@@ -93,16 +93,14 @@ class DevToolsDefaultBindingHandler
 // messages sent for DevToolsClient to a DebuggerShell instance.
 class DevToolsClientHostImpl : public DevToolsClientHost {
  public:
-  DevToolsClientHostImpl(
-      MessageLoop* message_loop,
-      net::HttpServer* server,
-      int connection_id)
+  DevToolsClientHostImpl(base::MessageLoop* message_loop,
+                         net::HttpServer* server,
+                         int connection_id)
       : message_loop_(message_loop),
         server_(server),
         connection_id_(connection_id),
         is_closed_(false),
-        detach_reason_("target_closed") {
-  }
+        detach_reason_("target_closed") {}
 
   virtual ~DevToolsClientHostImpl() {}
 
@@ -140,7 +138,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   }
 
  private:
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   net::HttpServer* server_;
   int connection_id_;
   bool is_closed_;
@@ -204,7 +202,7 @@ void DevToolsHttpHandlerImpl::Start() {
 // Runs on FILE thread.
 void DevToolsHttpHandlerImpl::StartHandlerThread() {
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
   if (!thread_->StartWithOptions(options)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

@@ -91,7 +91,7 @@ void URLRequestAbortOnEndJob::StartAsync() {
 }
 
 void URLRequestAbortOnEndJob::Start() {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestAbortOnEndJob::StartAsync,
                  weak_factory_.GetWeakPtr()));

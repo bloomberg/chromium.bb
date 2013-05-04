@@ -79,7 +79,7 @@ class PluginLoaderPosixTest : public testing::Test {
     PluginServiceImpl::GetInstance()->Init();
   }
 
-  MessageLoop* message_loop() { return &message_loop_; }
+  base::MessageLoop* message_loop() { return &message_loop_; }
   MockPluginLoaderPosix* plugin_loader() { return plugin_loader_.get(); }
 
   void AddThreePlugins() {
@@ -97,7 +97,7 @@ class PluginLoaderPosixTest : public testing::Test {
  private:
   base::ShadowingAtExitManager at_exit_manager_;  // Destroys PluginService.
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   BrowserThreadImpl file_thread_;
   BrowserThreadImpl io_thread_;
 

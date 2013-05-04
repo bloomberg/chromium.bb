@@ -38,7 +38,7 @@ class GpuWatchdogThread : public base::Thread,
 
   // An object of this type intercepts the reception and completion of all tasks
   // on the watched thread and checks whether the watchdog is armed.
-  class GpuWatchdogTaskObserver : public MessageLoop::TaskObserver {
+  class GpuWatchdogTaskObserver : public base::MessageLoop::TaskObserver {
    public:
     explicit GpuWatchdogTaskObserver(GpuWatchdogThread* watchdog);
     virtual ~GpuWatchdogTaskObserver();
@@ -62,7 +62,7 @@ class GpuWatchdogThread : public base::Thread,
   base::TimeDelta GetWatchedThreadTime();
 #endif
 
-  MessageLoop* watched_message_loop_;
+  base::MessageLoop* watched_message_loop_;
   base::TimeDelta timeout_;
   volatile bool armed_;
   GpuWatchdogTaskObserver task_observer_;

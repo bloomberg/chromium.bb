@@ -58,7 +58,7 @@ void NPObjectStub::DeleteSoon() {
 
     WebBindings::releaseObject(npobject);
 
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 }
 

@@ -135,7 +135,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   }
 
  protected:
-  MessageLoop main_loop_;
+  base::MessageLoop main_loop_;
   scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
   base::WaitableEvent loaded_event_;
   base::WaitableEvent key_loaded_event_;

@@ -52,7 +52,7 @@ int PluginMain(const MainFunctionParams& parameters) {
 #endif
   InitializeChromeApplication();
 #endif
-  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
+  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
   base::PlatformThread::SetName("CrPluginMain");
 
   base::PowerMonitor power_monitor;
@@ -77,7 +77,7 @@ int PluginMain(const MainFunctionParams& parameters) {
   {
     ChildProcess plugin_process;
     plugin_process.set_main_thread(new PluginThread());
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   return 0;

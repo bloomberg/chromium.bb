@@ -252,7 +252,7 @@ bool WebKitTestController::PrepareForLayoutTest(
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout)) {
     watchdog_.Reset(base::Bind(&WebKitTestController::TimeoutHandler,
                                base::Unretained(this)));
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         watchdog_.callback(),
         base::TimeDelta::FromMilliseconds(kTestTimeoutMilliseconds + 1000));
@@ -424,7 +424,8 @@ void WebKitTestController::DiscardMainWindow() {
   WebContentsObserver::Observe(NULL);
   if (is_running_test_) {
     Shell::CloseAllWindows();
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
   } else if (main_window_) {
     main_window_->Close();
   }
@@ -463,7 +464,7 @@ void WebKitTestController::OnTestFinished(bool did_timeout) {
     printer_->PrintImageFooter();
   RenderViewHost* render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&WebKitTestController::Send),
                  base::Unretained(this),
@@ -608,11 +609,12 @@ void WebKitTestController::OnCloseRemainingWindows() {
     if (open_windows[i] != main_window_)
       open_windows[i]->Close();
   }
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void WebKitTestController::OnResetDone() {
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
 }
 
 }  // namespace content

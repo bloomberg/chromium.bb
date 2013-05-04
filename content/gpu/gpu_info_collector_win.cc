@@ -604,7 +604,7 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   // Collect basic information about supported D3D11 features. Delay for 45
   // seconds so as not to regress performance tests.
   if (D3D11ShouldWork(*gpu_info)) {
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&CollectD3D11Support),
         base::TimeDelta::FromSeconds(45));

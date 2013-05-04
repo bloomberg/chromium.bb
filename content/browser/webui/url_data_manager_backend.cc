@@ -225,10 +225,9 @@ URLRequestChromeJob::~URLRequestChromeJob() {
 void URLRequestChromeJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&URLRequestChromeJob::StartAsync,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&URLRequestChromeJob::StartAsync, weak_factory_.GetWeakPtr()));
 
   TRACE_EVENT_ASYNC_BEGIN1("browser", "DataManager:Request", this, "URL",
       request_->url().possibly_invalid_spec());
@@ -518,7 +517,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
                                                &render_view_id);
 
   // Forward along the request to the data source.
-  MessageLoop* target_message_loop =
+  base::MessageLoop* target_message_loop =
       source->source()->MessageLoopForRequestPath(path);
   if (!target_message_loop) {
     job->MimeTypeAvailable(source->source()->GetMimeType(path));

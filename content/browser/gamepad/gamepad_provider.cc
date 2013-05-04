@@ -68,7 +68,7 @@ void GamepadProvider::Pause() {
     base::AutoLock lock(is_paused_lock_);
     is_paused_ = true;
   }
-  MessageLoop* polling_loop = polling_thread_->message_loop();
+  base::MessageLoop* polling_loop = polling_thread_->message_loop();
   polling_loop->PostTask(
       FROM_HERE,
       base::Bind(&GamepadProvider::SendPauseHint, Unretained(this), true));
@@ -82,7 +82,7 @@ void GamepadProvider::Resume() {
     is_paused_ = false;
   }
 
-  MessageLoop* polling_loop = polling_thread_->message_loop();
+  base::MessageLoop* polling_loop = polling_thread_->message_loop();
   polling_loop->PostTask(
       FROM_HERE,
       base::Bind(&GamepadProvider::SendPauseHint, Unretained(this), false));
@@ -93,8 +93,8 @@ void GamepadProvider::Resume() {
 
 void GamepadProvider::RegisterForUserGesture(const base::Closure& closure) {
   base::AutoLock lock(user_gesture_lock_);
-  user_gesture_observers_.push_back(
-      ClosureAndThread(closure, MessageLoop::current()->message_loop_proxy()));
+  user_gesture_observers_.push_back(ClosureAndThread(
+      closure, base::MessageLoop::current()->message_loop_proxy()));
 }
 
 void GamepadProvider::OnDevicesChanged(base::SystemMonitor::DeviceType type) {
@@ -114,7 +114,7 @@ void GamepadProvider::Initialize(scoped_ptr<GamepadDataFetcher> fetcher) {
 
   polling_thread_.reset(new base::Thread("Gamepad polling thread"));
   polling_thread_->StartWithOptions(
-      base::Thread::Options(MessageLoop::TYPE_IO, 0));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
   polling_thread_->message_loop()->PostTask(
       FROM_HERE,
@@ -125,7 +125,7 @@ void GamepadProvider::Initialize(scoped_ptr<GamepadDataFetcher> fetcher) {
 
 void GamepadProvider::DoInitializePollingThread(
     scoped_ptr<GamepadDataFetcher> fetcher) {
-  DCHECK(MessageLoop::current() == polling_thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == polling_thread_->message_loop());
   DCHECK(!data_fetcher_.get());  // Should only initialize once.
 
   if (!fetcher)
@@ -134,13 +134,13 @@ void GamepadProvider::DoInitializePollingThread(
 }
 
 void GamepadProvider::SendPauseHint(bool paused) {
-  DCHECK(MessageLoop::current() == polling_thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == polling_thread_->message_loop());
   if (data_fetcher_)
     data_fetcher_->PauseHint(paused);
 }
 
 void GamepadProvider::DoPoll() {
-  DCHECK(MessageLoop::current() == polling_thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == polling_thread_->message_loop());
   DCHECK(have_scheduled_do_poll_);
   have_scheduled_do_poll_ = false;
 
@@ -171,7 +171,7 @@ void GamepadProvider::DoPoll() {
 }
 
 void GamepadProvider::ScheduleDoPoll() {
-  DCHECK(MessageLoop::current() == polling_thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == polling_thread_->message_loop());
   if (have_scheduled_do_poll_)
     return;
 
@@ -181,7 +181,7 @@ void GamepadProvider::ScheduleDoPoll() {
       return;
   }
 
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&GamepadProvider::DoPoll, Unretained(this)),
       base::TimeDelta::FromMilliseconds(kDesiredSamplingIntervalMs));

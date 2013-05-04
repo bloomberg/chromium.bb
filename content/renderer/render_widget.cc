@@ -426,7 +426,7 @@ void RenderWidget::OnClose() {
   // If there is a Send call on the stack, then it could be dangerous to close
   // now.  Post a task that only gets invoked when there are no nested message
   // loops.
-  MessageLoop::current()->PostNonNestableTask(
+  base::MessageLoop::current()->PostNonNestableTask(
       FROM_HERE, base::Bind(&RenderWidget::Close, this));
 
   // Balances the AddRef taken when we called AddRoute.
@@ -1325,7 +1325,7 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
   // 2) Allows us to collect more damage rects before painting to help coalesce
   //    the work that we will need to do.
   invalidation_task_posted_ = true;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&RenderWidget::InvalidationCallback, this));
 }
 
@@ -1366,7 +1366,7 @@ void RenderWidget::didScrollRect(int dx, int dy,
   // 2) Allows us to collect more damage rects before painting to help coalesce
   //    the work that we will need to do.
   invalidation_task_posted_ = true;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&RenderWidget::InvalidationCallback, this));
 }
 
@@ -1610,7 +1610,7 @@ void RenderWidget::closeWidgetSoon() {
   // could be closed before the JS finishes executing.  So instead, post a
   // message back to the message loop, which won't run until the JS is
   // complete, and then the Close message can be sent.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&RenderWidget::DoDeferredClose, this));
 }
 

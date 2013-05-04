@@ -77,7 +77,7 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
     // not be available immediately so wait for it.
     while (!CheckCompositingSurface()) {
       base::RunLoop run_loop;
-      MessageLoop::current()->PostDelayedTask(
+      base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           run_loop.QuitClosure(),
           base::TimeDelta::FromMilliseconds(10));

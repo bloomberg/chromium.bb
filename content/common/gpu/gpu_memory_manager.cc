@@ -215,9 +215,8 @@ void GpuMemoryManager::ScheduleManage(
   if (manage_immediate_scheduled_)
     return;
   if (schedule_manage_time == kScheduleManageNow) {
-    MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuMemoryManager::Manage, AsWeakPtr()));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&GpuMemoryManager::Manage, AsWeakPtr()));
     manage_immediate_scheduled_ = true;
     if (!delayed_manage_callback_.IsCancelled())
       delayed_manage_callback_.Cancel();
@@ -226,10 +225,10 @@ void GpuMemoryManager::ScheduleManage(
       return;
     delayed_manage_callback_.Reset(base::Bind(&GpuMemoryManager::Manage,
                                               AsWeakPtr()));
-    MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      delayed_manage_callback_.callback(),
-      base::TimeDelta::FromMilliseconds(kDelayedScheduleManageTimeoutMs));
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        delayed_manage_callback_.callback(),
+        base::TimeDelta::FromMilliseconds(kDelayedScheduleManageTimeoutMs));
   }
 }
 

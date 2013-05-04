@@ -31,7 +31,7 @@ class MessageLoopQuitListener
     : public LocationProviderBase::ListenerInterface {
  public:
   MessageLoopQuitListener()
-      : client_message_loop_(MessageLoop::current()),
+      : client_message_loop_(base::MessageLoop::current()),
         updated_provider_(NULL),
         movement_provider_(NULL) {
     CHECK(client_message_loop_);
@@ -39,11 +39,11 @@ class MessageLoopQuitListener
   // ListenerInterface
   virtual void LocationUpdateAvailable(
       LocationProviderBase* provider) OVERRIDE {
-    EXPECT_EQ(client_message_loop_, MessageLoop::current());
+    EXPECT_EQ(client_message_loop_, base::MessageLoop::current());
     updated_provider_ = provider;
     client_message_loop_->Quit();
   }
-  MessageLoop* client_message_loop_;
+  base::MessageLoop* client_message_loop_;
   LocationProviderBase* updated_provider_;
   LocationProviderBase* movement_provider_;
 };
@@ -324,7 +324,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
   }
 
   GURL test_server_url_;
-  MessageLoop main_message_loop_;
+  base::MessageLoop main_message_loop_;
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   scoped_refptr<MockDeviceDataProviderImpl<WifiData> > wifi_data_provider_;
@@ -332,7 +332,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
 TEST_F(GeolocationNetworkProviderTest, CreateDestroy) {
   // Test fixture members were SetUp correctly.
-  EXPECT_EQ(&main_message_loop_, MessageLoop::current());
+  EXPECT_EQ(&main_message_loop_, base::MessageLoop::current());
   scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
   EXPECT_TRUE(NULL != provider.get());
   provider.reset();

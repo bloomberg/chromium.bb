@@ -268,7 +268,8 @@ void InterstitialPageImpl::Hide() {
 
   // Shutdown the RVH asynchronously, as we may have been called from a RVH
   // delegate method, and we can't delete the RVH out from under itself.
-  MessageLoop::current()->PostNonNestableTask(FROM_HERE,
+  base::MessageLoop::current()->PostNonNestableTask(
+      FROM_HERE,
       base::Bind(&InterstitialPageImpl::Shutdown,
                  weak_ptr_factory_.GetWeakPtr(),
                  render_view_host_));

@@ -138,7 +138,8 @@ void JavaBridgeDispatcherHost::CreateNPVariantParam(NPObject* object,
 
 void JavaBridgeDispatcherHost::CreateObjectStub(NPObject* object,
                                                 int route_id) {
-  DCHECK_EQ(g_background_thread.Get().message_loop(), MessageLoop::current());
+  DCHECK_EQ(g_background_thread.Get().message_loop(),
+            base::MessageLoop::current());
   if (!channel_) {
     channel_ = JavaBridgeChannelHost::GetJavaBridgeChannelHost(
         render_view_host()->GetProcess()->GetID(),

@@ -164,7 +164,7 @@ void EnsureNoPendingDownloadJobsOnFile(bool* result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   *result = (DownloadFile::GetNumberOfDownloadFiles() == 0);
   BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+      BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 class DownloadItemFactoryImpl : public DownloadItemFactory {

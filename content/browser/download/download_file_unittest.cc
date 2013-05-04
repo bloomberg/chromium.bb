@@ -302,7 +302,7 @@ class DownloadFileTest : public testing::Test {
   int64 bytes_per_sec_;
   std::string hash_state_;
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 
  private:
   void SetRenameResult(bool* called_p,
@@ -592,8 +592,9 @@ TEST_F(DownloadFileTest, ConfirmUpdate) {
   AppendDataToFile(chunks1, 2);
 
   // Run the message loops for 750ms and check for results.
-  loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
-                         base::TimeDelta::FromMilliseconds(750));
+  loop_.PostDelayedTask(FROM_HERE,
+                        base::MessageLoop::QuitClosure(),
+                        base::TimeDelta::FromMilliseconds(750));
   loop_.Run();
 
   EXPECT_EQ(static_cast<int64>(strlen(kTestData1) + strlen(kTestData2)),

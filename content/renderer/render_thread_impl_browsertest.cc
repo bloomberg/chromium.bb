@@ -38,7 +38,7 @@ TEST_F(RenderThreadImplBrowserTest,
 
   ContentRendererClient content_renderer_client;
   SetRendererClientForTesting(&content_renderer_client);
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
 
   std::string channel_id = IPC::Channel::GenerateVerifiedChannelID(
       std::string());

@@ -23,7 +23,7 @@ namespace content {
 // Mainline routine for running as the utility process.
 int UtilityMain(const MainFunctionParams& parameters) {
   // The main message loop of the utility process.
-  MessageLoop main_message_loop;
+  base::MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrUtilityMain");
 
   base::PowerMonitor power_monitor;
@@ -48,7 +48,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   return 0;
 }

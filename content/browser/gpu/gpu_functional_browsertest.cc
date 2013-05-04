@@ -85,10 +85,11 @@ class GpuFunctionalTest : public ContentBrowserTest {
 
     bool result = false;
     BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
+        BrowserThread::IO,
+        FROM_HERE,
         base::Bind(&VerifyGPUProcessLaunch, &result),
-        MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+        base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->Run();
     EXPECT_TRUE(result);
   }
 

@@ -567,9 +567,11 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
 
     FollowPendingRedirect(request_id, request_info);
 
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
         base::Bind(&ResourceDispatcher::FlushDeferredMessages,
-                   weak_factory_.GetWeakPtr(), request_id));
+                   weak_factory_.GetWeakPtr(),
+                   request_id));
   }
 }
 

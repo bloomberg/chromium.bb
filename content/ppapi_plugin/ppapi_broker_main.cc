@@ -19,7 +19,7 @@ int PpapiBrokerMain(const MainFunctionParams& parameters) {
     ChildProcess::WaitForDebugger("PpapiBroker");
   }
 
-  MessageLoop main_message_loop(MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_DEFAULT);
   base::PlatformThread::SetName("CrPPAPIBrokerMain");
 
   ChildProcess ppapi_broker_process;

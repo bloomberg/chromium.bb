@@ -3422,8 +3422,8 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
     HistoryService* history = HistoryServiceFactory::GetForProfiles(
         profile(), Profile::IMPLICIT_ACCESS);
     if (history) {
-      history->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
-      MessageLoop::current()->Run();
+      history->SetOnBackendDestroyTask(base::MessageLoop::QuitClosure());
+      base::MessageLoop::current()->Run();
     }
 
     // Do normal cleanup before deleting the profile directory below.

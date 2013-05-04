@@ -732,7 +732,7 @@ void BrowserPlugin::OnUpdateRect(
     // with the last seen view size.
     if (container_ && !size_changed_in_flight_) {
       size_changed_in_flight_ = true;
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&BrowserPlugin::SizeChangedDueToAutoSize,
                      base::Unretained(this),
@@ -1012,10 +1012,11 @@ void BrowserPlugin::WeakCallbackForPersistObject(
     // Asynchronously remove item from |alive_v8_permission_request_objects_|.
     // Note that we are using weak pointer for the following PostTask, so we
     // don't need to worry about BrowserPlugin going away.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&BrowserPlugin::OnRequestObjectGarbageCollected,
-                   plugin, request_id));
+                   plugin,
+                   request_id));
   }
 }
 
@@ -1182,7 +1183,7 @@ void BrowserPlugin::destroy() {
   // Will be a no-op if the mouse is not currently locked.
   if (render_view_)
     render_view_->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 NPObject* BrowserPlugin::scriptableObject() {

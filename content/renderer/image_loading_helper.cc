@@ -95,7 +95,7 @@ void ImageLoadingHelper::DidDownloadImage(
       std::find(image_fetchers_.begin(), image_fetchers_.end(), fetcher);
   if (iter != image_fetchers_.end()) {
     image_fetchers_.weak_erase(iter);
-    MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
   }
 }
 

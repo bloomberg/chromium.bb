@@ -56,7 +56,7 @@ class WebRTCInternalsTest : public testing::Test {
     return prefix + kstatic_part1 + id + kstatic_part2 + suffix;
   }
 
-  MessageLoop io_loop_;
+  base::MessageLoop io_loop_;
   TestBrowserThread io_thread_;
 };
 

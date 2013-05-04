@@ -61,7 +61,7 @@ class MockPollingPolicy :public PollingPolicyInterface {
 class MessageLoopQuitListener
     : public WifiDataProviderCommon::ListenerInterface {
  public:
-  explicit MessageLoopQuitListener(MessageLoop* message_loop)
+  explicit MessageLoopQuitListener(base::MessageLoop* message_loop)
       : message_loop_to_quit_(message_loop) {
     CHECK(message_loop_to_quit_ != NULL);
   }
@@ -69,11 +69,11 @@ class MessageLoopQuitListener
   virtual void DeviceDataUpdateAvailable(
       DeviceDataProvider<WifiData>* provider) OVERRIDE {
     // Provider should call back on client's thread.
-    EXPECT_EQ(MessageLoop::current(), message_loop_to_quit_);
+    EXPECT_EQ(base::MessageLoop::current(), message_loop_to_quit_);
     provider_ = provider;
     message_loop_to_quit_->QuitNow();
   }
-  MessageLoop* message_loop_to_quit_;
+  base::MessageLoop* message_loop_to_quit_;
   DeviceDataProvider<WifiData>* provider_;
 };
 
@@ -127,7 +127,7 @@ class GeolocationWifiDataProviderCommonTest : public testing::Test {
   }
 
  protected:
-  MessageLoop main_message_loop_;
+  base::MessageLoop main_message_loop_;
   MessageLoopQuitListener quit_listener_;
   scoped_refptr<WifiDataProviderCommonWithMock> provider_;
   MockWlanApi* wlan_api_;
@@ -136,7 +136,7 @@ class GeolocationWifiDataProviderCommonTest : public testing::Test {
 
 TEST_F(GeolocationWifiDataProviderCommonTest, CreateDestroy) {
   // Test fixture members were SetUp correctly.
-  EXPECT_EQ(&main_message_loop_, MessageLoop::current());
+  EXPECT_EQ(&main_message_loop_, base::MessageLoop::current());
   EXPECT_TRUE(NULL != provider_.get());
   EXPECT_TRUE(NULL != wlan_api_);
 }

@@ -110,7 +110,7 @@ void AddMessagesToFilter(IPC::ChannelProxy::MessageFilter* message_filter,
     message_filter->OnMessageReceived(events[i]);
   }
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void AddEventsToFilter(IPC::ChannelProxy::MessageFilter* message_filter,
@@ -142,7 +142,7 @@ class InputEventFilterTest : public testing::Test {
 
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   // Used to record IPCs sent by the filter to the RenderWidgetHost.
   IPC::TestSink ipc_sink_;

@@ -129,7 +129,7 @@ void PpapiThread::Shutdown() {
 
 bool PpapiThread::Send(IPC::Message* msg) {
   // Allow access from multiple threads.
-  if (MessageLoop::current() == message_loop())
+  if (base::MessageLoop::current() == message_loop())
     return ChildThread::Send(msg);
 
   return sync_message_filter()->Send(msg);

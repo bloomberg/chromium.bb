@@ -69,9 +69,8 @@ BrowserThreadImpl::BrowserThreadImpl(ID identifier)
 }
 
 BrowserThreadImpl::BrowserThreadImpl(ID identifier,
-                                     MessageLoop* message_loop)
-    : Thread(message_loop->thread_name().c_str()),
-      identifier_(identifier) {
+                                     base::MessageLoop* message_loop)
+    : Thread(message_loop->thread_name().c_str()), identifier_(identifier) {
   set_message_loop(message_loop);
   Initialize();
 }
@@ -113,51 +112,54 @@ void BrowserThreadImpl::Init() {
 MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
 
-NOINLINE void BrowserThreadImpl::UIThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::UIThreadRun(base::MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void BrowserThreadImpl::DBThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::DBThreadRun(base::MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void BrowserThreadImpl::WebKitThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::WebKitThreadRun(
+    base::MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void BrowserThreadImpl::FileThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::FileThreadRun(
+    base::MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
 NOINLINE void BrowserThreadImpl::FileUserBlockingThreadRun(
-    MessageLoop* message_loop) {
+    base::MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
 NOINLINE void BrowserThreadImpl::ProcessLauncherThreadRun(
-    MessageLoop* message_loop) {
+    base::MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void BrowserThreadImpl::CacheThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::CacheThreadRun(
+    base::MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void BrowserThreadImpl::IOThreadRun(MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::IOThreadRun(base::MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(message_loop);
   CHECK_GT(line_number, 0);
@@ -166,7 +168,7 @@ NOINLINE void BrowserThreadImpl::IOThreadRun(MessageLoop* message_loop) {
 MSVC_POP_WARNING()
 MSVC_ENABLE_OPTIMIZE();
 
-void BrowserThreadImpl::Run(MessageLoop* message_loop) {
+void BrowserThreadImpl::Run(base::MessageLoop* message_loop) {
   BrowserThread::ID thread_id;
   if (!GetCurrentThreadIdentifier(&thread_id))
     return Thread::Run(message_loop);
@@ -259,8 +261,9 @@ bool BrowserThreadImpl::PostTaskHelper(
   if (!target_thread_outlives_current)
     globals.lock.Acquire();
 
-  MessageLoop* message_loop = globals.threads[identifier] ?
-      globals.threads[identifier]->message_loop() : NULL;
+  base::MessageLoop* message_loop =
+      globals.threads[identifier] ? globals.threads[identifier]->message_loop()
+                                  : NULL;
   if (message_loop) {
     if (nestable) {
       message_loop->PostDelayedTask(from_here, task, delay);
@@ -361,7 +364,8 @@ bool BrowserThread::CurrentlyOn(ID identifier) {
   base::AutoLock lock(globals.lock);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
   return globals.threads[identifier] &&
-         globals.threads[identifier]->message_loop() == MessageLoop::current();
+         globals.threads[identifier]->message_loop() ==
+             base::MessageLoop::current();
 }
 
 // static
@@ -433,7 +437,7 @@ bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
   // function.
   // http://crbug.com/63678
   base::ThreadRestrictions::ScopedAllowSingleton allow_singleton;
-  MessageLoop* cur_message_loop = MessageLoop::current();
+  base::MessageLoop* cur_message_loop = base::MessageLoop::current();
   BrowserThreadGlobals& globals = g_globals.Get();
   for (int i = 0; i < ID_COUNT; ++i) {
     if (globals.threads[i] &&
@@ -461,7 +465,7 @@ MessageLoop* BrowserThread::UnsafeGetMessageLoopForThread(ID identifier) {
   base::AutoLock lock(globals.lock);
   base::Thread* thread = globals.threads[identifier];
   DCHECK(thread);
-  MessageLoop* loop = thread->message_loop();
+  base::MessageLoop* loop = thread->message_loop();
   return loop;
 }
 

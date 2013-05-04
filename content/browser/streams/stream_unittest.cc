@@ -32,7 +32,7 @@ class StreamTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<StreamRegistry> registry_;
 
  private:
@@ -138,7 +138,7 @@ TEST_F(StreamTest, Stream) {
   writer.Write(stream, buffer, kBufferSize);
   stream->Finalize();
   reader.Read(stream);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_EQ(reader.buffer()->capacity(), kBufferSize);
   for (int i = 0; i < kBufferSize; i++)

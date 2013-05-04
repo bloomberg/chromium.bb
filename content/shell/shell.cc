@@ -77,7 +77,8 @@ Shell::~Shell() {
   }
 
   if (windows_.empty() && quit_message_loop_)
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
 }
 
 Shell* Shell::CreateShell(WebContents* web_contents) {
@@ -105,7 +106,7 @@ void Shell::CloseAllWindows() {
   std::vector<Shell*> open_windows(windows_);
   for (size_t i = 0; i < open_windows.size(); ++i)
     open_windows[i]->Close();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void Shell::SetShellCreatedCallback(

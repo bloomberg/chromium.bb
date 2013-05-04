@@ -32,7 +32,7 @@ PluginProcessDispatcher::~PluginProcessDispatcher() {
   // plugin. This is the case for common plugins where they may be used on a
   // source and destination page of a navigation. We don't want to tear down
   // and re-start processes each time in these cases.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ChildProcess::ReleaseProcess,
                  base::Unretained(ChildProcess::current())),

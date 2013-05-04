@@ -47,19 +47,17 @@ namespace {
 class WebKitClientMessageLoopImpl
     : public WebDevToolsAgentClient::WebKitClientMessageLoop {
  public:
-  WebKitClientMessageLoopImpl() : message_loop_(MessageLoop::current()) { }
-  virtual ~WebKitClientMessageLoopImpl() {
-    message_loop_ = NULL;
-  }
+  WebKitClientMessageLoopImpl() : message_loop_(base::MessageLoop::current()) {}
+  virtual ~WebKitClientMessageLoopImpl() { message_loop_ = NULL; }
   virtual void run() {
-    MessageLoop::ScopedNestableTaskAllower allow(message_loop_);
+    base::MessageLoop::ScopedNestableTaskAllower allow(message_loop_);
     message_loop_->Run();
   }
   virtual void quitNow() {
     message_loop_->QuitNow();
   }
  private:
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 };
 
 typedef std::map<int, DevToolsAgent*> IdToAgentMap;

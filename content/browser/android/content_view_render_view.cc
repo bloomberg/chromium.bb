@@ -77,7 +77,7 @@ void ContentViewRenderView::ScheduleComposite() {
     return;
 
   scheduled_composite_ = true;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ContentViewRenderView::Composite,
                  weak_factory_.GetWeakPtr()));

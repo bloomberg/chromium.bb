@@ -106,8 +106,8 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
   }
 
   void QuitMessageLoop() {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            MessageLoop::QuitClosure());
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
   ResourceContext* context_;
@@ -218,8 +218,8 @@ class MockCanceledPluginServiceClient : public PluginProcessHost::Client {
 };
 
 void QuitUIMessageLoopFromIOThread() {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          MessageLoop::QuitClosure());
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 void OpenChannelAndThenCancel(PluginProcessHost::Client* client) {
@@ -271,13 +271,13 @@ class MockCanceledBeforeSentPluginProcessHostClient
     set_host(host);
     // This gets called right before we request the plugin<=>renderer channel,
     // so we have to post a task to cancel it.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&PluginProcessHost::CancelPendingRequest,
-                   base::Unretained(host), this));
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&QuitUIMessageLoopFromIOThread));
+                   base::Unretained(host),
+                   this));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&QuitUIMessageLoopFromIOThread));
   }
 
   bool set_plugin_info_called() const {
@@ -345,8 +345,8 @@ class MockCanceledAfterSentPluginProcessHostClient
   virtual void OnSentPluginChannelRequest() OVERRIDE {
     on_sent_plugin_channel_request_called_ = true;
     host()->CancelSentRequest(this);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            MessageLoop::QuitClosure());
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
   bool on_sent_plugin_channel_request_called() const {

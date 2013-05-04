@@ -37,7 +37,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
                      const Referrer& referrer,
                      const std::string& referrer_encoding,
                      WebContents* web_contents,
-                     MessageLoop* on_completed_loop,
+                     base::MessageLoop* on_completed_loop,
                      const OnCompleted& on_completed)
       : on_completed_loop_(on_completed_loop),
         on_completed_(on_completed),
@@ -132,7 +132,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     download_item_ = NULL;
   }
 
-  MessageLoop* on_completed_loop_;
+  base::MessageLoop* on_completed_loop_;
   OnCompleted on_completed_;
   GURL url_;
   Referrer referrer_;
@@ -154,7 +154,7 @@ DragDownloadFile::DragDownloadFile(const base::FilePath& file_path,
                                    WebContents* web_contents)
     : file_path_(file_path),
       file_stream_(file_stream.Pass()),
-      drag_message_loop_(MessageLoop::current()),
+      drag_message_loop_(base::MessageLoop::current()),
       state_(INITIALIZED),
       drag_ui_(NULL),
       weak_ptr_factory_(this) {
@@ -231,7 +231,7 @@ void DragDownloadFile::DownloadCompleted(bool is_successful) {
 
 void DragDownloadFile::CheckThread() {
 #if defined(OS_WIN)
-  DCHECK(drag_message_loop_ == MessageLoop::current());
+  DCHECK(drag_message_loop_ == base::MessageLoop::current());
 #else
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #endif

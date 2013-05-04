@@ -64,7 +64,7 @@ static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
 
 // This is a simplified version of the browser Jankometer, which measures
 // the processing time of tasks on the render thread.
-class RendererMessageLoopObserver : public MessageLoop::TaskObserver {
+class RendererMessageLoopObserver : public base::MessageLoop::TaskObserver {
  public:
   RendererMessageLoopObserver()
       : process_times_(base::Histogram::FactoryGet(
@@ -88,7 +88,7 @@ class RendererMessageLoopObserver : public MessageLoop::TaskObserver {
 };
 
 // For measuring memory usage after each task. Behind a command line flag.
-class MemoryObserver : public MessageLoop::TaskObserver {
+class MemoryObserver : public base::MessageLoop::TaskObserver {
  public:
   MemoryObserver() {}
   virtual ~MemoryObserver() {}
@@ -145,12 +145,13 @@ int RendererMain(const MainFunctionParams& parameters) {
 #if defined(OS_MACOSX)
   // As long as we use Cocoa in the renderer (for the forseeable future as of
   // now; see http://crbug.com/13890 for info) we need to have a UI loop.
-  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
+  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
 #else
   // The main message loop of the renderer services doesn't have IO or UI tasks,
   // unless in-process-plugins is used.
-  MessageLoop main_message_loop(RenderProcessImpl::InProcessPlugins() ?
-              MessageLoop::TYPE_UI : MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop main_message_loop(RenderProcessImpl::InProcessPlugins()
+                                          ? base::MessageLoop::TYPE_UI
+                                          : base::MessageLoop::TYPE_DEFAULT);
 #endif
   main_message_loop.AddTaskObserver(&task_observer);
 
@@ -231,7 +232,7 @@ int RendererMain(const MainFunctionParams& parameters) {
         pool->Recycle();
 #endif
       TRACE_EVENT_BEGIN_ETW("RendererMain.START_MSG_LOOP", 0, 0);
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
       TRACE_EVENT_END_ETW("RendererMain.START_MSG_LOOP", 0, 0);
     }
   }

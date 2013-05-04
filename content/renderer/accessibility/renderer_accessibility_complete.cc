@@ -227,12 +227,11 @@ void RendererAccessibilityComplete::HandleAccessibilityNotification(
     // When no accessibility notifications are in-flight post a task to send
     // the notifications to the browser. We use PostTask so that we can queue
     // up additional notifications.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(
-            &RendererAccessibilityComplete::
-                SendPendingAccessibilityNotifications,
-            weak_factory_.GetWeakPtr()));
+        base::Bind(&RendererAccessibilityComplete::
+                       SendPendingAccessibilityNotifications,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 

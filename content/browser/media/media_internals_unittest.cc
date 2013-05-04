@@ -53,7 +53,7 @@ class MediaInternalsTest : public testing::Test {
     internals_.reset(new MediaInternals());
   }
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   TestBrowserThread io_thread_;
   scoped_ptr<MediaInternals> internals_;
 };

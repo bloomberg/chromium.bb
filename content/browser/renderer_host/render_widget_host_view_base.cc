@@ -84,7 +84,7 @@ void NotifyPluginProcessHostHelper(HWND window, HWND parent, int tries) {
     // it's most likely the one for this plugin, try a few more times after a
     // delay.
     if (tries > 0) {
-      MessageLoop::current()->PostDelayedTask(
+      base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&NotifyPluginProcessHostHelper, window, parent, tries - 1),
           base::TimeDelta::FromMilliseconds(kTryDelayMs));

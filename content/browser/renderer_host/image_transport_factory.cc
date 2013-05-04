@@ -231,7 +231,8 @@ class CompositorSwapClient
     // Recreating contexts directly from here causes issues, so post a task
     // instead.
     // TODO(piman): Fix the underlying issues.
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
         base::Bind(&CompositorSwapClient::OnLostContext, this->AsWeakPtr()));
   }
 
@@ -261,7 +262,7 @@ class BrowserCompositorOutputSurfaceProxy
           arraysize(messages_to_filter),
           base::Bind(&BrowserCompositorOutputSurfaceProxy::OnMessageReceived,
                      this),
-          MessageLoop::current()->message_loop_proxy());
+          base::MessageLoop::current()->message_loop_proxy());
       message_handler_set_ = true;
     }
     surface_map_.AddWithID(surface, surface_id);
@@ -595,7 +596,7 @@ class GpuProcessTransportFactory
     }
 
     virtual void OnLostContext() OVERRIDE {
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&GpuProcessTransportFactory::OnLostMainThreadSharedContext,
                      factory_->callback_factory_.GetWeakPtr()));

@@ -42,7 +42,7 @@ class ShaderDiskCacheTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   TestBrowserThread cache_thread_;
   TestBrowserThread io_thread_;
 

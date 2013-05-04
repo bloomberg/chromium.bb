@@ -168,7 +168,7 @@ class RenderViewHostTestHarness : public testing::Test {
   // SetUp().
   scoped_ptr<BrowserContext> browser_context_;
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 
  private:
   // It is important not to use this directly in the implementation as

@@ -38,7 +38,7 @@ bool GpuProcessLogMessageHandler(int severity,
 
   // If we are not on main thread in child process, send through
   // the sync_message_filter; otherwise send directly.
-  if (MessageLoop::current() !=
+  if (base::MessageLoop::current() !=
       ChildProcess::current()->main_thread()->message_loop()) {
     ChildProcess::current()->main_thread()->sync_message_filter()->Send(
         new GpuHostMsg_OnLogMessage(severity, header, message));
@@ -127,7 +127,7 @@ void GpuChildThread::OnInitialize() {
 
   if (dead_on_arrival_) {
     VLOG(1) << "Exiting GPU process due to errors during initialization";
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
     return;
   }
 
@@ -193,7 +193,7 @@ void GpuChildThread::OnCollectGraphicsInfo() {
 #if defined(OS_WIN)
   if (!in_browser_process_) {
     // The unsandboxed GPU process fulfilled its duty.  Rest in peace.
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 #endif  // OS_WIN
 }

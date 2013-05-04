@@ -25,7 +25,7 @@ class PluginDataRemoverTest : public ContentBrowserTest {
   PluginDataRemoverTest() {}
 
   void OnWaitableEventSignaled(base::WaitableEvent* waitable_event) {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {

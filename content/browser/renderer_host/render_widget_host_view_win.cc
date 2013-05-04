@@ -1501,7 +1501,8 @@ void RenderWidgetHostViewWin::OnCancelMode() {
     SetWindowPos(NULL, 0, 0, 0, 0,
                  SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOMOVE |
                  SWP_NOREPOSITION | SWP_NOSIZE | SWP_NOZORDER);
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
         base::Bind(&RenderWidgetHostViewWin::ShutdownHost,
                    weak_factory_.GetWeakPtr()));
   }

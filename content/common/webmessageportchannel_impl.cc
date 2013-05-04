@@ -80,11 +80,11 @@ void WebMessagePortChannelImpl::entangle(WebMessagePortChannel* channel) {
 void WebMessagePortChannelImpl::postMessage(
     const WebString& message,
     WebMessagePortChannelArray* channels) {
-  if (MessageLoop::current() != ChildThread::current()->message_loop()) {
+  if (base::MessageLoop::current() != ChildThread::current()->message_loop()) {
     ChildThread::current()->message_loop()->PostTask(
         FROM_HERE,
-        base::Bind(&WebMessagePortChannelImpl::postMessage, this,
-                   message, channels));
+        base::Bind(
+            &WebMessagePortChannelImpl::postMessage, this, message, channels));
     return;
   }
 
@@ -127,10 +127,9 @@ bool WebMessagePortChannelImpl::tryGetMessage(
 }
 
 void WebMessagePortChannelImpl::Init() {
-  if (MessageLoop::current() != ChildThread::current()->message_loop()) {
+  if (base::MessageLoop::current() != ChildThread::current()->message_loop()) {
     ChildThread::current()->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&WebMessagePortChannelImpl::Init, this));
+        FROM_HERE, base::Bind(&WebMessagePortChannelImpl::Init, this));
     return;
   }
 
@@ -145,7 +144,7 @@ void WebMessagePortChannelImpl::Init() {
 
 void WebMessagePortChannelImpl::Entangle(
     scoped_refptr<WebMessagePortChannelImpl> channel) {
-  if (MessageLoop::current() != ChildThread::current()->message_loop()) {
+  if (base::MessageLoop::current() != ChildThread::current()->message_loop()) {
     ChildThread::current()->message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&WebMessagePortChannelImpl::Entangle, this, channel));
@@ -157,10 +156,9 @@ void WebMessagePortChannelImpl::Entangle(
 }
 
 void WebMessagePortChannelImpl::QueueMessages() {
-  if (MessageLoop::current() != ChildThread::current()->message_loop()) {
+  if (base::MessageLoop::current() != ChildThread::current()->message_loop()) {
     ChildThread::current()->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&WebMessagePortChannelImpl::QueueMessages, this));
+        FROM_HERE, base::Bind(&WebMessagePortChannelImpl::QueueMessages, this));
     return;
   }
   // This message port is being sent elsewhere (perhaps to another process).
@@ -177,7 +175,7 @@ void WebMessagePortChannelImpl::QueueMessages() {
 }
 
 void WebMessagePortChannelImpl::Send(IPC::Message* message) {
-  if (MessageLoop::current() != ChildThread::current()->message_loop()) {
+  if (base::MessageLoop::current() != ChildThread::current()->message_loop()) {
     DCHECK(!message->is_sync());
     ChildThread::current()->message_loop()->PostTask(
         FROM_HERE,

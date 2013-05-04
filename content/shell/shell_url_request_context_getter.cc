@@ -56,8 +56,8 @@ void InstallProtocolHandlers(net::URLRequestJobFactoryImpl* job_factory,
 ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     bool ignore_certificate_errors,
     const base::FilePath& base_path,
-    MessageLoop* io_loop,
-    MessageLoop* file_loop,
+    base::MessageLoop* io_loop,
+    base::MessageLoop* file_loop,
     ProtocolHandlerMap* protocol_handlers)
     : ignore_certificate_errors_(ignore_certificate_errors),
       base_path_(base_path),

@@ -110,7 +110,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   scoped_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;

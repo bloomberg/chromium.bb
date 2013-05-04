@@ -94,11 +94,11 @@ bool PepperInProcessRouter::SendToPlugin(IPC::Message* msg) {
   } else {
     CHECK(!pending_message_id_);
     // Dispatch plugin messages from the message loop.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&PepperInProcessRouter::DispatchPluginMsg,
-          weak_factory_.GetWeakPtr(),
-          base::Owned(message.release())));
+                   weak_factory_.GetWeakPtr(),
+                   base::Owned(message.release())));
   }
   return true;
 }

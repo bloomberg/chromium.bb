@@ -178,7 +178,7 @@ void WebContentsDragWin::StartDragging(const WebDropData& drop_data,
   DCHECK(!drag_drop_thread_.get());
   drag_drop_thread_.reset(new DragDropThread(this));
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_UI;
+  options.message_loop_type = base::MessageLoop::TYPE_UI;
   if (drag_drop_thread_->StartWithOptions(options)) {
     drag_drop_thread_->message_loop()->PostTask(
         FROM_HERE,
@@ -364,7 +364,8 @@ bool WebContentsDragWin::DoDragging(const WebDropData& drop_data,
     retain_source->set_data(&data);
     data.SetInDragLoop(true);
 
-    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+    base::MessageLoop::ScopedNestableTaskAllower allow(
+        base::MessageLoop::current());
     DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
                drag_source_,
                WebDragOpMaskToWinDragOpMask(ops),

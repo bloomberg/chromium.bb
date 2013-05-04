@@ -70,10 +70,13 @@ class PepperDeviceEnumerationHostHelper::ScopedRequest
       bool succeeded,
       const std::vector<ppapi::DeviceRefData>& devices) {
     if (sync_call_) {
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(&ScopedRequest::EnumerateDevicesCallbackBody, AsWeakPtr(),
-                     request_id, succeeded, devices));
+          base::Bind(&ScopedRequest::EnumerateDevicesCallbackBody,
+                     AsWeakPtr(),
+                     request_id,
+                     succeeded,
+                     devices));
     } else {
       DCHECK_EQ(request_id_, request_id);
       callback_.Run(request_id, succeeded, devices);

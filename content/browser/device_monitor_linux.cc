@@ -49,7 +49,7 @@ void DeviceMonitorLinux::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // We want to be notified of IO message loop destruction to delete |udev_|.
-  MessageLoop::current()->AddDestructionObserver(this);
+  base::MessageLoop::current()->AddDestructionObserver(this);
 
   std::vector<UdevLinux::UdevMonitorFilter> filters;
   for (size_t i = 0; i < arraysize(kSubsystemMap); ++i) {

@@ -513,7 +513,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
   // We run the UI message loop on the main thread. The capture device
   // will also spin up its own threads.
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<TestBrowserThread> ui_thread_;
 
   // Self-registering RenderProcessHostFactory.

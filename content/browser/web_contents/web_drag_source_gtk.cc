@@ -61,7 +61,7 @@ WebDragSourceGtk::~WebDragSourceGtk() {
   if (drop_data_) {
     gtk_grab_add(drag_widget_);
     gtk_grab_remove(drag_widget_);
-    MessageLoopForUI::current()->RemoveObserver(this);
+    base::MessageLoopForUI::current()->RemoveObserver(this);
     drop_data_.reset();
   }
 
@@ -148,7 +148,7 @@ bool WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
     return false;
   }
 
-  MessageLoopForUI::current()->AddObserver(this);
+  base::MessageLoopForUI::current()->AddObserver(this);
   return true;
 }
 
@@ -360,7 +360,7 @@ void WebDragSourceGtk::OnDragEnd(GtkWidget* sender,
     drag_pixbuf_ = NULL;
   }
 
-  MessageLoopForUI::current()->RemoveObserver(this);
+  base::MessageLoopForUI::current()->RemoveObserver(this);
 
   if (!download_url_.is_empty()) {
     gdk_property_delete(drag_context->source_window,

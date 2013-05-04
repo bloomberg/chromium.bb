@@ -729,7 +729,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   bool enable = command_line.HasSwitch(switches::kEnableThreadedCompositing);
   if (enable) {
-    MessageLoop* override_loop =
+    base::MessageLoop* override_loop =
         GetContentClient()->renderer()->OverrideCompositorMessageLoop();
     if (override_loop) {
       compositor_message_loop_proxy_ = override_loop->message_loop_proxy();
@@ -854,7 +854,7 @@ scoped_ptr<base::SharedMemory>
       new ChildProcessHostMsg_SyncAllocateSharedMemory(size, &handle);
 
   // Allow calling this from the compositor thread.
-  if (MessageLoop::current() == message_loop())
+  if (base::MessageLoop::current() == message_loop())
     success = ChildThread::Send(message);
   else
     success = sync_message_filter()->Send(message);
@@ -1097,7 +1097,8 @@ bool RenderThreadImpl::IsMainThread() {
 }
 
 bool RenderThreadImpl::IsIOThread() {
-  return MessageLoop::current() == ChildProcess::current()->io_message_loop();
+  return base::MessageLoop::current() ==
+         ChildProcess::current()->io_message_loop();
 }
 
 MessageLoop* RenderThreadImpl::GetMainLoop() {
@@ -1132,7 +1133,7 @@ int32 RenderThreadImpl::CreateViewCommandBuffer(
       &route_id);
 
   // Allow calling this from the compositor thread.
-  if (MessageLoop::current() == message_loop())
+  if (base::MessageLoop::current() == message_loop())
     ChildThread::Send(message);
   else
     sync_message_filter()->Send(message);
@@ -1330,7 +1331,7 @@ void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
 
 scoped_refptr<base::MessageLoopProxy>
 RenderThreadImpl::GetFileThreadMessageLoopProxy() {
-  DCHECK(message_loop() == MessageLoop::current());
+  DCHECK(message_loop() == base::MessageLoop::current());
   if (!file_thread_) {
     file_thread_.reset(new base::Thread("Renderer::FILE"));
     file_thread_->Start();

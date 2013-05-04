@@ -161,7 +161,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     // Make sure the rwhv_mac_ is gone once the superclass's |TearDown()| runs.
     rwhv_cocoa_.reset();
     pool_.Recycle();
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     pool_.Recycle();
 
     // See comment in SetUp().
@@ -694,7 +694,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   // render view receives it.
   NSEvent* event2 = MockScrollWheelEventWithPhase(@selector(phaseEnded));
   [NSApp postEvent:event2 atStart:NO];
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   ASSERT_EQ(2U, process_host->sink().message_count());
 
   // Clean up.

@@ -28,7 +28,7 @@ namespace content {
 // Mainline routine for running as the worker process.
 int WorkerMain(const MainFunctionParams& parameters) {
   // The main message loop of the worker process.
-  MessageLoop main_message_loop;
+  base::MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrWorkerMain");
 
   base::PowerMonitor power_monitor;
@@ -67,7 +67,7 @@ int WorkerMain(const MainFunctionParams& parameters) {
 
   // Load the accelerator table from the browser executable and tell the
   // message loop to use it when translating messages.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   return 0;
 }

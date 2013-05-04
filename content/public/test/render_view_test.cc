@@ -77,7 +77,7 @@ RenderViewTest::~RenderViewTest() {
 }
 
 void RenderViewTest::ProcessPendingMessages() {
-  msg_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  msg_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   msg_loop_.Run();
 }
 

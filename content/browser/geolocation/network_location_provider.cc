@@ -194,7 +194,7 @@ bool NetworkLocationProvider::StartProvider(bool high_accuracy) {
   // provider and it will be deleted by ref counting.
   wifi_data_provider_ = WifiDataProvider::Register(this);
 
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&NetworkLocationProvider::RequestPosition,
                  weak_factory_.GetWeakPtr()),

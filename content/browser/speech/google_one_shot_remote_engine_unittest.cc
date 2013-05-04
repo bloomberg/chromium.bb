@@ -43,7 +43,7 @@ class GoogleOneShotRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   SpeechRecognitionErrorCode error_;
   SpeechRecognitionResults results_;

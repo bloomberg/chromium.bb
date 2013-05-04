@@ -38,7 +38,7 @@ class MockRenderThread : public RenderThread {
 
   // RenderThread implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
-  virtual MessageLoop* GetMessageLoop() OVERRIDE;
+  virtual base::MessageLoop* GetMessageLoop() OVERRIDE;
   virtual IPC::SyncChannel* GetChannel() OVERRIDE;
   virtual std::string GetLocale() OVERRIDE;
   virtual IPC::SyncMessageFilter* GetSyncMessageFilter() OVERRIDE;

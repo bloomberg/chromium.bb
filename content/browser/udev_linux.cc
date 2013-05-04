@@ -32,8 +32,12 @@ UdevLinux::UdevLinux(const std::vector<UdevMonitorFilter>& filters,
   monitor_fd_ = udev_monitor_get_fd(monitor_);
   CHECK_GE(monitor_fd_, 0);
 
-  bool success = MessageLoopForIO::current()->WatchFileDescriptor(monitor_fd_,
-      true, MessageLoopForIO::WATCH_READ, &monitor_watcher_, this);
+  bool success = base::MessageLoopForIO::current()->WatchFileDescriptor(
+      monitor_fd_,
+      true,
+      base::MessageLoopForIO::WATCH_READ,
+      &monitor_watcher_,
+      this);
   CHECK(success);
 }
 

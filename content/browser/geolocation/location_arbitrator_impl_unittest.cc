@@ -144,7 +144,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
   scoped_ptr<MockLocationObserver> observer_;
   scoped_ptr<TestingGeolocationArbitrator> arbitrator_;
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 };
 
 TEST_F(GeolocationLocationArbitratorTest, CreateDestroy) {

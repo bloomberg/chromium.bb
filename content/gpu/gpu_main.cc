@@ -107,7 +107,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   // GpuMsg_Initialize message from the browser.
   bool dead_on_arrival = false;
 
-  MessageLoop::Type message_loop_type = MessageLoop::TYPE_IO;
+  base::MessageLoop::Type message_loop_type = base::MessageLoop::TYPE_IO;
 #if defined(OS_WIN)
   // Unless we're running on desktop GL, we don't need a UI message
   // loop, so avoid its use to work around apparent problems with some
@@ -115,13 +115,13 @@ int GpuMain(const MainFunctionParams& parameters) {
   if (command_line.HasSwitch(switches::kUseGL) &&
       command_line.GetSwitchValueASCII(switches::kUseGL) ==
           gfx::kGLImplementationDesktopName) {
-      message_loop_type = MessageLoop::TYPE_UI;
+    message_loop_type = base::MessageLoop::TYPE_UI;
   }
 #elif defined(OS_LINUX)
-  message_loop_type = MessageLoop::TYPE_DEFAULT;
+  message_loop_type = base::MessageLoop::TYPE_DEFAULT;
 #endif
 
-  MessageLoop main_message_loop(message_loop_type);
+  base::MessageLoop main_message_loop(message_loop_type);
   base::PlatformThread::SetName("CrGpuMain");
 
   // In addition to disabling the watchdog if the command line switch is

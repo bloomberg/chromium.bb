@@ -22,7 +22,7 @@ TEST(GeolocationDeviceDataProviderWifiData, CreateDestroy) {
   // run for correct behaviour, but we run it in this test to help smoke out
   // any race conditions between processing in the main loop and the setup /
   // tear down of the DeviceDataProvider thread.
-  MessageLoopForUI main_message_loop;
+  base::MessageLoopForUI main_message_loop;
   NullWifiDataListenerInterface listener;
   for (int i = 0; i < 10; i++) {
     DeviceDataProvider<WifiData>::Register(&listener);

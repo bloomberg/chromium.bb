@@ -58,7 +58,7 @@ class EnsureTerminateMessageFilter : public IPC::ChannelProxy::MessageFilter {
     // Ensure that we don't wait indefinitely for the plugin to shutdown.
     // as the browser does not terminate plugin processes on shutdown.
     // We achieve this by posting an exit process task on the IO thread.
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&EnsureTerminateMessageFilter::Terminate, this),
         kPluginProcessTerminateTimeout);

@@ -51,10 +51,9 @@ URLRequestFailedJob::URLRequestFailedJob(net::URLRequest* request,
 URLRequestFailedJob::~URLRequestFailedJob() {}
 
 void URLRequestFailedJob::Start() {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&URLRequestFailedJob::StartAsync,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&URLRequestFailedJob::StartAsync, weak_factory_.GetWeakPtr()));
 }
 
 // static

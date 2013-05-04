@@ -105,7 +105,7 @@ void InternalInitChildProcess(const std::vector<int>& file_ids,
 }
 
 void QuitMainThreadMessageLoop() {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 }  // namespace <anonymous>

@@ -325,7 +325,7 @@ class DownloadItemTest : public testing::Test {
   }
 
  private:
-  MessageLoopForUI loop_;
+  base::MessageLoopForUI loop_;
   TestBrowserThread ui_thread_;    // UI thread
   TestBrowserThread file_thread_;  // FILE thread
   StrictMock<MockDelegate> delegate_;

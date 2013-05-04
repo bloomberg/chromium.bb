@@ -233,7 +233,7 @@ void ImmediateShutdownAndExitProcess() {
 }
 
 // For measuring memory usage after each task. Behind a command line flag.
-class BrowserMainLoop::MemoryObserver : public MessageLoop::TaskObserver {
+class BrowserMainLoop::MemoryObserver : public base::MessageLoop::TaskObserver {
  public:
   MemoryObserver() {}
   virtual ~MemoryObserver() {}
@@ -363,8 +363,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
 #endif
 
   // Create a MessageLoop if one does not already exist for the current thread.
-  if (!MessageLoop::current())
-    main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
+  if (!base::MessageLoop::current())
+    main_message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
 
   InitializeMainThread();
 
@@ -411,7 +411,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
   if (parsed_command_line_.HasSwitch(switches::kMemoryMetrics)) {
     memory_observer_.reset(new MemoryObserver());
-    MessageLoop::current()->AddTaskObserver(memory_observer_.get());
+    base::MessageLoop::current()->AddTaskObserver(memory_observer_.get());
   }
 }
 
@@ -436,9 +436,9 @@ void BrowserMainLoop::CreateThreads() {
 
   base::Thread::Options default_options;
   base::Thread::Options io_message_loop_options;
-  io_message_loop_options.message_loop_type = MessageLoop::TYPE_IO;
+  io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;
   base::Thread::Options ui_message_loop_options;
-  ui_message_loop_options.message_loop_type = MessageLoop::TYPE_UI;
+  ui_message_loop_options.message_loop_type = base::MessageLoop::TYPE_UI;
 
   // Start threads in the order they occur in the BrowserThread::ID
   // enumeration, except for BrowserThread::UI which is the main
@@ -709,8 +709,8 @@ void BrowserMainLoop::InitializeMainThread() {
     main_message_loop_->set_thread_name(kThreadName);
 
   // Register the main thread by instantiating it, but don't call any methods.
-  main_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
-                                           MessageLoop::current()));
+  main_thread_.reset(
+      new BrowserThreadImpl(BrowserThread::UI, base::MessageLoop::current()));
 }
 
 #if defined(OS_ANDROID)
@@ -859,9 +859,10 @@ void BrowserMainLoop::MainMessageLoopRun() {
   // Android's main message loop is the Java message loop.
   NOTREACHED();
 #else
-  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
+  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
   if (parameters_.ui_task)
-    MessageLoopForUI::current()->PostTask(FROM_HERE, *parameters_.ui_task);
+    base::MessageLoopForUI::current()->PostTask(FROM_HERE,
+                                                *parameters_.ui_task);
 
   base::RunLoop run_loop;
   run_loop.Run();

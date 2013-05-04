@@ -68,7 +68,7 @@ void LoadProgressTracker::DidChangeLoadProgress(WebKit::WebFrame* frame,
   if (weak_factory_.HasWeakPtrs())
     return;
 
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&LoadProgressTracker::SendChangeLoadProgress,
                  weak_factory_.GetWeakPtr()),

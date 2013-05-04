@@ -1017,7 +1017,7 @@ void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
 void RenderWidgetHostViewMac::KillSelf() {
   if (!weak_factory_.HasWeakPtrs()) {
     [cocoa_view_ setHidden:YES];
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&RenderWidgetHostViewMac::ShutdownHost,
                    weak_factory_.GetWeakPtr()));
   }

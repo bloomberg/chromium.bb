@@ -113,7 +113,7 @@ static ResourceHostMsg_Request CreateResourceRequest(
 
 // Spin up the message loop to kick off the request.
 static void KickOffRequest() {
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // We may want to move this to a shared space if it is useful for something else
@@ -707,12 +707,12 @@ class ResourceDispatcherHostTest : public testing::Test,
     scoped_ptr<IPC::Message> ack(
         new ResourceHostMsg_DataReceived_ACK(msg.routing_id(), request_id));
 
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&GenerateIPCMessage, filter_, base::Passed(&ack)));
   }
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   BrowserThreadImpl ui_thread_;
   BrowserThreadImpl file_thread_;
   BrowserThreadImpl cache_thread_;
@@ -877,7 +877,7 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
 
   // flush all the pending requests
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
@@ -917,7 +917,7 @@ TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
 
   // flush all the pending requests
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(was_deleted);
 
@@ -935,7 +935,7 @@ TEST_F(ResourceDispatcherHostTest, CancelInResourceThrottleWillStartRequest) {
 
   // flush all the pending requests
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   ResourceIPCAccumulator::ClassifiedMessages msgs;
   accum_.GetClassifiedMessages(&msgs);
@@ -962,7 +962,7 @@ TEST_F(ResourceDispatcherHostTest, PausedStartError) {
 
   // flush all the pending requests
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(0, host_.pending_requests());
 }
@@ -991,7 +991,7 @@ TEST_F(ResourceDispatcherHostTest, ThrottleAndResumeTwice) {
   ASSERT_FALSE(GenericResourceThrottle::active_throttle());
 
   // The request is started asynchronously.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -1021,7 +1021,7 @@ TEST_F(ResourceDispatcherHostTest, CancelInDelegate) {
 
   // flush all the pending requests
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
@@ -1092,7 +1092,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
 
   // Make sure all requests have finished stage one. test_url_1 will have
   // finished.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // TODO(mbelshe):
   // Now that the async IO path is in place, the IO always completes on the
@@ -1396,7 +1396,7 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
 
   // Flush all the pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
@@ -1777,7 +1777,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigation) {
       new_render_view_id, new_request_id, request);
   bool msg_was_ok;
   host_.OnMessageReceived(transfer_request_msg, second_filter, &msg_was_ok);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -1839,7 +1839,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
       new_render_view_id, new_request_id, request);
   bool msg_was_ok;
   host_.OnMessageReceived(transfer_request_msg, second_filter, &msg_was_ok);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Response data for "http://other.com/blerg":
   const std::string kResponseBody = "hello world";
@@ -1850,7 +1850,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
   // OK, let the redirect happen.
   SetDelayedStartJobGeneration(false);
   CompleteStartRequest(second_filter, new_request_id);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -1859,7 +1859,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
   ResourceHostMsg_FollowRedirect redirect_msg(
       new_render_view_id, new_request_id, false, GURL());
   host_.OnMessageReceived(redirect_msg, second_filter, &msg_was_ok);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -1968,7 +1968,7 @@ TEST_F(ResourceDispatcherHostTest, DelayedDataReceivedACKs) {
       host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
     }
 
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     msgs.clear();
     accum_.GetClassifiedMessages(&msgs);

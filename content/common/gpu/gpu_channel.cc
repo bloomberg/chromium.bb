@@ -585,7 +585,7 @@ void GpuChannel::OnScheduled() {
   // defer newly received messages until the ones in the queue have all been
   // handled by HandleMessage. HandleMessage is invoked as a
   // task to prevent reentrancy.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&GpuChannel::HandleMessage, weak_factory_.GetWeakPtr()));
   handle_messages_scheduled_ = true;
@@ -703,7 +703,7 @@ void GpuChannel::LoseAllContexts() {
 }
 
 void GpuChannel::DestroySoon() {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&GpuChannel::OnDestroy, this));
 }
 

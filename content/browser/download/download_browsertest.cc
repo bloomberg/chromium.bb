@@ -240,7 +240,7 @@ void DownloadFileWithDelayFactory::AddRenameCallback(base::Closure callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   rename_callbacks_.push_back(callback);
   if (waiting_)
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
 }
 
 void DownloadFileWithDelayFactory::GetAllRenameCallbacks(
@@ -296,10 +296,12 @@ class CountingDownloadFile : public DownloadFileImpl {
   // until data is returned.
   static int GetNumberActiveFilesFromFileThread() {
     int result = -1;
-    BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::FILE,
+        FROM_HERE,
         base::Bind(&CountingDownloadFile::GetNumberActiveFiles, &result),
-        MessageLoop::current()->QuitClosure());
-    MessageLoop::current()->Run();
+        base::MessageLoop::current()->QuitClosure());
+    base::MessageLoop::current()->Run();
     DCHECK_NE(-1, result);
     return result;
   }
@@ -454,7 +456,7 @@ class DownloadCreateObserver : DownloadManager::Observer {
       item_ = download;
 
     if (waiting_)
-      MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->Quit();
   }
 
   DownloadItem* WaitForFinished() {
@@ -568,9 +570,9 @@ class DownloadContentTest : public ContentBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&EnsureNoPendingDownloadJobsOnIO, &result));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     return result &&
-        (CountingDownloadFile::GetNumberActiveFilesFromFileThread() == 0);
+           (CountingDownloadFile::GetNumberActiveFilesFromFileThread() == 0);
   }
 
   void DownloadAndWait(Shell* shell, const GURL& url,
@@ -679,7 +681,7 @@ class DownloadContentTest : public ContentBrowserTest {
     if (URLRequestSlowDownloadJob::NumberOutstandingRequests())
       *result = false;
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+        BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
   // Location of the downloads directory for these tests

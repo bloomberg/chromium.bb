@@ -63,17 +63,17 @@ class MockWin7LocationApi : public Win7LocationApi {
 class LocationProviderListenerLoopQuitter
     : public LocationProviderBase::ListenerInterface {
  public:
-  explicit LocationProviderListenerLoopQuitter(MessageLoop* message_loop)
+  explicit LocationProviderListenerLoopQuitter(base::MessageLoop* message_loop)
       : message_loop_to_quit_(message_loop) {
     CHECK(message_loop_to_quit_ != NULL);
   }
   virtual void LocationUpdateAvailable(LocationProviderBase* provider) {
-    EXPECT_EQ(MessageLoop::current(), message_loop_to_quit_);
+    EXPECT_EQ(base::MessageLoop::current(), message_loop_to_quit_);
     provider_ = provider;
     message_loop_to_quit_->Quit();
   }
 
-  MessageLoop* message_loop_to_quit_;
+  base::MessageLoop* message_loop_to_quit_;
   LocationProviderBase* provider_;
 };
 
@@ -97,7 +97,7 @@ class GeolocationProviderWin7Tests : public testing::Test {
  protected:
   MockWin7LocationApi* api_;
   LocationProviderListenerLoopQuitter location_listener_;
-  MessageLoop main_message_loop_;
+  base::MessageLoop main_message_loop_;
   Win7LocationProvider* provider_;
 };
 

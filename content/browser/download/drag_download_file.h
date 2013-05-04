@@ -63,7 +63,7 @@ class CONTENT_EXPORT DragDownloadFile : public ui::DownloadFileProvider {
 
   base::FilePath file_path_;
   scoped_ptr<net::FileStream> file_stream_;
-  MessageLoop* drag_message_loop_;
+  base::MessageLoop* drag_message_loop_;
   State state_;
   scoped_refptr<ui::DownloadFileObserver> observer_;
   base::RunLoop nested_loop_;

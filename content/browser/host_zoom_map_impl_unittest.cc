@@ -18,7 +18,7 @@ class HostZoomMapTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   TestBrowserThread ui_thread_;
 };
 

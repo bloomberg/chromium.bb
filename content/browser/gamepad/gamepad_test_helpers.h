@@ -50,11 +50,11 @@ class GamepadTestHelper {
   GamepadTestHelper();
   virtual ~GamepadTestHelper();
 
-  MessageLoop& message_loop() { return message_loop_; }
+  base::MessageLoop& message_loop() { return message_loop_; }
 
  private:
   // This must be constructed before the system monitor.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadTestHelper);
 };

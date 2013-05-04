@@ -260,7 +260,7 @@ class WorkerTest : public ContentBrowserTest {
     for (WorkerProcessHostIterator iter; !iter.Done(); ++iter)
       (*cur_process_count)++;
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+        BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
   bool WaitForWorkerProcessCount(int count) {

@@ -52,9 +52,9 @@ class DragDownloadFileTest : public ContentBrowserTest {
   virtual ~DragDownloadFileTest() {}
 
   void Succeed() {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        MessageLoopForUI::current()->QuitClosure());
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::MessageLoopForUI::current()->QuitClosure());
   }
 
   void FailFast() {

@@ -1406,11 +1406,12 @@ int PepperPluginDelegateImpl::EnumerateDevices(
       PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type),
       GURL());
 #else
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(
           &PepperDeviceEnumerationEventHandler::OnDevicesEnumerationFailed,
-          device_enumeration_event_handler_->AsWeakPtr(), request_id));
+          device_enumeration_event_handler_->AsWeakPtr(),
+          request_id));
 #endif
 
   return request_id;
@@ -1423,12 +1424,12 @@ void PepperPluginDelegateImpl::StopEnumerateDevices(int request_id) {
 #if defined(ENABLE_WEBRTC)
   // Need to post task since this function might be called inside the callback
   // of EnumerateDevices.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(
-          &MediaStreamDispatcher::StopEnumerateDevices,
-          render_view_->media_stream_dispatcher()->AsWeakPtr(),
-          request_id, device_enumeration_event_handler_.get()->AsWeakPtr()));
+      base::Bind(&MediaStreamDispatcher::StopEnumerateDevices,
+                 render_view_->media_stream_dispatcher()->AsWeakPtr(),
+                 request_id,
+                 device_enumeration_event_handler_.get()->AsWeakPtr()));
 #endif
 }
 
@@ -1570,10 +1571,11 @@ int PepperPluginDelegateImpl::OpenDevice(PP_DeviceType_Dev type,
       PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type),
       GURL());
 #else
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PepperDeviceEnumerationEventHandler::OnDeviceOpenFailed,
-                 device_enumeration_event_handler_->AsWeakPtr(), request_id));
+                 device_enumeration_event_handler_->AsWeakPtr(),
+                 request_id));
 #endif
 
   return request_id;

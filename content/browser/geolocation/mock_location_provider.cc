@@ -104,10 +104,11 @@ class AutoMockLocationProvider : public MockLocationProvider {
   void UpdateListenersIfNeeded() {
     if (!listeners_updated_) {
       listeners_updated_ = true;
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&MockLocationProvider::HandlePositionChanged,
-                     weak_factory_.GetWeakPtr(), position_));
+                     weak_factory_.GetWeakPtr(),
+                     position_));
     }
   }
 

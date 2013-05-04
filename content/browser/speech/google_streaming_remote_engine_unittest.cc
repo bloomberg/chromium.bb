@@ -79,7 +79,7 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   scoped_ptr<GoogleStreamingRemoteEngine> engine_under_test_;
   TestURLFetcherFactory url_fetcher_factory_;
   size_t last_number_of_upstream_chunks_seen_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   std::string response_buffer_;
   SpeechRecognitionErrorCode error_;
   std::queue<SpeechRecognitionResults> results_;

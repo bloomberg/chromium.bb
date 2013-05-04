@@ -207,10 +207,10 @@ void WebSharedWorkerClientProxy::EnsureWorkerContextTerminates() {
   // process, and avoids the crashed worker infobar from appearing to the new
   // page. It's ok to post several of theese, because the first executed task
   // will exit the message loop and subsequent ones won't be executed.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(
-          &WebSharedWorkerClientProxy::workerContextDestroyed,
-          weak_factory_.GetWeakPtr()),
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&WebSharedWorkerClientProxy::workerContextDestroyed,
+                 weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kMaxTimeForRunawayWorkerSeconds));
 }
 

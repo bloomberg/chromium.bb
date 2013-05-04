@@ -285,7 +285,7 @@ void GpsLocationProviderLinux::DoGpsPollTask() {
 
 void GpsLocationProviderLinux::ScheduleNextGpsPoll(int interval) {
   weak_factory_.InvalidateWeakPtrs();
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&GpsLocationProviderLinux::DoGpsPollTask,
                  weak_factory_.GetWeakPtr()),

@@ -23,14 +23,13 @@ namespace content {
 class IndexedDBTest : public testing::Test {
  public:
   IndexedDBTest()
-      : message_loop_(MessageLoop::TYPE_IO),
+      : message_loop_(base::MessageLoop::TYPE_IO),
         webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_),
         file_thread_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {
-  }
+        io_thread_(BrowserThread::IO, &message_loop_) {}
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
  private:
   BrowserThreadImpl webkit_thread_;

@@ -158,19 +158,20 @@ class OverscrollWindowDelegate : public ImageWindowDelegate {
 
 // Listens to all mouse drag events during a drag and drop and sends them to
 // the renderer.
-class WebDragSourceAura : public MessageLoopForUI::Observer,
+class WebDragSourceAura : public base::MessageLoopForUI::Observer,
                           public NotificationObserver {
  public:
   WebDragSourceAura(aura::Window* window, WebContentsImpl* contents)
       : window_(window),
         contents_(contents) {
-    MessageLoopForUI::current()->AddObserver(this);
-    registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+    base::MessageLoopForUI::current()->AddObserver(this);
+    registrar_.Add(this,
+                   NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                    Source<WebContents>(contents));
   }
 
   virtual ~WebDragSourceAura() {
-    MessageLoopForUI::current()->RemoveObserver(this);
+    base::MessageLoopForUI::current()->RemoveObserver(this);
   }
 
   // MessageLoop::Observer implementation:
@@ -1114,11 +1115,15 @@ void WebContentsViewAura::StartDragging(
   int result_op = 0;
   {
     gfx::NativeView content_native_view = GetContentNativeView();
-    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-    result_op = aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
-        data, root_window, content_native_view,
-        event_info.event_location, ConvertFromWeb(operations),
-        event_info.event_source);
+    base::MessageLoop::ScopedNestableTaskAllower allow(
+        base::MessageLoop::current());
+    result_op = aura::client::GetDragDropClient(root_window)
+        ->StartDragAndDrop(data,
+                           root_window,
+                           content_native_view,
+                           event_info.event_location,
+                           ConvertFromWeb(operations),
+                           event_info.event_source);
   }
 
   // Bail out immediately if the contents view window is gone. Note that it is

@@ -311,10 +311,9 @@ void GpuCommandBufferStub::ScheduleDelayedWork(int64 delay) {
     delay = 0;
   }
 
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&GpuCommandBufferStub::PollWork,
-                 AsWeakPtr()),
+      base::Bind(&GpuCommandBufferStub::PollWork, AsWeakPtr()),
       base::TimeDelta::FromMilliseconds(delay));
 }
 

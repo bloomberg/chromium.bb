@@ -85,7 +85,7 @@ class ByteStreamTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
  private:
   int producing_seed_key_;

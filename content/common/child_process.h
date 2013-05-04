@@ -30,7 +30,7 @@ class CONTENT_EXPORT ChildProcess {
   // Takes ownership of the pointer.
   void set_main_thread(ChildThread* thread);
 
-  MessageLoop* io_message_loop() { return io_thread_.message_loop(); }
+  base::MessageLoop* io_message_loop() { return io_thread_.message_loop(); }
   base::MessageLoopProxy* io_message_loop_proxy() {
     return io_thread_.message_loop_proxy();
   }

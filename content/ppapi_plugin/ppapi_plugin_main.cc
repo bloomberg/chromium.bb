@@ -79,7 +79,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 #endif
   }
 
-  MessageLoop main_message_loop;
+  base::MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrPPAPIMain");
 
 #if defined(OS_LINUX) && defined(USE_NSS)

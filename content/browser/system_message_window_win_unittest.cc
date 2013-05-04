@@ -25,7 +25,7 @@ class SystemMessageWindowWinTest : public testing::Test {
     system_monitor_.AddDevicesChangedObserver(&observer_);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::SystemMonitor system_monitor_;
   base::MockDevicesChangedObserver observer_;
   SystemMessageWindowWin window_;

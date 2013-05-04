@@ -67,7 +67,7 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
       return;
 
     // Delete the event when the stack unwinds as it could be in use now.
-    MessageLoop::current()->DeleteSoon(
+    base::MessageLoop::current()->DeleteSoon(
         FROM_HERE, modal_dialog_event_map_[render_view_id].event);
     modal_dialog_event_map_.erase(render_view_id);
   }
@@ -200,7 +200,7 @@ base::WaitableEvent* PluginChannel::GetModalDialogEvent(int render_view_id) {
 }
 
 PluginChannel::~PluginChannel() {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PluginReleaseCallback),
       base::TimeDelta::FromMinutes(kPluginReleaseTimeMinutes));
@@ -280,9 +280,11 @@ void PluginChannel::OnDestroyInstance(int instance_id,
       // Don't release the modal dialog event right away, but do it after the
       // stack unwinds since the plugin can be destroyed later if it's in use
       // right now.
-      MessageLoop::current()->PostNonNestableTask(FROM_HERE, base::Bind(
-          &MessageFilter::ReleaseModalDialogEvent, filter.get(),
-          render_view_id));
+      base::MessageLoop::current()->PostNonNestableTask(
+          FROM_HERE,
+          base::Bind(&MessageFilter::ReleaseModalDialogEvent,
+                     filter.get(),
+                     render_view_id));
       return;
     }
   }

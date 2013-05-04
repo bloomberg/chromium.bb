@@ -53,7 +53,7 @@ class LocaionProviderListenerLoopQuitter
   // LocationProviderBase::ListenerInterface
   virtual void LocationUpdateAvailable(
       LocationProviderBase* provider) OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 };
 
@@ -70,7 +70,7 @@ class GeolocationGpsProviderLinuxTests : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   BrowserThreadImpl ui_thread_;
   LocaionProviderListenerLoopQuitter location_listener_;
   scoped_ptr<GpsLocationProviderLinux> provider_;
@@ -151,7 +151,7 @@ TEST_F(GeolocationGpsProviderLinuxTests, GetPosition) {
   MockLibGps::g_instance_->get_position_.timestamp =
       base::Time::FromDoubleT(200);
   EXPECT_TRUE(MockLibGps::g_instance_->get_position_.Validate());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(1, MockLibGps::g_instance_->get_position_calls_);
   EXPECT_EQ(1, MockLibGps::g_instance_->gps_open_calls_);
   EXPECT_EQ(1, MockLibGps::g_instance_->gps_read_calls_);
@@ -160,7 +160,7 @@ TEST_F(GeolocationGpsProviderLinuxTests, GetPosition) {
 
   // Movement. This will block for up to half a second.
   MockLibGps::g_instance_->get_position_.latitude += 0.01;
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   provider_->GetPosition(&position);
   EXPECT_EQ(2, MockLibGps::g_instance_->get_position_calls_);
   EXPECT_EQ(1, MockLibGps::g_instance_->gps_open_calls_);
@@ -194,11 +194,11 @@ TEST_F(GeolocationGpsProviderLinuxTests, LibGpsReconnect) {
   EXPECT_TRUE(MockLibGps::g_instance_->get_position_.Validate());
   // This task makes gps_open() and LibGps::Start() to succeed after
   // 1500ms.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&EnableGpsOpenCallback),
       base::TimeDelta::FromMilliseconds(1500));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   provider_->GetPosition(&position);
   EXPECT_TRUE(position.Validate());
   // 3 gps_open() calls are expected (2 failures and 1 success)

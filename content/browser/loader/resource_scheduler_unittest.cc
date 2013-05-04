@@ -122,7 +122,7 @@ class ResourceSchedulerTest : public testing::Test {
  protected:
   ResourceSchedulerTest()
       : next_request_id_(0),
-        message_loop_(MessageLoop::TYPE_IO),
+        message_loop_(base::MessageLoop::TYPE_IO),
         ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
     scheduler_.OnClientCreated(kChildId, kRouteId);
@@ -199,7 +199,7 @@ class ResourceSchedulerTest : public testing::Test {
   }
 
   int next_request_id_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   BrowserThreadImpl ui_thread_;
   BrowserThreadImpl io_thread_;
   ResourceDispatcherHostImpl rdh_;

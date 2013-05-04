@@ -37,7 +37,7 @@ base::LazyInstance<URLRequestSlowDownloadJob::SlowJobsSet>::Leaky
     URLRequestSlowDownloadJob::pending_requests_ = LAZY_INSTANCE_INITIALIZER;
 
 void URLRequestSlowDownloadJob::Start() {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestSlowDownloadJob::StartAsync,
                  weak_factory_.GetWeakPtr()));
@@ -186,7 +186,7 @@ bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
       buffer_ = buf;
       buffer_size_ = buf_size;
       SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
-      MessageLoop::current()->PostDelayedTask(
+      base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&URLRequestSlowDownloadJob::CheckDoneStatus,
                      weak_factory_.GetWeakPtr()),
@@ -215,7 +215,7 @@ void URLRequestSlowDownloadJob::CheckDoneStatus() {
     NotifyDone(net::URLRequestStatus(
         net::URLRequestStatus::FAILED, net::ERR_CONNECTION_RESET));
   } else {
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&URLRequestSlowDownloadJob::CheckDoneStatus,
                    weak_factory_.GetWeakPtr()),

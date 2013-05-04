@@ -146,9 +146,9 @@ class ResourceLoaderTest : public testing::Test,
  protected:
   // testing::Test:
   virtual void SetUp() OVERRIDE {
-    message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
-    ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
-                                           message_loop_.get()));
+    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+    ui_thread_.reset(
+        new BrowserThreadImpl(BrowserThread::UI, message_loop_.get()));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
   }
@@ -179,7 +179,7 @@ class ResourceLoaderTest : public testing::Test,
   virtual void DidReceiveResponse(ResourceLoader* loader) OVERRIDE {}
   virtual void DidFinishLoading(ResourceLoader* loader) OVERRIDE {}
 
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
 

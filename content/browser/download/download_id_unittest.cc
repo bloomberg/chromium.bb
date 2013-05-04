@@ -44,7 +44,7 @@ class DownloadIdTest : public testing::Test {
 
  protected:
   scoped_refptr<DownloadManager> download_managers_[2];
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   // Necessary to delete |DownloadManager|s.
   BrowserThreadImpl ui_thread_;
   size_t num_managers_;

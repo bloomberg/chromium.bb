@@ -192,7 +192,7 @@ enum {
 namespace content {
 
 CoreLocationDataProviderMac::CoreLocationDataProviderMac() {
-  if (MessageLoop::current() !=
+  if (base::MessageLoop::current() !=
       GeolocationProvider::GetInstance()->message_loop()) {
     NOTREACHED() << "CoreLocation data provider must be created on "
         "the Geolocation thread.";
@@ -247,7 +247,7 @@ void CoreLocationDataProviderMac::StopUpdatingTask() {
 }
 
 void CoreLocationDataProviderMac::PositionUpdated(Geoposition position) {
-  DCHECK(MessageLoop::current() ==
+  DCHECK(base::MessageLoop::current() ==
          GeolocationProvider::GetInstance()->message_loop());
   if (provider_)
     provider_->SetPosition(&position);

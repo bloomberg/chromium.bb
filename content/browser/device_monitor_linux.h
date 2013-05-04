@@ -20,7 +20,7 @@ namespace content {
 
 class UdevLinux;
 
-class DeviceMonitorLinux : public MessageLoop::DestructionObserver {
+class DeviceMonitorLinux : public base::MessageLoop::DestructionObserver {
  public:
   DeviceMonitorLinux();
   virtual ~DeviceMonitorLinux();

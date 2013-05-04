@@ -222,7 +222,7 @@ class BaseFileTest : public testing::Test {
   DownloadInterruptReason expected_error_;
 
   // Mock file thread to satisfy debug checks in BaseFile.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   BrowserThreadImpl file_thread_;
 };
 

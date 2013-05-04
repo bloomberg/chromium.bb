@@ -201,7 +201,7 @@ void BufferedResourceHandler::Resume() {
       NOTREACHED();
       break;
     case STATE_REPLAYING:
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&BufferedResourceHandler::CallReplayReadCompleted,
                      weak_ptr_factory_.GetWeakPtr()));

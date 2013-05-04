@@ -127,7 +127,7 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
 
   static const int32 kViewId;  // arbitrary id for our testing view
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   ContentRendererClient content_renderer_client_;
   // channel that the renderer uses to talk to the browser.
   // For this test, we will handle the browser end of the channel.

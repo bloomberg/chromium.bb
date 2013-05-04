@@ -35,7 +35,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 class TextInputClientMacTest : public testing::Test {
  public:
   TextInputClientMacTest()
-      : message_loop_(MessageLoop::TYPE_UI),
+      : message_loop_(base::MessageLoop::TYPE_UI),
         browser_context_(),
         process_factory_(),
         delegate_(),
@@ -73,7 +73,7 @@ class TextInputClientMacTest : public testing::Test {
  private:
   friend class ScopedTestingThread;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   TestBrowserContext browser_context_;
 
   // Gets deleted when the last RWH in the "process" gets destroyed.

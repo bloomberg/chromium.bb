@@ -85,7 +85,7 @@ class StoragePartitionShaderClearTest : public testing::Test {
 
   size_t Size() { return cache_->Size(); }
 
-  MessageLoop* message_loop() { return &message_loop_; }
+  base::MessageLoop* message_loop() { return &message_loop_; }
 
  private:
   virtual void TearDown() OVERRIDE {
@@ -94,7 +94,7 @@ class StoragePartitionShaderClearTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   TestBrowserThread ui_thread_;
   TestBrowserThread cache_thread_;
   TestBrowserThread io_thread_;

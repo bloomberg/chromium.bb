@@ -30,7 +30,8 @@ class WebContentsImpl;
 
 // WebDragSourceGtk takes care of managing the drag from a WebContents
 // with Gtk.
-class CONTENT_EXPORT WebDragSourceGtk : public MessageLoopForUI::Observer {
+class CONTENT_EXPORT WebDragSourceGtk :
+    public base::MessageLoopForUI::Observer {
  public:
   explicit WebDragSourceGtk(WebContents* web_contents);
   virtual ~WebDragSourceGtk();

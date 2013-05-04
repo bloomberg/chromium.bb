@@ -151,7 +151,7 @@ class WebRTCAudioDeviceTest : public ::testing::Test, public IPC::Listener {
   std::string GetTestDataPath(const base::FilePath::StringType& file_name);
 
   scoped_ptr<ReplaceContentClientRenderer> saved_content_renderer_;
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   ContentRendererClient content_renderer_client_;
   RenderThreadImpl* render_thread_;  // Owned by mock_process_.
   scoped_ptr<WebRTCMockRenderProcess> mock_process_;

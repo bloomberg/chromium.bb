@@ -154,10 +154,9 @@ void MediaInternalsProxy::AddNetEventOnUIThread(base::Value* entry) {
   // if an update is not already pending.
   if (!pending_net_updates_) {
     pending_net_updates_.reset(new base::ListValue());
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(
-            &MediaInternalsProxy::SendNetEventsOnUIThread, this),
+        base::Bind(&MediaInternalsProxy::SendNetEventsOnUIThread, this),
         base::TimeDelta::FromMilliseconds(
             kMediaInternalsProxyEventDelayMilliseconds));
   }

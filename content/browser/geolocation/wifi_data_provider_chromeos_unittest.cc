@@ -60,7 +60,7 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_refptr<WifiDataProviderChromeOs> provider_;
   chromeos::ShillManagerClient* manager_client_;
   chromeos::ShillManagerClient::TestInterface* manager_test_;

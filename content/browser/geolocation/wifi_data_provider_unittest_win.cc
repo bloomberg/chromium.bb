@@ -12,7 +12,7 @@ namespace content {
 
 TEST(GeolocationWin32WifiDataProviderTest, CreateDestroy) {
   // WifiDataProviderCommon requires the client to have a message loop.
-  MessageLoop dummy_loop;
+  base::MessageLoop dummy_loop;
   scoped_refptr<Win32WifiDataProvider> instance(new Win32WifiDataProvider);
   instance = NULL;
   SUCCEED();

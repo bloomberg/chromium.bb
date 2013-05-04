@@ -63,16 +63,15 @@ class MockURLRequestContextGetter : public net::URLRequestContextGetter {
 class ChromeAppCacheServiceTest : public testing::Test {
  public:
   ChromeAppCacheServiceTest()
-      : message_loop_(MessageLoop::TYPE_IO),
+      : message_loop_(base::MessageLoop::TYPE_IO),
         kProtectedManifestURL(kProtectedManifest),
         kNormalManifestURL(kNormalManifest),
         kSessionOnlyManifestURL(kSessionOnlyManifest),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
+        file_user_blocking_thread_(BrowserThread::FILE_USER_BLOCKING,
+                                   &message_loop_),
         cache_thread_(BrowserThread::CACHE, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {
-  }
+        io_thread_(BrowserThread::IO, &message_loop_) {}
 
  protected:
   scoped_refptr<ChromeAppCacheService> CreateAppCacheService(
@@ -80,7 +79,7 @@ class ChromeAppCacheServiceTest : public testing::Test {
       bool init_storage);
   void InsertDataIntoAppCache(ChromeAppCacheService* appcache_service);
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
   const GURL kProtectedManifestURL;
   const GURL kNormalManifestURL;

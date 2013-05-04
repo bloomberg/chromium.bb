@@ -115,7 +115,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   // RenderThread implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
-  virtual MessageLoop* GetMessageLoop() OVERRIDE;
+  virtual base::MessageLoop* GetMessageLoop() OVERRIDE;
   virtual IPC::SyncChannel* GetChannel() OVERRIDE;
   virtual std::string GetLocale() OVERRIDE;
   virtual IPC::SyncMessageFilter* GetSyncMessageFilter() OVERRIDE;
@@ -158,7 +158,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // GpuChannelHostFactory implementation:
   virtual bool IsMainThread() OVERRIDE;
   virtual bool IsIOThread() OVERRIDE;
-  virtual MessageLoop* GetMainLoop() OVERRIDE;
+  virtual base::MessageLoop* GetMainLoop() OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() OVERRIDE;
   virtual base::WaitableEvent* GetShutDownEvent() OVERRIDE;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(

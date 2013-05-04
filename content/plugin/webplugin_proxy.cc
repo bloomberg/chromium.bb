@@ -199,9 +199,11 @@ void WebPluginProxy::InvalidateRect(const gfx::Rect& rect) {
     waiting_for_paint_ = true;
     // Invalidates caused by calls to NPN_InvalidateRect/NPN_InvalidateRgn
     // need to be painted asynchronously as per the NPAPI spec.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&WebPluginProxy::OnPaint, weak_factory_.GetWeakPtr(),
-            damaged_rect_));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebPluginProxy::OnPaint,
+                   weak_factory_.GetWeakPtr(),
+                   damaged_rect_));
     damaged_rect_ = gfx::Rect();
   }
 }

@@ -278,7 +278,7 @@ uint64 GpuChannelManager::MessagesProcessed() {
 }
 
 void GpuChannelManager::LoseAllContexts() {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&GpuChannelManager::OnLoseAllContexts,
                  weak_factory_.GetWeakPtr()));

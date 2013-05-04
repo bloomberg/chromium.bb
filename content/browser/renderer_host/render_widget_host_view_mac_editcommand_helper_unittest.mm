@@ -105,7 +105,7 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
   NSArray* edit_command_strings = helper.GetEditSelectorNames();
 
   // Set up a mock render widget and set expectations.
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   TestBrowserContext browser_context;
   MockRenderProcessHost mock_process(&browser_context);
   MockRenderWidgetHostDelegate delegate;

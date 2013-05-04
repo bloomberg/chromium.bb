@@ -168,7 +168,7 @@ void MockRenderProcessHost::Cleanup() {
         NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this),
         NotificationService::NoDetails());
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     RenderProcessHostImpl::UnregisterHost(GetID());
   }
 }

@@ -91,7 +91,7 @@ void Win7LocationProvider::DoPollTask() {
 }
 
 void Win7LocationProvider::ScheduleNextPoll(int interval) {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&Win7LocationProvider::DoPollTask, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(interval));

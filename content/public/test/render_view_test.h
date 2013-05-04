@@ -124,7 +124,7 @@ class RenderViewTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE;
 
-  MessageLoop msg_loop_;
+  base::MessageLoop msg_loop_;
   scoped_ptr<MockRenderProcess> mock_process_;
   // We use a naked pointer because we don't want to expose RenderViewImpl in
   // the embedder's namespace.

@@ -168,14 +168,14 @@ class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
     DCHECK(channel_ != NULL);
     channel_->Send(new PluginMsg_DidFinishLoading(instance_id_, resource_id_));
     channel_ = NULL;
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
   virtual void DidFail() OVERRIDE {
     DCHECK(channel_ != NULL);
     channel_->Send(new PluginMsg_DidFail(instance_id_, resource_id_));
     channel_ = NULL;
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
   virtual bool IsMultiByteResponseExpected() OVERRIDE {
@@ -279,7 +279,7 @@ void WebPluginDelegateProxy::PluginDestroyed() {
 
   plugin_ = NULL;
 
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 bool WebPluginDelegateProxy::Initialize(

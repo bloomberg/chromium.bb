@@ -928,7 +928,7 @@ void RenderWidgetHostViewGtk::Destroy() {
   // The RenderWidgetHost's destruction led here, so don't call it.
   host_ = NULL;
 
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void RenderWidgetHostViewGtk::SetTooltipText(const string16& tooltip_text) {

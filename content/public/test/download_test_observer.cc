@@ -78,7 +78,7 @@ void DownloadUpdatedObserver::OnDownloadUpdated(DownloadItem* item) {
   if (filter_.Run(item_))
     event_seen_ = true;
   if (waiting_ && event_seen_)
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
 }
 
 void DownloadUpdatedObserver::OnDownloadDestroyed(DownloadItem* item) {
@@ -86,7 +86,7 @@ void DownloadUpdatedObserver::OnDownloadDestroyed(DownloadItem* item) {
   item_->RemoveObserver(this);
   item_ = NULL;
   if (waiting_)
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
 }
 
 DownloadTestObserver::DownloadTestObserver(
@@ -231,7 +231,7 @@ void DownloadTestObserver::DownloadInFinalState(DownloadItem* download) {
 
 void DownloadTestObserver::SignalIfFinished() {
   if (waiting_ && IsFinished())
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
 }
 
 DownloadTestObserverTerminal::DownloadTestObserverTerminal(
@@ -379,7 +379,7 @@ void DownloadTestFlushObserver::PingIOThread(int cycle) {
         base::Bind(&DownloadTestFlushObserver::PingFileThread, this, cycle));
   } else {
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+        BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
   }
 }
 
@@ -415,7 +415,7 @@ void DownloadTestItemCreationObserver::DownloadItemCreationCallback(
   DCHECK_EQ(1u, called_back_count_);
 
   if (waiting_)
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
 }
 
 const DownloadUrlParameters::OnStartedCallback

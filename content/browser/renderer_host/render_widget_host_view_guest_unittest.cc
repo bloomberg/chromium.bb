@@ -51,7 +51,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;
 

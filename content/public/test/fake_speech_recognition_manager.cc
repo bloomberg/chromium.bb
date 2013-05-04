@@ -54,14 +54,16 @@ void FakeSpeechRecognitionManager::StartSession(int session_id) {
 
   if (should_send_fake_response_) {
     // Give the fake result in a short while.
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &FakeSpeechRecognitionManager::SetFakeRecognitionResult,
-        // This class does not need to be refcounted (typically done by
-        // PostTask) since it will outlive the test and gets released only
-        // when the test shuts down. Disabling refcounting here saves a bit
-        // of unnecessary code and the factory method can return a plain
-        // pointer below as required by the real code.
-        base::Unretained(this)));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &FakeSpeechRecognitionManager::SetFakeRecognitionResult,
+            // This class does not need to be refcounted (typically done by
+            // PostTask) since it will outlive the test and gets released only
+            // when the test shuts down. Disabling refcounting here saves a bit
+            // of unnecessary code and the factory method can return a plain
+            // pointer below as required by the real code.
+            base::Unretained(this)));
   }
   recognition_started_event_.Signal();
 }

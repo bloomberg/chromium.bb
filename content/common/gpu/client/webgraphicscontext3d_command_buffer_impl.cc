@@ -1432,8 +1432,10 @@ void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
   typedef WebGraphicsContext3DSwapBuffersClient WGC3DSwapClient;
   // This may be called after tear-down of the RenderView.
   if (ShouldUseSwapClient()) {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &WGC3DSwapClient::OnViewContextSwapBuffersComplete, swap_client_));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&WGC3DSwapClient::OnViewContextSwapBuffersComplete,
+                   swap_client_));
   }
 
   if (swapbuffers_complete_callback_)

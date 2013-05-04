@@ -113,7 +113,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
             BrowserThread::WEBKIT_DEPRECATED)));
     EXPECT_TRUE(helper->Run());
     // Wait for DidGetDiskUsage to be called.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     return disk_usage_;
   }
  private:

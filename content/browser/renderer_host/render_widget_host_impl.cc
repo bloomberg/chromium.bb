@@ -1714,7 +1714,7 @@ void RenderWidgetHostImpl::OnUpdateRect(
     bool post_callback = new_auto_size_.IsEmpty();
     new_auto_size_ = params.view_size;
     if (post_callback) {
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&RenderWidgetHostImpl::DelayedAutoResized,
                      weak_factory_.GetWeakPtr()));

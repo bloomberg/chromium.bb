@@ -39,12 +39,12 @@ class IndexedDBQuotaClientTest : public testing::Test {
         kOriginOther("http://other"),
         usage_(0),
         weak_factory_(this),
-        message_loop_(MessageLoop::TYPE_IO),
+        message_loop_(base::MessageLoop::TYPE_IO),
         db_thread_(BrowserThread::DB, &message_loop_),
         webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
+        file_user_blocking_thread_(BrowserThread::FILE_USER_BLOCKING,
+                                   &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
     browser_context_.reset(new TestBrowserContext());
     idb_context_ = static_cast<IndexedDBContextImpl*>(
@@ -68,7 +68,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     // doesn't outlive BrowserThread::WEBKIT_DEPRECATED.
     idb_context_ = NULL;
     browser_context_.reset();
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   int64 GetOriginUsage(
@@ -80,7 +80,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         origin, type,
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginUsageComplete,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_GT(usage_, -1);
     return usage_;
   }
@@ -94,7 +94,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         type,
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     return origins_;
   }
 
@@ -108,7 +108,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         type, host,
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     return origins_;
   }
 
@@ -119,7 +119,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         origin_url, kTemp,
         base::Bind(&IndexedDBQuotaClientTest::OnDeleteOriginComplete,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     return delete_status_;
   }
 
@@ -163,7 +163,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   quota::StorageType type_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   BrowserThreadImpl db_thread_;
   BrowserThreadImpl webkit_thread_;
   BrowserThreadImpl file_thread_;

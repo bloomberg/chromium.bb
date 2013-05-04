@@ -49,9 +49,7 @@ class StreamURLRequestJobTest : public testing::Test {
     StreamRegistry* registry_;
   };
 
-  StreamURLRequestJobTest()
-      : message_loop_(MessageLoop::TYPE_IO) {
-  }
+  StreamURLRequestJobTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
 
   virtual void SetUp() {
     registry_.reset(new StreamRegistry());
@@ -81,7 +79,7 @@ class StreamURLRequestJobTest : public testing::Test {
       request_->SetExtraRequestHeaders(extra_headers);
     request_->Start();
 
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     // Verify response.
     EXPECT_TRUE(request_->status().is_success());
@@ -91,7 +89,7 @@ class StreamURLRequestJobTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<StreamRegistry> registry_;
 
   net::URLRequestContext url_request_context_;
@@ -135,7 +133,7 @@ TEST_F(StreamURLRequestJobTest, TestGetNonExistentStreamRequest) {
   request_->set_method("GET");
   request_->Start();
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Verify response.
   EXPECT_FALSE(request_->status().is_success());

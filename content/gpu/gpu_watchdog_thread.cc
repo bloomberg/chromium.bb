@@ -25,7 +25,7 @@ const int64 kCheckPeriodMs = 2000;
 
 GpuWatchdogThread::GpuWatchdogThread(int timeout)
     : base::Thread("Watchdog"),
-      watched_message_loop_(MessageLoop::current()),
+      watched_message_loop_(base::MessageLoop::current()),
       timeout_(base::TimeDelta::FromMilliseconds(timeout)),
       armed_(false),
 #if defined(OS_WIN)

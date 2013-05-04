@@ -94,7 +94,7 @@ class DevToolsHttpHandlerTest : public testing::Test {
     file_thread_->Stop();
   }
  private:
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   BrowserThreadImpl ui_thread_;
   scoped_ptr<BrowserThreadImpl> file_thread_;
 };

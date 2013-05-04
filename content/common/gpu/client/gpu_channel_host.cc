@@ -117,7 +117,7 @@ bool GpuChannelHost::Send(IPC::Message* message) {
       base::ThreadRestrictions::ScopedAllowWait allow_wait;
       return channel_->Send(message);
     }
-  } else if (MessageLoop::current()) {
+  } else if (base::MessageLoop::current()) {
     return sync_filter_->Send(message);
   }
 

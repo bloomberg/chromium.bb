@@ -73,7 +73,7 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   P2PSocketType type_;
 
   // Message loop on which this socket was created and being used.
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 
   // Corresponding P2P socket client.
   scoped_refptr<P2PSocketClient> client_;
@@ -105,12 +105,11 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
 
 IpcPacketSocket::IpcPacketSocket()
     : type_(P2P_SOCKET_UDP),
-      message_loop_(MessageLoop::current()),
+      message_loop_(base::MessageLoop::current()),
       state_(IS_UNINITIALIZED),
       send_packets_pending_(0),
       writable_signal_expected_(false),
-      error_(0) {
-}
+      error_(0) {}
 
 IpcPacketSocket::~IpcPacketSocket() {
   if (state_ == IS_OPENING || state_ == IS_OPEN ||
@@ -122,7 +121,7 @@ IpcPacketSocket::~IpcPacketSocket() {
 bool IpcPacketSocket::Init(P2PSocketType type, P2PSocketClient* client,
                            const talk_base::SocketAddress& local_address,
                            const talk_base::SocketAddress& remote_address) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   DCHECK_EQ(state_, IS_UNINITIALIZED);
 
   type_ = type;
@@ -151,7 +150,7 @@ void IpcPacketSocket::InitAcceptedTcp(
     P2PSocketClient* client,
     const talk_base::SocketAddress& local_address,
     const talk_base::SocketAddress& remote_address) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   DCHECK_EQ(state_, IS_UNINITIALIZED);
 
   client_ = client;
@@ -163,23 +162,23 @@ void IpcPacketSocket::InitAcceptedTcp(
 
 // talk_base::AsyncPacketSocket interface.
 talk_base::SocketAddress IpcPacketSocket::GetLocalAddress() const {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   return local_address_;
 }
 
 talk_base::SocketAddress IpcPacketSocket::GetRemoteAddress() const {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   return remote_address_;
 }
 
 int IpcPacketSocket::Send(const void *data, size_t data_size) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   return SendTo(data, data_size, remote_address_);
 }
 
 int IpcPacketSocket::SendTo(const void *data, size_t data_size,
                             const talk_base::SocketAddress& address) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   switch (state_) {
     case IS_UNINITIALIZED:
@@ -221,7 +220,7 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
 }
 
 int IpcPacketSocket::Close() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   client_->Close();
   state_ = IS_CLOSED;
@@ -230,7 +229,7 @@ int IpcPacketSocket::Close() {
 }
 
 talk_base::AsyncPacketSocket::State IpcPacketSocket::GetState() const {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   switch (state_) {
     case IS_UNINITIALIZED:
@@ -267,17 +266,17 @@ int IpcPacketSocket::SetOption(talk_base::Socket::Option opt, int value) {
 }
 
 int IpcPacketSocket::GetError() const {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   return error_;
 }
 
 void IpcPacketSocket::SetError(int error) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   error_ = error;
 }
 
 void IpcPacketSocket::OnOpen(const net::IPEndPoint& address) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   if (!jingle_glue::IPEndPointToSocketAddress(address, &local_address_)) {
     // Always expect correct IPv4 address to be allocated.
@@ -296,7 +295,7 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& address) {
 void IpcPacketSocket::OnIncomingTcpConnection(
     const net::IPEndPoint& address,
     P2PSocketClient* client) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
 
@@ -310,7 +309,7 @@ void IpcPacketSocket::OnIncomingTcpConnection(
 }
 
 void IpcPacketSocket::OnSendComplete() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   --send_packets_pending_;
   DCHECK_GE(send_packets_pending_, 0);
@@ -323,14 +322,14 @@ void IpcPacketSocket::OnSendComplete() {
 }
 
 void IpcPacketSocket::OnError() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   state_ = IS_ERROR;
   error_ = ECONNABORTED;
 }
 
 void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
                                      const std::vector<char>& data) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   talk_base::SocketAddress address_lj;
   if (!jingle_glue::IPEndPointToSocketAddress(address, &address_lj)) {

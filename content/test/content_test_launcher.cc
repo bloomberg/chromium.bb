@@ -75,7 +75,8 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
 #if defined(OS_ANDROID)
     // This needs to be done before base::TestSuite::Initialize() is called,
     // as it also tries to set MessagePumpForUIFactory.
-    if (!MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUI))
+    if (!base::MessageLoop::InitMessagePumpForUIFactory(
+            &CreateMessagePumpForUI))
       LOG(INFO) << "MessagePumpForUIFactory already set, unable to override.";
 #endif
 

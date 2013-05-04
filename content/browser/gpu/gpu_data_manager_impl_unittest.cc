@@ -99,7 +99,7 @@ class GpuDataManagerImplTest : public testing::Test {
   void TestUnblockingDomainFrom3DAPIs(
       GpuDataManagerImpl::DomainGuilt guilt_level);
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 // We use new method instead of GetInstance() method because we want

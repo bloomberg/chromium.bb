@@ -20,14 +20,15 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
 
   // Special constructor for the main (UI) thread and unittests. We use a dummy
   // thread here since the main thread already exists.
-  BrowserThreadImpl(BrowserThread::ID identifier, MessageLoop* message_loop);
+  BrowserThreadImpl(BrowserThread::ID identifier,
+                    base::MessageLoop* message_loop);
   virtual ~BrowserThreadImpl();
 
   static void ShutdownThreadPool();
 
  protected:
   virtual void Init() OVERRIDE;
-  virtual void Run(MessageLoop* message_loop) OVERRIDE;
+  virtual void Run(base::MessageLoop* message_loop) OVERRIDE;
   virtual void CleanUp() OVERRIDE;
 
  private:
@@ -38,14 +39,14 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
 
   // The following are unique function names that makes it possible to tell
   // the thread id from the callstack alone in crash dumps.
-  void UIThreadRun(MessageLoop* message_loop);
-  void DBThreadRun(MessageLoop* message_loop);
-  void WebKitThreadRun(MessageLoop* message_loop);
-  void FileThreadRun(MessageLoop* message_loop);
-  void FileUserBlockingThreadRun(MessageLoop* message_loop);
-  void ProcessLauncherThreadRun(MessageLoop* message_loop);
-  void CacheThreadRun(MessageLoop* message_loop);
-  void IOThreadRun(MessageLoop* message_loop);
+  void UIThreadRun(base::MessageLoop* message_loop);
+  void DBThreadRun(base::MessageLoop* message_loop);
+  void WebKitThreadRun(base::MessageLoop* message_loop);
+  void FileThreadRun(base::MessageLoop* message_loop);
+  void FileUserBlockingThreadRun(base::MessageLoop* message_loop);
+  void ProcessLauncherThreadRun(base::MessageLoop* message_loop);
+  void CacheThreadRun(base::MessageLoop* message_loop);
+  void IOThreadRun(base::MessageLoop* message_loop);
 
   static bool PostTaskHelper(
       BrowserThread::ID identifier,

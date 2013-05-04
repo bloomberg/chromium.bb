@@ -568,7 +568,7 @@ class DownloadManagerTest : public testing::Test {
   base::FilePath intermediate_path_;
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   TestBrowserThread ui_thread_;
   TestBrowserThread file_thread_;
   base::WeakPtr<MockDownloadItemFactory> mock_download_item_factory_;

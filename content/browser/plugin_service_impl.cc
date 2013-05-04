@@ -581,7 +581,7 @@ string16 PluginServiceImpl::GetPluginDisplayNameByPath(
 
 void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
   scoped_refptr<base::MessageLoopProxy> target_loop(
-      MessageLoop::current()->message_loop_proxy());
+      base::MessageLoop::current()->message_loop_proxy());
 
   if (LoadPluginListInProcess()) {
     BrowserThread::GetBlockingPool()->

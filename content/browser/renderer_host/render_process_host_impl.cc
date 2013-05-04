@@ -508,11 +508,11 @@ bool RenderProcessHostImpl::Init() {
     base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)
     // In-process plugins require this to be a UI message loop.
-    options.message_loop_type = MessageLoop::TYPE_UI;
+    options.message_loop_type = base::MessageLoop::TYPE_UI;
 #else
     // We can't have multiple UI loops on Linux and Android, so we don't support
     // in-process plugins.
-    options.message_loop_type = MessageLoop::TYPE_DEFAULT;
+    options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
 #endif
     in_process_renderer_->StartWithOptions(options);
 
@@ -1258,7 +1258,7 @@ void RenderProcessHostImpl::Cleanup() {
         Source<RenderProcessHost>(this),
         NotificationService::NoDetails());
 
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     deleting_soon_ = true;
     // It's important not to wait for the DeleteTask to delete the channel
     // proxy. Kill it off now. That way, in case the profile is going away, the

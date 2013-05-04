@@ -30,7 +30,7 @@ BrowserPlugin* MockBrowserPluginManager::CreateBrowserPlugin(
 void MockBrowserPluginManager::AllocateInstanceID(
     BrowserPlugin* browser_plugin) {
   int instance_id = ++browser_plugin_counter_;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&MockBrowserPluginManager::AllocateInstanceIDACK,
                  this,

@@ -437,14 +437,14 @@ void ResourceLoader::Resume() {
       request_->FollowDeferredRedirect();
       break;
     case DEFERRED_READ:
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&ResourceLoader::ResumeReading,
                      weak_ptr_factory_.GetWeakPtr()));
       break;
     case DEFERRED_FINISH:
       // Delay self-destruction since we don't know how we were reached.
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&ResourceLoader::CallDidFinishLoading,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -493,9 +493,10 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
     // If the request isn't in flight, then we won't get an asynchronous
     // notification from the request, so we have to signal ourselves to finish
     // this request.
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&ResourceLoader::ResponseCompleted,
-                              weak_ptr_factory_.GetWeakPtr()));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ResourceLoader::ResponseCompleted,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -572,11 +573,12 @@ void ResourceLoader::StartReading(bool is_continuation) {
   } else {
     // Else, trigger OnReadCompleted asynchronously to avoid starving the IO
     // thread in case the URLRequest can provide data synchronously.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ResourceLoader::OnReadCompleted,
                    weak_ptr_factory_.GetWeakPtr(),
-                   request_.get(), bytes_read));
+                   request_.get(),
+                   bytes_read));
   }
 }
 

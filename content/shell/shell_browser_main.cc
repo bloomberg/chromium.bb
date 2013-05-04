@@ -120,7 +120,8 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kCheckLayoutTestSysDeps)) {
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
     main_runner_->Run();
     content::Shell::CloseAllWindows();
     main_runner_->Shutdown();
@@ -170,7 +171,8 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
         break;
     }
     if (!ran_at_least_once) {
-      MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+                                             base::MessageLoop::QuitClosure());
       main_runner_->Run();
     }
     exit_code = 0;

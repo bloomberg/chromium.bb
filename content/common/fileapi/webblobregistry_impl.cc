@@ -31,7 +31,8 @@ WebBlobRegistryImpl::~WebBlobRegistryImpl() {
 
 void WebBlobRegistryImpl::registerBlobURL(
     const WebURL& url, WebBlobData& data) {
-  DCHECK(ChildThread::current()->message_loop() == MessageLoop::current());
+  DCHECK(ChildThread::current()->message_loop() ==
+         base::MessageLoop::current());
   const size_t kLargeThresholdBytes = 250 * 1024;
   const size_t kMaxSharedMemoryBytes = 10 * 1024 * 1024;
 
@@ -111,12 +112,14 @@ void WebBlobRegistryImpl::registerBlobURL(
 
 void WebBlobRegistryImpl::registerBlobURL(
     const WebURL& url, const WebURL& src_url) {
-  DCHECK(ChildThread::current()->message_loop() == MessageLoop::current());
+  DCHECK(ChildThread::current()->message_loop() ==
+         base::MessageLoop::current());
   sender_->Send(new BlobHostMsg_CloneBlob(url, src_url));
 }
 
 void WebBlobRegistryImpl::unregisterBlobURL(const WebURL& url) {
-  DCHECK(ChildThread::current()->message_loop() == MessageLoop::current());
+  DCHECK(ChildThread::current()->message_loop() ==
+         base::MessageLoop::current());
   sender_->Send(new BlobHostMsg_RemoveBlob(url));
 }
 

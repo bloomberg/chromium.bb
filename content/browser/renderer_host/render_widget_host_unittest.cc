@@ -658,7 +658,7 @@ class RenderWidgetHostTest : public testing::Test {
 #endif
 
     // Process all pending tasks to avoid leaks.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void SendInputEventACK(WebInputEvent::Type type,
@@ -822,7 +822,7 @@ class RenderWidgetHostTest : public testing::Test {
     return reinterpret_cast<const WebInputEvent*>(data);
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 
   scoped_ptr<TestBrowserContext> browser_context_;
   RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
@@ -1097,7 +1097,7 @@ TEST_F(RenderWidgetHostTest, GetBackingStore_RepaintAck) {
 // Test that we don't paint when we're hidden, but we still send the ACK. Most
 // of the rest of the painting is tested in the GetBackingStore* ones.
 TEST_F(RenderWidgetHostTest, HiddenPaint) {
-  BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
+  BrowserThreadImpl ui_thread(BrowserThread::UI, base::MessageLoop::current());
   // Hide the widget, it should have sent out a message to the renderer.
   EXPECT_FALSE(host_->is_hidden_);
   host_->WasHidden();
@@ -1259,7 +1259,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
   // The coalesced events can queue up a delayed ack
   // so that additional input events can be processed before
   // we turn off coalescing.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   InputMsg_HandleInputEvent::ID));
@@ -1268,7 +1268,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
   // One more time.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   InputMsg_HandleInputEvent::ID));
@@ -1277,7 +1277,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
   // After the final ack, the queue should be empty.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0U, process_->sink().message_count());
 
   SimulateGestureFlingStartEvent(0.f, 0.f, WebGestureEvent::Touchpad);
@@ -1293,7 +1293,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEventsQueuedPhaseEndIsNotDropped) {
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::GestureScrollBegin,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Send a wheel event, should get sent directly.
   SimulateWheelEvent(0, -5, 0, false);
@@ -1372,7 +1372,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollGestureEvents) {
   // Check that the ACK sends the second message.
   SendInputEventACK(WebInputEvent::GestureScrollBegin,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
               InputMsg_HandleInputEvent::ID));
@@ -1381,7 +1381,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollGestureEvents) {
   // Ack for queued coalesced event.
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
               InputMsg_HandleInputEvent::ID));
@@ -1390,7 +1390,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollGestureEvents) {
   // Ack for queued uncoalesced event.
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
               InputMsg_HandleInputEvent::ID));
@@ -1399,7 +1399,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollGestureEvents) {
   // After the final ack, the queue should be empty.
   SendInputEventACK(WebInputEvent::GestureScrollEnd,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0U, process_->sink().message_count());
 }
 
@@ -1494,7 +1494,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollAndPinchEvents) {
   // Check that the ACK sends the second message.
   SendInputEventACK(WebInputEvent::GestureScrollBegin,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
               InputMsg_HandleInputEvent::ID));
@@ -1521,7 +1521,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollAndPinchEvents) {
   // Check that the ACK sends both scroll and pinch updates.
   SendInputEventACK(WebInputEvent::GesturePinchBegin,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetFirstMessageMatching(
               InputMsg_HandleInputEvent::ID));
@@ -1580,7 +1580,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollAndPinchEvents) {
   // Check that the ACK gets ignored.
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0U, process_->sink().message_count());
   // The flag should have been flipped back to false.
   EXPECT_FALSE(host_->WillIgnoreNextACK());
@@ -1603,7 +1603,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollAndPinchEvents) {
   // Check that the ACK sends the next scroll pinch pair.
   SendInputEventACK(WebInputEvent::GesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetFirstMessageMatching(
               InputMsg_HandleInputEvent::ID));
@@ -1614,13 +1614,13 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollAndPinchEvents) {
   // Check that the ACK sends the second message.
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0U, process_->sink().message_count());
 
   // Check that the ACK sends the second message.
   SendInputEventACK(WebInputEvent::GesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
               InputMsg_HandleInputEvent::ID));
@@ -1629,7 +1629,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollAndPinchEvents) {
   // Check that the queue is empty after ACK and no messages get sent.
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
 }
@@ -1652,13 +1652,13 @@ TEST_P(RenderWidgetHostWithSourceTest, GestureFlingCancelsFiltered) {
   EXPECT_TRUE(host_->FlingInProgress());
   SendInputEventACK(WebInputEvent::GestureFlingStart,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   EXPECT_FALSE(host_->FlingInProgress());
   EXPECT_EQ(2U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::GestureFlingCancel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
 
   // GFC before previous GFS is acked.
@@ -1673,10 +1673,10 @@ TEST_P(RenderWidgetHostWithSourceTest, GestureFlingCancelsFiltered) {
   // Advance state realistically.
   SendInputEventACK(WebInputEvent::GestureFlingStart,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   SendInputEventACK(WebInputEvent::GestureFlingCancel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
 
   // GFS is added to the queue if another event is pending
@@ -1743,9 +1743,11 @@ TEST_F(RenderWidgetHostTest, DeferredGestureTapDown) {
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
 
   // Wait long enough for first timeout and see if it fired.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
@@ -1772,9 +1774,11 @@ TEST_F(RenderWidgetHostTest, DeferredGestureTapDownSentOnTap) {
   EXPECT_EQ(WebInputEvent::GestureTap,
             host_->GestureEventLastQueueEvent().type);
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
 
   // If the deferral timer incorrectly fired, it sent an extra message.
   EXPECT_EQ(1U, process_->sink().message_count());
@@ -1794,9 +1798,11 @@ TEST_F(RenderWidgetHostTest, DeferredGestureTapDownOnlyOnce) {
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
 
   // Wait long enough for the timeout and verify it fired.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
@@ -1831,9 +1837,11 @@ TEST_F(RenderWidgetHostTest, DeferredGestureTapDownAnulledOnScroll) {
   EXPECT_EQ(WebInputEvent::GestureScrollBegin,
             host_->GestureEventLastQueueEvent().type);
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
 
   // If the deferral timer incorrectly fired, it will send an extra message.
   EXPECT_EQ(1U, process_->sink().message_count());
@@ -1857,9 +1865,11 @@ TEST_F(RenderWidgetHostTest, DeferredGestureTapDownAnulledOnTapCancel) {
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
 
   // If the deferral timer incorrectly fired, it will send an extra message.
   EXPECT_EQ(0U, process_->sink().message_count());
@@ -1878,9 +1888,11 @@ TEST_F(RenderWidgetHostTest, DeferredGestureTapDownTapCancel) {
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
@@ -1930,9 +1942,11 @@ TEST_F(RenderWidgetHostTest, DebounceDefersFollowingGestureEvents) {
   EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(3U, host_->GestureEventDebouncingQueueSize());
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(5));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(5));
+  base::MessageLoop::current()->Run();
 
   // The deferred events are correctly queued in coalescing queue.
   EXPECT_EQ(1U, process_->sink().message_count());
@@ -2977,9 +2991,11 @@ TEST_F(RenderWidgetHostTest, DontPostponeHangMonitorTimeout) {
   host_->StartHangMonitorTimeout(TimeDelta::FromSeconds(30));
 
   // Wait long enough for first timeout and see if it fired.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }
 
@@ -2995,9 +3011,11 @@ TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
   host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
 
   // Wait long enough for first timeout and see if it fired.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(40));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(40));
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }
 
@@ -3012,9 +3030,11 @@ TEST_F(RenderWidgetHostTest, ShorterDelayHangMonitorTimeout) {
   host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(20));
 
   // Wait long enough for the second timeout and see if it fired.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(25));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(25));
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }
 
@@ -3033,9 +3053,11 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
                     INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Wait long enough for first timeout and see if it fired.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(40));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(40));
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }
 
@@ -3493,9 +3515,11 @@ TEST_F(RenderWidgetHostTest, GestureScrollDebounceTimerOverscroll) {
   // enough overscroll to complete the gesture, the overscroll controller
   // will reset the state. The scroll-end should therefore be dispatched to the
   // renderer, and the gesture-event-filter should await an ACK for it.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(15));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(15));
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
@@ -3612,9 +3636,11 @@ TEST_F(RenderWidgetHostTest, OverscrollWithTouchEvents) {
 
   SimulateGestureEvent(WebKit::WebInputEvent::GestureScrollEnd,
                        WebGestureEvent::Touchscreen);
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->TouchEventQueueSize());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
@@ -3674,9 +3700,11 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->completed_mode());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(1U, host_->GestureEventDebouncingQueueSize());
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(1U, process_->sink().message_count());
   process_->sink().ClearMessages();
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
@@ -3731,9 +3759,11 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(1U, host_->GestureEventDebouncingQueueSize());
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(1U, process_->sink().message_count());
   process_->sink().ClearMessages();
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());

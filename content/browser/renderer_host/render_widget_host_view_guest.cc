@@ -435,7 +435,7 @@ void RenderWidgetHostViewGuest::WillWmDestroy() {
 
 void RenderWidgetHostViewGuest::DestroyGuestView() {
   host_ = NULL;
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 bool RenderWidgetHostViewGuest::DispatchLongPressGestureEvent(

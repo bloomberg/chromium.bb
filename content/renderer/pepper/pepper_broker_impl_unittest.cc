@@ -16,7 +16,7 @@ namespace content {
 
 class PepperBrokerImplTest : public ::testing::Test {
  protected:
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   // We need a render process for ppapi::proxy::ProxyChannel to work.
   MockRenderProcess mock_process_;
 };

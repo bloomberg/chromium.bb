@@ -91,7 +91,7 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
 #if defined(OS_ANDROID)
-  MessageLoopForUI::current()->Start();
+  base::MessageLoopForUI::current()->Start();
 #endif
 }
 

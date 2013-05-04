@@ -221,7 +221,7 @@ void WebKitTestRunner::postTask(WebTask* task) {
 }
 
 void WebKitTestRunner::postDelayedTask(WebTask* task, long long ms) {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WebTask::run, base::Owned(task)),
       base::TimeDelta::FromMilliseconds(ms));
@@ -653,7 +653,7 @@ void WebKitTestRunner::CaptureDump() {
     }
   }
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&WebKitTestRunner::Send),
                  base::Unretained(this),
