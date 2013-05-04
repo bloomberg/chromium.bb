@@ -50,6 +50,10 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
+#endif
+
 // static
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
 
@@ -270,6 +274,10 @@ void ChromeShellDelegate::RecordUserMetricsAction(
     case ash::UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON:
       content::RecordAction(
           content::UserMetricsAction("Launcher_ClickOnApplistButton"));
+#if defined(OS_CHROMEOS)
+      chromeos::default_pinned_apps_field_trial::RecordShelfClick(
+          chromeos::default_pinned_apps_field_trial::APP_LAUNCHER);
+#endif
       break;
     case ash::UMA_MINIMIZE_PER_KEY:
       content::RecordAction(content::UserMetricsAction("Minimize_UsingKey"));

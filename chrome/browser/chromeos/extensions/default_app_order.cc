@@ -54,21 +54,21 @@ void GetDefault(std::vector<std::string>* app_ids) {
   const char* kDefaultAppOrder[] = {
     extension_misc::kChromeAppId,
     extension_misc::kWebStoreAppId,
-    "coobgpohoikkiipiblmjeljniedjpjpf",  // Search
-    "blpcfgokakmgnkcojhhkbfbldkacnbeo",  // Youtube
-    "pjkljhegncpnkpknbcohdijeoejaedia",  // Gmail
+    extension_misc::kGoogleSearchAppId,
+    extension_misc::kYoutubeAppId,
+    extension_misc::kGmailAppId,
     "ejjicmeblgpmajnghnpcppodonldlgfn",  // Calendar
     "kjebfhglflhjjjiceimfkgicifkhjlnm",  // Scratchpad
     "lneaknkopdijkpnocmklfnjbeapigfbh",  // Google Maps
     "apdfllckaahabafndbhieahigkjlhalf",  // Drive
-    "aohghmighlieiainnegkcijnfilokake",  // Docs
-    "felcaaldnbdncclmgdcncolpebgiejap",  // Sheets
-    "aapocclcgogkmnckokdopfmhonfmgoek",  // Slides
+    extension_misc::kGoogleDocAppId,
+    extension_misc::kGoogleSheetsAppId,
+    extension_misc::kGoogleSlidesAppId,
     "dlppkpafhbajpcmmoheippocdidnckmm",  // Google+
     "kbpgddbgniojgndnhlkjbkpknjhppkbk",  // Google+ Hangouts
     "hhaomjibdihmijegdhdafkllkbggdgoj",  // Files
     "hkhhlkdconhgemhegnplaldnmnmkaemd",  // Tips & Tricks
-    "icppfcnhkcmnfdhfhphakoifcfokfdhg",  // Play Music
+    extension_misc::kGooglePlayMusicAppId,
     "mmimngoggfoobjdlefbcabngfnmieonb",  // Play Books
     "fppdphmgcddhjeddoeghpjefkdlccljb",  // Play Movies
     "fobcpibfeplaikcclojfdhfdmbbeofai",  // Games

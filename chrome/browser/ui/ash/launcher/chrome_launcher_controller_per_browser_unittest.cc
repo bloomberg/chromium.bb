@@ -72,13 +72,13 @@ class ChromeLauncherControllerPerBrowserTest : public testing::Test {
     extension3_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
                                     manifest,
                                     Extension::NO_FLAGS,
-                                    "pjkljhegncpnkpknbcohdijeoejaedia",
+                                    extension_misc::kGmailAppId,
                                     &error);
     // Fake search extension.
     extension4_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
                                     manifest,
                                     Extension::NO_FLAGS,
-                                    "coobgpohoikkiipiblmjeljniedjpjpf",
+                                    extension_misc::kGoogleSearchAppId,
                                     &error);
   }
 

@@ -55,6 +55,10 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
+#endif
+
 using content::WebContents;
 using extensions::Extension;
 
@@ -862,6 +866,10 @@ void ChromeLauncherControllerPerBrowser::ActivateWindowOrMinimizeIfActive(
 
 void ChromeLauncherControllerPerBrowser::OnBrowserShortcutClicked(
     int event_flags) {
+#if defined(OS_CHROMEOS)
+  chromeos::default_pinned_apps_field_trial::RecordShelfClick(
+      chromeos::default_pinned_apps_field_trial::CHROME);
+#endif
   if (event_flags & ui::EF_CONTROL_DOWN) {
     CreateNewWindow();
     return;
@@ -884,7 +892,14 @@ void ChromeLauncherControllerPerBrowser::ItemSelected(
     const ash::LauncherItem& item,
     const ui::Event& event) {
   DCHECK(HasItemController(item.id));
-  id_to_item_controller_map_[item.id]->Clicked(event);
+  LauncherItemController* item_controller = id_to_item_controller_map_[item.id];
+#if defined(OS_CHROMEOS)
+  if (!item_controller->app_id().empty()) {
+    chromeos::default_pinned_apps_field_trial::RecordShelfAppClick(
+        item_controller->app_id());
+  }
+#endif
+  item_controller->Clicked(event);
 }
 
 int ChromeLauncherControllerPerBrowser::GetBrowserShortcutResourceId() {

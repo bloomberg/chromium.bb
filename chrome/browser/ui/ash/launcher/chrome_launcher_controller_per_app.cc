@@ -72,13 +72,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/corewm/window_animations.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
+#endif
+
 using extensions::Extension;
+using extension_misc::kGmailAppId;
 using content::WebContents;
 
 namespace {
-
-// The App ID for of the gMail application.
-const char kGmailAppId[] = "pjkljhegncpnkpknbcohdijeoejaedia";
 
 std::string GetPrefKeyForRootWindow(aura::RootWindow* root_window) {
   gfx::Display display = gfx::Screen::GetScreenFor(
@@ -901,6 +903,10 @@ void ChromeLauncherControllerPerApp::ActivateWindowOrMinimizeIfActive(
 
 void ChromeLauncherControllerPerApp::OnBrowserShortcutClicked(
     int event_flags) {
+#if defined(OS_CHROMEOS)
+  chromeos::default_pinned_apps_field_trial::RecordShelfClick(
+      chromeos::default_pinned_apps_field_trial::CHROME);
+#endif
   if (event_flags & ui::EF_CONTROL_DOWN) {
     CreateNewWindow();
     return;
@@ -927,7 +933,14 @@ void ChromeLauncherControllerPerApp::ItemSelected(const ash::LauncherItem& item,
     return;
   }
   DCHECK(HasItemController(item.id));
-  id_to_item_controller_map_[item.id]->Clicked(event);
+  LauncherItemController* item_controller = id_to_item_controller_map_[item.id];
+#if defined(OS_CHROMEOS)
+  if (!item_controller->app_id().empty()) {
+    chromeos::default_pinned_apps_field_trial::RecordShelfAppClick(
+        item_controller->app_id());
+  }
+#endif
+  item_controller->Clicked(event);
 }
 
 int ChromeLauncherControllerPerApp::GetBrowserShortcutResourceId() {
@@ -1300,7 +1313,7 @@ ChromeLauncherControllerPerApp::CreateAppShortcutLauncherItemWithType(
 void ChromeLauncherControllerPerApp::UpdateBrowserItemStatus() {
   // Determine the new browser's active state and change if necessary.
   size_t browser_index = ash::launcher::GetBrowserItemIndex(*model_);
-  DCHECK(browser_index >= 0);
+  DCHECK_GE(browser_index, 0u);
   ash::LauncherItem browser_item = model_->items()[browser_index];
   ash::LauncherItemStatus browser_status = ash::STATUS_CLOSED;
 

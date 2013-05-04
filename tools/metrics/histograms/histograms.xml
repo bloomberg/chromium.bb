@@ -459,6 +459,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Cros.ClickOnShelf" enum="CrosShelfClickTarget">
+  <summary>Chrome OS shelf clicks.</summary>
+</histogram>
+
 <histogram name="CrosDisks.ArchiveType" enum="CrosDisksArchiveType">
   <summary>
     The type of archive file that Chrome OS cros-disks daemon is requested to
@@ -7680,6 +7684,18 @@ other types of suffix sets.
   <int value="0" label="ModemManagerCommandSendFailure"/>
 </enum>
 
+<enum name="CrosShelfClickTarget" type="int">
+  <int value="0" label="Chrome"/>
+  <int value="1" label="AppLauncher"/>
+  <int value="2" label="Gmail"/>
+  <int value="3" label="Search"/>
+  <int value="4" label="Youtube"/>
+  <int value="5" label="Doc"/>
+  <int value="6" label="Sheets"/>
+  <int value="7" label="Slides"/>
+  <int value="8" label="PlayMusic"/>
+</enum>
+
 <enum name="DomainBoundCerts.GetCertResult" type="int">
   <int value="0" label="SYNC_SUCCESS"/>
   <int value="1" label="ASYNC_SUCCESS"/>
@@ -10931,6 +10947,13 @@ other types of suffix sets.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.LoadType"/>
+</fieldtrial>
+
+<fieldtrial name="DefaultPinnedApps">
+  <group name="Existing"/>
+  <group name="Control"/>
+  <group name="Alternate"/>
+  <affected-histogram name="Cros.ClickOnShelf"/>
 </fieldtrial>
 
 <fieldtrial name="DnsImpact2">

@@ -43,7 +43,6 @@ using extensions::Manifest;
 
 namespace {
 const int kExpectedAppIndex = 1;
-const char* gmail_app_id = "pjkljhegncpnkpknbcohdijeoejaedia";
 const char* offline_gmail_url = "https://mail.google.com/mail/mu/u";
 const char* gmail_url = "https://mail.google.com/mail/u";
 }
@@ -187,14 +186,14 @@ class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
     extension3_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
                                     manifest_gmail,
                                     Extension::NO_FLAGS,
-                                    gmail_app_id,
+                                    extension_misc::kGmailAppId,
                                     &error);
 
     // Fake search extension.
     extension4_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
                                     manifest,
                                     Extension::NO_FLAGS,
-                                    "coobgpohoikkiipiblmjeljniedjpjpf",
+                                    extension_misc::kGoogleSearchAppId,
                                     &error);
 
     // Create a default launcher controller; some tests will call

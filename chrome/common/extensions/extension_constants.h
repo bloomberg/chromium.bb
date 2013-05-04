@@ -94,6 +94,9 @@ namespace extension_misc {
   // The extension id of the bookmark manager.
   extern const char kBookmarkManagerId[];
 
+  // The extension id of the Chrome component application.
+  extern const char kChromeAppId[];
+
   // The extension id of the Citrix Receiver application.
   extern const char kCitrixReceiverAppId[];
 
@@ -103,8 +106,29 @@ namespace extension_misc {
   // The extension id of the dev Citrix Receiver application.
   extern const char kCitrixReceiverAppDevId[];
 
+  // The extension id of the Cloud Print component application.
+  extern const char kCloudPrintAppId[];
+
   // The extension id of the Enterprise Web Store component application.
   extern const char kEnterpriseWebStoreAppId[];
+
+  // The extension id of GMail application.
+  extern const char kGmailAppId[];
+
+  // The extension id of the Google Doc application.
+  extern const char kGoogleDocAppId[];
+
+  // The extension id of the Google Play Music application.
+  extern const char kGooglePlayMusicAppId[];
+
+  // The extension id of the Google Search application.
+  extern const char kGoogleSearchAppId[];
+
+  // The extension id of the Google Sheets application.
+  extern const char kGoogleSheetsAppId[];
+
+  // The extension id of the Google Slides application.
+  extern const char kGoogleSlidesAppId[];
 
   // The extension id of the HTerm app for ChromeOS.
   extern const char kHTermAppId[];
@@ -124,20 +148,17 @@ namespace extension_misc {
   // The extension id of the Office Viewer extension.
   extern const char kQuickOfficeExtensionId[];
 
+  // The extension id of the settings application.
+  extern const char kSettingsAppId[];
+
   // The extension id used for testing streamsPrivate
   extern const char kStreamsPrivateTestExtensionId[];
 
   // The extension id of the Web Store component application.
   extern const char kWebStoreAppId[];
 
-  // The extension id of the Cloud Print component application.
-  extern const char kCloudPrintAppId[];
-
-  // The extension id of the Chrome component application.
-  extern const char kChromeAppId[];
-
-  // The extension id of the settings application.
-  extern const char kSettingsAppId[];
+  // The extension id of the Youtube application.
+  extern const char kYoutubeAppId[];
 
   // Note: this structure is an ASN.1 which encodes the algorithm used
   // with its parameters. This is defined in PKCS #1 v2.1 (RFC 3447).
@@ -305,7 +326,6 @@ namespace extension_misc {
   // List of sizes for extension icons that can be defined in the manifest.
   extern const int kScriptBadgeIconSizes[];
   extern const size_t kNumScriptBadgeIconSizes;
-
-}  // extension_misc
+}  // namespace extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

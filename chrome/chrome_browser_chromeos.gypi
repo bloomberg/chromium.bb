@@ -388,6 +388,8 @@
         'browser/chromeos/login/captive_portal_window_proxy.h',
         'browser/chromeos/login/chrome_restart_request.cc',
         'browser/chromeos/login/chrome_restart_request.h',
+        'browser/chromeos/login/default_pinned_apps_field_trial.cc',
+        'browser/chromeos/login/default_pinned_apps_field_trial.h',
         'browser/chromeos/login/default_user_images.cc',
         'browser/chromeos/login/default_user_images.h',
         'browser/chromeos/login/enrollment/enrollment_screen.cc',

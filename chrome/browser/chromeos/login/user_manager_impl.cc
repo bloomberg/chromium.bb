@@ -27,6 +27,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/remove_user_delegate.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
@@ -1016,6 +1017,8 @@ void UserManagerImpl::RegularUserLoggedIn(const std::string& email,
     // For GAIA login flow, logged in user wallpaper may not be loaded.
     WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
   }
+
+  default_pinned_apps_field_trial::SetupForUser(email, is_current_user_new_);
 
   // Make sure that new data is persisted to Local State.
   g_browser_process->local_state()->CommitPendingWrite();

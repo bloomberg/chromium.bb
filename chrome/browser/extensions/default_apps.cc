@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/default_apps.h"
 
+#include <set>
+#include <string>
+
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -20,14 +23,11 @@
 
 namespace {
 
-const char kGmailId[] = "pjkljhegncpnkpknbcohdijeoejaedia";
-const char kSearchId[] = "coobgpohoikkiipiblmjeljniedjpjpf";
-const char kYoutubeId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
-
 // Returns true if the app was a default app in Chrome 22
 bool IsOldDefaultApp(const std::string& extension_id) {
-  return extension_id == kGmailId || extension_id == kSearchId
-      || extension_id == kYoutubeId;
+  return extension_id == extension_misc::kGmailAppId ||
+         extension_id == extension_misc::kGoogleSearchAppId ||
+         extension_id == extension_misc::kYoutubeAppId;
 }
 
 bool IsLocaleSupported() {
@@ -45,7 +45,7 @@ bool IsLocaleSupported() {
   return true;
 }
 
-} // namespace
+}  // namespace
 
 namespace default_apps {
 

@@ -105,7 +105,7 @@ const char kGeneratedBackgroundPageFilename[] =
 
 const char kModulesDir[] = "_modules";
 
-}
+}  // namespace extension_filenames
 
 // These must match the values expected by the chrome.management extension API.
 namespace extension_info_keys {
@@ -124,11 +124,20 @@ namespace extension_info_keys {
 }  // namespace extension_filenames
 
 namespace extension_misc {
+
 const char kBookmarkManagerId[] = "eemcgdkfndhakfknompkggombfjjjeno";
+const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
 const char kCitrixReceiverAppId[] = "haiffjcadagjlijoggckpgfnoeiflnem";
 const char kCitrixReceiverAppBetaId[] = "gnedhmakppccajfpfiihfcdlnpgomkcf";
 const char kCitrixReceiverAppDevId[] = "fjcibdnjlbfnbfdjneajpipnlcppleek";
+const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
 const char kEnterpriseWebStoreAppId[] = "afchcafgojfnemjkcbhfekplkmjaldaa";
+const char kGmailAppId[] = "pjkljhegncpnkpknbcohdijeoejaedia";
+const char kGoogleDocAppId[] = "aohghmighlieiainnegkcijnfilokake";
+const char kGooglePlayMusicAppId[] = "icppfcnhkcmnfdhfhphakoifcfokfdhg";
+const char kGoogleSearchAppId[] = "coobgpohoikkiipiblmjeljniedjpjpf";
+const char kGoogleSheetsAppId[] = "felcaaldnbdncclmgdcncolpebgiejap";
+const char kGoogleSlidesAppId[] = "aapocclcgogkmnckokdopfmhonfmgoek";
 const char kHTermAppId[] = "pnhechapfaindjhompbnflcldabbghjo";
 const char kHTermDevAppId[] = "okddffdblfhhnmhodogpojmfkjmhinfp";
 const char kCroshBuiltinAppId[] = "nkoccljplnhpfnfiajclkommnmllphnl";
@@ -136,12 +145,12 @@ const char kQuickOfficeComponentExtensionId[] =
     "bpmcpldpdmajfigpchkicefoigmkfalc";
 const char kQuickOfficeDevExtensionId[] = "ionpfmkccalenbmnddpbmocokhaknphg";
 const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
+const char kSettingsAppId[] = "ennkphjdgehloodpbhlhldgbnhmacadg";
 const char kStreamsPrivateTestExtensionId[] =
     "oickdpebdnfbgkcaoklfcdhjniefkcji";
 const char kWebStoreAppId[] = "ahfgeienlihckogmohjhadlkjgocpleb";
-const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
-const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
-const char kSettingsAppId[] = "ennkphjdgehloodpbhlhldgbnhmacadg";
+const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
+
 const char kAppLaunchHistogram[] = "Extensions.AppLaunch";
 const char kPlatformAppLaunchHistogram[] = "Apps.AppLaunch";
 #if defined(OS_CHROMEOS)
