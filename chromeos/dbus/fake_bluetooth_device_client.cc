@@ -284,6 +284,8 @@ void FakeBluetoothDeviceClient::Pair(
     return;
   }
 
+  pairing_cancelled_ = false;
+
   FakeBluetoothAgentManagerClient* fake_bluetooth_agent_manager_client =
       static_cast<FakeBluetoothAgentManagerClient*>(
           DBusThreadManager::Get()->
