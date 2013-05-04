@@ -310,7 +310,7 @@ EventHandler::EventHandler(Frame* frame)
     , m_maxMouseMovedDuration(0)
     , m_baseEventType(PlatformEvent::NoType)
     , m_didStartDrag(false)
-    , m_didLongPressInvokeContextMenu(false)
+    , m_longTapShouldInvokeContextMenu(false)
 {
 }
 
@@ -363,7 +363,6 @@ void EventHandler::clear()
     m_maxMouseMovedDuration = 0;
     m_baseEventType = PlatformEvent::NoType;
     m_didStartDrag = false;
-    m_didLongPressInvokeContextMenu = false;
 }
 
 void EventHandler::nodeWillBeRemoved(Node* nodeToBeRemoved)
@@ -2408,7 +2407,7 @@ bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEve
     if (subframe && subframe->eventHandler()->handleGestureLongPress(gestureEvent))
         return true;
 
-    m_didLongPressInvokeContextMenu = true;
+    m_longTapShouldInvokeContextMenu = false;
     if (m_frame->settings() && m_frame->settings()->touchDragDropEnabled() && m_frame->view()) {
         PlatformMouseEvent mouseDragEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MouseMoved, 1,
             gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), WTF::currentTime());
@@ -2420,7 +2419,7 @@ bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEve
         m_mouseDownPos = m_frame->view()->windowToContents(mouseDragEvent.position());
         handleDrag(mev, DontCheckDragHysteresis);
         if (m_didStartDrag) {
-            m_didLongPressInvokeContextMenu = false;
+            m_longTapShouldInvokeContextMenu = true;
             return true;
         }
     }
@@ -2450,9 +2449,10 @@ bool EventHandler::handleGestureLongTap(const PlatformGestureEvent& gestureEvent
     if (subframe && subframe->eventHandler()->handleGestureLongTap(gestureEvent))
         return true;
 #if !OS(ANDROID)
-    if (!m_didLongPressInvokeContextMenu)
+    if (m_longTapShouldInvokeContextMenu) {
+        m_longTapShouldInvokeContextMenu = false;
         return sendContextMenuEventForGesture(gestureEvent);
-    m_didLongPressInvokeContextMenu = true;
+    }
 #endif
     return false;
 }

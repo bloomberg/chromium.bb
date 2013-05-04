@@ -4,21 +4,16 @@
 <script src="../../../js/resources/js-test-pre.js"></script>
 </head>
 <body onload="test()">
-<p>This test checks that the context menu is shown on long tap gesture.</p>
-<div id="text" draggable='true'>Testing</div>
-<div id="dragresult">FAIL</div>
-<div id="result">FAIL</div>
+<p>This test checks that the context menu is not shown on long tap gesture without a long press.</p>
+<div id="text">Testing</div>
+<div id="result">PASS</div>
 <script>
 function test()
 {
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    if (window.internals)
-        internals.settings.setTouchDragDropEnabled(true);
-
-    document.ondragstart = function() { document.getElementById("dragresult").innerHTML = "PASS"; }
-    document.oncontextmenu = function() { document.getElementById("result").innerHTML = "PASS"; }
+    document.oncontextmenu = function() { document.getElementById("result").innerHTML = "FAIL"; }
 
     var text = document.getElementById("text");
 
@@ -28,9 +23,6 @@ function test()
     if (!window.eventSender)
         return;
     if (eventSender.gestureLongTap) {
-        // Send long press first on the draggable div to start a drag. This
-        // will enable context menu on the subsequent long tap.
-        eventSender.gestureLongPress(x, y);
         eventSender.gestureLongTap(x, y);
     } else {
         debug("gestureLongTap not implemented by this platform");

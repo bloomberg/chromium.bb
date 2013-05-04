@@ -380,7 +380,8 @@ private:
     double m_maxMouseMovedDuration;
     PlatformEvent::Type m_baseEventType;
     bool m_didStartDrag;
-    bool m_didLongPressInvokeContextMenu;
+
+    bool m_longTapShouldInvokeContextMenu;
 };
 
 } // namespace WebCore
