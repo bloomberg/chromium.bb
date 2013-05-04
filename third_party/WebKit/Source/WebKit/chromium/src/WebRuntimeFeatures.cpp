@@ -51,33 +51,33 @@ void WebRuntimeFeatures::enableStableFeatures(bool enable)
     // All the "false" values should be removed, and all the flags
     // which default to "true" in RuntimeEnabledFeatures.cpp
     // should be moved here or enableTestingFeatures instead.
-    enableDatabase(true);
     enableApplicationCache(true);
-    enableNotifications(true);
-    enableLocalStorage(true);
-    enableSessionStorage(true);
-    enableIndexedDatabase(true);
-    enableGeolocation(true);
-    enableMediaSource(true);
-    enableMediaPlayer(true);
-    enableMediaStream(true);
-    enablePeerConnection(true);
-    enableFullScreenAPI(true);
-    enableEncryptedMedia(true);
-    enableWebAudio(true);
-    enableWebMIDI(false);
+    enableDatabase(true);
     enableDeviceMotion(false);
     enableDeviceOrientation(true);
-    enableSpeechInput(true);
-    enableScriptedSpeech(true);
-    enableGamepad(true);
-    enableFileSystem(true);
-    enableJavaScriptI18NAPI(true);
-    enableQuota(true);
-    enableSeamlessIFrames(false);
-    enableExperimentalWebSocket(false);
+    enableEncryptedMedia(true);
     enableExperimentalCanvasFeatures(false);
+    enableExperimentalWebSocket(false);
+    enableFileSystem(true);
+    enableFullScreenAPI(true);
+    enableGamepad(true);
+    enableGeolocation(true);
+    enableIndexedDatabase(true);
+    enableJavaScriptI18NAPI(true);
+    enableLocalStorage(true);
+    enableMediaPlayer(true);
+    enableMediaSource(true);
+    enableMediaStream(true);
+    enableNotifications(true);
+    enablePeerConnection(true);
+    enableQuota(true);
+    enableScriptedSpeech(true);
+    enableSeamlessIFrames(false);
+    enableSessionStorage(true);
+    enableSpeechInput(true);
     enableSpeechSynthesis(false);
+    enableWebAudio(true);
+    enableWebMIDI(false);
 }
 
 void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
@@ -86,15 +86,15 @@ void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
     // change dance with content/ is over.
     ASSERT_UNUSED(enable, enable);
 
-    enableStyleScoped(true);
-    enableCustomDOMElements(true);
-    enableCSSExclusions(true);
-    enableExperimentalContentSecurityPolicyFeatures(true);
-    enableCSSRegions(true);
     enableCSSCompositing(true);
+    enableCSSExclusions(true);
+    enableCSSRegions(true);
+    enableCustomDOMElements(true);
     enableDialogElement(true);
+    enableExperimentalContentSecurityPolicyFeatures(true);
     enableFontLoadEvents(true);
     enableSeamlessIFrames(true);
+    enableStyleScoped(true);
 }
 
 void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
