@@ -452,7 +452,7 @@ void TraceEvent::AppendValueAsJSON(unsigned char type,
     case TRACE_VALUE_TYPE_POINTER:
       // JSON only supports double and int numbers.
       // So as not to lose bits from a 64-bit pointer, output as a hex string.
-      StringAppendF(out, "\"%" PRIx64 "\"", static_cast<uint64>(
+      StringAppendF(out, "\"0x%" PRIx64 "\"", static_cast<uint64>(
                                      reinterpret_cast<intptr_t>(
                                      value.as_pointer)));
       break;
@@ -509,7 +509,7 @@ void TraceEvent::AppendAsJSON(std::string* out) const {
   // If id_ is set, print it out as a hex string so we don't loose any
   // bits (it might be a 64-bit pointer).
   if (flags_ & TRACE_EVENT_FLAG_HAS_ID)
-    StringAppendF(out, ",\"id\":\"%" PRIx64 "\"", static_cast<uint64>(id_));
+    StringAppendF(out, ",\"id\":\"0x%" PRIx64 "\"", static_cast<uint64>(id_));
 
   // Instant events also output their scope.
   if (phase_ == TRACE_EVENT_PHASE_INSTANT) {

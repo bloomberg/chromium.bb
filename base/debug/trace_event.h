@@ -205,6 +205,11 @@
 #define TRACE_ID_MANGLE(id) \
     trace_event_internal::TraceID::ForceMangle(id)
 
+// By default, pointers are mangled with the Process ID in TRACE_EVENT_ASYNC
+// macros. Use this macro to prevent Process ID mangling.
+#define TRACE_ID_DONT_MANGLE(id) \
+    trace_event_internal::TraceID::DontMangle(id)
+
 // Records a pair of begin and end events called "name" for the current
 // scope, with 0, 1 or 2 associated arguments. If the category is not
 // enabled, then this does nothing.
@@ -641,15 +646,20 @@
         category_group, name, id, TRACE_EVENT_FLAG_COPY, \
         arg1_name, arg1_val, arg2_name, arg2_val)
 
-// Macros to track the life time of arbitratry client objects.
+// Macros to track the life time and value of arbitratry client objects.
 // See also TraceTrackableObject.
 #define TRACE_EVENT_OBJECT_CREATED_WITH_ID(category_group, name, id) \
     INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_CREATE_OBJECT, \
-        category_group, name, id, TRACE_EVENT_FLAG_NONE)
+        category_group, name, TRACE_ID_DONT_MANGLE(id), TRACE_EVENT_FLAG_NONE)
+
+#define TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(category_group, name, id, snapshot) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_SNAPSHOT_OBJECT, \
+        category_group, name, TRACE_ID_DONT_MANGLE(id), TRACE_EVENT_FLAG_NONE,\
+        "snapshot", snapshot)
 
 #define TRACE_EVENT_OBJECT_DELETED_WITH_ID(category_group, name, id) \
     INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_DELETE_OBJECT, \
-        category_group, name, id, TRACE_EVENT_FLAG_NONE)
+        category_group, name, TRACE_ID_DONT_MANGLE(id), TRACE_EVENT_FLAG_NONE)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -826,6 +836,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern TRACE_EVENT_API_ATOMIC_WORD g_trace_state2;
 #define TRACE_EVENT_PHASE_COUNTER  ('C')
 #define TRACE_EVENT_PHASE_SAMPLE  ('P')
 #define TRACE_EVENT_PHASE_CREATE_OBJECT ('N')
+#define TRACE_EVENT_PHASE_SNAPSHOT_OBJECT ('O')
 #define TRACE_EVENT_PHASE_DELETE_OBJECT ('D')
 
 // Flags for changing the behavior of TRACE_EVENT_API_ADD_TRACE_EVENT.
@@ -866,32 +877,55 @@ const int kZeroNumArgs = 0;
 const unsigned long long kNoEventId = 0;
 
 // TraceID encapsulates an ID that can either be an integer or pointer. Pointers
-// are mangled with the Process ID so that they are unlikely to collide when the
-// same pointer is used on different processes.
+// are by default mangled with the Process ID so that they are unlikely to
+// collide when the same pointer is used on different processes.
 class TraceID {
  public:
+  class DontMangle {
+   public:
+    explicit DontMangle(void* id)
+        : data_(static_cast<unsigned long long>(
+              reinterpret_cast<unsigned long>(id))) {}
+    explicit DontMangle(unsigned long long id) : data_(id) {}
+    explicit DontMangle(unsigned long id) : data_(id) {}
+    explicit DontMangle(unsigned int id) : data_(id) {}
+    explicit DontMangle(unsigned short id) : data_(id) {}
+    explicit DontMangle(unsigned char id) : data_(id) {}
+    explicit DontMangle(long long id)
+        : data_(static_cast<unsigned long long>(id)) {}
+    explicit DontMangle(long id)
+        : data_(static_cast<unsigned long long>(id)) {}
+    explicit DontMangle(int id)
+        : data_(static_cast<unsigned long long>(id)) {}
+    explicit DontMangle(short id)
+        : data_(static_cast<unsigned long long>(id)) {}
+    explicit DontMangle(signed char id)
+        : data_(static_cast<unsigned long long>(id)) {}
+    unsigned long long data() const { return data_; }
+   private:
+    unsigned long long data_;
+  };
+
   class ForceMangle {
-    public:
-     explicit ForceMangle(unsigned long long id) : data_(id) {}
-     explicit ForceMangle(unsigned long id) : data_(id) {}
-     explicit ForceMangle(unsigned int id) : data_(id) {}
-     explicit ForceMangle(unsigned short id) : data_(id) {}
-     explicit ForceMangle(unsigned char id) : data_(id) {}
-     explicit ForceMangle(long long id)
-         : data_(static_cast<unsigned long long>(id)) {}
-     explicit ForceMangle(long id)
-         : data_(static_cast<unsigned long long>(id)) {}
-     explicit ForceMangle(int id)
-         : data_(static_cast<unsigned long long>(id)) {}
-     explicit ForceMangle(short id)
-         : data_(static_cast<unsigned long long>(id)) {}
-     explicit ForceMangle(signed char id)
-         : data_(static_cast<unsigned long long>(id)) {}
-
-     unsigned long long data() const { return data_; }
-
-    private:
-     unsigned long long data_;
+   public:
+    explicit ForceMangle(unsigned long long id) : data_(id) {}
+    explicit ForceMangle(unsigned long id) : data_(id) {}
+    explicit ForceMangle(unsigned int id) : data_(id) {}
+    explicit ForceMangle(unsigned short id) : data_(id) {}
+    explicit ForceMangle(unsigned char id) : data_(id) {}
+    explicit ForceMangle(long long id)
+        : data_(static_cast<unsigned long long>(id)) {}
+    explicit ForceMangle(long id)
+        : data_(static_cast<unsigned long long>(id)) {}
+    explicit ForceMangle(int id)
+        : data_(static_cast<unsigned long long>(id)) {}
+    explicit ForceMangle(short id)
+        : data_(static_cast<unsigned long long>(id)) {}
+    explicit ForceMangle(signed char id)
+        : data_(static_cast<unsigned long long>(id)) {}
+    unsigned long long data() const { return data_; }
+   private:
+    unsigned long long data_;
   };
 
   TraceID(const void* id, unsigned char* flags)
@@ -901,6 +935,8 @@ class TraceID {
   }
   TraceID(ForceMangle id, unsigned char* flags) : data_(id.data()) {
     *flags |= TRACE_EVENT_FLAG_MANGLE_ID;
+  }
+  TraceID(DontMangle id, unsigned char* flags) : data_(id.data()) {
   }
   TraceID(unsigned long long id, unsigned char* flags)
       : data_(id) { (void)flags; }
@@ -1213,11 +1249,16 @@ class TRACE_EVENT_API_CLASS_EXPORT TraceEndOnScopeClose {
     // Only called when p_data_ is non-null.
     if (*p_data_->category_group_enabled) {
       TRACE_EVENT_API_ADD_TRACE_EVENT(
-          TRACE_EVENT_PHASE_END,
-          p_data_->category_group_enabled,
-          p_data_->name, kNoEventId,
-          kZeroNumArgs, NULL, NULL, NULL, NULL,
-          TRACE_EVENT_FLAG_NONE);
+          TRACE_EVENT_PHASE_END,            // phase
+          p_data_->category_group_enabled,  // category enabled
+          p_data_->name,                    // name
+          kNoEventId,                       // id
+          kZeroNumArgs,                     // num_args
+          NULL,                             // arg_names
+          NULL,                             // arg_types
+          NULL,                             // arg_values
+          NULL,                             // convertable_values
+          TRACE_EVENT_FLAG_NONE);           // flags
     }
   }
 
@@ -1273,6 +1314,10 @@ template<typename IDType> class TraceScopedTrackableObject {
       name_(name),
       id_(id) {
     TRACE_EVENT_OBJECT_CREATED_WITH_ID(category_group_, name_, id_);
+  }
+
+  template <typename ArgType> void snapshot(ArgType snapshot) {
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(category_group_, name_, id_, snapshot);
   }
 
   ~TraceScopedTrackableObject() {

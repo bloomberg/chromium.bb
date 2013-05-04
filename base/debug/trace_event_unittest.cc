@@ -41,9 +41,11 @@ struct JsonKeyValue {
   CompareOp op;
 };
 
-static int kThreadId = 42;
-static int kAsyncId = 5;
-static const char kAsyncIdStr[] = "5";
+const int kThreadId = 42;
+const int kAsyncId = 5;
+const char kAsyncIdStr[] = "0x5";
+const int kAsyncId2 = 6;
+const char kAsyncId2Str[] = "0x6";
 
 class TraceEventTestFixture : public testing::Test {
  public:
@@ -395,16 +397,19 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
 
     TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0("all",
         "TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0 call",
-        kAsyncId + 1, kThreadId, 34567);
+        kAsyncId2, kThreadId, 34567);
     TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0("all",
         "TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0 call",
-        kAsyncId + 1, kThreadId, 45678);
+        kAsyncId2, kThreadId, 45678);
 
     TRACE_EVENT_OBJECT_CREATED_WITH_ID("all", "tracked object 1", 0x42);
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+        "all", "tracked object 1", 0x42, "hello");
     TRACE_EVENT_OBJECT_DELETED_WITH_ID("all", "tracked object 1", 0x42);
 
     TraceScopedTrackableObject<int> trackable("all", "tracked object 2",
                                               0x2128506);
+    trackable.snapshot("world");
   } // Scope close causes TRACE_EVENT0 etc to send their END events.
 
   if (task_complete_event)
@@ -427,7 +432,7 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
   {
     std::string str_val;
     EXPECT_TRUE(item && item->GetString("args.id", &str_val));
-    EXPECT_STREQ("1122", str_val.c_str());
+    EXPECT_STREQ("0x1122", str_val.c_str());
   }
   EXPECT_SUB_FIND_("extrastring1");
   EXPECT_FIND_("TRACE_EVENT_END_ETW call");
@@ -601,7 +606,7 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
   {
     std::string id;
     EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ("319009", id);
+    EXPECT_EQ("0x319009", id);
 
     std::string ph;
     EXPECT_TRUE((item && item->GetString("ph", &ph)));
@@ -616,7 +621,7 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
   {
     std::string id;
     EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ("319009", id);
+    EXPECT_EQ("0x319009", id);
 
     std::string ph;
     EXPECT_TRUE((item && item->GetString("ph", &ph)));
@@ -639,7 +644,7 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_EQ(kThreadId, val);
     std::string id;
     EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ(kAsyncId, atoi(id.c_str()));
+    EXPECT_EQ(kAsyncIdStr, id);
   }
 
   EXPECT_FIND_("TRACE_EVENT_COPY_END_WITH_ID_TID_AND_TIMESTAMP0 call");
@@ -651,7 +656,7 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_EQ(kThreadId, val);
     std::string id;
     EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ(kAsyncId, atoi(id.c_str()));
+    EXPECT_EQ(kAsyncIdStr, id);
   }
 
   EXPECT_FIND_("TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0 call");
@@ -663,7 +668,7 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_EQ(kThreadId, val);
     std::string id;
     EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ(kAsyncId + 1, atoi(id.c_str()));
+    EXPECT_EQ(kAsyncId2Str, id);
   }
 
   EXPECT_FIND_("TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0 call");
@@ -675,41 +680,63 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_EQ(kThreadId, val);
     std::string id;
     EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ(kAsyncId + 1, atoi(id.c_str()));
+    EXPECT_EQ(kAsyncId2Str, id);
   }
 
   EXPECT_FIND_("tracked object 1");
   {
     std::string phase;
     std::string id;
+    std::string snapshot;
 
     EXPECT_TRUE((item && item->GetString("ph", &phase)));
     EXPECT_EQ("N", phase);
     EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ("42", id);
-    EXPECT_TRUE((item = FindTraceEntry(trace_parsed, "tracked object 1",
-                                       item)));
-    EXPECT_TRUE((item && item->GetString("ph", &phase)));
+    EXPECT_EQ("0x42", id);
+
+    item = FindTraceEntry(trace_parsed, "tracked object 1", item);
+    EXPECT_TRUE(item);
+    EXPECT_TRUE(item && item->GetString("ph", &phase));
+    EXPECT_EQ("O", phase);
+    EXPECT_TRUE(item && item->GetString("id", &id));
+    EXPECT_EQ("0x42", id);
+    EXPECT_TRUE(item && item->GetString("args.snapshot", &snapshot));
+    EXPECT_EQ("hello", snapshot);
+
+    item = FindTraceEntry(trace_parsed, "tracked object 1", item);
+    EXPECT_TRUE(item);
+    EXPECT_TRUE(item && item->GetString("ph", &phase));
     EXPECT_EQ("D", phase);
-    EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ("42", id);
+    EXPECT_TRUE(item && item->GetString("id", &id));
+    EXPECT_EQ("0x42", id);
   }
 
   EXPECT_FIND_("tracked object 2");
   {
     std::string phase;
     std::string id;
+    std::string snapshot;
 
-    EXPECT_TRUE((item && item->GetString("ph", &phase)));
+    EXPECT_TRUE(item && item->GetString("ph", &phase));
     EXPECT_EQ("N", phase);
-    EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ("2128506", id);
-    EXPECT_TRUE((item = FindTraceEntry(trace_parsed, "tracked object 2",
-                                       item)));
-    EXPECT_TRUE((item && item->GetString("ph", &phase)));
+    EXPECT_TRUE(item && item->GetString("id", &id));
+    EXPECT_EQ("0x2128506", id);
+
+    item = FindTraceEntry(trace_parsed, "tracked object 2", item);
+    EXPECT_TRUE(item);
+    EXPECT_TRUE(item && item->GetString("ph", &phase));
+    EXPECT_EQ("O", phase);
+    EXPECT_TRUE(item && item->GetString("id", &id));
+    EXPECT_EQ("0x2128506", id);
+    EXPECT_TRUE(item && item->GetString("args.snapshot", &snapshot));
+    EXPECT_EQ("world", snapshot);
+
+    item = FindTraceEntry(trace_parsed, "tracked object 2", item);
+    EXPECT_TRUE(item);
+    EXPECT_TRUE(item && item->GetString("ph", &phase));
     EXPECT_EQ("D", phase);
-    EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ("2128506", id);
+    EXPECT_TRUE(item && item->GetString("id", &id));
+    EXPECT_EQ("0x2128506", id);
   }
 }
 
@@ -1093,12 +1120,12 @@ TEST_F(TraceEventTestFixture, AsyncBeginEndEvents) {
   EXPECT_TRUE(FindNamePhase("name1", "F"));
 
   std::string id_str;
-  StringAppendF(&id_str, "%llx", id);
+  StringAppendF(&id_str, "0x%llx", id);
 
   EXPECT_TRUE(FindNamePhaseKeyValue("name1", "S", "id", id_str.c_str()));
   EXPECT_TRUE(FindNamePhaseKeyValue("name1", "T", "id", id_str.c_str()));
   EXPECT_TRUE(FindNamePhaseKeyValue("name1", "F", "id", id_str.c_str()));
-  EXPECT_TRUE(FindNamePhaseKeyValue("name3", "S", "id", "0"));
+  EXPECT_TRUE(FindNamePhaseKeyValue("name3", "S", "id", "0x0"));
 
   // BEGIN events should not have id
   EXPECT_FALSE(FindNamePhaseKeyValue("name2", "B", "id", "0"));

@@ -498,8 +498,8 @@ TEST_F(TraceEventAnalyzerTest, AsyncBeginEndAssocations) {
   TraceEventVector found;
   analyzer->FindEvents(Query::MatchAsyncBeginWithNext(), &found);
   ASSERT_EQ(2u, found.size());
-  EXPECT_STRCASEEQ("B", found[0]->id.c_str());
-  EXPECT_STRCASEEQ("C", found[1]->id.c_str());
+  EXPECT_STRCASEEQ("0xb", found[0]->id.c_str());
+  EXPECT_STRCASEEQ("0xc", found[1]->id.c_str());
 }
 
 // Test AssociateAsyncBeginEndEvents
@@ -531,13 +531,13 @@ TEST_F(TraceEventAnalyzerTest, AsyncBeginEndAssocationsWithSteps) {
   analyzer->FindEvents(Query::MatchAsyncBeginWithNext(), &found);
   ASSERT_EQ(3u, found.size());
 
-  EXPECT_STRCASEEQ("B", found[0]->id.c_str());
+  EXPECT_STRCASEEQ("0xb", found[0]->id.c_str());
   EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_STEP, found[0]->other_event->phase);
   EXPECT_TRUE(found[0]->other_event->other_event);
   EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_END,
             found[0]->other_event->other_event->phase);
 
-  EXPECT_STRCASEEQ("C", found[1]->id.c_str());
+  EXPECT_STRCASEEQ("0xc", found[1]->id.c_str());
   EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_STEP, found[1]->other_event->phase);
   EXPECT_TRUE(found[1]->other_event->other_event);
   EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_STEP,
@@ -550,7 +550,7 @@ TEST_F(TraceEventAnalyzerTest, AsyncBeginEndAssocationsWithSteps) {
   EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_END,
             found[1]->other_event->other_event->other_event->phase);
 
-  EXPECT_STRCASEEQ("A", found[2]->id.c_str());
+  EXPECT_STRCASEEQ("0xa", found[2]->id.c_str());
   EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_STEP, found[2]->other_event->phase);
 }
 
