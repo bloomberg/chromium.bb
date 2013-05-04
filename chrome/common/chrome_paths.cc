@@ -356,18 +356,19 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif
 #if defined(WIDEVINE_CDM_AVAILABLE)
 #if defined(WIDEVINE_CDM_IS_COMPONENT)
-    // TODO(xhwang): DIR_WIDEVINE_CDM is used for Win/Mac/Linux and
-    // FILE_WIDEVINE_CDM_PLUGIN is used for ChromeOS. Unify them!
-    case chrome::DIR_WIDEVINE_CDM:
-      if (!GetInternalPluginsDirectory(&cur))
+    case chrome::DIR_COMPONENT_WIDEVINE_CDM:
+      if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
       cur = cur.Append(kWidevineCdmBaseDirectory);
       break;
 #endif  // defined(WIDEVINE_CDM_IS_COMPONENT)
-    case chrome::FILE_WIDEVINE_CDM_PLUGIN:
+    // TODO(xhwang): FILE_WIDEVINE_CDM_ADAPTER has different meanings.
+    // In the component case, this is the source adapter. Otherwise, it is the
+    // actual Pepper module that gets loaded.
+    case chrome::FILE_WIDEVINE_CDM_ADAPTER:
       if (!GetInternalPluginsDirectory(&cur))
         return false;
-      cur = cur.Append(kWidevineCdmPluginFileName);
+      cur = cur.Append(kWidevineCdmAdapterFileName);
       break;
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
     case chrome::FILE_RESOURCES_PACK:

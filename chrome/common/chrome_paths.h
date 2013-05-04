@@ -90,9 +90,9 @@ enum {
   FILE_O3D_PLUGIN,              // Full path to the O3D Pepper plugin file.
   FILE_O1D_PLUGIN,              // Full path to the O1D Pepper plugin file.
   FILE_GTALK_PLUGIN,            // Full path to the GTalk Pepper plugin file.
-  DIR_WIDEVINE_CDM,             // Directory that contains Widevine CDM files.
-  FILE_WIDEVINE_CDM_PLUGIN,     // Full path to the Widevine CDM Pepper plugin
-                                // file.
+  DIR_COMPONENT_WIDEVINE_CDM,   // Directory that contains component-updated
+                                // Widevine CDM files.
+  FILE_WIDEVINE_CDM_ADAPTER,    // Full path to the Widevine CDM adapter file.
   FILE_RESOURCES_PACK,          // Full path to the .pak file containing
                                 // binary data (e.g., html files and images
                                 // used by internal pages).

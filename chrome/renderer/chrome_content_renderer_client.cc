@@ -212,7 +212,7 @@ bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
   // Treat CDM invocations like JavaScript.
-  if (plugin.name == ASCIIToUTF16(kWidevineCdmPluginName)) {
+  if (plugin.name == ASCIIToUTF16(kWidevineCdmDisplayName)) {
     DCHECK(plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS);
     return true;
   }

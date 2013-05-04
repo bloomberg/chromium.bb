@@ -236,13 +236,13 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && !defined(WIDEVINE_CDM_IS_COMPONENT)
   static bool skip_widevine_cdm_file_check = false;
-  if (PathService::Get(chrome::FILE_WIDEVINE_CDM_PLUGIN, &path)) {
+  if (PathService::Get(chrome::FILE_WIDEVINE_CDM_ADAPTER, &path)) {
     if (skip_widevine_cdm_file_check || file_util::PathExists(path)) {
       content::PepperPluginInfo widevine_cdm;
       widevine_cdm.is_out_of_process = true;
       widevine_cdm.path = path;
-      widevine_cdm.name = kWidevineCdmPluginName;
-      widevine_cdm.description = kWidevineCdmPluginDescription;
+      widevine_cdm.name = kWidevineCdmDisplayName;
+      widevine_cdm.description = kWidevineCdmDescription;
       widevine_cdm.version = WIDEVINE_CDM_VERSION_STRING;
       webkit::WebPluginMimeType widevine_cdm_mime_type(
           kWidevineCdmPluginMimeType,
