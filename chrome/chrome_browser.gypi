@@ -3110,6 +3110,7 @@
             'android/java/src/org/chromium/chrome/browser/NavigationPopup.java',
             'android/java/src/org/chromium/chrome/browser/profiles/Profile.java',
             'android/java/src/org/chromium/chrome/browser/SSLClientCertificateRequest.java',
+            'android/java/src/org/chromium/chrome/browser/StatusTray.java',
             'android/java/src/org/chromium/chrome/browser/search_engines/TemplateUrlService.java',
             'android/java/src/org/chromium/chrome/browser/sync/ProfileSyncService.java',
             'android/java/src/org/chromium/chrome/browser/TabBase.java',
