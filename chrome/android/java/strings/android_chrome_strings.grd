@@ -61,7 +61,7 @@
         By clicking the below button, you agree to the terms of service. And also some other text that makes sure this is not one line.
       </message>
       <message desc="Message to show on autofill dialog while fetching data from native. [CHAR-LIMIT=None]" name="IDS_AUTOFILL_FETCH_MESSAGE">
-      Retrieving Wallet information
+        Fetching payment details
       </message>
     </messages>
   </release>

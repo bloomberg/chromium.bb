@@ -192,6 +192,11 @@ public class AutofillDialog extends AlertDialog
         public String getSaveLocallyText();
 
         /**
+         * @return The legal documents text.
+         */
+        public String getLegalDocumentsText();
+
+        /**
          * @return The progress bar label.
          */
         public String getProgressBarText();
@@ -423,6 +428,7 @@ public class AutofillDialog extends AlertDialog
      */
     public void updateAccountChooser(String[] accounts, int selectedAccountIndex) {
         mTitleView.updateAccountsAndSelect(Arrays.asList(accounts), selectedAccountIndex);
+        mContentView.updateLegalDocumentsText(mDelegate.getLegalDocumentsText());
     }
 
     /**
@@ -434,6 +440,7 @@ public class AutofillDialog extends AlertDialog
     public void modelChanged(boolean fetchingIsActive) {
         if (fetchingIsActive) {
             changeLayoutTo(AutofillDialogContentView.LAYOUT_FETCHING);
+            mTitleView.hideLogoAndAccountChooserVisibility();
         } else {
             changeLayoutTo(AutofillDialogContentView.LAYOUT_STEADY);
         }

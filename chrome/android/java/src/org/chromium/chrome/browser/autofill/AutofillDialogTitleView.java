@@ -8,6 +8,7 @@ import java.util.List;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
@@ -52,7 +53,21 @@ public class AutofillDialogTitleView extends FrameLayout {
         Spinner accountsSpinner = (Spinner) findViewById(R.id.accounts_spinner);
         if (selectedAccountIndex >= 0) {
             accountsSpinner.setSelection(selectedAccountIndex);
+            accountsSpinner.setVisibility(View.VISIBLE);
+            View logo = findViewById(R.id.accounts_logo);
+            boolean isWallet = accountNames.size() > 1 && selectedAccountIndex == 0;
+            logo.setVisibility(isWallet ? View.VISIBLE : View.GONE);
+        } else {
+            hideLogoAndAccountChooserVisibility();
         }
+    }
+
+    /**
+     * Hide the contents of the title view.
+     */
+    public void hideLogoAndAccountChooserVisibility() {
+        findViewById(R.id.accounts_spinner).setVisibility(View.GONE);
+        findViewById(R.id.accounts_logo).setVisibility(View.GONE);
     }
 
     /**
@@ -62,6 +77,8 @@ public class AutofillDialogTitleView extends FrameLayout {
     public void setAccountChooserEnabled(boolean enabled) {
         Spinner accountsSpinner = (Spinner) findViewById(R.id.accounts_spinner);
         accountsSpinner.setEnabled(enabled);
+        View logo = findViewById(R.id.accounts_logo);
+        logo.setEnabled(enabled);
     }
 
     /**

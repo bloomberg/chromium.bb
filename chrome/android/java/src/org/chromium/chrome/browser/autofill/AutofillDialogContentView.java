@@ -233,6 +233,21 @@ public class AutofillDialogContentView extends LinearLayout {
     }
 
     /**
+     * Updates the legal documents footer.
+     * @param legalDocumentsText The text to show, or a null/empty string.
+     */
+    public void updateLegalDocumentsText(String legalDocumentsText) {
+        TextView legalView = (TextView) findViewById(R.id.terms_info);
+        if (TextUtils.isEmpty(legalDocumentsText)) {
+            legalView.setVisibility(View.GONE);
+            return;
+        }
+
+        legalView.setText(legalDocumentsText);
+        legalView.setVisibility(View.VISIBLE);
+    }
+
+    /**
      * Updates a dropdown with the given items and adds default items to the end.
      * @param section The dialog section.
      * @param items The {@link AutofillDialogMenuItem} array to update the dropdown with.

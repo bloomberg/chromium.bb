@@ -104,7 +104,6 @@ void AutofillDialogViewAndroid::UpdateAccountChooser() {
   ui::MenuModel* model = controller_->MenuModelForAccountChooser();
   if (!model || controller_->ShouldShowSpinner()) {
     account_names.push_back(controller_->AccountChooserText());
-    selected_account_index = 0;
   } else {
     for (int i = 0; i < model->GetItemCount(); ++i) {
       if (model->IsItemCheckedAt(i))
@@ -272,6 +271,14 @@ ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetSaveLocallyText(
   return base::android::ConvertUTF16ToJavaString(
       env,
       controller_->SaveLocallyText());
+}
+
+ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetLegalDocumentsText(
+    JNIEnv* env,
+    jobject obj) {
+  return base::android::ConvertUTF16ToJavaString(
+      env,
+      controller_->LegalDocumentsText());
 }
 
 ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetProgressBarText(

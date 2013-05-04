@@ -14,6 +14,7 @@
         android:layout_columnSpan="4"
         android:layout_gravity="fill_horizontal"
         android:layout_marginLeft="@dimen/autofill_steady_margin"
+        android:layout_marginRight="@dimen/autofill_steady_margin"
         android:textSize="@dimen/autofill_notification_text_size"
         android:visibility="gone"/>
     <LinearLayout
@@ -21,6 +22,7 @@
         android:layout_columnSpan="4"
         android:layout_gravity="fill_horizontal"
         android:layout_marginLeft="@dimen/autofill_steady_margin"
+        android:layout_marginRight="@dimen/autofill_steady_margin"
         android:orientation="vertical"
         android:visibility="gone"/>
     <TextView
@@ -109,6 +111,7 @@
         android:layout_columnSpan="4"
         android:layout_gravity="fill_horizontal"
         android:layout_marginLeft="@dimen/autofill_steady_margin"
+        android:layout_marginRight="@dimen/autofill_steady_margin"
         android:textSize="@dimen/autofill_notification_text_size"
         android:visibility="gone"/>
     <LinearLayout
@@ -116,6 +119,7 @@
         android:layout_columnSpan="4"
         android:layout_gravity="fill_horizontal"
         android:layout_marginLeft="@dimen/autofill_steady_margin"
+        android:layout_marginRight="@dimen/autofill_steady_margin"
         android:orientation="vertical"
         android:visibility="gone"/>
     <View
@@ -127,7 +131,6 @@
         android:id="@+id/terms_info"
         android:layout_columnSpan="4"
         android:background="?android:attr/selectableItemBackground"
-        android:drawableRight="@drawable/arrow"
         android:gravity="left"
         android:padding="10dp"
         android:text="@string/autofill_terms_of_service"

@@ -19,15 +19,16 @@
         android:visibility="gone"
         android:gravity="center"
         android:orientation="vertical">
-        <ProgressBar
-            android:layout_marginTop="30dp"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:indeterminate="true"/>
         <TextView
-            android:layout_margin="20dp"
+            android:layout_marginTop="24dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/autofill_fetch_message" />
+        <ProgressBar
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:indeterminate="true"/>
     </LinearLayout>
 </org.chromium.chrome.browser.autofill.AutofillDialogContentView>

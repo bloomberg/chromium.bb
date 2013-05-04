@@ -22,17 +22,19 @@
     <dimen name="certificate_viewer_padding">20dp</dimen>
 
     <!-- Autofill Dialog -->
-    <dimen name="autofill_edit_margin">2dp</dimen>
-    <dimen name="autofill_steady_margin">5dp</dimen>
-    <dimen name="autofill_edit_text_size">18sp</dimen>
     <dimen name="autofill_edit_height">48dp</dimen>
-    <dimen name="autofill_menu_item_padding">5dp</dimen>
-    <dimen name="autofill_field_icon_width">40dp</dimen>
+    <dimen name="autofill_edit_margin">2dp</dimen>
+    <dimen name="autofill_edit_text_size">18sp</dimen>
     <dimen name="autofill_field_icon_height">30dp</dimen>
+    <dimen name="autofill_field_icon_width">40dp</dimen>
+    <dimen name="autofill_menu_icon_height">19dp</dimen>
+    <dimen name="autofill_menu_icon_width">25dp</dimen>
+    <dimen name="autofill_menu_item_padding">5dp</dimen>
     <dimen name="autofill_menu_item_size">44dp</dimen>
-    <dimen name="autofill_spinner_offset">-54dp</dimen>
     <dimen name="autofill_notification_padding">5dp</dimen>
     <dimen name="autofill_notification_text_size">12sp</dimen>
+    <dimen name="autofill_spinner_offset">-54dp</dimen>
+    <dimen name="autofill_steady_margin">5dp</dimen>
     <dimen name="autofill_steady_text_size">14sp</dimen>
     <dimen name="autofill_translation_anim_distance">300dp</dimen>
 </resources>
