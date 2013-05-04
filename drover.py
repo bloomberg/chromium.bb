@@ -3,11 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import datetime
+import json
 import optparse
 import os
 import re
-import string
 import sys
 import urllib2
 import urlparse
@@ -375,59 +376,49 @@ def getAllFilesInRevision(files_info):
 def getBranchForMilestone(milestone):
   """Queries omahaproxy.appspot.com for the branch number given |milestone|.
   """
-  OMAHA_PROXY_URL = "http://omahaproxy.appspot.com/all?csv=1"
-  request = urllib2.Request(OMAHA_PROXY_URL)
+  OMAHA_PROXY_URL = "https://omahaproxy.appspot.com/all?json=1"
   try:
-    response = urllib2.urlopen(request)
+    response = urllib2.urlopen(OMAHA_PROXY_URL)
   except urllib2.HTTPError, e:
     print "Failed to query %s: %d" % (OMAHA_PROXY_URL, e.code)
     return None
 
-  # Dictionary of [branch: major]. When searching for the appropriate branch
-  # matching |milestone|, all major versions that match are added to the
-  # dictionary. If all of the branches are the same, this branch value is
-  # returned; otherwise, the user is prompted to accept the largest branch
-  # value.
-  branch_dict = {}
+  # Response is in the form of:
+  # [{ os: "os_name", versions: [{ channel: "canary", true_branch: "1490" }] }]
+  os_versions = json.load(response)
 
-  # Slice the first line since it's column information text.
-  for line in response.readlines()[1:]:
-    # Version data is CSV.
-    parameters = string.split(line, ',')
+  branches = collections.defaultdict(list)
+  for os_version in os_versions:
+    for version in os_version['versions']:
+      if not version['true_branch'] or not version['version']:
+        continue
+      branch = version['true_branch']
+      mstone = version['version'].split('.')
+      if not branch[0].isdigit() or mstone[0] != str(milestone):
+        continue
+      branches[branch] += [os_version['os']]
 
-    # Version is the third parameter and consists of a quad of numbers separated
-    # by periods.
-    version = string.split(parameters[2], '.')
-    major = int(version[0], 10)
-    if major != milestone:
-      continue
-
-    # Branch number is the third value in the quad.
-    branch_dict[version[2]] = major
-
-  if not branch_dict:
-    # |milestone| not found.
-    print "Milestone provided is invalid"
+  if not branches:
     return None
 
-  # The following returns a sorted list of the keys of |branch_dict|.
-  sorted_branches = sorted(branch_dict)
-  branch = sorted_branches[-1]
+  if len(branches) == 1:
+    return branches.keys()[0]
 
-  # If all keys match, the branch is the same for all platforms given
-  # |milestone|. This is the safe case, so return the branch.
-  if len(sorted_branches) == 1:
-    return branch
+  choices = ('-(%s): %s' % (b, ', '.join(o)) for b, o in branches.iteritems())
+  print >> sys.stderr, ("\nNot all platforms have same branch number for M%d.\n"
+                        "\nHere's a list of platforms on each branch:\n"
+                        "%s") % (milestone, '\n'.join(choices))
 
-  # Not all of the platforms have the same branch. Prompt the user and return
-  # the greatest (by value) branch on success.
-  if prompt("Not all platforms have the same branch number, "
-            "continue with branch %s?" % branch):
-    return branch
+  errors = 0
+  while errors < 3:
+    user_input = raw_input("Which branch? ('q' to cancel) ").strip().lower()
+    if user_input in branches:
+      return user_input
+    if user_input.startswith('q'):
+      break
+    errors += 1
 
-  # User cancelled.
   return None
-
 
 def getSVNAuthInfo(folder=None):
   """Fetches SVN authorization information in the subversion auth folder and
