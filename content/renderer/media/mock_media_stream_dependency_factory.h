@@ -30,8 +30,6 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   void SetLive();
   // Changes the state of the source to ended and notifies the observer.
   void SetEnded();
-  // Set the video capturer.
-  void SetVideoCapturer(cricket::VideoCapturer* capturer);
 
  protected:
   virtual ~MockVideoSource();
@@ -41,7 +39,6 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
 
   std::vector<webrtc::ObserverInterface*> observers_;
   MediaSourceInterface::SourceState state_;
-  scoped_ptr<cricket::VideoCapturer> capturer_;
 };
 
 class MockAudioSource : public webrtc::AudioSourceInterface {
@@ -163,9 +160,6 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual scoped_refptr<webrtc::VideoTrackInterface>
       CreateLocalVideoTrack(const std::string& id,
                             webrtc::VideoSourceInterface* source) OVERRIDE;
-  virtual scoped_refptr<webrtc::VideoTrackInterface>
-      CreateLocalVideoTrack(const std::string& id,
-                            cricket::VideoCapturer* capturer) OVERRIDE;
   virtual scoped_refptr<webrtc::AudioTrackInterface>
       CreateLocalAudioTrack(const std::string& id,
                             webrtc::AudioSourceInterface* source) OVERRIDE;
