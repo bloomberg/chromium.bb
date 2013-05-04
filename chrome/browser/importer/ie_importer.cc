@@ -419,6 +419,14 @@ void IEImporter::StartImport(const importer::SourceProfile& source_profile,
   bridge_ = bridge;
   source_path_ = source_profile.source_path;
 
+  // If there is indication that an override is required, but we fail to set it,
+  // prefer returning early to running the test with whatever is in the real
+  // registry.
+  if (!test_registry_overrider_.StartRegistryOverrideIfNeeded()) {
+    NOTREACHED();
+    return;
+  }
+
   bridge_->NotifyStarted();
 
   if ((items & importer::HOME_PAGE) && !cancelled())

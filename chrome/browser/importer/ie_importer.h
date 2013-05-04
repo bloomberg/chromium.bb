@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
+#include "chrome/browser/importer/ie_importer_test_registry_overrider_win.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/profile_writer.h"
 
@@ -78,6 +79,9 @@ class IEImporter : public Importer {
   // IE does not have source path. It's used in unit tests only for providing a
   // fake source.
   base::FilePath source_path_;
+
+  // Used to override the registry for IEImporterTests if needed.
+  IEImporterTestRegistryOverrider test_registry_overrider_;
 
   DISALLOW_COPY_AND_ASSIGN(IEImporter);
 };

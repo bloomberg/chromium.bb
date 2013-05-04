@@ -30,6 +30,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/ie_importer.h"
+#include "chrome/browser/importer/ie_importer_test_registry_overrider_win.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_host.h"
@@ -45,10 +46,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-const char16 kUnitTestRegistrySubKey[] = L"SOFTWARE\\Chromium Unit Tests";
-const char16 kUnitTestUserOverrideSubKey[] =
-    L"SOFTWARE\\Chromium Unit Tests\\HKCU Override";
 
 const BookmarkInfo kIEBookmarks[] = {
   {true, 2, {L"Links", L"SubFolderOfLinks"},
@@ -416,37 +413,17 @@ class IEImporterBrowserTest : public InProcessBrowserTest {
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    StartRegistryOverride();
+
+    // Turn the override on for this process and flag child processes that they
+    // should do so as well.
+    ASSERT_TRUE(test_registry_overrider_.SetRegistryOverride());
 
     // This will launch the browser test and thus needs to happen last.
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
-    EndRegistryOverride();
-  }
-
-  void StartRegistryOverride() {
-    EXPECT_EQ(ERROR_SUCCESS, RegOverridePredefKey(HKEY_CURRENT_USER, NULL));
-    temp_hkcu_hive_key_.Create(HKEY_CURRENT_USER,
-                               kUnitTestUserOverrideSubKey,
-                               KEY_ALL_ACCESS);
-    EXPECT_TRUE(temp_hkcu_hive_key_.Valid());
-    EXPECT_EQ(ERROR_SUCCESS,
-              RegOverridePredefKey(HKEY_CURRENT_USER,
-                                   temp_hkcu_hive_key_.Handle()));
-  }
-
-  void EndRegistryOverride() {
-    EXPECT_EQ(ERROR_SUCCESS, RegOverridePredefKey(HKEY_CURRENT_USER, NULL));
-    temp_hkcu_hive_key_.Close();
-    base::win::RegKey key(HKEY_CURRENT_USER, kUnitTestRegistrySubKey,
-                          KEY_ALL_ACCESS);
-    key.DeleteKey(L"");
-  }
-
   base::ScopedTempDir temp_dir_;
-  base::win::RegKey temp_hkcu_hive_key_;
+  IEImporterTestRegistryOverrider test_registry_overrider_;
 };
 
 IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
@@ -519,9 +496,6 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
   importer::SourceProfile source_profile;
   source_profile.importer_type = importer::TYPE_IE;
   source_profile.source_path = temp_dir_.path();
-
-  // IUrlHistoryStg2::AddUrl seems to reset the override. Ensure it here.
-  StartRegistryOverride();
 
   host->StartImportSettings(
       source_profile,

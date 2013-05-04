@@ -814,6 +814,8 @@
         'browser/importer/firefox_proxy_settings.h',
         'browser/importer/ie_importer.cc',
         'browser/importer/ie_importer.h',
+        'browser/importer/ie_importer_test_registry_overrider_win.cc',
+        'browser/importer/ie_importer_test_registry_overrider_win.h',
         'browser/importer/importer.cc',
         'browser/importer/importer.h',
         'browser/importer/importer_bridge.cc',
