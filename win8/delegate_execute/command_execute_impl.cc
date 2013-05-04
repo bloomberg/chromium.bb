@@ -249,6 +249,10 @@ STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
   }
 
   bool decision_made = false;
+
+  // New Aura/Ash world we don't want to go throgh FindWindow path
+  // and instead take decision based on launch mode.
+#if !defined(USE_AURA)
   HWND chrome_window = ::FindWindowEx(HWND_MESSAGE, NULL,
                                       chrome::kMessageWindowClass,
                                       user_data_dir.value().c_str());
@@ -283,6 +287,7 @@ STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
 
     decision_made = true;
   }
+#endif
 
   if (!decision_made) {
     EC_HOST_UI_MODE mode = GetLaunchMode();
