@@ -414,7 +414,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnGetAudioHardwareConfig)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetMonitorColorProfile,
                         OnGetMonitorColorProfile)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvent, OnMediaLogEvent)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvents, OnMediaLogEvents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Are3DAPIsBlocked, OnAre3DAPIsBlocked)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLose3DContext, OnDidLose3DContext)
 #if defined(OS_ANDROID)
@@ -1013,9 +1013,10 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const base::FilePath& path,
       base::Bind(base::IgnoreResult(&RenderMessageFilter::Send), this, reply));
 }
 
-void RenderMessageFilter::OnMediaLogEvent(const media::MediaLogEvent& event) {
+void RenderMessageFilter::OnMediaLogEvents(
+    const std::vector<media::MediaLogEvent>& events) {
   if (media_internals_)
-    media_internals_->OnMediaEvent(render_process_id_, event);
+    media_internals_->OnMediaEvents(render_process_id_, events);
 }
 
 void RenderMessageFilter::CheckPolicyForCookies(

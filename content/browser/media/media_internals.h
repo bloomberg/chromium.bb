@@ -49,8 +49,8 @@ class CONTENT_EXPORT MediaInternals {
                                       double volume);
 
   // Called when a MediaEvent occurs.
-  virtual void OnMediaEvent(int render_process_id,
-                            const media::MediaLogEvent& event);
+  virtual void OnMediaEvents(int render_process_id,
+                             const std::vector<media::MediaLogEvent>& events);
 
   // Called with the update string.
   typedef base::Callback<void(const string16&)> UpdateCallback;

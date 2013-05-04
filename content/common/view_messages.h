@@ -2113,8 +2113,8 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,
                     int32 /* complete status */)
 
 // Notifies the browser of an event occurring in the media pipeline.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvent,
-                     media::MediaLogEvent /* event */)
+IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvents,
+                     std::vector<media::MediaLogEvent> /* events */)
 
 // Requests to lock the mouse. Will result in a ViewMsg_LockMouse_ACK message
 // being sent back.
