@@ -16,9 +16,6 @@ class Extension;
 
 namespace extension_test_util {
 
-// Makes a fake extension id using the given |seed|.
-std::string MakeId(std::string seed);
-
 // Return a very simple extension with id |id|.
 scoped_refptr<extensions::Extension> CreateExtensionWithID(std::string id);
 

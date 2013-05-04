@@ -15,8 +15,7 @@ class OmahaQueryParams {
  public:
   enum ProdId {
     CHROME = 0,
-    CHROMECRX,
-    CHROMIUMCRX,
+    CRX,
   };
 
   // Generates a string of URL query paramaters to be used when getting

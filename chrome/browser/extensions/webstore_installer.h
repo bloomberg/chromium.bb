@@ -154,10 +154,15 @@ class WebstoreInstaller :public content::NotificationObserver,
   static void SetDownloadDirectoryForTests(base::FilePath* directory);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WebstoreInstallerTest, PlatformParams);
   friend struct content::BrowserThread::DeleteOnThread<
    content::BrowserThread::UI>;
   friend class base::DeleteHelper<WebstoreInstaller>;
   virtual ~WebstoreInstaller();
+
+  // Helper to get install URL.
+  static GURL GetWebstoreInstallURL(const std::string& extension_id,
+                                    const std::string& install_source);
 
   // DownloadManager::DownloadUrl callback.
   void OnDownloadStarted(content::DownloadItem* item, net::Error error);

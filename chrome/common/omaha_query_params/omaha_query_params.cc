@@ -54,11 +54,12 @@ const char* GetProdIdString(chrome::OmahaQueryParams::ProdId prod) {
     case chrome::OmahaQueryParams::CHROME:
       return kChrome;
       break;
-    case chrome::OmahaQueryParams::CHROMECRX:
+    case chrome::OmahaQueryParams::CRX:
+#if defined(GOOGLE_CHROME_BUILD)
       return kChromeCrx;
-      break;
-    case chrome::OmahaQueryParams::CHROMIUMCRX:
+#else
       return kChromiumCrx;
+#endif
       break;
   }
   return kUnknown;

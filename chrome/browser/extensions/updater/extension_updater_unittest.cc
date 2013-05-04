@@ -451,13 +451,8 @@ static void VerifyQueryAndExtractParameters(
   std::map<std::string, std::string> params;
   ExtractParameters(query, &params);
 
-chrome::OmahaQueryParams::ProdId prod =
-#if defined(GOOGLE_CHROME_BUILD)
-  chrome::OmahaQueryParams::CHROMECRX;
-#else
-  chrome::OmahaQueryParams::CHROMIUMCRX;
-#endif
-  std::string omaha_params = chrome::OmahaQueryParams::Get(prod);
+  std::string omaha_params =
+      chrome::OmahaQueryParams::Get(chrome::OmahaQueryParams::CRX);
   std::map<std::string, std::string> expected;
   ExtractParameters(omaha_params, &expected);
 
