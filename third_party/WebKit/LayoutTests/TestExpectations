@@ -1771,8 +1771,8 @@ crbug.com/230315 fast/events/scale-and-scroll-window.html [ Pass ImageOnlyFailur
 crbug.com/230554 [ Linux Debug ] plugins/drag-events.html [ Crash ]
 
 # Failing tests after r148246
-crbug.com/230771 [ SnowLeopard Debug ] editing/pasteboard/drop-file-svg.html [ Failure ]
-crbug.com/230771 [ SnowLeopard Debug ] editing/pasteboard/file-drag-to-editable.html [ Failure ]
+crbug.com/230771 [ Lion Debug ] editing/pasteboard/drop-file-svg.html [ Failure ]
+crbug.com/230771 [ Lion Debug ] editing/pasteboard/file-drag-to-editable.html [ Failure ]
 crbug.com/230771 [ Linux Mac ] fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
 
 # From WebKit's generic expectations.
