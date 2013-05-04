@@ -32,6 +32,7 @@ import optparse
 import sys
 
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
+from webkitpy.common.memoized import memoized
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
 from webkitpy.layout_tests.models import test_failures
@@ -97,6 +98,24 @@ class RebaselineTest(AbstractRebaseliningCommand):
             return self._tool.filesystem.join(port.layout_tests_dir(), 'platform', override_dir)
         return port.baseline_version_dir()
 
+    @memoized
+    def _immediate_predecessors_in_fallback(self, path_to_rebaseline):
+        port_names = self._tool.port_factory.all_port_names()
+        immediate_predecessors_in_fallback = []
+        for port_name in port_names:
+            port = self._tool.port_factory.get(port_name)
+            if not port.buildbot_archives_baselines():
+                continue
+            baseline_search_path = port.baseline_search_path()
+            try:
+                index = baseline_search_path.index(path_to_rebaseline)
+                if index:
+                    immediate_predecessors_in_fallback.append(self._tool.filesystem.basename(baseline_search_path[index - 1]))
+            except ValueError:
+                # index throw's a ValueError if the item isn't in the list.
+                pass
+        return immediate_predecessors_in_fallback
+
     def _copy_existing_baseline(self, move_overwritten_baselines_to, test_name, suffix):
         old_baselines = []
         new_baselines = []
@@ -128,9 +147,13 @@ class RebaselineTest(AbstractRebaseliningCommand):
             if not self._tool.scm().exists(new_baseline):
                 self._add_to_scm(new_baseline)
 
-    def _save_baseline(self, data, target_baseline):
+    def _save_baseline(self, data, target_baseline, baseline_directory, test_name, suffix):
         if not data:
+            _log.debug("No baseline data to save.")
             return
+
+        self._copy_existing_baseline(self._immediate_predecessors_in_fallback(baseline_directory), test_name, suffix)
+
         filesystem = self._tool.filesystem
         filesystem.maybe_make_directory(filesystem.dirname(target_baseline))
         filesystem.write_binary_file(target_baseline, data)
@@ -155,11 +178,12 @@ class RebaselineTest(AbstractRebaseliningCommand):
         source_baseline = "%s/%s" % (results_url, self._file_name_for_actual_result(test_name, suffix))
         target_baseline = self._tool.filesystem.join(baseline_directory, self._file_name_for_expected_result(test_name, suffix))
 
+        # FIXME: This concept is outdated now that we always move baselines in _save_baseline.
         if move_overwritten_baselines_to:
             self._copy_existing_baseline(move_overwritten_baselines_to, test_name, suffix)
 
         _log.debug("Retrieving %s." % source_baseline)
-        self._save_baseline(self._tool.web.get_binary(source_baseline, convert_404_to_None=True), target_baseline)
+        self._save_baseline(self._tool.web.get_binary(source_baseline, convert_404_to_None=True), target_baseline, baseline_directory, test_name, suffix)
 
     def _rebaseline_test_and_update_expectations(self, options):
         port = self._tool.port_factory.get_from_builder_name(options.builder)

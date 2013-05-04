@@ -385,6 +385,9 @@ class TestPort(Port):
         }
         self._version = version_map[self._name]
 
+    def buildbot_archives_baselines(self):
+        return self._name != 'test-win-xp'
+
     def default_pixel_tests(self):
         return True
 
@@ -400,7 +403,7 @@ class TestPort(Port):
             'test-win-win7': ['test-win-win7'],
             'test-win-vista': ['test-win-vista', 'test-win-win7'],
             'test-win-xp': ['test-win-xp', 'test-win-vista', 'test-win-win7'],
-            'test-linux-x86_64': ['test-linux', 'test-win-win7'],
+            'test-linux-x86_64': ['test-linux-x86_64', 'test-win-win7'],
         }
         return [self._webkit_baseline_path(d) for d in search_paths[self.name()]]
 

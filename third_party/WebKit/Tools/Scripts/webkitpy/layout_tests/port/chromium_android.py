@@ -310,7 +310,7 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
 
     SUPPORTED_VERSIONS = ('android')
 
-    FALLBACK_PATHS = { 'android': [ 'chromium-android'] + chromium_linux.ChromiumLinuxPort.latest_platform_fallback_path() }
+    FALLBACK_PATHS = { 'android': [ 'chromium-android' ] + chromium_linux.ChromiumLinuxPort.latest_platform_fallback_path() }
 
     def __init__(self, host, port_name, **kwargs):
         super(ChromiumAndroidPort, self).__init__(host, port_name, **kwargs)
@@ -335,7 +335,6 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
             self.path_from_chromium_base('third_party', 'android_tools', 'sdk', 'platform-tools', 'adb')])
 
     # Local public methods.
-
     def get_device_serial(self, worker_number):
         if not self._devices:
             self._devices = AndroidCommands.get_devices(self._executive)
@@ -350,6 +349,8 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
         return self._build_path(MD5SUM_DEVICE_FILE_NAME)
 
     # Overridden public methods.
+    def buildbot_archives_baselines(self):
+        return False
 
     def additional_drt_flag(self):
         # Chromium for Android always uses the hardware GPU path.

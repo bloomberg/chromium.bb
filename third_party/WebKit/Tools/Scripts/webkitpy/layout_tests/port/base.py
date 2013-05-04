@@ -147,6 +147,9 @@ class Port(object):
         self._results_directory = None
         self._root_was_set = hasattr(options, 'root') and options.root
 
+    def buildbot_archives_baselines(self):
+        return True
+
     def additional_drt_flag(self):
         if self.driver_name() == self.CONTENT_SHELL_NAME:
             return ['--dump-render-tree']
