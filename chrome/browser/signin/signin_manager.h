@@ -46,6 +46,7 @@ class GaiaAuthFetcher;
 class ProfileIOData;
 class PrefService;
 class SigninGlobalError;
+class SigninManagerDelegate;
 
 class SigninManager : public SigninManagerBase,
                       public GaiaAuthConsumer,
@@ -69,7 +70,7 @@ class SigninManager : public SigninManagerBase,
   // OneClickSigninHelper.
   static const char* kChromeSigninEffectiveSite;
 
-  SigninManager();
+  explicit SigninManager(scoped_ptr<SigninManagerDelegate> delegate);
   virtual ~SigninManager();
 
   // Attempt to sign in this user with ClientLogin. If successful, set a
@@ -264,6 +265,8 @@ class SigninManager : public SigninManagerBase,
   // Callback invoked during signin after an OAuth token has been fetched
   // but before signin is complete.
   OAuthTokenFetchedCallback oauth_token_fetched_callback_;
+
+  scoped_ptr<SigninManagerDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };

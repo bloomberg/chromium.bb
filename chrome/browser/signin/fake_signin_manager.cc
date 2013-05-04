@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/chrome_signin_manager_delegate.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -48,7 +49,9 @@ ProfileKeyedService* FakeSigninManagerBase::Build(
 
 #if !defined (OS_CHROMEOS)
 
-FakeSigninManager::FakeSigninManager(Profile* profile) {
+FakeSigninManager::FakeSigninManager(Profile* profile)
+    : SigninManager(scoped_ptr<SigninManagerDelegate>(
+        new ChromeSigninManagerDelegate(profile))) {
   Initialize(profile);
 }
 

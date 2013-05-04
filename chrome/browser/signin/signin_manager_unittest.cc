@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/signin/chrome_signin_manager_delegate.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_unittest.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -71,7 +72,9 @@ class SigninManagerTest : public TokenServiceTestHarness {
     TestingBrowserProcess::GetGlobal()->SetLocalState(
         prefs_.get());
     TokenServiceTestHarness::SetUp();
-    manager_.reset(new SigninManager());
+    manager_.reset(new SigninManager(
+        scoped_ptr<SigninManagerDelegate>(
+            new ChromeSigninManagerDelegate(profile_.get()))));
     google_login_success_.ListenFor(
         chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
         content::Source<Profile>(profile_.get()));
@@ -205,7 +208,9 @@ class SigninManagerTest : public TokenServiceTestHarness {
 
     // Should persist across resets.
     manager_->Shutdown();
-    manager_.reset(new SigninManager());
+    manager_.reset(new SigninManager(
+        scoped_ptr<SigninManagerDelegate>(
+            new ChromeSigninManagerDelegate(profile_.get()))));
     manager_->Initialize(profile_.get());
     EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
   }
@@ -275,7 +280,9 @@ TEST_F(SigninManagerTest, SignInClientLogin) {
 
   // Should persist across resets.
   manager_->Shutdown();
-  manager_.reset(new SigninManager());
+  manager_.reset(new SigninManager(
+      scoped_ptr<SigninManagerDelegate>(
+          new ChromeSigninManagerDelegate(profile_.get()))));
   manager_->Initialize(profile_.get());
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
 }
@@ -470,7 +477,9 @@ TEST_F(SigninManagerTest, ClearTransientSigninData) {
 
   // On reset it should be regenerated.
   manager_->Shutdown();
-  manager_.reset(new SigninManager());
+  manager_.reset(new SigninManager(
+      scoped_ptr<SigninManagerDelegate>(
+          new ChromeSigninManagerDelegate(profile_.get()))));
   manager_->Initialize(profile_.get());
 
   // Now make sure we have the right user name.
@@ -488,7 +497,9 @@ TEST_F(SigninManagerTest, SignOutClientLogin) {
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
   // Should not be persisted anymore
   manager_->Shutdown();
-  manager_.reset(new SigninManager());
+  manager_.reset(new SigninManager(
+      scoped_ptr<SigninManagerDelegate>(
+          new ChromeSigninManagerDelegate(profile_.get()))));
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 }
@@ -506,7 +517,9 @@ TEST_F(SigninManagerTest, SignInFailureClientLogin) {
 
   // Should not be persisted
   manager_->Shutdown();
-  manager_.reset(new SigninManager());
+  manager_.reset(new SigninManager(
+      scoped_ptr<SigninManagerDelegate>(
+          new ChromeSigninManagerDelegate(profile_.get()))));
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 }

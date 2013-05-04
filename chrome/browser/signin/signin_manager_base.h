@@ -62,11 +62,6 @@ struct GoogleServiceSignoutDetails {
 
 class SigninManagerBase : public ProfileKeyedService {
  public:
-  // Returns true if the cookie policy for the given profile allows cookies
-  // for the Google signin domain.
-  static bool AreSigninCookiesAllowed(Profile* profile);
-  static bool AreSigninCookiesAllowed(CookieSettings* cookie_settings);
-
   // Returns true if the username is allowed based on the policy string.
   static bool IsAllowedUsername(const std::string& username,
                                 const std::string& policy);

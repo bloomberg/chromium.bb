@@ -14,7 +14,6 @@
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -38,22 +37,6 @@
 using namespace signin_internals_util;
 
 using content::BrowserThread;
-
-// static
-bool SigninManagerBase::AreSigninCookiesAllowed(Profile* profile) {
-  CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(profile);
-  return AreSigninCookiesAllowed(cookie_settings);
-}
-
-// static
-bool SigninManagerBase::AreSigninCookiesAllowed(
-    CookieSettings* cookie_settings) {
-  return cookie_settings &&
-      cookie_settings->IsSettingCookieAllowed(
-          GURL(GaiaUrls::GetInstance()->gaia_origin_url()),
-          GURL(GaiaUrls::GetInstance()->gaia_origin_url()));
-}
 
 // static
 bool SigninManagerBase::IsAllowedUsername(const std::string& username,

@@ -14,12 +14,12 @@
 #include "base/strings/string_split.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/signin_manager_cookie_helper.h"
+#include "chrome/browser/signin/signin_manager_delegate.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -79,12 +79,13 @@ bool SigninManager::IsWebBasedSigninFlowURL(const GURL& url) {
           .find(kChromiumSyncService) != std::string::npos;
 }
 
-SigninManager::SigninManager()
+SigninManager::SigninManager(scoped_ptr<SigninManagerDelegate> delegate)
     : prohibit_signout_(false),
       had_two_factor_error_(false),
       type_(SIGNIN_TYPE_NONE),
       weak_pointer_factory_(this),
-      signin_process_id_(kInvalidProcessId) {
+      signin_process_id_(kInvalidProcessId),
+      delegate_(delegate.Pass()) {
 }
 
 void SigninManager::SetSigninProcess(int process_id) {
@@ -199,7 +200,7 @@ void SigninManager::StartSignIn(const std::string& username,
 
   // Register for token availability.  The signin manager will pre-login the
   // user when the GAIA service token is ready for use.
-  if (AreSigninCookiesAllowed(profile_)) {
+  if (delegate_->AreSigninCookiesAllowed()) {
     TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
     registrar_.Add(this,
                    chrome::NOTIFICATION_TOKEN_AVAILABLE,

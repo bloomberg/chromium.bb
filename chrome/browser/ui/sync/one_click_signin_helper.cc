@@ -31,7 +31,9 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/signin/chrome_signin_manager_delegate.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_delegate.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -517,7 +519,7 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
       !profile->GetPrefs()->GetBoolean(prefs::kReverseAutologinEnabled))
     return false;
 
-  if (!SigninManager::AreSigninCookiesAllowed(profile))
+  if (!ChromeSigninManagerDelegate::ProfileAllowsSigninCookies(profile))
     return false;
 
   if (!email.empty()) {
@@ -641,7 +643,8 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
   if (!io_data->google_services_username()->GetValue().empty())
     return DONT_OFFER;
 
-  if (!SigninManager::AreSigninCookiesAllowed(io_data->GetCookieSettings()))
+  if (!ChromeSigninManagerDelegate::SettingsAllowSigninCookies(
+          io_data->GetCookieSettings()))
     return DONT_OFFER;
 
   // The checks below depend on chrome already knowing what account the user

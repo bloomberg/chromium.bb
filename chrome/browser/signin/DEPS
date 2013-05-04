@@ -9,7 +9,6 @@ include_rules = [
 
   # TODO(joi): Get this list to zero.
   "!chrome/browser/browser_process.h",
-  "!chrome/browser/content_settings/cookie_settings.h",
   "!chrome/browser/policy/cloud/user_policy_signin_service.h",
   "!chrome/browser/policy/cloud/user_policy_signin_service_factory.h",
   "!chrome/browser/profiles/profile.h",
@@ -46,7 +45,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  '.*_[a-z]*test\.cc': [
+  r".*_[a-z]*test\.cc": [
     # TODO(joi): Get this list to zero.
     "!chrome/browser/prefs/browser_prefs.h",
     "!chrome/browser/sync/profile_sync_service_mock.h",
@@ -54,5 +53,11 @@ specific_include_rules = {
     "!chrome/browser/ui/singleton_tabs.h",
     "!chrome/browser/ui/tabs/tab_strip_model.h",
     "!chrome/browser/ui/webui/sync_promo/sync_promo_ui.h",
+  ],
+
+  # These files are staying in //chrome so no need to limit.
+  r"chrome_signin_manager_delegate\.(h|cc)": [
+    "+chrome/browser",
+    "+chrome/common",
   ],
 }

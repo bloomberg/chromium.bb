@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/signin/chrome_signin_manager_delegate.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -78,13 +79,16 @@ void SigninManagerFactory::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 ProfileKeyedService* SigninManagerFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
+    content::BrowserContext* context) const {
   SigninManagerBase* service = NULL;
+  Profile* profile = static_cast<Profile*>(context);
 #if defined(OS_CHROMEOS)
   service = new SigninManagerBase();
 #else
-  service = new SigninManager();
+  service = new SigninManager(
+      scoped_ptr<SigninManagerDelegate>(
+          new ChromeSigninManagerDelegate(profile)));
 #endif
-  service->Initialize(static_cast<Profile*>(profile));
+  service->Initialize(profile);
   return service;
 }
