@@ -23,6 +23,10 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/activity_status.h"
+#endif
+
 class Pickle;
 class PickleIterator;
 
@@ -154,7 +158,14 @@ class NET_EXPORT_PRIVATE SimpleIndex
   void MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
                             bool force_index_flush);
 
+#if defined(OS_ANDROID)
+  void OnActivityStateChange(base::android::ActivityState state);
+
+  scoped_ptr<base::android::ActivityStatus::Listener> activity_status_listener_;
+#endif
+
   EntrySet entries_set_;
+
   uint64 cache_size_;  // Total cache storage size in bytes.
   uint64 max_size_;
   uint64 high_watermark_;
@@ -184,6 +195,11 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   typedef std::list<net::CompletionCallback> CallbackList;
   CallbackList to_run_when_initialized_;
+
+  // Set to true when the app is on the background. When the app is in the
+  // background we can write the index much more frequently, to insure fresh
+  // index on next startup.
+  bool app_on_background_;
 };
 
 }  // namespace disk_cache

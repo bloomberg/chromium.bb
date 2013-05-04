@@ -32,10 +32,8 @@ namespace {
 
 // How many seconds we delay writing the index to disk since the last cache
 // operation has happened.
-const int kWriteToDiskDelaySecs = 20;
-
-// WriteToDisk at lest every 5 minutes.
-const int kMaxWriteToDiskDelaySecs = 300;
+const int kWriteToDiskDelayMSecs = 20000;
+const int kWriteToDiskOnBackgroundDelayMSecs = 100;
 
 // Divides the cache space into this amount of parts to evict when only one part
 // is left.
@@ -154,10 +152,9 @@ void EntryMetadata::MergeWith(const EntryMetadata& from) {
     entry_size_ = from.entry_size_;
 }
 
-SimpleIndex::SimpleIndex(
-    base::SingleThreadTaskRunner* cache_thread,
-    base::SingleThreadTaskRunner* io_thread,
-    const base::FilePath& path)
+SimpleIndex::SimpleIndex(base::SingleThreadTaskRunner* cache_thread,
+                         base::SingleThreadTaskRunner* io_thread,
+                         const base::FilePath& path)
     : cache_size_(0),
       max_size_(0),
       high_watermark_(0),
@@ -166,7 +163,8 @@ SimpleIndex::SimpleIndex(
       initialized_(false),
       index_filename_(path.AppendASCII("the-real-index")),
       cache_thread_(cache_thread),
-      io_thread_(io_thread) {
+      io_thread_(io_thread),
+      app_on_background_(false) {
 }
 
 SimpleIndex::~SimpleIndex() {
@@ -181,6 +179,11 @@ SimpleIndex::~SimpleIndex() {
 
 void SimpleIndex::Initialize() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+
+#if defined(OS_ANDROID)
+  activity_status_listener_.reset(new base::android::ActivityStatus::Listener(
+      base::Bind(&SimpleIndex::OnActivityStateChange, AsWeakPtr())));
+#endif
 
   IndexCompletionCallback merge_callback =
       base::Bind(&SimpleIndex::MergeInitializingSet, AsWeakPtr());
@@ -375,19 +378,12 @@ void SimpleIndex::InsertInEntrySet(
 void SimpleIndex::PostponeWritingToDisk() {
   if (!initialized_)
     return;
-  const base::TimeDelta file_age = base::Time::Now() - last_write_to_disk_;
-  if (file_age > base::TimeDelta::FromSeconds(kMaxWriteToDiskDelaySecs) &&
-      write_to_disk_timer_.IsRunning()) {
-    // If the index file is too old and there is a timer programmed to run a
-    // WriteToDisk soon, we don't postpone it, so we always WriteToDisk
-    // approximately every kMaxWriteToDiskDelaySecs.
-    return;
-  }
-
+  const int delay = app_on_background_ ? kWriteToDiskOnBackgroundDelayMSecs
+                                       : kWriteToDiskDelayMSecs;
   // If the timer is already active, Start() will just Reset it, postponing it.
   write_to_disk_timer_.Start(
       FROM_HERE,
-      base::TimeDelta::FromSeconds(kWriteToDiskDelaySecs),
+      base::TimeDelta::FromMilliseconds(delay),
       base::Bind(&SimpleIndex::WriteToDisk, AsWeakPtr()));
 }
 
@@ -547,7 +543,6 @@ void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
       cache_size_ += it->second.GetEntrySize();
     }
   }
-  last_write_to_disk_ = base::Time::Now();
   initialized_ = true;
   removed_entries_.clear();
 
@@ -565,6 +560,22 @@ void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
   }
   to_run_when_initialized_.clear();
 }
+
+#if defined(OS_ANDROID)
+void SimpleIndex::OnActivityStateChange(
+    base::android::ActivityState state) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  // For more info about android activities, see:
+  // developer.android.com/training/basics/activity-lifecycle/pausing.html
+  // These values are defined in the file ActivityStatus.java
+  if (state == base::android::ACTIVITY_STATE_RESUMED) {
+    app_on_background_ = false;
+  } else if (state == base::android::ACTIVITY_STATE_STOPPED) {
+    app_on_background_ = true;
+    WriteToDisk();
+  }
+}
+#endif
 
 void SimpleIndex::WriteToDisk() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
