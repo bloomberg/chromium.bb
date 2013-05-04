@@ -184,7 +184,19 @@
         }],
       ],
     },
-    # TODO(ddorwin): Include CDM files in the Mac bundle.
+    {
+      # This file is used by the component installer.
+      # It is not a complete plug-in on its own.
+      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Internet Plug-Ins/',
+      'files': [],
+      'conditions': [
+        ['branding == "Chrome"', {
+          'files': [
+            '<(PRODUCT_DIR)/widevinecdmadapter.plugin',
+          ],
+        }],
+      ],
+    },
     {
       # Copy of resources used by tests.
       'destination': '<(PRODUCT_DIR)',
