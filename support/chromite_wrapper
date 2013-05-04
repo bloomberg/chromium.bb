@@ -30,7 +30,7 @@ import sys
 # in chromite/bin/ .
 
 def _FindChromite(path):
-  """Find the chromite dir in a repo or gclient checkout."""
+  """Find the chromite dir in a repo, gclient, or submodule checkout."""
   path = os.path.abspath(path)
   # Depending on the checkout type (whether repo chromeos or gclient chrome)
   # Chromite lives in a different location.
