@@ -126,7 +126,6 @@ WebNotificationTrayWin::WebNotificationTrayWin()
       should_update_tray_content_(true) {
   message_center_tray_.reset(new MessageCenterTray(
       this, g_browser_process->message_center()));
-  GetStatusIcon();
   UpdateStatusIcon();
 }
 
@@ -241,6 +240,12 @@ void WebNotificationTrayWin::UpdateStatusIcon() {
   if (!should_update_tray_content_)
     return;
   should_update_tray_content_ = false;
+
+  int total_notifications = message_center()->NotificationCount();
+  if (total_notifications == 0) {
+    DestroyStatusIcon();
+    return;
+  }
 
   int unread_notifications = message_center()->UnreadNotificationCount();
   StatusIcon* status_icon = GetStatusIcon();
