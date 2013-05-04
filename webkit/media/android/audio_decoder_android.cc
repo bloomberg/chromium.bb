@@ -94,6 +94,90 @@ bool AudioDecoderIO::ShareEncodedToProcess(base::SharedMemoryHandle* handle) {
       handle);
 }
 
+static float ConvertSampleToFloat(int16_t sample) {
+  const float kMaxScale = 1.0f / std::numeric_limits<int16_t>::max();
+  const float kMinScale = -1.0f / std::numeric_limits<int16_t>::min();
+
+  return sample * (sample < 0 ? kMinScale : kMaxScale);
+}
+
+// The number of frames is known so preallocate the destination
+// bus and copy the pcm data to the destination bus as it's being
+// received.
+static void CopyPcmDataToBus(int input_fd,
+                             WebKit::WebAudioBus* destination_bus,
+                             size_t number_of_frames,
+                             unsigned number_of_channels,
+                             double file_sample_rate) {
+  destination_bus->initialize(number_of_channels,
+                              number_of_frames,
+                              file_sample_rate);
+
+  int16_t pipe_data[PIPE_BUF / sizeof(int16_t)];
+  size_t decoded_frames = 0;
+  ssize_t nread;
+
+  while ((nread = HANDLE_EINTR(read(input_fd, pipe_data, sizeof(pipe_data)))) >
+         0) {
+    size_t samples_in_pipe = nread / sizeof(int16_t);
+    for (size_t m = 0; m < samples_in_pipe; m += number_of_channels) {
+      if (decoded_frames >= number_of_frames)
+        break;
+
+      for (size_t k = 0; k < number_of_channels; ++k) {
+        int16_t sample = pipe_data[m + k];
+        destination_bus->channelData(k)[decoded_frames] =
+            ConvertSampleToFloat(sample);
+      }
+      ++decoded_frames;
+    }
+  }
+}
+
+// The number of frames is unknown, so keep reading and buffering
+// until there's no more data and then copy the data to the
+// destination bus.
+static void BufferAndCopyPcmDataToBus(int input_fd,
+                                      WebKit::WebAudioBus* destination_bus,
+                                      unsigned number_of_channels,
+                                      double file_sample_rate) {
+  int16_t pipe_data[PIPE_BUF / sizeof(int16_t)];
+  std::vector<int16_t> decoded_samples;
+  ssize_t nread;
+
+  while ((nread = HANDLE_EINTR(read(input_fd, pipe_data, sizeof(pipe_data)))) >
+         0) {
+    size_t samples_in_pipe = nread / sizeof(int16_t);
+    if (decoded_samples.size() + samples_in_pipe > decoded_samples.capacity()) {
+      decoded_samples.reserve(std::max(samples_in_pipe,
+                                       2 * decoded_samples.capacity()));
+    }
+    std::copy(pipe_data,
+              pipe_data + samples_in_pipe,
+              back_inserter(decoded_samples));
+  }
+
+  DVLOG(1) << "Total samples read = " << decoded_samples.size();
+
+  // Convert the samples and save them in the audio bus.
+  size_t number_of_samples = decoded_samples.size();
+  size_t number_of_frames = decoded_samples.size() / number_of_channels;
+  size_t decoded_frames = 0;
+
+  destination_bus->initialize(number_of_channels,
+                              number_of_frames,
+                              file_sample_rate);
+
+  for (size_t m = 0; m < number_of_samples; m += number_of_channels) {
+    for (size_t k = 0; k < number_of_channels; ++k) {
+      int16_t sample = decoded_samples[m + k];
+      destination_bus->channelData(k)[decoded_frames] =
+          ConvertSampleToFloat(sample);
+    }
+    ++decoded_frames;
+  }
+}
+
 // To decode audio data, we want to use the Android MediaCodec class.
 // But this can't run in a sandboxed process so we need initiate the
 // request to MediaCodec in the browser.  To do this, we create a
@@ -146,6 +230,7 @@ bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
 
   unsigned number_of_channels = info.channel_count;
   double file_sample_rate = static_cast<double>(info.sample_rate);
+  size_t number_of_frames = info.number_of_frames;
 
   // Sanity checks
   if (!number_of_channels ||
@@ -155,40 +240,17 @@ bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
     return false;
   }
 
-  int16_t pipe_data[PIPE_BUF / sizeof(int16_t)];
-  std::vector<int16_t> decoded_samples;
-
-  // Keep reading from the pipe until it's closed.
-  while ((nread =
-          HANDLE_EINTR(read(input_fd, pipe_data, sizeof(pipe_data)))) > 0) {
-    size_t nsamples = nread / sizeof(int16_t);
-    decoded_samples.reserve(decoded_samples.size() + nsamples);
-    for (size_t k = 0; k < nsamples; ++k) {
-      decoded_samples.push_back(pipe_data[k]);
-    }
-  }
-
-  DVLOG(1) << "Total samples read = " << decoded_samples.size();
-
-  // Convert the samples and save them in the audio bus.
-  size_t number_of_samples = decoded_samples.size();
-  size_t number_of_frames = number_of_samples / number_of_channels;
-
-  destination_bus->initialize(number_of_channels,
-                              number_of_frames,
+  if (number_of_frames > 0) {
+    CopyPcmDataToBus(input_fd,
+                     destination_bus,
+                     number_of_frames,
+                     number_of_channels,
+                     file_sample_rate);
+  } else {
+    BufferAndCopyPcmDataToBus(input_fd,
+                              destination_bus,
+                              number_of_channels,
                               file_sample_rate);
-
-  size_t decoded_frames = 0;
-  const float kMaxScale = 1.0f / std::numeric_limits<int16_t>::max();
-  const float kMinScale = -1.0f / std::numeric_limits<int16_t>::min();
-
-  for (size_t m = 0; m < number_of_samples; m += number_of_channels) {
-    for (size_t k = 0; k < number_of_channels; ++k) {
-      int16_t sample = decoded_samples[m + k];
-      destination_bus->channelData(k)[decoded_frames] =
-          sample * (sample < 0 ? kMinScale : kMaxScale);
-    }
-    ++decoded_frames;
   }
 
   return true;
