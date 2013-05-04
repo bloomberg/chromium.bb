@@ -161,6 +161,10 @@ body.fakebox-focused #cursor {
   margin-bottom: 50px;
 }
 
+.mv-row:last-child {
+  margin-bottom: 0;
+}
+
 .mv-tile:first-child {
   -webkit-margin-start: -1px;
 }
@@ -305,7 +309,7 @@ body.fakebox-focused #cursor {
 }
 
 #mv-notice.mv-notice-hide {
-  visibility: hidden;
+  display: none;
 }
 
 #attribution {
@@ -335,9 +339,9 @@ body.fakebox-focused #cursor {
       url(images/page_icon.png) 1x,
       url(images/2x/page_icon.png) 2x) no-repeat;
   border-radius: 2px;
+  height: 22px;
   padding-bottom: 2px;
   padding-top: 3px;
-  height: 22px;
   white-space: nowrap;
 }
 
