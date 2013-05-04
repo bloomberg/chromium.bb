@@ -1,0 +1,5 @@
+Tests that inspect element action works for iframe children (https://bugs.webkit.org/show_bug.cgi?id=76808).
+
+
+Uncaught exception in inspector front-end: Uncaught TypeError: Cannot call method 'getAttribute' of null [file:///mnt/data/b/build/slave/WebKit_Linux_32/build/src/out/Release/resources/inspector/devtools.html:22]
+

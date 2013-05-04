@@ -1,3 +1,4 @@
+DESKTOP NOTIFICATION: icon , title title, text 
 Test that setting a null event listener in the options dictionary does not cause a crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
