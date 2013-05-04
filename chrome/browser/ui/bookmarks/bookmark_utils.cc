@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
@@ -235,10 +236,16 @@ bool HasBookmarkURLsAllowedInIncognitoMode(
   return false;
 }
 
+GURL GetURLToBookmark(content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  return IsInstantNTP(web_contents) ?
+      GURL(kChromeUINewTabURL) : web_contents->GetURL();
+}
+
 void GetURLAndTitleToBookmark(content::WebContents* web_contents,
                               GURL* url,
                               string16* title) {
-  *url = web_contents->GetURL();
+  *url = GetURLToBookmark(web_contents);
   *title = web_contents->GetTitle();
 }
 

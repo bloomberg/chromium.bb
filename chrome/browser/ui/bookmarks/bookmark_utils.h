@@ -66,6 +66,14 @@ bool HasBookmarkURLsAllowedInIncognitoMode(
     const std::vector<const BookmarkNode*>& selection,
     content::BrowserContext* browser_context);
 
+// Returns the bookmarkable URL for |web_contents|.
+// This is normally the current URL, but when the page is the Instant Extended
+// New Tab Page, the precise current URL may reflect various flags or other
+// implementation details that don't represent data we should store
+// in the bookmark.  In this case we instead return a URL that always
+// means "NTP" instead of the current URL.
+GURL GetURLToBookmark(content::WebContents* web_contents);
+
 // Fills in the URL and title for a bookmark of |web_contents|.
 void GetURLAndTitleToBookmark(content::WebContents* web_contents,
                               GURL* url,
