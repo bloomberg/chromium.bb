@@ -587,14 +587,23 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           is_nacl_unrestricted = true;
         }
         if (is_nacl_plugin || is_nacl_mime_type) {
-          GURL manifest_url = is_nacl_mime_type ?
-              url : GetNaClContentHandlerURL(actual_mime_type, plugin);
+          GURL manifest_url;
+          GURL app_url;
+          if (is_nacl_mime_type) {
+            // Normal NaCl embed. The app URL is the page URL.
+            manifest_url = url;
+            app_url = frame->top()->document().url();
+          } else {
+            // NaCl is being invoked as a content handler. Look up the NaCl
+            // module using the MIME type. The app URL is the manifest URL.
+            manifest_url = GetNaClContentHandlerURL(actual_mime_type, plugin);
+            app_url = manifest_url;
+          }
           const Extension* extension =
               g_current_client->extension_dispatcher_->extensions()->
                   GetExtensionOrAppByURL(ExtensionURLInfo(manifest_url));
-          GURL top_url = frame->top()->document().url();
           if (!IsNaClAllowed(manifest_url,
-                             top_url,
+                             app_url,
                              is_nacl_unrestricted,
                              extension,
                              &params)) {
@@ -736,32 +745,32 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
 //  static
 bool ChromeContentRendererClient::IsNaClAllowed(
     const GURL& manifest_url,
-    const GURL& top_url,
+    const GURL& app_url,
     bool is_nacl_unrestricted,
     const Extension* extension,
     WebPluginParams* params) {
   // Temporarily allow these URLs to run NaCl apps. We should remove this
   // code when PNaCl ships.
   bool is_whitelisted_url =
-      top_url.SchemeIs("https") &&
-      (top_url.host() == "plus.google.com" ||
-          top_url.host() == "plus.sandbox.google.com");
+      app_url.SchemeIs("https") &&
+      (app_url.host() == "plus.google.com" ||
+       app_url.host() == "plus.sandbox.google.com");
 
   bool is_extension_from_webstore =
       extension && extension->from_webstore();
 
   bool is_invoked_by_hosted_app = extension &&
       extension->is_hosted_app() &&
-      extension->web_extent().MatchesURL(top_url);
+      extension->web_extent().MatchesURL(app_url);
 
   // Allow built-in extensions and extensions under development.
   bool is_extension_unrestricted = extension &&
       (extension->location() == extensions::Manifest::COMPONENT ||
        extensions::Manifest::IsUnpackedLocation(extension->location()));
 
-  bool is_invoked_by_extension = top_url.SchemeIs("chrome-extension");
+  bool is_invoked_by_extension = app_url.SchemeIs("chrome-extension");
 
-  // NaCl PDF viewer can be loaded from all URLs.
+  // The NaCl PDF viewer is always allowed and can use 'Dev' interfaces.
   bool is_nacl_pdf_viewer =
       (is_extension_from_webstore &&
        manifest_url.SchemeIs("chrome-extension") &&

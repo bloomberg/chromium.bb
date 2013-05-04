@@ -165,7 +165,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   static GURL GetNaClContentHandlerURL(const std::string& actual_mime_type,
                                        const webkit::WebPluginInfo& plugin);
   static bool IsNaClAllowed(const GURL& manifest_url,
-                            const GURL& top_url,
+                            const GURL& app_url,
                             bool is_nacl_unrestricted,
                             const extensions::Extension* extension,
                             WebKit::WebPluginParams* params);
