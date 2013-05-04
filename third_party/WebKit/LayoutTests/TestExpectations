@@ -1860,6 +1860,6 @@ Bug(ojan) virtual/gpu/compositedscrolling/overflow/overflow-auto-with-touch-togg
 Bug(ojan) virtual/gpu/compositedscrolling/overflow/overflow-overlay-with-touch.html [ Failure Pass ]
 Bug(ojan) virtual/softwarecompositing/backface-visibility/backface-visibility-non3d.html [ ImageOnlyFailure Pass ]
 Bug(ojan) virtual/softwarecompositing/culling/tile-occlusion-boundaries.html [ ImageOnlyFailure Pass ]
+crbug.com/237270 fast/js/stack-overflow-arrity-catch.html [ Failure Pass ]
 
 crbug.com/88588 [ Mac Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure ]
-
