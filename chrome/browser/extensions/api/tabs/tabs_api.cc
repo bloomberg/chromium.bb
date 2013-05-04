@@ -1728,13 +1728,21 @@ bool TabsCaptureVisibleTabFunction::RunImpl() {
     }
   }
 
-  // captureVisibleTab() can return an image containing sensitive information
-  // that the browser would otherwise protect.  Ensure the extension has
-  // permission to do this.
-  if (!GetExtension()->CanCaptureVisiblePage(
-        web_contents->GetURL(),
-        SessionID::IdForTab(web_contents),
-        &error_)) {
+  // Use the last committed URL rather than the active URL for permissions
+  // checking, since the visible page won't be updated until it has been
+  // committed. A canonical example of this is interstitials, which show the
+  // URL of the new/loading page (active) but would capture the content of the
+  // old page (last committed).
+  //
+  // TODO(creis): Use WebContents::GetLastCommittedURL instead.
+  // http://crbug.com/237908.
+  NavigationEntry* last_committed_entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  GURL last_committed_url = last_committed_entry ?
+      last_committed_entry->GetURL() : GURL();
+  if (!GetExtension()->CanCaptureVisiblePage(last_committed_url,
+                                             SessionID::IdForTab(web_contents),
+                                             &error_)) {
     return false;
   }
 
