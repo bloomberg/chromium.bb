@@ -58,6 +58,133 @@ namespace content {
 // static
 BrowserPluginHostFactory* BrowserPluginGuest::factory_ = NULL;
 
+// Parent class for the various types of permission requests, each of which
+// should be able to handle the response to their permission request.
+class BrowserPluginGuest::PermissionRequest {
+ public:
+  virtual void Respond(bool should_allow) = 0;
+  virtual ~PermissionRequest() {}
+ protected:
+  PermissionRequest() {}
+};
+
+class BrowserPluginGuest::DownloadRequest : public PermissionRequest {
+ public:
+  explicit DownloadRequest(base::Callback<void(bool)> callback)
+      : callback_(callback) {}
+  virtual void Respond(bool should_allow) OVERRIDE {
+    callback_.Run(should_allow);
+  }
+  virtual ~DownloadRequest() {}
+ private:
+  base::Callback<void(bool)> callback_;
+};
+
+class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
+ public:
+  GeolocationRequest(GeolocationCallback callback,
+                     int bridge_id,
+                     BrowserPluginGuest* guest,
+                     base::WeakPtrFactory<BrowserPluginGuest>* weak_ptr_factory)
+                     : callback_(callback),
+                       bridge_id_(bridge_id),
+                       guest_(guest),
+                       weak_ptr_factory_(weak_ptr_factory) {}
+
+  virtual void Respond(bool should_allow) OVERRIDE {
+    WebContents* web_contents = guest_->embedder_web_contents();
+    if (should_allow && web_contents) {
+      // If renderer side embedder decides to allow gelocation, we need to check
+      // if the app/embedder itself has geolocation access.
+      BrowserContext* browser_context = web_contents->GetBrowserContext();
+      if (browser_context) {
+        GeolocationPermissionContext* geolocation_context =
+            browser_context->GetGeolocationPermissionContext();
+        if (geolocation_context) {
+          base::Callback<void(bool)> geolocation_callback = base::Bind(
+              &BrowserPluginGuest::SetGeolocationPermission,
+              weak_ptr_factory_->GetWeakPtr(),
+              callback_,
+              bridge_id_);
+          geolocation_context->RequestGeolocationPermission(
+              web_contents->GetRenderProcessHost()->GetID(),
+              web_contents->GetRoutingID(),
+              // The geolocation permission request here is not initiated
+              // through WebGeolocationPermissionRequest. We are only interested
+              // in the fact whether the embedder/app has geolocation
+              // permission. Therefore we use an invalid |bridge_id|.
+              -1 /* bridge_id */,
+              web_contents->GetURL(),
+              geolocation_callback);
+          return;
+        }
+      }
+    }
+    guest_->SetGeolocationPermission(callback_, bridge_id_, false);
+  }
+  virtual ~GeolocationRequest() {}
+ private:
+  base::Callback<void(bool)> callback_;
+  int bridge_id_;
+  BrowserPluginGuest* guest_;
+  base::WeakPtrFactory<BrowserPluginGuest>* weak_ptr_factory_;
+};
+
+class BrowserPluginGuest::MediaRequest : public PermissionRequest {
+ public:
+  MediaRequest(const MediaStreamRequest& request,
+               const MediaResponseCallback& callback,
+               BrowserPluginGuest* guest)
+               : request_(request),
+                 callback_(callback),
+                 guest_(guest) {}
+
+  virtual void Respond(bool should_allow) OVERRIDE {
+    WebContentsImpl* web_contents = guest_->embedder_web_contents();
+    if (should_allow && web_contents) {
+      // Re-route the request to the embedder's WebContents; the guest gets the
+      // permission this way.
+      web_contents->RequestMediaAccessPermission(request_, callback_);
+    } else {
+      // Deny the request.
+      callback_.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
+    }
+
+  }
+  virtual ~MediaRequest() {}
+ private:
+  MediaStreamRequest request_;
+  MediaResponseCallback callback_;
+  BrowserPluginGuest* guest_;
+};
+
+class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
+ public:
+  NewWindowRequest(int instance_id, BrowserPluginGuest* guest)
+      : instance_id_(instance_id),
+        guest_(guest) {}
+
+  virtual void Respond(bool should_allow) OVERRIDE {
+    int embedder_render_process_id =
+        guest_->embedder_web_contents()->GetRenderProcessHost()->GetID();
+    BrowserPluginGuest* guest =
+        guest_->GetWebContents()->GetBrowserPluginGuestManager()->
+            GetGuestByInstanceID(instance_id_, embedder_render_process_id);
+    if (!guest) {
+      LOG(INFO) << "Guest not found. Instance ID: " << instance_id_;
+      return;
+    }
+
+    // If we do not destroy the guest then we allow the new window.
+    if (!should_allow)
+      guest->Destroy();
+  }
+  virtual ~NewWindowRequest() {}
+ private:
+  int instance_id_;
+  BrowserPluginGuest* guest_;
+};
+
 namespace {
 const size_t kNumMaxOutstandingPermissionRequests = 1024;
 
@@ -99,7 +226,7 @@ static std::string RetrieveDownloadURLFromRequestId(
   return std::string();
 }
 
-}
+}  // namespace
 
 class BrowserPluginGuest::EmbedderRenderViewHostObserver
     : public RenderViewHostObserver {
@@ -379,18 +506,15 @@ void BrowserPluginGuest::CanDownload(
     int request_id,
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {
-  if (download_request_callback_map_.size() >=
-          kNumMaxOutstandingPermissionRequests) {
+  if (permission_request_map_.size() >= kNumMaxOutstandingPermissionRequests) {
     // Deny the download request.
     callback.Run(false);
     return;
   }
 
-  // TODO(lazyboy): Remove download specific map
-  // |download_request_callback_map_| once we have generalized request items for
-  // all permission types.
   int permission_request_id = next_permission_request_id_++;
-  download_request_callback_map_[permission_request_id] = callback;
+  permission_request_map_[permission_request_id] =
+      new DownloadRequest(callback);
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE,
@@ -565,7 +689,8 @@ void BrowserPluginGuest::RequestNewWindowPermission(
                    base::Value::CreateStringValue(
                        WindowOpenDispositionToString(disposition)));
   int request_id = next_permission_request_id_++;
-  new_window_request_map_[request_id] = guest->instance_id();
+  permission_request_map_[request_id] =
+      new NewWindowRequest(guest->instance_id(), this);
   SendMessageToEmbedder(new BrowserPluginMsg_RequestPermission(
       instance_id(), BrowserPluginPermissionTypeNewWindow,
       request_id, request_info));
@@ -651,13 +776,14 @@ void BrowserPluginGuest::AskEmbedderForGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
     const GeolocationCallback& callback) {
-  if (geolocation_request_map_.size() >= kNumMaxOutstandingPermissionRequests) {
+  if (permission_request_map_.size() >= kNumMaxOutstandingPermissionRequests) {
     // Deny the geolocation request.
     callback.Run(false);
     return;
   }
   int request_id = next_permission_request_id_++;
-  geolocation_request_map_[request_id] = std::make_pair(callback, bridge_id);
+  permission_request_map_[request_id] = new GeolocationRequest(
+      callback, bridge_id, this, &weak_ptr_factory_);
   DCHECK(bridge_id_to_request_id_map_.find(bridge_id) ==
          bridge_id_to_request_id_map_.end());
   bridge_id_to_request_id_map_[bridge_id] = request_id;
@@ -672,28 +798,25 @@ void BrowserPluginGuest::AskEmbedderForGeolocationPermission(
 }
 
 void BrowserPluginGuest::CancelGeolocationRequest(int bridge_id) {
-  std::map<int, int>::iterator iter =
+  std::map<int, int>::iterator bridge_itr =
       bridge_id_to_request_id_map_.find(bridge_id);
-  if (iter == bridge_id_to_request_id_map_.end())
+  if (bridge_itr == bridge_id_to_request_id_map_.end())
     return;
 
-  int request_id = iter->second;
-  GeolocationRequestsMap::iterator callback_iter =
-      geolocation_request_map_.find(request_id);
-  if (callback_iter != geolocation_request_map_.end())
-    geolocation_request_map_.erase(callback_iter);
+  int request_id = bridge_itr->second;
+  bridge_id_to_request_id_map_.erase(bridge_itr);
+  RequestMap::iterator request_itr = permission_request_map_.find(request_id);
+  if (request_itr == permission_request_map_.end())
+    return;
+  delete request_itr->second;
+  permission_request_map_.erase(request_itr);
 }
 
-void BrowserPluginGuest::SetGeolocationPermission(int request_id,
+void BrowserPluginGuest::SetGeolocationPermission(GeolocationCallback callback,
+                                                  int bridge_id,
                                                   bool allowed) {
-  GeolocationRequestsMap::iterator callback_iter =
-      geolocation_request_map_.find(request_id);
-  if (callback_iter != geolocation_request_map_.end()) {
-    GeolocationRequestItem& item = callback_iter->second;
-    item.first.Run(allowed);
-    bridge_id_to_request_id_map_.erase(item.second);
-    geolocation_request_map_.erase(callback_iter);
-  }
+  callback.Run(allowed);
+  CancelGeolocationRequest(bridge_id);
 }
 
 void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
@@ -1160,22 +1283,18 @@ void BrowserPluginGuest::OnRespondPermission(
     BrowserPluginPermissionType permission_type,
     int request_id,
     bool should_allow) {
-  switch (permission_type) {
-    case BrowserPluginPermissionTypeDownload:
-      OnRespondPermissionDownload(request_id, should_allow);
-      break;
-    case BrowserPluginPermissionTypeGeolocation:
-      OnRespondPermissionGeolocation(request_id, should_allow);
-      break;
-    case BrowserPluginPermissionTypeMedia:
-      OnRespondPermissionMedia(request_id, should_allow);
-      break;
-    case BrowserPluginPermissionTypeNewWindow:
-      OnRespondPermissionNewWindow(request_id, should_allow);
-      break;
-    default:
-      NOTREACHED();
-      break;
+  RequestMap::iterator request_itr = permission_request_map_.find(request_id);
+  if (request_itr == permission_request_map_.end()) {
+    LOG(INFO) << "Not a valid request ID.";
+    return;
+  }
+  request_itr->second->Respond(should_allow);
+
+  // Geolocation requests have to hang around for a while, so we don't delete
+  // them here.
+  if (permission_type != BrowserPluginPermissionTypeGeolocation) {
+    delete request_itr->second;
+    permission_request_map_.erase(request_itr);
   }
 }
 
@@ -1277,15 +1396,14 @@ void BrowserPluginGuest::RequestMediaAccessPermission(
     WebContents* web_contents,
     const MediaStreamRequest& request,
     const MediaResponseCallback& callback) {
-  if (media_requests_map_.size() >= kNumMaxOutstandingPermissionRequests) {
+  if (permission_request_map_.size() >= kNumMaxOutstandingPermissionRequests) {
     // Deny the media request.
     callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
     return;
   }
   int request_id = next_permission_request_id_++;
-  media_requests_map_.insert(
-      std::make_pair(request_id,
-                     std::make_pair(request, callback)));
+  permission_request_map_[request_id] =
+      new MediaRequest(request, callback, this);
 
   base::DictionaryValue request_info;
   request_info.Set(
@@ -1352,106 +1470,13 @@ void BrowserPluginGuest::OnUpdateRect(
       new BrowserPluginMsg_UpdateRect(instance_id(), relay_params));
 }
 
-void BrowserPluginGuest::OnRespondPermissionDownload(int request_id,
-                                                     bool should_allow) {
-  DownloadRequestMap::iterator download_request_iter =
-      download_request_callback_map_.find(request_id);
-  if (download_request_iter == download_request_callback_map_.end()) {
-    LOG(INFO) << "Not a valid request ID.";
-    return;
-  }
-
-  const base::Callback<void(bool)>& can_download_callback =
-    download_request_iter->second;
-  can_download_callback.Run(should_allow);
-}
-
-void BrowserPluginGuest::OnRespondPermissionGeolocation(
-    int request_id, bool should_allow) {
-  if (should_allow && embedder_web_contents_) {
-    // If renderer side embedder decides to allow gelocation, we need to check
-    // if the app/embedder itself has geolocation access.
-    BrowserContext* browser_context =
-        embedder_web_contents_->GetBrowserContext();
-    if (browser_context) {
-      GeolocationPermissionContext* geolocation_context =
-          browser_context->GetGeolocationPermissionContext();
-      if (geolocation_context) {
-        base::Callback<void(bool)> geolocation_callback = base::Bind(
-            &BrowserPluginGuest::SetGeolocationPermission,
-            weak_ptr_factory_.GetWeakPtr(),
-            request_id);
-        geolocation_context->RequestGeolocationPermission(
-            embedder_web_contents_->GetRenderProcessHost()->GetID(),
-            embedder_web_contents_->GetRoutingID(),
-            // The geolocation permission request here is not initiated through
-            // WebGeolocationPermissionRequest. We are only interested in the
-            // fact whether the embedder/app has geolocation permission.
-            // Therefore we use an invalid |bridge_id|.
-            -1 /* bridge_id */,
-            embedder_web_contents_->GetURL(),
-            geolocation_callback);
-        return;
-      }
-    }
-  }
-  SetGeolocationPermission(request_id, false);
-}
-
-void BrowserPluginGuest::OnRespondPermissionMedia(
-    int request_id, bool should_allow) {
-  MediaStreamRequestsMap::iterator media_request_iter =
-      media_requests_map_.find(request_id);
-  if (media_request_iter == media_requests_map_.end()) {
-    LOG(INFO) << "Not a valid request ID.";
-    return;
-  }
-  const MediaStreamRequest& request = media_request_iter->second.first;
-  const MediaResponseCallback& callback =
-      media_request_iter->second.second;
-
-  if (should_allow && embedder_web_contents_) {
-    // Re-route the request to the embedder's WebContents; the guest gets the
-    // permission this way.
-    embedder_web_contents_->RequestMediaAccessPermission(request, callback);
-  } else {
-    // Deny the request.
-    callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
-  }
-  media_requests_map_.erase(media_request_iter);
-}
-
-void BrowserPluginGuest::OnRespondPermissionNewWindow(
-    int request_id, bool should_allow) {
-  NewWindowRequestMap::iterator new_window_request_iter =
-      new_window_request_map_.find(request_id);
-  if (new_window_request_iter == new_window_request_map_.end()) {
-    LOG(INFO) << "Not a valid request ID.";
-    return;
-  }
-  int instance_id = new_window_request_iter->second;
-  int embedder_render_process_id =
-      embedder_web_contents_->GetRenderProcessHost()->GetID();
-  BrowserPluginGuest* guest =
-      GetWebContents()->GetBrowserPluginGuestManager()->
-          GetGuestByInstanceID(instance_id, embedder_render_process_id);
-  if (!guest) {
-    LOG(INFO) << "Guest not found. Instance ID: " << instance_id;
-    return;
-  }
-  if (!should_allow)
-    guest->Destroy();
-  // If we do not destroy the guest then we allow the new window.
-  new_window_request_map_.erase(new_window_request_iter);
-}
-
 void BrowserPluginGuest::DidRetrieveDownloadURLFromRequestId(
     const std::string& request_method,
     int permission_request_id,
     const std::string& url) {
   if (url.empty()) {
-    OnRespondPermissionDownload(permission_request_id,
-                                false /* should_allow */);
+    OnRespondPermission(instance_id(), BrowserPluginPermissionTypeDownload,
+                        permission_request_id, false);
     return;
   }
 

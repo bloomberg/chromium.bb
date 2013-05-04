@@ -242,9 +242,6 @@ class CONTENT_EXPORT BrowserPluginGuest
                                            const GeolocationCallback& callback);
   // Cancels pending geolocation request.
   void CancelGeolocationRequest(int bridge_id);
-  // Embedder sets permission to allow or deny geolocation request.
-  void SetGeolocationPermission(int request_id, bool allowed);
-
 
   // Allow the embedder to call this for unhandled messages when
   // BrowserPluginGuest is already destroyed.
@@ -267,13 +264,15 @@ class CONTENT_EXPORT BrowserPluginGuest
   void EndSystemDrag();
 
  private:
-  typedef std::pair<MediaStreamRequest, MediaResponseCallback>
-      MediaStreamRequestAndCallbackPair;
-  typedef std::map<int, MediaStreamRequestAndCallbackPair>
-      MediaStreamRequestsMap;
-
   class EmbedderRenderViewHostObserver;
   friend class TestBrowserPluginGuest;
+
+  class DownloadRequest;
+  class GeolocationRequest;
+  // MediaRequest because of naming conflicts with MediaStreamRequest.
+  class MediaRequest;
+  class NewWindowRequest;
+  class PermissionRequest;
 
   BrowserPluginGuest(int instance_id,
                      WebContentsImpl* web_contents,
@@ -415,17 +414,15 @@ class CONTENT_EXPORT BrowserPluginGuest
                          const std::string& name);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
 
-  // Helpers for |OnRespondPermission|.
-  void OnRespondPermissionDownload(int request_id, bool should_allow);
-  void OnRespondPermissionGeolocation(int request_id, bool should_allow);
-  void OnRespondPermissionMedia(int request_id, bool should_allow);
-  void OnRespondPermissionNewWindow(int request_id, bool should_allow);
-
   // Requests download permission through embedder JavaScript API after
   // retrieving url information from IO thread.
   void DidRetrieveDownloadURLFromRequestId(const std::string& request_method,
                                            int permission_request_id,
                                            const std::string& url);
+
+  // Embedder sets permission to allow or deny geolocation request.
+  void SetGeolocationPermission(
+      GeolocationCallback callback, int bridge_id, bool allowed);
 
   // Weak pointer used to ask GeolocationPermissionContext about geolocation
   // permission.
@@ -438,10 +435,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   scoped_ptr<EmbedderRenderViewHostObserver> embedder_rvh_observer_;
   WebContentsImpl* embedder_web_contents_;
 
-  // GeolocationRequestItem contains callback and bridge id for a request.
-  typedef std::pair<GeolocationCallback, int> GeolocationRequestItem;
-  typedef std::map<int, GeolocationRequestItem> GeolocationRequestsMap;
-  GeolocationRequestsMap geolocation_request_map_;
   std::map<int, int> bridge_id_to_request_id_map_;
 
   // An identifier that uniquely identifies a browser plugin guest within an
@@ -484,17 +477,10 @@ class CONTENT_EXPORT BrowserPluginGuest
   // A counter to generate a unique request id for a permission request.
   // We only need the ids to be unique for a given BrowserPluginGuest.
   int next_permission_request_id_;
-  // A map to store WebContents's media request object and callback.
-  // We need to store these because we need a roundtrip to the embedder to know
-  // if we allow or disallow the request. The key of the map is unique only for
-  // a given BrowserPluginGuest.
-  MediaStreamRequestsMap media_requests_map_;
-  // A map from request ID to instance ID for use by the New Window API.
-  typedef std::map<int, int> NewWindowRequestMap;
-  NewWindowRequestMap new_window_request_map_;
 
-  typedef std::map<int, base::Callback<void(bool)> > DownloadRequestMap;
-  DownloadRequestMap download_request_callback_map_;
+  // A map to store relevant info for a request keyed by the request's id.
+  typedef std::map<int, PermissionRequest*> RequestMap;
+  RequestMap permission_request_map_;
 
   // Indicates that this BrowserPluginGuest has associated renderer-side state.
   // This is used to determine whether or not to create a new RenderView when
