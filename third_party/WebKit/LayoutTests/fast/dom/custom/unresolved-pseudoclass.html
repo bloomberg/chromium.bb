@@ -36,12 +36,16 @@ var c = new X();
 document.body.insertBefore(c, b);
 shouldBe('window.getComputedStyle(c).color', '"rgb(0, 222, 0)"');
 
+// Registering x-x should have changed the styles of #a.
+shouldBe('window.getComputedStyle(a).color', '"rgb(0, 222, 0)"');
+
 var Y = document.webkitRegister('x-y', {prototype: Object.create(HTMLSpanElement.prototype)});
 var d = new Y();
 document.body.insertBefore(d, b);
 shouldBe('window.getComputedStyle(d).color', '"rgb(0, 111, 0)"');
 
-// FIXME: When upgrade is implemented check that a and b's styles have changed.
+// Registering is="x-y" should have changed the styles of #b.
+shouldBe('window.getComputedStyle(b).color', '"rgb(0, 111, 0)"');
 
 successfullyParsed = true;
 </script>

@@ -31,6 +31,7 @@
 #include "CSSValueKeywords.h"
 #include "HTMLElementFactory.h"
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
 #include "bindings/v8/Dictionary.h"
@@ -148,7 +149,6 @@
 #include "core/page/PageConsole.h"
 #include "core/page/PageGroup.h"
 #include "core/page/PointerLockController.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
@@ -782,7 +782,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
 
     if (!typeExtension.isNull()) {
         setTypeExtension(element.get(), typeExtension);
-        ensureCustomElementRegistry()->didGiveTypeExtension(element.get());
+        ensureCustomElementRegistry()->didGiveTypeExtension(element.get(), typeExtension);
     }
 
     return element;
@@ -808,7 +808,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
 
     if (!typeExtension.isNull()) {
         setTypeExtension(element.get(), typeExtension);
-        ensureCustomElementRegistry()->didGiveTypeExtension(element.get());
+        ensureCustomElementRegistry()->didGiveTypeExtension(element.get(), typeExtension);
     }
 
     return element;

@@ -34,16 +34,17 @@
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/ContextDestructionObserver.h"
 #include "core/dom/CustomElementConstructor.h"
+#include "core/dom/CustomElementUpgradeCandidateMap.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
-#include <wtf/HashSet.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "wtf/HashSet.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
@@ -87,7 +88,7 @@ public:
 
     Document* document() const;
 
-    void didGiveTypeExtension(Element*);
+    void didGiveTypeExtension(Element*, const AtomicString&);
     void customElementWasDestroyed(Element*);
 
     static bool isCustomTagName(const AtomicString& name) { return isValidName(name); }
@@ -97,9 +98,7 @@ public:
 
 private:
     typedef HashMap<AtomicString, RefPtr<CustomElementDefinition> > DefinitionMap;
-    typedef HashSet<AtomicString> NameSet;
     typedef ListHashSet<CustomElementRegistry*> InstanceSet;
-    typedef HashSet<Element*> ElementSet;
 
     static bool isValidName(const AtomicString&);
 
@@ -109,11 +108,12 @@ private:
     void deliverLifecycleCallbacks();
 
     void didCreateCustomTagElement(Element*);
-    void didCreateUnresolvedElement(Element*);
+    void didCreateUnresolvedElement(CustomElementDefinition::CustomElementKind, const AtomicString& type, Element*);
 
     DefinitionMap m_definitions;
+    CustomElementUpgradeCandidateMap m_candidates;
+
     Vector<CustomElementInvocation> m_invocations;
-    ElementSet m_unresolvedElements;
 };
 
 inline void CustomElementRegistry::deliverAllLifecycleCallbacksIfNeeded()

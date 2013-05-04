@@ -35,6 +35,7 @@
 #include "HTMLNames.h"
 #include "V8CustomElementConstructor.h"
 #include "V8HTMLElementWrapperFactory.h"
+#include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/CustomElementRegistry.h"
@@ -244,6 +245,28 @@ const QualifiedName* CustomElementHelpers::findLocalName(v8::Handle<v8::Object> 
         return svgName;
 #endif
     return 0;
+}
+
+void CustomElementHelpers::upgradeWrappers(ScriptExecutionContext* executionContext, const HashSet<Element*>& elements, const ScriptValue& prototype)
+{
+    if (elements.isEmpty())
+        return;
+
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Context> context = toV8Context(executionContext, mainThreadNormalWorld());
+    v8::Context::Scope scope(context);
+
+    v8::Handle<v8::Value> v8Prototype = prototype.v8Value();
+
+    for (HashSet<Element*>::const_iterator it = elements.begin(); it != elements.end(); ++it) {
+        v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld(*it);
+        if (wrapper.IsEmpty()) {
+            // The wrapper will be created with the right prototype when
+            // retrieved; we don't need to eagerly create the wrapper.
+            continue;
+        }
+        wrapper->SetPrototype(v8Prototype);
+    }
 }
 
 void CustomElementHelpers::invokeReadyCallbackIfNeeded(Element* element, v8::Handle<v8::Context> context)

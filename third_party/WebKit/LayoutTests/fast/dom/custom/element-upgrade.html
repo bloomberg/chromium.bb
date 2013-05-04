@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<script src="../../js/resources/js-test-pre.js"></script>
+<div id="container"></div>
+<script>
+description('Tests the element upgrade algorithm.');
+
+// "Element Upgrade" is the processing of custom elements which were
+// created before their definition was available, when the definition
+// becomes available. The following scenarios cover a lot but are not
+// exhaustive.
+
+// Scenario A: Custom tag; upgrade candidate is not in the document;
+// upgrade candidate did not have a JavaScript wrapper at upgrade
+// time; custom element does not have a ready callback.
+var host = document.createElement('div');
+host.innerHTML = '<x-a></x-a>';  // Using innerHTML avoids wrapping x-a
+var A = document.webkitRegister('x-a', {prototype: Object.create(HTMLElement.prototype)});
+shouldBeTrue('host.firstChild instanceof A');
+
+// Scenario B: Type extension; upgrade candidate is in the document;
+// upgrade candidate did have a JavaScript wrapper at upgrade time;
+// custom element has a ready callback.
+var element = document.createElement('span', 'x-b');
+var proto = Object.create(HTMLSpanElement.prototype);
+var callCount = 0;
+proto.readyCallback = function () {
+  callCount++;
+};
+var B = document.webkitRegister('x-b', {prototype: proto});
+shouldBeTrue('element instanceof B');
+shouldBe('callCount', '1');
+
+// Scenario C: The candidate is a custom tag but the definition is a
+// type extension. Upgrade should not happen.
+element = document.createElement('x-c');
+var C = document.webkitRegister('x-c', {prototype: Object.create(HTMLSpanElement.prototype)});
+shouldBeFalse('element instanceof C');
+shouldBe('Object.getPrototypeOf(element)', 'HTMLElement.prototype');
+
+// Scenario D: The candidate is a type extension, but the definition
+// extends a different tag. Upgrade should not happen.
+document.body.appendChild(host);
+host.innerHTML = '<span is="x-d"></span>';
+var D = document.webkitRegister('x-d', {prototype: Object.create(HTMLDivElement.prototype)});
+shouldBeFalse('host.firstChild instanceof D');
+shouldBe('document.querySelector(":unresolved")', 'host.firstChild');
+
+successfullyParsed = true;
+</script>
+<script src="../../js/resources/js-test-post.js"></script>

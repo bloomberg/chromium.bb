@@ -33,9 +33,9 @@
 
 #include "bindings/v8/ScriptValue.h"
 #include "core/dom/QualifiedName.h"
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
@@ -46,6 +46,11 @@ public:
     static PassRefPtr<CustomElementDefinition> create(ScriptState*, const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, const ScriptValue& prototype);
 
     virtual ~CustomElementDefinition() {}
+
+    enum CustomElementKind {
+        CustomTag,
+        TypeExtension
+    };
 
     // This specifies whether the custom element is in the HTML or SVG
     // namespace.
@@ -64,6 +69,7 @@ public:
     // name. This does not have a prefix.
     const QualifiedName& tagQName() const { return m_tag; }
 
+    CustomElementKind kind() const { return isTypeExtension() ? TypeExtension : CustomTag; }
     bool isTypeExtension() const { return type() != name(); }
 
     const ScriptValue& prototype() { return m_prototype; }

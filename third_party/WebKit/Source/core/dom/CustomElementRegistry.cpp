@@ -41,7 +41,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLElement.h"
-#include <wtf/HashSet.h>
 
 #if ENABLE(SVG)
 #include "SVGNames.h"
@@ -167,12 +166,20 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(Scri
 
     m_definitions.add(definition->type(), definition);
 
+    // Upgrade elements that were waiting for this definition.
+    CustomElementUpgradeCandidateMap::ElementSet upgradeCandidates = m_candidates.takeUpgradeCandidatesFor(definition.get());
+    CustomElementHelpers::upgradeWrappers(document(), upgradeCandidates, definition->prototype());
+    for (CustomElementUpgradeCandidateMap::ElementSet::iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
+        (*it)->setNeedsStyleRecalc(); // :unresolved has changed
+        activate(CustomElementInvocation(*it));
+    }
+
     return constructor.release();
 }
 
 bool CustomElementRegistry::isUnresolved(Element* element) const
 {
-    return m_unresolvedElements.contains(element);
+    return m_candidates.contains(element);
 }
 
 PassRefPtr<CustomElementDefinition> CustomElementRegistry::findFor(Element* element) const
@@ -234,7 +241,7 @@ PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(const Qualifie
     if (!definition || definition->isTypeExtension()) {
         // If a definition for a type extension was available, this
         // custom tag element will be unresolved in perpetuity.
-        didCreateUnresolvedElement(element.get());
+        didCreateUnresolvedElement(CustomElementDefinition::CustomTag, tagName.localName(), element.get());
     } else {
         didCreateCustomTagElement(element.get());
     }
@@ -242,7 +249,7 @@ PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(const Qualifie
     return element.release();
 }
 
-void CustomElementRegistry::didGiveTypeExtension(Element* element)
+void CustomElementRegistry::didGiveTypeExtension(Element* element, const AtomicString& type)
 {
     if (!element->isHTMLElement() && !element->isSVGElement())
         return;
@@ -251,7 +258,7 @@ void CustomElementRegistry::didGiveTypeExtension(Element* element)
     if (!definition || !definition->isTypeExtension()) {
         // If a definition for a custom tag was available, this type
         // extension element will be unresolved in perpetuity.
-        didCreateUnresolvedElement(element);
+        didCreateUnresolvedElement(CustomElementDefinition::TypeExtension, type, element);
     } else {
         activate(CustomElementInvocation(element));
     }
@@ -262,15 +269,15 @@ void CustomElementRegistry::didCreateCustomTagElement(Element* element)
     activate(CustomElementInvocation(element));
 }
 
-void CustomElementRegistry::didCreateUnresolvedElement(Element* element)
+void CustomElementRegistry::didCreateUnresolvedElement(CustomElementDefinition::CustomElementKind kind, const AtomicString& type, Element* element)
 {
-    m_unresolvedElements.add(element);
+    m_candidates.add(kind, type, element);
 }
 
 void CustomElementRegistry::customElementWasDestroyed(Element* element)
 {
     ASSERT(element->isCustomElement());
-    m_unresolvedElements.remove(element);
+    m_candidates.remove(element);
 }
 
 void CustomElementRegistry::activate(const CustomElementInvocation& invocation)

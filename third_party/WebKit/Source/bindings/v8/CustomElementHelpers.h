@@ -36,8 +36,9 @@
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/Element.h"
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/HashSet.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
@@ -60,6 +61,7 @@ public:
     static WrapperTypeInfo* findWrapperType(v8::Handle<v8::Value> chain);
     static const QualifiedName* findLocalName(v8::Handle<v8::Object> chain);
 
+    static void upgradeWrappers(ScriptExecutionContext*, const HashSet<Element*>&, const ScriptValue& prototype);
     static void invokeReadyCallbacksIfNeeded(ScriptExecutionContext*, const Vector<CustomElementInvocation>&);
 
     typedef v8::Handle<v8::Object> (*CreateSVGWrapperFunction)(SVGElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);

@@ -8,7 +8,9 @@ PASS window.getComputedStyle(a).color is "rgb(0, 0, 222)"
 PASS window.getComputedStyle(b).color is "rgb(0, 0, 222)"
 PASS window.getComputedStyle(b).borderColor is "rgb(0, 0, 111)"
 PASS window.getComputedStyle(c).color is "rgb(0, 222, 0)"
+PASS window.getComputedStyle(a).color is "rgb(0, 222, 0)"
 PASS window.getComputedStyle(d).color is "rgb(0, 111, 0)"
+PASS window.getComputedStyle(b).color is "rgb(0, 111, 0)"
 PASS successfullyParsed is true
 
 TEST COMPLETE

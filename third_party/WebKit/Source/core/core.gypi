@@ -1692,6 +1692,8 @@
             'dom/CustomElementDefinition.h',
             'dom/CustomElementRegistry.cpp',
             'dom/CustomElementRegistry.h',
+            'dom/CustomElementUpgradeCandidateMap.cpp',
+            'dom/CustomElementUpgradeCandidateMap.h',
             'dom/CustomEvent.cpp',
             'dom/CustomEvent.h',
             'dom/DOMCoreException.cpp',
