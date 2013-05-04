@@ -68,7 +68,9 @@
   F(PPB_URLResponseInfo_API) \
   F(PPB_VideoCapture_API) \
   F(PPB_VideoDecoder_API) \
+  F(PPB_VideoDestination_Private_API) \
   F(PPB_VideoLayer_API) \
+  F(PPB_VideoSource_Private_API) \
   F(PPB_View_API) \
   F(PPB_WebSocket_API) \
   F(PPB_Widget_API) \

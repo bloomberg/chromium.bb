@@ -25,6 +25,7 @@
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
@@ -537,25 +538,30 @@ PP_Resource PPB_ImageData_Proxy::CreateImageData(
   if (enter.failed())
     return 0;
 
-  PP_Resource result = 0;
-  PP_Bool clear = init_to_zero ? PP_TRUE : PP_FALSE;
-  if (is_nacl_plugin) {
-    result = enter.functions()->CreateImageDataNaCl(
-        instance, static_cast<PP_ImageDataFormat>(format), &size, clear);
-  } else {
-    result = enter.functions()->CreateImageData(
-        instance, static_cast<PP_ImageDataFormat>(format), &size, clear);
-  }
-  if (!result)
+  PP_Bool pp_init_to_zero = init_to_zero ? PP_TRUE : PP_FALSE;
+  ppapi::ScopedPPResource resource(
+      ppapi::ScopedPPResource::PassRef(),
+      is_nacl_plugin ?
+          enter.functions()->CreateImageDataNaCl(instance, format, &size,
+                                                 pp_init_to_zero) :
+          enter.functions()->CreateImageData(instance, format, &size,
+                                             pp_init_to_zero));
+  if (!resource.get())
     return 0;
 
-  thunk::EnterResourceNoLock<PPB_ImageData_API> enter_resource(result, false);
-  if (enter_resource.object()->Describe(desc) != PP_TRUE)
+  thunk::EnterResourceNoLock<PPB_ImageData_API> enter_resource(resource.get(),
+                                                               false);
+  if (enter_resource.object()->Describe(desc) != PP_TRUE) {
     DVLOG(1) << "CreateImageData failed: could not Describe";
+    return 0;
+  }
 
   int local_fd = 0;
-  if (enter_resource.object()->GetSharedMemory(&local_fd, byte_count) != PP_OK)
+  if (enter_resource.object()->GetSharedMemory(&local_fd,
+                                               byte_count) != PP_OK) {
     DVLOG(1) << "CreateImageData failed: could not GetSharedMemory";
+    return 0;
+  }
 
 #if defined(OS_WIN)
   *image_handle = dispatcher->ShareHandleWithRemote(
@@ -572,7 +578,7 @@ PP_Resource PPB_ImageData_Proxy::CreateImageData(
   #error Not implemented.
 #endif
 
-  return result;
+  return resource.Release();
 }
 
 void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
@@ -585,13 +591,13 @@ void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
   PP_ImageDataDesc desc;
   IPC::PlatformFileForTransit image_handle;
   uint32_t byte_count;
-  PP_Resource resource = CreateImageData(
-                             instance,
-                             static_cast<PP_ImageDataFormat>(format),
-                             size,
-                             true /* init_to_zero */,
-                             false /* is_nacl_plugin */,
-                             &desc, &image_handle, &byte_count);
+  PP_Resource resource =
+      CreateImageData(instance,
+                      static_cast<PP_ImageDataFormat>(format),
+                      size,
+                      true /* init_to_zero */,
+                      false /* is_nacl_plugin */,
+                      &desc, &image_handle, &byte_count);
   result->SetHostResource(instance, resource);
   if (resource) {
     image_data_desc->resize(sizeof(PP_ImageDataDesc));
@@ -619,13 +625,13 @@ void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
   PP_ImageDataDesc desc;
   IPC::PlatformFileForTransit image_handle;
   uint32_t byte_count;
-  PP_Resource resource = CreateImageData(
-                             instance,
-                             static_cast<PP_ImageDataFormat>(format),
-                             size,
-                             true /* init_to_zero */,
-                             true /* is_nacl_plugin */,
-                             &desc, &image_handle, &byte_count);
+  PP_Resource resource =
+      CreateImageData(instance,
+                      static_cast<PP_ImageDataFormat>(format),
+                      size,
+                      true /* init_to_zero */,
+                      true /* is_nacl_plugin */,
+                      &desc, &image_handle, &byte_count);
 
   result->SetHostResource(instance, resource);
   if (resource) {

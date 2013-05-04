@@ -42,6 +42,8 @@
 #include "ppapi/proxy/url_request_info_resource.h"
 #include "ppapi/proxy/url_response_info_resource.h"
 #include "ppapi/proxy/video_capture_resource.h"
+#include "ppapi/proxy/video_destination_resource.h"
+#include "ppapi/proxy/video_source_resource.h"
 #include "ppapi/proxy/websocket_resource.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/host_resource.h"
@@ -380,6 +382,17 @@ PP_Resource ResourceCreationProxy::CreateVideoDecoder(
     PP_VideoDecoder_Profile profile) {
   return PPB_VideoDecoder_Proxy::CreateProxyResource(
       instance, context3d_id, profile);
+}
+
+PP_Resource ResourceCreationProxy::CreateVideoDestination(
+    PP_Instance instance) {
+  return (new VideoDestinationResource(GetConnection(),
+                                       instance))->GetReference();
+}
+
+PP_Resource ResourceCreationProxy::CreateVideoSource(
+    PP_Instance instance) {
+  return (new VideoSourceResource(GetConnection(), instance))->GetReference();
 }
 
 #endif  // !defined(OS_NACL)

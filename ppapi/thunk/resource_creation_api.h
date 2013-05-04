@@ -167,6 +167,8 @@ class ResourceCreationAPI {
       PP_Instance instance,
       PP_Resource context3d_id,
       PP_VideoDecoder_Profile profile) = 0;
+  virtual PP_Resource CreateVideoDestination(PP_Instance instance) = 0;
+  virtual PP_Resource CreateVideoSource(PP_Instance instance) = 0;
 #endif  // !defined(OS_NACL)
 
   static const ApiID kApiID = API_ID_RESOURCE_CREATION;

@@ -202,8 +202,7 @@ PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
 }
 
 PP_Resource ResourceCreationImpl::CreateTalk(PP_Instance /* instance */) {
-  // Not implemented in-process.
-  return 0;
+  return 0;  // Not supported in-process.
 }
 
 PP_Resource ResourceCreationImpl::CreateResourceArray(
@@ -241,6 +240,16 @@ PP_Resource ResourceCreationImpl::CreateVideoDecoder(
     PP_Resource graphics3d_id,
     PP_VideoDecoder_Profile profile) {
   return PPB_VideoDecoder_Impl::Create(instance, graphics3d_id, profile);
+}
+
+PP_Resource ResourceCreationImpl::CreateVideoDestination(
+    PP_Instance instance) {
+  return 0;  // Not supported in-process.
+}
+
+PP_Resource ResourceCreationImpl::CreateVideoSource(
+    PP_Instance instance) {
+  return 0;  // Not supported in-process.
 }
 
 PP_Resource ResourceCreationImpl::CreateWheelInputEvent(

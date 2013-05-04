@@ -1844,4 +1844,27 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoCapture_OnError,
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoCapture_OnBufferReady,
                      uint32_t /* buffer */)
 
+// MediaStream -----------------------------------------------------------------
+
+// VideoDestination Private.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoDestination_Create)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_VideoDestination_Open,
+                     std::string /* stream_url */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoDestination_OpenReply)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_VideoDestination_PutFrame,
+                     ppapi::HostResource /* image_data */,
+                     PP_TimeTicks /* timestamp */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoDestination_Close)
+
+// VideoSource Private.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoSource_Create)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_VideoSource_Open,
+                     std::string /* stream_url */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoSource_OpenReply)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoSource_GetFrame)
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_VideoSource_GetFrameReply,
+                     ppapi::HostResource /* image_data */,
+                     PP_TimeTicks /* timestamp */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoSource_Close)
+
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)

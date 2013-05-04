@@ -78,6 +78,8 @@
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_udp_socket_private.h"
+#include "ppapi/c/private/ppb_video_destination_private.h"
+#include "ppapi/c/private/ppb_video_source_private.h"
 #include "ppapi/c/private/ppb_x509_certificate_private.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"

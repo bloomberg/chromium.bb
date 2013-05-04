@@ -13,6 +13,8 @@
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_truetype_font_host.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
+#include "content/renderer/pepper/pepper_video_destination_host.h"
+#include "content/renderer/pepper/pepper_video_source_host.h"
 #include "content/renderer/pepper/pepper_websocket_host.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ppapi/host/resource_host.h"
@@ -110,6 +112,18 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
         }
         return scoped_ptr<ResourceHost>(host);
       }
+    }
+  }
+
+  // Private interfaces.
+  if (GetPermissions().HasPermission(ppapi::PERMISSION_PRIVATE)) {
+    switch (message.type()) {
+      case PpapiHostMsg_VideoDestination_Create::ID:
+        return scoped_ptr<ResourceHost>(new PepperVideoDestinationHost(
+            host_, instance, params.pp_resource()));
+      case PpapiHostMsg_VideoSource_Create::ID:
+        return scoped_ptr<ResourceHost>(new PepperVideoSourceHost(
+            host_, instance, params.pp_resource()));
     }
   }
 
