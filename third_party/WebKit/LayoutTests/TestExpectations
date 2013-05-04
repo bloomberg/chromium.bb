@@ -415,41 +415,6 @@ webkit.org/b/83303 [ Win ] svg/as-background-image/svg-as-background-3.html [ Im
 webkit.org/b/83303 [ Win ] svg/custom/mouse-move-on-svg-container-standalone.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Win ] svg/custom/mouse-move-on-svg-root-standalone.svg [ ImageOnlyFailure Pass ]
 
-# These tests use paths and need a rebaseline after crbug.com/227397
-crbug.com/227397 fast/borders/borderRadiusAllStylesAllCorners.html [ Pass ImageOnlyFailure ]
-crbug.com/227397 fast/borders/borderRadiusDashed01.html [ Pass ImageOnlyFailure ]
-crbug.com/227397 fast/borders/borderRadiusDashed03.html [ Pass ImageOnlyFailure ]
-crbug.com/227397 fast/borders/borderRadiusDashed04.html [ Pass ImageOnlyFailure ]
-crbug.com/227397 fast/borders/borderRadiusDashed05.html [ Pass ImageOnlyFailure ]
-crbug.com/227397 fast/borders/borderRadiusDotted02.html [ Pass ImageOnlyFailure ]
-crbug.com/227397 fast/borders/borderRadiusDotted03.html [ Pass ImageOnlyFailure ]
-crbug.com/227397 fast/borders/borderRadiusDotted04.html [ Pass ImageOnlyFailure ]
-crbug.com/227397 ietestcenter/css3/bordersbackgrounds/border-radius-style-001.htm [ Pass ImageOnlyFailure ]
-crbug.com/227397 ietestcenter/css3/bordersbackgrounds/border-radius-style-002.htm [ Pass ImageOnlyFailure ]
-crbug.com/227397 svg/W3C-SVG-1.1/animate-elem-08-t.svg [ Pass Failure ]
-crbug.com/227397 svg/W3C-SVG-1.1/text-path-01-b.svg [ Pass Failure ]
-crbug.com/227397 svg/animations/animate-elem-06-t-drt.html [ Pass Failure ]
-crbug.com/227397 svg/animations/animate-elem-07-t-drt.html [ Pass Failure ]
-crbug.com/227397 svg/animations/animate-elem-08-t-drt.html [ Pass Failure ]
-crbug.com/227397 svg/animations/animate-text-nested-transforms.html [ Pass Failure ]
-crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ Pass ImageOnlyFailure ]
-crbug.com/227397 svg/batik/text/smallFonts.svg [ Pass Failure ]
-crbug.com/227397 svg/batik/text/textGlyphOrientationHorizontal.svg [ Pass Failure ]
-# Note, after the rebaseline, need to uncomment the other instance of textOnPath.svg above.
-crbug.com/227397 svg/batik/text/textOnPath.svg [ Pass Failure ]
-crbug.com/227397 svg/batik/text/textOnPath2.svg [ Pass Failure ]
-crbug.com/227397 svg/batik/text/textOnPath3.svg [ Pass Failure ]
-crbug.com/227397 svg/batik/text/textOnPathSpaces.svg [ Pass Failure ]
-crbug.com/227397 svg/batik/text/verticalText.svg [ Pass Failure ]
-# Note, after the rebaseline, need to uncomment the 2 other instances of textOnPath.svg above.
-crbug.com/227397 svg/batik/text/verticalTextOnPath.svg [ Pass Failure ]
-crbug.com/227397 svg/text/text-hkern.svg [ Pass Failure ]
-crbug.com/227397 svg/text/text-path-01-b.svg [ Pass Failure ]
-crbug.com/227397 svg/text/text-path-middle-align.svg [ Pass Failure ]
-crbug.com/227397 svg/text/textPathBoundsBug.svg [ Pass ImageOnlyFailure ]
-crbug.com/227397 svg/W3C-SVG-1.1/types-basicDOM-01-b.svg [ Pass Failure ]
-crbug.com/227397 svg/W3C-SVG-1.1/text-align-04-b.svg [ Pass Failure ]
-
 # This fails image 5-10% of the time. Probably a race condition on timers.
 webkit.org/b/83471 svg/as-image/animated-svg-as-image-same-image.html [ ImageOnlyFailure Pass ]
 
@@ -459,8 +424,8 @@ webkit.org/b/84230 [ Mac ] svg/as-image/img-preserveAspectRatio-support-1.html [
 
 webkit.org/b/84719 [ Win ] svg/text/select-text-svgfont.html [ Failure Pass ]
 
-# webkit.org/b/84854 [ Linux ] svg/batik/text/textOnPath.svg [ ImageOnlyFailure Pass ]
-# webkit.org/b/84854 [ Linux ] svg/batik/text/verticalTextOnPath.svg [ ImageOnlyFailure Pass ]
+webkit.org/b/84854 [ Linux ] svg/batik/text/textOnPath.svg [ ImageOnlyFailure Pass ]
+webkit.org/b/84854 [ Linux ] svg/batik/text/verticalTextOnPath.svg [ ImageOnlyFailure Pass ]
 
 webkit.org/b/85107 svg/as-image/animated-svg-as-image.html [ ImageOnlyFailure Pass ]
 
@@ -1770,7 +1735,7 @@ webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/data-url-iframe
 webkit.org/b/112980 [ XP Release ] http/tests/security/mixedContent/insecure-image-in-main-frame-blocked.html [ Failure Pass ]
 webkit.org/b/112981 [ Win ] svg/batik/masking/maskRegions.svg [ Failure Pass ]
 webkit.org/b/112981 [ Win ] svg/batik/text/textProperties2.svg [ Failure Pass ]
-# webkit.org/b/112981 [ Win ] svg/batik/text/verticalTextOnPath.svg [ Failure Pass ]
+webkit.org/b/112981 [ Win ] svg/batik/text/verticalTextOnPath.svg [ Failure Pass ]
 webkit.org/b/112984 [ Win Release ] fast/mediastream/RTCPeerConnection-statsSelector.html [ Failure Pass ]
 webkit.org/b/112987 [ Mac XP Release ] http/tests/xmlhttprequest/origin-whitelisting-https.html [ Failure Pass ]
 webkit.org/b/113128 fast/files/xhr-response-blob.html [ Failure Pass ]

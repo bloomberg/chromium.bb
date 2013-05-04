@@ -82,7 +82,6 @@ namespace WebCore {
         float length() const;
         FloatPoint pointAtLength(float length, bool& ok) const;
         float normalAngleAtLength(float length, bool& ok) const;
-        bool pointAndNormalAtLength(float length, FloatPoint&, float&) const;
 
         void clear();
         bool isEmpty() const;
