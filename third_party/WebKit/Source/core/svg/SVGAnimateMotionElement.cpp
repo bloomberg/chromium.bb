@@ -231,14 +231,15 @@ void SVGAnimateMotionElement::buildTransformForProgress(AffineTransform* transfo
 
     bool ok = false;
     float positionOnPath = m_animationPath.length() * percentage;
-    FloatPoint position = m_animationPath.pointAtLength(positionOnPath, ok);
+    FloatPoint position;
+    float angle;
+    ok = m_animationPath.pointAndNormalAtLength(positionOnPath, position, angle);
     if (!ok)
         return;
     transform->translate(position.x(), position.y());
     RotateMode rotateMode = this->rotateMode();
     if (rotateMode != RotateAuto && rotateMode != RotateAutoReverse)
         return;
-    float angle = m_animationPath.normalAngleAtLength(positionOnPath, ok);
     if (rotateMode == RotateAutoReverse)
         angle += 180;
     transform->rotate(angle);
