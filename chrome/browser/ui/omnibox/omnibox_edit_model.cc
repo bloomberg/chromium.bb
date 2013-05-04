@@ -524,6 +524,19 @@ void OmniboxEditModel::StartAutocomplete(
     cursor_position = user_text_.length();
   }
 
+  InstantController* instant = controller_->GetInstant();
+  if (instant) {
+    instant->OnAutocompleteStart();
+    // If the embedded page for InstantExtended is fetching its own suggestions,
+    // suppress search suggestions from SearchProvider. We still need
+    // SearchProvider to run for FinalizeInstantQuery.
+    // TODO(dcblack): Once we are done refactoring the omnibox so we don't need
+    // to use FinalizeInstantQuery anymore, we can take out this check and
+    // remove this provider from kInstantExtendedOmniboxProviders.
+    if (instant->WillFetchCompletions())
+      autocomplete_controller()->search_provider()->SuppressSearchSuggestions();
+  }
+
   // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as
   // Start ends up invoking OmniboxPopupModel::OnResultChanged which clears it.
   autocomplete_controller()->Start(AutocompleteInput(

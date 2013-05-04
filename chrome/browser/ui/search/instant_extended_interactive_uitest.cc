@@ -9,18 +9,24 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/history/history_db_task.h"
+#include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -71,6 +77,27 @@ gfx::Image CreateBitmap(SkColor color) {
   thumbnail.eraseColor(color);
   return gfx::Image::CreateFrom1xBitmap(thumbnail);  // adds ref.
 }
+
+// Task used to make sure history has finished processing a request. Intended
+// for use with BlockUntilHistoryProcessesPendingRequests.
+class QuittingHistoryDBTask : public history::HistoryDBTask {
+ public:
+  QuittingHistoryDBTask() {}
+
+  virtual bool RunOnDBThread(history::HistoryBackend* backend,
+                             history::HistoryDatabase* db) OVERRIDE {
+    return true;
+  }
+
+  virtual void DoneRunOnMainThread() OVERRIDE {
+    MessageLoop::current()->Quit();
+  }
+
+ private:
+  virtual ~QuittingHistoryDBTask() {}
+
+  DISALLOW_COPY_AND_ASSIGN(QuittingHistoryDBTask);
+};
 
 }  // namespace
 
@@ -135,6 +162,47 @@ class InstantExtendedTest : public InProcessBrowserTest,
                         &submit_count_) &&
            GetStringFromJS(contents, "apiHandle.value",
                            &query_value_);
+  }
+
+  TemplateURL* GetDefaultSearchProviderTemplateURL() {
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(browser()->profile());
+    if (template_url_service)
+      return template_url_service->GetDefaultSearchProvider();
+    return NULL;
+  }
+
+  bool AddSearchToHistory(string16 term, int visit_count) {
+    TemplateURL* template_url = GetDefaultSearchProviderTemplateURL();
+    if (!template_url)
+      return false;
+
+    HistoryService* history = HistoryServiceFactory::GetForProfile(
+        browser()->profile(), Profile::EXPLICIT_ACCESS);
+    GURL search(template_url->url_ref().ReplaceSearchTerms(
+        TemplateURLRef::SearchTermsArgs(term)));
+    history->AddPageWithDetails(
+        search, string16(), visit_count, visit_count,
+        base::Time::Now(), false, history::SOURCE_BROWSED);
+    history->SetKeywordSearchTermsForURL(
+        search, template_url->id(), term);
+    return true;
+  }
+
+  void BlockUntilHistoryProcessesPendingRequests() {
+    HistoryService* history = HistoryServiceFactory::GetForProfile(
+        browser()->profile(), Profile::EXPLICIT_ACCESS);
+    DCHECK(history);
+    DCHECK(MessageLoop::current());
+
+    CancelableRequestConsumer consumer;
+    history->ScheduleDBTask(new QuittingHistoryDBTask(), &consumer);
+    MessageLoop::current()->Run();
+  }
+
+  int CountSearchProviderSuggestions() {
+    return omnibox()->model()->autocomplete_controller()->search_provider()->
+        matches().size();
   }
 
   int on_most_visited_change_calls_;
@@ -2163,4 +2231,57 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_TRUE(instant_service->IsInstantProcess(
       contents->GetRenderProcessHost()->GetID()));
   EXPECT_EQ(GURL(instant_url_with_query), contents->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchProviderDoesntRun) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlaySupport();
+
+  // Add "query" to history.
+  ASSERT_TRUE(AddSearchToHistory(ASCIIToUTF16("query"), 10000));
+  BlockUntilHistoryProcessesPendingRequests();
+
+  SetOmniboxText("quer");
+
+  // Should get only SWYT from SearchProvider.
+  EXPECT_EQ(1, CountSearchProviderSuggestions());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchProviderRunsForLocalOnly) {
+  // Force local-only Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  instant()->SetInstantEnabled(true, true);
+  FocusOmniboxAndWaitForInstantOverlaySupport();
+
+  // Add "query" to history.
+  ASSERT_TRUE(AddSearchToHistory(ASCIIToUTF16("query"), 10000));
+  BlockUntilHistoryProcessesPendingRequests();
+
+  SetOmniboxText("quer");
+
+  // Should get 2 suggestions from SearchProvider:
+  //   - SWYT for "quer"
+  //   - Search history suggestion for "query"
+  EXPECT_EQ(2, CountSearchProviderSuggestions());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchProviderRunsForFallback) {
+  // Use an Instant URL that won't support Instant.
+  GURL instant_url = test_server()->GetURL("files/empty.html?strk=1");
+  InstantTestBase::Init(instant_url);
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlaySupport();
+  // Should fallback to the local overlay.
+  ASSERT_EQ(NULL, instant()->GetOverlayContents());
+
+  // Add "query" to history and wait for Instant support.
+  ASSERT_TRUE(AddSearchToHistory(ASCIIToUTF16("query"), 10000));
+  BlockUntilHistoryProcessesPendingRequests();
+
+  SetOmniboxText("quer");
+
+  // Should get 2 suggestions from SearchProvider:
+  //   - SWYT for "quer"
+  //   - Search history suggestion for "query"
+  EXPECT_EQ(2, CountSearchProviderSuggestions());
 }

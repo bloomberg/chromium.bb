@@ -230,7 +230,8 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
       have_suggest_results_(false),
       instant_finalized_(false),
       field_trial_triggered_(false),
-      field_trial_triggered_in_session_(false) {
+      field_trial_triggered_in_session_(false),
+      suppress_search_suggestions_(false) {
 }
 
 void SearchProvider::FinalizeInstantQuery(const string16& input_text,
@@ -313,8 +314,15 @@ void SearchProvider::ClearInstantSuggestion() {
   listener_->OnProviderUpdate(true);
 }
 
+void SearchProvider::SuppressSearchSuggestions() {
+  suppress_search_suggestions_ = true;
+}
+
 void SearchProvider::Start(const AutocompleteInput& input,
                            bool minimal_changes) {
+  const bool suppress_search_suggestions = suppress_search_suggestions_;
+  suppress_search_suggestions_ = false;
+
   // Do our best to load the model as early as possible.  This will reduce
   // odds of having the model not ready when really needed (a non-empty input).
   TemplateURLService* model = providers_.template_url_service();
@@ -402,13 +410,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   input_ = input;
 
-  // When Instant is enabled in the extended mode, the embedded page will handle
-  // all search suggestions itself, so don't run the normal provider flow.
-  // TODO(dcblack): Once we are done refactoring the omnibox so we don't need to
-  // use FinalizeInstantQuery anymore, we can take out this check and remove
-  // this provider from kInstantExtendedOmniboxProviders.
-  if (!chrome::IsInstantExtendedAPIEnabled() ||
-      !chrome::IsInstantEnabled(profile_)) {
+  if (!suppress_search_suggestions) {
     DoHistoryQuery(minimal_changes);
     StartOrStopSuggestQuery(minimal_changes);
   }

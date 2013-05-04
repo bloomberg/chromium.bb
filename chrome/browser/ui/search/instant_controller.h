@@ -73,6 +73,11 @@ class InstantController : public InstantPage::Delegate,
                     bool extended_enabled);
   virtual ~InstantController();
 
+  // Called when the Autocomplete flow is about to start. Sets up the
+  // appropriate page to send user updates to.  May reset |instant_tab_| or
+  // switch to a local fallback |overlay_| as necessary.
+  void OnAutocompleteStart();
+
   // Invoked as the user types into the omnibox. |user_text| is what the user
   // has typed. |full_text| is what the omnibox is showing. These may differ if
   // the user typed only some text, and the rest was inline autocompleted. If
@@ -90,6 +95,10 @@ class InstantController : public InstantPage::Delegate,
               bool omnibox_popup_is_open,
               bool escape_pressed,
               bool is_keyword_search);
+
+  // Returns whether the Instant page currently being used will fetch its own
+  // completions. True for extended mode, unless using a local Instant page.
+  bool WillFetchCompletions() const;
 
   // Releases and returns the NTP WebContents. May be NULL. Loads a new
   // WebContents for the NTP.
@@ -328,11 +337,6 @@ class InstantController : public InstantPage::Delegate,
 
   // Returns true if we should switch to using the local overlay.
   bool ShouldSwitchToLocalOverlay() const;
-
-  // Called from Update() to set up the appropriate page to send user updates
-  // to. May reset |instant_tab_| or switch to a local fallback |overlay_| as
-  // necessary.
-  bool SetUpInstantPageForUpdate();
 
   // If the active tab is an Instant search results page, sets |instant_tab_| to
   // point to it. Else, deletes any existing |instant_tab_|.

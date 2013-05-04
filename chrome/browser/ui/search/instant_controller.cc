@@ -258,6 +258,34 @@ InstantController::InstantController(BrowserInstantController* browser,
 InstantController::~InstantController() {
 }
 
+void InstantController::OnAutocompleteStart() {
+  if (instant_tab_ && instant_tab_->supports_instant()) {
+    LOG_INSTANT_DEBUG_EVENT(
+        this, "OnAutocompleteStart: using InstantTab");
+    return;
+  }
+
+  if (instant_tab_) {
+    // If we have an |instant_tab_| but it doesn't support Instant yet, sever
+    // the connection to it so we use the overlay instead. This ensures that the
+    // user interaction will be responsive and handles cases where
+    // |instant_tab_| never responds about whether it supports Instant.
+    instant_tab_.reset();
+    LOG_INSTANT_DEBUG_EVENT(
+        this, "OnAutocompleteStart: reset InstantTab");
+  }
+
+  // Not using |instant_tab_|. Check if overlay is OK to use.
+  if (ShouldSwitchToLocalOverlay()) {
+    ResetOverlay(GetLocalInstantURL());
+    LOG_INSTANT_DEBUG_EVENT(
+        this, "OnAutocompleteStart: switching to local overlay");
+  } else {
+    LOG_INSTANT_DEBUG_EVENT(
+        this, "OnAutocompleteStart: using existing overlay");
+  }
+}
+
 bool InstantController::Update(const AutocompleteMatch& match,
                                const string16& user_text,
                                const string16& full_text,
@@ -337,7 +365,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
     return false;
   }
 
-  if (!SetUpInstantPageForUpdate()) {
+  if (!instant_tab_ && !overlay_) {
     HideOverlay();
     return false;
   }
@@ -486,6 +514,13 @@ bool InstantController::Update(const AutocompleteMatch& match,
   browser_->SetInstantSuggestion(last_suggestion_);
 
   return true;
+}
+
+bool InstantController::WillFetchCompletions() const {
+  if (!extended_enabled_)
+    return false;
+
+  return !UsingLocalPage();
 }
 
 scoped_ptr<content::WebContents> InstantController::ReleaseNTPContents() {
@@ -1406,36 +1441,6 @@ bool InstantController::ShouldSwitchToLocalOverlay() const {
     return false;
 
   return !PageIsCurrent(overlay());
-}
-
-bool InstantController::SetUpInstantPageForUpdate() {
-  if (instant_tab_ && instant_tab_->supports_instant()) {
-    LOG_INSTANT_DEBUG_EVENT(
-        this, "SetUpInstantPageForUpdate: using InstantTab");
-    return true;
-  }
-
-  if (instant_tab_) {
-    // If we have an |instant_tab_| but it doesn't support Instant yet, sever
-    // the connection to it so we use the overlay instead. This ensures that the
-    // user interaction will be responsive and handles cases where
-    // |instant_tab_| never responds about whether it supports Instant.
-    instant_tab_.reset();
-    LOG_INSTANT_DEBUG_EVENT(
-        this, "SetUpInstantPageForUpdate: reset InstantTab");
-  }
-
-  // Not using |instant_tab_|. Check if overlay is OK to use.
-  if (ShouldSwitchToLocalOverlay()) {
-    ResetOverlay(GetLocalInstantURL());
-    LOG_INSTANT_DEBUG_EVENT(
-        this, "SetUpInstantPageForUpdate: switching to local overlay");
-  } else {
-    LOG_INSTANT_DEBUG_EVENT(
-        this, "SetUpInstantPageForUpdate: using existing overlay");
-  }
-
-  return instant_tab_ || overlay_;
 }
 
 void InstantController::ResetInstantTab() {

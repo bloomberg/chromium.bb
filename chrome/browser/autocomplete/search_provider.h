@@ -91,6 +91,15 @@ class SearchProvider : public AutocompleteProvider,
                             const InstantSuggestion& suggestion);
   void ClearInstantSuggestion();
 
+  // If called, SearchProvider will not fetch any search suggestions for the
+  // next call to Start(). Used with InstantExtended where Instant fetches its
+  // own search suggestions.
+  //
+  // Note that this only applies to the next call to Start() and so this must be
+  // called repeatedly before Start() if you wish to continually suppress search
+  // suggestions.
+  void SuppressSearchSuggestions();
+
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
@@ -494,6 +503,10 @@ class SearchProvider : public AutocompleteProvider,
   // Same as above except that it is maintained across the current Omnibox
   // session.
   bool field_trial_triggered_in_session_;
+
+  // If true, suppress search suggestions. Reset to false in Start().
+  // See comments for SuppressSearchSuggestions().
+  bool suppress_search_suggestions_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };
