@@ -5,9 +5,11 @@
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/base/scoped_ref_ptr.h"
+#include "third_party/libjingle/source/talk/media/base/videocapturer.h"
 
 using webrtc::AudioSourceInterface;
 using webrtc::AudioTrackInterface;
@@ -153,9 +155,12 @@ MockVideoSource::MockVideoSource()
 
 MockVideoSource::~MockVideoSource() {}
 
+void MockVideoSource::SetVideoCapturer(cricket::VideoCapturer* capturer) {
+  capturer_.reset(capturer);
+}
+
 cricket::VideoCapturer* MockVideoSource::GetVideoCapturer() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return capturer_.get();
 }
 
 void MockVideoSource::AddSink(cricket::VideoRenderer* output) {
@@ -465,6 +470,19 @@ MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
       new talk_base::RefCountedObject<MockLocalVideoTrack>(
           id, source));
   return track;
+}
+
+scoped_refptr<webrtc::VideoTrackInterface>
+MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
+    const std::string& id,
+    cricket::VideoCapturer* capturer) {
+  DCHECK(mock_pc_factory_created_);
+
+  scoped_refptr<MockVideoSource> source =
+      new talk_base::RefCountedObject<MockVideoSource>();
+  source->SetVideoCapturer(capturer);
+
+  return new talk_base::RefCountedObject<MockLocalVideoTrack>(id, source);
 }
 
 scoped_refptr<webrtc::AudioTrackInterface>
