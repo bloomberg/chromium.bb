@@ -11,12 +11,12 @@ PASS test(preventExtensions(obj())) is "(b:4)"
 PASS test(seal(obj())) is "(a:1)(b:4)S"
 PASS test(freeze(obj())) is "(a:1)(b:2)SF"
 PASS Object.preventExtensions(Math.sin) is Math.sin
-PASS var o = {}; Object.preventExtensions(o); o.__proto__ = { newProp: "Should not see this" }; o.newProp; threw exception TypeError: Attempted to assign to readonly property..
-PASS "use strict"; var o = {}; Object.preventExtensions(o); o.__proto__ = { newProp: "Should not see this" }; o.newProp; threw exception TypeError: Attempted to assign to readonly property..
+PASS var o = {}; Object.preventExtensions(o); o.__proto__ = { newProp: "Should not see this" }; o.newProp; threw exception TypeError: #<Object> is not extensible.
+PASS "use strict"; var o = {}; Object.preventExtensions(o); o.__proto__ = { newProp: "Should not see this" }; o.newProp; threw exception TypeError: #<Object> is not extensible.
 PASS Object.preventExtensions(Math); Math.sqrt(4) is 2
 PASS var arr = Object.preventExtensions([]); arr[0] = 42; arr[0] is undefined.
 PASS var arr = Object.preventExtensions([]); arr[0] = 42; arr.length is 0
-PASS "use strict"; var arr = Object.preventExtensions([]); arr[0] = 42; arr[0] threw exception TypeError: Attempted to assign to readonly property..
+PASS "use strict"; var arr = Object.preventExtensions([]); arr[0] = 42; arr[0] threw exception TypeError: Can't add property 0, object is not extensible.
 PASS obj.foo is 1
 PASS Object.isFrozen(func) is true
 PASS func.prototype === 42 is false

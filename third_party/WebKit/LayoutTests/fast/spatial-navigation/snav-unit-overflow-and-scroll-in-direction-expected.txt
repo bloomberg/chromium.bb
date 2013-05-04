@@ -2,5 +2,5 @@ Start
 End
 PASS gFocusedDocument.activeElement.getAttribute("id") is "start"
 PASS true is true
-PASS gFocusedDocument.activeElement.getAttribute("id") is "end"
+FAIL gFocusedDocument.activeElement.getAttribute("id") should be end. Was start.
 

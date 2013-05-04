@@ -2,10 +2,10 @@ This tests that the video element's controls are draggable in full screen. Press
 
 EVENT(webkitfullscreenchange)
 First drag.
-EXPECTED (endBox.left - startBox.left == '15') OK
-EXPECTED (endBox.top - startBox.top == '15') OK
+EXPECTED (endBox.left - startBox.left == '15'), OBSERVED '0' FAIL
+EXPECTED (endBox.top - startBox.top == '15'), OBSERVED '0' FAIL
 Second drag.
-EXPECTED (endBox.left - startBox.left == '5') OK
-EXPECTED (endBox.top - startBox.top == '5') OK
+EXPECTED (endBox.left - startBox.left == '5'), OBSERVED '0' FAIL
+EXPECTED (endBox.top - startBox.top == '5'), OBSERVED '0' FAIL
 END OF TEST
 

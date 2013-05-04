@@ -45,14 +45,14 @@ layer at (0,0) size 800x600
         RenderBlock {P} at (9,53) size 766x20
           RenderText {#text} at (0,0) size 141x19
             text run at (0,0) width 141: "ABCDEFGHIJKLMN"
-          RenderInline {SPAN} at (0,0) size 30x18
-            RenderText {#text} at (141,1) size 30x18
-              text run at (141,1) width 30: "OPQ"
+          RenderInline {SPAN} at (0,0) size 33x19
+            RenderText {#text} at (141,0) size 33x19
+              text run at (141,0) width 33: "OPQ"
           RenderInline {SPAN} at (0,0) size 112x16
-            RenderText {#text} at (171,2) size 112x16
-              text run at (171,2) width 112: "RSTUVWX"
-          RenderText {#text} at (283,0) size 20x19
-            text run at (283,0) width 20: "YZ"
+            RenderText {#text} at (174,2) size 112x16
+              text run at (174,2) width 112: "RSTUVWX"
+          RenderText {#text} at (286,0) size 20x19
+            text run at (286,0) width 20: "YZ"
       RenderBlock {DIV} at (0,428) size 784x90 [border: (1px solid #000000)]
         RenderBlock {P} at (9,17) size 766x20
           RenderText {#text} at (0,0) size 293x19
@@ -60,13 +60,13 @@ layer at (0,0) size 800x600
         RenderBlock {P} at (9,53) size 766x20
           RenderText {#text} at (0,0) size 153x19
             text run at (0,0) width 153: "ABCDEFGHIJKLMNO"
-          RenderInline {SPAN} at (0,0) size 120x16
+          RenderInline {SPAN} at (0,0) size 119x16
             RenderText {#text} at (153,2) size 32x16
               text run at (153,2) width 32: "PQ"
-            RenderInline {SPAN} at (0,0) size 40x18
-              RenderText {#text} at (185,1) size 40x18
-                text run at (185,1) width 40: "RSTU"
-            RenderText {#text} at (225,2) size 48x16
-              text run at (225,2) width 48: "VWX"
-          RenderText {#text} at (273,0) size 20x19
-            text run at (273,0) width 20: "YZ"
+            RenderInline {SPAN} at (0,0) size 39x19
+              RenderText {#text} at (185,0) size 39x19
+                text run at (185,0) width 39: "RSTU"
+            RenderText {#text} at (224,2) size 48x16
+              text run at (224,2) width 48: "VWX"
+          RenderText {#text} at (272,0) size 20x19
+            text run at (272,0) width 20: "YZ"

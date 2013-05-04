@@ -1,5 +1,5 @@
 Checking permission...
 
-PASS: Permission not granted.
+FAIL: Permission shouldn't be granted.
 PASS: Permission granted.
 

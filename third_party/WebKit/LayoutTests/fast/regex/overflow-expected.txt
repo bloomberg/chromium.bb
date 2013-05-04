@@ -6,7 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS regexp1.exec('') is null
 PASS regexp2.exec('') is null
 PASS regexp3.exec(s3) is null
-PASS function f() { /[^a$]{4294967295}/ } threw exception SyntaxError: Invalid regular expression: number too large in {} quantifier.
+FAIL function f() { /[^a$]{4294967295}/ } should throw SyntaxError: Invalid regular expression: number too large in {} quantifier. Was undefined.
 PASS successfullyParsed is true
 
 TEST COMPLETE

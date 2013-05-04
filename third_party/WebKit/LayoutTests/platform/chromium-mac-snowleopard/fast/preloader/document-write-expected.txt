@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: line 7: Uncaught TypeError: Object [object Object] has no method 'setSerializeHTTPLoads'
 document-write-plaintext.js has MIME type application/x-javascript
 script1.js has MIME type application/x-javascript
 

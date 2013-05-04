@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: line 24: Uncaught TypeError: Cannot read property 'redirectStart' of undefined
 Description
 
 This test validates the values in resource timing for a timing-allow-origin cross-origin resource request.
@@ -5,16 +6,4 @@ This test validates the values in resource timing for a timing-allow-origin cros
 
 
 
-PASS Starting document.location.hostname is correct (127.0.0.1:8000) 
-PASS redirectStart should be 0 in cross-origin request since no redirect! 
-PASS redirectEnd should be 0 in cross-origin request since no redirect! 
-PASS domainLookupStart should not be 0 in timing-allow cross-origin request! 
-PASS domainLookupEnd should not be 0 in timing-allow cross-origin request! 
-PASS connectStart should not be 0 in timing-allow cross-origin request! 
-PASS connectEnd should not be 0 in timing-allow cross-origin request! 
-PASS requestStart should not be 0 in timing-allow cross-origin request! 
-PASS responseStart should not be 0 in timing-allow cross-origin request! 
-PASS secureConnectionStart should be 0 in cross-origin request since no ssl! 
-PASS fetchStart should not be 0 in timing-allow cross-origin request! 
-PASS responseEnd should not be 0 in timing-allow cross-origin request! 
-
+Harness Error. harness_status.status = 2 , harness_status.message = null

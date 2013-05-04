@@ -1,0 +1,43 @@
+ 
+This tests the condition that triggers a 'change' event on file input forms.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Test that the 'change' event is triggered on a single file form when a selected file is changed:
+FAIL singleFileInput.value should be C:\fakepath\foo.txt. Was C:\fakepath\.
+PASS changeDispatched is true
+FAIL singleFileInput.value should be C:\fakepath\bar.txt. Was C:\fakepath\.
+FAIL changeDispatched should be true. Was false.
+FAIL singleFileInput.value should be C:\fakepath\bar.txt. Was C:\fakepath\.
+PASS changeDispatched is false
+FAIL singleFileInput.value should be C:\fakepath\foo.txt. Was C:\fakepath\.
+FAIL changeDispatched should be true. Was false.
+Test that the 'change' event is triggered on a multiple file form when a selected file is changed:
+FAIL multipleFilesInput.value should be C:\fakepath\foo.txt. Was C:\fakepath\.
+PASS changeDispatched is true
+FAIL multipleFilesInput.value should be C:\fakepath\bar.txt. Was C:\fakepath\.
+FAIL changeDispatched should be true. Was false.
+FAIL multipleFilesInput.value should be C:\fakepath\bar.txt. Was C:\fakepath\.
+PASS changeDispatched is false
+FAIL multipleFilesInput.value should be C:\fakepath\foo.txt. Was C:\fakepath\.
+FAIL changeDispatched should be true. Was false.
+Test that the 'change' event is triggered on a multiple file form when selected files are changed:
+FAIL multipleFilesInput.value should be C:\fakepath\foo.txt. Was C:\fakepath\.
+PASS changeDispatched is true
+FAIL multipleFilesInput.value should be C:\fakepath\foo.txt. Was C:\fakepath\.
+PASS changeDispatched is true
+FAIL multipleFilesInput.value should be C:\fakepath\foo.txt. Was C:\fakepath\.
+PASS changeDispatched is true
+FAIL multipleFilesInput.value should be C:\fakepath\foo.txt. Was C:\fakepath\.
+PASS changeDispatched is true
+FAIL multipleFilesInput.value should be C:\fakepath\foo.txt. Was C:\fakepath\.
+PASS changeDispatched is true
+FAIL multipleFilesInput.value should be C:\fakepath\bar.txt. Was C:\fakepath\.
+FAIL changeDispatched should be true. Was false.
+FAIL multipleFilesInput.value should be C:\fakepath\bar.txt. Was C:\fakepath\.
+PASS changeDispatched is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

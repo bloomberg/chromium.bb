@@ -1,4 +1,168 @@
-NOTE(simonjam): Blink has never passed this test. I don't know what this file
-would look like had we passed everything. Until then, I'm leaving this bogus
-file here and marking it failing in TestExpectations. If we ever pass all of
-these tests, please rebaseline this file.
+idlharness test
+
+This test validates the WebIDL included in the Navigation Timing specification.
+
+interface PerformanceTiming {
+  readonly attribute unsigned long long navigationStart;
+  readonly attribute unsigned long long unloadEventStart;
+  readonly attribute unsigned long long unloadEventEnd;
+  readonly attribute unsigned long long redirectStart;
+  readonly attribute unsigned long long redirectEnd;
+  readonly attribute unsigned long long fetchStart;
+  readonly attribute unsigned long long domainLookupStart;
+  readonly attribute unsigned long long domainLookupEnd;
+  readonly attribute unsigned long long connectStart;
+  readonly attribute unsigned long long connectEnd;
+  readonly attribute unsigned long long secureConnectionStart;
+  readonly attribute unsigned long long requestStart;
+  readonly attribute unsigned long long responseStart;
+  readonly attribute unsigned long long responseEnd;
+  readonly attribute unsigned long long domLoading;
+  readonly attribute unsigned long long domInteractive;
+  readonly attribute unsigned long long domContentLoadedEventStart;
+  readonly attribute unsigned long long domContentLoadedEventEnd;
+  readonly attribute unsigned long long domComplete;
+  readonly attribute unsigned long long loadEventStart;
+  readonly attribute unsigned long long loadEventEnd;
+};
+
+interface PerformanceNavigation {
+  const unsigned short TYPE_NAVIGATE = 0;
+  const unsigned short TYPE_RELOAD = 1;
+  const unsigned short TYPE_BACK_FORWARD = 2;
+  const unsigned short TYPE_RESERVED = 255;
+  readonly attribute unsigned short type;
+  readonly attribute unsigned short redirectCount;
+};
+
+interface Performance {
+  readonly attribute PerformanceTiming timing;
+  readonly attribute PerformanceNavigation navigation;
+};
+
+partial interface Window {
+  [Replaceable] readonly attribute Performance performance;
+};
+
+FAIL Window interface: attribute performance assert_true: The prototype object must have a property "performance" expected true got false
+PASS Window must be primary interface of window 
+FAIL Stringification of window assert_class_string is not defined(stack: ReferenceError: assert_class_string is not defined
+    at IdlObject. (http://127.0.0.1:8000/w3c/resources/idlharness.js:1563:9)
+    at Object.Test.step (http://127.0.0.1:8000/w3c/resources/testharness.js:876:18)
+    at test (http://127.0.0.1:8000/w3c/resources/testharness.js:338:18)
+    at IdlObject.IdlInterface.test_primary_interface_of (http://127.0.0.1:8000/w3c/resources/idlharness.js:1559:5)
+    at IdlObject.IdlInterface.test_object (http://127.0.0.1:8000/w3c/resources/idlharness.js:1509:10)
+    at null. (http://127.0.0.1:8000/w3c/resources/idlharness.js:440:36)
+    at Array.forEach (native)
+    at IdlArray.test (http://127.0.0.1:8000/w3c/resources/idlharness.js:438:32)
+    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:82:13
+    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:83:3)
+FAIL Window interface: window must inherit property "performance" with the proper type (0) assert_inherits: property "performance" found on object expected in prototype chain
+FAIL PerformanceTiming interface: existence and properties of interface object assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: existence and properties of interface prototype object assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: existence and properties of interface prototype object's "constructor" property assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute navigationStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute unloadEventStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute unloadEventEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute redirectStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute redirectEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute fetchStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute domainLookupStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute domainLookupEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute connectStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute connectEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute secureConnectionStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute requestStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute responseStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute responseEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute domLoading assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute domInteractive assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute domContentLoadedEventStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute domContentLoadedEventEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute domComplete assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute loadEventStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming interface: attribute loadEventEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL PerformanceTiming must be primary interface of window.performance.timing assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
+FAIL Stringification of window.performance.timing assert_class_string is not defined(stack: ReferenceError: assert_class_string is not defined
+    at IdlObject. (http://127.0.0.1:8000/w3c/resources/idlharness.js:1563:9)
+    at Object.Test.step (http://127.0.0.1:8000/w3c/resources/testharness.js:876:18)
+    at test (http://127.0.0.1:8000/w3c/resources/testharness.js:338:18)
+    at IdlObject.IdlInterface.test_primary_interface_of (http://127.0.0.1:8000/w3c/resources/idlharness.js:1559:5)
+    at IdlObject.IdlInterface.test_object (http://127.0.0.1:8000/w3c/resources/idlharness.js:1509:10)
+    at null. (http://127.0.0.1:8000/w3c/resources/idlharness.js:440:36)
+    at Array.forEach (native)
+    at IdlArray.test (http://127.0.0.1:8000/w3c/resources/idlharness.js:438:32)
+    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:82:13
+    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:83:3)
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "navigationStart" with the proper type (0) assert_inherits: property "navigationStart" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "unloadEventStart" with the proper type (1) assert_inherits: property "unloadEventStart" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "unloadEventEnd" with the proper type (2) assert_inherits: property "unloadEventEnd" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "redirectStart" with the proper type (3) assert_inherits: property "redirectStart" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "redirectEnd" with the proper type (4) assert_inherits: property "redirectEnd" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "fetchStart" with the proper type (5) assert_inherits: property "fetchStart" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "domainLookupStart" with the proper type (6) assert_inherits: property "domainLookupStart" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "domainLookupEnd" with the proper type (7) assert_inherits: property "domainLookupEnd" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "connectStart" with the proper type (8) assert_inherits: property "connectStart" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "connectEnd" with the proper type (9) assert_inherits: property "connectEnd" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "secureConnectionStart" with the proper type (10) assert_inherits: property "secureConnectionStart" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "requestStart" with the proper type (11) assert_inherits: property "requestStart" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "responseStart" with the proper type (12) assert_inherits: property "responseStart" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "responseEnd" with the proper type (13) assert_inherits: property "responseEnd" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "domLoading" with the proper type (14) assert_inherits: property "domLoading" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "domInteractive" with the proper type (15) assert_inherits: property "domInteractive" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "domContentLoadedEventStart" with the proper type (16) assert_inherits: property "domContentLoadedEventStart" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "domContentLoadedEventEnd" with the proper type (17) assert_inherits: property "domContentLoadedEventEnd" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "domComplete" with the proper type (18) assert_inherits: property "domComplete" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "loadEventStart" with the proper type (19) assert_inherits: property "loadEventStart" found on object expected in prototype chain
+FAIL PerformanceTiming interface: window.performance.timing must inherit property "loadEventEnd" with the proper type (20) assert_inherits: property "loadEventEnd" found on object expected in prototype chain
+FAIL PerformanceNavigation interface: existence and properties of interface object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation interface: existence and properties of interface prototype object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation interface: existence and properties of interface prototype object's "constructor" property assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation interface: constant TYPE_NAVIGATE on interface object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation interface: constant TYPE_NAVIGATE on interface prototype object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation interface: constant TYPE_RELOAD on interface object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation interface: constant TYPE_RELOAD on interface prototype object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface prototype object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation interface: constant TYPE_RESERVED on interface object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation interface: constant TYPE_RESERVED on interface prototype object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation interface: attribute type assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation interface: attribute redirectCount assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL PerformanceNavigation must be primary interface of window.performance.navigation assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
+FAIL Stringification of window.performance.navigation assert_class_string is not defined(stack: ReferenceError: assert_class_string is not defined
+    at IdlObject. (http://127.0.0.1:8000/w3c/resources/idlharness.js:1563:9)
+    at Object.Test.step (http://127.0.0.1:8000/w3c/resources/testharness.js:876:18)
+    at test (http://127.0.0.1:8000/w3c/resources/testharness.js:338:18)
+    at IdlObject.IdlInterface.test_primary_interface_of (http://127.0.0.1:8000/w3c/resources/idlharness.js:1559:5)
+    at IdlObject.IdlInterface.test_object (http://127.0.0.1:8000/w3c/resources/idlharness.js:1509:10)
+    at null. (http://127.0.0.1:8000/w3c/resources/idlharness.js:440:36)
+    at Array.forEach (native)
+    at IdlArray.test (http://127.0.0.1:8000/w3c/resources/idlharness.js:438:32)
+    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:82:13
+    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:83:3)
+PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_NAVIGATE" with the proper type (0) 
+PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_RELOAD" with the proper type (1) 
+PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_BACK_FORWARD" with the proper type (2) 
+PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_RESERVED" with the proper type (3) 
+FAIL PerformanceNavigation interface: window.performance.navigation must inherit property "type" with the proper type (4) assert_inherits: property "type" found on object expected in prototype chain
+FAIL PerformanceNavigation interface: window.performance.navigation must inherit property "redirectCount" with the proper type (5) assert_inherits: property "redirectCount" found on object expected in prototype chain
+FAIL Performance interface: existence and properties of interface object assert_own_property: window does not have own property "Performance" expected property "Performance" missing
+FAIL Performance interface: existence and properties of interface prototype object assert_own_property: window does not have own property "Performance" expected property "Performance" missing
+FAIL Performance interface: existence and properties of interface prototype object's "constructor" property assert_own_property: window does not have own property "Performance" expected property "Performance" missing
+FAIL Performance interface: attribute timing assert_own_property: window does not have own property "Performance" expected property "Performance" missing
+FAIL Performance interface: attribute navigation assert_own_property: window does not have own property "Performance" expected property "Performance" missing
+FAIL Performance must be primary interface of window.performance assert_own_property: window does not have own property "Performance" expected property "Performance" missing
+FAIL Stringification of window.performance assert_class_string is not defined(stack: ReferenceError: assert_class_string is not defined
+    at IdlObject. (http://127.0.0.1:8000/w3c/resources/idlharness.js:1563:9)
+    at Object.Test.step (http://127.0.0.1:8000/w3c/resources/testharness.js:876:18)
+    at test (http://127.0.0.1:8000/w3c/resources/testharness.js:338:18)
+    at IdlObject.IdlInterface.test_primary_interface_of (http://127.0.0.1:8000/w3c/resources/idlharness.js:1559:5)
+    at IdlObject.IdlInterface.test_object (http://127.0.0.1:8000/w3c/resources/idlharness.js:1509:10)
+    at null. (http://127.0.0.1:8000/w3c/resources/idlharness.js:440:36)
+    at Array.forEach (native)
+    at IdlArray.test (http://127.0.0.1:8000/w3c/resources/idlharness.js:438:32)
+    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:82:13
+    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:83:3)
+FAIL Performance interface: window.performance must inherit property "timing" with the proper type (0) assert_inherits: property "timing" found on object expected in prototype chain
+FAIL Performance interface: window.performance must inherit property "navigation" with the proper type (1) assert_inherits: property "navigation" found on object expected in prototype chain
+

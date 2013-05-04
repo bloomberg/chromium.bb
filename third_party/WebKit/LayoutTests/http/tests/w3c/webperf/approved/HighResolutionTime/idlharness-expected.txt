@@ -1,4 +1,26 @@
-NOTE(simonjam): Blink has never passed this test. I don't know what this file
-would look like had we passed everything. Until then, I'm leaving this bogus
-file here and marking it failing in TestExpectations. If we ever pass all of
-these tests, please rebaseline this file.
+CONSOLE MESSAGE: line 308: typedef not yet supported
+idlharness test
+
+This test validates the WebIDL included in the High Resolution Time specification.
+
+typedef double DOMHighResTimeStamp;
+
+partial interface Performance {
+  DOMHighResTimeStamp now();
+};
+
+FAIL Performance interface: operation now() assert_own_property: window does not have own property "Performance" expected property "Performance" missing
+FAIL Performance must be primary interface of window.performance assert_own_property: window does not have own property "Performance" expected property "Performance" missing
+FAIL Stringification of window.performance assert_class_string is not defined(stack: ReferenceError: assert_class_string is not defined
+    at IdlObject. (http://127.0.0.1:8000/w3c/resources/idlharness.js:1563:9)
+    at Object.Test.step (http://127.0.0.1:8000/w3c/resources/testharness.js:876:18)
+    at test (http://127.0.0.1:8000/w3c/resources/testharness.js:338:18)
+    at IdlObject.IdlInterface.test_primary_interface_of (http://127.0.0.1:8000/w3c/resources/idlharness.js:1559:5)
+    at IdlObject.IdlInterface.test_object (http://127.0.0.1:8000/w3c/resources/idlharness.js:1509:10)
+    at null. (http://127.0.0.1:8000/w3c/resources/idlharness.js:440:36)
+    at Array.forEach (native)
+    at IdlArray.test (http://127.0.0.1:8000/w3c/resources/idlharness.js:438:32)
+    at http://127.0.0.1:8000/w3c/webperf/approved/HighResolutionTime/idlharness.html:48:13
+    at http://127.0.0.1:8000/w3c/webperf/approved/HighResolutionTime/idlharness.html:49:3)
+PASS Performance interface: window.performance must inherit property "now" with the proper type (0) 
+

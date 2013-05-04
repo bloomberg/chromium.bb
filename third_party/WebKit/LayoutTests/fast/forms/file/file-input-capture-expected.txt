@@ -3,15 +3,15 @@ Tests the capture attribute of <input type='file'>
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS 'capture' in input is true
-PASS input.capture is ''
-PASS input.capture is 'filesystem'
-PASS input.capture is 'camera'
-PASS input.capture is 'camcorder'
-PASS input.capture is 'microphone'
-PASS input.capture is 'filesystem'
-PASS input.capture is 'camcorder'
-PASS input.getAttribute('capture') is 'CamCorder'
+FAIL 'capture' in input should be true. Was false.
+FAIL input.capture should be  (of type string). Was undefined (of type undefined).
+FAIL input.capture should be filesystem (of type string). Was undefined (of type undefined).
+FAIL input.capture should be camera (of type string). Was undefined (of type undefined).
+FAIL input.capture should be camcorder (of type string). Was undefined (of type undefined).
+FAIL input.capture should be microphone (of type string). Was undefined (of type undefined).
+FAIL input.capture should be filesystem (of type string). Was undefined (of type undefined).
+FAIL input.capture should be camcorder. Was CamCorder.
+FAIL input.getAttribute('capture') should be CamCorder. Was xyzzy.
 PASS successfullyParsed is true
 
 TEST COMPLETE

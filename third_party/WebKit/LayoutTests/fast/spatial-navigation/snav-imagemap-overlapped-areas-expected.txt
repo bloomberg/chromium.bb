@@ -1,9 +1,9 @@
  
 
 
-PASS gFocusedDocument.activeElement.getAttribute("id") is "4"
-PASS gFocusedDocument.activeElement.getAttribute("id") is "1"
-PASS gFocusedDocument.activeElement.getAttribute("id") is "2"
+FAIL gFocusedDocument.activeElement.getAttribute("id") should be 4. Was 1.
+FAIL gFocusedDocument.activeElement.getAttribute("id") should be 1. Was 2.
+FAIL gFocusedDocument.activeElement.getAttribute("id") should be 2. Was 5.
 PASS gFocusedDocument.activeElement.getAttribute("id") is "5"
 PASS gFocusedDocument.activeElement.getAttribute("id") is "4"
 PASS gFocusedDocument.activeElement.getAttribute("id") is "3"
