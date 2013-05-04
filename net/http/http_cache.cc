@@ -722,7 +722,9 @@ int HttpCache::OpenEntry(const std::string& key, ActiveEntry** entry,
 
 int HttpCache::CreateEntry(const std::string& key, ActiveEntry** entry,
                            Transaction* trans) {
-  DCHECK(!FindActiveEntry(key));
+  if (FindActiveEntry(key)) {
+    return ERR_CACHE_RACE;
+  }
 
   WorkItem* item = new WorkItem(WI_CREATE_ENTRY, trans, entry);
   PendingOp* pending_op = GetPendingOp(key);

@@ -2900,6 +2900,13 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenMissingFile) {
   entry->Close();
   entry = NULL;
 
+  // To make sure the file creation completed we need to call open again so that
+  // we block until it actually created the files.
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+  ASSERT_TRUE(entry != NULL);
+  entry->Close();
+  entry = NULL;
+
   // Delete one of the files in the entry.
   base::FilePath to_delete_file = cache_path_.AppendASCII(
       disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, 0));
@@ -2927,6 +2934,13 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenBadFile) {
 
   ASSERT_EQ(net::OK, CreateEntry(key, &entry));
   disk_cache::Entry* null = NULL;
+  ASSERT_NE(null, entry);
+  entry->Close();
+  entry = NULL;
+
+  // To make sure the file creation completed we need to call open again so that
+  // we block until it actually created the files.
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
   ASSERT_NE(null, entry);
   entry->Close();
   entry = NULL;

@@ -104,6 +104,10 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
     // IO is currently in flight, operations must wait for completion before
     // launching.
     STATE_IO_PENDING,
+
+    // A failure occurred in the current or previous operation. All operations
+    // after that must fail, until we receive a Close().
+    STATE_FAILURE,
   };
 
   virtual ~SimpleEntryImpl();
@@ -130,11 +134,10 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   // the last reference.
   void RunNextOperationIfNeeded();
 
-  void OpenEntryInternal(Entry** entry,
-                         const CompletionCallback& callback);
+  void OpenEntryInternal(const CompletionCallback& callback, Entry** out_entry);
 
-  void CreateEntryInternal(Entry** entry,
-                           const CompletionCallback& callback);
+  void CreateEntryInternal(const CompletionCallback& callback,
+                           Entry** out_entry);
 
   void CloseInternal();
 

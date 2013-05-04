@@ -6,10 +6,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
-#include "base/threading/platform_thread.h"
-#include "base/timer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/platform_thread.h"
+#include "base/timer.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -20,6 +20,7 @@
 #include "net/disk_cache/entry_impl.h"
 #include "net/disk_cache/mem_entry_impl.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
+#include "net/disk_cache/simple/simple_entry_impl.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -2423,6 +2424,334 @@ TEST_F(DiskCacheEntryTest, SimpleCacheNoEOF) {
   EXPECT_TRUE(TruncatePath(entry_path, invalid_size));
   EXPECT_EQ(net::ERR_FAILED, OpenEntry(key, &entry));
   DisableIntegrityCheck();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic) {
+  // Test sequence:
+  // Create, Write, Read, Write, Read, Close.
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+  const char key[] = "the first key";
+
+  MessageLoopHelper helper;
+  CallbackTest callback1(&helper, false);
+  CallbackTest callback2(&helper, false);
+  CallbackTest callback3(&helper, false);
+  CallbackTest callback4(&helper, false);
+  CallbackTest callback5(&helper, false);
+
+  int expected = 0;
+  const int kSize1 = 10;
+  const int kSize2 = 20;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
+  scoped_refptr<net::IOBuffer> buffer1_read(new net::IOBuffer(kSize1));
+  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kSize2));
+  scoped_refptr<net::IOBuffer> buffer2_read(new net::IOBuffer(kSize2));
+  CacheTestFillBuffer(buffer1->data(), kSize1, false);
+  CacheTestFillBuffer(buffer2->data(), kSize2, false);
+
+  disk_cache::Entry* entry = NULL;
+  // Create is optimistic, must return OK.
+  ASSERT_EQ(net::OK,
+            cache_->CreateEntry(key, &entry,
+                                base::Bind(&CallbackTest::Run,
+                                           base::Unretained(&callback1))));
+  EXPECT_NE(null, entry);
+
+  // This write may or may not be optimistic (it depends if the previous
+  // optimistic create already finished by the time we call the write here).
+  int ret = entry->WriteData(
+      0, 0, buffer1, kSize1,
+      base::Bind(&CallbackTest::Run, base::Unretained(&callback2)), false);
+  EXPECT_TRUE(kSize1 == ret || net::ERR_IO_PENDING == ret);
+  if (net::ERR_IO_PENDING == ret)
+    expected++;
+
+  // This Read must not be optimistic, since we don't support that yet.
+  EXPECT_EQ(net::ERR_IO_PENDING, entry->ReadData(
+      0, 0, buffer1_read, kSize1,
+      base::Bind(&CallbackTest::Run, base::Unretained(&callback3))));
+  expected++;
+  EXPECT_TRUE(helper.WaitUntilCacheIoFinished(expected));
+  EXPECT_EQ(0, memcmp(buffer1->data(), buffer1_read->data(), kSize1));
+
+  // At this point after waiting, the pending operations queue on the entry
+  // should be empty, so the next Write operation must run as optimistic.
+  EXPECT_EQ(kSize2,
+            entry->WriteData(
+                0, 0, buffer2, kSize2,
+                base::Bind(&CallbackTest::Run,
+                           base::Unretained(&callback4)), false));
+
+  // Lets do another read so we block until both the write and the read
+  // operation finishes and we can then test for HasOneRef() below.
+  EXPECT_EQ(net::ERR_IO_PENDING, entry->ReadData(
+      0, 0, buffer2_read, kSize2,
+      base::Bind(&CallbackTest::Run, base::Unretained(&callback5))));
+  expected++;
+
+  EXPECT_TRUE(helper.WaitUntilCacheIoFinished(expected));
+  EXPECT_EQ(0, memcmp(buffer2->data(), buffer2_read->data(), kSize2));
+
+  // Check that we are not leaking.
+  EXPECT_NE(entry, null);
+  EXPECT_TRUE(
+      static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
+  entry->Close();
+  entry = NULL;
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic2) {
+  // Test sequence:
+  // Create, Open, Close, Close.
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+  const char key[] = "the first key";
+
+  MessageLoopHelper helper;
+  CallbackTest callback1(&helper, false);
+  CallbackTest callback2(&helper, false);
+
+  disk_cache::Entry* entry = NULL;
+  ASSERT_EQ(net::OK,
+            cache_->CreateEntry(key, &entry,
+                                base::Bind(&CallbackTest::Run,
+                                           base::Unretained(&callback1))));
+  EXPECT_NE(null, entry);
+
+  disk_cache::Entry* entry2 = NULL;
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            cache_->OpenEntry(key, &entry2,
+                              base::Bind(&CallbackTest::Run,
+                                         base::Unretained(&callback2))));
+  EXPECT_TRUE(helper.WaitUntilCacheIoFinished(1));
+
+  EXPECT_NE(null, entry2);
+  EXPECT_EQ(entry, entry2);
+
+  // We have to call close twice, since we called create and open above.
+  entry->Close();
+
+  // Check that we are not leaking.
+  EXPECT_TRUE(
+      static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
+  entry->Close();
+  entry = NULL;
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic3) {
+  // Test sequence:
+  // Create, Close, Open, Close.
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+  const char key[] = "the first key";
+
+  disk_cache::Entry* entry = NULL;
+  ASSERT_EQ(net::OK,
+            cache_->CreateEntry(key, &entry, net::CompletionCallback()));
+  EXPECT_NE(null, entry);
+  entry->Close();
+
+  net::TestCompletionCallback cb;
+  disk_cache::Entry* entry2 = NULL;
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            cache_->OpenEntry(key, &entry2, cb.callback()));
+  EXPECT_EQ(net::OK, cb.GetResult(net::ERR_IO_PENDING));
+
+  EXPECT_NE(null, entry2);
+  EXPECT_EQ(entry, entry2);
+
+  // Check that we are not leaking.
+  EXPECT_TRUE(
+      static_cast<disk_cache::SimpleEntryImpl*>(entry2)->HasOneRef());
+  entry2->Close();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic4) {
+  // Test sequence:
+  // Create, Close, Write, Open, Open, Close, Write, Read, Close.
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+  const char key[] = "the first key";
+
+  net::TestCompletionCallback cb;
+  const int kSize1 = 10;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
+  CacheTestFillBuffer(buffer1->data(), kSize1, false);
+  disk_cache::Entry* entry = NULL;
+
+  ASSERT_EQ(net::OK,
+            cache_->CreateEntry(key, &entry, net::CompletionCallback()));
+  EXPECT_NE(null, entry);
+  entry->Close();
+
+  // Lets do a Write so we block until both the Close and the Write
+  // operation finishes. Write must fail since we are writing in a closed entry.
+  EXPECT_EQ(net::ERR_IO_PENDING, entry->WriteData(
+      0, 0, buffer1, kSize1, cb.callback(), false));
+  EXPECT_EQ(net::ERR_FAILED, cb.GetResult(net::ERR_IO_PENDING));
+
+  // Finish running the pending tasks so that we fully complete the close
+  // operation and destroy the entry object.
+  MessageLoop::current()->RunUntilIdle();
+
+  // At this point the |entry| must have been destroyed, and called
+  // RemoveSelfFromBackend().
+  disk_cache::Entry* entry2 = NULL;
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            cache_->OpenEntry(key, &entry2, cb.callback()));
+  EXPECT_EQ(net::OK, cb.GetResult(net::ERR_IO_PENDING));
+  EXPECT_NE(null, entry2);
+
+  disk_cache::Entry* entry3 = NULL;
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            cache_->OpenEntry(key, &entry3, cb.callback()));
+  EXPECT_EQ(net::OK, cb.GetResult(net::ERR_IO_PENDING));
+  EXPECT_NE(null, entry3);
+  EXPECT_EQ(entry2, entry3);
+  entry3->Close();
+
+  // The previous Close doesn't actually closes the entry since we opened it
+  // twice, so the next Write operation must succeed and it must be able to
+  // perform it optimistically, since there is no operation running on this
+  // entry.
+  EXPECT_EQ(kSize1, entry2->WriteData(
+      0, 0, buffer1, kSize1, net::CompletionCallback(), false));
+
+  // Lets do another read so we block until both the write and the read
+  // operation finishes and we can then test for HasOneRef() below.
+  EXPECT_EQ(net::ERR_IO_PENDING, entry2->ReadData(
+      0, 0, buffer1, kSize1, cb.callback()));
+  EXPECT_EQ(kSize1, cb.GetResult(net::ERR_IO_PENDING));
+
+  // Check that we are not leaking.
+  EXPECT_TRUE(
+      static_cast<disk_cache::SimpleEntryImpl*>(entry2)->HasOneRef());
+  entry2->Close();
+}
+
+// This test is flaky because of the race of Create followed by a Doom.
+// See test SimpleCacheCreateDoomRace.
+TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheOptimistic5) {
+  // Test sequence:
+  // Create, Doom, Write, Read, Close.
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+  const char key[] = "the first key";
+
+  net::TestCompletionCallback cb;
+  const int kSize1 = 10;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
+  CacheTestFillBuffer(buffer1->data(), kSize1, false);
+  disk_cache::Entry* entry = NULL;
+
+  ASSERT_EQ(net::OK,
+            cache_->CreateEntry(key, &entry, net::CompletionCallback()));
+  EXPECT_NE(null, entry);
+  entry->Doom();
+
+  EXPECT_EQ(net::ERR_IO_PENDING, entry->WriteData(
+      0, 0, buffer1, kSize1, cb.callback(), false));
+  EXPECT_EQ(kSize1, cb.GetResult(net::ERR_IO_PENDING));
+
+  EXPECT_EQ(net::ERR_IO_PENDING, entry->ReadData(
+      0, 0, buffer1, kSize1, cb.callback()));
+  EXPECT_EQ(kSize1, cb.GetResult(net::ERR_IO_PENDING));
+
+  // Check that we are not leaking.
+  EXPECT_TRUE(
+      static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
+  entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic6) {
+  // Test sequence:
+  // Create, Write, Doom, Doom, Read, Doom, Close.
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+  const char key[] = "the first key";
+
+  net::TestCompletionCallback cb;
+  const int kSize1 = 10;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
+  scoped_refptr<net::IOBuffer> buffer1_read(new net::IOBuffer(kSize1));
+  CacheTestFillBuffer(buffer1->data(), kSize1, false);
+  disk_cache::Entry* entry = NULL;
+
+  ASSERT_EQ(net::OK,
+            cache_->CreateEntry(key, &entry, net::CompletionCallback()));
+  EXPECT_NE(null, entry);
+
+  EXPECT_EQ(net::ERR_IO_PENDING, entry->WriteData(
+      0, 0, buffer1, kSize1, cb.callback(), false));
+  EXPECT_EQ(kSize1, cb.GetResult(net::ERR_IO_PENDING));
+
+  entry->Doom();
+  entry->Doom();
+
+  // This Read must not be optimistic, since we don't support that yet.
+  EXPECT_EQ(net::ERR_IO_PENDING, entry->ReadData(
+      0, 0, buffer1_read, kSize1, cb.callback()));
+  EXPECT_EQ(kSize1, cb.GetResult(net::ERR_IO_PENDING));
+  EXPECT_EQ(0, memcmp(buffer1->data(), buffer1_read->data(), kSize1));
+
+  entry->Doom();
+
+  // Check that we are not leaking.
+  EXPECT_TRUE(
+      static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
+  entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheCreateDoomRace) {
+  // Test sequence:
+  // Create, Doom, Write, Close, Check files are not on disk anymore.
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+  const char key[] = "the first key";
+
+  net::TestCompletionCallback cb;
+  const int kSize1 = 10;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
+  CacheTestFillBuffer(buffer1->data(), kSize1, false);
+  disk_cache::Entry* entry = NULL;
+
+  ASSERT_EQ(net::OK,
+            cache_->CreateEntry(key, &entry, net::CompletionCallback()));
+  EXPECT_NE(null, entry);
+
+  cache_->DoomEntry(key, cb.callback());
+  EXPECT_EQ(net::OK, cb.GetResult(net::ERR_IO_PENDING));
+
+  // Lets do a Write so we block until all operations are done, so we can check
+  // the HasOneRef() below. This call can't be optimistic and we are checking
+  // that here.
+  EXPECT_EQ(net::ERR_IO_PENDING, entry->WriteData(
+      0, 0, buffer1, kSize1, cb.callback(), false));
+  EXPECT_EQ(kSize1, cb.GetResult(net::ERR_IO_PENDING));
+
+  // Check that we are not leaking.
+  EXPECT_TRUE(
+      static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
+  entry->Close();
+
+  // Finish running the pending tasks so that we fully complete the close
+  // operation and destroy the entry object.
+  MessageLoop::current()->RunUntilIdle();
+
+  for (int i = 0; i < disk_cache::kSimpleEntryFileCount; ++i) {
+    base::FilePath entry_file_path = cache_path_.AppendASCII(
+        disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, i));
+    base::PlatformFileInfo info;
+    EXPECT_FALSE(file_util::GetFileInfo(entry_file_path, &info));
+  }
 }
 
 // Tests that old entries are evicted while new entries remain in the index.

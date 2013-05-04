@@ -79,16 +79,35 @@ SimpleEntryImpl::SimpleEntryImpl(SimpleBackendImpl* backend,
                  arrays_should_be_same_size2);
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(have_written_),
                  arrays_should_be_same_size3);
-
   MakeUninitialized();
 }
 
 int SimpleEntryImpl::OpenEntry(Entry** out_entry,
                                const CompletionCallback& callback) {
   DCHECK(backend_);
+  // This enumeration is used in histograms, add entries only at end.
+  enum OpenEntryIndexEnum {
+    INDEX_NOEXIST = 0,
+    INDEX_MISS = 1,
+    INDEX_HIT = 2,
+    INDEX_MAX = 3,
+  };
+  OpenEntryIndexEnum open_entry_index_enum = INDEX_NOEXIST;
+  if (backend_) {
+    if (backend_->index()->Has(key_))
+      open_entry_index_enum = INDEX_HIT;
+    else
+      open_entry_index_enum = INDEX_MISS;
+  }
+  UMA_HISTOGRAM_ENUMERATION("SimpleCache.OpenEntryIndexState",
+                            open_entry_index_enum, INDEX_MAX);
+
+  // If entry is not known to the index, initiate fast failover to the network.
+  if (open_entry_index_enum == INDEX_MISS)
+    return net::ERR_FAILED;
 
   pending_operations_.push(base::Bind(&SimpleEntryImpl::OpenEntryInternal,
-                                      this, out_entry, callback));
+                                      this, callback, out_entry));
   RunNextOperationIfNeeded();
   return net::ERR_IO_PENDING;
 }
@@ -96,15 +115,42 @@ int SimpleEntryImpl::OpenEntry(Entry** out_entry,
 int SimpleEntryImpl::CreateEntry(Entry** out_entry,
                                  const CompletionCallback& callback) {
   DCHECK(backend_);
-  pending_operations_.push(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
-                                      this, out_entry, callback));
+  int ret_value = net::ERR_FAILED;
+  if (state_ == STATE_UNINITIALIZED &&
+      pending_operations_.size() == 0) {
+    ReturnEntryToCaller(out_entry);
+    // We can do optimistic Create.
+    pending_operations_.push(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
+                                        this,
+                                        CompletionCallback(),
+                                        static_cast<Entry**>(NULL)));
+    ret_value = net::OK;
+  } else {
+    pending_operations_.push(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
+                                        this,
+                                        callback,
+                                        out_entry));
+    ret_value = net::ERR_IO_PENDING;
+  }
+
+  // We insert the entry in the index before creating the entry files in the
+  // SimpleSynchronousEntry, because this way the worst scenario is when we
+  // have the entry in the index but we don't have the created files yet, this
+  // way we never leak files. CreationOperationComplete will remove the entry
+  // from the index if the creation fails.
+  if (backend_)
+    backend_->index()->Insert(key_);
+
+  // Since we don't know the correct values for |last_used_| and
+  // |last_modified_| yet, we make this approximation.
+  last_used_ = last_modified_ = base::Time::Now();
+
   RunNextOperationIfNeeded();
-  return net::ERR_IO_PENDING;
+  return ret_value;
 }
 
 int SimpleEntryImpl::DoomEntry(const CompletionCallback& callback) {
   MarkAsDoomed();
-
   scoped_ptr<int> result(new int());
   Closure task = base::Bind(&SimpleSynchronousEntry::DoomEntry, path_, key_,
                             entry_hash_, result.get());
@@ -152,6 +198,7 @@ Time SimpleEntryImpl::GetLastModified() const {
 
 int32 SimpleEntryImpl::GetDataSize(int stream_index) const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_LE(0, data_size_[stream_index]);
   return data_size_[stream_index];
 }
 
@@ -165,7 +212,7 @@ int SimpleEntryImpl::ReadData(int stream_index,
     return net::ERR_INVALID_ARGUMENT;
   if (offset >= data_size_[stream_index] || offset < 0 || !buf_len)
     return 0;
-  buf_len = std::min(buf_len, data_size_[stream_index] - offset);
+
   // TODO(felipeg): Optimization: Add support for truly parallel read
   // operations.
   pending_operations_.push(
@@ -191,19 +238,41 @@ int SimpleEntryImpl::WriteData(int stream_index,
       buf_len < 0) {
     return net::ERR_INVALID_ARGUMENT;
   }
-  pending_operations_.push(
-      base::Bind(&SimpleEntryImpl::WriteDataInternal,
-                 this,
-                 stream_index,
-                 offset,
-                 make_scoped_refptr(buf),
-                 buf_len,
-                 callback,
-                 truncate));
+
+  int ret_value = net::ERR_FAILED;
+  if (state_ == STATE_READY && pending_operations_.size() == 0) {
+    // We can only do optimistic Write if there is no pending operations, so
+    // that we are sure that the next call to RunNextOperationIfNeeded will
+    // actually run the write operation that sets the stream size. It also
+    // prevents from previous possibly-conflicting writes that could be stacked
+    // in the |pending_operations_|. We could optimize this for when we have
+    // only read operations enqueued.
+    pending_operations_.push(
+        base::Bind(&SimpleEntryImpl::WriteDataInternal, this, stream_index,
+                   offset, make_scoped_refptr(buf), buf_len,
+                   CompletionCallback(), truncate));
+    ret_value = buf_len;
+  } else {
+    pending_operations_.push(
+        base::Bind(&SimpleEntryImpl::WriteDataInternal, this, stream_index,
+                   offset, make_scoped_refptr(buf), buf_len, callback,
+                   truncate));
+    ret_value = net::ERR_IO_PENDING;
+  }
+
+  if (truncate) {
+    data_size_[stream_index] = offset + buf_len;
+  } else {
+    data_size_[stream_index] = std::max(offset + buf_len,
+                                        data_size_[stream_index]);
+  }
+
+  // Since we don't know the correct values for |last_used_| and
+  // |last_modified_| yet, we make this approximation.
+  last_used_ = last_modified_ = base::Time::Now();
+
   RunNextOperationIfNeeded();
-  // TODO(felipeg): Optimization: Add support for optimistic writes, quickly
-  // returning net::OK here.
-  return net::ERR_IO_PENDING;
+  return ret_value;
 }
 
 int SimpleEntryImpl::ReadSparseData(int64 offset,
@@ -258,7 +327,7 @@ int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
 SimpleEntryImpl::~SimpleEntryImpl() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(0U, pending_operations_.size());
-  DCHECK_EQ(STATE_UNINITIALIZED, state_);
+  DCHECK(STATE_UNINITIALIZED == state_ || STATE_FAILURE == state_);
   DCHECK(!synchronous_entry_);
   RemoveSelfFromBackend();
 }
@@ -268,9 +337,11 @@ void SimpleEntryImpl::MakeUninitialized() {
   std::memset(crc32s_end_offset_, 0, sizeof(crc32s_end_offset_));
   std::memset(crc32s_, 0, sizeof(crc32s_));
   std::memset(have_written_, 0, sizeof(have_written_));
+  std::memset(data_size_, 0, sizeof(data_size_));
 }
 
 void SimpleEntryImpl::ReturnEntryToCaller(Entry** out_entry) {
+  DCHECK(out_entry);
   ++open_count_;
   AddRef();  // Balanced in Close()
   *out_entry = this;
@@ -292,10 +363,8 @@ void SimpleEntryImpl::MarkAsDoomed() {
 
 void SimpleEntryImpl::RunNextOperationIfNeeded() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-
   UMA_HISTOGRAM_CUSTOM_COUNTS("SimpleCache.EntryOperationsPending",
                               pending_operations_.size(), 0, 100, 20);
-
   if (!pending_operations_.empty() && state_ != STATE_IO_PENDING) {
     base::Closure operation = pending_operations_.front();
     pending_operations_.pop();
@@ -304,43 +373,23 @@ void SimpleEntryImpl::RunNextOperationIfNeeded() {
   }
 }
 
-void SimpleEntryImpl::OpenEntryInternal(Entry** out_entry,
-                                        const CompletionCallback& callback) {
+void SimpleEntryImpl::OpenEntryInternal(const CompletionCallback& callback,
+                                        Entry** out_entry) {
   ScopedOperationRunner operation_runner(this);
-
   if (state_ == STATE_READY) {
     ReturnEntryToCaller(out_entry);
     MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(callback,
                                                                 net::OK));
     return;
-  }
-  DCHECK_EQ(STATE_UNINITIALIZED, state_);
-
-  // This enumeration is used in histograms, add entries only at end.
-  enum OpenEntryIndexEnum {
-    INDEX_NOEXIST = 0,
-    INDEX_MISS = 1,
-    INDEX_HIT = 2,
-    INDEX_MAX = 3,
-  };
-  OpenEntryIndexEnum open_entry_index_enum = INDEX_NOEXIST;
-  if (backend_) {
-    if (backend_->index()->Has(key_))
-      open_entry_index_enum = INDEX_HIT;
-    else
-      open_entry_index_enum = INDEX_MISS;
-  }
-  UMA_HISTOGRAM_ENUMERATION("SimpleCache.OpenEntryIndexState",
-                            open_entry_index_enum, INDEX_MAX);
-  // If entry is not known to the index, initiate fast failover to the network.
-  if (open_entry_index_enum == INDEX_MISS) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-                                          base::Bind(callback,
-                                                     net::ERR_FAILED));
+  } else if (state_ == STATE_FAILURE) {
+    if (!callback.is_null()) {
+      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
+          callback, net::ERR_FAILED));
+    }
     return;
   }
+  DCHECK_EQ(STATE_UNINITIALIZED, state_);
   state_ = STATE_IO_PENDING;
-
   const base::TimeTicks start_time = base::TimeTicks::Now();
   typedef SimpleSynchronousEntry* PointerToSimpleSynchronousEntry;
   scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
@@ -354,15 +403,15 @@ void SimpleEntryImpl::OpenEntryInternal(Entry** out_entry,
   WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
 }
 
-void SimpleEntryImpl::CreateEntryInternal(Entry** out_entry,
-                                          const CompletionCallback& callback) {
+void SimpleEntryImpl::CreateEntryInternal(const CompletionCallback& callback,
+                                          Entry** out_entry) {
   ScopedOperationRunner operation_runner(this);
-
-  if (state_ == STATE_READY) {
+  if (state_ != STATE_UNINITIALIZED) {
     // There is already an active normal entry.
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-                                          base::Bind(callback,
-                                                     net::ERR_FAILED));
+    if (!callback.is_null()) {
+      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
+          callback, net::ERR_FAILED));
+    }
     return;
   }
   DCHECK_EQ(STATE_UNINITIALIZED, state_);
@@ -373,13 +422,6 @@ void SimpleEntryImpl::CreateEntryInternal(Entry** out_entry,
   for (int i = 0; i < kSimpleEntryFileCount; ++i)
     have_written_[i] = true;
 
-  // We insert the entry in the index before creating the entry files in the
-  // SimpleSynchronousEntry, because this way the worst scenario is when we
-  // have the entry in the index but we don't have the created files yet, this
-  // way we never leak files. CreationOperationComplete will remove the entry
-  // from the index if the creation fails.
-  if (backend_)
-    backend_->index()->Insert(key_);
   const base::TimeTicks start_time = base::TimeTicks::Now();
   typedef SimpleSynchronousEntry* PointerToSimpleSynchronousEntry;
   scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
@@ -395,32 +437,38 @@ void SimpleEntryImpl::CreateEntryInternal(Entry** out_entry,
 
 void SimpleEntryImpl::CloseInternal() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(0U, pending_operations_.size());
-  DCHECK_EQ(STATE_READY, state_);
-  DCHECK(synchronous_entry_);
-
-  state_ = STATE_IO_PENDING;
-
   typedef SimpleSynchronousEntry::CRCRecord CRCRecord;
-
   scoped_ptr<std::vector<CRCRecord> >
       crc32s_to_write(new std::vector<CRCRecord>());
-  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    if (have_written_[i]) {
-      if (data_size_[i] == crc32s_end_offset_[i]) {
-        int32 crc = data_size_[i] == 0 ? crc32(0, Z_NULL, 0) : crc32s_[i];
-        crc32s_to_write->push_back(CRCRecord(i, true, crc));
-      } else {
-        crc32s_to_write->push_back(CRCRecord(i, false, 0));
+
+  if (state_ == STATE_READY) {
+    DCHECK(synchronous_entry_);
+    state_ = STATE_IO_PENDING;
+    for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+      if (have_written_[i]) {
+        if (data_size_[i] == crc32s_end_offset_[i]) {
+          int32 crc = data_size_[i] == 0 ? crc32(0, Z_NULL, 0) : crc32s_[i];
+          crc32s_to_write->push_back(CRCRecord(i, true, crc));
+        } else {
+          crc32s_to_write->push_back(CRCRecord(i, false, 0));
+        }
       }
     }
+  } else {
+    DCHECK_EQ(STATE_FAILURE, state_);
   }
-  Closure task = base::Bind(&SimpleSynchronousEntry::Close,
-                            base::Unretained(synchronous_entry_),
-                            base::Passed(&crc32s_to_write));
-  Closure reply = base::Bind(&SimpleEntryImpl::CloseOperationComplete, this);
-  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
-  synchronous_entry_ = NULL;
+
+  if (synchronous_entry_) {
+    Closure task = base::Bind(&SimpleSynchronousEntry::Close,
+                              base::Unretained(synchronous_entry_),
+                              base::Passed(&crc32s_to_write));
+    Closure reply = base::Bind(&SimpleEntryImpl::CloseOperationComplete, this);
+    synchronous_entry_ = NULL;
+    WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+  } else {
+    synchronous_entry_ = NULL;
+    CloseOperationComplete();
+  }
 }
 
 void SimpleEntryImpl::ReadDataInternal(int stream_index,
@@ -429,7 +477,26 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
                                        int buf_len,
                                        const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  ScopedOperationRunner operation_runner(this);
+
+  if (state_ == STATE_FAILURE || state_ == STATE_UNINITIALIZED) {
+    if (!callback.is_null()) {
+      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
+          callback, net::ERR_FAILED));
+    }
+    return;
+  }
   DCHECK_EQ(STATE_READY, state_);
+  buf_len = std::min(buf_len, GetDataSize(stream_index) - offset);
+  if (offset < 0 || buf_len <= 0) {
+    // If there is nothing to read, we bail out before setting state_ to
+    // STATE_IO_PENDING.
+    if (!callback.is_null())
+      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
+          callback, 0));
+    return;
+  }
+
   state_ = STATE_IO_PENDING;
   if (backend_)
     backend_->index()->UseIfExists(key_);
@@ -453,6 +520,17 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
                                        const CompletionCallback& callback,
                                        bool truncate) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  ScopedOperationRunner operation_runner(this);
+  if (state_ == STATE_FAILURE || state_ == STATE_UNINITIALIZED) {
+    if (!callback.is_null()) {
+      // We need to posttask so that we don't go in a loop when we call the
+      // callback directly.
+      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
+          callback, net::ERR_FAILED));
+    }
+    // |this| may be destroyed after return here.
+    return;
+  }
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;
   if (backend_)
@@ -495,25 +573,35 @@ void SimpleEntryImpl::CreationOperationComplete(
   DCHECK_EQ(state_, STATE_IO_PENDING);
   DCHECK(in_sync_entry);
   DCHECK(in_result);
-
   ScopedOperationRunner operation_runner(this);
-
   UMA_HISTOGRAM_BOOLEAN(
       "SimpleCache.EntryCreationResult", *in_result == net::OK);
   if (*in_result != net::OK) {
     if (*in_result!= net::ERR_FILE_EXISTS)
       MarkAsDoomed();
+    if (!completion_callback.is_null()) {
+      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
+          completion_callback, net::ERR_FAILED));
+    }
     MakeUninitialized();
-    completion_callback.Run(net::ERR_FAILED);
+    state_ = STATE_FAILURE;
     return;
   }
+  // If out_entry is NULL, it means we already called ReturnEntryToCaller from
+  // the optimistic Create case.
+  if (out_entry)
+    ReturnEntryToCaller(out_entry);
+
   state_ = STATE_READY;
   synchronous_entry_ = *in_sync_entry;
   SetSynchronousData();
-  ReturnEntryToCaller(out_entry);
   UMA_HISTOGRAM_TIMES("SimpleCache.EntryCreationTime",
                       (base::TimeTicks::Now() - start_time));
-  completion_callback.Run(net::OK);
+
+  if (!completion_callback.is_null()) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
+        completion_callback, net::OK));
+  }
 }
 
 void SimpleEntryImpl::EntryOperationComplete(
@@ -524,15 +612,19 @@ void SimpleEntryImpl::EntryOperationComplete(
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_IO_PENDING, state_);
   DCHECK(result);
-
   state_ = STATE_READY;
-
   if (*result < 0) {
     MarkAsDoomed();
+    state_ = STATE_FAILURE;
     crc32s_end_offset_[stream_index] = 0;
+  } else {
+    SetSynchronousData();
   }
-  SetSynchronousData();
-  completion_callback.Run(*result);
+
+  if (!completion_callback.is_null()) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
+        completion_callback, *result));
+  }
   RunNextOperationIfNeeded();
 }
 
@@ -598,14 +690,14 @@ void SimpleEntryImpl::ChecksumOperationComplete(
 void SimpleEntryImpl::CloseOperationComplete() {
   DCHECK(!synchronous_entry_);
   DCHECK_EQ(0, open_count_);
-  DCHECK_EQ(STATE_IO_PENDING, state_);
-
+  DCHECK(STATE_IO_PENDING == state_ || STATE_FAILURE == state_);
   MakeUninitialized();
   RunNextOperationIfNeeded();
 }
 
 void SimpleEntryImpl::SetSynchronousData() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_READY, state_);
   // TODO(felipeg): These copies to avoid data races are not optimal. While
   // adding an IO thread index (for fast misses etc...), we can store this data
