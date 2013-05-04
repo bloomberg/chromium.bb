@@ -36,7 +36,7 @@ class BASE_EXPORT MessageLoopProxyImpl : public MessageLoopProxy {
 
  private:
   // Allow the MessageLoop to create a MessageLoopProxyImpl.
-  friend class ::MessageLoop;
+  friend class MessageLoop;
   friend class DeleteHelper<MessageLoopProxyImpl>;
 
   MessageLoopProxyImpl();

@@ -108,7 +108,7 @@ class ObserverListThreadSafe
   void AddObserver(ObserverType* obs) {
     // If there is not a current MessageLoop, it is impossible to notify on it,
     // so do not add the observer.
-    if (!MessageLoop::current())
+    if (!base::MessageLoop::current())
       return;
 
     ObserverList<ObserverType>* list = NULL;

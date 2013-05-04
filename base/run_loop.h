@@ -73,7 +73,7 @@ class BASE_EXPORT RunLoop {
   base::Closure QuitClosure();
 
  private:
-  friend class ::MessageLoop;
+  friend class MessageLoop;
 #if defined(OS_ANDROID)
   // Android doesn't support the blocking MessageLoop::Run, so it calls
   // BeforeRun and AfterRun directly.
