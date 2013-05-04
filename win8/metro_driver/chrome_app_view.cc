@@ -753,7 +753,7 @@ ChromeAppView::Load(HSTRING entryPoint) {
 void RunMessageLoop(winui::Core::ICoreDispatcher* dispatcher) {
   // We're entering a nested message loop, let's allow dispatching
   // tasks while we're in there.
-  MessageLoop::current()->SetNestableTasksAllowed(true);
+  base::MessageLoop::current()->SetNestableTasksAllowed(true);
 
   // Enter main core message loop. There are several ways to exit it
   // Nicely:
@@ -765,7 +765,7 @@ void RunMessageLoop(winui::Core::ICoreDispatcher* dispatcher) {
           ::CoreProcessEventsOption_ProcessUntilQuit);
 
   // Wind down the thread's chrome message loop.
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 void ChromeAppView::CheckForOSKActivation() {
@@ -798,10 +798,9 @@ void ChromeAppView::CheckForOSKActivation() {
       }
     }
   }
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ChromeAppView::CheckForOSKActivation,
-                 base::Unretained(this)),
+      base::Bind(&ChromeAppView::CheckForOSKActivation, base::Unretained(this)),
       base::TimeDelta::FromMilliseconds(kCheckOSKDelayMs));
 }
 
@@ -820,7 +819,7 @@ ChromeAppView::Run() {
   }
 
   // Create a message loop to allow message passing into this thread.
-  MessageLoop msg_loop(MessageLoop::TYPE_UI);
+  base::MessageLoop msg_loop(base::MessageLoop::TYPE_UI);
 
   // Announce our message loop to the world.
   globals.appview_msg_loop = msg_loop.message_loop_proxy();

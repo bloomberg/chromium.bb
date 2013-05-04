@@ -267,14 +267,15 @@ HRESULT OpenWithDialogController::RunSynchronously(
     const string16& protocol,
     const string16& program,
     std::vector<string16>* choices) {
-  DCHECK_EQ(MessageLoop::current(), static_cast<MessageLoop*>(NULL));
+  DCHECK_EQ(base::MessageLoop::current(),
+            static_cast<base::MessageLoop*>(NULL));
   if (base::win::GetVersion() < base::win::VERSION_WIN8) {
     NOTREACHED() << "Windows 8 is required.";
     return E_FAIL;
   }
 
   HRESULT result = S_OK;
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   base::RunLoop run_loop;
 
   message_loop.PostTask(

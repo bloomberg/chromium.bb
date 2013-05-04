@@ -73,10 +73,8 @@ void MetroExit() {
 
 class ChromeChannelListener : public IPC::Listener {
  public:
-  ChromeChannelListener(MessageLoop* ui_loop, ChromeAppViewAsh* app_view)
-      : ui_proxy_(ui_loop->message_loop_proxy()),
-        app_view_(app_view) {
-  }
+  ChromeChannelListener(base::MessageLoop* ui_loop, ChromeAppViewAsh* app_view)
+      : ui_proxy_(ui_loop->message_loop_proxy()), app_view_(app_view) {}
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     IPC_BEGIN_MESSAGE_MAP(ChromeChannelListener, message)
@@ -253,7 +251,7 @@ class PointerInfoHandler {
 void RunMessageLoop(winui::Core::ICoreDispatcher* dispatcher) {
   // We're entering a nested message loop, let's allow dispatching
   // tasks while we're in there.
-  MessageLoop::current()->SetNestableTasksAllowed(true);
+  base::MessageLoop::current()->SetNestableTasksAllowed(true);
 
   // Enter main core message loop. There are several ways to exit it
   // Nicely:
@@ -265,7 +263,7 @@ void RunMessageLoop(winui::Core::ICoreDispatcher* dispatcher) {
           ::CoreProcessEventsOption_ProcessUntilQuit);
 
   // Wind down the thread's chrome message loop.
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 // Helper to return the state of the shift/control/alt keys.
@@ -406,12 +404,12 @@ ChromeAppViewAsh::Run() {
   }
 
   // Create a message loop to allow message passing into this thread.
-  MessageLoop msg_loop(MessageLoop::TYPE_UI);
+  base::MessageLoop msg_loop(base::MessageLoop::TYPE_UI);
 
   // Create the IPC channel IO thread. It needs to out-live the ChannelProxy.
   base::Thread io_thread("metro_IO_thread");
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread.StartWithOptions(options);
 
   std::string ipc_channel_name("viewer");
