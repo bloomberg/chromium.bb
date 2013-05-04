@@ -26,6 +26,9 @@ void TestInterpreterWrapper::Reset(Interpreter* interpreter) {
   if (!hwprops_)
     hwprops_ = &dummy_;
 
+  if (mprops_.get()) {
+    mprops_.reset(NULL);
+  }
   prop_reg_.reset(new PropRegistry());
   mprops_.reset(new MetricsProperties(prop_reg_.get()));
 
