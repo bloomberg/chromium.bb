@@ -561,6 +561,7 @@
             ['include', '^base/audio_bus\\.'],
             ['include', '^base/channel_layout\\.'],
             ['include', '^base/media_stub\\.cc$'],
+            ['include', '^base/media_switches\\.'],
             ['include', '^base/vector_math\\.'],
           ],
           'link_settings': {

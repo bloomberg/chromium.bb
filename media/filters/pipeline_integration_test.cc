@@ -464,11 +464,8 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource) {
   Stop();
 }
 
-// TODO(tomfinegan): Enable this test when the VP9 bitstream is finalized, and
-// http://crbug.com/173333 is fixed.
-TEST_F(PipelineIntegrationTest,
-       DISABLED_BasicPlayback_MediaSource_VideoOnly_VP9_WebM) {
-  MockMediaSource source("bear-vp9.webm", kWebMVP9, 19324);
+TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VideoOnly_VP9_WebM) {
+  MockMediaSource source("bear-vp9.webm", kWebMVP9, 19678);
   StartPipelineWithMediaSource(&source);
   source.EndOfStream();
 
@@ -483,8 +480,6 @@ TEST_F(PipelineIntegrationTest,
   source.Abort();
   Stop();
 }
-
-
 
 TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_WebM) {
   MockMediaSource source("bear-320x240-16x9-aspect.webm", kWebM,
@@ -911,8 +906,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
 }
 
 // Verify that VP9 video in WebM containers can be played back.
-// Disabled since it might crash or corrupt heap, see http://crbug.com/173333
-TEST_F(PipelineIntegrationTest, DISABLED_BasicPlayback_VideoOnly_VP9_WebM) {
+TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_VP9_WebM) {
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp9.webm"),
                     PIPELINE_OK));
   Play();
@@ -921,8 +915,7 @@ TEST_F(PipelineIntegrationTest, DISABLED_BasicPlayback_VideoOnly_VP9_WebM) {
 
 // Verify that VP9 video and Opus audio in the same WebM container can be played
 // back.
-// Disabled since it might crash or corrupt heap, see http://crbug.com/173333
-TEST_F(PipelineIntegrationTest, DISABLED_BasicPlayback_VP9_Opus_WebM) {
+TEST_F(PipelineIntegrationTest, BasicPlayback_VP9_Opus_WebM) {
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp9-opus.webm"),
                     PIPELINE_OK));
   Play();

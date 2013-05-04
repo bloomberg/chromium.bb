@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/test/test_suite.h"
 #include "media/base/media.h"
+#include "media/base/media_switches.h"
 
 class TestSuiteNoAtExit : public base::TestSuite {
  public:
@@ -19,6 +21,10 @@ void TestSuiteNoAtExit::Initialize() {
   // Run this here instead of main() to ensure an AtExitManager is already
   // present.
   media::InitializeMediaLibraryForTesting();
+  // Enable VP9 video codec support for all media tests.
+  // TODO(tomfinegan): Remove this once the VP9 flag is removed or negated.
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  cmd_line->AppendSwitch(switches::kEnableVp9Playback);
 }
 
 int main(int argc, char** argv) {
