@@ -208,6 +208,12 @@ class MEDIA_EXPORT SourceBufferStream {
   // in |ranges_|, false otherwise or if |ranges_| is empty.
   bool ShouldSeekToStartOfBuffered(base::TimeDelta seek_timestamp) const;
 
+  // Returns true if the |prev_is_keyframe| & |current_is_keyframe| combination
+  // on buffers with the same timestamp should be allowed. Returns false if the
+  // combination should signal an error.
+  bool AllowSameTimestamp(bool prev_is_keyframe,
+                          bool current_is_keyframe) const;
+
   // Returns true if the timestamps of |buffers| are monotonically increasing
   // since the previous append to the media segment, false otherwise.
   bool IsMonotonicallyIncreasing(const BufferQueue& buffers) const;

@@ -482,6 +482,21 @@ bool SourceBufferStream::ShouldSeekToStartOfBuffered(
           beginning_of_buffered < kSeekToStartFudgeRoom());
 }
 
+// Buffers with the same timestamp are only allowed under certain conditions.
+// Video: Allowed when the previous frame and current frame are NOT keyframes.
+//        This is the situation for VP8 Alt-Ref frames.
+// Otherwise: Allowed in all situations except where a non-keyframe is followed
+//            by a keyframe.
+// Returns true if |prev_is_keyframe| and |current_is_keyframe| indicate a
+// same timestamp situation that is allowed. False is returned otherwise.
+bool SourceBufferStream::AllowSameTimestamp(
+    bool prev_is_keyframe, bool current_is_keyframe) const {
+  if (video_configs_.size() > 0)
+    return !prev_is_keyframe && !current_is_keyframe;
+
+  return prev_is_keyframe || !current_is_keyframe;
+}
+
 bool SourceBufferStream::IsMonotonicallyIncreasing(
     const BufferQueue& buffers) const {
   DCHECK(!buffers.empty());
@@ -500,8 +515,9 @@ bool SourceBufferStream::IsMonotonicallyIncreasing(
       }
 
       if (current_timestamp == prev_timestamp &&
-          (current_is_keyframe || prev_is_keyframe)) {
-        MEDIA_LOG(log_cb_) << "Invalid alt-ref frame construct detected at "
+          !AllowSameTimestamp(prev_is_keyframe, current_is_keyframe)) {
+        MEDIA_LOG(log_cb_) << "Unexpected combination of buffers with the"
+                           << " same timestamp detected at "
                            << current_timestamp.InSecondsF();
         return false;
       }
@@ -693,28 +709,25 @@ bool SourceBufferStream::InsertIntoExistingRange(
         deleted_buffers);
   }
 
-  // Check for invalid alt-ref frame constructs:
-  //   * A keyframe followed by a non-keyframe.
-  //   * A non-keyframe followed by a keyframe that is not
-  //     the first frame of a media segment.
-  if (prev_timestamp == next_timestamp &&
-      ((prev_is_keyframe && !next_is_keyframe) ||
-       (!new_media_segment_ && next_is_keyframe))) {
-    MEDIA_LOG(log_cb_) << "Invalid alt-ref frame construct detected at time "
-                       << prev_timestamp.InSecondsF();
-    return false;
+  bool is_exclusive = false;
+  if (prev_timestamp == next_timestamp) {
+    if (!new_media_segment_ &&
+        !AllowSameTimestamp(prev_is_keyframe, next_is_keyframe)) {
+      MEDIA_LOG(log_cb_) << "Invalid same timestamp construct detected at time "
+                         << prev_timestamp.InSecondsF();
+      return false;
+    }
+
+    // Make the delete range exclusive if we are dealing with an allowed same
+    // timestamp situation so that the buffer with the same timestamp that is
+    // already stored in |*range_for_new_buffers_itr| doesn't get deleted.
+    is_exclusive = AllowSameTimestamp(prev_is_keyframe, next_is_keyframe);
   }
 
   // If we cannot append the |new_buffers| to the end of the existing range,
   // this is either a start overlap or a middle overlap. Delete the buffers
   // that |new_buffers| overlaps.
   if (!range_for_new_buffers->CanAppendBuffersToEnd(new_buffers)) {
-    // Make the delete range exclusive if we are dealing with an alt-ref
-    // situation so that the buffer with the same timestamp that is already
-    // stored in |*range_for_new_buffers_itr| doesn't get deleted.
-    bool is_exclusive = prev_timestamp == next_timestamp &&
-        !prev_is_keyframe && !next_is_keyframe;
-
     DeleteBetween(
         range_for_new_buffers_itr, new_buffers.front()->GetDecodeTimestamp(),
         new_buffers.back()->GetDecodeTimestamp(), is_exclusive,

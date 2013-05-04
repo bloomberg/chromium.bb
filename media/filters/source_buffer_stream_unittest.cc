@@ -2711,7 +2711,7 @@ TEST_F(SourceBufferStreamTest, OverlapSplitAndMergeWhileWaitingForMoreData) {
 
 // Verify that non-keyframes with the same timestamp in the same
 // append are handled correctly.
-TEST_F(SourceBufferStreamTest, AltRefFrame_SingleAppend) {
+TEST_F(SourceBufferStreamTest, SameTimestamp_Video_SingleAppend) {
   Seek(0);
   NewSegmentAppend("0K 30 30 60 90 120K 150");
   CheckExpectedBuffers("0K 30 30 60 90 120K 150");
@@ -2719,7 +2719,7 @@ TEST_F(SourceBufferStreamTest, AltRefFrame_SingleAppend) {
 
 // Verify that non-keyframes with the same timestamp can occur
 // in different appends.
-TEST_F(SourceBufferStreamTest, AltRefFrame_TwoAppends) {
+TEST_F(SourceBufferStreamTest, SameTimestamp_Video_TwoAppends) {
   Seek(0);
   NewSegmentAppend("0K 30");
   AppendBuffers("30 60 90 120K 150");
@@ -2728,31 +2728,31 @@ TEST_F(SourceBufferStreamTest, AltRefFrame_TwoAppends) {
 
 // Verify that a non-keyframe followed by a keyframe with the same timestamp
 // is not allowed.
-TEST_F(SourceBufferStreamTest, AltRefFrame_Invalid_1) {
+TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Invalid_1) {
   Seek(0);
   NewSegmentAppend("0K 30");
   AppendBuffers_ExpectFailure("30K 60");
 }
 
-TEST_F(SourceBufferStreamTest, AltRefFrame_Invalid_2) {
+TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Invalid_2) {
   Seek(0);
   NewSegmentAppend_ExpectFailure("0K 30 30K 60");
 }
 
 // Verify that a keyframe followed by a non-keyframe with the same timestamp
 // is not allowed.
-TEST_F(SourceBufferStreamTest, AltRefFrame_Invalid_3) {
+TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Invalid_3) {
   Seek(0);
   NewSegmentAppend("0K 30K");
   AppendBuffers_ExpectFailure("30 60");
 }
 
-TEST_F(SourceBufferStreamTest, AltRefFrame_Invalid_4) {
+TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Invalid_4) {
   Seek(0);
   NewSegmentAppend_ExpectFailure("0K 30K 30 60");
 }
 
-TEST_F(SourceBufferStreamTest, AltRefFrame_Overlap_1) {
+TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_1) {
   Seek(0);
   NewSegmentAppend("0K 30 60 60 90 120K 150");
 
@@ -2760,14 +2760,14 @@ TEST_F(SourceBufferStreamTest, AltRefFrame_Overlap_1) {
   CheckExpectedBuffers("0K 30 60K 91 121K 151");
 }
 
-TEST_F(SourceBufferStreamTest, AltRefFrame_Overlap_2) {
+TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_2) {
   Seek(0);
   NewSegmentAppend("0K 30 60 60 90 120K 150");
   NewSegmentAppend("0K 30 61");
   CheckExpectedBuffers("0K 30 61 120K 150");
 }
 
-TEST_F(SourceBufferStreamTest, AltRefFrame_Overlap_3) {
+TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
   Seek(0);
   NewSegmentAppend("0K 20 40 60 80 100K 101 102 103K");
   NewSegmentAppend("0K 20 40 60 80 90");
@@ -2777,6 +2777,24 @@ TEST_F(SourceBufferStreamTest, AltRefFrame_Overlap_3) {
   CheckExpectedBuffers("0K 20 40 60 80 90 90 110K 150");
   CheckNoNextBuffer();
   CheckExpectedRangesByTimestamp("{ [0,190) }");
+}
+
+// Test all the valid same timestamp cases for audio.
+TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
+  AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
+                            44100, NULL, 0, false);
+  stream_.reset(new SourceBufferStream(config, LogCB()));
+  Seek(0);
+  NewSegmentAppend("0K 0K 30K 30 60 60");
+  CheckExpectedBuffers("0K 0K 30K 30 60 60");
+}
+
+TEST_F(SourceBufferStreamTest, SameTimestamp_Audio_Invalid_1) {
+  AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
+                            44100, NULL, 0, false);
+  stream_.reset(new SourceBufferStream(config, LogCB()));
+  Seek(0);
+  NewSegmentAppend_ExpectFailure("0K 30 30K 60");
 }
 
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.
