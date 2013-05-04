@@ -294,8 +294,8 @@ void SimpleIndex::StartEvictionIfNeeded() {
   // Take all live key hashes from the index and sort them by time.
   eviction_in_progress_ = true;
   eviction_start_time_ = base::TimeTicks::Now();
-  UMA_HISTOGRAM_COUNTS("SimpleCache.CacheSizeOnEviction", cache_size_);
-  UMA_HISTOGRAM_COUNTS("SimpleCache.CacheMaxSizeOnEviction", max_size_);
+  UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.CacheSizeOnStart", cache_size_);
+  UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.MaxCacheSizeOnStart", max_size_);
   scoped_ptr<std::vector<uint64> > entry_hashes(new std::vector<uint64>());
   for (EntrySet::const_iterator it = entries_set_.begin(),
        end = entries_set_.end(); it != end; ++it) {
@@ -320,10 +320,11 @@ void SimpleIndex::StartEvictionIfNeeded() {
 
   // Take out the rest of hashes from the eviction list.
   entry_hashes->erase(it, entry_hashes->end());
-  UMA_HISTOGRAM_COUNTS("SimpleCache.SizeOfEviction", evicted_so_far_size);
-  UMA_HISTOGRAM_COUNTS("SimpleCache.EvictionEntryCount", entry_hashes->size());
-  UMA_HISTOGRAM_TIMES("SimpleCache.EvictionTimeToSelectEntries",
+  UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.EntryCount", entry_hashes->size());
+  UMA_HISTOGRAM_TIMES("SimpleCache.Eviction.TimeToSelectEntries",
                       base::TimeTicks::Now() - eviction_start_time_);
+  UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.SizeOfEvicted",
+                       evicted_so_far_size);
 
   scoped_ptr<int> result(new int());
   base::Closure task = base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
@@ -356,10 +357,10 @@ void SimpleIndex::EvictionDone(scoped_ptr<int> result) {
 
   // Ignore the result of eviction. We did our best.
   eviction_in_progress_ = false;
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.EvictionResult", *result == net::OK);
-  UMA_HISTOGRAM_TIMES("SimpleCache.EvictionTimeToDone",
+  UMA_HISTOGRAM_BOOLEAN("SimpleCache.Eviction.Result", *result == net::OK);
+  UMA_HISTOGRAM_TIMES("SimpleCache.Eviction.TimeToDone",
                       base::TimeTicks::Now() - eviction_start_time_);
-  UMA_HISTOGRAM_COUNTS("SimpleCache.SizeAfterEviction", cache_size_);
+  UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.SizeWhenDone", cache_size_);
 }
 
 // static

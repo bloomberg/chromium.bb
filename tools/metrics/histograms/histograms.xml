@@ -6622,6 +6622,124 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.CreationToIndex" units="milliseconds">
+  <summary>
+    The time from the creation of the simple cache backend until the index has
+    been loaded from disk.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.CreationToIndexFail" units="milliseconds">
+  <summary>
+    The time from the creation of the simple cache backend until the index fails
+    to load.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.EntryCreationResult" enum="BooleanSuccess">
+  <summary>
+    For entry creation operations that were sent to the disk, the result of
+    creation.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.EntryCreationTime" units="milliseconds">
+  <summary>The time, in ms, spent creating a new entry on disk.</summary>
+</histogram>
+
+<histogram name="SimpleCache.EntryOperationsPending">
+  <summary>
+    At the time that operations are run, the number of pending operations on a
+    particular entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Eviction.CacheSizeOnStart" units="bytes">
+  <summary>The size of the cache at the beginning of an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Eviction.EntryCount">
+  <summary>The number of entries to be erased in an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Eviction.MaxCacheSizeOnStart" units="bytes">
+  <summary>
+    The maximum allowed size of the cache at the beginning of an eviction.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Eviction.Result" enum="BooleanSuccess">
+  <summary>The result of an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Eviction.SizeOfEvicted" units="bytes">
+  <summary>The number of bytes to be erased in an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Eviction.SizeWhenDone" units="bytes">
+  <summary>The size of the cache after running an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Eviction.TimeToDone" units="milliseconds">
+  <summary>Time spent completing an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Eviction.TimeToSelectEntries" units="milliseconds">
+  <summary>Time spent selecting entries for eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexCorrupt" units="BooleanCorrupt">
+  <summary>For each index load, whether the index file was corrupt.</summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexInitializationMethod"
+    enum="SimpleCacheIndexInitializationMethod">
+  <summary>The method used to initialize the simple cache index.</summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexInitializationWaiters">
+  <summary>
+    At the time of index initialization, the number of enqueued jobs awaiting
+    index initialization.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexLoadTime" units="milliseconds">
+  <summary>
+    Time (as measured on the worker pool) spent loading the index file.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexNumEntriesOnWrite">
+  <summary>The number of entries written to the index on a flush.</summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexRestoreTime" units="milliseconds">
+  <summary>
+    Time (as measured on the worker pool) spent restoring the index file by
+    iterating directory entries.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexStale" units="BooleanStale">
+  <summary>For each index load, whether the index file was stale.</summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexWriteToDiskTime" units="milliseconds">
+  <summary>
+    The amount of time spend writing the index file to disk, measured starting
+    at the beginning of the write on the callback thread, and calculated using
+    the completion time on the worker pool.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.OpenEntryIndexState"
+    enum="SimpleCacheOpenEntryIndexState">
+  <summary>
+    At the time that an entry is opened, the state of that entry in the index.
+  </summary>
+</histogram>
+
 <histogram name="Sqlite.AppCache.Error" enum="SqliteErrorCode">
   <summary>Error codes returned by sqlite for the appcache db.</summary>
 </histogram>
@@ -7345,6 +7463,11 @@ other types of suffix sets.
   <int value="1" label="Attempted"/>
 </enum>
 
+<enum name="BooleanCorrupt" type="int">
+  <int value="0" label="Not Corrupt"/>
+  <int value="1" label="Corrupt"/>
+</enum>
+
 <enum name="BooleanCovered" type="int">
   <int value="0" label="Not Covered"/>
   <int value="1" label="Covered"/>
@@ -7398,6 +7521,11 @@ other types of suffix sets.
 <enum name="BooleanSelected" type="int">
   <int value="0" label="No selection"/>
   <int value="1" label="Selected"/>
+</enum>
+
+<enum name="BooleanStale" type="int">
+  <int value="0" label="Fresh"/>
+  <int value="1" label="Stale"/>
 </enum>
 
 <enum name="BooleanSuccess" type="int">
@@ -10188,6 +10316,17 @@ other types of suffix sets.
   </summary>
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
+</enum>
+
+<enum name="SimpleCacheIndexInitializationMethod" type="int">
+  <int value="0" label="Directory Scan"/>
+  <int value="1" label="Index File"/>
+</enum>
+
+<enum name="SimpleCacheOpenEntryIndexState" type="int">
+  <int value="0" label="No index"/>
+  <int value="1" label="Hit"/>
+  <int value="2" label="Miss"/>
 </enum>
 
 <enum name="SocketStreamConnectionType" type="int">
