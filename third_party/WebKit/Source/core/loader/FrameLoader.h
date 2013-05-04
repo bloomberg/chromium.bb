@@ -244,7 +244,7 @@ public:
     void completed();
     bool allAncestorsAreComplete() const; // including this
     void clientRedirected(const KURL&, double delay, double fireDate, bool lockBackForwardList);
-    void clientRedirectCancelledOrFinished(bool cancelWithLoadInProgress);
+    void clientRedirectCancelledOrFinished();
 
     void setOriginalURLForDownloadRequest(ResourceRequest&);
 
@@ -382,7 +382,6 @@ private:
     bool m_delegateIsHandlingProvisionalLoadError;
 
     bool m_quickRedirectComing;
-    bool m_sentRedirectNotification;
     bool m_inStopAllLoaders;
 
     String m_outgoingReferrer;

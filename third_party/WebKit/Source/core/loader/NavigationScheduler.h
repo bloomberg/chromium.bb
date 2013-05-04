@@ -82,7 +82,7 @@ public:
 
     void startTimer();
 
-    void cancel(bool newLoadInProgress = false);
+    void cancel();
     void clear();
 
 private:

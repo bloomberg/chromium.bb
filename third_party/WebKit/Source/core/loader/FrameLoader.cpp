@@ -208,7 +208,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_loadType(FrameLoadTypeStandard)
     , m_delegateIsHandlingProvisionalLoadError(false)
     , m_quickRedirectComing(false)
-    , m_sentRedirectNotification(false)
     , m_inStopAllLoaders(false)
     , m_isExecutingJavaScriptFormAction(false)
     , m_didCallImplicitClose(true)
@@ -921,7 +920,8 @@ void FrameLoader::provisionalLoadStarted()
 {
     if (m_stateMachine.firstLayoutDone())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
-    m_frame->navigationScheduler()->cancel(true);
+    m_frame->navigationScheduler()->cancel();
+    m_quickRedirectComing = false;
 }
 
 void FrameLoader::resetMultipleFormSubmissionProtection()
@@ -1157,28 +1157,12 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
     }
 
     bool sameURL = shouldTreatURLAsSameAsCurrent(newURL);
-    const String& httpMethod = request.httpMethod();
-    
-    // Make sure to do scroll to fragment processing even if the URL is
-    // exactly the same so pages with '#' links and DHTML side effects
-    // work properly.
-    if (shouldPerformFragmentNavigation(isFormSubmission, httpMethod, newLoadType, newURL)) {
-        m_loadType = newLoadType;
-        checkNavigationPolicyAndContinueFragmentScroll(action);
-    } else {
-        // must grab this now, since this load may stop the previous load and clear this flag
-        bool isRedirect = m_quickRedirectComing;
-        loadWithNavigationAction(request, action, lockHistory, newLoadType, formState.release());
-        if (isRedirect) {
-            m_quickRedirectComing = false;
-            if (m_provisionalDocumentLoader)
-                m_provisionalDocumentLoader->setIsClientRedirect(true);
-        } else if (sameURL && newLoadType != FrameLoadTypeReload && newLoadType != FrameLoadTypeReloadFromOrigin)
-            // Example of this case are sites that reload the same URL with a different cookie
-            // driving the generated content, or a master frame with links that drive a target
-            // frame, where the user has clicked on the same link repeatedly.
-            m_loadType = FrameLoadTypeSame;
-    }
+    loadWithNavigationAction(request, action, lockHistory, newLoadType, formState.release());
+    // Example of this case are sites that reload the same URL with a different cookie
+    // driving the generated content, or a master frame with links that drive a target
+    // frame, where the user has clicked on the same link repeatedly.
+    if (sameURL && newLoadType != FrameLoadTypeReload && newLoadType != FrameLoadTypeReloadFromOrigin)
+        m_loadType = FrameLoadTypeSame;
 }
 
 SubstituteData FrameLoader::defaultSubstituteDataForURL(const KURL& url)
@@ -1219,6 +1203,11 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
     loader->setTriggeringAction(action);
     if (m_documentLoader)
         loader->setOverrideEncoding(m_documentLoader->overrideEncoding());
+
+    if (m_quickRedirectComing) {
+        loader->setIsClientRedirect(true);
+        m_quickRedirectComing = false;
+    }
 
     loadWithDocumentLoader(loader.get(), type, formState);
 }
@@ -1596,11 +1585,9 @@ void FrameLoader::commitProvisionalLoad()
     }
 
     // Call clientRedirectCancelledOrFinished() here so that the frame load delegate is notified that the redirect's
-    // status has changed, if there was a redirect.  The frame load delegate may have saved some state about
-    // the redirect in its -webView:willPerformClientRedirectToURL:delay:fireDate:forFrame:.  Since we are
-    // just about to commit a new page, there cannot possibly be a pending redirect at this point.
-    if (m_sentRedirectNotification)
-        clientRedirectCancelledOrFinished(false);
+    // status has changed, if there was a redirect.
+    if (pdl->isClientRedirect())
+        clientRedirectCancelledOrFinished();
     
     didOpenURL();
 
@@ -1714,27 +1701,15 @@ void FrameLoader::transitionToCommitted()
         m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
 }
 
-void FrameLoader::clientRedirectCancelledOrFinished(bool cancelWithLoadInProgress)
+void FrameLoader::clientRedirectCancelledOrFinished()
 {
-    // Note that -webView:didCancelClientRedirectForFrame: is called on the frame load delegate even if
-    // the redirect succeeded.  We should either rename this API, or add a new method, like
-    // -webView:didFinishClientRedirectForFrame:
     m_client->dispatchDidCancelClientRedirect();
-
-    if (!cancelWithLoadInProgress)
-        m_quickRedirectComing = false;
-
-    m_sentRedirectNotification = false;
 }
 
 void FrameLoader::clientRedirected(const KURL& url, double seconds, double fireDate, bool lockBackForwardList)
 {
     m_client->dispatchWillPerformClientRedirect(url, seconds, fireDate);
-    
-    // Remember that we sent a redirect notification to the frame load delegate so that when we commit
-    // the next provisional load, we can send a corresponding -webView:didCancelClientRedirectForFrame:
-    m_sentRedirectNotification = true;
-    
+
     // If a "quick" redirect comes in, we set a special mode so we treat the next
     // load as part of the original navigation. If we don't have a document loader, we have
     // no "original" load on which to base a redirect, so we treat the redirect as a normal load.
@@ -2250,16 +2225,8 @@ void FrameLoader::loadPostRequest(const ResourceRequest& inRequest, const String
             targetFrame->loader()->loadWithNavigationAction(workingResourceRequest, action, lockHistory, loadType, formState.release());
         else
             checkNewWindowPolicyAndContinue(formState.release(), frameName, action);
-    } else {
-        // must grab this now, since this load may stop the previous load and clear this flag
-        bool isRedirect = m_quickRedirectComing;
-        loadWithNavigationAction(workingResourceRequest, action, lockHistory, loadType, formState.release());    
-        if (isRedirect) {
-            m_quickRedirectComing = false;
-            if (m_provisionalDocumentLoader)
-                m_provisionalDocumentLoader->setIsClientRedirect(true);
-        }
-    }
+    } else
+        loadWithNavigationAction(workingResourceRequest, action, lockHistory, loadType, formState.release());
 }
 
 unsigned long FrameLoader::loadResourceSynchronously(const ResourceRequest& request, StoredCredentials storedCredentials, ResourceError& error, ResourceResponse& response, Vector<char>& data)
@@ -2315,12 +2282,9 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
             m_submittedFormURL = KURL();
             
         // Call clientRedirectCancelledOrFinished here so that the frame load delegate is notified that the redirect's
-        // status has changed, if there was a redirect. The frame load delegate may have saved some state about
-        // the redirect in its -webView:willPerformClientRedirectToURL:delay:fireDate:forFrame:. Since we are definitely
-        // not going to use this provisional resource, as it was cancelled, notify the frame load delegate that the redirect
-        // has ended.
-        if (m_sentRedirectNotification)
-            clientRedirectCancelledOrFinished(false);
+        // status has changed, if there was a redirect.
+        if (loader->isClientRedirect())
+            clientRedirectCancelledOrFinished();
     }
 
     checkCompleted();
@@ -2330,7 +2294,6 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
 
 void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction& action)
 {
-    m_quickRedirectComing = false;
     m_documentLoader->setTriggeringAction(action);
 
     const ResourceRequest& request = action.resourceRequest();
@@ -2472,10 +2435,10 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
     bool canContinue = shouldContinue && shouldClose();
 
     if (!canContinue) {
-        // If we were waiting for a quick redirect, but the policy delegate decided to ignore it, then we 
+        // If we were waiting for a client redirect, but the policy delegate decided to ignore it, then we
         // need to report that the client redirect was cancelled.
-        if (m_quickRedirectComing)
-            clientRedirectCancelledOrFinished(false);
+        if (m_policyDocumentLoader->isClientRedirect())
+            clientRedirectCancelledOrFinished();
 
         setPolicyDocumentLoader(0);
 

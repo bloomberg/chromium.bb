@@ -73,7 +73,7 @@ public:
 
     virtual bool shouldStartTimer(Frame*) { return true; }
     virtual void didStartTimer(Frame*, Timer<NavigationScheduler>*) { }
-    virtual void didStopTimer(Frame*, bool /* newLoadInProgress */) { }
+    virtual void didStopTimer(Frame*) { }
 
     double delay() const { return m_delay; }
     bool lockHistory() const { return m_lockHistory; }
@@ -121,7 +121,7 @@ protected:
         frame->loader()->clientRedirected(KURL(ParsedURLString, m_url), delay(), currentTime() + timer->nextFireInterval(), lockBackForwardList());
     }
 
-    virtual void didStopTimer(Frame* frame, bool newLoadInProgress)
+    virtual void didStopTimer(Frame* frame)
     {
         if (!m_haveToldClient)
             return;
@@ -132,7 +132,7 @@ protected:
         // fact unavailable. We need to be consistent with them, otherwise the
         // gesture state will sometimes be set and sometimes not within
         // dispatchDidCancelClientRedirect().
-        frame->loader()->clientRedirectCancelledOrFinished(newLoadInProgress);
+        frame->loader()->clientRedirectCancelledOrFinished();
     }
 
     SecurityOrigin* securityOrigin() const { return m_securityOrigin.get(); }
@@ -247,7 +247,7 @@ public:
         frame->loader()->clientRedirected(m_submission->requestURL(), delay(), currentTime() + timer->nextFireInterval(), lockBackForwardList());
     }
 
-    virtual void didStopTimer(Frame* frame, bool newLoadInProgress)
+    virtual void didStopTimer(Frame* frame)
     {
         if (!m_haveToldClient)
             return;
@@ -258,7 +258,7 @@ public:
         // fact unavailable. We need to be consistent with them, otherwise the
         // gesture state will sometimes be set and sometimes not within
         // dispatchDidCancelClientRedirect().
-        frame->loader()->clientRedirectCancelledOrFinished(newLoadInProgress);
+        frame->loader()->clientRedirectCancelledOrFinished();
     }
 
 private:
@@ -470,7 +470,7 @@ void NavigationScheduler::startTimer()
     InspectorInstrumentation::frameScheduledNavigation(m_frame, m_redirect->delay());
 }
 
-void NavigationScheduler::cancel(bool newLoadInProgress)
+void NavigationScheduler::cancel()
 {
     if (m_timer.isActive())
         InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
@@ -478,7 +478,7 @@ void NavigationScheduler::cancel(bool newLoadInProgress)
 
     OwnPtr<ScheduledNavigation> redirect(m_redirect.release());
     if (redirect)
-        redirect->didStopTimer(m_frame, newLoadInProgress);
+        redirect->didStopTimer(m_frame);
 }
 
 } // namespace WebCore
