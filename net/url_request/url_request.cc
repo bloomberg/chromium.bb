@@ -377,8 +377,7 @@ void URLRequest::SetExtraRequestHeaders(
 }
 
 LoadStateWithParam URLRequest::GetLoadState() const {
-  // Only return LOAD_STATE_WAITING_FOR_DELEGATE if there's a load state param.
-  if (blocked_on_delegate_ && !load_state_param_.empty()) {
+  if (blocked_on_delegate_) {
     return LoadStateWithParam(LOAD_STATE_WAITING_FOR_DELEGATE,
                               load_state_param_);
   }

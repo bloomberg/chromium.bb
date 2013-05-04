@@ -36,8 +36,13 @@ string16 CoreTabHelper::GetStatusText() const {
 
   switch (web_contents()->GetLoadState().state) {
     case net::LOAD_STATE_WAITING_FOR_DELEGATE:
-      return l10n_util::GetStringFUTF16(IDS_LOAD_STATE_WAITING_FOR_DELEGATE,
-                                        web_contents()->GetLoadState().param);
+      if (!web_contents()->GetLoadState().param.empty()) {
+        return l10n_util::GetStringFUTF16(IDS_LOAD_STATE_WAITING_FOR_DELEGATE,
+                                          web_contents()->GetLoadState().param);
+      } else {
+        return l10n_util::GetStringUTF16(
+            IDS_LOAD_STATE_WAITING_FOR_DELEGATE_GENERIC);
+      }
     case net::LOAD_STATE_WAITING_FOR_CACHE:
       return l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_CACHE);
     case net::LOAD_STATE_WAITING_FOR_APPCACHE:
