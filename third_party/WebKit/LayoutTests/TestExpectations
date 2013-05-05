@@ -1576,3 +1576,10 @@ crbug.com/237270 fast/js/stack-overflow-arrity-catch.html [ Failure Pass ]
 
 crbug.com/238082 [ Win Mac Debug ] media/media-continues-playing-after-replace-source.html [ Crash Timeout Pass ]
 crbug.com/88588 [ Mac Win Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pass ]
+
+Bug(ojan) compositing/video-page-visibility.html [ ImageOnlyFailure Pass ]
+Bug(ojan) virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure Pass ]
+Bug(ojan) fast/harness/perftests/runs-per-second-log.html [ Failure Pass ]
+Bug(ojan) http/tests/download/inherited-encoding.html [ Failure Pass ]
+Bug(ojan) http/tests/download/basic-ascii.html [ Failure ]
+Bug(ojan) [ Linux ] svg/text/font-size-below-point-five.svg [ Failure ImageOnlyFailure Pass ]
