@@ -20,6 +20,11 @@ class Size;
 // representations of the same basic concept (for example, an icon) at various
 // sizes and (optionally) aspect ratios. A method is provided for finding the
 // most appropriate image to fit in a given rectangle.
+//
+// NOTE: This is not appropriate for storing an image at a single logical pixel
+// size, with high-DPI bitmap versions; use an Image or ImageSkia for that. Each
+// image in an ImageFamily should have a different logical size (and may also
+// include high-DPI representations).
 class UI_EXPORT ImageFamily {
  private:
   // Forward declaration.
