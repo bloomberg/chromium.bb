@@ -6744,6 +6744,29 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.SyncCreatePlatformFileError"
+    enum="PlatformFileError">
+  <summary>
+    The platform error of attempting to create a new cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncCreateResult"
+    enum="SimpleCacheSyncCreateResult">
+  <summary>The result of attempting to create a new cache entry.</summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncOpenPlatformFileError"
+    enum="PlatformFileError">
+  <summary>
+    The platform error of attempting to create a new cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncOpenResult" enum="SimpleCacheSyncOpenResult">
+  <summary>The result of attempting to create a new cache entry.</summary>
+</histogram>
+
 <histogram name="Sqlite.AppCache.Error" enum="SqliteErrorCode">
   <summary>Error codes returned by sqlite for the appcache db.</summary>
 </histogram>
@@ -10343,6 +10366,24 @@ other types of suffix sets.
   <int value="0" label="No index"/>
   <int value="1" label="Hit"/>
   <int value="2" label="Miss"/>
+</enum>
+
+<enum name="SimpleCacheSyncCreateResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Platform File Error"/>
+  <int value="2" label="Can't Write Header"/>
+  <int value="3" label="Can't Write Key"/>
+</enum>
+
+<enum name="SimpleCacheSyncOpenResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Platform File Error"/>
+  <int value="2" label="Can't Read Header"/>
+  <int value="3" label="Bad Magic Number"/>
+  <int value="4" label="Bad Version"/>
+  <int value="5" label="Can't Read Key"/>
+  <int value="6" label="Key Mismatch"/>
+  <int value="7" label="Hash Mismatch"/>
 </enum>
 
 <enum name="SocketStreamConnectionType" type="int">

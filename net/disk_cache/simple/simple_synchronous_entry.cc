@@ -14,6 +14,7 @@
 #include "base/file_util.h"
 #include "base/hash.h"
 #include "base/location.h"
+#include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/stringprintf.h"
 #include "net/base/io_buffer.h"
@@ -37,6 +38,44 @@ using base::ReadPlatformFile;
 using base::Time;
 using base::TruncatePlatformFile;
 using base::WritePlatformFile;
+
+namespace {
+
+// Used in histograms, please only add entries at the end.
+enum OpenEntryResult {
+  OPEN_ENTRY_SUCCESS = 0,
+  OPEN_ENTRY_PLATFORM_FILE_ERROR = 1,
+  OPEN_ENTRY_CANT_READ_HEADER = 2,
+  OPEN_ENTRY_BAD_MAGIC_NUMBER = 3,
+  OPEN_ENTRY_BAD_VERSION = 4,
+  OPEN_ENTRY_CANT_READ_KEY = 5,
+  OPEN_ENTRY_KEY_MISMATCH = 6,
+  OPEN_ENTRY_KEY_HASH_MISMATCH = 7,
+  OPEN_ENTRY_MAX = 8,
+};
+
+// Used in histograms, please only add entries at the end.
+enum CreateEntryResult {
+  CREATE_ENTRY_SUCCESS = 0,
+  CREATE_ENTRY_PLATFORM_FILE_ERROR = 1,
+  CREATE_ENTRY_CANT_WRITE_HEADER = 2,
+  CREATE_ENTRY_CANT_WRITE_KEY = 3,
+  CREATE_ENTRY_MAX = 4,
+};
+
+void RecordSyncOpenResult(OpenEntryResult result) {
+  DCHECK_GT(OPEN_ENTRY_MAX, result);
+  UMA_HISTOGRAM_ENUMERATION(
+      "SimpleCache.SyncOpenResult", result, OPEN_ENTRY_MAX);
+}
+
+void RecordSyncCreateResult(CreateEntryResult result) {
+  DCHECK_GT(CREATE_ENTRY_MAX, result);
+  UMA_HISTOGRAM_ENUMERATION(
+      "SimpleCache.SyncCreateResult", result, CREATE_ENTRY_MAX);
+}
+
+}
 
 namespace disk_cache {
 
@@ -314,9 +353,15 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
     PlatformFileError error;
     files_[i] = CreatePlatformFile(filename, flags, NULL, &error);
     if (error != PLATFORM_FILE_OK) {
-      DVLOG(8) << "CreatePlatformFile error " << error << " while "
-               << (create ? "creating " : "opening ")
-               << filename.MaybeAsASCII();
+      if (create) {
+        RecordSyncCreateResult(CREATE_ENTRY_PLATFORM_FILE_ERROR);
+        UMA_HISTOGRAM_ENUMERATION("SimpleCache.SyncCreatePlatformFileError",
+                                  -error, -base::PLATFORM_FILE_ERROR_MAX);
+      } else {
+        RecordSyncOpenResult(OPEN_ENTRY_PLATFORM_FILE_ERROR);
+        UMA_HISTOGRAM_ENUMERATION("SimpleCache.SyncOpenPlatformFileError",
+                                  -error, -base::PLATFORM_FILE_ERROR_MAX);
+      }
       while (--i >= 0) {
         bool ALLOW_UNUSED did_close = ClosePlatformFile(files_[i]);
         DLOG_IF(INFO, !did_close) << "Could not close file "
@@ -373,6 +418,7 @@ int SimpleSynchronousEntry::InitializeForOpen() {
                          sizeof(header));
     if (header_read_result != sizeof(header)) {
       DLOG(WARNING) << "Cannot read header from entry.";
+      RecordSyncOpenResult(OPEN_ENTRY_CANT_READ_HEADER);
       return net::ERR_FAILED;
     }
 
@@ -381,11 +427,13 @@ int SimpleSynchronousEntry::InitializeForOpen() {
       // should give consideration to not saturating the log with these if that
       // becomes a problem.
       DLOG(WARNING) << "Magic number did not match.";
+      RecordSyncOpenResult(OPEN_ENTRY_BAD_MAGIC_NUMBER);
       return net::ERR_FAILED;
     }
 
     if (header.version != kSimpleVersion) {
       DLOG(WARNING) << "Unreadable version.";
+      RecordSyncOpenResult(OPEN_ENTRY_BAD_VERSION);
       return net::ERR_FAILED;
     }
 
@@ -394,19 +442,22 @@ int SimpleSynchronousEntry::InitializeForOpen() {
                                            key.get(), header.key_length);
     if (key_read_result != implicit_cast<int>(header.key_length)) {
       DLOG(WARNING) << "Cannot read key from entry.";
+      RecordSyncOpenResult(OPEN_ENTRY_CANT_READ_KEY);
       return net::ERR_FAILED;
     }
     if (header.key_length != key_.size() ||
         std::memcmp(key_.data(), key.get(), key_.size()) != 0) {
-      // TODO(gavinp): Since the way we use Entry SHA to name entries means this
-      // is expected to occur at some frequency, add unit_tests that this does
-      // is handled gracefully at higher levels.
+      // TODO(gavinp): Since the way we use entry hash to name entries means
+      // this is expected to occur at some frequency, add unit_tests that this
+      // does is handled gracefully at higher levels.
       DLOG(WARNING) << "Key mismatch on open.";
+      RecordSyncOpenResult(OPEN_ENTRY_KEY_MISMATCH);
       return net::ERR_FAILED;
     }
 
     if (base::Hash(key.get(), header.key_length) != header.key_hash) {
       DLOG(WARNING) << "Hash mismatch on key.";
+      RecordSyncOpenResult(OPEN_ENTRY_KEY_HASH_MISMATCH);
       return net::ERR_FAILED;
     }
   }
@@ -432,12 +483,14 @@ int SimpleSynchronousEntry::InitializeForCreate() {
     if (WritePlatformFile(files_[i], 0, reinterpret_cast<char*>(&header),
                           sizeof(header)) != sizeof(header)) {
       DLOG(WARNING) << "Could not write headers to new cache entry.";
+      RecordSyncCreateResult(CREATE_ENTRY_CANT_WRITE_HEADER);
       return net::ERR_FAILED;
     }
 
     if (WritePlatformFile(files_[i], sizeof(header), key_.data(),
                           key_.size()) != implicit_cast<int>(key_.size())) {
       DLOG(WARNING) << "Could not write keys to new cache entry.";
+      RecordSyncCreateResult(CREATE_ENTRY_CANT_WRITE_KEY);
       return net::ERR_FAILED;
     }
   }
