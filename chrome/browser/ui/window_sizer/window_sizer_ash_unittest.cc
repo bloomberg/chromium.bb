@@ -573,6 +573,58 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
   }
 }
 
+// Test the placement of newly created windows on an empty desktop.
+// This test supplements "PlaceNewWindows" by testing the creation of a newly
+// created browser window on an empty desktop.
+TEST_F(WindowSizerTestWithBrowser, PlaceNewBrowserWindowOnEmptyDesktop) {
+  // Create a browser which we can use to pass into the GetWindowBounds
+  // function.
+  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  Browser::CreateParams native_params(profile.get(),
+                                      chrome::HOST_DESKTOP_TYPE_ASH);
+  scoped_ptr<Browser> browser(
+      chrome::CreateBrowserWithTestWindowForParams(&native_params));
+
+  // If there is no previous state the window should get maximized if the
+  // screen is smaller than our limit (1350 pixels width).
+  gfx::Rect window_bounds;
+  ui::WindowShowState out_show_state1 = ui::SHOW_STATE_DEFAULT;
+  GetWindowBoundsAndShowState(
+                  p1024x768,                    // The screen resolution.
+                  p1024x768,                    // The monitor work area.
+                  gfx::Rect(),                  // The second monitor.
+                  gfx::Rect(),                  // The (persisted) bounds.
+                  p1024x768,                    // The overall work area.
+                  ui::SHOW_STATE_NORMAL,        // The persisted show state.
+                  ui::SHOW_STATE_DEFAULT,       // The last show state.
+                  DEFAULT,                      // No persisted values.
+                  browser.get(),                // Use this browser.
+                  gfx::Rect(),                  // Don't request valid bounds.
+                  &window_bounds,
+                  &out_show_state1);
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, out_show_state1);
+
+  // If there is a stored coordinate however, that should be taken instead.
+  ui::WindowShowState out_show_state2 = ui::SHOW_STATE_DEFAULT;
+  GetWindowBoundsAndShowState(
+                  p1024x768,                    // The screen resolution.
+                  p1024x768,                    // The monitor work area.
+                  gfx::Rect(),                  // The second monitor.
+                  gfx::Rect(50, 100, 300, 150), // The (persisted) bounds.
+                  p1024x768,                    // The overall work area.
+                  ui::SHOW_STATE_NORMAL,        // The persisted show state.
+                  ui::SHOW_STATE_DEFAULT,       // The last show state.
+                  PERSISTED,                    // Set the persisted values.
+                  browser.get(),                // Use this browser.
+                  gfx::Rect(),                  // Don't request valid bounds.
+                  &window_bounds,
+                  &out_show_state2);
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, out_show_state2);
+  EXPECT_EQ("50,100 300x150", window_bounds.ToString());
+
+ }
+
+
 #if defined(OS_CHROMEOS)
 #define MAYBE_PlaceNewWindowsOnMultipleDisplays PlaceNewWindowsOnMultipleDisplays
 #else

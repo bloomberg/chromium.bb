@@ -135,6 +135,15 @@ bool MoveRect(const gfx::Rect& work_area,
   return false;
 }
 
+// Adjust the |target_in_screen| rectangle so it moves as much as possible into
+// the |work_area| .
+void AdjustTargetRectVerticallyAgainstWorkspace(const gfx::Rect& work_area,
+                                                gfx::Rect* target_in_screen) {
+  if (target_in_screen->bottom() > work_area.bottom())
+    target_in_screen->set_y(std::max(work_area.y(),
+        work_area.bottom() - target_in_screen->height()));
+}
+
 }  // namespace
 
 // static
@@ -171,8 +180,11 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
   }
 
   ui::WindowShowState passed_show_state = *show_state;
-  if (!GetSavedWindowBounds(bounds_in_screen, show_state))
+  bool has_saved_bounds = true;
+  if (!GetSavedWindowBounds(bounds_in_screen, show_state)) {
+    has_saved_bounds = false;
     GetDefaultWindowBounds(bounds_in_screen);
+  }
 
   if (browser_ && browser_->is_type_tabbed()) {
     aura::RootWindow* active = ash::Shell::GetActiveRootWindow();
@@ -188,8 +200,15 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
     if (browser_->window() &&
         top_window == browser_->window()->GetNativeWindow())
       top_window = NULL;
+
     // If there is no valid other window we take the coordinates as is.
-    if (!count || !top_window) {
+    if ((!count || !top_window)) {
+      if (has_saved_bounds) {
+        // Restore to previous state - if there is one.
+        AdjustTargetRectVerticallyAgainstWorkspace(work_area,
+                                                     bounds_in_screen);
+        return true;
+      }
       // When using "small screens" we want to always open in full screen mode.
       if (passed_show_state == ui::SHOW_STATE_DEFAULT &&
           !browser_->is_session_restore() &&
@@ -220,9 +239,7 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
         bounds_in_screen->CenterPoint().x() < work_area.CenterPoint().x();
 
     MoveRect(work_area, *bounds_in_screen, move_right);
-    if (bounds_in_screen->bottom() > work_area.bottom())
-      bounds_in_screen->set_y(std::max(work_area.y(),
-          work_area.bottom() - bounds_in_screen->height()));
+    AdjustTargetRectVerticallyAgainstWorkspace(work_area, bounds_in_screen);
     return true;
   }
 
