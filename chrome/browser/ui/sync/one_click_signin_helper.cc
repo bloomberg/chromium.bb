@@ -1114,16 +1114,6 @@ void OneClickSigninHelper::DidStopLoading(
           << " auto_accept=" << auto_accept_
           << " source=" << source_;
 
-  const char kSignInToChromeDialogFieldTrialName[] =
-      "SignInToChromeConfirmation";
-  const char kSignInConfirmBubbleGroupName[] = "Bubble";
-  BrowserWindow::OneClickSigninBubbleType bubble_type;
-  if (base::FieldTrialList::FindFullName(kSignInToChromeDialogFieldTrialName) ==
-      kSignInConfirmBubbleGroupName)
-    bubble_type = BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE;
-  else
-    bubble_type = BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG;
-
   switch (auto_accept_) {
     case AUTO_ACCEPT_NONE:
       if (SyncPromoUI::UseWebBasedSigninFlow() && showing_signin_)
@@ -1134,7 +1124,7 @@ void OneClickSigninHelper::DidStopLoading(
       LogOneClickHistogramValue(one_click_signin::HISTOGRAM_WITH_DEFAULTS);
       SigninManager::DisableOneClickSignIn(profile);
       browser->window()->ShowOneClickSigninBubble(
-          bubble_type,
+          BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG,
           UTF8ToUTF16(email_),
           string16(), /* no error message to display */
           base::Bind(&StartSync,
