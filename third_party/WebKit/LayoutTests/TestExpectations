@@ -72,16 +72,16 @@ crbug.com/229435 [ Debug ] editing/selection/caret-at-bidi-boundary.html [ Slow 
 # -----------------------------------------------------------------
 
 # Context menu behavior differs on Mac. This test needs to be adjusted for Mac.
-webkit.org/b/102987 [ Mac ] fast/events/context-nodrag.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/102987 [ Mac ] fast/events/context-nodrag.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # Fails because Blend Mode is not enabled on Chromium yet 
-webkit.org/b/98950 transitions/blendmode-transitions.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/100071 fast/canvas/canvas-blend-image.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/100071 fast/canvas/canvas-blend-solid.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-image.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/108550 css3/compositing/effect-background-blend-mode-stacking.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/108550 css3/compositing/effect-background-blend-mode.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/98950 transitions/blendmode-transitions.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/100071 fast/canvas/canvas-blend-image.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/100071 fast/canvas/canvas-blend-solid.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-image.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/108550 css3/compositing/effect-background-blend-mode-stacking.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/108550 css3/compositing/effect-background-blend-mode.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # Quota API is not supported in DRT yet.
 crbug.com/84572 storage/storageinfo-missing-arguments.html
@@ -104,28 +104,28 @@ webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-cra
 webkit.org/b/67434 [ Debug ] fast/block/float/overhanging-tall-block.html [ Skip ]
 
 # Vibration API is not supported yet in the chromium port.
-webkit.org/b/72010 fast/dom/navigator-vibration.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/72010 fast/dom/navigator-vibration.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # Battery Status API is not supported yet in the chromium port.
-webkit.org/b/62698 batterystatus [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/62698 batterystatus [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # Requires generation of progress events during loading
-webkit.org/b/100985 media/progress-events-generated-correctly.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/100985 media/progress-events-generated-correctly.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # Resolution media query is not yet enabled.
-webkit.org/b/85262 fast/media/mq-resolution.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/85262 fast/media/mq-resolution-dpi-dpcm-warning.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/85262 fast/media/mq-resolution.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/85262 fast/media/mq-resolution-dpi-dpcm-warning.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # CSS3 Text support is not yet enabled (needs ENABLE_CSS3_TEXT).
-webkit.org/b/58491 fast/css3-text/css3-text-decoration [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/76173 fast/css3-text/css3-text-align-last [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/112755 fast/css3-text/css3-text-indent [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/58491 fast/css3-text/css3-text-decoration [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/76173 fast/css3-text/css3-text-align-last [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/112755 fast/css3-text/css3-text-indent [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # Chromium does not support smart pasting in text controls yet.
-webkit.org/b/60830 editing/pasteboard/smart-paste-in-text-control.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/60830 editing/pasteboard/smart-paste-in-text-control.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # Chromium needs larger media files to test buffering this way.
-webkit.org/b/88172 http/tests/media/video-buffered.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/88172 http/tests/media/video-buffered.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # We expect V8 to crash in an orderly fashion instead of throwing a JavaScript out-of-memory error.
 webkit.org/b/103348 fast/js/string-replacement-outofmemory.html [ Crash ]
@@ -199,8 +199,8 @@ crbug.com/233066 http/tests/security/MessagePort/event-listener-context.html [ S
 # This test is out of date with respect to the latest version of the HTML5 spec
 # Test had to be decommissioned to fix https://bugs.webkit.org/show_bug.cgi?id=65709
 # We can re-enable the test when it gets changed upstream to become spec-compliant
-crbug.com/233066 canvas/philip/tests/2d.drawImage.outsidesource.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-crbug.com/233066 virtual/gpu/canvas/philip/tests/2d.drawImage.outsidesource.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/233066 canvas/philip/tests/2d.drawImage.outsidesource.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+crbug.com/233066 virtual/gpu/canvas/philip/tests/2d.drawImage.outsidesource.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # INPUT_TYPE_DATETIME_INCOMPLETE is disabled across Chromium until a better Android UI is worked out.  See crbug.com/164561.
 webkit.org/b/109272 fast/forms/datetime [ Skip ]
@@ -323,7 +323,7 @@ crbug.com/61799 webkit.org/b/64319 plugins/evaluate-js-after-removing-plugin-ele
 # Object.keys on an NPObject produces the wrong output.
 crbug.com/35387 [ Mac ] plugins/reentrant-update-widget-positions.html [ Timeout ]
 # Times out after http://trac.webkit.org/changeset/62739/
-crbug.com/48550 plugins/return-negative-one-from-write.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/48550 plugins/return-negative-one-from-write.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 crbug.com/38353 http/tests/plugins/plugin-document-has-focus.html [ Timeout ]
 
 # Tests differences from switching to webkit.org's test netscape plugin rather
@@ -335,7 +335,7 @@ webkit.org/b/48655 [ Debug ] plugins/js-from-destroy.html [ Crash ]
 crbug.com/33211 http/tests/loading/deleted-host-in-resource-load-delegate-callback.html [ Timeout ]
 
 # HTML5 DB layout tests
-crbug.com/27697 storage/websql/hash-change-with-xhr.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/27697 storage/websql/hash-change-with-xhr.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 crbug.com/78376 http/tests/media/video-play-stall-seek.html [ Timeout ]
 
@@ -344,8 +344,8 @@ crbug.com/78376 http/tests/media/video-play-stall-seek.html [ Timeout ]
 crbug.com/73609 http/tests/media/video-play-stall.html [ Failure Slow ]
 
 # We haven't implemented reverse audio/video playback.
-crbug.com/33099 media/video-reverse-play-duration.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-crbug.com/33099 media/video-timeupdate-reverse-play.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/33099 media/video-reverse-play-duration.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+crbug.com/33099 media/video-timeupdate-reverse-play.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 crbug.com/100798 [ Mac Debug ] fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
 crbug.com/100798 [ Win7 Mac Debug ] fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]
@@ -484,7 +484,7 @@ crbug.com/30536 http/tests/misc/acid3.html [ Failure Slow ] # See "SVG Tests" se
 webkit.org/b/98599 [ Linux Win ] css3/masking/clip-path-reference-userSpaceOnUse.html [ ImageOnlyFailure ]
 
 # Started timing out with agl's complex text change.  Page is verrry slow.
-crbug.com/10343 [ Linux ] fast/text/large-text-composed-char.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/10343 [ Linux ] fast/text/large-text-composed-char.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # This test sometimes fails indefinitely, other times it takes 1-2 seconds.
 crbug.com/14009 [ Win ] http/tests/misc/dns-prefetch-control.html [ Pass Timeout ]
@@ -644,17 +644,17 @@ crbug.com/2844 [ Win ] http/tests/appcache/offline-access.html [ Pass Timeout ]
 crbug.com/2844 [ Win ] http/tests/appcache/update-cache.html [ Pass Timeout ]
 
 # These fail because chromium's appcache is async but webkit's is not.
-crbug.com/2844 http/tests/appcache/idempotent-update.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-crbug.com/2844 http/tests/appcache/top-frame-2.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/2844 http/tests/appcache/idempotent-update.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+crbug.com/2844 http/tests/appcache/top-frame-2.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # This test fails because there is no setAppCacheMaximumSize API yet.
 crbug.com/2844 http/tests/appcache/max-size.html
 
 # Flakiness documented around Webkit Roll 51681:51711
-crbug.com/2844 http/tests/appcache/404-manifest.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-crbug.com/2844 http/tests/appcache/404-resource.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-crbug.com/2844 http/tests/appcache/foreign-iframe-main.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-crbug.com/2844 http/tests/appcache/non-html.xhtml [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/2844 http/tests/appcache/404-manifest.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+crbug.com/2844 http/tests/appcache/404-resource.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+crbug.com/2844 http/tests/appcache/foreign-iframe-main.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+crbug.com/2844 http/tests/appcache/non-html.xhtml [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # LayoutTestController::clearApplicationCacheForOrigin isn't implemented
 webkit.org/b/ http/tests/appcache/origin-delete.html
@@ -670,15 +670,15 @@ webkit.org/b/85463 editing/inserting/typing-space-to-trigger-smart-link.html
 crbug.com/25977 [ Win ] http/tests/appcache/main-resource-hash.html [ Pass Timeout ]
 crbug.com/25977 [ Win ] http/tests/appcache/online-whitelist.html [ Pass Timeout ]
 
-webkit.org/b/104991 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-click-hyperlink.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/104991 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-event-fired.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/104991 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-nested-divs.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/104991 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-click-hyperlink.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/104991 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-event-fired.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/104991 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-nested-divs.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
-webkit.org/b/107205 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-click.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/107205 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-drag.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/107623 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-panIcon.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/107205 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-click.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/107205 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-drag.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/107623 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-panIcon.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
-crbug.com/224735 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-in-iframe.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/224735 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-in-iframe.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 crbug.com/31623 [ Win ] http/tests/appcache/remove-cache.html [ Pass Timeout ]
 
@@ -687,7 +687,7 @@ crbug.com/31623 [ Win ] http/tests/appcache/remove-cache.html [ Pass Timeout ]
 # As of Aug 31, 2012, now times out in release. Marking flaky everywhere.
 crbug.com/32308 fast/frames/cached-frame-counter.html [ Pass Timeout ]
 
-crbug.com/33293 fast/media/lifetime.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/33293 fast/media/lifetime.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # Chromium DumpRenderTree does not have support for visited links.
 # It always return false in response to isLinkVisited().
@@ -702,7 +702,7 @@ webkit.org/b/111031 fast/history/visited-link-background-color.html [ ImageOnlyF
 crbug.com/42696 http/tests/xmlhttprequest/cross-origin-authorization-with-embedder.html [ Timeout ]
 
 # Chromium does not support cancel for notifications permissions.
-webkit.org/b/42798 fast/notifications/notifications-cancel-request-permission.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/42798 fast/notifications/notifications-cancel-request-permission.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 crbug.com/46603 [ Release ] fast/frames/lots-of-iframes.html [ Pass Timeout ]
 crbug.com/46603 [ Release ] fast/frames/lots-of-objects.html [ Timeout ]
@@ -730,7 +730,7 @@ webkit.org/b/63057 [ Release ] perf/adding-radio-buttons.html [ Failure Pass ]
 webkit.org/b/96977 [ Mac Release ] perf/nested-combined-selectors.html [ Failure Pass ]
 
 # new or failing since WebKit rev. 65740:65800
-crbug.com/53073 [ Debug ] storage/websql/change-version.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/53073 [ Debug ] storage/websql/change-version.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 webkit.org/b/45737 [ Debug ] fast/frames/frame-limit.html [ Timeout ]
 webkit.org/b/45737 [ Win Linux Release ] fast/frames/frame-limit.html [ Slow ]
@@ -771,11 +771,11 @@ crbug.com/61739 [ Debug ] animations/suspend-resume-animation-events.html [ Fail
 code.google.com/p/v8/issues/detail?id=953 fast/regex/pcre-test-1.html [ Timeout ]
 
 # Skip until Skia knows how to draw focus rings on a path.
-webkit.org/b/50282 fast/images/imagemap-focus-ring-outline-color-explicitly-inherited-from-map.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/50282 fast/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/50282 fast/images/imagemap-focus-ring-outline-color.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/50282 fast/images/imagemap-circle-focus-ring.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/50282 fast/images/imagemap-polygon-focus-ring.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/50282 fast/images/imagemap-focus-ring-outline-color-explicitly-inherited-from-map.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/50282 fast/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/50282 fast/images/imagemap-focus-ring-outline-color.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/50282 fast/images/imagemap-circle-focus-ring.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/50282 fast/images/imagemap-polygon-focus-ring.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 #/////////////////////////////////////////////////////////////////////////
 # Regressions caused by switching to DRT.
@@ -801,7 +801,7 @@ crbug.com/66087 [ Win ] http/tests/misc/no-last-modified.html [ Timeout Pass ]
 
 # Needs V8 investigation.  Skipped due to concern that this may be corrupting
 # memory and thus leading to unpredictable results.
-crbug.com/66099 fast/js/array-sort-modifying-tostring.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/66099 fast/js/array-sort-modifying-tostring.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 crbug.com/66751 http/tests/local/link-stylesheet-load-order-preload.html [ Failure Pass Timeout ]
 crbug.com/66751 http/tests/local/link-stylesheet-load-order.html [ Failure Pass Timeout ]
@@ -831,13 +831,13 @@ crbug.com/69639 webkit.org/b/63227 http/tests/loading/cross-origin-XHR-willLoadR
 
 # These tests are too slow with our MESA backend.  We can re-enable when we have
 # bots running tests on real hardware.
-webkit.org/b/49629 compositing/lots-of-img-layers.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/49629 compositing/lots-of-img-layers.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 webkit.org/b/54051 [ Mac ] plugins/windowless_plugin_paint_test.html [ Timeout ]
 
 # Skip an overly restrictive cross-origin HTTPS test
-crbug.com/69594 http/tests/appcache/different-https-origin-resource-main.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/69594 http/tests/appcache/different-https-origin-resource-main.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 crbug.com/76550 [ Win Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Slow ]
 crbug.com/76550 [ Lion SnowLeopard Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Timeout ]
@@ -900,7 +900,7 @@ webkit.org/b/98906 fast/forms/suggestion-picker/date-suggestion-picker-mouse-ope
 # CSS Regions tests for region styling and scoped styles
 webkit.org/b/49142 fast/regions/style-scoped-in-flow-override-region-styling-multiple-regions.html [ ImageOnlyFailure ]
 
-webkit.org/b/92131 inspector/styles/region-style-crash.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/92131 inspector/styles/region-style-crash.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 webkit.org/b/62754 [ Mac Debug ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Failure ]
 webkit.org/b/62754 [ Mac Linux Release ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Timeout ]
@@ -914,7 +914,7 @@ webkit.org/b/70887 [ Debug ] jquery/css.html [ Pass Timeout ]
 # For some reason, these tests are running as pixel tests most of the time instead of dumping as text.
 webkit.org/b/74694 http/tests/cache/history-only-cached-subresource-loads-max-age-https.html [ Missing Pass ]
 
-webkit.org/b/95365 fast/loader/reload-zero-byte-plugin.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/95365 fast/loader/reload-zero-byte-plugin.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 webkit.org/b/66419 http/tests/misc/authentication-redirect-1/authentication-sent-to-redirect-cross-origin.html [ Failure Timeout ]
 webkit.org/b/66419 http/tests/misc/authentication-redirect-2/authentication-sent-to-redirect-same-origin.html [ Failure Timeout ]
@@ -932,14 +932,14 @@ webkit.org/b/66989 [ Mac ] transforms/3d/general/perspective-non-layer.html [ Fa
 webkit.org/b/72530 [ Debug ] fast/frames/sandboxed-iframe-navigation-targetlink.html [ Slow ]
 
 # ICC color profiles are not supported on Linux.
-webkit.org/b/70001 [ Linux ] fast/images/color-jpeg-with-color-profile.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/86722 [ Linux ] fast/images/paletted-png-with-color-profile.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/70001 [ Linux ] fast/images/color-jpeg-with-color-profile.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/86722 [ Linux ] fast/images/paletted-png-with-color-profile.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # These all will timeout, because we are lacking a hook that signals test completion.
-webkit.org/b/70066 svg/as-image/image-respects-deviceScaleFactor.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/70066 svg/as-image/image-respects-deviceScaleFactor.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # SVG painting in high DPI mode is broken in DRT.
-webkit.org/b/92511 svg/as-image/animated-svg-repaints-completely-in-hidpi.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/92511 svg/as-image/animated-svg-repaints-completely-in-hidpi.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # Swidth DRT to high DPI output mode, which temporarily breaks IMAGE
 crbug.com/146756 [ Win Mac ] virtual/gpu/fast/hidpi/broken-image-icon-hidpi.html [ ImageOnlyFailure Timeout ]
@@ -968,33 +968,33 @@ webkit.org/b/91415 [ Mac Linux Debug ] fast/frames/calculate-fixed.html [ Failur
 webkit.org/b/91415 [ Win Debug ] fast/frames/calculate-fixed.html [ Slow ]
 
 # Opera-submitted tests to W3C for <track>, a lot of failures still.
-webkit.org/b/103926 media/track/opera/idl/media-idl-tests.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLMediaElement/crossOrigin.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/kind.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/constructor.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/createEvent.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/line.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onenter.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onexit.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/snapToLines.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/text.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/vertical.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCueList/getter.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackList/getter.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackList/onremovetrack.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/track/track-element/cloneNode.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/track/track-element/src-clear-cues.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/track/webvtt/parsing/001.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/entities.html [ Failure ImageOnlyFailure Pass Crash Timeout ] 
-webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tags.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/12345_timestamps.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/timestamps.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tree-building.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/cue_font_size_transition.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_evil_timestamp.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/103926 media/track/opera/idl/media-idl-tests.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLMediaElement/crossOrigin.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/kind.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/constructor.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/createEvent.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/line.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onenter.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onexit.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/snapToLines.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/text.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/vertical.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCueList/getter.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackList/getter.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackList/onremovetrack.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/track/track-element/cloneNode.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/track/track-element/src-clear-cues.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing/001.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/entities.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ] 
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tags.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/12345_timestamps.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/timestamps.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tree-building.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/cue_font_size_transition.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_evil_timestamp.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # Animations tests use an inherently-flaky timer-based design.
 webkit.org/b/66953 [ Mac Win Debug ] animations/change-one-anim.html [ Failure Pass ]
@@ -1014,13 +1014,13 @@ webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/methods.html [ Fail
 webkit.org/b/75111 fast/workers/storage/use-same-database-in-page-and-workers.html [ Pass Timeout ]
 
 # Crashes due to an OOM error on V8.
-crbug.com/108832 fast/js/array-splice.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/108832 fast/js/array-splice.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
-webkit.org/b/75786 compositing/tiled-layers-hidpi.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/75786 virtual/softwarecompositing/tiled-layers-hidpi.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/75786 compositing/tiled-layers-hidpi.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/75786 virtual/softwarecompositing/tiled-layers-hidpi.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
-webkit.org/b/48454 compositing/tiling/huge-layer-img.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/48454 virtual/softwarecompositing/tiling/huge-layer-img.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/48454 compositing/tiling/huge-layer-img.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/48454 virtual/softwarecompositing/tiling/huge-layer-img.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 code.google.com/p/v8/issues/detail?id=1900 [ Debug ] inspector/debugger/watch-expressions-panel-switch.html [ Slow ]
 code.google.com/p/v8/issues/detail?id=1900 [ Debug ] inspector/debugger/debugger-breakpoints-not-activated-on-reload.html [ Slow ]
@@ -1137,9 +1137,9 @@ webkit.org/b/86909 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifes
 webkit.org/b/86909 [ Win ] http/tests/inspector/network/network-content-replacement-xhr.html [ Pass Timeout ]
 
 # Ref-tests can't have platform specific results.
-webkit.org/b/87175 fast/regions/floats-basic-in-variable-width-regions.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/87175 fast/regions/overflow-in-uniform-regions.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/87175 fast/regions/render-region-renderer.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/87175 fast/regions/floats-basic-in-variable-width-regions.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/87175 fast/regions/overflow-in-uniform-regions.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/87175 fast/regions/render-region-renderer.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 webkit.org/b/87321 [ XP Release ] fast/history/history-subframe-with-name.html [ Failure Pass ]
 webkit.org/b/87321 [ Debug ] fast/history/history-subframe-with-name.html [ Pass Timeout ]
@@ -1220,27 +1220,27 @@ webkit.org/b/92570 [ Win Debug ] inspector/timeline/timeline-network-received-da
 webkit.org/b/92570 [ Win Debug ] inspector/timeline/timeline-start-time.html [ Failure Pass Timeout ]
 
 # Chromium still has the CC toggle button, not the menu of tracks.
-webkit.org/b/101670 media/video-controls-captions-trackmenu.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/101670 media/video-controls-captions-trackmenu-sorted.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/101670 media/video-controls-captions-trackmenu-localized.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/101670 media/video-controls-captions-trackmenu-hide-on-click.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/101670 media/track/track-user-preferences.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/101670 media/video-controls-captions-trackmenu.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/101670 media/video-controls-captions-trackmenu-sorted.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/101670 media/video-controls-captions-trackmenu-localized.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/101670 media/video-controls-captions-trackmenu-hide-on-click.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/101670 media/track/track-user-preferences.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 webkit.org/b/92941 accessibility/loading-iframe-updates-axtree.html [ Timeout ]
 
 # Tests added by bug 76270. According to bug 92968, they should be skipped in Chromium.
-webkit.org/b/92968 http/tests/appcache/abort-cache-onchecking-manifest-404.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/92968 http/tests/appcache/abort-cache-onchecking-resource-404.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/92968 http/tests/appcache/abort-cache-ondownloading-resource-404.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/92968 http/tests/appcache/abort-cache-onchecking.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/92968 http/tests/appcache/abort-cache-ondownloading.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/92968 http/tests/appcache/abort-cache-onprogress.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/92968 http/tests/appcache/abort-cache-onchecking-manifest-404.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/92968 http/tests/appcache/abort-cache-onchecking-resource-404.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/92968 http/tests/appcache/abort-cache-ondownloading-resource-404.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/92968 http/tests/appcache/abort-cache-onchecking.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/92968 http/tests/appcache/abort-cache-ondownloading.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/92968 http/tests/appcache/abort-cache-onprogress.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 webkit.org/b/93566 [ Debug ] fast/parser/iframe-sets-parent-to-javascript-url.html [ Failure Pass ]
 webkit.org/b/93567 [ Debug ] fast/parser/javascript-url-compat-mode.html [ Failure Pass ]
 
 # V8 does not support static attributes
-webkit.org/b/93488 fast/notifications/notifications-permission.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/93488 fast/notifications/notifications-permission.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 webkit.org/b/93801 [ Mac ] fast/speech/input-appearance-searchandspeech.html [ ImageOnlyFailure Pass ]
 
@@ -1256,8 +1256,8 @@ webkit.org/b/94017 [ Win ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailu
 
 webkit.org/b/95581 [ XP ] http/tests/misc/javascript-url-stop-loaders.html [ Pass Timeout ]
 
-webkit.org/b/110871 compositing/overlap-blending/ [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/110871 virtual/softwarecompositing/overlap-blending/ [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/110871 compositing/overlap-blending/ [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/110871 virtual/softwarecompositing/overlap-blending/ [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 webkit.org/b/90488 [ Win ] http/tests/inspector/network-preflight-options.html [ Pass Timeout ]
 
@@ -1291,7 +1291,7 @@ webkit.org/b/97179 http/tests/css/link-css-disabled-value-with-slow-loading-shee
 webkit.org/b/97296 [ Win ] fast/text/international/hebrew-selection.html [ ImageOnlyFailure ]
 
 # These tests appear to be making the EWS bots flaky. See bug for details.
-webkit.org/b/96951 platform/chromium-linux/compositing/gestures [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/96951 platform/chromium-linux/compositing/gestures [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 # WebGL not yet supported by the software compositor.
 crbug.com/151713 virtual/softwarecompositing/backface-visibility/backface-visibility-webgl.html [ Skip ]
@@ -1301,7 +1301,7 @@ crbug.com/151713 virtual/softwarecompositing/webgl [ Skip ]
 webkit.org/b/98275 media/event-queue-crash.html [ Skip ]
 
 # CSS Device Adaptation is not enabled.
-webkit.org/b/95959 css3/device-adapt [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/95959 css3/device-adapt [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 webkit.org/b/98699 [ Lion ] fast/writing-mode/vertical-subst-font-vert-no-dflt.html [ Crash ]
 webkit.org/b/98811 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
@@ -1324,9 +1324,9 @@ webkit.org/b/97499 http/tests/security/script-crossorigin-onerror-information.ht
 webkit.org/b/97499 http/tests/security/script-no-crossorigin-onerror-should-be-sanitized.html [ Failure ]
 
 # These tests need a special rebaseline from rtoy@, after which they can be un-skipped.
-crbug.com/168425 webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-crbug.com/168425 webaudio/codec-tests/vorbis/vbr-96kbps-44khz.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-crbug.com/168425 webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+crbug.com/168425 webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+crbug.com/168425 webaudio/codec-tests/vorbis/vbr-96kbps-44khz.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+crbug.com/168425 webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 webkit.org/b/100023 [ Mac ] fast/sub-pixel/file-upload-control-at-fractional-offset.html [ ImageOnlyFailure ]
 
@@ -1380,10 +1380,10 @@ crbug.com/230644 inspector/debugger/live-edit-breakpoints.html [ Pass Timeout ]
 crbug.com/230644 inspector/debugger/live-edit.html [ Pass Timeout ]
 
 # No support for exposing in-band text tracks
-webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band-cues-added-once.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band-style.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
-webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band-legacy-api.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band-cues-added-once.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band-style.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band-legacy-api.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 webkit.org/b/104489 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_attribute_order.html [ Failure Timeout Pass ]
 webkit.org/b/104489 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_script_types.html [ Failure Timeout Pass ]
@@ -1394,7 +1394,7 @@ webkit.org/b/106238 [ Win ] svg/dynamic-updates/SVGUseElement-dom-href1-attr.htm
 webkit.org/b/106238 [ Win ] svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ ImageOnlyFailure Pass ]
 webkit.org/b/106249 [ Win ] fast/speech/scripted/navigate-away.html [ Failure Pass ]
 
-webkit.org/b/106332 http/tests/misc/authentication-redirect-4/authentication-sent-to-redirect-same-origin-url.html [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/106332 http/tests/misc/authentication-redirect-4/authentication-sent-to-redirect-same-origin-url.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 webkit.org/b/106387 [ Debug ] svg/W3C-SVG-1.1/animate-elem-80-t.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/106387 [ Debug ] svg/W3C-SVG-1.1/filters-comptran-01-b.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/106390 [ Win ] svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ ImageOnlyFailure Pass ]
@@ -1509,9 +1509,9 @@ crbug.com/230771 [ Linux Mac ] fast/forms/file/file-input-reset.html [ ImageOnly
 
 # From WebKit's generic expectations.
 # pending functional patch and per-port verification
-webkit.org/b/109954 css3/line-break [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/109954 css3/line-break [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 # pending implementation completion and feature enabling
-webkit.org/b/109570 media/track/regions-webvtt [ Failure ImageOnlyFailure Pass Crash Timeout ]
+webkit.org/b/109570 media/track/regions-webvtt [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
 
