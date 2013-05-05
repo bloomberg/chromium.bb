@@ -27,4 +27,6 @@ CONSOLE MESSAGE: line 26: Uncaught ReferenceError: addRow is not defined
 CONSOLE MESSAGE: line 27: Uncaught ReferenceError: addRow is not defined
 CONSOLE MESSAGE: line 28: Uncaught ReferenceError: addRow is not defined
 CONSOLE MESSAGE: line 29: Uncaught ReferenceError: addRow is not defined
+CONSOLE MESSAGE: line 30: Uncaught ReferenceError: addRow is not defined
+CONSOLE MESSAGE: line 31: Uncaught ReferenceError: addRow is not defined
 
