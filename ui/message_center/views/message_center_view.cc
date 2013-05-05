@@ -638,9 +638,11 @@ void RichMessageListView::DoUpdateIfPossible() {
   }
 
   if (!last_child || reposition_top_ < last_child->bounds().y()) {
-    int top = child_area.y();
+    int top = std::max(reposition_top_, child_area.y());
     for (int i = 0; i < child_count(); ++i) {
       views::View* child = child_at(i);
+      if (child->bounds().y() < top)
+        continue;
       int height = child->GetHeightForWidth(width);
       AnimateChild(child, top, height);
       if (IsValidChild(child))
