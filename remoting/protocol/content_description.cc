@@ -63,18 +63,14 @@ XmlElement* FormatChannelConfig(const ChannelConfig& config,
   result->AddAttr(QName(kDefaultNs, kTransportAttr),
                   ValueToName(kTransports, config.transport));
 
-  // TODO(sergeyu): Here we add version and codec attributes even when transport
-  // is set to NONE. This is needed for backward compatibility only. Fix this
-  // code once the current stable version is able to cope with missing version
-  // and codec attributes.
-  // crbug.com/144053
+  if (config.transport != ChannelConfig::TRANSPORT_NONE) {
+    result->AddAttr(QName(kDefaultNs, kVersionAttr),
+                    base::IntToString(config.version));
 
-  result->AddAttr(QName(kDefaultNs, kVersionAttr),
-                  base::IntToString(config.version));
-
-  if (config.codec != ChannelConfig::CODEC_UNDEFINED) {
-    result->AddAttr(QName(kDefaultNs, kCodecAttr),
-                    ValueToName(kCodecs, config.codec));
+    if (config.codec != ChannelConfig::CODEC_UNDEFINED) {
+      result->AddAttr(QName(kDefaultNs, kCodecAttr),
+                      ValueToName(kCodecs, config.codec));
+    }
   }
 
   return result;
@@ -168,14 +164,6 @@ XmlElement* ContentDescription::ToXml() const {
   for (it = config()->audio_configs().begin();
        it != config()->audio_configs().end(); ++it) {
     ChannelConfig config = *it;
-    if (config.transport == ChannelConfig::TRANSPORT_NONE) {
-      // Older client and host may expect the following values for for the
-      // version and codec for the NONE audio config.
-      // TODO(sergeyu): Remove this code once the current version supports.
-      // crbug.com/144053
-      config.version = 2;
-      config.codec = ChannelConfig::CODEC_VERBATIM;
-    }
     root->AddElement(FormatChannelConfig(config, kAudioTag));
   }
 
