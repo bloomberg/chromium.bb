@@ -94,14 +94,15 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
 
   virtual void ReserveVirtualPath(
       content::DownloadItem* download,
-      const base::FilePath& target_path,
+      const base::FilePath& virtual_path,
+      bool create_directory,
       DownloadPathReservationTracker::FilenameConflictAction conflict_action,
       const DownloadPathReservationTracker::ReservedPathCallback& callback)
       OVERRIDE {
     // Pretend the path reservation succeeded without any change to
     // |target_path|.
     MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback, target_path, true));
+                                     base::Bind(callback, virtual_path, true));
   }
 
   virtual void PromptUserForDownloadPath(

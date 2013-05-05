@@ -420,6 +420,7 @@ void ChromeDownloadManagerDelegate::NotifyExtensions(
 void ChromeDownloadManagerDelegate::ReserveVirtualPath(
     content::DownloadItem* download,
     const base::FilePath& virtual_path,
+    bool create_directory,
     DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     const DownloadTargetDeterminerDelegate::ReservedPathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -434,7 +435,7 @@ void ChromeDownloadManagerDelegate::ReserveVirtualPath(
 #endif
   DownloadPathReservationTracker::GetReservedPath(
       *download, virtual_path, download_prefs_->DownloadPath(),
-      conflict_action, callback);
+      create_directory, conflict_action, callback);
 }
 
 void ChromeDownloadManagerDelegate::PromptUserForDownloadPath(

@@ -196,14 +196,6 @@ DownloadItem::DownloadState StateEnumFromString(const std::string& state) {
   return DownloadItem::MAX_DOWNLOAD_STATE;
 }
 
-bool ValidateFilename(const base::FilePath& filename) {
-  return !filename.empty() &&
-         (filename == filename.StripTrailingSeparators()) &&
-         (filename.BaseName().value() != base::FilePath::kCurrentDirectory) &&
-         !filename.ReferencesParent() &&
-         !filename.IsAbsolute();
-}
-
 std::string TimeToISO8601(const base::Time& t) {
   base::Time::Exploded exploded;
   t.UTCExplode(&exploded);
@@ -607,8 +599,9 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
     return false;
   }
 
-  // Returns false if this extension_id was not expected or if this extension_id
-  // has already reported, regardless of whether the filename is valid.
+  // Returns false if this |extension_id| was not expected or if this
+  // |extension_id| has already reported. The caller is responsible for
+  // validating |filename|.
   bool DeterminerCallback(
       const std::string& extension_id,
       const base::FilePath& filename,
@@ -623,7 +616,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
         // Do not use filename if another determiner has already overridden the
         // filename and they take precedence. Extensions that were installed
         // later take precedence over previous extensions.
-        if (ValidateFilename(filename) &&
+        if (!filename.empty() &&
             (determiner_.extension_id.empty() ||
              (determiners_[index].install_time > determiner_.install_time))) {
           determined_filename_ = filename;
@@ -843,7 +836,7 @@ bool DownloadsDownloadFunction::RunImpl() {
 #elif defined(OS_POSIX)
     base::FilePath file_path(*options.filename.get());
 #endif
-    if (!ValidateFilename(file_path) ||
+    if (!net::IsSafePortableBasename(file_path) ||
         (file_path.DirName().value() != base::FilePath::kCurrentDirectory)) {
       error_ = download_extension_errors::kInvalidFilenameError;
       return false;
@@ -1278,7 +1271,7 @@ bool ExtensionDownloadsEventRouter::DetermineFilename(
     bool include_incognito,
     const std::string& ext_id,
     int download_id,
-    const base::FilePath& filename,
+    const base::FilePath& const_filename,
     extensions::api::downloads::FilenameConflictAction conflict_action,
     std::string* error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1305,12 +1298,20 @@ bool ExtensionDownloadsEventRouter::DetermineFilename(
     *error = download_extension_errors::kInvalidOperationError;
     return false;
   }
+  base::FilePath::StringType filename_str(const_filename.value());
+  // Allow windows-style directory separators on all platforms.
+  std::replace(filename_str.begin(), filename_str.end(),
+               FILE_PATH_LITERAL('\\'), FILE_PATH_LITERAL('/'));
+  base::FilePath filename(filename_str);
+  bool valid_filename = net::IsSafePortableRelativePath(filename);
+  filename = (valid_filename ? filename.NormalizePathSeparators() :
+              base::FilePath());
   if (!data->DeterminerCallback(ext_id, filename, conflict_action)) {
     // Nobody expects this ext_id!
     *error = download_extension_errors::kInvalidOperationError;
     return false;
   }
-  if (!filename.empty() && !ValidateFilename(filename)) {
+  if (!const_filename.empty() && !valid_filename) {
     // If this is moved to before DeterminerCallback(), then it will block
     // forever waiting for this ext_id to report.
     *error = download_extension_errors::kInvalidFilenameError;

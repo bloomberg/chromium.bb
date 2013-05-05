@@ -106,7 +106,11 @@ class DownloadsEventsListener : public content::NotificationObserver {
 
     const base::Time& caught() { return caught_; }
 
-    bool Equals(const Event& other) {
+    bool Satisfies(const Event& other) const {
+      return other.SatisfiedBy(*this);
+    }
+
+    bool SatisfiedBy(const Event& other) const {
       if ((profile_ != other.profile_) ||
           (event_name_ != other.event_name_))
         return false;
@@ -127,9 +131,9 @@ class DownloadsEventsListener : public content::NotificationObserver {
         for (base::DictionaryValue::Iterator iter(*left_dict);
              !iter.IsAtEnd(); iter.Advance()) {
           base::Value* right_value = NULL;
-          if (right_dict->HasKey(iter.key()) &&
-              right_dict->Get(iter.key(), &right_value) &&
-              !iter.value().Equals(right_value)) {
+          if (!right_dict->HasKey(iter.key()) ||
+              (right_dict->Get(iter.key(), &right_value) &&
+               !iter.value().Equals(right_value))) {
             return false;
           }
         }
@@ -181,7 +185,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
           events_.push_back(new_event);
           if (waiting_ &&
               waiting_for_.get() &&
-              waiting_for_->Equals(*new_event)) {
+              new_event->Satisfies(*waiting_for_)) {
             waiting_ = false;
             MessageLoopForUI::current()->Quit();
           }
@@ -198,8 +202,9 @@ class DownloadsEventsListener : public content::NotificationObserver {
     waiting_for_.reset(new Event(profile, event_name, json_args, base::Time()));
     for (std::deque<Event*>::const_iterator iter = events_.begin();
          iter != events_.end(); ++iter) {
-      if ((*iter)->Equals(*waiting_for_.get()))
+      if ((*iter)->Satisfies(*waiting_for_.get())) {
         return true;
+      }
     }
     waiting_ = true;
     content::RunMessageLoop();
@@ -930,12 +935,6 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_TRUE(RunFunction(new DownloadsOpenFunction(),
                           DownloadItemIdAsArgList(download_item)));
   EXPECT_TRUE(download_item->GetOpened());
-  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
-      base::StringPrintf("[{\"id\": %d,"
-                         "  \"opened\": {"
-                         "    \"previous\": false,"
-                         "    \"current\": true}}]",
-                         download_item->GetId())));
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
@@ -1559,22 +1558,25 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
       base::StringPrintf("[{\"danger\": \"safe\","
-                          "  \"incognito\": false,"
-                          "  \"mime\": \"text/plain\","
-                          "  \"paused\": false,"
-                          "  \"url\": \"%s\"}]",
-                          download_url.c_str())));
+                         "  \"incognito\": false,"
+                         "  \"mime\": \"text/plain\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         download_url.c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("slow.txt.crdownload").c_str(),
-                          GetFilename("slow.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("slow.txt.crdownload").c_str(),
+                         GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
 }
 
 // Test that we can start a download from an incognito context, and that the
@@ -1600,22 +1602,25 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
       base::StringPrintf("[{\"danger\": \"safe\","
-                          "  \"incognito\": true,"
-                          "  \"mime\": \"text/plain\","
-                          "  \"paused\": false,"
-                          "  \"url\": \"%s\"}]",
-                          download_url.c_str())));
+                         "  \"incognito\": true,"
+                         "  \"mime\": \"text/plain\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         download_url.c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\":%d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"current\": \"complete\","
-                          "    \"previous\": \"in_progress\"}}]",
-                          result_id,
-                          GetFilename("slow.txt.crdownload").c_str(),
-                          GetFilename("slow.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("slow.txt.crdownload").c_str(),
+                         GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\":%d,"
+                         "  \"state\": {"
+                         "    \"current\": \"complete\","
+                         "    \"previous\": \"in_progress\"}}]",
+                         result_id)));
 }
 
 // Test that we disallow certain headers case-insensitively.
@@ -1753,22 +1758,25 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
       base::StringPrintf("[{\"danger\": \"safe\","
-                          "  \"incognito\": false,"
-                          "  \"mime\": \"text/plain\","
-                          "  \"paused\": false,"
-                          "  \"url\": \"%s\"}]",
-                          download_url.c_str())));
+                         "  \"incognito\": false,"
+                         "  \"mime\": \"text/plain\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         download_url.c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("slow.txt.crdownload").c_str(),
-                          GetFilename("slow.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("slow.txt.crdownload").c_str(),
+                         GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
 }
 
 // Valid data URLs are valid URLs.
@@ -1792,22 +1800,25 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
       base::StringPrintf("[{\"danger\": \"safe\","
-                          "  \"incognito\": false,"
-                          "  \"mime\": \"text/plain\","
-                          "  \"paused\": false,"
-                          "  \"url\": \"%s\"}]",
-                          download_url.c_str())));
+                         "  \"incognito\": false,"
+                         "  \"mime\": \"text/plain\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         download_url.c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("data.txt.crdownload").c_str(),
-                          GetFilename("data.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("data.txt.crdownload").c_str(),
+                         GetFilename("data.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
 }
 
 // Valid file URLs are valid URLs.
@@ -1851,13 +1862,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       base::StringPrintf("[{\"id\": %d,"
                           "  \"filename\": {"
                           "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
+                          "    \"current\": \"%s\"}}]",
                           result_id,
                           GetFilename("file.txt.crdownload").c_str(),
                           GetFilename("file.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                          "  \"state\": {"
+                          "    \"previous\": \"in_progress\","
+                          "    \"current\": \"complete\"}}]",
+                          result_id)));
 }
 
 // Test that auth-basic-succeed would fail if the resource requires the
@@ -1920,24 +1934,27 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
       base::StringPrintf("[{\"danger\": \"safe\","
-                          "  \"incognito\": false,"
-                          "  \"mime\": \"application/octet-stream\","
-                          "  \"paused\": false,"
-                          "  \"url\": \"%s\"}]",
-                          download_url.c_str())));
+                         "  \"incognito\": false,"
+                         "  \"mime\": \"application/octet-stream\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         download_url.c_str())));
   std::string incomplete_filename = GetFilename(
       "headers-succeed.txt.crdownload");
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          incomplete_filename.c_str(),
-                          GetFilename("headers-succeed.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         incomplete_filename.c_str(),
+                         GetFilename("headers-succeed.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
 }
 
 // Test that headers-succeed would fail if the resource requires the headers and
@@ -2048,15 +2065,18 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                         "  \"state\": {"
-                         "    \"previous\": \"in_progress\","
-                         "    \"current\": \"complete\"},"
                          "  \"filename\": {"
                          "    \"previous\": \"%s\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
                          GetFilename("post-succeed.txt.crdownload").c_str(),
                          GetFilename("post-succeed.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
 }
 
 // Test that downloadPostSuccess would fail if the resource requires the POST
@@ -2217,13 +2237,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       base::StringPrintf("[{\"id\": %d,"
                           "  \"filename\": {"
                           "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
+                          "    \"current\": \"%s\"}}]",
                           result_id,
                           GetFilename("on_record.txt.crdownload").c_str(),
                           GetFilename("on_record.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                          "  \"state\": {"
+                          "    \"previous\": \"in_progress\","
+                          "    \"current\": \"complete\"}}]",
+                          result_id)));
   std::string disk_data;
   EXPECT_TRUE(file_util::ReadFileToString(item->GetFullPath(), &disk_data));
   EXPECT_STREQ(kPayloadData, disk_data.c_str());
@@ -2282,15 +2305,12 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   // The download should complete successfully.
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("slow.txt.crdownload").c_str(),
-                          GetFilename("slow.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("slow.txt.crdownload").c_str(),
+                         GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"state\": {"
@@ -2367,15 +2387,12 @@ IN_PROC_BROWSER_TEST_F(
                          result_id)));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
                           "  \"state\": {"
                           "    \"previous\": \"in_progress\","
                           "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("overridden.swf.crdownload").c_str(),
-                          GetFilename("overridden.swf").c_str())));
+                          result_id)));
+  EXPECT_EQ(downloads_directory().AppendASCII("overridden.swf"),
+            item->GetFullPath());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -2431,13 +2448,212 @@ IN_PROC_BROWSER_TEST_F(
       base::StringPrintf("[{\"id\": %d,"
                           "  \"filename\": {"
                           "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
+                          "    \"current\": \"%s\"}}]",
                           result_id,
                           GetFilename("slow.txt.crdownload").c_str(),
                           GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                          "  \"state\": {"
+                          "    \"previous\": \"in_progress\","
+                          "    \"current\": \"complete\"}}]",
+                          result_id)));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    DownloadExtensionTest,
+    DownloadExtensionTest_OnDeterminingFilename_IllegalFilename) {
+  GoOnTheRecord();
+  LoadExtension("downloads_split");
+  AddFilenameDeterminer();
+  CHECK(StartTestServer());
+  std::string download_url = test_server()->GetURL("slow?0").spec();
+
+  // Start downloading a file.
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(), base::StringPrintf(
+          "[{\"url\": \"%s\"}]", download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+
+  ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                          "  \"incognito\": false,"
+                          "  \"id\": %d,"
+                          "  \"mime\": \"text/plain\","
+                          "  \"paused\": false,"
+                          "  \"url\": \"%s\"}]",
+                          result_id,
+                          download_url.c_str())));
+  ASSERT_TRUE(WaitFor(
+      events::kOnDownloadDeterminingFilename,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\":\"slow.txt\"}]",
+                         result_id)));
+  ASSERT_TRUE(item->GetTargetFilePath().empty());
+  ASSERT_TRUE(item->IsInProgress());
+
+  // Respond to the onDeterminingFilename.
+  std::string error;
+  ASSERT_FALSE(ExtensionDownloadsEventRouter::DetermineFilename(
+      browser()->profile(),
+      false,
+      GetExtensionId(),
+      result_id,
+      base::FilePath(FILE_PATH_LITERAL("<")),
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      &error));
+  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
+      "[{\"id\": %d,"
+      "  \"filename\": {"
+      "    \"previous\": \"%s\","
+      "    \"current\": \"%s\"}}]",
+      result_id,
+      GetFilename("slow.txt.crdownload").c_str(),
+      GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
+      "[{\"id\": %d,"
+      "  \"state\": {"
+      "    \"previous\": \"in_progress\","
+      "    \"current\": \"complete\"}}]",
+      result_id)));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    DownloadExtensionTest,
+    DownloadExtensionTest_OnDeterminingFilename_IllegalFilenameExtension) {
+  GoOnTheRecord();
+  LoadExtension("downloads_split");
+  AddFilenameDeterminer();
+  CHECK(StartTestServer());
+  std::string download_url = test_server()->GetURL("slow?0").spec();
+
+  // Start downloading a file.
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(), base::StringPrintf(
+          "[{\"url\": \"%s\"}]", download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+
+  ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                          "  \"incognito\": false,"
+                          "  \"id\": %d,"
+                          "  \"mime\": \"text/plain\","
+                          "  \"paused\": false,"
+                          "  \"url\": \"%s\"}]",
+                          result_id,
+                          download_url.c_str())));
+  ASSERT_TRUE(WaitFor(
+      events::kOnDownloadDeterminingFilename,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\":\"slow.txt\"}]",
+                         result_id)));
+  ASSERT_TRUE(item->GetTargetFilePath().empty());
+  ASSERT_TRUE(item->IsInProgress());
+
+  // Respond to the onDeterminingFilename.
+  std::string error;
+  ASSERT_FALSE(ExtensionDownloadsEventRouter::DetermineFilename(
+      browser()->profile(),
+      false,
+      GetExtensionId(),
+      result_id,
+      base::FilePath(FILE_PATH_LITERAL(
+          "My Computer.{20D04FE0-3AEA-1069-A2D8-08002B30309D}/foo")),
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      &error));
+  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
+      "[{\"id\": %d,"
+      "  \"filename\": {"
+      "    \"previous\": \"%s\","
+      "    \"current\": \"%s\"}}]",
+      result_id,
+      GetFilename("slow.txt.crdownload").c_str(),
+      GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
+      "[{\"id\": %d,"
+      "  \"state\": {"
+      "    \"previous\": \"in_progress\","
+      "    \"current\": \"complete\"}}]",
+      result_id)));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    DownloadExtensionTest,
+    DownloadExtensionTest_OnDeterminingFilename_ReservedFilename) {
+  GoOnTheRecord();
+  LoadExtension("downloads_split");
+  AddFilenameDeterminer();
+  CHECK(StartTestServer());
+  std::string download_url = test_server()->GetURL("slow?0").spec();
+
+  // Start downloading a file.
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(), base::StringPrintf(
+          "[{\"url\": \"%s\"}]", download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+
+  ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                          "  \"incognito\": false,"
+                          "  \"id\": %d,"
+                          "  \"mime\": \"text/plain\","
+                          "  \"paused\": false,"
+                          "  \"url\": \"%s\"}]",
+                          result_id,
+                          download_url.c_str())));
+  ASSERT_TRUE(WaitFor(
+      events::kOnDownloadDeterminingFilename,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\":\"slow.txt\"}]",
+                         result_id)));
+  ASSERT_TRUE(item->GetTargetFilePath().empty());
+  ASSERT_TRUE(item->IsInProgress());
+
+  // Respond to the onDeterminingFilename.
+  std::string error;
+  ASSERT_FALSE(ExtensionDownloadsEventRouter::DetermineFilename(
+      browser()->profile(),
+      false,
+      GetExtensionId(),
+      result_id,
+      base::FilePath(FILE_PATH_LITERAL("con.foo")),
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      &error));
+  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
+      "[{\"id\": %d,"
+      "  \"filename\": {"
+      "    \"previous\": \"%s\","
+      "    \"current\": \"%s\"}}]",
+      result_id,
+      GetFilename("slow.txt.crdownload").c_str(),
+      GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
+      "[{\"id\": %d,"
+      "  \"state\": {"
+      "    \"previous\": \"in_progress\","
+      "    \"current\": \"complete\"}}]",
+      result_id)));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -2491,15 +2707,18 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("slow.txt.crdownload").c_str(),
-                          GetFilename("slow.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("slow.txt.crdownload").c_str(),
+                         GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -2553,15 +2772,18 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("slow.txt.crdownload").c_str(),
-                          GetFilename("slow.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("slow.txt.crdownload").c_str(),
+                         GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -2618,13 +2840,16 @@ IN_PROC_BROWSER_TEST_F(
       base::StringPrintf("[{\"id\": %d,"
                           "  \"filename\": {"
                           "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
+                          "    \"current\": \"%s\"}}]",
                           result_id,
                           GetFilename("slow.txt.crdownload").c_str(),
                           GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                          "  \"state\": {"
+                          "    \"previous\": \"in_progress\","
+                          "    \"current\": \"complete\"}}]",
+                          result_id)));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -2679,15 +2904,18 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("slow.txt.crdownload").c_str(),
-                          GetFilename("slow.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("slow.txt.crdownload").c_str(),
+                         GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -2712,13 +2940,13 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
   ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
       base::StringPrintf("[{\"danger\": \"safe\","
-                          "  \"incognito\": false,"
-                          "  \"id\": %d,"
-                          "  \"mime\": \"text/plain\","
-                          "  \"paused\": false,"
-                          "  \"url\": \"%s\"}]",
-                          result_id,
-                          download_url.c_str())));
+                         "  \"incognito\": false,"
+                         "  \"id\": %d,"
+                         "  \"mime\": \"text/plain\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         result_id,
+                         download_url.c_str())));
   ASSERT_TRUE(WaitFor(
       events::kOnDownloadDeterminingFilename,
       base::StringPrintf("[{\"id\": %d,"
@@ -2741,15 +2969,12 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("slow.txt.crdownload").c_str(),
-                          GetFilename("slow.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("slow.txt.crdownload").c_str(),
+                         GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"state\": {"
@@ -2771,13 +2996,13 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
       base::StringPrintf("[{\"danger\": \"safe\","
-                          "  \"incognito\": false,"
-                          "  \"id\": %d,"
-                          "  \"mime\": \"text/plain\","
-                          "  \"paused\": false,"
-                          "  \"url\": \"%s\"}]",
-                          result_id,
-                          download_url.c_str())));
+                         "  \"incognito\": false,"
+                         "  \"id\": %d,"
+                         "  \"mime\": \"text/plain\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         result_id,
+                         download_url.c_str())));
   ASSERT_TRUE(WaitFor(
       events::kOnDownloadDeterminingFilename,
       base::StringPrintf("[{\"id\": %d,"
@@ -2803,15 +3028,12 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("foo.crdownload").c_str(),
-                          GetFilename("foo").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("foo.crdownload").c_str(),
+                         GetFilename("foo").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"state\": {"
@@ -2931,15 +3153,12 @@ IN_PROC_BROWSER_TEST_F(
   // The download should complete successfully.
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("42.txt.crdownload").c_str(),
-                          GetFilename("42.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("42.txt.crdownload").c_str(),
+                         GetFilename("42.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"state\": {"
@@ -2994,15 +3213,12 @@ IN_PROC_BROWSER_TEST_F(
   // The download should complete successfully.
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("5.txt.crdownload").c_str(),
-                          GetFilename("5.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("5.txt.crdownload").c_str(),
+                         GetFilename("5.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"state\": {"
@@ -3072,15 +3288,12 @@ IN_PROC_BROWSER_TEST_F(
   // The download should complete successfully.
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("42.txt.crdownload").c_str(),
-                          GetFilename("42.txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("42.txt.crdownload").c_str(),
+                         GetFilename("42.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"state\": {"
@@ -3134,15 +3347,12 @@ IN_PROC_BROWSER_TEST_F(
   // The download should complete successfully.
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"%s\","
-                          "    \"current\": \"%s\"},"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]",
-                          result_id,
-                          GetFilename("42 (1).txt.crdownload").c_str(),
-                          GetFilename("42 (1).txt").c_str())));
+                         "  \"filename\": {"
+                         "    \"previous\": \"%s\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("42 (1).txt.crdownload").c_str(),
+                         GetFilename("42 (1).txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"state\": {"
@@ -3266,13 +3476,16 @@ IN_PROC_BROWSER_TEST_F(
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
                          "    \"previous\": \"%s\","
-                         "    \"current\": \"%s\"},"
-                         "  \"state\": {"
-                         "    \"previous\": \"in_progress\","
-                         "    \"current\": \"complete\"}}]",
+                         "    \"current\": \"%s\"}}]",
                          item->GetId(),
                          GetFilename("42.txt.crdownload").c_str(),
                          GetFilename("42.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         item->GetId())));
 }
 
 // TODO(benjhayden) Figure out why DisableExtension() does not fire

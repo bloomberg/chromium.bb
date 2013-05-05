@@ -155,6 +155,7 @@ void CreateReservation(
     DownloadId download_id,
     const base::FilePath& suggested_path,
     const base::FilePath& default_download_path,
+    bool create_directory,
     DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     const DownloadPathReservationTracker::ReservedPathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -170,34 +171,37 @@ void CreateReservation(
   DCHECK(!ContainsKey(reservations, download_id));
 
   base::FilePath target_path(suggested_path.NormalizePathSeparators());
+  base::FilePath target_dir = target_path.DirName();
+  base::FilePath filename = target_path.BaseName();
   bool is_path_writeable = true;
   bool has_conflicts = false;
   bool name_too_long = false;
 
-  // Create the default download path if it doesn't already exist and is where
-  // we are going to create the downloaded file. |target_path| might point
-  // elsewhere if this was a programmatic download.
-  if (!default_download_path.empty() &&
-      default_download_path == target_path.DirName() &&
-      !file_util::DirectoryExists(default_download_path)) {
-    file_util::CreateDirectory(default_download_path);
+  // Create target_dir if necessary and appropriate. target_dir may be the last
+  // directory that the user selected in a FilePicker; if that directory has
+  // since been removed, do NOT automatically re-create it. Only automatically
+  // create the directory if it is the default Downloads directory or if the
+  // caller explicitly requested automatic directory creation.
+  if (!file_util::DirectoryExists(target_dir) &&
+      (create_directory ||
+       (!default_download_path.empty() &&
+        (default_download_path == target_dir)))) {
+    file_util::CreateDirectory(target_dir);
   }
 
   // Check writability of the suggested path. If we can't write to it, default
   // to the user's "My Documents" directory. We'll prompt them in this case.
-  base::FilePath dir = target_path.DirName();
-  base::FilePath filename = target_path.BaseName();
-  if (!file_util::PathIsWritable(dir)) {
-    DVLOG(1) << "Unable to write to directory \"" << dir.value() << "\"";
+  if (!file_util::PathIsWritable(target_dir)) {
+    DVLOG(1) << "Unable to write to directory \"" << target_dir.value() << "\"";
     is_path_writeable = false;
-    PathService::Get(chrome::DIR_USER_DOCUMENTS, &dir);
-    target_path = dir.Append(filename);
+    PathService::Get(chrome::DIR_USER_DOCUMENTS, &target_dir);
+    target_path = target_dir.Append(filename);
   }
 
   if (is_path_writeable) {
     // Check the limit of file name length if it could be obtained. When the
     // suggested name exceeds the limit, truncate or prompt the user.
-    int max_length = file_util::GetMaximumPathComponentLength(dir);
+    int max_length = file_util::GetMaximumPathComponentLength(target_dir);
     if (max_length != -1) {
       int limit = max_length - kIntermediateNameSuffixLength;
       if (limit <= 0 || !TruncateFileName(&target_path, limit))
@@ -342,6 +346,7 @@ void DownloadPathReservationTracker::GetReservedPath(
     DownloadItem& download_item,
     const base::FilePath& target_path,
     const base::FilePath& default_path,
+    bool create_directory,
     FilenameConflictAction conflict_action,
     const ReservedPathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -350,10 +355,14 @@ void DownloadPathReservationTracker::GetReservedPath(
   new DownloadItemObserver(download_item);
   // DownloadItemObserver deletes itself.
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateReservation, download_item.GetGlobalId(),
-                 target_path, default_path, conflict_action, callback));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
+      &CreateReservation,
+      download_item.GetGlobalId(),
+      target_path,
+      default_path,
+      create_directory,
+      conflict_action,
+      callback));
 }
 
 // static

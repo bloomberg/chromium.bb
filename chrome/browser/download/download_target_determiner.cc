@@ -64,6 +64,7 @@ DownloadTargetDeterminer::DownloadTargetDeterminer(
     const content::DownloadTargetCallback& callback)
     : next_state_(STATE_GENERATE_TARGET_PATH),
       should_prompt_(false),
+      create_directory_(false),
       conflict_action_(download->GetForcedFilePath().empty() ?
                        DownloadPathReservationTracker::UNIQUIFY :
                        DownloadPathReservationTracker::OVERWRITE),
@@ -225,6 +226,7 @@ void DownloadTargetDeterminer::NotifyExtensionsDone(
     // suggest it.
     net::GenerateSafeFileName(std::string(), false, &new_path);
     virtual_path_ = new_path;
+    create_directory_ = true;
     conflict_action_ = conflict_action;
   }
 
@@ -239,7 +241,7 @@ DownloadTargetDeterminer::Result
   next_state_ = STATE_PROMPT_USER_FOR_DOWNLOAD_PATH;
 
   delegate_->ReserveVirtualPath(
-      download_, virtual_path_, conflict_action_,
+      download_, virtual_path_, create_directory_, conflict_action_,
       base::Bind(&DownloadTargetDeterminer::ReserveVirtualPathDone,
                  weak_ptr_factory_.GetWeakPtr()));
   return QUIT_DOLOOP;

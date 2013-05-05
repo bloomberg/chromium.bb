@@ -231,6 +231,7 @@ class DownloadTargetDeterminer
   // state
   State next_state_;
   bool should_prompt_;
+  bool create_directory_;
   DownloadPathReservationTracker::FilenameConflictAction conflict_action_;
   content::DownloadDangerType danger_type_;
   base::FilePath virtual_path_;

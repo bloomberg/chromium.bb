@@ -79,6 +79,7 @@ class DownloadTargetDeterminerDelegate {
   virtual void ReserveVirtualPath(
       content::DownloadItem* download,
       const base::FilePath& virtual_path,
+      bool create_directory,
       DownloadPathReservationTracker::FilenameConflictAction conflict_action,
       const ReservedPathCallback& callback) = 0;
 
