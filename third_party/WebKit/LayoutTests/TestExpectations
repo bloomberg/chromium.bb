@@ -1501,6 +1501,9 @@ crbug.com/229698 http/tests/security/mixedContent/about-blank-iframe-in-main-fra
 crbug.com/230554 [ Linux Debug ] plugins/drag-events.html [ Crash ]
 
 # Failing tests after r148246
+# The Linux results are different between 32 and 64 bit (as per the bots).
+crbug.com/230771 [ Linux ] editing/pasteboard/drop-file-svg.html [ Pass Failure ]
+crbug.com/230771 [ Linux ] editing/pasteboard/file-drag-to-editable.html [ Pass Failure ]
 crbug.com/230771 [ Lion Debug ] editing/pasteboard/drop-file-svg.html [ Failure ]
 crbug.com/230771 [ Lion Debug ] editing/pasteboard/file-drag-to-editable.html [ Failure ]
 crbug.com/230771 [ Linux Mac ] fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
