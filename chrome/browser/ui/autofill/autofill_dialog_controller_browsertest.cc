@@ -103,10 +103,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return true;
   }
 
-  virtual std::vector<AutofillFieldType> InputsAreValid(
+  virtual ValidityData InputsAreValid(
       const DetailOutputMap& inputs,
       ValidationType validation_type) const OVERRIDE {
-    return std::vector<AutofillFieldType>();
+    return ValidityData();
   }
 
   // Increase visibility for testing.

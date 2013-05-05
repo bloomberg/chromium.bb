@@ -106,6 +106,20 @@ views::Label* CreateDetailsSectionLabel(const string16& text) {
   return label;
 }
 
+// Draws an arrow at the top of |canvas| pointing to |tip_x|.
+void DrawArrow(gfx::Canvas* canvas, int tip_x, const SkColor& color) {
+  const int arrow_half_width = kArrowWidth / 2.0f;
+  const int arrow_middle = tip_x - arrow_half_width;
+
+  SkPath arrow;
+  arrow.moveTo(arrow_middle - arrow_half_width, kArrowHeight);
+  arrow.lineTo(arrow_middle + arrow_half_width, kArrowHeight);
+  arrow.lineTo(arrow_middle, 0);
+  arrow.close();
+  canvas->ClipPath(arrow);
+  canvas->DrawColor(color);
+}
+
 // This class handles layout for the first row of a SuggestionView.
 // It exists to circumvent shortcomings of GridLayout and BoxLayout (namely that
 // the former doesn't fully respect child visibility, and that the latter won't
@@ -157,6 +171,41 @@ class SectionRowView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(SectionRowView);
 };
 
+// This view is used for the contents of the error bubble widget.
+class ErrorBubbleContents : public views::View {
+ public:
+  explicit ErrorBubbleContents(const string16& message)
+      : color_(SK_ColorWHITE) {
+    DialogNotification notification(DialogNotification::VALIDATION_ERROR,
+                                    string16());
+    color_ = notification.GetBackgroundColor();
+
+    set_border(views::Border::CreateEmptyBorder(kArrowHeight, 0, 0, 0));
+
+    views::Label* label = new views::Label();
+    label->SetText(message);
+    label->SetAutoColorReadabilityEnabled(false);
+    label->SetEnabledColor(SK_ColorWHITE);
+    label->set_border(
+        views::Border::CreateSolidSidedBorder(5, 10, 5, 10, color_));
+    label->set_background(
+        views::Background::CreateSolidBackground(color_));
+    SetLayoutManager(new views::FillLayout());
+    AddChildView(label);
+  }
+  virtual ~ErrorBubbleContents() {}
+
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    views::View::OnPaint(canvas);
+    DrawArrow(canvas, width() / 2.0f, color_);
+  }
+
+ private:
+  SkColor color_;
+
+  DISALLOW_COPY_AND_ASSIGN(ErrorBubbleContents);
+};
+
 }  // namespace
 
 // AutofillDialogViews::SizeLimitedScrollView ----------------------------------
@@ -192,6 +241,50 @@ void AutofillDialogViews::SizeLimitedScrollView::SetMaximumHeight(
     PreferredSizeChanged();
 }
 
+// AutofillDialogViews::ErrorBubble --------------------------------------------
+
+AutofillDialogViews::ErrorBubble::ErrorBubble(views::View* anchor,
+                                              const string16& message)
+    : anchor_(anchor),
+      observer_(this) {
+  ErrorBubbleContents* contents = new ErrorBubbleContents(message);
+
+  widget_ = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  params.transparent = true;
+  views::Widget* anchor_widget = anchor->GetWidget();
+  params.parent = anchor_widget->GetNativeView();
+
+  gfx::Rect anchor_bounds = anchor->GetBoundsInScreen();
+  gfx::Rect bubble_bounds;
+  bubble_bounds.set_size(contents->GetPreferredSize());
+  bubble_bounds.set_x(anchor_bounds.right() -
+      (anchor_bounds.width() + bubble_bounds.width()) / 2);
+  const int kErrorBubbleOverlap = 3;
+  bubble_bounds.set_y(anchor_bounds.bottom() - kErrorBubbleOverlap);
+  params.bounds = bubble_bounds;
+
+  widget_->Init(params);
+  widget_->SetContentsView(contents);
+  widget_->Show();
+  observer_.Add(widget_);
+}
+
+AutofillDialogViews::ErrorBubble::~ErrorBubble() {
+  if (widget_)
+    widget_->Hide();
+}
+
+bool AutofillDialogViews::ErrorBubble::IsShowing() {
+  return widget_ && widget_->IsVisible();
+}
+
+void AutofillDialogViews::ErrorBubble::OnWidgetClosing(views::Widget* widget) {
+  DCHECK_EQ(widget_, widget);
+  observer_.Remove(widget_);
+  widget_ = NULL;
+}
+
 // AutofillDialogViews::DecoratedTextfield -------------------------------------
 
 AutofillDialogViews::DecoratedTextfield::DecoratedTextfield(
@@ -211,6 +304,7 @@ AutofillDialogViews::DecoratedTextfield::~DecoratedTextfield() {}
 
 void AutofillDialogViews::DecoratedTextfield::SetInvalid(bool invalid) {
   invalid_ = invalid;
+  // TODO(estade): Red is not exactly the right color.
   if (invalid)
     textfield_->SetBorderColor(SK_ColorRED);
   else
@@ -243,6 +337,7 @@ void AutofillDialogViews::DecoratedTextfield::OnPaint(gfx::Canvas* canvas) {
     dog_ear.lineTo(width(), kDogEarSize);
     dog_ear.close();
     canvas->ClipPath(dog_ear);
+    // TODO(estade): Red is not exactly the right color.
     canvas->DrawColor(SK_ColorRED);
   }
 }
@@ -400,19 +495,10 @@ void AutofillDialogViews::NotificationArea::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
   if (HasArrow()) {
-    const int arrow_half_width = kArrowWidth / 2.0f;
-    const int anchor_half_width =
-        arrow_centering_anchor_->width() / 2.0f;
-    const int arrow_middle =
-        GetMirroredXInView(width() - anchor_half_width - arrow_half_width);
-
-    SkPath arrow;
-    arrow.moveTo(arrow_middle - arrow_half_width, kArrowHeight);
-    arrow.lineTo(arrow_middle + arrow_half_width, kArrowHeight);
-    arrow.lineTo(arrow_middle, 0);
-    arrow.close();
-    canvas->ClipPath(arrow);
-    canvas->DrawColor(notifications_[0].GetBackgroundColor());
+    DrawArrow(
+        canvas,
+        GetMirroredXInView(width() - arrow_centering_anchor_->width() / 2.0f),
+        notifications_[0].GetBackgroundColor());
   }
 }
 
@@ -1387,6 +1473,22 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   ContentsPreferredSizeChanged();
 }
 
+template<class T>
+void AutofillDialogViews::SetValidityForInput(
+    T* input,
+    const string16& message) {
+  bool invalid = !message.empty();
+  input->SetInvalid(invalid);
+
+  if (invalid) {
+    validity_map_[input] = message;
+    if (!error_bubble_ || !error_bubble_->IsShowing())
+      error_bubble_.reset(new ErrorBubble(input, message));
+  } else {
+    validity_map_.erase(input);
+  }
+}
+
 bool AutofillDialogViews::ValidateGroup(
     const DetailsGroup& group,
     AutofillDialogController::ValidationType validation_type) {
@@ -1394,15 +1496,18 @@ bool AutofillDialogViews::ValidateGroup(
 
   scoped_ptr<DetailInput> cvc_input;
   DetailOutputMap detail_outputs;
-  std::map<AutofillFieldType, base::Callback<void(bool)> > field_map;
+  typedef std::map<AutofillFieldType, base::Callback<void(const string16&)> >
+      FieldMap;
+  FieldMap field_map;
 
   if (group.manual_input->visible()) {
     for (TextfieldMap::const_iterator iter = group.textfields.begin();
          iter != group.textfields.end(); ++iter) {
       detail_outputs[iter->first] = iter->second->textfield()->text();
-      field_map[iter->first->type] =
-          base::Bind(&DecoratedTextfield::SetInvalid,
-                     base::Unretained(iter->second));
+      field_map[iter->first->type] = base::Bind(
+          &AutofillDialogViews::SetValidityForInput<DecoratedTextfield>,
+          base::Unretained(this),
+          iter->second);
     }
     for (ComboboxMap::const_iterator iter = group.comboboxes.begin();
          iter != group.comboboxes.end(); ++iter) {
@@ -1410,9 +1515,10 @@ bool AutofillDialogViews::ValidateGroup(
       string16 item =
           combobox->model()->GetItemAt(combobox->selected_index());
       detail_outputs[iter->first] = item;
-      field_map[iter->first->type] =
-          base::Bind(&views::Combobox::SetInvalid,
-                     base::Unretained(iter->second));
+      field_map[iter->first->type] = base::Bind(
+          &AutofillDialogViews::SetValidityForInput<views::Combobox>,
+          base::Unretained(this),
+          iter->second);
     }
   } else if (group.section == SECTION_CC) {
     DecoratedTextfield* decorated_cvc =
@@ -1420,24 +1526,26 @@ bool AutofillDialogViews::ValidateGroup(
     cvc_input.reset(new DetailInput);
     cvc_input->type = CREDIT_CARD_VERIFICATION_CODE;
     detail_outputs[cvc_input.get()] = decorated_cvc->textfield()->text();
-    field_map[cvc_input->type] =
-        base::Bind(&DecoratedTextfield::SetInvalid,
-                   base::Unretained(decorated_cvc));
+    field_map[cvc_input->type] = base::Bind(
+        &AutofillDialogViews::SetValidityForInput<DecoratedTextfield>,
+        base::Unretained(this),
+        decorated_cvc);
   }
 
-  std::vector<AutofillFieldType> invalid_inputs;
+  ValidityData invalid_inputs;
   invalid_inputs = controller_->InputsAreValid(detail_outputs, validation_type);
   // Flag invalid fields, removing them from |field_map|.
-  for (std::vector<AutofillFieldType>::const_iterator iter =
+  for (ValidityData::const_iterator iter =
            invalid_inputs.begin(); iter != invalid_inputs.end(); ++iter) {
-    field_map[*iter].Run(true);
-    field_map.erase(*iter);
+    const string16& message = iter->second;
+    field_map[iter->first].Run(message);
+    field_map.erase(iter->first);
   }
 
   // The remaining fields in |field_map| are valid. Mark them as such.
-  for (std::map<AutofillFieldType, base::Callback<void(bool)> >::iterator
-       iter = field_map.begin(); iter != field_map.end(); ++iter) {
-    iter->second.Run(false);  // Calls SetInvalid(false) for this field.
+  for (FieldMap::iterator iter = field_map.begin(); iter != field_map.end();
+       ++iter) {
+    iter->second.Run(string16());
   }
 
   return invalid_inputs.empty();
@@ -1498,7 +1606,10 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
   // correcting a minor mistake (i.e. a wrong CC digit) should immediately
   // result in validation - positive user feedback.
   if (decorated->invalid() && was_edit) {
-    decorated->SetInvalid(!controller_->InputIsValid(type, textfield->text()));
+    bool invalid = !controller_->InputIsValid(type, textfield->text());
+    decorated->SetInvalid(invalid);
+    if (!invalid && error_bubble_ && error_bubble_->anchor() == decorated)
+      error_bubble_.reset();
 
     // If the field transitioned from invalid to valid, re-validate the group,
     // since inter-field checks become meaningful with valid fields.

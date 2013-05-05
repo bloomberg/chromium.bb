@@ -132,10 +132,10 @@ bool MockAutofillDialogController::InputIsValid(AutofillFieldType type,
   return false;
 }
 
-std::vector<AutofillFieldType> MockAutofillDialogController::InputsAreValid(
+ValidityData MockAutofillDialogController::InputsAreValid(
      const DetailOutputMap& inputs,
      ValidationType validation_type) const {
-  return std::vector<AutofillFieldType>();
+  return ValidityData();
 }
 
 void MockAutofillDialogController::UserEditedOrActivatedInput(

@@ -49,7 +49,7 @@ class MockAutofillDialogController : public AutofillDialogController {
                                   const string16& user_input) const OVERRIDE;
   virtual bool InputIsValid(AutofillFieldType type,
                             const string16& value) const OVERRIDE;
-  virtual std::vector<AutofillFieldType> InputsAreValid(
+  virtual ValidityData InputsAreValid(
       const DetailOutputMap& inputs,
       ValidationType validation_type) const OVERRIDE;
   virtual void UserEditedOrActivatedInput(const DetailInput* input,

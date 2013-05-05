@@ -172,6 +172,26 @@ class AutofillDialogViews : public AutofillDialogView,
     DISALLOW_COPY_AND_ASSIGN(SizeLimitedScrollView);
   };
 
+  // A class that creates and manages a widget for error messages.
+  class ErrorBubble : public views::WidgetObserver {
+   public:
+    ErrorBubble(views::View* anchor, const string16& message);
+    virtual ~ErrorBubble();
+
+    bool IsShowing();
+
+    virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+
+    views::View* anchor() { return anchor_; }
+
+   private:
+    views::Widget* widget_;  // Weak, may be NULL.
+    views::View* anchor_;  // Weak.
+    ScopedObserver<views::Widget, ErrorBubble> observer_;
+
+    DISALLOW_COPY_AND_ASSIGN(ErrorBubble);
+  };
+
   // A class which holds a textfield and draws extra stuff on top, like
   // invalid content indications.
   class DecoratedTextfield : public views::View {
@@ -450,6 +470,12 @@ class AutofillDialogViews : public AutofillDialogView,
   // Returns NULL if no DetailsGroup was found.
   DetailsGroup* GroupForView(views::View* view);
 
+  // Sets the visual state for an input to be either valid or invalid. This
+  // should work on Comboboxes or DecoratedTextfields. If |message| is empty,
+  // the input is valid.
+  template<class T>
+  void SetValidityForInput(T* input, const string16& message);
+
   // Checks all manual inputs in |group| for validity. Decorates the invalid
   // ones and returns true if all were valid.
   bool ValidateGroup(const DetailsGroup& group,
@@ -540,6 +566,12 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // The focus manager for |window_|.
   views::FocusManager* focus_manager_;
+
+  // The object that manages the error bubble widget.
+  scoped_ptr<ErrorBubble> error_bubble_;
+
+  // Map from input view (textfield or combobox) to error string.
+  std::map<views::View*, string16> validity_map_;
 
   ScopedObserver<views::Widget, AutofillDialogViews> observer_;
 

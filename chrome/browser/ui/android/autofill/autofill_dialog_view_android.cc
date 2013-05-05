@@ -454,22 +454,22 @@ bool AutofillDialogViewAndroid::ValidateSection(
     DialogSection section, AutofillDialogController::ValidationType type) {
   DetailOutputMap detail_outputs;
   GetUserInput(section, &detail_outputs);
-  std::vector<AutofillFieldType> invalid_inputs = controller_->InputsAreValid(
-      detail_outputs, type);
+  ValidityData invalid_inputs =
+      controller_->InputsAreValid(detail_outputs, type);
 
-  const size_t item_count =  invalid_inputs.size();
+  const size_t item_count = invalid_inputs.size();
   if (item_count == 0) return true;
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> error_array =
       Java_AutofillDialogGlue_createAutofillDialogFieldError(env, item_count);
-  for (size_t i = 0; i < item_count; ++i) {
-    // TODO(aurimas) Start using real error strings.
-    string16 error = ASCIIToUTF16("Error");
+  size_t i = 0;
+  for (ValidityData::const_iterator iter =
+           invalid_inputs.begin(); iter != invalid_inputs.end(); ++iter, ++i) {
     ScopedJavaLocalRef<jstring> error_text =
-        base::android::ConvertUTF16ToJavaString(env, error);
+        base::android::ConvertUTF16ToJavaString(env, iter->second);
     Java_AutofillDialogGlue_addToAutofillDialogFieldErrorArray(
-        env, error_array.obj(), i, invalid_inputs[i], error_text.obj());
+        env, error_array.obj(), i, iter->first, error_text.obj());
   }
   Java_AutofillDialogGlue_updateSectionErrors(env,
                                               java_object_.obj(),

@@ -1046,9 +1046,11 @@ bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
   return !value.empty();
 }
 
-std::vector<AutofillFieldType> AutofillDialogControllerImpl::InputsAreValid(
+// TODO(estade): Replace all the error messages here with more helpful and
+// translateable ones. TODO(groby): Also add tests.
+ValidityData AutofillDialogControllerImpl::InputsAreValid(
     const DetailOutputMap& inputs, ValidationType validation_type) const {
-  std::vector<AutofillFieldType> invalid_fields;
+  ValidityData invalid_messages;
   std::map<AutofillFieldType, string16> field_values;
   for (DetailOutputMap::const_iterator iter = inputs.begin();
        iter != inputs.end(); ++iter) {
@@ -1056,10 +1058,14 @@ std::vector<AutofillFieldType> AutofillDialogControllerImpl::InputsAreValid(
     if (validation_type == VALIDATE_EDIT && iter->second.empty())
       continue;
 
-    field_values[iter->first->type] = iter->second;
-
-    if (!InputIsValid(iter->first->type, iter->second))
-      invalid_fields.push_back(iter->first->type);
+    const AutofillFieldType type = iter->first->type;
+    if (!InputIsValid(type, iter->second)) {
+      invalid_messages[type] = iter->second.empty() ?
+          ASCIIToUTF16("You forgot one") :
+          ASCIIToUTF16("Are you sure this is right?");
+    } else {
+      field_values[type] = iter->second;
+    }
   }
 
   // Validate the date formed by month and year field. (Autofill dialog is
@@ -1070,8 +1076,10 @@ std::vector<AutofillFieldType> AutofillDialogControllerImpl::InputsAreValid(
             field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR],
             field_values[CREDIT_CARD_EXP_MONTH],
             base::Time::Now())) {
-      invalid_fields.push_back(CREDIT_CARD_EXP_MONTH);
-      invalid_fields.push_back(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+      invalid_messages[CREDIT_CARD_EXP_MONTH] =
+          ASCIIToUTF16("more complicated message");
+      invalid_messages[CREDIT_CARD_EXP_4_DIGIT_YEAR] =
+          ASCIIToUTF16("more complicated message");
     }
   }
 
@@ -1082,16 +1090,12 @@ std::vector<AutofillFieldType> AutofillDialogControllerImpl::InputsAreValid(
     if (!autofill::IsValidCreditCardSecurityCode(
             field_values[CREDIT_CARD_VERIFICATION_CODE],
             field_values[CREDIT_CARD_NUMBER])) {
-      invalid_fields.push_back(CREDIT_CARD_VERIFICATION_CODE);
+      invalid_messages[CREDIT_CARD_VERIFICATION_CODE] =
+          ASCIIToUTF16("CVC doesn't match card type!");
     }
   }
 
-  // De-duplicate invalid fields.
-  std::sort(invalid_fields.begin(), invalid_fields.end());
-  invalid_fields.erase(std::unique(
-      invalid_fields.begin(), invalid_fields.end()), invalid_fields.end());
-
-  return invalid_fields;
+  return invalid_messages;
 }
 
 void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
