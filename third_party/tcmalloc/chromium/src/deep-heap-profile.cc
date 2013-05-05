@@ -9,7 +9,7 @@
 
 #include "deep-heap-profile.h"
 
-#ifdef DEEP_HEAP_PROFILE
+#ifdef USE_DEEP_HEAP_PROFILE
 #include <algorithm>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -912,7 +912,7 @@ void DeepHeapProfile::WriteProcMaps(const char* prefix,
   RawWrite(fd, raw_buffer, length);
   RawClose(fd);
 }
-#else  // DEEP_HEAP_PROFILE
+#else  // USE_DEEP_HEAP_PROFILE
 
 DeepHeapProfile::DeepHeapProfile(HeapProfileTable* heap_profile,
                                  const char* prefix)
@@ -926,4 +926,4 @@ int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
   return heap_profile_->FillOrderedProfile(raw_buffer, buffer_size);
 }
 
-#endif  // DEEP_HEAP_PROFILE
+#endif  // USE_DEEP_HEAP_PROFILE

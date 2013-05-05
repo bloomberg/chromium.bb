@@ -54,6 +54,10 @@
 #include <stdlib.h>               // for getenv
 #include "base/basictypes.h"
 
+#if defined(__ANDROID__) || defined(ANDROID)
+#include <sys/system_properties.h>
+#endif
+
 #define DECLARE_VARIABLE(type, name)                                          \
   namespace FLAG__namespace_do_not_use_directly_use_DECLARE_##type##_instead {  \
   extern PERFTOOLS_DLL_DECL type FLAGS_##name;                                \
@@ -112,6 +116,50 @@
 
 // These macros (could be functions, but I don't want to bother with a .cc
 // file), make it easier to initialize flags from the environment.
+// They are functions in Android because __system_property_get() doesn't
+// return a string.
+
+#if defined(__ANDROID__) || defined(ANDROID)
+
+// Returns a pointer to a static variable.  The string pointed by the returned
+// pointer must not be modified.
+inline const char* const EnvToString(const char* envname, const char* dflt) {
+  static char system_property_value[PROP_VALUE_MAX];
+  if (__system_property_get(envname, system_property_value) > 0)
+    return system_property_value;
+  return dflt;
+}
+
+inline bool EnvToBool(const char* envname, bool dflt) {
+  static const char kTrueValues[] = "tTyY1";
+  char system_property_value[PROP_VALUE_MAX];
+  if (__system_property_get(envname, system_property_value) > 0)
+    return memchr(kTrueValues, system_property_value[0], sizeof(kTrueValues));
+  return dflt;
+}
+
+inline int EnvToInt(const char* envname, int dflt) {
+  char system_property_value[PROP_VALUE_MAX];
+  if (__system_property_get(envname, system_property_value) > 0)
+    return strtol(system_property_value, NULL, 10);
+  return dflt;
+}
+
+inline int64 EnvToInt64(const char* envname, int64 dflt) {
+  char system_property_value[PROP_VALUE_MAX];
+  if (__system_property_get(envname, system_property_value) > 0)
+    return strtoll(system_property_value, NULL, 10);
+  return dflt;
+}
+
+inline double EnvToDouble(const char* envname, double dflt) {
+  char system_property_value[PROP_VALUE_MAX];
+  if (__system_property_get(envname, system_property_value) > 0)
+    return strtod(system_property_value, NULL);
+  return dflt;
+}
+
+#else  // defined(__ANDROID__) || defined(ANDROID)
 
 #define EnvToString(envname, dflt)   \
   (!getenv(envname) ? (dflt) : getenv(envname))
@@ -127,5 +175,7 @@
 
 #define EnvToDouble(envname, dflt)  \
   (!getenv(envname) ? (dflt) : strtod(getenv(envname), NULL))
+
+#endif  // defined(__ANDROID__) || defined(ANDROID)
 
 #endif  // BASE_COMMANDLINEFLAGS_H_

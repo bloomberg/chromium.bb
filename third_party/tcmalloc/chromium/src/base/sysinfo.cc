@@ -30,6 +30,8 @@
 #include <config.h>
 #if (defined(_WIN32) || defined(__MINGW32__)) && !defined(__CYGWIN__) && !defined(__CYGWIN32)
 # define PLATFORM_WINDOWS 1
+#elif defined(__ANDROID__) || defined(ANDROID)
+# define PLATFORM_ANDROID 1
 #endif
 
 #include <ctype.h>    // for isspace()
@@ -54,6 +56,8 @@
 #include <process.h>          // for getpid() (actually, _getpid())
 #include <shlwapi.h>          // for SHGetValueA()
 #include <tlhelp32.h>         // for Module32First()
+#elif defined(PLATFORM_ANDROID)
+#include <sys/system_properties.h>
 #endif
 #include "base/sysinfo.h"
 #include "base/commandlineflags.h"
@@ -192,7 +196,12 @@ const char* GetenvBeforeMain(const char* name) {
 // In Chromium this hack is intentionally disabled, because the path is not
 // re-initialized upon fork.
 bool GetUniquePathFromEnv(const char* env_name, char* path) {
+#if defined(PLATFORM_ANDROID)
+  char envval[PROP_VALUE_MAX];
+  __system_property_get(env_name, envval);
+#else
   char* envval = getenv(env_name);
+#endif
   if (envval == NULL || *envval == '\0')
     return false;
   if (envval[0] & 128) {                  // high bit is set

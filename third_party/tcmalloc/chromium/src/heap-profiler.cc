@@ -81,6 +81,36 @@
 #endif
 #endif
 
+#if defined(__ANDROID__) || defined(ANDROID)
+// On android, there are no environment variables.
+// Instead, we use system properties, set via:
+//   adb shell setprop prop_name prop_value
+// From <sys/system_properties.h>,
+//   PROP_NAME_MAX   32
+//   PROP_VALUE_MAX  92
+#define HEAPPROFILE "heapprof"
+#define HEAP_PROFILE_ALLOCATION_INTERVAL "heapprof.allocation_interval"
+#define HEAP_PROFILE_DEALLOCATION_INTERVAL "heapprof.deallocation_interval"
+#define HEAP_PROFILE_INUSE_INTERVAL "heapprof.inuse_interval"
+#define HEAP_PROFILE_TIME_INTERVAL "heapprof.time_interval"
+#define HEAP_PROFILE_MMAP_LOG "heapprof.mmap_log"
+#define HEAP_PROFILE_MMAP "heapprof.mmap"
+#define HEAP_PROFILE_ONLY_MMAP "heapprof.only_mmap"
+#define DEEP_HEAP_PROFILE "heapprof.deep_heap_profile"
+#define HEAP_PROFILE_TYPE_STATISTICS "heapprof.type_statistics"
+#else  // defined(__ANDROID__) || defined(ANDROID)
+#define HEAPPROFILE "HEAPPROFILE"
+#define HEAP_PROFILE_ALLOCATION_INTERVAL "HEAP_PROFILE_ALLOCATION_INTERVAL"
+#define HEAP_PROFILE_DEALLOCATION_INTERVAL "HEAP_PROFILE_DEALLOCATION_INTERVAL"
+#define HEAP_PROFILE_INUSE_INTERVAL "HEAP_PROFILE_INUSE_INTERVAL"
+#define HEAP_PROFILE_TIME_INTERVAL "HEAP_PROFILE_TIME_INTERVAL"
+#define HEAP_PROFILE_MMAP_LOG "HEAP_PROFILE_MMAP_LOG"
+#define HEAP_PROFILE_MMAP "HEAP_PROFILE_MMAP"
+#define HEAP_PROFILE_ONLY_MMAP "HEAP_PROFILE_ONLY_MMAP"
+#define DEEP_HEAP_PROFILE "DEEP_HEAP_PROFILE"
+#define HEAP_PROFILE_TYPE_STATISTICS "HEAP_PROFILE_TYPE_STATISTICS"
+#endif  // defined(__ANDROID__) || defined(ANDROID)
+
 using STL_NAMESPACE::string;
 using STL_NAMESPACE::sort;
 
@@ -92,42 +122,42 @@ using STL_NAMESPACE::sort;
 //----------------------------------------------------------------------
 
 DEFINE_int64(heap_profile_allocation_interval,
-             EnvToInt64("HEAP_PROFILE_ALLOCATION_INTERVAL", 1 << 30 /*1GB*/),
+             EnvToInt64(HEAP_PROFILE_ALLOCATION_INTERVAL, 1 << 30 /*1GB*/),
              "If non-zero, dump heap profiling information once every "
              "specified number of bytes allocated by the program since "
              "the last dump.");
 DEFINE_int64(heap_profile_deallocation_interval,
-             EnvToInt64("HEAP_PROFILE_DEALLOCATION_INTERVAL", 0),
+             EnvToInt64(HEAP_PROFILE_DEALLOCATION_INTERVAL, 0),
              "If non-zero, dump heap profiling information once every "
              "specified number of bytes deallocated by the program "
              "since the last dump.");
 // We could also add flags that report whenever inuse_bytes changes by
 // X or -X, but there hasn't been a need for that yet, so we haven't.
 DEFINE_int64(heap_profile_inuse_interval,
-             EnvToInt64("HEAP_PROFILE_INUSE_INTERVAL", 100 << 20 /*100MB*/),
+             EnvToInt64(HEAP_PROFILE_INUSE_INTERVAL, 100 << 20 /*100MB*/),
              "If non-zero, dump heap profiling information whenever "
              "the high-water memory usage mark increases by the specified "
              "number of bytes.");
 DEFINE_int64(heap_profile_time_interval,
-             EnvToInt64("HEAP_PROFILE_TIME_INTERVAL", 0),
+             EnvToInt64(HEAP_PROFILE_TIME_INTERVAL, 0),
              "If non-zero, dump heap profiling information once every "
              "specified number of seconds since the last dump.");
 DEFINE_bool(mmap_log,
-            EnvToBool("HEAP_PROFILE_MMAP_LOG", false),
+            EnvToBool(HEAP_PROFILE_MMAP_LOG, false),
             "Should mmap/munmap calls be logged?");
 DEFINE_bool(mmap_profile,
-            EnvToBool("HEAP_PROFILE_MMAP", false),
+            EnvToBool(HEAP_PROFILE_MMAP, false),
             "If heap-profiling is on, also profile mmap, mremap, and sbrk)");
 DEFINE_bool(only_mmap_profile,
-            EnvToBool("HEAP_PROFILE_ONLY_MMAP", false),
+            EnvToBool(HEAP_PROFILE_ONLY_MMAP, false),
             "If heap-profiling is on, only profile mmap, mremap, and sbrk; "
             "do not profile malloc/new/etc");
 DEFINE_bool(deep_heap_profile,
-            EnvToBool("DEEP_HEAP_PROFILE", false),
+            EnvToBool(DEEP_HEAP_PROFILE, false),
             "If heap-profiling is on, profile deeper (only on Linux)");
 #if defined(TYPE_PROFILING)
 DEFINE_bool(heap_profile_type_statistics,
-            EnvToBool("HEAP_PROFILE_TYPE_STATISTICS", false),
+            EnvToBool(HEAP_PROFILE_TYPE_STATISTICS, false),
             "If heap-profiling is on, dump type statistics.");
 #endif  // defined(TYPE_PROFILING)
 
@@ -628,13 +658,13 @@ extern "C" void HeapProfilerDumpAliveObjects(const char* filename) {
 static void HeapProfilerInit() {
   // Everything after this point is for setting up the profiler based on envvar
   char fname[PATH_MAX];
-  if (!GetUniquePathFromEnv("HEAPPROFILE", fname)) {
+  if (!GetUniquePathFromEnv(HEAPPROFILE, fname)) {
     return;
   }
   // We do a uid check so we don't write out files in a setuid executable.
 #ifdef HAVE_GETEUID
   if (getuid() != geteuid()) {
-    RAW_LOG(WARNING, ("HeapProfiler: ignoring HEAPPROFILE because "
+    RAW_LOG(WARNING, ("HeapProfiler: ignoring " HEAPPROFILE " because "
                       "program seems to be setuid\n"));
     return;
   }
