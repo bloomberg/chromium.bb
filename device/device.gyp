@@ -48,6 +48,8 @@
         'bluetooth/bluetooth_profile.h',
         'bluetooth/bluetooth_profile_mac.h',
         'bluetooth/bluetooth_profile_mac.mm',
+        'bluetooth/bluetooth_profile_win.cc',
+        'bluetooth/bluetooth_profile_win.h',
         'bluetooth/bluetooth_service_record.cc',
         'bluetooth/bluetooth_service_record.h',
         'bluetooth/bluetooth_service_record_chromeos.cc',

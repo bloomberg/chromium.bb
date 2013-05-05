@@ -15,6 +15,7 @@
 namespace device {
 
 class BluetoothAdapterWin;
+class BluetoothServiceRecord;
 
 class BluetoothDeviceWin : public BluetoothDevice {
  public:
@@ -70,6 +71,8 @@ class BluetoothDeviceWin : public BluetoothDevice {
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
 
+  const BluetoothServiceRecord* GetServiceRecord(const std::string& uuid) const;
+
  protected:
   // BluetoothDevice override
   virtual std::string GetDeviceName() const OVERRIDE;
@@ -80,14 +83,6 @@ class BluetoothDeviceWin : public BluetoothDevice {
   // Used by BluetoothAdapterWin to update the visible state during
   // discovery.
   void SetVisible(bool visible);
-
-  // Computes the fingerprint that can be used to compare the devices.
-  static uint32 ComputeDeviceFingerprint(
-      const BluetoothTaskManagerWin::DeviceState& state);
-
-  uint32 device_fingerprint() const {
-    return device_fingerprint_;
-  }
 
   // The Bluetooth class of the device, a bitmask that may be decoded using
   // https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm
@@ -110,9 +105,6 @@ class BluetoothDeviceWin : public BluetoothDevice {
 
   // The services (identified by UUIDs) that this device provides.
   ServiceList service_uuids_;
-
-  // Used to compare the devices.
-  uint32 device_fingerprint_;
   ServiceRecordList service_record_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceWin);

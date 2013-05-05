@@ -64,6 +64,9 @@ void BluetoothProfileMac::SetConnectionCallback(
 }
 
 bool BluetoothProfileMac::Connect(IOBluetoothDevice* device) {
+  if (connection_callback_.is_null())
+    return false;
+
   IOBluetoothSDPServiceRecord* record =
       [device getServiceRecordForUUID:GetIOBluetoothSDPUUID(uuid_)];
   if (record != nil) {

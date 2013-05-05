@@ -7,6 +7,8 @@
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "device/bluetooth/bluetooth_profile_mac.h"
+#elif defined(OS_WIN)
+#include "device/bluetooth/bluetooth_profile_win.h"
 #endif
 
 #include <string>
@@ -46,6 +48,8 @@ void BluetoothProfile::Register(const std::string& uuid,
 #if defined(OS_MACOSX)
   if (base::mac::IsOSLionOrLater())
     profile = new BluetoothProfileMac(uuid, options.name);
+#elif defined(OS_WIN)
+  profile = new BluetoothProfileWin(uuid, options.name);
 #endif
 
   callback.Run(profile);
