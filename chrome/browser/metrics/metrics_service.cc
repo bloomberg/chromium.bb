@@ -426,10 +426,8 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterDictionaryPref(prefs::kProfileMetrics);
   registry->RegisterIntegerPref(prefs::kNumKeywords, 0);
-  registry->RegisterListPref(prefs::kMetricsInitialLogsXml);
-  registry->RegisterListPref(prefs::kMetricsOngoingLogsXml);
-  registry->RegisterListPref(prefs::kMetricsInitialLogsProto);
-  registry->RegisterListPref(prefs::kMetricsOngoingLogsProto);
+  registry->RegisterListPref(prefs::kMetricsInitialLogs);
+  registry->RegisterListPref(prefs::kMetricsOngoingLogs);
 
   registry->RegisterInt64Pref(prefs::kInstallDate, 0);
   registry->RegisterInt64Pref(prefs::kUninstallMetricsPageLoadCount, 0);
@@ -462,10 +460,8 @@ void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
 
   local_state->ClearPref(prefs::kStabilityPluginStats);
 
-  local_state->ClearPref(prefs::kMetricsInitialLogsXml);
-  local_state->ClearPref(prefs::kMetricsOngoingLogsXml);
-  local_state->ClearPref(prefs::kMetricsInitialLogsProto);
-  local_state->ClearPref(prefs::kMetricsOngoingLogsProto);
+  local_state->ClearPref(prefs::kMetricsInitialLogs);
+  local_state->ClearPref(prefs::kMetricsOngoingLogs);
 }
 
 MetricsService::MetricsService()
@@ -1396,13 +1392,12 @@ void MetricsService::PrepareFetchWithStagedLog() {
 
   // Prepare the protobuf version.
   DCHECK(!current_fetch_.get());
-  if (log_manager_.has_staged_log_proto()) {
+  if (log_manager_.has_staged_log()) {
     current_fetch_.reset(net::URLFetcher::Create(
-        GURL(kServerUrlProto), net::URLFetcher::POST, this));
+        GURL(kServerUrl), net::URLFetcher::POST, this));
     current_fetch_->SetRequestContext(
         g_browser_process->system_request_context());
-    current_fetch_->SetUploadData(kMimeTypeProto,
-                                  log_manager_.staged_log_text().proto);
+    current_fetch_->SetUploadData(kMimeType, log_manager_.staged_log_text());
     // We already drop cookies server-side, but we might as well strip them out
     // client-side as well.
     current_fetch_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -1434,7 +1429,7 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // Provide boolean for error recovery (allow us to ignore response_code).
   bool discard_log = false;
-  const size_t log_size = log_manager_.staged_log_text().proto.length();
+  const size_t log_size = log_manager_.staged_log_text().length();
   if (!upload_succeeded && log_size > kUploadLogAvoidRetransmitSize) {
     UMA_HISTOGRAM_COUNTS("UMA.Large Rejected Log was Discarded",
                          static_cast<int>(log_size));
@@ -1445,7 +1440,7 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   if (upload_succeeded || discard_log)
-    log_manager_.DiscardStagedLogProto();
+    log_manager_.DiscardStagedLog();
 
   waiting_for_asynchronous_reporting_step_ = false;
 

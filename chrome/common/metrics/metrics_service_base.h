@@ -33,13 +33,11 @@ class MetricsServiceBase : public base::HistogramFlattener {
   MetricsServiceBase();
   virtual ~MetricsServiceBase();
 
-  // The metrics servers' URLs, for XML and protobuf uploads.
-  static const char kServerUrlXml[];
-  static const char kServerUrlProto[];
+  // The metrics server's URL.
+  static const char kServerUrl[];
 
-  // The MIME types for the uploaded metrics data, for XML and protobuf uploads.
-  static const char kMimeTypeXml[];
-  static const char kMimeTypeProto[];
+  // The MIME type for the uploaded metrics data.
+  static const char kMimeType[];
 
   // Record complete list of histograms into the current log.
   // Called when we close a log.

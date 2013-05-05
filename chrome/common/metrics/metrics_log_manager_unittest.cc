@@ -10,8 +10,6 @@
 #include "chrome/common/metrics/metrics_log_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef MetricsLogManager::SerializedLog SerializedLog;
-
 namespace {
 
 class MetricsLogManagerTest : public testing::Test {
@@ -20,13 +18,13 @@ class MetricsLogManagerTest : public testing::Test {
 // Dummy serializer that just stores logs in memory.
 class DummyLogSerializer : public MetricsLogManager::LogSerializer {
  public:
-  virtual void SerializeLogs(const std::vector<SerializedLog>& logs,
+  virtual void SerializeLogs(const std::vector<std::string>& logs,
                              MetricsLogManager::LogType log_type) OVERRIDE {
     persisted_logs_[log_type] = logs;
   }
 
   virtual void DeserializeLogs(MetricsLogManager::LogType log_type,
-                               std::vector<SerializedLog>* logs) OVERRIDE {
+                               std::vector<std::string>* logs) OVERRIDE {
     ASSERT_NE(static_cast<void*>(NULL), logs);
     *logs = persisted_logs_[log_type];
   }
@@ -37,7 +35,7 @@ class DummyLogSerializer : public MetricsLogManager::LogSerializer {
   }
 
   // In-memory "persitent storage".
-  std::vector<SerializedLog> persisted_logs_[2];
+  std::vector<std::string> persisted_logs_[2];
 };
 
 }  // namespace
@@ -69,8 +67,7 @@ TEST(MetricsLogManagerTest, StandardFlow) {
   EXPECT_TRUE(log_manager.has_staged_log());
   EXPECT_FALSE(log_manager.staged_log_text().empty());
 
-  log_manager.DiscardStagedLogXml();
-  log_manager.DiscardStagedLogProto();
+  log_manager.DiscardStagedLog();
   EXPECT_EQ(second_log, log_manager.current_log());
   EXPECT_FALSE(log_manager.has_staged_log());
   EXPECT_FALSE(log_manager.has_unsent_logs());
@@ -113,8 +110,7 @@ TEST(MetricsLogManagerTest, InterjectedLog) {
 
   EXPECT_FALSE(log_manager.has_staged_log());
   log_manager.StageNextLogForUpload();
-  log_manager.DiscardStagedLogXml();
-  log_manager.DiscardStagedLogProto();
+  log_manager.DiscardStagedLog();
   EXPECT_FALSE(log_manager.has_unsent_logs());
 }
 
@@ -130,8 +126,7 @@ TEST(MetricsLogManagerTest, InterjectedLogPreservesType) {
   log_manager.FinishCurrentLog();
   log_manager.ResumePausedLog();
   log_manager.StageNextLogForUpload();
-  log_manager.DiscardStagedLogXml();
-  log_manager.DiscardStagedLogProto();
+  log_manager.DiscardStagedLog();
 
   // Verify that the remaining log (which is the original ongoing log) still
   // has the right type.
@@ -144,8 +139,8 @@ TEST(MetricsLogManagerTest, InterjectedLogPreservesType) {
 }
 
 TEST(MetricsLogManagerTest, StoreAndLoad) {
-  std::vector<SerializedLog> initial_logs;
-  std::vector<SerializedLog> ongoing_logs;
+  std::vector<std::string> initial_logs;
+  std::vector<std::string> ongoing_logs;
 
   // Set up some in-progress logging in a scoped log manager simulating the
   // leadup to quitting, then persist as would be done on quit.
@@ -154,7 +149,7 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     DummyLogSerializer* serializer = new DummyLogSerializer;
     log_manager.set_log_serializer(serializer);
     // Simulate a log having already been unsent from a previous session.
-    SerializedLog log = {"xml", "proto"};
+    std::string log = "proto";
     serializer->persisted_logs_[MetricsLogManager::ONGOING_LOG].push_back(log);
     EXPECT_FALSE(log_manager.has_unsent_logs());
     log_manager.LoadPersistedUnsentLogs();
@@ -197,8 +192,7 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     EXPECT_TRUE(log_manager.has_unsent_logs());
 
     log_manager.StageNextLogForUpload();
-    log_manager.DiscardStagedLogXml();
-    log_manager.DiscardStagedLogProto();
+    log_manager.DiscardStagedLog();
     // The initial log should be sent first; update the persisted storage to
     // verify.
     log_manager.PersistUnsentLogs();
@@ -207,14 +201,12 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
 
     // Handle the first ongoing log.
     log_manager.StageNextLogForUpload();
-    log_manager.DiscardStagedLogXml();
-    log_manager.DiscardStagedLogProto();
+    log_manager.DiscardStagedLog();
     EXPECT_TRUE(log_manager.has_unsent_logs());
 
     // Handle the last log.
     log_manager.StageNextLogForUpload();
-    log_manager.DiscardStagedLogXml();
-    log_manager.DiscardStagedLogProto();
+    log_manager.DiscardStagedLog();
     EXPECT_FALSE(log_manager.has_unsent_logs());
 
     // Nothing should have changed "on disk" since PersistUnsentLogs hasn't been
@@ -316,8 +308,7 @@ TEST(MetricsLogManagerTest, ProvisionalStoreNoop) {
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(MetricsLogManager::PROVISIONAL_STORE);
     log_manager.StageNextLogForUpload();
-    log_manager.DiscardStagedLogXml();
-    log_manager.DiscardStagedLogProto();
+    log_manager.DiscardStagedLog();
     log_manager.BeginLoggingWithLog(log2, MetricsLogManager::ONGOING_LOG);
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();

@@ -12,9 +12,9 @@
 // Its major job is to manage logs, prepare them for transmission.
 // Currently only histogram data is tracked in log.  When MetricsService
 // prepares log for submission it snapshots the current stats of histograms,
-// translates log to XML.  Transmission includes submitting a compressed log
-// as data in a URL-get, and is performed using functionality provided by
-// Urlmon
+// translates log to a protocol buffer.  Transmission includes submitting a
+// compressed log as data in a URL-get, and is performed using functionality
+// provided by Urlmon
 // The actual transmission is performed using a windows timer procedure which
 // basically means that the thread on which the MetricsService object is
 // instantiated needs a message pump. Also on IE7 where every tab is created
@@ -438,10 +438,7 @@ bool MetricsService::UploadData() {
 
   if (log_manager_.has_staged_log()) {
     HRESULT hr = ChromeFrameMetricsDataUploader::UploadDataHelper(
-        log_manager_.staged_log_text().xml, kServerUrlXml, kMimeTypeXml);
-    DCHECK(SUCCEEDED(hr));
-    hr = ChromeFrameMetricsDataUploader::UploadDataHelper(
-        log_manager_.staged_log_text().proto, kServerUrlProto, kMimeTypeProto);
+        log_manager_.staged_log_text(), kServerUrl, kMimeType);
     DCHECK(SUCCEEDED(hr));
     log_manager_.DiscardStagedLog();
   } else {

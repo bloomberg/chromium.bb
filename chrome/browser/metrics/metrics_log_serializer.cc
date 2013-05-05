@@ -39,15 +39,9 @@ const size_t kStorageByteLimitPerLogType = 300000;
 const size_t kChecksumEntryCount = 2;
 
 MetricsLogSerializer::LogReadStatus MakeRecallStatusHistogram(
-    MetricsLogSerializer::LogReadStatus status,
-    bool is_xml) {
-  if (is_xml) {
-    UMA_HISTOGRAM_ENUMERATION("PrefService.PersistentLogRecall",
-                              status, MetricsLogSerializer::END_RECALL_STATUS);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("PrefService.PersistentLogRecallProtobufs",
-                              status, MetricsLogSerializer::END_RECALL_STATUS);
-  }
+    MetricsLogSerializer::LogReadStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("PrefService.PersistentLogRecallProtobufs",
+                            status, MetricsLogSerializer::END_RECALL_STATUS);
   return status;
 }
 
@@ -58,71 +52,50 @@ MetricsLogSerializer::MetricsLogSerializer() {}
 
 MetricsLogSerializer::~MetricsLogSerializer() {}
 
-void MetricsLogSerializer::SerializeLogs(
-    const std::vector<MetricsLogManager::SerializedLog>& logs,
-    MetricsLogManager::LogType log_type) {
+void MetricsLogSerializer::SerializeLogs(const std::vector<std::string>& logs,
+                                         MetricsLogManager::LogType log_type) {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
-  const char* pref_xml = NULL;
-  const char* pref_proto = NULL;
+  const char* pref = NULL;
   size_t store_length_limit = 0;
   switch (log_type) {
     case MetricsLogManager::INITIAL_LOG:
-      pref_xml = prefs::kMetricsInitialLogsXml;
-      pref_proto = prefs::kMetricsInitialLogsProto;
+      pref = prefs::kMetricsInitialLogs;
       store_length_limit = kInitialLogsPersistLimit;
       break;
     case MetricsLogManager::ONGOING_LOG:
-      pref_xml = prefs::kMetricsOngoingLogsXml;
-      pref_proto = prefs::kMetricsOngoingLogsProto;
+      pref = prefs::kMetricsOngoingLogs;
       store_length_limit = kOngoingLogsPersistLimit;
       break;
-    default:
+    case MetricsLogManager::NO_LOG:
       NOTREACHED();
       return;
   };
 
-  // Write the XML version.
-  ListPrefUpdate update_xml(local_state, pref_xml);
-  WriteLogsToPrefList(logs, true, store_length_limit,
-                      kStorageByteLimitPerLogType, update_xml.Get());
-
-  // Write the protobuf version.
-  ListPrefUpdate update_proto(local_state, pref_proto);
-  WriteLogsToPrefList(logs, false, store_length_limit,
-                      kStorageByteLimitPerLogType, update_proto.Get());
+  ListPrefUpdate update(local_state, pref);
+  WriteLogsToPrefList(logs, store_length_limit, kStorageByteLimitPerLogType,
+                      update.Get());
 }
 
-void MetricsLogSerializer::DeserializeLogs(
-    MetricsLogManager::LogType log_type,
-    std::vector<MetricsLogManager::SerializedLog>* logs) {
+void MetricsLogSerializer::DeserializeLogs(MetricsLogManager::LogType log_type,
+                                           std::vector<std::string>* logs) {
   DCHECK(logs);
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
-  const char* pref_xml;
-  const char* pref_proto;
-  if (log_type == MetricsLogManager::INITIAL_LOG) {
-    pref_xml = prefs::kMetricsInitialLogsXml;
-    pref_proto = prefs::kMetricsInitialLogsProto;
-  } else {
-    pref_xml = prefs::kMetricsOngoingLogsXml;
-    pref_proto = prefs::kMetricsOngoingLogsProto;
-  }
+  const char* pref;
+  if (log_type == MetricsLogManager::INITIAL_LOG)
+    pref = prefs::kMetricsInitialLogs;
+  else
+    pref = prefs::kMetricsOngoingLogs;
 
-  const ListValue* unsent_logs_xml = local_state->GetList(pref_xml);
-  const ListValue* unsent_logs_proto = local_state->GetList(pref_proto);
-  if (ReadLogsFromPrefList(*unsent_logs_xml, true, logs) == RECALL_SUCCESS) {
-    // In order to try to keep the data sent to both servers roughly in sync,
-    // only read the protobuf data if we read the XML data successfully.
-    ReadLogsFromPrefList(*unsent_logs_proto, false, logs);
-  }
+  const ListValue* unsent_logs = local_state->GetList(pref);
+  ReadLogsFromPrefList(*unsent_logs, logs);
 }
 
 // static
 void MetricsLogSerializer::WriteLogsToPrefList(
-    const std::vector<MetricsLogManager::SerializedLog>& local_list,
-    bool is_xml,
+    const std::vector<std::string>& local_list,
     size_t list_length_limit,
     size_t byte_limit,
     base::ListValue* list) {
@@ -139,7 +112,7 @@ void MetricsLogSerializer::WriteLogsToPrefList(
   if (local_list.size() > list_length_limit) {
     start = local_list.size();
     size_t bytes_used = 0;
-    for (std::vector<MetricsLogManager::SerializedLog>::const_reverse_iterator
+    for (std::vector<std::string>::const_reverse_iterator
          it = local_list.rbegin(); it != local_list.rend(); ++it) {
       size_t log_size = it->length();
       if (bytes_used >= byte_limit &&
@@ -159,13 +132,11 @@ void MetricsLogSerializer::WriteLogsToPrefList(
   base::MD5Context ctx;
   base::MD5Init(&ctx);
   std::string encoded_log;
-  for (std::vector<MetricsLogManager::SerializedLog>::const_iterator it =
-           local_list.begin() + start;
+  for (std::vector<std::string>::const_iterator it = local_list.begin() + start;
        it != local_list.end(); ++it) {
-    const std::string& value = is_xml ? it->xml : it->proto;
     // We encode the compressed log as Value::CreateStringValue() expects to
     // take a valid UTF8 string.
-    if (!base::Base64Encode(value, &encoded_log)) {
+    if (!base::Base64Encode(*it, &encoded_log)) {
       list->Clear();
       return;
     }
@@ -183,34 +154,29 @@ void MetricsLogSerializer::WriteLogsToPrefList(
 // static
 MetricsLogSerializer::LogReadStatus MetricsLogSerializer::ReadLogsFromPrefList(
     const ListValue& list,
-    bool is_xml,
-    std::vector<MetricsLogManager::SerializedLog>* local_list) {
+    std::vector<std::string>* local_list) {
   if (list.GetSize() == 0)
-    return MakeRecallStatusHistogram(LIST_EMPTY, is_xml);
+    return MakeRecallStatusHistogram(LIST_EMPTY);
   if (list.GetSize() < 3)
-    return MakeRecallStatusHistogram(LIST_SIZE_TOO_SMALL, is_xml);
+    return MakeRecallStatusHistogram(LIST_SIZE_TOO_SMALL);
 
   // The size is stored at the beginning of the list.
   int size;
   bool valid = (*list.begin())->GetAsInteger(&size);
   if (!valid)
-    return MakeRecallStatusHistogram(LIST_SIZE_MISSING, is_xml);
+    return MakeRecallStatusHistogram(LIST_SIZE_MISSING);
   // Account for checksum and size included in the list.
   if (static_cast<unsigned int>(size) !=
       list.GetSize() - kChecksumEntryCount) {
-    return MakeRecallStatusHistogram(LIST_SIZE_CORRUPTION, is_xml);
+    return MakeRecallStatusHistogram(LIST_SIZE_CORRUPTION);
   }
 
   // Allocate strings for all of the logs we are going to read in.
   // Do this ahead of time so that we can decode the string values directly into
   // the elements of |local_list|, and thereby avoid making copies of the
   // serialized logs, which can be fairly large.
-  if (is_xml) {
-    DCHECK(local_list->empty());
-    local_list->resize(size);
-  } else if (local_list->size() != static_cast<size_t>(size)) {
-    return MakeRecallStatusHistogram(XML_PROTO_MISMATCH, false);
-  }
+  DCHECK(local_list->empty());
+  local_list->resize(size);
 
   base::MD5Context ctx;
   base::MD5Init(&ctx);
@@ -222,18 +188,16 @@ MetricsLogSerializer::LogReadStatus MetricsLogSerializer::ReadLogsFromPrefList(
     bool valid = (*it)->GetAsString(&encoded_log);
     if (!valid) {
       local_list->clear();
-      return MakeRecallStatusHistogram(LOG_STRING_CORRUPTION, is_xml);
+      return MakeRecallStatusHistogram(LOG_STRING_CORRUPTION);
     }
 
     base::MD5Update(&ctx, encoded_log);
 
     DCHECK_LT(local_index, local_list->size());
-    std::string& decoded_log = is_xml ?
-        (*local_list)[local_index].xml :
-        (*local_list)[local_index].proto;
+    std::string& decoded_log = (*local_list)[local_index];
     if (!base::Base64Decode(encoded_log, &decoded_log)) {
       local_list->clear();
-      return MakeRecallStatusHistogram(DECODE_FAIL, is_xml);
+      return MakeRecallStatusHistogram(DECODE_FAIL);
     }
   }
 
@@ -245,11 +209,11 @@ MetricsLogSerializer::LogReadStatus MetricsLogSerializer::ReadLogsFromPrefList(
   valid = (*(list.end() - 1))->GetAsString(&recovered_md5);
   if (!valid) {
     local_list->clear();
-    return MakeRecallStatusHistogram(CHECKSUM_STRING_CORRUPTION, is_xml);
+    return MakeRecallStatusHistogram(CHECKSUM_STRING_CORRUPTION);
   }
   if (recovered_md5 != base::MD5DigestToBase16(digest)) {
     local_list->clear();
-    return MakeRecallStatusHistogram(CHECKSUM_CORRUPTION, is_xml);
+    return MakeRecallStatusHistogram(CHECKSUM_CORRUPTION);
   }
-  return MakeRecallStatusHistogram(RECALL_SUCCESS, is_xml);
+  return MakeRecallStatusHistogram(RECALL_SUCCESS);
 }

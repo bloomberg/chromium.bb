@@ -457,10 +457,8 @@ extern const char kMetricsSessionID[];
 extern const char kMetricsLowEntropySource[];
 extern const char kMetricsClientIDTimestamp[];
 extern const char kMetricsReportingEnabled[];
-extern const char kMetricsInitialLogsXml[];
-extern const char kMetricsInitialLogsProto[];
-extern const char kMetricsOngoingLogsXml[];
-extern const char kMetricsOngoingLogsProto[];
+extern const char kMetricsInitialLogs[];
+extern const char kMetricsOngoingLogs[];
 
 extern const char kBookmarkPromptEnabled[];
 extern const char kBookmarkPromptImpressionCount[];
