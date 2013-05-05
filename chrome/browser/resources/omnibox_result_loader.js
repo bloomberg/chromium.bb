@@ -8,6 +8,8 @@
  */
 
 (function() {
+<include src="local_ntp/instant_iframe_validation.js">
+
 /**
  * The origin of the embedding page.
  * This string literal must be in double quotes for proper escaping.
