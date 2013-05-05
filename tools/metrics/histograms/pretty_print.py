@@ -34,6 +34,7 @@ ATTRIBUTE_ORDER = {
   'fieldtrial': ['name', 'separator', 'ordering'],
   'group': ['name', 'label'],
   'affected-histogram': ['name'],
+  'with-group': ['name'],
 }
 
 # Tag names for top-level nodes whose children we don't want to indent.
@@ -75,6 +76,10 @@ ALPHABETIZATION_RULES = {
 }
 
 
+class Error(Exception):
+  pass
+
+
 def LastLineLength(s):
   """Returns the length of the last line in s.
 
@@ -105,6 +110,9 @@ def PrettyPrintNode(node, indent=0):
 
   Returns:
     The pretty-printed string (including embedded newlines).
+
+  Raises:
+    Error if the XML has unknown tags or attributes.
   """
   # Handle the top-level document node.
   if node.nodeType == xml.dom.minidom.Node.DOCUMENT_NODE:
@@ -150,17 +158,22 @@ def PrettyPrintNode(node, indent=0):
 
     # Pretty-print the attributes.
     attributes = node.attributes.keys()
-    if len(attributes) > 0:
+    if attributes:
       # Reorder the attributes.
-      if node.tagName in ATTRIBUTE_ORDER:
-        recognized_attributes = (
-          [a for a in ATTRIBUTE_ORDER[node.tagName] if a in attributes])
+      if not node.tagName in ATTRIBUTE_ORDER:
+        unrecognized_attributes = attributes;
+      else:
         unrecognized_attributes = (
           [a for a in attributes if not a in ATTRIBUTE_ORDER[node.tagName]])
-        for a in unrecognized_attributes:
-          logging.error(
-            'Unrecognized attribute %s in tag %s' % (a, node.tagName))
-        attributes = recognized_attributes + unrecognized_attributes
+        attributes = (
+          [a for a in ATTRIBUTE_ORDER[node.tagName] if a in attributes])
+
+      for a in unrecognized_attributes:
+        logging.error(
+            'Unrecognized attribute "%s" in tag "%s"' % (a, node.tagName))
+      if unrecognized_attributes:
+        raise Error()
+
       for a in attributes:
         value = XmlEscape(node.attributes[a].value)
         # Replace sequences of whitespace with single spaces.
@@ -223,7 +236,7 @@ def PrettyPrintNode(node, indent=0):
   # or cdata section (<![CDATA[...]]!>), neither of which are legal in the
   # histograms XML at present.
   logging.error('Ignoring unrecognized node data: %s' % node.toxml())
-  return ''
+  raise Error()
 
 
 def unsafeAppendChild(parent, child):
@@ -309,7 +322,11 @@ def main():
     sys.exit(1)
 
   logging.info('Pretty-printing...')
-  pretty = PrettyPrint(xml)
+  try:
+    pretty = PrettyPrint(xml)
+  except Error:
+    logging.error('Aborting parsing due to fatal errors.')
+    sys.exit(1)
 
   if xml == pretty:
     logging.info('histograms.xml is correctly pretty-printed.')
