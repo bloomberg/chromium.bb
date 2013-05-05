@@ -53,7 +53,7 @@ if __name__ == '__main__':
         f.write(
             contents.replace('PASSWORD = None', 'PASSWORD = \'%s\'' % password)
                     .replace('USERNAME = None', 'USERNAME = \'%s\'' % username))
-        run_appcfg()
+      run_appcfg()
     finally:
       with open('github_file_system.py', 'w+') as f:
         f.write(contents)
