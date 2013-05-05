@@ -217,6 +217,11 @@ def parse_args(args):
                  "running. (Example: --wrapper='valgrind --smc-check=all')"),
         optparse.make_option("-i", "--ignore-tests", action="append", default=[],
             help="directories or test to ignore (may specify multiple times)"),
+        optparse.make_option("--ignore-flaky-tests", action="store", default="default",
+            help=("Control whether tests that are flaky on the bots get ignored."
+                "'default' == Don't use the bot data."
+                "'very-flaky' == Ignore any tests that flaked more than once on the bot."
+                "'maybe-flaky' == Ignore any tests that flaked once on the bot.")),
         optparse.make_option("--test-list", action="append",
             help="read list of tests to run from file", metavar="FILE"),
         optparse.make_option("--skipped", action="store", default="default",
