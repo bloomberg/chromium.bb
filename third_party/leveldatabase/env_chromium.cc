@@ -606,19 +606,6 @@ class ChromiumEnv : public Env, public UMALogger {
 
   virtual void StartThread(void (*function)(void* arg), void* arg);
 
-  virtual std::string UserIdentifier() {
-#if defined(OS_WIN)
-    std::wstring user_sid;
-    bool ret = ::base::win::GetUserSidString(&user_sid);
-    DCHECK(ret);
-    return UTF16ToUTF8(user_sid);
-#else
-    char buf[100];
-    snprintf(buf, sizeof(buf), "%d", int(geteuid()));
-    return buf;
-#endif
-  }
-
   virtual Status GetTestDirectory(std::string* path) {
     mu_.Acquire();
     if (test_directory_.empty()) {
@@ -694,7 +681,6 @@ class ChromiumEnv : public Env, public UMALogger {
   base::HistogramBase* GetMaxFDHistogram(const std::string& type);
   base::FilePath test_directory_;
 
-  size_t page_size_;
   ::base::Lock mu_;
   ::base::ConditionVariable bgsignal_;
   bool started_bgthread_;
@@ -707,7 +693,6 @@ class ChromiumEnv : public Env, public UMALogger {
 
 ChromiumEnv::ChromiumEnv()
     : name_("LevelDBEnv"),
-      page_size_(::base::SysInfo::VMAllocationGranularity()),
       bgsignal_(&mu_),
       started_bgthread_(false),
       kMaxRenameTimeMillis(1000) {
