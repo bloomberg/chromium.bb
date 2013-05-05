@@ -23,7 +23,6 @@ var isGooglePage = location.href.indexOf('isGoogle') != -1;
  * @const
  */
 var CLASSES = {
-  ACTIVE_SUGGESTIONS_CONTAINER: 'active-suggestions-container',
   BLACKLIST: 'mv-blacklist', // triggers tile blacklist animation
   BLACKLIST_BUTTON: 'mv-x',
   CUSTOM_THEME: 'custom-theme',
@@ -39,7 +38,6 @@ var CLASSES = {
   HIDE_NTP: 'hide-ntp', // hides NTP and disables scrollbars
   HIDE_TILE: 'mv-tile-hide', // hides tiles on small browser width
   HOVERED: 'hovered',
-  PENDING_SUGGESTIONS_CONTAINER: 'pending-suggestions-container',
   PAGE: 'mv-page', // page tiles
   ROW: 'mv-row',  // tile row
   SEARCH: 'search',
@@ -58,6 +56,7 @@ var CLASSES = {
  * @const
  */
 var IDS = {
+  ACTIVE_SUGGESTIONS_CONTAINER: 'active-suggestions-container',
   ATTRIBUTION: 'attribution',
   CURSOR: 'cursor',
   FAKEBOX: 'fakebox',
@@ -66,6 +65,7 @@ var IDS = {
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
   NTP_CONTENTS: 'ntp-contents',
+  PENDING_SUGGESTIONS_CONTAINER: 'pending-suggestions-container',
   RESTORE_ALL_LINK: 'mv-restore',
   SUGGESTION_LOADER: 'suggestion-loader',
   SUGGESTION_STYLE: 'suggestion-style',
@@ -358,8 +358,7 @@ function createTile(page) {
     var blacklistButton = createAndAppendElement(
         tileElement, 'div', CLASSES.BLACKLIST_BUTTON);
     blacklistButton.addEventListener('click', generateBlacklistFunction(rid));
-    // TODO(jeremycho): i18n. See http://crbug.com/190223.
-    blacklistButton.title = "Don't show on this page";
+    blacklistButton.title = templateData.removeThumbnailTooltip;
 
     // The page favicon, if any.
     var faviconUrl = page.faviconUrl;
@@ -980,12 +979,12 @@ function SuggestionsBox(inputValue, suggestionData, selectedIndex) {
   }
 
   /**
-   * The container for this suggestions box. div.pending-suggestion-container
-   * if inactive and div.active-suggestion-container if active.
+   * The container for this suggestions box. #pending-suggestion-container
+   * if inactive and #active-suggestion-container if active.
    * @type {Element}
    * @private
    */
-  this.container_ = $qs('.' + CLASSES.PENDING_SUGGESTIONS_CONTAINER);
+  this.container_ = $(IDS.PENDING_SUGGESTIONS_CONTAINER);
   assert(this.container_);
 }
 
@@ -1168,14 +1167,14 @@ SuggestionsBox.prototype = {
    * Marks the suggestions container as active.
    */
   activate: function() {
-    this.container_.className = CLASSES.ACTIVE_SUGGESTIONS_CONTAINER;
+    this.container_.id = IDS.ACTIVE_SUGGESTIONS_CONTAINER;
   },
 
   /**
    * Marks the suggestions container as inactive.
    */
   deactivate: function() {
-    this.container_.className = CLASSES.PENDING_SUGGESTIONS_CONTAINER;
+    this.container_.id = IDS.PENDING_SUGGESTIONS_CONTAINER;
     this.container_.innerHTML = '';
   },
 
@@ -1198,9 +1197,8 @@ function makePendingSuggestionsActive() {
     activeBox.destroy();
   } else {
     // Initially there will be no active suggestions, but we still want to use
-    // div.active-container to load the next suggestions.
-    $qs('.' + CLASSES.ACTIVE_SUGGESTIONS_CONTAINER).className =
-        CLASSES.PENDING_SUGGESTIONS_CONTAINER;
+    // #active-suggestions-container to load the next suggestions.
+    $(IDS.ACTIVE_SUGGESTIONS_CONTAINER).id = IDS.PENDING_SUGGESTIONS_CONTAINER;
   }
   pendingBox.activate();
   activeBox = pendingBox;
@@ -1215,7 +1213,7 @@ function makePendingSuggestionsActive() {
 function hideActiveSuggestions() {
   searchboxApiHandle.showOverlay(0);
   if (activeBox) {
-    $qs('.' + CLASSES.ACTIVE_SUGGESTIONS_CONTAINER).innerHTML = '';
+    $(IDS.ACTIVE_SUGGESTIONS_CONTAINER).innerHTML = '';
     activeBox.destroy();
   }
   activeBox = null;
@@ -1423,6 +1421,8 @@ function getEmbeddedSearchApiHandle() {
  * Google-provided page.
  */
 function init() {
+  document.title = templateData.title;
+
   iframePool = new IframePool();
   iframePool.init();
   $(IDS.SUGGESTION_LOADER).onload = function() {
@@ -1458,16 +1458,15 @@ function init() {
   }
 
 
-  // TODO(jeremycho): i18n.
   var notificationMessage = $(IDS.NOTIFICATION_MESSAGE);
-  notificationMessage.innerText = 'Thumbnail removed.';
+  notificationMessage.textContent = templateData.thumbnailRemovedNotification;
   var undoLink = $(IDS.UNDO_LINK);
   undoLink.addEventListener('click', onUndo);
-  undoLink.innerText = 'Undo';
+  undoLink.textContent = templateData.undoThumbnailRemove;
   var restoreAllLink = $(IDS.RESTORE_ALL_LINK);
   restoreAllLink.addEventListener('click', onRestoreAll);
-  restoreAllLink.innerText = 'Restore all';
-  attribution.innerText = 'Theme created by';
+  restoreAllLink.textContent = templateData.restoreThumbnailsShort;
+  attribution.textContent = templateData.attributionIntro;
 
   var notificationCloseButton = $(IDS.NOTIFICATION_CLOSE_BUTTON);
   notificationCloseButton.addEventListener('click', hideNotification);
@@ -1503,9 +1502,9 @@ function init() {
       hideActiveSuggestions();
     }
   };
-  $qs('.' + CLASSES.ACTIVE_SUGGESTIONS_CONTAINER).dir =
+  $(IDS.ACTIVE_SUGGESTIONS_CONTAINER).dir =
       searchboxApiHandle.rtl ? 'rtl' : 'ltr';
-  $qs('.' + CLASSES.PENDING_SUGGESTIONS_CONTAINER).dir =
+  $(IDS.PENDING_SUGGESTIONS_CONTAINER).dir =
       searchboxApiHandle.rtl ? 'rtl' : 'ltr';
   iframePool.setTextDirection(searchboxApiHandle.rtl);
 

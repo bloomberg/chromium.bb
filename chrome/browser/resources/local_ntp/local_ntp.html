@@ -4,16 +4,16 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <head>
-  <!-- Placeholder title until http://crbug/196415 is resolved. -->
-  <title>New Tab</title>
+  <script src="chrome-search://local-ntp/translated-strings.js"></script>
   <script src="chrome-search://local-ntp/local-ntp.js"></script>
   <link rel="stylesheet" href="chrome-search://local-ntp/local-ntp.css"></link>
 </head>
 <body>
   <iframe src="chrome-search://suggestion/loader.html" id="suggestion-loader"
-          hidden></iframe>
-  <div class="active-suggestions-container"></div>
-  <div class="pending-suggestions-container"></div>
+      hidden>
+  </iframe>
+  <div id="active-suggestions-container"></div>
+  <div id="pending-suggestions-container"></div>
   <div id="ntp-contents">
     <div id="mv-top-margin"></div>
     <div id="most-visited">

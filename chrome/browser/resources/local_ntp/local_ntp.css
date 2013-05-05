@@ -27,7 +27,7 @@ body.fakebox-animate #ntp-contents {
 }
 
 /* Hide suggestions during the fakebox animation. */
-body.fakebox-animate .active-suggestions-container {
+body.fakebox-animate #active-suggestions-container {
   height: 0;
   visibility: hidden;
 }
@@ -368,6 +368,6 @@ body.fakebox-focused #cursor {
   position: absolute;
 }
 
-.pending-suggestions-container {
+#pending-suggestions-container {
   display: none;
 }
