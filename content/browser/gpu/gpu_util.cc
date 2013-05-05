@@ -183,6 +183,8 @@ void UpdateStats(const GpuBlacklist* blacklist,
 
 void MergeFeatureSets(std::set<int>* dst, const std::set<int>& src) {
   DCHECK(dst);
+  if (src.empty())
+    return;
   dst->insert(src.begin(), src.end());
 }
 
