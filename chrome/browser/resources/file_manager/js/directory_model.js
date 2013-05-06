@@ -472,7 +472,8 @@ DirectoryModel.prototype.rescan = function() {
     cr.dispatchSimpleEvent(this, 'rescan-completed');
   }).bind(this);
 
-  this.scan_(dirContents, successCallback, function() {});
+  this.scan_(dirContents,
+             successCallback, function() {}, function() {}, function() {});
 };
 
 /**
@@ -507,15 +508,24 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
       opt_callback();
   }.bind(this);
 
+  var onFailed = function() {
+    cr.dispatchSimpleEvent(this, 'scan-failed');
+  }.bind(this);
+
   var onUpdated = function() {
     cr.dispatchSimpleEvent(this, 'scan-updated');
+  }.bind(this);
+
+  var onCancelled = function() {
+    cr.dispatchSimpleEvent(this, 'scan-cancelled');
   }.bind(this);
 
   // Clear the table, and start scanning.
   cr.dispatchSimpleEvent(this, 'scan-started');
   var fileList = this.getFileList();
   fileList.splice(0, fileList.length);
-  this.scan_(this.currentDirContents_, onDone, onUpdated);
+  this.scan_(this.currentDirContents_,
+             onDone, onFailed, onUpdated, onCancelled);
 };
 
 /**
@@ -525,12 +535,15 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
  * @param {DirectoryContents} dirContents DirectoryContents instance on which
  *     the scan will be run.
  * @param {function()} successCallback Callback on success.
+ * @param {function()} failureCallback Callback on failure.
  * @param {function()} updatedCallback Callback on update. Only on the last
  *     update, {@code successCallback} is called instead of this.
+ * @param {function()} cancelledCallback Callback on cancel.
  * @private
  */
 DirectoryModel.prototype.scan_ = function(
-    dirContents, successCallback, updatedCallback) {
+    dirContents,
+    successCallback, failureCallback, updatedCallback, cancelledCallback) {
   var self = this;
 
   /**
@@ -557,6 +570,7 @@ DirectoryModel.prototype.scan_ = function(
   var onFailure = function() {
     self.runningScan_ = null;
     self.scanFailures_++;
+    failureCallback();
 
     if (maybeRunPendingRescan())
       return;
@@ -570,7 +584,7 @@ DirectoryModel.prototype.scan_ = function(
   dirContents.addEventListener('scan-completed', onSuccess);
   dirContents.addEventListener('scan-updated', updatedCallback);
   dirContents.addEventListener('scan-failed', onFailure);
-  dirContents.addEventListener('scan-cancelled', this.dispatchEvent.bind(this));
+  dirContents.addEventListener('scan-cancelled', cancelledCallback);
   dirContents.scan();
 };
 

@@ -436,6 +436,7 @@ DialogType.isModal = function(type) {
     });
     dm.addEventListener('scan-started', this.onScanStarted_.bind(this));
     dm.addEventListener('scan-completed', this.onScanCompleted_.bind(this));
+    dm.addEventListener('scan-failed', this.onScanCancelled_.bind(this));
     dm.addEventListener('scan-cancelled', this.onScanCancelled_.bind(this));
     dm.addEventListener('scan-updated', this.onScanUpdated_.bind(this));
     dm.addEventListener('rescan-completed',
@@ -2487,6 +2488,11 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.onScanCompleted_ = function() {
+    if (!this.scanInProgress_) {
+      console.error('Scan-completed event recieved. But scan is not started.');
+      return;
+    }
+
     this.hideSpinnerLater_();
     this.refreshCurrentDirectoryMetadata_();
 
@@ -2512,6 +2518,11 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.onScanUpdated_ = function() {
+    if (!this.scanInProgress_) {
+      console.error('Scan-updated event recieved. But scan is not started.');
+      return;
+    }
+
     // We need to hide the spinner only once.
     if (this.scanUpdatedAtLeastOnceOrCompleted_ || this.scanUpdatedTimer_)
       return;
@@ -2539,6 +2550,11 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.onScanCancelled_ = function() {
+    if (!this.scanInProgress_) {
+      console.error('Scan-cancelled event recieved. But scan is not started.');
+      return;
+    }
+
     this.hideSpinnerLater_();
     if (this.scanCompletedTimer_) {
       clearTimeout(this.scanCompletedTimer_);
@@ -2551,6 +2567,7 @@ DialogType.isModal = function(type) {
     // Finish unfinished batch updates.
     if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
       this.scanUpdatedAtLeastOnceOrCompleted_ = true;
+      this.scanInProgress_ = false;
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
     }
