@@ -142,11 +142,9 @@ function buildTaskManager(areConflicting) {
     if (alarm.name == CANNOT_UNLOAD_ALARM_NAME) {
       // Error if the event page wasn't unloaded after a reasonable timeout
       // since starting the last task.
-      // TODO(vadimt): Uncomment the verify once this bug is fixed:
-      // crbug.com/177563
-      // verify(false, 'Event page didn\'t unload, queue = ' +
-      // JSON.stringify(tasks) + ', step = ' + stepName + ' (ignore this verify
-      // if devtools is attached).');
+      verify(false, 'Event page didn\'t unload, queue=' +
+          JSON.stringify(queue) + ', step=' + stepName +
+          ' (ignore this assert if devtools is open).');
     }
   });
 
