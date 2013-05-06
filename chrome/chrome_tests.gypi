@@ -1592,6 +1592,7 @@
         'browser/ui/webui/options/autofill_options_browsertest.js',
         'browser/ui/webui/options/browser_options_browsertest.js',
         'browser/ui/webui/options/certificate_manager_browsertest.js',
+        'browser/ui/webui/options/chromeos/bluetooth_options_browsertest.js',
         'browser/ui/webui/options/chromeos/guest_mode_options_ui_browsertest.cc',
         'browser/ui/webui/options/chromeos/kiosk_apps_browsertest.js',
         'browser/ui/webui/options/content_options_browsertest.js',
