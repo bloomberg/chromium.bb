@@ -25,8 +25,8 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -304,6 +304,9 @@ void BeginInstallWithManifestFunction::SetResultCode(ResultCode code) {
     case INVALID_ICON_URL:
       SetResult(Value::CreateStringValue("invalid_icon_url"));
       break;
+    case SIGNIN_FAILED:
+      SetResult(Value::CreateStringValue("signin_failed"));
+      break;
     default:
       CHECK(false);
   }
@@ -333,16 +336,16 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
     return;
   }
 
-  content::WebContents* web_contents = GetAssociatedWebContents();
-  if (!web_contents)  // The browser window has gone away.
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
+  if (dummy_extension_->is_platform_app() &&
+      signin_manager->GetAuthenticatedUsername().empty() &&
+      signin_manager->AuthInProgress()) {
+    signin_tracker_.reset(new SigninTracker(profile(), this));
     return;
-  install_prompt_.reset(new ExtensionInstallPrompt(web_contents));
-  install_prompt_->ConfirmWebstoreInstall(
-      this,
-      dummy_extension_,
-      &icon_,
-      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
-  // Control flow finishes up in InstallUIProceed or InstallUIAbort.
+  }
+
+  SigninCompletedOrNotNeeded();
 }
 
 void BeginInstallWithManifestFunction::OnWebstoreParseFailure(
@@ -370,6 +373,39 @@ void BeginInstallWithManifestFunction::OnWebstoreParseFailure(
 
   // Matches the AddRef in RunImpl().
   Release();
+}
+
+void BeginInstallWithManifestFunction::GaiaCredentialsValid() {}
+
+void BeginInstallWithManifestFunction::SigninFailed(
+    const GoogleServiceAuthError& error) {
+  signin_tracker_.reset();
+
+  SetResultCode(SIGNIN_FAILED);
+  error_ = error.ToString();
+  SendResponse(false);
+
+  // Matches the AddRef in RunImpl().
+  Release();
+}
+
+void BeginInstallWithManifestFunction::SigninSuccess() {
+  signin_tracker_.reset();
+
+  SigninCompletedOrNotNeeded();
+}
+
+void BeginInstallWithManifestFunction::SigninCompletedOrNotNeeded() {
+  content::WebContents* web_contents = GetAssociatedWebContents();
+  if (!web_contents)  // The browser window has gone away.
+    return;
+  install_prompt_.reset(new ExtensionInstallPrompt(web_contents));
+  install_prompt_->ConfirmWebstoreInstall(
+      this,
+      dummy_extension_,
+      &icon_,
+      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
+  // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }
 
 void BeginInstallWithManifestFunction::InstallUIProceed() {

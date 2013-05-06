@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
+#include "chrome/browser/signin/signin_tracker.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -71,7 +72,8 @@ class InstallBundleFunction : public AsyncExtensionFunction,
 class BeginInstallWithManifestFunction
     : public AsyncExtensionFunction,
       public ExtensionInstallPrompt::Delegate,
-      public WebstoreInstallHelper::Delegate {
+      public WebstoreInstallHelper::Delegate,
+      public SigninTracker::Observer {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.beginInstallWithManifest3",
                              WEBSTOREPRIVATE_BEGININSTALLWITHMANIFEST3)
@@ -101,7 +103,10 @@ class BeginInstallWithManifestFunction
     PERMISSION_DENIED,
 
     // Invalid icon url.
-    INVALID_ICON_URL
+    INVALID_ICON_URL,
+
+    // Signin has failed.
+    SIGNIN_FAILED
   };
 
   BeginInstallWithManifestFunction();
@@ -130,6 +135,14 @@ class BeginInstallWithManifestFunction
   void SetResultCode(ResultCode code);
 
  private:
+  // SigninTracker::Observer override.
+  virtual void GaiaCredentialsValid() OVERRIDE;
+  virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void SigninSuccess() OVERRIDE;
+
+  // Called when signin is complete or not needed.
+  void SigninCompletedOrNotNeeded();
+
   // These store the input parameters to the function.
   std::string id_;
   std::string manifest_;
@@ -148,6 +161,8 @@ class BeginInstallWithManifestFunction
 
   // The class that displays the install prompt.
   scoped_ptr<ExtensionInstallPrompt> install_prompt_;
+
+  scoped_ptr<SigninTracker> signin_tracker_;
 };
 
 class CompleteInstallFunction
