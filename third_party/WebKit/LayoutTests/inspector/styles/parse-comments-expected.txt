@@ -6,14 +6,14 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#main  { (parse-comments.html:26)
+#main  { (parse-comments.html:25)
 /-- overloaded --/ /-- disabled --/ Comment: value;
 color/* Comment: value */:/* Comment: value */ green/* Comment: value */;
 /-- overloaded --/ /-- disabled --/ Comment: value;
 
 [expanded] 
-@media not print (parse-comments.html:8)
-#main  { (parse-comments.html:10)
+@media not print (parse-comments.html:7)
+#main  { (parse-comments.html:9)
 /-- overloaded --/ /-- disabled --/ Comment: value;
 background /* Comment: value */ :/* Comment: value */blue/* Comment: value */;
 /-- overloaded --/ /-- disabled --/ Comment: value;
