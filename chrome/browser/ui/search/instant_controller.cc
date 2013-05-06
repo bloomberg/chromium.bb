@@ -50,27 +50,26 @@ namespace {
 // to avoid the page jumping up/down very fast in response to bounds changes.
 const int kUpdateBoundsDelayMS = 1000;
 
-// For reporting Instant extended navigations.
+// For reporting Instant navigations.
 enum InstantNavigation {
   INSTANT_NAVIGATION_LOCAL_CLICK = 0,
   INSTANT_NAVIGATION_LOCAL_SUBMIT = 1,
   INSTANT_NAVIGATION_ONLINE_CLICK = 2,
   INSTANT_NAVIGATION_ONLINE_SUBMIT = 3,
-  INSTANT_NAVIGATION_MAX = 4
+  INSTANT_NAVIGATION_NONEXTENDED = 4,
+  INSTANT_NAVIGATION_MAX = 5
 };
 
-void RecordNavigationHistogram(bool is_local, bool is_click) {
+void RecordNavigationHistogram(bool is_local, bool is_click, bool is_extended) {
   InstantNavigation navigation;
-  if (is_local) {
-    if (is_click)
-      navigation = INSTANT_NAVIGATION_LOCAL_CLICK;
-    else
-      navigation = INSTANT_NAVIGATION_LOCAL_SUBMIT;
+  if (!is_extended) {
+    navigation = INSTANT_NAVIGATION_NONEXTENDED;
+  } else if (is_local) {
+    navigation = is_click ? INSTANT_NAVIGATION_LOCAL_CLICK :
+                            INSTANT_NAVIGATION_LOCAL_SUBMIT;
   } else {
-    if (is_click)
-      navigation = INSTANT_NAVIGATION_ONLINE_CLICK;
-    else
-      navigation = INSTANT_NAVIGATION_ONLINE_SUBMIT;
+    navigation = is_click ? INSTANT_NAVIGATION_ONLINE_CLICK :
+                            INSTANT_NAVIGATION_ONLINE_SUBMIT;
   }
   UMA_HISTOGRAM_ENUMERATION("InstantExtended.InstantNavigation",
                             navigation,
@@ -705,9 +704,9 @@ void InstantController::OnCancel(const AutocompleteMatch& match,
 }
 
 void InstantController::OmniboxNavigateToURL() {
+  RecordNavigationHistogram(UsingLocalPage(), false, extended_enabled_);
   if (!extended_enabled_)
     return;
-  RecordNavigationHistogram(UsingLocalPage(), false);
   if (instant_tab_)
     instant_tab_->Submit(string16());
 }
@@ -1309,13 +1308,15 @@ void InstantController::NavigateToURL(const content::WebContents* contents,
   if (!extended_enabled_)
     return;
   if (overlay_) {
-    RecordNavigationHistogram(UsingLocalPage(), true);
     HideOverlay();
   }
 
   if (transition == content::PAGE_TRANSITION_AUTO_BOOKMARK) {
     content::RecordAction(
         content::UserMetricsAction("InstantExtended.MostVisitedClicked"));
+  } else {
+    // Exclude navigation by Most Visited click.
+    RecordNavigationHistogram(UsingLocalPage(), true, true);
   }
   browser_->OpenURL(url, transition, disposition);
 }
