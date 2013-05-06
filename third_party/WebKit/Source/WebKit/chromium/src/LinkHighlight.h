@@ -69,6 +69,8 @@ public:
     virtual WebLayer* layer() OVERRIDE;
     virtual void clearCurrentGraphicsLayer() OVERRIDE;
 
+    WebCore::GraphicsLayerChromium* currentGraphicsLayerForTesting() const { return m_currentGraphicsLayer; }
+
 private:
     LinkHighlight(WebCore::Node*, WebViewImpl*);
 
