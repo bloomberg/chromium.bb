@@ -309,8 +309,6 @@ String StylePropertySerializer::asText() const
 
 String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
 {
-    // Only enabled properties should be part of the style.
-    ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID));
     // Shorthand and 4-values properties
     switch (propertyID) {
     case CSSPropertyBorderSpacing:
