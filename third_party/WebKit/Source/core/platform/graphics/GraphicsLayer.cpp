@@ -95,6 +95,12 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_replicaLayer(0)
     , m_replicatedLayer(0)
     , m_repaintCount(0)
+    , m_contentsLayer(0)
+    , m_contentsLayerId(0)
+    , m_linkHighlight(0)
+    , m_contentsLayerPurpose(NoContentsLayer)
+    , m_inSetChildren(false)
+    , m_scrollableArea(0)
 {
 #ifndef NDEBUG
     if (m_client)

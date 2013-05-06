@@ -94,12 +94,6 @@ PassOwnPtr<GraphicsLayer> GraphicsLayer::create(GraphicsLayerClient* client)
 
 GraphicsLayerChromium::GraphicsLayerChromium(GraphicsLayerClient* client)
     : GraphicsLayer(client)
-    , m_contentsLayer(0)
-    , m_contentsLayerId(0)
-    , m_linkHighlight(0)
-    , m_contentsLayerPurpose(NoContentsLayer)
-    , m_inSetChildren(false)
-    , m_scrollableArea(0)
 {
     m_opaqueRectTrackingContentLayerDelegate = adoptPtr(new OpaqueRectTrackingContentLayerDelegate(this));
     m_layer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(m_opaqueRectTrackingContentLayerDelegate.get()));

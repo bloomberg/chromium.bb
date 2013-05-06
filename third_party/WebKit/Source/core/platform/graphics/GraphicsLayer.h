@@ -34,9 +34,15 @@
 #include "core/platform/graphics/GraphicsLayerClient.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/PlatformLayer.h"
+#include "core/platform/graphics/chromium/OpaqueRectTrackingContentLayerDelegate.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/transforms/TransformOperations.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
+
+#include <public/WebContentLayer.h>
+#include <public/WebImageLayer.h>
+#include <public/WebLayer.h>
+#include <public/WebSolidColorLayer.h>
 
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -62,6 +68,7 @@ class FloatRect;
 class GraphicsContext;
 class GraphicsLayerFactory;
 class Image;
+class ScrollableArea;
 class TextStream;
 class TimingFunction;
 
@@ -187,7 +194,16 @@ protected:
     AnimatedPropertyID m_property;
 };
 
+// FIXME: find a better home for this declaration.
+class LinkHighlightClient {
+public:
+    virtual void invalidate() = 0;
+    virtual void clearCurrentGraphicsLayer() = 0;
+    virtual WebKit::WebLayer* layer() = 0;
 
+protected:
+    virtual ~LinkHighlightClient() { }
+};
 
 // GraphicsLayer is an abstraction for a rendering surface with backing store,
 // which may have associated transformation and animations.
@@ -195,6 +211,13 @@ protected:
 class GraphicsLayer {
     WTF_MAKE_NONCOPYABLE(GraphicsLayer); WTF_MAKE_FAST_ALLOCATED;
 public:
+    enum ContentsLayerPurpose {
+        NoContentsLayer = 0,
+        ContentsLayerForImage,
+        ContentsLayerForVideo,
+        ContentsLayerForCanvas,
+    };
+
     static PassOwnPtr<GraphicsLayer> create(GraphicsLayerFactory*, GraphicsLayerClient*);
 
     // FIXME: Replace all uses of this create function with the one that takes a GraphicsLayerFactory.
@@ -501,6 +524,33 @@ protected:
     IntRect m_contentsRect;
 
     int m_repaintCount;
+
+    String m_nameBase;
+
+    Color m_contentsSolidColor;
+
+    OwnPtr<WebKit::WebContentLayer> m_layer;
+    OwnPtr<WebKit::WebLayer> m_transformLayer;
+    OwnPtr<WebKit::WebImageLayer> m_imageLayer;
+    OwnPtr<WebKit::WebSolidColorLayer> m_contentsSolidColorLayer;
+    WebKit::WebLayer* m_contentsLayer;
+    // We don't have ownership of m_contentsLayer, but we do want to know if a given layer is the
+    // same as our current layer in setContentsTo(). Since m_contentsLayer may be deleted at this point,
+    // we stash an ID away when we know m_contentsLayer is alive and use that for comparisons from that point
+    // on.
+    int m_contentsLayerId;
+
+    LinkHighlightClient* m_linkHighlight;
+
+    OwnPtr<OpaqueRectTrackingContentLayerDelegate> m_opaqueRectTrackingContentLayerDelegate;
+
+    ContentsLayerPurpose m_contentsLayerPurpose;
+    bool m_inSetChildren;
+
+    typedef HashMap<String, int> AnimationIdMap;
+    AnimationIdMap m_animationIdMap;
+
+    ScrollableArea* m_scrollableArea;
 };
 
 
