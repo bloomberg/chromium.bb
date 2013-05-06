@@ -88,6 +88,11 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const base::Time& last_modified_time,
       const fileapi::FileSystemOperation::StatusCallback& callback)
           OVERRIDE;
+  virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
+      base::SequencedTaskRunner* file_task_runner,
+      const fileapi::FileSystemURL& url,
+      int64 offset,
+      const base::Time& expected_modification_time) OVERRIDE;
 
  protected:
   virtual ~FileSystemProxy();

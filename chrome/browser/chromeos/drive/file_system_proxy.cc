@@ -18,6 +18,7 @@
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/blob/file_stream_reader.h"
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
@@ -707,6 +708,18 @@ void FileSystemProxy::CreateWritableSnapshotFile(
                          this,
                          file_path,
                          callback))));
+}
+
+scoped_ptr<webkit_blob::FileStreamReader>
+FileSystemProxy::CreateFileStreamReader(
+    base::SequencedTaskRunner* file_task_runner,
+    const fileapi::FileSystemURL& url,
+    int64 offset,
+    const base::Time& expected_modification_time) {
+  // TODO(hidehiko): Implement the FileStreamReader for drive files.
+  // crbug.com/127129
+  NOTIMPLEMENTED();
+  return scoped_ptr<webkit_blob::FileStreamReader>();
 }
 
 FileSystemProxy::~FileSystemProxy() {
