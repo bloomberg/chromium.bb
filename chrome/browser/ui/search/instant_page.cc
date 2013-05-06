@@ -7,9 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/frame_navigate_params.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 
@@ -193,27 +191,6 @@ void InstantPage::DidCommitProvisionalLoadForFrame(
     content::RenderViewHost* /* render_view_host */) {
   if (is_main_frame && ShouldProcessAboutToNavigateMainFrame())
     delegate_->InstantPageAboutToNavigateMainFrame(contents(), url);
-}
-
-void InstantPage::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& /* params */) {
-  // A 204 can be sent by the search provider as a lightweight signal
-  // to fall back to the local page, and we obviously want to fall back
-  // if we get any response code that indicates an error.
-  if (details.http_status_code == 204 || details.http_status_code >= 400)
-    delegate_->InstantPageLoadFailed(contents());
-}
-
-void InstantPage::DidFailProvisionalLoad(
-    int64 /* frame_id */,
-    bool is_main_frame,
-    const GURL& /* validated_url */,
-    int /* error_code */,
-    const string16& /* error_description */,
-    content::RenderViewHost* /* render_view_host */) {
-  if (is_main_frame)
-    delegate_->InstantPageLoadFailed(contents());
 }
 
 void InstantPage::OnSetSuggestions(

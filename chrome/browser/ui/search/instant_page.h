@@ -18,8 +18,6 @@
 class GURL;
 
 namespace content {
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
 class WebContents;
 }
 
@@ -92,9 +90,6 @@ class InstantPage : public content::WebContentsObserver {
 
     // Called when the SearchBox wants to undo all Most Visited deletions.
     virtual void UndoAllMostVisitedDeletions() = 0;
-
-    // Called when the page fails to load for whatever reason.
-    virtual void InstantPageLoadFailed(content::WebContents* contents) = 0;
 
    protected:
     virtual ~Delegate();
@@ -219,16 +214,6 @@ class InstantPage : public content::WebContentsObserver {
       bool is_main_frame,
       const GURL& url,
       content::PageTransition transition_type,
-      content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-  virtual void DidFailProvisionalLoad(
-      int64 frame_id,
-      bool is_main_frame,
-      const GURL& validated_url,
-      int error_code,
-      const string16& error_description,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
   void OnSetSuggestions(int page_id,

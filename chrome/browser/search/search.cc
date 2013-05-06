@@ -485,12 +485,11 @@ bool ShouldPreferRemoteNTPOnStartup() {
   // precedence and allows the trial to not be reported (if it's never queried).
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI) ||
+      command_line->HasSwitch(switches::kEnableInstantExtendedAPI) ||
       command_line->HasSwitch(switches::kEnableLocalOnlyInstantExtendedAPI) ||
-      command_line->HasSwitch(switches::kEnableLocalFirstLoadNTP)) {
+      command_line->HasSwitch(switches::kDisableLocalOnlyInstantExtendedAPI)) {
     return false;
   }
-  if (command_line->HasSwitch(switches::kDisableLocalFirstLoadNTP))
-    return true;
 
   FieldTrialFlags flags;
   if (GetFieldTrialInfo(
