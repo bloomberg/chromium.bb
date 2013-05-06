@@ -58,7 +58,7 @@ from webkitpy.layout_tests.models.test_expectations import TestExpectations
 
 
 logging.basicConfig()
-_log = logging.getLogger("move-layout-tests")
+_log = logging.getLogger(__name__)
 _log.setLevel(logging.INFO)
 
 PLATFORM_DIRECTORY = 'platform'

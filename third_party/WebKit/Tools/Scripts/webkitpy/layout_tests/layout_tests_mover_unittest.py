@@ -36,10 +36,6 @@ from webkitpy.layout_tests.layout_tests_mover import LayoutTestsMover
 from webkitpy.layout_tests.port.chromium import ChromiumPort
 
 
-logging.basicConfig()
-_log = logging.getLogger('move-layout-tests-unittests')
-_log.setLevel(logging.INFO)
-
 class MockPort(ChromiumPort):
 
     def __init__(self, **kwargs):
