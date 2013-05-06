@@ -39,7 +39,6 @@
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/TextRun.h"
-#include "painting/GraphicsContextBuilder.h"
 #include <public/WebFloatPoint.h>
 #include <public/WebFloatRect.h>
 #include <public/WebRect.h>
@@ -94,9 +93,7 @@ void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFl
                            int from, int to) const
 {
     FontCachePurgePreventer fontCachePurgePreventer;
-
-    GraphicsContextBuilder builder(canvas);
-    GraphicsContext& gc = builder.context();
+    GraphicsContext gc(canvas);
 
     gc.save();
     gc.setShouldSmoothFonts(canvasIsOpaque);

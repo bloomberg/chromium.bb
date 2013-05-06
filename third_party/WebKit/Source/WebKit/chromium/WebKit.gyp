@@ -357,7 +357,6 @@
                 'src/NotificationPresenterImpl.cpp',
                 'src/painting/ContinuousPainter.h',
                 'src/painting/ContinuousPainter.cpp',
-                'src/painting/GraphicsContextBuilder.h',
                 'src/painting/PaintAggregator.h',
                 'src/painting/PaintAggregator.cpp',
                 'src/PageOverlay.cpp',

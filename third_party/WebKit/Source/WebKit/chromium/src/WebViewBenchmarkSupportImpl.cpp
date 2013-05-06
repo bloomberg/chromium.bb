@@ -30,10 +30,10 @@
 #include "WebViewImpl.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/IntSize.h"
-#include "painting/GraphicsContextBuilder.h"
 
 #include <public/WebCanvas.h>
 #include <wtf/CurrentTime.h>
@@ -48,9 +48,9 @@ void WebViewBenchmarkSupportImpl::paintLayer(PaintClient* paintClient, GraphicsL
 {
     WebSize canvasSize(clip.width(), clip.height());
     WebCanvas* canvas = paintClient->willPaint(canvasSize);
-    GraphicsContextBuilder builder(canvas);
+    GraphicsContext context(canvas);
 
-    layer.paintGraphicsLayerContents(builder.context(), clip);
+    layer.paintGraphicsLayerContents(context, clip);
     paintClient->didPaint(canvas);
 }
 

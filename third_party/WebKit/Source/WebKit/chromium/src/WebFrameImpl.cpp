@@ -162,6 +162,7 @@
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
@@ -178,7 +179,6 @@
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemType.h"
-#include "painting/GraphicsContextBuilder.h"
 #include <public/Platform.h>
 #include <public/WebFileSystem.h>
 #include <public/WebFileSystemType.h>
@@ -1450,8 +1450,7 @@ float WebFrameImpl::printPage(int page, WebCanvas* canvas)
 #if ENABLE(PRINTING)
     ASSERT(m_printContext && page >= 0 && frame() && frame()->document());
 
-    GraphicsContextBuilder builder(canvas);
-    GraphicsContext& graphicsContext = builder.context();
+    GraphicsContext graphicsContext(canvas);
     graphicsContext.setPrinting(true);
     return m_printContext->spoolPage(graphicsContext, page);
 #else
@@ -2078,8 +2077,7 @@ void WebFrameImpl::printPagesWithBoundaries(WebCanvas* canvas, const WebSize& pa
 {
     ASSERT(m_printContext);
 
-    GraphicsContextBuilder builder(canvas);
-    GraphicsContext& graphicsContext = builder.context();
+    GraphicsContext graphicsContext(canvas);
     graphicsContext.setPrinting(true);
 
     m_printContext->spoolAllPagesWithBoundaries(graphicsContext, FloatSize(pageSizeInPixels.width, pageSizeInPixels.height));

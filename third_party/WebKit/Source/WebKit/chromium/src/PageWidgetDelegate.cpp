@@ -37,7 +37,7 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "painting/GraphicsContextBuilder.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/CurrentTime.h>
 
 using namespace WebCore;
@@ -84,8 +84,7 @@ void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas*
 {
     if (rect.isEmpty())
         return;
-    GraphicsContextBuilder builder(canvas);
-    GraphicsContext& gc = builder.context();
+    GraphicsContext gc(canvas);
     gc.setShouldSmoothFonts(background == Opaque);
     gc.applyDeviceScaleFactor(page->deviceScaleFactor());
     gc.setUseHighResMarkers(page->deviceScaleFactor() > 1.5f);

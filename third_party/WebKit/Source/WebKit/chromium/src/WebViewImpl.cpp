@@ -145,7 +145,6 @@
 #include "modules/battery/BatteryController.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "painting/ContinuousPainter.h"
-#include "painting/GraphicsContextBuilder.h"
 #include <public/Platform.h>
 #include <public/WebCompositorOutputSurface.h>
 #include <public/WebCompositorSupport.h>

@@ -37,7 +37,6 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "painting/GraphicsContextBuilder.h"
 #include <public/WebCanvas.h>
 #include <public/WebRect.h>
 #include <public/WebVector.h>
@@ -235,7 +234,8 @@ void WebPluginScrollbarImpl::scroll(ScrollDirection direction, ScrollGranularity
 
 void WebPluginScrollbarImpl::paint(WebCanvas* canvas, const WebRect& rect)
 {
-    m_scrollbar->paint(&GraphicsContextBuilder(canvas).context(), rect);
+    GraphicsContext context(canvas);
+    m_scrollbar->paint(&context, rect);
 }
 
 bool WebPluginScrollbarImpl::handleInputEvent(const WebInputEvent& event)

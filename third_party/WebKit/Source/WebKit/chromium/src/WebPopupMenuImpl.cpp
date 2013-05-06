@@ -47,9 +47,9 @@
 #include "core/platform/chromium/FramelessScrollView.h"
 #include "core/platform/chromium/PopupContainer.h"
 #include "core/platform/chromium/PopupMenuChromium.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
-#include "painting/GraphicsContextBuilder.h"
 #include <public/WebRect.h>
 
 using namespace WebCore;
@@ -194,8 +194,7 @@ void WebPopupMenuImpl::paint(WebCanvas* canvas, const WebRect& rect, PaintOption
         return;
 
     if (!rect.isEmpty()) {
-        GraphicsContextBuilder builder(canvas);
-        GraphicsContext& context = builder.context();
+        GraphicsContext context(canvas);
         context.applyDeviceScaleFactor(m_client->deviceScaleFactor());
         m_widget->paint(&context, rect);
     }
