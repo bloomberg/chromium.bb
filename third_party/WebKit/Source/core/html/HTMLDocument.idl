@@ -37,9 +37,6 @@
 
     void clear();
 
-    void captureEvents();
-    void releaseEvents();
-
     readonly attribute long width;
     readonly attribute long height;
              [TreatNullAs=NullString] attribute DOMString dir;

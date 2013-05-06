@@ -348,16 +348,6 @@ v8::Handle<v8::Value> V8DOMWindow::toStringMethodCustom(const v8::Arguments& arg
     return domWrapper->ObjectProtoToString();
 }
 
-v8::Handle<v8::Value> V8DOMWindow::releaseEventsMethodCustom(const v8::Arguments& args)
-{
-    return v8::Undefined();
-}
-
-v8::Handle<v8::Value> V8DOMWindow::captureEventsMethodCustom(const v8::Arguments& args)
-{
-    return v8::Undefined();
-}
-
 class DialogHandler {
 public:
     explicit DialogHandler(v8::Handle<v8::Value> dialogArguments)

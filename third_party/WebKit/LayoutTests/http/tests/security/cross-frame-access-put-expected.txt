@@ -186,8 +186,6 @@ CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from access
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
-CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
-CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 ALERT: PASS: window.Attr should be 'function Attr() { [native code] }' and is.
 ALERT: PASS: window.CDATASection should be 'function CDATASection() { [native code] }' and is.
 ALERT: PASS: window.CharacterData should be 'function CharacterData() { [native code] }' and is.
@@ -352,7 +350,6 @@ ALERT: PASS: window.alert should be 'function alert() { [native code] }' and is.
 ALERT: PASS: window.atob should be 'function atob() { [native code] }' and is.
 ALERT: PASS: window.blur should be 'function () { [native code] }' and is.
 ALERT: PASS: window.btoa should be 'function btoa() { [native code] }' and is.
-ALERT: PASS: window.captureEvents should be 'function captureEvents() { [native code] }' and is.
 ALERT: PASS: window.clearInterval should be 'function clearInterval() { [native code] }' and is.
 ALERT: PASS: window.clearTimeout should be 'function clearTimeout() { [native code] }' and is.
 ALERT: PASS: window.close should be 'function () { [native code] }' and is.
@@ -368,7 +365,6 @@ ALERT: PASS: window.moveTo should be 'function moveTo() { [native code] }' and i
 ALERT: PASS: window.open should be 'function open() { [native code] }' and is.
 ALERT: PASS: window.print should be 'function print() { [native code] }' and is.
 ALERT: PASS: window.prompt should be 'function prompt() { [native code] }' and is.
-ALERT: PASS: window.releaseEvents should be 'function releaseEvents() { [native code] }' and is.
 ALERT: PASS: window.removeEventListener should be 'function removeEventListener() { [native code] }' and is.
 ALERT: PASS: window.resizeBy should be 'function resizeBy() { [native code] }' and is.
 ALERT: PASS: window.resizeTo should be 'function resizeTo() { [native code] }' and is.

@@ -1623,16 +1623,6 @@ void DOMWindow::removeAllEventListeners()
     removeAllBeforeUnloadEventListeners(this);
 }
 
-void DOMWindow::captureEvents()
-{
-    // Not implemented.
-}
-
-void DOMWindow::releaseEvents()
-{
-    // Not implemented.
-}
-
 void DOMWindow::finishedLoading()
 {
     if (m_shouldPrintWhenFinishedLoading) {

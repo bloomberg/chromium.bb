@@ -39,7 +39,6 @@ var functionNames = [
     'pageYOffset',
     'parent',
     'prompt',
-    'releaseEvents',
     'removeEventListener',
     'resizeBy',
     'resizeTo',

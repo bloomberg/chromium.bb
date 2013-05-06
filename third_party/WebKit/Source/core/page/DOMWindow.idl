@@ -283,9 +283,6 @@
                                       optional boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event evt);
 
-    [Custom] void captureEvents(/*in long eventFlags*/);
-    [Custom] void releaseEvents(/*in long eventFlags*/);
-
     // Global constructors
     attribute StyleSheetConstructor StyleSheet;
     attribute CSSStyleSheetConstructor CSSStyleSheet;

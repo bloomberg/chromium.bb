@@ -269,14 +269,6 @@ void HTMLDocument::setVlinkColor(const String& value)
     }
 }
 
-void HTMLDocument::captureEvents()
-{
-}
-
-void HTMLDocument::releaseEvents()
-{
-}
-
 PassRefPtr<DocumentParser> HTMLDocument::createParser()
 {
     bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(this->page());
