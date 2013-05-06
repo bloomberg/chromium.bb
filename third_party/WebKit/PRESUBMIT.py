@@ -13,40 +13,40 @@ _EXCLUDED_PATHS = ()
 
 
 def _CheckForVersionControlConflictsInFile(input_api, f):
-  pattern = input_api.re.compile('^(?:<<<<<<<|>>>>>>>) |^=======$')
-  errors = []
-  for line_num, line in f.ChangedContents():
-    if pattern.match(line):
-      errors.append('    %s:%d %s' % (f.LocalPath(), line_num, line))
-  return errors
+    pattern = input_api.re.compile('^(?:<<<<<<<|>>>>>>>) |^=======$')
+    errors = []
+    for line_num, line in f.ChangedContents():
+        if pattern.match(line):
+            errors.append('    %s:%d %s' % (f.LocalPath(), line_num, line))
+    return errors
 
 
 def _CheckForVersionControlConflicts(input_api, output_api):
-  """Usually this is not intentional and will cause a compile failure."""
-  errors = []
-  for f in input_api.AffectedFiles():
-    errors.extend(_CheckForVersionControlConflictsInFile(input_api, f))
+    """Usually this is not intentional and will cause a compile failure."""
+    errors = []
+    for f in input_api.AffectedFiles():
+        errors.extend(_CheckForVersionControlConflictsInFile(input_api, f))
 
-  results = []
-  if errors:
-    results.append(output_api.PresubmitError(
-      'Version control conflict markers found, please resolve.', errors))
-  return results
+    results = []
+    if errors:
+        results.append(output_api.PresubmitError(
+            'Version control conflict markers found, please resolve.', errors))
+    return results
 
 
 def _CommonChecks(input_api, output_api):
-  """Checks common to both upload and commit."""
-  # We should figure out what license checks we actually want to use.
-  license_header = r'.*'
+    """Checks common to both upload and commit."""
+    # We should figure out what license checks we actually want to use.
+    license_header = r'.*'
 
-  results = []
-  results.extend(input_api.canned_checks.PanProjectChecks(
-      input_api, output_api, excluded_paths=_EXCLUDED_PATHS,
-      maxlen=800, license_header=license_header))
-  results.extend(_CheckForVersionControlConflicts(input_api, output_api))
-  results.extend(_CheckPatchFiles(input_api, output_api))
-  results.extend(_CheckTestExpectations(input_api, output_api))
-  return results
+    results = []
+    results.extend(input_api.canned_checks.PanProjectChecks(
+        input_api, output_api, excluded_paths=_EXCLUDED_PATHS,
+        maxlen=800, license_header=license_header))
+    results.extend(_CheckForVersionControlConflicts(input_api, output_api))
+    results.extend(_CheckPatchFiles(input_api, output_api))
+    results.extend(_CheckTestExpectations(input_api, output_api))
+    return results
 
 
 def _CheckSubversionConfig(input_api, output_api):
@@ -104,38 +104,59 @@ def _CheckPatchFiles(input_api, output_api):
 
 
 def _CheckTestExpectations(input_api, output_api):
-  local_paths = [f.LocalPath() for f in input_api.AffectedFiles()]
-  if any(path.startswith('LayoutTests') for path in local_paths):
-    lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-        'Tools', 'Scripts', 'lint-test-expectations')
-    _, errs = input_api.subprocess.Popen(
-        [input_api.python_executable, lint_path],
-        stdout=input_api.subprocess.PIPE,
-        stderr=input_api.subprocess.PIPE).communicate()
-    if not errs:
-      return [output_api.PresubmitError("lint-test-expectations failed "
-                                        "to produce output; check by hand. ")]
-    if errs.strip() != 'Lint succeeded.':
-      return [output_api.PresubmitError(errs)]
-  return []
+    local_paths = [f.LocalPath() for f in input_api.AffectedFiles()]
+    if any(path.startswith('LayoutTests') for path in local_paths):
+        lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+            'Tools', 'Scripts', 'lint-test-expectations')
+        _, errs = input_api.subprocess.Popen(
+            [input_api.python_executable, lint_path],
+            stdout=input_api.subprocess.PIPE,
+            stderr=input_api.subprocess.PIPE).communicate()
+        if not errs:
+            return [output_api.PresubmitError(
+                "lint-test-expectations failed "
+                "to produce output; check by hand. ")]
+        if errs.strip() != 'Lint succeeded.':
+            return [output_api.PresubmitError(errs)]
+    return []
+
+
+def _CheckStyle(input_api, output_api):
+    args = (['check-webkit-style', '--diff-files'] +
+            [f.LocalPath() for f in input_api.AffectedFiles()])
+    results = []
+
+    try:
+        child = input_api.subprocess.Popen(args,
+                                           stderr=input_api.subprocess.PIPE)
+        _, stderrdata = child.communicate()
+        if child.returncode != 0:
+            results.append(output_api.PresubmitError(
+                'check-webkit-style failed', [stderrdata]))
+    except Exception as e:
+        results.append(output_api.PresubmitNotifyResult(
+            'Could not run check-webkit-style', [str(e)]))
+
+    return results
 
 
 def CheckChangeOnUpload(input_api, output_api):
-  results = []
-  results.extend(_CommonChecks(input_api, output_api))
-  return results
+    results = []
+    results.extend(_CommonChecks(input_api, output_api))
+    results.extend(_CheckStyle(input_api, output_api))
+    return results
 
 
 def CheckChangeOnCommit(input_api, output_api):
-  results = []
-  results.extend(_CommonChecks(input_api, output_api))
-  results.extend(input_api.canned_checks.CheckTreeIsOpen(
-      input_api, output_api,
-      json_url='http://blink-status.appspot.com/current?format=json'))
-  results.extend(input_api.canned_checks.CheckChangeHasDescription(
-      input_api, output_api))
-  results.extend(_CheckSubversionConfig(input_api, output_api))
-  return results
+    results = []
+    results.extend(_CommonChecks(input_api, output_api))
+    results.extend(input_api.canned_checks.CheckTreeIsOpen(
+        input_api, output_api,
+        json_url='http://blink-status.appspot.com/current?format=json'))
+    results.extend(input_api.canned_checks.CheckChangeHasDescription(
+        input_api, output_api))
+    results.extend(_CheckSubversionConfig(input_api, output_api))
+    return results
 
 def GetPreferredTrySlaves(project, change):
     return ['linux_layout_rel', 'mac_layout_rel', 'win_layout_rel']
