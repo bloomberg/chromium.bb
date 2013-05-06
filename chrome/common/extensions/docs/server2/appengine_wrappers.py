@@ -6,7 +6,8 @@ import os
 
 def GetAppVersion():
   if 'CURRENT_VERSION_ID' in os.environ:
-    return os.environ['CURRENT_VERSION_ID']
+    # The version ID looks like 2-0-25.36712548, we only want the 2-0-25.
+    return os.environ['CURRENT_VERSION_ID'].split('.', 1)[0]
   # Not running on appengine, get it from the app.yaml file ourselves. We
   # could properly parse this using a yaml library but Python doesn't have
   # one built in so whatevs.
