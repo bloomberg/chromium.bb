@@ -13,6 +13,8 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "base/sha1.h"
+#include "base/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/breakpad_mac.h"
@@ -90,6 +92,7 @@
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
+#include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
@@ -213,7 +216,11 @@ const char* kPredefinedAllowedSocketOrigins[] = {
   "mapljbgnjledlpdmlchihnmeclmefbba",  // see crbug.com/134099
   "ghbfeebgmiidnnmeobbbaiamklmpbpii",  // see crbug.com/134099
   "jdfhpkjeckflbbleddjlpimecpbjdeep",  // see crbug.com/142514
-  "iabmpiboiopbgfabjmgeedhcmjenhbla"   // see crbug.com/165080
+  "iabmpiboiopbgfabjmgeedhcmjenhbla",  // see crbug.com/165080
+  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F", // see crbug.com/234789
+  "7525AF4F66763A70A883C4700529F647B470E4D2", // see crbug.com/238084
+  "0B549507088E1564D672F7942EB87CA4DAD73972", // see crbug.com/238084
+  "864288364E239573E777D3E0E36864E590E95C74"  // see crbug.com/238084
 };
 
 // Returns a copy of the given url with its host set to given host and path set
@@ -452,6 +459,16 @@ GURL GetEffectiveURLForSignin(const GURL& url) {
 void SetApplicationLocaleOnIOThread(const std::string& locale) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   g_io_thread_application_locale.Get() = locale;
+}
+
+std::string HashHost(const std::string& host) {
+  const std::string id_hash = base::SHA1HashString(host);
+  DCHECK(id_hash.length() == base::kSHA1Length);
+  return base::HexEncode(id_hash.c_str(), id_hash.length());
+}
+
+bool HostIsInSet(const std::string& host, const std::set<std::string>& set) {
+  return set.count(host) > 0 || set.count(HashHost(host)) > 0;
 }
 
 }  // namespace
@@ -2074,7 +2091,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
 
   std::string host = url.host();
   if (url.SchemeIs(extensions::kExtensionScheme) &&
-      allowed_socket_origins_.count(host)) {
+      HostIsInSet(host, allowed_socket_origins_)) {
     return true;
   }
 
@@ -2085,6 +2102,23 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
   if (extension_service) {
     extension = extension_service->extensions()->
         GetExtensionOrAppByURL(ExtensionURLInfo(url));
+  }
+
+  // Check the modules that are imported by this extension to see if any of them
+  // is whitelisted.
+  if (extension) {
+    const std::vector<extensions::SharedModuleInfo::ImportInfo>& imports =
+        extensions::SharedModuleInfo::GetImports(extension);
+    std::vector<extensions::SharedModuleInfo::ImportInfo>::const_iterator it;
+    for (it = imports.begin(); it != imports.end(); ++it) {
+      const Extension* imported_extension = extension_service->
+          GetExtensionById(it->extension_id, false);
+      if (imported_extension &&
+          extensions::SharedModuleInfo::IsSharedModule(imported_extension) &&
+          HostIsInSet(it->extension_id, allowed_socket_origins_)) {
+        return true;
+      }
+    }
   }
 
   // Need to check this now and not on construction because otherwise it won't
@@ -2104,15 +2138,6 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
         return true;
     }
   }
-
-  if (!extension)
-    return false;
-
-  extensions::SocketPermission::CheckParam extension_params(
-      params.type, params.host, params.port);
-  if (extension->CheckAPIPermissionWithParam(APIPermission::kSocket,
-                                             &extension_params))
-    return true;
 
   return false;
 }
