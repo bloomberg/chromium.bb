@@ -338,7 +338,6 @@ TEST_F(BluetoothExperimentalChromeOSTest, AlreadyPresent) {
   EXPECT_FALSE(adapter_->IsPowered());
   EXPECT_EQ(FakeBluetoothAdapterClient::kAdapterAddress,
             adapter_->GetAddress());
-  EXPECT_EQ(FakeBluetoothAdapterClient::kAdapterName, adapter_->GetName());
   EXPECT_FALSE(adapter_->IsDiscovering());
 
   // There should be a device

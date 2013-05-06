@@ -95,6 +95,11 @@ class BluetoothAdapterExperimentalChromeOS
   // subsequently operate on that adapter until it is removed.
   void SetAdapter(const dbus::ObjectPath& object_path);
 
+  // Set the adapter name to one chosen from the system information, and method
+  // called by dbus:: on completion of the alias property change.
+  void SetAdapterName();
+  void OnSetAlias(bool success);
+
   // Remove the currently tracked adapter. IsPresent() will return false after
   // this is called.
   void RemoveAdapter();

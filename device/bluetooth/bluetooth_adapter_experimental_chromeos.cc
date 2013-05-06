@@ -7,8 +7,10 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/experimental_bluetooth_adapter_client.h"
 #include "chromeos/dbus/experimental_bluetooth_device_client.h"
@@ -310,6 +312,8 @@ void BluetoothAdapterExperimentalChromeOS::SetAdapter(
 
   VLOG(1) << object_path_.value() << ": using adapter.";
 
+  SetAdapterName();
+
   ExperimentalBluetoothAdapterClient::Properties* properties =
       DBusThreadManager::Get()->GetExperimentalBluetoothAdapterClient()->
           GetProperties(object_path_);
@@ -335,6 +339,38 @@ void BluetoothAdapterExperimentalChromeOS::SetAdapter(
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceAdded(this, device_chromeos));
   }
+}
+
+void BluetoothAdapterExperimentalChromeOS::SetAdapterName() {
+  // Set a better name for the adapter than "BlueZ 5.x"; this isn't an ideal
+  // way to do this but it'll do for now. See http://crbug.com/126732 and
+  // http://crbug.com/126802.
+  std::string board;
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kChromeOSReleaseBoard)) {
+    board = command_line->
+        GetSwitchValueASCII(chromeos::switches::kChromeOSReleaseBoard);
+  }
+
+  std::string alias;
+  if (board.substr(0, 6) == "stumpy") {
+    alias = "Chromebox";
+  } else if (board.substr(0, 4) == "link") {
+    alias = "Chromebook Pixel";
+  } else {
+    alias = "Chromebook";
+  }
+
+  DBusThreadManager::Get()->GetExperimentalBluetoothAdapterClient()->
+      GetProperties(object_path_)->alias.Set(
+          alias,
+          base::Bind(&BluetoothAdapterExperimentalChromeOS::OnSetAlias,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BluetoothAdapterExperimentalChromeOS::OnSetAlias(bool success) {
+  LOG_IF(WARNING, !success) << object_path_.value()
+                            << ": Failed to set adapter alias";
 }
 
 void BluetoothAdapterExperimentalChromeOS::RemoveAdapter() {
