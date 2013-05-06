@@ -25,10 +25,20 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
-  "audio": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
-  },
+  "audio": [
+    {
+      "channel": "dev",
+      "extension_types": ["platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"],
+      "whitelist": [
+        "8C3741E3AF0B93B6E8E0DDD499BB0B74839EA578",
+        "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB"
+      ]
+    }
+  ],
   "autotestPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],

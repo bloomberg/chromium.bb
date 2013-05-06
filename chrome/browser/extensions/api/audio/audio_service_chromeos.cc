@@ -6,6 +6,9 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_number_conversions.h"
+#include "chromeos/audio/audio_device.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/audio_node.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -19,17 +22,22 @@ using api::audio::OutputDeviceInfo;
 using api::audio::InputDeviceInfo;
 
 class AudioServiceImpl : public AudioService,
-                         public chromeos::CrasAudioClient::Observer {
+                         public chromeos::CrasAudioHandler::Observer {
  public:
   AudioServiceImpl();
   virtual ~AudioServiceImpl();
 
   // Called by listeners to this service to add/remove themselves as observers.
-  virtual void AddObserver(AudioService::Observer* observer);
-  virtual void RemoveObserver(AudioService::Observer* observer);
+  virtual void AddObserver(AudioService::Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(AudioService::Observer* observer) OVERRIDE;
 
   // Start to query audio device information.
-  virtual void StartGetInfo(const GetInfoCallback& callback);
+  virtual void StartGetInfo(const GetInfoCallback& callback) OVERRIDE;
+  virtual void SetActiveDevices(const DeviceIdList& device_list) OVERRIDE;
+  virtual bool SetDeviceProperties(const std::string& device_id,
+                                   bool muted,
+                                   int volume,
+                                   int gain) OVERRIDE;
 
  protected:
   // chromeos::CrasAudioClient::Observer overrides.
@@ -49,10 +57,14 @@ class AudioServiceImpl : public AudioService,
                   const chromeos::AudioNodeList& audio_nodes,
                   bool success);
 
+  bool FindDevice(uint64 id, chromeos::AudioDevice* device);
+  uint64 GetIdFromStr(const std::string& id_str);
+
   // List of observers.
   ObserverList<AudioService::Observer> observer_list_;
 
   chromeos::CrasAudioClient* cras_audio_client_;
+  chromeos::CrasAudioHandler* cras_audio_handler_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
@@ -63,6 +75,7 @@ class AudioServiceImpl : public AudioService,
 
 AudioServiceImpl::AudioServiceImpl()
     : cras_audio_client_(NULL),
+      cras_audio_handler_(NULL),
       weak_ptr_factory_(this) {
   if (chromeos::DBusThreadManager::IsInitialized() &&
       chromeos::DBusThreadManager::Get()) {
@@ -70,6 +83,8 @@ AudioServiceImpl::AudioServiceImpl()
         chromeos::DBusThreadManager::Get()->GetCrasAudioClient();
     if (cras_audio_client_)
       cras_audio_client_->AddObserver(this);
+    if (chromeos::CrasAudioHandler::IsInitialized())
+      cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
   }
 }
 
@@ -95,6 +110,55 @@ void AudioServiceImpl::StartGetInfo(const GetInfoCallback& callback) {
                                             callback));
 }
 
+void AudioServiceImpl::SetActiveDevices(const DeviceIdList& device_list) {
+  DCHECK(cras_audio_handler_);
+  if (!cras_audio_handler_)
+    return;
+
+  bool input_device_set = false;
+  bool output_device_set = false;
+
+  for (size_t i = 0; i < device_list.size(); ++i) {
+    chromeos::AudioDevice device;
+    bool found = FindDevice(GetIdFromStr(device_list[i]), &device);
+    if (found) {
+      if (device.is_input && !input_device_set) {
+        cras_audio_handler_->SetActiveInputNode(device.id);
+        input_device_set = true;
+      } else if (!device.is_input && !output_device_set) {
+        cras_audio_handler_->SetActiveOutputNode(device.id);
+        output_device_set = true;
+      }
+    }
+  }
+}
+
+bool AudioServiceImpl::SetDeviceProperties(const std::string& device_id,
+                                           bool muted,
+                                           int volume,
+                                           int gain) {
+  DCHECK(cras_audio_handler_);
+  if (!cras_audio_handler_)
+    return false;
+
+  chromeos::AudioDevice device;
+  bool found = FindDevice(GetIdFromStr(device_id), &device);
+  if (!found)
+    return false;
+
+  if (!device.is_input && volume != -1) {
+    cras_audio_handler_->SetVolumeGainPercentForDevice(GetIdFromStr(device_id),
+                                                       volume);
+    return true;
+  } else if (device.is_input && gain != -1) {
+    cras_audio_handler_->SetVolumeGainPercentForDevice(GetIdFromStr(device_id),
+                                                       gain);
+    return true;
+  }
+
+  return false;
+}
+
 void AudioServiceImpl::OnGetNodes(const GetInfoCallback& callback,
                                   const chromeos::AudioNodeList& audio_nodes,
                                   bool success) {
@@ -105,15 +169,19 @@ void AudioServiceImpl::OnGetNodes(const GetInfoCallback& callback,
         iter != audio_nodes.end(); ++iter) {
       if (!iter->is_input) {
         linked_ptr<OutputDeviceInfo> info(new OutputDeviceInfo());
-        info->id = iter->id;
+        info->id = base::Uint64ToString(iter->id);
         info->name = iter->name;
         info->is_active = iter->active;
+        info->volume = cras_audio_handler_->GetOutputVolumePercentForDevice(
+            iter->id);
         output_info.push_back(info);
       } else {
         linked_ptr<InputDeviceInfo> info(new InputDeviceInfo());
-        info->id = iter->id;
+        info->id = base::Uint64ToString(iter->id);
         info->name = iter->name;
         info->is_active = iter->active;
+        info->gain = cras_audio_handler_->GetInputGainPercentForDevice(
+            iter->id);
         input_info.push_back(info);
       }
     }
@@ -122,6 +190,27 @@ void AudioServiceImpl::OnGetNodes(const GetInfoCallback& callback,
   DCHECK(!callback.is_null());
   if (!callback.is_null())
     callback.Run(output_info, input_info, success);
+}
+
+bool AudioServiceImpl::FindDevice(uint64 id, chromeos::AudioDevice* device) {
+  chromeos::AudioDeviceList devices;
+  cras_audio_handler_->GetAudioDevices(&devices);
+
+  for (size_t i = 0; i < devices.size(); ++i) {
+    if (devices[i].id == id) {
+      *device = devices[i];
+      return true;
+    }
+  }
+  return false;
+}
+
+uint64 AudioServiceImpl::GetIdFromStr(const std::string& id_str) {
+  uint64 device_id;
+  if (!base::StringToUint64(id_str, &device_id))
+    return 0;
+  else
+    return device_id;
 }
 
 void AudioServiceImpl::OutputVolumeChanged(int volume) {

@@ -41,6 +41,10 @@ CrasAudioSwitchHandler* CrasAudioSwitchHandler::Get() {
   return g_cras_audio_handler;
 }
 
+void CrasAudioSwitchHandler::UpdateActiveDevice() {
+  GetNodes();
+}
+
 CrasAudioSwitchHandler::CrasAudioSwitchHandler()
     : muted_device_id_(0),
       weak_ptr_factory_(this) {

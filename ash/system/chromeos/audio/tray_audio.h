@@ -43,6 +43,8 @@ class TrayAudio : public TrayImageItem,
   // Overridden from chromeos::CrasAudioHandler::AudioObserver.
   virtual void OnOutputVolumeChanged() OVERRIDE;
   virtual void OnOutputMuteChanged() OVERRIDE;
+  virtual void OnInputGainChanged() OVERRIDE;
+  virtual void OnInputMuteChanged() OVERRIDE;
   virtual void OnAudioNodesChanged() OVERRIDE;
   virtual void OnActiveOutputNodeChanged() OVERRIDE;
   virtual void OnActiveInputNodeChanged() OVERRIDE;

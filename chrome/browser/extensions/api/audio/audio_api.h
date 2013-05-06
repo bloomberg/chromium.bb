@@ -54,7 +54,7 @@ class AudioGetInfoFunction : public AsyncExtensionFunction {
                           bool success);
 };
 
-class AudioSetActiveDevicesFunction : public AsyncExtensionFunction {
+class AudioSetActiveDevicesFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("audio.setActiveDevices",
                              AUDIO_SETACTIVEDEVICES);
@@ -64,7 +64,7 @@ class AudioSetActiveDevicesFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class AudioSetPropertiesFunction : public AsyncExtensionFunction {
+class AudioSetPropertiesFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("audio.setProperties",
                              AUDIO_SETPROPERTIES);
