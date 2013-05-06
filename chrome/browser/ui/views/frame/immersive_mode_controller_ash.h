@@ -154,9 +154,8 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Enables or disables layer-based painting to allow smooth animations.
   void EnablePaintToLayer(bool enable);
 
-  // Updates layout for |browser_view_| including window caption controls and
-  // tab strip style |immersive_style|.
-  void LayoutBrowserView(bool immersive_style);
+  // Updates the browser root view's layout including window caption controls.
+  void LayoutBrowserRootView();
 
   // Called when the animation to slide open the top-of-window views has
   // completed.

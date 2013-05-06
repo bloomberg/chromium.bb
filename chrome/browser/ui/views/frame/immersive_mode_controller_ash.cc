@@ -248,7 +248,7 @@ void ImmersiveModeControllerAsh::AnchoredWidgetManager::UpdateRevealedLock() {
     // anchored to the top-of-window views while the top-of-window views are
     // animating. Skip to the end of the reveal animation instead.
     // We do not query the controller's reveal state because we may be called
-    // as a result of LayoutBrowserView() in MaybeStartReveal() when
+    // as a result of LayoutBrowserRootView() in MaybeStartReveal() when
     // |reveal_state_| is SLIDING_OPEN but no animation is running yet.
     ui::Layer* top_container_layer =
         controller_->browser_view_->top_container()->layer();
@@ -407,13 +407,16 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
   // Init() is called.
   EnableWindowObservers(true);
 
+  UpdateUseMinimalChrome(LAYOUT_NO);
+
   if (enabled_) {
     // Animate enabling immersive mode by sliding out the top-of-window views.
     // No animation occurs if a lock is holding the top-of-window views open.
 
     // Do a reveal to set the initial state for the animation. (And any
     // required state in case the animation cannot run because of a lock holding
-    // the top-of-window views open.)
+    // the top-of-window views open.) This call has the side effect of relaying
+    // out |browser_view_|'s root view.
     MaybeStartReveal(ANIMATE_NO);
 
     // Reset the mouse and the focus revealed locks so that they do not affect
@@ -436,14 +439,12 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     // Snap immediately to the closed state.
     reveal_state_ = CLOSED;
     EnablePaintToLayer(false);
-    browser_view_->GetWidget()->non_client_view()->frame_view()->
-        ResetWindowControls();
     browser_view_->tabstrip()->SetImmersiveStyle(false);
-  }
-  // Don't need explicit layout because we're inside a fullscreen transition
-  // and it blocks layout calls.
 
-  UpdateUseMinimalChrome(LAYOUT_NO);
+    // Relayout the root view because disabling immersive fullscreen may have
+    // changed the result of NonClientFrameView::GetBoundsForClientView().
+    LayoutBrowserRootView();
+  }
 }
 
 bool ImmersiveModeControllerAsh::IsEnabled() const {
@@ -794,7 +795,7 @@ void ImmersiveModeControllerAsh::UpdateUseMinimalChrome(Layout layout) {
     // If the top-of-window views are revealed or animating, the change will
     // take effect with the layout once the top-of-window views are closed.
     if (layout == LAYOUT_YES && reveal_state_ == CLOSED)
-      LayoutBrowserView(true);
+      LayoutBrowserRootView();
   }
 }
 
@@ -832,7 +833,8 @@ void ImmersiveModeControllerAsh::MaybeStartReveal(Animate animate) {
 
     // Ensure window caption buttons are updated and the view bounds are
     // computed at normal (non-immersive-style) size.
-    LayoutBrowserView(false);
+    browser_view_->tabstrip()->SetImmersiveStyle(false);
+    LayoutBrowserRootView();
 
     // Do not do any more processing if LayoutBrowserView() changed
     // |reveal_state_|.
@@ -878,11 +880,10 @@ void ImmersiveModeControllerAsh::EnablePaintToLayer(bool enable) {
     bookmark_bar->SetPaintToLayer(false);
 }
 
-void ImmersiveModeControllerAsh::LayoutBrowserView(bool immersive_style) {
+void ImmersiveModeControllerAsh::LayoutBrowserRootView() {
   // Update the window caption buttons.
   browser_view_->GetWidget()->non_client_view()->frame_view()->
       ResetWindowControls();
-  browser_view_->tabstrip()->SetImmersiveStyle(immersive_style);
   browser_view_->frame()->GetRootView()->Layout();
 }
 
@@ -933,7 +934,8 @@ void ImmersiveModeControllerAsh::OnSlideClosedAnimationCompleted() {
   // Layers aren't needed after animation completes.
   EnablePaintToLayer(false);
   // Update tabstrip for closed state.
-  LayoutBrowserView(true);
+  browser_view_->tabstrip()->SetImmersiveStyle(true);
+  LayoutBrowserRootView();
 }
 
 void ImmersiveModeControllerAsh::DoAnimation(
