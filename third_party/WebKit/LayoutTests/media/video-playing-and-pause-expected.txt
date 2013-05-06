@@ -1,0 +1,10 @@
+Test that pausing the media element in "playing" event handler pauses the media immediately.
+
+RUN(video.play())
+SCRIPT DONE
+EVENT(play)
+EVENT(timeupdate)
+EVENT(pause)
+EXPECTED (video.paused == 'true') OK
+END OF TEST
+
