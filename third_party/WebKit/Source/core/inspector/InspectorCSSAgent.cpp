@@ -766,13 +766,19 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(const Vector<RefPtr<StyleSheet>
     for (HashSet<CSSStyleSheet*>::iterator it = removedSheets.begin(); it != removedSheets.end(); ++it) {
         RefPtr<InspectorStyleSheet> inspectorStyleSheet = m_cssStyleSheetToInspectorStyleSheet.get(*it);
         ASSERT(inspectorStyleSheet);
-        if (m_idToInspectorStyleSheet.contains(inspectorStyleSheet->id()))
-            m_frontend->styleSheetRemoved(unbindStyleSheet(inspectorStyleSheet.get()));
+        if (m_idToInspectorStyleSheet.contains(inspectorStyleSheet->id())) {
+            String id = unbindStyleSheet(inspectorStyleSheet.get());
+            if (m_frontend)
+                m_frontend->styleSheetRemoved(id);
+        }
     }
     RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSStyleSheetHeader> > addedHeaders = TypeBuilder::Array<TypeBuilder::CSS::CSSStyleSheetHeader>::create();
     for (HashSet<CSSStyleSheet*>::iterator it = addedSheets.begin(); it != addedSheets.end(); ++it) {
-        if (!m_cssStyleSheetToInspectorStyleSheet.contains(*it))
-            m_frontend->styleSheetAdded(bindStyleSheet(static_cast<CSSStyleSheet*>(*it))->buildObjectForStyleSheetInfo());
+        if (!m_cssStyleSheetToInspectorStyleSheet.contains(*it)) {
+            InspectorStyleSheet* newStyleSheet = bindStyleSheet(static_cast<CSSStyleSheet*>(*it));
+            if (m_frontend)
+                m_frontend->styleSheetAdded(newStyleSheet->buildObjectForStyleSheetInfo());
+        }
     }
 }
 
