@@ -22,7 +22,9 @@
 #define PrintContext_h
 
 #include <wtf/Forward.h>
+#include <wtf/HashMap.h>
 #include <wtf/Vector.h>
+#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
@@ -32,6 +34,7 @@ class FloatRect;
 class FloatSize;
 class GraphicsContext;
 class IntRect;
+class Node;
 
 class PrintContext {
 public:
@@ -80,14 +83,20 @@ public:
     static void spoolAllPagesWithBoundaries(Frame*, GraphicsContext&, const FloatSize& pageSizeInPixels);
 
 protected:
+    void outputLinkedDestinations(GraphicsContext&, Node*, const IntRect& pageRect);
+
     Frame* m_frame;
     Vector<IntRect> m_pageRects;
 
 private:
     void computePageRectsWithPageSizeInternal(const FloatSize& pageSizeInPixels, bool allowHorizontalTiling);
+    void collectLinkedDestinations(Node*);
 
     // Used to prevent misuses of begin() and end() (e.g., call end without begin).
     bool m_isPrinting;
+
+    HashMap<String, Element*> m_linkedDestinations;
+    bool m_linkedDestinationsValid;
 };
 
 }

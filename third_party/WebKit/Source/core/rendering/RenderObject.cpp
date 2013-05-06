@@ -1144,7 +1144,16 @@ void RenderObject::addPDFURLRect(GraphicsContext* context, const LayoutRect& rec
     const AtomicString& href = toElement(n)->getAttribute(hrefAttr);
     if (href.isNull())
         return;
-    context->setURLForRect(n->document()->completeURL(href), pixelSnappedIntRect(rect));
+    KURL url = n->document()->completeURL(href);
+    if (!url.isValid())
+        return;
+    if (context->supportsURLFragments() && url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, n->document()->baseURL())) {
+        String name = url.fragmentIdentifier();
+        if (document()->findAnchor(name))
+            context->setURLFragmentForRect(name, pixelSnappedIntRect(rect));
+        return;
+    }
+    context->setURLForRect(url, pixelSnappedIntRect(rect));
 }
 
 void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRect)

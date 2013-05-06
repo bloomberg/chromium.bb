@@ -378,6 +378,9 @@ namespace WebCore {
 
         void setURLForRect(const KURL&, const IntRect&);
 
+        void setURLFragmentForRect(const String& name, const IntRect&);
+        void addURLTargetAtPoint(const String& name, const IntPoint&);
+
         void concatCTM(const AffineTransform&);
         void setCTM(const AffineTransform&);
 
@@ -396,6 +399,7 @@ namespace WebCore {
         bool shouldIncludeChildWindows() const { return false; }
 
         static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle);
+        bool supportsURLFragments() { return printing(); }
 
     private:
         static bool supportsTransparencyLayers();
@@ -452,4 +456,3 @@ namespace WebCore {
 } // namespace WebCore
 
 #endif // GraphicsContext_h
-

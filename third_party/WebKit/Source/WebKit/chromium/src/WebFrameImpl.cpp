@@ -357,6 +357,8 @@ public:
         context.translate(static_cast<float>(-pageRect.x()), static_cast<float>(-pageRect.y()));
         context.clip(pageRect);
         frame()->view()->paintContents(&context, pageRect);
+        if (context.supportsURLFragments())
+            outputLinkedDestinations(context, frame()->document(), pageRect);
         context.restore();
         return scale;
     }

@@ -46,6 +46,7 @@ const float printingMaximumShrinkFactor = 2;
 PrintContext::PrintContext(Frame* frame)
     : m_frame(frame)
     , m_isPrinting(false)
+    , m_linkedDestinationsValid(false)
 {
 }
 
@@ -201,6 +202,8 @@ void PrintContext::spoolPage(GraphicsContext& ctx, int pageNumber, float width)
     ctx.translate(-pageRect.x(), -pageRect.y());
     ctx.clip(pageRect);
     m_frame->view()->paintContents(&ctx, pageRect);
+    if (ctx.supportsURLFragments())
+        outputLinkedDestinations(ctx, m_frame->document(), pageRect);
     ctx.restore();
 }
 
@@ -219,6 +222,8 @@ void PrintContext::end()
     ASSERT(m_isPrinting);
     m_isPrinting = false;
     m_frame->setPrinting(false, FloatSize(), FloatSize(), 0, AdjustViewSize);
+    m_linkedDestinations.clear();
+    m_linkedDestinationsValid = false;
 }
 
 static RenderBoxModelObject* enclosingBoxModelObject(RenderObject* object)
@@ -258,6 +263,45 @@ int PrintContext::pageNumberForElement(Element* element, const FloatSize& pageSi
             return pageNumber;
     }
     return -1;
+}
+
+void PrintContext::collectLinkedDestinations(Node* node)
+{
+    for (Node* i = node->firstChild(); i; i = i->nextSibling())
+        collectLinkedDestinations(i);
+
+    if (!node->isLink() || !node->isElementNode())
+        return;
+    const AtomicString& href = toElement(node)->getAttribute(HTMLNames::hrefAttr);
+    if (href.isNull())
+        return;
+    KURL url = node->document()->completeURL(href);
+    if (!url.isValid())
+        return;
+    if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, node->document()->baseURL())) {
+        String name = url.fragmentIdentifier();
+        Element* element = node->document()->findAnchor(name);
+        if (element)
+            m_linkedDestinations.set(name, element);
+    }
+}
+
+void PrintContext::outputLinkedDestinations(GraphicsContext& graphicsContext, Node* node, const IntRect& pageRect)
+{
+    if (!m_linkedDestinationsValid) {
+        collectLinkedDestinations(node);
+        m_linkedDestinationsValid = true;
+    }
+
+    HashMap<String, Element*>::const_iterator end = m_linkedDestinations.end();
+    for (HashMap<String, Element*>::const_iterator it = m_linkedDestinations.begin(); it != end; ++it) {
+        IntRect boundingBox = it->value->renderer()->absoluteBoundingBoxRect();
+        if (pageRect.intersects(boundingBox)) {
+            IntPoint point = boundingBox.minXMinYCorner();
+            point.clampNegativeToZero();
+            graphicsContext.addURLTargetAtPoint(it->key, point);
+        }
+    }
 }
 
 String PrintContext::pageProperty(Frame* frame, const char* propertyName, int pageNumber)

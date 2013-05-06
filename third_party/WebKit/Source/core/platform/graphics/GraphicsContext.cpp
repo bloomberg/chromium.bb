@@ -1506,6 +1506,25 @@ void GraphicsContext::setURLForRect(const KURL& link, const IntRect& destRect)
     SkAnnotateRectWithURL(platformContext()->canvas(), destRect, url.get());
 }
 
+void GraphicsContext::setURLFragmentForRect(const String& destName, const IntRect& rect)
+{
+    if (paintingDisabled())
+        return;
+
+    SkAutoDataUnref skDestName(SkData::NewWithCString(destName.utf8().data()));
+    SkAnnotateLinkToDestination(platformContext()->canvas(), rect, skDestName.get());
+}
+
+void GraphicsContext::addURLTargetAtPoint(const String& name, const IntPoint& pos)
+{
+    if (paintingDisabled())
+        return;
+
+    SkAutoDataUnref nameData(SkData::NewWithCString(name.utf8().data()));
+    SkAnnotateNamedDestination(platformContext()->canvas(),
+        SkPoint::Make(pos.x(), pos.y()), nameData);
+}
+
 void GraphicsContext::concatCTM(const AffineTransform& affine)
 {
     if (paintingDisabled())
