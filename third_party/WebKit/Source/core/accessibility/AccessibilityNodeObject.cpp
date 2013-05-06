@@ -1294,7 +1294,7 @@ String AccessibilityNodeObject::helpText() const
     return String();
 }
 
-LayoutRect AccessibilityNodeObject::boundingBoxRect() const
+LayoutRect AccessibilityNodeObject::elementRect() const
 {
     // AccessibilityNodeObjects have no mechanism yet to return a size or position.
     // For now, let's return the position of the ancestor that does have a position,
@@ -1312,11 +1312,6 @@ LayoutRect AccessibilityNodeObject::boundingBoxRect() const
     }
 
     return boundingBox;
-}
-
-LayoutRect AccessibilityNodeObject::elementRect() const
-{
-    return boundingBoxRect();
 }
 
 AccessibilityObject* AccessibilityNodeObject::parentObject() const

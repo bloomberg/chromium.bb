@@ -503,15 +503,12 @@ public:
     virtual String title() const { return String(); }
     virtual String helpText() const { return String(); }
 
-    // Position and size.
-    virtual LayoutRect boundingBoxRect() const { return LayoutRect(); }
-    IntRect pixelSnappedBoundingBoxRect() const { return pixelSnappedIntRect(boundingBoxRect()); }
-    virtual LayoutRect elementRect() const = 0;
-    IntRect pixelSnappedElementRect() const { return pixelSnappedIntRect(elementRect()); }
-    LayoutSize size() const { return elementRect().size(); }
-    IntSize pixelSnappedSize() const { return elementRect().pixelSnappedSize(); }
+    // Location and click point in frame-relative coordinates.
+    virtual LayoutRect elementRect() const { return LayoutRect(); }
+    virtual void checkCachedElementRect() const { }
+    virtual void updateCachedElementRect() const { }
+    virtual void markCachedElementRectDirty() const;
     virtual IntPoint clickPoint();
-    static IntRect boundingBoxForQuads(RenderObject*, const Vector<FloatQuad>&);
 
     // Hit testing.
     // Called on the root AX object to return the deepest available element.
@@ -674,6 +671,7 @@ public:
     static bool isARIAInput(AccessibilityRole);
     static AccessibilityObject* anchorElementForNode(Node*);
     static AccessibilityRole ariaRoleToWebCoreRole(const String&);
+    static IntRect boundingBoxForQuads(RenderObject*, const Vector<FloatQuad>&);
 
 protected:
     AXID m_id;

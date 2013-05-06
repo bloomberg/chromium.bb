@@ -223,6 +223,7 @@ static RenderBoxModelObject* nextContinuation(RenderObject* renderer)
 AccessibilityRenderObject::AccessibilityRenderObject(RenderObject* renderer)
     : AccessibilityNodeObject(renderer->node())
     , m_renderer(renderer)
+    , m_cachedElementRectDirty(true)
 {
 #ifndef NDEBUG
     m_renderer->setHasAXObject(true);
@@ -241,11 +242,17 @@ AccessibilityRenderObject::~AccessibilityRenderObject()
 
 LayoutRect AccessibilityRenderObject::elementRect() const
 {
-    // a checkbox or radio button should encompass its label
-    if (isCheckboxOrRadio())
-        return checkboxOrRadioRect();
+    if (!m_renderer)
+        return LayoutRect();
+    if (!m_renderer->isBox())
+        return computeElementRect();
 
-    return boundingBoxRect();
+    for (const AccessibilityObject* obj = this; obj; obj = obj->parentObject())
+        obj->checkCachedElementRect();
+    for (const AccessibilityObject* obj = this; obj; obj = obj->parentObject())
+        obj->updateCachedElementRect();
+
+    return m_cachedElementRect;
 }
 
 int AccessibilityRenderObject::layoutCount() const
@@ -1153,20 +1160,6 @@ const String& AccessibilityRenderObject::actionVerb() const
     }
 }
 
-LayoutRect AccessibilityRenderObject::checkboxOrRadioRect() const
-{
-    if (!m_renderer)
-        return LayoutRect();
-
-    HTMLLabelElement* label = labelForElement(toElement(m_renderer->node()));
-    if (!label || !label->renderer())
-        return boundingBoxRect();
-
-    LayoutRect labelRect = axObjectCache()->getOrCreate(label)->elementRect();
-    labelRect.unite(boundingBoxRect());
-    return labelRect;
-}
-
 void AccessibilityRenderObject::selectedChildren(AccessibilityChildrenVector& result)
 {
     ASSERT(result.isEmpty());
@@ -1533,45 +1526,68 @@ String AccessibilityRenderObject::helpText() const
 // Position and size.
 //
 
-LayoutRect AccessibilityRenderObject::boundingBoxRect() const
+void AccessibilityRenderObject::checkCachedElementRect() const
 {
-    RenderObject* obj = m_renderer;
+    if (m_cachedElementRectDirty)
+        return;
 
-    if (!obj)
-        return LayoutRect();
+    if (!m_renderer)
+        return;
 
-    if (obj->node()) // If we are a continuation, we want to make sure to use the primary renderer.
-        obj = obj->node()->renderer();
+    if (!m_renderer->isBox()) {
+        AccessibilityNodeObject::checkCachedElementRect();
+        return;
+    }
 
-    // absoluteFocusRingQuads will query the hierarchy below this element, which for large webpages can be very slow.
-    // For a web area, which will have the most elements of any element, absoluteQuads should be used.
-    // We should also use absoluteQuads for SVG elements, otherwise transforms won't be applied.
-    Vector<FloatQuad> quads;
-    bool isSVGRoot = false;
-#if ENABLE(SVG)
-    if (obj->isSVGRoot())
-        isSVGRoot = true;
-#endif
-    if (obj->isText())
-        toRenderText(obj)->absoluteQuads(quads, 0, RenderText::ClipToEllipsis);
-    else if (isWebArea() || isSeamlessWebArea() || isSVGRoot)
-        obj->absoluteQuads(quads);
-    else
-        obj->absoluteFocusRingQuads(quads);
+    bool dirty = false;
+    RenderBox* box = toRenderBox(m_renderer);
+    if (box->frameRect() != m_cachedFrameRect)
+        dirty = true;
 
-    LayoutRect result = boundingBoxForQuads(obj, quads);
+    if (box->canBeScrolledAndHasScrollableArea()) {
+        ScrollableArea* scrollableArea = box->layer();
+        if (scrollableArea->scrollPosition() != m_cachedScrollPosition)
+            dirty = true;
+    }
 
-#if ENABLE(SVG)
-    Document* document = this->document();
-    if (document && document->isSVGDocument())
-        offsetBoundingBoxForRemoteSVGElement(result);
-#endif
+    if (dirty)
+        markCachedElementRectDirty();
+}
 
-    // The size of the web area should be the content size, not the clipped size.
-    if ((isWebArea() || isSeamlessWebArea()) && obj->frame()->view())
-        result.setSize(obj->frame()->view()->contentsSize());
+void AccessibilityRenderObject::updateCachedElementRect() const
+{
+    if (!m_cachedElementRectDirty)
+        return;
 
-    return result;
+    if (!m_renderer)
+        return;
+
+    if (!m_renderer->isBox()) {
+        AccessibilityNodeObject::updateCachedElementRect();
+        return;
+    }
+
+    RenderBox* box = toRenderBox(m_renderer);
+    m_cachedFrameRect = box->frameRect();
+
+    if (box->canBeScrolledAndHasScrollableArea()) {
+        ScrollableArea* scrollableArea = box->layer();
+        m_cachedScrollPosition = scrollableArea->scrollPosition();
+    }
+
+    m_cachedElementRect = computeElementRect();
+    m_cachedElementRectDirty = false;
+}
+
+void AccessibilityRenderObject::markCachedElementRectDirty() const
+{
+    if (m_cachedElementRectDirty)
+        return;
+
+    // Marks children recursively, if this element changed.
+    m_cachedElementRectDirty = true;
+    for (AccessibilityObject* child = firstChild(); child; child = child->nextSibling())
+        child->markCachedElementRectDirty();
 }
 
 IntPoint AccessibilityRenderObject::clickPoint()
@@ -2889,7 +2905,7 @@ AccessibilityObject* AccessibilityRenderObject::remoteSVGElementHitTest(const In
     if (!remote)
         return 0;
 
-    IntSize offset = point - roundedIntPoint(boundingBoxRect().location());
+    IntSize offset = point - roundedIntPoint(elementRect().location());
     return remote->accessibilityHitTest(IntPoint(offset));
 }
 
@@ -2899,7 +2915,7 @@ void AccessibilityRenderObject::offsetBoundingBoxForRemoteSVGElement(LayoutRect&
 {
     for (AccessibilityObject* parent = parentObject(); parent; parent = parent->parentObject()) {
         if (parent->isAccessibilitySVGRoot()) {
-            rect.moveBy(parent->parentObject()->boundingBoxRect().location());
+            rect.moveBy(parent->parentObject()->elementRect().location());
             break;
         }
     }
@@ -3127,6 +3143,56 @@ bool AccessibilityRenderObject::inheritsPresentationalRole() const
     }
 
     return false;
+}
+
+LayoutRect AccessibilityRenderObject::computeElementRect() const
+{
+    RenderObject* obj = m_renderer;
+
+    if (!obj)
+        return LayoutRect();
+
+    if (obj->node()) // If we are a continuation, we want to make sure to use the primary renderer.
+        obj = obj->node()->renderer();
+
+    // absoluteFocusRingQuads will query the hierarchy below this element, which for large webpages can be very slow.
+    // For a web area, which will have the most elements of any element, absoluteQuads should be used.
+    // We should also use absoluteQuads for SVG elements, otherwise transforms won't be applied.
+    Vector<FloatQuad> quads;
+    bool isSVGRoot = false;
+#if ENABLE(SVG)
+    if (obj->isSVGRoot())
+        isSVGRoot = true;
+#endif
+    if (obj->isText())
+        toRenderText(obj)->absoluteQuads(quads, 0, RenderText::ClipToEllipsis);
+    else if (isWebArea() || isSeamlessWebArea() || isSVGRoot)
+        obj->absoluteQuads(quads);
+    else
+        obj->absoluteFocusRingQuads(quads);
+
+    LayoutRect result = boundingBoxForQuads(obj, quads);
+
+#if ENABLE(SVG)
+    Document* document = this->document();
+    if (document && document->isSVGDocument())
+        offsetBoundingBoxForRemoteSVGElement(result);
+#endif
+
+    // The size of the web area should be the content size, not the clipped size.
+    if ((isWebArea() || isSeamlessWebArea()) && obj->frame()->view())
+        result.setSize(obj->frame()->view()->contentsSize());
+
+    // Checkboxes and radio buttons include their label as part of their rect.
+    if (isCheckboxOrRadio()) {
+        HTMLLabelElement* label = labelForElement(toElement(m_renderer->node()));
+        if (label && !label->renderer()) {
+            LayoutRect labelRect = axObjectCache()->getOrCreate(label)->elementRect();
+            result.unite(labelRect);
+        }
+    }
+
+    return result;
 }
 
 } // namespace WebCore
