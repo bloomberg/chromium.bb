@@ -13,10 +13,6 @@
 
 namespace {
 
-// URI label for a lazily decoded SkPixelRef.
-const char kLabelLazyDecoded[] = "lazy";
-const int kLabelLazyDecodedLength = 4;
-
 bool isSolidColorPaint(const SkPaint& paint) {
   SkXfermode::Mode xferMode;
 
@@ -112,52 +108,6 @@ void AnalysisDevice::setForceNotTransparent(bool flag) {
     isTransparent_ = false;
 }
 
-void AnalysisDevice::addPixelRefIfLazy(SkPixelRef* pixelRef) {
-  if (!pixelRef)
-    return;
-
-  uint32_t genID = pixelRef->getGenerationID();
-
-  // If this ID exists (whether it is lazy pixel ref or not),
-  // we can return early.
-  std::pair<IdSet::iterator, bool> insertionResult =
-      existingPixelRefIDs_.insert(genID);
-  if (!insertionResult.second)
-    return;
-
-  if (pixelRef->getURI() &&
-      !strncmp(pixelRef->getURI(),
-               kLabelLazyDecoded,
-               kLabelLazyDecodedLength)) {
-    lazyPixelRefs_.push_back(static_cast<skia::LazyPixelRef*>(pixelRef));
-  }
-}
-
-void AnalysisDevice::addBitmap(const SkBitmap& bitmap) {
-  addPixelRefIfLazy(bitmap.pixelRef());
-}
-
-void AnalysisDevice::addBitmapFromPaint(const SkPaint& paint) {
-  SkShader* shader = paint.getShader();
-  if (shader) {
-    SkBitmap bitmap;
-    // Check whether the shader is a gradient in order to short-circuit
-    // call to asABitmap to prevent generation of bitmaps from
-    // gradient shaders, which implement asABitmap.
-    if (SkShader::kNone_GradientType == shader->asAGradient(NULL) &&
-        SkShader::kNone_BitmapType != shader->asABitmap(&bitmap, NULL, NULL)) {
-        addPixelRefIfLazy(bitmap.pixelRef());
-    }
-  }
-}
-
-void AnalysisDevice::consumeLazyPixelRefs(LazyPixelRefList* pixelRefs) {
-  DCHECK(pixelRefs);
-  DCHECK(pixelRefs->empty());
-  lazyPixelRefs_.swap(*pixelRefs);
-  existingPixelRefIDs_.clear();
-}
-
 void AnalysisDevice::clear(SkColor color) {
   isTransparent_ = (!isForcedNotTransparent_ && SkColorGetA(color) == 0);
   hasText_ = false;
@@ -172,7 +122,6 @@ void AnalysisDevice::clear(SkColor color) {
 }
 
 void AnalysisDevice::drawPaint(const SkDraw&, const SkPaint& paint) {
-  addBitmapFromPaint(paint);
   isSolidColor_ =
       (isSolidColor_ && isSolidColorPaint(paint) && paint.getColor() == color_);
   isTransparent_ = false;
@@ -181,15 +130,12 @@ void AnalysisDevice::drawPaint(const SkDraw&, const SkPaint& paint) {
 void AnalysisDevice::drawPoints(const SkDraw&, SkCanvas::PointMode mode,
                           size_t count, const SkPoint[],
                           const SkPaint& paint) {
-  addBitmapFromPaint(paint);
   isSolidColor_ = false;
   isTransparent_ = false;
 }
 
 void AnalysisDevice::drawRect(const SkDraw& draw, const SkRect& rect,
                         const SkPaint& paint) {
-  addBitmapFromPaint(paint);
-
   bool doesCoverCanvas = isFullQuad(draw,
                                     SkRect::MakeWH(width(), height()),
                                     rect);
@@ -239,7 +185,6 @@ void AnalysisDevice::drawRect(const SkDraw& draw, const SkRect& rect,
 
 void AnalysisDevice::drawOval(const SkDraw&, const SkRect& oval,
                         const SkPaint& paint) {
-  addBitmapFromPaint(paint);
   isSolidColor_ = false;
   isTransparent_ = false;
 }
@@ -248,7 +193,6 @@ void AnalysisDevice::drawPath(const SkDraw&, const SkPath& path,
                         const SkPaint& paint,
                         const SkMatrix* prePathMatrix,
                         bool pathIsMutable ) {
-  addBitmapFromPaint(paint);
   isSolidColor_ = false;
   isTransparent_ = false;
 }
@@ -258,14 +202,12 @@ void AnalysisDevice::drawBitmap(const SkDraw&, const SkBitmap& bitmap,
                           const SkMatrix& matrix, const SkPaint& paint) {
   isSolidColor_ = false;
   isTransparent_ = false;
-  addBitmap(bitmap);
 }
 
 void AnalysisDevice::drawSprite(const SkDraw&, const SkBitmap& bitmap,
                           int x, int y, const SkPaint& paint) {
   isSolidColor_ = false;
   isTransparent_ = false;
-  addBitmap(bitmap);
 }
 
 void AnalysisDevice::drawBitmapRect(const SkDraw& draw, const SkBitmap& bitmap,
@@ -275,13 +217,11 @@ void AnalysisDevice::drawBitmapRect(const SkDraw& draw, const SkBitmap& bitmap,
   // but reset solid color to false.
   drawRect(draw, dst, paint);
   isSolidColor_ = false;
-  addBitmap(bitmap);
 }
 
 
 void AnalysisDevice::drawText(const SkDraw&, const void* text, size_t len,
                         SkScalar x, SkScalar y, const SkPaint& paint) {
-  addBitmapFromPaint(paint);
   isSolidColor_ = false;
   isTransparent_ = false;
   hasText_ = true;
@@ -291,7 +231,6 @@ void AnalysisDevice::drawPosText(const SkDraw& draw, const void* text,
                            size_t len,
                            const SkScalar pos[], SkScalar constY,
                            int scalarsPerPos, const SkPaint& paint) {
-  addBitmapFromPaint(paint);
   isSolidColor_ = false;
   isTransparent_ = false;
   hasText_ = true;
@@ -301,7 +240,6 @@ void AnalysisDevice::drawTextOnPath(const SkDraw&, const void* text,
                               size_t len,
                               const SkPath& path, const SkMatrix* matrix,
                               const SkPaint& paint) {
-  addBitmapFromPaint(paint);
   isSolidColor_ = false;
   isTransparent_ = false;
   hasText_ = true;
@@ -312,7 +250,6 @@ void AnalysisDevice::drawPosTextOnPath(const SkDraw& draw, const void* text,
                                  size_t len,
                                  const SkPoint pos[], const SkPaint& paint,
                                  const SkPath& path, const SkMatrix* matrix) {
-  addBitmapFromPaint(paint);
   isSolidColor_ = false;
   isTransparent_ = false;
   hasText_ = true;
@@ -325,7 +262,6 @@ void AnalysisDevice::drawVertices(const SkDraw&, SkCanvas::VertexMode,
                             const SkColor colors[], SkXfermode* xmode,
                             const uint16_t indices[], int indexCount,
                             const SkPaint& paint) {
-  addBitmapFromPaint(paint);
   isSolidColor_ = false;
   isTransparent_ = false;
 }
@@ -356,10 +292,6 @@ bool AnalysisCanvas::getColorIfSolid(SkColor* color) const {
 
 bool AnalysisCanvas::hasText() const {
   return (static_cast<AnalysisDevice*>(getDevice()))->hasText();
-}
-
-void AnalysisCanvas::consumeLazyPixelRefs(LazyPixelRefList* pixelRefs) {
-  static_cast<AnalysisDevice*>(getDevice())->consumeLazyPixelRefs(pixelRefs);
 }
 
 bool AnalysisCanvas::clipRect(const SkRect& rect, SkRegion::Op op,
