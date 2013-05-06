@@ -443,37 +443,6 @@ int TCPClientSocketLibevent::Read(IOBuffer* buf,
   DCHECK(!callback.is_null());
   DCHECK_GT(buf_len, 0);
 
-  if (use_tcp_fastopen_ &&
-      (fast_open_status_ == FAST_OPEN_FAST_CONNECT_RETURN ||
-       fast_open_status_ == FAST_OPEN_SLOW_CONNECT_RETURN)) {
-    DCHECK_NE(FAST_OPEN_STATUS_UNKNOWN, fast_open_status_);
-    bool getsockopt_success(false);
-    bool server_acked_data(false);
-#if defined(TCP_INFO)
-    // Probe to see the if the socket used TCP Fast Open.
-    tcp_info info;
-    socklen_t info_len = sizeof(tcp_info);
-    getsockopt_success =
-        getsockopt(socket_, IPPROTO_TCP, TCP_INFO, &info, &info_len) == 0 &&
-        info_len == sizeof(tcp_info);
-    server_acked_data = getsockopt_success &&
-        (info.tcpi_options & TCPI_OPT_SYN_DATA);
-#endif
-    if (getsockopt_success) {
-      if (fast_open_status_ == FAST_OPEN_FAST_CONNECT_RETURN) {
-        fast_open_status_ = (server_acked_data ? FAST_OPEN_SYN_DATA_ACK :
-                             FAST_OPEN_SYN_DATA_NACK);
-      } else {
-        fast_open_status_ = (server_acked_data ? FAST_OPEN_NO_SYN_DATA_ACK :
-                             FAST_OPEN_NO_SYN_DATA_NACK);
-      }
-    } else {
-      fast_open_status_ = (fast_open_status_ == FAST_OPEN_FAST_CONNECT_RETURN ?
-                           FAST_OPEN_SYN_DATA_FAILED :
-                           FAST_OPEN_NO_SYN_DATA_FAILED);
-    }
-  }
-
   int nread = HANDLE_EINTR(read(socket_, buf->data(), buf_len));
   if (nread >= 0) {
     base::StatsCounter read_bytes("tcp.read_bytes");
@@ -482,6 +451,7 @@ int TCPClientSocketLibevent::Read(IOBuffer* buf,
       use_history_.set_was_used_to_convey_data();
     net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, nread,
                                   buf->data());
+    RecordFastOpenStatus();
     return nread;
   }
   if (errno != EAGAIN && errno != EWOULDBLOCK) {
@@ -623,6 +593,7 @@ bool TCPClientSocketLibevent::SetNoDelay(bool no_delay) {
 }
 
 void TCPClientSocketLibevent::ReadWatcher::OnFileCanReadWithoutBlocking(int) {
+  socket_->RecordFastOpenStatus();
   if (!socket_->read_callback_.is_null())
     socket_->DidCompleteRead();
 }
@@ -789,6 +760,39 @@ int TCPClientSocketLibevent::GetLocalAddress(IPEndPoint* address) const {
     return ERR_FAILED;
 
   return OK;
+}
+
+void TCPClientSocketLibevent::RecordFastOpenStatus() {
+  if (use_tcp_fastopen_ &&
+      (fast_open_status_ == FAST_OPEN_FAST_CONNECT_RETURN ||
+       fast_open_status_ == FAST_OPEN_SLOW_CONNECT_RETURN)) {
+    DCHECK_NE(FAST_OPEN_STATUS_UNKNOWN, fast_open_status_);
+    bool getsockopt_success(false);
+    bool server_acked_data(false);
+#if defined(TCP_INFO)
+    // Probe to see the if the socket used TCP Fast Open.
+    tcp_info info;
+    socklen_t info_len = sizeof(tcp_info);
+    getsockopt_success =
+        getsockopt(socket_, IPPROTO_TCP, TCP_INFO, &info, &info_len) == 0 &&
+        info_len == sizeof(tcp_info);
+    server_acked_data = getsockopt_success &&
+        (info.tcpi_options & TCPI_OPT_SYN_DATA);
+#endif
+    if (getsockopt_success) {
+      if (fast_open_status_ == FAST_OPEN_FAST_CONNECT_RETURN) {
+        fast_open_status_ = (server_acked_data ? FAST_OPEN_SYN_DATA_ACK :
+                             FAST_OPEN_SYN_DATA_NACK);
+      } else {
+        fast_open_status_ = (server_acked_data ? FAST_OPEN_NO_SYN_DATA_ACK :
+                             FAST_OPEN_NO_SYN_DATA_NACK);
+      }
+    } else {
+      fast_open_status_ = (fast_open_status_ == FAST_OPEN_FAST_CONNECT_RETURN ?
+                           FAST_OPEN_SYN_DATA_FAILED :
+                           FAST_OPEN_NO_SYN_DATA_FAILED);
+    }
+  }
 }
 
 const BoundNetLog& TCPClientSocketLibevent::NetLog() const {

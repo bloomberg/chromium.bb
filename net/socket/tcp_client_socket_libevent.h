@@ -185,6 +185,9 @@ class NET_EXPORT_PRIVATE TCPClientSocketLibevent : public StreamSocket,
   // Internal function to write to a socket.
   int InternalWrite(IOBuffer* buf, int buf_len);
 
+  // Called when the socket is known to be in a connected state.
+  void RecordFastOpenStatus();
+
   int socket_;
 
   // Local IP address and port we are bound to. Set to NULL if Bind()
