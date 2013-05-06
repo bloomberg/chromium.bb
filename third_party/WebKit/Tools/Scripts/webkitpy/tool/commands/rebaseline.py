@@ -186,18 +186,19 @@ class RebaselineTest(AbstractRebaseliningCommand):
         self._save_baseline(self._tool.web.get_binary(source_baseline, convert_404_to_None=True), target_baseline, baseline_directory, test_name, suffix)
 
     def _rebaseline_test_and_update_expectations(self, options):
-        port = self._tool.port_factory.get_from_builder_name(options.builder)
-        if (port.reference_files(options.test)):
-            _log.warning("Cannot rebaseline reftest: %s", options.test)
-            return
-
         if options.results_directory:
             results_url = 'file://' + options.results_directory
         else:
             results_url = self._results_url(options.builder)
         self._baseline_suffix_list = options.suffixes.split(',')
+
         for suffix in self._baseline_suffix_list:
-            self._rebaseline_test(options.builder, options.test, options.move_overwritten_baselines_to, suffix, results_url)
+            port = self._tool.port_factory.get_from_builder_name(options.builder)
+            for test_name in port.tests([options.test]):
+                if (port.reference_files(test_name)):
+                    _log.warning("Cannot rebaseline reftest: %s", test_name)
+                    return
+                self._rebaseline_test(options.builder, test_name, options.move_overwritten_baselines_to, suffix, results_url)
         self._scm_changes['remove-lines'].append({'builder': options.builder, 'test': options.test})
 
     def execute(self, options, args, tool):

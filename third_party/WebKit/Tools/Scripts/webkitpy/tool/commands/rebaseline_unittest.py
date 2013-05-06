@@ -112,15 +112,25 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
         self.assertItemsEqual(self.tool.web.urls_fetched, [self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
 
     def test_rebaseline_test_with_results_directory(self):
+        self._write("userscripts/another-test.html", "test data")
         self._write(self.lion_expectations_path, "Bug(x) [ Mac ] userscripts/another-test.html [ ImageOnlyFailure ]\nbug(z) [ Linux ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
         self.options.results_directory = '/tmp'
         self.command._rebaseline_test_and_update_expectations(self.options)
         self.assertItemsEqual(self.tool.web.urls_fetched, ['file:///tmp/userscripts/another-test-actual.txt'])
 
     def test_rebaseline_reftest(self):
+        self._write("userscripts/another-test.html", "test data")
         self._write("userscripts/another-test-expected.html", "generic result")
         OutputCapture().assert_outputs(self, self.command._rebaseline_test_and_update_expectations, args=[self.options],
             expected_logs="Cannot rebaseline reftest: userscripts/another-test.html\n")
+
+    def test_rebaseline_directory(self):
+        self._write("userscripts/first-test.html", "test data")
+        self._write("userscripts/second-test.html", "test data")
+        self.options.test = "userscripts"
+        self.command._rebaseline_test_and_update_expectations(self.options)
+        expected_fetched_urls = [self.WEB_PREFIX + '/userscripts/first-test-actual.txt', self.WEB_PREFIX + '/userscripts/second-test-actual.txt']
+        self.assertItemsEqual(self.tool.web.urls_fetched, expected_fetched_urls)
 
     def test_rebaseline_test_and_print_scm_changes(self):
         self.command._print_scm_changes = True
