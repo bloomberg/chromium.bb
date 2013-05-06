@@ -43,52 +43,44 @@ namespace WebKit {
 
 void WebRuntimeFeatures::enableStableFeatures(bool enable)
 {
-    // FIXME: Actually respect the enable arg once the 3-part
-    // change dance with content/ is over.
-    ASSERT_UNUSED(enable, enable);
-
-    enableApplicationCache(true);
-    enableDatabase(true);
-    enableDeviceOrientation(true);
-    enableDirectoryUpload(true);
-    enableEncryptedMedia(true);
-    enableFileSystem(true);
-    enableFullScreenAPI(true);
-    enableGamepad(true);
-    enableGeolocation(true);
-    enableIndexedDatabase(true);
-    enableInputTypeWeek(true);
-    enableJavaScriptI18NAPI(true);
-    enableLocalStorage(true);
-    enableMediaPlayer(true);
-    enableMediaSource(true);
-    enableMediaStream(true);
-    enableNotifications(true);
-    enablePeerConnection(true);
-    enableQuota(true);
-    enableScriptedSpeech(true);
-    enableSessionStorage(true);
-    enableSpeechInput(true);
-    enableTouch(true);
-    enableWebAudio(true);
-    enableVideoTrack(true);
+    enableApplicationCache(enable);
+    enableDatabase(enable);
+    enableDeviceOrientation(enable);
+    enableDirectoryUpload(enable);
+    enableEncryptedMedia(enable);
+    enableFileSystem(enable);
+    enableFullScreenAPI(enable);
+    enableGamepad(enable);
+    enableGeolocation(enable);
+    enableIndexedDatabase(enable);
+    enableInputTypeWeek(enable);
+    enableJavaScriptI18NAPI(enable);
+    enableLocalStorage(enable);
+    enableMediaPlayer(enable);
+    enableMediaSource(enable);
+    enableMediaStream(enable);
+    enableNotifications(enable);
+    enablePeerConnection(enable);
+    enableQuota(enable);
+    enableScriptedSpeech(enable);
+    enableSessionStorage(enable);
+    enableSpeechInput(enable);
+    enableTouch(enable);
+    enableWebAudio(enable);
+    enableVideoTrack(enable);
 }
 
 void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
 {
-    // FIXME: Actually respect the enable arg once the 3-part
-    // change dance with content/ is over.
-    ASSERT_UNUSED(enable, enable);
-
-    enableCSSCompositing(true);
-    enableCSSExclusions(true);
-    enableCSSRegions(true);
-    enableCustomDOMElements(true);
-    enableDialogElement(true);
-    enableExperimentalContentSecurityPolicyFeatures(true);
-    enableFontLoadEvents(true);
-    enableSeamlessIFrames(true);
-    enableStyleScoped(true);
+    enableCSSCompositing(enable);
+    enableCSSExclusions(enable);
+    enableCSSRegions(enable);
+    enableCustomDOMElements(enable);
+    enableDialogElement(enable);
+    enableExperimentalContentSecurityPolicyFeatures(enable);
+    enableFontLoadEvents(enable);
+    enableSeamlessIFrames(enable);
+    enableStyleScoped(enable);
 }
 
 void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
@@ -96,15 +88,15 @@ void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
     // This method should be used by ContentShell
     // to enable features which should be enabled for
     // the layout tests but are not yet "experimental".
-    enableCanvasPath(true);
-    enableEncryptedMedia(true);
-    enableExperimentalCanvasFeatures(true);
-    enableExperimentalShadowDOM(true);
-    enableFontLoadEvents(true);
-    enableInputTypeDateTime(true);
-    enableRequestAutocomplete(true);
-    enableScriptedSpeech(true);
-    enableWebMIDI(true);
+    enableCanvasPath(enable);
+    enableEncryptedMedia(enable);
+    enableExperimentalCanvasFeatures(enable);
+    enableExperimentalShadowDOM(enable);
+    enableFontLoadEvents(enable);
+    enableInputTypeDateTime(enable);
+    enableRequestAutocomplete(enable);
+    enableScriptedSpeech(enable);
+    enableWebMIDI(enable);
 }
 
 void WebRuntimeFeatures::enableDatabase(bool enable)
