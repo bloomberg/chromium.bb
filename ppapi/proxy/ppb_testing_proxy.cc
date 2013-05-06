@@ -51,16 +51,17 @@ PP_Bool ReadImageData(PP_Resource graphics_2d,
 }
 
 void RunMessageLoop(PP_Instance instance) {
-  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
   CHECK(PpapiGlobals::Get()->GetMainThreadMessageLoop()->
-            BelongsToCurrentThread());
-  MessageLoop::current()->Run();
+      BelongsToCurrentThread());
+  base::MessageLoop::current()->Run();
 }
 
 void QuitMessageLoop(PP_Instance instance) {
   CHECK(PpapiGlobals::Get()->GetMainThreadMessageLoop()->
             BelongsToCurrentThread());
-  MessageLoop::current()->QuitNow();
+  base::MessageLoop::current()->QuitNow();
 }
 
 uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {

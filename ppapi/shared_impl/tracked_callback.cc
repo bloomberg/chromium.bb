@@ -157,7 +157,7 @@ void TrackedCallback::PostRun(int32_t result) {
     // classes protect against having a null target_loop_ otherwise).
     DCHECK(IsMainThread());
     DCHECK(PpapiGlobals::Get()->IsHostGlobals());
-    MessageLoop::current()->PostTask(FROM_HERE, callback_closure);
+    base::MessageLoop::current()->PostTask(FROM_HERE, callback_closure);
   } else {
     target_loop_->PostClosure(FROM_HERE, callback_closure, 0);
   }

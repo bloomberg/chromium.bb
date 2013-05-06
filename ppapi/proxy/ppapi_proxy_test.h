@@ -177,7 +177,7 @@ class PluginProxyTest : public PluginProxyTestHarness, public testing::Test {
   virtual void SetUp();
   virtual void TearDown();
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 // This class provides support for multi-thread testing. A secondary thread is
@@ -301,7 +301,7 @@ class HostProxyTest : public HostProxyTestHarness, public testing::Test {
   virtual void SetUp();
   virtual void TearDown();
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 // Use this base class to test both sides of a proxy.
@@ -339,7 +339,7 @@ class TwoWayTest : public testing::Test {
   // The plugin side of the proxy runs on its own thread.
   base::Thread plugin_thread_;
   // The message loop for the main (host) thread.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   // Aliases for the host and plugin harnesses; if we're testing a PPP
   // interface, remote_harness will point to plugin_, and local_harness

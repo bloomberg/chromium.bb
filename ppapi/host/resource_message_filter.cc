@@ -17,9 +17,8 @@ namespace host {
 
 ResourceMessageFilter::ResourceMessageFilter()
     : reply_thread_message_loop_proxy_(
-           MessageLoop::current()->message_loop_proxy()),
-      resource_host_(NULL) {
-}
+          base::MessageLoop::current()->message_loop_proxy()),
+      resource_host_(NULL) {}
 
 ResourceMessageFilter::ResourceMessageFilter(
     scoped_refptr<base::MessageLoopProxy> reply_thread_message_loop_proxy)

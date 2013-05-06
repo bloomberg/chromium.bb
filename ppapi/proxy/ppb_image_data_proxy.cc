@@ -275,11 +275,11 @@ void ImageDataCache::Add(ImageData* image_data) {
   cache_[image_data->pp_instance()].Add(image_data);
 
   // Schedule a timer to invalidate this entry.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       RunWhileLocked(base::Bind(&ImageDataCache::OnTimer,
-                     weak_factory_.GetWeakPtr(),
-                     image_data->pp_instance())),
+                                weak_factory_.GetWeakPtr(),
+                                image_data->pp_instance())),
       base::TimeDelta::FromSeconds(kMaxAgeSeconds));
 }
 

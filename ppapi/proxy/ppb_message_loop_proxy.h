@@ -70,7 +70,7 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
   // that it's created on the thread it will run on. NULL for the main thread
   // loop, since that's owned by somebody else. This is needed for Run and Quit.
   // Any time we post tasks, we should post them using loop_proxy_.
-  scoped_ptr<MessageLoop> loop_;
+  scoped_ptr<base::MessageLoop> loop_;
   scoped_refptr<base::MessageLoopProxy> loop_proxy_;
 
   // Number of invocations of Run currently on the stack.

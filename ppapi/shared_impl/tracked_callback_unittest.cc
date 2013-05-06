@@ -20,8 +20,7 @@ namespace {
 class TrackedCallbackTest : public testing::Test {
  public:
   TrackedCallbackTest()
-      : message_loop_(MessageLoop::TYPE_DEFAULT),
-        pp_instance_(1234) {}
+      : message_loop_(base::MessageLoop::TYPE_DEFAULT), pp_instance_(1234) {}
 
   PP_Instance pp_instance() const { return pp_instance_; }
 
@@ -33,7 +32,7 @@ class TrackedCallbackTest : public testing::Test {
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   TestGlobals globals_;
   PP_Instance pp_instance_;
 };
@@ -220,18 +219,18 @@ TEST_F(CallbackResourceTest, AbortOnNoRef) {
   // Kill resource #1, spin the message loop to run posted calls, and check that
   // things are in the expected states.
   resource_tracker->ReleaseResource(resource_1_id);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   resource_1->CheckFinalState();
   resource_2->CheckIntermediateState();
 
   // Kill resource #2.
   resource_tracker->ReleaseResource(resource_2_id);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   resource_1->CheckFinalState();
   resource_2->CheckFinalState();
 
   // This shouldn't be needed, but make sure there are no stranded tasks.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // Test that "resurrecting" a resource (getting a new ID for a |Resource|)
@@ -247,21 +246,21 @@ TEST_F(CallbackResourceTest, Resurrection) {
   // Unref it, spin the message loop to run posted calls, and check that things
   // are in the expected states.
   resource_tracker->ReleaseResource(resource_id);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   resource->CheckFinalState();
 
   // "Resurrect" it and check that the callbacks are still dead.
   PP_Resource new_resource_id = resource->GetReference();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   resource->CheckFinalState();
 
   // Unref it again and do the same.
   resource_tracker->ReleaseResource(new_resource_id);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   resource->CheckFinalState();
 
   // This shouldn't be needed, but make sure there are no stranded tasks.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace ppapi

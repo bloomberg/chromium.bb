@@ -86,7 +86,7 @@ int32_t MessageLoopResource::AttachToCurrentThread() {
   AddRef();
   slot->Set(this);
 
-  loop_.reset(new MessageLoop(MessageLoop::TYPE_DEFAULT));
+  loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
   loop_proxy_ = base::MessageLoopProxy::current();
 
   // Post all pending work to the message loop.
@@ -106,8 +106,8 @@ int32_t MessageLoopResource::Run() {
     return PP_ERROR_INPROGRESS;
 
   nested_invocations_++;
-  CallWhileUnlocked(base::Bind(&MessageLoop::Run,
-                               base::Unretained(loop_.get())));
+  CallWhileUnlocked(
+      base::Bind(&base::MessageLoop::Run, base::Unretained(loop_.get())));
   nested_invocations_--;
 
   if (should_destroy_ && nested_invocations_ == 0) {
@@ -141,7 +141,7 @@ int32_t MessageLoopResource::PostQuit(PP_Bool should_destroy) {
   if (IsCurrent() && nested_invocations_ > 0)
     loop_->Quit();
   else
-    PostClosure(FROM_HERE, MessageLoop::QuitClosure(), 0);
+    PostClosure(FROM_HERE, base::MessageLoop::QuitClosure(), 0);
   return PP_OK;
 }
 

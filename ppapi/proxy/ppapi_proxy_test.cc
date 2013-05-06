@@ -537,7 +537,7 @@ TwoWayTest::~TwoWayTest() {
 
 void TwoWayTest::SetUp() {
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.StartWithOptions(options);
   plugin_thread_.Start();
 

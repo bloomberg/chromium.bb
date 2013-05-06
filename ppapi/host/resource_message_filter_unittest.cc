@@ -51,7 +51,7 @@ class MyResourceHost : public ResourceHost {
 
   const IPC::Message& last_handled_msg() const { return last_handled_msg_; }
   const IPC::Message& last_reply_msg() const { return last_reply_msg_; }
-  MessageLoop* last_reply_message_loop() const {
+  base::MessageLoop* last_reply_message_loop() const {
     return last_reply_message_loop_;
   }
 
@@ -74,7 +74,7 @@ class MyResourceHost : public ResourceHost {
   virtual void SendReply(const ReplyMessageContext& context,
                          const IPC::Message& msg) OVERRIDE {
     last_reply_msg_ = msg;
-    last_reply_message_loop_ = MessageLoop::current();
+    last_reply_message_loop_ = base::MessageLoop::current();
     g_handler_completion.Signal();
   }
 
@@ -84,7 +84,7 @@ class MyResourceHost : public ResourceHost {
 
   IPC::Message last_handled_msg_;
   IPC::Message last_reply_msg_;
-  MessageLoop* last_reply_message_loop_;
+  base::MessageLoop* last_reply_message_loop_;
 };
 
 // Dummy message filter which simply stores a copy of messages it handles.
@@ -108,7 +108,7 @@ class MyResourceFilter : public ResourceMessageFilter {
   }
 
   const IPC::Message& last_handled_msg() const { return last_handled_msg_; }
-  MessageLoop* last_message_loop() const { return last_message_loop_; }
+  base::MessageLoop* last_message_loop() const { return last_message_loop_; }
 
   virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& msg) OVERRIDE {
@@ -121,7 +121,7 @@ class MyResourceFilter : public ResourceMessageFilter {
       const IPC::Message& msg,
       HostMessageContext* context) OVERRIDE {
     last_handled_msg_ = msg;
-    last_message_loop_ = MessageLoop::current();
+    last_message_loop_ = base::MessageLoop::current();
     if (msg.type() == msg_type_) {
       context->reply_msg = IPC::Message(0, reply_msg_type_,
                                         IPC::Message::PRIORITY_NORMAL);
@@ -136,7 +136,7 @@ class MyResourceFilter : public ResourceMessageFilter {
   uint32 reply_msg_type_;
 
   IPC::Message last_handled_msg_;
-  MessageLoop* last_message_loop_;
+  base::MessageLoop* last_message_loop_;
 };
 
 }  // namespace

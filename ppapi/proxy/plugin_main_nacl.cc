@@ -266,12 +266,12 @@ int PpapiPluginMain() {
 
   // Though it isn't referenced here, we must instantiate an AtExitManager.
   base::AtExitManager exit_manager;
-  MessageLoop loop;
+  base::MessageLoop loop;
   IPC::Logging::set_log_function_map(&g_log_function_mapping);
   ppapi::proxy::PluginGlobals plugin_globals;
   base::Thread io_thread("Chrome_NaClIOThread");
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread.StartWithOptions(options);
 
   // Start up the SRPC server on another thread. Otherwise, when it blocks
