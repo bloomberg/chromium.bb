@@ -35,3 +35,5 @@ Contents:
     The atoms.h/cc files are only used directly in the chrome version of
     webdriver found under the path src/chrome/test/webdriver.
 
+Local Modifications:
+- Applied changes in patch.diff to the selenium tree prior to building the atoms.

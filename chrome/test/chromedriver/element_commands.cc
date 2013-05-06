@@ -72,9 +72,9 @@ Status ExecuteElementCommand(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   std::string id;
-  if (!params.GetString("id", &id))
-    return Status(kUnknownError, "'id' of element must be a string");
-  return command.Run(session, web_view, id, params, value);
+  if (params.GetString("id", &id) || params.GetString("element", &id))
+    return command.Run(session, web_view, id, params, value);
+  return Status(kUnknownError, "element identifier must be a string");
 }
 
 Status ExecuteFindChildElement(
@@ -164,6 +164,21 @@ Status ExecuteClickElement(
       session->mouse_position = location;
     return status;
   }
+}
+
+Status ExecuteTouchSingleTap(
+    Session* session,
+    WebView* web_view,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+  return web_view->CallFunction(
+      session->GetCurrentFrameId(),
+      webdriver::atoms::asString(webdriver::atoms::TOUCH_SINGLE_TAP),
+      args,
+      value);
 }
 
 Status ExecuteClearElement(

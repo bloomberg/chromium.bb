@@ -1,0 +1,24 @@
+Index: javascript/chrome-driver/build.desc
+===================================================================
+--- javascript/chrome-driver/build.desc	(revision 18456)
++++ javascript/chrome-driver/build.desc	(working copy)
+@@ -24,6 +24,11 @@
+   function = "webdriver.chrome.getPageZoom",
+   deps = [ ":deps" ])
+ 
++js_fragment(name = "touch_single_tap",
++  module = "bot.action",
++  function = "bot.action.tap",
++  deps = [ "//javascript/atoms:deps" ])
++
+ js_test(name = "test",
+   srcs = [ "test/*_test.html" ],
+   deps = [
+@@ -39,6 +44,7 @@
+     "//javascript/chrome-driver:get_location_in_view:chrome",
+     "//javascript/chrome-driver:get_page_zoom:chrome",
+     "//javascript/chrome-driver:is_element_clickable:chrome",
++    "//javascript/chrome-driver:touch_single_tap:chrome",
+     "//javascript/webdriver/atoms:clear:chrome",
+     "//javascript/webdriver/atoms:clear_local_storage:chrome",
+     "//javascript/webdriver/atoms:clear_session_storage:chrome",

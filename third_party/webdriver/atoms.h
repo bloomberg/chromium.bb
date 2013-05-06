@@ -27,6 +27,7 @@ extern const char* const GET_FIRST_CLIENT_RECT[];
 extern const char* const GET_LOCATION_IN_VIEW[];
 extern const char* const GET_PAGE_ZOOM[];
 extern const char* const IS_ELEMENT_CLICKABLE[];
+extern const char* const TOUCH_SINGLE_TAP[];
 extern const char* const CLEAR[];
 extern const char* const CLEAR_LOCAL_STORAGE[];
 extern const char* const CLEAR_SESSION_STORAGE[];

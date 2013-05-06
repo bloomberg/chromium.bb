@@ -65,6 +65,8 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteSendKeysToElement);
   element_command_map[CommandNames::kSubmitElement] =
       base::Bind(&ExecuteSubmitElement);
+  element_command_map[CommandNames::kTouchSingleTap] =
+      base::Bind(&ExecuteTouchSingleTap);
   element_command_map[CommandNames::kGetElementText] =
       base::Bind(&ExecuteGetElementText);
   element_command_map[CommandNames::kGetElementValue] =

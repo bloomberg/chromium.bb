@@ -355,6 +355,18 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     div.Click()
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
+  def testSingleTapElement(self):
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>old</div>";'
+        'var div = document.getElementsByTagName("div")[0];'
+        'div.addEventListener("click", function() {'
+        '  var div = document.getElementsByTagName("div")[0];'
+        '  div.innerHTML="new<br>";'
+        '});'
+        'return div;')
+    div.SingleTap()
+    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
+
   def testClickElementInSubFrame(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/frame_test.html'))
     frame = self._driver.FindElement('tag name', 'iframe')

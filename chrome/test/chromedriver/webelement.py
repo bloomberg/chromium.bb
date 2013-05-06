@@ -28,6 +28,9 @@ class WebElement(object):
   def Click(self):
     self._Execute('clickElement')
 
+  def SingleTap(self):
+    self._Execute('touchSingleTap')
+
   def Clear(self):
     self._Execute('clearElement')
 
