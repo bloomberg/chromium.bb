@@ -48,11 +48,11 @@ class StringSlicer {
         elide_in_middle_(elide_in_middle) {
   }
 
-  // Cuts |text_| to be |length| characters long.  If |cut_in_middle_| is true,
+  // Cuts |text_| to be |length| characters long. If |elide_in_middle_| is true,
   // the middle of the string is removed to leave equal-length pieces from the
   // beginning and end of the string; otherwise, the end of the string is
-  // removed and only the beginning remains.  If |insert_ellipsis| is true,
-  // then an ellipsis character will by inserted at the cut point.
+  // removed and only the beginning remains. If |insert_ellipsis| is true,
+  // then an ellipsis character will be inserted at the cut point.
   string16 CutString(size_t length, bool insert_ellipsis) {
     const string16 ellipsis_text = insert_ellipsis ? ellipsis_ : string16();
 
@@ -478,7 +478,8 @@ string16 ElideText(const string16& text,
   if (current_text_pixel_width <= available_pixel_width)
     return text;
 
-  if (font.GetStringWidth(kEllipsisUTF16) > available_pixel_width)
+  if (insert_ellipsis &&
+      font.GetStringWidth(kEllipsisUTF16) > available_pixel_width)
     return string16();
 
   // Use binary search to compute the elided text.
@@ -953,8 +954,12 @@ int RectangleText::WrapWord(const string16& word) {
   int lines_added = 0;
   bool first_fragment = true;
   while (!insufficient_height_ && !text.empty()) {
-    const string16 fragment =
+    string16 fragment =
         ui::ElideText(text, font_, available_pixel_width_, ui::TRUNCATE_AT_END);
+    // At least one character has to be added at every line, even if the
+    // available space is too small.
+    if(fragment.empty())
+      fragment = text.substr(0, 1);
     if (!first_fragment && NewLine())
       lines_added++;
     AddToCurrentLine(fragment);

@@ -345,6 +345,31 @@ TEST(TextEliderTest, ElideTextTruncate) {
   }
 }
 
+TEST(TextEliderTest, ElideTextEllipsis) {
+  const gfx::Font font;
+  const int kTestWidth = font.GetStringWidth(ASCIIToUTF16("Test"));
+  const char* kEllipsis = "\xE2\x80\xA6";
+  const int kEllipsisWidth = font.GetStringWidth(UTF8ToUTF16(kEllipsis));
+  struct TestData {
+    const char* input;
+    int width;
+    const char* output;
+  } cases[] = {
+    { "", 0, "" },
+    { "Test", 0, "" },
+    { "Test", kEllipsisWidth, kEllipsis },
+    { "", kTestWidth, "" },
+    { "Tes", kTestWidth, "Tes" },
+    { "Test", kTestWidth, "Test" },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    string16 result = ElideText(UTF8ToUTF16(cases[i].input), font,
+                                cases[i].width, ELIDE_AT_END);
+    EXPECT_EQ(cases[i].output, UTF16ToUTF8(result));
+  }
+}
+
 // Checks that all occurrences of |first_char| are followed by |second_char| and
 // all occurrences of |second_char| are preceded by |first_char| in |text|.
 static void CheckSurrogatePairs(const string16& text,

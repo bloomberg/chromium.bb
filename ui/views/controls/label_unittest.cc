@@ -184,6 +184,24 @@ TEST(LabelTest, SingleLineSizing) {
             required_size.width() + border.width());
 }
 
+TEST(LabelTest, MultilineSmallAvailableWidthSizing) {
+  Label label;
+  string16 test_text(ASCIIToUTF16("Too Wide."));
+
+  label.SetMultiLine(true);
+  label.SetAllowCharacterBreak(true);
+  label.SetElideBehavior(Label::ELIDE_AT_END);
+  label.SetText(test_text);
+
+  // Check that Label can be laid out at a variety of small sizes,
+  // splitting the words into up to one character per line if necessary.
+  // Incorrect word splitting may cause infinite loops in text layout.
+  gfx::Size required_size = label.GetPreferredSize();
+  for (int i = 1; i < required_size.width(); ++i) {
+    EXPECT_GT(label.GetHeightForWidth(i), 0);
+  }
+}
+
 TEST(LabelTest, MultiLineSizing) {
   Label label;
   label.set_focusable(false);

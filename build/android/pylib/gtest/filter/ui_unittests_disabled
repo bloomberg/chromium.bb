@@ -33,6 +33,7 @@ TextEliderTest.ElideRectangleTextPunctuation
 TextEliderTest.ElideTextLongStrings
 TextEliderTest.ElideTextSurrogatePairs
 TextEliderTest.ElideTextTruncate
+TextEliderTest.ElideTextEllipsis
 TextEliderTest.TestFileURLEliding
 TextEliderTest.TestFilenameEliding
 TextEliderTest.TestGeneralEliding
