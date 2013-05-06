@@ -7140,3 +7140,10 @@
    fun:_ZN7WebCore20ElementRuleCollector20collectMatchingRulesERKNS_12MatchRequestERNS_13StyleResolver9RuleRangeE
    fun:_ZN7WebCore13StyleResolver16matchAuthorRulesERNS_20ElementRuleCollectorEb
 }
+{
+   bug_238339
+   Memcheck:Leak
+   ...
+   fun:_ZN3net12_GLOBAL__N_150URLRequestFtpJobTest_FtpProxyRequestOrphanJob_Test8TestBodyEv
+}
+
