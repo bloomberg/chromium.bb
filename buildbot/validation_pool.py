@@ -816,8 +816,10 @@ class ValidationPool(object):
   MAX_TIMEOUT = 60 * 60 * 4
   SLEEP_TIMEOUT = 30
   STATUS_URL = 'https://chromiumos-status.appspot.com/current?format=json'
-  STATUS_PASSED = manifest_version.BuilderStatus.STATUS_PASSED
   STATUS_FAILED = manifest_version.BuilderStatus.STATUS_FAILED
+  STATUS_INFLIGHT = manifest_version.BuilderStatus.STATUS_INFLIGHT
+  STATUS_PASSED = manifest_version.BuilderStatus.STATUS_PASSED
+  STATUS_WAITING = 'waiting'
 
   # The grace period (in seconds) before we reject a patch due to dependency
   # errors.
@@ -1584,10 +1586,12 @@ class ValidationPool(object):
                                                  messages)
       self._SendNotification(change, '%(details)s', details=msg)
       if change in suspects:
-        if self.pre_cq:
-          self.UpdatePreCQStatus(change, self.STATUS_FAILED)
         self._helper_pool.ForChange(change).RemoveCommitReady(
             change, dryrun=self.dryrun)
+      if self.pre_cq:
+        # Mark the change as failed. If the Ready bit is still set, the change
+        # will be retried automatically.
+        self.UpdatePreCQStatus(change, self.STATUS_FAILED)
 
   def GetValidationFailedMessage(self):
     """Returns message indicating these changes failed to be validated."""

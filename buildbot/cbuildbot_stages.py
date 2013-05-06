@@ -1129,10 +1129,10 @@ class PreCQCompletionStage(bs.BuilderStage):
 class PreCQLauncherStage(SyncStage):
   """Scans for CLs and automatically launches Pre-CQ jobs to test them."""
 
-  STATUS_INFLIGHT = manifest_version.BuilderStatus.STATUS_INFLIGHT
-  STATUS_PASSED = manifest_version.BuilderStatus.STATUS_PASSED
-  STATUS_FAILED = manifest_version.BuilderStatus.STATUS_FAILED
-  STATUS_WAITING = 'waiting'
+  STATUS_INFLIGHT = validation_pool.ValidationPool.STATUS_INFLIGHT
+  STATUS_PASSED = validation_pool.ValidationPool.STATUS_PASSED
+  STATUS_FAILED = validation_pool.ValidationPool.STATUS_FAILED
+  STATUS_WAITING = validation_pool.ValidationPool.STATUS_WAITING
 
   def __init__(self, options, build_config):
     super(PreCQLauncherStage, self).__init__(options, build_config)
