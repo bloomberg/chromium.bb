@@ -17,6 +17,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -26,6 +27,8 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
@@ -34,11 +37,11 @@
 namespace policy {
 
 ProfilePolicyConnector::ProfilePolicyConnector(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
 #if defined(OS_CHROMEOS)
-  is_primary_user_ = false;
+      is_primary_user_(false),
 #endif
-}
+      weak_ptr_factory_(this) {}
 
 ProfilePolicyConnector::~ProfilePolicyConnector() {}
 
@@ -58,13 +61,16 @@ void ProfilePolicyConnector::Init(
     providers.push_back(cloud_policy_manager);
 
   bool is_managed = false;
+  std::string username;
   if (!chromeos::ProfileHelper::IsSigninProfile(profile_)) {
     // |user| should never be NULL except for the signin profile.
+    // TODO(joaodasilva): get the |user| that corresponds to the |profile_|
+    // from the ProfileHelper, once that's ready.
     chromeos::UserManager* user_manager = chromeos::UserManager::Get();
     chromeos::User* user = user_manager->GetActiveUser();
     CHECK(user);
-    const std::string& username = user->email();
     // Check if |user| is managed, and if it's a public account.
+    username = user->email();
     is_managed =
         connector->GetUserAffiliation(username) == USER_AFFILIATION_MANAGED;
     is_primary_user_ =
@@ -99,13 +105,14 @@ void ProfilePolicyConnector::Init(
           device_local_account_policy_provider_.get());
     }
 
-    // TODO(joaodasilva): create the NetworkConfigurationUpdater for user ONC
-    // here, after splitting that class into an instance for device policy and
-    // another per profile for user policy.
-    NetworkConfigurationUpdater* network_updater =
-        connector->GetNetworkConfigurationUpdater();
-    network_updater->set_allow_trusted_certificates_from_policy(is_managed);
-    network_updater->OnUserPolicyInitialized();
+    chromeos::CryptohomeClient* cryptohome_client =
+        chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
+    cryptohome_client->GetSanitizedUsername(
+        username,
+        base::Bind(
+            &ProfilePolicyConnector::InitializeNetworkConfigurationUpdater,
+            weak_ptr_factory_.GetWeakPtr(),
+            is_managed));
   }
 #endif
 }
@@ -149,6 +156,20 @@ void ProfilePolicyConnector::InitializeDeviceLocalAccountPolicyProvider(
       new DeviceLocalAccountPolicyProvider(
           username, device_local_account_policy_service));
   device_local_account_policy_provider_->Init();
+}
+
+void ProfilePolicyConnector::InitializeNetworkConfigurationUpdater(
+    bool is_managed,
+    chromeos::DBusMethodCallStatus status,
+    const std::string& hashed_username) {
+  // TODO(joaodasilva): create the NetworkConfigurationUpdater for user ONC
+  // here, after splitting that class into an instance for device policy and
+  // another per profile for user policy.
+  BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  NetworkConfigurationUpdater* network_updater =
+      connector->GetNetworkConfigurationUpdater();
+  network_updater->OnUserPolicyInitialized(is_managed, hashed_username);
 }
 #endif
 

@@ -26,14 +26,11 @@ class NetworkConfigurationUpdater {
   // Notifies this updater that the user policy is initialized. Before this
   // function is called, the user policy is not applied. This function may
   // trigger immediate policy applications.
-  virtual void OnUserPolicyInitialized() = 0;
-
   // Web trust isn't given to certificates imported from ONC by default. Setting
-  // |allow| to true allows giving Web trust to the certificates that
-  // request it.
-  void set_allow_trusted_certificates_from_policy(bool allow) {
-    allow_trusted_certificates_from_policy_ = allow;
-  }
+  // |allow_trust_certs_from_policy| to true allows giving Web trust to the
+  // certificates that request it.
+  virtual void OnUserPolicyInitialized(bool allow_trusted_certs_from_policy,
+                                       const std::string& hashed_username) = 0;
 
   // Returns a CertTrustAnchorProvider that provides the list of server and
   // CA certificates with the Web trust flag set that were retrieved from the
@@ -45,6 +42,8 @@ class NetworkConfigurationUpdater {
   net::CertTrustAnchorProvider* GetCertTrustAnchorProvider();
 
  protected:
+  void SetAllowTrustedCertsFromPolicy();
+
   void SetTrustAnchors(scoped_ptr<net::CertificateList> web_trust_certs);
 
  private:

@@ -56,9 +56,13 @@ void NetworkConfigurationUpdaterImplCros::OnProfileListChanged() {
   ApplyNetworkConfigurations();
 }
 
-void NetworkConfigurationUpdaterImplCros::OnUserPolicyInitialized() {
+void NetworkConfigurationUpdaterImplCros::OnUserPolicyInitialized(
+    bool allow_trust_certs_from_policy,
+    const std::string& hashed_username) {
   VLOG(1) << "User policy initialized, applying policies.";
   user_policy_initialized_ = true;
+  if (allow_trust_certs_from_policy)
+    SetAllowTrustedCertsFromPolicy();
   ApplyNetworkConfigurations();
 }
 

@@ -48,7 +48,9 @@ class NetworkConfigurationUpdaterImplCros
   // NetworkConfigurationUpdater overrides.
 
   // In this implementation, this function applies both device and user policy.
-  virtual void OnUserPolicyInitialized() OVERRIDE;
+  virtual void OnUserPolicyInitialized(
+      bool allow_trusted_certs_from_policy,
+      const std::string& hashed_username) OVERRIDE;
 
  private:
   // Callback that's called by |policy_service_| if the respective ONC policy

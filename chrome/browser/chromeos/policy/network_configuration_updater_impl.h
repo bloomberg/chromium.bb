@@ -36,7 +36,9 @@ class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater {
   virtual ~NetworkConfigurationUpdaterImpl();
 
   // NetworkConfigurationUpdater overrides.
-  virtual void OnUserPolicyInitialized() OVERRIDE;
+  virtual void OnUserPolicyInitialized(
+      bool allow_trusted_certs_from_policy,
+      const std::string& hashed_username) OVERRIDE;
 
  private:
   // Callback that's called by |policy_service_| if the respective ONC policy
@@ -46,9 +48,6 @@ class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater {
                        const base::Value* current);
 
   void ApplyNetworkConfiguration(chromeos::onc::ONCSource onc_source);
-
-  // Whether the user policy is already available.
-  bool user_policy_initialized_;
 
   // Wraps the policy service we read network configuration from.
   PolicyChangeRegistrar policy_change_registrar_;

@@ -23,8 +23,7 @@ NetworkConfigurationUpdaterImpl::NetworkConfigurationUpdaterImpl(
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
     scoped_ptr<chromeos::CertificateHandler> certificate_handler)
-    : user_policy_initialized_(false),
-      policy_change_registrar_(
+    : policy_change_registrar_(
           policy_service, PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())),
       policy_service_(policy_service),
       network_config_handler_(network_config_handler),
@@ -47,9 +46,12 @@ NetworkConfigurationUpdaterImpl::NetworkConfigurationUpdaterImpl(
 NetworkConfigurationUpdaterImpl::~NetworkConfigurationUpdaterImpl() {
 }
 
-void NetworkConfigurationUpdaterImpl::OnUserPolicyInitialized() {
+void NetworkConfigurationUpdaterImpl::OnUserPolicyInitialized(
+    bool allow_trusted_certs_from_policy,
+    const std::string& hashed_username) {
   VLOG(1) << "User policy initialized.";
-  user_policy_initialized_ = true;
+  if (allow_trusted_certs_from_policy)
+    SetAllowTrustedCertsFromPolicy();
   ApplyNetworkConfiguration(chromeos::onc::ONC_SOURCE_USER_POLICY);
 }
 
@@ -59,8 +61,6 @@ void NetworkConfigurationUpdaterImpl::OnPolicyChanged(
     const base::Value* current) {
   VLOG(1) << "Policy for ONC source "
           << chromeos::onc::GetSourceAsString(onc_source) << " changed.";
-  VLOG(2) << "User policy is " << (user_policy_initialized_ ? "" : "not ")
-          << "initialized.";
   ApplyNetworkConfiguration(onc_source);
 }
 

@@ -9,7 +9,12 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_method_call_status.h"
+#endif
 
 class Profile;
 
@@ -54,8 +59,17 @@ class ProfilePolicyConnector : public ProfileKeyedService {
   bool UsedPolicyCertificates();
 
  private:
+#if defined(ENABLE_CONFIGURATION_POLICY)
+
 #if defined(OS_CHROMEOS)
   void InitializeDeviceLocalAccountPolicyProvider(const std::string& username);
+
+  // Callback for CryptohomeClient::GetSanitizedUsername() that initializes the
+  // NetworkConfigurationUpdater after receiving the hashed username.
+  void InitializeNetworkConfigurationUpdater(
+      bool is_managed,
+      chromeos::DBusMethodCallStatus status,
+      const std::string& hashed_username);
 #endif
 
   Profile* profile_;
@@ -64,7 +78,7 @@ class ProfilePolicyConnector : public ProfileKeyedService {
   // Some of the user policy configuration affects browser global state, and
   // can only come from one Profile. |is_primary_user_| is true if this
   // connector belongs to the first signed-in Profile, and in that case that
-  // Profile's policy is the one that affect global policy settings in
+  // Profile's policy is the one that affects global policy settings in
   // local state.
   bool is_primary_user_;
 
@@ -75,6 +89,9 @@ class ProfilePolicyConnector : public ProfileKeyedService {
 #if defined(ENABLE_MANAGED_USERS) && defined(ENABLE_CONFIGURATION_POLICY)
   scoped_ptr<ManagedModePolicyProvider> managed_mode_policy_provider_;
 #endif
+
+  base::WeakPtrFactory<ProfilePolicyConnector> weak_ptr_factory_;
+#endif  // ENABLE_CONFIGURATION_POLICY
 
   scoped_ptr<PolicyService> policy_service_;
 

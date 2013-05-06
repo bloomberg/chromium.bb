@@ -64,7 +64,8 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
     profile_test->AddProfile(kUserProfilePath);
 
     g_browser_process->browser_policy_connector()->
-        GetNetworkConfigurationUpdater()->OnUserPolicyInitialized();
+        GetNetworkConfigurationUpdater()->OnUserPolicyInitialized(
+            false, "hash");
     ShillDeviceClient::TestInterface* device_test =
         DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     device_test->ClearDevices();

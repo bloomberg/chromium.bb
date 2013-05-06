@@ -196,7 +196,7 @@ TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
 
   EXPECT_CALL(network_library_, RemoveNetworkProfileObserver(_));
 
-  updater.OnUserPolicyInitialized();
+  updater.OnUserPolicyInitialized(false, "hash");
 }
 
 class NetworkConfigurationUpdaterTestWithParam
@@ -258,7 +258,7 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, InitialUpdates) {
 
   EXPECT_CALL(network_library_, RemoveNetworkProfileObserver(_));
 
-  updater.OnUserPolicyInitialized();
+  updater.OnUserPolicyInitialized(false, "hash");
 }
 
 TEST_P(NetworkConfigurationUpdaterTestWithParam,
@@ -290,7 +290,7 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam,
   EXPECT_TRUE(trust_provider->GetAdditionalTrustAnchors().empty());
 
   // Initially, certificates imported from policy don't have trust flags.
-  updater.OnUserPolicyInitialized();
+  updater.OnUserPolicyInitialized(false, "hash");
   content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
   Mock::VerifyAndClearExpectations(&network_library_);
   Mock::VerifyAndClearExpectations(&certificate_handler);
@@ -305,12 +305,11 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam,
   EXPECT_CALL(network_library_, LoadOncNetworks(_, current_source));
   EXPECT_CALL(*certificate_handler, ImportCertificates(_, current_source, _))
       .WillRepeatedly(SetCertificateList(cert_list));
-  updater.set_allow_trusted_certificates_from_policy(true);
-  // Trigger a policy update.
-  PolicyMap policy;
-  policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateStringValue(kFakeONC));
-  UpdateProviderPolicy(policy);
+  // Trigger a new policy load, and spin the IO message loop to pass the
+  // certificates to the |trust_provider| on the IO thread.
+  updater.OnUserPolicyInitialized(true, "hash");
+  base::RunLoop loop;
+  loop.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&network_library_);
   Mock::VerifyAndClearExpectations(&certificate_handler);
 
@@ -339,7 +338,7 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, PolicyChange) {
       policy_service_.get(),
       &network_library_,
       make_scoped_ptr<chromeos::CertificateHandler>(certificate_handler));
-  updater.OnUserPolicyInitialized();
+  updater.OnUserPolicyInitialized(false, "hash");
   Mock::VerifyAndClearExpectations(&network_library_);
   Mock::VerifyAndClearExpectations(&certificate_handler);
 

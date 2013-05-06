@@ -8,8 +8,7 @@
 
 namespace policy {
 
-ProfilePolicyConnector::ProfilePolicyConnector(Profile* profile)
-    : profile_(profile) {}
+ProfilePolicyConnector::ProfilePolicyConnector(Profile* profile) {}
 
 ProfilePolicyConnector::~ProfilePolicyConnector() {}
 
@@ -22,6 +21,7 @@ void ProfilePolicyConnector::Init(
 void ProfilePolicyConnector::InitForTesting(scoped_ptr<PolicyService> service) {
   policy_service_ = service.Pass();
 }
+
 void ProfilePolicyConnector::Shutdown() {}
 
 bool ProfilePolicyConnector::UsedPolicyCertificates() {

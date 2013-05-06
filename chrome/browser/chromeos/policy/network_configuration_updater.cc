@@ -61,6 +61,10 @@ NetworkConfigurationUpdater::GetCertTrustAnchorProvider() {
   return cert_trust_provider_;
 }
 
+void NetworkConfigurationUpdater::SetAllowTrustedCertsFromPolicy() {
+  allow_trusted_certificates_from_policy_ = true;
+}
+
 void NetworkConfigurationUpdater::SetTrustAnchors(
     scoped_ptr<net::CertificateList> web_trust_certs) {
   if (allow_trusted_certificates_from_policy_) {
