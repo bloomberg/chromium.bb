@@ -177,6 +177,7 @@ const char kTagGsm[] = "gsm";
 const char kTagHardwareAddress[] = "hardwareAddress";
 const char kTagHardwareRevision[] = "hardwareRevision";
 const char kTagIdentity[] = "identity";
+const char kTagIccid[] = "iccid";
 const char kTagImei[] = "imei";
 const char kTagImsi[] = "imsi";
 const char kTagLanguage[] = "language";
@@ -1499,6 +1500,7 @@ void InternetOptionsHandler::PopulateCellularDetails(
     dictionary->SetString(kTagPrlVersion,
                           base::StringPrintf("%u", device->prl_version()));
     dictionary->SetString(kTagMeid, device->meid());
+    dictionary->SetString(kTagIccid, device->iccid());
     dictionary->SetString(kTagImei, device->imei());
     dictionary->SetString(kTagMdn, device->mdn());
     dictionary->SetString(kTagImsi, device->imsi());

@@ -1032,6 +1032,7 @@ cr.define('options.internet', function() {
       $('hardware-revision').textContent = data.hardwareRevision;
       $('prl-version').textContent = data.prlVersion;
       $('meid').textContent = data.meid;
+      $('iccid').textContent = data.iccid;
       $('imei').textContent = data.imei;
       $('mdn').textContent = data.mdn;
       $('esn').textContent = data.esn;
