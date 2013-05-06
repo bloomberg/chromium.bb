@@ -249,6 +249,10 @@ void RenderMenuList::setText(const String& s)
                 m_buttonText->destroy();
             m_buttonText = new (renderArena()) RenderText(document(), s.impl());
             m_buttonText->setStyle(style());
+            // We need to set the text explicitly though it was specified in the
+            // constructor because RenderText doesn't refer to the text
+            // specified in the constructor in a case of re-transforming.
+            m_buttonText->setText(s.impl(), true);
             addChild(m_buttonText);
         }
         adjustInnerStyle();

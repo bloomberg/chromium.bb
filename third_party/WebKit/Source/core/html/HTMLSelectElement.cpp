@@ -68,7 +68,7 @@ using namespace HTMLNames;
 // Upper limit agreed upon with representatives of Opera and Mozilla.
 static const unsigned maxSelectItems = 10000;
 
-HTMLSelectElement::HTMLSelectElement(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
+HTMLSelectElement::HTMLSelectElement(const QualifiedName& tagName, Document* document, HTMLFormElement* form, bool createdByParser)
     : HTMLFormControlElementWithState(tagName, document, form)
     , m_typeAhead(this)
     , m_size(0)
@@ -79,15 +79,16 @@ HTMLSelectElement::HTMLSelectElement(const QualifiedName& tagName, Document* doc
     , m_multiple(false)
     , m_activeSelectionState(false)
     , m_shouldRecalcListItems(false)
+    , m_isParsingInProgress(createdByParser)
 {
     ASSERT(hasTagName(selectTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLSelectElement> HTMLSelectElement::create(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
+PassRefPtr<HTMLSelectElement> HTMLSelectElement::create(const QualifiedName& tagName, Document* document, HTMLFormElement* form, bool createdByParser)
 {
     ASSERT(tagName.matches(selectTag));
-    return adoptRef(new HTMLSelectElement(tagName, document, form));
+    return adoptRef(new HTMLSelectElement(tagName, document, form, createdByParser));
 }
 
 const AtomicString& HTMLSelectElement::formControlType() const
@@ -355,6 +356,7 @@ bool HTMLSelectElement::childShouldCreateRenderer(const NodeRenderingContext& ch
 
 PassRefPtr<HTMLCollection> HTMLSelectElement::selectedOptions()
 {
+    updateListItemSelectedStates();
     return ensureCachedHTMLCollection(SelectedOptions);
 }
 
@@ -365,8 +367,10 @@ PassRefPtr<HTMLOptionsCollection> HTMLSelectElement::options()
 
 void HTMLSelectElement::updateListItemSelectedStates()
 {
-    if (m_shouldRecalcListItems)
-        recalcListItems();
+    if (!m_shouldRecalcListItems)
+        return;
+    recalcListItems();
+    setNeedsValidityCheck();
 }
 
 void HTMLSelectElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
@@ -1561,6 +1565,13 @@ unsigned HTMLSelectElement::length() const
     }
 
     return options;
+}
+
+void HTMLSelectElement::finishParsingChildren()
+{
+    HTMLFormControlElementWithState::finishParsingChildren();
+    m_isParsingInProgress = false;
+    updateListItemSelectedStates();
 }
 
 } // namespace

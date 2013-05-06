@@ -110,7 +110,7 @@ s interfaceName=HTMLElement
 samp interfaceName=HTMLElement
 script constructorNeedsCreatedByParser
 section interfaceName=HTMLElement
-select constructorNeedsFormElement
+select constructorNeedsFormElement, constructorNeedsCreatedByParser
 small interfaceName=HTMLElement
 source wrapperOnlyIfMediaIsAvailable
 span

@@ -38,7 +38,7 @@ class HTMLOptionElement;
 
 class HTMLSelectElement : public HTMLFormControlElementWithState, public TypeAheadDataSource {
 public:
-    static PassRefPtr<HTMLSelectElement> create(const QualifiedName&, Document*, HTMLFormElement*);
+    static PassRefPtr<HTMLSelectElement> create(const QualifiedName&, Document*, HTMLFormElement*, bool createdByParser);
 
     int selectedIndex() const;
     void setSelectedIndex(int);
@@ -104,9 +104,10 @@ public:
     
     // For use in the implementation of HTMLOptionElement.
     void optionSelectionStateChanged(HTMLOptionElement*, bool optionIsSelected);
+    bool isParsingInProgress() const { return m_isParsingInProgress; }
 
 protected:
-    HTMLSelectElement(const QualifiedName&, Document*, HTMLFormElement*);
+    HTMLSelectElement(const QualifiedName&, Document*, HTMLFormElement*, bool createdByParser);
 
 private:
     virtual const AtomicString& formControlType() const;
@@ -181,6 +182,7 @@ private:
 
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
+    virtual void finishParsingChildren() OVERRIDE;
 
     // TypeAheadDataSource functions.
     virtual int indexOfSelectedOption() const OVERRIDE;
@@ -200,6 +202,7 @@ private:
     bool m_multiple;
     bool m_activeSelectionState;
     mutable bool m_shouldRecalcListItems;
+    bool m_isParsingInProgress;
 };
 
 inline bool isHTMLSelectElement(const Node* node)

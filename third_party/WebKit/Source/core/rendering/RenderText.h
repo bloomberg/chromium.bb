@@ -33,6 +33,9 @@ class InlineTextBox;
 
 class RenderText : public RenderObject {
 public:
+    // FIXME: If the node argument is not a Text node or the string argument is
+    // not the content of the Text node, updating text-transform property
+    // doesn't re-transform the string.
     RenderText(Node*, PassRefPtr<StringImpl>);
 #ifndef NDEBUG
     virtual ~RenderText();

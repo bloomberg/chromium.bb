@@ -52,7 +52,7 @@ public:
 
 protected:
     KeygenSelectElement(Document* document)
-        : HTMLSelectElement(selectTag, document, 0)
+        : HTMLSelectElement(selectTag, document, 0, false)
     {
         DEFINE_STATIC_LOCAL(AtomicString, pseudoId, ("-webkit-keygen-select", AtomicString::ConstructFromLiteral));
         setPseudo(pseudoId);
