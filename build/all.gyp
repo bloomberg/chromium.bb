@@ -402,6 +402,7 @@
           'type': 'none',
           'dependencies': [
             'chromium_builder_qa',  # needed for perf pyauto tests
+            '../content/content.gyp:content_shell',
             '../webkit/webkit.gyp:pull_in_DumpRenderTree',  # to run layout tests
           ],
         },  # target_name: chromium_builder_perf_av
@@ -523,6 +524,7 @@
           'dependencies': [
             '../chrome/chrome.gyp:chrome',
             '../net/net.gyp:dns_fuzz_stub',
+            '../content/content.gyp:content_shell',
             '../webkit/webkit.gyp:pull_in_DumpRenderTree',
           ],
         },
@@ -682,6 +684,7 @@
           'dependencies': [
             '../webkit/webkit.gyp:test_shell',
             '../webkit/webkit.gyp:pull_in_webkit_unit_tests',
+            '../content/content.gyp:content_shell',
             '../webkit/webkit.gyp:pull_in_DumpRenderTree',
           ],
         },
