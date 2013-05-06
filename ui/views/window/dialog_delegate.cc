@@ -152,25 +152,11 @@ NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
 
 // static
 NonClientFrameView* DialogDelegate::CreateNewStyleFrameView(Widget* widget) {
-  return CreateNewStyleFrameView(widget, false);
-}
-
-NonClientFrameView* DialogDelegate::CreateNewStyleFrameView(
-    Widget* widget,
-    bool force_opaque_border) {
   BubbleFrameView* frame = new BubbleFrameView(gfx::Insets());
   const SkColor color = widget->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
-  if (force_opaque_border) {
-    frame->SetBubbleBorder(new BubbleBorder(
-        BubbleBorder::NONE,
-        BubbleBorder::NO_SHADOW_OPAQUE_BORDER,
-        color));
-  } else {
-    frame->SetBubbleBorder(new BubbleBorder(BubbleBorder::FLOAT,
-                                            BubbleBorder::SMALL_SHADOW,
-                                            color));
-  }
+  frame->SetBubbleBorder(
+      new BubbleBorder(BubbleBorder::FLOAT, BubbleBorder::SMALL_SHADOW, color));
   frame->SetTitle(widget->widget_delegate()->GetWindowTitle());
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
   if (delegate) {
@@ -180,8 +166,6 @@ NonClientFrameView* DialogDelegate::CreateNewStyleFrameView(
   }
   frame->SetShowCloseButton(true);
   frame->set_can_drag(true);
-  if (force_opaque_border)
-    widget->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   return frame;
 }
 

@@ -35,7 +35,6 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/border.h"
 #include "ui/views/color_constants.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/focus/focus_manager.h"
@@ -116,15 +115,6 @@ class WebContentsModalDialogHostObserverViews
   virtual void OnPositionRequiresUpdate() OVERRIDE {
     gfx::Size size = target_widget_->GetWindowBoundsInScreen().size();
     gfx::Point position = host_->GetDialogPosition(size);
-    views::Border* border =
-        target_widget_->non_client_view()->frame_view()->border();
-    // Border may be null during widget initialization.
-    if (border) {
-      // Align the first row of pixels inside the border. This is the apparent
-      // top of the dialog.
-      gfx::Insets border_insets = border->GetInsets();
-      position -= gfx::Vector2d(border_insets.left(), border_insets.top());
-    }
     target_widget_->SetBounds(gfx::Rect(position, size));
   }
 
@@ -680,15 +670,8 @@ views::Widget* CreateWebContentsModalDialogViews(
 views::NonClientFrameView* CreateConstrainedStyleNonClientFrameView(
     views::Widget* widget,
     content::BrowserContext* browser_context) {
-  if (views::DialogDelegate::UseNewStyle()) {
-#if defined(USE_AURA)
-    const bool force_opaque_border = false;
-#else
-    const bool force_opaque_border = true;
-#endif
-    return views::DialogDelegate::CreateNewStyleFrameView(widget,
-                                                          force_opaque_border);
-  }
+  if (views::DialogDelegate::UseNewStyle())
+    return views::DialogDelegate::CreateNewStyleFrameView(widget);
 #if defined(USE_ASH)
   ConstrainedWindowFrameViewAsh* frame = new ConstrainedWindowFrameViewAsh;
   frame->Init(widget);

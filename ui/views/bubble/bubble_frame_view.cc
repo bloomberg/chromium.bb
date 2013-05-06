@@ -9,7 +9,6 @@
 #include "grit/ui_resources.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/label_button.h"
@@ -97,42 +96,7 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
 }
 
 void BubbleFrameView::GetWindowMask(const gfx::Size& size,
-                                    gfx::Path* window_mask) {
-  if (bubble_border_->shadow() != BubbleBorder::NO_SHADOW_OPAQUE_BORDER)
-    return;
-
-  // Use a window mask roughly matching the border in the image assets.
-
-  // Stroke size in pixels of borders in image assets.
-  static const int kBorderStrokeSize = 1;
-
-  gfx::Insets border_insets = bubble_border_->GetInsets();
-  SkRect rect = {border_insets.left() - kBorderStrokeSize,
-                 border_insets.top() - kBorderStrokeSize,
-                 size.width() - border_insets.right() + kBorderStrokeSize,
-                 size.height() - border_insets.bottom() + kBorderStrokeSize};
-
-  // Approximate rounded corners matching the border.
-  SkPoint polygon[] = {
-    {rect.left() + 2, rect.top()},
-    {rect.left() + 1, rect.top() + 1},
-    {rect.left(), rect.top() + 2},
-
-    {rect.left(), rect.bottom() - 3},
-    {rect.left() + 1, rect.bottom() - 2},
-    {rect.left() + 2, rect.bottom()},
-
-    {rect.right() - 3, rect.bottom()},
-    {rect.right() - 1, rect.bottom() - 2},
-    {rect.right(), rect.bottom() - 3},
-
-    {rect.right(), rect.top() + 2},
-    {rect.right() - 1, rect.top() + 1},
-    {rect.right() - 2, rect.top()}
-  };
-
-  window_mask->addPoly(polygon, sizeof(polygon)/sizeof(polygon[0]), true);
-}
+                                    gfx::Path* window_mask) {}
 
 void BubbleFrameView::ResetWindowControls() {}
 
