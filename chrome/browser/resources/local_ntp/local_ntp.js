@@ -494,7 +494,7 @@ function hideNtp() {
       !document.body.classList.contains(CLASSES.FAKEBOX_ANIMATE)) {
     // The user has typed in the fakebox - initiate the fakebox animation,
     // which upon termination will hide the NTP.
-    document.body.classList.remove(CLASSES.FAKEBOX_FOCUS);
+    setFakeboxFocus(false);
     fakebox.addEventListener('webkitTransitionEnd', fakeboxAnimationDone);
     document.body.classList.add(CLASSES.FAKEBOX_ANIMATE);
   } else if (!fakebox ||
@@ -518,6 +518,13 @@ function clearCustomTheme() {
  */
 function isNtpVisible() {
   return !document.body.classList.contains(CLASSES.HIDE_NTP);
+}
+
+/**
+ * @param {boolean} focus True to focus the fakebox.
+ */
+function setFakeboxFocus(focus) {
+  return document.body.classList.toggle(CLASSES.FAKEBOX_FOCUS, focus);
 }
 
 /**
@@ -1509,15 +1516,15 @@ function init() {
   iframePool.setTextDirection(searchboxApiHandle.rtl);
 
   if (fakebox) {
-    // Listener for updating the fakebox focus.
+    // Listener for updating the key capture state.
     document.body.onclick = function(event) {
-      if (isFakeboxClick(event)) {
-        document.body.classList.add(CLASSES.FAKEBOX_FOCUS);
+      if (isFakeboxClick(event))
         searchboxApiHandle.startCapturingKeyStrokes();
-      } else {
-        document.body.classList.remove(CLASSES.FAKEBOX_FOCUS);
+      else if (fakeboxIsFocused())
         searchboxApiHandle.stopCapturingKeyStrokes();
-      }
+    };
+    searchboxApiHandle.onkeycapturechange = function() {
+      setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
     };
 
     // Set the cursor alignment based on language directionality.
