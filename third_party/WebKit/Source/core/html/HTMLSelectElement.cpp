@@ -640,6 +640,8 @@ void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions)
 void HTMLSelectElement::listBoxOnChange()
 {
     ASSERT(!usesMenuList() || m_multiple);
+    if (isDisabledFormControl())
+        return;
 
     const Vector<HTMLElement*>& items = listItems();
 
