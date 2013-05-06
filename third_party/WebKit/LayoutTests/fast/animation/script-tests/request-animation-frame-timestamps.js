@@ -21,6 +21,9 @@ window.requestAnimationFrame(function(timestamp) {
 });
 
 if (window.testRunner)
+    testRunner.display();
+
+if (window.testRunner)
     testRunner.waitUntilDone();
 
 setTimeout(function() {

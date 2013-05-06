@@ -14,6 +14,13 @@ window.requestAnimationFrame(function() {
     sameFrame = false;
 }, e);
 
+// This should fire the three already registered callbacks, but not the one dynamically registered.
+if (window.testRunner)
+    testRunner.display();
+// This should fire the dynamically registered callback.
+if (window.testRunner)
+    testRunner.display();
+
 if (window.testRunner)
     testRunner.waitUntilDone();
 
