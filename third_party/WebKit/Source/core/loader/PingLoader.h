@@ -34,7 +34,6 @@
 
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceHandleClient.h"
-#include "core/platform/network/ResourceHandleTypes.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/RefPtr.h>
 
@@ -62,7 +61,7 @@ public:
     virtual ~PingLoader();
 
 private:
-    PingLoader(Frame*, ResourceRequest&, StoredCredentials = AllowStoredCredentials);
+    PingLoader(Frame*, ResourceRequest&);
 
     virtual void didReceiveResponse(ResourceHandle*, const ResourceResponse&) OVERRIDE { delete this; }
     virtual void didReceiveData(ResourceHandle*, const char*, int, int) OVERRIDE { delete this; }

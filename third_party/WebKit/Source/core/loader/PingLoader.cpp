@@ -114,18 +114,18 @@ void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRe
     String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), reportURL, frame->loader()->outgoingReferrer());
     if (!referrer.isEmpty())
         request.setHTTPReferrer(referrer);
-    OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request, SecurityOrigin::create(reportURL)->isSameSchemeHostPort(frame->document()->securityOrigin()) ? AllowStoredCredentials : DoNotAllowStoredCredentials));
+    OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request));
 
     // Leak the ping loader, since it will kill itself as soon as it receives a response.
     PingLoader* leakedPingLoader = pingLoader.leakPtr();
     UNUSED_PARAM(leakedPingLoader);
 }
 
-PingLoader::PingLoader(Frame* frame, ResourceRequest& request, StoredCredentials credentialsAllowed)
+PingLoader::PingLoader(Frame* frame, ResourceRequest& request)
     : m_timeout(this, &PingLoader::timeout)
 {
     unsigned long identifier = createUniqueIdentifier();
-    m_handle = ResourceHandle::create(frame->loader()->networkingContext(), request, this, false, false, credentialsAllowed);
+    m_handle = ResourceHandle::create(frame->loader()->networkingContext(), request, this, false, false, AllowStoredCredentials);
 
     InspectorInstrumentation::continueAfterPingLoader(frame, identifier, frame->loader()->activeDocumentLoader(), request, ResourceResponse());
 
