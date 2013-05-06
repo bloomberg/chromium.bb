@@ -549,7 +549,7 @@
           'chromium_win_pch%': 1
         }],
 
-        ['use_aura==1 or chromeos==1 or OS=="android"', {
+        ['use_aura==1 or chromeos==1 or OS=="android" or OS=="ios"', {
           'enable_plugin_installation%': 0,
         }, {
           'enable_plugin_installation%': 1,
