@@ -28,91 +28,55 @@
 module("model");
 
 var kExampleCommitDataXML =
-    '<?xml version="1.0"?>\n\n' +
-    '<rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">\n\n' +
-    '  \n\n' +
-    '\n\n' +
-    '  <channel>\n\n' +
-    '    <title>Revisions of /trunk</title>\n\n' +
-    '    <link>http://trac.webkit.org/log/trunk?rev=92362</link>\n\n' +
-    '    <description>Trac Log - Revisions of /trunk</description>\n\n' +
-    '    <language>en-US</language>\n\n' +
-    '    <generator>Trac 0.11.7</generator>\n\n' +
-    '    <image>\n\n' +
-    '      <title>WebKit</title>\n\n' +
-    '      <url>http://trac.webkit.org/chrome/site/icon.png</url>\n\n' +
-    '      <link>http://trac.webkit.org/log/trunk?rev=92362</link>\n\n' +
-    '    </image>\n\n' +
-    '    <item>\n' +
-    '          <author>commit-queue@webkit.org</author>\n' +
-    '      <pubDate>Wed, 03 Aug 2011 04:26:52 GMT</pubDate>\n' +
-    '      <title>Revision 92259: Unreviewed, rolling out r92256.\n' +
-    'http://trac.webkit.org/changeset/92256 ...</title>\n' +
-    '      <link>http://trac.webkit.org/changeset/92259/trunk</link>\n' +
-    '      <guid isPermaLink="false">http://trac.webkit.org/changeset/92259/trunk</guid>\n' +
-    '      <description>&lt;p&gt;\n' +
-    'Unreviewed, rolling out &lt;a class="changeset" href="http://trac.webkit.org/changeset/92256" title="Make EventDispatchMediator RefCounted. ..."&gt;r92256&lt;/a&gt;.\n' +
-    '&lt;a class="ext-link" href="http://trac.webkit.org/changeset/92256"&gt;&lt;span class="icon"&gt; &lt;/span&gt;http://trac.webkit.org/changeset/92256&lt;/a&gt;\n' +
-    '&lt;a class="ext-link" href="https://bugs.webkit.org/show_bug.cgi?id=65593"&gt;&lt;span class="icon"&gt; &lt;/span&gt;https://bugs.webkit.org/show_bug.cgi?id=65593&lt;/a&gt;\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'Causing tons of crashes on the chromium win bots (Requested by\n' +
-    'jamesr on #webkit).\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'Patch by Sheriff Bot &amp;lt;&lt;a class="mail-link" href="mailto:webkit.review.bot@gmail.com"&gt;&lt;span class="icon"&gt; &lt;/span&gt;webkit.review.bot@gmail.com&lt;/a&gt;&amp;gt; on 2011-08-02\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    '* dom/Event.cpp:\n' +
-    '* dom/Event.h:\n' +
-    '* dom/EventDispatcher.cpp:\n' +
-    '(WebCore::EventDispatcher::dispatchEvent):\n' +
-    '* dom/EventDispatcher.h:\n' +
-    '* dom/KeyboardEvent.cpp:\n' +
-    '* dom/KeyboardEvent.h:\n' +
-    '* dom/MouseEvent.cpp:\n' +
-    '* dom/MouseEvent.h:\n' +
-    '* dom/Node.cpp:\n' +
-    '(WebCore::Node::dispatchEvent):\n' +
-    '(WebCore::Node::dispatchKeyEvent):\n' +
-    '(WebCore::Node::dispatchMouseEvent):\n' +
-    '(WebCore::Node::dispatchWheelEvent):\n' +
-    '* dom/WheelEvent.cpp:\n' +
-    '* dom/WheelEvent.h:\n' +
-    '&lt;/p&gt;\n' +
-    '</description>\n' +
-    '      <category>Log</category>\n' +
-    '    </item><item>\n' +
-    '          <author>macpherson@chromium.org</author>\n\n' +
-    '      <pubDate>Thu, 04 Aug 2011 02:09:19 GMT</pubDate>\n\n' +
-    '      <title>Revision 92256: Support cast between CSSPrimitiveValue and EBoxSizing, use in ...</title>\n\n' +
-    '      <link>http://trac.webkit.org/changeset/92256/trunk</link>\n\n' +
-    '      <guid isPermaLink="false">http://trac.webkit.org/changeset/92256/trunk</guid>\n\n' +
-    '      <description>&lt;p&gt;\n\n' +
-    'Support cast between CSSPrimitiveValue and EBoxSizing, use in CSSStyleSelector.\n\n' +
-    '&lt;a class="ext-link" href="https://bugs.webkit.org/show_bug.cgi?id=65657"&gt;&lt;span class="icon"&gt; &lt;/span&gt;https://bugs.webkit.org/show_bug.cgi?id=65657&lt;/a&gt;\n\n' +
-    '&lt;/p&gt;\n\n' +
-    '&lt;p&gt;\n\n' +
-    'Reviewed by Simon Fraser.\n\n' +
-    '&lt;/p&gt;\n\n' +
-    '&lt;p&gt;\n\n' +
-    'No new tests / refactoring only.\n\n' +
-    '&lt;/p&gt;\n\n' +
-    '&lt;p&gt;\n\n' +
-    '* css/CSSPrimitiveValueMappings.h:\n\n' +
-    '(WebCore::CSSPrimitiveValue::CSSPrimitiveValue):\n\n' +
-    'Implement cast from EBoxSizing.\n' +
-    '(WebCore::CSSPrimitiveValue::operator EBoxSizing):\n' +
-    'Implement cast to EBoxSizing.\n' +
-    '* css/CSSStyleSelector.cpp:\n' +
-    '(WebCore::CSSStyleSelector::applyProperty):\n' +
-    'Use appropriate macro to simplify code using cast.\n' +
-    '&lt;/p&gt;\n' +
-    '</description>\n' +
-    '      <category>Log</category>\n' +
-    '    </item>\n' +
-    ' </channel>\n' +
-    '</rss>\n'
+    '<?xml version="1.0"?>\n' +
+    '<log>\n' +
+    '<logentry\n' +
+    '   revision="147744">\n' +
+    '<author>tkent@chromium.org</author>\n' +
+    '<date>2013-04-06T13:00:08.314281Z</date>\n' +
+    '<msg>Revert 147740 "Remove the ENABLE_QUOTA compile-time flag."\n' +
+    '\n' +
+    '&gt; Remove the ENABLE_QUOTA compile-time flag.\n' +
+    '&gt; \n' +
+    '&gt; This patch drops the ~20 occurances of \'#IFDEF ENABLE(QUOTA)\' from the\n' +
+    '&gt; codebase. It shouldn\'t effect any web-visible behavior, as the interesting\n' +
+    '&gt; bits are still hidden away behind the runtime flag, whose behavior\n' +
+    '&gt; is untouched by this patch.\n' +
+    '&gt; \n' +
+    '&gt; R=eseidel@chromium.org,kinuko@chromium.org\n' +
+    '&gt; \n' +
+    '&gt; Review URL: https://codereview.chromium.org/13529033\n' +
+    '\n' +
+    'TBR=mkwst@chromium.org\n' +
+    'Review URL: https://codereview.chromium.org/13462004</msg>\n' +
+    '</logentry>\n' +
+    '<logentry\n' +
+    '   revision="147743">\n' +
+    '<author>tkent@chromium.org</author>\n' +
+    '<date>2013-04-06T12:48:59.078499Z</date>\n' +
+    '<msg>Update test expectations.\n' +
+    '\n' +
+    'BUG=227354,227357</msg>\n' +
+    '</logentry>\n' +
+    '<logentry\n' +
+    '   revision="147742">\n' +
+    '<author>gavinp@chromium.org</author>\n' +
+    '<date>2013-04-06T12:40:34.111299Z</date>\n' +
+    '<msg>Guard &lt;link&gt; beforeload against recursion.\n' +
+    '\n' +
+    'The beforeload event on a link element can recurse if it mutates its\n' +
+    'firing link element. Now guard against this, only allowing the\n' +
+    'innermost (last!) change to run. This prevents multiple client\n' +
+    'registration and stops the crash in the bug report (which is\n' +
+    'reproduced in the test).\n' +
+    '\n' +
+    'BUG=174920\n' +
+    '\n' +
+    'Committed: https://src.chromium.org/viewvc/blink?view=rev&amp;revision=147738\n' +
+    '\n' +
+    'Review URL: https://codereview.chromium.org/13725004</msg>\n' +
+    '</logentry>\n' +
+    '</log>';
 
 test("rebaselineQueue", 3, function() {
     var queue = model.takeRebaselineQueue();
@@ -156,24 +120,34 @@ test("updateRecentCommits", 2, function() {
                 delete commitData.message;
             });
             deepEqual(recentCommits, [{
-                "revision": 92259,
-                "title": "Revision 92259: Unreviewed, rolling out r92256.\nhttp://trac.webkit.org/changeset/92256 ...",
-                "time": "Wed, 03 Aug 2011 04:26:52 GMT",
-                "summary": "Unreviewed, rolling out r92256.",
-                "author": "Sheriff Bot",
-                "reviewer": null,
-                "bugID": 65593,
-                "revertedRevision": 92256
-             }, {
-                "revision": 92256,
-                "title": "Revision 92256: Support cast between CSSPrimitiveValue and EBoxSizing, use in ...",
-                "time": "Thu, 04 Aug 2011 02:09:19 GMT",
-                "summary": "Support cast between CSSPrimitiveValue and EBoxSizing, use in CSSStyleSelector.",
-                "author": "macpherson@chromium.org",
-                "reviewer": "Simon Fraser",
-                "bugID": 65657,
-                "revertedRevision": undefined,
-                "wasReverted": true
+                'revision': '147744',
+                'title': 'Revert 147740 "Remove the ENABLE_QUOTA compile-time flag."',
+                'time': '2013-04-06T13:00:08.314281Z',
+                'summary': 'Revert 147740 "Remove the ENABLE_QUOTA compile-time flag."',
+                'author': 'tkent@chromium.org',
+                'reviewer': 'eseidel@chromium',
+                'bugID': 0,
+                'revertedRevision': undefined
+            },
+            {
+                'revision': '147743',
+                'title': 'Update test expectations.',
+                'time': '2013-04-06T12:48:59.078499Z',
+                'summary': 'Update test expectations.',
+                'author': 'tkent@chromium.org',
+                'reviewer': null,
+                'bugID': 227354,
+                'revertedRevision': undefined
+              },
+            {
+                'revision': '147742',
+                'title': 'Guard <link> beforeload against recursion.',
+                'time': '2013-04-06T12:40:34.111299Z',
+                'summary': 'Guard <link> beforeload against recursion.',
+                'author': 'gavinp@chromium.org',
+                'reviewer': null,
+                'bugID': 174920,
+                'revertedRevision': undefined
             }]);
         });
     });
@@ -198,11 +172,11 @@ test("commitDataListForRevisionRange", 6, function() {
                 return commitData.bugID;
             }
 
-            deepEqual(model.commitDataListForRevisionRange(92259, 92259).map(extractBugIDs), [65593]);
-            deepEqual(model.commitDataListForRevisionRange(92256, 92259).map(extractBugIDs), [65657, 65593]);
-            deepEqual(model.commitDataListForRevisionRange(92259, 92256).map(extractBugIDs), []);
-            deepEqual(model.commitDataListForRevisionRange(0, 92256).map(extractBugIDs), [65657]);
-            deepEqual(model.commitDataListForRevisionRange(92256, 0).map(extractBugIDs), []);
+            deepEqual(model.commitDataListForRevisionRange(147742, 147742).map(extractBugIDs), [174920]);
+            deepEqual(model.commitDataListForRevisionRange(147740, 147742).map(extractBugIDs), [174920]);
+            deepEqual(model.commitDataListForRevisionRange(147739, 147740).map(extractBugIDs), []);
+            deepEqual(model.commitDataListForRevisionRange(0, 147742).map(extractBugIDs), [174920]);
+            deepEqual(model.commitDataListForRevisionRange(147743, 0).map(extractBugIDs), []);
             delete model.state.recentCommits;
         });
     });

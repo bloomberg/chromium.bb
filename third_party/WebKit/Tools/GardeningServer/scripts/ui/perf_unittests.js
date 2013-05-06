@@ -57,7 +57,7 @@ asyncTest("View", 7, function() {
     setTimeout(function() {
         equal(view.outerHTML, '<div id="perf-view">' +
             '<ol class="notifications">' +
-                '<li style="opacity: 0; ">' +
+                '<li style="opacity: 0;">' +
                     '<div class="how"></div><div class="what">Loading list of perf dashboards...</div>' +
                 '</li>' +
             '</ol>' +
@@ -74,7 +74,7 @@ asyncTest("View", 7, function() {
 
         equal(view.outerHTML, '<div id="perf-view">' +
             '<ol class="notifications">' +
-                '<li style="opacity: 0; ">' +
+                '<li style="opacity: 0;">' +
                     '<div class="how"></div><div class="what">Loading list of perf dashboards...</div>' +
                 '</li>' +
             '</ol>' +
@@ -91,7 +91,7 @@ asyncTest("View", 7, function() {
 
         equal(view.outerHTML, '<div id="perf-view">' +
             '<ol class="notifications">' +
-                '<li style="opacity: 0; ">' +
+                '<li style="opacity: 0;">' +
                     '<div class="how"></div><div class="what">Loading list of perf dashboards...</div>' +
                 '</li>' +
             '</ol>' +
@@ -108,7 +108,7 @@ asyncTest("View", 7, function() {
 
         equal(view.outerHTML, '<div id="perf-view">' +
             '<ol class="notifications">' +
-                '<li style="opacity: 0; ">' +
+                '<li style="opacity: 0;">' +
                     '<div class="how"></div><div class="what">Loading list of perf dashboards...</div>' +
                 '</li>' +
             '</ol>' +
@@ -125,7 +125,7 @@ asyncTest("View", 7, function() {
 
         equal(view.outerHTML, '<div id="perf-view">' +
             '<ol class="notifications">' +
-                '<li style="opacity: 0; ">' +
+                '<li style="opacity: 0;">' +
                     '<div class="how"></div><div class="what">Loading list of perf dashboards...</div>' +
                 '</li>' +
             '</ol>' +
@@ -142,7 +142,7 @@ asyncTest("View", 7, function() {
 
         equal(view.outerHTML, '<div id="perf-view">' +
             '<ol class="notifications">' +
-                '<li style="opacity: 0; ">' +
+                '<li style="opacity: 0;">' +
                     '<div class="how"></div><div class="what">Loading list of perf dashboards...</div>' +
                 '</li>' +
             '</ol>' +
@@ -159,7 +159,7 @@ asyncTest("View", 7, function() {
 
         equal(view.outerHTML, '<div id="perf-view">' +
             '<ol class="notifications">' +
-                '<li style="opacity: 0; ">' +
+                '<li style="opacity: 0;">' +
                     '<div class="how"></div><div class="what">Loading list of perf dashboards...</div>' +
                 '</li>' +
             '</ol>' +

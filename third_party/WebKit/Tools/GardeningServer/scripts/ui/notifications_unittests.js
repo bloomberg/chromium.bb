@@ -87,7 +87,7 @@ test('SuspiciousCommit', 2, function() {
     equal(suspiciousCommit.tagName, 'LI');
     equal(suspiciousCommit.innerHTML,
         '<div class="description">' +
-            '<a href="http://trac.webkit.org/changeset/1" target="_blank">1</a>' +
+            '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1" target="_blank">1</a>' +
             '<span>' +
                 '<span class="summary">summary</span>' +
                 '<span class="author">author</span>' +
@@ -104,7 +104,7 @@ test('FailingTestsSummary', 12, function() {
             '<time class="relative"></time>' +
             '<table class="failures">' +
                 '<thead><tr><td>type</td><td>release</td><td>debug</td></tr></thead>' +
-                '<tbody><tr class="BUILDING" style="display: none; "><td><span>BUILDING</span></td><td></td><td></td></tr></tbody>' +
+                '<tbody><tr class="BUILDING" style="display: none;"><td><span>BUILDING</span></td><td></td><td></td></tr></tbody>' +
             '</table>' +
         '</div>' +
         '<div class="what">' +
@@ -124,7 +124,7 @@ test('FailingTestsSummary', 12, function() {
             '<time class="relative"></time>' +
             '<table class="failures">' +
                 '<thead><tr><td>type</td><td>release</td><td>debug</td></tr></thead>' +
-                '<tbody><tr class="BUILDING" style="display: none; "><td><span>BUILDING</span></td><td></td><td></td></tr></tbody>' +
+                '<tbody><tr class="BUILDING" style="display: none;"><td><span>BUILDING</span></td><td></td><td></td></tr></tbody>' +
             '</table>' +
         '</div>' +
         '<div class="what">' +
@@ -147,7 +147,7 @@ test('FailingTestsSummary', 12, function() {
             '<time class="relative"></time>' +
             '<table class="failures">' +
                 '<thead><tr><td>type</td><td>release</td><td>debug</td></tr></thead>' +
-                '<tbody><tr class="BUILDING" style="display: none; "><td><span>BUILDING</span></td><td></td><td></td></tr></tbody>' +
+                '<tbody><tr class="BUILDING" style="display: none;"><td><span>BUILDING</span></td><td></td><td></td></tr></tbody>' +
             '</table>' +
         '</div>' +
         '<div class="what">' +
@@ -172,7 +172,7 @@ test('FailingTestsSummary', 12, function() {
             '<time class="relative">10 minutes ago</time>' +
             '<table class="failures">' +
                 '<thead><tr><td>type</td><td>release</td><td>debug</td></tr></thead>' +
-                '<tbody><tr class="BUILDING" style="display: none; "><td><span>BUILDING</span></td><td></td><td></td></tr></tbody>' +
+                '<tbody><tr class="BUILDING" style="display: none;"><td><span>BUILDING</span></td><td></td><td></td></tr></tbody>' +
             '</table>' +
         '</div>' +
         '<div class="what">' +
@@ -188,7 +188,7 @@ test('FailingTestsSummary', 12, function() {
             '<ul class="causes">' +
                 '<li>' +
                     '<div class="description">' +
-                        '<a href="http://trac.webkit.org/changeset/1" target="_blank">1</a>' +
+                        '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1" target="_blank">1</a>' +
                         '<span>' +
                             '<span class="summary">summary</span>' +
                             '<span class="author">author</span>' +
@@ -199,7 +199,7 @@ test('FailingTestsSummary', 12, function() {
             '</ul>' +
         '</div>');
 
-    testFailures.addFailureAnalysis({testName: 'foo', resultNodesByBuilder: {'Webkit Linux (dbg)': { actual: 'TEXT'}}});
+    testFailures.addFailureAnalysis({testName: 'foo', resultNodesByBuilder: {'WebKit Linux (dbg)': { actual: 'TEXT'}}});
     equal(testFailures.innerHTML,
         '<div class="how">' +
             '<time class="relative">10 minutes ago</time>' +
@@ -209,9 +209,9 @@ test('FailingTestsSummary', 12, function() {
                     '<tr class="TEXT">' +
                         '<td><span>TEXT</span></td>' +
                         '<td></td>' +
-                        '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=Webkit+Linux+(dbg)"><span class="version">lucid</span><span class="architecture">64-bit</span></a></td>' +
+                        '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux+(dbg)"><span class="version">lucid</span><span class="architecture">64-bit</span></a></td>' +
                     '</tr>' +
-                    '<tr class="BUILDING" style="display: none; "><td><span>BUILDING</span></td><td></td><td></td></tr>' +
+                    '<tr class="BUILDING" style="display: none;"><td><span>BUILDING</span></td><td></td><td></td></tr>' +
                 '</tbody>' +
             '</table>' +
         '</div>' +
@@ -229,7 +229,7 @@ test('FailingTestsSummary', 12, function() {
             '<ul class="causes">' +
                 '<li>' +
                     '<div class="description">' +
-                        '<a href="http://trac.webkit.org/changeset/1" target="_blank">1</a>' +
+                        '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1" target="_blank">1</a>' +
                         '<span>' +
                             '<span class="summary">summary</span>' +
                             '<span class="author">author</span>' +
@@ -240,7 +240,7 @@ test('FailingTestsSummary', 12, function() {
             '</ul>' +
         '</div>');
 
-    testFailures.updateBuilderResults({'Webkit Mac10.6': { actual: 'BUILDING'}});
+    testFailures.updateBuilderResults({'WebKit Mac10.6': { actual: 'BUILDING'}});
     equal(testFailures.innerHTML,
         '<div class="how">' +
             '<time class="relative">10 minutes ago</time>' +
@@ -250,11 +250,11 @@ test('FailingTestsSummary', 12, function() {
                     '<tr class="TEXT">' +
                         '<td><span>TEXT</span></td>' +
                         '<td></td>' +
-                        '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=Webkit+Linux+(dbg)"><span class="version">lucid</span><span class="architecture">64-bit</span></a></td>' +
+                        '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux+(dbg)"><span class="version">lucid</span><span class="architecture">64-bit</span></a></td>' +
                     '</tr>' +
                     '<tr class="BUILDING" style="">' +
                         '<td><span>BUILDING</span></td>' +
-                        '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=Webkit+Mac10.6"><span class="version">snowleopard</span></a></td>' +
+                        '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Mac10.6"><span class="version">snowleopard</span></a></td>' +
                         '<td></td>' +
                     '</tr>' +
                 '</tbody>' +
@@ -274,7 +274,7 @@ test('FailingTestsSummary', 12, function() {
             '<ul class="causes">' +
                 '<li>' +
                     '<div class="description">' +
-                        '<a href="http://trac.webkit.org/changeset/1" target="_blank">1</a>' +
+                        '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1" target="_blank">1</a>' +
                         '<span>' +
                             '<span class="summary">summary</span>' +
                             '<span class="author">author</span>' +
@@ -298,7 +298,7 @@ test('FailingTestsSummary (grouping)', 1, function() {
             '<time class="relative"></time>' +
             '<table class="failures">' +
                 '<thead><tr><td>type</td><td>release</td><td>debug</td></tr></thead>' +
-                '<tbody><tr class="BUILDING" style="display: none; "><td><span>BUILDING</span></td><td></td><td></td></tr></tbody>' +
+                '<tbody><tr class="BUILDING" style="display: none;"><td><span>BUILDING</span></td><td></td><td></td></tr></tbody>' +
             '</table>' +
         '</div>' +
         '<div class="what">' +
@@ -318,7 +318,7 @@ test('FailingTestsSummary (grouping)', 1, function() {
 
 test('BuildersFailing', 1, function() {
     var builderFailing = new ui.notifications.BuildersFailing('Disasterifying');
-    builderFailing.setFailingBuilders({'Webkit Linux': ['compile'], 'Webkit Win7': ['webkit_tests', 'update']});
+    builderFailing.setFailingBuilders({'WebKit Linux': ['compile'], 'WebKit Win7': ['webkit_tests', 'update']});
     equal(builderFailing.innerHTML,
         '<div class="how">' +
             '<time class="relative"></time>' +
@@ -326,8 +326,8 @@ test('BuildersFailing', 1, function() {
         '<div class="what">' +
             '<div class="problem">Disasterifying:' +
                 '<ul class="effects">' +
-                    '<li class="builder"><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=Webkit+Linux"><span class="version">lucid</span><span class="architecture">64-bit</span><span class="failures"> compile</span></a></li>' +
-                    '<li class="builder"><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=Webkit+Win7"><span class="version">win7</span><span class="failures"> webkit_tests, update</span></a></li>' +
+                    '<li class="builder"><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux"><span class="version">lucid</span><span class="architecture">64-bit</span><span class="failures"> compile</span></a></li>' +
+                    '<li class="builder"><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Win7"><span class="version">win7</span><span class="failures"> webkit_tests, update</span></a></li>' +
                 '</ul>' +
             '</div>' +
             '<ul class="causes"></ul>' +
