@@ -1445,6 +1445,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableWebPInAcceptHeader)
   },
+  {
+    "apps-use-native-frame",
+    IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_NAME,
+    IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_DESCRIPTION,
+    kOsWin,
+    SINGLE_VALUE_TYPE(switches::kAppsUseNativeFrame)
+  },
 };
 
 const Experiment* experiments = kExperiments;

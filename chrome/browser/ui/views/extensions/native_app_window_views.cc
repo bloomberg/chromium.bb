@@ -152,7 +152,7 @@ void NativeAppWindowViews::InitializeDefaultWindow(
     const ShellWindow::CreateParams& create_params) {
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_WINDOW);
   init_params.delegate = this;
-  init_params.remove_standard_frame = true;
+  init_params.remove_standard_frame = ShouldUseChromeStyleFrame();
   init_params.use_system_default_icon = true;
   // TODO(erg): Conceptually, these are toplevel windows, but we theoretically
   // could plumb context through to here in some cases.
@@ -407,35 +407,37 @@ void NativeAppWindowViews::OnViewWasResized() {
   // TODO(jeremya): this doesn't seem like a terribly elegant way to keep the
   // window shape in sync.
 #if defined(OS_WIN) && !defined(USE_AURA)
-  // Set the window shape of the RWHV.
   DCHECK(window_);
   DCHECK(web_view_);
   gfx::Size sz = web_view_->size();
   int height = sz.height(), width = sz.width();
-  int radius = 1;
-  gfx::Path path;
-  if (window_->IsMaximized() || window_->IsFullscreen()) {
-    // Don't round the corners when the window is maximized or fullscreen.
-    path.addRect(0, 0, width, height);
-  } else {
-    if (frameless_) {
-      path.moveTo(0, radius);
-      path.lineTo(radius, 0);
-      path.lineTo(width - radius, 0);
-      path.lineTo(width, radius);
+  if (ShouldUseChromeStyleFrame()) {
+    // Set the window shape of the RWHV.
+    const int kCornerRadius = 1;
+    gfx::Path path;
+    if (window_->IsMaximized() || window_->IsFullscreen()) {
+      // Don't round the corners when the window is maximized or fullscreen.
+      path.addRect(0, 0, width, height);
     } else {
-      // Don't round the top corners in chrome-style frame mode.
-      path.moveTo(0, 0);
-      path.lineTo(width, 0);
+      if (frameless_) {
+        path.moveTo(0, kCornerRadius);
+        path.lineTo(kCornerRadius, 0);
+        path.lineTo(width - kCornerRadius, 0);
+        path.lineTo(width, kCornerRadius);
+      } else {
+        // Don't round the top corners in chrome-style frame mode.
+        path.moveTo(0, 0);
+        path.lineTo(width, 0);
+      }
     }
-    path.lineTo(width, height - radius - 1);
-    path.lineTo(width - radius - 1, height);
-    path.lineTo(radius + 1, height);
-    path.lineTo(0, height - radius - 1);
+    path.lineTo(width, height - kCornerRadius - 1);
+    path.lineTo(width - kCornerRadius - 1, height);
+    path.lineTo(kCornerRadius + 1, height);
+    path.lineTo(0, height - kCornerRadius - 1);
     path.close();
+    SetWindowRgn(web_contents()->GetView()->GetNativeView(),
+                 path.CreateNativeRegion(), 1);
   }
-  SetWindowRgn(web_contents()->GetView()->GetNativeView(),
-               path.CreateNativeRegion(), 1);
 
   SkRegion* rgn = new SkRegion;
   if (!window_->IsFullscreen()) {
@@ -458,6 +460,11 @@ void NativeAppWindowViews::OnViewWasResized() {
   FOR_EACH_OBSERVER(WebContentsModalDialogHostObserver,
                     observer_list_,
                     OnPositionRequiresUpdate());
+}
+
+bool NativeAppWindowViews::ShouldUseChromeStyleFrame() const {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAppsUseNativeFrame) || frameless_;
 }
 
 // WidgetDelegate implementation.
@@ -546,9 +553,12 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
     }
   }
 #endif
-  ShellWindowFrameView* frame_view = new ShellWindowFrameView(this);
-  frame_view->Init(window_);
-  return frame_view;
+  if (ShouldUseChromeStyleFrame()) {
+    ShellWindowFrameView* frame_view = new ShellWindowFrameView(this);
+    frame_view->Init(window_);
+    return frame_view;
+  }
+  return views::WidgetDelegateView::CreateNonClientFrameView(widget);
 }
 
 bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(

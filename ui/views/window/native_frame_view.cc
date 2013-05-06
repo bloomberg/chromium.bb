@@ -63,8 +63,20 @@ void NativeFrameView::UpdateWindowTitle() {
   // Nothing to do.
 }
 
+// Returns the client size. On Windows, this is the expected behavior for
+// native frames (see |NativeWidgetWin::WidgetSizeIsClientSize()|), while other
+// platforms currently always return client bounds from
+// |GetWindowBoundsForClientBounds()|.
 gfx::Size NativeFrameView::GetPreferredSize() {
   return frame_->client_view()->GetPreferredSize();
+}
+
+gfx::Size NativeFrameView::GetMinimumSize() {
+  return frame_->client_view()->GetMinimumSize();
+}
+
+gfx::Size NativeFrameView::GetMaximumSize() {
+  return frame_->client_view()->GetMaximumSize();
 }
 
 }  // namespace views

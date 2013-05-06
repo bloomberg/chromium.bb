@@ -108,6 +108,9 @@ const char kAppsNewInstallBubble[]          = "apps-new-install-bubble";
 // Disable throbber for extension apps.
 const char kAppsNoThrob[]                   = "apps-no-throb";
 
+// Experimental native frame support for packaged apps.
+const char kAppsUseNativeFrame[]            = "apps-use-native-frame";
+
 // Whitelist of servers that Negotiate will generate delegated Kerberos tickets
 // for.
 const char kAuthNegotiateDelegateWhitelist[] =

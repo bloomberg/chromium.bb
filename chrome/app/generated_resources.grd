@@ -6804,6 +6804,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_DESCRIPTION" desc="Description for the flag to enable locally managed users.">
         Enables support for user profiles that are managed by another user and can have restrictions applied.
       </message>
+      <message name="IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_NAME" desc="Title for the flag to enable native style frames for apps.">
+        Native style window frames for packaged apps
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_DESCRIPTION" desc="Description for the flag to enable native style frames for apps.">
+        Use native-style window decorations for packaged app windows.
+      </message>
       <message name="IDS_FLAGS_ENABLE_WEBP_IN_ACCEPT_HEADER_NAME" desc="Title for the flag to enable 'image/webp' in accept header.">
         Enable 'image/webp' accept header
       </message>

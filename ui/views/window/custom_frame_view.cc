@@ -239,6 +239,20 @@ gfx::Size CustomFrameView::GetPreferredSize() {
       gfx::Rect(frame_->client_view()->GetPreferredSize())).size();
 }
 
+gfx::Size CustomFrameView::GetMinimumSize() {
+  return frame_->non_client_view()->GetWindowBoundsForClientBounds(
+      gfx::Rect(frame_->client_view()->GetMinimumSize())).size();
+}
+
+gfx::Size CustomFrameView::GetMaximumSize() {
+  gfx::Size max_size = frame_->client_view()->GetMaximumSize();
+  gfx::Size converted_size =
+      frame_->non_client_view()->GetWindowBoundsForClientBounds(
+          gfx::Rect(max_size)).size();
+  return gfx::Size(max_size.width() == 0 ? 0 : converted_size.width(),
+                   max_size.height() == 0 ? 0 : converted_size.height());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameView, ButtonListener implementation:
 
