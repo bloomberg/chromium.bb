@@ -95,7 +95,7 @@ body:not(.has-results) #search-field:not(:valid) {
   -webkit-padding-end: 0;
 }
 
-.remove-entry {
+button.remove-entry {
   background: url('../../../../ui/webui/resources/images/2x/x-thin.png')
       no-repeat center center;
   background-size: 13px;
@@ -105,10 +105,11 @@ body:not(.has-results) #search-field:not(:valid) {
   min-width: 45px;
   opacity: 0.7;
   padding: 0 16px;
+  vertical-align: top;
   width: 45px;
 }
 
-.remove-entry:active {
+button.remove-entry:active {
   opacity: 1.0;
 }
 

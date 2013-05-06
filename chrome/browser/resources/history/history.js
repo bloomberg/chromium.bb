@@ -168,7 +168,8 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   titleAndDomainWrapper.appendChild(domain);
 
   if (isMobileVersion()) {
-    var removeButton = createElementWithClassName('div', 'remove-entry');
+    var removeButton = createElementWithClassName('button', 'remove-entry');
+    removeButton.classList.add('custom-appearance');
     removeButton.addEventListener('click', function(e) {
       self.removeFromHistory();
       e.stopPropagation();
