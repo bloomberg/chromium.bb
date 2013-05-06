@@ -59,7 +59,6 @@ class FormState;
 class FormSubmission;
 class FrameLoaderClient;
 class FrameNetworkingContext;
-class MHTMLArchive;
 class NavigationAction;
 class NetworkingContext;
 class Page;
@@ -102,7 +101,6 @@ public:
 
     void load(const FrameLoadRequest&);
 
-    void loadArchive(PassRefPtr<MHTMLArchive>);
     unsigned long loadResourceSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
 
     void changeLocation(SecurityOrigin*, const KURL&, const String& referrer, bool lockHistory = true, bool lockBackForwardList = true, bool refresh = false);

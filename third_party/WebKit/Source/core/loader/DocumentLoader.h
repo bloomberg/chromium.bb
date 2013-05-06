@@ -121,14 +121,7 @@ namespace WebCore {
         void setTitle(const StringWithDirection&);
         const String& overrideEncoding() const { return m_overrideEncoding; }
 
-        void setArchive(PassRefPtr<MHTMLArchive>);
-        void addAllArchiveResources(MHTMLArchive*);
-        PassRefPtr<MHTMLArchive> popArchiveForSubframe(const String& frameName, const KURL&);
-
         bool scheduleArchiveLoad(ResourceLoader*, const ResourceRequest&);
-
-        // Return the ArchiveResource for the URL only when loading an Archive
-        ArchiveResource* archiveResourceForURL(const KURL&) const;
 
 #ifndef NDEBUG
         bool isSubstituteLoadPending(ResourceLoader*) const;
@@ -209,6 +202,10 @@ namespace WebCore {
         
         bool maybeCreateArchive();
         void clearArchiveResources();
+
+        void prepareSubframeArchiveLoadIfNeeded();
+        void addAllArchiveResources(MHTMLArchive*);
+        ArchiveResource* archiveResourceForURL(const KURL&) const;
 
         void willSendRequest(ResourceRequest&, const ResourceResponse&);
         void finishedLoading(double finishTime);

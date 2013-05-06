@@ -72,7 +72,6 @@
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/loader/archive/MHTMLArchive.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/Chrome.h"
@@ -799,12 +798,6 @@ void FrameLoader::loadURLIntoChildFrame(const KURL& url, const String& referer, 
 {
     ASSERT(childFrame);
 
-    RefPtr<MHTMLArchive> subframeArchive = activeDocumentLoader()->popArchiveForSubframe(childFrame->tree()->uniqueName(), url);
-    if (subframeArchive) {
-        childFrame->loader()->loadArchive(subframeArchive.release());
-        return;
-    }
-
     HistoryItem* parentItem = history()->currentItem();
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
@@ -818,22 +811,6 @@ void FrameLoader::loadURLIntoChildFrame(const KURL& url, const String& referer, 
     }
 
     childFrame->loader()->loadURL(url, referer, "_self", false, FrameLoadTypeRedirectWithLockedBackForwardList, 0, 0);
-}
-
-void FrameLoader::loadArchive(PassRefPtr<MHTMLArchive> archive)
-{
-    ArchiveResource* mainResource = archive->mainResource();
-    ASSERT(mainResource);
-    if (!mainResource)
-        return;
-        
-    SubstituteData substituteData(mainResource->data(), mainResource->mimeType(), mainResource->textEncoding(), KURL());
-    
-    ResourceRequest request(mainResource->url());
-
-    RefPtr<DocumentLoader> documentLoader = m_client->createDocumentLoader(request, substituteData);
-    documentLoader->setArchive(archive.get());
-    load(documentLoader.get());
 }
 
 ObjectContentType FrameLoader::defaultObjectContentType(const KURL& url, const String& mimeTypeIn, bool shouldPreferPlugInsForImages)
