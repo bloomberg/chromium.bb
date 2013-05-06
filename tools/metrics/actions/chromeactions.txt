@@ -1130,6 +1130,7 @@
 0x95c990454684cb1d	NewTabPage_ReopenTab
 0xab4d417c5ca44904	NewTab_Button
 0xbdc9ec125e7a3ade	NewWindow
+0xa86d43452b05bf72	Notifications.ShowMessageCenter
 0x268376698078c71b	OmniboxInputInProgress
 0xe7ff15c3f1043a26	Omnibox_DragString
 0x1a18c36c737ec22b	Omnibox_DragURL

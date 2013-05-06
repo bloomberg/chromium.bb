@@ -12,6 +12,7 @@
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/views/message_center/notification_bubble_wrapper_win.h"
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"
@@ -114,6 +115,8 @@ gfx::ImageSkia GetIcon(int unread_count) {
 
 }  // namespace
 
+using content::UserMetricsAction;
+
 namespace message_center {
 
 MessageCenterTrayDelegate* CreateMessageCenterTray() {
@@ -151,6 +154,8 @@ void WebNotificationTrayWin::HidePopups() {
 }
 
 bool WebNotificationTrayWin::ShowMessageCenter() {
+  content::RecordAction(UserMetricsAction("Notifications.ShowMessageCenter"));
+
   scoped_ptr<message_center::MessageCenterBubble> bubble(
       new message_center::MessageCenterBubble(message_center()));
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
