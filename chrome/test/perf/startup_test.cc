@@ -199,12 +199,12 @@ class StartupTest : public UIPerfTest {
         ASSERT_TRUE(PathService::Get(chrome::DIR_APP, &dir_app));
 
         base::FilePath chrome_exe(dir_app.Append(GetExecutablePath()));
-        ASSERT_TRUE(EvictFileFromSystemCacheWrapper(chrome_exe));
+        ASSERT_TRUE(base::EvictFileFromSystemCacheWithRetry(chrome_exe));
 #if defined(OS_WIN)
         // chrome.dll is windows specific.
         base::FilePath chrome_dll(
             dir_app.Append(FILE_PATH_LITERAL("chrome.dll")));
-        ASSERT_TRUE(EvictFileFromSystemCacheWrapper(chrome_dll));
+        ASSERT_TRUE(base::EvictFileFromSystemCacheWithRetry(chrome_dll));
 #endif
       }
       UITest::SetUp();

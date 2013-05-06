@@ -612,17 +612,6 @@ void UITest::WaitForFinish(const std::string &name,
   EXPECT_EQ(expected_cookie_value, cookie_value);
 }
 
-bool UITest::EvictFileFromSystemCacheWrapper(const base::FilePath& path) {
-  const int kCycles = 10;
-  const TimeDelta kDelay = TestTimeouts::action_timeout() / kCycles;
-  for (int i = 0; i < kCycles; i++) {
-    if (file_util::EvictFileFromSystemCache(path))
-      return true;
-    base::PlatformThread::Sleep(kDelay);
-  }
-  return false;
-}
-
 bool UITest::WaitUntilJavaScriptCondition(TabProxy* tab,
                                           const std::wstring& frame_xpath,
                                           const std::wstring& jscript,

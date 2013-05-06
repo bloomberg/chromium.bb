@@ -39,6 +39,41 @@ namespace {
 // Passed as value of kTestType.
 const char kUITestType[] = "ui";
 
+// Copies the contents of the given source directory to the given dest
+// directory. This is somewhat different than CopyDirectory in base which will
+// copies "source/" to "dest/source/". This version will copy "source/*" to
+// "dest/*", overwriting existing files as necessary.
+//
+// This also kicks the files out of the memory cache for the startup tests.
+// TODO(brettw) bug 237904: This is the wrong place for this code. It means all
+// startup tests other than the "cold" ones run more slowly than necessary.
+bool CopyDirectoryContentsNoCache(const base::FilePath& source,
+                                  const base::FilePath& dest) {
+  file_util::FileEnumerator en(source, false,
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES);
+  for (base::FilePath cur = en.Next(); !cur.empty(); cur = en.Next()) {
+    file_util::FileEnumerator::FindInfo info;
+    en.GetFindInfo(&info);
+    if (file_util::FileEnumerator::IsDirectory(info)) {
+      if (!file_util::CopyDirectory(cur, dest, true))
+        return false;
+    } else {
+      if (!file_util::CopyFile(cur, dest.Append(cur.BaseName())))
+        return false;
+    }
+  }
+
+  // Kick out the profile files, this must happen after SetUp which creates the
+  // profile. It might be nicer to use EvictFileFromSystemCacheWrapper from
+  // UITest which will retry on failure.
+  file_util::FileEnumerator kickout(dest, true,
+                                    file_util::FileEnumerator::FILES);
+  for (base::FilePath cur = kickout.Next(); !cur.empty(); cur = kickout.Next())
+    base::EvictFileFromSystemCacheWithRetry(cur);
+  return true;
+}
+
 // We want to have a current history database when we start the browser so
 // things like the NTP will have thumbnails.  This method updates the dates
 // in the history to be more recent.
@@ -184,8 +219,8 @@ bool ProxyLauncher::LaunchBrowser(const LaunchState& state) {
 
   if (!state.template_user_data.empty()) {
     // Recursively copy the template directory to the user_data_dir.
-    if (!file_util::CopyRecursiveDirNoCache(
-            state.template_user_data, user_data_dir())) {
+    if (!CopyDirectoryContentsNoCache(state.template_user_data,
+                                      user_data_dir())) {
       LOG(ERROR) << "Failed to copy user data directory template.";
       return false;
     }

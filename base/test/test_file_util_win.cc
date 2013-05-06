@@ -216,59 +216,6 @@ bool EvictFileFromSystemCache(const base::FilePath& file) {
   return true;
 }
 
-// Like CopyFileNoCache but recursively copies all files and subdirectories
-// in the given input directory to the output directory.
-bool CopyRecursiveDirNoCache(const base::FilePath& source_dir,
-                             const base::FilePath& dest_dir) {
-  // Try to create the directory if it doesn't already exist.
-  if (!CreateDirectory(dest_dir)) {
-    if (GetLastError() != ERROR_ALREADY_EXISTS)
-      return false;
-  }
-
-  std::vector<std::wstring> files_copied;
-
-  base::FilePath src(source_dir.AppendASCII("*"));
-
-  WIN32_FIND_DATA fd;
-  HANDLE fh = FindFirstFile(src.value().c_str(), &fd);
-  if (fh == INVALID_HANDLE_VALUE)
-    return false;
-
-  do {
-    std::wstring cur_file(fd.cFileName);
-    if (cur_file == L"." || cur_file == L"..")
-      continue;  // Skip these special entries.
-
-    base::FilePath cur_source_path = source_dir.Append(cur_file);
-    base::FilePath cur_dest_path = dest_dir.Append(cur_file);
-
-    if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-      // Recursively copy a subdirectory. We stripped "." and ".." already.
-      if (!CopyRecursiveDirNoCache(cur_source_path, cur_dest_path)) {
-        FindClose(fh);
-        return false;
-      }
-    } else {
-      // Copy the file.
-      if (!::CopyFile(cur_source_path.value().c_str(),
-                      cur_dest_path.value().c_str(), false)) {
-        FindClose(fh);
-        return false;
-      }
-
-      // We don't check for errors from this function, often, we are copying
-      // files that are in the repository, and they will have read-only set.
-      // This will prevent us from evicting from the cache, but these don't
-      // matter anyway.
-      EvictFileFromSystemCache(cur_dest_path);
-    }
-  } while (FindNextFile(fh, &fd));
-
-  FindClose(fh);
-  return true;
-}
-
 // Checks if the volume supports Alternate Data Streams. This is required for
 // the Zone Identifier implementation.
 bool VolumeSupportsADS(const base::FilePath& path) {

@@ -864,6 +864,7 @@
         'test/simple_test_tick_clock.h',
         'test/task_runner_test_template.cc',
         'test/task_runner_test_template.h',
+        'test/test_file_util.cc',
         'test/test_file_util.h',
         'test/test_file_util_linux.cc',
         'test/test_file_util_mac.cc',

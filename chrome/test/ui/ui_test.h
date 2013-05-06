@@ -372,13 +372,6 @@ class UITest : public UITestBase, public PlatformTest {
                      const std::string& expected_cookie_value,
                      const base::TimeDelta wait_time);
 
-  // Wrapper around EvictFileFromSystemCache to retry 10 times in case of
-  // error.
-  // Apparently needed for Windows buildbots (to workaround an error when
-  // file is in use).
-  // TODO(phajdan.jr): Move to test_file_util if we need it in more places.
-  bool EvictFileFromSystemCacheWrapper(const base::FilePath& path);
-
   // Polls the tab for a JavaScript condition and returns once one of the
   // following conditions hold true:
   // - The JavaScript condition evaluates to true (return true).

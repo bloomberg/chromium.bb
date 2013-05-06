@@ -13,9 +13,18 @@
 #include "base/files/file_path.h"
 
 namespace base {
-class FilePath;
-}
 
+class FilePath;
+
+// Clear a specific file from the system cache like EvictFileFromSystemCache,
+// but on failure it will sleep and retry. On the Windows buildbots, eviction
+// can fail if the file is marked in use, and this will throw off timings that
+// rely on uncached files.
+bool EvictFileFromSystemCacheWithRetry(const FilePath& file);
+
+}  // namespace base
+
+// TODO(brettw) move all of this to the base namespace.
 namespace file_util {
 
 // Wrapper over file_util::Delete. On Windows repeatedly invokes Delete in case
@@ -26,15 +35,6 @@ bool DieFileDie(const base::FilePath& file, bool recurse);
 // Clear a specific file from the system cache. After this call, trying
 // to access this file will result in a cold load from the hard drive.
 bool EvictFileFromSystemCache(const base::FilePath& file);
-
-// Like CopyFileNoCache but recursively copies all files and subdirectories
-// in the given input directory to the output directory. Any files in the
-// destination that already exist will be overwritten.
-//
-// Returns true on success. False means there was some error copying, so the
-// state of the destination is unknown.
-bool CopyRecursiveDirNoCache(const base::FilePath& source_dir,
-                             const base::FilePath& dest_dir);
 
 #if defined(OS_WIN)
 // Returns true if the volume supports Alternate Data Streams.
