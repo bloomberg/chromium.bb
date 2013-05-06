@@ -8,7 +8,6 @@
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
 
