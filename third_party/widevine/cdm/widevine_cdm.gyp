@@ -35,6 +35,7 @@
                 'symbols/win/<(target_arch)/widevine_cdm_version.h',
             'widevine_cdm_binary_files%': [
               'binaries/win/<(target_arch)/widevinecdm.dll',
+              'binaries/win/<(target_arch)/widevinecdm.dll.lib',
             ],
           }],
         ],
@@ -70,8 +71,14 @@
                 '<(PRODUCT_DIR)/libwidevinecdm.so',
               ],
             }],
-            [ 'OS == "win" and 0', {
+            [ 'OS == "win"', {
               'type': 'shared_library',
+              # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+              'msvs_disabled_warnings': [ 4267, ],
+              'libraries': [
+                # Copied by widevine_cdm_binaries.
+                '<(PRODUCT_DIR)/widevinecdm.dll.lib',
+              ],
             }],
             [ 'OS == "mac"', {
               'type': 'loadable_module',
