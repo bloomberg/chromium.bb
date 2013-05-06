@@ -37,7 +37,7 @@ if (!chrome.embeddedSearch) {
       var nodeShadow = safeObjects.createShadowRoot.apply(node);
       nodeShadow.applyAuthorStyles = true;
       nodeShadow.innerHTML =
-          '<div style="' +
+          '<div dir="auto" style="' +
               (opt_width ? 'width: ' + opt_width + 'px !important;' : '') +
               'height: ' + height + 'px !important;' +
               'font-family: \'' + GetFont() + '\', \'Arial\' !important;' +

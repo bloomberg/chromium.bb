@@ -947,16 +947,6 @@ IframePool.prototype = {
   release: function(iframe) {
     this.iframes_.push(iframe);
     iframe.style.top = OFF_SCREEN;
-  },
-
-  /**
-   * Sets the text direction on each iframe element.
-   * @param {boolean} isRtl True if rendering rtl and false if ltr.
-   */
-  setTextDirection: function(isRtl) {
-    for (var i = 0; i < this.iframes_.length; i++) {
-      this.iframes_[i].dir = isRtl ? 'rtl' : 'ltr';
-    }
   }
 };
 
@@ -1431,11 +1421,14 @@ function setSuggestionStyles() {
       '.suggestion.search {' +
       '  background-position: ' +
           (isRtl ? '-webkit-calc(100% - 5px)' : '5px') + ' 4px;' +
-      '  -webkit-margin-start: ' + startMargin + 'px;' +
-      '  -webkit-margin-end: ' +
+      '  margin-' + (isRtl ? 'right' : 'left') + ': ' + startMargin + 'px;' +
+      '  margin-' + (isRtl ? 'left' : 'right') + ': ' +
           (window.innerWidth - searchboxApiHandle.width - startMargin) + 'px;' +
       '  font: ' + searchboxApiHandle.fontSize + 'px "' +
           searchboxApiHandle.font + '";' +
+      '}' +
+      '.suggestion-contents {' +
+      '  padding-' + (isRtl ? 'right' : 'left') + ': 26px;' +
       '}';
   $qs('head').appendChild(style);
 
@@ -1654,11 +1647,6 @@ function init() {
       hideActiveSuggestions();
     }
   };
-  $(IDS.ACTIVE_SUGGESTIONS_CONTAINER).dir =
-      searchboxApiHandle.rtl ? 'rtl' : 'ltr';
-  $(IDS.PENDING_SUGGESTIONS_CONTAINER).dir =
-      searchboxApiHandle.rtl ? 'rtl' : 'ltr';
-  iframePool.setTextDirection(searchboxApiHandle.rtl);
 
   if (fakebox) {
     // Listener for updating the key capture state.

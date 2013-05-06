@@ -361,7 +361,6 @@ body.fakebox-focused #cursor {
 }
 
 .suggestion-contents {
-  -webkit-padding-start: 26px;
   -webkit-user-select: none;
   border: none;
   height: 22px;

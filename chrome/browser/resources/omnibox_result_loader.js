@@ -68,9 +68,10 @@ function getStyle(pageStyle) {
  */
 function updateResult(resultDoc, suggestion, pageStyle) {
   var style = getStyle(pageStyle);
-  resultDoc.body.dir = style.isRtl ? 'rtl' : 'ltr';
+  resultDoc.body.dir = 'auto';
   resultDoc.body.style.fontSize = style.fontSize + 'px';
   resultDoc.body.style.fontFamily = style.font;
+  resultDoc.body.style.textAlign = style.isRtl ? 'right' : 'left';
   var contentsNode = resultDoc.querySelector('#contents');
   contentsNode.textContent = suggestion.contents;
   contentsNode.style.color = suggestion.is_search ?
