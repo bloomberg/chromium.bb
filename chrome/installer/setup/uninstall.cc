@@ -339,41 +339,35 @@ void DeleteShortcuts(const InstallerState& installer_state,
   ShellUtil::ShellChange install_level = installer_state.system_install() ?
       ShellUtil::SYSTEM_LEVEL : ShellUtil::CURRENT_USER;
 
-  VLOG(1) << "Deleting Desktop shortcut.";
-  if (!ShellUtil::RemoveShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist,
-                                 target_exe, install_level, NULL)) {
-    LOG(WARNING) << "Failed to delete Desktop shortcut.";
-  }
-  // Also try to delete the alternate desktop shortcut. It is not sufficient
-  // to do so upon failure of the above call as ERROR_FILE_NOT_FOUND on
-  // delete is considered success.
-  if (!ShellUtil::RemoveShortcut(
-          ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist, target_exe, install_level,
-          &dist->GetAlternateApplicationName())) {
-    LOG(WARNING) << "Failed to delete alternate Desktop shortcut.";
+  VLOG(1) << "Deleting Desktop shortcuts.";
+  if (!ShellUtil::RemoveShortcuts(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist,
+                                  install_level, target_exe)) {
+    LOG(WARNING) << "Failed to delete Desktop shortcuts.";
   }
 
-  VLOG(1) << "Deleting Quick Launch shortcut.";
-  if (!ShellUtil::RemoveShortcut(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
-                                 dist, target_exe, install_level, NULL)) {
-    LOG(WARNING) << "Failed to delete Quick Launch shortcut.";
+  VLOG(1) << "Deleting Quick Launch shortcuts.";
+  if (!ShellUtil::RemoveShortcuts(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
+                                  dist, install_level, target_exe)) {
+    LOG(WARNING) << "Failed to delete Quick Launch shortcuts.";
   }
 
   VLOG(1) << "Deleting Start Menu shortcuts.";
-  if (!ShellUtil::RemoveShortcut(ShellUtil::SHORTCUT_LOCATION_START_MENU, dist,
-                                 target_exe, install_level, NULL)) {
+  if (!ShellUtil::RemoveShortcuts(ShellUtil::SHORTCUT_LOCATION_START_MENU, dist,
+                                  install_level, target_exe)) {
     LOG(WARNING) << "Failed to delete Start Menu shortcuts.";
   }
 
-  // Although the shortcut removal calls above will unpin their shortcut if they
-  // result in a deletion (i.e. shortcut existed and pointed to |target_exe|),
-  // it is possible for shortcuts to remain pinned while their parent shortcut
-  // has been deleted or changed to point to another |target_exe|. Make sure all
-  // pinned-to-taskbar shortcuts that point to |target_exe| are unpinned.
-  ShellUtil::RemoveTaskbarShortcuts(target_exe.value());
+  // Unpin all pinned-to-taskbar shortcuts that point to |chrome_exe|.
+  if (!ShellUtil::RemoveShortcuts(ShellUtil::SHORTCUT_LOCATION_TASKBAR_PINS,
+                                  dist, ShellUtil::CURRENT_USER, target_exe)) {
+    LOG(WARNING) << "Failed to unpin taskbar shortcuts at user-level.";
+  }
 
-  ShellUtil::RemoveStartScreenShortcuts(product.distribution(),
-                                        target_exe.value());
+  // Delete the folder of secondary tiles from the start screen for |dist|.
+  if (!ShellUtil::RemoveShortcuts(ShellUtil::SHORTCUT_LOCATION_APP_SHORTCUTS,
+                                  dist, install_level, target_exe)) {
+    LOG(WARNING) << "Failed to delete start-screen shortcuts.";
+  }
 }
 
 bool ScheduleParentAndGrandparentForDeletion(const base::FilePath& path) {

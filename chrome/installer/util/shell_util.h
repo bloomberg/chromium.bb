@@ -40,10 +40,13 @@ class ShellUtil {
   };
 
   // Typical shortcut directories. Resolved in GetShortcutPath().
+  // Also used in ShortcutLocationIsSupported().
   enum ShortcutLocation {
     SHORTCUT_LOCATION_DESKTOP,
     SHORTCUT_LOCATION_QUICK_LAUNCH,
     SHORTCUT_LOCATION_START_MENU,
+    SHORTCUT_LOCATION_TASKBAR_PINS,  // base::win::VERSION_WIN7 +
+    SHORTCUT_LOCATION_APP_SHORTCUTS,  // base::win::VERSION_WIN8 +
   };
 
   enum ShortcutOperation {
@@ -299,6 +302,10 @@ class ShellUtil {
                                             const string16& chrome_exe,
                                             const string16& suffix);
 
+  // Returns true if the current Windows version supports the presence of
+  // shortcuts at |location|.
+  static bool ShortcutLocationIsSupported(ShellUtil::ShortcutLocation location);
+
   // Sets |path| to the path for a shortcut at the |location| desired for the
   // given |level| (CURRENT_USER for per-user path and SYSTEM_LEVEL for
   // all-users path).
@@ -313,6 +320,8 @@ class ShellUtil {
   // |dist| gives the type of browser distribution currently in use.
   // |properties| and |operation| affect this method as described on their
   // invidividual definitions above.
+  // |location| may be one of SHORTCUT_LOCATION_DESKTOP,
+  // SHORTCUT_LOCATION_QUICK_LAUNCH, or SHORTCUT_LOCATION_START_MENU.
   static bool CreateOrUpdateShortcut(
       ShellUtil::ShortcutLocation location,
       BrowserDistribution* dist,
@@ -503,33 +512,29 @@ class ShellUtil {
                                         bool elevate_if_not_admin);
 
   // Removes installed shortcut(s) at |location|.
+  // |level|: CURRENT_USER to remove per-user shortcuts, or SYSTEM_LEVEL to
+  // remove all-users shortcuts.
   // |target_exe|: Shortcut target exe; shortcuts will only be deleted when
   // their target is |target_exe|.
-  // |level|: CURRENT_USER to remove the per-user shortcut and SYSTEM_LEVEL to
-  // remove the all-users shortcut.
-  // |shortcut_name|: If non-null, remove the shortcut named |shortcut_name| at
-  // location; otherwise remove all shortcuts to |target_exe| at |location|.
   // If |location| is SHORTCUT_LOCATION_START_MENU, the shortcut folder specific
   // to |dist| is deleted.
-  // Also attempts to unpin the removed shortcut(s) from the taskbar.
-  // Returns true if the shortcut(s) were successfully deleted (or there were
-  // none at |location| pointing to |target_exe|).
-  static bool RemoveShortcut(ShellUtil::ShortcutLocation location,
-                             BrowserDistribution* dist,
-                             const base::FilePath& target_exe,
-                             ShellChange level,
-                             const string16* shortcut_name);
+  // Returns true if all shortcuts pointing to |target_exe| are successfully
+  // deleted, including the case where no such shortcuts are found.
+  static bool RemoveShortcuts(ShellUtil::ShortcutLocation location,
+                              BrowserDistribution* dist,
+                              ShellChange level,
+                              const base::FilePath& target_exe);
 
-  // Enumerates all shortcuts pinned to the taskbar and deletes those pointing
-  // to |target_exe|.
-  // base::win::TaskbarUnpinShortcutLink() should be prefered, but this is
-  // useful on uninstall as the parent shortcut of a pin might no longer exist
-  // (thus making it impossible to unpin it via that API).
-  static void RemoveTaskbarShortcuts(const string16& target_exe);
-
-  // This will remove all secondary tiles from the start screen for |dist|.
-  static void RemoveStartScreenShortcuts(BrowserDistribution* dist,
-                                         const string16& target_exe);
+  // Applies the updates in |shortcut_properties| to all shortcuts in |location|
+  // that target |target_exe|.
+  // Returns true if all shortcuts pointing to |target_exe| are successfully
+  // updated, including the case where no such shortcuts are found.
+  static bool UpdateShortcuts(
+      ShellUtil::ShortcutLocation location,
+      BrowserDistribution* dist,
+      ShellChange level,
+      const base::FilePath& target_exe,
+      const ShellUtil::ShortcutProperties& properties);
 
   // Sets |suffix| to the base 32 encoding of the md5 hash of this user's sid
   // preceded by a dot.

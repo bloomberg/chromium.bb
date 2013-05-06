@@ -15,6 +15,7 @@
 #include <limits>
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -1159,32 +1160,118 @@ ShellUtil::DefaultState ProbeProtocolHandlers(
   return ProbeOpenCommandHandlers(protocols, num_protocols);
 }
 
-// Removes shortcut at |shortcut_path| if it is a shortcut that points to
-// |target_exe|. If |delete_folder| is true, deletes the parent folder of
-// the shortcut completely. Returns true if either the shortcut was deleted
-// successfully or if the shortcut did not point to |target_exe|.
-bool MaybeRemoveShortcutAtPath(const base::FilePath& shortcut_path,
-                               const base::FilePath& target_exe,
-                               bool delete_folder) {
-  base::FilePath target_path;
-  if (!base::win::ResolveShortcut(shortcut_path, &target_path, NULL))
-    return false;
+// (Windows 8+) Finds and stores an app shortcuts folder path in *|path|.
+// Returns true on success.
+bool GetAppShortcutsFolder(BrowserDistribution* dist,
+                           ShellUtil::ShellChange level,
+                           base::FilePath *path) {
+  DCHECK(path);
+  DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN8);
 
-  if (InstallUtil::ProgramCompare(target_exe).EvaluatePath(target_path)) {
-    // Unpin the shortcut if it was ever pinned by the user or the installer.
-    VLOG(1) << "Trying to unpin " << shortcut_path.value();
-    if (!base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str())) {
-      VLOG(1) << shortcut_path.value()
-              << " wasn't pinned (or the unpin failed).";
-    }
-    if (delete_folder)
-      return file_util::Delete(shortcut_path.DirName(), true);
-    else
-      return file_util::Delete(shortcut_path, false);
+  base::FilePath folder;
+  if (!PathService::Get(base::DIR_APP_SHORTCUTS, &folder)) {
+    LOG(ERROR) << "Could not get application shortcuts location.";
+    return false;
   }
 
-  // The shortcut at |shortcut_path| doesn't point to |target_exe|, act as if
-  // our shortcut had been deleted.
+  folder = folder.Append(
+      ShellUtil::GetBrowserModelId(dist, level == ShellUtil::CURRENT_USER));
+  if (!file_util::DirectoryExists(folder)) {
+    VLOG(1) << "No start screen shortcuts.";
+    return false;
+  }
+
+  *path = folder;
+  return true;
+}
+
+typedef base::Callback<bool(const base::FilePath&)> FileOperationCallback;
+
+// Shortcut operations for BatchShortcutAction().
+
+bool ShortcutOpUnpin(const base::FilePath& shortcut_path) {
+  VLOG(1) << "Trying to unpin " << shortcut_path.value();
+  if (!base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str())) {
+    VLOG(1) << shortcut_path.value() << " wasn't pinned (or the unpin failed).";
+    // No error, since shortcut might not be pinned.
+  }
+  return true;
+}
+
+bool ShortcutOpDelete(const base::FilePath& shortcut_path) {
+  bool ret = file_util::Delete(shortcut_path, false);
+  LOG_IF(ERROR, !ret) << "Failed to remove " << shortcut_path.value();
+  return ret;
+}
+
+bool ShortcutOpUpdate(const base::win::ShortcutProperties& shortcut_properties,
+                      const base::FilePath& shortcut_path) {
+  bool ret = base::win::CreateOrUpdateShortcutLink(
+      shortcut_path, shortcut_properties, base::win::SHORTCUT_REPLACE_EXISTING);
+  LOG_IF(ERROR, !ret) << "Failed to update " << shortcut_path.value();
+  return ret;
+}
+
+// {|location|, |dist|, |level|} determine |shortcut_folder|.
+// Applies |shortcut_operation| to each shortcut in |shortcut_folder| that
+// targets |target_exe|.
+// Returns true if all operations are successful. All intended operations are
+// attempted even if failures occur.
+bool BatchShortcutAction(const FileOperationCallback& shortcut_operation,
+                         ShellUtil::ShortcutLocation location,
+                         BrowserDistribution* dist,
+                         ShellUtil::ShellChange level,
+                         const base::FilePath& target_exe) {
+  DCHECK(!shortcut_operation.is_null());
+  base::FilePath shortcut_folder;
+  if (!ShellUtil::GetShortcutPath(location, dist, level, &shortcut_folder)) {
+    LOG(WARNING) << "Cannot find path at location " << location;
+    return false;
+  }
+
+  bool success = true;
+  InstallUtil::ProgramCompare target_compare(target_exe);
+  file_util::FileEnumerator enumerator(
+      shortcut_folder, false, file_util::FileEnumerator::FILES,
+      string16(L"*") + installer::kLnkExt);
+  base::FilePath target_path;
+  for (base::FilePath shortcut_path = enumerator.Next();
+       !shortcut_path.empty();
+       shortcut_path = enumerator.Next()) {
+    if (base::win::ResolveShortcut(shortcut_path, &target_path, NULL)) {
+      if (target_compare.EvaluatePath(target_path) &&
+          !shortcut_operation.Run(shortcut_path)) {
+        success = false;
+      }
+    } else {
+      LOG(ERROR) << "Cannot resolve shortcut at " << shortcut_path.value();
+      success = false;
+    }
+  }
+  return success;
+}
+
+// Removes folder spsecified by {|location|, |dist|, |level|}.
+bool RemoveShortcutFolder(ShellUtil::ShortcutLocation location,
+                          BrowserDistribution* dist,
+                          ShellUtil::ShellChange level) {
+
+  // Explicitly whitelist locations, since accidental calls can be very harmful.
+  if (location != ShellUtil::SHORTCUT_LOCATION_START_MENU &&
+      location != ShellUtil::SHORTCUT_LOCATION_APP_SHORTCUTS) {
+    NOTREACHED();
+    return false;
+  }
+
+  base::FilePath shortcut_folder;
+  if (!ShellUtil::GetShortcutPath(location, dist, level, &shortcut_folder)) {
+    LOG(WARNING) << "Cannot find path at location " << location;
+    return false;
+  }
+  if (!file_util::Delete(shortcut_folder, true)) {
+    LOG(ERROR) << "Cannot remove folder " << shortcut_folder.value();
+    return false;
+  }
   return true;
 }
 
@@ -1252,10 +1339,30 @@ bool ShellUtil::QuickIsChromeRegisteredInHKLM(BrowserDistribution* dist,
                                  CONFIRM_SHELL_REGISTRATION_IN_HKLM);
 }
 
+bool ShellUtil::ShortcutLocationIsSupported(
+    ShellUtil::ShortcutLocation location) {
+  switch (location) {
+    case SHORTCUT_LOCATION_DESKTOP:
+      return true;
+    case SHORTCUT_LOCATION_QUICK_LAUNCH:
+      return true;
+    case SHORTCUT_LOCATION_START_MENU:
+      return true;
+    case SHORTCUT_LOCATION_TASKBAR_PINS:
+      return base::win::GetVersion() >= base::win::VERSION_WIN7;
+    case SHORTCUT_LOCATION_APP_SHORTCUTS:
+      return base::win::GetVersion() >= base::win::VERSION_WIN8;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 bool ShellUtil::GetShortcutPath(ShellUtil::ShortcutLocation location,
                                 BrowserDistribution* dist,
                                 ShellChange level,
                                 base::FilePath* path) {
+  DCHECK(path);
   int dir_key = -1;
   bool add_folder_for_dist = false;
   switch (location) {
@@ -1272,6 +1379,13 @@ bool ShellUtil::GetShortcutPath(ShellUtil::ShortcutLocation location,
                                           base::DIR_COMMON_START_MENU;
       add_folder_for_dist = true;
       break;
+    case SHORTCUT_LOCATION_TASKBAR_PINS:
+      dir_key = base::DIR_TASKBAR_PINS;
+      break;
+    case SHORTCUT_LOCATION_APP_SHORTCUTS:
+      // TODO(huangs): Move GetAppShortcutsFolder() logic into base_paths_win.
+      return GetAppShortcutsFolder(dist, level, path);
+
     default:
       NOTREACHED();
       return false;
@@ -1293,6 +1407,14 @@ bool ShellUtil::CreateOrUpdateShortcut(
     BrowserDistribution* dist,
     const ShellUtil::ShortcutProperties& properties,
     ShellUtil::ShortcutOperation operation) {
+  // Explicitly whitelist locations to which this is applicable.
+  if (location != SHORTCUT_LOCATION_DESKTOP &&
+      location != SHORTCUT_LOCATION_QUICK_LAUNCH &&
+      location != SHORTCUT_LOCATION_START_MENU) {
+    NOTREACHED();
+    return false;
+  }
+
   DCHECK(dist);
   // |pin_to_taskbar| is only acknowledged when first creating the shortcut.
   DCHECK(!properties.pin_to_taskbar ||
@@ -1301,8 +1423,7 @@ bool ShellUtil::CreateOrUpdateShortcut(
 
   base::FilePath user_shortcut_path;
   base::FilePath system_shortcut_path;
-  if (!GetShortcutPath(location, dist, SYSTEM_LEVEL, &system_shortcut_path) ||
-      system_shortcut_path.empty()) {
+  if (!GetShortcutPath(location, dist, SYSTEM_LEVEL, &system_shortcut_path)) {
     NOTREACHED();
     return false;
   }
@@ -1320,8 +1441,7 @@ bool ShellUtil::CreateOrUpdateShortcut(
     // Otherwise install the user-level shortcut, unless the system-level
     // variant of this shortcut is present on the machine and |operation| states
     // not to create a user-level shortcut in that case.
-    if (!GetShortcutPath(location, dist, CURRENT_USER, &user_shortcut_path) ||
-        user_shortcut_path.empty()) {
+    if (!GetShortcutPath(location, dist, CURRENT_USER, &user_shortcut_path)) {
       NOTREACHED();
       return false;
     }
@@ -1861,104 +1981,43 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
   }
 }
 
-bool ShellUtil::RemoveShortcut(ShellUtil::ShortcutLocation location,
-                               BrowserDistribution* dist,
-                               const base::FilePath& target_exe,
-                               ShellChange level,
-                               const string16* shortcut_name) {
-  const bool delete_folder = (location == SHORTCUT_LOCATION_START_MENU);
+// static
+bool ShellUtil::RemoveShortcuts(ShellUtil::ShortcutLocation location,
+                                BrowserDistribution* dist,
+                                ShellChange level,
+                                const base::FilePath& target_exe) {
+  if (!ShellUtil::ShortcutLocationIsSupported(location))
+    return true;  // Vacuous success.
 
-  base::FilePath shortcut_folder;
-  if (!GetShortcutPath(location, dist, level, &shortcut_folder) ||
-      shortcut_folder.empty()) {
-    NOTREACHED();
-    return false;
-  }
+  switch (location) {
+    case SHORTCUT_LOCATION_START_MENU:  // Falls through.
+    case SHORTCUT_LOCATION_APP_SHORTCUTS:
+      return RemoveShortcutFolder(location, dist, level);
 
-  if (!delete_folder && !shortcut_name) {
-    file_util::FileEnumerator enumerator(shortcut_folder, false,
-        file_util::FileEnumerator::FILES);
-    bool had_failures = false;
-    for (base::FilePath path = enumerator.Next(); !path.empty();
-         path = enumerator.Next()) {
-      if (path.Extension() != installer::kLnkExt)
-        continue;
+    case SHORTCUT_LOCATION_TASKBAR_PINS:
+      return BatchShortcutAction(base::Bind(&ShortcutOpUnpin), location, dist,
+                                 level, target_exe);
 
-      if (!MaybeRemoveShortcutAtPath(path, target_exe, delete_folder))
-        had_failures = true;
-    }
-    return !had_failures;
-  }
-
-  const string16 shortcut_base_name(
-      (shortcut_name ? *shortcut_name : dist->GetAppShortCutName()) +
-      installer::kLnkExt);
-  const base::FilePath shortcut_path(
-      shortcut_folder.Append(shortcut_base_name));
-  if (!file_util::PathExists(shortcut_path))
-    return true;
-
-  return MaybeRemoveShortcutAtPath(shortcut_path, target_exe, delete_folder);
-}
-
-void ShellUtil::RemoveTaskbarShortcuts(const string16& target_exe) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
-  base::FilePath taskbar_pins_path;
-  if (!PathService::Get(base::DIR_TASKBAR_PINS, &taskbar_pins_path) ||
-      !file_util::PathExists(taskbar_pins_path)) {
-    LOG(ERROR) << "Couldn't find path to taskbar pins.";
-    return;
-  }
-
-  file_util::FileEnumerator shortcuts_enum(
-      taskbar_pins_path, false,
-      file_util::FileEnumerator::FILES, FILE_PATH_LITERAL("*.lnk"));
-
-  base::FilePath target_path(target_exe);
-  InstallUtil::ProgramCompare target_compare(target_path);
-  for (base::FilePath shortcut_path = shortcuts_enum.Next();
-       !shortcut_path.empty();
-       shortcut_path = shortcuts_enum.Next()) {
-    base::FilePath read_target;
-    if (!base::win::ResolveShortcut(shortcut_path, &read_target, NULL)) {
-      LOG(ERROR) << "Couldn't resolve shortcut at " << shortcut_path.value();
-      continue;
-    }
-    if (target_compare.EvaluatePath(read_target)) {
-      // Unpin this shortcut if it points to |target_exe|.
-      base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str());
-    }
+    default:
+      return BatchShortcutAction(base::Bind(&ShortcutOpDelete), location, dist,
+                                 level, target_exe);
   }
 }
 
-void ShellUtil::RemoveStartScreenShortcuts(BrowserDistribution* dist,
-                                           const string16& target_exe) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
-    return;
+// static
+bool ShellUtil::UpdateShortcuts(
+    ShellUtil::ShortcutLocation location,
+    BrowserDistribution* dist,
+    ShellChange level,
+    const base::FilePath& target_exe,
+    const ShellUtil::ShortcutProperties& properties) {
+  if (!ShellUtil::ShortcutLocationIsSupported(location))
+    return true;  // Vacuous success.
 
-  base::FilePath app_shortcuts_path;
-  if (!PathService::Get(base::DIR_APP_SHORTCUTS, &app_shortcuts_path)) {
-    LOG(ERROR) << "Could not get application shortcuts location to delete"
-               << " start screen shortcuts.";
-    return;
-  }
-
-  app_shortcuts_path = app_shortcuts_path.Append(
-      GetBrowserModelId(dist,
-                        InstallUtil::IsPerUserInstall(target_exe.c_str())));
-  if (!file_util::DirectoryExists(app_shortcuts_path)) {
-    VLOG(1) << "No start screen shortcuts to delete.";
-    return;
-  }
-
-  VLOG(1) << "Removing start screen shortcuts from "
-          << app_shortcuts_path.value();
-  if (!file_util::Delete(app_shortcuts_path, true)) {
-    LOG(ERROR) << "Failed to remove start screen shortcuts from "
-               << app_shortcuts_path.value();
-  }
+  base::win::ShortcutProperties shortcut_properties(
+      TranslateShortcutProperties(properties));
+  return BatchShortcutAction(base::Bind(&ShortcutOpUpdate, shortcut_properties),
+                             location, dist, level, target_exe);
 }
 
 bool ShellUtil::GetUserSpecificRegistrySuffix(string16* suffix) {

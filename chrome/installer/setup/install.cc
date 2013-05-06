@@ -260,9 +260,9 @@ void CleanupLegacyShortcuts(const InstallerState& installer_state,
   file_util::Delete(uninstall_shortcut_path, false);
 
   if (installer_state.system_install()) {
-    ShellUtil::RemoveShortcut(
-        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist, chrome_exe,
-        ShellUtil::SYSTEM_LEVEL, NULL);
+    ShellUtil::RemoveShortcuts(
+        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist,
+        ShellUtil::SYSTEM_LEVEL, chrome_exe);
   }
 }
 
