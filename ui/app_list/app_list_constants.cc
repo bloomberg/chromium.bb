@@ -7,7 +7,10 @@
 namespace app_list {
 
 const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF5, 0xF5, 0xF5);
-const SkColor kHoverAndPushedColor = SkColorSetARGB(0x19, 0, 0, 0);
+// 6% black over kContentsBackgroundColor
+const SkColor kSelectedColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
+// 10% black over kContentsBackgroundColor
+const SkColor kHoverAndPushedColor = SkColorSetRGB(0xDC, 0xDC, 0xDC);
 
 // Duration in milliseconds for page transition.
 const int kPageTransitionDurationInMs = 180;

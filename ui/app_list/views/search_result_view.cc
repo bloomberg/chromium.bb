@@ -39,10 +39,6 @@ const SkColor kDefaultTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kDimmedTextColor = SkColorSetRGB(0x96, 0x96, 0x96);
 const SkColor kURLTextColor = SkColorSetRGB(0x00, 0x99, 0x33);
 
-const SkColor kSelectedBackgroundColor = SkColorSetRGB(0xEC, 0xEC, 0xEC);
-// 6% black on top of kSelectedBackgroundColor
-const SkColor kHoverSelectedColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
-
 // A non-interactive image view to display result icon.
 class IconView : public views::ImageView {
  public:
@@ -185,9 +181,9 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
   const bool selected = list_view_->IsResultViewSelected(this);
   const bool hover = state() == STATE_HOVERED || state() == STATE_PRESSED;
   if (hover && selected)
-    canvas->FillRect(content_rect, kHoverSelectedColor);
+    canvas->FillRect(content_rect, kHoverAndPushedColor);
   else if (selected || hover)
-    canvas->FillRect(content_rect, kSelectedBackgroundColor);
+    canvas->FillRect(content_rect, kSelectedColor);
   else
     canvas->FillRect(content_rect, kContentsBackgroundColor);
 
