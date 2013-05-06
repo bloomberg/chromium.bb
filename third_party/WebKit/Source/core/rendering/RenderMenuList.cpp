@@ -42,6 +42,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/PopupMenu.h"
 #include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/rendering/RenderBR.h"
 #include "core/rendering/RenderScrollbar.h"
@@ -332,13 +333,10 @@ void RenderMenuList::showPopup()
         m_popup = document()->page()->chrome()->createPopupMenu(this);
     m_popupIsVisible = true;
 
-    // Compute the top left taking transforms into account, but use
-    // the actual width of the element to size the popup.
-    FloatPoint absTopLeft = localToAbsolute(FloatPoint(), UseTransforms);
-    IntRect absBounds = absoluteBoundingBoxRectIgnoringTransforms();
-    absBounds.setLocation(roundedIntPoint(absTopLeft));
+    FloatQuad quad(localToAbsoluteQuad(FloatQuad(borderBoundingBox())));
+    IntSize size = pixelSnappedIntRect(frameRect()).size();
     HTMLSelectElement* select = selectElement();
-    m_popup->show(absBounds, document()->view(), select->optionToListIndex(select->selectedIndex()));
+    m_popup->show(quad, size, document()->view(), select->optionToListIndex(select->selectedIndex()));
 }
 
 void RenderMenuList::hidePopup()

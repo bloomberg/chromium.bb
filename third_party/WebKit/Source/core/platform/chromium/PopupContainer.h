@@ -34,6 +34,7 @@
 #include "core/platform/PopupMenuStyle.h"
 #include "core/platform/chromium/FramelessScrollView.h"
 #include "core/platform/chromium/PopupListBox.h"
+#include "core/platform/graphics/FloatQuad.h"
 
 namespace WebCore {
 
@@ -75,16 +76,13 @@ public:
     // so WebViewImpl can create a PopupContainer. This method is used for
     // displaying auto complete popup menus on Mac Chromium, and for all
     // popups on other platforms.
-    void showInRect(const IntRect&, FrameView*, int index);
+    void showInRect(const FloatQuad& controlPosition, const IntSize& controlSize, FrameView*, int index);
 
     // Hides the popup.
     void hidePopup();
 
     // The popup was hidden.
     void notifyPopupHidden();
-
-    // Compute size of widget and children. Return right offset for the popup right alignment.
-    int layoutAndGetRTLOffset();
 
     PopupListBox* listBox() const { return m_listBox.get(); }
 
@@ -115,7 +113,7 @@ public:
     String getSelectedItemToolTip();
 
     // This is public for testing.
-    static IntRect layoutAndCalculateWidgetRectInternal(IntRect widgetRectInScreen, int targetControlHeight, const FloatRect& windowRect, const FloatRect& screen, bool isRTL, const int rtlOffset, PopupContent*, bool& needToResizeView);
+    static IntRect layoutAndCalculateWidgetRectInternal(IntRect widgetRectInScreen, int targetControlHeight, const FloatRect& windowRect, const FloatRect& screen, bool isRTL, const int rtlOffset, const IntSize& transformOffset, PopupContent*, bool& needToResizeView);
 
 
 private:
@@ -128,7 +126,7 @@ private:
     void paintBorder(GraphicsContext*, const IntRect&);
 
     // Layout and calculate popup widget size and location and returns it as IntRect.
-    IntRect layoutAndCalculateWidgetRect(int targetControlHeight, const IntPoint& popupInitialCoordinate);
+    IntRect layoutAndCalculateWidgetRect(int targetControlHeight, const IntSize& transformOffset, const IntPoint& popupInitialCoordinate);
 
     void fitToListBox();
 
@@ -141,11 +139,15 @@ private:
     PopupContainerSettings m_settings;
     PopupType m_popupType;
 
-    // This contains the "ideal" dimensions and position for the popup
-    // (PopupContainer's frameRect() location should always be (0, 0), since
-    // it is rendered inside (and relative to) a WebWidget, which should get
-    // the actual popup position through chromeClient()).
-    IntRect m_originalFrameRect;
+    // m_controlPosition contains the transformed position of the <select>/<input> associated with this popup.
+    // m_controlSize is the size of the <select>/<input> without transform.
+    // The popup menu will be positioned as follows:
+    // LTR : If the popup is positioned down it will align with the bottom left of m_controlPosition (p4)
+    //       If the popup is positioned up it will align with the top left of m_controlPosition (p1)
+    // RTL : If the popup is positioned down it will align with the bottom right of m_controlPosition (p3)
+    //       If the popup is positioned up it will align with the top right of m_controlPosition (p2)
+    FloatQuad m_controlPosition;
+    IntSize m_controlSize;
 
     // Whether the popup is currently open.
     bool m_popupOpen;

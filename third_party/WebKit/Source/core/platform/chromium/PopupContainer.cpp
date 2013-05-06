@@ -111,7 +111,7 @@ PopupContainer::~PopupContainer()
         removeChild(m_listBox.get());
 }
 
-IntRect PopupContainer::layoutAndCalculateWidgetRectInternal(IntRect widgetRectInScreen, int targetControlHeight, const FloatRect& windowRect, const FloatRect& screen, bool isRTL, const int rtlOffset, PopupContent* listBox, bool& needToResizeView)
+IntRect PopupContainer::layoutAndCalculateWidgetRectInternal(IntRect widgetRectInScreen, int targetControlHeight, const FloatRect& windowRect, const FloatRect& screen, bool isRTL, const int rtlOffset, const IntSize& transformOffset, PopupContent* listBox, bool& needToResizeView)
 {
     ASSERT(listBox);
     if (windowRect.x() >= screen.x() && windowRect.maxX() <= screen.maxX() && (widgetRectInScreen.x() < screen.x() || widgetRectInScreen.maxX() > screen.maxX())) {
@@ -140,13 +140,13 @@ IntRect PopupContainer::layoutAndCalculateWidgetRectInternal(IntRect widgetRectI
 
     // Calculate Y axis size.
     if (widgetRectInScreen.maxY() > static_cast<int>(screen.maxY())) {
-        if (widgetRectInScreen.y() - widgetRectInScreen.height() - targetControlHeight > 0) {
+        if (widgetRectInScreen.y() - widgetRectInScreen.height() - targetControlHeight - transformOffset.height() > 0) {
             // There is enough room to open upwards.
-            widgetRectInScreen.move(0, -(widgetRectInScreen.height() + targetControlHeight));
+            widgetRectInScreen.move(-transformOffset.width(), -(widgetRectInScreen.height() + targetControlHeight + transformOffset.height()));
         } else {
             // Figure whether upwards or downwards has more room and set the
             // maximum number of items.
-            int spaceAbove = widgetRectInScreen.y() - targetControlHeight;
+            int spaceAbove = widgetRectInScreen.y() - targetControlHeight + transformOffset.height();
             int spaceBelow = screen.maxY() - widgetRectInScreen.y();
             if (spaceAbove > spaceBelow)
                 listBox->setMaxHeight(spaceAbove);
@@ -157,13 +157,13 @@ IntRect PopupContainer::layoutAndCalculateWidgetRectInternal(IntRect widgetRectI
             widgetRectInScreen.setHeight(listBox->popupContentHeight() + kBorderSize * 2);
             // Move WebWidget upwards if necessary.
             if (spaceAbove > spaceBelow)
-                widgetRectInScreen.move(0, -(widgetRectInScreen.height() + targetControlHeight));
+                widgetRectInScreen.move(-transformOffset.width(), -(widgetRectInScreen.height() + targetControlHeight + transformOffset.height()));
         }
     }
     return widgetRectInScreen;
 }
 
-IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, const IntPoint& popupInitialCoordinate)
+IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, const IntSize& transformOffset, const IntPoint& popupInitialCoordinate)
 {
     // Reset the max width and height to their default values, they will be recomputed below
     // if necessary.
@@ -172,9 +172,19 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
 
     // Lay everything out to figure out our preferred size, then tell the view's
     // WidgetClient about it. It should assign us a client.
-    int rtlOffset = layoutAndGetRTLOffset();
+    m_listBox->layout();
+    fitToListBox();
     bool isRTL = this->isRTL();
-    int rightOffset = isRTL ? rtlOffset : 0;
+
+    // Compute the starting x-axis for a normal RTL or right-aligned LTR dropdown. For those,
+    // the right edge of dropdown box should be aligned with the right edge of <select>/<input> element box,
+    // and the dropdown box should be expanded to the left if more space is needed.
+    // m_originalFrameRect.width() is the width of the target <select>/<input> element.
+    int horizontalForRtlOffset = isRTL ? m_controlPosition.p2().x() - m_controlPosition.p1().x() - (m_listBox->width() + kBorderSize * 2) : 0;
+
+    // Compute the y-axis offset between the bottom left and bottom right points.
+    // If the <select>/<input> is transformed, they are not the same.
+    int verticalForRtlOffset = isRTL ? - m_controlPosition.p4().y() + m_controlPosition.p3().y() : 0;
 
     // Assume m_listBox size is already calculated.
     IntSize targetSize(m_listBox->width() + kBorderSize * 2,
@@ -187,7 +197,7 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
         FloatRect screen = screenAvailableRect(m_frameView.get());
         // Use popupInitialCoordinate.x() + rightOffset because RTL position
         // needs to be considered.
-        widgetRectInScreen = client->rootViewToScreen(IntRect(popupInitialCoordinate.x() + rightOffset, popupInitialCoordinate.y(), targetSize.width(), targetSize.height()));
+        widgetRectInScreen = client->rootViewToScreen(IntRect(popupInitialCoordinate.x() + horizontalForRtlOffset, popupInitialCoordinate.y() + verticalForRtlOffset, targetSize.width(), targetSize.height()));
 
         // If we have multiple screens and the browser rect is in one screen, we have
         // to clip the window width to the screen width.
@@ -195,7 +205,7 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
         FloatRect windowRect = client->windowRect();
 
         bool needToResizeView = false;
-        widgetRectInScreen = layoutAndCalculateWidgetRectInternal(widgetRectInScreen, targetControlHeight, windowRect, screen, isRTL, rtlOffset, m_listBox.get(), needToResizeView);
+        widgetRectInScreen = layoutAndCalculateWidgetRectInternal(widgetRectInScreen, targetControlHeight, windowRect, screen, isRTL, horizontalForRtlOffset, transformOffset, m_listBox.get(), needToResizeView);
         if (needToResizeView)
             fitToListBox();
     }
@@ -209,8 +219,8 @@ void PopupContainer::showPopup(FrameView* view)
     listBox()->m_focusedNode = m_frameView->frame()->document()->focusedNode();
 
     if (ChromeClient* client = chromeClient()) {
-        IntRect popupRect = m_originalFrameRect;
-        client->popupOpened(this, layoutAndCalculateWidgetRect(popupRect.height(), popupRect.location()), false);
+        IntSize transformOffset(m_controlPosition.p4().x() - m_controlPosition.p1().x(), m_controlPosition.p4().y() - m_controlPosition.p1().y() - m_controlSize.height());
+        client->popupOpened(this, layoutAndCalculateWidgetRect(m_controlSize.height(), transformOffset, roundedIntPoint(m_controlPosition.p4())), false);
         m_popupOpen = true;
     }
 
@@ -247,18 +257,6 @@ void PopupContainer::fitToListBox()
     // Size ourselves to contain listbox + border.
     resize(m_listBox->width() + kBorderSize * 2, m_listBox->height() + kBorderSize * 2);
     invalidate();
-}
-
-int PopupContainer::layoutAndGetRTLOffset()
-{
-    m_listBox->layout();
-    fitToListBox();
-
-    // Compute the starting x-axis for a normal RTL or right-aligned LTR dropdown. For those,
-    // the right edge of dropdown box should be aligned with the right edge of <select>/<input> element box,
-    // and the dropdown box should be expanded to the left if more space is needed.
-    // m_originalFrameRect.width() is the width of the target <select>/<input> element.
-    return m_originalFrameRect.width() - (m_listBox->width() + kBorderSize * 2);
 }
 
 bool PopupContainer::handleMouseDownEvent(const PlatformMouseEvent& event)
@@ -379,12 +377,12 @@ ChromeClient* PopupContainer::chromeClient()
     return m_frameView->frame()->page()->chrome()->client();
 }
 
-void PopupContainer::showInRect(const IntRect& r, FrameView* v, int index)
+void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize& controlSize, FrameView* v, int index)
 {
-    // The rect is the size of the select box. It's usually larger than we need.
+    // The controlSize is the size of the select box. It's usually larger than we need.
     // subtract border size so that usually the container will be displayed
     // exactly the same width as the select box.
-    listBox()->setBaseWidth(max(r.width() - kBorderSize * 2, 0));
+    listBox()->setBaseWidth(max(controlSize.width() - kBorderSize * 2, 0));
 
     listBox()->updateFromElement();
 
@@ -393,22 +391,20 @@ void PopupContainer::showInRect(const IntRect& r, FrameView* v, int index)
     // FIXME: make sure this is correct, and add an assertion.
     // ASSERT(popupWindow(popup)->listBox()->selectedIndex() == index);
 
-    // Convert point to main window coords.
-    IntPoint location = v->contentsToWindow(r.location());
-
-    // Move it below the select widget.
-    location.move(0, r.height());
-
-    m_originalFrameRect = IntRect(location, r.size());
+    // Save and convert the controlPosition to main window coords.
+    m_controlPosition = controlPosition;
+    IntPoint delta = v->contentsToWindow(IntPoint());
+    m_controlPosition.move(delta.x(), delta.y());
+    m_controlSize = controlSize;
 
     // Position at (0, 0) since the frameRect().location() is relative to the parent WebWidget.
-    setFrameRect(IntRect(IntPoint(), r.size()));
+    setFrameRect(IntRect(IntPoint(), controlSize));
     showPopup(v);
 }
 
 IntRect PopupContainer::refresh(const IntRect& targetControlRect)
 {
-    listBox()->setBaseWidth(max(m_originalFrameRect.width() - kBorderSize * 2, 0));
+    listBox()->setBaseWidth(max(m_controlSize.width() - kBorderSize * 2, 0));
     listBox()->updateFromElement();
 
     IntPoint locationInWindow = m_frameView->contentsToWindow(targetControlRect.location());
@@ -416,7 +412,7 @@ IntRect PopupContainer::refresh(const IntRect& targetControlRect)
     // Move it below the select widget.
     locationInWindow.move(0, targetControlRect.height());
 
-    IntRect widgetRectInScreen = layoutAndCalculateWidgetRect(targetControlRect.height(), locationInWindow);
+    IntRect widgetRectInScreen = layoutAndCalculateWidgetRect(targetControlRect.height(), IntSize(), locationInWindow);
 
     // Reset the size (which can be set to the PopupListBox size in layoutAndGetRTLOffset(), exceeding the available widget rectangle.)
     if (size() != widgetRectInScreen.size())

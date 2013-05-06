@@ -65,7 +65,7 @@ void fillWithEmptyClients(Page::PageClients& pageClients)
 
 class EmptyPopupMenu : public PopupMenu {
 public:
-    virtual void show(const IntRect&, FrameView*, int) { }
+    virtual void show(const FloatQuad&, const IntSize&, FrameView*, int) { }
     virtual void hide() { }
     virtual void updateFromElement() { }
     virtual void disconnectClient() { }

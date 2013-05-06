@@ -66,7 +66,7 @@ PopupMenuChromium::~PopupMenuChromium()
     hide();
 }
 
-void PopupMenuChromium::show(const IntRect& rect, FrameView* frameView, int index)
+void PopupMenuChromium::show(const FloatQuad& controlPosition, const IntSize& controlSize, FrameView* frameView, int index)
 {
     if (!p.popup) {
         Settings* settings = frameView->frame()->page()->settings();
@@ -74,7 +74,7 @@ void PopupMenuChromium::show(const IntRect& rect, FrameView* frameView, int inde
         popupSettings.deviceSupportsTouch = settings->deviceSupportsTouch();
         p.popup = PopupContainer::create(client(), PopupContainer::Select, popupSettings);
     }
-    p.popup->showInRect(rect, frameView, index);
+    p.popup->showInRect(controlPosition, controlSize, frameView, index);
 }
 
 void PopupMenuChromium::hide()

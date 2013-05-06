@@ -204,7 +204,7 @@ protected:
 
     void showPopup()
     {
-        m_popupMenu->show(IntRect(0, 0, 100, 100),
+        m_popupMenu->show(FloatQuad(FloatRect(0, 0, 100, 100)), IntSize(100, 100),
             static_cast<WebFrameImpl*>(m_webView->mainFrame())->frameView(), 0);
         ASSERT_TRUE(popupOpen());
         EXPECT_TRUE(m_webView->selectPopup()->popupType() == PopupContainer::Select);

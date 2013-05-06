@@ -37,6 +37,7 @@
 #include "WebViewClient.h"
 #include "core/page/FrameView.h"
 #include "core/platform/PopupMenuClient.h"
+#include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/text/TextDirection.h"
 #include <public/WebVector.h>
@@ -57,8 +58,9 @@ ExternalPopupMenu::~ExternalPopupMenu()
 {
 }
 
-void ExternalPopupMenu::show(const IntRect& rect, FrameView* v, int index)
+void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, FrameView* v, int index)
 {
+    IntRect rect(controlPosition.enclosingBoundingBox());
     // WebCore reuses the PopupMenu of a page.
     // For simplicity, we do recreate the actual external popup everytime.
     hide();

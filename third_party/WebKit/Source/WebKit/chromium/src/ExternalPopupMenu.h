@@ -37,8 +37,10 @@
 #include <public/WebScrollbar.h>
 
 namespace WebCore {
+class FloatQuad;
 class FrameView;
 class IntRect;
+class IntSize;
 class PopupMenuClient;
 }
 
@@ -59,7 +61,7 @@ public:
 
 private:
     // WebCore::PopupMenu methods:
-    virtual void show(const WebCore::IntRect&, WebCore::FrameView*, int index);
+    virtual void show(const WebCore::FloatQuad& controlPosition, const WebCore::IntSize&, WebCore::FrameView*, int index);
     virtual void hide();
     virtual void updateFromElement();
     virtual void disconnectClient();

@@ -3514,7 +3514,8 @@ void WebViewImpl::applyAutofillSuggestions(
         refreshAutofillPopup();
     } else {
         m_autofillPopupShowing = true;
-        m_autofillPopup->showInRect(focusedNode->pixelSnappedBoundingBox(), focusedNode->ownerDocument()->view(), 0);
+        IntRect rect = focusedNode->pixelSnappedBoundingBox();
+        m_autofillPopup->showInRect(FloatQuad(rect), rect.size(), focusedNode->ownerDocument()->view(), 0);
     }
 }
 

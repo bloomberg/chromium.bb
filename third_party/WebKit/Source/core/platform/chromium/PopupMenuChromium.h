@@ -48,7 +48,7 @@ public:
     PopupMenuChromium(PopupMenuClient*);
     ~PopupMenuChromium();
 
-    virtual void show(const IntRect&, FrameView*, int index);
+    virtual void show(const FloatQuad& controlPosition, const IntSize& controlSize, FrameView*, int index);
     virtual void hide();
     virtual void updateFromElement();
     virtual void disconnectClient();

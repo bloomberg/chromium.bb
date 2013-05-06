@@ -39,6 +39,7 @@
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/SearchPopupMenu.h"
+#include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
@@ -134,7 +135,9 @@ void RenderSearchField::showPopup()
         m_searchPopup->saveRecentSearches(name, m_recentSearches);
     }
 
-    m_searchPopup->popupMenu()->show(pixelSnappedIntRect(absoluteBoundingBoxRect()), document()->view(), -1);
+    FloatQuad quad(localToAbsoluteQuad(FloatQuad(borderBoundingBox())));
+    IntSize size = pixelSnappedIntRect(frameRect()).size();
+    m_searchPopup->popupMenu()->show(quad, size, document()->view(), -1);
 }
 
 void RenderSearchField::hidePopup()
