@@ -639,25 +639,23 @@ void WrenchMenuModel::Build(bool is_new_menu) {
                            tools_menu_model_.get());
   }
 
+#if !defined(OS_CHROMEOS)
+  // For Send Feedback Link experiment (crbug.com/169339).
+  if (chrome::UseAlternateSendFeedbackLocation())
+    AddItemWithStringId(IDC_FEEDBACK,
+                        chrome::GetSendFeedbackMenuLabelID());
+#endif
+
   bool show_exit_menu = browser_defaults::kShowExitMenuItem;
 #if defined(OS_WIN) && defined(USE_AURA)
   if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
     show_exit_menu = false;
 #endif
-  if (show_exit_menu)
-    AddSeparator(ui::NORMAL_SEPARATOR);
 
-#if !defined(OS_CHROMEOS)
-  // For Send Feedback Link experiment (crbug.com/169339).
-  if (chrome::UseAlternateSendFeedbackLocation()) {
-    AddItemWithStringId(IDC_FEEDBACK,
-                        chrome::GetSendFeedbackMenuLabelID());
+  if (show_exit_menu) {
     AddSeparator(ui::NORMAL_SEPARATOR);
-  }
-#endif
-
-  if (show_exit_menu)
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
+  }
 }
 
 void WrenchMenuModel::AddGlobalErrorMenuItems() {
