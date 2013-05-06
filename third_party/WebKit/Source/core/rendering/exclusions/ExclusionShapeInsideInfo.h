@@ -96,7 +96,7 @@ public:
     bool needsLayout() { return m_needsLayout; }
 
 protected:
-    virtual FloatRect computedShapeLogicalBoundingBox() const OVERRIDE { return computedShape()->shapePaddingLogicalBoundingBox(); }
+    virtual LayoutRect computedShapeLogicalBoundingBox() const OVERRIDE { return computedShape()->shapePaddingLogicalBoundingBox(); }
 
 private:
     ExclusionShapeInsideInfo(const RenderBlock* renderer)
