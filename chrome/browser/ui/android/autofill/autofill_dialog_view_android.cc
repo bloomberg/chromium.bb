@@ -102,8 +102,12 @@ void AutofillDialogViewAndroid::UpdateAccountChooser() {
   int selected_account_index = -1;
 
   ui::MenuModel* model = controller_->MenuModelForAccountChooser();
-  if (!model || controller_->ShouldShowSpinner()) {
+  if (controller_->ShouldShowSpinner()) {
+    // Do not show accounts if not yet known.
+  } else if (!model) {
+    // TODO(aruslan): http://crbug.com/177495 Publish Android accounts.
     account_names.push_back(controller_->AccountChooserText());
+    selected_account_index = 0;
   } else {
     for (int i = 0; i < model->GetItemCount(); ++i) {
       if (model->IsItemCheckedAt(i))
