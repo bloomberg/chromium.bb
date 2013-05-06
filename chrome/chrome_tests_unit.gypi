@@ -2426,6 +2426,11 @@
         'common/crash_keys.h',
       ],
       'conditions': [
+        ['OS=="mac" or OS=="ios"', {
+          'include_dirs': [
+            '<(DEPTH)/breakpad/src',
+          ],
+        }],
         ['OS=="mac"', {
           # TODO(mark): We really want this for all non-static library targets,
           # but when we tried to pull it up to the common.gypi level, it broke

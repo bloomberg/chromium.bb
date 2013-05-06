@@ -27,7 +27,7 @@ const size_t kLargeSize = kSmallSize * 16;
 // the actual length of the string is one less.
 #if defined(OS_MACOSX)
 static const size_t kSingleChunkLength =
-    google_breakpad::KeyValueEntry::MAX_STRING_STORAGE_SIZE - 1;
+    google_breakpad::SimpleStringDictionary::value_size - 1;
 #elif defined(OS_WIN)
 static const size_t kSingleChunkLength =
     google_breakpad::CustomInfoEntry::kValueMaxLength - 1;

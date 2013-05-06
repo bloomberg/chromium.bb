@@ -492,6 +492,9 @@
             ['include', '^common/chrome_version_info\\.cc$'],
             ['include', '^common/zip'],
           ],
+          'include_dirs': [
+            '<(DEPTH)/breakpad/src',
+          ],
         }],
         ['OS=="android"', {
           'sources/': [
@@ -542,6 +545,7 @@
             '../third_party/mach_override/mach_override.gyp:mach_override',
           ],
           'include_dirs': [
+            '<(DEPTH)/breakpad/src',
             '../third_party/GTM',
           ],
           'sources!': [
