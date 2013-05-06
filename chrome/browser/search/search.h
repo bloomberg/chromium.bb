@@ -28,6 +28,24 @@ class PrefRegistrySyncable;
 
 namespace chrome {
 
+enum OptInState {
+  // The user has not manually opted in/out of InstantExtended,
+  // either local or regular. The in/out for local or not may
+  // occur concurrently, but only once for each (local or not).
+  INSTANT_EXTENDED_NOT_SET,
+  // The user has opted-in to InstantExtended.
+  INSTANT_EXTENDED_OPT_IN,
+  // The user has opted-out of InstantExtended.
+  INSTANT_EXTENDED_OPT_OUT,
+  // The user has opted-in to Local InstantExtended.
+  INSTANT_EXTENDED_OPT_IN_LOCAL,
+  // The user has opted-out of Local InstantExtended.
+  INSTANT_EXTENDED_OPT_OUT_LOCAL,
+  // The user has opted-out of both Local and regular InstantExtended.
+  INSTANT_EXTENDED_OPT_OUT_BOTH,
+  INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT,
+};
+
 // Use this value for "start margin" to prevent the "es_sm" parameter from
 // being used.
 extern const int kDisableStartMargin;
@@ -198,6 +216,10 @@ GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
 // Returns whether the default search provider has a valid Instant URL in its
 // template. Exposed for testing only.
 bool DefaultSearchProviderSupportsInstant(Profile* profile);
+
+// Let tests reset the gate that prevents metrics from being sent more than
+// once.
+void ResetInstantExtendedOptInStateGateForTest();
 
 }  // namespace chrome
 

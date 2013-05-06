@@ -4,6 +4,9 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -78,18 +81,61 @@ TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfo) {
 }
 
 class InstantExtendedAPIEnabledTest : public testing::Test {
+ public:
+  InstantExtendedAPIEnabledTest() : histogram_(NULL) {
+  }
  protected:
   virtual void SetUp() {
     field_trial_list_.reset(new base::FieldTrialList(
         new metrics::SHA1EntropyProvider("42")));
+    base::StatisticsRecorder::Initialize();
+    ResetInstantExtendedOptInStateGateForTest();
+    previous_metrics_count_.resize(INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT, 0);
+    base::HistogramBase* histogram = GetHistogram();
+    if (histogram) {
+      scoped_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
+      if (samples.get()) {
+        for (int state = INSTANT_EXTENDED_NOT_SET;
+             state < INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT; ++state) {
+          previous_metrics_count_[state] = samples->GetCount(state);
+        }
+      }
+    }
   }
 
   virtual CommandLine* GetCommandLine() const {
     return CommandLine::ForCurrentProcess();
   }
 
+  void ValidateMetrics(base::HistogramBase::Sample value) {
+    base::HistogramBase* histogram = GetHistogram();
+    if (histogram) {
+      scoped_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
+      if (samples.get()) {
+        for (int state = INSTANT_EXTENDED_NOT_SET;
+             state < INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT; ++state) {
+          if (state == value) {
+            EXPECT_EQ(previous_metrics_count_[state] + 1,
+                      samples->GetCount(state));
+          } else {
+            EXPECT_EQ(previous_metrics_count_[state], samples->GetCount(state));
+          }
+        }
+      }
+    }
+  }
+
  private:
+  base::HistogramBase* GetHistogram() {
+    if (!histogram_) {
+      histogram_ = base::StatisticsRecorder::FindHistogram(
+          "InstantExtended.OptInState");
+    }
+    return histogram_;
+  }
+  base::HistogramBase* histogram_;
   scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::vector<int> previous_metrics_count_;
 };
 
 TEST_F(InstantExtendedAPIEnabledTest, EnabledViaCommandLineFlag) {
@@ -101,6 +147,7 @@ TEST_F(InstantExtendedAPIEnabledTest, EnabledViaCommandLineFlag) {
 #else
   EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
 #endif
+  ValidateMetrics(INSTANT_EXTENDED_OPT_IN);
 }
 
 TEST_F(InstantExtendedAPIEnabledTest, EnabledViaFinchFlag) {
@@ -109,6 +156,7 @@ TEST_F(InstantExtendedAPIEnabledTest, EnabledViaFinchFlag) {
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
   EXPECT_EQ(42ul, EmbeddedSearchPageVersion());
+  ValidateMetrics(INSTANT_EXTENDED_NOT_SET);
 }
 
 TEST_F(InstantExtendedAPIEnabledTest, DisabledViaCommandLineFlag) {
@@ -118,6 +166,7 @@ TEST_F(InstantExtendedAPIEnabledTest, DisabledViaCommandLineFlag) {
   EXPECT_FALSE(IsInstantExtendedAPIEnabled());
   EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
   EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  ValidateMetrics(INSTANT_EXTENDED_OPT_OUT);
 }
 
 TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyEnabledViaCommandLineFlag) {
@@ -125,6 +174,7 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyEnabledViaCommandLineFlag) {
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
   EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  ValidateMetrics(INSTANT_EXTENDED_OPT_IN_LOCAL);
 }
 
 TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyEnabledViaFinch) {
@@ -133,6 +183,23 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyEnabledViaFinch) {
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
   EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  ValidateMetrics(INSTANT_EXTENDED_NOT_SET);
+}
+
+TEST_F(InstantExtendedAPIEnabledTest, BothLocalAndRegularOptOutCommandLine) {
+  GetCommandLine()->AppendSwitch(switches::kDisableLocalOnlyInstantExtendedAPI);
+  GetCommandLine()->AppendSwitch(switches::kDisableInstantExtendedAPI);
+  EXPECT_FALSE(IsInstantExtendedAPIEnabled());
+  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
+  ValidateMetrics(INSTANT_EXTENDED_OPT_OUT_BOTH);
+}
+
+TEST_F(InstantExtendedAPIEnabledTest, BothLocalAndRegularOptInCommandLine) {
+  GetCommandLine()->AppendSwitch(switches::kEnableLocalOnlyInstantExtendedAPI);
+  GetCommandLine()->AppendSwitch(switches::kEnableInstantExtendedAPI);
+  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
+  EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
+  ValidateMetrics(INSTANT_EXTENDED_OPT_IN_LOCAL);
 }
 
 TEST_F(InstantExtendedAPIEnabledTest,
@@ -142,6 +209,7 @@ TEST_F(InstantExtendedAPIEnabledTest,
   EXPECT_FALSE(IsInstantExtendedAPIEnabled());
   EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
   EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  ValidateMetrics(INSTANT_EXTENDED_OPT_OUT);
 }
 
 TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyCommandLineTrumpsFinch) {
@@ -151,6 +219,7 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyCommandLineTrumpsFinch) {
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
   EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  ValidateMetrics(INSTANT_EXTENDED_OPT_IN_LOCAL);
 }
 
 TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyFinchTrumpedByCommandLine) {
@@ -160,6 +229,7 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyFinchTrumpedByCommandLine) {
   EXPECT_FALSE(IsInstantExtendedAPIEnabled());
   EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
   EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  ValidateMetrics(INSTANT_EXTENDED_OPT_OUT);
 }
 
 TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyFinchTrumpsFinch) {
@@ -168,6 +238,7 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyFinchTrumpsFinch) {
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
   EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  ValidateMetrics(INSTANT_EXTENDED_NOT_SET);
 }
 
 TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyDisabledViaCommandLineFlag) {
@@ -177,6 +248,7 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyDisabledViaCommandLineFlag) {
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
   EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
+  ValidateMetrics(INSTANT_EXTENDED_OPT_OUT_LOCAL);
 }
 
 class SearchTest : public BrowserWithTestWindowTest {

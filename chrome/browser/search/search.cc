@@ -76,6 +76,9 @@ const char kGroupNumberPrefix[] = "Group";
 // be ignored and Instant Extended will not be enabled by default.
 const char kDisablingSuffix[] = "DISABLED";
 
+// Remember if we reported metrics about opt-in/out state.
+bool instant_extended_opt_in_state_gate = false;
+
 TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile);
@@ -122,19 +125,29 @@ bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
   return false;
 }
 
-enum OptInState {
-  NOT_SET,  // The user has not manually opted into or out of InstantExtended.
-  OPT_IN,   // The user has opted-in to InstantExtended.
-  OPT_OUT,  // The user has opted-out of InstantExtended.
-  OPT_IN_STATE_ENUM_COUNT,
-};
+void RecordInstantExtendedOptInState() {
+  if (!instant_extended_opt_in_state_gate) {
+    instant_extended_opt_in_state_gate = true;
+    OptInState state = INSTANT_EXTENDED_NOT_SET;
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(
+        switches::kDisableLocalOnlyInstantExtendedAPI)) {
+      if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI)) {
+        state = INSTANT_EXTENDED_OPT_OUT_BOTH;
+      } else {
+        state = INSTANT_EXTENDED_OPT_OUT_LOCAL;
+      }
+    } else if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI)) {
+      state = INSTANT_EXTENDED_OPT_OUT;
+    } else if (command_line->HasSwitch(
+        switches::kEnableLocalOnlyInstantExtendedAPI)) {
+      state = INSTANT_EXTENDED_OPT_IN_LOCAL;
+    } else if (command_line->HasSwitch(switches::kEnableInstantExtendedAPI)) {
+      state = INSTANT_EXTENDED_OPT_IN;
+    }
 
-void RecordInstantExtendedOptInState(OptInState state) {
-  static bool recorded = false;
-  if (!recorded) {
-    recorded = true;
     UMA_HISTOGRAM_ENUMERATION("InstantExtended.OptInState", state,
-                              OPT_IN_STATE_ENUM_COUNT);
+                              INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT);
   }
 }
 
@@ -260,18 +273,14 @@ uint64 EmbeddedSearchPageVersion() {
   // Check the command-line/about:flags setting first, which should have
   // precedence and allows the trial to not be reported (if it's never queried).
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI)) {
-    RecordInstantExtendedOptInState(OPT_OUT);
+  if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI))
     return kEmbeddedPageVersionDisabled;
-  }
   if (command_line->HasSwitch(switches::kEnableInstantExtendedAPI)) {
     // The user has set the about:flags switch to Enabled - give the default
     // UI version.
-    RecordInstantExtendedOptInState(OPT_IN);
     return kEmbeddedPageVersionDefault;
   }
 
-  RecordInstantExtendedOptInState(NOT_SET);
   FieldTrialFlags flags;
   if (GetFieldTrialInfo(
           base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
@@ -288,10 +297,12 @@ bool IsQueryExtractionEnabled() {
 }
 
 bool IsLocalOnlyInstantExtendedAPIEnabled() {
+  RecordInstantExtendedOptInState();
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableLocalOnlyInstantExtendedAPI) ||
-      command_line->HasSwitch(switches::kDisableInstantExtendedAPI))
+      command_line->HasSwitch(switches::kDisableInstantExtendedAPI)) {
     return false;
+  }
   if (command_line->HasSwitch(switches::kEnableLocalOnlyInstantExtendedAPI))
     return true;
 
@@ -659,6 +670,10 @@ bool DefaultSearchProviderSupportsInstant(Profile* profile) {
   return instant_url.is_valid() &&
          (!IsInstantExtendedAPIEnabled() ||
           template_url->HasSearchTermsReplacementKey(instant_url));
+}
+
+void ResetInstantExtendedOptInStateGateForTest() {
+  instant_extended_opt_in_state_gate = false;
 }
 
 }  // namespace chrome
