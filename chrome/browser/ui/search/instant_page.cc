@@ -7,6 +7,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
@@ -64,7 +66,13 @@ void InstantPage::InitializeFonts() {
 }
 
 void InstantPage::DetermineIfPageSupportsInstant() {
-  Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(routing_id()));
+  if (IsLocal()) {
+    // Local pages always support Instant. That's why we keep them around.
+    int page_id = contents()->GetController().GetActiveEntry()->GetPageID();
+    OnInstantSupportDetermined(page_id, true);
+  } else {
+    Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(routing_id()));
+  }
 }
 
 void InstantPage::SendAutocompleteResults(
