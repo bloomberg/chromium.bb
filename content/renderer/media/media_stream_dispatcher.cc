@@ -8,6 +8,7 @@
 #include "base/message_loop_proxy.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "googleurl/src/gurl.h"
 
@@ -201,6 +202,15 @@ void MediaStreamDispatcher::CloseDevice(const std::string& label) {
            << ", {label = " << label << "}";
 
   StopStream(label);
+}
+
+bool MediaStreamDispatcher::Send(IPC::Message* message) {
+  if (!RenderThread::Get()) {
+    delete message;
+    return false;
+  }
+
+  return RenderThread::Get()->Send(message);
 }
 
 bool MediaStreamDispatcher::OnMessageReceived(const IPC::Message& message) {
