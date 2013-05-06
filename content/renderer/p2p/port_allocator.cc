@@ -74,6 +74,9 @@ P2PPortAllocator::P2PPortAllocator(
   if (config_.disable_tcp_transport)
     flags |= cricket::PORTALLOCATOR_DISABLE_TCP;
   set_flags(flags);
+  // TODO(ronghuawu): crbug/138185 add ourselves to the firewall list in browser
+  // process and then remove below line.
+  set_allow_tcp_listen(false);
 }
 
 P2PPortAllocator::~P2PPortAllocator() {
