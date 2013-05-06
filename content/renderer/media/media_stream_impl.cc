@@ -475,7 +475,7 @@ void MediaStreamImpl::DeleteUserMediaRequestInfo(
   NOTREACHED();
 }
 
-void MediaStreamImpl::FrameWillClose(WebKit::WebFrame* frame) {
+void MediaStreamImpl::FrameDetached(WebKit::WebFrame* frame) {
   // Loop through all UserMediaRequests and find the requests that belong to the
   // frame that is being closed.
   UserMediaRequests::iterator request_it = user_media_requests_.begin();
