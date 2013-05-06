@@ -260,8 +260,6 @@ PASS 'function ProgressEvent() { [native code] }' is 'function ProgressEvent() {
 PASS 'function ProgressEvent() { [native code] }' is 'function ProgressEvent() { [native code] }'
 PASS 'function Range() { [native code] }' is 'function Range() { [native code] }'
 PASS 'function Range() { [native code] }' is 'function Range() { [native code] }'
-PASS 'function RangeException() { [native code] }' is 'function RangeException() { [native code] }'
-PASS 'function RangeException() { [native code] }' is 'function RangeException() { [native code] }'
 PASS 'function Rect() { [native code] }' is 'function Rect() { [native code] }'
 PASS 'function Rect() { [native code] }' is 'function Rect() { [native code] }'
 PASS 'function SVGAngle() { [native code] }' is 'function SVGAngle() { [native code] }'

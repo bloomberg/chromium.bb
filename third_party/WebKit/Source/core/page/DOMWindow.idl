@@ -544,7 +544,6 @@
 
     attribute NodeFilterConstructor NodeFilter;
     attribute RangeConstructor Range;
-    attribute RangeExceptionConstructor RangeException;
 
     attribute EventSourceConstructor EventSource; // Usable with new the operator
 

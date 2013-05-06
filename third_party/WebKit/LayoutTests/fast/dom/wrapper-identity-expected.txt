@@ -78,7 +78,6 @@ PASS var object = window['NodeFilter']; isEqualJS(object, object); is true
 PASS var object = window['Option']; isEqualJS(object, object); is true
 PASS var object = window['Range']; isEqualJS(object, object); is true
 PASS var object = window['RangeError']; isEqualJS(object, object); is true
-PASS var object = window['RangeException']; isEqualJS(object, object); is true
 PASS var object = window['ReferenceError']; isEqualJS(object, object); is true
 PASS var object = window['SyntaxError']; isEqualJS(object, object); is true
 PASS var object = window['TypeError']; isEqualJS(object, object); is true

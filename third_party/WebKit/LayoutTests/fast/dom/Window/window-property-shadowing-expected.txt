@@ -160,7 +160,6 @@ PASS: Event successfully shadowed
 PASS: MutationEvent successfully shadowed
 PASS: NodeFilter successfully shadowed
 PASS: Range successfully shadowed
-PASS: RangeException successfully shadowed
 PASS: XMLDocument successfully shadowed
 PASS: DOMParser successfully shadowed
 PASS: XMLSerializer successfully shadowed

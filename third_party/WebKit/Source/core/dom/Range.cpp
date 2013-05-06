@@ -35,7 +35,6 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/NodeWithIndex.h"
 #include "core/dom/ProcessingInstruction.h"
-#include "core/dom/RangeException.h"
 #include "core/dom/Text.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
@@ -1011,11 +1010,11 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionCode& ec)
     case Node::ENTITY_NODE:
     case Node::NOTATION_NODE:
     case Node::DOCUMENT_NODE:
-        ec = RangeException::INVALID_NODE_TYPE_ERR;
+        ec = INVALID_NODE_TYPE_ERR;
         return;
     default:
         if (newNode->isShadowRoot()) {
-            ec = RangeException::INVALID_NODE_TYPE_ERR;
+            ec = INVALID_NODE_TYPE_ERR;
             return;
         }
         break;
@@ -1137,7 +1136,7 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionCode& ec) const
         case Node::DOCUMENT_TYPE_NODE:
         case Node::ENTITY_NODE:
         case Node::NOTATION_NODE:
-            ec = RangeException::INVALID_NODE_TYPE_ERR;
+            ec = INVALID_NODE_TYPE_ERR;
             return 0;
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:
@@ -1179,7 +1178,7 @@ void Range::checkNodeBA(Node* n, ExceptionCode& ec) const
         case Node::DOCUMENT_NODE:
         case Node::ENTITY_NODE:
         case Node::NOTATION_NODE:
-            ec = RangeException::INVALID_NODE_TYPE_ERR;
+            ec = INVALID_NODE_TYPE_ERR;
             return;
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:
@@ -1211,7 +1210,7 @@ void Range::checkNodeBA(Node* n, ExceptionCode& ec) const
         case Node::PROCESSING_INSTRUCTION_NODE:
         case Node::TEXT_NODE:
         case Node::XPATH_NAMESPACE_NODE:
-            ec = RangeException::INVALID_NODE_TYPE_ERR;
+            ec = INVALID_NODE_TYPE_ERR;
             return;
     }
 }
@@ -1317,7 +1316,7 @@ void Range::selectNode(Node* refNode, ExceptionCode& ec)
             case Node::DOCUMENT_TYPE_NODE:
             case Node::ENTITY_NODE:
             case Node::NOTATION_NODE:
-                ec = RangeException::INVALID_NODE_TYPE_ERR;
+                ec = INVALID_NODE_TYPE_ERR;
                 return;
         }
     }
@@ -1337,7 +1336,7 @@ void Range::selectNode(Node* refNode, ExceptionCode& ec)
         case Node::DOCUMENT_NODE:
         case Node::ENTITY_NODE:
         case Node::NOTATION_NODE:
-            ec = RangeException::INVALID_NODE_TYPE_ERR;
+            ec = INVALID_NODE_TYPE_ERR;
             return;
     }
 
@@ -1381,7 +1380,7 @@ void Range::selectNodeContents(Node* refNode, ExceptionCode& ec)
             case Node::DOCUMENT_TYPE_NODE:
             case Node::ENTITY_NODE:
             case Node::NOTATION_NODE:
-                ec = RangeException::INVALID_NODE_TYPE_ERR;
+                ec = INVALID_NODE_TYPE_ERR;
                 return;
         }
     }
@@ -1416,7 +1415,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
         case Node::DOCUMENT_TYPE_NODE:
         case Node::ENTITY_NODE:
         case Node::NOTATION_NODE:
-            ec = RangeException::INVALID_NODE_TYPE_ERR;
+            ec = INVALID_NODE_TYPE_ERR;
             return;
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:
@@ -1464,7 +1463,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
     if (endNonTextContainer->nodeType() == Node::TEXT_NODE)
         endNonTextContainer = endNonTextContainer->parentNode();
     if (startNonTextContainer != endNonTextContainer) {
-        ec = RangeException::BAD_BOUNDARYPOINTS_ERR;
+        ec = INVALID_STATE_ERR;
         return;
     }
 

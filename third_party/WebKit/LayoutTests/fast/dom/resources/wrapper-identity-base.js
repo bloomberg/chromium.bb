@@ -70,7 +70,6 @@ var staticWindowProperties = [
     'Option',
     'Range',
     'RangeError',
-    'RangeException',
     'ReferenceError',
     'SyntaxError',
     'TypeError',

@@ -188,7 +188,6 @@ CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from access
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
-CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 ALERT: PASS: window.Attr should be 'function Attr() { [native code] }' and is.
 ALERT: PASS: window.CDATASection should be 'function CDATASection() { [native code] }' and is.
 ALERT: PASS: window.CharacterData should be 'function CharacterData() { [native code] }' and is.
@@ -269,7 +268,6 @@ ALERT: PASS: window.Notation should be 'function Notation() { [native code] }' a
 ALERT: PASS: window.ProcessingInstruction should be 'function ProcessingInstruction() { [native code] }' and is.
 ALERT: PASS: window.Range should be 'function Range() { [native code] }' and is.
 ALERT: PASS: window.RangeError should be 'function RangeError() { [native code] }' and is.
-ALERT: PASS: window.RangeException should be 'function RangeException() { [native code] }' and is.
 ALERT: PASS: window.ReferenceError should be 'function ReferenceError() { [native code] }' and is.
 ALERT: PASS: window.SyntaxError should be 'function SyntaxError() { [native code] }' and is.
 ALERT: PASS: window.Text should be 'function Text() { [native code] }' and is.
