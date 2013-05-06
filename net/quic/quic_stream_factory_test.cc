@@ -262,5 +262,53 @@ TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
   EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
+TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
+  scoped_ptr<QuicEncryptedPacket> rst3(ConstructRstPacket(1, 3));
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+  StaticSocketDataProvider socket_data(reads, arraysize(reads),
+                                       NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  MockWrite writes2[] = {
+    MockWrite(SYNCHRONOUS, rst3->data(), rst3->length()),
+  };
+  MockRead reads2[] = {
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+  StaticSocketDataProvider socket_data2(reads2, arraysize(reads2),
+                                        writes2, arraysize(writes2));
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, net_log_,
+                                            callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+
+  // Change the IP address and verify that stream saw the error.
+  factory_.OnIPAddressChanged();
+  EXPECT_EQ(ERR_NETWORK_CHANGED,
+            stream->ReadResponseHeaders(callback_.callback()));
+
+  // Now attempting to request a stream to the same origin should create
+  // a new session.
+
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, net_log_,
+                                             callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  stream = request2.ReleaseStream();
+  stream.reset();  // Will reset stream 3.
+
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data2.at_read_eof());
+  EXPECT_TRUE(socket_data2.at_write_eof());
+}
+
 }  // namespace test
 }  // namespace net

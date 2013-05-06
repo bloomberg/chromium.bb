@@ -355,6 +355,10 @@ base::Value* QuicStreamFactory::QuicStreamFactoryInfoToValue() const {
   return list;
 }
 
+void QuicStreamFactory::OnIPAddressChanged() {
+  CloseAllSessions(ERR_NETWORK_CHANGED);
+}
+
 bool QuicStreamFactory::HasActiveSession(
     const HostPortProxyPair& host_port_proxy_pair) {
   return ContainsKey(active_sessions_, host_port_proxy_pair);

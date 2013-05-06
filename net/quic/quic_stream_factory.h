@@ -13,6 +13,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_log.h"
+#include "net/base/network_change_notifier.h"
 #include "net/proxy/proxy_server.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_crypto_stream.h"
@@ -63,7 +64,8 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 
 // A factory for creating new QuicHttpStreams on top of a pool of
 // QuicClientSessions.
-class NET_EXPORT_PRIVATE QuicStreamFactory {
+class NET_EXPORT_PRIVATE QuicStreamFactory
+    : public NetworkChangeNotifier::IPAddressObserver {
  public:
   QuicStreamFactory(
       HostResolver* host_resolver,
@@ -100,6 +102,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory {
   void CloseAllSessions(int error);
 
   base::Value* QuicStreamFactoryInfoToValue() const;
+
+  // NetworkChangeNotifier::IPAddressObserver methods:
+
+  // Until the servers support roaming, close all connections when the local
+  // IP address changes.
+  virtual void OnIPAddressChanged() OVERRIDE;
 
  private:
   class Job;
