@@ -83,121 +83,115 @@ class PageCycler(page_measurement.PageMeasurement):
     if not memory['Browser']:
       return
 
-    metric = 'rss'
+    metric = 'resident_set_size'
     if sys.platform == 'win32':
-      metric = 'ws'
+      metric = 'working_set'
 
     # Browser
     if 'VM' in memory['Browser']:
-      results.AddSummary('vm_size_f_b', 'bytes', memory['Browser']['VM'],
-                         chart_name='vm_size_final_b', data_type='unimportant')
+      results.AddSummary('vm_final_size_browser', 'bytes',
+                         memory['Browser']['VM'], data_type='unimportant')
     if 'VMPeak' in memory['Browser']:
-      results.AddSummary('vm_pk_b', 'bytes', memory['Browser']['VMPeak'],
-                         chart_name='vm_peak_b', data_type='unimportant')
+      results.AddSummary('vm_peak_size_browser', 'bytes', memory['Browser']
+                         ['VMPeak'], data_type='unimportant')
     if 'WorkingSetSize' in memory['Browser']:
-      results.AddSummary('vm_%s_f_b' % metric, 'bytes',
+      results.AddSummary('vm_%s_final_size_browser' % metric, 'bytes',
                          memory['Browser']['WorkingSetSize'],
-                         chart_name='vm_%s_final_b' % metric,
                          data_type='unimportant')
     if 'WorkingSetSizePeak' in memory['Browser']:
-      results.AddSummary('%s_pk_b' % metric, 'bytes',
+      results.AddSummary('%s_peak_size_browser' % metric, 'bytes',
                          memory['Browser']['WorkingSetSizePeak'],
-                         chart_name='%s_peak_b' % metric,
                          data_type='unimportant')
     if 'PrivateDirty' in memory['Browser']:
-      results.AddSummary('vm_private_dirty_f_b', 'bytes',
+      results.AddSummary('vm_private_dirty_final_browser', 'bytes',
                          memory['Browser']['PrivateDirty'],
-                         chart_name='vm_private_dirty_final_b',
                          data_type='unimportant')
     if 'ProportionalSetSize' in memory['Browser']:
-      results.AddSummary('vm_pss_f_b', 'bytes',
+      results.AddSummary('vm_proportional_set_size_final_browser', 'bytes',
                          memory['Browser']['ProportionalSetSize'],
-                         chart_name='vm_pss_final_b', data_type='unimportant')
+                         data_type='unimportant')
 
     # Renderer
     if 'VM' in memory['Renderer']:
-      results.AddSummary('vm_size_f_r', 'bytes', memory['Renderer']['VM'],
-                         chart_name='vm_size_final_r', data_type='unimportant')
+      results.AddSummary('vm_final_size_renderer', 'bytes',
+                         memory['Renderer']['VM'], data_type='unimportant')
     if 'VMPeak' in memory['Renderer']:
-      results.AddSummary('vm_pk_r', 'bytes', memory['Browser']['VMPeak'],
-                         chart_name='vm_peak_r', data_type='unimportant')
+      results.AddSummary('vm_peak_size_renderer', 'bytes',
+                         memory['Browser']['VMPeak'], data_type='unimportant')
     if 'WorkingSetSize' in memory['Renderer']:
-      results.AddSummary('vm_%s_f_r' % metric, 'bytes',
+      results.AddSummary('vm_%s_final_size_renderer' % metric, 'bytes',
                          memory['Renderer']['WorkingSetSize'],
-                         chart_name='vm_%s_final_r' % metric,
                          data_type='unimportant')
     if 'WorkingSetSizePeak' in memory['Renderer']:
-      results.AddSummary('%s_pk_r' % metric, 'bytes',
+      results.AddSummary('%s_peak_size_renderer' % metric, 'bytes',
                          memory['Browser']['WorkingSetSizePeak'],
-                         chart_name='%s_peak_r' % metric,
                          data_type='unimportant')
     if 'PrivateDirty' in memory['Renderer']:
-      results.AddSummary('vm_private_dirty_f_r', 'bytes',
+      results.AddSummary('vm_private_dirty_final_renderer', 'bytes',
                          memory['Renderer']['PrivateDirty'],
-                         chart_name='vm_private_dirty_final_r',
                          data_type='unimportant')
     if 'ProportionalSetSize' in memory['Renderer']:
-      results.AddSummary('vm_pss_f_r', 'bytes',
+      results.AddSummary('vm_proportional_set_size_final_renderer', 'bytes',
                          memory['Renderer']['ProportionalSetSize'],
-                         chart_name='vm_pss_final_r', data_type='unimportant')
+                         data_type='unimportant')
 
     # Total
     if 'VM' in memory['Browser'] and 'VM' in memory['Renderer']:
-      results.AddSummary('vm_size_f_t', 'bytes',
+      results.AddSummary('vm_final_size_total', 'bytes',
                          memory['Browser']['VM'] + memory['Renderer']['VM'],
-                         chart_name='vm_size_final_t', data_type='unimportant')
+                         data_type='unimportant')
     if ('WorkingSetSize' in memory['Browser'] and
         'WorkingSetSize' in memory['Renderer']):
-      results.AddSummary('vm_%s_f_t' % metric, 'bytes',
+      results.AddSummary('vm_%s_final_size_total' % metric, 'bytes',
                          memory['Browser']['WorkingSetSize'] +
                          memory['Renderer']['WorkingSetSize'],
-                         chart_name='vm_%s_final_t' % metric,
                          data_type='unimportant')
     if ('PrivateDirty' in memory['Browser'] and
         'PrivateDirty' in memory['Renderer']):
-      results.AddSummary('vm_private_dirty_f_t', 'bytes',
+      results.AddSummary('vm_private_dirty_final_total', 'bytes',
                          memory['Browser']['PrivateDirty'] +
                          memory['Renderer']['PrivateDirty'],
-                         chart_name='vm_private_dirty_final_t',
                          data_type='unimportant')
     if ('ProportionalSetSize' in memory['Browser'] and
         'ProportionalSetSize' in memory['Renderer']):
-      results.AddSummary('vm_pss_f_t', 'bytes',
+      results.AddSummary('vm_proportional_set_size_final_total', 'bytes',
                          memory['Browser']['ProportionalSetSize'] +
                          memory['Renderer']['ProportionalSetSize'],
-                         chart_name='vm_pss_final_t', data_type='unimportant')
+                         data_type='unimportant')
 
-    results.AddSummary('cc', 'kb',
+    results.AddSummary('commit_charge', 'kb',
                        memory['SystemCommitCharge'] - self.start_commit_charge,
-                       chart_name='commit_charge', data_type='unimportant')
-    results.AddSummary('proc_', 'count', memory['ProcessCount'],
-                       chart_name='processes', data_type='unimportant')
+                       data_type='unimportant')
+    results.AddSummary('processes', 'count', memory['ProcessCount'],
+                       data_type='unimportant')
 
   def MeasureIO(self, tab, results):
     io_stats = tab.browser.io_stats
     if not io_stats['Browser']:
       return
-    results.AddSummary('r_op_b', '', io_stats['Browser']['ReadOperationCount'],
-                       chart_name='read_op_b', data_type='unimportant')
-    results.AddSummary('w_op_b', '', io_stats['Browser']['WriteOperationCount'],
-                       chart_name='write_op_b', data_type='unimportant')
-    results.AddSummary('r_b', 'kb',
+    results.AddSummary('read_operations_browser', '', io_stats['Browser']
+                       ['ReadOperationCount'], data_type='unimportant')
+    results.AddSummary('write_operations_browser', '', io_stats['Browser']
+                       ['WriteOperationCount'],
+                       data_type='unimportant')
+    results.AddSummary('read_bytes_browser', 'kb',
                        io_stats['Browser']['ReadTransferCount'] / 1024,
-                       chart_name='read_byte_b', data_type='unimportant')
-    results.AddSummary('w_b', 'kb',
+                       data_type='unimportant')
+    results.AddSummary('write_bytes_browser', 'kb',
                        io_stats['Browser']['WriteTransferCount'] / 1024,
-                       chart_name='write_byte_b', data_type='unimportant')
-    results.AddSummary('r_op_r', '', io_stats['Renderer']['ReadOperationCount'],
-                       chart_name='read_op_r', data_type='unimportant')
-    results.AddSummary('w_op_r', '',
+                       data_type='unimportant')
+    results.AddSummary('read_operations_renderer', '',
+                       io_stats['Renderer']['ReadOperationCount'],
+                       data_type='unimportant')
+    results.AddSummary('write_operations_renderer', '',
                        io_stats['Renderer']['WriteOperationCount'],
-                       chart_name='write_op_r', data_type='unimportant')
-    results.AddSummary('r_r', 'kb',
+                       data_type='unimportant')
+    results.AddSummary('read_bytes_renderer', 'kb',
                        io_stats['Renderer']['ReadTransferCount'] / 1024,
-                       chart_name='read_byte_r', data_type='unimportant')
-    results.AddSummary('w_r', 'kb',
+                       data_type='unimportant')
+    results.AddSummary('write_bytes_renderer', 'kb',
                        io_stats['Renderer']['WriteTransferCount'] / 1024,
-                       chart_name='write_byte_r', data_type='unimportant')
+                       data_type='unimportant')
 
   def MeasurePage(self, page, tab, results):
     def _IsDone():
@@ -207,7 +201,8 @@ class PageCycler(page_measurement.PageMeasurement):
     for h in self.histograms:
       h.GetValue(page, tab, results)
 
-    results.Add('t', 'ms', int(float(tab.EvaluateJavaScript('__pc_load_time'))),
+    results.Add('page_load_time', 'ms',
+                int(float(tab.EvaluateJavaScript('__pc_load_time'))),
                 chart_name='times')
 
   def DidRunPageSet(self, tab, results):
