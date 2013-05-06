@@ -174,11 +174,14 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
                                  int x_offset);
 
   // Constructs or re-constructs |system_bubble_| and populates it with |items|.
+  // Specify |change_tray_status| to true if want to change the tray background
+  // status.
   void ShowItems(const std::vector<SystemTrayItem*>& items,
                  bool details,
                  bool activate,
                  BubbleCreationType creation_type,
-                 int x_offset);
+                 int x_offset,
+                 bool change_tray_status);
 
   // Constructs or re-constructs |notification_bubble_| and populates it with
   // |notification_items_|, or destroys it if there are no notification items.
