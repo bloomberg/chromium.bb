@@ -7177,6 +7177,20 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.V8DOMWindowShell.createContext.IsolatedWorld"
+    units="milliseconds">
+  <summary>
+    Duration of time taken to create a V8 Context for an isolated world.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.V8DOMWindowShell.createContext.MainWorld"
+    units="milliseconds">
+  <summary>
+    Duration of time taken to create a V8 Context for the main world.
+  </summary>
+</histogram>
+
 <histogram name="WinTimeTicks.FailedToChangeCores" enum="WindowsVersion">
   <summary>
     Incremented each time the TimeTicks field trial runs on a machine with
