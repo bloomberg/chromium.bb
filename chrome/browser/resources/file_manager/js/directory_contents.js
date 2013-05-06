@@ -865,7 +865,7 @@ DirectoryContentsDriveOffline.prototype.__proto__ = DirectoryContents.prototype;
  */
 DirectoryContentsDriveOffline.prototype.clone = function() {
   return new DirectoryContentsDriveOffline(
-      this.context_, this.directoryEntry_, this.fakeOfflineDirEntry_,
+      this.context_, this.driveDirEntry_, this.fakeOfflineDirEntry_,
       this.query_);
 };
 

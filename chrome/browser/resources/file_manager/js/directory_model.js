@@ -1355,12 +1355,6 @@ DirectoryModel.prototype.search = function(query,
  * @param {string=} opt_query Query string used for the search.
  */
 DirectoryModel.prototype.specialSearch = function(path, opt_query) {
-  // Any special search needs Drive mounted.
-  if (this.volumeManager_.getDriveStatus() ==
-        VolumeManager.DriveStatus.UNMOUNTED) {
-    this.volumeManager_.mountDrive(function() {}, function() {});
-  }
-
   var query = opt_query || '';
 
   this.clearSearch_();
@@ -1368,53 +1362,59 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
   this.onSearchCompleted_ = null;
   this.onClearSearch_ = null;
 
-  var driveRoot = this.findRootEntryByType_(RootType.DRIVE);
-  if (!driveRoot || driveRoot == DirectoryModel.fakeDriveEntry_) {
-    // Drive root not available or not ready. onDriveStatusChanged_() handles
-    // rescan if necessary.
-    driveRoot = null;
-  }
+  var onDriveDirectoryResolved = function(driveRoot) {
+    if (!driveRoot || driveRoot == DirectoryModel.fakeDriveEntry_) {
+      // Drive root not available or not ready. onDriveStatusChanged_() handles
+      // rescan if necessary.
+      driveRoot = null;
+    }
 
-  var specialSearchType = PathUtil.getRootType(path);
-  var newDirContents;
-  var dirEntry;
-  if (specialSearchType == RootType.DRIVE_OFFLINE) {
-    newDirContents = new DirectoryContentsDriveOffline(
-        this.currentFileListContext_,
-        driveRoot,
-        DirectoryModel.fakeDriveOfflineEntry_,
-        query);
-    dirEntry = DirectoryModel.fakeDriveOfflineEntry_;
-  } else if (specialSearchType == RootType.DRIVE_SHARED_WITH_ME) {
-    newDirContents = new DirectoryContentsDriveSearchMetadata(
-        this.currentFileListContext_,
-        driveRoot,
-        DirectoryModel.fakeDriveSharedWithMeEntry_,
-        query,
-        DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_SHARED_WITH_ME);
-    dirEntry = DirectoryModel.fakeDriveSharedWithMeEntry_;
-  } else if (specialSearchType == RootType.DRIVE_RECENT) {
-    newDirContents = new DirectoryContentsDriveSearchMetadata(
-        this.currentFileListContext_,
-        driveRoot,
-        DirectoryModel.fakeDriveRecentEntry_,
-        query,
-        DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_RECENT_FILES);
-    dirEntry = DirectoryModel.fakeDriveRecentEntry_;
-  } else {
-    // Unknown path.
-    this.changeDirectory(thid.getDefaultDirectory());
-    return;
-  }
+    var specialSearchType = PathUtil.getRootType(path);
+    var newDirContents;
+    var dirEntry;
+    if (specialSearchType == RootType.DRIVE_OFFLINE) {
+      newDirContents = new DirectoryContentsDriveOffline(
+          this.currentFileListContext_,
+          driveRoot,
+          DirectoryModel.fakeDriveOfflineEntry_,
+          query);
+      dirEntry = DirectoryModel.fakeDriveOfflineEntry_;
+    } else if (specialSearchType == RootType.DRIVE_SHARED_WITH_ME) {
+      newDirContents = new DirectoryContentsDriveSearchMetadata(
+          this.currentFileListContext_,
+          driveRoot,
+          DirectoryModel.fakeDriveSharedWithMeEntry_,
+          query,
+          DirectoryContentsDriveSearchMetadata.
+              SearchType.SEARCH_SHARED_WITH_ME);
+      dirEntry = DirectoryModel.fakeDriveSharedWithMeEntry_;
+    } else if (specialSearchType == RootType.DRIVE_RECENT) {
+      newDirContents = new DirectoryContentsDriveSearchMetadata(
+          this.currentFileListContext_,
+          driveRoot,
+          DirectoryModel.fakeDriveRecentEntry_,
+          query,
+          DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_RECENT_FILES);
+      dirEntry = DirectoryModel.fakeDriveRecentEntry_;
+    } else {
+      // Unknown path.
+      this.changeDirectory(thid.getDefaultDirectory());
+      return;
+    }
 
-  var previous = this.currentDirContents_.getDirectoryEntry();
-  this.clearAndScan_(newDirContents);
+    var previous = this.currentDirContents_.getDirectoryEntry();
+    this.clearAndScan_(newDirContents);
 
-  var e = new cr.Event('directory-changed');
-  e.previousDirEntry = previous;
-  e.newDirEntry = dirEntry;
-  e.initial = false;
-  this.dispatchEvent(e);
+    var e = new cr.Event('directory-changed');
+    e.previousDirEntry = previous;
+    e.newDirEntry = dirEntry;
+    e.initial = false;
+    this.dispatchEvent(e);
+  }.bind(this);
+
+  this.resolveDirectory(DirectoryModel.fakeDriveEntry_.fullPath,
+                        onDriveDirectoryResolved /* success */,
+                        function() {} /* failed */);
 };
 
 /**
