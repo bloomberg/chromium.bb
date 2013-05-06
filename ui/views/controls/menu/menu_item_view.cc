@@ -813,9 +813,14 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 
   // Render the foreground.
-  SkColor fg_color = native_theme->GetSystemColor(
-      enabled() ? ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor
-          : ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor);
+  ui::NativeTheme::ColorId color_id =
+      ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
+  if (enabled()) {
+    color_id = render_selection ?
+        ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor:
+        ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
+  }
+  SkColor fg_color = native_theme->GetSystemColor(color_id);
   SkColor override_foreground_color;
   if (delegate && delegate->GetForegroundColor(GetCommand(),
                                                render_selection,
@@ -839,7 +844,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                         text_bounds.x(), text_bounds.y(), text_bounds.width(),
                         text_bounds.height(), flags);
 
-  PaintAccelerator(canvas);
+  PaintAccelerator(canvas, render_selection);
 
   // Render the submenu indicator (arrow).
   if (HasSubmenu()) {
@@ -854,7 +859,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 }
 
-void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
+void MenuItemView::PaintAccelerator(gfx::Canvas* canvas,
+                                    bool render_selection) {
   string16 accel_text = GetAcceleratorText();
   if (accel_text.empty())
     return;
@@ -876,10 +882,16 @@ void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
   else
     flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
   canvas->DrawStringInt(
-      accel_text, font, GetNativeTheme()->GetSystemColor(
+      accel_text,
+      font,
+      GetNativeTheme()->GetSystemColor(render_selection ?
+          ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor :
           ui::NativeTheme::kColorId_TextButtonDisabledColor),
-      accel_bounds.x(), accel_bounds.y(), accel_bounds.width(),
-      accel_bounds.height(), flags);
+      accel_bounds.x(),
+      accel_bounds.y(),
+      accel_bounds.width(),
+      accel_bounds.height(),
+      flags);
 }
 
 void MenuItemView::DestroyAllMenuHosts() {

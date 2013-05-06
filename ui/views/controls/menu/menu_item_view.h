@@ -397,7 +397,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
   // Paints the accelerator.
-  void PaintAccelerator(gfx::Canvas* canvas);
+  void PaintAccelerator(gfx::Canvas* canvas, bool render_selection);
 
   // Destroys the window used to display this menu and recursively destroys
   // the windows used to display all descendants.

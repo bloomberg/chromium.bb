@@ -39,6 +39,13 @@ void NATIVE_THEME_EXPORT CommonThemePaintMenuItemBackground(
     NativeTheme::State state,
     const gfx::Rect& rect);
 
+// Adjust some colors for menu Finch experiments.
+// |color_id| id of a color to be adjusted.
+// |color| color before adjustment.
+// Returns adjusted color.
+SkColor AdjustColorForMenuVariations(NativeTheme::ColorId color_id,
+                                     SkColor color);
+
 }  // namespace ui
 
 #endif  // UI_NATIVE_THEME_COMMON_THEME_H_

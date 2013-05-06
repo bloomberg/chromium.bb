@@ -48,6 +48,7 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
       native_theme(theme),
       show_delay(400),
       corner_radius(0) {
+  AdjustForMenuVariations();
   // Use 40px tall menu items when running in touch optimized mode.
   // For Windows use 40px tall menu items when running in touch optimized mode.
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
@@ -58,5 +59,29 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
 }
 
 MenuConfig::~MenuConfig() {}
+
+void MenuConfig::AdjustForMenuVariations() {
+  switch (ui::NativeTheme::GetMenuVariation()) {
+    case ui::NativeTheme::MENU_VARIATION_COMPACT_1:
+    case ui::NativeTheme::MENU_VARIATION_CONTRAST:
+      item_top_margin = 5;
+      item_bottom_margin = 4;
+      item_no_icon_top_margin = 5;
+      item_no_icon_bottom_margin = 5;
+      separator_height = 11;
+      menu_vertical_border_size = 5;
+      break;
+    case ui::NativeTheme::MENU_VARIATION_COMPACT_2:
+      item_top_margin = 4;
+      item_bottom_margin = 3;
+      item_no_icon_top_margin = 4;
+      item_no_icon_bottom_margin = 4;
+      separator_height = 11;
+      menu_vertical_border_size = 3;
+      break;
+    default:
+      break;
+  }
+}
 
 }  // namespace views
