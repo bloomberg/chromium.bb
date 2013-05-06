@@ -2418,14 +2418,16 @@ bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEve
     bool shouldLongPressSelectWord = m_frame->settings() && m_frame->settings()->touchEditingEnabled();
 #endif
     if (shouldLongPressSelectWord) {
-      IntPoint hitTestPoint = m_frame->view()->windowToContents(gestureEvent.position());
-      HitTestResult result = hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
-      Node* innerNode = result.targetNode();
-      if (!result.isLiveLink() && innerNode && (innerNode->isContentEditable() || innerNode->isTextNode())) {
-          selectClosestWordFromHitTestResult(result, DontAppendTrailingWhitespace);
-          if (m_frame->selection()->isRange())
-              return true;
-      }
+        IntPoint hitTestPoint = m_frame->view()->windowToContents(gestureEvent.position());
+        HitTestResult result = hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
+        Node* innerNode = result.targetNode();
+        if (!result.isLiveLink() && innerNode && (innerNode->isContentEditable() || innerNode->isTextNode())) {
+            selectClosestWordFromHitTestResult(result, DontAppendTrailingWhitespace);
+            if (m_frame->selection()->isRange()) {
+                focusDocumentView();
+                return true;
+            }
+        }
     }
     return sendContextMenuEventForGesture(gestureEvent);
 }
