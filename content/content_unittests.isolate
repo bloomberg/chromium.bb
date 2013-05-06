@@ -12,6 +12,7 @@
           '<(PRODUCT_DIR)/content_unittests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/lib/libpeerconnection.so',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/test_data/',
         ],
@@ -37,6 +38,7 @@
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/content_resources.pak',
           '<(PRODUCT_DIR)/ffmpegsumo.so',
+          '<(PRODUCT_DIR)/libpeerconnection.so',
         ],
       },
     }],
@@ -54,6 +56,7 @@
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/icudt.dll',
+          '<(PRODUCT_DIR)/libpeerconnection.dll',
         ],
       },
     }],
