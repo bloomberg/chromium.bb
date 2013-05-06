@@ -1,0 +1,54 @@
+<!DOCTYPE  html>
+<html>
+    <head>
+        <script src=../media-file.js></script>
+        <script src=../media-controls.js></script>
+        <script src=../video-test.js></script>
+
+        <script>
+        function startTest()
+        {
+            document.getElementsByTagName('track')[0].track.mode  =  'showing';
+            document.getElementsByTagName('track')[1].track.mode  =  'showing';
+
+            setTimeout("CFcrash()", 10);
+        }
+
+        function CFcrash()
+        {
+            document1  =  document.implementation.createDocument("",  null);
+            document1.appendChild(label1);
+
+            delete document1;
+
+            setTimeout(runGCAndEndTest, 0);
+        }
+
+        function runGCAndEndTest()
+        {
+            gc();
+
+            consoleWrite("");
+            consoleWrite("No crash. PASS.");
+            consoleWrite("");
+
+            endTest();
+        }
+
+        document.addEventListener("DOMContentLoaded", startTest, false);
+        </script>
+    </head>
+
+    <body>
+        <p>Tests that removing track nodes while their parent is being deleted doesn't crash</p>
+        <label id="label1">
+          <video autoplay>
+              <!-- Can't use findMediaElement() as test doesn't crash, so source needs to be specified here -->
+              <source src="../content/test.ogv">
+              <source src="../content/test.mp4">
+              <track src="captions-webvtt/captions-fast.vtt">
+              <track src="captions-webvtt/captions-fast.vtt">
+          </video>
+        </label>
+    </body>
+</html>
