@@ -56,6 +56,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   enum Shadow {
     SHADOW    = 0,
     NO_SHADOW,
+    NO_SHADOW_OPAQUE_BORDER,
     BIG_SHADOW,
     SMALL_SHADOW,
     SHADOW_COUNT,
