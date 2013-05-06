@@ -128,13 +128,12 @@ std::vector<IndexedDBInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
   std::vector<IndexedDBInfo> result;
   for (std::vector<GURL>::const_iterator iter = origins.begin();
        iter != origins.end(); ++iter) {
-    const GURL& origin = *iter;
+    const GURL& origin_url = *iter;
 
-    string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin);
-    base::FilePath idb_directory = GetIndexedDBFilePath(origin_id);
-    result.push_back(IndexedDBInfo(origin,
-                                   GetOriginDiskUsage(origin),
-                                   GetOriginLastModified(origin),
+    base::FilePath idb_directory = GetFilePath(origin_url);
+    result.push_back(IndexedDBInfo(origin_url,
+                                   GetOriginDiskUsage(origin_url),
+                                   GetOriginLastModified(origin_url),
                                    idb_directory));
   }
   return result;
@@ -150,8 +149,7 @@ int64 IndexedDBContextImpl::GetOriginDiskUsage(const GURL& origin_url) {
 base::Time IndexedDBContextImpl::GetOriginLastModified(const GURL& origin_url) {
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return base::Time();
-  string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
-  base::FilePath idb_directory = GetIndexedDBFilePath(origin_id);
+  base::FilePath idb_directory = GetFilePath(origin_url);
   base::PlatformFileInfo file_info;
   if (!file_util::GetFileInfo(idb_directory, &file_info))
     return base::Time();
@@ -159,6 +157,25 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const GURL& origin_url) {
 }
 
 void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  ForceClose(origin_url);
+  if (data_path_.empty() || !IsInOriginSet(origin_url))
+    return;
+
+  base::FilePath idb_directory = GetFilePath(origin_url);
+  EnsureDiskUsageCacheInitialized(origin_url);
+  const bool recursive = true;
+  bool deleted = file_util::Delete(idb_directory, recursive);
+
+  QueryDiskAndUpdateQuotaUsage(origin_url);
+  if (deleted) {
+    RemoveFromOriginSet(origin_url);
+    origin_size_map_.erase(origin_url);
+    space_available_map_.erase(origin_url);
+  }
+}
+
+void IndexedDBContextImpl::ForceClose(const GURL& origin_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return;
@@ -172,22 +189,14 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
       connections.erase(it++);
       db->forceClose();
     }
-    DCHECK(connections_[origin_url].size() == 0);
+    DCHECK_EQ(connections_[origin_url].size(), 0UL);
     connections_.erase(origin_url);
   }
+}
 
+base::FilePath IndexedDBContextImpl::GetFilePath(const GURL& origin_url) {
   string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
-  base::FilePath idb_directory = GetIndexedDBFilePath(origin_id);
-  EnsureDiskUsageCacheInitialized(origin_url);
-  const bool recursive = true;
-  bool deleted = file_util::Delete(idb_directory, recursive);
-
-  QueryDiskAndUpdateQuotaUsage(origin_url);
-  if (deleted) {
-    RemoveFromOriginSet(origin_url);
-    origin_size_map_.erase(origin_url);
-    space_available_map_.erase(origin_url);
-  }
+  return GetIndexedDBFilePath(origin_id);
 }
 
 base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
@@ -197,7 +206,7 @@ base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
 
 void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url,
                                             WebIDBDatabase* connection) {
-  DCHECK(connections_[origin_url].count(connection) == 0);
+  DCHECK_EQ(connections_[origin_url].count(connection), 0UL);
   if (quota_manager_proxy()) {
     quota_manager_proxy()->NotifyStorageAccessed(
         quota::QuotaClient::kIndexedDatabase, origin_url,

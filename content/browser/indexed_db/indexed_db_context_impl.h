@@ -54,9 +54,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   static const base::FilePath::CharType kIndexedDBExtension[];
 
   // Disables the exit-time deletion of session-only data.
-  void SetForceKeepSessionState() {
-    force_keep_session_state_ = true;
-  }
+  void SetForceKeepSessionState() { force_keep_session_state_ = true; }
 
   // IndexedDBContext implementation:
   virtual std::vector<GURL> GetAllOrigins() OVERRIDE;
@@ -64,8 +62,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
   virtual int64 GetOriginDiskUsage(const GURL& origin_url) OVERRIDE;
   virtual base::Time GetOriginLastModified(const GURL& origin_url) OVERRIDE;
   virtual void DeleteForOrigin(const GURL& origin_url) OVERRIDE;
-  virtual base::FilePath GetFilePathForTesting(
-      const string16& origin_id) const OVERRIDE;
+  virtual base::FilePath GetFilePathForTesting(const string16& origin_id) const
+      OVERRIDE;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
   void ConnectionOpened(const GURL& origin_url, WebKit::WebIDBDatabase*);
@@ -76,7 +74,13 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   quota::QuotaManagerProxy* quota_manager_proxy();
 
+  void ForceClose(const GURL& origin_url);
+  base::FilePath GetFilePath(const GURL& origin_url);
   base::FilePath data_path() const { return data_path_; }
+  bool IsInOriginSet(const GURL& origin_url) {
+    std::set<GURL>* set = GetOriginSet();
+    return set->find(origin_url) != set->end();
+  }
 
   // For unit tests allow to override the |data_path_|.
   void set_data_path_for_testing(const base::FilePath& data_path) {
@@ -100,8 +104,10 @@ class CONTENT_EXPORT IndexedDBContextImpl
   int64 ReadUsageFromDisk(const GURL& origin_url) const;
   void EnsureDiskUsageCacheInitialized(const GURL& origin_url);
   void QueryDiskAndUpdateQuotaUsage(const GURL& origin_url);
-  void GotUsageAndQuota(const GURL& origin_url, quota::QuotaStatusCode,
-                        int64 usage, int64 quota);
+  void GotUsageAndQuota(const GURL& origin_url,
+                        quota::QuotaStatusCode,
+                        int64 usage,
+                        int64 quota);
   void GotUpdatedQuota(const GURL& origin_url, int64 usage, int64 quota);
   void QueryAvailableQuota(const GURL& origin_url);
 
@@ -112,11 +118,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void RemoveFromOriginSet(const GURL& origin_url) {
     GetOriginSet()->erase(origin_url);
   }
-  bool IsInOriginSet(const GURL& origin_url) {
-    std::set<GURL>* set = GetOriginSet();
-    return set->find(origin_url) != set->end();
-  }
-
   // Only for testing.
   void ResetCaches();
 

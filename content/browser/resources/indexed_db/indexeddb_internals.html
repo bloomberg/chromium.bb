@@ -10,10 +10,11 @@
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
     <!-- templates -->
     <div style="display:none">
-        <div id="indexeddb-list-template">
+        <div id="indexeddb-list-template"
+             jsvalues="$partition_path:$this.partition_path">
             <div class="indexeddb-summary">
                 <span>Instances in: </span>
-                <span jscontent="$this.path"></span>
+                <span jscontent="$this.partition_path"></span>
                 <span jscontent="'(' + $this.idbs.length + ')'"></span>
             </div>
             <div class="indexeddb-item" jsselect="$this.idbs">
@@ -30,6 +31,11 @@
                 <div class="indexeddb-last-modified">
                     <span>Path:</span>
                     <span jscontent="path"></span>
+                </div>
+                <div class="controls">
+                    <a href="#" class="download"
+                       jsvalues=".idb_origin_url:url;.idb_partition_path:$partition_path">Download</a>
+                    <span class="download-status" style="display: none">Loading...</span>
                 </div>
             </div>
         </div>
