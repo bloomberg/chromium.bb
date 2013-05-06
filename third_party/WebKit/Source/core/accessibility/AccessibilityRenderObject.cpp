@@ -372,7 +372,8 @@ AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
         return ImageRole;
     }
 
-    if (node && node->hasTagName(canvasTag))
+    // Note: if JavaScript is disabled, the renderer won't be a RenderHTMLCanvas.
+    if (node && node->hasTagName(canvasTag) && m_renderer->isCanvas())
         return CanvasRole;
 
     if (cssBox && cssBox->isRenderView()) {
