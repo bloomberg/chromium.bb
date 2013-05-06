@@ -872,6 +872,9 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the Chrome App List to appear in the taskbar and in any shortcuts to it.">
         Chrome App Launcher
       </message>
+      <message name="IDS_APP_LIST_SHORTCUT_NAME_CANARY" desc="Name for the Chrome App List to appear in the taskbar and in any shortcuts to it for the Canary channel.">
+        Chrome App Launcher Canary
+      </message>
       <message name="IDS_APP_LIST_SIGNIN_HEADING" desc="Heading for when the launcher needs to sign in.">
         Sign in to Chrome
       </message>
@@ -882,6 +885,9 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       <!-- App shortcuts -->
       <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME" desc="Name for the Chrome Apps Start Menu folder name.">
         Chrome Apps
+      </message>
+      <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY" desc="Name for the Chrome Apps Start Menu folder name for the Canary channel.">
+        Chrome Canary Apps
       </message>
 
       <!-- Chrome OS OOBE Terms of Service screen-->

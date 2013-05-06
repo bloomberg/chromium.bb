@@ -516,8 +516,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
   shortcut_info_.description = UTF8ToUTF16(app->description());
 
   // Place Chrome app shortcuts in the "Chrome Apps" submenu.
-  shortcut_menu_subdir_ =
-      l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME);
+  shortcut_menu_subdir_ = web_app::GetAppShortcutsSubdirName();
 
   InitControls();
 

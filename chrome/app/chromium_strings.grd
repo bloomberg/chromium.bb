@@ -948,6 +948,9 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the Chromium App List to appear in the taskbar and in any shortcuts to it.">
         Chromium App Launcher
       </message>
+      <message name="IDS_APP_LIST_SHORTCUT_NAME_CANARY" desc="Name for the Chromium App List to appear in the taskbar and in any shortcuts to it.">
+        Chromium App Launcher
+      </message>
       <message name="IDS_APP_LIST_SIGNIN_HEADING" desc="Heading for when the launcher needs to sign in.">
         Sign in to Chromium
       </message>
@@ -957,6 +960,9 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
 
       <!-- App shortcuts -->
       <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME" desc="Name for the Chromium Apps Start Menu folder name.">
+        Chromium Apps
+      </message>
+      <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY" desc="Name for the Chrome Apps Start Menu folder name.">
         Chromium Apps
       </message>
 

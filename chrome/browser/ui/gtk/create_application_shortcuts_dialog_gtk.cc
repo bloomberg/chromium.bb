@@ -323,8 +323,7 @@ CreateChromeApplicationShortcutsDialogGtk::
         profile_path_(profile->GetPath())  {
 
   // Place Chrome app shortcuts in the "Chrome Apps" submenu.
-  shortcut_menu_subdir_ =
-      l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME);
+  shortcut_menu_subdir_ = web_app::GetAppShortcutsSubdirName();
 
   // Get shortcut information and icon now; they are needed for our UI.
   web_app::UpdateShortcutInfoAndIconForApp(

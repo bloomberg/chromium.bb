@@ -40,6 +40,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -110,6 +111,13 @@ int GetAppListIconIndex() {
 #else
   return kAppListIconIndexChromium;
 #endif
+}
+
+string16 GetAppListShortcutName() {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY)
+    return l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME_CANARY);
+  return l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME);
 }
 
 CommandLine GetAppListCommandLine() {
@@ -189,23 +197,22 @@ void CreateAppListShortcuts(
     return;
   }
 
+  string16 app_list_shortcut_name = GetAppListShortcutName();
+
   string16 wide_switches(GetAppListCommandLine().GetArgumentsString());
 
   base::win::ShortcutProperties shortcut_properties;
   shortcut_properties.set_target(chrome_exe);
   shortcut_properties.set_working_dir(chrome_exe.DirName());
   shortcut_properties.set_arguments(wide_switches);
-  shortcut_properties.set_description(
-      l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME));
+  shortcut_properties.set_description(app_list_shortcut_name);
   shortcut_properties.set_icon(chrome_exe, GetAppListIconIndex());
   shortcut_properties.set_app_id(app_model_id);
 
-  const string16 file_name =
-      l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME);
-
   for (size_t i = 0; i < shortcut_paths.size(); ++i) {
-    base::FilePath shortcut_file = shortcut_paths[i].Append(file_name).
-        AddExtension(installer::kLnkExt);
+    base::FilePath shortcut_file =
+        shortcut_paths[i].Append(app_list_shortcut_name).
+            AddExtension(installer::kLnkExt);
     if (!file_util::PathExists(shortcut_file.DirName()) &&
         !file_util::CreateDirectory(shortcut_file.DirName())) {
       NOTREACHED();
@@ -217,8 +224,9 @@ void CreateAppListShortcuts(
   }
 
   if (success && pin_to_taskbar) {
-    base::FilePath shortcut_to_pin = user_data_dir.Append(file_name).
-        AddExtension(installer::kLnkExt);
+    base::FilePath shortcut_to_pin =
+        user_data_dir.Append(app_list_shortcut_name).
+            AddExtension(installer::kLnkExt);
     success = base::win::TaskbarPinShortcutLink(
         shortcut_to_pin.value().c_str()) && success;
   }
@@ -715,7 +723,7 @@ void AppListController::PopulateViewFromProfile(Profile* profile) {
 
   ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
   CommandLine relaunch = GetAppListCommandLine();
-  string16 app_name(l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME));
+  string16 app_name(GetAppListShortcutName());
   ui::win::SetRelaunchDetailsForWindow(
       relaunch.GetCommandLineString(), app_name, hwnd);
   ::SetWindowText(hwnd, app_name.c_str());
