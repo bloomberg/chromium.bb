@@ -100,7 +100,6 @@ PASS TryAllocate('NodeFilter') is 'exception'
 PASS TryAllocate('NodeList') is 'exception'
 PASS TryAllocate('Plugin') is 'exception'
 PASS TryAllocate('PluginArray') is 'exception'
-PASS TryAllocate('Range') is 'exception'
 PASS TryAllocate('Rect') is 'exception'
 PASS TryAllocate('StyleSheet') is 'exception'
 PASS TryAllocate('StyleSheetList') is 'exception'
@@ -131,6 +130,9 @@ PASS TryAllocate('NPObject') is 'no constructor'
 PASS TryAllocate('DOMParser') is '[object DOMParser]'
 PASS TryAllocate('DOMParser') is '[object DOMParser]'
 PASS TryAllocate('DOMParser') is '[object DOMParser]'
+FAIL TryAllocate('Range') should be [object Range]. Was .
+FAIL TryAllocate('Range') should be [object Range]. Was .
+FAIL TryAllocate('Range') should be [object Range]. Was .
 PASS TryAllocate('XMLHttpRequest') is '[object XMLHttpRequest]'
 PASS TryAllocate('XMLHttpRequest') is '[object XMLHttpRequest]'
 PASS TryAllocate('XMLHttpRequest') is '[object XMLHttpRequest]'

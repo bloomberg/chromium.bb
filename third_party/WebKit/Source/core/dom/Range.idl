@@ -20,7 +20,9 @@
 
 // Introduced in DOM Level 2:
 [
-    ImplementationLacksVTable
+    Constructor,
+    CallWith=ScriptExecutionContext,
+    ImplementationLacksVTable,
 ] interface Range {
 
     [GetterRaisesException] readonly attribute Node startContainer;

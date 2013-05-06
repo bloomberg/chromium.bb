@@ -104,6 +104,11 @@ PassRefPtr<Range> Range::create(PassRefPtr<Document> ownerDocument, const Positi
     return adoptRef(new Range(ownerDocument, start.containerNode(), start.computeOffsetInContainerNode(), end.containerNode(), end.computeOffsetInContainerNode()));
 }
 
+PassRefPtr<Range> Range::create(ScriptExecutionContext* context)
+{
+    return adoptRef(new Range(toDocument(context)));
+}
+
 Range::~Range()
 {
     // Always detach (even if we've already detached) to fix https://bugs.webkit.org/show_bug.cgi?id=26044
