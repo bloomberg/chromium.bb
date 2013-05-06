@@ -768,46 +768,10 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       new WebDatabaseObserverImpl(sync_message_filter()));
   WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
 
-  // Default values for the "stable" feature configuration.
-  WebRuntimeFeatures::enableDatabase(true);
-  WebRuntimeFeatures::enableApplicationCache(true);
-  WebRuntimeFeatures::enableNotifications(true);
-  WebRuntimeFeatures::enableLocalStorage(true);
-  WebRuntimeFeatures::enableSessionStorage(true);
-  WebRuntimeFeatures::enableIndexedDatabase(true);
-  WebRuntimeFeatures::enableGeolocation(true);
-  WebRuntimeFeatures::enableMediaSource(true);
-  WebRuntimeFeatures::enableMediaPlayer(true);
-  WebRuntimeFeatures::enableMediaStream(true);
-  WebRuntimeFeatures::enablePeerConnection(true);
-  WebRuntimeFeatures::enableFullScreenAPI(true);
-  WebRuntimeFeatures::enableEncryptedMedia(true);
-  WebRuntimeFeatures::enableWebAudio(true);
-  WebRuntimeFeatures::enableWebMIDI(false);
-  WebRuntimeFeatures::enableDeviceMotion(false);
-  WebRuntimeFeatures::enableDeviceOrientation(true);
-  WebRuntimeFeatures::enableSpeechInput(true);
-  WebRuntimeFeatures::enableScriptedSpeech(true);
-  WebRuntimeFeatures::enableGamepad(true);
-  WebRuntimeFeatures::enableFileSystem(true);
-  WebRuntimeFeatures::enableJavaScriptI18NAPI(true);
-  WebRuntimeFeatures::enableQuota(true);
-  WebRuntimeFeatures::enableSeamlessIFrames(false);
-  WebRuntimeFeatures::enableExperimentalWebSocket(false);
-  WebRuntimeFeatures::enableExperimentalCanvasFeatures(false);
-  WebRuntimeFeatures::enableSpeechSynthesis(false);
+  WebRuntimeFeatures::enableStableFeatures(true);
 
-  if (command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures)) {
-    WebRuntimeFeatures::enableStyleScoped(true);
-    WebRuntimeFeatures::enableCustomDOMElements(true);
-    WebRuntimeFeatures::enableCSSExclusions(true);
-    WebRuntimeFeatures::enableExperimentalContentSecurityPolicyFeatures(true);
-    WebRuntimeFeatures::enableCSSRegions(true);
-    WebRuntimeFeatures::enableCSSCompositing(true);
-    WebRuntimeFeatures::enableDialogElement(true);
-    WebRuntimeFeatures::enableFontLoadEvents(true);
-    WebRuntimeFeatures::enableSeamlessIFrames(true);
-  }
+  if (command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures))
+    WebRuntimeFeatures::enableExperimentalFeatures(true);
 
   AdjustRuntimeFeatureDefaultsForPlatform();
   AdjustRuntimeFeaturesFromArgs(command_line);
