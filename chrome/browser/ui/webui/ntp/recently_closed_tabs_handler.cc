@@ -169,7 +169,7 @@ void RecentlyClosedTabsHandler::CreateRecentlyClosedValues(
 
     entry_dict->SetInteger("sessionId", entry->id);
     entry_list_value->Append(entry_dict.release());
-    added_count++;
+    ++added_count;
   }
 }
 

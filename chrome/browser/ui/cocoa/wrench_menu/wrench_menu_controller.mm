@@ -239,7 +239,8 @@ class ZoomLevelObserver {
   ui::MenuModel* model = [self wrenchMenuModel];
   int index = 0;
   if (ui::MenuModel::GetModelAndIndexForCommandId(
-          IDC_RESTORE_TAB, &model, &index)) {
+      RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId,
+      &model, &index)) {
     recentTabsMenuModelDelegate_.reset(
         new RecentTabsMenuModelDelegate(model, [self recentTabsSubmenu]));
   }
@@ -325,7 +326,8 @@ class ZoomLevelObserver {
   int index = 0;
   ui::MenuModel* recentTabsMenuModel = [self wrenchMenuModel];
   if (ui::MenuModel::GetModelAndIndexForCommandId(
-          IDC_RESTORE_TAB, &recentTabsMenuModel, &index)) {
+      RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId,
+      &recentTabsMenuModel, &index)) {
     if (recentTabsMenuModel == model) {
       return static_cast<RecentTabsSubMenuModel*>(
           recentTabsMenuModel)->GetMaxWidthForItemAtIndex(modelIndex);
