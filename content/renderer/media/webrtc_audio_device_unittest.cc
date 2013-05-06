@@ -126,7 +126,7 @@ class WebRTCMediaProcessImpl : public webrtc::VoEMediaProcess {
   // TODO(henrika): Refactor in WebRTC and convert to Chrome coding style.
   virtual void Process(const int channel,
                        const webrtc::ProcessingTypes type,
-                       WebRtc_Word16 audio_10ms[],
+                       int16_t audio_10ms[],
                        const int length,
                        const int sampling_freq,
                        const bool is_stereo) OVERRIDE {
