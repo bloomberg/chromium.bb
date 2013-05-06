@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+// 'use strict'; TODO(vadimt): Uncomment once crbug.com/237617 is fixed.
 
 /**
  * @fileoverview The event page for Google Now for Chrome implementation.
@@ -107,6 +107,19 @@ function areTasksConflicting(newTaskName, scheduledTaskName) {
 }
 
 var tasks = buildTaskManager(areTasksConflicting);
+
+// Add error processing to API calls.
+tasks.instrumentApiFunction(chrome.location.onLocationUpdate, 'addListener', 0);
+tasks.instrumentApiFunction(chrome.notifications, 'create', 2);
+tasks.instrumentApiFunction(chrome.notifications, 'update', 2);
+tasks.instrumentApiFunction(
+    chrome.notifications.onButtonClicked, 'addListener', 0);
+tasks.instrumentApiFunction(chrome.notifications.onClicked, 'addListener', 0);
+tasks.instrumentApiFunction(chrome.notifications.onClosed, 'addListener', 0);
+tasks.instrumentApiFunction(chrome.runtime.onInstalled, 'addListener', 0);
+tasks.instrumentApiFunction(chrome.runtime.onStartup, 'addListener', 0);
+tasks.instrumentApiFunction(chrome.tabs, 'create', 1);
+tasks.instrumentApiFunction(storage, 'get', 1);
 
 /**
  * Diagnostic event identifier.
@@ -314,7 +327,7 @@ function requestNotificationCards(position, callback) {
   var request = new XMLHttpRequest();
 
   request.responseType = 'text';
-  request.onloadend = function(event) {
+  request.onloadend = tasks.wrapCallback(function(event) {
     console.log('requestNotificationCards-onloadend ' + request.status);
     if (request.status == HTTP_OK) {
       recordEvent(DiagnosticEvent.REQUEST_FOR_CARDS_SUCCESS);
@@ -322,7 +335,7 @@ function requestNotificationCards(position, callback) {
     } else {
       callback();
     }
-  };
+  });
 
   request.open(
       'POST',
@@ -400,13 +413,13 @@ function requestCardDismissal(
                           '&dismissalAge=' + (Date.now() - dismissalTimeMs);
   var request = new XMLHttpRequest();
   request.responseType = 'text';
-  request.onloadend = function(event) {
+  request.onloadend = tasks.wrapCallback(function(event) {
     console.log('requestDismissingCard-onloadend ' + request.status);
     if (request.status == HTTP_OK)
       recordEvent(DiagnosticEvent.DISMISS_REQUEST_SUCCESS);
 
     callbackBoolean(request.status == HTTP_OK);
-  };
+  });
 
   request.open(
       'POST',

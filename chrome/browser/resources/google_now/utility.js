@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+// 'use strict'; TODO(vadimt): Uncomment once crbug.com/237617 is fixed.
+
+// TODO(vadimt): Remove alerts.
 
 /**
  * @fileoverview Utility objects and functions for Google Now extension.
@@ -15,12 +17,8 @@
  *     false.
  */
 function verify(condition, message) {
-  // TODO(vadimt): Remove alert.
-  if (!condition) {
-    var errorText = 'ASSERT: ' + message;
-    alert(errorText);
-    throw new Error(errorText);
-  }
+  if (!condition)
+    throw new Error('ASSERT: ' + message);
 }
 
 /**
@@ -138,6 +136,60 @@ function buildTaskManager(areConflicting) {
     stepName = step;
   }
 
+  // Limiting 1 alert per background page load.
+  var alertShown = false;
+
+  /**
+   * Adds error processing to an API callback.
+   * @param {Function} callback Callback to instrument.
+   * @return {Function} Instrumented callback.
+   */
+  function wrapCallback(callback) {
+    return function() {
+      // This is the wrapper for the callback.
+      try {
+        return callback.apply(null, arguments);
+      } catch (error) {
+        var message = 'Uncaught exception:\n' + error.stack;
+        console.error(message);
+        if (!alertShown) {
+          alertShown = true;
+          alert(message);
+        }
+      }
+    };
+  }
+
+  /**
+   * Instruments an API function to add error processing to its user
+   * code-provided callback.
+   * @param {Object} namespace Namespace of the API function.
+   * @param {string} functionName Name of the API function.
+   * @param {number} callbackParameter Index of the callback parameter to this
+   *     API function.
+   */
+  function instrumentApiFunction(namespace, functionName, callbackParameter) {
+    var originalFunction = namespace[functionName];
+
+    if (!originalFunction)
+      alert('Cannot instrument ' + functionName);
+
+    namespace[functionName] = function() {
+      // This is the wrapper for the API function. Pass the wrapped callback to
+      // the original function.
+      var callback = arguments[callbackParameter];
+      if (typeof callback != 'function') {
+        alert('Argument ' + callbackParameter + ' of ' + functionName +
+              ' is not a function');
+      }
+      arguments[callbackParameter] = wrapCallback(callback);
+      return originalFunction.apply(namespace, arguments);
+    };
+  }
+
+  instrumentApiFunction(chrome.alarms.onAlarm, 'addListener', 0);
+  instrumentApiFunction(chrome.runtime.onSuspend, 'addListener', 0);
+
   chrome.alarms.onAlarm.addListener(function(alarm) {
     if (alarm.name == CANNOT_UNLOAD_ALARM_NAME) {
       // Error if the event page wasn't unloaded after a reasonable timeout
@@ -163,6 +215,9 @@ function buildTaskManager(areConflicting) {
 
   return {
     add: add,
-    debugSetStepName: debugSetStepName
+    // TODO(vadimt): Replace with instrumenting callbacks.
+    debugSetStepName: debugSetStepName,
+    instrumentApiFunction: instrumentApiFunction,
+    wrapCallback: wrapCallback
   };
 }
