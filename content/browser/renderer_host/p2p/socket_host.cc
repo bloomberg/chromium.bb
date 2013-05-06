@@ -10,7 +10,6 @@
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
 
 namespace {
-const int kStunHeaderSize = 20;
 const uint32 kStunMagicCookie = 0x2112A442;
 }  // namespace
 
@@ -79,10 +78,18 @@ P2PSocketHost* P2PSocketHost::Create(
       return new P2PSocketHostUdp(message_sender, id);
 
     case P2P_SOCKET_TCP_SERVER:
-      return new P2PSocketHostTcpServer(message_sender, id);
+      return new P2PSocketHostTcpServer(
+          message_sender, id, P2P_SOCKET_TCP_CLIENT);
+
+    case P2P_SOCKET_STUN_TCP_SERVER:
+      return new P2PSocketHostTcpServer(
+          message_sender, id, P2P_SOCKET_STUN_TCP_CLIENT);
 
     case P2P_SOCKET_TCP_CLIENT:
       return new P2PSocketHostTcp(message_sender, id);
+
+    case P2P_SOCKET_STUN_TCP_CLIENT:
+      return new P2PSocketHostStunTcp(message_sender, id);
   }
 
   NOTREACHED();

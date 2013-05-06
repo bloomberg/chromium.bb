@@ -26,7 +26,10 @@ namespace content {
 
 class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
  public:
-  P2PSocketHostTcpServer(IPC::Sender* message_sender, int id);
+  typedef std::map<net::IPEndPoint, net::StreamSocket*> AcceptedSocketsMap;
+
+  P2PSocketHostTcpServer(IPC::Sender* message_sender, int id,
+                         P2PSocketType client_type);
   virtual ~P2PSocketHostTcpServer();
 
   // P2PSocketHost overrides.
@@ -40,8 +43,6 @@ class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
  private:
   friend class P2PSocketHostTcpServerTest;
 
-  typedef std::map<net::IPEndPoint, net::StreamSocket*> AcceptedSocketsMap;
-
   void OnError();
 
   void DoAccept();
@@ -50,6 +51,7 @@ class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
   // Callback for Accept().
   void OnAccepted(int result);
 
+  const P2PSocketType client_type_;
   scoped_ptr<net::ServerSocket> socket_;
   net::IPEndPoint local_address_;
 
