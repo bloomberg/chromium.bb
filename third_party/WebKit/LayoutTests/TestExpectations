@@ -1609,3 +1609,8 @@ crbug.com/237270 http/tests/history/replacestate-post-to-get.html [ Pass Timeout
 crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
 
+# Layout root not getting laid out before renderer is destroyed. See bug 238363.
+crbug.com/238363 compositing/overflow/overflow-hidden-canvas-layer.html [ Crash ]
+crbug.com/238363 fast/dom/node-move-to-new-document-crash-main.html [ Crash ]
+crbug.com/238363 fast/history/saves-state-after-fragment-nav.html [ Crash ]
+crbug.com/238363 fast/speech/change-focus.html [ Crash ]
