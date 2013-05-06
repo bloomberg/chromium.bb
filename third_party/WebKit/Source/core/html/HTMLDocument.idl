@@ -33,7 +33,7 @@
 
     // Extensions
 
-    [Replaceable] attribute HTMLAllCollection all;
+    [Replaceable] readonly attribute HTMLAllCollection all;
 
     void clear();
 

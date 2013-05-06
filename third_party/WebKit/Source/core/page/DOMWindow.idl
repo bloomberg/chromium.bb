@@ -182,7 +182,7 @@
     [RaisesException] DOMString atob([TreatNullAs=NullString,Default=Undefined] optional DOMString string);
     [RaisesException] DOMString btoa([TreatNullAs=NullString,Default=Undefined] optional DOMString string);
 
-    [Replaceable] attribute DOMWindowCSS CSS;
+    [Replaceable] readonly attribute DOMWindowCSS CSS;
 
     // Events
     attribute EventListener onabort;
