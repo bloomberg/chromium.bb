@@ -37,8 +37,8 @@
 
     void clear();
 
-    [MeasureAs=CaptureEvents] void captureEvents();
-    [MeasureAs=ReleaseEvents] void releaseEvents();
+    void captureEvents();
+    void releaseEvents();
 
     readonly attribute long width;
     readonly attribute long height;
