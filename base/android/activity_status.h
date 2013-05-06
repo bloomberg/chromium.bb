@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/android/jni_android.h"
+#include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
@@ -49,7 +50,7 @@ enum ActivityState {
 //    // Stop listening.
 //    delete my_listener
 //
-BASE_EXPORT class ActivityStatus {
+class BASE_EXPORT ActivityStatus {
  public:
   typedef base::Callback<void(ActivityState)> StateChangeCallback;
 
