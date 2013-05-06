@@ -13,16 +13,12 @@
         android:id="@+id/top_checkbox_notification"
         android:layout_columnSpan="4"
         android:layout_gravity="fill_horizontal"
-        android:layout_marginLeft="@dimen/autofill_steady_margin"
-        android:layout_marginRight="@dimen/autofill_steady_margin"
         android:textSize="@dimen/autofill_notification_text_size"
         android:visibility="gone"/>
     <LinearLayout
         android:id="@+id/top_notifications"
         android:layout_columnSpan="4"
         android:layout_gravity="fill_horizontal"
-        android:layout_marginLeft="@dimen/autofill_steady_margin"
-        android:layout_marginRight="@dimen/autofill_steady_margin"
         android:orientation="vertical"
         android:visibility="gone"/>
     <TextView
@@ -110,16 +106,12 @@
         android:id="@+id/save_locally_checkbox"
         android:layout_columnSpan="4"
         android:layout_gravity="fill_horizontal"
-        android:layout_marginLeft="@dimen/autofill_steady_margin"
-        android:layout_marginRight="@dimen/autofill_steady_margin"
         android:textSize="@dimen/autofill_notification_text_size"
         android:visibility="gone"/>
     <LinearLayout
         android:id="@+id/bottom_notifications"
         android:layout_columnSpan="4"
         android:layout_gravity="fill_horizontal"
-        android:layout_marginLeft="@dimen/autofill_steady_margin"
-        android:layout_marginRight="@dimen/autofill_steady_margin"
         android:orientation="vertical"
         android:visibility="gone"/>
     <View
