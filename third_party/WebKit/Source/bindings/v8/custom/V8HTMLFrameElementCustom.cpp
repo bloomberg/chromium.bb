@@ -32,7 +32,6 @@
 #include "V8HTMLFrameElement.h"
 
 #include "HTMLNames.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/html/HTMLFrameElement.h"
 
@@ -45,7 +44,7 @@ void V8HTMLFrameElement::locationAttrSetterCustom(v8::Local<v8::String> name, v8
     HTMLFrameElement* frame = V8HTMLFrameElement::toNative(info.Holder());
     String locationValue = toWebCoreStringWithNullCheck(value);
 
-    if (!BindingSecurity::allowSettingFrameSrcToJavascriptUrl(BindingState::instance(), frame, locationValue))
+    if (!BindingSecurity::allowSettingFrameSrcToJavascriptUrl(frame, locationValue))
         return;
 
     frame->setLocation(locationValue);

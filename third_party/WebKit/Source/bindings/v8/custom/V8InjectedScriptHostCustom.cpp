@@ -46,7 +46,6 @@
 #include "V8Uint8Array.h"
 #include "V8Uint8ClampedArray.h"
 #include "bindings/tests/results/V8Float64Array.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptDebugServer.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8AbstractEventListener.h"
@@ -73,7 +72,7 @@ ScriptValue InjectedScriptHost::nodeAsScriptValue(ScriptState* state, Node* node
     v8::Local<v8::Context> context = state->context();
     v8::Context::Scope contextScope(context);
 
-    if (!BindingSecurity::shouldAllowAccessToNode(BindingState::instance(), node))
+    if (!BindingSecurity::shouldAllowAccessToNode(node))
         return ScriptValue(v8::Null());
     return ScriptValue(toV8(node, v8::Handle<v8::Object>(), context->GetIsolate()));
 }

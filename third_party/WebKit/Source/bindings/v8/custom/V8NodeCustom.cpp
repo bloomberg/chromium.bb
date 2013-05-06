@@ -45,7 +45,6 @@
 #include "V8Notation.h"
 #include "V8ProcessingInstruction.h"
 #include "V8Text.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8EventListener.h"

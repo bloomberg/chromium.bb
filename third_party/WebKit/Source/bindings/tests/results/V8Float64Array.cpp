@@ -26,7 +26,6 @@
 #include "V8Float32Array.h"
 #include "V8Float64Array.h"
 #include "V8Int32Array.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"

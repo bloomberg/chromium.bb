@@ -1202,7 +1202,7 @@ static v8::Handle<v8::Value> ${funcName}AttrGetter(v8::Local<v8::String> name, c
         return privateTemplate->GetFunction();
     }
     ${interfaceName}* imp = ${v8InterfaceName}::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
         static const char* sharedTemplateUniqueKey = "${funcName}SharedTemplate";
         v8::Persistent<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, $newTemplateParams, $functionLength);
         return sharedTemplate->GetFunction();
@@ -1237,7 +1237,7 @@ static void ${interfaceName}DomainSafeFunctionSetter(v8::Local<v8::String> name,
     if (holder.IsEmpty())
         return;
     ${interfaceName}* imp = ${v8InterfaceName}::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return;
 
     info.This()->SetHiddenValue(name, value);
@@ -1270,7 +1270,7 @@ sub GenerateFeatureObservation
 
     if ($measureAs) {
         AddToImplIncludes("core/page/UseCounter.h");
-        return "    UseCounter::count(activeDOMWindow(BindingState::instance()), UseCounter::${measureAs});\n";
+        return "    UseCounter::count(activeDOMWindow(), UseCounter::${measureAs});\n";
     }
 
     return "";
@@ -1281,7 +1281,7 @@ sub GenerateDeprecationNotification
     my $deprecateAs = shift;
     if ($deprecateAs) {
         AddToImplIncludes("core/page/PageConsole.h");
-        return "    UseCounter::countDeprecation(activeDOMWindow(BindingState::instance()), UseCounter::${deprecateAs});\n";
+        return "    UseCounter::countDeprecation(activeDOMWindow(), UseCounter::${deprecateAs});\n";
     }
     return "";
 }
@@ -1453,7 +1453,7 @@ END
 
     # Generate security checks if necessary
     if ($attribute->signature->extendedAttributes->{"CheckSecurityForNode"}) {
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(BindingState::instance(), imp->" . $attribute->signature->name . "()))\n        return v8::Handle<v8::Value>(v8Null(info.GetIsolate()));\n\n";
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . $attribute->signature->name . "()))\n        return v8::Handle<v8::Value>(v8Null(info.GetIsolate()));\n\n";
     }
 
     my $useExceptions = 1 if $attribute->signature->extendedAttributes->{"GetterRaisesException"};
@@ -1706,7 +1706,7 @@ END
         AddToImplIncludes("core/page/Frame.h");
         $code .= <<END;
     ${interfaceName}* imp = V8${interfaceName}::toNative(info.Holder());
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return;
 END
     }
@@ -2234,7 +2234,7 @@ END
         # We have not find real use cases yet.
         AddToImplIncludes("core/page/Frame.h");
         $code .= <<END;
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return v8Undefined();
 END
     }
@@ -2258,7 +2258,7 @@ END
     }
 
     if ($function->signature->extendedAttributes->{"CheckSecurityForNode"}) {
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(BindingState::instance(), imp->" . $function->signature->name . "(ec)))\n";
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . $function->signature->name . "(ec)))\n";
         $code .= "        return v8::Handle<v8::Value>(v8Null(args.GetIsolate()));\n";
 END
     }
@@ -2795,7 +2795,7 @@ END
     $code .= GenerateConstructorHeader();
     AddToImplIncludes("V8Document.h");
     $code .= <<END;
-    Document* document = currentDocument(BindingState::instance());
+    Document* document = currentDocument();
 
     // Make sure the document is added to the DOM Node map. Otherwise, the ${interfaceName} instance
     // may end up being the only node in the map and get garbage-collected prematurely.
@@ -3313,7 +3313,6 @@ sub GenerateImplementation
     # - Add default header template
     push(@implContentHeader, GenerateImplementationContentHeader($interface));
 
-    AddToImplIncludes("bindings/v8/BindingState.h");
     AddToImplIncludes("bindings/v8/V8Binding.h");
     AddToImplIncludes("bindings/v8/V8DOMWrapper.h");
     AddToImplIncludes("core/dom/ContextFeatures.h");
@@ -4304,7 +4303,7 @@ sub GenerateSecurityCheckFunctions
 bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
 {
     $interfaceName* imp =  ${v8InterfaceName}::toNative(host);
-    return BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame(), DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
 }
 
 END
@@ -4312,7 +4311,7 @@ END
 bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
 {
     $interfaceName* imp =  ${v8InterfaceName}::toNative(host);
-    return BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame(), DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
 }
 
 END

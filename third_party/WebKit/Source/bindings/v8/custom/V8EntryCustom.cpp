@@ -35,7 +35,6 @@
 #include "V8DirectoryEntry.h"
 #include "V8Entry.h"
 #include "V8FileEntry.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/V8Binding.h"
 #include "wtf/RefPtr.h"
 

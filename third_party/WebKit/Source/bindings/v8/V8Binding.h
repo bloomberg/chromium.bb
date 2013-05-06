@@ -477,6 +477,10 @@ namespace WebCore {
     DOMWindow* toDOMWindow(v8::Handle<v8::Context>);
     ScriptExecutionContext* toScriptExecutionContext(v8::Handle<v8::Context>);
 
+    DOMWindow* activeDOMWindow();
+    DOMWindow* firstDOMWindow();
+    Document* currentDocument();
+
     // Returns the context associated with a ScriptExecutionContext.
     v8::Local<v8::Context> toV8Context(ScriptExecutionContext*, DOMWrapperWorld*);
 

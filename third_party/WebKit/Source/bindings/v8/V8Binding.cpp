@@ -328,6 +328,28 @@ ScriptExecutionContext* toScriptExecutionContext(v8::Handle<v8::Context> context
     return 0;
 }
 
+DOMWindow* activeDOMWindow()
+{
+    v8::Handle<v8::Context> context = v8::Context::GetCalling();
+    if (context.IsEmpty()) {
+        // Unfortunately, when processing script from a plug-in, we might not
+        // have a calling context. In those cases, we fall back to the
+        // entered context.
+        context = v8::Context::GetEntered();
+    }
+    return toDOMWindow(context);
+}
+
+DOMWindow* firstDOMWindow()
+{
+    return toDOMWindow(v8::Context::GetEntered());
+}
+
+Document* currentDocument()
+{
+    return toDOMWindow(v8::Context::GetCurrent())->document();
+}
+
 Frame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
 {
     DOMWindow* window = toDOMWindow(context);

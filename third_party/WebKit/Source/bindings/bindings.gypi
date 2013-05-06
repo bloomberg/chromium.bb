@@ -8,8 +8,6 @@
             'v8/ArrayValue.h',
             'v8/BindingSecurity.cpp',
             'v8/BindingSecurity.h',
-            'v8/BindingState.cpp',
-            'v8/BindingState.h',
             'v8/CustomElementHelpers.cpp',
             'v8/CustomElementHelpers.h',
             'v8/DOMDataStore.cpp',

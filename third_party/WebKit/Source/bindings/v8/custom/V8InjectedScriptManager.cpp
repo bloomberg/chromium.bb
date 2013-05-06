@@ -33,7 +33,6 @@
 
 #include "V8DOMWindow.h"
 #include "V8InjectedScriptHost.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptDebugServer.h"
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/V8Binding.h"
@@ -125,7 +124,7 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
     Frame* frame = V8DOMWindow::toNative(holder)->frame();
 
     v8::Context::Scope contextScope(context);
-    return BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), frame, DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(frame, DoNotReportSecurityError);
 }
 
 } // namespace WebCore

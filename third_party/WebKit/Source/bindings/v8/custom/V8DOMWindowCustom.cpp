@@ -33,7 +33,6 @@
 
 #include "V8HTMLCollection.h"
 #include "V8Node.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
@@ -107,7 +106,7 @@ v8::Handle<v8::Value> WindowSetTimeoutImpl(const v8::Arguments& args, bool singl
     if (argumentCount >= 2)
         timeout = args[1]->Int32Value();
 
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return v8::Undefined();
 
     int id;
@@ -151,7 +150,7 @@ v8::Handle<v8::Value> V8DOMWindow::eventAttrGetterCustom(v8::Local<v8::String> n
         return v8::Undefined();
 
     Frame* frame = V8DOMWindow::toNative(holder)->frame();
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), frame))
+    if (!BindingSecurity::shouldAllowAccessToFrame(frame))
         return v8::Undefined();
 
     ASSERT(frame);
@@ -173,7 +172,7 @@ void V8DOMWindow::eventAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8
         return;
 
     Frame* frame = V8DOMWindow::toNative(holder)->frame();
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), frame))
+    if (!BindingSecurity::shouldAllowAccessToFrame(frame))
         return;
 
     ASSERT(frame);
@@ -188,13 +187,12 @@ void V8DOMWindow::eventAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8
 void V8DOMWindow::locationAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     DOMWindow* imp = V8DOMWindow::toNative(info.Holder());
-    BindingState* state = BindingState::instance();
 
-    DOMWindow* active = activeDOMWindow(state);
+    DOMWindow* active = activeDOMWindow();
     if (!active)
       return;
 
-    DOMWindow* first = firstDOMWindow(state);
+    DOMWindow* first = firstDOMWindow();
     if (!first)
       return;
 
@@ -206,7 +204,7 @@ void V8DOMWindow::openerAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v
 {
     DOMWindow* imp = V8DOMWindow::toNative(info.Holder());
 
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return;
 
     // Opener can be shadowed if it is in the same domain.
@@ -233,7 +231,7 @@ v8::Handle<v8::Value> V8DOMWindow::addEventListenerMethodCustom(const v8::Argume
 
     DOMWindow* imp = V8DOMWindow::toNative(args.Holder());
 
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return v8::Undefined();
 
     Document* doc = imp->document();
@@ -263,7 +261,7 @@ v8::Handle<v8::Value> V8DOMWindow::removeEventListenerMethodCustom(const v8::Arg
 
     DOMWindow* imp = V8DOMWindow::toNative(args.Holder());
 
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return v8::Undefined();
 
     Document* doc = imp->document();
@@ -297,7 +295,7 @@ v8::Handle<v8::Value> V8DOMWindow::postMessageMethodCustom(const v8::Arguments& 
     // None of these need to be RefPtr because args and context are guaranteed
     // to hold on to them.
     DOMWindow* window = V8DOMWindow::toNative(args.Holder());
-    DOMWindow* source = activeDOMWindow(BindingState::instance());
+    DOMWindow* source = activeDOMWindow();
 
     // If called directly by WebCore we don't have a calling context.
     if (!source)
@@ -405,8 +403,7 @@ static void setUpDialog(DOMWindow* dialog, void* handler)
 v8::Handle<v8::Value> V8DOMWindow::showModalDialogMethodCustom(const v8::Arguments& args)
 {
     DOMWindow* impl = V8DOMWindow::toNative(args.Holder());
-    BindingState* state = BindingState::instance();
-    if (!BindingSecurity::shouldAllowAccessToFrame(state, impl->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame()))
         return v8::Undefined();
 
     // FIXME: Handle exceptions properly.
@@ -414,7 +411,7 @@ v8::Handle<v8::Value> V8DOMWindow::showModalDialogMethodCustom(const v8::Argumen
     DialogHandler handler(args[1]);
     String dialogFeaturesString = toWebCoreStringWithUndefinedOrNullCheck(args[2]);
 
-    impl->showModalDialog(urlString, dialogFeaturesString, activeDOMWindow(state), firstDOMWindow(state), setUpDialog, &handler);
+    impl->showModalDialog(urlString, dialogFeaturesString, activeDOMWindow(), firstDOMWindow(), setUpDialog, &handler);
 
     return handler.returnValue();
 }
@@ -422,8 +419,7 @@ v8::Handle<v8::Value> V8DOMWindow::showModalDialogMethodCustom(const v8::Argumen
 v8::Handle<v8::Value> V8DOMWindow::openMethodCustom(const v8::Arguments& args)
 {
     DOMWindow* impl = V8DOMWindow::toNative(args.Holder());
-    BindingState* state = BindingState::instance();
-    if (!BindingSecurity::shouldAllowAccessToFrame(state, impl->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame()))
         return v8::Undefined();
 
     // FIXME: Handle exceptions properly.
@@ -431,7 +427,7 @@ v8::Handle<v8::Value> V8DOMWindow::openMethodCustom(const v8::Arguments& args)
     AtomicString frameName = (args[1]->IsUndefined() || args[1]->IsNull()) ? "_blank" : AtomicString(toWebCoreString(args[1]));
     String windowFeaturesString = toWebCoreStringWithUndefinedOrNullCheck(args[2]);
 
-    RefPtr<DOMWindow> openedWindow = impl->open(urlString, frameName, windowFeaturesString, activeDOMWindow(state), firstDOMWindow(state));
+    RefPtr<DOMWindow> openedWindow = impl->open(urlString, frameName, windowFeaturesString, activeDOMWindow(), firstDOMWindow());
     if (!openedWindow)
         return v8::Undefined();
 
@@ -542,7 +538,7 @@ bool V8DOMWindow::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local
             return true;
     }
 
-    return BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), target, DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(target, DoNotReportSecurityError);
 }
 
 bool V8DOMWindow::indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
@@ -572,7 +568,7 @@ bool V8DOMWindow::indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_
     if (type == v8::ACCESS_GET && childFrame && !host->HasRealIndexedProperty(index))
         return true;
 
-    return BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), target, DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(target, DoNotReportSecurityError);
 }
 
 v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

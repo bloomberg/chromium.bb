@@ -25,7 +25,6 @@
 #include "V8Document.h"
 
 #include "V8Location.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
@@ -49,13 +48,11 @@ void V8Document::locationAttrSetterCustom(v8::Local<v8::String> name, v8::Local<
     if (!document->frame())
         return;
 
-    BindingState* state = BindingState::instance();
-
-    DOMWindow* active = activeDOMWindow(state);
+    DOMWindow* active = activeDOMWindow();
     if (!active)
         return;
 
-    DOMWindow* first = firstDOMWindow(state);
+    DOMWindow* first = firstDOMWindow();
     if (!first)
         return;
 

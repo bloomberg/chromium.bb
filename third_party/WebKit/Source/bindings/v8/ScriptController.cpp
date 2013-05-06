@@ -35,7 +35,6 @@
 #include "V8DOMWindow.h"
 #include "V8Event.h"
 #include "V8HTMLElement.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/NPObjectWrapper.h"
 #include "bindings/v8/NPV8Object.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
@@ -95,7 +94,7 @@ void ScriptController::initializeThreading()
 
 bool ScriptController::canAccessFromCurrentOrigin(Frame *frame)
 {
-    return !v8::Context::InContext() || BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), frame);
+    return !v8::Context::InContext() || BindingSecurity::shouldAllowAccessToFrame(frame);
 }
 
 ScriptController::ScriptController(Frame* frame)

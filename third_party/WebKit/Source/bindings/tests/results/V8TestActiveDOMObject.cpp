@@ -24,7 +24,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8Node.h"
 #include "V8TestActiveDOMObject.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -103,13 +102,13 @@ static v8::Handle<v8::Value> excitingAttrAttrGetterCallback(v8::Local<v8::String
 bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
 {
     TestActiveDOMObject* imp =  V8TestActiveDOMObject::toNative(host);
-    return BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame(), DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
 }
 
 bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
 {
     TestActiveDOMObject* imp =  V8TestActiveDOMObject::toNative(host);
-    return BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame(), DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
 }
 
 static v8::Handle<v8::Value> excitingFunctionMethod(const v8::Arguments& args)
@@ -117,7 +116,7 @@ static v8::Handle<v8::Value> excitingFunctionMethod(const v8::Arguments& args)
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(args.Holder());
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return v8Undefined();
     V8TRYCATCH(Node*, nextChild, V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
     imp->excitingFunction(nextChild);
@@ -159,7 +158,7 @@ static v8::Handle<v8::Value> postMessageAttrGetter(v8::Local<v8::String> name, c
         return privateTemplate->GetFunction();
     }
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
         static const char* sharedTemplateUniqueKey = "postMessageSharedTemplate";
         v8::Persistent<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestActiveDOMObjectV8Internal::postMessageMethodCallback, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestActiveDOMObject::info, currentWorldType)), 1);
         return sharedTemplate->GetFunction();
@@ -183,7 +182,7 @@ static void TestActiveDOMObjectDomainSafeFunctionSetter(v8::Local<v8::String> na
     if (holder.IsEmpty())
         return;
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return;
 
     info.This()->SetHiddenValue(name, value);

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/v8/BindingSecurity.h"
 
-#include "bindings/v8/BindingState.h"
+#include "bindings/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -42,42 +42,44 @@
 
 namespace WebCore {
 
-static bool canAccessDocument(BindingState* state, Document* targetDocument, SecurityReportingOption reportingOption = ReportSecurityError)
+static bool canAccessDocument(Document* targetDocument, SecurityReportingOption reportingOption = ReportSecurityError)
 {
     if (!targetDocument)
         return false;
 
-    DOMWindow* active = activeDOMWindow(state);
+    DOMWindow* active = activeDOMWindow();
     if (!active)
         return false;
 
     if (active->document()->securityOrigin()->canAccess(targetDocument->securityOrigin()))
         return true;
 
-    if (reportingOption == ReportSecurityError)
-        printErrorMessageForFrame(targetDocument->frame(), targetDocument->domWindow()->crossDomainAccessErrorMessage(active));
+    if (reportingOption == ReportSecurityError) {
+        if (Frame* frame = targetDocument->frame())
+            frame->document()->domWindow()->printErrorMessage(targetDocument->domWindow()->crossDomainAccessErrorMessage(active));
+    }
 
     return false;
 }
 
-bool BindingSecurity::shouldAllowAccessToDOMWindow(BindingState* state, DOMWindow* target, SecurityReportingOption reportingOption)
+bool BindingSecurity::shouldAllowAccessToDOMWindow(DOMWindow* target, SecurityReportingOption reportingOption)
 {
-    return target && canAccessDocument(state, target->document(), reportingOption);
+    return target && canAccessDocument(target->document(), reportingOption);
 }
 
-bool BindingSecurity::shouldAllowAccessToFrame(BindingState* state, Frame* target, SecurityReportingOption reportingOption)
+bool BindingSecurity::shouldAllowAccessToFrame(Frame* target, SecurityReportingOption reportingOption)
 {
-    return target && canAccessDocument(state, target->document(), reportingOption);
+    return target && canAccessDocument(target->document(), reportingOption);
 }
 
-bool BindingSecurity::shouldAllowAccessToNode(BindingState* state, Node* target)
+bool BindingSecurity::shouldAllowAccessToNode(Node* target)
 {
-    return target && canAccessDocument(state, target->document());
+    return target && canAccessDocument(target->document());
 }
 
-bool BindingSecurity::allowSettingFrameSrcToJavascriptUrl(BindingState* state, HTMLFrameElementBase* frame, const String& value)
+bool BindingSecurity::allowSettingFrameSrcToJavascriptUrl(HTMLFrameElementBase* frame, const String& value)
 {
-    return !protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(value)) || canAccessDocument(state, frame->contentDocument());
+    return !protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(value)) || canAccessDocument(frame->contentDocument());
 }
 
 }

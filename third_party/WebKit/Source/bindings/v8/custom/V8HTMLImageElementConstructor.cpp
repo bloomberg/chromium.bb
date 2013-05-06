@@ -34,7 +34,6 @@
 #include "HTMLNames.h"
 #include "V8Document.h"
 #include "V8HTMLImageElement.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLImageElement.h"
@@ -53,7 +52,7 @@ static v8::Handle<v8::Value> v8HTMLImageElementConstructorMethodCustom(const v8:
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject)
         return args.Holder();
 
-    Document* document = currentDocument(BindingState::instance());
+    Document* document = currentDocument();
 
     // Make sure the document is added to the DOM Node map. Otherwise, the HTMLImageElement instance
     // may end up being the only node in the map and get garbage-collected prematurely.

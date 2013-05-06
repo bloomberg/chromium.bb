@@ -33,7 +33,6 @@
 
 #include "V8ArrayBuffer.h"
 #include "V8MessagePort.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
@@ -155,7 +154,7 @@ ScriptExecutionContext* getScriptExecutionContext()
     if (WorkerScriptController* controller = WorkerScriptController::controllerForContext())
         return controller->workerContext();
 
-    return currentDocument(BindingState::instance());
+    return currentDocument();
 }
 
 } // namespace WebCore

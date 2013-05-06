@@ -31,7 +31,6 @@
 #include "V8ArrayBuffer.h"
 #include "V8AudioBuffer.h"
 #include "V8OfflineAudioContext.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/page/Frame.h"
 #include "modules/webaudio/AudioBuffer.h"
@@ -43,7 +42,7 @@ namespace WebCore {
 
 v8::Handle<v8::Value> V8AudioContext::constructorCustom(const v8::Arguments& args)
 {
-    Document* document = currentDocument(BindingState::instance());
+    Document* document = currentDocument();
 
     RefPtr<AudioContext> audioContext;
     

@@ -25,7 +25,6 @@
 #include "V8Event.h"
 #include "V8Node.h"
 #include "V8TestEventTarget.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Collection.h"

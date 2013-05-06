@@ -39,7 +39,6 @@
 #include "WebArrayBufferView.h"
 #include "WebElement.h"
 #include "WebRange.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/NPV8Object.h"  // for PrivateIdentifier
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8DOMWrapper.h"

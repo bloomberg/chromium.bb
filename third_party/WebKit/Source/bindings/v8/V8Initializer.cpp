@@ -29,7 +29,6 @@
 #include "V8DOMWindow.h"
 #include "V8History.h"
 #include "V8Location.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "bindings/v8/V8Binding.h"
@@ -77,7 +76,7 @@ static void reportFatalErrorInMainThread(const char* location, const char* messa
 
 static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Handle<v8::Value> data)
 {
-    DOMWindow* firstWindow = firstDOMWindow(BindingState::instance());
+    DOMWindow* firstWindow = firstDOMWindow();
     if (!firstWindow->isCurrentlyDisplayedInFrame())
         return;
 
@@ -101,7 +100,7 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8
     if (!target)
         return;
     DOMWindow* targetWindow = target->document()->domWindow();
-    targetWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(activeDOMWindow(BindingState::instance())));
+    targetWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(activeDOMWindow()));
 }
 
 static void initializeV8Common()

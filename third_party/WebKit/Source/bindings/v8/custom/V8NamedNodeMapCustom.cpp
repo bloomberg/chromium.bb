@@ -34,7 +34,6 @@
 #include "V8Attr.h"
 #include "V8Element.h"
 #include "V8Node.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/NamedNodeMap.h"
 

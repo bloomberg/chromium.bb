@@ -32,7 +32,6 @@
 #include "V8Location.h"
 
 #include "V8DOMWindow.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8EventListener.h"
 #include "bindings/v8/V8Utilities.h"
@@ -48,79 +47,72 @@ namespace WebCore {
 void V8Location::hashAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     Location* impl = V8Location::toNative(info.Holder());
-    BindingState* state = BindingState::instance();
 
     // FIXME: Handle exceptions correctly.
     String hash = toWebCoreString(value);
 
-    impl->setHash(hash, activeDOMWindow(state), firstDOMWindow(state));
+    impl->setHash(hash, activeDOMWindow(), firstDOMWindow());
 }
 
 void V8Location::hostAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     Location* impl = V8Location::toNative(info.Holder());
-    BindingState* state = BindingState::instance();
 
     // FIXME: Handle exceptions correctly.
     String host = toWebCoreString(value);
 
-    impl->setHost(host, activeDOMWindow(state), firstDOMWindow(state));
+    impl->setHost(host, activeDOMWindow(), firstDOMWindow());
 }
 
 void V8Location::hostnameAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     Location* impl = V8Location::toNative(info.Holder());
-    BindingState* state = BindingState::instance();
 
     // FIXME: Handle exceptions correctly.
     String hostname = toWebCoreString(value);
 
-    impl->setHostname(hostname, activeDOMWindow(state), firstDOMWindow(state));
+    impl->setHostname(hostname, activeDOMWindow(), firstDOMWindow());
 }
 
 void V8Location::hrefAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     Location* impl = V8Location::toNative(info.Holder());
-    BindingState* state = BindingState::instance();
 
     // FIXME: Handle exceptions correctly.
     String href = toWebCoreString(value);
 
-    impl->setHref(href, activeDOMWindow(state), firstDOMWindow(state));
+    impl->setHref(href, activeDOMWindow(), firstDOMWindow());
 }
 
 void V8Location::pathnameAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     Location* impl = V8Location::toNative(info.Holder());
-    BindingState* state = BindingState::instance();
 
     // FIXME: Handle exceptions correctly.
     String pathname = toWebCoreString(value);
 
-    impl->setPathname(pathname, activeDOMWindow(state), firstDOMWindow(state));
+    impl->setPathname(pathname, activeDOMWindow(), firstDOMWindow());
 }
 
 void V8Location::portAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     Location* impl = V8Location::toNative(info.Holder());
-    BindingState* state = BindingState::instance();
 
     // FIXME: Handle exceptions correctly.
     String port = toWebCoreString(value);
 
-    impl->setPort(port, activeDOMWindow(state), firstDOMWindow(state));
+    impl->setPort(port, activeDOMWindow(), firstDOMWindow());
 }
 
 void V8Location::protocolAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     Location* impl = V8Location::toNative(info.Holder());
-    BindingState* state = BindingState::instance();
 
     // FIXME: Handle exceptions correctly.
     String protocol = toWebCoreString(value);
 
     ExceptionCode ec = 0;
-    impl->setProtocol(protocol, activeDOMWindow(state), firstDOMWindow(state), ec);
+    impl->setProtocol(protocol, activeDOMWindow(), firstDOMWindow(), ec);
     if (UNLIKELY(ec))
         setDOMException(ec, info.GetIsolate());
 }
@@ -128,12 +120,11 @@ void V8Location::protocolAttrSetterCustom(v8::Local<v8::String> name, v8::Local<
 void V8Location::searchAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     Location* impl = V8Location::toNative(info.Holder());
-    BindingState* state = BindingState::instance();
 
     // FIXME: Handle exceptions correctly.
     String search = toWebCoreString(value);
 
-    impl->setSearch(search, activeDOMWindow(state), firstDOMWindow(state));
+    impl->setSearch(search, activeDOMWindow(), firstDOMWindow());
 }
 
 v8::Handle<v8::Value> V8Location::reloadAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
@@ -152,7 +143,7 @@ v8::Handle<v8::Value> V8Location::reloadAttrGetterCustom(v8::Local<v8::String> n
         return privateTemplate->GetFunction();
     }
     Location* imp = V8Location::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
         static const char* sharedTemplateUniqueKey = "reloadSharedTemplate";
         v8::Persistent<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, V8Location::reloadMethodCustom, v8Undefined(), v8::Signature::New(data->rawTemplate(&V8Location::info, currentWorldType)));
         return sharedTemplate->GetFunction();
@@ -176,7 +167,7 @@ v8::Handle<v8::Value> V8Location::replaceAttrGetterCustom(v8::Local<v8::String> 
         return privateTemplate->GetFunction();
     }
     Location* imp = V8Location::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
         static const char* sharedTemplateUniqueKey = "replaceSharedTemplate";
         v8::Persistent<v8::FunctionTemplate> sharedTemplate = V8PerIsolateData::from(info.GetIsolate())->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, V8Location::replaceMethodCustom, v8Undefined(), v8::Signature::New(data->rawTemplate(&V8Location::info, currentWorldType)));
         return sharedTemplate->GetFunction();
@@ -200,7 +191,7 @@ v8::Handle<v8::Value> V8Location::assignAttrGetterCustom(v8::Local<v8::String> n
         return privateTemplate->GetFunction();
     }
     Location* imp = V8Location::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
         static const char* sharedTemplateUniqueKey = "assignSharedTemplate";
         v8::Persistent<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, V8Location::assignMethodCustom, v8Undefined(), v8::Signature::New(data->rawTemplate(&V8Location::info, currentWorldType)));
         return sharedTemplate->GetFunction();
@@ -211,33 +202,30 @@ v8::Handle<v8::Value> V8Location::assignAttrGetterCustom(v8::Local<v8::String> n
 v8::Handle<v8::Value> V8Location::reloadMethodCustom(const v8::Arguments& args)
 {
     Location* impl = V8Location::toNative(args.Holder());
-    BindingState* state = BindingState::instance();
 
-    impl->reload(activeDOMWindow(state));
+    impl->reload(activeDOMWindow());
     return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8Location::replaceMethodCustom(const v8::Arguments& args)
 {
     Location* impl = V8Location::toNative(args.Holder());
-    BindingState* state = BindingState::instance();
 
     // FIXME: Handle exceptions correctly.
     String urlString = toWebCoreString(args[0]);
 
-    impl->replace(urlString, activeDOMWindow(state), firstDOMWindow(state));
+    impl->replace(urlString, activeDOMWindow(), firstDOMWindow());
     return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8Location::assignMethodCustom(const v8::Arguments& args)
 {
     Location* impl = V8Location::toNative(args.Holder());
-    BindingState* state = BindingState::instance();
 
     // FIXME: Handle exceptions correctly.
     String urlString = toWebCoreString(args[0]);
 
-    impl->assign(urlString, activeDOMWindow(state), firstDOMWindow(state));
+    impl->assign(urlString, activeDOMWindow(), firstDOMWindow());
     return v8::Undefined();
 }
 
@@ -255,7 +243,7 @@ v8::Handle<v8::Value> V8Location::toStringMethodCustom(const v8::Arguments& args
 {
     v8::Handle<v8::Object> holder = args.Holder();
     Location* imp = V8Location::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return v8::Undefined();
     String result = imp->href();
     return v8String(result, args.GetIsolate());

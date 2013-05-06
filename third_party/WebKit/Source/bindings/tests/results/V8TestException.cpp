@@ -23,7 +23,6 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8TestException.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"

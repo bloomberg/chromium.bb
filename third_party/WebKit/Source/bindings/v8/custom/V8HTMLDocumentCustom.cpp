@@ -36,7 +36,6 @@
 #include "V8HTMLAllCollection.h"
 #include "V8HTMLCollection.h"
 #include "V8Node.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWindowShell.h"
@@ -102,14 +101,14 @@ static String writeHelperGetString(const v8::Arguments& args)
 v8::Handle<v8::Value> V8HTMLDocument::writeMethodCustom(const v8::Arguments& args)
 {
     HTMLDocument* htmlDocument = V8HTMLDocument::toNative(args.Holder());
-    htmlDocument->write(writeHelperGetString(args), activeDOMWindow(BindingState::instance())->document());
+    htmlDocument->write(writeHelperGetString(args), activeDOMWindow()->document());
     return v8::Undefined();
 }
 
 v8::Handle<v8::Value> V8HTMLDocument::writelnMethodCustom(const v8::Arguments& args)
 {
     HTMLDocument* htmlDocument = V8HTMLDocument::toNative(args.Holder());
-    htmlDocument->writeln(writeHelperGetString(args), activeDOMWindow(BindingState::instance())->document());
+    htmlDocument->writeln(writeHelperGetString(args), activeDOMWindow()->document());
     return v8::Undefined();
 }
 
@@ -139,7 +138,7 @@ v8::Handle<v8::Value> V8HTMLDocument::openMethodCustom(const v8::Arguments& args
         }
     }
 
-    htmlDocument->open(activeDOMWindow(BindingState::instance())->document());
+    htmlDocument->open(activeDOMWindow()->document());
     return args.Holder();
 }
 

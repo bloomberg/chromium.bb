@@ -32,7 +32,6 @@
 #include "V8CustomEvent.h"
 
 #include "V8Event.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"

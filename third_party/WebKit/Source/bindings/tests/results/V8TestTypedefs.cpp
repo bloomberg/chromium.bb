@@ -29,7 +29,6 @@
 #include "V8TestCallback.h"
 #include "V8TestSubObj.h"
 #include "V8TestTypedefs.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"

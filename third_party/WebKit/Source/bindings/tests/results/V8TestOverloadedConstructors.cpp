@@ -26,7 +26,6 @@
 #include "V8ArrayBufferView.h"
 #include "V8Blob.h"
 #include "V8TestOverloadedConstructors.h"
-#include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
