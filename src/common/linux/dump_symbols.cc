@@ -152,14 +152,16 @@ typename ElfClass::Addr GetLoadingAddress(
     int nheader) {
   typedef typename ElfClass::Phdr Phdr;
 
+  // For non-PIC executables (e_type == ET_EXEC), the load address is
+  // the start address of the first PT_LOAD segment.  (ELF requires
+  // the segments to be sorted by load address.)  For PIC executables
+  // and dynamic libraries (e_type == ET_DYN), this address will
+  // normally be zero.
   for (int i = 0; i < nheader; ++i) {
     const Phdr& header = program_headers[i];
-    // For executable, it is the PT_LOAD segment with offset to zero.
-    if (header.p_type == PT_LOAD &&
-        header.p_offset == 0)
+    if (header.p_type == PT_LOAD)
       return header.p_vaddr;
   }
-  // For other types of ELF, return 0.
   return 0;
 }
 
