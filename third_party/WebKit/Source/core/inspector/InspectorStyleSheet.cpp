@@ -393,7 +393,7 @@ void StyleSheetHandler::endComment(unsigned offset)
             return;
         m_propertyRangeStart = UINT_MAX;
     }
-    if (m_currentRuleDataStack.isEmpty() || !m_currentRuleDataStack.last()->ruleHeaderRange.end)
+    if (m_currentRuleDataStack.isEmpty() || !m_currentRuleDataStack.last()->ruleHeaderRange.end || !m_currentRuleDataStack.last()->styleSourceData)
         return;
 
     // The lexer is not inside a property AND it is scanning a declaration-aware rule body.
