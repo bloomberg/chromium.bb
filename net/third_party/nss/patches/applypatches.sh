@@ -45,3 +45,5 @@ patch -p4 < $patches_dir/suitebonly.patch
 patch -p4 < $patches_dir/secitemarray.patch
 
 patch -p4 < $patches_dir/unusedvariables.patch
+
+patch -p4 < $patches_dir/handlecertstatus.patch

@@ -1,0 +1,64 @@
+diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
+--- a/nss/lib/ssl/ssl3con.c	2013-05-04 11:26:17.636818185 -0700
++++ b/nss/lib/ssl/ssl3con.c	2013-05-04 11:24:00.074886386 -0700
+@@ -9952,21 +9952,31 @@ ssl3_HandleHandshakeMessage(sslSocket *s
+      * get one when it is allowed, but otherwise we just carry on.
+      */
+     if (ss->ssl3.hs.ws == wait_certificate_status) {
+-       /* We must process any CertificateStatus message before we call
+-        * ssl3_AuthCertificate, as ssl3_AuthCertificate needs any stapled OCSP
+-        * response we get.
+-        */
+-       if (ss->ssl3.hs.msg_type == certificate_status) {
+-           rv = ssl3_HandleCertificateStatus(ss, b, length);
+-           if (rv != SECSuccess)
+-               return rv;
+-       }
++        /* We must process any CertificateStatus message before we call
++         * ssl3_AuthCertificate, as ssl3_AuthCertificate needs any stapled
++         * OCSP response we get.
++         */
++        if (ss->ssl3.hs.msg_type == certificate_status) {
++            rv = ssl3_HandleCertificateStatus(ss, b, length);
++            if (rv != SECSuccess)
++                return rv;
++            if (IS_DTLS(ss)) {
++                /* Increment the expected sequence number */
++                ss->ssl3.hs.recvMessageSeq++;
++            }
++        }
+ 
+-       /* Regardless of whether we got a CertificateStatus message, we must
+-        * authenticate the cert before we handle any more handshake messages.
+-        */
+-       rv = ssl3_AuthCertificate(ss); /* sets ss->ssl3.hs.ws */
+-    } else switch (ss->ssl3.hs.msg_type) {
++        /* Regardless of whether we got a CertificateStatus message, we must
++         * authenticate the cert before we handle any more handshake messages.
++         */
++        rv = ssl3_AuthCertificate(ss); /* sets ss->ssl3.hs.ws */
++        PORT_Assert(rv != SECWouldBlock);
++        if (rv != SECSuccess || ss->ssl3.hs.msg_type == certificate_status) {
++            return rv;
++        }
++    }
++
++    switch (ss->ssl3.hs.msg_type) {
+     case hello_request:
+ 	if (length != 0) {
+ 	    (void)ssl3_DecodeError(ss);
+@@ -10008,10 +10018,10 @@ ssl3_HandleHandshakeMessage(sslSocket *s
+ 	rv = ssl3_HandleCertificate(ss, b, length);
+ 	break;
+     case certificate_status:
+-       /* The good case is handled above */
+-       PORT_SetError(SSL_ERROR_RX_UNEXPECTED_CERT_STATUS);
+-       rv = SECFailure;
+-       break;
++	/* The good case is handled above */
++	(void)SSL3_SendAlert(ss, alert_fatal, unexpected_message);
++	PORT_SetError(SSL_ERROR_RX_UNEXPECTED_CERT_STATUS);
++	return SECFailure;
+     case server_key_exchange:
+ 	if (ss->sec.isServer) {
+ 	    (void)SSL3_SendAlert(ss, alert_fatal, unexpected_message);

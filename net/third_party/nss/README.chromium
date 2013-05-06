@@ -95,6 +95,11 @@ Patches:
     patches/unusedvariables.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=866949
 
+  * Fix bugs in the code in ssl3_HandleHandshakeMessage that handles a
+    CertificateStatus message.
+    patches/handlecertstatus.patch
+    https://bugzilla.mozilla.org/show_bug.cgi?id=867795
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 
