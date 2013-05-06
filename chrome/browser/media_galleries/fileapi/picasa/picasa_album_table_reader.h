@@ -18,7 +18,7 @@ const base::Time::Exploded kPicasaVariantTimeEpoch = {
 
 const char kPicasaAlbumTableName[] = "albumdata";
 
-const uint32 kAlbumCategoryUserAlbum = 0;
+const uint32 kAlbumCategoryAlbum     = 0;
 const uint32 kAlbumCategoryFolder    = 2;
 const uint32 kAlbumCategoryInvalid   = 0xffff;  // Sentinel value.
 
@@ -26,20 +26,9 @@ const char kAlbumTokenPrefix[] = "]album:";
 
 struct AlbumInfo {
   AlbumInfo(const std::string& name, const base::Time& timestamp,
-            const std::string& uid);
+            const std::string& uid, const base::FilePath& path);
 
   ~AlbumInfo();
-
-  std::string name;
-  base::Time timestamp;
-  std::string uid;
-};
-
-struct FolderInfo {
-  FolderInfo(const std::string& name, const base::Time& timestamp,
-             const std::string& uid, const base::FilePath& path);
-
-  ~FolderInfo();
 
   std::string name;
   base::Time timestamp;
@@ -55,23 +44,18 @@ class PicasaAlbumTableReader {
 
   bool Init();
 
-  const std::vector<FolderInfo>& folders() const;
-
-  const std::vector<AlbumInfo>& user_albums() const;
+  const std::vector<AlbumInfo>& albums() const;
+  const std::vector<AlbumInfo>& folders() const;
 
   static base::FilePath PicasaDB3Dir();
-
- protected:
-  PicasaAlbumTableReader(const std::vector<FolderInfo>& folders,
-                         const std::vector<AlbumInfo>& user_albums);
 
  private:
   const base::FilePath directory_path_;
 
   bool initialized_;
 
-  std::vector<FolderInfo> folders_;
-  std::vector<AlbumInfo> user_albums_;
+  std::vector<AlbumInfo> albums_;
+  std::vector<AlbumInfo> folders_;
 
   DISALLOW_COPY_AND_ASSIGN(PicasaAlbumTableReader);
 };

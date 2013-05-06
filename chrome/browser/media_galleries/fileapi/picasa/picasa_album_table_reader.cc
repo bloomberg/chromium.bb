@@ -30,21 +30,14 @@ base::Time TimeFromMicrosoftVariantTime(double variant_time) {
 }  // namespace
 
 AlbumInfo::AlbumInfo(const std::string& name, const base::Time& timestamp,
-                     const std::string& uid)
-    : name(name),
-      timestamp(timestamp),
-      uid(uid) {}
-
-AlbumInfo::~AlbumInfo() {}
-
-FolderInfo::FolderInfo(const std::string& name, const base::Time& timestamp,
-                       const std::string& uid, const base::FilePath& path)
+                     const std::string& uid, const base::FilePath& path)
     : name(name),
       timestamp(timestamp),
       uid(uid),
-      path(path) {}
+      path(path) {
+}
 
-FolderInfo::~FolderInfo() {}
+AlbumInfo::~AlbumInfo() {}
 
 PicasaAlbumTableReader::PicasaAlbumTableReader(
     const base::FilePath& directory_path)
@@ -69,22 +62,15 @@ base::FilePath PicasaAlbumTableReader::PicasaDB3Dir() {
   return path.Append(FPL("Google")).Append(FPL("Picasa2")).Append(FPL("db3"));
 }
 
-const std::vector<FolderInfo>& PicasaAlbumTableReader::folders() const {
+const std::vector<AlbumInfo>& PicasaAlbumTableReader::folders() const {
   DCHECK(initialized_);
   return folders_;
 }
 
-const std::vector<AlbumInfo>& PicasaAlbumTableReader::user_albums() const {
+const std::vector<AlbumInfo>& PicasaAlbumTableReader::albums() const {
   DCHECK(initialized_);
-  return user_albums_;
+  return albums_;
 }
-
-PicasaAlbumTableReader::PicasaAlbumTableReader(
-    const std::vector<FolderInfo>& folders,
-    const std::vector<AlbumInfo>& user_albums)
-    : initialized_(true),
-      folders_(folders),
-      user_albums_(user_albums) {}
 
 bool PicasaAlbumTableReader::Init() {
   if (initialized_)
@@ -123,14 +109,14 @@ bool PicasaAlbumTableReader::Init() {
     base::Time timestamp = TimeFromMicrosoftVariantTime(date);
 
     switch (category) {
-      case kAlbumCategoryUserAlbum: {
+      case kAlbumCategoryAlbum: {
         std::string token;
         if (!token_column->ReadString(i, &token) || token.empty() ||
             !StartsWithASCII(token, kAlbumTokenPrefix, false)) {
           continue;
         }
 
-        user_albums_.push_back(AlbumInfo(name, timestamp, uid));
+        albums_.push_back(AlbumInfo(name, timestamp, uid, base::FilePath()));
         break;
       }
       case kAlbumCategoryFolder: {
@@ -141,7 +127,7 @@ bool PicasaAlbumTableReader::Init() {
         base::FilePath path =
             base::FilePath(base::FilePath::FromUTF8Unsafe(filename));
 
-        folders_.push_back(FolderInfo(name, timestamp, uid, path));
+        folders_.push_back(AlbumInfo(name, timestamp, uid, path));
         break;
       }
       default: {

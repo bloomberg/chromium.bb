@@ -21,7 +21,7 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
   std::vector<uint32> category_vector;
   category_vector.push_back(picasa::kAlbumCategoryFolder);
   category_vector.push_back(picasa::kAlbumCategoryInvalid);
-  category_vector.push_back(picasa::kAlbumCategoryUserAlbum);
+  category_vector.push_back(picasa::kAlbumCategoryAlbum);
 
   std::vector<double> date_vector;
   date_vector.push_back(0.0);
@@ -29,7 +29,7 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
   date_vector.push_back(0.0 + test_time_delta);
 
   std::string test_folder_name = "Pix4dalulz";
-  std::string test_user_album_name = "Cats";
+  std::string test_album_name = "Cats";
 
   base::FilePath test_folder_path =
       base::FilePath(base::FilePath::FromUTF8Unsafe("C:\\Pix4dalulz"));
@@ -41,7 +41,7 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
   std::vector<std::string> name_vector;
   name_vector.push_back(test_folder_name);
   name_vector.push_back("");
-  name_vector.push_back(test_user_album_name);
+  name_vector.push_back(test_album_name);
 
   std::vector<std::string> token_vector;
   token_vector.push_back("");
@@ -70,18 +70,18 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
 
   ASSERT_TRUE(reader.Init());
 
-  const std::vector<picasa::FolderInfo>& folders = reader.folders();
-  const std::vector<picasa::AlbumInfo>& user_albums = reader.user_albums();
+  const std::vector<picasa::AlbumInfo>& albums = reader.albums();
+  const std::vector<picasa::AlbumInfo>& folders = reader.folders();
 
+  ASSERT_EQ(1u, albums.size());
   ASSERT_EQ(1u, folders.size());
-  ASSERT_EQ(1u, user_albums.size());
 
+  EXPECT_EQ(test_album_name, albums[0].name);
   EXPECT_EQ(test_folder_name, folders[0].name);
-  EXPECT_EQ(test_user_album_name, user_albums[0].name);
 
   EXPECT_EQ(test_folder_path, folders[0].path);
 
-  base::TimeDelta time_delta = user_albums[0].timestamp - folders[0].timestamp;
+  base::TimeDelta time_delta = albums[0].timestamp - folders[0].timestamp;
 
   EXPECT_EQ(test_time_delta, time_delta.InDays());
 }
