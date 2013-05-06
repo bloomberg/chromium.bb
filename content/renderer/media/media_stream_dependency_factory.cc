@@ -41,14 +41,14 @@ struct {
   const char* key;
   const char* value;
 } const kWebAudioConstraints[] = {
-  {webrtc::MediaConstraintsInterface::kEchoCancellation,
-   webrtc::MediaConstraintsInterface::kValueFalse},
-  {webrtc::MediaConstraintsInterface::kAutoGainControl,
-   webrtc::MediaConstraintsInterface::kValueFalse},
-  {webrtc::MediaConstraintsInterface::kNoiseSuppression,
-   webrtc::MediaConstraintsInterface::kValueFalse},
-  {webrtc::MediaConstraintsInterface::kHighpassFilter,
-   webrtc::MediaConstraintsInterface::kValueFalse},
+    {webrtc::MediaConstraintsInterface::kEchoCancellation,
+     webrtc::MediaConstraintsInterface::kValueFalse},
+    {webrtc::MediaConstraintsInterface::kAutoGainControl,
+     webrtc::MediaConstraintsInterface::kValueFalse},
+    {webrtc::MediaConstraintsInterface::kNoiseSuppression,
+     webrtc::MediaConstraintsInterface::kValueFalse},
+    {webrtc::MediaConstraintsInterface::kHighpassFilter,
+     webrtc::MediaConstraintsInterface::kValueFalse},
 };
 
 class WebAudioConstraints : public RTCMediaConstraints {
@@ -402,6 +402,40 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
   }
 }
 
+bool MediaStreamDependencyFactory::AddNativeVideoMediaTrack(
+    const std::string& track_id,
+    WebKit::WebMediaStream* stream,
+    cricket::VideoCapturer* capturer) {
+  if (!stream) {
+    LOG(ERROR) << "AddNativeVideoMediaTrack called with null WebMediaStream.";
+    return false;
+  }
+
+  // Create native track from the source.
+  scoped_refptr<webrtc::VideoTrackInterface> native_track =
+      CreateLocalVideoTrack(track_id, capturer);
+
+  // Add the native track to native stream
+  MediaStreamExtraData* extra_data =
+      static_cast<MediaStreamExtraData*>(stream->extraData());
+  DCHECK(extra_data);
+  webrtc::MediaStreamInterface* native_stream = extra_data->stream();
+  native_stream->AddTrack(native_track);
+
+  // Create a new webkit video track.
+  WebKit::WebMediaStreamTrack webkit_track;
+  WebKit::WebMediaStreamSource webkit_source;
+  WebKit::WebString webkit_track_id(UTF8ToUTF16(track_id));
+  WebKit::WebMediaStreamSource::Type type =
+      WebKit::WebMediaStreamSource::TypeVideo;
+  webkit_source.initialize(webkit_track_id, type, webkit_track_id);
+  webkit_track.initialize(webkit_track_id, webkit_source);
+
+  // Add the track to WebMediaStream.
+  stream->addTrack(webkit_track);
+  return true;
+}
+
 bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
     const WebKit::WebMediaStream& stream,
     const WebKit::WebMediaStreamTrack& track) {
@@ -551,6 +585,22 @@ scoped_refptr<webrtc::VideoTrackInterface>
 MediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
     webrtc::VideoSourceInterface* source) {
+  return pc_factory_->CreateVideoTrack(id, source).get();
+}
+
+scoped_refptr<webrtc::VideoTrackInterface>
+MediaStreamDependencyFactory::CreateLocalVideoTrack(
+    const std::string& id, cricket::VideoCapturer* capturer) {
+  if (!capturer) {
+    LOG(ERROR) << "CreateLocalVideoTrack called with null VideoCapturer.";
+    return NULL;
+  }
+
+  // Create video source from the |capturer|.
+  scoped_refptr<webrtc::VideoSourceInterface> source =
+      pc_factory_->CreateVideoSource(capturer, NULL).get();
+
+  // Create native track from the source.
   return pc_factory_->CreateVideoTrack(id, source).get();
 }
 

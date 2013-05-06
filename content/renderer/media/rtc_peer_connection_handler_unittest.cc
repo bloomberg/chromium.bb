@@ -127,7 +127,7 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
  public:
   MOCK_METHOD1(UnregisterPeerConnection,
                void(RTCPeerConnectionHandler* pc_handler));
-  // TODO (jiayl): add coverage for the following methods
+  // TODO(jiayl): add coverage for the following methods
   MOCK_METHOD2(TrackCreateOffer,
                void(RTCPeerConnectionHandler* pc_handler,
                     const RTCMediaConstraints& constraints));
@@ -177,7 +177,7 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
   MOCK_METHOD1(TrackOnRenegotiationNeeded,
                void(RTCPeerConnectionHandler* pc_handler));
   MOCK_METHOD2(TrackCreateDTMFSender,
-               void (RTCPeerConnectionHandler* pc_handler,
+               void(RTCPeerConnectionHandler* pc_handler,
                      const WebKit::WebMediaStreamTrack& track));
 };
 
@@ -248,9 +248,10 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
     local_stream.audioSources(video_tracks);
     const std::string video_track_id = UTF16ToUTF8(video_tracks[0].id());
+    webrtc::VideoSourceInterface* source = NULL;
     scoped_refptr<webrtc::VideoTrackInterface> video_track(
         mock_dependency_factory_->CreateLocalVideoTrack(
-            video_track_id, 0));
+            video_track_id, source));
     native_stream->AddTrack(video_track);
 
     local_stream.setExtraData(new MediaStreamExtraData(native_stream, true));
@@ -266,9 +267,10 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     scoped_refptr<webrtc::MediaStreamInterface> stream(
         mock_dependency_factory_->CreateLocalMediaStream(stream_label));
     if (!video_track_label.empty()) {
+      webrtc::VideoSourceInterface* source = NULL;
       scoped_refptr<webrtc::VideoTrackInterface> video_track(
           mock_dependency_factory_->CreateLocalVideoTrack(
-              video_track_label, 0));
+              video_track_label, source));
       stream->AddTrack(video_track);
     }
     if (!audio_track_label.empty()) {

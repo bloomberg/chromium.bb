@@ -95,6 +95,12 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   bool AddNativeMediaStreamTrack(const WebKit::WebMediaStream& stream,
                                  const WebKit::WebMediaStreamTrack& track);
 
+  // Creates and adds libjingle representation of a MediaStreamTrack to |stream|
+  // based on the desired |track_id| and |capturer|.
+  bool AddNativeVideoMediaTrack(const std::string& track_id,
+                                WebKit::WebMediaStream* stream,
+                                cricket::VideoCapturer* capturer);
+
   bool RemoveNativeMediaStreamTrack(const WebKit::WebMediaStream& stream,
                                     const WebKit::WebMediaStreamTrack& track);
 
@@ -166,6 +172,12 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   virtual scoped_refptr<webrtc::VideoTrackInterface>
       CreateLocalVideoTrack(const std::string& id,
                             webrtc::VideoSourceInterface* source);
+
+  // Asks the PeerConnection factory to create a Local VideoTrack object with
+  // the video source using |capturer|.
+  virtual scoped_refptr<webrtc::VideoTrackInterface>
+      CreateLocalVideoTrack(const std::string& id,
+                            cricket::VideoCapturer* capturer);
 
   virtual bool EnsurePeerConnectionFactory();
   virtual bool PeerConnectionFactoryCreated();
