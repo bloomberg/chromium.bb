@@ -51,7 +51,6 @@
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/PluginDocument.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/AutoscrollController.h"
@@ -1302,11 +1301,6 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 {
     RefPtr<FrameView> protector(m_frame->view());
 
-    if (InspectorInstrumentation::handleMousePress(m_frame->page())) {
-        invalidateClick();
-        return true;
-    }
-
     bool defaultPrevented = dispatchSyntheticTouchEventIfEnabled(mouseEvent);
     if (defaultPrevented)
         return true;
@@ -1477,8 +1471,6 @@ bool EventHandler::mouseMoved(const PlatformMouseEvent& event)
     hoveredNode.setToNonShadowAncestor();
     page->chrome()->mouseDidMoveOverElement(hoveredNode, event.modifierFlags());
     page->chrome()->setToolTip(hoveredNode);
-
-    InspectorInstrumentation::handleMouseMove(m_frame, event);
 
     return result;
 }
@@ -3697,9 +3689,6 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
             // Touch events should not go to text nodes
             if (node->isTextNode())
                 node = EventPathWalker::parent(node);
-
-            if (InspectorInstrumentation::handleTouchEvent(m_frame->page(), node))
-                return true;
 
             Document* doc = node->document();
             // Record the originating touch document even if it does not have a touch listener.

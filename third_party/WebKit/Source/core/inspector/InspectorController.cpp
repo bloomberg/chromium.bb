@@ -71,6 +71,8 @@
 #include "core/inspector/PageRuntimeAgent.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
+#include "core/platform/PlatformMouseEvent.h"
+#include "core/platform/PlatformTouchEvent.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/UnusedParam.h>
@@ -331,6 +333,22 @@ void InspectorController::hideHighlight()
 Node* InspectorController::highlightedNode() const
 {
     return m_overlay->highlightedNode();
+}
+
+bool InspectorController::handleMouseEvent(Frame* frame, const PlatformMouseEvent& event)
+{
+    if (event.type() == PlatformEvent::MouseMoved) {
+        m_domAgent->handleMouseMove(frame, event);
+        return false;
+    }
+    if (event.type() == PlatformEvent::MousePressed)
+        return m_domAgent->handleMousePress();
+    return false;
+}
+
+bool InspectorController::handleTouchEvent(Frame* frame, const PlatformTouchEvent& event)
+{
+    return m_domAgent->handleTouchEvent(frame, event);
 }
 
 bool InspectorController::profilerEnabled()

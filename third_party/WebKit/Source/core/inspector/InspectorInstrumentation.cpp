@@ -264,12 +264,6 @@ void didUpdateRegionLayoutImpl(InstrumentingAgents* instrumentingAgents, Documen
         cssAgent->didUpdateRegionLayout(document, namedFlow);
 }
 
-void handleMouseMoveImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, const PlatformMouseEvent& event)
-{
-    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
-        domAgent->handleMouseMove(frame, event);
-}
-
 void didScrollImpl(InstrumentingAgents* instrumentingAgents)
 {
     if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
@@ -280,20 +274,6 @@ void didResizeMainFrameImpl(InstrumentingAgents* instrumentingAgents)
 {
     if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
         pageAgent->didResizeMainFrame();
-}
-
-bool handleTouchEventImpl(InstrumentingAgents* instrumentingAgents, Node* node)
-{
-    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
-        return domAgent->handleTouchEvent(node);
-    return false;
-}
-
-bool handleMousePressImpl(InstrumentingAgents* instrumentingAgents)
-{
-    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
-        return domAgent->handleMousePress();
-    return false;
 }
 
 bool forcePseudoStateImpl(InstrumentingAgents* instrumentingAgents, Element* element, CSSSelector::PseudoType pseudoState)

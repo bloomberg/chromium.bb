@@ -37,6 +37,7 @@
 #include "WebDataSource.h"
 #include "WebDevToolsAgentClient.h"
 #include "WebFrameImpl.h"
+#include "WebInputEventConversion.h"
 #include "WebMemoryUsageInfo.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
@@ -458,6 +459,24 @@ void WebDevToolsAgentImpl::webViewResized(const WebSize& size)
         m_metricsSupport->webViewResized();
     if (InspectorController* ic = inspectorController())
         ic->webViewResized(m_metricsSupport ? IntSize(size.width, size.height) : IntSize());
+}
+
+bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputEvent& inputEvent)
+{
+    InspectorController* ic = inspectorController();
+    if (!ic)
+        return false;
+
+    if (WebInputEvent::isMouseEventType(inputEvent.type) && inputEvent.type != WebInputEvent::MouseEnter) {
+        // PlatformMouseEventBuilder does not work with MouseEnter type, so we filter it out manually.
+        PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(page->mainFrame()->view(), *static_cast<const WebMouseEvent*>(&inputEvent));
+        return ic->handleMouseEvent(page->mainFrame(), mouseEvent);
+    }
+    if (WebInputEvent::isTouchEventType(inputEvent.type)) {
+        PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(page->mainFrame()->view(), *static_cast<const WebTouchEvent*>(&inputEvent));
+        return ic->handleTouchEvent(page->mainFrame(), touchEvent);
+    }
+    return false;
 }
 
 void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float fontScaleFactor, bool fitWindow)

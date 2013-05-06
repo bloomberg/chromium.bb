@@ -49,7 +49,6 @@ void mediaQueryResultChangedImpl(InstrumentingAgents*);
 void didCreateNamedFlowImpl(InstrumentingAgents*, Document*, NamedFlow*);
 void willRemoveNamedFlowImpl(InstrumentingAgents*, Document*, NamedFlow*);
 void didUpdateRegionLayoutImpl(InstrumentingAgents*, Document*, NamedFlow*);
-void handleMouseMoveImpl(InstrumentingAgents*, Frame*, const PlatformMouseEvent&);
 void willSendXMLHttpRequestImpl(InstrumentingAgents*, const String& url);
 void didScheduleResourceRequestImpl(InstrumentingAgents*, Document*, const String& url);
 void didInstallTimerImpl(InstrumentingAgents*, ScriptExecutionContext*, int timerId, int timeout, bool singleShot);
@@ -242,12 +241,6 @@ inline void didUpdateRegionLayout(Document* document, NamedFlow* namedFlow)
         didUpdateRegionLayoutImpl(instrumentingAgents, document, namedFlow);
 }
 
-inline void handleMouseMove(Frame* frame, const PlatformMouseEvent& event)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
-        handleMouseMoveImpl(instrumentingAgents, frame, event);
-}
 inline void willSendXMLHttpRequest(ScriptExecutionContext* context, const String& url)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());

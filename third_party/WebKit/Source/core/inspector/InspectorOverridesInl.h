@@ -35,8 +35,6 @@ namespace WebCore {
 
 namespace InspectorInstrumentation {
 
-bool handleMousePressImpl(InstrumentingAgents*);
-bool handleTouchEventImpl(InstrumentingAgents*, Node*);
 bool forcePseudoStateImpl(InstrumentingAgents*, Element*, CSSSelector::PseudoType);
 bool shouldApplyScreenWidthOverrideImpl(InstrumentingAgents*);
 bool shouldApplyScreenHeightOverrideImpl(InstrumentingAgents*);
@@ -44,22 +42,6 @@ bool shouldPauseDedicatedWorkerOnStartImpl(InstrumentingAgents*);
 GeolocationPosition* overrideGeolocationPositionImpl(InstrumentingAgents*, GeolocationPosition*);
 DeviceOrientationData* overrideDeviceOrientationImpl(InstrumentingAgents*, DeviceOrientationData*);
 String getCurrentUserInitiatedProfileNameImpl(InstrumentingAgents*, bool incrementProfileNumber);
-
-inline bool handleMousePress(Page* page)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(false);
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        return handleMousePressImpl(instrumentingAgents);
-    return false;
-}
-
-inline bool handleTouchEvent(Page* page, Node* node)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(false);
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        return handleTouchEventImpl(instrumentingAgents, node);
-    return false;
-}
 
 inline bool forcePseudoState(Element* element, CSSSelector::PseudoType pseudoState)
 {
