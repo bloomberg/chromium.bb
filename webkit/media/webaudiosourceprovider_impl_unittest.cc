@@ -88,9 +88,6 @@ class WebAudioSourceProviderImplTest
   DISALLOW_COPY_AND_ASSIGN(WebAudioSourceProviderImplTest);
 };
 
-// test start/stop/play/pause all return either silence or real audio data.
-// test setVolume results in volume adjustment
-
 TEST_F(WebAudioSourceProviderImplTest, SetClientBeforeInitialize) {
   // setClient() with a NULL client should do nothing if no client is set.
   wasp_impl_->setClient(NULL);
@@ -159,6 +156,12 @@ TEST_F(WebAudioSourceProviderImplTest, ProvideInput) {
   WebKit::WebVector<float*> audio_data(static_cast<size_t>(bus1->channels()));
   for (size_t i = 0; i < audio_data.size(); ++i)
     audio_data[i] = bus1->channel(i);
+
+  // Verify provideInput() works before Initialize() and returns silence.
+  bus1->channel(0)[0] = 1;
+  bus2->Zero();
+  wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
+  ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
 
   wasp_impl_->Initialize(params_, &fake_callback_);
   SetClient(this);

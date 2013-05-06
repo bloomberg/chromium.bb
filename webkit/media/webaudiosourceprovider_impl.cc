@@ -87,8 +87,11 @@ void WebAudioSourceProviderImpl::setClient(
 
 void WebAudioSourceProviderImpl::provideInput(
     const WebVector<float*>& audio_data, size_t number_of_frames) {
-  DCHECK(renderer_);
-  DCHECK_EQ(static_cast<size_t>(bus_wrapper_->channels()), audio_data.size());
+  if (!bus_wrapper_ ||
+      static_cast<size_t>(bus_wrapper_->channels()) != audio_data.size()) {
+    bus_wrapper_ = media::AudioBus::CreateWrapper(audio_data.size());
+  }
+
   bus_wrapper_->set_frames(number_of_frames);
   for (size_t i = 0; i < audio_data.size(); ++i)
     bus_wrapper_->SetChannelData(i, audio_data[i]);
@@ -102,7 +105,9 @@ void WebAudioSourceProviderImpl::provideInput(
     return;
   }
 
+  DCHECK(renderer_);
   DCHECK(client_);
+  DCHECK_EQ(channels_, bus_wrapper_->channels());
   renderer_->Render(bus_wrapper_.get(), 0);
   bus_wrapper_->Scale(volume_);
 }
@@ -159,7 +164,6 @@ void WebAudioSourceProviderImpl::Initialize(
   // Keep track of the format in case the client hasn't yet been set.
   channels_ = params.channels();
   sample_rate_ = params.sample_rate();
-  bus_wrapper_ = media::AudioBus::CreateWrapper(channels_);
 
   if (client_) {
     // Inform WebKit about the audio stream format.
