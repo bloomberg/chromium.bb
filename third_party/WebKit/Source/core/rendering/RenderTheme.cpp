@@ -40,7 +40,7 @@
 #include "core/platform/FloatConversion.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/FontSelector.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/StringTruncator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderMeter.h"

@@ -30,7 +30,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/Icon.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/rendering/PaintInfo.h"

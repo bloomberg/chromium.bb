@@ -33,7 +33,7 @@
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/HitTestRequest.h"

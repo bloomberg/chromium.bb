@@ -48,7 +48,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 

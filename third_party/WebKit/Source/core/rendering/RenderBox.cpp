@@ -41,7 +41,7 @@
 #include "core/page/Page.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatQuad.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/HitTestResult.h"

@@ -31,6 +31,7 @@
 #include "core/page/FrameView.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/graphics/Gradient.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/mac/LocalCurrentGraphicsContext.h"

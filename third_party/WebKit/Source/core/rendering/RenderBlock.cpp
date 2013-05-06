@@ -40,7 +40,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/PODFreeListArena.h"
 #include "core/platform/graphics/FloatQuad.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/ColumnInfo.h"
 #include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"

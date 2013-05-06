@@ -46,7 +46,7 @@
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontSelector.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/plugins/PluginView.h"

@@ -32,7 +32,7 @@
 
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatQuad.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/StrokeStyleApplier.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/LayoutRepainter.h"

@@ -31,7 +31,7 @@
 #include "core/dom/Attr.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PointerEventsHitRules.h"

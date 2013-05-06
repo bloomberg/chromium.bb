@@ -26,7 +26,7 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"

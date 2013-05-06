@@ -78,7 +78,7 @@
 #include "core/platform/graphics/FloatPoint3D.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Gradient.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"

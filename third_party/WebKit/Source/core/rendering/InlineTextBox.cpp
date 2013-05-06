@@ -35,7 +35,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"

@@ -29,7 +29,7 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderView.h"

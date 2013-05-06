@@ -24,7 +24,7 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRepainter.h"

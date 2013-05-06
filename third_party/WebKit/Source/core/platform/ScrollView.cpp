@@ -33,7 +33,7 @@
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/ScrollbarTheme.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include <wtf/StdLibExtras.h>
 

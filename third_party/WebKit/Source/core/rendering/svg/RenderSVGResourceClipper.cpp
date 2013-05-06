@@ -29,7 +29,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"

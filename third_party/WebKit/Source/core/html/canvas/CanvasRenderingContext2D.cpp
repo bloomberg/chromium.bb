@@ -61,7 +61,7 @@
 #include "core/platform/KURL.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/StrokeStyleApplier.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"

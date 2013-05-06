@@ -26,7 +26,7 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGContainer.h"
 
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGResource.h"

@@ -33,6 +33,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/FrameView.h"
 #include "core/page/Settings.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/IntRect.h"

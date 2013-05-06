@@ -40,6 +40,7 @@
 #import "core/platform/LocalizedStrings.h"
 #import "core/platform/SharedBuffer.h"
 #import "core/platform/graphics/BitmapImage.h"
+#import "core/platform/graphics/GraphicsContextStateSaver.h"
 #import "core/platform/graphics/Image.h"
 #import "core/platform/graphics/ImageBuffer.h"
 #import "core/platform/graphics/StringTruncator.h"

@@ -31,6 +31,7 @@
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/ScrollbarThemeComposite.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 
 // -----------------------------------------------------------------------------
 // This file contains scrollbar theme code that is cross platform. Additional

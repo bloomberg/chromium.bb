@@ -449,45 +449,6 @@ namespace WebCore {
         bool m_isCertainlyOpaque;
         bool m_printing;
     };
-
-    class GraphicsContextStateSaver {
-        WTF_MAKE_FAST_ALLOCATED;
-    public:
-        GraphicsContextStateSaver(GraphicsContext& context, bool saveAndRestore = true)
-        : m_context(context)
-        , m_saveAndRestore(saveAndRestore)
-        {
-            if (m_saveAndRestore)
-                m_context.save();
-        }
-        
-        ~GraphicsContextStateSaver()
-        {
-            if (m_saveAndRestore)
-                m_context.restore();
-        }
-        
-        void save()
-        {
-            ASSERT(!m_saveAndRestore);
-            m_context.save();
-            m_saveAndRestore = true;
-        }
-
-        void restore()
-        {
-            ASSERT(m_saveAndRestore);
-            m_context.restore();
-            m_saveAndRestore = false;
-        }
-        
-        GraphicsContext* context() const { return &m_context; }
-
-    private:
-        GraphicsContext& m_context;
-        bool m_saveAndRestore;
-    };
-
 } // namespace WebCore
 
 #endif // GraphicsContext_h

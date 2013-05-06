@@ -29,7 +29,7 @@
 #include "core/platform/Length.h"
 #include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 
 namespace WebCore {
 
