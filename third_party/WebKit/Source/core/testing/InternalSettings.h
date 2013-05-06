@@ -83,12 +83,6 @@ public:
     virtual ~InternalSettings();
     void resetToConsistentState();
 
-    void setMockScrollbarsEnabled(bool enabled, ExceptionCode&);
-    void setUsesOverlayScrollbars(bool enabled, ExceptionCode&);
-    void setTouchEventEmulationEnabled(bool enabled, ExceptionCode&);
-    void setAuthorShadowDOMForAnyElementEnabled(bool);
-    void setExperimentalShadowDOMEnabled(bool enabled);
-    void setStyleScopedEnabled(bool);
     void setStandardFontFamily(const String& family, const String& script, ExceptionCode&);
     void setSerifFontFamily(const String& family, const String& script, ExceptionCode&);
     void setSansSerifFontFamily(const String& family, const String& script, ExceptionCode&);
@@ -96,22 +90,36 @@ public:
     void setCursiveFontFamily(const String& family, const String& script, ExceptionCode&);
     void setFantasyFontFamily(const String& family, const String& script, ExceptionCode&);
     void setPictographFontFamily(const String& family, const String& script, ExceptionCode&);
-    void setTextAutosizingEnabled(bool enabled, ExceptionCode&);
-    void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionCode&);
-    void setTextAutosizingFontScaleFactor(float fontScaleFactor, ExceptionCode&);
-    void setResolutionOverride(int dotsPerCSSInchHorizontally, int dotsPerCSSInchVertically, ExceptionCode&);
-    void setMediaTypeOverride(const String& mediaType, ExceptionCode&);
-    void setCSSExclusionsEnabled(bool enabled, ExceptionCode&);
-    void setCSSVariablesEnabled(bool enabled, ExceptionCode&);
-    bool cssVariablesEnabled(ExceptionCode&);
-    void setEditingBehavior(const String&, ExceptionCode&);
-    void setDialogElementEnabled(bool, ExceptionCode&);
-    void setLazyLayoutEnabled(bool, ExceptionCode&);
-    void setShouldDisplayTrackKind(const String& kind, bool enabled, ExceptionCode&);
-    bool shouldDisplayTrackKind(const String& kind, ExceptionCode&);
-    void setLangAttributeAwareFormControlUIEnabled(bool);
-    void setImagesEnabled(bool enabled, ExceptionCode&);
+
     void setDefaultVideoPosterURL(const String& url, ExceptionCode&);
+    void setEditingBehavior(const String&, ExceptionCode&);
+    void setImagesEnabled(bool, ExceptionCode&);
+    void setMediaTypeOverride(const String& mediaType, ExceptionCode&);
+    void setMockScrollbarsEnabled(bool, ExceptionCode&);
+    void setResolutionOverride(int dotsPerCSSInchHorizontally, int dotsPerCSSInchVertically, ExceptionCode&);
+    void setTextAutosizingEnabled(bool, ExceptionCode&);
+    void setTextAutosizingFontScaleFactor(float fontScaleFactor, ExceptionCode&);
+    void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionCode&);
+    void setTouchEventEmulationEnabled(bool, ExceptionCode&);
+    void setUsesOverlayScrollbars(bool, ExceptionCode&);
+
+    void setShouldDisplayTrackKind(const String& kind, bool, ExceptionCode&);
+    bool shouldDisplayTrackKind(const String& kind, ExceptionCode&);
+
+    // cssVariablesEnabled is not backed by RuntimeEnabledFeatures, but should be.
+    bool cssVariablesEnabled(ExceptionCode&);
+    void setCSSVariablesEnabled(bool, ExceptionCode&);
+
+    // FIXME: The following are RuntimeEnabledFeatures and likely
+    // cannot be changed after process start.  These setters should
+    // be removed or moved onto internals.runtimeFlags:
+    void setAuthorShadowDOMForAnyElementEnabled(bool);
+    void setCSSExclusionsEnabled(bool);
+    void setDialogElementEnabled(bool);
+    void setExperimentalShadowDOMEnabled(bool);
+    void setLangAttributeAwareFormControlUIEnabled(bool);
+    void setLazyLayoutEnabled(bool);
+    void setStyleScopedEnabled(bool);
 
 private:
     explicit InternalSettings(Page*);

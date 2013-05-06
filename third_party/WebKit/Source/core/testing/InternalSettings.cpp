@@ -278,9 +278,8 @@ void InternalSettings::setTextAutosizingFontScaleFactor(float fontScaleFactor, E
     settings()->setTextAutosizingFontScaleFactor(fontScaleFactor);
 }
 
-void InternalSettings::setCSSExclusionsEnabled(bool enabled, ExceptionCode& ec)
+void InternalSettings::setCSSExclusionsEnabled(bool enabled)
 {
-    UNUSED_PARAM(ec);
     RuntimeEnabledFeatures::setCSSExclusionsEnabled(enabled);
 }
 
@@ -311,14 +310,13 @@ void InternalSettings::setEditingBehavior(const String& editingBehavior, Excepti
         ec = SYNTAX_ERR;
 }
 
-void InternalSettings::setDialogElementEnabled(bool enabled, ExceptionCode&)
+void InternalSettings::setDialogElementEnabled(bool enabled)
 {
     RuntimeEnabledFeatures::setDialogElementEnabled(enabled);
 }
 
-void InternalSettings::setLazyLayoutEnabled(bool enabled, ExceptionCode& ec)
+void InternalSettings::setLazyLayoutEnabled(bool enabled)
 {
-    UNUSED_PARAM(ec);
     RuntimeEnabledFeatures::setLazyLayoutEnabled(enabled);
 }
 
