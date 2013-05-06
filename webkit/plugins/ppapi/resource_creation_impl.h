@@ -15,6 +15,10 @@ namespace ppapi {
 
 class PluginInstance;
 
+// This is an abstract class.  ResourceCreationAPI functions that implement
+// "old-style" resources are handled here. See
+// content/renderer/pepper/pepper_in_process_resource_creation.h for functions
+// that implement "new-style" resources.
 class WEBKIT_PLUGINS_EXPORT ResourceCreationImpl
     : public NON_EXPORTED_BASE(::ppapi::thunk::ResourceCreationAPI) {
  public:
