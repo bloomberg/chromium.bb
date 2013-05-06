@@ -75,6 +75,7 @@ class CustomFilterParameter;
 class CustomFilterParameterList;
 class CustomFilterProgram;
 struct CustomFilterProgramMixSettings;
+class DeprecatedStyleBuilder;
 class Document;
 class Element;
 class ElementRuleCollector;
@@ -92,7 +93,6 @@ class RuleSet;
 class Settings;
 class StaticCSSRuleList;
 class StyleCustomFilterProgramCache;
-class StyleBuilder;
 class StyleImage;
 class StyleKeyframe;
 class StylePendingImage;
@@ -607,7 +607,7 @@ private:
     RefPtr<ViewportStyleResolver> m_viewportStyleResolver;
 #endif
 
-    const StyleBuilder& m_styleBuilder;
+    const DeprecatedStyleBuilder& m_styleBuilder;
 
     OwnPtr<ScopedStyleResolver> m_scopeResolver;
     CSSToStyleMap m_styleMap;
@@ -617,7 +617,7 @@ private:
 
     OwnPtr<StyleCustomFilterProgramCache> m_customFilterProgramCache;
 
-    friend class StyleBuilder;
+    friend class DeprecatedStyleBuilder;
     friend bool operator==(const MatchedProperties&, const MatchedProperties&);
     friend bool operator!=(const MatchedProperties&, const MatchedProperties&);
     friend bool operator==(const MatchRanges&, const MatchRanges&);

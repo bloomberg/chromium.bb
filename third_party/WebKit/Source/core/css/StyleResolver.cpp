@@ -54,6 +54,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSVariableValue.h"
 #include "core/css/Counter.h"
+#include "core/css/DeprecatedStyleBuilder.h"
 #include "core/css/ElementRuleCollector.h"
 #include "core/css/FontFeatureValue.h"
 #include "core/css/FontValue.h"
@@ -65,7 +66,6 @@
 #include "core/css/RuleSet.h"
 #include "core/css/SelectorCheckerFastPath.h"
 #include "core/css/ShadowValue.h"
-#include "core/css/StyleBuilder.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StylePropertyShorthand.h"
 #include "core/css/StyleRule.h"
@@ -249,7 +249,7 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
 #if ENABLE(CSS_DEVICE_ADAPTATION)
     , m_viewportStyleResolver(ViewportStyleResolver::create(document))
 #endif
-    , m_styleBuilder(StyleBuilder::sharedStyleBuilder())
+    , m_styleBuilder(DeprecatedStyleBuilder::sharedStyleBuilder())
     , m_styleMap(this)
 {
     Element* root = document->documentElement();
@@ -3029,13 +3029,13 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         return;
     }
 
-    // These properties are aliased and StyleBuilder already applied the property on the prefixed version.
+    // These properties are aliased and DeprecatedStyleBuilder already applied the property on the prefixed version.
     case CSSPropertyTransitionDelay:
     case CSSPropertyTransitionDuration:
     case CSSPropertyTransitionProperty:
     case CSSPropertyTransitionTimingFunction:
         return;
-    // These properties are implemented in the StyleBuilder lookup table.
+    // These properties are implemented in the DeprecatedStyleBuilder lookup table.
     case CSSPropertyBackgroundAttachment:
     case CSSPropertyBackgroundClip:
     case CSSPropertyBackgroundColor:
