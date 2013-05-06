@@ -1931,6 +1931,36 @@ def CMDset_close(parser, args):
   return 0
 
 
+def CMDformat(parser, args):
+  """run clang-format on the diff"""
+  CLANG_EXTS = ['.cc', '.cpp', '.h']
+  parser.add_option('--full', action='store_true', default=False)
+  opts, args = parser.parse_args(args)
+  if args:
+    parser.error('Unrecognized args: %s' % ' '.join(args))
+
+  if opts.full:
+    cmd = ['diff', '--name-only', '--'] + ['.*' + ext for ext in CLANG_EXTS]
+    files = RunGit(cmd).split()
+    if not files:
+      print "Nothing to format."
+      return 0
+    RunCommand(['clang-format', '-i'] + files)
+  else:
+    cfd_path = os.path.join('/usr', 'lib', 'clang-format',
+                            'clang-format-diff.py')
+    if not os.path.exists(cfd_path):
+      print >> sys.stderr, 'Could not find clang-format-diff at %s.' % cfd_path
+      return 2
+    cmd = ['diff', '-U0', '@{u}', '--'] + ['.*' + ext for ext in CLANG_EXTS]
+    diff = RunGit(cmd)
+    cmd = [sys.executable, '/usr/lib/clang-format/clang-format-diff.py',
+           '-style', 'Chromium']
+    RunCommand(cmd, stdin=diff)
+
+  return 0
+
+
 def Command(name):
   return getattr(sys.modules[__name__], 'CMD' + name, None)
 
