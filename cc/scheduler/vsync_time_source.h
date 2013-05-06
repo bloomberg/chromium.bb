@@ -33,7 +33,16 @@ class VSyncProvider {
 // external vsync signal.
 class CC_EXPORT VSyncTimeSource : public TimeSource, public VSyncClient {
  public:
-  static scoped_refptr<VSyncTimeSource> Create(VSyncProvider* vsync_provider);
+  enum NotificationDisableOption {
+    // The notification will be lazily disabled in the callback to ensure
+    // we get notified of the frame immediately following a quick on-off-on
+    // transition.
+    DISABLE_ON_NEXT_TICK,
+    DISABLE_SYNCHRONOUSLY
+  };
+
+  static scoped_refptr<VSyncTimeSource> Create(
+      VSyncProvider* vsync_provider, NotificationDisableOption option);
 
   // TimeSource implementation
   virtual void SetClient(TimeSourceClient* client) OVERRIDE;
@@ -48,7 +57,8 @@ class CC_EXPORT VSyncTimeSource : public TimeSource, public VSyncClient {
   virtual void DidVSync(base::TimeTicks frame_time) OVERRIDE;
 
  protected:
-  explicit VSyncTimeSource(VSyncProvider* vsync_provider);
+  explicit VSyncTimeSource(VSyncProvider* vsync_provider,
+                           NotificationDisableOption option);
   virtual ~VSyncTimeSource();
 
   base::TimeTicks last_tick_time_;
@@ -58,6 +68,7 @@ class CC_EXPORT VSyncTimeSource : public TimeSource, public VSyncClient {
 
   VSyncProvider* vsync_provider_;
   TimeSourceClient* client_;
+  NotificationDisableOption disable_option_;
 
   DISALLOW_COPY_AND_ASSIGN(VSyncTimeSource);
 };

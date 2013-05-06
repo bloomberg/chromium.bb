@@ -32,7 +32,9 @@ class FakeVSyncProvider : public VSyncProvider {
 
 class VSyncTimeSourceTest : public testing::Test {
  public:
-  VSyncTimeSourceTest() : timer_(VSyncTimeSource::Create(&provider_)) {
+  VSyncTimeSourceTest()
+      : timer_(VSyncTimeSource::Create(
+          &provider_, VSyncTimeSource::DISABLE_ON_NEXT_TICK)) {
     timer_->SetClient(&client_);
   }
 
@@ -78,6 +80,30 @@ TEST_F(VSyncTimeSourceTest, NotificationDisabledLazily) {
   provider_.Trigger(frame_time);
   EXPECT_TRUE(provider_.IsVSyncNotificationEnabled());
   EXPECT_FALSE(client_.TickCalled());
+}
+
+TEST_F(VSyncTimeSourceTest, NotificationDisabledImmediatelyForSetting) {
+  timer_ = VSyncTimeSource::Create(&provider_,
+                                   VSyncTimeSource::DISABLE_SYNCHRONOUSLY);
+  timer_->SetClient(&client_);
+  base::TimeTicks frame_time = base::TimeTicks::Now();
+
+  // Enable timer and trigger sync once.
+  timer_->SetActive(true);
+  EXPECT_TRUE(provider_.IsVSyncNotificationEnabled());
+  provider_.Trigger(frame_time);
+  EXPECT_TRUE(client_.TickCalled());
+
+  // Disable timer should disable vsync notification immediately.
+  timer_->SetActive(false);
+  EXPECT_FALSE(provider_.IsVSyncNotificationEnabled());
+
+  // Enable again and timer can be ticked again.
+  client_.Reset();
+  timer_->SetActive(true);
+  EXPECT_TRUE(provider_.IsVSyncNotificationEnabled());
+  provider_.Trigger(frame_time);
+  EXPECT_TRUE(client_.TickCalled());
 }
 
 TEST_F(VSyncTimeSourceTest, ValidNextTickTime) {

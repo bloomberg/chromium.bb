@@ -61,6 +61,8 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layer_tree_host,
       render_vsync_enabled_(layer_tree_host->settings().render_vsync_enabled),
       render_vsync_notification_enabled_(
           layer_tree_host->settings().render_vsync_notification_enabled),
+      synchronously_disable_vsync_(
+          layer_tree_host->settings().synchronously_disable_vsync),
       vsync_client_(NULL),
       inside_draw_(false),
       defer_commits_(false),
@@ -1114,7 +1116,11 @@ void ThreadProxy::InitializeImplOnImplThread(
   if (render_vsync_enabled_) {
     if (render_vsync_notification_enabled_) {
       frame_rate_controller.reset(
-          new FrameRateController(VSyncTimeSource::Create(this)));
+          new FrameRateController(VSyncTimeSource::Create(
+              this,
+              synchronously_disable_vsync_ ?
+                  VSyncTimeSource::DISABLE_SYNCHRONOUSLY :
+                  VSyncTimeSource::DISABLE_ON_NEXT_TICK)));
     } else {
       frame_rate_controller.reset(
           new FrameRateController(DelayBasedTimeSource::Create(

@@ -18,6 +18,7 @@ LayerTreeSettings::LayerTreeSettings()
       impl_side_painting(false),
       render_vsync_enabled(true),
       render_vsync_notification_enabled(false),
+      synchronously_disable_vsync(false),
       per_tile_painting_enabled(false),
       partial_swap_enabled(false),
       cache_render_pass_contents(true),

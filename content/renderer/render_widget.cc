@@ -295,6 +295,16 @@ bool RenderWidget::AllowPartialSwap() const {
   return true;
 }
 
+bool RenderWidget::SynchronouslyDisableVSync() const {
+#if defined(OS_ANDROID)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSynchronousRendererCompositor)) {
+    return true;
+  }
+#endif
+  return false;
+}
+
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)

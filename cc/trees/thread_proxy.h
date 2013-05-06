@@ -246,6 +246,7 @@ class ThreadProxy : public Proxy,
 
   bool render_vsync_enabled_;
   bool render_vsync_notification_enabled_;
+  bool synchronously_disable_vsync_;
   VSyncClient* vsync_client_;
 
   bool inside_draw_;
