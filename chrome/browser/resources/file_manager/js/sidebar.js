@@ -47,7 +47,9 @@ DirectoryTreeUtil.updateChangedDirectoryItem = function(
  * @param {function(number): DirectoryEntry} iterator Function which returns
  *     the n-th Entry in the directory.
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
- * @param {boolean} recursive True if the update is recursively.
+ * @param {boolean} recursive True if the all visible sub-directories are
+ *     updated recursively including left arrows. If false, the update walks
+ *     only immediate child directories without arrows.
  */
 DirectoryTreeUtil.updateSubElementsFromList = function(
     parentElement, iterator, directoryModel, recursive) {
@@ -162,12 +164,11 @@ DirectoryTreeUtil.addAndRemoveDriveSpecialDirs = function(entries) {
  *
  * @param {DirectoryTree|DirectoryItem} item Parent to be reloaded.
  * @param {DirectoryModel} dm The directory model.
- * @param {boolean} recursive True if the update is recursively.
  * @param {function(Array.<Entry>)} successCallback Callback on success.
  * @param {function()=} opt_errorCallback Callback on failure.
  */
 DirectoryTreeUtil.updateSubDirectories = function(
-    item, dm, recursive, successCallback, opt_errorCallback) {
+    item, dm, successCallback, opt_errorCallback) {
   // Tries to retrieve new entry if the cached entry is dummy.
   if (DirectoryTreeUtil.isDummyEntry(item.entry)) {
     // Fake Drive root.
@@ -184,7 +185,7 @@ DirectoryTreeUtil.updateSubDirectories = function(
           }
 
           DirectoryTreeUtil.updateSubDirectories(
-              item, dm, recursive, successCallback, opt_errorCallback);
+              item, dm, successCallback, opt_errorCallback);
         },
         opt_errorCallback);
     return;
@@ -374,7 +375,7 @@ DirectoryItem.prototype.scrollIntoViewIfNeeded = function(unused) {
  **/
 DirectoryItem.prototype.onExpand_ = function(e) {
   this.updateSubDirectories(
-      false /* recursive */,
+      true /* recursive */,
       function() {},
       function() {
         this.expanded = false;
@@ -394,7 +395,6 @@ DirectoryItem.prototype.updateSubDirectories = function(
   DirectoryTreeUtil.updateSubDirectories(
       this,
       this.directoryModel_,
-      recursive,
       function(entries) {
         this.entries_ = entries;
         this.redrawSubDirectoryList_(recursive);
@@ -647,7 +647,6 @@ DirectoryTree.prototype.updateSubDirectories = function(
   DirectoryTreeUtil.updateSubDirectories(
       this,
       this.directoryModel_,
-      recursive,
       function(entries) {
         this.entries_ = entries;
         this.redraw(recursive);
