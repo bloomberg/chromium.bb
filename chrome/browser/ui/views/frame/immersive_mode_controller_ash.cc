@@ -48,6 +48,16 @@ const int kAnimationOffsetY = 3;
 const int kRevealSlowAnimationDurationMs = 400;
 const int kRevealFastAnimationDurationMs = 200;
 
+// How many pixels a gesture can start away from the TopContainerView when in
+// closed state and still be considered near it. This is needed to overcome
+// issues with poor location values near the edge of the display.
+const int kNearTopContainerDistance = 5;
+
+// Used to multiply x value of an update in check to determine if gesture is
+// vertical. This is used to make sure that gesture is close to vertical instead
+// of just more vertical then horizontal.
+const int kSwipeVerticalThresholdMultiplier = 3;
+
 // If |hovered| is true, moves the mouse above |view|. Moves it outside of
 // |view| otherwise.
 // Should not be called outside of tests.
@@ -338,7 +348,8 @@ ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
       revealed_lock_count_(0),
       tab_indicator_visibility_(TAB_INDICATORS_HIDE),
       native_window_(NULL),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      gesture_begun_(false) {
 }
 
 ImmersiveModeControllerAsh::~ImmersiveModeControllerAsh() {
@@ -529,6 +540,49 @@ void ImmersiveModeControllerAsh::OnMouseEvent(ui::MouseEvent* event) {
 
   UpdateMouseRevealedLock(false);
   // Pass along event for further handling.
+}
+
+void ImmersiveModeControllerAsh::OnGestureEvent(ui::GestureEvent* event) {
+  if (!enabled_)
+    return;
+
+  // Touch gestures should not initiate revealing the top-of-window views while
+  // |native_window_| is inactive.
+  if (!views::Widget::GetWidgetForNativeWindow(native_window_)->IsActive())
+    return;
+
+  switch (event->type()) {
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      if (IsNearTopContainer(event->location())) {
+        gesture_begun_ = true;
+        event->SetHandled();
+      }
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      if (gesture_begun_) {
+        SwipeType swipe_type = GetSwipeType(event);
+        if ((reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED) &&
+            swipe_type == SWIPE_OPEN) {
+          browser_view_->SetFocusToLocationBar(false);
+          event->SetHandled();
+        } else if ((reveal_state_ == SLIDING_OPEN ||
+                    reveal_state_ == REVEALED) &&
+                   swipe_type == SWIPE_CLOSE) {
+          views::FocusManager* focus_manager = browser_view_->GetFocusManager();
+          DCHECK(focus_manager);
+          focus_manager->ClearFocus();
+          event->SetHandled();
+        }
+        gesture_begun_ = false;
+      }
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
+      gesture_begun_ = false;
+      break;
+    default:
+      break;
+  }
 }
 
 void ImmersiveModeControllerAsh::OnWillChangeFocus(views::View* focused_before,
@@ -919,4 +973,28 @@ void ImmersiveModeControllerAsh::DoLayerAnimation(
   if (observer)
     settings.AddObserver(observer);
   layer->SetTransform(target_transform);
+}
+
+
+ImmersiveModeControllerAsh::SwipeType ImmersiveModeControllerAsh::GetSwipeType(
+    ui::GestureEvent* event) const {
+  if (event->type() != ui::ET_GESTURE_SCROLL_UPDATE)
+    return SWIPE_NONE;
+  // Make sure that it is a clear vertical gesture.
+  if (abs(event->details().scroll_y()) <=
+      kSwipeVerticalThresholdMultiplier * abs(event->details().scroll_x()))
+    return SWIPE_NONE;
+  if (event->details().scroll_y() < 0)
+    return SWIPE_CLOSE;
+  else if (event->details().scroll_y() > 0)
+    return SWIPE_OPEN;
+  return SWIPE_NONE;
+}
+
+bool ImmersiveModeControllerAsh::IsNearTopContainer(gfx::Point location) const {
+  gfx::Rect near_bounds =
+      browser_view_->top_container()->GetTargetBoundsInScreen();
+  if (reveal_state_ == CLOSED)
+    near_bounds.Inset(gfx::Insets(0, 0, -kNearTopContainerDistance, 0));
+  return near_bounds.Contains(location);
 }

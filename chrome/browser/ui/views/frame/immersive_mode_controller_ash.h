@@ -75,6 +75,7 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
 
   // ui::EventHandler overrides:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // views::FocusChangeObserver overrides:
   virtual void OnWillChangeFocus(views::View* focused_before,
@@ -115,6 +116,11 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
     TAB_INDICATORS_FORCE_HIDE,
     TAB_INDICATORS_HIDE,
     TAB_INDICATORS_SHOW
+  };
+  enum SwipeType {
+    SWIPE_OPEN,
+    SWIPE_CLOSE,
+    SWIPE_NONE
   };
 
   // Enables or disables observers for mouse move, focus, and window restore.
@@ -175,6 +181,16 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
                         int duration_ms,
                         ui::ImplicitAnimationObserver* observer);
 
+  // Returns the type of swipe given |event|.
+  SwipeType GetSwipeType(ui::GestureEvent* event) const;
+
+  // True when |location| is "near" to the top container. When the top container
+  // is not closed "near" means within the displayed bounds. When the top
+  // container is closed "near" means either within the displayed bounds or
+  // within a few pixels of it. This allow the container to steal enough pixels
+  // to detect a swipe in.
+  bool IsNearTopContainer(gfx::Point location) const;
+
   // Browser view holding the views to be shown and hidden. Not owned.
   BrowserView* browser_view_;
 
@@ -218,6 +234,10 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<ImmersiveModeControllerAsh> weak_ptr_factory_;
+
+  // Tracks if the controller has seen a ET_GESTURE_SCROLL_BEGIN, without the
+  // following events.
+  bool gesture_begun_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAsh);
 };
