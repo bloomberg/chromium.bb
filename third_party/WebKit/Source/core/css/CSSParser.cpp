@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/css/CSSParser.h"
 
-#include <limits.h>
 #include "CSSValueKeywords.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBasicShapes.h"
@@ -39,6 +38,7 @@
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
+#include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
@@ -71,6 +71,7 @@
 #include "core/css/WebKitCSSKeyframeRule.h"
 #include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/css/WebKitCSSRegionRule.h"
+#include "core/css/WebKitCSSShaderValue.h"
 #include "core/css/WebKitCSSTransformValue.h"
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -84,25 +85,21 @@
 #include "core/platform/text/TextEncoding.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/svg/SVGParserUtilities.h"
+#include <limits.h>
 #include <wtf/BitArray.h>
-#include <wtf/dtoa.h>
 #include <wtf/HexNumber.h>
+#include <wtf/dtoa.h>
 #include <wtf/text/StringBuffer.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/StringImpl.h>
 
-#if ENABLE(CSS_IMAGE_SET)
-#include "core/css/CSSImageSetValue.h"
-#endif
-
-#include "core/css/WebKitCSSFilterValue.h"
 #if ENABLE(SVG)
 #include "core/css/WebKitCSSSVGDocumentValue.h"
 #endif
 
 #include "core/css/WebKitCSSArrayFunctionValue.h"
+#include "core/css/WebKitCSSFilterValue.h"
 #include "core/css/WebKitCSSMixFunctionValue.h"
-#include "core/css/WebKitCSSShaderValue.h"
 
 #define YYDEBUG 0
 
@@ -1930,12 +1927,10 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
                 String uri = value->string;
                 if (!uri.isNull())
                     image = CSSImageValue::create(completeURL(uri));
-#if ENABLE(CSS_IMAGE_SET)
             } else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "-webkit-image-set(")) {
                 image = parseImageSet(m_valueList.get());
                 if (!image)
                     break;
-#endif
             } else
                 break;
 
@@ -2055,14 +2050,12 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             else
                 return false;
         }
-#if ENABLE(CSS_IMAGE_SET)
         else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "-webkit-image-set(")) {
             parsedValue = parseImageSet(m_valueList.get());
             if (!parsedValue)
                 return false;
             m_valueList->next();
         }
-#endif
         break;
 
     case CSSPropertyWebkitTextStrokeWidth:
@@ -3552,12 +3545,10 @@ bool CSSParser::parseContent(CSSPropertyID propId, bool important)
                 parsedValue = parseCounterContent(args, true);
                 if (!parsedValue)
                     return false;
-#if ENABLE(CSS_IMAGE_SET)
             } else if (equalIgnoringCase(val->function->name, "-webkit-image-set(")) {
                 parsedValue = parseImageSet(m_valueList.get());
                 if (!parsedValue)
                     return false;
-#endif
             } else if (isGeneratedImageValue(val)) {
                 if (!parseGeneratedImage(m_valueList.get(), parsedValue))
                     return false;
@@ -3645,13 +3636,11 @@ bool CSSParser::parseFillImage(CSSParserValueList* valueList, RefPtr<CSSValue>& 
     if (isGeneratedImageValue(valueList->current()))
         return parseGeneratedImage(valueList, value);
 
-#if ENABLE(CSS_IMAGE_SET)
     if (valueList->current()->unit == CSSParserValue::Function && equalIgnoringCase(valueList->current()->function->name, "-webkit-image-set(")) {
         value = parseImageSet(m_valueList.get());
         if (value)
             return true;
     }
-#endif
 
     return false;
 }
@@ -6407,14 +6396,12 @@ bool CSSParser::parseBorderImage(CSSPropertyID propId, RefPtr<CSSValue>& result,
                     context.commitImage(value);
                 else
                     return false;
-#if ENABLE(CSS_IMAGE_SET)
             } else if (val->unit == CSSParserValue::Function && equalIgnoringCase(val->function->name, "-webkit-image-set(")) {
                 RefPtr<CSSValue> value = parseImageSet(m_valueList.get());
                 if (value)
                     context.commitImage(value);
                 else
                     return false;
-#endif
             } else if (val->id == CSSValueNone)
                 context.commitImage(cssValuePool().createIdentifierValue(CSSValueNone));
         }
@@ -7662,7 +7649,6 @@ bool CSSParser::parseCanvas(CSSParserValueList* valueList, RefPtr<CSSValue>& can
     return true;
 }
 
-#if ENABLE(CSS_IMAGE_SET)
 PassRefPtr<CSSValue> CSSParser::parseImageSet(CSSParserValueList* valueList)
 {
     CSSParserValue* function = valueList->current();
@@ -7719,7 +7705,6 @@ PassRefPtr<CSSValue> CSSParser::parseImageSet(CSSParserValueList* valueList)
 
     return imageSet.release();
 }
-#endif
 
 class TransformOperationInfo {
 public:
@@ -7996,7 +7981,6 @@ PassRefPtr<CSSValueList> CSSParser::parseTransform()
 
     return list.release();
 }
-
 
 PassRefPtr<CSSValue> CSSParser::parseTransformValue(CSSParserValue *value)
 {

@@ -22,29 +22,26 @@
 #include "config.h"
 #include "core/css/CSSCursorImageValue.h"
 
+#include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/rendering/style/StyleCachedImage.h"
+#include "core/rendering/style/StyleCachedImageSet.h"
 #include "core/rendering/style/StyleImage.h"
 #include "core/rendering/style/StylePendingImage.h"
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/text/WTFString.h>
 #include <wtf/UnusedParam.h>
+#include <wtf/text/WTFString.h>
 
 #if ENABLE(SVG)
 #include "SVGNames.h"
 #include "core/svg/SVGCursorElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGURIReference.h"
-#endif
-
-#if ENABLE(CSS_IMAGE_SET)
-#include "core/css/CSSImageSetValue.h"
-#include "core/rendering/style/StyleCachedImageSet.h"
 #endif
 
 namespace WebCore {
@@ -139,10 +136,8 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
 
 StyleImage* CSSCursorImageValue::cachedImage(CachedResourceLoader* loader)
 {
-#if ENABLE(CSS_IMAGE_SET)
     if (m_imageValue->isImageSetValue())
         return static_cast<CSSImageSetValue*>(m_imageValue.get())->cachedImageSet(loader);
-#endif
 
     if (!m_accessedImage) {
         m_accessedImage = true;
@@ -175,11 +170,9 @@ StyleImage* CSSCursorImageValue::cachedImage(CachedResourceLoader* loader)
 
 StyleImage* CSSCursorImageValue::cachedOrPendingImage(Document* document)
 {
-#if ENABLE(CSS_IMAGE_SET)
     // Need to delegate completely so that changes in device scale factor can be handled appropriately.
     if (m_imageValue->isImageSetValue())
         return static_cast<CSSImageSetValue*>(m_imageValue.get())->cachedOrPendingImageSet(document);
-#endif
 
     if (!m_image)
         m_image = StylePendingImage::create(this);

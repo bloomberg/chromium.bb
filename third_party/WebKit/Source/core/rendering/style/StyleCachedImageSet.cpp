@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/rendering/style/StyleCachedImageSet.h"
 
-#if ENABLE(CSS_IMAGE_SET)
-
 #include "core/css/CSSImageSetValue.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderObject.h"
@@ -122,5 +120,3 @@ bool StyleCachedImageSet::knownToBeOpaque(const RenderObject* renderer) const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(CSS_IMAGE_SET)

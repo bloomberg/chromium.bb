@@ -26,8 +26,6 @@
 #ifndef StyleCachedImageSet_h
 #define StyleCachedImageSet_h
 
-#if ENABLE(CSS_IMAGE_SET)
-
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/graphics/LayoutSize.h"
@@ -73,7 +71,7 @@ public:
     virtual float imageScaleFactor() const { return m_imageScaleFactor; }
     virtual bool knownToBeOpaque(const RenderObject*) const OVERRIDE;
     virtual CachedImage* cachedImage() const OVERRIDE { return m_bestFitImage.get(); }
-    
+
 private:
     StyleCachedImageSet(CachedImage*, float imageScaleFactor, CSSImageSetValue*);
 
@@ -83,7 +81,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(CSS_IMAGE_SET)
 
 #endif // StyleCachedImageSet_h

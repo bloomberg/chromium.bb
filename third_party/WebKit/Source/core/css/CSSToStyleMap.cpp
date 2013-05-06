@@ -520,11 +520,7 @@ void CSSToStyleMap::mapNinePieceImage(CSSPropertyID property, CSSValue* value, N
     for (unsigned i = 0 ; i < borderImage->length() ; ++i) {
         CSSValue* current = borderImage->item(i);
 
-        if (current->isImageValue() || current->isImageGeneratorValue()
-#if ENABLE(CSS_IMAGE_SET)
-            || current->isImageSetValue()
-#endif
-            )
+        if (current->isImageValue() || current->isImageGeneratorValue() || current->isImageSetValue())
             image.setImage(styleImage(imageProperty, current));
         else if (current->isBorderImageSliceValue())
             mapNinePieceImageSlice(current, image);

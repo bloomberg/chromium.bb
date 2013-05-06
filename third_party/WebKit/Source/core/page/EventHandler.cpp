@@ -92,6 +92,7 @@
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/StyleCachedImage.h"
+#include "core/rendering/style/StyleCachedImageSet.h"
 #include <wtf/Assertions.h>
 #include <wtf/CurrentTime.h>
 #include <wtf/StdLibExtras.h>
@@ -102,10 +103,6 @@
 #include "core/svg/SVGDocument.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGUseElement.h"
-#endif
-
-#if ENABLE(CSS_IMAGE_SET)
-#include "core/rendering/style/StyleCachedImageSet.h"
 #endif
 
 namespace WebCore {

@@ -30,7 +30,7 @@
 namespace WebCore {
 
 class StyleSheetContents;
-    
+
 // FIXME: The current CSSValue and subclasses should be turned into internal types (StyleValue).
 // The few subtypes that are actually exposed in CSSOM can be seen in the cloneForCSSOM() function.
 // They should be handled by separate wrapper classes.
@@ -63,9 +63,8 @@ public:
 
     bool isPrimitiveValue() const { return m_classType == PrimitiveClass; }
     bool isValueList() const { return m_classType >= ValueListClass; }
-    
+
     bool isBaseValueList() const { return m_classType == ValueListClass; }
-        
 
     bool isAspectRatioValue() const { return m_classType == AspectRatioClass; }
     bool isBorderImageSliceValue() const { return m_classType == BorderImageSliceClass; }
@@ -74,9 +73,7 @@ public:
     bool isFontValue() const { return m_classType == FontClass; }
     bool isImageGeneratorValue() const { return m_classType >= CanvasClass && m_classType <= RadialGradientClass; }
     bool isGradientValue() const { return m_classType >= LinearGradientClass && m_classType <= RadialGradientClass; }
-#if ENABLE(CSS_IMAGE_SET)
     bool isImageSetValue() const { return m_classType == ImageSetClass; }
-#endif
     bool isImageValue() const { return m_classType == ImageClass; }
     bool isImplicitInitialValue() const;
     bool isInheritedValue() const { return m_classType == InheritedClass; }
@@ -167,9 +164,7 @@ protected:
 
         // List class types must appear after ValueListClass.
         ValueListClass,
-#if ENABLE(CSS_IMAGE_SET)
         ImageSetClass,
-#endif
         WebKitCSSFilterClass,
         WebKitCSSArrayFunctionValueClass,
         WebKitCSSMixFunctionValueClass,

@@ -139,6 +139,7 @@
 #include "core/svg/SVGURIReference.h"
 #endif
 
+#include "core/css/CSSImageSetValue.h"
 #include "core/css/WebKitCSSMixFunctionValue.h"
 #include "core/css/WebKitCSSShaderValue.h"
 #include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
@@ -148,16 +149,12 @@
 #include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 #include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
+#include "core/rendering/style/StyleCachedImageSet.h"
 #include "core/rendering/style/StyleCachedShader.h"
 #include "core/rendering/style/StyleCustomFilterProgram.h"
 #include "core/rendering/style/StyleCustomFilterProgramCache.h"
 #include "core/rendering/style/StylePendingShader.h"
 #include "core/rendering/style/StyleShader.h"
-
-#if ENABLE(CSS_IMAGE_SET)
-#include "core/css/CSSImageSetValue.h"
-#include "core/rendering/style/StyleCachedImageSet.h"
-#endif
 
 #include "core/html/track/WebVTTElement.h"
 
@@ -2477,11 +2474,9 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
                     else
                         state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSImageGeneratorValue*>(item)), didSet);
                     didSet = true;
-#if ENABLE(CSS_IMAGE_SET)
                 } else if (item->isImageSetValue()) {
                     state.style()->setContent(setOrPendingFromValue(CSSPropertyContent, static_cast<CSSImageSetValue*>(item)), didSet);
                     didSet = true;
-#endif
                 }
 
                 if (item->isImageValue()) {
@@ -3301,10 +3296,8 @@ PassRefPtr<StyleImage> StyleResolver::styleImage(CSSPropertyID property, CSSValu
         return generatedOrPendingFromValue(property, static_cast<CSSImageGeneratorValue*>(value));
     }
 
-#if ENABLE(CSS_IMAGE_SET)
     if (value->isImageSetValue())
         return setOrPendingFromValue(property, static_cast<CSSImageSetValue*>(value));
-#endif
 
     if (value->isCursorImageValue())
         return cursorOrPendingFromValue(property, static_cast<CSSCursorImageValue*>(value));
@@ -3329,7 +3322,6 @@ PassRefPtr<StyleImage> StyleResolver::generatedOrPendingFromValue(CSSPropertyID 
     return StyleGeneratedImage::create(value);
 }
 
-#if ENABLE(CSS_IMAGE_SET)
 PassRefPtr<StyleImage> StyleResolver::setOrPendingFromValue(CSSPropertyID property, CSSImageSetValue* value)
 {
     RefPtr<StyleImage> image = value->cachedOrPendingImageSet(document());
@@ -3337,7 +3329,6 @@ PassRefPtr<StyleImage> StyleResolver::setOrPendingFromValue(CSSPropertyID proper
         m_state.pendingImageProperties().set(property, value);
     return image.release();
 }
-#endif
 
 PassRefPtr<StyleImage> StyleResolver::cursorOrPendingFromValue(CSSPropertyID property, CSSCursorImageValue* value)
 {
@@ -4203,12 +4194,10 @@ PassRefPtr<StyleImage> StyleResolver::loadPendingImage(StylePendingImage* pendin
         return cursorImageValue->cachedImage(cachedResourceLoader);
     }
 
-#if ENABLE(CSS_IMAGE_SET)
     if (pendingImage->cssImageSetValue()) {
         CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue();
         return imageSetValue->cachedImageSet(cachedResourceLoader);
     }
-#endif
 
     return 0;
 }

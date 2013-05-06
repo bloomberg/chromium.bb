@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/css/CSSImageSetValue.h"
 
-#if ENABLE(CSS_IMAGE_SET)
-
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Document.h"
@@ -209,5 +207,3 @@ void CSSImageSetValue::ImageWithScale::reportMemoryUsage(MemoryObjectInfo* memor
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(CSS_IMAGE_SET)
