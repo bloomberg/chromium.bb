@@ -445,7 +445,8 @@ class ProxyResolverV8::Context {
     global_template->Set(ASCIILiteralToV8String("isInNetEx"),
                          is_in_net_ex_template);
 
-    v8_context_ = v8::Context::New(NULL, global_template);
+    v8_context_ = v8::Persistent<v8::Context>::New(
+        isolate_, v8::Context::New(isolate_, NULL, global_template));
 
     v8::Context::Scope ctx(v8_context_);
 

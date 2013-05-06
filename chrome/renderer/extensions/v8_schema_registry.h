@@ -31,7 +31,7 @@ class V8SchemaRegistry {
  private:
   // Gets the separate context that backs the registry, creating a new one if
   // if necessary.
-  v8::Persistent<v8::Context> GetOrCreateContext();
+  v8::Handle<v8::Context> GetOrCreateContext();
 
   // Cache of schemas.
   typedef std::map<std::string, v8::Persistent<v8::Object> > SchemaCache;

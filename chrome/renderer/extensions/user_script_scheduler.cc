@@ -195,11 +195,8 @@ void UserScriptScheduler::ExecuteCodeImpl(
       }
 
       WebScriptSource source(WebString::fromUTF8(params.code));
-      v8::HandleScope scope;
-      v8::Persistent<v8::Context> persistent_context = v8::Context::New();
-      v8::Local<v8::Context> context =
-          v8::Local<v8::Context>::New(persistent_context);
-      persistent_context.Dispose(context->GetIsolate());
+      v8::Isolate* isolate = v8::Isolate::GetCurrent();
+      v8::HandleScope scope(isolate);
 
       scoped_ptr<content::V8ValueConverter> v8_converter(
           content::V8ValueConverter::create());
@@ -232,6 +229,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
           script_value = results[0];
       }
       if (!script_value.IsEmpty()) {
+        v8::Local<v8::Context> context = v8::Context::New(isolate);
         base::Value* base_val =
             v8_converter->FromV8Value(script_value, context);
         // Always append an execution result (i.e. no result == null result) so

@@ -45,7 +45,7 @@ v8::Handle<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
   if (maybe_schema != schema_cache_.end())
     return handle_scope.Close(maybe_schema->second);
 
-  v8::Persistent<v8::Context> context = GetOrCreateContext();
+  v8::Handle<v8::Context> context = GetOrCreateContext();
   v8::Context::Scope context_scope(context);
 
   const base::DictionaryValue* schema =
@@ -61,10 +61,16 @@ v8::Handle<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
   return handle_scope.Close(v8_schema);
 }
 
-v8::Persistent<v8::Context> V8SchemaRegistry::GetOrCreateContext() {
-  if (context_.get().IsEmpty())
-    context_.reset(v8::Context::New());
-  return context_.get();
+v8::Handle<v8::Context> V8SchemaRegistry::GetOrCreateContext() {
+  // It's ok to create local handles in this function, since this is only called
+  // when we have a HandleScope.
+  if (context_.get().IsEmpty()) {
+    v8::Handle<v8::Context> context =
+        v8::Context::New(v8::Isolate::GetCurrent());
+    context_.reset(context);
+    return context;
+  }
+  return v8::Local<v8::Context>::New(context_.get());
 }
 
 }  // namespace extensions
