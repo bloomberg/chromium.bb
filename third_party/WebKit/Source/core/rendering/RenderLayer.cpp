@@ -2152,11 +2152,11 @@ void RenderLayer::scrollByRecursively(const IntSize& delta, ScrollOffsetClamping
         restrictedByLineClamp = !renderer()->parent()->style()->lineClamp().isNone();
 
     if (renderer()->hasOverflowClip() && !restrictedByLineClamp) {
-        IntSize newScrollOffset = scrollOffset() + delta;
+        IntSize newScrollOffset = adjustedScrollOffset() + delta;
         scrollToOffset(newScrollOffset, clamp);
 
         // If this layer can't do the scroll we ask the next layer up that can scroll to try
-        IntSize remainingScrollOffset = newScrollOffset - scrollOffset();
+        IntSize remainingScrollOffset = newScrollOffset - adjustedScrollOffset();
         if (!remainingScrollOffset.isZero() && renderer()->parent()) {
             if (RenderLayer* scrollableLayer = enclosingScrollableLayer())
                 scrollableLayer->scrollByRecursively(remainingScrollOffset);
@@ -2191,7 +2191,7 @@ IntSize RenderLayer::clampScrollOffset(const IntSize& scrollOffset) const
 void RenderLayer::scrollToOffset(const IntSize& scrollOffset, ScrollOffsetClamping clamp)
 {
     IntSize newScrollOffset = clamp == ScrollOffsetClamped ? clampScrollOffset(scrollOffset) : scrollOffset;
-    if (newScrollOffset != this->scrollOffset())
+    if (newScrollOffset != adjustedScrollOffset())
         scrollToOffsetWithoutAnimation(IntPoint(newScrollOffset));
 }
 
@@ -2317,11 +2317,11 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
         LayoutRect layerBounds(0, 0, box->clientWidth(), box->clientHeight());
         LayoutRect r = getRectToExpose(layerBounds, localExposeRect, alignX, alignY);
 
-        IntSize clampedScrollOffset = clampScrollOffset(scrollOffset() + toIntSize(roundedIntRect(r).location()));
-        if (clampedScrollOffset != scrollOffset()) {
-            IntSize oldScrollOffset = scrollOffset();
+        IntSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset() + toIntSize(roundedIntRect(r).location()));
+        if (clampedScrollOffset != adjustedScrollOffset()) {
+            IntSize oldScrollOffset = adjustedScrollOffset();
             scrollToOffset(clampedScrollOffset);
-            IntSize scrollOffsetDifference = scrollOffset() - oldScrollOffset;
+            IntSize scrollOffsetDifference = adjustedScrollOffset() - oldScrollOffset;
             localExposeRect.move(-scrollOffsetDifference);
             newRect = LayoutRect(box->localToAbsoluteQuad(FloatQuad(FloatRect(localExposeRect)), UseTransforms).boundingBox());
         }
@@ -3195,22 +3195,22 @@ void RenderLayer::updateScrollInfoAfterLayout()
         return;
 
     m_scrollDimensionsDirty = true;
-    IntSize originalScrollOffset = scrollOffset();
+    IntSize originalScrollOffset = adjustedScrollOffset();
 
     computeScrollDimensions();
 
     if (box->style()->overflowX() != OMARQUEE) {
         // Layout may cause us to be at an invalid scroll position. In this case we need
         // to pull our scroll offsets back to the max (or push them up to the min).
-        IntSize clampedScrollOffset = clampScrollOffset(scrollOffset());
-        if (clampedScrollOffset != scrollOffset())
+        IntSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset());
+        if (clampedScrollOffset != adjustedScrollOffset())
             scrollToOffset(clampedScrollOffset);
     }
 
     updateScrollbarsAfterLayout();
 
-    if (originalScrollOffset != scrollOffset())
-        scrollToOffsetWithoutAnimation(IntPoint(scrollOffset()));
+    if (originalScrollOffset != adjustedScrollOffset())
+        scrollToOffsetWithoutAnimation(IntPoint(adjustedScrollOffset()));
 
     // Composited scrolling may need to be enabled or disabled if the amount of overflow changed.
     if (renderer()->view() && compositor()->updateLayerCompositingState(this))
