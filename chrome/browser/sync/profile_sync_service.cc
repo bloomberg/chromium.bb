@@ -368,24 +368,24 @@ browser_sync::SessionModelAssociator*
 
 scoped_ptr<browser_sync::DeviceInfo>
 ProfileSyncService::GetLocalDeviceInfo() const {
-  DCHECK(sync_initialized());
-  browser_sync::SyncedDeviceTracker* device_tracker =
-      backend_->GetSyncedDeviceTracker();
-  if (device_tracker)
-    return device_tracker->ReadLocalDeviceInfo();
-  else
-    return scoped_ptr<browser_sync::DeviceInfo>();
+  if (backend_) {
+    browser_sync::SyncedDeviceTracker* device_tracker =
+        backend_->GetSyncedDeviceTracker();
+    if (device_tracker)
+      return device_tracker->ReadLocalDeviceInfo();
+  }
+  return scoped_ptr<browser_sync::DeviceInfo>();
 }
 
 scoped_ptr<browser_sync::DeviceInfo>
 ProfileSyncService::GetDeviceInfo(const std::string& client_id) const {
-  DCHECK(sync_initialized());
-  browser_sync::SyncedDeviceTracker* device_tracker =
-      backend_->GetSyncedDeviceTracker();
-  if (device_tracker)
-    return device_tracker->ReadDeviceInfo(client_id);
-  else
-    return scoped_ptr<browser_sync::DeviceInfo>();
+  if (backend_) {
+    browser_sync::SyncedDeviceTracker* device_tracker =
+        backend_->GetSyncedDeviceTracker();
+    if (device_tracker)
+      return device_tracker->ReadDeviceInfo(client_id);
+  }
+  return scoped_ptr<browser_sync::DeviceInfo>();
 }
 
 void ProfileSyncService::GetDataTypeControllerStates(

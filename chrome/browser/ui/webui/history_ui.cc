@@ -254,7 +254,7 @@ void GetDeviceNameAndType(const ProfileSyncService* sync_service,
                           const std::string& client_id,
                           std::string* name,
                           std::string* type) {
-  if (sync_service) {
+  if (sync_service && sync_service->sync_initialized()) {
     scoped_ptr<browser_sync::DeviceInfo> device_info =
         sync_service->GetDeviceInfo(client_id);
     if (device_info.get()) {

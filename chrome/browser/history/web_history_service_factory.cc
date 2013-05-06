@@ -22,6 +22,7 @@ bool IsHistorySyncEnabled(Profile* profile) {
     ProfileSyncService* sync =
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
     return sync &&
+        sync->sync_initialized() &&
         sync->GetPreferredDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
   }
   return false;
