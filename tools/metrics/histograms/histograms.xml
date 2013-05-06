@@ -860,14 +860,6 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="HttpCache.TruncatedHeader" units="BooleanTruncated">
-  <summary>Whether cache headers were truncated before read.</summary>
-</histogram>
-
-<histogram name="HttpCache.TruncatedMetadata" units="BooleanTruncated">
-  <summary>Whether cache entry metadata was truncated before read.</summary>
-</histogram>
-
 <histogram name="Import.ImporterType.AutoImport" enum="ImporterType">
   <summary>The importer used on first run Auto Import.</summary>
 </histogram>
@@ -7577,11 +7569,6 @@ other types of suffix sets.
 <enum name="BooleanTabDiscard" type="int">
   <int value="0" label="Memory OK, no discards"/>
   <int value="1" label="Memory low, tabs discarded"/>
-</enum>
-
-<enum name="BooleanTruncated" type="int">
-  <int value="0" label="Was Not Truncated"/>
-  <int value="1" label="Was Truncated"/>
 </enum>
 
 <enum name="BooleanUsage" type="int">

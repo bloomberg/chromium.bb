@@ -1384,17 +1384,6 @@ int HttpCache::Transaction::DoCacheReadResponse() {
   next_state_ = STATE_CACHE_READ_RESPONSE_COMPLETE;
 
   io_buf_len_ = entry_->disk_entry->GetDataSize(kResponseInfoIndex);
-  if (io_buf_len_ > 0) {
-    UMA_HISTOGRAM_BOOLEAN("HttpCache.TruncatedHeader", false);
-  } else {
-    UMA_HISTOGRAM_BOOLEAN("HttpCache.TruncatedHeader", true);
-    DLOG(WARNING) << "Truncated cache entry header encountered";
-    mode_ = NONE;
-    if (partial_.get())
-      partial_->RestoreHeaders(&custom_request_->extra_headers);
-    next_state_ = STATE_SEND_REQUEST;
-    return OK;
-  }
   read_buf_ = new IOBuffer(io_buf_len_);
 
   net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_READ_INFO);
@@ -1492,19 +1481,8 @@ int HttpCache::Transaction::DoCacheReadMetadata() {
   DCHECK(!response_.metadata);
   next_state_ = STATE_CACHE_READ_METADATA_COMPLETE;
 
-  int32 data_size = entry_->disk_entry->GetDataSize(kMetadataIndex);
-  if (data_size > 0) {
-    UMA_HISTOGRAM_BOOLEAN("HttpCache.TruncatedMetadata", false);
-  } else {
-    UMA_HISTOGRAM_BOOLEAN("HttpCache.TruncatedMetadata", true);
-    DLOG(WARNING) << "Truncated cache entry metadata encountered";
-    mode_ = NONE;
-    if (partial_.get())
-      partial_->RestoreHeaders(&custom_request_->extra_headers);
-    next_state_ = STATE_SEND_REQUEST;
-    return OK;
-  }
-  response_.metadata = new IOBufferWithSize(data_size);
+  response_.metadata =
+      new IOBufferWithSize(entry_->disk_entry->GetDataSize(kMetadataIndex));
 
   net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_READ_INFO);
   ReportCacheActionStart();
