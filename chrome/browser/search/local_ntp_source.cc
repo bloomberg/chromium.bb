@@ -147,8 +147,8 @@ bool LocalNtpSource::ShouldServiceRequest(
 }
 
 std::string LocalNtpSource::GetContentSecurityPolicyFrameSrc() const {
-  // Allow embedding of chrome search suggestion host.
-  return base::StringPrintf("frame-src %s://%s/;",
-                            chrome::kChromeSearchScheme,
-                            chrome::kChromeSearchSuggestionHost);
+  // Allow embedding of suggestion and most visited iframes.
+  return base::StringPrintf("frame-src %s %s;",
+                            chrome::kChromeSearchSuggestionUrl,
+                            chrome::kChromeSearchMostVisitedUrl);
 }

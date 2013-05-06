@@ -2,8 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+/**
+ * @fileoverview The local InstantExtended NTP and suggestions dropdown.
+ */
+
 (function() {
 <include src="../../../../ui/webui/resources/js/assert.js">
+
 
 /**
  * True if this a Google page and not some other search provider.  Used to
@@ -16,6 +22,7 @@ var isGooglePage = location.href.indexOf('isGoogle') != -1;
 // ==========================================================
 //  Enums
 // ==========================================================
+
 
 /**
  * Enum for classnames.
@@ -31,7 +38,6 @@ var CLASSES = {
   FAKEBOX_ANIMATE: 'fakebox-animate', // triggers fakebox animation
   FAKEBOX_FOCUS: 'fakebox-focused', // Applies focus styles to the fakebox
   FAVICON: 'mv-favicon',
-  FILLER: 'mv-filler', // filler tiles
   GOOGLE_PAGE: 'google-page', // shows the Google logo and fakebox
   HIDE_BLACKLIST_BUTTON: 'mv-x-hide', // hides blacklist button during animation
   HIDE_NOTIFICATION: 'mv-notice-hide',
@@ -39,6 +45,7 @@ var CLASSES = {
   HIDE_TILE: 'mv-tile-hide', // hides tiles on small browser width
   HOVERED: 'hovered',
   PAGE: 'mv-page', // page tiles
+  PAGE_READY: 'mv-page-ready',  // page tile when ready
   ROW: 'mv-row',  // tile row
   SEARCH: 'search',
   SELECTED: 'selected', // a selected suggestion (if any)
@@ -49,6 +56,7 @@ var CLASSES = {
   TILE: 'mv-tile',
   TITLE: 'mv-title'
 };
+
 
 /**
  * Enum for HTML element ids.
@@ -79,6 +87,7 @@ var IDS = {
 //  NTP implementation
 // =============================================================================
 
+
 /**
  * The element used to vertically position the most visited section on
  * window resize.
@@ -86,11 +95,13 @@ var IDS = {
  */
 var topMarginElement;
 
+
 /**
  * The container for the tile elements.
  * @type {Element}
  */
 var tilesContainer;
+
 
 /**
  * The notification displayed when a page is blacklisted.
@@ -98,11 +109,13 @@ var tilesContainer;
  */
 var notification;
 
+
 /**
  * The container for the theme attribution.
  * @type {Element}
  */
 var attribution;
+
 
 /**
  * The "fakebox" - an input field that looks like a regular searchbox.  When it
@@ -111,6 +124,7 @@ var attribution;
  */
 var fakebox;
 
+
 /**
  * The container for NTP elements that should be hidden when suggestions are
  * visible.
@@ -118,17 +132,20 @@ var fakebox;
  */
 var ntpContents;
 
+
 /**
  * The array of rendered tiles, ordered by appearance.
  * @type {!Array.<Tile>}
  */
 var tiles = [];
 
+
 /**
  * The last blacklisted tile if any, which by definition should not be filler.
  * @type {?Tile}
  */
 var lastBlacklistedTile = null;
+
 
 /**
  * True if a page has been blacklisted and we're waiting on the
@@ -138,6 +155,7 @@ var lastBlacklistedTile = null;
  */
 var isBlacklisting = false;
 
+
 /**
  * Current number of tiles columns shown based on the window width, including
  * those that just contain filler.
@@ -145,11 +163,13 @@ var isBlacklisting = false;
  */
 var numColumnsShown = 0;
 
+
 /**
  * The browser embeddedSearch.newTabPage object.
  * @type {Object}
  */
 var ntpApiHandle;
+
 
 /**
  * Possible background-colors of a non-custom theme. Used to determine whether
@@ -159,12 +179,14 @@ var ntpApiHandle;
  */
 var WHITE = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
 
+
 /**
  * Total tile width. Should be equal to mv-tile's width + 2 * border-width.
  * @private {number}
  * @const
  */
 var TILE_WIDTH = 140;
+
 
 /**
  * Margin between tiles. Should be equal to mv-tile's -webkit-margin-start.
@@ -173,6 +195,7 @@ var TILE_WIDTH = 140;
  */
 var TILE_MARGIN_START = 20;
 
+
 /**
  * The height of the most visited section.
  * @type {number}
@@ -180,17 +203,22 @@ var TILE_MARGIN_START = 20;
  */
 var MOST_VISITED_HEIGHT = 296;
 
+
 /** @type {number} @const */
 var MAX_NUM_TILES_TO_SHOW = 8;
+
 
 /** @type {number} @const */
 var MIN_NUM_COLUMNS = 2;
 
+
 /** @type {number} @const */
 var MAX_NUM_COLUMNS = 4;
 
+
 /** @type {number} @const */
 var NUM_ROWS = 2;
+
 
 /**
  * Minimum total padding to give to the left and right of the most visited
@@ -199,6 +227,55 @@ var NUM_ROWS = 2;
  * @const
  */
 var MIN_TOTAL_HORIZONTAL_PADDING = 200;
+
+
+/**
+ * The filename for a most visited iframe src which shows a page title.
+ * @type {string}
+ * @const
+ */
+var MOST_VISITED_TITLE_IFRAME = 'title.html';
+
+
+/**
+ * The filename for a most visited iframe src which shows a thumbnail image.
+ * @type {string}
+ * @const
+ */
+var MOST_VISITED_THUMBNAIL_IFRAME = 'thumbnail.html';
+
+
+/**
+ * The hex color for most visited tile elements.
+ * @type {string}
+ * @const
+ */
+var MOST_VISITED_COLOR = '777777';
+
+
+/**
+ * The hex color for most visited tile titles when using a custom theme.
+ * @type {string}
+ * @const
+ */
+var MOST_VISITED_THEME_TITLE_COLOR = 'ffffff';
+
+
+/**
+ * The font family for most visited tile elements.
+ * @type {string}
+ * @const
+ */
+var MOST_VISITED_FONT_FAMILY = '';
+
+
+/**
+ * The font size for most visited tile elements.
+ * @type {number}
+ * @const
+ */
+var MOST_VISITED_FONT_SIZE = 11;
+
 
 /**
  * A Tile is either a rendering of a Most Visited page or "filler" used to
@@ -216,6 +293,7 @@ function Tile(elem, opt_rid) {
   /** @type {number|undefined} */
   this.rid = opt_rid;
 }
+
 
 /**
  * Updates the NTP based on the current theme.
@@ -238,6 +316,7 @@ function onThemeChange() {
   document.body.classList.toggle(CLASSES.CUSTOM_THEME, isCustom);
   updateAttribution(info.attributionUrl);
 }
+
 
 /**
  * Renders the attribution if the image is present and loadable.  Otherwise
@@ -264,6 +343,7 @@ function updateAttribution(url) {
   attributionImage.src = url;
 }
 
+
 /**
  * Handles a new set of Most Visited page data.
  */
@@ -288,6 +368,7 @@ function onMostVisitedChange() {
   }
 }
 
+
 /**
  * Renders the current set of tiles.
  */
@@ -302,6 +383,28 @@ function renderTiles() {
     rows[Math.floor(i / numColumnsShown)].appendChild(tiles[i].elem);
   }
 }
+
+
+/**
+ * Builds a URL to display a most visited tile component in an iframe.
+ * @param {string} filename The desired most visited component filename.
+ * @param {number} rid The restricted ID.
+ * @param {string} color The text color for text in the iframe.
+ * @param {string} fontFamily The font family for text in the iframe.
+ * @param {number} fontSize The font size for text in the iframe.
+ * @param {boolean} textShadow True if text should be drawn with a shadow.
+ * @return {string} An URL to display the most visited component in an iframe.
+ */
+function getMostVisitedIframeUrl(filename, rid, color, fontFamily, fontSize,
+    textShadow) {
+  return 'chrome-search://most-visited/' + encodeURIComponent(filename) + '?' +
+      ['rid=' + encodeURIComponent(rid),
+       'c=' + encodeURIComponent(color),
+       'f=' + encodeURIComponent(fontFamily),
+       'fs=' + encodeURIComponent(fontSize),
+       'ts=' + (textShadow ? '1' : '')].join('&');
+}
+
 
 /**
  * Creates a Tile with the specified page data. If no data is provided, a
@@ -322,37 +425,32 @@ function createTile(page) {
       ntpApiHandle.navigateContentWindow(rid);
     });
 
-    // The shadow DOM which renders the page title.
-    var titleElement = page.titleElement;
-    if (titleElement) {
-      titleElement.classList.add(CLASSES.TITLE);
-      tileElement.appendChild(titleElement);
-    }
+    // The iframe which renders the page title.
+    var titleElement = document.createElement('iframe');
+    var usingCustomTheme = document.body.classList.contains(
+        CLASSES.CUSTOM_THEME);
 
-    // Render the thumbnail if present. Otherwise, fall back to a shadow DOM
-    // which renders the domain.
-    var thumbnailUrl = page.thumbnailUrl;
+    titleElement.src = getMostVisitedIframeUrl(
+        MOST_VISITED_TITLE_IFRAME, rid,
+        usingCustomTheme ? MOST_VISITED_THEME_TITLE_COLOR : MOST_VISITED_COLOR,
+        MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, usingCustomTheme);
+    titleElement.hidden = true;
+    titleElement.onload = function() { titleElement.hidden = false; };
+    titleElement.className = CLASSES.TITLE;
+    tileElement.appendChild(titleElement);
 
-    var showDomainElement = function() {
-      var domainElement = page.domainElement;
-      if (domainElement) {
-        domainElement.classList.add(CLASSES.DOMAIN);
-        tileElement.appendChild(domainElement);
-      }
+    // The iframe which renders either a thumbnail or domain element.
+    var thumbnailElement = document.createElement('iframe');
+    thumbnailElement.src = getMostVisitedIframeUrl(
+        MOST_VISITED_THUMBNAIL_IFRAME, rid, MOST_VISITED_COLOR,
+        MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, false);
+    thumbnailElement.hidden = true;
+    thumbnailElement.onload = function() {
+      thumbnailElement.hidden = false;
+      tileElement.classList.add(CLASSES.PAGE_READY);
     };
-    if (thumbnailUrl) {
-      var image = new Image();
-      image.onload = function() {
-        var thumbnailElement = createAndAppendElement(
-            tileElement, 'div', CLASSES.THUMBNAIL);
-        thumbnailElement.style.backgroundImage = 'url(' + thumbnailUrl + ')';
-      };
-
-      image.onerror = showDomainElement;
-      image.src = thumbnailUrl;
-    } else {
-      showDomainElement();
-    }
+    thumbnailElement.className = CLASSES.THUMBNAIL;
+    tileElement.appendChild(thumbnailElement);
 
     // The button used to blacklist this page.
     var blacklistButton = createAndAppendElement(
@@ -369,10 +467,10 @@ function createTile(page) {
     }
     return new Tile(tileElement, rid);
   } else {
-    tileElement.classList.add(CLASSES.FILLER);
     return new Tile(tileElement);
   }
 }
+
 
 /**
  * Generates a function to be called when the page with the corresponding RID
@@ -393,6 +491,7 @@ function generateBlacklistFunction(rid) {
   };
 }
 
+
 /**
  * Shows the blacklist notification and triggers a delay to hide it.
  */
@@ -403,12 +502,14 @@ function showNotification() {
   notification.classList.add(CLASSES.DELAYED_HIDE_NOTIFICATION);
 }
 
+
 /**
  * Hides the blacklist notification.
  */
 function hideNotification() {
   notification.classList.add(CLASSES.HIDE_NOTIFICATION);
 }
+
 
 /**
  * Handles the end of the blacklist animation by showing the notification and
@@ -426,6 +527,7 @@ function blacklistAnimationDone() {
   onMostVisitedChange();
 }
 
+
 /**
  * Handles a click on the notification undo link by hiding the notification and
  * informing Chrome.
@@ -437,6 +539,7 @@ function onUndo() {
     ntpApiHandle.undoMostVisitedDeletion(lastBlacklistedRID);
 }
 
+
 /**
  * Handles a click on the restore all notification link by hiding the
  * notification and informing Chrome.
@@ -445,6 +548,7 @@ function onRestoreAll() {
   hideNotification();
   ntpApiHandle.undoAllMostVisitedDeletions();
 }
+
 
 /**
  * Handles a resize by vertically centering the most visited section
@@ -472,6 +576,7 @@ function onResize() {
   }
 }
 
+
 /**
  * Returns the tile corresponding to the specified page RID.
  * @param {number} rid The page RID being looked up.
@@ -485,6 +590,7 @@ function getTileByRid(rid) {
   }
   return null;
 }
+
 
 /**
  * Hides the NTP.
@@ -505,6 +611,7 @@ function hideNtp() {
   }
 }
 
+
 /**
  * Clears the custom theme (if any).
  */
@@ -513,12 +620,14 @@ function clearCustomTheme() {
   document.body.classList.remove(CLASSES.CUSTOM_THEME);
 }
 
+
 /**
  * @return {boolean} True if the NTP is visible.
  */
 function isNtpVisible() {
   return !document.body.classList.contains(CLASSES.HIDE_NTP);
 }
+
 
 /**
  * @param {boolean} focus True to focus the fakebox.
@@ -534,6 +643,7 @@ function isFakeboxFocused() {
   return document.body.classList.contains(CLASSES.FAKEBOX_FOCUS);
 }
 
+
 /**
  * @param {!Event} event The click event.
  * @return {boolean} True if the click occurred in the fakebox.
@@ -541,6 +651,7 @@ function isFakeboxFocused() {
 function isFakeboxClick(event) {
   return fakebox.contains(event.target);
 }
+
 
 /**
  * Cleans up the fakebox animation, hides the NTP, and shows suggestions.
@@ -559,6 +670,7 @@ function fakeboxAnimationDone(event) {
 //  Dropdown Implementation
 // =============================================================================
 
+
 /**
  * Possible behaviors for navigateContentWindow.
  * @enum {number}
@@ -568,6 +680,7 @@ var WindowOpenDisposition = {
   NEW_BACKGROUND_TAB: 2
 };
 
+
 /**
  * The JavaScript button event value for a middle click.
  * @type {number}
@@ -575,12 +688,14 @@ var WindowOpenDisposition = {
  */
 var MIDDLE_MOUSE_BUTTON = 1;
 
+
 /**
  * The maximum number of suggestions to show.
  * @type {number}
  * @const
  */
 var MAX_SUGGESTIONS_TO_SHOW = 5;
+
 
 /**
  * Assume any native suggestion with a score higher than this value has been
@@ -590,12 +705,14 @@ var MAX_SUGGESTIONS_TO_SHOW = 5;
  */
 var INLINE_SUGGESTION_THRESHOLD = 1200;
 
+
 /**
  * The color code for a query.
  * @type {number}
  * @const
  */
 var SUGGESTION_QUERY_COLOR = 0x000000;
+
 
 /**
  * The color code for a suggestion display URL.
@@ -604,12 +721,14 @@ var SUGGESTION_QUERY_COLOR = 0x000000;
  */
 var SUGGESTION_URL_COLOR = 0x009933;
 
+
 /**
  * The color code for a suggestion title.
  * @type {number}
  * @const
  */
 var SUGGESTION_TITLE_COLOR = 0x666666;
+
 
 /**
  * A top position which is off-screen.
@@ -618,12 +737,14 @@ var SUGGESTION_TITLE_COLOR = 0x666666;
  */
 var OFF_SCREEN = '-1000px';
 
+
 /**
  * The expected origin of a suggestion iframe.
  * @type {string}
  * @const
  */
 var SUGGESTION_ORIGIN = 'chrome-search://suggestion';
+
 
 /**
  * Suggestion provider type corresponding to a verbatim URL suggestion.
@@ -632,12 +753,14 @@ var SUGGESTION_ORIGIN = 'chrome-search://suggestion';
  */
 var VERBATIM_URL_TYPE = 'url-what-you-typed';
 
+
 /**
  * Suggestion provider type corresponding to a verbatim search suggestion.
  * @type {string}
  * @const
  */
 var VERBATIM_SEARCH_TYPE = 'search-what-you-typed';
+
 
 /**
  * "Up" arrow keycode.
@@ -646,12 +769,14 @@ var VERBATIM_SEARCH_TYPE = 'search-what-you-typed';
  */
 var KEY_UP_ARROW = 38;
 
+
 /**
  * "Down" arrow keycode.
  * @type {number}
  * @const
  */
 var KEY_DOWN_ARROW = 40;
+
 
 /**
  * Pixels of padding inside a suggestion div for displaying its icon.
@@ -660,11 +785,13 @@ var KEY_DOWN_ARROW = 40;
  */
 var SUGGESTION_ICON_PADDING = 26;
 
+
 /**
  * Pixels by which iframes should be moved down relative to their wrapping
  * suggestion div.
  */
 var SUGGESTION_TOP_OFFSET = 4;
+
 
 /**
  * The displayed suggestions.
@@ -672,11 +799,13 @@ var SUGGESTION_TOP_OFFSET = 4;
  */
 var activeBox;
 
+
 /**
  * The suggestions being rendered.
  * @type {SuggestionsBox}
  */
 var pendingBox;
+
 
 /**
  * A pool of iframes to display suggestions.
@@ -684,11 +813,13 @@ var pendingBox;
  */
 var iframePool;
 
+
 /**
  * A serial number for the next suggestions rendered.
  * @type {number}
  */
 var nextRequestId = 0;
+
 
 /**
  * The omnibox input value during the last onnativesuggestions event.
@@ -696,12 +827,14 @@ var nextRequestId = 0;
  */
 var lastInputValue = '';
 
+
 /**
  * True if updateSuggestions() was deferred due to suggestion iframes not being
  * ready and false otherwise.
  * @type {boolean}
  */
 var updateSuggestionsWasDeferred = false;
+
 
 /**
  * @param {Object} suggestion A suggestion.
@@ -718,6 +851,7 @@ function shouldSelectSuggestion(suggestion, inVerbatimMode) {
   return isVerbatimUrl || (!inVerbatimMode && inlineableSuggestion);
 }
 
+
 /**
  * Extract the desired navigation behavior from a click button.
  * @param {number} button The Event#button property of a click event.
@@ -729,6 +863,7 @@ function getDispositionFromClickButton(button) {
     return WindowOpenDisposition.NEW_BACKGROUND_TAB;
   return WindowOpenDisposition.CURRENT_TAB;
 }
+
 
 /**
  * @return {boolean} True if all suggestion iframes are ready.
@@ -1214,6 +1349,7 @@ function makePendingSuggestionsActive() {
   searchboxApiHandle.showOverlay(activeBox.height);
 }
 
+
 /**
  * Hides the active suggestions box.
  */
@@ -1225,6 +1361,7 @@ function hideActiveSuggestions() {
   }
   activeBox = null;
 }
+
 
 /**
  * Updates suggestions in response to a onchange or onnativesuggestions call.
@@ -1267,6 +1404,7 @@ function updateSuggestions() {
   lastInputValue = inputValue;
 }
 
+
 /**
  * Calls updateSuggestions() if it was deferred until suggestion iframes loaded
  * and they have now all loaded.
@@ -1275,6 +1413,7 @@ function callDeferredUpdateSuggestions() {
   if (updateSuggestionsWasDeferred && suggestionIframesReady())
     updateSuggestions();
 }
+
 
 /**
  * Appends or replaces a style node for suggestion properties that depend on
@@ -1308,6 +1447,7 @@ function setSuggestionStyles() {
   window.removeEventListener('resize', setSuggestionStyles);
 }
 
+
 /**
  * Makes keys navigate through suggestions.
  * @param {Object} e The key being pressed.
@@ -1325,6 +1465,7 @@ function handleKeyPress(e) {
       break;
   }
 }
+
 
 /**
  * Handles postMessage calls from suggestion iframes.
@@ -1354,6 +1495,7 @@ function handleMessage(message) {
 //  Utils
 // =============================================================================
 
+
 /**
  * Shortcut for document.getElementById.
  * @param {string} id of the element.
@@ -1363,6 +1505,7 @@ function $(id) {
   return document.getElementById(id);
 }
 
+
 /**
  * Shortcut for document.querySelector.
  * @param {string} selector A selector to query the desired element.
@@ -1371,6 +1514,7 @@ function $(id) {
 function $qs(selector) {
   return document.querySelector(selector);
 }
+
 
 /**
  * Utility function which creates an element with an optional classname and
@@ -1388,6 +1532,7 @@ function createAndAppendElement(parent, name, opt_class) {
   return child;
 }
 
+
 /**
  * Removes a node from its parent.
  * @param {Node} node The node to remove.
@@ -1396,6 +1541,7 @@ function removeNode(node) {
   node.parentNode.removeChild(node);
 }
 
+
 /**
  * Removes all the child nodes on a DOM node.
  * @param {Node} node Node to remove children from.
@@ -1403,6 +1549,7 @@ function removeNode(node) {
 function removeChildren(node) {
   node.innerHTML = '';
 }
+
 
 /**
  * @return {Object} the handle to the embeddedSearch API.
@@ -1418,6 +1565,7 @@ function getEmbeddedSearchApiHandle() {
 // =============================================================================
 //  Initialization
 // =============================================================================
+
 
 /**
  * Prepares the New Tab Page by adding listeners, rendering the current
