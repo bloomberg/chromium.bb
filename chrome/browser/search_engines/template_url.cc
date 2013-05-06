@@ -72,6 +72,7 @@ const char kGoogleSearchFieldtrialParameter[] =
     "google:searchFieldtrialParameter";
 const char kGoogleSourceIdParameter[] = "google:sourceId";
 const char kGoogleSuggestAPIKeyParameter[] = "google:suggestAPIKeyParameter";
+const char kGoogleZeroPrefixUrlParameter[] = "google:zeroPrefixUrl";
 
 // Same as kSearchTermsParameter, with no escaping.
 const char kGoogleUnescapedSearchTermsParameter[] =
@@ -154,6 +155,9 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(const string16& search_terms)
       accepted_suggestion(NO_SUGGESTIONS_AVAILABLE),
       cursor_position(string16::npos),
       omnibox_start_margin(-1) {
+}
+
+TemplateURLRef::SearchTermsArgs::~SearchTermsArgs() {
 }
 
 
@@ -349,6 +353,16 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
                                          unescaped_terms.end()));
         break;
       }
+
+      case GOOGLE_ZERO_PREFIX_URL:
+        if (!search_terms_args.zero_prefix_url.empty()) {
+          const std::string& escaped_zero_prefix_url =
+              net::EscapeQueryParamValue(search_terms_args.zero_prefix_url,
+                                         true);
+          url.insert(i->index, "url=" + escaped_zero_prefix_url + "&");
+        }
+
+        break;
 
       case LANGUAGE:
         url.insert(i->index, search_terms_data.GetApplicationLocale());
@@ -592,6 +606,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_SEARCH_CLIENT, start));
   } else if (parameter == kGoogleSearchFieldtrialParameter) {
     replacements->push_back(Replacement(GOOGLE_SEARCH_FIELDTRIAL_GROUP, start));
+  } else if (parameter == kGoogleZeroPrefixUrlParameter) {
+    replacements->push_back(Replacement(GOOGLE_ZERO_PREFIX_URL, start));
   } else if (parameter == kGoogleSuggestAPIKeyParameter) {
     url->insert(start,
                 net::EscapeQueryParamValue(google_apis::GetAPIKey(), false));

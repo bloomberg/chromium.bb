@@ -737,6 +737,10 @@ const char kForceLoadCloudPolicy[]          = "force-load-cloud-policy";
 // Enables using GAIA information to populate profile name and icon.
 const char kGaiaProfileInfo[]               = "gaia-profile-info";
 
+// Specifies an alternate URL to use for retrieving suggestions. Useful for
+// testing.
+const char kGoogleBaseSuggestURL[]    = "google-base-suggest-url";
+
 // Specifies an alternate URL to use for retrieving the search domain for
 // Google. Useful for testing.
 const char kGoogleSearchDomainCheckURL[]    = "google-search-domain-check-url";

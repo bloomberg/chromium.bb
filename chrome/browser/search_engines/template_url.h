@@ -55,6 +55,7 @@ class TemplateURLRef {
   // is required and is passed in the constructor.
   struct SearchTermsArgs {
     explicit SearchTermsArgs(const string16& search_terms);
+    ~SearchTermsArgs();
 
     // The search terms (query).
     const string16 search_terms;
@@ -78,6 +79,10 @@ class TemplateURLRef {
     // The start-edge margin of the omnibox in pixels, used in extended Instant
     // to align the preview contents with the omnibox.
     int omnibox_start_margin;
+
+    // The URL of the current webpage to be used for experimental zero-prefix
+    // suggestions.
+    std::string zero_prefix_url;
   };
 
   TemplateURLRef(TemplateURL* owner, Type type);
@@ -182,6 +187,7 @@ class TemplateURLRef {
     GOOGLE_SEARCH_CLIENT,
     GOOGLE_SEARCH_FIELDTRIAL_GROUP,
     GOOGLE_UNESCAPED_SEARCH_TERMS,
+    GOOGLE_ZERO_PREFIX_URL,
     LANGUAGE,
     SEARCH_TERMS,
   };
