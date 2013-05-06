@@ -448,10 +448,6 @@ class ASH_EXPORT Shell
     return launcher_model_.get();
   }
 
-  internal::AppListController* app_list_controller() {
-    return app_list_controller_.get();
-  }
-
   // Returns the launcher delegate, creating if necesary.
   LauncherDelegate* GetLauncherDelegate();
 

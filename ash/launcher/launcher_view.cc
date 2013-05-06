@@ -420,7 +420,22 @@ void LauncherView::OnShelfAlignmentChanged() {
   UpdateFirstButtonPadding();
   overflow_button_->OnShelfAlignmentChanged();
   LayoutToIdealBounds();
-  for (int i = 0; i < view_model_->view_size(); ++i) {
+  for (int i=0; i < view_model_->view_size(); ++i) {
+    // TODO: remove when AppIcon is a Launcher Button.
+    if (TYPE_APP_LIST == model_->items()[i].type) {
+      ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+      static_cast<AppListButton*>(view_model_->view_at(i))->SetImageAlignment(
+          shelf->SelectValueForShelfAlignment(
+              views::ImageButton::ALIGN_CENTER,
+              views::ImageButton::ALIGN_LEFT,
+              views::ImageButton::ALIGN_RIGHT,
+              views::ImageButton::ALIGN_CENTER),
+          shelf->SelectValueForShelfAlignment(
+              views::ImageButton::ALIGN_TOP,
+              views::ImageButton::ALIGN_MIDDLE,
+              views::ImageButton::ALIGN_MIDDLE,
+              views::ImageButton::ALIGN_BOTTOM));
+    }
     if (i >= first_visible_index_ && i <= last_visible_index_)
       view_model_->view_at(i)->Layout();
   }
@@ -748,6 +763,18 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     case TYPE_APP_LIST: {
       // TODO(dave): turn this into a LauncherButton too.
       AppListButton* button = new AppListButton(this, this);
+      ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+      button->SetImageAlignment(
+          shelf->SelectValueForShelfAlignment(
+              views::ImageButton::ALIGN_CENTER,
+              views::ImageButton::ALIGN_LEFT,
+              views::ImageButton::ALIGN_RIGHT,
+              views::ImageButton::ALIGN_CENTER),
+          shelf->SelectValueForShelfAlignment(
+              views::ImageButton::ALIGN_TOP,
+              views::ImageButton::ALIGN_MIDDLE,
+              views::ImageButton::ALIGN_MIDDLE,
+              views::ImageButton::ALIGN_BOTTOM));
       view = button;
       break;
     }

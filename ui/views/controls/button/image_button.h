@@ -109,7 +109,6 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
 
   // Change the toggled state.
   void SetToggled(bool toggled);
-  bool toggled() const { return toggled_; }
 
   // Like ImageButton::SetImage(), but to set the graphics used for the
   // "has been toggled" state.  Must be called for each button state

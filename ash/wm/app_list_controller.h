@@ -9,7 +9,6 @@
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/observer_list.h"
 #include "base/timer.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -29,12 +28,7 @@ class LocatedEvent;
 }
 
 namespace ash {
-
-class Shell;
-
 namespace internal {
-
-class AppListControllerObserver;
 
 // AppListController is a controller that manages app list UI for shell.
 // It creates AppListView and schedules showing/hiding animation.
@@ -49,11 +43,8 @@ class AppListController : public ui::EventHandler,
                           public LauncherIconObserver,
                           public app_list::PaginationModelObserver {
  public:
-  explicit AppListController(Shell* shell);
+  AppListController();
   virtual ~AppListController();
-
-  // Closes opened app list and cleans up its dependency on shell.
-  void Shutdown();
 
   // Show/hide app list window. The |window| is used to deterime in
   // which display (in which the |window| exists) the app list should
@@ -63,19 +54,12 @@ class AppListController : public ui::EventHandler,
   // Whether app list window is visible (shown or being shown).
   bool IsVisible() const;
 
-  // Convenience wrapper to toggle visibility using the SetVisible() and
-  // IsVisible().
-  void Toggle(aura::Window* window);
-
   // Returns target visibility. This differs from IsVisible() if an animation
   // is ongoing.
   bool GetTargetVisibility() const { return is_visible_; }
 
   // Returns app list window or NULL if it is not visible.
   aura::Window* GetWindow();
-
-  void AddObserver(AppListControllerObserver* observer);
-  void RemoveObserver(AppListControllerObserver* observer);
 
  private:
   // Sets the app list view and attempts to show it.
@@ -121,8 +105,6 @@ class AppListController : public ui::EventHandler,
   virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
   virtual void TransitionChanged() OVERRIDE;
 
-  Shell* shell_;
-
   scoped_ptr<app_list::PaginationModel> pagination_model_;
 
   // Whether we should show or hide app list widget.
@@ -136,8 +118,6 @@ class AppListController : public ui::EventHandler,
 
   // Whether should schedule snap back animation.
   bool should_snap_back_;
-
-  ObserverList<AppListControllerObserver, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListController);
 };

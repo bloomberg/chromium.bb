@@ -259,11 +259,11 @@ Shell::~Shell() {
   // TooltipController is deleted with the Shell so removing its references.
   RemovePreTargetHandler(tooltip_controller_.get());
 
-  // AppList needs to clean up it dependency on Shell and closes its opened
-  // UI (if any) before closing all RootWindows. However, the controller
-  // instance is still needed so that sub views (e.g. app menu button on
-  // the shelf) could properly clean up.
-  app_list_controller_->Shutdown();
+  // AppList needs to be released before shelf layout manager, which is
+  // destroyed with launcher container in the loop below. However, app list
+  // container is now on top of launcher container and released after it.
+  // TODO(xiyuan): Move it back when app list container is no longer needed.
+  app_list_controller_.reset();
 
   // Destroy SystemTrayDelegate before destroying the status area(s).
   system_tray_delegate_->Shutdown();
@@ -592,10 +592,6 @@ void Shell::Init() {
   if (!system_tray_delegate_)
     system_tray_delegate_.reset(SystemTrayDelegate::CreateDummyDelegate());
 
-  // Creates app_list_controller_ before the launcher because app list
-  // button observes it for UI visibility.
-  app_list_controller_.reset(new internal::AppListController(this));
-
   // Creates StatusAreaWidget.
   root_window_controller->InitForPrimaryDisplay();
 
@@ -646,15 +642,21 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen) {
 }
 
 void Shell::ToggleAppList(aura::Window* window) {
-  app_list_controller_->Toggle(window);
+  // If the context window is not given, show it on the active root window.
+  if (!window)
+    window = GetActiveRootWindow();
+  if (!app_list_controller_)
+    app_list_controller_.reset(new internal::AppListController);
+  app_list_controller_->SetVisible(!app_list_controller_->IsVisible(), window);
 }
 
 bool Shell::GetAppListTargetVisibility() const {
-  return app_list_controller_->GetTargetVisibility();
+  return app_list_controller_.get() &&
+      app_list_controller_->GetTargetVisibility();
 }
 
 aura::Window* Shell::GetAppListWindow() {
-  return app_list_controller_->GetWindow();
+  return app_list_controller_.get() ? app_list_controller_->GetWindow() : NULL;
 }
 
 bool Shell::IsSystemModalWindowOpen() const {

@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/app_list_controller_observer.h"
 #include "ash/wm/property_util.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/pagination_model.h"
@@ -53,11 +52,10 @@ views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
           views::BubbleBorder::TOP_CENTER);
 }
 
-// Offsets the given |rect| towards shelf.
-gfx::Rect OffsetTowardsShelf(Shell* shell,
-                             const gfx::Rect& rect,
-                             views::Widget* widget) {
-  ShelfAlignment shelf_alignment = shell->GetShelfAlignment(
+// Offset given |rect| towards shelf.
+gfx::Rect OffsetTowardsShelf(const gfx::Rect& rect, views::Widget* widget) {
+  DCHECK(Shell::HasInstance());
+  ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment(
       widget->GetNativeView()->GetRootWindow());
   gfx::Rect offseted(rect);
   switch (shelf_alignment) {
@@ -83,31 +81,23 @@ gfx::Rect OffsetTowardsShelf(Shell* shell,
 ////////////////////////////////////////////////////////////////////////////////
 // AppListController, public:
 
-AppListController::AppListController(Shell* shell)
-    : shell_(shell),
-      pagination_model_(new app_list::PaginationModel),
+AppListController::AppListController()
+    : pagination_model_(new app_list::PaginationModel),
       is_visible_(false),
       view_(NULL),
       should_snap_back_(false) {
-  shell_->AddShellObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
   pagination_model_->AddObserver(this);
 }
 
 AppListController::~AppListController() {
-  Shutdown();
-  pagination_model_->RemoveObserver(this);
-}
-
-void AppListController::Shutdown() {
   // Ensures app list view goes before the controller since pagination model
   // lives in the controller and app list view would access it on destruction.
   if (view_ && view_->GetWidget())
     view_->GetWidget()->CloseNow();
 
-  if (shell_) {
-    shell_->RemoveShellObserver(this);
-    shell_ = NULL;
-  }
+  Shell::GetInstance()->RemoveShellObserver(this);
+  pagination_model_->RemoveObserver(this);
 }
 
 void AppListController::SetVisible(bool visible, aura::Window* window) {
@@ -121,18 +111,14 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
   Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager()->
       UpdateAutoHideState();
 
-  // Determine the root window to show the UI.
-  aura::RootWindow* root_window =
-      window ? window->GetRootWindow() : Shell::GetActiveRootWindow();
-
   if (view_) {
     ScheduleAnimation();
   } else if (is_visible_) {
     // AppListModel and AppListViewDelegate are owned by AppListView. They
     // will be released with AppListView on close.
     app_list::AppListView* view = new app_list::AppListView(
-        shell_->delegate()->CreateAppListViewDelegate());
-    aura::Window* container = GetRootWindowController(root_window)->
+        Shell::GetInstance()->delegate()->CreateAppListViewDelegate());
+    aura::Window* container = GetRootWindowController(window->GetRootWindow())->
         GetContainer(kShellWindowId_AppListContainer);
     view->InitAsBubble(
         container,
@@ -143,30 +129,14 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
         true /* border_accepts_events */);
     SetView(view);
   }
-
-  FOR_EACH_OBSERVER(AppListControllerObserver,
-                    observers_,
-                    OnAppLauncherVisibilityChanged(is_visible_, root_window));
 }
 
 bool AppListController::IsVisible() const {
   return view_ && view_->GetWidget()->IsVisible();
 }
 
-void AppListController::Toggle(aura::Window* window) {
-  SetVisible(!IsVisible(), window);
-}
-
 aura::Window* AppListController::GetWindow() {
   return is_visible_ && view_ ? view_->GetWidget()->GetNativeWindow() : NULL;
-}
-
-void AppListController::AddObserver(AppListControllerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void AppListController::RemoveObserver(AppListControllerObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +149,7 @@ void AppListController::SetView(app_list::AppListView* view) {
   view_ = view;
   views::Widget* widget = view_->GetWidget();
   widget->AddObserver(this);
-  shell_->AddPreTargetHandler(this);
+  Shell::GetInstance()->AddPreTargetHandler(this);
   Launcher::ForWindow(widget->GetNativeWindow())->AddIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
   aura::client::GetFocusClient(widget->GetNativeView())->AddObserver(this);
@@ -194,7 +164,7 @@ void AppListController::ResetView() {
   views::Widget* widget = view_->GetWidget();
   widget->RemoveObserver(this);
   GetLayer(widget)->GetAnimator()->RemoveObserver(this);
-  shell_->RemovePreTargetHandler(this);
+  Shell::GetInstance()->RemovePreTargetHandler(this);
   Launcher::ForWindow(widget->GetNativeWindow())->RemoveIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
   aura::client::GetFocusClient(widget->GetNativeView())->RemoveObserver(this);
@@ -212,10 +182,9 @@ void AppListController::ScheduleAnimation() {
   gfx::Rect target_bounds;
   if (is_visible_) {
     target_bounds = widget->GetWindowBoundsInScreen();
-    widget->SetBounds(OffsetTowardsShelf(shell_, target_bounds, widget));
+    widget->SetBounds(OffsetTowardsShelf(target_bounds, widget));
   } else {
-    target_bounds = OffsetTowardsShelf(shell_,
-                                       widget->GetWindowBoundsInScreen(),
+    target_bounds = OffsetTowardsShelf(widget->GetWindowBoundsInScreen(),
                                        widget);
   }
 

@@ -3,13 +3,10 @@
 // found in the LICENSE file.
 
 #include "ash/launcher/launcher.h"
-
-#include <vector>
-
-#include "ash/launcher/app_list_button.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_view.h"
+
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -27,7 +24,6 @@
 #endif
 
 typedef ash::test::AshTestBase LauncherTest;
-using ash::internal::AppListButton;
 using ash::internal::LauncherView;
 using ash::internal::LauncherButton;
 
@@ -61,7 +57,7 @@ TEST_F(LauncherTest, OpenBrowser) {
 
 // Confirm that using the menu will clear the hover attribute. To avoid another
 // browser test we check this here.
-TEST_F(LauncherTest, CheckHoverAfterMenu) {
+TEST_F(LauncherTest, checkHoverAfterMenu) {
   Launcher* launcher = Launcher::ForPrimaryDisplay();
   ASSERT_TRUE(launcher);
   LauncherView* launcher_view = launcher->GetLauncherViewForTest();
@@ -118,52 +114,6 @@ TEST_F(LauncherTest, ShowOverflowBubble) {
   // Waits for all transitions to finish and there should be no crash.
   test.RunMessageLoopUntilAnimationsDone();
   EXPECT_FALSE(launcher->IsShowingOverflowBubble());
-}
-
-// Tests app list button toggles when app list UI shows up.
-TEST_F(LauncherTest, AppMenuToggle) {
-  AppListButton* app_list_button = static_cast<AppListButton*>(
-      Launcher::ForPrimaryDisplay()->GetLauncherViewForTest()->
-      GetAppListButtonView());
-  Shell* shell = Shell::GetInstance();
-
-  EXPECT_FALSE(shell->GetAppListTargetVisibility());
-  EXPECT_FALSE(app_list_button->toggled());
-  shell->ToggleAppList(NULL);
-  EXPECT_TRUE(shell->GetAppListTargetVisibility());
-  EXPECT_TRUE(app_list_button->toggled());
-}
-
-// Tests only the app list button with a UI is toggled.
-TEST_F(LauncherTest, MultipleAppMenuToggle) {
-  UpdateDisplay("300x300,200x200");
-
-  std::vector<AppListButton*> app_list_buttons;
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  for (Shell::RootWindowList::const_iterator it = root_windows.begin();
-       it != root_windows.end(); ++it) {
-    AppListButton* button = static_cast<AppListButton*>(
-        Launcher::ForWindow(*it)->GetLauncherViewForTest()->
-        GetAppListButtonView());
-    app_list_buttons.push_back(button);
-    EXPECT_FALSE(button->toggled());
-  }
-
-  Shell* shell = Shell::GetInstance();
-
-  EXPECT_FALSE(shell->GetAppListTargetVisibility());
-  shell->ToggleAppList(root_windows[0]);
-  EXPECT_TRUE(shell->GetAppListTargetVisibility());
-  EXPECT_TRUE(app_list_buttons[0]->toggled());
-  EXPECT_FALSE(app_list_buttons[1]->toggled());
-
-  shell->ToggleAppList(NULL);
-  EXPECT_FALSE(shell->GetAppListTargetVisibility());
-
-  shell->ToggleAppList(root_windows[1]);
-  EXPECT_TRUE(shell->GetAppListTargetVisibility());
-  EXPECT_FALSE(app_list_buttons[0]->toggled());
-  EXPECT_TRUE(app_list_buttons[1]->toggled());
 }
 
 }  // namespace ash
