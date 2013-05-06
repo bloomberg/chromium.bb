@@ -1260,10 +1260,7 @@ function updateSuggestions() {
         suggestions.slice(0, MAX_SUGGESTIONS_TO_SHOW), selectedIndex);
     searchboxApiHandle.hideBars();
     pendingBox.loadSuggestions();
-  } else if (lastInputValue != inputValue) {
-    // To prevent flickering of the suggestions box due to multiple
-    // onnativesuggestion events firing on the same input value. Only clear if
-    // the first such event actually dictates to do so.
+  } else {
     hideActiveSuggestions();
   }
 

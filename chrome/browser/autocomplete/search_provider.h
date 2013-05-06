@@ -114,6 +114,10 @@ class SearchProvider : public AutocompleteProvider,
   // net::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
+  // Returns whether the provider is done processing the query with the
+  // exception of waiting for Instant to finish.
+  bool IsNonInstantSearchDone() const;
+
   bool field_trial_triggered_in_session() const {
     return field_trial_triggered_in_session_;
   }

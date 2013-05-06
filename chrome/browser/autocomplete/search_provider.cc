@@ -593,6 +593,10 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
     listener_->OnProviderUpdate(results_updated);
 }
 
+bool SearchProvider::IsNonInstantSearchDone() const {
+  return !timer_.IsRunning() && (suggest_results_pending_ == 0);
+}
+
 SearchProvider::~SearchProvider() {
 }
 
@@ -1600,6 +1604,6 @@ void SearchProvider::DemoteKeywordNavigationMatchesPastTopQuery() {
 void SearchProvider::UpdateDone() {
   // We're done when the timer isn't running, there are no suggest queries
   // pending, and we're not waiting on Instant.
-  done_ = (!timer_.IsRunning() && (suggest_results_pending_ == 0) &&
-           (instant_finalized_ || !chrome::IsInstantEnabled(profile_)));
+  done_ = IsNonInstantSearchDone() &&
+      (instant_finalized_ || !chrome::IsInstantEnabled(profile_));
 }

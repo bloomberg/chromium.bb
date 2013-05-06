@@ -27,7 +27,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
@@ -1469,26 +1468,16 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
       chrome::NOTIFICATION_INSTANT_COMMITTED,
       content::NotificationService::AllSources());
 
+  // Create an observer to wait for the autocomplete.
+  content::WindowedNotificationObserver autocomplete_observer(
+      chrome::NOTIFICATION_INSTANT_SENT_AUTOCOMPLETE_RESULTS,
+      content::NotificationService::AllSources());
+
   // Typing in the omnibox should show the overlay. Don't wait for the overlay
   // to show however.
   SetOmniboxText("query");
 
-  // The autocomplete controller isn't done until all the providers are done.
-  // Though we don't care about the SearchProvider when we send autocomplete
-  // results to the page, we do need to cause it to be "done" to make this test
-  // work. Setting the suggestion calls SearchProvider::FinalizeInstantQuery(),
-  // thus causing it to be done.
-  omnibox()->model()->SetInstantSuggestion(
-      InstantSuggestion(ASCIIToUTF16("query"),
-                        INSTANT_COMPLETE_NOW,
-                        INSTANT_SUGGESTION_SEARCH,
-                        ASCIIToUTF16("query")));
-  while (!omnibox()->model()->autocomplete_controller()->done()) {
-    content::WindowedNotificationObserver autocomplete_observer(
-        chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-        content::NotificationService::AllSources());
-    autocomplete_observer.Wait();
-  }
+  autocomplete_observer.Wait();
 
   // Explicitly unfocus the omnibox without triggering a click. Note that this
   // doesn't actually change the focus state of the omnibox, only what the
@@ -2284,4 +2273,26 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchProviderRunsForFallback) {
   //   - SWYT for "quer"
   //   - Search history suggestion for "query"
   EXPECT_EQ(2, CountSearchProviderSuggestions());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchProviderForLocalNTP) {
+  // Force local-only Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+  instant()->SetInstantEnabled(true, true);
+
+  // Add "google" to history.
+  ASSERT_TRUE(AddSearchToHistory(ASCIIToUTF16("google"), 10000));
+  BlockUntilHistoryProcessesPendingRequests();
+
+  // Create an observer to wait for the autocomplete.
+  content::WindowedNotificationObserver autocomplete_observer(
+      chrome::NOTIFICATION_INSTANT_SENT_AUTOCOMPLETE_RESULTS,
+      content::NotificationService::AllSources());
+
+  SetOmniboxText("http://www.example.com");
+
+  autocomplete_observer.Wait();
+  ASSERT_TRUE(omnibox()->model()->autocomplete_controller()->
+              search_provider()->IsNonInstantSearchDone());
 }

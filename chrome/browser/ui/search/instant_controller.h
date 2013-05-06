@@ -250,6 +250,7 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_BackspaceFromQueryToSelectedUrlAndNavigate);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OnDefaultSearchProviderChanged);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, SearchProviderForLocalNTP);
 
   Profile* profile() const;
   InstantOverlay* overlay() const;

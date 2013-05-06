@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_tab_helper.h"
@@ -596,15 +597,19 @@ void InstantController::HandleAutocompleteResults(
        provider != providers.end(); ++provider) {
     const bool from_search_provider =
         (*provider)->type() == AutocompleteProvider::TYPE_SEARCH;
+
     // Unless we are talking to a local page, skip SearchProvider, since it only
     // echoes suggestions.
     if (from_search_provider && !UsingLocalPage())
       continue;
-    // Only send autocomplete results when all the providers are done. Skip
-    // this check for the SearchProvider, since it isn't done until the page
-    // calls SetSuggestions (causing SearchProvider::FinalizeInstantQuery() to
-    // be called), which makes it a chicken-and-egg thing.
-    if (!from_search_provider && !(*provider)->done()) {
+
+    // Only send autocomplete results when all the providers are done.
+    // TODO(jeremycho): Pass search_provider() as a parameter to this function
+    // and remove the static cast.
+    const bool provider_done = from_search_provider ?
+        static_cast<SearchProvider*>(*provider)->IsNonInstantSearchDone() :
+        (*provider)->done();
+    if (!provider_done) {
       DVLOG(1) << "Waiting for " << (*provider)->GetName();
       return;
     }
@@ -638,6 +643,11 @@ void InstantController::HandleAutocompleteResults(
     instant_tab_->SendAutocompleteResults(results);
   else
     overlay_->SendAutocompleteResults(results);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_INSTANT_SENT_AUTOCOMPLETE_RESULTS,
+      content::Source<InstantController>(this),
+      content::NotificationService::NoDetails());
 }
 
 void InstantController::OnDefaultSearchProviderChanged() {
