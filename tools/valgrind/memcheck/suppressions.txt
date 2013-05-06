@@ -7131,3 +7131,9 @@
    fun:_ZN5drive4util10FileReader4OpenERKN4base8FilePathElRKNS2_8CallbackIFviEEE
    fun:_ZN5drive4util*DriveFileReaderTest_*_Test8TestBodyEv
 }
+{
+  bug_238160
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN63ExperimentalIdentityLaunchWebAuthFlowTest_RedirectMatching_Test8TestBodyEv
+}
