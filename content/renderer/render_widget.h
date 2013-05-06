@@ -282,6 +282,7 @@ class CONTENT_EXPORT RenderWidget
   // RenderWidget IPC message handlers
   void OnHandleInputEvent(const WebKit::WebInputEvent* event,
                           bool keyboard_shortcut);
+  void OnCursorVisibilityChange(bool is_visible);
   void OnMouseCaptureLost();
   virtual void OnSetFocus(bool enable);
   void OnClose();

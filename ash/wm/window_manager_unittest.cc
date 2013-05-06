@@ -11,6 +11,7 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/activation_delegate.h"
+#include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -29,6 +30,28 @@
 #include "ui/views/corewm/input_method_event_filter.h"
 
 namespace {
+
+class TestingCursorClientObserver : public aura::client::CursorClientObserver {
+ public:
+  TestingCursorClientObserver()
+      : cursor_visibility_(false),
+        did_visibility_change_(false) {}
+  void reset() { cursor_visibility_ = did_visibility_change_ = false; }
+  bool is_cursor_visible() const { return cursor_visibility_; }
+  bool did_visibility_change() const { return did_visibility_change_; }
+
+  // Overridden from aura::client::CursorClientObserver:
+  virtual void OnCursorVisibilityChanged(bool is_visible) OVERRIDE {
+    cursor_visibility_ = is_visible;
+    did_visibility_change_ = true;
+  }
+
+ private:
+  bool cursor_visibility_;
+  bool did_visibility_change_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingCursorClientObserver);
+};
 
 base::TimeDelta getTime() {
   return ui::EventTimeForNow();
@@ -751,6 +774,67 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
   generator.MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+}
+
+TEST_F(WindowManagerTest, TestCursorClientObserver) {
+  aura::test::EventGenerator& generator = GetEventGenerator();
+  views::corewm::CursorManager* cursor_manager =
+      ash::Shell::GetInstance()->cursor_manager();
+
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShell(
+      SK_ColorWHITE, -1, gfx::Rect(0, 0, 100, 100)));
+  wm::ActivateWindow(w1.get());
+
+  // Add two observers. Both should have OnCursorVisibilityChanged()
+  // invoked when an event changes the visibility of the cursor.
+  TestingCursorClientObserver observer_a;
+  TestingCursorClientObserver observer_b;
+  cursor_manager->AddObserver(&observer_a);
+  cursor_manager->AddObserver(&observer_b);
+
+  // Initial state before any events have been sent.
+  observer_a.reset();
+  observer_b.reset();
+  EXPECT_FALSE(observer_a.did_visibility_change());
+  EXPECT_FALSE(observer_b.did_visibility_change());
+  EXPECT_FALSE(observer_a.is_cursor_visible());
+  EXPECT_FALSE(observer_b.is_cursor_visible());
+
+  // Keypress should hide the cursor.
+  generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_TRUE(observer_a.did_visibility_change());
+  EXPECT_TRUE(observer_b.did_visibility_change());
+  EXPECT_FALSE(observer_a.is_cursor_visible());
+  EXPECT_FALSE(observer_b.is_cursor_visible());
+
+  // Mouse move should show the cursor.
+  observer_a.reset();
+  observer_b.reset();
+  generator.MoveMouseTo(50, 50);
+  EXPECT_TRUE(observer_a.did_visibility_change());
+  EXPECT_TRUE(observer_b.did_visibility_change());
+  EXPECT_TRUE(observer_a.is_cursor_visible());
+  EXPECT_TRUE(observer_b.is_cursor_visible());
+
+  // Remove observer_b. Its OnCursorVisibilityChanged() should
+  // not be invoked past this point.
+  cursor_manager->RemoveObserver(&observer_b);
+
+  // Gesture tap should hide the cursor.
+  observer_a.reset();
+  observer_b.reset();
+  generator.GestureTapAt(gfx::Point(25, 25));
+  EXPECT_TRUE(observer_a.did_visibility_change());
+  EXPECT_FALSE(observer_b.did_visibility_change());
+  EXPECT_FALSE(observer_a.is_cursor_visible());
+
+  // Mouse move should show the cursor.
+  observer_a.reset();
+  observer_b.reset();
+  generator.MoveMouseTo(50, 50);
+  EXPECT_TRUE(observer_a.did_visibility_change());
+  EXPECT_FALSE(observer_b.did_visibility_change());
+  EXPECT_TRUE(observer_a.is_cursor_visible());
 }
 
 }  // namespace ash
