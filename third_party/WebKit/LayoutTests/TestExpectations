@@ -1126,9 +1126,6 @@ webkit.org/b/84847 [ Release ] inspector/timeline/timeline-start-time.html [ Fai
 
 webkit.org/b/85106 tables/mozilla/other/slashlogo.html [ Slow ]
 
-# Interferes with the rAF tests that are enabled
-webkit.org/b/85689 fast/animation/request-animation-frame-disabled.html [ Skip ]
-
 # Skip it because it seems its frame loading notifications leak to the next test.
 webkit.org/b/85949 http/tests/loading/post-in-iframe-with-back-navigation.html [ Skip ]
 
