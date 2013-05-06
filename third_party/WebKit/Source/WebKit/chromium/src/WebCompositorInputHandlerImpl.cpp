@@ -230,14 +230,14 @@ WebCompositorInputHandlerImpl::EventDisposition WebCompositorInputHandlerImpl::h
         }
     }
 
+#ifndef NDEBUG
+    m_expectScrollUpdateEnd = false;
+#endif
+
     switch (scrollStatus) {
     case WebInputHandlerClient::ScrollStatusStarted: {
-        if (gestureEvent.sourceDevice == WebGestureEvent::Touchpad) {
+        if (gestureEvent.sourceDevice == WebGestureEvent::Touchpad)
             m_inputHandlerClient->scrollEnd();
-#ifndef NDEBUG
-            m_expectScrollUpdateEnd = false;
-#endif
-        }
         m_flingCurve = adoptPtr(Platform::current()->createFlingAnimationCurve(gestureEvent.sourceDevice, WebFloatPoint(gestureEvent.data.flingStart.velocityX, gestureEvent.data.flingStart.velocityY), WebSize()));
         TRACE_EVENT_ASYNC_BEGIN0("webkit", "WebCompositorInputHandlerImpl::handleGestureFling::started", this);
         m_flingParameters.delta = WebFloatPoint(gestureEvent.data.flingStart.velocityX, gestureEvent.data.flingStart.velocityY);
@@ -303,9 +303,6 @@ bool WebCompositorInputHandlerImpl::cancelCurrentFling()
     if (hadFlingAnimation && m_flingParameters.sourceDevice == WebGestureEvent::Touchscreen) {
         m_inputHandlerClient->scrollEnd();
         TRACE_EVENT_ASYNC_END0("webkit", "WebCompositorInputHandlerImpl::handleGestureFling::started", this);
-#ifndef NDEBUG
-        m_expectScrollUpdateEnd = false;
-#endif
     }
 
     TRACE_EVENT_INSTANT1("webkit", "WebCompositorInputHandlerImpl::cancelCurrentFling", "hadFlingAnimation", hadFlingAnimation);
