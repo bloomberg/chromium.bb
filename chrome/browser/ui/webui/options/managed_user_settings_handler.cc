@@ -27,6 +27,12 @@
 #include "grit/google_chrome_strings.h"
 #include "grit/locale_settings.h"
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/managed_mode_policy_provider.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#endif
+
 using content::UserMetricsAction;
 
 namespace {
@@ -111,8 +117,9 @@ void ManagedUserSettingsHandler::InitializePage() {
 void ManagedUserSettingsHandler::HandlePageOpened(const base::ListValue* args) {
   start_time_ = base::TimeTicks::Now();
   content::RecordAction(UserMetricsAction("ManagedMode_OpenSettings"));
-  ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()));
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(profile);
   ManagedModeNavigationObserver* observer =
       ManagedModeNavigationObserver::FromWebContents(
           web_ui()->GetWebContents());
@@ -127,6 +134,13 @@ void ManagedUserSettingsHandler::HandlePageOpened(const base::ListValue* args) {
     has_seen_settings_dialog_ = true;
   }
 
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(profile);
+  policy::ManagedModePolicyProvider* policy_provider =
+      connector->managed_mode_policy_provider();
+  const DictionaryValue* settings = policy_provider->GetPolicies();
+  web_ui()->CallJavascriptFunction("ManagedUserSettings.loadSettings",
+                                   *settings);
   if (observer->is_elevated()) {
     web_ui()->CallJavascriptFunction("ManagedUserSettings.setAuthenticated",
                                      base::FundamentalValue(true));
@@ -197,6 +211,30 @@ void ManagedUserSettingsHandler::RegisterMessages() {
       "checkManualExceptionValidity",
       base::Bind(&ManagedUserSettingsHandler::CheckManualExceptionValidity,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setManagedUserSetting",
+      base::Bind(&ManagedUserSettingsHandler::SetSetting,
+                 base::Unretained(this)));
+}
+
+void ManagedUserSettingsHandler::SetSetting(
+    const ListValue* args) {
+  std::string key;
+  if (!args->GetString(0, &key)) {
+    NOTREACHED();
+    return;
+  }
+  const Value* value = NULL;
+  if (!args->Get(1, &value)) {
+    NOTREACHED();
+    return;
+  }
+  Profile* profile = Profile::FromWebUI(web_ui());
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(profile);
+  policy::ManagedModePolicyProvider* policy_provider =
+      connector->managed_mode_policy_provider();
+  policy_provider->SetPolicy(key, make_scoped_ptr(value->DeepCopy()));
 }
 
 void ManagedUserSettingsHandler::SaveMetrics(const ListValue* args) {

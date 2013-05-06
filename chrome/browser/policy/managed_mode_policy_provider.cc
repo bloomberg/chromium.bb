@@ -6,11 +6,15 @@
 
 #include "base/prefs/json_pref_store.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "policy/policy_constants.h"
 
+using base::DictionaryValue;
+using base::Value;
 using content::BrowserThread;
 
 namespace policy {
@@ -45,20 +49,62 @@ ManagedModePolicyProvider::ManagedModePolicyProvider(
 
 ManagedModePolicyProvider::~ManagedModePolicyProvider() {}
 
-const base::Value* ManagedModePolicyProvider::GetPolicy(
+void ManagedModePolicyProvider::InitDefaults() {
+  DCHECK(store_->IsInitializationComplete());
+  if (GetCachedPolicy())
+    return;
+
+  DictionaryValue* dict = new DictionaryValue;
+  dict->SetInteger(policy::key::kContentPackDefaultFilteringBehavior,
+                   ManagedModeURLFilter::ALLOW);
+  dict->SetBoolean(policy::key::kForceSafeSearch, true);
+
+  store_->SetValue(kPolicies, dict);
+  UpdatePolicyFromCache();
+}
+
+void ManagedModePolicyProvider::InitDefaultsForTesting(
+    scoped_ptr<DictionaryValue> dict) {
+  DCHECK(store_->IsInitializationComplete());
+  DCHECK(!GetCachedPolicy());
+  store_->SetValue(kPolicies, dict.release());
+  UpdatePolicyFromCache();
+}
+
+const DictionaryValue* ManagedModePolicyProvider::GetPolicies() const {
+  DictionaryValue* dict = GetCachedPolicy();
+  DCHECK(dict);
+  return dict;
+}
+
+const Value* ManagedModePolicyProvider::GetPolicy(
     const std::string& key) const {
-  base::DictionaryValue* dict = GetCachedPolicy();
-  base::Value* value = NULL;
+  DictionaryValue* dict = GetCachedPolicy();
+  Value* value = NULL;
 
   // Returns NULL if the key doesn't exist.
   dict->GetWithoutPathExpansion(key, &value);
   return value;
 }
 
+scoped_ptr<DictionaryValue> ManagedModePolicyProvider::GetPolicyDictionary(
+    const std::string& key) {
+  const Value* value = GetPolicy(key);
+  const DictionaryValue* dict = NULL;
+  if (value && value->GetAsDictionary(&dict))
+    return make_scoped_ptr(dict->DeepCopy());
+
+  return make_scoped_ptr(new DictionaryValue);
+}
+
 void ManagedModePolicyProvider::SetPolicy(const std::string& key,
-                                          const base::Value* value) {
-  base::DictionaryValue* dict = GetCachedPolicy();
-  dict->SetWithoutPathExpansion(key, value->DeepCopy());
+                                          scoped_ptr<Value> value) {
+  DictionaryValue* dict = GetCachedPolicy();
+  if (value)
+    dict->SetWithoutPathExpansion(key, value.release());
+  else
+    dict->RemoveWithoutPathExpansion(key, NULL);
+
   store_->ReportValueChanged(kPolicies);
   UpdatePolicyFromCache();
 }
@@ -86,26 +132,26 @@ void ManagedModePolicyProvider::OnInitializationCompleted(bool success) {
   UpdatePolicyFromCache();
 }
 
-base::DictionaryValue* ManagedModePolicyProvider::GetCachedPolicy() const {
-  base::Value* value = NULL;
-  base::DictionaryValue* dict = NULL;
-  if (store_->GetMutableValue(kPolicies, &value)) {
-    bool success = value->GetAsDictionary(&dict);
-    DCHECK(success);
-  } else {
-    dict = new base::DictionaryValue;
-    store_->SetValue(kPolicies, dict);
-  }
+DictionaryValue* ManagedModePolicyProvider::GetCachedPolicy() const {
+  Value* value = NULL;
+  if (!store_->GetMutableValue(kPolicies, &value))
+    return NULL;
 
+  DictionaryValue* dict = NULL;
+  bool success = value->GetAsDictionary(&dict);
+  DCHECK(success);
   return dict;
 }
 
 void ManagedModePolicyProvider::UpdatePolicyFromCache() {
   scoped_ptr<PolicyBundle> policy_bundle(new PolicyBundle);
-  PolicyMap* policy_map =
-      &policy_bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
-  policy_map->LoadFrom(GetCachedPolicy(),
-                       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  DictionaryValue* policies = GetCachedPolicy();
+  if (policies) {
+    PolicyMap* policy_map =
+        &policy_bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME,
+                                            std::string()));
+    policy_map->LoadFrom(policies, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  }
   UpdatePolicy(policy_bundle.Pass());
 }
 

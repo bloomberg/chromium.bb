@@ -16,6 +16,9 @@
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#include "chrome/browser/policy/managed_mode_policy_provider.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -34,6 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "grit/generated_resources.h"
+#include "policy/policy_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::InterstitialPage;
@@ -62,9 +66,6 @@ class InterstitialObserver : public content::WebContentsObserver {
 };
 
 // Tests the filter mode in which all sites are blocked by default.
-// TODO(sergiu): Make the webkit error message disappear when navigating to an
-// interstitial page. The message states: "Not allowed to load local resource:
-// chrome://resources/css/widgets.css" followed by the compiled page.
 class ManagedModeBlockModeTest : public InProcessBrowserTest {
  public:
   // Indicates whether the interstitial should proceed or not.
@@ -172,9 +173,6 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
           info_bar_delegate->AsConfirmInfoBarDelegate();
       ASSERT_TRUE(confirm_info_bar_delegate);
 
-      content::WindowedNotificationObserver infobar_removed(
-          chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-          content::NotificationService::AllSources());
       InfoBarService* infobar_service =
           InfoBarService::FromWebContents(tab);
 
@@ -197,8 +195,9 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
           NOTREACHED();
           break;
       }
-
-      infobar_removed.Wait();
+      // Policy changes propagate asynchronously, so we spin up the
+      // message loop.
+      base::RunLoop().RunUntilIdle();
     } else {
       scoped_refptr<content::MessageLoopRunner> loop_runner(
           new content::MessageLoopRunner);
@@ -220,17 +219,22 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
 
     Profile* profile = browser()->profile();
     managed_user_service_ = ManagedUserServiceFactory::GetForProfile(profile);
-    profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
-    profile->GetPrefs()->SetInteger(prefs::kDefaultManagedModeFilteringBehavior,
-                                    ManagedModeURLFilter::BLOCK);
-    managed_user_service_->Init();
+    managed_user_service_->InitForTesting();
+    policy::ProfilePolicyConnector* connector =
+        policy::ProfilePolicyConnectorFactory::GetForProfile(profile);
+    policy::ManagedModePolicyProvider* policy_provider =
+        connector->managed_mode_policy_provider();
+    policy_provider->SetPolicy(
+        policy::key::kContentPackDefaultFilteringBehavior,
+        scoped_ptr<base::Value>(
+            new base::FundamentalValue(ManagedModeURLFilter::BLOCK)));
+    base::RunLoop().RunUntilIdle();
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Enable the test server and remap all URLs to it.
     ASSERT_TRUE(test_server()->Start());
     std::string host_port = test_server()->host_port_pair().ToString();
-    command_line->AppendSwitch(switches::kManaged);
     command_line->AppendSwitchASCII(switches::kHostResolverRules,
         "MAP *.example.com " + host_port + "," +
         "MAP *.new-example.com " + host_port + "," +
@@ -313,6 +317,9 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest, SimpleURLInWhitelist) {
   hosts.push_back(test_url.host());
   managed_user_service_->SetManualBehaviorForHosts(
       hosts, ManagedUserService::MANUAL_ALLOW);
+  // Policy changes propagate asynchronously, so we spin up the
+  // message loop.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
             managed_user_service_->GetManualBehaviorForHost(test_url.host()));
 
@@ -340,6 +347,9 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   hosts.push_back(example_domain);
   managed_user_service_->SetManualBehaviorForHosts(
       hosts, ManagedUserService::MANUAL_ALLOW);
+  // Policy changes propagate asynchronously, so we spin up the
+  // message loop.
+  base::RunLoop().RunUntilIdle();
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -370,6 +380,9 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   hosts.push_back(a_domain);
   managed_user_service_->SetManualBehaviorForHosts(
       hosts, ManagedUserService::MANUAL_ALLOW);
+  // Policy changes propagate asynchronously, so we spin up the
+  // message loop.
+  base::RunLoop().RunUntilIdle();
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -401,6 +414,9 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   hosts.push_back("www.example.com");
   managed_user_service_->SetManualBehaviorForHosts(
       hosts, ManagedUserService::MANUAL_ALLOW);
+  // Policy changes propagate asynchronously, so we spin up the
+  // message loop.
+  base::RunLoop().RunUntilIdle();
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -560,18 +576,15 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
       info_bar_delegate->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(confirm_info_bar_delegate);
 
-  content::WindowedNotificationObserver infobar_removed(
-      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-      content::NotificationService::AllSources());
-
   // Finally accept the infobar and see that it is gone.
   confirm_info_bar_delegate->InfoBarDismissed();
   ASSERT_TRUE(confirm_info_bar_delegate->Accept());
+  // Policy changes propagate asynchronously, so we spin up the
+  // message loop.
+  base::RunLoop().RunUntilIdle();
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(tab);
   infobar_service->RemoveInfoBar(confirm_info_bar_delegate);
-  infobar_removed.Wait();
-
   EXPECT_FALSE(IsPreviewInfobarPresent());
 
   EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
@@ -637,6 +650,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   hosts.push_back(allowed_url.host());
   managed_user_service_->SetManualBehaviorForHosts(
       hosts, ManagedUserService::MANUAL_ALLOW);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       ManagedUserService::MANUAL_ALLOW,
       managed_user_service_->GetManualBehaviorForHost(allowed_url.host()));

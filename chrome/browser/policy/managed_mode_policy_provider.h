@@ -6,9 +6,10 @@
 #define CHROME_BROWSER_POLICY_MANAGED_MODE_POLICY_PROVIDER_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/prefs/persistent_pref_store.h"
+#include "base/prefs/pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
+class PersistentPrefStore;
 class Profile;
 
 namespace base {
@@ -43,11 +44,32 @@ class ManagedModePolicyProvider
   explicit ManagedModePolicyProvider(PersistentPrefStore* store);
   virtual ~ManagedModePolicyProvider();
 
+  // Sets the default policies for a managed user when no policies have ever
+  // been set. This method should be called before any of the policy
+  // getters/setters below.
+  void InitDefaults();
+
+  // Sets the default policies to |dict|.
+  void InitDefaultsForTesting(scoped_ptr<DictionaryValue> dict);
+
+  // Returns all policies defined by this class.
+  const base::DictionaryValue* GetPolicies() const;
+
   // Returns the stored value for a policy with the given |key|, or NULL if no
   // such policy is defined.
   const base::Value* GetPolicy(const std::string& key) const;
+
+  // Convenience method that returns a copy of the stored dictionary to update
+  // and pass back to SetPolicy(). There is no locking, so in order to prevent
+  // multiple clients from overwriting each other's changes, the call to
+  // SetPolicy() should happen on the same iteration of the message loop as the
+  // call to this method.
+  scoped_ptr<base::DictionaryValue> GetPolicyDictionary(const std::string& key);
+
   // Sets the policy with the given |key| to a copy of the given |value|.
-  void SetPolicy(const std::string& key, const base::Value* value);
+  // Note that policies are updated asynchronously, so the policy won't take
+  // effect immediately after this method.
+  void SetPolicy(const std::string& key, scoped_ptr<base::Value> value);
 
   // ConfigurationPolicyProvider implementation:
   virtual void Shutdown() OVERRIDE;

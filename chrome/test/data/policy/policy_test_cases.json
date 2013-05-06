@@ -1759,6 +1759,15 @@
     ]
   },
 
+  "ContentPackDefaultFilteringBehavior": {
+  },
+
+  "ContentPackManualBehaviorHosts": {
+  },
+
+  "ContentPackManualBehaviorURLs": {
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

@@ -5,11 +5,14 @@
 #include "chrome/browser/managed_mode/managed_mode_resource_throttle.h"
 
 #include "base/prefs/pref_service.h"
+#include "base/values.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#include "chrome/browser/policy/managed_mode_policy_provider.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_entry.h"
@@ -18,6 +21,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "policy/policy_constants.h"
 
 using content::MessageLoopRunner;
 using content::NavigationController;
@@ -35,10 +39,9 @@ class ManagedModeResourceThrottleTest : public InProcessBrowserTest {
 };
 
 void ManagedModeResourceThrottleTest::SetUpOnMainThread() {
-  Profile* profile = browser()->profile();
-  managed_user_service_ = ManagedUserServiceFactory::GetForProfile(profile);
-  profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
-  managed_user_service_->Init();
+  managed_user_service_ =
+      ManagedUserServiceFactory::GetForProfile(browser()->profile());
+  managed_user_service_->InitForTesting();
 }
 
 // Tests that showing the blocking interstitial for a WebContents without a
@@ -46,8 +49,15 @@ void ManagedModeResourceThrottleTest::SetUpOnMainThread() {
 IN_PROC_BROWSER_TEST_F(ManagedModeResourceThrottleTest,
                        NoNavigationObserverBlock) {
   Profile* profile = browser()->profile();
-  profile->GetPrefs()->SetInteger(prefs::kDefaultManagedModeFilteringBehavior,
-                                  ManagedModeURLFilter::BLOCK);
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(profile);
+  policy::ManagedModePolicyProvider* policy_provider =
+      connector->managed_mode_policy_provider();
+  policy_provider->SetPolicy(
+      policy::key::kContentPackDefaultFilteringBehavior,
+      scoped_ptr<base::Value>(
+          new base::FundamentalValue(ManagedModeURLFilter::BLOCK)));
+  base::RunLoop().RunUntilIdle();
 
   scoped_ptr<WebContents> web_contents(
       WebContents::Create(WebContents::CreateParams(profile)));

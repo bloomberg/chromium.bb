@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 203
+#   For your editing convenience: highest ID currently used: 206
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4597,6 +4597,101 @@
           'desc': '''This policy specifies the allowed extensions to use Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() for remote attestation. Extensions must be added to this list to use the API.
 
           If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.''',
+        },
+      ],
+    },
+    {
+      'name': 'LocallyManagedUsers',
+      'type': 'group',
+      'caption': '''Locally managed users settings''',
+      'desc': '''Configure settings for managed users.''',
+      'policies': [
+        {
+          'name': 'ContentPackDefaultFilteringBehavior',
+          'future': True,
+          'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 0, 1, 2 ],
+          },
+          'items': [
+            {
+              'name': 'Allow',
+              'value': 0,
+              'caption': '''Allow access to sites outside of content packs.''',
+            },
+            {
+              'name': 'Warn',
+              'value': 1,
+              'caption': '''Warn when visiting sites outside of content packs.''',
+            },
+            {
+              'name': 'Block',
+              'value': 2,
+              'caption': '''Block access to sites outside of content packs.''',
+            },
+          ],
+          'supported_on': ['chrome.*:28-', 'chrome_os:0.28-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True
+          },
+          'example_value': 2,
+          'id': 204,
+          'caption': '''Default behavior for sites not in any content pack''',
+          'desc': '''The default behavior for sites not in any content pack.
+
+          This policy is for internal use by Chrome itself.''',
+        },
+        {
+          'name': 'ContentPackManualBehaviorHosts',
+          'future': True,
+          'type': 'dict',
+          'schema': {
+            'type': 'object',
+            'additionalProperties': {
+              'type': 'boolean'
+            }
+          },
+          'supported_on': ['chrome.*:28-', 'chrome_os:0.28-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True
+          },
+          'example_value': {
+            'www.example.com': True,
+            'moose.org': False
+          },
+          'id': 205,
+          'caption': '''Managed user manual exception hosts''',
+          'desc': '''A dictionary mapping hostnames to a boolean flag specifying whether access to the host should be allowed (true) or blocked (false).
+
+          This policy is for internal use by Chrome itself.''',
+        },
+        {
+          'name': 'ContentPackManualBehaviorURLs',
+          'future': True,
+          'type': 'dict',
+          'schema': {
+            'type': 'object',
+            'additionalProperties': {
+              'type': 'boolean'
+            }
+          },
+          'supported_on': ['chrome.*:28-', 'chrome_os:0.28-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True
+          },
+          'example_value': {
+            'https://www.example.com': True,
+            'http://moose.org': False
+          },
+          'id': 206,
+          'caption': '''Managed user manual exception URLs''',
+          'desc': '''A dictionary mapping URLs to a boolean flag specifying whether access to the host should be allowed (true) or blocked (false).
+
+          This policy is for internal use by Chrome itself.''',
         },
       ],
     },

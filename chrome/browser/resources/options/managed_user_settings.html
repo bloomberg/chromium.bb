@@ -7,10 +7,13 @@
       <h3 i18n-content="contentPacksTabLabel"></h3>
       <list id="content-packs-list"></list>
       <div class="settings-row">
+        <!-- TODO(sergiu): make $('get-content-packs-button') behave the same as
+             the other controls once the button actually does something. -->
         <button id="get-content-packs-button" i18n-content="getContentPacks"
             disabled>
         </button>
-        <button id="manage-exceptions-button" i18n-content="manageExceptions">
+        <button id="manage-exceptions-button" i18n-content="manageExceptions"
+            class="disabled-when-locked">
         </button>
       </div>
     </section>
@@ -19,25 +22,22 @@
       <h3 i18n-content="contentPackSettings"></h3>
       <div class="radio">
         <label>
-          <input type="radio" name="contentpacks" value="0"
-              id="contentpacks-allow"
-              pref="profile.managed.default_filtering_behavior">
+          <input type="radio" name="contentpacks" value="allow"
+              id="contentpacks-allow" class="disabled-when-locked">
           <span i18n-content="outsideContentPacksAllow"></span>
         </label>
       </div>
       <div class="radio">
         <label>
-          <input type="radio" name="contentpacks" value="1"
-              id="contentpacks-warn"
-              pref="profile.managed.default_filtering_behavior">
+          <input type="radio" name="contentpacks" value="warn"
+              id="contentpacks-warn" class="disabled-when-locked">
           <span i18n-content="outsideContentPacksWarn"></span>
         </label>
       </div>
       <div class="radio">
         <label>
-          <input type="radio" name="contentpacks" value="2"
-              id="contentpacks-block"
-              pref="profile.managed.default_filtering_behavior">
+          <input type="radio" name="contentpacks" value="block"
+              id="contentpacks-block" class="disabled-when-locked">
           <span i18n-content="outsideContentPacksBlock"></span>
         </label>
       </div>
@@ -48,12 +48,14 @@
       <div class="checkbox">
         <label>
           <input type="checkbox" id="safe-search-checkbox"
-              pref="settings.force_safesearch">
+              class="disabled-when-locked">
           <span i18n-content="enableSafeSearch"></span>
         </label>
       </div>
       <div class="settings-row">
-        <button id="set-passphrase" i18n-content="setPassphrase"></button>
+        <button id="set-passphrase" i18n-content="setPassphrase"
+             class="disabled-when-locked">
+        </button>
       </div>
     </section>
   </div>

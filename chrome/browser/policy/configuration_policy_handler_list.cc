@@ -330,6 +330,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kVariationsRestrictParameter,
     prefs::kVariationsRestrictParameter,
     Value::TYPE_STRING },
+  { key::kContentPackDefaultFilteringBehavior,
+    prefs::kDefaultManagedModeFilteringBehavior,
+    Value::TYPE_INTEGER },
+  { key::kContentPackManualBehaviorHosts,
+    prefs::kManagedModeManualHosts,
+    Value::TYPE_DICTIONARY },
+  { key::kContentPackManualBehaviorURLs,
+    prefs::kManagedModeManualURLs,
+    Value::TYPE_DICTIONARY },
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,

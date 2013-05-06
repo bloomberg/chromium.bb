@@ -26,10 +26,15 @@ class ManagedUserSettingsHandler : public OptionsPageUIHandler {
   virtual void RegisterMessages() OVERRIDE;
 
  private:
-  // Save user metrics. Called from WebUI.
+  // WebUI message handlers:
+  // Save user metrics. Takes no arguments.
   void SaveMetrics(const base::ListValue* args);
 
-  // Records metric that the settings page was opened. Called from WebUI.
+  // Sets a managed user setting. The first argument is the name of the
+  // setting, the second argument is the Value.
+  void SetSetting(const base::ListValue* args);
+
+  // Records metric that the settings page was opened. Takes no arguments.
   void HandlePageOpened(const base::ListValue* args);
 
   // Decides whether a given pattern is valid, or if it should be

@@ -7,11 +7,12 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 
 ManagedUserSettingsTest::ManagedUserSettingsTest() {
@@ -28,11 +29,11 @@ void ManagedUserSettingsTest::SetUpOnMainThread() {
       browser()->tab_strip_model()->GetActiveWebContents();
   ManagedModeNavigationObserver::CreateForWebContents(web_contents);
 
-  Profile* profile = browser()->profile();
-  profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
+  ManagedUserService* managed_user_service =
+      ManagedUserServiceFactory::GetForProfile(browser()->profile());
+  managed_user_service->InitForTesting();
 }
 
 void ManagedUserSettingsTest::SetUpCommandLine(CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kManaged);
   command_line->AppendSwitch(switches::kEnableManagedUsers);
 }

@@ -11,6 +11,9 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
+#include "chrome/browser/policy/managed_mode_policy_provider.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,8 +25,11 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
+#include "policy/policy_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::DictionaryValue;
+using base::Value;
 using content::BrowserThread;
 
 namespace {
@@ -370,9 +376,12 @@ ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForHost(
 void ManagedUserService::SetManualBehaviorForHosts(
     const std::vector<std::string>& hostnames,
     ManualBehavior behavior) {
-  DictionaryPrefUpdate update(profile_->GetPrefs(),
-                              prefs::kManagedModeManualHosts);
-  DictionaryValue* dict = update.Get();
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
+  policy::ManagedModePolicyProvider* policy_provider =
+      connector->managed_mode_policy_provider();
+  scoped_ptr<DictionaryValue> dict = policy_provider->GetPolicyDictionary(
+      policy::key::kContentPackManualBehaviorHosts);
   for (std::vector<std::string>::const_iterator it = hostnames.begin();
        it != hostnames.end(); ++it) {
     // The hostname should already be canonicalized, i.e. canonicalizing it
@@ -383,8 +392,8 @@ void ManagedUserService::SetManualBehaviorForHosts(
     else
       dict->SetBooleanWithoutPathExpansion(*it, behavior == MANUAL_ALLOW);
   }
-
-  UpdateManualHosts();
+  policy_provider->SetPolicy(policy::key::kContentPackManualBehaviorHosts,
+                             dict.PassAs<Value>());
 }
 
 ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForURL(
@@ -401,10 +410,12 @@ ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForURL(
 
 void ManagedUserService::SetManualBehaviorForURLs(const std::vector<GURL>& urls,
                                                   ManualBehavior behavior) {
-  DictionaryPrefUpdate update(profile_->GetPrefs(),
-                              prefs::kManagedModeManualURLs);
-  DictionaryValue* dict = update.Get();
-
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
+  policy::ManagedModePolicyProvider* policy_provider =
+      connector->managed_mode_policy_provider();
+  scoped_ptr<DictionaryValue> dict = policy_provider->GetPolicyDictionary(
+      policy::key::kContentPackManualBehaviorURLs);
   for (std::vector<GURL>::const_iterator it = urls.begin(); it != urls.end();
        ++it) {
     GURL url = ManagedModeURLFilter::Normalize(*it);
@@ -415,8 +426,8 @@ void ManagedUserService::SetManualBehaviorForURLs(const std::vector<GURL>& urls,
                                            behavior == MANUAL_ALLOW);
     }
   }
-
-  UpdateManualURLs();
+  policy_provider->SetPolicy(policy::key::kContentPackManualBehaviorURLs,
+                             dict.PassAs<Value>());
 }
 
 void ManagedUserService::GetManualExceptionsForHost(const std::string& host,
@@ -448,6 +459,12 @@ void ManagedUserService::RemoveElevationForExtension(
 #endif
 }
 
+void ManagedUserService::InitForTesting() {
+  DCHECK(!profile_->GetPrefs()->GetBoolean(prefs::kProfileIsManaged));
+  profile_->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
+  Init();
+}
+
 void ManagedUserService::Init() {
   if (!ProfileIsManaged())
     return;
@@ -476,12 +493,21 @@ void ManagedUserService::Init() {
       base::Bind(
           &ManagedUserService::OnDefaultFilteringBehaviorChanged,
           base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kManagedModeManualHosts,
+      base::Bind(&ManagedUserService::UpdateManualHosts,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kManagedModeManualURLs,
+      base::Bind(&ManagedUserService::UpdateManualURLs,
+                 base::Unretained(this)));
 
-  // TODO(bauerb): Setting the default value here does not currently trigger
-  // the proper notification. Once that is fixed use SetDefaultPrefValue
-  // instead.
-  if (!profile_->GetPrefs()->HasPrefPath(prefs::kForceSafeSearch))
-    profile_->GetPrefs()->SetBoolean(prefs::kForceSafeSearch, true);
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
+  policy::ManagedModePolicyProvider* policy_provider =
+      connector->managed_mode_policy_provider();
+  if (policy_provider)
+    policy_provider->InitDefaults();
 
   // Initialize the filter.
   OnDefaultFilteringBehaviorChanged();

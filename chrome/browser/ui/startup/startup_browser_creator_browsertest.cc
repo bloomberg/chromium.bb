@@ -37,6 +37,8 @@
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #endif
 
 using extensions::Extension;
@@ -911,7 +913,10 @@ class ManagedModeBrowserCreatorTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ManagedModeBrowserCreatorTest,
                        StartupManagedModeProfile) {
   // Make this a managed profile.
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
+  ManagedUserService* managed_user_service =
+      ManagedUserServiceFactory::GetForProfile(browser()->profile());
+  managed_user_service->InitForTesting();
+
   StartupBrowserCreator browser_creator;
 
   // Do a simple non-process-startup browser launch.

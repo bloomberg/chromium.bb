@@ -127,7 +127,8 @@ bool ManagedModePrivateSetPolicyFunction::RunImpl() {
       policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
   policy::ManagedModePolicyProvider* policy_provider =
       connector->managed_mode_policy_provider();
-  policy_provider->SetPolicy(params->key, params->value.get());
+  policy_provider->SetPolicy(params->key,
+                             make_scoped_ptr(params->value->DeepCopy()));
 #endif
   return true;
 }

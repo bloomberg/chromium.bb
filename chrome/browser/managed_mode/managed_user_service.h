@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/management_policy.h"
@@ -108,6 +109,9 @@ class ManagedUserService : public ProfileKeyedService,
   // Initializes this object. This method does nothing if the profile is not
   // managed.
   void Init();
+
+  // Marks the profile as managed and initializes it.
+  void InitForTesting();
 
   void set_startup_elevation(bool elevation) {
     startup_elevation_ = elevation;

@@ -8,7 +8,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "chrome/common/pref_names.h"
 
 class SingleClientManagedUserSettingsSyncTest : public SyncTest {
  public:
@@ -19,10 +18,8 @@ class SingleClientManagedUserSettingsSyncTest : public SyncTest {
 
 IN_PROC_BROWSER_TEST_F(SingleClientManagedUserSettingsSyncTest, Sanity) {
   ASSERT_TRUE(SetupClients());
-  for (int i = 0; i < num_clients(); ++i) {
-    Profile* profile = GetProfile(i);
-    profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
-    ManagedUserServiceFactory::GetForProfile(profile)->Init();
-  }
+  for (int i = 0; i < num_clients(); ++i)
+    ManagedUserServiceFactory::GetForProfile(GetProfile(i))->InitForTesting();
+
   ASSERT_TRUE(SetupSync());
 }

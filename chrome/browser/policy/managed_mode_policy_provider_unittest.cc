@@ -132,7 +132,8 @@ class ManagedModePolicyProviderAPITest : public PolicyTestBase {
 
   virtual void SetUp() OVERRIDE {
     PolicyTestBase::SetUp();
-    provider_.Init();
+    provider_.InitDefaultsForTesting(
+        make_scoped_ptr(new base::DictionaryValue));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -155,7 +156,8 @@ TEST_F(ManagedModePolicyProviderAPITest, Empty) {
 
 TEST_F(ManagedModePolicyProviderAPITest, SetPolicy) {
   base::StringValue policy_value("PolicyValue");
-  provider_.SetPolicy(kPolicyKey, &policy_value);
+  provider_.SetPolicy(kPolicyKey,
+                      scoped_ptr<base::Value>(policy_value.DeepCopy()));
 
   EXPECT_TRUE(base::Value::Equals(&policy_value,
                                   provider_.GetPolicy(kPolicyKey)));
