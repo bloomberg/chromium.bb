@@ -14,6 +14,7 @@
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
+#include "base/auto_reset.h"
 #include "base/i18n/number_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -173,7 +174,8 @@ WebNotificationTray::WebNotificationTray(
     : TrayBackgroundView(status_area_widget),
       button_(NULL),
       show_message_center_on_unlock_(false),
-      should_update_tray_content_(false) {
+      should_update_tray_content_(false),
+      should_block_shelf_auto_hide_(false) {
   button_ = new internal::WebNotificationButton(this);
   button_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON);
@@ -200,6 +202,7 @@ bool WebNotificationTray::ShowMessageCenter() {
   if (!ShouldShowMessageCenter())
     return false;
 
+  should_block_shelf_auto_hide_ = true;
   message_center::MessageCenterBubble* message_center_bubble =
       new message_center::MessageCenterBubble(message_center());
 
@@ -245,6 +248,7 @@ void WebNotificationTray::HideMessageCenter() {
   if (!message_center_bubble())
     return;
   message_center_bubble_.reset();
+  should_block_shelf_auto_hide_ = false;
   SetBubbleVisible(false);
   show_message_center_on_unlock_ = false;
   status_area_widget()->SetHideSystemNotifications(false);
@@ -301,6 +305,7 @@ bool WebNotificationTray::ShouldShowMessageCenter() {
 }
 
 void WebNotificationTray::ShowQuietModeMenu() {
+  base::AutoReset<bool> reset(&should_block_shelf_auto_hide_, true);
   scoped_ptr<ui::MenuModel> menu_model(
       message_center_tray_->CreateQuietModeMenu());
   quiet_mode_menu_runner_.reset(new views::MenuRunner(menu_model.get()));
@@ -346,8 +351,7 @@ void WebNotificationTray::UpdateAfterLoginStatusChange(
 }
 
 bool WebNotificationTray::ShouldBlockLauncherAutoHide() const {
-  return IsMessageCenterBubbleVisible() ||
-      (quiet_mode_menu_runner_.get() && quiet_mode_menu_runner_->IsRunning());
+  return should_block_shelf_auto_hide_;
 }
 
 bool WebNotificationTray::IsMessageCenterBubbleVisible() const {

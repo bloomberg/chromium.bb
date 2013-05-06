@@ -152,6 +152,12 @@ class ASH_EXPORT WebNotificationTray
 
   bool should_update_tray_content_;
 
+  // True when the shelf auto hide behavior has to be blocked. Previously
+  // this was done by checking |message_center_bubble_| but actually
+  // the check can be called when creating this object, so it would cause
+  // flickers of the shelf from hidden to shown. See: crbug.com/181213
+  bool should_block_shelf_auto_hide_;
+
   DISALLOW_COPY_AND_ASSIGN(WebNotificationTray);
 };
 
