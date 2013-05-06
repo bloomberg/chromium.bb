@@ -40,168 +40,168 @@
 
 namespace WebCore {
 
-    class Page;
+class Page;
 
-    enum EditableLinkBehavior {
-        EditableLinkDefaultBehavior,
-        EditableLinkAlwaysLive,
-        EditableLinkOnlyLiveWithShiftKey,
-        EditableLinkLiveWhenNotFocused,
-        EditableLinkNeverLive
-    };
+enum EditableLinkBehavior {
+    EditableLinkDefaultBehavior,
+    EditableLinkAlwaysLive,
+    EditableLinkOnlyLiveWithShiftKey,
+    EditableLinkLiveWhenNotFocused,
+    EditableLinkNeverLive
+};
 
-    enum TextDirectionSubmenuInclusionBehavior {
-        TextDirectionSubmenuNeverIncluded,
-        TextDirectionSubmenuAutomaticallyIncluded,
-        TextDirectionSubmenuAlwaysIncluded
-    };
+enum TextDirectionSubmenuInclusionBehavior {
+    TextDirectionSubmenuNeverIncluded,
+    TextDirectionSubmenuAutomaticallyIncluded,
+    TextDirectionSubmenuAlwaysIncluded
+};
 
-    // UScriptCode uses -1 and 0 for UScriptInvalidCode and UScriptCommon.
-    // We need to use -2 and -3 for empty value and deleted value.
-    struct UScriptCodeHashTraits : WTF::GenericHashTraits<int> {
-        static const bool emptyValueIsZero = false;
-        static int emptyValue() { return -2; }
-        static void constructDeletedValue(int& slot) { slot = -3; }
-        static bool isDeletedValue(int value) { return value == -3; }
-    };
+// UScriptCode uses -1 and 0 for UScriptInvalidCode and UScriptCommon.
+// We need to use -2 and -3 for empty value and deleted value.
+struct UScriptCodeHashTraits : WTF::GenericHashTraits<int> {
+    static const bool emptyValueIsZero = false;
+    static int emptyValue() { return -2; }
+    static void constructDeletedValue(int& slot) { slot = -3; }
+    static bool isDeletedValue(int value) { return value == -3; }
+};
 
-    typedef HashMap<int, AtomicString, DefaultHash<int>::Hash, UScriptCodeHashTraits> ScriptFontFamilyMap;
+typedef HashMap<int, AtomicString, DefaultHash<int>::Hash, UScriptCodeHashTraits> ScriptFontFamilyMap;
 
-    class Settings {
-        WTF_MAKE_NONCOPYABLE(Settings); WTF_MAKE_FAST_ALLOCATED;
-    public:
-        static PassOwnPtr<Settings> create(Page*);
+class Settings {
+    WTF_MAKE_NONCOPYABLE(Settings); WTF_MAKE_FAST_ALLOCATED;
+public:
+    static PassOwnPtr<Settings> create(Page*);
 
-        void setStandardFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-        const AtomicString& standardFontFamily(UScriptCode = USCRIPT_COMMON) const;
+    void setStandardFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    const AtomicString& standardFontFamily(UScriptCode = USCRIPT_COMMON) const;
 
-        void setFixedFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-        const AtomicString& fixedFontFamily(UScriptCode = USCRIPT_COMMON) const;
+    void setFixedFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    const AtomicString& fixedFontFamily(UScriptCode = USCRIPT_COMMON) const;
 
-        void setSerifFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-        const AtomicString& serifFontFamily(UScriptCode = USCRIPT_COMMON) const;
+    void setSerifFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    const AtomicString& serifFontFamily(UScriptCode = USCRIPT_COMMON) const;
 
-        void setSansSerifFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-        const AtomicString& sansSerifFontFamily(UScriptCode = USCRIPT_COMMON) const;
+    void setSansSerifFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    const AtomicString& sansSerifFontFamily(UScriptCode = USCRIPT_COMMON) const;
 
-        void setCursiveFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-        const AtomicString& cursiveFontFamily(UScriptCode = USCRIPT_COMMON) const;
+    void setCursiveFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    const AtomicString& cursiveFontFamily(UScriptCode = USCRIPT_COMMON) const;
 
-        void setFantasyFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-        const AtomicString& fantasyFontFamily(UScriptCode = USCRIPT_COMMON) const;
+    void setFantasyFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    const AtomicString& fantasyFontFamily(UScriptCode = USCRIPT_COMMON) const;
 
-        void setPictographFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-        const AtomicString& pictographFontFamily(UScriptCode = USCRIPT_COMMON) const;
+    void setPictographFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    const AtomicString& pictographFontFamily(UScriptCode = USCRIPT_COMMON) const;
 
-        void setTextAutosizingEnabled(bool);
-        bool textAutosizingEnabled() const { return m_textAutosizingEnabled; }
+    void setTextAutosizingEnabled(bool);
+    bool textAutosizingEnabled() const { return m_textAutosizingEnabled; }
 
-        void setTextAutosizingFontScaleFactor(float);
-        float textAutosizingFontScaleFactor() const { return m_textAutosizingFontScaleFactor; }
+    void setTextAutosizingFontScaleFactor(float);
+    float textAutosizingFontScaleFactor() const { return m_textAutosizingFontScaleFactor; }
 
-        // Only set by Layout Tests, and only used if textAutosizingEnabled() returns true.
-        void setTextAutosizingWindowSizeOverride(const IntSize&);
-        const IntSize& textAutosizingWindowSizeOverride() const { return m_textAutosizingWindowSizeOverride; }
+    // Only set by Layout Tests, and only used if textAutosizingEnabled() returns true.
+    void setTextAutosizingWindowSizeOverride(const IntSize&);
+    const IntSize& textAutosizingWindowSizeOverride() const { return m_textAutosizingWindowSizeOverride; }
 
-        // Only set by Layout Tests.
-        void setResolutionOverride(const IntSize&);
-        const IntSize& resolutionOverride() const { return m_resolutionDensityPerInchOverride; }
+    // Only set by Layout Tests.
+    void setResolutionOverride(const IntSize&);
+    const IntSize& resolutionOverride() const { return m_resolutionDensityPerInchOverride; }
 
-        // Only set by Layout Tests.
-        void setMediaTypeOverride(const String&);
-        const String& mediaTypeOverride() const { return m_mediaTypeOverride; }
+    // Only set by Layout Tests.
+    void setMediaTypeOverride(const String&);
+    const String& mediaTypeOverride() const { return m_mediaTypeOverride; }
 
-        // Unlike areImagesEnabled, this only suppresses the network load of
-        // the image URL.  A cached image will still be rendered if requested.
-        void setLoadsImagesAutomatically(bool);
-        bool loadsImagesAutomatically() const { return m_loadsImagesAutomatically; }
+    // Unlike areImagesEnabled, this only suppresses the network load of
+    // the image URL.  A cached image will still be rendered if requested.
+    void setLoadsImagesAutomatically(bool);
+    bool loadsImagesAutomatically() const { return m_loadsImagesAutomatically; }
 
-        // Clients that execute script should call ScriptController::canExecuteScripts()
-        // instead of this function. ScriptController::canExecuteScripts() checks the
-        // HTML sandbox, plug-in sandboxing, and other important details.
-        bool isScriptEnabled() const { return m_isScriptEnabled; }
-        void setScriptEnabled(bool);
+    // Clients that execute script should call ScriptController::canExecuteScripts()
+    // instead of this function. ScriptController::canExecuteScripts() checks the
+    // HTML sandbox, plug-in sandboxing, and other important details.
+    bool isScriptEnabled() const { return m_isScriptEnabled; }
+    void setScriptEnabled(bool);
 
-        SETTINGS_GETTERS_AND_SETTERS
+    SETTINGS_GETTERS_AND_SETTERS
 
-        void setJavaEnabled(bool);
-        bool isJavaEnabled() const { return m_isJavaEnabled; }
+    void setJavaEnabled(bool);
+    bool isJavaEnabled() const { return m_isJavaEnabled; }
 
-        void setImagesEnabled(bool);
-        bool areImagesEnabled() const { return m_areImagesEnabled; }
+    void setImagesEnabled(bool);
+    bool areImagesEnabled() const { return m_areImagesEnabled; }
 
-        void setPluginsEnabled(bool);
-        bool arePluginsEnabled() const { return m_arePluginsEnabled; }
+    void setPluginsEnabled(bool);
+    bool arePluginsEnabled() const { return m_arePluginsEnabled; }
 
-        void setDNSPrefetchingEnabled(bool);
-        bool dnsPrefetchingEnabled() const { return m_dnsPrefetchingEnabled; }
+    void setDNSPrefetchingEnabled(bool);
+    bool dnsPrefetchingEnabled() const { return m_dnsPrefetchingEnabled; }
 
-        void setUserStyleSheetLocation(const KURL&);
-        const KURL& userStyleSheetLocation() const { return m_userStyleSheetLocation; }
+    void setUserStyleSheetLocation(const KURL&);
+    const KURL& userStyleSheetLocation() const { return m_userStyleSheetLocation; }
 
-        void setFontRenderingMode(FontRenderingMode mode);
-        FontRenderingMode fontRenderingMode() const;
+    void setFontRenderingMode(FontRenderingMode mode);
+    FontRenderingMode fontRenderingMode() const;
 
-        void setCSSCustomFilterEnabled(bool enabled) { m_isCSSCustomFilterEnabled = enabled; }
-        bool isCSSCustomFilterEnabled() const { return m_isCSSCustomFilterEnabled; }
+    void setCSSCustomFilterEnabled(bool enabled) { m_isCSSCustomFilterEnabled = enabled; }
+    bool isCSSCustomFilterEnabled() const { return m_isCSSCustomFilterEnabled; }
 
-        void setCSSStickyPositionEnabled(bool enabled) { m_cssStickyPositionEnabled = enabled; }
-        bool cssStickyPositionEnabled() const { return m_cssStickyPositionEnabled; }
+    void setCSSStickyPositionEnabled(bool enabled) { m_cssStickyPositionEnabled = enabled; }
+    bool cssStickyPositionEnabled() const { return m_cssStickyPositionEnabled; }
 
-        void setCSSVariablesEnabled(bool enabled) { m_cssVariablesEnabled = enabled; }
-        bool cssVariablesEnabled() const { return m_cssVariablesEnabled; }
+    void setCSSVariablesEnabled(bool enabled) { m_cssVariablesEnabled = enabled; }
+    bool cssVariablesEnabled() const { return m_cssVariablesEnabled; }
 
-        static void setMockScrollbarsEnabled(bool flag);
-        static bool mockScrollbarsEnabled();
+    static void setMockScrollbarsEnabled(bool flag);
+    static bool mockScrollbarsEnabled();
 
-        static void setUsesOverlayScrollbars(bool flag);
-        static bool usesOverlayScrollbars();
+    static void setUsesOverlayScrollbars(bool flag);
+    static bool usesOverlayScrollbars();
 
-        void setTouchEventEmulationEnabled(bool enabled) { m_touchEventEmulationEnabled = enabled; }
-        bool isTouchEventEmulationEnabled() const { return m_touchEventEmulationEnabled; }
+    void setTouchEventEmulationEnabled(bool enabled) { m_touchEventEmulationEnabled = enabled; }
+    bool isTouchEventEmulationEnabled() const { return m_touchEventEmulationEnabled; }
 
-    private:
-        explicit Settings(Page*);
+private:
+    explicit Settings(Page*);
 
-        void initializeDefaultFontFamilies();
+    void initializeDefaultFontFamilies();
 
-        Page* m_page;
+    Page* m_page;
 
-        String m_mediaTypeOverride;
-        KURL m_userStyleSheetLocation;
-        ScriptFontFamilyMap m_standardFontFamilyMap;
-        ScriptFontFamilyMap m_serifFontFamilyMap;
-        ScriptFontFamilyMap m_fixedFontFamilyMap;
-        ScriptFontFamilyMap m_sansSerifFontFamilyMap;
-        ScriptFontFamilyMap m_cursiveFontFamilyMap;
-        ScriptFontFamilyMap m_fantasyFontFamilyMap;
-        ScriptFontFamilyMap m_pictographFontFamilyMap;
-        float m_textAutosizingFontScaleFactor;
-        IntSize m_textAutosizingWindowSizeOverride;
-        bool m_textAutosizingEnabled : 1;
-        IntSize m_resolutionDensityPerInchOverride;
+    String m_mediaTypeOverride;
+    KURL m_userStyleSheetLocation;
+    ScriptFontFamilyMap m_standardFontFamilyMap;
+    ScriptFontFamilyMap m_serifFontFamilyMap;
+    ScriptFontFamilyMap m_fixedFontFamilyMap;
+    ScriptFontFamilyMap m_sansSerifFontFamilyMap;
+    ScriptFontFamilyMap m_cursiveFontFamilyMap;
+    ScriptFontFamilyMap m_fantasyFontFamilyMap;
+    ScriptFontFamilyMap m_pictographFontFamilyMap;
+    float m_textAutosizingFontScaleFactor;
+    IntSize m_textAutosizingWindowSizeOverride;
+    bool m_textAutosizingEnabled : 1;
+    IntSize m_resolutionDensityPerInchOverride;
 
-        SETTINGS_MEMBER_VARIABLES
+    SETTINGS_MEMBER_VARIABLES
 
-        bool m_isJavaEnabled : 1;
-        bool m_loadsImagesAutomatically : 1;
-        bool m_areImagesEnabled : 1;
-        bool m_arePluginsEnabled : 1;
-        bool m_isScriptEnabled : 1;
-        unsigned m_fontRenderingMode : 1;
-        bool m_isCSSCustomFilterEnabled : 1;
-        bool m_cssStickyPositionEnabled : 1;
-        bool m_cssVariablesEnabled : 1;
-        bool m_dnsPrefetchingEnabled : 1;
+    bool m_isJavaEnabled : 1;
+    bool m_loadsImagesAutomatically : 1;
+    bool m_areImagesEnabled : 1;
+    bool m_arePluginsEnabled : 1;
+    bool m_isScriptEnabled : 1;
+    unsigned m_fontRenderingMode : 1;
+    bool m_isCSSCustomFilterEnabled : 1;
+    bool m_cssStickyPositionEnabled : 1;
+    bool m_cssVariablesEnabled : 1;
+    bool m_dnsPrefetchingEnabled : 1;
 
-        bool m_touchEventEmulationEnabled : 1;
+    bool m_touchEventEmulationEnabled : 1;
 
-        Timer<Settings> m_setImageLoadingSettingsTimer;
-        void imageLoadingSettingsTimerFired(Timer<Settings>*);
+    Timer<Settings> m_setImageLoadingSettingsTimer;
+    void imageLoadingSettingsTimerFired(Timer<Settings>*);
 
-        static bool gMockScrollbarsEnabled;
-        static bool gUsesOverlayScrollbars;
-    };
+    static bool gMockScrollbarsEnabled;
+    static bool gUsesOverlayScrollbars;
+};
 
 } // namespace WebCore
 
