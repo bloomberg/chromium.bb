@@ -449,7 +449,10 @@ cr.define('options.internet', function() {
      * @param {Event} e Click event.
      */
     disableManualProxy_: function(e) {
-      $('advanced-config').hidden = true;
+      $('ignored-host-list').disabled = true;
+      $('new-host').disabled = true;
+      $('remove-host').disabled = true;
+      $('add-host').disabled = true;
       $('proxy-all-protocols').disabled = true;
       $('proxy-host-name').disabled = true;
       $('proxy-host-port').disabled = true;
@@ -465,6 +468,8 @@ cr.define('options.internet', function() {
                                         !$('auto-proxy').checked;
       $('proxy-pac-url').disabled = $('proxy-use-pac-url').disabled ||
                                     !$('proxy-use-pac-url').checked;
+      $('auto-proxy-parms').hidden = !$('auto-proxy').checked;
+      $('manual-proxy-parms').hidden = !$('manual-proxy').checked;
     },
 
     /**
@@ -474,9 +479,9 @@ cr.define('options.internet', function() {
      * @param {Event} e Click event.
      */
     enableManualProxy_: function(e) {
-      $('advanced-config').hidden = false;
       $('ignored-host-list').redraw();
       var allDisabled = $('manual-proxy').disabled;
+      $('ignored-host-list').disabled = allDisabled;
       $('new-host').disabled = allDisabled;
       $('remove-host').disabled = allDisabled;
       $('add-host').disabled = allDisabled;
@@ -493,6 +498,8 @@ cr.define('options.internet', function() {
       $('socks-port').disabled = allDisabled;
       $('proxy-use-pac-url').disabled = true;
       $('proxy-pac-url').disabled = true;
+      $('auto-proxy-parms').hidden = !$('auto-proxy').checked;
+      $('manual-proxy-parms').hidden = !$('manual-proxy').checked;
     },
   };
 
@@ -561,6 +568,13 @@ cr.define('options.internet', function() {
     updateHidden('#details-internet-page .action-area', true);
     detailsPage.updateControls();
     detailsPage.visible = true;
+  };
+
+  /**
+   * Initializes even handling for keyboard driven flow.
+   */
+  DetailsInternetPage.initializeKeyboardFlow = function() {
+    keyboard.initializeKeyboardFlow();
   };
 
   DetailsInternetPage.updateProxySettings = function(type) {

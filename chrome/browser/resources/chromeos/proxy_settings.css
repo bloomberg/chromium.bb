@@ -27,3 +27,21 @@ body {
 #internet-details-content-area > .subpages-tab-contents {
   height: 100% !important;
 }
+
+#advanced-config {
+  padding-top: 10px;
+}
+
+html[highlight=strong] input[type='button']:focus,
+html[highlight=strong] input[type='checkbox']:focus,
+html[highlight=strong] input[type='radio']:focus,
+html[highlight=strong] input[type='text']:focus,
+html[highlight=strong] input[type='url']:focus,
+html[highlight=strong] button:focus,
+html[highlight=strong] list:focus {
+  box-shadow: 0 0 23px rgb(77, 144, 254) !important;
+}
+
+html[highlight=strong] #network-proxy-tab {
+  padding: 10px;
+}

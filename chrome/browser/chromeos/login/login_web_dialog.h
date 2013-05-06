@@ -88,7 +88,6 @@ class LoginWebDialog : public ui::WebDialogDelegate,
   GURL url_;
   Style style_;
   content::NotificationRegistrar notification_registrar_;
-  BubbleFrameView* bubble_frame_view_;
   bool is_open_;
 
   // Dialog display size.

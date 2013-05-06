@@ -76,57 +76,6 @@ cr.define('cr.ui.Oobe', function() {
     },
 
     /**
-     * Swallows left and right keypress and keyup events.
-     */
-    onKeyIgnore: function(event) {
-      if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
-        return;
-
-      if (event.keyIdentifier == 'Left' || event.keyIdentifier == 'Right') {
-        event.stopPropagation();
-        event.preventDefault();
-      }
-    },
-
-    /**
-     * Converts right/left into tab/shift-tab key events.
-     */
-    onKeyDown: function(event) {
-      if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
-        return;
-
-      if (event.keyIdentifier == 'Left') {
-        Oobe.getInstance().raiseTabKeyEvent(
-            document.activeElement, 'keydown', true);
-        Oobe.getInstance().raiseTabKeyEvent(
-            document.activeElement, 'keypress', true);
-        Oobe.getInstance().raiseTabKeyEvent(
-            document.activeElement, 'keyup', true);
-        event.stopPropagation();
-        event.preventDefault();
-      } else if (event.keyIdentifier == 'Right') {
-        Oobe.getInstance().raiseTabKeyEvent(
-            document.activeElement, 'keydown', false);
-        Oobe.getInstance().raiseTabKeyEvent(
-            document.activeElement, 'keypress', false);
-        Oobe.getInstance().raiseTabKeyEvent(
-            document.activeElement, 'keyup', false);
-        event.stopPropagation();
-        event.preventDefault();
-      }
-    },
-
-    /**
-     * Initializes even handling for keyboard driven flow.
-     */
-    initializeKeyboardFlow: function() {
-      console.log('initializeKeyboardFlow');
-      document.addEventListener('keydown', cr.ui.Oobe.onKeyDown, true);
-      document.addEventListener('keypress', cr.ui.Oobe.onKeyIgnore, true);
-      document.addEventListener('keyup', cr.ui.Oobe.onKeyIgnore, true);
-    },
-
-    /**
      * Initializes OOBE accessibility menu.
      */
     initializeA11yMenu: function() {

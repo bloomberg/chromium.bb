@@ -10,6 +10,8 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/common/chrome_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -43,7 +45,6 @@ void ProxyHandler::GetLocalizedValues(
     { "socksHost", IDS_PROXY_SOCKS_HOST },
     { "proxyAutomatic", IDS_PROXY_AUTOMATIC },
     { "proxyUseConfigUrl", IDS_PROXY_USE_AUTOCONFIG_URL },
-    { "advancedProxyConfig", IDS_PROXY_ADVANCED_CONFIG },
     { "addHost", IDS_PROXY_ADD_HOST },
     { "removeHost", IDS_PROXY_REMOVE_HOST },
     { "proxyPort", IDS_PROXY_PORT },
@@ -61,6 +62,18 @@ void ProxyHandler::GetLocalizedValues(
       l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_ENABLE_SHARED_HINT,
           l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES)));
+}
+
+void ProxyHandler::InitializePage() {
+  ::options::OptionsPageUIHandler::InitializePage();
+
+  bool keyboard_driven_oobe = false;
+  system::StatisticsProvider::GetInstance()->GetMachineFlag(
+      chrome::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+  if (keyboard_driven_oobe) {
+    web_ui()->CallJavascriptFunction(
+        "DetailsInternetPage.initializeKeyboardFlow");
+  }
 }
 
 }  // namespace options

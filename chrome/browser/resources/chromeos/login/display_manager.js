@@ -125,7 +125,7 @@ cr.define('cr.ui.login', function() {
     set forceKeyboardFlow(value) {
       this.forceKeyboardFlow_ = value;
       if (value)
-        cr.ui.Oobe.initializeKeyboardFlow();
+        keyboard.initializeKeyboardFlow();
     },
 
     /**
@@ -136,28 +136,6 @@ cr.define('cr.ui.login', function() {
     showVersion: function(show) {
       $('version-labels').hidden = !show;
       this.allowToggleVersion_ = !show;
-    },
-
-    /**
-     * Raises tab/shift-tab keyboard events.
-     * @param {HTMLElement} element Element that should receive the event.
-     * @param {string} eventType Keyboard event type.
-     * @param {boolean} shift True if shift should be on.
-     */
-    raiseTabKeyEvent: function(element, eventType, shift) {
-      var event = document.createEvent('KeyboardEvent');
-      event.initKeyboardEvent(
-          eventType,
-          true,  // canBubble
-          true,  // cancelable
-          window,
-          'U+0009',
-          0,  // keyLocation
-          false,  // ctrl
-          false,  // alt
-          shift,  // shift
-          false);  // meta
-      element.dispatchEvent(event);
     },
 
     /**
@@ -199,15 +177,10 @@ cr.define('cr.ui.login', function() {
         return;
 
       // Handle special accelerators for keyboard enhanced navigation flow.
-      if (name == ACCELERATOR_LEFT) {
-        this.raiseTabKeyEvent(document.activeElement, 'keydown', true);
-        this.raiseTabKeyEvent(document.activeElement, 'keypress', true);
-        this.raiseTabKeyEvent(document.activeElement, 'keyup', true);
-      } else if (name == ACCELERATOR_RIGHT) {
-        this.raiseTabKeyEvent(document.activeElement, 'keydown', false);
-        this.raiseTabKeyEvent(document.activeElement, 'keypress', false);
-        this.raiseTabKeyEvent(document.activeElement, 'keyup', false);
-     }
+      if (name == ACCELERATOR_LEFT)
+        keyboard.raiseKeyFocusPrevious(document.activeElement);
+      else if (name == ACCELERATOR_RIGHT)
+        keyboard.raiseKeyFocusNext(document.activeElement);
     },
 
     /**

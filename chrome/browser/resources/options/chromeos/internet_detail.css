@@ -61,9 +61,15 @@
    entry. */
 #ignored-host-list {
   -webkit-margin-start: 0;
-  border: solid 1px #999;
+  border: 1px solid #bfbfbf;
   min-height: 64px;
   width: 400px;
+}
+
+#ignored-host-list[disabled] {
+  background-color: rgb(235, 235, 228);
+  color: #999;
+  opacity: 1;
 }
 
 #new-host {
@@ -96,4 +102,8 @@
 .dns-display:not([selected]) {
   -webkit-transition: opacity 150ms ease-in-out;
   display: none;
+}
+
+.proxy-subsection {
+  padding-left: 24px;
 }

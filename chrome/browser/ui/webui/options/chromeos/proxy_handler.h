@@ -20,6 +20,7 @@ class ProxyHandler : public ::options::OptionsPageUIHandler {
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void InitializePage() OVERRIDE;
 
  private:
 

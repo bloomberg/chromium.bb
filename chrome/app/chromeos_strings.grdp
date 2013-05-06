@@ -2369,9 +2369,6 @@ Battery full
   <message name="IDS_PROXY_USE_AUTOCONFIG_URL" desc="Label for the checkbox that controls whether to use an autoconfiguration URL.">
     Use an autoconfiguration URL
   </message>
-  <message name="IDS_PROXY_ADVANCED_CONFIG" desc="Label for the Advanced Proxy.">
-    Advanced Configuration
-  </message>
   <message name="IDS_PROXY_ADD_HOST" desc="Label for the Add host button.">
     Add
   </message>

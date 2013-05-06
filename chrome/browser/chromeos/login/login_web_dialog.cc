@@ -45,7 +45,6 @@ LoginWebDialog::LoginWebDialog(Delegate* delegate,
       title_(title),
       url_(url),
       style_(style),
-      bubble_frame_view_(NULL),
       is_open_(false) {
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
   width_ = static_cast<int>(kDefaultWidthRatio * screen_bounds.width());

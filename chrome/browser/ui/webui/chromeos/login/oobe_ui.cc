@@ -60,6 +60,7 @@ const char kEnterpriseEnrollmentGaiaLoginPath[] = "gaialogin";
 const char kStringsJSPath[] = "strings.js";
 const char kLoginJSPath[] = "login.js";
 const char kOobeJSPath[] = "oobe.js";
+const char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
 const char kDemoUserLoginJSPath[] = "demo_user_login.js";
 
 // Paths for deferred resource loading.
@@ -108,6 +109,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
                           IDR_LOGIN_JS);
   source->AddResourcePath(kEnterpriseEnrollmentGaiaLoginPath,
                           IDR_GAIA_LOGIN_HTML);
+  source->AddResourcePath(kKeyboardUtilsJSPath,
+                          IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyFrameSrc(
       "frame-src chrome://terms/ "
       "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/;");
