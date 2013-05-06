@@ -18,6 +18,8 @@
  */
 
 [
+    Constructor,
+    CallWith=ScriptExecutionContext,
     SkipVTableValidation
 ] interface DocumentFragment : Node {
     // NodeSelector - Selector API
