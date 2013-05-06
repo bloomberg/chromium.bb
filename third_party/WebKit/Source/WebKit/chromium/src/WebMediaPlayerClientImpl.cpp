@@ -79,12 +79,7 @@ void WebMediaPlayerClientImpl::setIsEnabled(bool isEnabled)
 void WebMediaPlayerClientImpl::registerSelf(MediaEngineRegistrar registrar)
 {
     if (m_isEnabled) {
-        registrar(WebMediaPlayerClientImpl::create,
-                  WebMediaPlayerClientImpl::getSupportedTypes,
-                  WebMediaPlayerClientImpl::supportsType,
-                  0,
-                  0,
-                  0);
+        registrar(WebMediaPlayerClientImpl::create, WebMediaPlayerClientImpl::supportsType);
     }
 }
 
@@ -728,12 +723,6 @@ PassOwnPtr<MediaPlayerPrivateInterface> WebMediaPlayerClientImpl::create(MediaPl
     OwnPtr<WebMediaPlayerClientImpl> client = adoptPtr(new WebMediaPlayerClientImpl());
     client->m_mediaPlayer = player;
     return client.release();
-}
-
-void WebMediaPlayerClientImpl::getSupportedTypes(HashSet<String>& supportedTypes)
-{
-    // FIXME: integrate this list with WebMediaPlayerClientImpl::supportsType.
-    notImplemented();
 }
 
 #if ENABLE(ENCRYPTED_MEDIA)

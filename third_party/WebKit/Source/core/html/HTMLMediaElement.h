@@ -65,7 +65,7 @@ typedef Vector<CueInterval> CueList;
 // But it can't be until the Chromium WebMediaPlayerClientImpl class is fixed so it
 // no longer depends on typecasting a MediaPlayerClient to an HTMLMediaElement.
 
-class HTMLMediaElement : public HTMLElement, public MediaPlayerClient, public MediaPlayerSupportsTypeClient, public ActiveDOMObject, public MediaControllerInterface
+class HTMLMediaElement : public HTMLElement, public MediaPlayerClient, public ActiveDOMObject, public MediaControllerInterface
     , private TextTrackClient
 #if USE(PLATFORM_TEXT_TRACK_MENU)
     , public PlatformTextTrackMenuClient
@@ -285,12 +285,6 @@ public:
     void sourceWasRemoved(HTMLSourceElement*);
     void sourceWasAdded(HTMLSourceElement*);
 
-    // Media cache management.
-    static void getSitesInMediaCache(Vector<String>&);
-    static void clearMediaCache();
-    static void clearMediaCacheForSite(const String&);
-    static void resetMediaEngines();
-
     bool isPlaying() const { return m_playing; }
 
     virtual bool hasPendingActivity() const;
@@ -418,9 +412,6 @@ private:
     virtual String mediaPlayerReferrer() const OVERRIDE;
     virtual String mediaPlayerUserAgent() const OVERRIDE;
     virtual CORSMode mediaPlayerCORSMode() const OVERRIDE;
-
-    virtual bool mediaPlayerNeedsSiteSpecificHacks() const OVERRIDE;
-    virtual String mediaPlayerDocumentHost() const OVERRIDE;
 
     virtual void mediaPlayerEnterFullscreen() OVERRIDE;
     virtual void mediaPlayerExitFullscreen() OVERRIDE;

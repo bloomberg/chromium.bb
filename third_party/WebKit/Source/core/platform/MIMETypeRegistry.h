@@ -64,9 +64,6 @@ public:
     // document in a frame.  Includes supported JavaScript MIME types.
     static bool isSupportedNonImageMIMEType(const String& mimeType);
 
-    // Check to see if a mime type is suitable for being loaded using <video> and <audio>
-    static bool isSupportedMediaMIMEType(const String& mimeType); 
-
     // Check to see if the mime type and codecs are supported by the MediaSource implementation.
     static bool isSupportedMediaSourceMIMEType(const String& mimeType, const String& codecs);
 

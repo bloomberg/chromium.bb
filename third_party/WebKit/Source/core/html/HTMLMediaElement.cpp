@@ -575,7 +575,7 @@ HTMLMediaElement::NetworkState HTMLMediaElement::networkState() const
 
 String HTMLMediaElement::canPlayType(const String& mimeType, const String& keySystem, const KURL& url) const
 {
-    MediaPlayer::SupportsType support = MediaPlayer::supportsType(ContentType(mimeType), keySystem, url, this);
+    MediaPlayer::SupportsType support = MediaPlayer::supportsType(ContentType(mimeType), keySystem, url);
     String canPlay;
 
     // 4.8.10.3
@@ -3058,7 +3058,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
             if (shouldLog)
                 LOG(Media, "HTMLMediaElement::selectNextSourceChild - 'type' is '%s' - key system is '%s'", type.utf8().data(), system.utf8().data());
 #endif
-            if (!MediaPlayer::supportsType(ContentType(type), system, mediaURL, this))
+            if (!MediaPlayer::supportsType(ContentType(type), system, mediaURL))
                 goto check_again;
         }
 
@@ -3877,26 +3877,6 @@ void HTMLMediaElement::setShouldDelayLoadEvent(bool shouldDelay)
 }
 
 
-void HTMLMediaElement::getSitesInMediaCache(Vector<String>& sites)
-{
-    MediaPlayer::getSitesInMediaCache(sites);
-}
-
-void HTMLMediaElement::clearMediaCache()
-{
-    MediaPlayer::clearMediaCache();
-}
-
-void HTMLMediaElement::clearMediaCacheForSite(const String& site)
-{
-    MediaPlayer::clearMediaCacheForSite(site);
-}
-
-void HTMLMediaElement::resetMediaEngines()
-{
-    MediaPlayer::resetMediaEngines();
-}
-
 MediaControls* HTMLMediaElement::mediaControls() const
 {
     return toMediaControls(userAgentShadowRoot()->firstChild());
@@ -4236,17 +4216,6 @@ MediaPlayerClient::CORSMode HTMLMediaElement::mediaPlayerCORSMode() const
     if (equalIgnoringCase(fastGetAttribute(HTMLNames::crossoriginAttr), "use-credentials"))
         return UseCredentials;
     return Anonymous;
-}
-
-bool HTMLMediaElement::mediaPlayerNeedsSiteSpecificHacks() const
-{
-    Settings* settings = document()->settings();
-    return settings && settings->needsSiteSpecificQuirks();
-}
-
-String HTMLMediaElement::mediaPlayerDocumentHost() const
-{
-    return document()->url().host();
 }
 
 void HTMLMediaElement::mediaPlayerEnterFullscreen()

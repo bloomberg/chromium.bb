@@ -148,12 +148,6 @@ public:
     virtual unsigned audioDecodedByteCount() const { return 0; }
     virtual unsigned videoDecodedByteCount() const { return 0; }
 
-    void getSitesInMediaCache(Vector<String>&) { }
-    void clearMediaCache() { }
-    void clearMediaCacheForSite(const String&) { }
-
-    virtual String engineDescription() const { return emptyString(); }
-
 #if ENABLE(WEB_AUDIO)
     virtual AudioSourceProvider* audioSourceProvider() { return 0; }
 #endif

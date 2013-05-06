@@ -27,14 +27,12 @@
 #define MediaPlayer_h
 
 #include "core/platform/KURL.h"
-#include "core/platform/Timer.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/PlatformLayer.h"
 #include <wtf/Forward.h>
-#include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -205,14 +203,6 @@ public:
     virtual void paintTextTrackRepresentation(GraphicsContext*, const IntRect&) { }
 };
 
-class MediaPlayerSupportsTypeClient {
-public:
-    virtual ~MediaPlayerSupportsTypeClient() { }
-
-    virtual bool mediaPlayerNeedsSiteSpecificHacks() const { return false; }
-    virtual String mediaPlayerDocumentHost() const { return String(); }
-};
-
 class MediaPlayer {
     WTF_MAKE_NONCOPYABLE(MediaPlayer); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -225,12 +215,8 @@ public:
 
     // Media engine support.
     enum SupportsType { IsNotSupported, IsSupported, MayBeSupported };
-    static MediaPlayer::SupportsType supportsType(const ContentType&, const String& keySystem, const KURL&, const MediaPlayerSupportsTypeClient*);
-    static void getSupportedTypes(HashSet<String>&);
+    static MediaPlayer::SupportsType supportsType(const ContentType&, const String& keySystem, const KURL&);
     static bool isAvailable();
-    static void getSitesInMediaCache(Vector<String>&);
-    static void clearMediaCache();
-    static void clearMediaCacheForSite(const String&);
 
     bool supportsFullscreen() const;
     bool supportsSave() const;
@@ -404,8 +390,6 @@ public:
     String referrer() const;
     String userAgent() const;
 
-    String engineDescription() const;
-
     CachedResourceLoader* cachedResourceLoader();
 
     void addTextTrack(PassRefPtr<InbandTextTrackPrivate>);
@@ -414,8 +398,6 @@ public:
     bool requiresTextTrackRepresentation() const;
     void setTextTrackRepresentation(TextTrackRepresentation*);
 
-    static void resetMediaEngines();
-
 #if USE(PLATFORM_TEXT_TRACK_MENU)
     bool implementsTextTrackControls() const;
     PassRefPtr<PlatformTextTrackMenuInterface> textTrackMenu();
@@ -423,13 +405,9 @@ public:
 
 private:
     MediaPlayer(MediaPlayerClient*);
-    void loadWithNextMediaEngine(MediaPlayerFactory*);
-    void reloadTimerFired(Timer<MediaPlayer>*);
-
-    static void initializeMediaEngines();
+    void loadWithMediaEngine();
 
     MediaPlayerClient* m_mediaPlayerClient;
-    Timer<MediaPlayer> m_reloadTimer;
     OwnPtr<MediaPlayerPrivateInterface> m_private;
     MediaPlayerFactory* m_currentMediaEngine;
     KURL m_url;
@@ -451,18 +429,13 @@ private:
 };
 
 typedef PassOwnPtr<MediaPlayerPrivateInterface> (*CreateMediaEnginePlayer)(MediaPlayer*);
-typedef void (*MediaEngineSupportedTypes)(HashSet<String>& types);
 #if ENABLE(ENCRYPTED_MEDIA) || ENABLE(ENCRYPTED_MEDIA_V2)
 typedef MediaPlayer::SupportsType (*MediaEngineSupportsType)(const String& type, const String& codecs, const String& keySystem, const KURL& url);
 #else
 typedef MediaPlayer::SupportsType (*MediaEngineSupportsType)(const String& type, const String& codecs, const KURL& url);
 #endif
-typedef void (*MediaEngineGetSitesInMediaCache)(Vector<String>&);
-typedef void (*MediaEngineClearMediaCache)();
-typedef void (*MediaEngineClearMediaCacheForSite)(const String&);
 
-typedef void (*MediaEngineRegistrar)(CreateMediaEnginePlayer, MediaEngineSupportedTypes, MediaEngineSupportsType,
-    MediaEngineGetSitesInMediaCache, MediaEngineClearMediaCache, MediaEngineClearMediaCacheForSite);
+typedef void (*MediaEngineRegistrar)(CreateMediaEnginePlayer, MediaEngineSupportsType);
 
 }
 

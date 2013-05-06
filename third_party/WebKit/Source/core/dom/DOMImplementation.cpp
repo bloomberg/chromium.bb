@@ -67,22 +67,6 @@ static void addString(FeatureSet& set, const char* string)
     set.add(string);
 }
 
-class DOMImplementationSupportsTypeClient : public MediaPlayerSupportsTypeClient {
-public:
-    DOMImplementationSupportsTypeClient(bool needsHacks, const String& host)
-        : m_needsHacks(needsHacks)
-        , m_host(host)
-    {
-    }
-
-private:
-    virtual bool mediaPlayerNeedsSiteSpecificHacks() const OVERRIDE { return m_needsHacks; }
-    virtual String mediaPlayerDocumentHost() const OVERRIDE { return m_host; }
-
-    bool m_needsHacks;
-    String m_host;
-};
-
 #if ENABLE(SVG)
 
 static bool isSVG10Feature(const String &feature, const String &version)
@@ -433,11 +417,10 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& type, Frame
     if (Image::supportsType(type))
         return ImageDocument::create(frame, url);
 
-     // Check to see if the type can be played by our MediaPlayer, if so create a MediaDocument
+    // Check to see if the type can be played by our MediaPlayer, if so create a MediaDocument
     // Key system is not applicable here.
-    DOMImplementationSupportsTypeClient client(frame && frame->settings() && frame->settings()->needsSiteSpecificQuirks(), url.host());
-    if (MediaPlayer::supportsType(ContentType(type), String(), url, &client))
-         return MediaDocument::create(frame, url);
+    if (MediaPlayer::supportsType(ContentType(type), String(), url))
+        return MediaDocument::create(frame, url);
 
     // Everything else except text/plain can be overridden by plugins. In particular, Adobe SVG Viewer should be used for SVG, if installed.
     // Disallowing plug-ins to use text/plain prevents plug-ins from hijacking a fundamental type that the browser is expected to handle,

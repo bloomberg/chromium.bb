@@ -119,13 +119,6 @@ bool MIMETypeRegistry::isSupportedNonImageMIMEType(const String& mimeType)
         != WebKit::WebMimeRegistry::IsNotSupported;
 }
 
-bool MIMETypeRegistry::isSupportedMediaMIMEType(const String& mimeType)
-{
-    HashSet<String> supportedMediaMIMETypes;
-    MediaPlayer::getSupportedTypes(supportedMediaMIMETypes);
-    return !mimeType.isEmpty() && supportedMediaMIMETypes.contains(mimeType);
-}
-
 bool MIMETypeRegistry::isSupportedMediaSourceMIMEType(const String& mimeType, const String& codecs)
 {
     return !mimeType.isEmpty() && !codecs.isEmpty()
