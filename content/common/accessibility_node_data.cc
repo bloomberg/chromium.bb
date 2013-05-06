@@ -474,8 +474,11 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
       case ATTR_ARIA_READONLY:
         result += " aria_readonly=" + value;
         break;
-    case ATTR_CAN_SET_VALUE:
+      case ATTR_CAN_SET_VALUE:
         result += " can_set_value=" + value;
+        break;
+      case ATTR_UPDATE_LOCATION_ONLY:
+        result += " update_location_only=" + value;
         break;
     }
   }

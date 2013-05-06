@@ -2986,6 +2986,13 @@ bool BrowserAccessibilityWin::IsNative() const {
   return true;
 }
 
+void BrowserAccessibilityWin::SetLocation(const gfx::Rect& new_location) {
+  BrowserAccessibility::SetLocation(new_location);
+  HWND hwnd = manager_->ToBrowserAccessibilityManagerWin()->parent_hwnd();
+  ::NotifyWinEvent(EVENT_OBJECT_LOCATIONCHANGE, hwnd,
+                   OBJID_CLIENT, unique_id_win());
+}
+
 BrowserAccessibilityWin* BrowserAccessibilityWin::NewReference() {
   AddRef();
   return this;

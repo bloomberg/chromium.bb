@@ -270,6 +270,10 @@ struct CONTENT_EXPORT AccessibilityNodeData {
 
     // Writeable attributes
     ATTR_CAN_SET_VALUE,
+
+    // If this is set, all of the other fields in this struct should
+    // be ignored and only the locations should change.
+    ATTR_UPDATE_LOCATION_ONLY,
   };
 
   AccessibilityNodeData();

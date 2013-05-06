@@ -105,6 +105,8 @@ BrowserAccessibilityWin
   CONTENT_EXPORT virtual void NativeAddReference() OVERRIDE;
   CONTENT_EXPORT virtual void NativeReleaseReference() OVERRIDE;
   CONTENT_EXPORT virtual bool IsNative() const OVERRIDE;
+  CONTENT_EXPORT virtual void SetLocation(const gfx::Rect& new_location)
+      OVERRIDE;
 
   //
   // IAccessible methods.

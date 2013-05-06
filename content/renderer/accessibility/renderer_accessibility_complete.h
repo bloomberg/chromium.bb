@@ -54,6 +54,7 @@ class CONTENT_EXPORT RendererAccessibilityComplete
     BrowserTreeNode();
     virtual ~BrowserTreeNode();
     int32 id;
+    gfx::Rect location;
     BrowserTreeNode* parent;
     std::vector<BrowserTreeNode*> children;
   };
@@ -63,6 +64,13 @@ class CONTENT_EXPORT RendererAccessibilityComplete
  protected:
   // Send queued notifications from the renderer to the browser.
   void SendPendingAccessibilityNotifications();
+
+  // Check the entire accessibility tree to see if any nodes have
+  // changed location, by comparing their locations to the cached
+  // versions. If any have moved, append a notification to |notifications|
+  // that updates the coordinates of these objects.
+  void AppendLocationChangeNotifications(
+      std::vector<AccessibilityHostMsg_NotificationParams>* notifications);
 
  private:
   // Handle an accessibility notification to be sent to the browser process.

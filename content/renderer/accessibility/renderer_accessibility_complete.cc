@@ -4,6 +4,8 @@
 
 #include "content/renderer/accessibility/renderer_accessibility_complete.h"
 
+#include <queue>
+
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "content/renderer/accessibility/accessibility_node_serializer.h"
@@ -359,7 +361,52 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
 #endif
   }
 
+  AppendLocationChangeNotifications(&notification_msgs);
+
   Send(new AccessibilityHostMsg_Notifications(routing_id(), notification_msgs));
+}
+
+void RendererAccessibilityComplete::AppendLocationChangeNotifications(
+    std::vector<AccessibilityHostMsg_NotificationParams>* notification_msgs) {
+  std::queue<WebAccessibilityObject> objs_to_explore;
+  std::vector<BrowserTreeNode*> location_changes;
+  WebAccessibilityObject root_object = GetMainDocument().accessibilityObject();
+  objs_to_explore.push(root_object);
+
+  while (objs_to_explore.size()) {
+    WebAccessibilityObject obj = objs_to_explore.front();
+    objs_to_explore.pop();
+    int id = obj.axID();
+    if (browser_id_map_.find(id) != browser_id_map_.end()) {
+      BrowserTreeNode* browser_node = browser_id_map_[id];
+      gfx::Rect new_location = obj.boundingBoxRect();
+      if (browser_node->location != new_location) {
+        browser_node->location = new_location;
+        location_changes.push_back(browser_node);
+      }
+    }
+
+    for (unsigned i = 0; i < obj.childCount(); ++i)
+      objs_to_explore.push(obj.childAt(i));
+  }
+
+  if (location_changes.size() == 0)
+    return;
+
+  AccessibilityHostMsg_NotificationParams notification_msg;
+  notification_msg.notification_type =
+      static_cast<AccessibilityNotification>(-1);
+  notification_msg.id = root_object.axID();
+  notification_msg.nodes.resize(location_changes.size());
+  for (size_t i = 0; i < location_changes.size(); i++) {
+    AccessibilityNodeData& serialized_node = notification_msg.nodes[i];
+    serialized_node.id = location_changes[i]->id;
+    serialized_node.location = location_changes[i]->location;
+    serialized_node.bool_attributes[
+        AccessibilityNodeData::ATTR_UPDATE_LOCATION_ONLY] = true;
+  }
+
+  notification_msgs->push_back(notification_msg);
 }
 
 RendererAccessibilityComplete::BrowserTreeNode*
@@ -396,6 +443,7 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
     browser_root_ = CreateBrowserTreeNode();
     browser_node = browser_root_;
     browser_node->id = obj.axID();
+    browser_node->location = obj.boundingBoxRect();
     browser_node->parent = NULL;
     browser_id_map_[browser_node->id] = browser_node;
   }
@@ -489,10 +537,13 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
     new_child_ids.erase(child_id);
     serialized_node->child_ids.push_back(child_id);
     if (browser_child_id_map.find(child_id) != browser_child_id_map.end()) {
-      browser_node->children.push_back(browser_child_id_map[child_id]);
+      BrowserTreeNode* reused_child = browser_child_id_map[child_id];
+      reused_child->location = obj.boundingBoxRect();
+      browser_node->children.push_back(reused_child);
     } else {
       BrowserTreeNode* new_child = CreateBrowserTreeNode();
       new_child->id = child_id;
+      new_child->location = obj.boundingBoxRect();
       new_child->parent = browser_node;
       browser_node->children.push_back(new_child);
       browser_id_map_[child_id] = new_child;

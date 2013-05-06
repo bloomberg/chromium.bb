@@ -97,6 +97,10 @@ void BrowserAccessibility::UpdateParent(BrowserAccessibility* parent,
   index_in_parent_ = index_in_parent;
 }
 
+void BrowserAccessibility::SetLocation(const gfx::Rect& new_location) {
+  location_ = new_location;
+}
+
 bool BrowserAccessibility::IsDescendantOf(
     BrowserAccessibility* ancestor) {
   if (this == ancestor) {

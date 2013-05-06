@@ -81,6 +81,9 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Update the parent and index in parent if this node has been moved.
   void UpdateParent(BrowserAccessibility* parent, int index_in_parent);
 
+  // Update this node's location, leaving everything else the same.
+  virtual void SetLocation(const gfx::Rect& new_location);
+
   // Return true if this object is equal to or a descendant of |ancestor|.
   bool IsDescendantOf(BrowserAccessibility* ancestor);
 
