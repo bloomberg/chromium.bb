@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/pmp_column_reader.h"
 
-namespace picasaimport {
+namespace picasa {
 
 namespace {
 
@@ -131,27 +131,27 @@ bool PmpTestHelper::InitColumnReaderFromBytes(PmpColumnReader* const reader,
 // Return a vector so we don't have to worry about memory management.
 std::vector<uint8> PmpTestHelper::MakeHeader(const PmpFieldType field_type,
                                              const uint32 row_count) {
-  std::vector<uint8> header(picasaimport::kPmpHeaderSize);
+  std::vector<uint8> header(picasa::kPmpHeaderSize);
 
   // Copy in magic bytes.
-  memcpy(&header[picasaimport::kPmpMagic1Offset], &picasaimport::kPmpMagic1,
-         sizeof(picasaimport::kPmpMagic1));
-  memcpy(&header[picasaimport::kPmpMagic2Offset], &picasaimport::kPmpMagic2,
-         sizeof(picasaimport::kPmpMagic2));
-  memcpy(&header[picasaimport::kPmpMagic3Offset], &picasaimport::kPmpMagic3,
-         sizeof(picasaimport::kPmpMagic3));
-  memcpy(&header[picasaimport::kPmpMagic4Offset], &picasaimport::kPmpMagic4,
-         sizeof(picasaimport::kPmpMagic4));
+  memcpy(&header[picasa::kPmpMagic1Offset], &picasa::kPmpMagic1,
+         sizeof(picasa::kPmpMagic1));
+  memcpy(&header[picasa::kPmpMagic2Offset], &picasa::kPmpMagic2,
+         sizeof(picasa::kPmpMagic2));
+  memcpy(&header[picasa::kPmpMagic3Offset], &picasa::kPmpMagic3,
+         sizeof(picasa::kPmpMagic3));
+  memcpy(&header[picasa::kPmpMagic4Offset], &picasa::kPmpMagic4,
+         sizeof(picasa::kPmpMagic4));
 
   // Copy in field type.
   uint16 field_type_short = static_cast<uint16>(field_type);
-  memcpy(&header[picasaimport::kPmpFieldType1Offset], &field_type_short,
+  memcpy(&header[picasa::kPmpFieldType1Offset], &field_type_short,
          sizeof(uint16));
-  memcpy(&header[picasaimport::kPmpFieldType2Offset], &field_type_short,
+  memcpy(&header[picasa::kPmpFieldType2Offset], &field_type_short,
          sizeof(uint16));
 
   // Copy in row count.
-  memcpy(&header[picasaimport::kPmpRowCountOffset], &row_count, sizeof(uint32));
+  memcpy(&header[picasa::kPmpRowCountOffset], &row_count, sizeof(uint32));
 
   return header;
 }
@@ -176,4 +176,4 @@ template std::vector<uint8> PmpTestHelper::MakeHeaderAndBody<uint8>(
 template std::vector<uint8> PmpTestHelper::MakeHeaderAndBody<uint64>(
     const PmpFieldType, const uint32, const std::vector<uint64>&);
 
-}  // namespace picasaimport
+}  // namespace picasa

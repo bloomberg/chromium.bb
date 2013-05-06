@@ -9,19 +9,19 @@
 
 namespace {
 
-using picasaimport::PmpTestHelper;
-using picasaimport::PMP_TYPE_UINT32;
+using picasa::PmpTestHelper;
+using picasa::PMP_TYPE_UINT32;
 
 TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
-  PmpTestHelper test_helper(picasaimport::kPicasaAlbumTableName);
+  PmpTestHelper test_helper(picasa::kPicasaAlbumTableName);
   ASSERT_TRUE(test_helper.Init());
 
   int test_time_delta = 100;
 
   std::vector<uint32> category_vector;
-  category_vector.push_back(picasaimport::kAlbumCategoryFolder);
-  category_vector.push_back(picasaimport::kAlbumCategoryInvalid);
-  category_vector.push_back(picasaimport::kAlbumCategoryUserAlbum);
+  category_vector.push_back(picasa::kAlbumCategoryFolder);
+  category_vector.push_back(picasa::kAlbumCategoryInvalid);
+  category_vector.push_back(picasa::kAlbumCategoryUserAlbum);
 
   std::vector<double> date_vector;
   date_vector.push_back(0.0);
@@ -46,7 +46,7 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
   std::vector<std::string> token_vector;
   token_vector.push_back("");
   token_vector.push_back("");
-  token_vector.push_back(std::string(picasaimport::kAlbumTokenPrefix) + "uid3");
+  token_vector.push_back(std::string(picasa::kAlbumTokenPrefix) + "uid3");
 
   std::vector<std::string> uid_vector;
   uid_vector.push_back("uid1");
@@ -54,25 +54,24 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
   uid_vector.push_back("uid3");
 
   ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      "category", picasaimport::PMP_TYPE_UINT32, category_vector));
+      "category", picasa::PMP_TYPE_UINT32, category_vector));
   ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      "date", picasaimport::PMP_TYPE_DOUBLE64, date_vector));
+      "date", picasa::PMP_TYPE_DOUBLE64, date_vector));
   ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      "filename", picasaimport::PMP_TYPE_STRING, filename_vector));
+      "filename", picasa::PMP_TYPE_STRING, filename_vector));
   ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      "name", picasaimport::PMP_TYPE_STRING, name_vector));
+      "name", picasa::PMP_TYPE_STRING, name_vector));
   ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      "token", picasaimport::PMP_TYPE_STRING, token_vector));
+      "token", picasa::PMP_TYPE_STRING, token_vector));
   ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      "uid", picasaimport::PMP_TYPE_STRING, uid_vector));
+      "uid", picasa::PMP_TYPE_STRING, uid_vector));
 
-  picasaimport::PicasaAlbumTableReader reader(test_helper.GetTempDirPath());
+  picasa::PicasaAlbumTableReader reader(test_helper.GetTempDirPath());
 
   ASSERT_TRUE(reader.Init());
 
-  const std::vector<picasaimport::FolderInfo>& folders = reader.folders();
-  const std::vector<picasaimport::AlbumInfo>& user_albums =
-      reader.user_albums();
+  const std::vector<picasa::FolderInfo>& folders = reader.folders();
+  const std::vector<picasa::AlbumInfo>& user_albums = reader.user_albums();
 
   ASSERT_EQ(1u, folders.size());
   ASSERT_EQ(1u, user_albums.size());

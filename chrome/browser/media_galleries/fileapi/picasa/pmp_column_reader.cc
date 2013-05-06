@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 
-namespace picasaimport {
+namespace picasa {
 
 namespace {
 
@@ -189,4 +189,4 @@ long PmpColumnReader::IndexStrings() {
   return bytes_parsed - kPmpHeaderSize;
 }
 
-}  // namespace picasaimport
+}  // namespace picasa

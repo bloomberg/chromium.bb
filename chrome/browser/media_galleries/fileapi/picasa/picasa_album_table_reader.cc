@@ -15,7 +15,7 @@
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
-namespace picasaimport {
+namespace picasa {
 
 namespace {
 
@@ -154,4 +154,4 @@ bool PicasaAlbumTableReader::Init() {
   return true;
 }
 
-}  // namespace picasaimport
+}  // namespace picasa

@@ -13,7 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/pmp_column_reader.h"
 
-namespace picasaimport {
+namespace picasa {
 
 namespace {
 
@@ -75,4 +75,4 @@ std::map<std::string, const PmpColumnReader*> PmpTableReader::Columns() const {
   return column_map_;
 }
 
-}  // namespace picasaimport
+}  // namespace picasa

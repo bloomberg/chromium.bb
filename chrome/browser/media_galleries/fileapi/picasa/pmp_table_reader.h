@@ -17,7 +17,7 @@ namespace base {
 class FilePath;
 }
 
-namespace picasaimport {
+namespace picasa {
 
 class PmpColumnReader;
 
@@ -52,6 +52,6 @@ class PmpTableReader {
   DISALLOW_COPY_AND_ASSIGN(PmpTableReader);
 };
 
-}  // namespace picasaimport
+}  // namespace picasa
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_TABLE_READER_H_

@@ -15,7 +15,7 @@
 
 namespace {
 
-using picasaimport::PmpTestHelper;
+using picasa::PmpTestHelper;
 
 TEST(PmpTableReaderTest, RowCountAndFieldType) {
   std::string table_name("tabletest");
@@ -31,10 +31,10 @@ TEST(PmpTableReaderTest, RowCountAndFieldType) {
   const std::vector<uint32> uint32s_vector(30, 42);
   const std::vector<double> doubles_vector(20, 0.5);
 
-  picasaimport::PmpFieldType column_field_types[] = {
-    picasaimport::PMP_TYPE_STRING,
-    picasaimport::PMP_TYPE_UINT32,
-    picasaimport::PMP_TYPE_DOUBLE64
+  picasa::PmpFieldType column_field_types[] = {
+    picasa::PMP_TYPE_STRING,
+    picasa::PMP_TYPE_UINT32,
+    picasa::PMP_TYPE_DOUBLE64
   };
 
   const uint32 max_rows = uint32s_vector.size();
@@ -48,7 +48,7 @@ TEST(PmpTableReaderTest, RowCountAndFieldType) {
   ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
       column_names[2], column_field_types[2], doubles_vector));
 
-  picasaimport::PmpTableReader table_reader(table_name,
+  picasa::PmpTableReader table_reader(table_name,
                                             test_helper.GetTempDirPath());
 
   for (unsigned int i = 0; i < column_names.size(); i++) {

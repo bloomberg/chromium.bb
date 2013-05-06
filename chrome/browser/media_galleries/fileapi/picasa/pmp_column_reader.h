@@ -16,7 +16,7 @@ namespace base {
 class FilePath;
 }
 
-namespace picasaimport {
+namespace picasa {
 
 // Reads a single PMP column from a file.
 class PmpColumnReader {
@@ -57,6 +57,6 @@ class PmpColumnReader {
   DISALLOW_COPY_AND_ASSIGN(PmpColumnReader);
 };
 
-}  // namespace picasaimport
+}  // namespace picasa
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_COLUMN_READER_H_

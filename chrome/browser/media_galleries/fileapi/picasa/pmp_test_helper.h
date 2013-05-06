@@ -15,7 +15,7 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace picasaimport {
+namespace picasa {
 
 class PmpColumnReader;
 
@@ -51,6 +51,6 @@ class PmpTestHelper {
   base::ScopedTempDir temp_dir_;
 };
 
-}  // namespace picasaimport
+}  // namespace picasa
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_TEST_HELPER_H_

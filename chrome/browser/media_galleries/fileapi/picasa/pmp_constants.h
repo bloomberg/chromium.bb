@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 
-namespace picasaimport {
+namespace picasa {
 
 // PMP file format.
 // Info derived from: http://sbktech.blogspot.com/2011/12/picasa-pmp-format.html
@@ -41,6 +41,6 @@ enum PmpFieldType {
   PMP_TYPE_INVALID  = 0xff
 };
 
-}  // namespace picasaimport
+}  // namespace picasa
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_CONSTANTS_H_

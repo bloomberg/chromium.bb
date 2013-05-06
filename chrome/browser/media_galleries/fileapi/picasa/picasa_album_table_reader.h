@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/time.h"
 
-namespace picasaimport {
+namespace picasa {
 
 const base::Time::Exploded kPicasaVariantTimeEpoch = {
   1899, 12, 7, 30,  // Dec 30, 1899 (Saturday)
@@ -76,6 +76,6 @@ class PicasaAlbumTableReader {
   DISALLOW_COPY_AND_ASSIGN(PicasaAlbumTableReader);
 };
 
-}  // namespace picasaimport
+}  // namespace picasa
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PICASA_ALBUM_TABLE_READER_H_

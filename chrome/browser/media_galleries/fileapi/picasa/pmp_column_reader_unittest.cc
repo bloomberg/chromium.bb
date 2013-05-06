@@ -13,8 +13,8 @@
 
 namespace {
 
-using picasaimport::PmpColumnReader;
-using picasaimport::PmpTestHelper;
+using picasa::PmpColumnReader;
+using picasa::PmpTestHelper;
 
 // Overridden version of Read method to make test code templatable.
 bool DoRead(const PmpColumnReader* reader, uint32 row, std::string* target) {
@@ -39,7 +39,7 @@ bool DoRead(const PmpColumnReader* reader, uint32 row, uint64* target) {
 
 // TestValid
 template<class T>
-void TestValid(const picasaimport::PmpFieldType field_type,
+void TestValid(const picasa::PmpFieldType field_type,
                const std::vector<T>& elems) {
   PmpTestHelper test_helper("test");
   ASSERT_TRUE(test_helper.Init());
@@ -62,7 +62,7 @@ void TestValid(const picasaimport::PmpFieldType field_type,
 }
 
 template<class T>
-void TestMalformed(const picasaimport::PmpFieldType field_type,
+void TestMalformed(const picasa::PmpFieldType field_type,
                    const std::vector<T>& elems) {
   PmpTestHelper test_helper("test");
   ASSERT_TRUE(test_helper.Init());
@@ -101,7 +101,7 @@ void TestMalformed(const picasaimport::PmpFieldType field_type,
 }
 
 template<class T>
-void TestPrimitive(const picasaimport::PmpFieldType field_type) {
+void TestPrimitive(const picasa::PmpFieldType field_type) {
   // Make an ascending vector of the primitive.
   uint32 n = 100;
   std::vector<T> data(n, 0);
@@ -121,53 +121,53 @@ TEST(PmpColumnReaderTest, HeaderParsingAndValidation) {
   PmpColumnReader reader_good_header;
   uint32 rows_read = 0xFF;
   std::vector<uint8> good_header =
-      PmpTestHelper::MakeHeader(picasaimport::PMP_TYPE_STRING, 0);
+      PmpTestHelper::MakeHeader(picasa::PMP_TYPE_STRING, 0);
   EXPECT_TRUE(test_helper.InitColumnReaderFromBytes(
       &reader_good_header,
       good_header,
-      picasaimport::PMP_TYPE_STRING,
+      picasa::PMP_TYPE_STRING,
       &rows_read));
   EXPECT_EQ(0U, rows_read) << "Read non-zero rows from header-only data.";
 
   PmpColumnReader reader_bad_magic_bytes;
   std::vector<uint8> bad_magic_bytes =
-      PmpTestHelper::MakeHeader(picasaimport::PMP_TYPE_STRING, 0);
+      PmpTestHelper::MakeHeader(picasa::PMP_TYPE_STRING, 0);
   bad_magic_bytes[0] = 0xff;
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
       &reader_bad_magic_bytes,
       bad_magic_bytes,
-      picasaimport::PMP_TYPE_STRING,
+      picasa::PMP_TYPE_STRING,
       NULL));
 
   PmpColumnReader reader_inconsistent_types;
   std::vector<uint8> inconsistent_type =
-      PmpTestHelper::MakeHeader(picasaimport::PMP_TYPE_STRING, 0);
-  inconsistent_type[picasaimport::kPmpFieldType1Offset] = 0xff;
+      PmpTestHelper::MakeHeader(picasa::PMP_TYPE_STRING, 0);
+  inconsistent_type[picasa::kPmpFieldType1Offset] = 0xff;
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
       &reader_inconsistent_types,
       inconsistent_type,
-      picasaimport::PMP_TYPE_STRING,
+      picasa::PMP_TYPE_STRING,
       NULL));
 
   PmpColumnReader reader_invalid_type;
   std::vector<uint8> invalid_type =
-      PmpTestHelper::MakeHeader(picasaimport::PMP_TYPE_STRING, 0);
-  invalid_type[picasaimport::kPmpFieldType1Offset] = 0xff;
-  invalid_type[picasaimport::kPmpFieldType2Offset] = 0xff;
+      PmpTestHelper::MakeHeader(picasa::PMP_TYPE_STRING, 0);
+  invalid_type[picasa::kPmpFieldType1Offset] = 0xff;
+  invalid_type[picasa::kPmpFieldType2Offset] = 0xff;
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
       &reader_invalid_type,
       invalid_type,
-      picasaimport::PMP_TYPE_STRING,
+      picasa::PMP_TYPE_STRING,
       NULL));
 
   PmpColumnReader reader_incomplete_header;
   std::vector<uint8> incomplete_header =
-      PmpTestHelper::MakeHeader(picasaimport::PMP_TYPE_STRING, 0);
+      PmpTestHelper::MakeHeader(picasa::PMP_TYPE_STRING, 0);
   incomplete_header.resize(10);
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
       &reader_incomplete_header,
       incomplete_header,
-      picasaimport::PMP_TYPE_STRING,
+      picasa::PMP_TYPE_STRING,
       NULL));
 }
 
@@ -175,7 +175,7 @@ TEST(PmpColumnReaderTest, StringParsing) {
   std::vector<std::string> empty_strings(100, "");
 
   // Test empty strings read okay.
-  TestValid(picasaimport::PMP_TYPE_STRING, empty_strings);
+  TestValid(picasa::PMP_TYPE_STRING, empty_strings);
 
   std::vector<std::string> mixed_strings;
   mixed_strings.push_back("");
@@ -187,17 +187,17 @@ TEST(PmpColumnReaderTest, StringParsing) {
   mixed_strings.push_back("");
 
   // Test that a mixed set of strings read correctly.
-  TestValid(picasaimport::PMP_TYPE_STRING, mixed_strings);
+  TestValid(picasa::PMP_TYPE_STRING, mixed_strings);
 
   // Test with the data messed up in a variety of ways.
-  TestMalformed(picasaimport::PMP_TYPE_STRING, mixed_strings);
+  TestMalformed(picasa::PMP_TYPE_STRING, mixed_strings);
 }
 
 TEST(PmpColumnReaderTest, PrimitiveParsing) {
-  TestPrimitive<uint32>(picasaimport::PMP_TYPE_UINT32);
-  TestPrimitive<double>(picasaimport::PMP_TYPE_DOUBLE64);
-  TestPrimitive<uint8>(picasaimport::PMP_TYPE_UINT8);
-  TestPrimitive<uint64>(picasaimport::PMP_TYPE_UINT64);
+  TestPrimitive<uint32>(picasa::PMP_TYPE_UINT32);
+  TestPrimitive<double>(picasa::PMP_TYPE_DOUBLE64);
+  TestPrimitive<uint8>(picasa::PMP_TYPE_UINT8);
+  TestPrimitive<uint64>(picasa::PMP_TYPE_UINT64);
 }
 
 }  // namespace
