@@ -49,12 +49,14 @@ class WebAudioBusPrivate : public AudioBus {
 void WebAudioBus::initialize(unsigned numberOfChannels, size_t length, double sampleRate)
 {        
 #if ENABLE(WEB_AUDIO)
-    AudioBus* audioBus = new AudioBus(numberOfChannels, length);
+    RefPtr<AudioBus> audioBus = AudioBus::create(numberOfChannels, length);
     audioBus->setSampleRate(sampleRate);
 
     if (m_private)
-        delete m_private;
-    m_private = static_cast<WebAudioBusPrivate*>(audioBus);
+        (static_cast<AudioBus*>(m_private))->deref();
+
+    audioBus->ref();
+    m_private = static_cast<WebAudioBusPrivate*>(audioBus.get());
 #else
     ASSERT_NOT_REACHED();
 #endif
@@ -76,8 +78,10 @@ void WebAudioBus::resizeSmaller(size_t newLength)
 void WebAudioBus::reset()
 {
 #if ENABLE(WEB_AUDIO)
-    delete m_private;
-    m_private = 0;
+    if (m_private) {
+        (static_cast<AudioBus*>(m_private))->deref();
+        m_private = 0;
+    }
 #else
     ASSERT_NOT_REACHED();
 #endif

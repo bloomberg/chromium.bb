@@ -63,8 +63,8 @@ public:
 private:
     AudioIOCallback& m_callback;
     unsigned m_numberOfOutputChannels;
-    AudioBus m_inputBus;
-    AudioBus m_renderBus;
+    RefPtr<AudioBus> m_inputBus;
+    RefPtr<AudioBus> m_renderBus;
     float m_sampleRate;
     bool m_isPlaying;
     OwnPtr<WebKit::WebAudioDevice> m_audioDevice;

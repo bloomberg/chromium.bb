@@ -53,8 +53,8 @@ PassOwnPtr<AudioDestination> AudioDestination::create(AudioIOCallback& callback,
 AudioDestinationChromium::AudioDestinationChromium(AudioIOCallback& callback, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate)
     : m_callback(callback)
     , m_numberOfOutputChannels(numberOfOutputChannels)
-    , m_inputBus(numberOfInputChannels, renderBufferSize)
-    , m_renderBus(numberOfOutputChannels, renderBufferSize, false)
+    , m_inputBus(AudioBus::create(numberOfInputChannels, renderBufferSize))
+    , m_renderBus(AudioBus::create(numberOfOutputChannels, renderBufferSize, false))
     , m_sampleRate(sampleRate)
     , m_isPlaying(false)
 {
@@ -83,8 +83,8 @@ AudioDestinationChromium::AudioDestinationChromium(AudioIOCallback& callback, co
     // extra silence for the input. Otherwise, we can over-consume the input FIFO.
     if (m_callbackBufferSize != renderBufferSize) {
         // FIXME: handle multi-channel input and don't hard-code to stereo.
-        AudioBus silence(2, renderBufferSize);
-        m_inputFifo->push(&silence);
+        RefPtr<AudioBus> silence = AudioBus::create(2, renderBufferSize);
+        m_inputFifo->push(silence.get());
     }
 }
 
@@ -136,24 +136,24 @@ void AudioDestinationChromium::render(const WebKit::WebVector<float*>& sourceDat
     // Buffer optional live input.
     if (sourceData.size() >= 2) {
         // FIXME: handle multi-channel input and don't hard-code to stereo.
-        AudioBus wrapperBus(2, numberOfFrames, false);
-        wrapperBus.setChannelMemory(0, sourceData[0], numberOfFrames);
-        wrapperBus.setChannelMemory(1, sourceData[1], numberOfFrames);
-        m_inputFifo->push(&wrapperBus);
+        RefPtr<AudioBus> wrapperBus = AudioBus::create(2, numberOfFrames, false);
+        wrapperBus->setChannelMemory(0, sourceData[0], numberOfFrames);
+        wrapperBus->setChannelMemory(1, sourceData[1], numberOfFrames);
+        m_inputFifo->push(wrapperBus.get());
     }
 
     for (unsigned i = 0; i < m_numberOfOutputChannels; ++i)
-        m_renderBus.setChannelMemory(i, audioData[i], numberOfFrames);
+        m_renderBus->setChannelMemory(i, audioData[i], numberOfFrames);
 
-    m_fifo->consume(&m_renderBus, numberOfFrames);
+    m_fifo->consume(m_renderBus.get(), numberOfFrames);
 }
 
 void AudioDestinationChromium::provideInput(AudioBus* bus, size_t framesToProcess)
 {
     AudioBus* sourceBus = 0;
     if (m_inputFifo->framesInFifo() >= framesToProcess) {
-        m_inputFifo->consume(&m_inputBus, framesToProcess);
-        sourceBus = &m_inputBus;
+        m_inputFifo->consume(m_inputBus.get(), framesToProcess);
+        sourceBus = m_inputBus.get();
     }
 
     m_callback.render(sourceBus, bus, framesToProcess);
