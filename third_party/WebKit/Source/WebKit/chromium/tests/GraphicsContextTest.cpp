@@ -944,13 +944,12 @@ TEST(PlatformContextSkiaTest, contextTransparencyLayerTest)
 
     GraphicsContext context(&canvas);
     context.setTrackOpaqueRegion(true);
-    
+
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
-    
     context.fillRect(FloatRect(20, 20, 10, 10), opaque, ColorSpaceDeviceRGB, CompositeSourceOver);
     EXPECT_EQ_RECT(IntRect(20, 20, 10, 10), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
-    
+
     context.clearRect(FloatRect(20, 20, 10, 10));
     EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
 
