@@ -5412,13 +5412,14 @@ sub AssertNotSequenceType
     die "Sequences must not be used as the type of an attribute, constant or exception field." if GetSequenceType($type);
 }
 
-# xmlEncoding becomes XMLEncoding, but xmlllang becomes Xmllang.
 sub FirstLetterToUpperCase
 {
     my $param = shift;
     my $ret = ucfirst($param);
+    # xmlEncoding becomes XMLEncoding, but xmlllang becomes Xmllang.
     $ret =~ s/Xml/XML/ if $ret =~ /^Xml[^a-z]/;
-
+    $ret =~ s/Css/CSS/ if $ret =~ /^Css[^T]/;  # css -> setCSS, except setCssText.
+    $ret =~ s/Ime/IME/ if $ret =~ /^Ime/;  # ime -> setIME
     return $ret;
 }
 

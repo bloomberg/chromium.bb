@@ -1,3 +1,4 @@
+
 {
     'variables': {
         'core_idl_files': [
@@ -3590,6 +3591,7 @@
           'testing/MallocStatistics.idl',
           'testing/TypeConversions.idl',
           '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalSettingsGenerated.idl',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalRuntimeFlags.idl',
         ],
         'webcore_test_support_files': [
             'testing/v8/WebCoreTestSupport.cpp',

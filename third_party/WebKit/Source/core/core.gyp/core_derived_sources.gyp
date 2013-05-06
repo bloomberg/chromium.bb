@@ -37,7 +37,7 @@
 
   'targets': [
     {
-      'target_name': 'generate_settings',
+      'target_name': 'generate_test_support_idls',
       'type': 'none',
       'actions': [
         {
@@ -61,6 +61,24 @@
           ],
           'msvs_cygwin_shell': 1,
         },
+        {
+          'action_name': 'InternalRuntimeFlags',
+          'inputs': [
+            '<@(scripts_for_in_files)',
+            '../scripts/make_internal_runtime_flags.py',
+            '../page/RuntimeEnabledFeatures.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalRuntimeFlags.idl',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalRuntimeFlags.h',
+          ],
+          'action': [
+            'python',
+            '../scripts/make_internal_runtime_flags.py',
+            '../page/RuntimeEnabledFeatures.in',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+          ],
+        },
       ]
     },
     {
@@ -68,7 +86,7 @@
       'type': 'none',
       'hard_dependency': 1,
       'dependencies': [
-        'generate_settings',
+        'generate_test_support_idls',
       ],
       'sources': [
         # bison rule

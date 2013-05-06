@@ -1069,6 +1069,8 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalSettings.h',
         '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8InternalSettingsGenerated.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalSettingsGenerated.h',
+        '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8InternalRuntimeFlags.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalRuntimeFlags.h',
       ],
       'sources/': [
         ['exclude', 'testing/js'],

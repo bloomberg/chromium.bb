@@ -127,7 +127,7 @@
       'hard_dependency': 1,
       'dependencies': [
         'supplemental_dependencies',
-        '../core/core.gyp/core_derived_sources.gyp:generate_settings',
+        '../core/core.gyp/core_derived_sources.gyp:generate_test_support_idls',
       ],
       'sources': [
         '<@(idl_files)',

@@ -29,9 +29,11 @@
 
 #include "HTMLNames.h"
 #include "InspectorFrontendClientLocal.h"
+#include "InternalRuntimeFlags.h"
 #include "InternalSettings.h"
 #include "MallocStatistics.h"
 #include "MockPagePopupDriver.h"
+#include "RuntimeEnabledFeatures.h"
 #include "TypeConversions.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/css/StyleSheetContents.h"
@@ -85,7 +87,6 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -234,6 +235,7 @@ void Internals::resetToConsistentState(Page* page)
 
 Internals::Internals(Document* document)
     : ContextDestructionObserver(document)
+    , m_runtimeFlags(InternalRuntimeFlags::create())
 {
     if (document && document->page())
         document->page()->group().captionPreferences()->setTestingMode(true);
@@ -260,6 +262,11 @@ InternalSettings* Internals::settings() const
     if (!page)
         return 0;
     return InternalSettings::from(page);
+}
+
+InternalRuntimeFlags* Internals::runtimeFlags() const
+{
+    return m_runtimeFlags.get();
 }
 
 unsigned Internals::workerThreadCount() const

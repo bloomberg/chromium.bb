@@ -48,6 +48,7 @@ class DocumentMarker;
 class Element;
 class Frame;
 class InspectorFrontendChannelDummy;
+class InternalRuntimeFlags;
 class InternalSettings;
 class Node;
 class Page;
@@ -205,6 +206,7 @@ public:
     static const char* internalsId;
 
     InternalSettings* settings() const;
+    InternalRuntimeFlags* runtimeFlags() const;
     unsigned workerThreadCount() const;
 
     void setBatteryStatus(Document*, const String& eventType, bool charging, double chargingTime, double dischargingTime, double level, ExceptionCode&);
@@ -304,6 +306,7 @@ private:
     DocumentMarker* markerAt(Node*, const String& markerType, unsigned index, ExceptionCode&);
     RefPtr<DOMWindow> m_frontendWindow;
     OwnPtr<InspectorFrontendChannelDummy> m_frontendChannel;
+    RefPtr<InternalRuntimeFlags> m_runtimeFlags;
 };
 
 } // namespace WebCore
