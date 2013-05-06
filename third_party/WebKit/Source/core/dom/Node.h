@@ -879,6 +879,13 @@ inline void Node::lazyReattach(ShouldSetAttached shouldSetAttached)
     lazyAttach(shouldSetAttached);
 }
 
+// Need a template since ElementShadow is not a Node, but has the style recalc methods.
+template<class T>
+inline bool shouldRecalcStyle(Node::StyleChange change, const T* node)
+{
+    return change >= Node::Inherit || node->childNeedsStyleRecalc() || node->needsStyleRecalc();
+}
+
 } //namespace
 
 #ifndef NDEBUG

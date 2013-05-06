@@ -183,13 +183,6 @@ static Attr* findAttrNodeInList(AttrNodeList* attrNodeList, const QualifiedName&
     return 0;
 }
 
-// Need a template since ElementShadow is not a Node, but has the style recalc methods.
-template<class T>
-static inline bool shouldRecalcStyle(Node::StyleChange change, const T* node)
-{
-    return change >= Node::Inherit || node->childNeedsStyleRecalc() || node->needsStyleRecalc();
-}
-
 PassRefPtr<Element> Element::create(const QualifiedName& tagName, Document* document)
 {
     return adoptRef(new Element(tagName, document, CreateElement));

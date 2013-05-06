@@ -1664,7 +1664,7 @@ void Document::recalcStyle(StyleChange change)
             if (!n->isElementNode())
                 continue;
             Element* element = toElement(n);
-            if (change >= Inherit || element->childNeedsStyleRecalc() || element->needsStyleRecalc())
+            if (shouldRecalcStyle(change, element))
                 element->recalcStyle(change);
         }
 
