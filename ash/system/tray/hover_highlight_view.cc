@@ -6,7 +6,6 @@
 
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_views.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"

@@ -9,7 +9,6 @@
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/tray_background_view.h"
-#include "ash/system/tray/tray_views.h"
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

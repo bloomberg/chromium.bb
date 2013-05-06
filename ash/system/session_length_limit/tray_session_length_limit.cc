@@ -13,7 +13,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_notification_view.h"
-#include "ash/system/tray/tray_views.h"
+#include "ash/system/tray/tray_utils.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/string16.h"

@@ -12,7 +12,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_views.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"

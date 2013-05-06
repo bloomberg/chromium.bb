@@ -19,6 +19,7 @@
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_notification_view.h"
+#include "ash/system/tray/tray_utils.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chromeos/network/network_state.h"

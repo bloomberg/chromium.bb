@@ -12,7 +12,6 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_views.h"
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"

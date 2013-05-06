@@ -17,6 +17,7 @@
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_popup_label_button.h"
 #include "ash/system/tray/tray_popup_label_button_border.h"
+#include "ash/system/tray/tray_utils.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"

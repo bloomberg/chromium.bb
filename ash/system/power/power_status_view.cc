@@ -9,7 +9,6 @@
 #include "ash/system/power/tray_power.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_views.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"

@@ -5,7 +5,6 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/tray_views.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/user/login_status.h"
 #include "base/command_line.h"

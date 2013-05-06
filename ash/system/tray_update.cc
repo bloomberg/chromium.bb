@@ -14,7 +14,6 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_views.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "grit/ash_resources.h"

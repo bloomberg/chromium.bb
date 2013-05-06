@@ -5,7 +5,6 @@
 #include "ash/system/monitor/tray_monitor.h"
 
 #include "ash/system/tray/tray_item_view.h"
-#include "ash/system/tray/tray_views.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"

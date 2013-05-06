@@ -13,7 +13,7 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_views.h"
+#include "ash/system/tray/tray_utils.h"
 #include "base/i18n/number_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
