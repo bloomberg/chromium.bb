@@ -149,26 +149,45 @@ class BuilderStage(object):
         enter_chroot=True, error_code_ok=True)
     return binhost.output.rstrip('\n')
 
-  @staticmethod
-  def _GetSlavesForMaster(build_config, configs=None):
-    """Gets the important builds corresponding to this master.
+  # pylint: disable=W0102
+  def _GetSlavesForMaster(self, configs=cbuildbot_config.config):
+    """Gets the important builds corresponding to this master builder.
+
+    Given that we are a master builder, find all corresponding slaves that
+    are important to me.  These are those builders that share the same
+    build_type and manifest_version url.
+
+    If we have overridden our chrome_rev type, do not presume to be the
+    master of either our set of builders or the other's.
+    """
+    if self._chrome_rev !=  self._build_config['chrome_rev']:
+      return []
+    return cbuildbot_config.GetSlavesForMaster(self._build_config, configs)
+
+  # pylint: disable=W0102
+  def _GetSlavesForUnifiedMaster(self, configs=cbuildbot_config.config):
+    """Gets the important builds corresponding to this unified master.
+
+    A unified master has both private and public slaves that read from two
+    separate manifest_versions repositories.
 
     Returns:
       A tuple consisting of the public slaves and private slaves for this
       unified builder.
     """
-    if configs is None:
-      configs = cbuildbot_config.config
     public_builders = []
     private_builders = []
-    assert build_config['manifest_version']
-    assert build_config['master']
+    build_type = self._build_config['build_type']
+    branch_config = self._build_config['branch']
+    assert self._build_config['unified_manifest_version']
+    assert self._build_config['manifest_version']
+    assert self._build_config['master']
     for build_name, config in configs.iteritems():
-      if (config['important'] and
+      if (config['important'] and config['unified_manifest_version'] and
           config['manifest_version'] and
-          config['build_type'] == build_config['build_type'] and
-          config['chrome_rev'] == build_config['chrome_rev'] and
-          config['branch'] == build_config['branch']):
+          config['build_type'] == build_type and
+          config['chrome_rev'] == self._chrome_rev and
+          config['branch'] == branch_config):
         if config['internal']:
           private_builders.append(build_name)
         else:

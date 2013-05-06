@@ -296,44 +296,69 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
         'manifest_version': True,
         'build_type': constants.PFQ_TYPE,
         'overlays': 'public',
-        'important': False,
+        'important': True,
         'chrome_rev': None,
+        'unified_manifest_version': False,
         'branch': False,
         'internal': False,
     }
     test_config['test2'] = {
-        'manifest_version': False,
+        'manifest_version': True,
         'build_type': constants.PFQ_TYPE,
         'overlays': 'public',
         'important': True,
         'chrome_rev': None,
+        'unified_manifest_version': False,
         'branch': False,
         'internal': False,
     }
     test_config['test3'] = {
         'manifest_version': True,
         'build_type': constants.PFQ_TYPE,
-        'overlays': 'both',
-        'important': True,
+        'overlays': 'public',
+        'important': False,
         'chrome_rev': None,
+        'unified_manifest_version': False,
         'branch': False,
-        'internal': True,
+        'internal': False,
     }
     test_config['test4'] = {
+        'manifest_version': False,
+        'build_type': constants.PFQ_TYPE,
+        'overlays': 'public',
+        'important': True,
+        'chrome_rev': None,
+        'unified_manifest_version': False,
+        'branch': False,
+        'internal': False,
+    }
+    test_config['test5'] = {
         'manifest_version': True,
         'build_type': constants.PFQ_TYPE,
         'overlays': 'both',
         'important': True,
         'chrome_rev': None,
+        'unified_manifest_version': True,
+        'branch': False,
+        'internal': True,
+    }
+    test_config['test6'] = {
+        'manifest_version': True,
+        'build_type': constants.PFQ_TYPE,
+        'overlays': 'both',
+        'important': True,
+        'chrome_rev': None,
+        'unified_manifest_version': True,
         'branch': True,
         'internal': True,
     }
-    test_config['test5'] = {
+    test_config['test7'] = {
         'manifest_version': True,
         'build_type': constants.PFQ_TYPE,
         'overlays': 'public',
         'important': True,
         'chrome_rev': None,
+        'unified_manifest_version': True,
         'branch': False,
         'internal': False,
     }
@@ -341,15 +366,15 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
 
   def testGetUnifiedSlavesStatus(self):
     """Tests that we get the statuses for a fake unified master completion."""
-    self.mox.StubOutWithMock(bs.BuilderStage, '_GetSlavesForMaster')
+    self.mox.StubOutWithMock(bs.BuilderStage, '_GetSlavesForUnifiedMaster')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetBuildersStatus')
+    self.build_config['unified_manifest_version'] = True
     p_bs = ['s1', 's2']
     pr_bs = ['s3']
     status1 = dict(s1='pass', s2='fail')
     status2 = dict(s3='pass')
 
-    bs.BuilderStage._GetSlavesForMaster(self.build_config).AndReturn(
-        (p_bs, pr_bs,))
+    bs.BuilderStage._GetSlavesForUnifiedMaster().AndReturn((p_bs, pr_bs,))
     lkgm_manager.LKGMManager.GetBuildersStatus(p_bs).AndReturn(status1)
     lkgm_manager.LKGMManager.GetBuildersStatus(pr_bs).AndReturn(status2)
 
@@ -365,19 +390,38 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
       self.assertTrue(v, statuses.get(k))
 
   def testGetSlavesForMaster(self):
-    """Tests that we get the slaves for a fake unified master configuration."""
+    """Tests that we get the slaves for a fake master configuration."""
     test_config = self._GetTestConfig()
+    self.build_config['unified_manifest_version'] = False
     self.mox.ReplayAll()
     stage = self.ConstructStage()
-    p, pr = stage._GetSlavesForMaster(self.build_config, test_config)
+    important_configs = stage._GetSlavesForMaster(test_config)
+    self.mox.VerifyAll()
+
+    self.assertTrue('test1' in important_configs)
+    self.assertTrue('test2' in important_configs)
+    self.assertFalse('test3' in important_configs)
+    self.assertFalse('test4' in important_configs)
+    self.assertFalse('test5' in important_configs)
+    self.assertFalse('test6' in important_configs)
+
+  def testGetSlavesForUnifiedMaster(self):
+    """Tests that we get the slaves for a fake unified master configuration."""
+    test_config = self._GetTestConfig()
+    self.build_config['unified_manifest_version'] = True
+    self.mox.ReplayAll()
+    stage = self.ConstructStage()
+    p, pr = stage._GetSlavesForUnifiedMaster(test_config)
     self.mox.VerifyAll()
 
     important_configs = p + pr
-    self.assertTrue('test5' in p)
-    self.assertTrue('test3' in pr)
+    self.assertTrue('test7' in p)
+    self.assertTrue('test5' in pr)
     self.assertFalse('test1' in important_configs)
     self.assertFalse('test2' in important_configs)
+    self.assertFalse('test3' in important_configs)
     self.assertFalse('test4' in important_configs)
+    self.assertFalse('test6' in important_configs)
 
 
 class AbstractBuildTest(AbstractStageTest,
