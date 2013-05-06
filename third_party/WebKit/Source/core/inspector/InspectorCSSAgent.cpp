@@ -1254,7 +1254,7 @@ InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(Document* documen
     if (ec)
         return 0;
 
-    return m_documentToInspectorStyleSheet.get(document).get();
+    return m_documentToInspectorStyleSheet.get(document);
 }
 
 InspectorStyleSheet* InspectorCSSAgent::assertStyleSheetForId(ErrorString* errorString, const String& styleSheetId)

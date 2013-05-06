@@ -54,7 +54,7 @@ void MediaStreamRegistry::unregisterMediaStreamURL(const KURL& url)
 MediaStreamDescriptor* MediaStreamRegistry::lookupMediaStreamDescriptor(const String& url)
 {
     ASSERT(isMainThread());
-    return m_streamDescriptors.get(url).get();
+    return m_streamDescriptors.get(url);
 }
 
 } // namespace WebCore

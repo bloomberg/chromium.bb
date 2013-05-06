@@ -149,8 +149,9 @@ namespace WTF {
 
         typedef PassRefPtr<P> PassOutType;
         static PassRefPtr<P> passOut(RefPtr<P>& value) { return value.release(); }
-        // FIXME: We should consider changing PeekType to a raw pointer for better performance,
-        // but then callers won't need to call get; doing so will require updating many call sites.
+
+        typedef P* PeekType;
+        static PeekType peek(const RefPtr<P>& value) { return value.get(); }
     };
 
     template<> struct HashTraits<String> : SimpleClassHashTraits<String> {

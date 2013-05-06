@@ -70,7 +70,7 @@ void MediaSourceRegistry::unregisterMediaSourceURL(const KURL& url)
 MediaSource* MediaSourceRegistry::lookupMediaSource(const String& url)
 {
     ASSERT(isMainThread());
-    return m_mediaSources.get(url).get();
+    return m_mediaSources.get(url);
 }
 
 } // namespace WebCore

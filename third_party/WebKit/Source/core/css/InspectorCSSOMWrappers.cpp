@@ -127,7 +127,7 @@ CSSStyleRule* InspectorCSSOMWrappers::getWrapperForRuleInSheets(StyleRule* rule,
 
         collectFromDocumentStyleSheetCollection(styleSheetCollection);
     }
-    return m_styleRuleToCSSOMWrapperMap.get(rule).get();
+    return m_styleRuleToCSSOMWrapperMap.get(rule);
 }
 
 void InspectorCSSOMWrappers::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
