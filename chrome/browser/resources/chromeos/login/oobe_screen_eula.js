@@ -44,6 +44,7 @@ login.createScreen('EulaScreen', 'eula', function() {
         $('accept-button').disabled = false;
         $('eula').classList.remove('eula-loading');
       }
+      $('accept-button').disabled = true;
       $('cros-eula-frame').src = 'chrome://terms';
     },
 
