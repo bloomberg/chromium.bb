@@ -16,7 +16,6 @@
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/chrome.pak',
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
-          '<(PRODUCT_DIR)/lib/libpeerconnection.so',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',
           '<(PRODUCT_DIR)/locales/en-US.pak',
@@ -58,7 +57,6 @@
           '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/libpeerconnection.so',
           '<(PRODUCT_DIR)/ffmpegsumo.so',
         ],
         'isolate_dependency_untracked': [

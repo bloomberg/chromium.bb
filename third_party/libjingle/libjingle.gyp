@@ -11,13 +11,8 @@
     'libjingle_additional_deps%': [],
     'libjingle_peerconnection_additional_deps%': [],
     'libjingle_source%': "source",
-    'conditions': [
-      ['OS=="win" or OS=="mac" or OS=="linux"', {
-        'libpeer_target_type%': 'loadable_module',
-      }, {
-        'libpeer_target_type%': 'static_library',
-      }],
-    ],
+    'libpeer_target_type%': 'static_library',
+    'libpeer_allocator_shim%': 0,
   },
   'target_defaults': {
     'defines': [
@@ -765,7 +760,8 @@
             '<(libjingle_source)/talk/session/tunnel/tunnelsessionclient.h',
           ],
           'conditions': [
-            ['libpeer_target_type!="static_library" and OS!="mac"', {
+            ['libpeer_allocator_shim==1 and '
+             'libpeer_target_type!="static_library" and OS!="mac"', {
               'sources': [
                 'overrides/allocator_shim/allocator_stub.cc',
                 'overrides/allocator_shim/allocator_stub.h',
@@ -870,7 +866,8 @@
             'libjingle_webrtc',
           ],
           'conditions': [
-            ['libpeer_target_type!="static_library"', {
+            ['libpeer_allocator_shim==1 and '
+             'libpeer_target_type!="static_library"', {
               'sources': [
                 'overrides/initialize_module.cc',
               ],

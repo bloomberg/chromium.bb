@@ -51,21 +51,6 @@ static base::FilePath GetLibPeerConnectionPath() {
   return path;
 }
 
-#if !defined(OS_WIN)
-// On platforms other than Windows (i.e. mac and linux based ones),
-// the location of the .so in the installed layout will be different relative
-// to the loading module than it is in the build directory.
-// GetLibPeerConnectionPath returns the path as it will be in the installed
-// layout, but to support isolated tests, we need to also support loading the
-// so in the build layout, which we do here.
-// On Windows, these layouts are the same.
-static base::FilePath GetLibPeerConnectionPathForTests() {
-  base::FilePath path;
-  CHECK(PathService::Get(base::DIR_MODULE, &path));
-  return path.Append(FILE_PATH_LITERAL("libpeerconnection.so"));
-}
-#endif
-
 bool InitializeWebRtcModule() {
   if (g_create_webrtc_media_engine)
     return true;  // InitializeWebRtcModule has already been called.
@@ -76,10 +61,6 @@ bool InitializeWebRtcModule() {
   std::string error;
   static base::NativeLibrary lib =
       base::LoadNativeLibrary(path, &error);
-#if !defined(OS_WIN)
-  if (!lib)
-    lib = base::LoadNativeLibrary(GetLibPeerConnectionPathForTests(), &error);
-#endif
   CHECK(lib);
 
   InitializeModuleFunction initialize_module =
