@@ -1698,6 +1698,8 @@
         'browser/search/instant_service_factory.h',
         'browser/search/local_ntp_source.cc',
         'browser/search/local_ntp_source.h',
+        'browser/search/most_visited_iframe_source.cc',
+        'browser/search/most_visited_iframe_source.h',
         'browser/search/search.cc',
         'browser/search/search.h',
         'browser/search/suggestion_iframe_source.cc',
