@@ -72,20 +72,6 @@ class StartupTest : public UIPerfTest {
     collect_profiling_stats_ = true;
   }
 
-  // Set the command line arguments to enable or disable FCM.
-  // http://crbug.com/178497
-  void SetUpWithCompositingEnabledOnMac() {
-#if defined(OS_MACOSX)
-    launch_arguments_.AppendSwitch(switches::kForceCompositingMode);
-#endif
-  }
-
-  void SetUpWithCompositingDisabledOnMac() {
-#if defined(OS_MACOSX)
-    launch_arguments_.AppendSwitch(switches::kDisableForceCompositingMode);
-#endif
-  }
-
   // Load a complex html file on startup represented by |which_tab|.
   void SetUpWithComplexFileURL(unsigned int which_tab) {
     const char* const kTestPageCyclerDomains[] = {
@@ -318,18 +304,9 @@ class StartupTest : public UIPerfTest {
 };
 
 TEST_F(StartupTest, PerfWarm) {
-  SetUpWithCompositingDisabledOnMac();
   RunStartupTest("warm", "t", WARM, IMPORTANT,
                  UITestBase::DEFAULT_THEME, 0, 0);
 }
-
-#if defined(OS_MACOSX)
-TEST_F(StartupTest, PerfWarmFCM) {
-  SetUpWithCompositingEnabledOnMac();
-  RunStartupTest("warm", "t_fcm", WARM, IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 0, 0);
-}
-#endif
 
 TEST_F(StartupTest, PerfReferenceWarm) {
   UseReferenceBuild();
@@ -347,18 +324,9 @@ TEST_F(StartupTest, PerfReferenceWarm) {
 #endif
 
 TEST_F(StartupTest, MAYBE_PerfCold) {
-  SetUpWithCompositingDisabledOnMac();
   RunStartupTest("cold", "t", COLD, NOT_IMPORTANT,
                  UITestBase::DEFAULT_THEME, 0, 0);
 }
-
-#if defined(OS_MACOSX)
-TEST_F(StartupTest, PerfColdFCM) {
-  SetUpWithCompositingEnabledOnMac();
-  RunStartupTest("cold", "t_fcm", COLD, NOT_IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 0, 0);
-}
-#endif
 
 void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
                                           int tab_count, int nth_timed_tab,
@@ -404,16 +372,8 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
 #endif
 
 TEST_F(StartupTest, MAYBE_PerfFewTabs) {
-  SetUpWithCompositingDisabledOnMac();
   RunPerfTestWithManyTabs("few_tabs", "cmdline", 5, 2, false);
 }
-
-#if defined(OS_MACOSX)
-TEST_F(StartupTest, PerfFewTabsFCM) {
-  SetUpWithCompositingEnabledOnMac();
-  RunPerfTestWithManyTabs("few_tabs", "cmdline_fcm", 5, 2, false);
-}
-#endif
 
 TEST_F(StartupTest, PerfFewTabsReference) {
   UseReferenceBuild();
@@ -421,16 +381,8 @@ TEST_F(StartupTest, PerfFewTabsReference) {
 }
 
 TEST_F(StartupTest, PerfRestoreFewTabs) {
-  SetUpWithCompositingDisabledOnMac();
   RunPerfTestWithManyTabs("few_tabs", "restore", 5, 2, true);
 }
-
-#if defined(OS_MACOSX)
-TEST_F(StartupTest, PerfRestoreFewTabsFCM) {
-  SetUpWithCompositingEnabledOnMac();
-  RunPerfTestWithManyTabs("few_tabs", "restore_fcm", 5, 2, true);
-}
-#endif
 
 TEST_F(StartupTest, PerfRestoreFewTabsReference) {
   UseReferenceBuild();
@@ -489,40 +441,18 @@ TEST_F(StartupTest, PerfRestoreSeveralTabsReference) {
 }
 
 TEST_F(StartupTest, PerfExtensionEmpty) {
-  SetUpWithCompositingDisabledOnMac();
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("empty");
   RunStartupTest("warm", "extension_empty", WARM, NOT_IMPORTANT,
                  UITestBase::DEFAULT_THEME, 1, 0);
 }
 
-#if defined(OS_MACOSX)
-TEST_F(StartupTest, PerfExtensionEmptyFCM) {
-  SetUpWithCompositingEnabledOnMac();
-  SetUpWithFileURL();
-  SetUpWithExtensionsProfile("empty");
-  RunStartupTest("warm", "extension_empty_fcm", WARM, NOT_IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 1, 0);
-}
-#endif
-
 TEST_F(StartupTest, PerfExtensionContentScript1) {
-  SetUpWithCompositingDisabledOnMac();
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("content_scripts1");
   RunStartupTest("warm", "extension_content_scripts1", WARM, NOT_IMPORTANT,
                  UITestBase::DEFAULT_THEME, 1, 0);
 }
-
-#if defined(OS_MACOSX)
-TEST_F(StartupTest, PerfExtensionContentScript1FCM) {
-  SetUpWithCompositingEnabledOnMac();
-  SetUpWithFileURL();
-  SetUpWithExtensionsProfile("content_scripts1");
-  RunStartupTest("warm", "extension_content_scripts1_fcm", WARM, NOT_IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 1, 0);
-}
-#endif
 
 TEST_F(StartupTest, MAYBE_PerfExtensionContentScript50) {
   SetUpWithFileURL();
@@ -537,21 +467,10 @@ TEST_F(StartupTest, MAYBE_PerfComplexTheme) {
 }
 
 TEST_F(StartupTest, ProfilingScript1) {
-  SetUpWithCompositingDisabledOnMac();
   SetUpWithFileURL();
   SetUpWithProfiling();
   RunStartupTest("warm", "profiling_scripts1", WARM, NOT_IMPORTANT,
                  UITestBase::DEFAULT_THEME, 1, 0);
 }
-
-#if defined(OS_MACOSX)
-TEST_F(StartupTest, ProfilingScript1FCM) {
-  SetUpWithCompositingEnabledOnMac();
-  SetUpWithFileURL();
-  SetUpWithProfiling();
-  RunStartupTest("warm", "profiling_scripts1_fcm", WARM, NOT_IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 1, 0);
-}
-#endif
 
 }  // namespace
