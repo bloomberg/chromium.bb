@@ -654,7 +654,8 @@ typedef enum {
   MD_OS_LINUX         = 0x8201,  /* Linux */
   MD_OS_SOLARIS       = 0x8202,  /* Solaris */
   MD_OS_ANDROID       = 0x8203,  /* Android */
-  MD_OS_PS3           = 0x8204   /* PS3 */
+  MD_OS_PS3           = 0x8204,  /* PS3 */
+  MD_OS_NACL          = 0x8205   /* Native Client (NaCl) */
 } MDOSPlatform;
 
 typedef struct {

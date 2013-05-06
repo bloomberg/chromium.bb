@@ -554,6 +554,12 @@ bool MinidumpProcessor::GetOSInfo(Minidump *dump, SystemInfo *info) {
 
     case MD_OS_PS3: {
       info->os = "PS3";
+      break;
+    }
+
+    case MD_OS_NACL: {
+      info->os = "NaCl";
+      break;
     }
 
     default: {

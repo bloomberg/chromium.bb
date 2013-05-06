@@ -3307,6 +3307,10 @@ string MinidumpSystemInfo::GetOS() {
       os = "ps3";
       break;
 
+    case MD_OS_NACL:
+      os = "nacl";
+      break;
+
     default:
       BPLOG(ERROR) << "MinidumpSystemInfo unknown OS for platform " <<
                       HexString(system_info_.platform_id);
