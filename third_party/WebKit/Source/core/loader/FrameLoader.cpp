@@ -501,7 +501,7 @@ void FrameLoader::didExplicitOpen()
 
     // Calling document.open counts as committing the first real document load.
     if (!m_stateMachine.committedFirstRealDocumentLoad())
-        m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
+        m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
     
     // Prevent window.open(url) -- eg window.open("about:blank") -- from blowing away results
     // from a subsequent window.document.open / window.document.write call. 
@@ -564,9 +564,6 @@ void FrameLoader::clear(bool clearWindowProperties, bool clearScriptObjects, boo
     m_checkTimer.stop();
     m_shouldCallCheckCompleted = false;
     m_shouldCallCheckLoadComplete = false;
-
-    if (m_stateMachine.isDisplayingInitialEmptyDocument() && m_stateMachine.committedFirstRealDocumentLoad())
-        m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
 }
 
 void FrameLoader::receivedFirstData()
@@ -610,10 +607,8 @@ void FrameLoader::didBeginDocument(bool dispatch)
     m_didCallImplicitClose = false;
     m_frame->document()->setReadyState(Document::Loading);
 
-    if (m_pendingStateObject) {
-        m_frame->document()->statePopped(m_pendingStateObject.get());
-        m_pendingStateObject.clear();
-    }
+    if (history()->currentItem())
+        m_frame->document()->statePopped(history()->currentItem()->stateObject());
 
     if (dispatch)
         dispatchDidClearWindowObjectsInAllWorlds();
@@ -918,8 +913,6 @@ void FrameLoader::handleFallbackContent()
 
 void FrameLoader::provisionalLoadStarted()
 {
-    if (m_stateMachine.firstLayoutDone())
-        m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
     m_frame->navigationScheduler()->cancel();
     m_quickRedirectComing = false;
 }
@@ -1047,7 +1040,6 @@ void FrameLoader::prepareForHistoryNavigation()
         frame()->page()->backForward()->setCurrentItem(currentItem.get());
 
         ASSERT(stateMachine()->isDisplayingInitialEmptyDocument());
-        stateMachine()->advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
         stateMachine()->advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
     }
 }
@@ -1563,8 +1555,6 @@ void FrameLoader::transitionToCommitted()
             scrollAnimator->cancelAnimations();
     }
 
-    history()->updateForCommit();
-
     // The call to closeURL() invokes the unload event handler, which can execute arbitrary
     // JavaScript. If the script initiates a new load, we need to abandon the current load,
     // or the two will stomp each other.
@@ -1591,66 +1581,8 @@ void FrameLoader::transitionToCommitted()
     if (isLoadingMainFrame())
         m_frame->page()->chrome()->client()->needTouchEvents(false);
 
-    // Handle adding the URL to the back/forward list.
-    DocumentLoader* dl = m_documentLoader.get();
-
-    switch (m_loadType) {
-        case FrameLoadTypeForward:
-        case FrameLoadTypeBack:
-        case FrameLoadTypeIndexedBackForward:
-            if (m_frame->page()) {
-                // If the first load within a frame is a navigation within a back/forward list that was attached
-                // without any of the items being loaded then we need to update the history in a similar manner as
-                // for a standard load with the exception of updating the back/forward list (<rdar://problem/8091103>).
-                if (!m_stateMachine.committedFirstRealDocumentLoad() && isLoadingMainFrame())
-                    history()->updateForStandardLoad(HistoryController::UpdateAllExceptBackForwardList);
-
-                history()->updateForBackForwardNavigation();
-
-                if (history()->currentItem())
-                    m_pendingStateObject = history()->currentItem()->stateObject();
-
-                // Create a document view for this document.
-                m_client->transitionToCommittedForNewPage();
-            }
-            break;
-
-        case FrameLoadTypeReload:
-        case FrameLoadTypeReloadFromOrigin:
-        case FrameLoadTypeSame:
-        case FrameLoadTypeReplace:
-            history()->updateForReload();
-            m_client->transitionToCommittedForNewPage();
-            break;
-
-        case FrameLoadTypeStandard:
-            history()->updateForStandardLoad();
-            if (m_frame->view())
-                m_frame->view()->setScrollbarsSuppressed(true);
-            m_client->transitionToCommittedForNewPage();
-            break;
-
-        case FrameLoadTypeRedirectWithLockedBackForwardList:
-            history()->updateForRedirectWithLockedBackForwardList();
-            m_client->transitionToCommittedForNewPage();
-            break;
-
-        // FIXME Remove this check when dummy ds is removed (whatever "dummy ds" is).
-        // An exception should be thrown if we're in the FrameLoadTypeUninitialized state.
-        default:
-            ASSERT_NOT_REACHED();
-    }
-
-    m_documentLoader->writer()->setMIMEType(dl->responseMIMEType());
-
-    // Tell the client we've committed this URL.
-    ASSERT(m_frame->view());
-
-    if (m_stateMachine.creatingInitialEmptyDocument())
-        return;
-
-    if (!m_stateMachine.committedFirstRealDocumentLoad())
-        m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
+    history()->updateForCommit();
+    m_client->transitionToCommittedForNewPage();
 }
 
 void FrameLoader::clientRedirectCancelledOrFinished()
@@ -1931,20 +1863,12 @@ void FrameLoader::didFirstLayout()
 {
     if (m_frame->page() && isBackForwardLoadType(m_loadType))
         history()->restoreScrollPositionAndViewState();
-
-    if (m_stateMachine.committedFirstRealDocumentLoad() && !m_stateMachine.isDisplayingInitialEmptyDocument() && !m_stateMachine.firstLayoutDone())
-        m_stateMachine.advanceTo(FrameLoaderStateMachine::FirstLayoutDone);
 }
 
 void FrameLoader::frameLoadCompleted()
 {
     // Note: Can be called multiple times.
     history()->updateForFrameLoadCompleted();
-
-    // After a canceled provisional load, firstLayoutDone is false.
-    // Reset it to true if we're displaying a page.
-    if (m_documentLoader && m_stateMachine.committedFirstRealDocumentLoad() && !m_stateMachine.isDisplayingInitialEmptyDocument() && !m_stateMachine.firstLayoutDone())
-        m_stateMachine.advanceTo(FrameLoaderStateMachine::FirstLayoutDone);
 }
 
 void FrameLoader::detachChildren()
@@ -2861,7 +2785,6 @@ void FrameLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_documentLoader, "documentLoader");
     info.addMember(m_provisionalDocumentLoader, "provisionalDocumentLoader");
     info.addMember(m_policyDocumentLoader, "policyDocumentLoader");
-    info.addMember(m_pendingStateObject, "pendingStateObject");
     info.addMember(m_submittedFormURL, "submittedFormURL");
     info.addMember(m_checkTimer, "checkTimer");
     info.addMember(m_opener, "opener");

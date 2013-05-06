@@ -46,8 +46,6 @@ class StringWithDirection;
 class HistoryController {
     WTF_MAKE_NONCOPYABLE(HistoryController);
 public:
-    enum HistoryUpdateType { UpdateAll, UpdateAllExceptBackForwardList };
-
     explicit HistoryController(Frame*);
     ~HistoryController();
 
@@ -61,10 +59,6 @@ public:
     void saveDocumentAndScrollState();
     void restoreDocumentState();
 
-    void updateForBackForwardNavigation();
-    void updateForReload();
-    void updateForStandardLoad(HistoryUpdateType updateType = UpdateAll);
-    void updateForRedirectWithLockedBackForwardList();
     void updateForClientRedirect();
     void updateForCommit();
     void updateForSameDocumentNavigation();
@@ -93,6 +87,11 @@ private:
     void initializeItem(HistoryItem*);
     PassRefPtr<HistoryItem> createItem();
     PassRefPtr<HistoryItem> createItemTree(Frame* targetFrame, bool clipAtTarget);
+
+    void updateForBackForwardNavigation();
+    void updateForReload();
+    void updateForStandardLoad();
+    void updateForRedirectWithLockedBackForwardList();
 
     void recursiveSetProvisionalItem(HistoryItem*, HistoryItem*, FrameLoadType);
     void recursiveGoToItem(HistoryItem*, HistoryItem*, FrameLoadType);

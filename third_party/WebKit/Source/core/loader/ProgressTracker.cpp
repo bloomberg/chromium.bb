@@ -30,8 +30,8 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/loader/FrameLoaderStateMachine.h"
 #include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/platform/Logging.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
@@ -196,7 +196,7 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const char*, i
         percentOfRemainingBytes = 1.0;
     
     // For documents that use WebCore's layout system, treat first layout as the half-way point.
-    bool useClampedMaxProgress = !frame->loader()->stateMachine()->firstLayoutDone();
+    bool useClampedMaxProgress = !frame->view()->didFirstLayout();
     double maxProgressValue = useClampedMaxProgress ? 0.5 : finalProgressValue;
     increment = (maxProgressValue - m_progressValue) * percentOfRemainingBytes;
     m_progressValue += increment;

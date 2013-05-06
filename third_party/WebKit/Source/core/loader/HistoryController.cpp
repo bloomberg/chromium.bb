@@ -308,7 +308,7 @@ void HistoryController::updateForReload()
 //     1) Back/forward: The m_currentItem is part of this mechanism.
 //     2) Global history: Handled by the client.
 //
-void HistoryController::updateForStandardLoad(HistoryUpdateType updateType)
+void HistoryController::updateForStandardLoad()
 {
     LOG(History, "WebCoreHistory: Updating History for Standard Load in frame %s", m_frame->loader()->documentLoader()->url().string().ascii().data());
 
@@ -317,10 +317,8 @@ void HistoryController::updateForStandardLoad(HistoryUpdateType updateType)
     const KURL& historyURL = frameLoader->documentLoader()->urlForHistory();
 
     if (!frameLoader->documentLoader()->isClientRedirect()) {
-        if (!historyURL.isEmpty()) {
-            if (updateType != UpdateAllExceptBackForwardList)
-                updateBackForwardListClippedAtTarget(true);
-        }
+        if (!historyURL.isEmpty())
+            updateBackForwardListClippedAtTarget(true);
     } else {
         // The client redirect replaces the current history item.
         updateCurrentItem();
@@ -375,7 +373,7 @@ void HistoryController::updateForCommit()
     FrameLoadType type = frameLoader->loadType();
     if (isBackForwardLoadType(type)
         || isReplaceLoadTypeWithProvisionalItem(type)
-        || (isReloadTypeWithProvisionalItem(type) && !frameLoader->provisionalDocumentLoader()->unreachableURL().isEmpty())) {
+        || (isReloadTypeWithProvisionalItem(type) && !frameLoader->documentLoader()->unreachableURL().isEmpty())) {
         // Once committed, we want to use current item for saving DocState, and
         // the provisional item for restoring state.
         // Note previousItem must be set before we close the URL, which will
@@ -392,6 +390,28 @@ void HistoryController::updateForCommit()
         Page* page = m_frame->page();
         ASSERT(page);
         page->mainFrame()->loader()->history()->recursiveUpdateForCommit();
+    }
+
+    switch (type) {
+        case FrameLoadTypeForward:
+        case FrameLoadTypeBack:
+        case FrameLoadTypeIndexedBackForward:
+            updateForBackForwardNavigation();
+            return;
+        case FrameLoadTypeReload:
+        case FrameLoadTypeReloadFromOrigin:
+        case FrameLoadTypeSame:
+        case FrameLoadTypeReplace:
+            updateForReload();
+            return;
+        case FrameLoadTypeStandard:
+            updateForStandardLoad();
+            return;
+        case FrameLoadTypeRedirectWithLockedBackForwardList:
+            updateForRedirectWithLockedBackForwardList();
+            return;
+        default:
+            ASSERT_NOT_REACHED();
     }
 }
 

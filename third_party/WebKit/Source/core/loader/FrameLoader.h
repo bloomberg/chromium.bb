@@ -389,8 +389,6 @@ private:
     PageDismissalType m_pageDismissalEventBeingDispatched;
     bool m_isComplete;
 
-    RefPtr<SerializedScriptValue> m_pendingStateObject;
-
     bool m_needsClear;
 
     KURL m_submittedFormURL;
