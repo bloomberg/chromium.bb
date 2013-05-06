@@ -363,10 +363,7 @@ class Manager(object):
         # Remove these files from the results directory so they don't take up too much space on the buildbot.
         # The tools use the version we uploaded to the results server anyway.
         self._filesystem.remove(times_json_path)
-        # FIXME: Temporarily keep these in the results directory to aid debugging why slow
-        # tests sometimes don't get listed in the flakiness dashboard.
-        if self._options.builder_name != "WebKit Linux":
-            self._filesystem.remove(incremental_results_path)
+        self._filesystem.remove(incremental_results_path)
 
     def _copy_results_html_file(self, destination_path):
         base_dir = self._port.path_from_webkit_base('LayoutTests', 'fast', 'harness')
