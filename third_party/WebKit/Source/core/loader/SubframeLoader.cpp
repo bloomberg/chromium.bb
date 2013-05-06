@@ -70,7 +70,7 @@ void SubframeLoader::clear()
     m_containsPlugins = false;
 }
 
-bool SubframeLoader::requestFrame(HTMLFrameOwnerElement* ownerElement, const String& urlString, const AtomicString& frameName, bool lockHistory, bool lockBackForwardList)
+bool SubframeLoader::requestFrame(HTMLFrameOwnerElement* ownerElement, const String& urlString, const AtomicString& frameName, bool lockBackForwardList)
 {
     // Support for <frame src="javascript:string">
     KURL scriptURL;
@@ -81,7 +81,7 @@ bool SubframeLoader::requestFrame(HTMLFrameOwnerElement* ownerElement, const Str
     } else
         url = completeURL(urlString);
 
-    Frame* frame = loadOrRedirectSubframe(ownerElement, url, frameName, lockHistory, lockBackForwardList);
+    Frame* frame = loadOrRedirectSubframe(ownerElement, url, frameName, lockBackForwardList);
     if (!frame)
         return false;
 
@@ -178,7 +178,7 @@ bool SubframeLoader::requestObject(HTMLPlugInImageElement* ownerElement, const S
     // If the plug-in element already contains a subframe, loadOrRedirectSubframe will re-use it. Otherwise,
     // it will create a new frame and set it as the RenderPart's widget, causing what was previously 
     // in the widget to be torn down.
-    return loadOrRedirectSubframe(ownerElement, completedURL, frameName, true, true);
+    return loadOrRedirectSubframe(ownerElement, completedURL, frameName, true);
 }
 
 PassRefPtr<Widget> SubframeLoader::createJavaAppletWidget(const IntSize& size, HTMLAppletElement* element, const Vector<String>& paramNames, const Vector<String>& paramValues)
@@ -226,11 +226,11 @@ PassRefPtr<Widget> SubframeLoader::createJavaAppletWidget(const IntSize& size, H
     return widget;
 }
 
-Frame* SubframeLoader::loadOrRedirectSubframe(HTMLFrameOwnerElement* ownerElement, const KURL& url, const AtomicString& frameName, bool lockHistory, bool lockBackForwardList)
+Frame* SubframeLoader::loadOrRedirectSubframe(HTMLFrameOwnerElement* ownerElement, const KURL& url, const AtomicString& frameName, bool lockBackForwardList)
 {
     Frame* frame = ownerElement->contentFrame();
     if (frame)
-        frame->navigationScheduler()->scheduleLocationChange(m_frame->document()->securityOrigin(), url.string(), m_frame->loader()->outgoingReferrer(), lockHistory, lockBackForwardList);
+        frame->navigationScheduler()->scheduleLocationChange(m_frame->document()->securityOrigin(), url.string(), m_frame->loader()->outgoingReferrer(), lockBackForwardList);
     else
         frame = loadSubframe(ownerElement, url, frameName, m_frame->loader()->outgoingReferrer());
 

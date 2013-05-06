@@ -453,7 +453,7 @@ void InspectorPageAgent::navigate(ErrorString*, const String& url)
 {
     UserGestureIndicator indicator(DefinitelyProcessingNewUserGesture);
     Frame* frame = m_page->mainFrame();
-    frame->loader()->changeLocation(frame->document()->securityOrigin(), frame->document()->completeURL(url), "", false, false);
+    frame->loader()->changeLocation(frame->document()->securityOrigin(), frame->document()->completeURL(url), "", false);
 }
 
 static PassRefPtr<TypeBuilder::Page::Cookie> buildObjectForCookie(const Cookie& cookie)

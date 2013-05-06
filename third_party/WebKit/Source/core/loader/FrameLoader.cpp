@@ -268,21 +268,21 @@ void FrameLoader::setDefersLoading(bool defers)
     }
 }
 
-void FrameLoader::changeLocation(SecurityOrigin* securityOrigin, const KURL& url, const String& referrer, bool lockHistory, bool lockBackForwardList, bool refresh)
+void FrameLoader::changeLocation(SecurityOrigin* securityOrigin, const KURL& url, const String& referrer, bool lockBackForwardList, bool refresh)
 {
     urlSelected(FrameLoadRequest(securityOrigin, ResourceRequest(url, referrer, refresh ? ReloadIgnoringCacheData : UseProtocolCachePolicy), "_self"),
-        0, lockHistory, lockBackForwardList, MaybeSendReferrer, ReplaceDocumentIfJavaScriptURL);
+        0, lockBackForwardList, MaybeSendReferrer, ReplaceDocumentIfJavaScriptURL);
 }
 
-void FrameLoader::urlSelected(const KURL& url, const String& passedTarget, PassRefPtr<Event> triggeringEvent, bool lockHistory, bool lockBackForwardList, ShouldSendReferrer shouldSendReferrer)
+void FrameLoader::urlSelected(const KURL& url, const String& passedTarget, PassRefPtr<Event> triggeringEvent, bool lockBackForwardList, ShouldSendReferrer shouldSendReferrer)
 {
     urlSelected(FrameLoadRequest(m_frame->document()->securityOrigin(), ResourceRequest(url), passedTarget),
-        triggeringEvent, lockHistory, lockBackForwardList, shouldSendReferrer, DoNotReplaceDocumentIfJavaScriptURL);
+        triggeringEvent, lockBackForwardList, shouldSendReferrer, DoNotReplaceDocumentIfJavaScriptURL);
 }
 
 // The shouldReplaceDocumentIfJavaScriptURL parameter will go away when the FIXME to eliminate the
 // corresponding parameter from ScriptController::executeIfJavaScriptURL() is addressed.
-void FrameLoader::urlSelected(const FrameLoadRequest& passedRequest, PassRefPtr<Event> triggeringEvent, bool lockHistory, bool lockBackForwardList, ShouldSendReferrer shouldSendReferrer, ShouldReplaceDocumentIfJavaScriptURL shouldReplaceDocumentIfJavaScriptURL)
+void FrameLoader::urlSelected(const FrameLoadRequest& passedRequest, PassRefPtr<Event> triggeringEvent, bool lockBackForwardList, ShouldSendReferrer shouldSendReferrer, ShouldReplaceDocumentIfJavaScriptURL shouldReplaceDocumentIfJavaScriptURL)
 {
     ASSERT(!m_suppressOpenerInNewFrame);
 
@@ -299,7 +299,7 @@ void FrameLoader::urlSelected(const FrameLoadRequest& passedRequest, PassRefPtr<
         m_suppressOpenerInNewFrame = true;
     addHTTPOriginIfNeeded(frameRequest.resourceRequest(), outgoingOrigin());
 
-    loadFrameRequest(frameRequest, lockHistory, lockBackForwardList, triggeringEvent, 0, shouldSendReferrer);
+    loadFrameRequest(frameRequest, lockBackForwardList, triggeringEvent, 0, shouldSendReferrer);
 
     m_suppressOpenerInNewFrame = false;
 }
@@ -810,7 +810,7 @@ void FrameLoader::loadURLIntoChildFrame(const KURL& url, const String& referer, 
         }
     }
 
-    childFrame->loader()->loadURL(url, referer, "_self", false, FrameLoadTypeRedirectWithLockedBackForwardList, 0, 0);
+    childFrame->loader()->loadURL(url, referer, "_self", FrameLoadTypeRedirectWithLockedBackForwardList, 0, 0);
 }
 
 ObjectContentType FrameLoader::defaultObjectContentType(const KURL& url, const String& mimeTypeIn, bool shouldPreferPlugInsForImages)
@@ -1041,7 +1041,7 @@ void FrameLoader::setupForReplace()
     detachChildren();
 }
 
-void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockHistory, bool lockBackForwardList,
+void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBackForwardList,
     PassRefPtr<Event> event, PassRefPtr<FormState> formState, ShouldSendReferrer shouldSendReferrer)
 {    
     // Protect frame from getting blown away inside dispatchBeforeLoadEvent in loadWithDocumentLoader.
@@ -1072,9 +1072,9 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockHis
         loadType = FrameLoadTypeStandard;
 
     if (request.resourceRequest().httpMethod() == "POST")
-        loadPostRequest(request.resourceRequest(), referrer, request.frameName(), lockHistory, loadType, event, formState.get());
+        loadPostRequest(request.resourceRequest(), referrer, request.frameName(), loadType, event, formState.get());
     else
-        loadURL(request.resourceRequest().url(), referrer, request.frameName(), lockHistory, loadType, event, formState.get());
+        loadURL(request.resourceRequest().url(), referrer, request.frameName(), loadType, event, formState.get());
 
     // FIXME: It's possible this targetFrame will not be the same frame that was targeted by the actual
     // load if frame names have changed.
@@ -1088,7 +1088,7 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockHis
     }
 }
 
-void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const String& frameName, bool lockHistory, FrameLoadType newLoadType,
+void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const String& frameName, FrameLoadType newLoadType,
     PassRefPtr<Event> event, PassRefPtr<FormState> prpFormState)
 {
     if (m_inStopAllLoaders)
@@ -1111,7 +1111,7 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
     // The search for a target frame is done earlier in the case of form submission.
     Frame* targetFrame = isFormSubmission ? 0 : findFrameForNavigation(frameName);
     if (targetFrame && targetFrame != m_frame) {
-        targetFrame->loader()->loadURL(newURL, referrer, "_self", lockHistory, newLoadType, event, formState.release());
+        targetFrame->loader()->loadURL(newURL, referrer, "_self", newLoadType, event, formState.release());
         return;
     }
 
@@ -1126,7 +1126,7 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
     }
 
     bool sameURL = shouldTreatURLAsSameAsCurrent(newURL);
-    loadWithNavigationAction(request, action, lockHistory, newLoadType, formState.release());
+    loadWithNavigationAction(request, action, newLoadType, formState.release());
     // Example of this case are sites that reload the same URL with a different cookie
     // driving the generated content, or a master frame with links that drive a target
     // frame, where the user has clicked on the same link repeatedly.
@@ -1166,7 +1166,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     load(loader.get());
 }
 
-void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, bool lockHistory, FrameLoadType type, PassRefPtr<FormState> formState, const String& overrideEncoding)
+void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, FrameLoadType type, PassRefPtr<FormState> formState, const String& overrideEncoding)
 {
     RefPtr<DocumentLoader> loader = m_client->createDocumentLoader(request, defaultSubstituteDataForURL(request.url()));
     loader->setTriggeringAction(action);
@@ -1331,7 +1331,7 @@ void FrameLoader::reload(bool endToEndReload, const KURL& overrideURL, const Str
 
     FrameLoadType type = endToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
     NavigationAction action(request, type, isFormSubmission);
-    loadWithNavigationAction(request, action, false, type, 0, overrideEncoding);
+    loadWithNavigationAction(request, action, type, 0, overrideEncoding);
 }
 
 void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItemPolicy)
@@ -2048,7 +2048,7 @@ void FrameLoader::addHTTPOriginIfNeeded(ResourceRequest& request, const String& 
     request.setHTTPOrigin(origin);
 }
 
-void FrameLoader::loadPostRequest(const ResourceRequest& inRequest, const String& referrer, const String& frameName, bool lockHistory, FrameLoadType loadType, PassRefPtr<Event> event, PassRefPtr<FormState> prpFormState)
+void FrameLoader::loadPostRequest(const ResourceRequest& inRequest, const String& referrer, const String& frameName, FrameLoadType loadType, PassRefPtr<Event> event, PassRefPtr<FormState> prpFormState)
 {
     RefPtr<FormState> formState = prpFormState;
 
@@ -2075,11 +2075,11 @@ void FrameLoader::loadPostRequest(const ResourceRequest& inRequest, const String
     if (!frameName.isEmpty()) {
         // The search for a target frame is done earlier in the case of form submission.
         if (Frame* targetFrame = formState ? 0 : findFrameForNavigation(frameName))
-            targetFrame->loader()->loadWithNavigationAction(workingResourceRequest, action, lockHistory, loadType, formState.release());
+            targetFrame->loader()->loadWithNavigationAction(workingResourceRequest, action, loadType, formState.release());
         else
             checkNewWindowPolicyAndContinue(formState.release(), frameName, action);
     } else
-        loadWithNavigationAction(workingResourceRequest, action, lockHistory, loadType, formState.release());
+        loadWithNavigationAction(workingResourceRequest, action, loadType, formState.release());
 }
 
 unsigned long FrameLoader::loadResourceSynchronously(const ResourceRequest& request, StoredCredentials storedCredentials, ResourceError& error, ResourceResponse& response, Vector<char>& data)
@@ -2375,7 +2375,7 @@ void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formStat
 
     // FIXME: We can't just send our NavigationAction to the new FrameLoader's loadWithNavigationAction(), we need to
     // create a new one with a default NavigationType and no triggering event. We should figure out why.
-    mainFrame->loader()->loadWithNavigationAction(action.resourceRequest(), NavigationAction(action.resourceRequest()), false, FrameLoadTypeStandard, formState);
+    mainFrame->loader()->loadWithNavigationAction(action.resourceRequest(), NavigationAction(action.resourceRequest()), FrameLoadTypeStandard, formState);
 }
 
 void FrameLoader::requestFromDelegate(ResourceRequest& request, unsigned long& identifier, ResourceError& error)
@@ -2621,7 +2621,7 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem* item, FrameLoadType loa
         action = NavigationAction(requestForOriginalURL, loadType, false);
     }
 
-    loadWithNavigationAction(request, action, false, loadType, 0);
+    loadWithNavigationAction(request, action, loadType, 0);
 }
 
 // Loads content into this frame, as specified by history item

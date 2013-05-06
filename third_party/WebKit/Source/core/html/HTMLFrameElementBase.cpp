@@ -72,7 +72,7 @@ bool HTMLFrameElementBase::isURLAllowed() const
     return true;
 }
 
-void HTMLFrameElementBase::openURL(bool lockHistory, bool lockBackForwardList)
+void HTMLFrameElementBase::openURL(bool lockBackForwardList)
 {
     if (!isURLAllowed())
         return;
@@ -84,7 +84,7 @@ void HTMLFrameElementBase::openURL(bool lockHistory, bool lockBackForwardList)
     if (!parentFrame)
         return;
 
-    parentFrame->loader()->subframeLoader()->requestFrame(this, m_URL, m_frameName, lockHistory, lockBackForwardList);
+    parentFrame->loader()->subframeLoader()->requestFrame(this, m_URL, m_frameName, lockBackForwardList);
 }
 
 void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -185,7 +185,7 @@ void HTMLFrameElementBase::setLocation(const String& str)
     m_URL = AtomicString(str);
 
     if (inDocument())
-        openURL(false, false);
+        openURL(false);
 }
 
 bool HTMLFrameElementBase::supportsFocus() const

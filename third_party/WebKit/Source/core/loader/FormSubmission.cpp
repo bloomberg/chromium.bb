@@ -124,7 +124,7 @@ void FormSubmission::Attributes::copyFrom(const Attributes& other)
     m_acceptCharset = other.m_acceptCharset;
 }
 
-inline FormSubmission::FormSubmission(Method method, const KURL& action, const String& target, const String& contentType, PassRefPtr<FormState> state, PassRefPtr<FormData> data, const String& boundary, bool lockHistory, PassRefPtr<Event> event)
+inline FormSubmission::FormSubmission(Method method, const KURL& action, const String& target, const String& contentType, PassRefPtr<FormState> state, PassRefPtr<FormData> data, const String& boundary, PassRefPtr<Event> event)
     : m_method(method)
     , m_action(action)
     , m_target(target)
@@ -132,12 +132,11 @@ inline FormSubmission::FormSubmission(Method method, const KURL& action, const S
     , m_formState(state)
     , m_formData(data)
     , m_boundary(boundary)
-    , m_lockHistory(lockHistory)
     , m_event(event)
 {
 }
 
-PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const Attributes& attributes, PassRefPtr<Event> event, bool lockHistory, FormSubmissionTrigger trigger)
+PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const Attributes& attributes, PassRefPtr<Event> event, FormSubmissionTrigger trigger)
 {
     ASSERT(form);
 
@@ -219,7 +218,7 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
     formData->setContainsPasswordData(containsPasswordData);
     String targetOrBaseTarget = copiedAttributes.target().isEmpty() ? document->baseTarget() : copiedAttributes.target();
     RefPtr<FormState> formState = FormState::create(form, formValues, document, trigger);
-    return adoptRef(new FormSubmission(copiedAttributes.method(), actionURL, targetOrBaseTarget, encodingType, formState.release(), formData.release(), boundary, lockHistory, event));
+    return adoptRef(new FormSubmission(copiedAttributes.method(), actionURL, targetOrBaseTarget, encodingType, formState.release(), formData.release(), boundary, event));
 }
 
 KURL FormSubmission::requestURL() const

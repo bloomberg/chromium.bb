@@ -96,15 +96,15 @@ public:
 
     // FIXME: These are all functions which start loads. We have too many.
     void loadURLIntoChildFrame(const KURL&, const String& referer, Frame*);
-    void loadFrameRequest(const FrameLoadRequest&, bool lockHistory, bool lockBackForwardList,  // Called by submitForm, calls loadPostRequest and loadURL.
+    void loadFrameRequest(const FrameLoadRequest&, bool lockBackForwardList,  // Called by submitForm, calls loadPostRequest and loadURL.
         PassRefPtr<Event>, PassRefPtr<FormState>, ShouldSendReferrer);
 
     void load(const FrameLoadRequest&);
 
     unsigned long loadResourceSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
 
-    void changeLocation(SecurityOrigin*, const KURL&, const String& referrer, bool lockHistory = true, bool lockBackForwardList = true, bool refresh = false);
-    void urlSelected(const KURL&, const String& target, PassRefPtr<Event>, bool lockHistory, bool lockBackForwardList, ShouldSendReferrer);
+    void changeLocation(SecurityOrigin*, const KURL&, const String& referrer, bool lockBackForwardList = true, bool refresh = false);
+    void urlSelected(const KURL&, const String& target, PassRefPtr<Event>, bool lockBackForwardList, ShouldSendReferrer);
     void submitForm(PassRefPtr<FormSubmission>);
 
     void reload(bool endToEndReload = false, const KURL& overrideURL = KURL(), const String& overrideEncoding = String());
@@ -313,18 +313,18 @@ private:
 
     void dispatchDidCommitLoad();
 
-    void urlSelected(const FrameLoadRequest&, PassRefPtr<Event>, bool lockHistory, bool lockBackForwardList, ShouldSendReferrer, ShouldReplaceDocumentIfJavaScriptURL);
+    void urlSelected(const FrameLoadRequest&, PassRefPtr<Event>, bool lockBackForwardList, ShouldSendReferrer, ShouldReplaceDocumentIfJavaScriptURL);
 
     void loadWithDocumentLoader(DocumentLoader*, FrameLoadType, PassRefPtr<FormState>); // Calls continueLoadAfterNavigationPolicy
     void load(DocumentLoader*);                                                         // Calls loadWithDocumentLoader   
 
     void loadWithNavigationAction(const ResourceRequest&, const NavigationAction&,      // Calls loadWithDocumentLoader
-        bool lockHistory, FrameLoadType, PassRefPtr<FormState>, const String& overrideEncoding = String());
+        FrameLoadType, PassRefPtr<FormState>, const String& overrideEncoding = String());
 
     void loadPostRequest(const ResourceRequest&, const String& referrer,                // Called by loadFrameRequest, calls loadWithNavigationAction
-        const String& frameName, bool lockHistory, FrameLoadType, PassRefPtr<Event>, PassRefPtr<FormState>);
+        const String& frameName, FrameLoadType, PassRefPtr<Event>, PassRefPtr<FormState>);
     void loadURL(const KURL&, const String& referrer, const String& frameName,          // Called by loadFrameRequest, calls loadWithNavigationAction or dispatches to navigation policy delegate
-        bool lockHistory, FrameLoadType, PassRefPtr<Event>, PassRefPtr<FormState>);
+        FrameLoadType, PassRefPtr<Event>, PassRefPtr<FormState>);
 
     bool shouldReload(const KURL& currentURL, const KURL& destinationURL);
 

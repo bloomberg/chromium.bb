@@ -66,7 +66,7 @@ private:
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
     void setNameAndOpenURL();
-    void openURL(bool lockHistory = true, bool lockBackForwardList = true);
+    void openURL(bool lockBackForwardList = true);
 
     AtomicString m_URL;
     AtomicString m_frameName;

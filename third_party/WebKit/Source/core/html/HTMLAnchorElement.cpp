@@ -547,7 +547,7 @@ void HTMLAnchorElement::handleClick(Event* event)
 
         frame->loader()->client()->startDownload(request, fastGetAttribute(downloadAttr));
     } else
-        frame->loader()->urlSelected(kurl, target(), event, false, false, hasRel(RelationNoReferrer) ? NeverSendReferrer : MaybeSendReferrer);
+        frame->loader()->urlSelected(kurl, target(), event, false, hasRel(RelationNoReferrer) ? NeverSendReferrer : MaybeSendReferrer);
 
     sendPings(kurl);
 }

@@ -174,7 +174,7 @@ static void openNewWindow(const KURL& urlToLoad, Frame* frame)
                 return;
             newPage->chrome()->show();
         }
-        newPage->mainFrame()->loader()->loadFrameRequest(request, false, false, 0, 0, MaybeSendReferrer);
+        newPage->mainFrame()->loader()->loadFrameRequest(request, false, 0, 0, MaybeSendReferrer);
     }
 }
 
@@ -290,12 +290,12 @@ void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)
         break;
     case ContextMenuItemTagOpenLink:
         if (Frame* targetFrame = m_hitTestResult.targetFrame())
-            targetFrame->loader()->loadFrameRequest(FrameLoadRequest(frame->document()->securityOrigin(), ResourceRequest(m_hitTestResult.absoluteLinkURL(), frame->loader()->outgoingReferrer())), false, false, 0, 0, MaybeSendReferrer);
+            targetFrame->loader()->loadFrameRequest(FrameLoadRequest(frame->document()->securityOrigin(), ResourceRequest(m_hitTestResult.absoluteLinkURL(), frame->loader()->outgoingReferrer())), false, 0, 0, MaybeSendReferrer);
         else
             openNewWindow(m_hitTestResult.absoluteLinkURL(), frame);
         break;
     case ContextMenuItemTagOpenLinkInThisWindow:
-        frame->loader()->loadFrameRequest(FrameLoadRequest(frame->document()->securityOrigin(), ResourceRequest(m_hitTestResult.absoluteLinkURL(), frame->loader()->outgoingReferrer())), false, false, 0, 0, MaybeSendReferrer);
+        frame->loader()->loadFrameRequest(FrameLoadRequest(frame->document()->securityOrigin(), ResourceRequest(m_hitTestResult.absoluteLinkURL(), frame->loader()->outgoingReferrer())), false, 0, 0, MaybeSendReferrer);
         break;
     case ContextMenuItemTagBold:
         frame->editor()->command("ToggleBold").execute();
