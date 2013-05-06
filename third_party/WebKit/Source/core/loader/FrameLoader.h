@@ -109,9 +109,7 @@ public:
     void urlSelected(const KURL&, const String& target, PassRefPtr<Event>, bool lockHistory, bool lockBackForwardList, ShouldSendReferrer);
     void submitForm(PassRefPtr<FormSubmission>);
 
-    void reload(bool endToEndReload = false);
-    void reloadWithOverrideEncoding(const String& overrideEncoding);
-    void reloadWithOverrideURL(const KURL& overrideUrl, bool endToEndReload = false);
+    void reload(bool endToEndReload = false, const KURL& overrideURL = KURL(), const String& overrideEncoding = String());
 
     void loadItem(HistoryItem*, FrameLoadType);
     HistoryItem* requestedHistoryItem() const { return m_requestedHistoryItem.get(); }
@@ -323,14 +321,12 @@ private:
     void load(DocumentLoader*);                                                         // Calls loadWithDocumentLoader   
 
     void loadWithNavigationAction(const ResourceRequest&, const NavigationAction&,      // Calls loadWithDocumentLoader
-        bool lockHistory, FrameLoadType, PassRefPtr<FormState>);
+        bool lockHistory, FrameLoadType, PassRefPtr<FormState>, const String& overrideEncoding = String());
 
     void loadPostRequest(const ResourceRequest&, const String& referrer,                // Called by loadFrameRequest, calls loadWithNavigationAction
         const String& frameName, bool lockHistory, FrameLoadType, PassRefPtr<Event>, PassRefPtr<FormState>);
     void loadURL(const KURL&, const String& referrer, const String& frameName,          // Called by loadFrameRequest, calls loadWithNavigationAction or dispatches to navigation policy delegate
-        bool lockHistory, FrameLoadType, PassRefPtr<Event>, PassRefPtr<FormState>);                                                         
-
-    void reloadWithRequest(const ResourceRequest&, bool endToEndReload);
+        bool lockHistory, FrameLoadType, PassRefPtr<Event>, PassRefPtr<FormState>);
 
     bool shouldReload(const KURL& currentURL, const KURL& destinationURL);
 

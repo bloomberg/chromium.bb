@@ -931,15 +931,13 @@ v8::Handle<v8::Value> WebFrameImpl::createFileEntry(WebFileSystemType type, cons
 void WebFrameImpl::reload(bool ignoreCache)
 {
     ASSERT(frame());
-    frame()->loader()->history()->saveDocumentAndScrollState();
     frame()->loader()->reload(ignoreCache);
 }
 
 void WebFrameImpl::reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache)
 {
     ASSERT(frame());
-    frame()->loader()->history()->saveDocumentAndScrollState();
-    frame()->loader()->reloadWithOverrideURL(overrideUrl, ignoreCache);
+    frame()->loader()->reload(ignoreCache, overrideUrl);
 }
 
 void WebFrameImpl::loadRequest(const WebURLRequest& request)

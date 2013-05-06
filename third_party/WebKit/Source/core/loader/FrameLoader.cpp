@@ -1197,11 +1197,14 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     load(loader.get());
 }
 
-void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, bool lockHistory, FrameLoadType type, PassRefPtr<FormState> formState)
+void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, bool lockHistory, FrameLoadType type, PassRefPtr<FormState> formState, const String& overrideEncoding)
 {
     RefPtr<DocumentLoader> loader = m_client->createDocumentLoader(request, defaultSubstituteDataForURL(request.url()));
     loader->setTriggeringAction(action);
-    if (m_documentLoader)
+
+    if (!overrideEncoding.isEmpty())
+        loader->setOverrideEncoding(overrideEncoding);
+    else if (m_documentLoader)
         loader->setOverrideEncoding(m_documentLoader->overrideEncoding());
 
     if (m_quickRedirectComing) {
@@ -1337,80 +1340,29 @@ bool FrameLoader::shouldReloadToHandleUnreachableURL(DocumentLoader* docLoader)
     return compareDocumentLoader && unreachableURL == compareDocumentLoader->request().url();
 }
 
-void FrameLoader::reloadWithOverrideEncoding(const String& encoding)
+void FrameLoader::reload(bool endToEndReload, const KURL& overrideURL, const String& overrideEncoding)
 {
     if (!m_documentLoader)
         return;
 
+    frame()->loader()->history()->saveDocumentAndScrollState();
     ResourceRequest request = m_documentLoader->request();
-    KURL unreachableURL = m_documentLoader->unreachableURL();
-    if (!unreachableURL.isEmpty())
-        request.setURL(unreachableURL);
+    if (!overrideURL.isEmpty())
+        request.setURL(overrideURL);
+    else if (!m_documentLoader->unreachableURL().isEmpty())
+        request.setURL(m_documentLoader->unreachableURL());
 
-    // FIXME: If the resource is a result of form submission and is not cached, the form will be silently resubmitted.
-    // We should ask the user for confirmation in this case.
-    request.setCachePolicy(ReturnCacheDataElseLoad);
+    bool isFormSubmission = request.httpMethod() == "POST";
+    if (overrideEncoding.isEmpty())
+        request.setCachePolicy(ReloadIgnoringCacheData);
+    else if (isFormSubmission)
+        request.setCachePolicy(ReturnCacheDataDontLoad);
+    else
+        request.setCachePolicy(ReturnCacheDataElseLoad);
 
-    RefPtr<DocumentLoader> loader = m_client->createDocumentLoader(request, defaultSubstituteDataForURL(request.url()));
-    setPolicyDocumentLoader(loader.get());
-
-    loader->setOverrideEncoding(encoding);
-
-    loadWithDocumentLoader(loader.get(), FrameLoadTypeReload, 0);
-}
-
-void FrameLoader::reloadWithOverrideURL(const KURL& overrideUrl, bool endToEndReload)
-{
-    if (!m_documentLoader)
-        return;
-
-    if (overrideUrl.isEmpty())
-        return;
-
-    ResourceRequest request = m_documentLoader->request();
-    request.setURL(overrideUrl);
-    reloadWithRequest(request, endToEndReload);
-}
-
-void FrameLoader::reload(bool endToEndReload)
-{
-    if (!m_documentLoader)
-        return;
-
-    // If a window is created by javascript, its main frame can have an empty but non-nil URL.
-    // Reloading in this case will lose the current contents (see 4151001).
-    if (m_documentLoader->request().url().isEmpty())
-        return;
-
-    // Replace error-page URL with the URL we were trying to reach.
-    ResourceRequest initialRequest = m_documentLoader->request();
-    KURL unreachableURL = m_documentLoader->unreachableURL();
-    if (!unreachableURL.isEmpty())
-        initialRequest.setURL(unreachableURL);
-
-    reloadWithRequest(initialRequest, endToEndReload);
-}
-
-void FrameLoader::reloadWithRequest(const ResourceRequest& initialRequest, bool endToEndReload)
-{
-    ASSERT(m_documentLoader);
-
-    // Create a new document loader for the reload, this will become m_documentLoader eventually,
-    // but first it has to be the "policy" document loader, and then the "provisional" document loader.
-    RefPtr<DocumentLoader> loader = m_client->createDocumentLoader(initialRequest, defaultSubstituteDataForURL(initialRequest.url()));
-
-    ResourceRequest& request = loader->request();
-
-    // FIXME: We don't have a mechanism to revalidate the main resource without reloading at the moment.
-    request.setCachePolicy(ReloadIgnoringCacheData);
-
-    // If we're about to re-post, set up action so the application can warn the user.
-    if (request.httpMethod() == "POST")
-        loader->setTriggeringAction(NavigationAction(request, NavigationTypeFormResubmitted));
-
-    loader->setOverrideEncoding(m_documentLoader->overrideEncoding());
-    
-    loadWithDocumentLoader(loader.get(), endToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload, 0);
+    FrameLoadType type = endToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
+    NavigationAction action(request, type, isFormSubmission);
+    loadWithNavigationAction(request, action, false, type, 0, overrideEncoding);
 }
 
 void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItemPolicy)

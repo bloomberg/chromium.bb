@@ -2588,7 +2588,7 @@ void WebViewImpl::setPageEncoding(const WebString& encodingName)
     String newEncodingName;
     if (!encodingName.isEmpty())
         newEncodingName = encodingName;
-    m_page->mainFrame()->loader()->reloadWithOverrideEncoding(newEncodingName);
+    m_page->mainFrame()->loader()->reload(false, KURL(), newEncodingName);
 }
 
 bool WebViewImpl::dispatchBeforeUnloadEvent()
