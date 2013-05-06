@@ -4,11 +4,14 @@
 
 #include "chrome/renderer/page_load_histograms.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "content/public/common/content_constants.h"
@@ -56,8 +59,33 @@ URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
   return static_cast<URLPattern::SchemeMasks>(0);
 }
 
+// Returns true if the data reduction proxy was used. Note, this function will
+// produce a false positive if a page is fetched using SPDY and using a proxy,
+// and |kDatReductionProxyViaValue| is added to the Via header.
+// TODO(bengr): Plumb the hostname of the proxy from |HttpNetworkTransaction|
+// and check if it matches |SPDY_PROXY_AUTH_ORIGIN|.
+bool DataReductionProxyWasUsed(WebFrame* frame) {
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  const char kViaHeaderName[] = "Via";
+  const char kDatReductionProxyViaValue[] = "1.1 Chrome Compression Proxy";
+
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  if (!document_state->was_fetched_via_proxy() ||
+      !document_state->was_fetched_via_spdy()) {
+    return false;
+  }
+
+  std::string via_header(UTF16ToUTF8(
+      frame->dataSource()->response().httpHeaderField(kViaHeaderName)));
+  return via_header.find(kDatReductionProxyViaValue) != std::string::npos;
+#endif
+  return false;
+}
+
 void DumpPerformanceTiming(const WebPerformance& performance,
-                           DocumentState* document_state) {
+                           DocumentState* document_state,
+                           bool data_reduction_proxy_was_used) {
   Time request = document_state->request_time();
 
   Time navigation_start = Time::FromDoubleT(performance.navigationStart());
@@ -96,20 +124,49 @@ void DumpPerformanceTiming(const WebPerformance& performance,
     PLT_HISTOGRAM("PLT.PT_BeginToFinishDoc", load_event_start - begin);
     PLT_HISTOGRAM("PLT.PT_CommitToFinishDoc",
                   load_event_start - response_start);
+    if (data_reduction_proxy_was_used) {
+      PLT_HISTOGRAM("PLT.PT_BeginToFinishDoc_DataReductionProxy",
+                    load_event_start - begin);
+      PLT_HISTOGRAM("PLT.PT_CommitToFinishDoc_DataReductionProxy",
+                    load_event_start - response_start);
+    }
   }
   if (!load_event_end.is_null()) {
     PLT_HISTOGRAM("PLT.PT_BeginToFinish", load_event_end - begin);
     PLT_HISTOGRAM("PLT.PT_CommitToFinish", load_event_end - response_start);
     PLT_HISTOGRAM("PLT.PT_RequestToFinish", load_event_end - navigation_start);
     PLT_HISTOGRAM("PLT.PT_StartToFinish", load_event_end - request_start);
+    if (data_reduction_proxy_was_used) {
+      PLT_HISTOGRAM("PLT.PT_BeginToFinish_DataReductionProxy",
+                    load_event_end - begin);
+      PLT_HISTOGRAM("PLT.PT_CommitToFinish_DataReductionProxy",
+                    load_event_end - response_start);
+      PLT_HISTOGRAM("PLT.PT_RequestToFinish_DataReductionProxy",
+                    load_event_end - navigation_start);
+      PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy",
+                    load_event_end - request_start);
+    }
+
   }
   if (!load_event_start.is_null() && !load_event_end.is_null()) {
     PLT_HISTOGRAM("PLT.PT_FinishDocToFinish",
                   load_event_end - load_event_start);
+    if (data_reduction_proxy_was_used) {
+      PLT_HISTOGRAM("PLT.PT_FinishDocToFinish_DataReductionProxy",
+                    load_event_end - load_event_start);
+    }
   }
   PLT_HISTOGRAM("PLT.PT_BeginToCommit", response_start - begin);
   PLT_HISTOGRAM("PLT.PT_RequestToStart", request_start - navigation_start);
   PLT_HISTOGRAM("PLT.PT_StartToCommit", response_start - request_start);
+  if (data_reduction_proxy_was_used) {
+    PLT_HISTOGRAM("PLT.PT_BeginToCommit_DataReductionProxy",
+                  response_start - begin);
+    PLT_HISTOGRAM("PLT.PT_RequestToStart_DataReductionProxy",
+                  request_start - navigation_start);
+    PLT_HISTOGRAM("PLT.PT_StartToCommit_DataReductionProxy",
+                  response_start - request_start);
+  }
 }
 
 enum MissingStartType {
@@ -154,12 +211,15 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
 
+  bool data_reduction_proxy_was_used = DataReductionProxyWasUsed(frame);
+
   // Times based on the Web Timing metrics.
   // http://www.w3.org/TR/navigation-timing/
   // TODO(tonyg, jar): We are in the process of vetting these metrics against
   // the existing ones. Once we understand any differences, we will standardize
   // on a single set of metrics.
-  DumpPerformanceTiming(frame->performance(), document_state);
+  DumpPerformanceTiming(frame->performance(), document_state,
+                        data_reduction_proxy_was_used);
 
   // If we've already dumped, do nothing.
   // This simple bool works because we only dump for the main frame.
@@ -331,16 +391,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       break;
   }
 
-  bool spdy_proxy_auth_origin_is_set = false;
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  spdy_proxy_auth_origin_is_set = true;
-#else
-  spdy_proxy_auth_origin_is_set = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kSpdyProxyAuthOrigin);
-#endif
-
-  if (document_state->was_fetched_via_proxy() &&
-      document_state->was_fetched_via_spdy() && spdy_proxy_auth_origin_is_set) {
+  if (data_reduction_proxy_was_used) {
     UMA_HISTOGRAM_ENUMERATION(
         "PLT.Abandoned_SpdyProxy", abandoned_page ? 1 : 0, 2);
     PLT_HISTOGRAM("PLT.BeginToFinishDoc_SpdyProxy", begin_to_finish_doc);
