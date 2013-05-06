@@ -28,17 +28,25 @@ AggregateDeviceManager::~AggregateDeviceManager() {
 }
 
 AudioDeviceID AggregateDeviceManager::GetDefaultAggregateDevice() {
+  AudioDeviceID current_input_device;
+  AudioDeviceID current_output_device;
+  AudioManagerMac::GetDefaultInputDevice(&current_input_device);
+  AudioManagerMac::GetDefaultOutputDevice(&current_output_device);
+
+  if (AudioManagerMac::HardwareSampleRateForDevice(current_input_device) !=
+      AudioManagerMac::HardwareSampleRateForDevice(current_output_device)) {
+    // TODO(crogers): with some extra work we can make aggregate devices work
+    // if the clock domain is the same but the sample-rate differ.
+    // For now we fallback to the synchronized path.
+    return kAudioDeviceUnknown;
+  }
+
   // Use a lazily created aggregate device if it's already available
   // and still appropriate.
   if (aggregate_device_ != kAudioObjectUnknown) {
     // TODO(crogers): handle default device changes for synchronized I/O.
     // For now, we check to make sure the default devices haven't changed
     // since we lazily created the aggregate device.
-    AudioDeviceID current_input_device;
-    AudioDeviceID current_output_device;
-    AudioManagerMac::GetDefaultInputDevice(&current_input_device);
-    AudioManagerMac::GetDefaultOutputDevice(&current_output_device);
-
     if (current_input_device == input_device_ &&
         current_output_device == output_device_)
       return aggregate_device_;
@@ -48,8 +56,8 @@ AudioDeviceID AggregateDeviceManager::GetDefaultAggregateDevice() {
     return kAudioDeviceUnknown;
   }
 
-  AudioManagerMac::GetDefaultInputDevice(&input_device_);
-  AudioManagerMac::GetDefaultOutputDevice(&output_device_);
+  input_device_ = current_input_device;
+  output_device_ = current_output_device;
 
   // Only create an aggregrate device if the clock domains match.
   UInt32 input_clockdomain = GetClockDomain(input_device_);
