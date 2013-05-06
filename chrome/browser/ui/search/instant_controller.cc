@@ -38,6 +38,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/base/escape.h"
+#include "net/base/network_change_notifier.h"
 #include "third_party/icu/public/common/unicode/normalizer2.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -1420,7 +1421,8 @@ std::string InstantController::GetLocalInstantURL() const {
 }
 
 std::string InstantController::GetInstantURL() const {
-  if (extended_enabled_ && use_local_page_only_)
+  if (extended_enabled_ &&
+      (use_local_page_only_ || net::NetworkChangeNotifier::IsOffline()))
     return GetLocalInstantURL();
 
   const GURL instant_url = chrome::GetInstantURL(profile(),
