@@ -283,8 +283,8 @@
                                       optional boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event evt);
 
-    [Custom] void captureEvents(/*in long eventFlags*/);
-    [Custom] void releaseEvents(/*in long eventFlags*/);
+    [Custom, MeasureAs=CaptureEvents] void captureEvents(/*in long eventFlags*/);
+    [Custom, MeasureAs=ReleaseEvents] void releaseEvents(/*in long eventFlags*/);
 
     // Global constructors
     attribute StyleSheetConstructor StyleSheet;
