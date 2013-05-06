@@ -61,15 +61,19 @@ size_t SysInfo::MaxSharedMemorySize() {
 
 // static
 std::string SysInfo::CPUModelName() {
-  const char kModelNamePrefix[] = "model name";
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  const char kCpuModelPrefix[] = "Hardware";
+#else
+  const char kCpuModelPrefix[] = "model name";
+#endif
   std::string contents;
   file_util::ReadFileToString(FilePath("/proc/cpuinfo"), &contents);
   DCHECK(!contents.empty());
   if (!contents.empty()) {
     std::istringstream iss(contents);
     std::string line;
-    while (std::getline(iss, line)){
-      if (line.compare(0, strlen(kModelNamePrefix), kModelNamePrefix) == 0) {
+    while (std::getline(iss, line)) {
+      if (line.compare(0, strlen(kCpuModelPrefix), kCpuModelPrefix) == 0) {
         size_t pos = line.find(": ");
         return line.substr(pos + 2);
       }
