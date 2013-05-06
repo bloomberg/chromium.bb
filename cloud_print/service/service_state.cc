@@ -45,14 +45,14 @@ class ServiceStateURLRequestDelegate : public net::URLRequest::Delegate {
         return;
     }
     request->Cancel();
-  };
+  }
 
   virtual void OnReadCompleted(net::URLRequest* request,
                                int bytes_read) OVERRIDE {
     Read(request);
     if (!request->status().is_io_pending())
-      MessageLoop::current()->Quit();
-  };
+      base::MessageLoop::current()->Quit();
+  }
 
   const std::string& data() const {
     return data_;
@@ -160,7 +160,7 @@ std::string ServiceState::ToString() {
 std::string ServiceState::LoginToGoogle(const std::string& service,
                                         const std::string& email,
                                         const std::string& password) {
-  MessageLoop loop(MessageLoop::TYPE_IO);
+  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
 
   net::URLRequestContextBuilder builder;
   scoped_ptr<net::URLRequestContext> context(builder.Build());
@@ -190,11 +190,12 @@ std::string ServiceState::LoginToGoogle(const std::string& service,
   request.set_method("POST");
   request.Start();
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      MessageLoop::QuitClosure(),
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(kRequestTimeoutMs));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const char kAuthStart[] = "Auth=";
   std::vector<std::string> lines;

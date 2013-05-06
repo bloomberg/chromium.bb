@@ -31,11 +31,11 @@ SetupListener::SetupListener(const string16& user)
       ipc_thread_(new base::Thread("ipc_thread")),
       succeded_(false),
       is_xps_available_(false) {
-  ipc_thread_->StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
-  ipc_thread_->message_loop()->PostTask(FROM_HERE,
-                                        base::Bind(&SetupListener::Connect,
-                                                   base::Unretained(this),
-                                                   user));
+  ipc_thread_->StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+  ipc_thread_->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&SetupListener::Connect, base::Unretained(this), user));
 }
 
 SetupListener::~SetupListener() {

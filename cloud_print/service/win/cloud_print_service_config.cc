@@ -28,7 +28,7 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
                     public ATL::CDialogImpl<SetupDialog> {
  public:
   // Enables accelerators.
-  class MessageFilter : public MessageLoopForUI::MessageFilter {
+  class MessageFilter : public base::MessageLoopForUI::MessageFilter {
    public:
     explicit MessageFilter(SetupDialog* dialog) : dialog_(dialog){}
     virtual ~MessageFilter() {};
@@ -112,8 +112,8 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
   ServiceController::State state_;
   base::Thread worker_;
 
-  MessageLoop* ui_loop_;
-  MessageLoop* io_loop_;
+  base::MessageLoop* ui_loop_;
+  base::MessageLoop* io_loop_;
 
   ServiceController controller_;
 };
@@ -121,12 +121,13 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
 SetupDialog::SetupDialog()
     : state_(ServiceController::STATE_NOT_FOUND),
       worker_("worker") {
-  ui_loop_ = MessageLoop::current();
-  DCHECK(ui_loop_->IsType(MessageLoop::TYPE_UI));
+  ui_loop_ = base::MessageLoop::current();
+  DCHECK(ui_loop_->IsType(base::MessageLoop::TYPE_UI));
 
-  worker_.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
+  worker_.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   io_loop_ = worker_.message_loop();
-  DCHECK(io_loop_->IsType(MessageLoop::TYPE_IO));
+  DCHECK(io_loop_->IsType(base::MessageLoop::TYPE_IO));
 }
 
 void SetupDialog::PostUITask(const base::Closure& task) {
@@ -138,22 +139,23 @@ void SetupDialog::PostIOTask(const base::Closure& task) {
 }
 
 void SetupDialog::ShowErrorMessageBox(const string16& error_message) {
-  DCHECK(MessageLoop::current()->IsType(MessageLoop::TYPE_UI));
+  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI));
   MessageBox(error_message.c_str(),
              LoadLocalString(IDS_OPERATION_FAILED_TITLE).c_str(),
              MB_ICONERROR | MB_OK);
 }
 
 void SetupDialog::AskToCloseChrome() {
-  DCHECK(MessageLoop::current()->IsType(MessageLoop::TYPE_UI));
+  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI));
   MessageBox(LoadLocalString(IDS_ADD_PRINTERS_USING_CHROME).c_str(),
-             LoadLocalString(IDS_CONTINUE_IN_CHROME_TITLE).c_str(), MB_OK);
+             LoadLocalString(IDS_CONTINUE_IN_CHROME_TITLE).c_str(),
+             MB_OK);
 }
 
 void SetupDialog::SetState(ServiceController::State status,
                            const string16& user,
                            bool is_logging_enabled) {
-  DCHECK(MessageLoop::current()->IsType(MessageLoop::TYPE_UI));
+  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI));
   state_ = status;
 
   DWORD status_string = 0;
@@ -266,7 +268,8 @@ LRESULT SetupDialog::OnCancel(UINT, INT nIdentifier, HWND, BOOL& handled) {
 
 LRESULT SetupDialog::OnDestroy(UINT message, WPARAM wparam, LPARAM lparam,
                                BOOL& handled) {
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
   return 1;
 }
 
@@ -299,16 +302,19 @@ bool SetupDialog::IsLoggingEnabled() const{
 }
 
 void SetupDialog::UpdateState() {
-  DCHECK(MessageLoop::current()->IsType(MessageLoop::TYPE_IO));
+  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO));
   controller_.UpdateState();
   PostUITask(base::Bind(&SetupDialog::SetState, this, controller_.state(),
                         controller_.user(), controller_.is_logging_enabled()));
 }
 
 void SetupDialog::ShowError(const string16& error_message) {
-  DCHECK(MessageLoop::current()->IsType(MessageLoop::TYPE_IO));
-  PostUITask(base::Bind(&SetupDialog::SetState, this,
-                        ServiceController::STATE_UNKNOWN, L"", false));
+  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO));
+  PostUITask(base::Bind(&SetupDialog::SetState,
+                        this,
+                        ServiceController::STATE_UNKNOWN,
+                        L"",
+                        false));
   PostUITask(base::Bind(&SetupDialog::ShowErrorMessageBox, this,
                         error_message));
   LOG(ERROR) << error_message;
@@ -328,7 +334,7 @@ void SetupDialog::Install(const string16& user, const string16& password,
   base::ScopedClosureRunner scoped_update_status(
         base::Bind(&SetupDialog::UpdateState, this));
 
-  DCHECK(MessageLoop::current()->IsType(MessageLoop::TYPE_IO));
+  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO));
 
   SetupListener setup(GetUser());
   HRESULT hr = controller_.InstallCheckService(user, password,
@@ -396,7 +402,7 @@ void SetupDialog::Install(const string16& user, const string16& password,
 }
 
 void SetupDialog::Start() {
-  DCHECK(MessageLoop::current()->IsType(MessageLoop::TYPE_IO));
+  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO));
   HRESULT hr = controller_.StartService();
   if (FAILED(hr))
     ShowError(hr);
@@ -404,7 +410,7 @@ void SetupDialog::Start() {
 }
 
 void SetupDialog::Stop() {
-  DCHECK(MessageLoop::current()->IsType(MessageLoop::TYPE_IO));
+  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO));
   HRESULT hr = controller_.StopService();
   if (FAILED(hr))
     ShowError(hr);
@@ -412,7 +418,7 @@ void SetupDialog::Stop() {
 }
 
 void SetupDialog::Uninstall() {
-  DCHECK(MessageLoop::current()->IsType(MessageLoop::TYPE_IO));
+  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO));
   HRESULT hr = controller_.UninstallService();
   if (FAILED(hr))
     ShowError(hr);
@@ -432,7 +438,7 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
   base::AtExitManager at_exit;
   CommandLine::Init(0, NULL);
 
-  MessageLoopForUI loop;
+  base::MessageLoopForUI loop;
   scoped_refptr<SetupDialog> dialog(new SetupDialog());
   dialog->Create(NULL);
   dialog->ShowWindow(SW_SHOW);

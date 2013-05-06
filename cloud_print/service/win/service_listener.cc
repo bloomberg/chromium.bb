@@ -57,10 +57,10 @@ std::string GetEnvironment(const base::FilePath& user_data_dir) {
 ServiceListener::ServiceListener(const base::FilePath& user_data_dir)
     : ipc_thread_(new base::Thread("ipc_thread")),
       user_data_dir_(user_data_dir) {
-  ipc_thread_->StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
-  ipc_thread_->message_loop()->PostTask(FROM_HERE,
-                                        base::Bind(&ServiceListener::Connect,
-                                                   base::Unretained(this)));
+  ipc_thread_->StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+  ipc_thread_->message_loop()->PostTask(
+      FROM_HERE, base::Bind(&ServiceListener::Connect, base::Unretained(this)));
 }
 
 ServiceListener::~ServiceListener() {
