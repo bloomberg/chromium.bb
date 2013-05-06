@@ -41,6 +41,7 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/stacking_client.h"
@@ -634,6 +635,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       synthetic_move_sent_(false),
       accelerated_compositing_state_changed_(false),
       can_lock_compositor_(YES),
+      cursor_visibility_state_in_renderer_(UNKNOWN),
       paint_observer_(NULL),
       touch_editing_client_(NULL) {
   host_->SetView(this);
@@ -729,6 +731,11 @@ void RenderWidgetHostViewAura::WasShown() {
   if (!host_->is_hidden())
     return;
   host_->WasShown();
+
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(window_->GetRootWindow());
+  if (cursor_client)
+    NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
 
   if (!current_surface_ && host_->is_accelerated_compositing_active() &&
       !released_front_lock_.get()) {
@@ -2515,6 +2522,13 @@ void RenderWidgetHostViewAura::OnWindowActivated(aura::Window* gained_active,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, aura::client::CursorClientObserver implementation:
+
+void RenderWidgetHostViewAura::OnCursorVisibilityChanged(bool is_visible) {
+  NotifyRendererOfCursorVisibilityState(is_visible);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, aura::client::FocusChangeObserver implementation:
 
 void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
@@ -2827,6 +2841,17 @@ void RenderWidgetHostViewAura::ModifyEventMovementAndCoords(
   }
 }
 
+void RenderWidgetHostViewAura::NotifyRendererOfCursorVisibilityState(
+    bool is_visible) {
+  if (host_->is_hidden() ||
+      (cursor_visibility_state_in_renderer_ == VISIBLE && is_visible) ||
+      (cursor_visibility_state_in_renderer_ == NOT_VISIBLE && !is_visible))
+    return;
+
+  cursor_visibility_state_in_renderer_ = is_visible ? VISIBLE : NOT_VISIBLE;
+  host_->SendCursorVisibilityState(is_visible);
+}
+
 void RenderWidgetHostViewAura::SchedulePaintIfNotInClip(
     const gfx::Rect& rect,
     const gfx::Rect& clip) {
@@ -2877,9 +2902,21 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
   UpdateScreenInfo(window_);
   if (popup_type_ != WebKit::WebPopupTypeNone)
     event_filter_for_popup_exit_.reset(new EventFilterForPopupExit(this));
+
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(window_->GetRootWindow());
+  if (cursor_client) {
+    cursor_client->AddObserver(this);
+    NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
+  }
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(window_->GetRootWindow());
+  if (cursor_client)
+    cursor_client->RemoveObserver(this);
+
   event_filter_for_popup_exit_.reset();
   window_->GetRootWindow()->RemoveRootWindowObserver(this);
   host_->ParentChanged(0);

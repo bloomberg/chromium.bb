@@ -22,6 +22,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_delegate.h"
+#include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_delegate.h"
@@ -66,6 +67,7 @@ class RenderWidgetHostViewAura
       public aura::client::ActivationDelegate,
       public aura::client::ActivationChangeObserver,
       public aura::client::FocusChangeObserver,
+      public aura::client::CursorClientObserver,
       public ImageTransportFactoryObserver,
       public BrowserAccessibilityDelegate,
       public base::SupportsWeakPtr<RenderWidgetHostViewAura> {
@@ -297,6 +299,9 @@ class RenderWidgetHostViewAura
   virtual void OnWindowActivated(aura::Window* gained_activation,
                                  aura::Window* lost_activation) OVERRIDE;
 
+  // Overridden from aura::client::CursorClientObserver:
+  virtual void OnCursorVisibilityChanged(bool is_visible) OVERRIDE;
+
   // Overridden from aura::client::FocusChangeObserver:
   virtual void OnWindowFocused(aura::Window* gained_focus,
                                aura::Window* lost_focus) OVERRIDE;
@@ -385,6 +390,10 @@ class RenderWidgetHostViewAura
   // This method computes movementX/Y and keeps track of mouse location for
   // mouse lock on all mouse move events.
   void ModifyEventMovementAndCoords(WebKit::WebMouseEvent* event);
+
+  // Sends an IPC to the renderer process to communicate whether or not
+  // the mouse cursor is visible anywhere on the screen.
+  void NotifyRendererOfCursorVisibilityState(bool is_visible);
 
   // If |clip| is non-empty and and doesn't contain |rect| or |clip| is empty
   // SchedulePaint() is invoked for |rect|.
@@ -612,6 +621,15 @@ class RenderWidgetHostViewAura
     NO_PENDING_COMMIT,
   };
   CanLockCompositorState can_lock_compositor_;
+
+  // Used to track the last cursor visibility update that was sent to the
+  // renderer via NotifyRendererOfCursorVisibilityState().
+  enum CursorVisibilityState {
+    UNKNOWN,
+    VISIBLE,
+    NOT_VISIBLE,
+  };
+  CursorVisibilityState cursor_visibility_state_in_renderer_;
 
   // An observer to notify that the paint content of the view has changed. The
   // observer is not owned by the view, and must remove itself as an oberver

@@ -1143,6 +1143,10 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
   }
 }
 
+void RenderWidgetHostImpl::SendCursorVisibilityState(bool is_visible) {
+  Send(new InputMsg_CursorVisibilityChange(GetRoutingID(), is_visible));
+}
+
 void RenderWidgetHostImpl::SendInputEvent(const WebInputEvent& input_event,
                                           int event_size,
                                           bool is_keyboard_shortcut) {

@@ -309,6 +309,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
     IPC_MESSAGE_HANDLER(InputMsg_HandleInputEvent, OnHandleInputEvent)
+    IPC_MESSAGE_HANDLER(InputMsg_CursorVisibilityChange,
+                        OnCursorVisibilityChange)
     IPC_MESSAGE_HANDLER(InputMsg_MouseCaptureLost, OnMouseCaptureLost)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
@@ -819,6 +821,11 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
     if (WebInputEvent::isTouchEventType(input_event->type))
       DidHandleTouchEvent(*(static_cast<const WebTouchEvent*>(input_event)));
   }
+}
+
+void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
+  if (webwidget_)
+    webwidget_->setCursorVisibilityState(is_visible);
 }
 
 void RenderWidget::OnMouseCaptureLost() {

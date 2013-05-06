@@ -38,6 +38,7 @@
         'client/capture_delegate.h',
         'client/cursor_client.cc',
         'client/cursor_client.h',
+        'client/cursor_client_observer.h',
         'client/default_capture_client.cc',
         'client/default_capture_client.h',
         'client/dispatcher_client.cc',
