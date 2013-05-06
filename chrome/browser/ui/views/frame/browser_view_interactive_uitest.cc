@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewImmersiveInstantExtendedTest,
       content::NotificationService::AllSources());
   ui_test_utils::NavigateToURLWithDisposition(browser(),
                                               GURL(chrome::kChromeUINewTabURL),
-                                              NEW_FOREGROUND_TAB,
+                                              CURRENT_TAB,
                                               ui_test_utils::BROWSER_TEST_NONE);
   instant_tab_observer.Wait();
 
