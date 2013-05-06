@@ -22,6 +22,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -542,15 +544,21 @@ void WizardController::OnUserImageSkipped() {
 void WizardController::OnEnrollmentDone() {
   // Mark OOBE as completed only if enterprise enrollment was part of the
   // forced flow (i.e. app kiosk).
-  if (force_enrollment_) {
+  if (force_enrollment_)
     PerformPostUpdateActions();
 
-    // TODO(zelidrag): Check fetched policy, launch the app here.
-    if (!can_exit_enrollment_)
-      return;
-  }
+  // TODO(mnissler): Unify the logic for auto-login for Public Sessions and
+  // Kiosk Apps and make this code cover both cases: http://crbug.com/234694.
+  const std::string auto_launch_app =
+      KioskAppManager::Get()->GetAutoLaunchApp();
+  if (!auto_launch_app.empty()) {
+    ExistingUserController::current_controller()->PrepareKioskAppLaunch();
 
-  ShowLoginScreen();
+    // KioskAppLauncher deletes itself when done.
+    (new KioskAppLauncher(auto_launch_app))->Start();
+  } else if (!force_enrollment_ || can_exit_enrollment_) {
+    ShowLoginScreen();
+  }
 }
 
 void WizardController::OnResetCanceled() {
