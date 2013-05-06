@@ -256,7 +256,7 @@ COMMANDS_llvm_pnacl_arm = [
      '%(FINALIZE)s %(tmp)s.nonfinal.pexe -o %(tmp)s.final.pexe'
     ),
     ('translate-arm',
-     '%(LD)s %(tmp)s.final.pexe -o %(tmp)s.nexe',
+     '%(LD)s %(TRANSLATE_FLAGS)s %(tmp)s.final.pexe -o %(tmp)s.nexe',
      ),
     ('qemu-sel_ldr',
      '%(EMU)s %(SEL_LDR)s -B %(IRT)s -Q %(tmp)s.nexe',
@@ -278,7 +278,8 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
     EMU = EMU_SCRIPT,
     SEL_LDR = RUN_SEL_LDR_ARM,
     IRT = IRT_ARM,
-    CFLAGS = '-O0 -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O0 -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS,
+    TRANSLATE_FLAGS='')
 
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'] = ToolchainConfig(
@@ -295,7 +296,8 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'] = ToolchainConfig(
     SEL_LDR = RUN_SEL_LDR_ARM,
     IRT = IRT_ARM,
     CFLAGS = '-O3 -D__OPTIMIZE__ -static ' + CLANG_CFLAGS  + ' '
-              + GLOBAL_CFLAGS)
+              + GLOBAL_CFLAGS,
+    TRANSLATE_FLAGS = '')
 
 ######################################################################
 # PNACL + SEL_LDR [X8632]
@@ -310,7 +312,7 @@ COMMANDS_llvm_pnacl_x86 = [
      '%(FINALIZE)s %(tmp)s.nonfinal.pexe -o %(tmp)s.final.pexe',
      ),
     ('translate-x86',
-     '%(LD)s %(tmp)s.final.pexe -o %(tmp)s.nexe ',
+     '%(LD)s %(TRANSLATE_FLAGS)s %(tmp)s.final.pexe -o %(tmp)s.nexe ',
      ),
     ('sel_ldr',
      '%(SEL_LDR)s -B %(IRT)s %(tmp)s.nexe',
@@ -329,7 +331,8 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x86-32_O0'] = ToolchainConfig(
     LD = PNACL_LD + ' -arch x86-32',
     SEL_LDR = RUN_SEL_LDR_X32,
     IRT = IRT_X32,
-    CFLAGS = '-O0  -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O0  -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS,
+    TRANSLATE_FLAGS = '')
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x86-32_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
@@ -343,7 +346,8 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x86-32_O3'] = ToolchainConfig(
     SEL_LDR = RUN_SEL_LDR_X32,
     IRT = IRT_X32,
     CFLAGS = '-O3 -D__OPTIMIZE__ -static ' + CLANG_CFLAGS + ' '
-             + GLOBAL_CFLAGS)
+             + GLOBAL_CFLAGS,
+    TRANSLATE_FLAGS = '')
 
 ######################################################################
 # PNACL + SEL_LDR [X8664]
@@ -360,7 +364,8 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O0'] = ToolchainConfig(
     LD = PNACL_LD + ' -arch x86-64',
     SEL_LDR = RUN_SEL_LDR_X64,
     IRT = IRT_X64,
-    CFLAGS = '-O0 -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O0 -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS,
+    TRANSLATE_FLAGS = '')
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
@@ -374,4 +379,5 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O3'] = ToolchainConfig(
     SEL_LDR = RUN_SEL_LDR_X64,
     IRT = IRT_X64,
     CFLAGS = '-O3 -D__OPTIMIZE__ -static ' + CLANG_CFLAGS + ' '
-             + GLOBAL_CFLAGS)
+             + GLOBAL_CFLAGS,
+    TRANSLATE_FLAGS = '')

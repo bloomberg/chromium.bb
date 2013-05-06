@@ -101,6 +101,7 @@ def eh_tests(context, config, exclude, extra_args):
              '--config=' + config]
   if 'pnacl' in config:
     command.append('--append=CFLAGS:--pnacl-allow-exceptions')
+    command.append('--append=TRANSLATE_FLAGS:--pnacl-allow-exceptions')
   command.extend(extra_args)
   command.extend(glob.glob(os.path.join(TEST_PATH_CPP, 'eh', '*.C')))
   print command
