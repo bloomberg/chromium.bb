@@ -252,9 +252,9 @@ gfx::ImageSkia* BaseImageForType(ImageType image_type, IconType icon_type) {
 }
 
 ImageType ImageTypeForNetworkType(const std::string& type) {
-  if (type == flimflam::kTypeWifi || type == flimflam::kTypeWimax)
+  if (type == flimflam::kTypeWifi)
     return ARCS;
-  else if (type == flimflam::kTypeCellular)
+  else if (type == flimflam::kTypeCellular || type == flimflam::kTypeWimax)
     return BARS;
   return NONE;
 }
@@ -571,7 +571,7 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
           IDR_AURA_UBER_TRAY_NETWORK_SECURE_DARK);
     }
   } else if (type == flimflam::kTypeWimax) {
-    badges->top_left = rb.GetImageSkiaNamed(
+    technology_badge_ = rb.GetImageSkiaNamed(
         IconTypeIsDark(icon_type_) ?
         IDR_AURA_UBER_TRAY_NETWORK_4G_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_4G_LIGHT);
