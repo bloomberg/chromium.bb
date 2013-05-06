@@ -88,19 +88,17 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
 
   if (policy.has_user_whitelist()) {
     const em::UserWhitelistProto& container(policy.user_whitelist());
-    if (container.user_whitelist_size()) {
-      ListValue* whitelist = new ListValue();
-      RepeatedPtrField<std::string>::const_iterator entry;
-      for (entry = container.user_whitelist().begin();
-           entry != container.user_whitelist().end();
-           ++entry) {
-        whitelist->Append(Value::CreateStringValue(*entry));
-      }
-      policies->Set(key::kDeviceUserWhitelist,
-                    POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE,
-                    whitelist);
+    ListValue* whitelist = new ListValue();
+    RepeatedPtrField<std::string>::const_iterator entry;
+    for (entry = container.user_whitelist().begin();
+         entry != container.user_whitelist().end();
+         ++entry) {
+      whitelist->Append(Value::CreateStringValue(*entry));
     }
+    policies->Set(key::kDeviceUserWhitelist,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE,
+                  whitelist);
   }
 
   if (policy.has_ephemeral_users_enabled()) {
@@ -120,45 +118,43 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
         policy.device_local_accounts());
     const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
         container.account();
-    if (accounts.size() > 0) {
-      scoped_ptr<base::ListValue> account_list(new base::ListValue());
-      RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
-      for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
-        scoped_ptr<base::DictionaryValue> entry_dict(
-            new base::DictionaryValue());
-        if (entry->has_type()) {
-          if (entry->has_account_id()) {
-            entry_dict->SetStringWithoutPathExpansion(
-                chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
-                entry->account_id());
-          }
-          entry_dict->SetIntegerWithoutPathExpansion(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyType, entry->type());
-          if (entry->kiosk_app().has_app_id()) {
-            entry_dict->SetStringWithoutPathExpansion(
-                chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
-                entry->kiosk_app().app_id());
-          }
-          if (entry->kiosk_app().has_update_url()) {
-            entry_dict->SetStringWithoutPathExpansion(
-                chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
-                entry->kiosk_app().update_url());
-          }
-        } else if (entry->has_id()) {
-          // Deprecated public session specification.
+    scoped_ptr<base::ListValue> account_list(new base::ListValue());
+    RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
+    for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
+      scoped_ptr<base::DictionaryValue> entry_dict(
+          new base::DictionaryValue());
+      if (entry->has_type()) {
+        if (entry->has_account_id()) {
           entry_dict->SetStringWithoutPathExpansion(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyId, entry->id());
-          entry_dict->SetIntegerWithoutPathExpansion(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
-              chromeos::DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION);
+              chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
+              entry->account_id());
         }
-        account_list->Append(entry_dict.release());
+        entry_dict->SetIntegerWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyType, entry->type());
+        if (entry->kiosk_app().has_app_id()) {
+          entry_dict->SetStringWithoutPathExpansion(
+              chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
+              entry->kiosk_app().app_id());
+        }
+        if (entry->kiosk_app().has_update_url()) {
+          entry_dict->SetStringWithoutPathExpansion(
+              chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
+              entry->kiosk_app().update_url());
+        }
+      } else if (entry->has_id()) {
+        // Deprecated public session specification.
+        entry_dict->SetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyId, entry->id());
+        entry_dict->SetIntegerWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
+            chromeos::DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION);
       }
-      policies->Set(key::kDeviceLocalAccounts,
-                    POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE,
-                    account_list.release());
+      account_list->Append(entry_dict.release());
     }
+    policies->Set(key::kDeviceLocalAccounts,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE,
+                  account_list.release());
     if (container.has_auto_login_id()) {
       policies->Set(key::kDeviceLocalAccountAutoLoginId,
                     POLICY_LEVEL_MANDATORY,
@@ -443,19 +439,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
 
   if (policy.has_start_up_urls()) {
     const em::StartUpUrlsProto& container(policy.start_up_urls());
-    if (container.start_up_urls_size()) {
-      ListValue* urls = new ListValue();
-      RepeatedPtrField<std::string>::const_iterator entry;
-      for (entry = container.start_up_urls().begin();
-           entry != container.start_up_urls().end();
-           ++entry) {
-        urls->Append(Value::CreateStringValue(*entry));
-      }
-      policies->Set(key::kDeviceStartUpUrls,
-                    POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE,
-                    urls);
+    ListValue* urls = new ListValue();
+    RepeatedPtrField<std::string>::const_iterator entry;
+    for (entry = container.start_up_urls().begin();
+         entry != container.start_up_urls().end();
+         ++entry) {
+      urls->Append(Value::CreateStringValue(*entry));
     }
+    policies->Set(key::kDeviceStartUpUrls,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE,
+                  urls);
   }
 
   if (policy.has_system_timezone()) {
@@ -492,19 +486,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
 
   if (policy.has_start_up_flags()) {
     const em::StartUpFlagsProto& container(policy.start_up_flags());
-    if (container.flags_size()) {
-      ListValue* flags = new ListValue();
-      RepeatedPtrField<std::string>::const_iterator entry;
-      for (entry = container.flags().begin();
-           entry != container.flags().end();
-           ++entry) {
-        flags->Append(Value::CreateStringValue(*entry));
-      }
-      policies->Set(key::kDeviceStartUpFlags,
-                    POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE,
-                    flags);
+    ListValue* flags = new ListValue();
+    RepeatedPtrField<std::string>::const_iterator entry;
+    for (entry = container.flags().begin();
+         entry != container.flags().end();
+         ++entry) {
+      flags->Append(Value::CreateStringValue(*entry));
     }
+    policies->Set(key::kDeviceStartUpFlags,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE,
+                  flags);
   }
 
   if (policy.has_variations_parameter()) {
