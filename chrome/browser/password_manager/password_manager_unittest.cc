@@ -251,10 +251,12 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateSubframe) {
 
   // Simulate navigating a sub-frame.
   content::LoadCommittedDetails details;
+  details.is_main_frame = false;
   content::FrameNavigateParams params;
   manager()->DidNavigateAnyFrame(details, params);
 
   // Simulate navigating the real page.
+  details.is_main_frame = true;
   params.password_form = form;
   manager()->DidNavigateAnyFrame(details, params);
 
@@ -269,6 +271,60 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateSubframe) {
 
   ASSERT_FALSE(NULL == form_to_save.get());
   EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
+
+  // Simulate saving the form, as if the info bar was accepted.
+  form_to_save->Save();
+}
+
+// This test verifies a fix for http://crbug.com/236673
+TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
+  std::vector<PasswordForm*> result;  // Empty password store.
+  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(*store_, GetLogins(_,_))
+      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  PasswordForm first_form(MakeSimpleForm());
+  first_form.origin = GURL("http://www.nytimes.com/");
+  first_form.action = GURL("https://myaccount.nytimes.com/auth/login");
+  first_form.signon_realm = "http://www.nytimes.com/";
+  PasswordForm second_form(MakeSimpleForm());
+  second_form.origin = GURL("https://myaccount.nytimes.com/auth/login");
+  second_form.action = GURL("https://myaccount.nytimes.com/auth/login");
+  second_form.signon_realm = "https://myaccount.nytimes.com/";
+
+  // Pretend that the form is hidden on the first page.
+  std::vector<PasswordForm> observed;
+  observed.push_back(first_form);
+  manager()->OnPasswordFormsParsed(observed);
+  observed.clear();
+  manager()->OnPasswordFormsRendered(observed);
+
+  // Now navigate to a second page.
+  content::LoadCommittedDetails details;
+  details.is_main_frame = true;
+  content::FrameNavigateParams params;
+  manager()->DidNavigateAnyFrame(details, params);
+
+  // This page contains a form with the same markup, but on a different
+  // URL.
+  observed.push_back(second_form);
+  manager()->OnPasswordFormsParsed(observed);
+  manager()->OnPasswordFormsRendered(observed);
+
+  // Now submit this form
+  params.password_form = second_form;
+  manager()->DidNavigateAnyFrame(details, params);
+
+  // Navigation after form submit.
+  scoped_ptr<PasswordFormManager> form_to_save;
+  EXPECT_CALL(delegate_, AddSavePasswordInfoBarIfPermitted(_))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
+  observed.clear();
+  manager()->OnPasswordFormsParsed(observed);
+  manager()->OnPasswordFormsRendered(observed);
+
+  // Make sure that the saved form matches the second form, not the first.
+  ASSERT_TRUE(form_to_save.get());
+  EXPECT_CALL(*store_, AddLogin(FormMatches(second_form)));
 
   // Simulate saving the form, as if the info bar was accepted.
   form_to_save->Save();

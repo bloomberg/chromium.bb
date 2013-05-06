@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/common/autofill_messages.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -206,17 +207,17 @@ void PasswordManager::SetObserver(LoginModelObserver* observer) {
 void PasswordManager::DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) {
-  if (!params.password_form.origin.is_valid()) {
-    // This codepath essentially means that a frame not containing a password
-    // form was navigated.  For example, this might be a subframe of the main
-    // page, navigated either automatically or in response to a user action.
-    return;
-  }
+  bool password_form_submitted = params.password_form.origin.is_valid();
 
-  // There might be password data to provisionally save. Other than that, we're
-  // ready to reset and move on.
-  ProvisionallySavePassword(params.password_form);
-  pending_login_managers_.clear();
+  // Try to save the password if one was submitted.
+  if (password_form_submitted)
+    ProvisionallySavePassword(params.password_form);
+
+  // Clear data after submission or main frame navigation. We don't want
+  // to clear data after subframe navigation as there might be password
+  // forms on other frames that could be submitted.
+  if (password_form_submitted || details.is_main_frame)
+    pending_login_managers_.clear();
 }
 
 bool PasswordManager::OnMessageReceived(const IPC::Message& message) {
