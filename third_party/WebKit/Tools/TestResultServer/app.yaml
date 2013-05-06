@@ -1,7 +1,8 @@
 application: test-results
 version: 1
-runtime: python
+runtime: python27
 api_version: 1
+threadsafe: true
 
 handlers:
 - url: /stylesheets
@@ -11,8 +12,8 @@ handlers:
   static_dir: static-dashboards
 
 - url: /testfile/delete
-  script: main.py
+  script: main.app
   login: admin
 
 - url: /.*
-  script: main.py
+  script: main.app

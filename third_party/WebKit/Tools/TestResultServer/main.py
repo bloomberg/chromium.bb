@@ -26,12 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Request a modern Django
-from google.appengine.dist import use_library
-use_library('django', '1.1')
-
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp.util import run_wsgi_app
+import webapp2
 
 from handlers import menu
 from handlers import testfilehandler
@@ -44,11 +39,4 @@ routes = [
     ('/*|/menu', menu.Menu),
 ]
 
-application = webapp.WSGIApplication(routes, debug=True)
-
-
-def main():
-    run_wsgi_app(application)
-
-if __name__ == "__main__":
-    main()
+app = webapp2.WSGIApplication(routes, debug=True)
