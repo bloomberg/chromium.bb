@@ -126,7 +126,7 @@ function sendKey(keyIdentifier) {
 
   // Exit shift mode after pressing any key but space.
   if (currentMode == SHIFT_MODE && keyIdentifier != 'Spacebar') {
-    transitionMode(KEY_MODE);
+    transitionMode(SHIFT_MODE);
   }
   // Enter shift mode after typing a closing punctuation and then a space for a
   // new sentence.

@@ -9,6 +9,7 @@
     "keyboard": "index.html"
   },
   "permissions": [
+    "audioCapture",
     "experimental"
   ]
 }
