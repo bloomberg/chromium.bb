@@ -45,7 +45,7 @@ base::FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
 
 void ResourceBundle::LoadCommonResources() {
   AddDataPackFromPath(GetResourcesPakFilePath(@"chrome", nil),
-                      ui::SCALE_FACTOR_100P);
+                      ui::SCALE_FACTOR_NONE);
 
   if (IsScaleFactorSupported(SCALE_FACTOR_100P)) {
     AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_100_percent", nil),
