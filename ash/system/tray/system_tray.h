@@ -179,8 +179,7 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
                  bool details,
                  bool activate,
                  BubbleCreationType creation_type,
-                 int x_offset,
-                 bool change_tray_status);
+                 int x_offset);
 
   // Constructs or re-constructs |notification_bubble_| and populates it with
   // |notification_items_|, or destroys it if there are no notification items.

@@ -214,7 +214,7 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
                                   BubbleCreationType creation_type) {
   std::vector<SystemTrayItem*> items;
   items.push_back(item);
-  ShowItems(items, true, activate, creation_type, GetTrayXOffset(item), false);
+  ShowItems(items, true, activate, creation_type, GetTrayXOffset(item));
   if (system_bubble_)
     system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
@@ -334,7 +334,6 @@ bool SystemTray::HasSystemBubbleType(SystemTrayBubble::BubbleType type) {
 void SystemTray::DestroySystemBubble() {
   system_bubble_.reset();
   detailed_item_ = NULL;
-  SetBubbleVisible(false);
 }
 
 void SystemTray::DestroyNotificationBubble() {
@@ -367,15 +366,14 @@ int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
 
 void SystemTray::ShowDefaultViewWithOffset(BubbleCreationType creation_type,
                                            int arrow_offset) {
-  ShowItems(items_.get(), false, true, creation_type, arrow_offset, true);
+  ShowItems(items_.get(), false, true, creation_type, arrow_offset);
 }
 
 void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            bool detailed,
                            bool can_activate,
                            BubbleCreationType creation_type,
-                           int arrow_offset,
-                           bool change_tray_status) {
+                           int arrow_offset) {
   // Destroy any existing bubble and create a new one.
   SystemTrayBubble::BubbleType bubble_type = detailed ?
       SystemTrayBubble::BUBBLE_TYPE_DETAILED :
@@ -414,8 +412,6 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     SystemTrayBubble* bubble = new SystemTrayBubble(this, items, bubble_type);
     system_bubble_.reset(new internal::SystemBubbleWrapper(bubble));
     system_bubble_->InitView(this, tray_container(), &init_params);
-    if (change_tray_status)
-      SetBubbleVisible(true);
   }
   // Save height of default view for creating detailed views directly.
   if (!detailed)
@@ -479,7 +475,6 @@ void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
   UpdateAfterShelfAlignmentChange(alignment);
   // Destroy any existing bubble so that it is rebuilt correctly.
   system_bubble_.reset();
-  SetBubbleVisible(false);
   // Rebuild any notification bubble.
   if (notification_bubble_) {
     notification_bubble_.reset();
