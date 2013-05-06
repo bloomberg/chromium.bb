@@ -850,6 +850,9 @@ For Chromium, processes used to display diagnostics information (such as this "a
         <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE" desc="The body of the sync promo NTP bubble.">
           You're now signed in to Chromium! Your bookmarks, history, and other settings will be synced to your Google Account.
         </message>
+        <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_SYNC_DISABLED_MESSAGE" desc="The body of the signin bubble, when sync has been disabled.">
+          You're now signed in to Chromium! Sync is disabled by your administrator.
+        </message>
         <message name="IDS_SYNC_WRONG_EMAIL" desc="Message shown when sync setup failed due to the user entering the wrong email address for sign in.">
           You were signed in to Chromium as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Please use the same account to sign in again.
         </message>
