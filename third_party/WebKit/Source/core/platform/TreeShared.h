@@ -38,14 +38,12 @@ protected:
     TreeShared()
         : m_refCount(1)
 #ifndef NDEBUG
+        , m_deletionHasBegun(false)
+        , m_inRemovedLastRefFunction(false)
         , m_adoptionIsRequired(true)
 #endif
     {
         ASSERT(isMainThread());
-#ifndef NDEBUG
-        m_deletionHasBegun = false;
-        m_inRemovedLastRefFunction = false;
-#endif
     }
 
     ~TreeShared()
@@ -94,19 +92,15 @@ public:
         return m_refCount;
     }
 
-#ifndef NDEBUG
-    bool m_deletionHasBegun;
-    bool m_inRemovedLastRefFunction;
-#endif
-
 private:
-#ifndef NDEBUG
-    friend void adopted<>(TreeShared<NodeType>*);
-#endif
-
     int m_refCount;
 
 #ifndef NDEBUG
+public:
+    bool m_deletionHasBegun;
+    bool m_inRemovedLastRefFunction;
+private:
+    friend void adopted<>(TreeShared<NodeType>*);
     bool m_adoptionIsRequired;
 #endif
 };
