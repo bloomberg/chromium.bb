@@ -240,6 +240,7 @@ InstantController::InstantController(BrowserInstantController* browser,
       instant_enabled_(false),
       use_local_page_only_(true),
       model_(this),
+      use_tab_for_suggestions_(false),
       last_omnibox_text_has_inline_autocompletion_(false),
       last_verbatim_(false),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
@@ -265,15 +266,7 @@ void InstantController::OnAutocompleteStart() {
     return;
   }
 
-  if (instant_tab_) {
-    // If we have an |instant_tab_| but it doesn't support Instant yet, sever
-    // the connection to it so we use the overlay instead. This ensures that the
-    // user interaction will be responsive and handles cases where
-    // |instant_tab_| never responds about whether it supports Instant.
-    instant_tab_.reset();
-    LOG_INSTANT_DEBUG_EVENT(
-        this, "OnAutocompleteStart: reset InstantTab");
-  }
+  use_tab_for_suggestions_ = false;
 
   // Not using |instant_tab_|. Check if overlay is OK to use.
   if (ShouldSwitchToLocalOverlay()) {
@@ -314,7 +307,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // DCHECKs below because |user_text| and |full_text| have different semantics
   // when keyword search is in effect.
   if (is_keyword_search) {
-    if (instant_tab_)
+    if (UseTabForSuggestions())
       instant_tab_->Update(string16(), 0, 0, true);
     else
       HideOverlay();
@@ -365,7 +358,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
     return false;
   }
 
-  if (!instant_tab_ && !overlay_) {
+  if (!UseTabForSuggestions() && !overlay_) {
     HideOverlay();
     return false;
   }
@@ -375,7 +368,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
       if (!user_input_in_progress) {
         // If the user isn't typing and the omnibox popup is closed, it means a
         // regular navigation, tab-switch or the user hitting Escape.
-        if (instant_tab_) {
+        if (UseTabForSuggestions()) {
           // The user is on a search results page. It may be showing results for
           // a partial query the user typed before they hit Escape. Send the
           // omnibox text to the page to restore the original results.
@@ -408,7 +401,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
         last_omnibox_text_.clear();
         last_user_text_.clear();
         last_suggestion_ = InstantSuggestion();
-        if (instant_tab_) {
+        if (UseTabForSuggestions()) {
           // On a search results page, tell it to clear old results.
           instant_tab_->Update(string16(), 0, 0, true);
         } else if (search_mode_.is_origin_ntp()) {
@@ -438,7 +431,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
       last_omnibox_text_.clear();
       last_user_text_.clear();
       last_suggestion_ = InstantSuggestion();
-      if (instant_tab_)
+      if (UseTabForSuggestions())
         instant_tab_->Update(string16(), 0, 0, true);
       else if (search_mode_.is_origin_ntp())
         overlay_->Update(string16(), 0, 0, true);
@@ -493,7 +486,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   if (!extended_enabled_)
     search_mode_.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
 
-  if (instant_tab_) {
+  if (UseTabForSuggestions()) {
     instant_tab_->Update(user_text, selection_start, selection_end, verbatim);
   } else {
     if (first_interaction_time_.is_null())
@@ -583,7 +576,7 @@ void InstantController::HandleAutocompleteResults(
   if (!extended_enabled_)
     return;
 
-  if (!instant_tab_ && !overlay_)
+  if (!UseTabForSuggestions() && !overlay_)
     return;
 
   // The omnibox sends suggestions when its possibly imaginary popup closes
@@ -639,7 +632,7 @@ void InstantController::HandleAutocompleteResults(
       "HandleAutocompleteResults: total_results=%d",
       static_cast<int>(results.size())));
 
-  if (instant_tab_)
+  if (UseTabForSuggestions())
     instant_tab_->SendAutocompleteResults(results);
   else
     overlay_->SendAutocompleteResults(results);
@@ -672,10 +665,10 @@ bool InstantController::OnUpOrDownKeyPressed(int count) {
   if (!extended_enabled_)
     return false;
 
-  if (!instant_tab_ && !overlay_)
+  if (!UseTabForSuggestions() && !overlay_)
     return false;
 
-  if (instant_tab_)
+  if (UseTabForSuggestions())
     instant_tab_->UpOrDownKeyPressed(count);
   else
     overlay_->UpOrDownKeyPressed(count);
@@ -689,7 +682,7 @@ void InstantController::OnCancel(const AutocompleteMatch& match,
   if (!extended_enabled_)
     return;
 
-  if (!instant_tab_ && !overlay_)
+  if (!UseTabForSuggestions() && !overlay_)
     return;
 
   // We manually reset the state here since the JS is not expected to do it.
@@ -704,7 +697,7 @@ void InstantController::OnCancel(const AutocompleteMatch& match,
   // inline autocompletion is "zon.com"; so the selection should span from
   // user_text.size() to full_text.size(). The selection bounds are inverted
   // because the caret is at the end of |user_text|, not |full_text|.
-  if (instant_tab_) {
+  if (UseTabForSuggestions()) {
     instant_tab_->CancelSelection(user_text, full_text.size(), user_text.size(),
                                   last_verbatim_);
   } else {
@@ -717,7 +710,7 @@ void InstantController::OmniboxNavigateToURL() {
   RecordNavigationHistogram(UsingLocalPage(), false, extended_enabled_);
   if (!extended_enabled_)
     return;
-  if (instant_tab_)
+  if (UseTabForSuggestions())
     instant_tab_->Submit(string16());
 }
 
@@ -737,13 +730,13 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
 
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
       "CommitIfPossible: type=%d last_omnibox_text_='%s' "
-      "last_match_was_search_=%d instant_tab_=%d", type,
+      "last_match_was_search_=%d use_tab_for_suggestions=%d", type,
       UTF16ToUTF8(last_omnibox_text_).c_str(), last_match_was_search_,
-      instant_tab_ != NULL));
+      UseTabForSuggestions()));
 
   // If we are on an already committed search results page, send a submit event
   // to the page, but otherwise, nothing else to do.
-  if (instant_tab_) {
+  if (UseTabForSuggestions()) {
     if (type == INSTANT_COMMIT_PRESSED_ENTER &&
         !instant_tab_->IsLocal() &&
         (last_match_was_search_ ||
@@ -867,6 +860,9 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   // Try to create another overlay immediately so that it is ready for the next
   // user interaction.
   ResetOverlay(GetInstantURL());
+
+  if (instant_tab_)
+    use_tab_for_suggestions_ = true;
 
   LOG_INSTANT_DEBUG_EVENT(this, "Committed");
   return true;
@@ -1215,7 +1211,7 @@ void InstantController::SetSuggestions(
   // Ignore if the message is from an unexpected source.
   if (IsContentsFrom(ntp(), contents))
     return;
-  if (instant_tab_ && !IsContentsFrom(instant_tab(), contents))
+  if (UseTabForSuggestions() && !IsContentsFrom(instant_tab(), contents))
     return;
   if (IsContentsFrom(overlay(), contents) &&
       !allow_overlay_to_show_search_suggestions_)
@@ -1227,7 +1223,8 @@ void InstantController::SetSuggestions(
 
   // TODO(samarth): allow InstantTabs to call SetSuggestions() from the NTP once
   // that is better supported.
-  bool can_use_instant_tab = instant_tab_ && search_mode_.is_search();
+  bool can_use_instant_tab = UseTabForSuggestions() &&
+      search_mode_.is_search();
   bool can_use_overlay = search_mode_.is_search_suggestions() &&
       !last_omnibox_text_.empty();
   if (!can_use_instant_tab && !can_use_overlay)
@@ -1471,6 +1468,7 @@ void InstantController::ResetInstantTab() {
       StartListeningToMostVisitedChanges();
       instant_tab_->KeyCaptureChanged(
           omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
+      use_tab_for_suggestions_ = true;
     }
 
     // Hide the |overlay_| since we are now using |instant_tab_| instead.
@@ -1502,11 +1500,14 @@ void InstantController::HideInternal() {
 
   // Clear the first interaction timestamp for later use.
   first_interaction_time_ = base::Time();
+
+  if (instant_tab_)
+    use_tab_for_suggestions_ = true;
 }
 
 void InstantController::ShowOverlay(int height, InstantSizeUnits units) {
   // If we are on a committed search results page, the |overlay_| is not in use.
-  if (instant_tab_)
+  if (UseTabForSuggestions())
     return;
 
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
@@ -1520,6 +1521,8 @@ void InstantController::ShowOverlay(int height, InstantSizeUnits units) {
   // HideOverlay()) so that it can change its mind.
   if (height == 0) {
     model_.SetOverlayState(SearchMode(), 0, INSTANT_SIZE_PERCENT);
+    if (instant_tab_)
+      use_tab_for_suggestions_ = true;
     return;
   }
 
@@ -1700,6 +1703,10 @@ bool InstantController::FixSuggestion(InstantSuggestion* suggestion) const {
 }
 
 bool InstantController::UsingLocalPage() const {
-  return (instant_tab_ && instant_tab_->IsLocal()) ||
-      (!instant_tab_ && overlay_ && overlay_->IsLocal());
+  return (UseTabForSuggestions() && instant_tab_->IsLocal()) ||
+      (!UseTabForSuggestions() && overlay_ && overlay_->IsLocal());
+}
+
+bool InstantController::UseTabForSuggestions() const {
+  return instant_tab_ && use_tab_for_suggestions_;
 }

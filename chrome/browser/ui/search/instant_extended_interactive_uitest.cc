@@ -314,6 +314,35 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputShowsOverlay) {
   EXPECT_EQ(overlay, instant()->GetOverlayContents());
 }
 
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, UsesOverlayIfTabNotReady) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+
+  // Open a new tab and start typing before InstantTab is properly hooked up.
+  // Should use the overlay.
+  ui_test_utils::NavigateToURLWithDisposition(browser(),
+                                              GURL(chrome::kChromeUINewTabURL),
+                                              NEW_FOREGROUND_TAB,
+                                              ui_test_utils::BROWSER_TEST_NONE);
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
+
+  // But Instant tab should still exist.
+  ASSERT_NE(static_cast<InstantTab*>(NULL), instant()->instant_tab());
+  EXPECT_FALSE(instant()->UseTabForSuggestions());
+
+  // Wait for Instant Tab support if it still hasn't finished loading.
+  if (!instant()->instant_tab()->supports_instant()) {
+    content::WindowedNotificationObserver instant_tab_observer(
+        chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+        content::NotificationService::AllSources());
+    instant_tab_observer.Wait();
+  }
+
+  // Hide the overlay. Now, we should be using Instant tab for suggestions.
+  instant()->HideOverlay();
+  EXPECT_TRUE(instant()->UseTabForSuggestions());
+}
+
 // Test that middle clicking on a suggestion opens the result in a new tab.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
                        MiddleClickOnSuggestionOpensInNewTab) {

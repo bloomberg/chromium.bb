@@ -211,6 +211,7 @@ class InstantController : public InstantPage::Delegate,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UsesOverlayIfTabNotReady);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            SearchQueryNotDisplayedForNavsuggest);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, SetWithTemplateURL);
@@ -383,6 +384,10 @@ class InstantController : public InstantPage::Delegate,
   // Returns true if the local page is being used.
   bool UsingLocalPage() const;
 
+  // Returns true iff |use_tab_for_suggestions_| is true and |instant_tab_|
+  // exists.
+  bool UseTabForSuggestions() const;
+
   BrowserInstantController* const browser_;
 
   // Whether the extended API and regular API are enabled. If both are false,
@@ -406,6 +411,11 @@ class InstantController : public InstantPage::Delegate,
   scoped_ptr<InstantOverlay> overlay_;
   scoped_ptr<InstantNTP> ntp_;
   scoped_ptr<InstantTab> instant_tab_;
+
+  // If true, send suggestion-related events (such as user key strokes, auto
+  // complete results, etc.) to |instant_tab_| instead of |overlay_|. Once set
+  // to false, will stay false until the overlay is hidden or committed.
+  bool use_tab_for_suggestions_;
 
   // The most recent full_text passed to Update(). If empty, we'll not accept
   // search suggestions from |overlay_| or |instant_tab_|.
