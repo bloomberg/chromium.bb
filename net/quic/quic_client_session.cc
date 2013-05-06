@@ -179,23 +179,27 @@ Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
 void QuicClientSession::OnReadComplete(int result) {
   read_pending_ = false;
   // TODO(rch): Inform the connection about the result.
-  if (result > 0) {
-    scoped_refptr<IOBufferWithSize> buffer(read_buffer_);
-    read_buffer_ = new IOBufferWithSize(kMaxPacketSize);
-    QuicEncryptedPacket packet(buffer->data(), result);
-    IPEndPoint local_address;
-    IPEndPoint peer_address;
-    socket_->GetLocalAddress(&local_address);
-    socket_->GetPeerAddress(&peer_address);
-    // ProcessUdpPacket might result in |this| being deleted, so we
-    // use a weak pointer to be safe.
-    connection()->ProcessUdpPacket(local_address, peer_address, packet);
-    if (!connection()->connected()) {
-      stream_factory_->OnSessionClose(this);
-      return;
-    }
-    StartReading();
+  if (result <= 0) {
+    DLOG(INFO) << "Closing session on read error: " << result;
+    CloseSessionOnError(result);
+    return;
   }
+
+  scoped_refptr<IOBufferWithSize> buffer(read_buffer_);
+  read_buffer_ = new IOBufferWithSize(kMaxPacketSize);
+  QuicEncryptedPacket packet(buffer->data(), result);
+  IPEndPoint local_address;
+  IPEndPoint peer_address;
+  socket_->GetLocalAddress(&local_address);
+  socket_->GetPeerAddress(&peer_address);
+  // ProcessUdpPacket might result in |this| being deleted, so we
+  // use a weak pointer to be safe.
+  connection()->ProcessUdpPacket(local_address, peer_address, packet);
+  if (!connection()->connected()) {
+    stream_factory_->OnSessionClose(this);
+    return;
+  }
+  StartReading();
 }
 
 }  // namespace net

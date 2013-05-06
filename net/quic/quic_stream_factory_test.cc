@@ -141,7 +141,7 @@ TEST_F(QuicStreamFactoryTest, Create) {
     MockWrite(SYNCHRONOUS, rst7->data(), rst7->length()),
   };
   MockRead reads[] = {
-    MockRead(ASYNC, OK),  // EOF
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
   StaticSocketDataProvider socket_data(reads, arraysize(reads),
                                        writes, arraysize(writes));
@@ -191,7 +191,7 @@ TEST_F(QuicStreamFactoryTest, CancelCreate) {
     MockWrite(SYNCHRONOUS, rst3->data(), rst3->length()),
   };
   MockRead reads[] = {
-    MockRead(ASYNC, OK),  // EOF
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
   StaticSocketDataProvider socket_data(reads, arraysize(reads),
                                        writes, arraysize(writes));
@@ -217,7 +217,7 @@ TEST_F(QuicStreamFactoryTest, CancelCreate) {
 TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
   scoped_ptr<QuicEncryptedPacket> rst3(ConstructRstPacket(1, 3));
   MockRead reads[] = {
-    MockRead(ASYNC, OK),  // EOF
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
   StaticSocketDataProvider socket_data(reads, arraysize(reads),
                                        NULL, 0);
@@ -227,7 +227,7 @@ TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
     MockWrite(SYNCHRONOUS, rst3->data(), rst3->length()),
   };
   MockRead reads2[] = {
-    MockRead(ASYNC, OK),  // EOF
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
   StaticSocketDataProvider socket_data2(reads2, arraysize(reads2),
                                         writes2, arraysize(writes2));
