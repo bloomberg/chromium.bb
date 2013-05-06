@@ -570,12 +570,6 @@ bool AccessibilityObject::isInsideARIALiveRegion() const
     return false;
 }
 
-void AccessibilityObject::markCachedElementRectDirty() const
-{
-    for (unsigned i = 0; i < m_children.size(); ++i)
-        m_children[i].get()->markCachedElementRectDirty();
-}
-
 IntPoint AccessibilityObject::clickPoint()
 {
     LayoutRect rect = elementRect();
@@ -793,7 +787,7 @@ bool AccessibilityObject::press() const
 
 void AccessibilityObject::scrollToMakeVisible() const
 {
-    IntRect objectRect = pixelSnappedIntRect(elementRect());
+    IntRect objectRect = pixelSnappedIntRect(boundingBoxRect());
     objectRect.setLocation(IntPoint());
     scrollToMakeVisibleWithSubFocus(objectRect);
 }
@@ -881,7 +875,7 @@ void AccessibilityObject::scrollToMakeVisibleWithSubFocus(const IntRect& subfocu
     if (!scrollableArea)
         return;
 
-    LayoutRect objectRect = elementRect();
+    LayoutRect objectRect = boundingBoxRect();
     IntPoint scrollPosition = scrollableArea->scrollPosition();
     IntRect scrollVisibleRect = scrollableArea->visibleContentRect();
 
@@ -926,7 +920,7 @@ void AccessibilityObject::scrollToGlobalPoint(const IntPoint& globalPoint) const
 
         ScrollableArea* scrollableArea = outer->getScrollableAreaIfScrollable();
 
-        LayoutRect innerRect = inner->isAccessibilityScrollView() ? inner->parentObject()->elementRect() : inner->elementRect();
+        LayoutRect innerRect = inner->isAccessibilityScrollView() ? inner->parentObject()->boundingBoxRect() : inner->boundingBoxRect();
         LayoutRect objectRect = innerRect;
         IntPoint scrollPosition = scrollableArea->scrollPosition();
 

@@ -63,6 +63,8 @@ public:
     static PassRefPtr<AccessibilityRenderObject> create(RenderObject*);
     virtual ~AccessibilityRenderObject();
 
+    RenderObject* m_renderer;
+
     // Public, overridden from AccessibilityObject.
     virtual RenderObject* renderer() const { return m_renderer; }
     virtual LayoutRect elementRect() const;
@@ -81,12 +83,6 @@ public:
     virtual AccessibilityRole determineAccessibilityRole();
 
 protected:
-    RenderObject* m_renderer;
-    mutable LayoutRect m_cachedElementRect;
-    mutable LayoutRect m_cachedFrameRect;
-    mutable IntPoint m_cachedScrollPosition;
-    mutable bool m_cachedElementRectDirty;
-
     //
     // Overridden from AccessibilityObject.
     //
@@ -144,6 +140,7 @@ protected:
 
     // Properties of interactive elements.
     virtual const String& actionVerb() const;
+    LayoutRect checkboxOrRadioRect() const;
     virtual void selectedChildren(AccessibilityChildrenVector&);
     virtual String stringValue() const;
 
@@ -174,10 +171,8 @@ protected:
     // Accessibility Text - (To be deprecated).
     virtual String helpText() const;
 
-    // Location and click point in frame-relative coordinates.
-    virtual void checkCachedElementRect() const;
-    virtual void updateCachedElementRect() const;
-    virtual void markCachedElementRectDirty() const;
+    // Position and size.
+    virtual LayoutRect boundingBoxRect() const;
     virtual IntPoint clickPoint();
 
     // Hit testing.
@@ -277,7 +272,6 @@ private:
     void ariaSelectedRows(AccessibilityChildrenVector&);
     bool elementAttributeValue(const QualifiedName&) const;
     bool inheritsPresentationalRole() const;
-    LayoutRect computeElementRect() const;
 };
 
 inline AccessibilityRenderObject* toAccessibilityRenderObject(AccessibilityObject* object)

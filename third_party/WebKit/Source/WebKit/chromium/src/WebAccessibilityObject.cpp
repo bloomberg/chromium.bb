@@ -491,7 +491,7 @@ WebRect WebAccessibilityObject::boundingBoxRect() const
     if (isDetached())
         return WebRect();
 
-    return pixelSnappedIntRect(m_private->elementRect());
+    return m_private->pixelSnappedBoundingBoxRect();
 }
 
 bool WebAccessibilityObject::canvasHasFallbackContent() const
@@ -561,7 +561,7 @@ WebAccessibilityObject WebAccessibilityObject::hitTest(const WebPoint& point) co
     if (hit)
         return WebAccessibilityObject(hit);
 
-    if (m_private->elementRect().contains(contentsPoint))
+    if (m_private->boundingBoxRect().contains(contentsPoint))
         return *this;
 
     return WebAccessibilityObject();
