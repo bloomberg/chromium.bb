@@ -59,8 +59,7 @@ bool DocumentMarkersCollector::Visit(content::RenderView* render_view) {
   if (!render_view || !render_view->GetWebView())
     return true;
   WebVector<uint32> markers;
-  // TODO(rouslan): Call spellingMarkers() after Blink DEPS roll:
-  // render_view->GetWebView()->spellingMarkers(&markers);
+  render_view->GetWebView()->spellingMarkers(&markers);
   for (size_t i = 0; i < markers.size(); ++i)
     markers_.push_back(markers[i]);
   // Visit all render views.
