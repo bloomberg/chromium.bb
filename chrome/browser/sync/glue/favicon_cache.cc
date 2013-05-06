@@ -351,7 +351,34 @@ syncer::SyncError FaviconCache::ProcessSyncChanges(
         continue;
       } else {
         DVLOG(1) << "Deleting favicon at " << favicon_url.spec();
-        DropSyncedFavicon(favicon_iter);
+        // If we only have partial data for the favicon (which implies orphaned
+        // nodes), delete the local favicon only if the type corresponds to the
+        // partial data we have. If we do have orphaned nodes, we rely on the
+        // expiration logic to remove them eventually.
+        if (type == syncer::FAVICON_IMAGES &&
+            FaviconInfoHasImages(*(favicon_iter->second)) &&
+            !FaviconInfoHasTracking(*(favicon_iter->second))) {
+          DropSyncedFavicon(favicon_iter);
+        } else if (type == syncer::FAVICON_TRACKING &&
+                   !FaviconInfoHasImages(*(favicon_iter->second)) &&
+                   FaviconInfoHasTracking(*(favicon_iter->second))) {
+          DropSyncedFavicon(favicon_iter);
+        } else {
+          // Only delete the data for the modified type.
+          if (type == syncer::FAVICON_TRACKING) {
+            recent_favicons_.erase(favicon_iter->second);
+            favicon_iter->second->last_visit_time = base::Time();
+            favicon_iter->second->is_bookmarked = false;
+            recent_favicons_.insert(favicon_iter->second);
+            DCHECK(!FaviconInfoHasTracking(*(favicon_iter->second)));
+          } else {
+            for (int i = 0; i < NUM_SIZES; ++i) {
+              favicon_iter->second->bitmap_data[i] =
+                  history::FaviconBitmapResult();
+            }
+            DCHECK(!FaviconInfoHasImages(*(favicon_iter->second)));
+          }
+        }
       }
     } else if (iter->change_type() == syncer::SyncChange::ACTION_UPDATE ||
                iter->change_type() == syncer::SyncChange::ACTION_ADD) {
@@ -964,18 +991,22 @@ FaviconCache::FaviconMap::iterator FaviconCache::DeleteSyncedFavicon(
     syncer::SyncChangeList* image_changes,
     syncer::SyncChangeList* tracking_changes) {
   linked_ptr<SyncedFaviconInfo> favicon_info = favicon_iter->second;
-  image_changes->push_back(
-      syncer::SyncChange(FROM_HERE,
-                         syncer::SyncChange::ACTION_DELETE,
-                         syncer::SyncData::CreateLocalDelete(
-                             favicon_info->favicon_url.spec(),
-                             syncer::FAVICON_IMAGES)));
-  tracking_changes->push_back(
-      syncer::SyncChange(FROM_HERE,
-                         syncer::SyncChange::ACTION_DELETE,
-                         syncer::SyncData::CreateLocalDelete(
-                             favicon_info->favicon_url.spec(),
-                             syncer::FAVICON_TRACKING)));
+  if (FaviconInfoHasImages(*(favicon_iter->second))) {
+    image_changes->push_back(
+        syncer::SyncChange(FROM_HERE,
+                           syncer::SyncChange::ACTION_DELETE,
+                           syncer::SyncData::CreateLocalDelete(
+                               favicon_info->favicon_url.spec(),
+                               syncer::FAVICON_IMAGES)));
+  }
+  if (FaviconInfoHasTracking(*(favicon_iter->second))) {
+    tracking_changes->push_back(
+        syncer::SyncChange(FROM_HERE,
+                           syncer::SyncChange::ACTION_DELETE,
+                           syncer::SyncData::CreateLocalDelete(
+                               favicon_info->favicon_url.spec(),
+                               syncer::FAVICON_TRACKING)));
+  }
   FaviconMap::iterator next = favicon_iter;
   next++;
   DropSyncedFavicon(favicon_iter);

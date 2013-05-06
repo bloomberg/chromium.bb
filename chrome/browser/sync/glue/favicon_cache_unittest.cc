@@ -1046,7 +1046,7 @@ TEST_F(SyncFaviconCacheTest, ReceiveSameTracking) {
 // Verify we can delete favicons after setting up sync.
 TEST_F(SyncFaviconCacheTest, DeleteFavicons) {
   syncer::SyncDataList initial_image_data, initial_tracking_data;
-  syncer::SyncChangeList deletions;
+  syncer::SyncChangeList tracking_deletions, image_deletions;
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(BuildFaviconData(i),
@@ -1059,18 +1059,29 @@ TEST_F(SyncFaviconCacheTest, DeleteFavicons) {
     initial_tracking_data.push_back(
         syncer::SyncData::CreateRemoteData(1,
                                            tracking_specifics));
-    deletions.push_back(
+    tracking_deletions.push_back(
         syncer::SyncChange(
              FROM_HERE,
              syncer::SyncChange::ACTION_DELETE,
              syncer::SyncData::CreateRemoteData(1, tracking_specifics)));
+    image_deletions.push_back(
+        syncer::SyncChange(
+             FROM_HERE,
+             syncer::SyncChange::ACTION_DELETE,
+             syncer::SyncData::CreateRemoteData(1, image_specifics)));
   }
 
   SetUpInitialSync(initial_image_data, initial_tracking_data);
 
-  // Now receive the deletions.
+  // Now receive the tracking deletions. Since we'll still have orphan data,
+  // the favicon count should remain the same.
   EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
-  cache()->ProcessSyncChanges(FROM_HERE, deletions);
+  cache()->ProcessSyncChanges(FROM_HERE, tracking_deletions);
+  EXPECT_EQ(0U, processor()->GetAndResetChangeList().size());
+  EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
+
+  // Once the image deletions arrive, the favicon count should be 0 again.
+  cache()->ProcessSyncChanges(FROM_HERE, image_deletions);
   EXPECT_EQ(0U, processor()->GetAndResetChangeList().size());
   EXPECT_EQ(0U, GetFaviconCount());
 }
