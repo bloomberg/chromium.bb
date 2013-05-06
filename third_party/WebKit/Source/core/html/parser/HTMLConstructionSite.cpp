@@ -83,8 +83,10 @@ static inline bool isAllWhitespace(const String& string)
     return string.isAllSpecialCharacters<isHTMLSpace>();
 }
 
-static inline void executeTask(HTMLConstructionSiteTask& task)
+static inline void executeInsertTask(HTMLConstructionSiteTask& task)
 {
+    ASSERT(task.operation == HTMLConstructionSiteTask::Insert);
+
     if (task.parent->hasTagName(templateTag))
         task.parent = toHTMLTemplateElement(task.parent.get())->content();
 
@@ -105,12 +107,36 @@ static inline void executeTask(HTMLConstructionSiteTask& task)
         task.child->finishParsingChildren();
 }
 
+static inline void executeReparentTask(HTMLConstructionSiteTask& task)
+{
+    ASSERT(task.operation == HTMLConstructionSiteTask::Reparent);
+
+    if (ContainerNode* parent = task.child->parentNode())
+        parent->parserRemoveChild(task.child.get());
+
+    task.parent->parserAppendChild(task.child);
+
+    if (task.child->parentElement()->attached() && !task.child->attached())
+        task.child->lazyAttach();
+}
+
+static inline void executeTask(HTMLConstructionSiteTask& task)
+{
+    if (task.operation == HTMLConstructionSiteTask::Insert)
+        return executeInsertTask(task);
+
+    if (task.operation == HTMLConstructionSiteTask::Reparent)
+        return executeReparentTask(task);
+
+    ASSERT_NOT_REACHED();
+}
+
 void HTMLConstructionSite::attachLater(ContainerNode* parent, PassRefPtr<Node> prpChild, bool selfClosing)
 {
     ASSERT(scriptingContentIsAllowed(m_parserContentPolicy) || !prpChild.get()->isElementNode() || !toScriptElementIfPossible(toElement(prpChild.get())));
     ASSERT(pluginContentIsAllowed(m_parserContentPolicy) || !prpChild->isPluginElement());
 
-    HTMLConstructionSiteTask task;
+    HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Insert);
     task.parent = parent;
     task.child = prpChild;
     task.selfClosing = selfClosing;
@@ -125,19 +151,19 @@ void HTMLConstructionSite::attachLater(ContainerNode* parent, PassRefPtr<Node> p
         task.parent = task.parent->parentNode();
 
     ASSERT(task.parent);
-    m_attachmentQueue.append(task);
+    m_taskQueue.append(task);
 }
 
 void HTMLConstructionSite::executeQueuedTasks()
 {
-    const size_t size = m_attachmentQueue.size();
+    const size_t size = m_taskQueue.size();
     if (!size)
         return;
 
     // Copy the task queue into a local variable in case executeTask
     // re-enters the parser.
-    AttachmentQueue queue;
-    queue.swap(m_attachmentQueue);
+    TaskQueue queue;
+    queue.swap(m_taskQueue);
 
     for (size_t i = 0; i < size; ++i)
         executeTask(queue[i]);
@@ -472,7 +498,7 @@ void HTMLConstructionSite::insertForeignElement(AtomicHTMLToken* token, const At
 
 void HTMLConstructionSite::insertTextNode(const String& characters, WhitespaceMode whitespaceMode)
 {
-    HTMLConstructionSiteTask task;
+    HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Insert);
     task.parent = currentNode();
 
     if (shouldFosterParent())
@@ -513,6 +539,14 @@ void HTMLConstructionSite::insertTextNode(const String& characters, WhitespaceMo
 
         executeTask(task);
     }
+}
+
+void HTMLConstructionSite::reparent(HTMLElementStack::ElementRecord* newParent, HTMLElementStack::ElementRecord* child)
+{
+    HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Reparent);
+    task.parent = newParent->element();
+    task.child = child->element();
+    m_taskQueue.append(task);
 }
 
 PassRefPtr<Element> HTMLConstructionSite::createElement(AtomicHTMLToken* token, const AtomicString& namespaceURI)
@@ -646,12 +680,12 @@ bool HTMLConstructionSite::shouldFosterParent() const
 
 void HTMLConstructionSite::fosterParent(PassRefPtr<Node> node)
 {
-    HTMLConstructionSiteTask task;
+    HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Insert);
     findFosterSite(task);
     task.child = node;
     ASSERT(task.parent);
 
-    m_attachmentQueue.append(task);
+    m_taskQueue.append(task);
 }
 
 }

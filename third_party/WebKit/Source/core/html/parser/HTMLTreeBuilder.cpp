@@ -1566,11 +1566,7 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken* token)
             if (lastNode == furthestBlock)
                 bookmark.moveToAfter(nodeEntry);
             // 9.9
-            if (ContainerNode* parent = lastNode->element()->parentNode())
-                parent->parserRemoveChild(lastNode->element());
-            node->element()->parserAppendChild(lastNode->element());
-            if (lastNode->element()->parentElement()->attached() && !lastNode->element()->attached())
-                lastNode->element()->lazyAttach();
+            m_tree.reparent(node, lastNode);
             // 9.10
             lastNode = node;
         }

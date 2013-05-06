@@ -39,11 +39,18 @@
 namespace WebCore {
 
 struct HTMLConstructionSiteTask {
-    HTMLConstructionSiteTask()
-        : selfClosing(false)
+    enum Operation {
+        Insert,
+        Reparent,
+    };
+
+    explicit HTMLConstructionSiteTask(Operation op)
+        : operation(op)
+        , selfClosing(false)
     {
     }
 
+    Operation operation;
     RefPtr<ContainerNode> parent;
     RefPtr<Node> nextChild;
     RefPtr<Node> child;
@@ -99,6 +106,8 @@ public:
     void insertHTMLHtmlStartTagBeforeHTML(AtomicHTMLToken*);
     void insertHTMLHtmlStartTagInBody(AtomicHTMLToken*);
     void insertHTMLBodyStartTagInBody(AtomicHTMLToken*);
+
+    void reparent(HTMLElementStack::ElementRecord* newParent, HTMLElementStack::ElementRecord* child);
 
     PassRefPtr<HTMLStackItem> createElementFromSavedToken(HTMLStackItem*);
 
@@ -156,7 +165,7 @@ public:
 private:
     // In the common case, this queue will have only one task because most
     // tokens produce only one DOM mutation.
-    typedef Vector<HTMLConstructionSiteTask, 1> AttachmentQueue;
+    typedef Vector<HTMLConstructionSiteTask, 1> TaskQueue;
 
     void setCompatibilityMode(Document::CompatibilityMode);
     void setCompatibilityModeFromDoctype(const String& name, const String& publicId, const String& systemId);
@@ -183,7 +192,7 @@ private:
     mutable HTMLElementStack m_openElements;
     mutable HTMLFormattingElementList m_activeFormattingElements;
 
-    AttachmentQueue m_attachmentQueue;
+    TaskQueue m_taskQueue;
 
     ParserContentPolicy m_parserContentPolicy;
     bool m_isParsingFragment;
