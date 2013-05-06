@@ -90,7 +90,7 @@ class ProviderTypeComboboxModel : public ui::ComboboxModel {
 
 class VpnServerCACertComboboxModel : public ui::ComboboxModel {
  public:
-  explicit VpnServerCACertComboboxModel(CertLibrary* cert_library);
+  VpnServerCACertComboboxModel();
   virtual ~VpnServerCACertComboboxModel();
 
   // Overridden from ui::ComboboxModel:
@@ -98,14 +98,12 @@ class VpnServerCACertComboboxModel : public ui::ComboboxModel {
   virtual string16 GetItemAt(int index) OVERRIDE;
 
  private:
-  CertLibrary* cert_library_;
-
   DISALLOW_COPY_AND_ASSIGN(VpnServerCACertComboboxModel);
 };
 
 class VpnUserCertComboboxModel : public ui::ComboboxModel {
  public:
-  explicit VpnUserCertComboboxModel(CertLibrary* cert_library);
+  VpnUserCertComboboxModel();
   virtual ~VpnUserCertComboboxModel();
 
   // Overridden from ui::ComboboxModel:
@@ -113,8 +111,6 @@ class VpnUserCertComboboxModel : public ui::ComboboxModel {
   virtual string16 GetItemAt(int index) OVERRIDE;
 
  private:
-  CertLibrary* cert_library_;
-
   DISALLOW_COPY_AND_ASSIGN(VpnUserCertComboboxModel);
 };
 
@@ -137,80 +133,77 @@ string16 ProviderTypeComboboxModel::GetItemAt(int index) {
 
 // VpnServerCACertComboboxModel ------------------------------------------------
 
-VpnServerCACertComboboxModel::VpnServerCACertComboboxModel(
-    CertLibrary* cert_library)
-    : cert_library_(cert_library) {
+VpnServerCACertComboboxModel::VpnServerCACertComboboxModel() {
 }
 
 VpnServerCACertComboboxModel::~VpnServerCACertComboboxModel() {
 }
 
 int VpnServerCACertComboboxModel::GetItemCount() const {
-  if (cert_library_->CertificatesLoading())
+  if (CertLibrary::Get()->CertificatesLoading())
     return 1;  // "Loading"
   // "Default" + certs.
-  return cert_library_->GetCACertificates().Size() + 1;
+  return CertLibrary::Get()->NumCertificates(
+      CertLibrary::CERT_TYPE_SERVER_CA) + 1;
 }
 
 string16 VpnServerCACertComboboxModel::GetItemAt(int index) {
-  if (cert_library_->CertificatesLoading())
+  if (CertLibrary::Get()->CertificatesLoading())
     return l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
   if (index == 0)
     return l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA_DEFAULT);
   int cert_index = index - 1;
-  return cert_library_->GetCACertificates().GetDisplayStringAt(cert_index);
+  return CertLibrary::Get()->GetCertDisplayStringAt(
+      CertLibrary::CERT_TYPE_SERVER_CA, cert_index);
 }
 
 // VpnUserCertComboboxModel ----------------------------------------------------
 
-VpnUserCertComboboxModel::VpnUserCertComboboxModel(
-    CertLibrary* cert_library)
-    : cert_library_(cert_library) {
+VpnUserCertComboboxModel::VpnUserCertComboboxModel() {
 }
 
 VpnUserCertComboboxModel::~VpnUserCertComboboxModel() {
 }
 
 int VpnUserCertComboboxModel::GetItemCount() const {
-  if (cert_library_->CertificatesLoading())
+  if (CertLibrary::Get()->CertificatesLoading())
     return 1;  // "Loading"
-  int num_certs = cert_library_->GetUserCertificates().Size();
+  int num_certs =
+      CertLibrary::Get()->NumCertificates(CertLibrary::CERT_TYPE_USER);
   if (num_certs == 0)
     return 1;  // "None installed"
   return num_certs;
 }
 
 string16 VpnUserCertComboboxModel::GetItemAt(int index) {
-  if (cert_library_->CertificatesLoading()) {
+  if (CertLibrary::Get()->CertificatesLoading()) {
     return l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
   }
-  if (cert_library_->GetUserCertificates().Size() == 0) {
+  if (CertLibrary::Get()->NumCertificates(CertLibrary::CERT_TYPE_USER) == 0) {
     return l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED);
   }
-  return cert_library_->GetUserCertificates().GetDisplayStringAt(index);
+  return CertLibrary::Get()->GetCertDisplayStringAt(
+      CertLibrary::CERT_TYPE_USER, index);
 }
 
 }  // namespace internal
 
 VPNConfigView::VPNConfigView(NetworkConfigView* parent, VirtualNetwork* vpn)
-    : ChildNetworkConfigView(parent, vpn),
-      cert_library_(NULL) {
+    : ChildNetworkConfigView(parent, vpn) {
   Init(vpn);
 }
 
 VPNConfigView::VPNConfigView(NetworkConfigView* parent)
-    : ChildNetworkConfigView(parent),
-      cert_library_(NULL) {
+    : ChildNetworkConfigView(parent) {
   Init(NULL);
 }
 
 VPNConfigView::~VPNConfigView() {
-  if (cert_library_)
-    cert_library_->RemoveObserver(this);
+  CertLibrary::Get()->RemoveObserver(this);
 }
 
 views::View* VPNConfigView::GetInitiallyFocusedView() {
@@ -420,28 +413,26 @@ const std::string VPNConfigView::GetOTP() const {
 }
 
 const std::string VPNConfigView::GetServerCACertNssNickname() const {
-  DCHECK(cert_library_);
   int index = server_ca_cert_combobox_ ?
       server_ca_cert_combobox_->selected_index() : 0;
   if (index == 0) {
     // First item is "Default".
     return std::string();
   } else {
-    DCHECK(cert_library_);
-    DCHECK_GT(cert_library_->GetCACertificates().Size(), 0);
     int cert_index = index - 1;
-    return cert_library_->GetCACertificates().GetNicknameAt(cert_index);
+    return CertLibrary::Get()->GetCertNicknameAt(
+        CertLibrary::CERT_TYPE_SERVER_CA, cert_index);
   }
 }
 
 const std::string VPNConfigView::GetUserCertID() const {
-  DCHECK(cert_library_);
   if (!HaveUserCerts()) {
     return std::string();  // "None installed"
   } else {
     // Certificates are listed in the order they appear in the model.
     int index = user_cert_combobox_ ? user_cert_combobox_->selected_index() : 0;
-    return cert_library_->GetUserCertificates().GetPkcs11IdAt(index);
+    return CertLibrary::Get()->GetCertPkcs11IdAt(
+        CertLibrary::CERT_TYPE_USER, index);
   }
 }
 
@@ -476,12 +467,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
-  // VPN may require certificates, so always set the library and observe.
-  cert_library_ = CrosLibrary::Get()->GetCertLibrary();
-
-  // Setup a callback if certificates are yet to be loaded.
-  if (!cert_library_->CertificatesLoaded())
-    cert_library_->AddObserver(this);
+  // Observer any changes to the certificate list.
+  CertLibrary::Get()->AddObserver(this);
 
   const int column_view_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);
@@ -604,7 +591,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA));
     layout->AddView(server_ca_cert_label_);
     server_ca_cert_combobox_model_.reset(
-        new internal::VpnServerCACertComboboxModel(cert_library_));
+        new internal::VpnServerCACertComboboxModel());
     server_ca_cert_combobox_ = new views::Combobox(
         server_ca_cert_combobox_model_.get());
     layout->AddView(server_ca_cert_combobox_);
@@ -622,7 +609,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_CERT));
     layout->AddView(user_cert_label_);
     user_cert_combobox_model_.reset(
-        new internal::VpnUserCertComboboxModel(cert_library_));
+        new internal::VpnUserCertComboboxModel());
     user_cert_combobox_ = new views::Combobox(user_cert_combobox_model_.get());
     user_cert_combobox_->set_listener(this);
     layout->AddView(user_cert_combobox_);
@@ -729,8 +716,8 @@ void VPNConfigView::Refresh() {
     if (enable_server_ca_cert_ &&
         (vpn && !vpn->ca_cert_nss().empty())) {
       // Select the current server CA certificate in the combobox.
-      int cert_index = cert_library_->GetCACertificates().FindCertByNickname(
-          vpn->ca_cert_nss());
+      int cert_index = CertLibrary::Get()->GetCertIndexByNickname(
+          CertLibrary::CERT_TYPE_SERVER_CA, vpn->ca_cert_nss());
       if (cert_index >= 0) {
         // Skip item for "Default"
         server_ca_cert_combobox_->SetSelectedIndex(1 + cert_index);
@@ -746,8 +733,8 @@ void VPNConfigView::Refresh() {
     user_cert_combobox_->ModelChanged();
     if (enable_user_cert_ &&
         (vpn && !vpn->client_cert_id().empty())) {
-      int cert_index = cert_library_->GetUserCertificates().FindCertByPkcs11Id(
-          vpn->client_cert_id());
+      int cert_index = CertLibrary::Get()->GetCertIndexByPkcs11Id(
+          CertLibrary::CERT_TYPE_USER, vpn->client_cert_id());
       if (cert_index >= 0)
         user_cert_combobox_->SetSelectedIndex(cert_index);
       else
@@ -826,7 +813,7 @@ void VPNConfigView::UpdateErrorLabel() {
 
   // Error message.
   std::string error_msg;
-  if (UserCertRequired() && cert_library_->CertificatesLoaded()) {
+  if (UserCertRequired() && CertLibrary::Get()->CertificatesLoaded()) {
     if (!HaveUserCerts()) {
       error_msg = l10n_util::GetStringUTF8(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PLEASE_INSTALL_USER_CERT);
@@ -864,7 +851,7 @@ bool VPNConfigView::UserCertRequired() const {
 }
 
 bool VPNConfigView::HaveUserCerts() const {
-  return cert_library_->GetUserCertificates().Size() > 0;
+  return CertLibrary::Get()->NumCertificates(CertLibrary::CERT_TYPE_USER) > 0;
 }
 
 bool VPNConfigView::IsUserCertValid() const {
@@ -874,8 +861,9 @@ bool VPNConfigView::IsUserCertValid() const {
   if (index < 0)
     return false;
   // Currently only hardware-backed user certificates are valid.
-  if (cert_library_->IsHardwareBacked() &&
-      !cert_library_->GetUserCertificates().IsHardwareBackedAt(index))
+  if (CertLibrary::Get()->IsHardwareBacked() &&
+      !CertLibrary::Get()->IsCertHardwareBackedAt(
+          CertLibrary::CERT_TYPE_USER, index))
     return false;
   return true;
 }

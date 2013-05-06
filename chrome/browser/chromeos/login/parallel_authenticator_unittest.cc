@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/mock_cert_library.h"
 #include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
@@ -77,15 +76,8 @@ class ParallelAuthenticatorTest : public testing::Test {
     mock_caller_ = new cryptohome::MockAsyncMethodCaller;
     cryptohome::AsyncMethodCaller::InitializeForTesting(mock_caller_);
 
-    chromeos::CrosLibrary::TestApi* test_api =
-        chromeos::CrosLibrary::Get()->GetTestApi();
-
     mock_cryptohome_library_ .reset(new MockCryptohomeLibrary());
     CryptohomeLibrary::SetForTest(mock_cryptohome_library_.get());
-
-    mock_cert_library_ = new MockCertLibrary();
-    EXPECT_CALL(*mock_cert_library_, LoadKeyStore()).Times(AnyNumber());
-    test_api->SetCertLibrary(mock_cert_library_, true);
 
     io_thread_.Start();
 
@@ -222,7 +214,6 @@ class ParallelAuthenticatorTest : public testing::Test {
   ScopedTestCrosSettings test_cros_settings_;
 
   // Mocks, destroyed by CrosLibrary class.
-  MockCertLibrary* mock_cert_library_;
   ScopedUserManagerEnabler user_manager_enabler_;
 
   scoped_ptr<MockCryptohomeLibrary> mock_cryptohome_library_;

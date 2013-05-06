@@ -225,6 +225,8 @@
         'ime/xkeyboard.h',
         'login/login_state.cc',
         'login/login_state.h',
+        'network/cert_loader.cc',
+        'network/cert_loader.h',
         'network/certificate_handler.cc',
         'network/certificate_handler.h',
         'network/certificate_pattern.cc',

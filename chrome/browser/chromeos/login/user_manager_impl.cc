@@ -1117,8 +1117,6 @@ void UserManagerImpl::NotifyOnLogin() {
       content::Source<UserManager>(this),
       content::Details<const User>(active_user_));
 
-  CrosLibrary::Get()->GetCertLibrary()->LoadKeyStore();
-
   // Indicate to DeviceSettingsService that the owner key may have become
   // available.
   DeviceSettingsService::Get()->SetUsername(active_user_->email());

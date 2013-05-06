@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/network_login_observer.h"
 
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chromeos/network/network_state_handler.h"
@@ -14,11 +13,16 @@
 namespace chromeos {
 
 NetworkLoginObserver::NetworkLoginObserver() {
-  CrosLibrary::Get()->GetCertLibrary()->AddObserver(this);
+  // CertLoader does not get initialized in many unit tests even though
+  // NetworkLibrary which owns this class does. TODO(stevenjb): Eliminate
+  // this class along with NetworkLibrary, crbug.com/154852.
+  if (CertLoader::IsInitialized())
+    CertLoader::Get()->AddObserver(this);
 }
 
 NetworkLoginObserver::~NetworkLoginObserver() {
-  CrosLibrary::Get()->GetCertLibrary()->RemoveObserver(this);
+  if (CertLoader::IsInitialized())
+    CertLoader::Get()->RemoveObserver(this);
 }
 
 void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
@@ -84,7 +88,9 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
   }
 }
 
-void NetworkLoginObserver::OnCertificatesLoaded(bool initial_load) {
+void NetworkLoginObserver::OnCertificatesLoaded(
+    const net::CertificateList& cert_list,
+    bool initial_load) {
   if (initial_load) {
     // Once certificates have loaded, connect to the "best" available network.
     NetworkStateHandler::Get()->ConnectToBestWifiNetwork();

@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/contacts/contact_manager.h"
+#include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
@@ -105,6 +106,7 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/cert_loader.h"
 #include "chromeos/network/geolocation_handler.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
@@ -270,7 +272,7 @@ void RunAutoLaunchKioskApp() {
 
   // Login screen is skipped but 'login-prompt-visible' signal is still needed.
   LOG(INFO) << "Kiosk app auto launch >> login-prompt-visible";
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+  DBusThreadManager::Get()->GetSessionManagerClient()->
       EmitLoginPromptVisible();
 }
 
@@ -303,6 +305,9 @@ class DBusServices {
     DBusThreadManager::Initialize();
     CrosDBusService::Initialize();
 
+    LoginState::Initialize();
+    CertLoader::Initialize();
+    CertLibrary::Initialize();
     CryptohomeLibrary::Initialize();
 
     // This function and SystemKeyEventListener use InputMethodManager.
@@ -314,16 +319,14 @@ class DBusServices {
     disks::DiskMountManager::Initialize();
     cryptohome::AsyncMethodCaller::Initialize();
 
-    chromeos::LoginState::Initialize();
-
     // Always initialize these handlers which should not conflict with
     // NetworkLibrary.
-    chromeos::network_event_log::Initialize();
-    chromeos::GeolocationHandler::Initialize();
-    chromeos::NetworkStateHandler::Initialize();
+    network_event_log::Initialize();
+    GeolocationHandler::Initialize();
+    NetworkStateHandler::Initialize();
 
-    chromeos::NetworkConfigurationHandler::Initialize();
-    chromeos::ManagedNetworkConfigurationHandler::Initialize();
+    NetworkConfigurationHandler::Initialize();
+    ManagedNetworkConfigurationHandler::Initialize();
 
     // Initialize the network change notifier for Chrome OS. The network
     // change notifier starts to monitor changes from the power manager and
@@ -352,11 +355,11 @@ class DBusServices {
     DeviceSettingsService::Get()->SetSessionManager(
         DBusThreadManager::Get()->GetSessionManagerClient(),
         OwnerKeyUtil::Create());
-    chromeos::ConnectivityStateHelper::Initialize();
+    ConnectivityStateHelper::Initialize();
   }
 
   ~DBusServices() {
-    chromeos::ConnectivityStateHelper::Shutdown();
+    ConnectivityStateHelper::Shutdown();
     // CrosLibrary is shut down before DBusThreadManager even though it
     // is initialized first becuase some of its libraries depend on DBus
     // clients.
@@ -365,20 +368,23 @@ class DBusServices {
     if (cros_initialized_ && CrosLibrary::Get())
       CrosLibrary::Shutdown();
 
-    chromeos::ManagedNetworkConfigurationHandler::Shutdown();
-    chromeos::NetworkConfigurationHandler::Shutdown();
+    ManagedNetworkConfigurationHandler::Shutdown();
+    NetworkConfigurationHandler::Shutdown();
 
-    chromeos::NetworkStateHandler::Shutdown();
-    chromeos::GeolocationHandler::Shutdown();
-    chromeos::network_event_log::Shutdown();
-
-    chromeos::LoginState::Shutdown();
+    NetworkStateHandler::Shutdown();
+    GeolocationHandler::Shutdown();
+    network_event_log::Shutdown();
 
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
     input_method::Shutdown();
     CryptohomeLibrary::Shutdown();
+    CertLibrary::Shutdown();
+    CertLoader::Shutdown();
+    LoginState::Shutdown();
+
     CrosDBusService::Shutdown();
+
     // NOTE: This must only be called if Initialize() was called.
     DBusThreadManager::Shutdown();
   }
@@ -509,7 +515,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
     SystemKeyEventListener::Initialize();
   }
 
-  chromeos::DeviceOAuth2TokenServiceFactory::Initialize();
+  DeviceOAuth2TokenServiceFactory::Initialize();
 
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
@@ -594,7 +600,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // Initialize magnification manager before ash tray is created. And this must
   // be placed after UserManager::SessionStarted();
-  chromeos::MagnificationManager::Initialize();
+  MagnificationManager::Initialize();
 
   // Add observers for WallpaperManager. This depends on PowerManagerClient,
   // TimezoneSettings and CrosSettings.
@@ -757,7 +763,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   LoginUtils::Get()->StopBackgroundFetchers();
 
   // Stops all in-flight OAuth2 token fetchers before the IO thread stops.
-  chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
+  DeviceOAuth2TokenServiceFactory::Shutdown();
 
   // Shutdown the upgrade detector for Chrome OS. The upgrade detector
   // stops monitoring changes from the update engine.
@@ -794,7 +800,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Singletons are finally destroyed in AtExitManager.
   XInputHierarchyChangedEventListener::GetInstance()->Stop();
 
-  // chromeos::SystemKeyEventListener::Shutdown() is always safe to call,
+  // SystemKeyEventListener::Shutdown() is always safe to call,
   // even if Initialize() wasn't called.
   SystemKeyEventListener::Shutdown();
   imageburner::BurnManager::Shutdown();
@@ -824,7 +830,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Delete ContactManager while |g_browser_process| is still alive.
   contact_manager_.reset();
 
-  chromeos::MagnificationManager::Shutdown();
+  MagnificationManager::Shutdown();
 
   // Let the UserManager and WallpaperManager unregister itself as an observer
   // of the CrosSettings singleton before it is destroyed.

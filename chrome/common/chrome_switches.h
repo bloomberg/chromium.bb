@@ -235,7 +235,6 @@ extern const char kLimitedInstallFromWebstore[];
 extern const char kLoadAndLaunchApp[];
 extern const char kLoadComponentExtension[];
 extern const char kLoadExtension[];
-extern const char kLoadOpencryptoki[];
 extern const char kUninstallExtension[];
 extern const char kLogNetLog[];
 extern const char kMakeDefaultBrowser[];

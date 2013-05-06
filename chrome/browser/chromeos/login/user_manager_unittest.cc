@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/mock_cert_library.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
@@ -26,8 +25,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::AnyNumber;
-
 namespace chromeos {
 
 class UserManagerTest : public testing::Test {
@@ -39,11 +36,6 @@ class UserManagerTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    MockCertLibrary* mock_cert_library = new MockCertLibrary();
-    EXPECT_CALL(*mock_cert_library, LoadKeyStore()).Times(AnyNumber());
-    chromeos::CrosLibrary::Get()->GetTestApi()->SetCertLibrary(
-        mock_cert_library, true);
-
     cros_settings_ = CrosSettings::Get();
 
     // Replace the real DeviceSettingsProvider with a stub.

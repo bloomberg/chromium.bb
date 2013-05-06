@@ -473,8 +473,6 @@ bool ParallelAuthenticator::VerifyOwner() {
     owner_is_verified_ = true;
     return true;
   }
-  // First we have to make sure the current user's cert store is available.
-  CrosLibrary::Get()->GetCertLibrary()->LoadKeyStore();
   // Now we can continue reading the private key.
   DeviceSettingsService::Get()->SetUsername(
       current_state_->user_context.username);

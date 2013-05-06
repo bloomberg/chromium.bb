@@ -116,8 +116,6 @@ class VPNConfigView : public ChildNetworkConfigView,
                           const std::string& dict_key,
                           const std::string& key);
 
-  CertLibrary* cert_library_;
-
   std::string server_hostname_;
   string16 service_name_from_server_;
   bool service_text_modified_;

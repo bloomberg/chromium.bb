@@ -23,7 +23,7 @@ namespace chromeos {
 namespace {
 
 const char kStubSystemSalt[] = "stub_system_salt";
-const size_t kKeySize = 16;
+const size_t kNonceSize = 16;
 
 // Does nothing.  Used as a Cryptohome::VoidMethodCallback.
 void DoNothing(DBusMethodCallStatus call_status) {}
@@ -169,10 +169,10 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return system_salt_key_.get();
   }
 
-  crypto::SymmetricKey* PassphraseToKey(const std::string& passprhase,
+  crypto::SymmetricKey* PassphraseToKey(const std::string& passphrase,
                                         const std::string& salt) {
     return crypto::SymmetricKey::DeriveKeyFromPassword(
-        crypto::SymmetricKey::AES, passprhase, salt, 1000, 256);
+        crypto::SymmetricKey::AES, passphrase, salt, 1000, 256);
   }
 
 
@@ -185,7 +185,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
       LOG(WARNING) << "Failed to initialize Encryptor.";
       return std::string();
     }
-    std::string nonce = salt.substr(0, kKeySize);
+    std::string nonce = salt.substr(0, kNonceSize);
     std::string encoded_token;
     CHECK(encryptor.SetCounter(nonce));
     if (!encryptor.Encrypt(token, &encoded_token)) {
@@ -217,7 +217,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
       return std::string();
     }
 
-    std::string nonce = salt.substr(0, kKeySize);
+    std::string nonce = salt.substr(0, kNonceSize);
     std::string token;
     CHECK(encryptor.SetCounter(nonce));
     if (!encryptor.Decrypt(encrypted_token, &token)) {

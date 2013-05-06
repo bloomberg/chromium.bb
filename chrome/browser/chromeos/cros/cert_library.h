@@ -8,19 +8,20 @@
 #include <string>
 
 #include "base/string16.h"
+#include "chromeos/network/cert_loader.h"
 #include "net/cert/x509_certificate.h"
-
-namespace crypto {
-class SymmetricKey;
-}
 
 namespace chromeos {
 
-class CertLibrary {
- public:
+class CertNameComparator;
 
-  // Observers can register themselves via CertLibrary::AddObserver, and can
-  // un-register with CertLibrary::RemoveObserver.
+// This class is responsible for keeping track of certificates in a UI
+// friendly manner. It observes CertLoader to receive certificate list
+// updates and sorts them by type for the UI. All public APIs are expected
+// to be called from the UI thread and are non blocking. Observers will also
+// be called on the UI thread.
+class CertLibrary : public CertLoader::Observer {
+ public:
   class Observer {
    public:
     virtual ~Observer() {}
@@ -36,70 +37,67 @@ class CertLibrary {
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  // Wrapper class to provide an additional interface for net::CertificateList.
-  class CertList {
-   public:
-    explicit CertList(CertLibrary* library);
-    ~CertList();
-    void Append(net::X509Certificate* cert) { list_.push_back(cert); }
-    void Clear() { list_.clear(); }
-    int Size() const { return static_cast<int>(list_.size()); }
-    net::X509Certificate* GetCertificateAt(int index) const;
-    string16 GetDisplayStringAt(int index) const;  // User-visible name.
-    std::string GetNicknameAt(int index) const;
-    std::string GetPkcs11IdAt(int index) const;
-    bool IsHardwareBackedAt(int index) const;
-    // Finds the index of a Certificate matching |nickname|.
-    // Returns -1 if none found.
-    int FindCertByNickname(const std::string& nickname) const;
-    // Same as above but for a pkcs#11 id.
-    int FindCertByPkcs11Id(const std::string& pkcs11_id) const;
-    net::CertificateList& list() { return list_; }
-   private:
-    net::CertificateList list_;
-    CertLibrary* cert_library_;
-
-    DISALLOW_COPY_AND_ASSIGN(CertList);
+  enum CertType {
+    CERT_TYPE_DEFAULT,
+    CERT_TYPE_USER,
+    CERT_TYPE_SERVER,
+    CERT_TYPE_SERVER_CA
   };
 
-  virtual ~CertLibrary();
+  // Manage the global instance.
+  static void Initialize();
+  static void Shutdown();
+  static CertLibrary* Get();
+  static bool IsInitialized();
 
-  static CertLibrary* GetImpl(bool stub);
-
-  // Registers |observer|. The thread on which this is called is the thread
-  // on which |observer| will be called back with notifications.
-  virtual void AddObserver(Observer* observer) = 0;
-
-  // Unregisters |observer| from receiving notifications.  This must be called
-  // on the same thread on which AddObserver() was called.
-  virtual void RemoveObserver(Observer* observer) = 0;
-
-  // Loads the key/certificates database for the current logged in user.
-  virtual void LoadKeyStore() = 0;
+  // Add / Remove Observer
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Returns true when the certificate list has been requested but not loaded.
-  virtual bool CertificatesLoading() const = 0;
+  bool CertificatesLoading() const;
 
   // Returns true when the certificate list has been initiailized.
-  virtual bool CertificatesLoaded() const = 0;
+  bool CertificatesLoaded() const;
 
   // Returns true if the TPM is available for hardware-backed certificates.
-  virtual bool IsHardwareBacked() const = 0;
+  bool IsHardwareBacked() const;
 
-  // Returns the cached TPM token name.
-  virtual const std::string& GetTpmTokenName() const = 0;
+  // Retruns the number of certificates available for |type|.
+  int NumCertificates(CertType type) const;
 
-  // Returns the current list of all certificates.
-  virtual const CertList& GetCertificates() const = 0;
+  // Retreives the certificate property for |type| at |index|.
+  string16 GetCertDisplayStringAt(CertType type, int index) const;
+  std::string GetCertNicknameAt(CertType type, int index) const;
+  std::string GetCertPkcs11IdAt(CertType type, int index) const;
+  bool IsCertHardwareBackedAt(CertType type, int index) const;
 
-  // Returns the current list of user certificates.
-  virtual const CertList& GetUserCertificates() const = 0;
+  // Returns the index of a Certificate matching |nickname| or -1 if none found.
+  int GetCertIndexByNickname(CertType type, const std::string& nickname) const;
+  // Same as above but for a PKCS#11 id. TODO(stevenjb): Replace this with a
+  // better mechanism for uniquely idientifying certificates, crbug.com/236978.
+  int GetCertIndexByPkcs11Id(CertType type, const std::string& pkcs11_id) const;
 
-  // Returns the current list of server certificates.
-  virtual const CertList& GetServerCertificates() const = 0;
+  // CertLoader::Observer
+  virtual void OnCertificatesLoaded(const net::CertificateList&,
+                                    bool initial_load) OVERRIDE;
 
-  // Returns the current list of server CA certificates.
-  virtual const CertList& GetCACertificates() const = 0;
+ private:
+  CertLibrary();
+  virtual ~CertLibrary();
+
+  net::X509Certificate* GetCertificateAt(CertType type, int index) const;
+  const net::CertificateList& GetCertificateListForType(CertType type) const;
+
+  ObserverList<CertLibrary::Observer> observer_list_;
+
+  // Sorted certificate lists
+  net::CertificateList certs_;
+  net::CertificateList user_certs_;
+  net::CertificateList server_certs_;
+  net::CertificateList server_ca_certs_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertLibrary);
 };
 
 }  // namespace chromeos

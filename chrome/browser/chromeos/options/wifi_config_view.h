@@ -137,8 +137,6 @@ class WifiConfigView : public ChildNetworkConfigView,
   // Updates the error text label.
   void UpdateErrorLabel();
 
-  CertLibrary* cert_library_;
-
   NetworkPropertyUIData eap_method_ui_data_;
   NetworkPropertyUIData phase_2_auth_ui_data_;
   NetworkPropertyUIData user_cert_ui_data_;

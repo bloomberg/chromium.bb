@@ -858,13 +858,6 @@ const char kDisableCloudPolicyOnSignin[]    = "disable-cloud-policy-on-signin";
 // Loads an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
 
-// Loads the opencryptoki library into NSS at startup. This is only needed
-// temporarily for developers who need to work on WiFi/VPN certificate code.
-//
-// TODO(gspencer): Remove this switch once cryptohomed work is finished:
-// http://crosbug.com/12295 and http://crosbug.com/12304
-const char kLoadOpencryptoki[]              = "load-opencryptoki";
-
 // Enables displaying net log events on the command line, or writing the events
 // to a separate file if a file name is given.
 const char kLogNetLog[]                     = "log-net-log";

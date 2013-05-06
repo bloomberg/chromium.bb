@@ -67,8 +67,6 @@
         'browser/browsing_data/mock_browsing_data_server_bound_cert_helper.h',
         'browser/chromeos/contacts/contact_test_util.cc',
         'browser/chromeos/contacts/contact_test_util.h',
-        'browser/chromeos/cros/mock_cert_library.cc',
-        'browser/chromeos/cros/mock_cert_library.h',
         'browser/chromeos/cros/mock_network_library.cc',
         'browser/chromeos/cros/mock_network_library.h',
         'browser/chromeos/input_method/mock_candidate_window_controller.cc',
