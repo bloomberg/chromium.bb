@@ -1603,3 +1603,12 @@ webkit.org/b/92811 [ Win Linux Debug ] virtual/softwarecompositing/video-page-vi
 webkit.org/b/83875 [ Linux ] svg/text/font-size-below-point-five.svg [ Failure ImageOnlyFailure Pass ]
 
 crbug.com/236344 fast/forms/calendar-picker/week-picker-key-operations.html [ Failure Pass ]
+
+crbug.com/237270 fast/css/custom-font-xheight.html [ Pass Timeout ]
+crbug.com/237270 fast/css/sticky/sticky-top-zoomed.html [ Pass Timeout ]
+crbug.com/237270 fast/css/variables/invalid-font-reference.html [ Pass Timeout ]
+crbug.com/237270 http/tests/history/replacestate-post-to-get-2.html [ Pass Timeout ]
+crbug.com/237270 http/tests/history/replacestate-post-to-get.html [ Pass Timeout ]
+crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
+crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
+
