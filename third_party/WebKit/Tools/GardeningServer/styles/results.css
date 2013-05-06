@@ -146,7 +146,7 @@ html, body, #onebar, .results-view, .test-selector {
 }
 
 #results, #perf {
-    /* FIXME: We really should use flexbox so we don't have to do this. But that requires restructuring the DOM a bit. */;
+    /* FIXME: We really should use flexbox so we don't have to do this. But that requires restructuring the DOM a bit. */
     height: -webkit-calc(100% - 39px);
     box-sizing: border-box;
     /* Position relative so that nested percentages size to this element. */

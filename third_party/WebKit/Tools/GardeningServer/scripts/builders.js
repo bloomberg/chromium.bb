@@ -39,11 +39,6 @@ function buildBotURL(platform)
     return config.kPlatforms[platform].buildConsoleURL;
 }
 
-function urlForBuilderInfo(platform, builderName)
-{
-    return buildBotURL(platform) + '/json/builders/' + encodeURIComponent(builderName) + '/';
-}
-
 function urlForBuildInfo(platform, builderName, buildNumber)
 {
     return buildBotURL(platform) + '/json/builders/' + encodeURIComponent(builderName) + '/builds/' + encodeURIComponent(buildNumber);
@@ -116,39 +111,6 @@ function fetchMostRecentBuildInfoByBuilder(platform, callback)
         });
     });
 }
-
-builders.builderInfo = function(platform, builderName, callback)
-{
-    var builderInfoURL = urlForBuilderInfo(platform, builderName);
-    net.get(builderInfoURL, callback);
-};
-
-builders.cachedBuildInfos = function(platform, builderName, callback)
-{
-    var builderInfoURL = urlForBuilderInfo(platform, builderName);
-    net.get(builderInfoURL, function(builderInfo) {
-        var selectURL = urlForBuilderInfo(platform, builderName) + 'builds';
-        var start = Math.max(0, builderInfo.cachedBuilds.length - config.kBuildNumberLimit);
-        var selectParams = { select : builderInfo.cachedBuilds.slice(start) };
-        var traditionalEncoding = true;
-        selectURL += '?' + $.param(selectParams, traditionalEncoding);
-        net.get(selectURL, callback);
-    });
-}
-
-builders.recentBuildInfos = function(callback)
-{
-    fetchMostRecentBuildInfoByBuilder(config.currentPlatform, function(buildInfoByBuilder) {
-        var buildInfo = {};
-        $.each(buildInfoByBuilder, function(builderName, thisBuildInfo) {
-            if (!buildInfo)
-                return;
-            
-            buildInfo[builderName] = thisBuildInfo;
-        });
-        callback(buildInfo);
-    });
-};
 
 builders.buildersFailingNonLayoutTests = function(callback)
 {

@@ -36,7 +36,7 @@ asyncTest('FlakinessData', 1, function() {
             // setTimeout to be after the postMessage has been handled.
             setTimeout(function() {
                 equals(dashboard.offsetHeight, 15);
-                $(dashboard).detach();
+                dashboard.remove();
                 start();
             }, 0);
         }, 0);

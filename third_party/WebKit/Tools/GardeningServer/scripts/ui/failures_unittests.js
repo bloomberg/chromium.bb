@@ -29,17 +29,17 @@ module('ui.failures');
 
 test('Builder', 6, function() {
     var configuration;
-    configuration = new ui.failures.Builder("Webkit Linux", ["update", "webkit_tests"]);
+    configuration = new ui.failures.Builder("WebKit Linux", ["update", "webkit_tests"]);
     deepEqual(Object.getOwnPropertyNames(configuration.__proto__).sort(), [
         '_addSpan',
         'equals',
         'init',
     ]);
-    equal(configuration.outerHTML, '<a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=Webkit+Linux"><span class="version">lucid</span><span class="architecture">64-bit</span><span class="failures"> update, webkit_tests</span></a>');
-    configuration = new ui.failures.Builder("Webkit Win");
-    equal(configuration.outerHTML, '<a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=Webkit+Win"><span class="version">xp</span></a>');
+    equal(configuration.outerHTML, '<a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux"><span class="version">lucid</span><span class="architecture">64-bit</span><span class="failures"> update, webkit_tests</span></a>');
+    configuration = new ui.failures.Builder("WebKit XP");
+    equal(configuration.outerHTML, '<a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+XP"><span class="version">xp</span></a>');
     configuration._addSpan('foo', 'bar');
-    equal(configuration.outerHTML, '<a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=Webkit+Win"><span class="version">xp</span><span class="foo">bar</span></a>');
+    equal(configuration.outerHTML, '<a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+XP"><span class="version">xp</span><span class="foo">bar</span></a>');
     ok(configuration.equals({version: 'xp'}));
     ok(!configuration.equals({version: 'lucid', is64bit: true}));
 });
@@ -85,7 +85,7 @@ test('FailureGrid', 10, function() {
     equal(grid.outerHTML, '<table class="failures">' +
         '<thead><tr><td>type</td><td>release</td><td>debug</td></tr></thead>' +
         '<tbody>' +
-            '<tr class="TEXT" style="">' +
+            '<tr class="TEXT">' +
                 '<td><span>TEXT</span></td>' +
                 '<td></td>' +
                 '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux+(dbg)"><span class="version">lucid</span><span class="architecture">64-bit</span></a></td>' +
@@ -102,7 +102,7 @@ test('FailureGrid', 10, function() {
                 '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Mac10.6"><span class="version">snowleopard</span></a></td>' +
                 '<td></td>' +
             '</tr>' +
-            '<tr class="TEXT" style="">' +
+            '<tr class="TEXT">' +
                 '<td><span>TEXT</span></td>' +
                 '<td></td>' +
                 '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux+(dbg)"><span class="version">lucid</span><span class="architecture">64-bit</span></a></td>' +
@@ -114,12 +114,12 @@ test('FailureGrid', 10, function() {
     equal(grid.outerHTML, '<table class="failures">' +
         '<thead><tr><td>type</td><td>release</td><td>debug</td></tr></thead>' +
         '<tbody>' +
-            '<tr class="IMAGE+TEXT" style="">' +
+            '<tr class="IMAGE+TEXT">' +
                 '<td><span>IMAGE+TEXT</span></td>' +
                 '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Mac10.6"><span class="version">snowleopard</span></a></td>' +
                 '<td></td>' +
             '</tr>' +
-            '<tr class="TEXT" style="">' +
+            '<tr class="TEXT">' +
                 '<td><span>TEXT</span></td>' +
                 '<td></td>' +
                 '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux+(dbg)"><span class="version">lucid</span><span class="architecture">64-bit</span></a></td>' +
