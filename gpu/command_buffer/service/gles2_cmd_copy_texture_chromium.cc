@@ -409,9 +409,9 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
   }
 
   decoder->RestoreAttribute(kVertexPositionAttrib);
-  decoder->RestoreTextureUnitBindings(0);
   decoder->RestoreTextureState(source_id);
   decoder->RestoreTextureState(dest_id);
+  decoder->RestoreTextureUnitBindings(0);
   decoder->RestoreActiveTexture();
   decoder->RestoreProgramBindings();
   decoder->RestoreBufferBindings();
