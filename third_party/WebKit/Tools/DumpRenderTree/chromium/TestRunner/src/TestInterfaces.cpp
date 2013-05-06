@@ -59,31 +59,9 @@ TestInterfaces::TestInterfaces()
 {
     WebKit::setLayoutTestMode(true);
 
-    WebRuntimeFeatures::enableDeviceMotion(false);
-    WebRuntimeFeatures::enableGeolocation(true);
-    WebRuntimeFeatures::enableIndexedDatabase(true);
-    WebRuntimeFeatures::enableInputTypeDateTime(true);
-    WebRuntimeFeatures::enableInputTypeWeek(true);
-    WebRuntimeFeatures::enableFileSystem(true);
-    WebRuntimeFeatures::enableFontLoadEvents(true);
-    WebRuntimeFeatures::enableJavaScriptI18NAPI(true);
-    WebRuntimeFeatures::enableMediaSource(true);
-    WebRuntimeFeatures::enableEncryptedMedia(true);
-    WebRuntimeFeatures::enableMediaStream(true);
-    WebRuntimeFeatures::enablePeerConnection(true);
-    WebRuntimeFeatures::enableWebAudio(true);
-    WebRuntimeFeatures::enableWebMIDI(true);
-    WebRuntimeFeatures::enableVideoTrack(true);
-    WebRuntimeFeatures::enableGamepad(true);
-    WebRuntimeFeatures::enableCustomDOMElements(true);
-    WebRuntimeFeatures::enableStyleScoped(true);
-    WebRuntimeFeatures::enableScriptedSpeech(true);
-    WebRuntimeFeatures::enableRequestAutocomplete(true);
-    WebRuntimeFeatures::enableExperimentalContentSecurityPolicyFeatures(true);
-    WebRuntimeFeatures::enableSeamlessIFrames(true);
-    WebRuntimeFeatures::enableCanvasPath(true);
-    WebRuntimeFeatures::enableExperimentalShadowDOM(true);
-    WebRuntimeFeatures::enableExperimentalCanvasFeatures(true);
+    WebRuntimeFeatures::enableStableFeatures(true);
+    WebRuntimeFeatures::enableExperimentalFeatures(true);
+    WebRuntimeFeatures::enableTestOnlyFeatures(true);
 
     resetAll();
 }

@@ -105,6 +105,34 @@ void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
     // This method should be used by ContentShell
     // to enable features which should be enabled for
     // the layout tests but are not yet "experimental".
+
+    // FIXME: These are exactly copied from TestInterfaces.cpp
+    // Most of these are redundant with enableStableFeatures
+    // and should be removed in a follow-up patch.
+    enableCanvasPath(true);
+    enableCustomDOMElements(true);
+    enableEncryptedMedia(true);
+    enableExperimentalCanvasFeatures(true);
+    enableExperimentalContentSecurityPolicyFeatures(true);
+    enableExperimentalShadowDOM(true);
+    enableFileSystem(true);
+    enableFontLoadEvents(true);
+    enableGamepad(true);
+    enableGeolocation(true);
+    enableIndexedDatabase(true);
+    enableInputTypeDateTime(true);
+    enableInputTypeWeek(true);
+    enableJavaScriptI18NAPI(true);
+    enableMediaSource(true);
+    enableMediaStream(true);
+    enablePeerConnection(true);
+    enableRequestAutocomplete(true);
+    enableScriptedSpeech(true);
+    enableSeamlessIFrames(true);
+    enableStyleScoped(true);
+    enableVideoTrack(true);
+    enableWebAudio(true);
+    enableWebMIDI(true);
 }
 
 void WebRuntimeFeatures::enableDatabase(bool enable)
