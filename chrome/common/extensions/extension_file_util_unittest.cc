@@ -11,16 +11,9 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
-#include "chrome/common/extensions/api/extension_action/page_action_handler.h"
-#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,20 +26,6 @@ using extensions::Manifest;
 namespace keys = extension_manifest_keys;
 
 class ExtensionFileUtilTest : public testing::Test {
- protected:
-  virtual void SetUp() OVERRIDE {
-    testing::Test::SetUp();
-    (new extensions::BackgroundManifestHandler)->Register();
-    (new extensions::BrowserActionHandler)->Register();
-    (new extensions::DefaultLocaleHandler)->Register();
-    (new extensions::IconsHandler)->Register();
-    (new extensions::PageActionHandler)->Register();
-    (new extensions::ContentScriptsHandler)->Register();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    extensions::ManifestHandler::ClearRegistryForTesting();
-  }
 };
 
 TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {

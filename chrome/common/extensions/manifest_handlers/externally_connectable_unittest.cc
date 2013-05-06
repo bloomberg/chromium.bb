@@ -22,12 +22,6 @@ class ExternallyConnectableTest : public ExtensionManifestTest {
  public:
   ExternallyConnectableTest() : channel_(chrome::VersionInfo::CHANNEL_DEV) {}
 
- protected:
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new ExternallyConnectableHandler)->Register();
-  }
-
  private:
   Feature::ScopedCurrentChannel channel_;
 };

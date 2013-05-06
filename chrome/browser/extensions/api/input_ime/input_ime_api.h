@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/common/extensions/api/input_ime/input_components_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -28,6 +27,7 @@ class ImeObserver;
 }
 
 namespace extensions {
+struct InputComponentInfo;
 
 class InputImeEventRouter {
  public:

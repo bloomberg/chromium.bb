@@ -11,10 +11,6 @@ using extensions::Extension;
 using extensions::WebAccessibleResourcesInfo;
 
 class WebAccessibleResourcesManifestTest : public ExtensionManifestTest {
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new extensions::WebAccessibleResourcesHandler)->Register();
-  }
 };
 
 TEST_F(WebAccessibleResourcesManifestTest, WebAccessibleResources) {

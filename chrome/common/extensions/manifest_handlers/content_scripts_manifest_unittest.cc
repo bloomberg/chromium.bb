@@ -17,11 +17,6 @@ namespace errors = extension_manifest_errors;
 namespace extensions {
 
 class ContentScriptsManifestTest : public ExtensionManifestTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new ContentScriptsHandler)->Register();
-  }
 };
 
 TEST_F(ContentScriptsManifestTest, MatchPattern) {

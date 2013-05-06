@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
@@ -17,11 +16,6 @@ namespace extensions {
 
 class PageActionManifestTest : public ExtensionManifestTest {
  protected:
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new PageActionHandler)->Register();
-  }
-
   virtual const char* test_data_dir() OVERRIDE {
     return "page_action";
   }

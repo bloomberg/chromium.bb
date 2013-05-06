@@ -10,10 +10,6 @@
 namespace errors = extension_manifest_errors;
 
 class URLOverridesManifestTest : public ExtensionManifestTest {
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new extensions::URLOverridesHandler)->Register();
-  }
 };
 
 TEST_F(URLOverridesManifestTest, Override) {

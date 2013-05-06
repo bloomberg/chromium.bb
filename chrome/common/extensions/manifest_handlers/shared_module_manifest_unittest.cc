@@ -4,7 +4,6 @@
 
 #include "base/version.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,11 +24,6 @@ const char* kNoImport = "cccccccccccccccccccccccccccccccc";
 namespace extensions {
 
 class SharedModuleManifestTest : public ExtensionManifestTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new SharedModuleHandler)->Register();
-  }
 };
 
 TEST_F(SharedModuleManifestTest, ExportsAll) {

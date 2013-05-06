@@ -4,8 +4,6 @@
 
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,12 +12,6 @@ namespace errors = extension_manifest_errors;
 namespace extensions {
 
 class SandboxedPagesManifestTest : public ExtensionManifestTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new SandboxedPageHandler)->Register();
-    (new CSPHandler(false))->Register();  // Not platform app.
-  }
 };
 
 TEST_F(SandboxedPagesManifestTest, SandboxedPages) {

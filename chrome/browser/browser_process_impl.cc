@@ -71,6 +71,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
@@ -198,6 +199,7 @@ BrowserProcessImpl::BrowserProcessImpl(
 
   extensions::PermissionsInfo::GetInstance()->InitializeWithDelegate(
       extensions::ChromeAPIPermissions());
+  extensions::RegisterChromeManifestHandlers();
   extension_event_router_forwarder_ = new extensions::EventRouterForwarder;
   ExtensionRendererState::GetInstance()->Init();
 

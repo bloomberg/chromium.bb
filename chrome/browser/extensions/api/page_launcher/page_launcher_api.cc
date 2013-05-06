@@ -9,20 +9,9 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/page_launcher.h"
-#include "chrome/common/extensions/api/page_launcher/page_launcher_handler.h"
 #include "googleurl/src/gurl.h"
 
 namespace extensions {
-
-static base::LazyInstance<ProfileKeyedAPIFactory<PageLauncherAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
-
-PageLauncherAPI::PageLauncherAPI(Profile* profile) {
-  (new PageLauncherHandler)->Register();
-}
-
-PageLauncherAPI::~PageLauncherAPI() {
-}
 
 // static
 void PageLauncherAPI::DispatchOnClickedEvent(
@@ -45,12 +34,6 @@ void PageLauncherAPI::DispatchOnClickedEvent(
                 api::page_launcher::OnClicked::Create(data)));
   EventRouter* event_router = ExtensionSystem::Get(profile)->event_router();
   event_router->DispatchEventToExtension(extension_id, event.Pass());
-}
-
-
-// static
-ProfileKeyedAPIFactory<PageLauncherAPI>* PageLauncherAPI::GetFactoryInstance() {
-  return &g_factory.Get();
 }
 
 }  // namespace extensions

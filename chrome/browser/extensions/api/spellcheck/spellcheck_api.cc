@@ -38,7 +38,6 @@ SpellcheckService::DictionaryFormat GetDictionaryFormat(std::string format) {
 
 
 SpellcheckAPI::SpellcheckAPI(Profile* profile) {
-  (new SpellcheckHandler)->Register();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,

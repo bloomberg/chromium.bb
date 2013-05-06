@@ -49,8 +49,6 @@ void CommandService::RegisterUserPrefs(
 
 CommandService::CommandService(Profile* profile)
     : profile_(profile) {
-  (new CommandsHandler)->Register();
-
   ExtensionFunctionRegistry::GetInstance()->
       RegisterFunction<GetAllCommandsFunction>();
 

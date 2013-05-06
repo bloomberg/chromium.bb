@@ -4,7 +4,6 @@
 
 #include "chrome/common/extensions/features/base_feature_provider.h"
 
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/features/permission_feature.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,10 +12,7 @@ using chrome::VersionInfo;
 
 namespace extensions {
 
-class BaseFeatureProviderTest : public ExtensionTest {
-};
-
-TEST_F(BaseFeatureProviderTest, ManifestFeatures) {
+TEST(BaseFeatureProviderTest, ManifestFeatures) {
   FeatureProvider* provider = BaseFeatureProvider::GetByName("manifest");
   SimpleFeature* feature =
       static_cast<SimpleFeature*>(provider->GetFeature("description"));
@@ -59,7 +55,7 @@ TEST_F(BaseFeatureProviderTest, ManifestFeatures) {
       extension.get(), Feature::UNSPECIFIED_CONTEXT).result());
 }
 
-TEST_F(BaseFeatureProviderTest, PermissionFeatures) {
+TEST(BaseFeatureProviderTest, PermissionFeatures) {
   FeatureProvider* provider = BaseFeatureProvider::GetByName("permission");
   SimpleFeature* feature =
       static_cast<SimpleFeature*>(provider->GetFeature("contextMenus"));
@@ -104,7 +100,7 @@ SimpleFeature* CreatePermissionFeature() {
   return new PermissionFeature();
 }
 
-TEST_F(BaseFeatureProviderTest, Validation) {
+TEST(BaseFeatureProviderTest, Validation) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
   base::DictionaryValue* feature1 = new base::DictionaryValue();
@@ -139,7 +135,7 @@ TEST_F(BaseFeatureProviderTest, Validation) {
   EXPECT_TRUE(provider->GetFeature("feature2"));
 }
 
-TEST_F(BaseFeatureProviderTest, ComplexFeatures) {
+TEST(BaseFeatureProviderTest, ComplexFeatures) {
   scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
       .Set("feature1",

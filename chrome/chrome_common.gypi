@@ -198,6 +198,8 @@
         'common/extensions/api/system_indicator/system_indicator_handler.h',
         'common/extensions/background_info.cc',
         'common/extensions/background_info.h',
+        'common/extensions/chrome_manifest_handlers.cc',
+        'common/extensions/chrome_manifest_handlers.h',
         'common/extensions/command.cc',
         'common/extensions/command.h',
         'common/extensions/csp_handler.cc',

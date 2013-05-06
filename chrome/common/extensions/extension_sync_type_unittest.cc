@@ -3,26 +3,19 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
-#include "chrome/common/extensions/api/plugins/plugins_handler.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
 #include "googleurl/src/gurl.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace keys = extension_manifest_keys;
 namespace errors = extension_manifest_errors;
 
 namespace extensions {
 
-class ExtensionSyncTypeTest : public ExtensionTest {
+class ExtensionSyncTypeTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
-    ExtensionTest::SetUp();
-    (new UpdateURLHandler)->Register();
-    (new PluginsHandler)->Register();
-  }
-
   enum SyncTestExtensionType {
     EXTENSION,
     APP,

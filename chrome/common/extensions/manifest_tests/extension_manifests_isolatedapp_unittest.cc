@@ -16,11 +16,6 @@ namespace errors = extension_manifest_errors;
 namespace extensions {
 
 class IsolatedAppsManifestTest : public ExtensionManifestTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    testing::Test::SetUp();
-    (new AppIsolationHandler)->Register();
-  }
 };
 
 TEST_F(IsolatedAppsManifestTest, IsolatedApps) {

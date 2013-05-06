@@ -22,7 +22,6 @@
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/string_ordinal.h"
@@ -64,7 +63,7 @@ class MockGalleryChangeObserver
 
 }  // namespace
 
-class MediaGalleriesPreferencesTest : public extensions::ExtensionTest {
+class MediaGalleriesPreferencesTest : public testing::Test {
  public:
   typedef std::map<std::string /*device id*/, MediaGalleryPrefIdSet>
       DeviceIdPrefIdsMap;
@@ -84,8 +83,6 @@ class MediaGalleriesPreferencesTest : public extensions::ExtensionTest {
   }
 
   virtual void SetUp() OVERRIDE {
-    extensions::ExtensionTest::SetUp();
-
     extensions::TestExtensionSystem* extension_system(
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile_.get())));
@@ -124,7 +121,6 @@ class MediaGalleriesPreferencesTest : public extensions::ExtensionTest {
 
   virtual void TearDown() OVERRIDE {
     Verify();
-    extensions::ExtensionTest::TearDown();
   }
 
   void Verify() {

@@ -12,13 +12,8 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
-#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
-#include "chrome/common/extensions/incognito_handler.h"
-#include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
-#include "chrome/common/extensions/permissions/scoped_testing_permissions_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -50,8 +45,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 class ActionBoxMenuBubbleControllerTest : public CocoaProfileTest {
  public:
-  ActionBoxMenuBubbleControllerTest()
-      : permissions_info_(extensions::ChromeAPIPermissions()) {
+  ActionBoxMenuBubbleControllerTest() {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -67,14 +61,11 @@ class ActionBoxMenuBubbleControllerTest : public CocoaProfileTest {
         &command_line, base::FilePath(), false);
     EXPECT_TRUE(service_->extensions_enabled());
     service_->Init();
-    (new extensions::BackgroundManifestHandler)->Register();
-    (new extensions::IncognitoHandler)->Register();
   }
 
   virtual void TearDown() OVERRIDE {
     // Close our windows.
     [controller_ close];
-    extensions::ManifestHandler::ClearRegistryForTesting();
     CocoaProfileTest::TearDown();
   }
 
@@ -131,7 +122,6 @@ class ActionBoxMenuBubbleControllerTest : public CocoaProfileTest {
  protected:
   ActionBoxMenuBubbleController* controller_;
   MenuDelegate menu_delegate_;
-  extensions::ScopedTestingPermissionsInfo permissions_info_;
   ExtensionService* service_;
 };
 

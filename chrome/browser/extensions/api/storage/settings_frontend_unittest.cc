@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/api/storage/settings_test_util.h"
 #include "chrome/browser/value_store/value_store.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,7 +49,7 @@ scoped_ptr<Value> CreateMegabyte() {
 
 }
 
-class ExtensionSettingsFrontendTest : public ExtensionTest {
+class ExtensionSettingsFrontendTest : public testing::Test {
  public:
   ExtensionSettingsFrontendTest()
       : storage_factory_(new util::ScopedSettingsStorageFactory()),
@@ -58,7 +57,6 @@ class ExtensionSettingsFrontendTest : public ExtensionTest {
         file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
-    ExtensionTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_.reset(new util::MockProfile(temp_dir_.path()));
     ResetFrontend();
@@ -69,7 +67,6 @@ class ExtensionSettingsFrontendTest : public ExtensionTest {
     profile_.reset();
     // Execute any pending deletion tasks.
     message_loop_.RunUntilIdle();
-    ExtensionTest::TearDown();
   }
 
  protected:

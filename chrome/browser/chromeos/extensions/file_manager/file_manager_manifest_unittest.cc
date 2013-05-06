@@ -7,7 +7,6 @@
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,10 +21,10 @@ using extensions::ListBuilder;
 namespace {
 
 class FileBrowserHandlerManifestTest : public ExtensionManifestTest {
+ protected:
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
     (new FileBrowserHandlerParser)->Register();
-    (new extensions::URLOverridesHandler)->Register();
   }
 };
 

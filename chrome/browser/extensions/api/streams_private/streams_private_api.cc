@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/mime_types_handler.h"
 #include "content/public/browser/stream_handle.h"
 
 namespace keys = extension_input_module_constants;
@@ -37,8 +36,6 @@ StreamsPrivateAPI* StreamsPrivateAPI::Get(Profile* profile) {
 StreamsPrivateAPI::StreamsPrivateAPI(Profile* profile)
     : profile_(profile),
       weak_ptr_factory_(this) {
-  (new MimeTypesHandlerParser)->Register();
-
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
 }

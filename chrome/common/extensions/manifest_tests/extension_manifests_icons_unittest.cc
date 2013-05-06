@@ -13,11 +13,6 @@
 namespace extensions {
 
 class IconsManifestTest : public ExtensionManifestTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new IconsHandler)->Register();
-  }
 };
 
 TEST_F(IconsManifestTest, NormalizeIconPaths) {

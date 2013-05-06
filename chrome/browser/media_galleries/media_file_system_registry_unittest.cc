@@ -31,12 +31,7 @@
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
-#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/incognito_handler.h"
-#include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
-#include "chrome/common/extensions/permissions/scoped_testing_permissions_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -380,7 +375,6 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   // Needed for extension service & friends to work.
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  extensions::ScopedTestingPermissionsInfo permissions_info_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
@@ -589,8 +583,7 @@ int ProfileState::GetAndClearComparisonCount() {
 
 MediaFileSystemRegistryTest::MediaFileSystemRegistryTest()
     : ui_thread_(content::BrowserThread::UI, MessageLoop::current()),
-      file_thread_(content::BrowserThread::FILE, MessageLoop::current()),
-      permissions_info_(extensions::ChromeAPIPermissions()) {
+      file_thread_(content::BrowserThread::FILE, MessageLoop::current()) {
 }
 
 void MediaFileSystemRegistryTest::CreateProfileState(size_t profile_count) {
@@ -755,8 +748,6 @@ void MediaFileSystemRegistryTest::SetUp() {
 
   test_file_system_context_ = new TestMediaFileSystemContext(
       g_browser_process->media_file_system_registry());
-  (new extensions::BackgroundManifestHandler)->Register();
-  (new extensions::IncognitoHandler)->Register();
 
   ASSERT_TRUE(galleries_dir_.CreateUniqueTempDir());
   empty_dir_ = galleries_dir_.path().AppendASCII("empty");
@@ -774,7 +765,6 @@ void MediaFileSystemRegistryTest::TearDown() {
   EXPECT_EQ(0U, registry->GetExtensionGalleriesHostCountForTests());
   BrowserThread::GetBlockingPool()->FlushForTesting();
   MessageLoop::current()->RunUntilIdle();
-  extensions::ManifestHandler::ClearRegistryForTesting();
 }
 
 ///////////

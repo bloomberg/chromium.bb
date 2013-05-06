@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/feature.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,10 +22,6 @@ namespace keys = extension_manifest_keys;
 namespace extensions {
 
 class ExtensionManifestBackgroundTest : public ExtensionManifestTest {
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new BackgroundManifestHandler)->Register();
-  }
 };
 
 TEST_F(ExtensionManifestBackgroundTest, BackgroundPermission) {

@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/web_apps.h"
@@ -81,15 +80,7 @@ base::Time GetTestTime(int year, int month, int day, int hour, int minute,
 
 }  // namespace
 
-class ExtensionFromWebApp : public ExtensionTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    ExtensionTest::SetUp();
-    (new IconsHandler)->Register();
-  }
-};
-
-TEST_F(ExtensionFromWebApp, GenerateVersion) {
+TEST(ExtensionFromWebApp, GenerateVersion) {
   EXPECT_EQ("2010.1.1.0",
             ConvertTimeToExtensionVersion(
                 GetTestTime(2010, 1, 1, 0, 0, 0, 0)));
@@ -101,7 +92,7 @@ TEST_F(ExtensionFromWebApp, GenerateVersion) {
                 GetTestTime(2010, 10, 1, 23, 59, 59, 999)));
 }
 
-TEST_F(ExtensionFromWebApp, Basic) {
+TEST(ExtensionFromWebApp, Basic) {
   base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
@@ -159,7 +150,7 @@ TEST_F(ExtensionFromWebApp, Basic) {
   }
 }
 
-TEST_F(ExtensionFromWebApp, Minimal) {
+TEST(ExtensionFromWebApp, Minimal) {
   base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 

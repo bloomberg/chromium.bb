@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
@@ -14,12 +13,6 @@ namespace errors = extension_manifest_errors;
 namespace extensions {
 
 class RequirementsManifestTest : public ExtensionManifestTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new PluginsHandler)->Register();
-    (new RequirementsHandler)->Register();
-  }
 };
 
 TEST_F(RequirementsManifestTest, RequirementsInvalid) {

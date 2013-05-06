@@ -9,12 +9,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "chrome/common/extensions/unpacker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -31,16 +28,6 @@ public:
     LOG(WARNING) << "Deleting temp dir: "
                  << temp_dir_.path().LossyDisplayName();
     LOG(WARNING) << temp_dir_.Delete();
-  }
-
-  virtual void SetUp() OVERRIDE {
-    testing::Test::SetUp();
-    (new DefaultLocaleHandler)->Register();
-    (new ThemeHandler)->Register();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    ManifestHandler::ClearRegistryForTesting();
   }
 
   void SetupUnpacker(const std::string& crx_name) {

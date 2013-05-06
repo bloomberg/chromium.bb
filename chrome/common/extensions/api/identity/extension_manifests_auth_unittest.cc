@@ -13,11 +13,6 @@ namespace keys = extension_manifest_keys;
 namespace extensions {
 
 class OAuth2ManifestTest : public ExtensionManifestTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new OAuth2ManifestHandler)->Register();
-  }
 };
 
 TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {

@@ -10,12 +10,11 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ExtensionManifestTest : public extensions::ExtensionTest {
+class ExtensionManifestTest : public testing::Test {
  public:
   ExtensionManifestTest();
 

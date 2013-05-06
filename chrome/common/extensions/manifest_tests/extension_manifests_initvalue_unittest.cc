@@ -6,13 +6,8 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/api/extension_action/page_action_handler.h"
-#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,15 +23,6 @@ namespace keys = extension_manifest_keys;
 namespace extensions {
 
 class InitValueManifestTest : public ExtensionManifestTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new extensions::DefaultLocaleHandler)->Register();
-    (new extensions::IconsHandler)->Register();
-    (new extensions::OptionsPageHandler)->Register();
-    (new extensions::PageActionHandler)->Register();
-    (new extensions::ContentScriptsHandler)->Register();
-  }
 };
 
 TEST_F(InitValueManifestTest, InitFromValueInvalid) {

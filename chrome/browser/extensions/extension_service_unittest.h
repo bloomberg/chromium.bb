@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +28,7 @@ namespace extensions {
 class ManagementPolicy;
 }
 
-class ExtensionServiceTestBase : public extensions::ExtensionTest {
+class ExtensionServiceTestBase : public testing::Test {
  public:
   struct ExtensionServiceInitParams {
     base::FilePath profile_path;

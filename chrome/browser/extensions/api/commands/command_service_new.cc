@@ -15,7 +15,6 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
@@ -48,8 +47,6 @@ void CommandService::RegisterUserPrefs(
 
 CommandService::CommandService(Profile* profile)
     : profile_(profile) {
-  (new CommandsHandler)->Register();
-
   ExtensionFunctionRegistry::GetInstance()->
       RegisterFunction<GetAllCommandsFunction>();
 

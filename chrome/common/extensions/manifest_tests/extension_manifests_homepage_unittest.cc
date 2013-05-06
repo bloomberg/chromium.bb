@@ -12,11 +12,6 @@
 namespace errors = extension_manifest_errors;
 
 class HomepageURLManifestTest : public ExtensionManifestTest {
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new extensions::HomepageURLHandler)->Register();
-    (new extensions::UpdateURLHandler)->Register();
-  }
 };
 
 TEST_F(HomepageURLManifestTest, ParseHomepageURLs) {

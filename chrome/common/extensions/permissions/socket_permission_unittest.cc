@@ -6,7 +6,7 @@
 
 #include "base/pickle.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_unittest.h"
+#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/extensions/permissions/socket_permission_data.h"
 #include "ipc/ipc_message.h"
@@ -26,10 +26,7 @@ void ParseTest(const std::string& permission,
   EXPECT_EQ(expected_result, data.GetAsStringForTest());
 }
 
-class SocketPermissionTest : public ExtensionTest {
-};
-
-TEST_F(SocketPermissionTest, General) {
+TEST(SocketPermissionTest, General) {
   SocketPermissionData data1, data2;
 
   CHECK(data1.ParseForTest("tcp-connect"));
@@ -45,7 +42,7 @@ TEST_F(SocketPermissionTest, General) {
   EXPECT_TRUE(data1 < data2);
 }
 
-TEST_F(SocketPermissionTest, Parse) {
+TEST(SocketPermissionTest, Parse) {
   SocketPermissionData data;
 
   EXPECT_FALSE(data.ParseForTest(std::string()));
@@ -119,7 +116,7 @@ TEST_F(SocketPermissionTest, Parse) {
   ParseTest("tcp-connect:*.example.com:99", "tcp-connect:*.example.com:99");
 }
 
-TEST_F(SocketPermissionTest, Match) {
+TEST(SocketPermissionTest, Match) {
   SocketPermissionData data;
   scoped_ptr<SocketPermission::CheckParam> param;
 
@@ -219,7 +216,7 @@ TEST_F(SocketPermissionTest, Match) {
   EXPECT_TRUE(data.Check(param.get()));
 }
 
-TEST_F(SocketPermissionTest, IPC) {
+TEST(SocketPermissionTest, IPC) {
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
@@ -261,7 +258,7 @@ TEST_F(SocketPermissionTest, IPC) {
   }
 }
 
-TEST_F(SocketPermissionTest, Value) {
+TEST(SocketPermissionTest, Value) {
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 

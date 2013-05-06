@@ -5,17 +5,14 @@
 #include "base/pickle.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
-class APIPermissionSetTest : public ExtensionTest {
-};
-
-TEST_F(APIPermissionSetTest, General) {
+TEST(APIPermissionSetTest, General) {
   APIPermissionSet apis;
   apis.insert(APIPermission::kTab);
   apis.insert(APIPermission::kBackground);
@@ -35,7 +32,7 @@ TEST_F(APIPermissionSetTest, General) {
   EXPECT_EQ(apis.size(), 4u);
 }
 
-TEST_F(APIPermissionSetTest, CreateUnion) {
+TEST(APIPermissionSetTest, CreateUnion) {
   APIPermission* permission = NULL;
 
   APIPermissionSet apis1;
@@ -123,7 +120,7 @@ TEST_F(APIPermissionSetTest, CreateUnion) {
   EXPECT_EQ(expected_apis, result);
 }
 
-TEST_F(APIPermissionSetTest, CreateIntersection) {
+TEST(APIPermissionSetTest, CreateIntersection) {
   APIPermission* permission = NULL;
 
   APIPermissionSet apis1;
@@ -201,7 +198,7 @@ TEST_F(APIPermissionSetTest, CreateIntersection) {
   EXPECT_EQ(expected_apis, result);
 }
 
-TEST_F(APIPermissionSetTest, CreateDifference) {
+TEST(APIPermissionSetTest, CreateDifference) {
   APIPermission* permission = NULL;
 
   APIPermissionSet apis1;
@@ -272,7 +269,7 @@ TEST_F(APIPermissionSetTest, CreateDifference) {
   EXPECT_TRUE(result2.empty());
 }
 
-TEST_F(APIPermissionSetTest, IPC) {
+TEST(APIPermissionSetTest, IPC) {
   APIPermission* permission = NULL;
 
   APIPermissionSet apis;

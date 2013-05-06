@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/features/api_feature.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/simple_feature.h"
@@ -32,10 +31,7 @@ SimpleFeature* CreateAPIFeature() {
   return new APIFeature();
 }
 
-class ExtensionAPITest : public ExtensionTest {
-};
-
-TEST_F(ExtensionAPITest, Creation) {
+TEST(ExtensionAPITest, Creation) {
   ExtensionAPI* shared_instance = ExtensionAPI::GetSharedInstance();
   EXPECT_EQ(shared_instance, ExtensionAPI::GetSharedInstance());
 
@@ -62,7 +58,7 @@ TEST_F(ExtensionAPITest, Creation) {
   }
 }
 
-TEST_F(ExtensionAPITest, SplitDependencyName) {
+TEST(ExtensionAPITest, SplitDependencyName) {
   struct {
     std::string input;
     std::string expected_feature_type;
@@ -86,7 +82,7 @@ TEST_F(ExtensionAPITest, SplitDependencyName) {
   }
 }
 
-TEST_F(ExtensionAPITest, IsPrivileged) {
+TEST(ExtensionAPITest, IsPrivileged) {
   scoped_ptr<ExtensionAPI> extension_api(
       ExtensionAPI::CreateWithDefaultConfiguration());
 
@@ -115,7 +111,7 @@ TEST_F(ExtensionAPITest, IsPrivileged) {
   EXPECT_FALSE(extension_api->IsPrivileged("storage.set"));
 }
 
-TEST_F(ExtensionAPITest, IsPrivilegedFeatures) {
+TEST(ExtensionAPITest, IsPrivilegedFeatures) {
   struct {
     std::string api_full_name;
     bool expect_is_privilged;
@@ -225,7 +221,7 @@ TEST(ExtensionAPI, APIFeatures) {
   }
 }
 
-TEST_F(ExtensionAPITest, LazyGetSchema) {
+TEST(ExtensionAPITest, LazyGetSchema) {
   scoped_ptr<ExtensionAPI> apis(ExtensionAPI::CreateWithDefaultConfiguration());
 
   EXPECT_EQ(NULL, apis->GetSchema(std::string()));
@@ -279,7 +275,7 @@ scoped_refptr<Extension> CreateExtensionWithPermission(
   return CreateExtensionWithPermissions(permissions);
 }
 
-TEST_F(ExtensionAPITest, ExtensionWithUnprivilegedAPIs) {
+TEST(ExtensionAPITest, ExtensionWithUnprivilegedAPIs) {
   scoped_refptr<Extension> extension;
   {
     std::set<std::string> permissions;
@@ -334,7 +330,7 @@ TEST_F(ExtensionAPITest, ExtensionWithUnprivilegedAPIs) {
                                           GURL()).is_available());
 }
 
-TEST_F(ExtensionAPITest, ExtensionWithDependencies) {
+TEST(ExtensionAPITest, ExtensionWithDependencies) {
   // Extension with the "ttsEngine" permission but not the "tts" permission; it
   // should not automatically get "tts" permission.
   {
@@ -376,7 +372,7 @@ bool MatchesURL(
       api_name, NULL, Feature::WEB_PAGE_CONTEXT, GURL(url)).is_available();
 }
 
-TEST_F(ExtensionAPITest, URLMatching) {
+TEST(ExtensionAPITest, URLMatching) {
   scoped_ptr<ExtensionAPI> api(ExtensionAPI::CreateWithDefaultConfiguration());
 
   // "app" API is available to all URLs that content scripts can be injected.
@@ -403,7 +399,7 @@ TEST_F(ExtensionAPITest, URLMatching) {
                           "chrome-extension://fakeextension"));
 }
 
-TEST_F(ExtensionAPITest, GetAPINameFromFullName) {
+TEST(ExtensionAPITest, GetAPINameFromFullName) {
   struct {
     std::string input;
     std::string api_name;
@@ -431,7 +427,7 @@ TEST_F(ExtensionAPITest, GetAPINameFromFullName) {
   }
 }
 
-TEST_F(ExtensionAPITest, DefaultConfigurationFeatures) {
+TEST(ExtensionAPITest, DefaultConfigurationFeatures) {
   scoped_ptr<ExtensionAPI> api(ExtensionAPI::CreateWithDefaultConfiguration());
 
   SimpleFeature* bookmarks = static_cast<SimpleFeature*>(
@@ -465,7 +461,7 @@ TEST_F(ExtensionAPITest, DefaultConfigurationFeatures) {
   }
 }
 
-TEST_F(ExtensionAPITest, FeaturesRequireContexts) {
+TEST(ExtensionAPITest, FeaturesRequireContexts) {
   // TODO(cduvall): Make this check API featues.
   scoped_ptr<base::DictionaryValue> api_features1(new base::DictionaryValue());
   scoped_ptr<base::DictionaryValue> api_features2(new base::DictionaryValue());
@@ -503,7 +499,7 @@ static void GetDictionaryFromList(const base::DictionaryValue* schema,
   EXPECT_TRUE(list->GetDictionary(list_index, out));
 }
 
-TEST_F(ExtensionAPITest, TypesHaveNamespace) {
+TEST(ExtensionAPITest, TypesHaveNamespace) {
   base::FilePath manifest_path;
   PathService::Get(chrome::DIR_TEST_DATA, &manifest_path);
   manifest_path = manifest_path.AppendASCII("extensions")

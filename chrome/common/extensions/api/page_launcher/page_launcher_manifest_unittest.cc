@@ -6,7 +6,6 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/extensions/api/page_launcher/page_launcher_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
@@ -14,13 +13,7 @@
 namespace extensions {
 
 class PageLauncherManifestTest : public ExtensionManifestTest {
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new PageLauncherHandler)->Register();
-    // Required to be recognized as a platform app.
-    (new BackgroundManifestHandler)->Register();
-  }
-
+ protected:
   virtual char const* test_data_dir() OVERRIDE {
     return "page_launcher";
   }

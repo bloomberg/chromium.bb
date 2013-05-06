@@ -18,10 +18,8 @@
 #include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/extensions/background_info.h"
+#include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -42,9 +40,7 @@ namespace extensions {
 StartupHelper::StartupHelper() : pack_job_succeeded_(false) {
   PermissionsInfo::GetInstance()->InitializeWithDelegate(
       ChromeAPIPermissions());
-  (new DefaultLocaleHandler)->Register();
-  (new BackgroundManifestHandler)->Register();
-  (new IncognitoHandler)->Register();
+  RegisterChromeManifestHandlers();
 }
 
 void StartupHelper::OnPackSuccess(

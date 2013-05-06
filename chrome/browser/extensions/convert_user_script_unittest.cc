@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,16 +30,6 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 }
 
 class ExtensionFromUserScript : public testing::Test {
- public:
-  virtual void SetUp() OVERRIDE {
-    testing::Test::SetUp();
-    (new ContentScriptsHandler)->Register();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    testing::Test::TearDown();
-    ManifestHandler::ClearRegistryForTesting();
-  }
 };
 
 TEST_F(ExtensionFromUserScript, Basic) {

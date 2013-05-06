@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
@@ -14,11 +13,6 @@ namespace errors = extension_manifest_errors;
 namespace extensions {
 
 class ExtensionManifestOfflineEnabledTest : public ExtensionManifestTest {
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new OfflineEnabledHandler)->Register();
-    (new BackgroundManifestHandler)->Register();
-  }
 };
 
 TEST_F(ExtensionManifestOfflineEnabledTest, OfflineEnabled) {

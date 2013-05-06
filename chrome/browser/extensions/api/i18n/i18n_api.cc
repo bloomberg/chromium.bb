@@ -14,7 +14,6 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/i18n.h"
-#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/pref_names.h"
 
 namespace GetAcceptLanguages = extensions::api::i18n::GetAcceptLanguages;
@@ -58,21 +57,6 @@ bool I18nGetAcceptLanguagesFunction::RunImpl() {
 
   results_ = GetAcceptLanguages::Results::Create(languages);
   return true;
-}
-
-I18nAPI::I18nAPI(Profile* profile) {
-  (new DefaultLocaleHandler)->Register();
-}
-
-I18nAPI::~I18nAPI() {
-}
-
-static base::LazyInstance<ProfileKeyedAPIFactory<I18nAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
-
-// static
-ProfileKeyedAPIFactory<I18nAPI>* I18nAPI::GetFactoryInstance() {
-  return &g_factory.Get();
 }
 
 }  // namespace extensions

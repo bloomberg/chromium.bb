@@ -5,7 +5,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/mime_types_handler.h"
@@ -23,10 +22,6 @@ using extensions::ListBuilder;
 namespace {
 
 class StreamsPrivateManifestTest : public ExtensionManifestTest {
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new MimeTypesHandlerParser)->Register();
-  }
 };
 
 TEST_F(StreamsPrivateManifestTest, ValidMimeTypesHandlerMIMETypes) {

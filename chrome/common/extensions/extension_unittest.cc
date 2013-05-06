@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_unittest.h"
-
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
@@ -13,22 +11,16 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/api/plugins/plugins_handler.h"
-#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/features/feature.h"
-#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
-#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
-#include "chrome/common/extensions/permissions/scoped_testing_permissions_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "chrome/common/url_constants.h"
@@ -54,25 +46,9 @@ namespace errors = extension_manifest_errors;
 
 namespace extensions {
 
-ExtensionTest::ExtensionTest() : permissions_info_(ChromeAPIPermissions()) {}
-
-void ExtensionTest::SetUp() {
-  testing::Test::SetUp();
-  (new BackgroundManifestHandler)->Register();
-  // We need the IncognitoHandler registered for all tests, since
-  // Extension uses it in Extension::CheckPlatformAppFeatures() as part of the
-  // creation process.
-  (new IncognitoHandler)->Register();
-}
-
-void ExtensionTest::TearDown() {
-  ManifestHandler::ClearRegistryForTesting();
-  testing::Test::TearDown();
-}
-
 // We persist location values in the preferences, so this is a sanity test that
 // someone doesn't accidentally change them.
-TEST_F(ExtensionTest, LocationValuesTest) {
+TEST(ExtensionTest, LocationValuesTest) {
   ASSERT_EQ(0, Manifest::INVALID_LOCATION);
   ASSERT_EQ(1, Manifest::INTERNAL);
   ASSERT_EQ(2, Manifest::EXTERNAL_PREF);
@@ -84,7 +60,7 @@ TEST_F(ExtensionTest, LocationValuesTest) {
   ASSERT_EQ(8, Manifest::COMMAND_LINE);
 }
 
-TEST_F(ExtensionTest, LocationPriorityTest) {
+TEST(ExtensionTest, LocationPriorityTest) {
   for (int i = 0; i < Manifest::NUM_LOCATIONS; i++) {
     Manifest::Location loc = static_cast<Manifest::Location>(i);
 
@@ -121,7 +97,7 @@ TEST_F(ExtensionTest, LocationPriorityTest) {
                 Manifest::EXTERNAL_PREF));
 }
 
-TEST_F(ExtensionTest, GetResourceURLAndPath) {
+TEST(ExtensionTest, GetResourceURLAndPath) {
   scoped_refptr<Extension> extension = LoadManifestStrict("empty_manifest",
       "empty.json");
   EXPECT_TRUE(extension.get());
@@ -139,7 +115,7 @@ TEST_F(ExtensionTest, GetResourceURLAndPath) {
             extension->GetResourceURL("/test.html").spec());
 }
 
-TEST_F(ExtensionTest, GetAbsolutePathNoError) {
+TEST(ExtensionTest, GetAbsolutePathNoError) {
   scoped_refptr<Extension> extension = LoadManifestStrict("absolute_path",
       "absolute.json");
   EXPECT_TRUE(extension.get());
@@ -156,7 +132,7 @@ TEST_F(ExtensionTest, GetAbsolutePathNoError) {
 }
 
 
-TEST_F(ExtensionTest, IdIsValid) {
+TEST(ExtensionTest, IdIsValid) {
   EXPECT_TRUE(Extension::IdIsValid("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
   EXPECT_TRUE(Extension::IdIsValid("pppppppppppppppppppppppppppppppp"));
   EXPECT_TRUE(Extension::IdIsValid("abcdefghijklmnopabcdefghijklmnop"));
@@ -171,7 +147,7 @@ TEST_F(ExtensionTest, IdIsValid) {
 
 // This test ensures that the mimetype sniffing code stays in sync with the
 // actual crx files that we test other parts of the system with.
-TEST_F(ExtensionTest, MimeTypeSniffing) {
+TEST(ExtensionTest, MimeTypeSniffing) {
   base::FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
   path = path.AppendASCII("extensions").AppendASCII("good.crx");
@@ -199,8 +175,7 @@ TEST_F(ExtensionTest, MimeTypeSniffing) {
   EXPECT_EQ("application/octet-stream", result);
 }
 
-TEST_F(ExtensionTest, EffectiveHostPermissions) {
-  (new ContentScriptsHandler)->Register();
+TEST(ExtensionTest, EffectiveHostPermissions) {
   scoped_refptr<Extension> extension;
   URLPatternSet hosts;
 
@@ -277,7 +252,7 @@ static bool CheckSocketPermission(scoped_refptr<Extension> extension,
       APIPermission::kSocket, &param);
 }
 
-TEST_F(ExtensionTest, SocketPermissions) {
+TEST(ExtensionTest, SocketPermissions) {
   // Set feature current channel to appropriate value.
   Feature::ScopedCurrentChannel scoped_channel(
       chrome::VersionInfo::CHANNEL_DEV);
@@ -314,7 +289,7 @@ TEST_F(ExtensionTest, SocketPermissions) {
 
 // This tests the API permissions with an empty manifest (one that just
 // specifies a name and a version and nothing else).
-TEST_F(ExtensionTest, ApiPermissions) {
+TEST(ExtensionTest, ApiPermissions) {
   const struct {
     const char* permission_name;
     bool expect_success;
@@ -359,7 +334,7 @@ TEST_F(ExtensionTest, ApiPermissions) {
   }
 }
 
-TEST_F(ExtensionTest, GetPermissionMessages_ManyApiPermissions) {
+TEST(ExtensionTest, GetPermissionMessages_ManyApiPermissions) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-apis.json");
   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
@@ -374,7 +349,7 @@ TEST_F(ExtensionTest, GetPermissionMessages_ManyApiPermissions) {
             UTF16ToUTF8(warnings[5]));
 }
 
-TEST_F(ExtensionTest, GetPermissionMessages_LocationApiPermission) {
+TEST(ExtensionTest, GetPermissionMessages_LocationApiPermission) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions",
                            "location-api.json",
@@ -385,8 +360,7 @@ TEST_F(ExtensionTest, GetPermissionMessages_LocationApiPermission) {
   EXPECT_EQ("Detect your physical location", UTF16ToUTF8(warnings[0]));
 }
 
-TEST_F(ExtensionTest, GetPermissionMessages_ManyHosts) {
-  (new ContentScriptsHandler)->Register();
+TEST(ExtensionTest, GetPermissionMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-hosts.json");
   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
@@ -395,8 +369,7 @@ TEST_F(ExtensionTest, GetPermissionMessages_ManyHosts) {
             UTF16ToUTF8(warnings[0]));
 }
 
-TEST_F(ExtensionTest, GetPermissionMessages_Plugins) {
-  (new PluginsHandler)->Register();
+TEST(ExtensionTest, GetPermissionMessages_Plugins) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "plugins.json");
   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
@@ -411,8 +384,7 @@ TEST_F(ExtensionTest, GetPermissionMessages_Plugins) {
 #endif
 }
 
-TEST_F(ExtensionTest, WantsFileAccess) {
-  (new ContentScriptsHandler)->Register();
+TEST(ExtensionTest, WantsFileAccess) {
   scoped_refptr<Extension> extension;
   GURL file_url("file:///etc/passwd");
 
@@ -507,7 +479,7 @@ TEST_F(ExtensionTest, WantsFileAccess) {
       NULL));
 }
 
-TEST_F(ExtensionTest, ExtraFlags) {
+TEST(ExtensionTest, ExtraFlags) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("app", "manifest.json", Extension::FROM_WEBSTORE);
   EXPECT_TRUE(extension->from_webstore());
@@ -886,7 +858,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 2));
 }
 
-TEST_F(ExtensionTest, OptionalOnlyPermission) {
+TEST(ExtensionTest, OptionalOnlyPermission) {
   // Set feature current channel to dev because the only permission that must
   // be optional (usbDevices) is only available on dev channel.
   Feature::ScopedCurrentChannel scoped_channel(

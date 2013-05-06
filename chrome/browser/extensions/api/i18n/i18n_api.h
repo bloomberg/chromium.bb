@@ -18,26 +18,6 @@ class I18nGetAcceptLanguagesFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("i18n.getAcceptLanguages", I18N_GETACCEPTLANGUAGES)
 };
 
-class I18nAPI : public ProfileKeyedAPI {
- public:
-  explicit I18nAPI(Profile* profile);
-  virtual ~I18nAPI();
-
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<I18nAPI>* GetFactoryInstance();
-
- private:
-  friend class ProfileKeyedAPIFactory<I18nAPI>;
-
-  // ProfileKeyedAPI implementation.
-  static const char* service_name() {
-    return "I18nAPI";
-  }
-  static const bool kServiceIsNULLWhileTesting = true;
-
-  DISALLOW_COPY_AND_ASSIGN(I18nAPI);
-};
-
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_I18N_I18N_API_H_

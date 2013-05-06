@@ -9,10 +9,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class DevToolsPageManifestTest : public ExtensionManifestTest {
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new extensions::DevToolsPageHandler)->Register();
-  }
 };
 
 TEST_F(DevToolsPageManifestTest, DevToolsExtensions) {

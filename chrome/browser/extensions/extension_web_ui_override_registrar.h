@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_CHROME_MANIFEST_PARSER_H_
-#define CHROME_BROWSER_EXTENSIONS_CHROME_MANIFEST_PARSER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_UI_OVERRIDE_REGISTRAR_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_UI_OVERRIDE_REGISTRAR_H_
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
@@ -14,14 +14,15 @@ class Profile;
 
 namespace extensions {
 
-class ChromeManifestParser : public ProfileKeyedAPI,
+class ExtensionWebUIOverrideRegistrar : public ProfileKeyedAPI,
                              public content::NotificationObserver {
  public:
-  explicit ChromeManifestParser(Profile* profile);
-  virtual ~ChromeManifestParser();
+  explicit ExtensionWebUIOverrideRegistrar(Profile* profile);
+  virtual ~ExtensionWebUIOverrideRegistrar();
 
   // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<ChromeManifestParser>* GetFactoryInstance();
+  static ProfileKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>*
+      GetFactoryInstance();
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -29,17 +30,19 @@ class ChromeManifestParser : public ProfileKeyedAPI,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<ChromeManifestParser>;
+  friend class ProfileKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>;
 
   // ProfileKeyedAPI implementation.
-  static const char* service_name() { return "ChromeManifestParser"; }
+  static const char* service_name() {
+    return "ExtensionWebUIOverrideRegistrar";
+  }
 
   Profile* const profile_;
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeManifestParser);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionWebUIOverrideRegistrar);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_CHROME_MANIFEST_PARSER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_UI_OVERRIDE_REGISTRAR_H_

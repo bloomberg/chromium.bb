@@ -16,21 +16,13 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_pattern.h"
-#include "chrome/common/extensions/api/extension_action/page_action_handler.h"
-#include "chrome/common/extensions/background_info.h"
-#include "chrome/common/extensions/csp_handler.h"
+#include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/incognito_handler.h"
-#include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
-#include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
-#include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "chrome/common/external_ipc_fuzzer.h"
 #include "chrome/common/localized_error.h"
 #include "chrome/common/render_messages.h"
@@ -139,20 +131,6 @@ const char kWebViewTagName[] = "WEBVIEW";
 const char kAdViewTagName[] = "ADVIEW";
 
 chrome::ChromeContentRendererClient* g_current_client;
-
-// Explicitly register all extension ManifestHandlers needed to parse
-// fields used in the renderer.
-void RegisterExtensionManifestHandlers() {
-  (new extensions::AppIsolationHandler)->Register();
-  (new extensions::BackgroundManifestHandler)->Register();
-  (new extensions::CSPHandler(false))->Register();  // not platform app.
-  (new extensions::CSPHandler(true))->Register();  // platform app.
-  (new extensions::DevToolsPageHandler)->Register();
-  (new extensions::IncognitoHandler)->Register();
-  (new extensions::PageActionHandler)->Register();
-  (new extensions::SandboxedPageHandler)->Register();
-  (new extensions::WebAccessibleResourcesHandler)->Register();
-}
 
 static void AppendParams(const std::vector<string16>& additional_names,
                          const std::vector<string16>& additional_values,
@@ -332,10 +310,9 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
       extension_resource_scheme);
 
-  extensions::ChromeAPIPermissions permissions;
   extensions::PermissionsInfo::GetInstance()->InitializeWithDelegate(
-      permissions);
-  RegisterExtensionManifestHandlers();
+      extensions::ChromeAPIPermissions());
+  extensions::RegisterChromeManifestHandlers();
 }
 
 void ChromeContentRendererClient::RenderViewCreated(

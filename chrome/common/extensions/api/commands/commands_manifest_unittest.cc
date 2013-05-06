@@ -8,7 +8,6 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
-#include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
@@ -16,10 +15,6 @@ namespace errors = extension_manifest_errors;
 namespace extensions {
 
 class CommandsManifestTest : public ExtensionManifestTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    (new CommandsHandler)->Register();
-  }
 };
 
 TEST_F(CommandsManifestTest, CommandManifestSimple) {
@@ -86,7 +81,6 @@ TEST_F(CommandsManifestTest, CommandManifestRejectJustShift) {
 }
 
 TEST_F(CommandsManifestTest, BrowserActionSynthesizesCommand) {
-  (new BrowserActionHandler)->Register();
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("browser_action_synthesizes_command.json");
   // An extension with a browser action but no extension command specified

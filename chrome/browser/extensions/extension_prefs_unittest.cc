@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -64,7 +65,6 @@ void ExtensionPrefsTest::RegisterPreferences(
     user_prefs::PrefRegistrySyncable* registry) {}
 
 void ExtensionPrefsTest::SetUp() {
-  ExtensionTest::SetUp();
   RegisterPreferences(prefs_.pref_registry());
   Initialize();
 }
@@ -79,7 +79,6 @@ void ExtensionPrefsTest::TearDown() {
   Verify();
   prefs_.pref_service()->CommitPendingWrite();
   message_loop_.RunUntilIdle();
-  ExtensionTest::TearDown();
 }
 
 // Tests the LastPingDay/SetLastPingDay functions.

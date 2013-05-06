@@ -4,18 +4,12 @@
 
 
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
 class ExcludeMatchesManifestTest : public ExtensionManifestTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new ContentScriptsHandler)->Register();
-  }
 };
 
 TEST_F(ExcludeMatchesManifestTest, ExcludeMatchPatterns) {

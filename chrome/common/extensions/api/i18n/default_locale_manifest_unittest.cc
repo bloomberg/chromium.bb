@@ -10,10 +10,6 @@
 namespace extensions {
 
 class DefaultLocaleManifestTest : public ExtensionManifestTest {
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new DefaultLocaleHandler)->Register();
-  }
 };
 
 TEST_F(DefaultLocaleManifestTest, DefaultLocale) {

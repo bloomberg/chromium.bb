@@ -75,10 +75,6 @@ class ManifestHandler {
                                 std::string* error,
                                 std::vector<InstallWarning>* warnings);
 
-  // Reset the manifest handler registry to an empty state. Useful for
-  // unit tests.
-  static void ClearRegistryForTesting();
-
  protected:
   // A convenience method for handlers that only register for 1 key,
   // so that they can define keys() { return SingleKey(kKey); }
@@ -106,7 +102,6 @@ class ManifestHandlerRegistry {
                          std::string* error,
                          std::vector<InstallWarning>* warnings);
 
-  void ClearForTesting();
   // Overrides the current global ManifestHandlerRegistry with
   // |registry|, returning the current one.
   static ManifestHandlerRegistry* SetForTesting(

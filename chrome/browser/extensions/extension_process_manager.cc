@@ -27,7 +27,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/incognito_handler.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -177,9 +176,6 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
     event_page_suspending_time_ = base::TimeDelta::FromSeconds(
         suspending_time_sec);
   }
-
-  (new BackgroundManifestHandler())->Register();
-  (new extensions::IncognitoHandler())->Register();
 
   content::DevToolsManager::GetInstance()->AddAgentStateCallback(
       devtools_callback_);

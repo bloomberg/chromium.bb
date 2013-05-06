@@ -10,9 +10,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +24,7 @@ typedef SpecialStoragePolicy::StoragePolicy StoragePolicy;
 
 namespace keys = extension_manifest_keys;
 
-class ExtensionSpecialStoragePolicyTest : public extensions::ExtensionTest {
+class ExtensionSpecialStoragePolicyTest : public testing::Test {
  protected:
   class PolicyChangeObserver : public SpecialStoragePolicy::Observer {
    public:
@@ -93,7 +91,6 @@ class ExtensionSpecialStoragePolicyTest : public extensions::ExtensionTest {
   };
 
   virtual void SetUp() OVERRIDE {
-    extensions::ExtensionTest::SetUp();
     policy_ = new ExtensionSpecialStoragePolicy(NULL);
   }
 

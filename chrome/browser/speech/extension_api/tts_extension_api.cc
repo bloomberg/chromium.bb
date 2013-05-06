@@ -14,7 +14,6 @@
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
 #include "chrome/browser/speech/tts_controller.h"
-#include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace constants = tts_extension_api_constants;
@@ -293,7 +292,6 @@ TtsAPI* TtsAPI::Get(Profile* profile) {
 }
 
 TtsAPI::TtsAPI(Profile* profile) {
-  (new TtsEngineManifestHandler)->Register();
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<ExtensionTtsEngineSendTtsEventFunction>();

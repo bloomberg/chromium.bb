@@ -184,7 +184,6 @@ void ExtensionOmniboxEventRouter::OnInputCancelled(
 OmniboxAPI::OmniboxAPI(Profile* profile)
     : profile_(profile),
       url_service_(TemplateURLServiceFactory::GetForProfile(profile)) {
-  (new OmniboxHandler)->Register();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,

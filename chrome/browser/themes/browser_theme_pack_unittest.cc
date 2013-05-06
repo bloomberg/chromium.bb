@@ -13,8 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "content/public/test/test_browser_thread.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,15 +28,6 @@ class BrowserThemePackTest : public ::testing::Test {
         fake_ui_thread(BrowserThread::UI, &message_loop),
         fake_file_thread(BrowserThread::FILE, &message_loop),
         theme_pack_(new BrowserThemePack) {
-  }
-
-  virtual void SetUp() OVERRIDE {
-    testing::Test::SetUp();
-    (new extensions::ThemeHandler)->Register();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    extensions::ManifestHandler::ClearRegistryForTesting();
   }
 
   // Transformation for link underline colors.

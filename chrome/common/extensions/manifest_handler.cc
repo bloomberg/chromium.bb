@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/common/extensions/extension.h"
 
@@ -54,11 +55,6 @@ void ManifestHandler::Register() {
   const std::vector<std::string> keys = Keys();
   for (size_t i = 0; i < keys.size(); ++i)
     GetRegistry()->RegisterManifestHandler(keys[i], this_linked);
-}
-
-// static
-void ManifestHandler::ClearRegistryForTesting() {
-  GetRegistry()->ClearForTesting();
 }
 
 // static
@@ -131,12 +127,6 @@ bool ManifestHandlerRegistry::ValidateExtension(
       return false;
   }
   return true;
-}
-
-void ManifestHandlerRegistry::ClearForTesting() {
-  priority_map_.clear();
-  handlers_.clear();
-  is_sorted_ = false;
 }
 
 // static

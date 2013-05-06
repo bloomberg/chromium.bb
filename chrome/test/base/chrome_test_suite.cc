@@ -23,6 +23,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/chrome_manifest_handlers.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_launcher.h"
@@ -226,10 +228,15 @@ void ChromeTestSuite::Initialize() {
 #if !defined(OS_IOS)
   extensions::RegisterPathProvider();
 
+  // Only want to do this for unit tests.
   if (!content::GetCurrentTestLauncherDelegate()) {
-    // Only want to do this for unit tests. For browser tests, this won't create
-    // the right object since TestChromeWebUIControllerFactory is used. That's
-    // created and registered in ChromeBrowserMainParts as in normal startup.
+    extensions::PermissionsInfo::GetInstance()->InitializeWithDelegate(
+        extensions::ChromeAPIPermissions());
+    extensions::RegisterChromeManifestHandlers();
+
+    // For browser tests, this won't create the right object since
+    // TestChromeWebUIControllerFactory is used. That's created and
+    // registered in ChromeBrowserMainParts as in normal startup.
     content::WebUIControllerFactory::RegisterFactory(
         ChromeWebUIControllerFactory::GetInstance());
   }

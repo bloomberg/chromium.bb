@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
@@ -12,11 +11,6 @@
 namespace extensions {
 
 class ExtensionManifestKioskEnabledTest : public ExtensionManifestTest {
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new BackgroundManifestHandler)->Register();
-    (new KioskEnabledHandler)->Register();
-  }
 };
 
 TEST_F(ExtensionManifestKioskEnabledTest, InvalidKioskEnabled) {

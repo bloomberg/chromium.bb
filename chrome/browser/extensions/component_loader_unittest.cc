@@ -14,7 +14,6 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -73,7 +72,7 @@ class MockExtensionService : public TestExtensionService {
 
 }  // namespace
 
-class ComponentLoaderTest : public ExtensionTest {
+class ComponentLoaderTest : public testing::Test {
  public:
   ComponentLoaderTest()
       // Note: we pass the same pref service here, to stand in for both
@@ -82,7 +81,6 @@ class ComponentLoaderTest : public ExtensionTest {
   }
 
   virtual void SetUp() OVERRIDE {
-    ExtensionTest::SetUp();
     extension_path_ =
         GetBasePath().AppendASCII("good")
                      .AppendASCII("Extensions")

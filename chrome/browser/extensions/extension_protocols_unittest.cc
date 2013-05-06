@@ -12,9 +12,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/incognito_handler.h"
-#include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/mock_resource_context.h"
@@ -79,15 +76,12 @@ class ExtensionProtocolTest : public testing::Test {
     net::URLRequestContext* request_context =
         resource_context_.GetRequestContext();
     old_factory_ = request_context->job_factory();
-    (new IncognitoHandler)->Register();
-    (new IconsHandler)->Register();
   }
 
   virtual void TearDown() {
     net::URLRequestContext* request_context =
         resource_context_.GetRequestContext();
     request_context->set_job_factory(old_factory_);
-    ManifestHandler::ClearRegistryForTesting();
   }
 
   void SetProtocolHandler(bool incognito) {

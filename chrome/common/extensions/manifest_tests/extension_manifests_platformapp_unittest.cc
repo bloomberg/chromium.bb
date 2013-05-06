@@ -6,7 +6,6 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/incognito_handler.h"
@@ -19,14 +18,6 @@ namespace errors = extension_manifest_errors;
 namespace extensions {
 
 class PlatformAppsManifestTest : public ExtensionManifestTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    testing::Test::SetUp();
-    (new BackgroundManifestHandler)->Register();
-    (new CSPHandler(true))->Register();  // platform app.
-    (new IncognitoHandler)->Register();
-    (new AppIsolationHandler)->Register();
-  }
 };
 
 TEST_F(PlatformAppsManifestTest, PlatformApps) {

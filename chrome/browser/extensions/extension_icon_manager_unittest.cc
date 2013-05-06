@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/common/id_util.h"
@@ -22,7 +21,7 @@ using extensions::Manifest;
 
 // Our test class that takes care of managing the necessary threads for loading
 // extension icons, and waiting for those loads to happen.
-class ExtensionIconManagerTest : public extensions::ExtensionTest {
+class ExtensionIconManagerTest : public testing::Test {
  public:
   ExtensionIconManagerTest() :
       unwaited_image_loads_(0),
@@ -52,7 +51,6 @@ class ExtensionIconManagerTest : public extensions::ExtensionTest {
 
  private:
   virtual void SetUp() {
-    extensions::ExtensionTest::SetUp();
     file_thread_.Start();
     io_thread_.Start();
   }

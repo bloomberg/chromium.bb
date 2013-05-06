@@ -62,14 +62,12 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
-#include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/pref_names.h"
@@ -570,13 +568,7 @@ void ExtensionServiceTestBase::SetUpTestCase() {
 }
 
 void ExtensionServiceTestBase::SetUp() {
-  ExtensionTest::SetUp();
   ExtensionErrorReporter::GetInstance()->ClearErrors();
-  (new extensions::BackgroundManifestHandler)->Register();
-  (new extensions::ContentScriptsHandler)->Register();
-  (new extensions::DefaultLocaleHandler)->Register();
-  (new extensions::PluginsHandler)->Register();
-  (new extensions::RequirementsHandler)->Register();
 }
 
 class ExtensionServiceTest

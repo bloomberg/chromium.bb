@@ -6,7 +6,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/common/extensions/api/permissions.h"
-#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
@@ -27,11 +26,8 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 
 }  // namespace
 
-class ExtensionPermissionsAPIHelpers : public ExtensionTest {
-};
-
 // Tests that we can convert PermissionSets to and from values.
-TEST_F(ExtensionPermissionsAPIHelpers, Pack) {
+TEST(ExtensionPermissionsAPIHelpers, Pack) {
   APIPermissionSet apis;
   apis.insert(APIPermission::kTab);
   apis.insert(APIPermission::kWebRequest);
@@ -80,7 +76,7 @@ TEST_F(ExtensionPermissionsAPIHelpers, Pack) {
 
 // Tests various error conditions and edge cases when unpacking values
 // into PermissionSets.
-TEST_F(ExtensionPermissionsAPIHelpers, Unpack) {
+TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   scoped_ptr<ListValue> apis(new ListValue());
   apis->Append(Value::CreateStringValue("tabs"));
   scoped_ptr<ListValue> origins(new ListValue());

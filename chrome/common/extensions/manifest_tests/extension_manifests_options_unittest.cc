@@ -10,10 +10,6 @@
 namespace errors = extension_manifest_errors;
 
 class OptionsPageManifestTest : public ExtensionManifestTest {
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new extensions::OptionsPageHandler)->Register();
-  }
 };
 
 TEST_F(OptionsPageManifestTest, OptionsPageInApps) {

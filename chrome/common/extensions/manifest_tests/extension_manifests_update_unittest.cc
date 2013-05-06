@@ -12,10 +12,6 @@ using extensions::Extension;
 namespace errors = extension_manifest_errors;
 
 class UpdateURLManifestTest : public ExtensionManifestTest {
-  virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    (new extensions::UpdateURLHandler)->Register();
-  }
 };
 
 TEST_F(UpdateURLManifestTest, UpdateUrls) {
