@@ -4033,6 +4033,13 @@
                 },
               },
             },
+            'xcode_settings': {
+              # It is necessary to link with the -fobjc-arc flag to use
+              # subscripting on iOS < 6.
+              'OTHER_LDFLAGS': [
+                '-fobjc-arc',
+              ],
+            },
             'conditions': [
               # TODO(justincohen): ninja builds don't support signing yet.
               ['"<(GENERATOR)"!="ninja"', {
