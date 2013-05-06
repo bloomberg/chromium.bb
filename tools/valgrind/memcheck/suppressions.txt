@@ -3396,21 +3396,6 @@
    fun:_ZN3net13SSLConnectJob12OnIOCompleteEi
 }
 {
-   bug_93006a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN19DownloadManagerTestC2Ev
-   fun:_ZN*DownloadManagerTest_*
-}
-{
-   bug_93006b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15DownloadManager4InitEP7Profile
-   fun:_ZN19DownloadManagerTestC2Ev
-   fun:_ZN*DownloadManagerTest_*
-}
-{
    bug_93250a
    Memcheck:Leak
    fun:_Znw*
