@@ -1558,6 +1558,9 @@ crbug.com/234758 [ Mac Debug ] fast/workers/worker-document-leak.html [ Pass Tim
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Pass Crash ]
 crbug.com/234758 [ Debug ] virtual/gpu/fast/canvas/canvas-strokePath-gradient-shadow.html [ Pass Timeout ]
 
+# Needs baselines:
+Bug(thakis) fast/block/lineboxcontain/block-with-ideographs.xhtml [ Missing ]
+
 # these tests were slow already and seem to have gotten slower around r149356, enough to Timeout otherwise.
 crbug.com/236992 [ Debug ] css3/filters/filter-property-computed-style.html [ Slow ]
 crbug.com/236992 [ Debug ] css3/flexbox/position-absolute-children.html [ Slow ]
