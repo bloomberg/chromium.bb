@@ -41,6 +41,16 @@ webkit.org/b/109400 [ Win ] http/tests/css/css-image-loading.html [ Pass Timeout
 webkit.org/b/109400 [ Mac Win ] http/tests/css/shared-stylesheet-mutation-preconstruct.html [ Slow ]
 webkit.org/b/67121 [ Win Debug ] editing/selection/move-by-word-visually-multi-space.html [ Slow ]
 crbug.com/24182 [ Mac Win Debug ] fast/frames/sandboxed-iframe-navigation-parent.html [ Slow ]
+webkit.org/b/82417 [ Linux ] fast/frames/set-unloaded-frame-location.html [ Slow ]
+webkit.org/b/84696 [ Release ] fast/workers/storage/interrupt-database.html [ Slow ]
+webkit.org/b/86909 [ Win ] compositing/geometry/object-clip-rects-assertion.html [ Slow ]
+webkit.org/b/86909 [ Win ] virtual/softwarecompositing/geometry/object-clip-rects-assertion.html [ Slow ]
+webkit.org/b/86909 [ Win ] virtual/gpu/fast/canvas/webgl/webgl-composite-modes-repaint.html [ Slow ]
+webkit.org/b/90488 [ Win ] inspector/extensions/extensions-reload.html [ Slow ]
+webkit.org/b/111649 [ Mac Win Linux ] fast/events/intercept-postmessage.html [ Slow ]
+webkit.org/b/111640 [ Mac Win ] fast/dom/Window/window-special-properties.html [ Slow ]
+webkit.org/b/113129 [ Win7 Debug ] inspector/styles/edit-inspector-stylesheet.html [ Slow ]
+webkit.org/b/82954 svg/hixie/perf/007.xml [ Slow ]	
 
 # These tests started being slow when we switched to DRT.
 webkit.org/b/90488 [ Debug ] inspector [ Slow ]
@@ -738,6 +748,7 @@ webkit.org/b/45737 [ Win Linux Release ] fast/frames/frame-limit.html [ Slow ]
 # Regressions from webkit roll r67178:t67358
 webkit.org/b/60092 [ Debug ] fast/forms/select-set-length-with-mutation-remove.html [ Pass Timeout ]
 webkit.org/b/60093 [ Win7 ] http/tests/incremental/slow-utf8-text.pl [ Pass Timeout ]
+webkit.org/b/60093 [ Linux Debug ] http/tests/incremental/slow-utf8-text.pl [ Slow ]	
 
 webkit.org/b/91432 fast/canvas/webgl/read-pixels-test.html [ Timeout ]
 webkit.org/b/91432 virtual/gpu/fast/canvas/webgl/read-pixels-test.html [ Timeout ]
@@ -872,7 +883,7 @@ crbug.com/780807 http/tests/misc/webtiming-origins.html [ Failure Pass ]
 webkit.org/b/58193 [ Win7 ] http/tests/local/fileapi/send-sliced-dragged-file.html [ Pass Timeout ]
 
 # Need to figure out why this is slow.
-webkit.org/b/60131 [ Win Debug ] fast/css/visited-link-hang.html [ Slow ]
+webkit.org/b/60131 [ Debug ] fast/css/visited-link-hang.html [ Slow ]
 
 webkit.org/b/56702 [ Win ] http/tests/navigation/ping-cross-origin-from-https.html [ Failure Pass Timeout ]
 
@@ -1079,7 +1090,7 @@ webkit.org/b/82776 storage/indexeddb/pending-version-change-on-exit.html
 
 webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
-crbug.com/122462 [ Debug ] http/tests/inspector/inspect-element.html [ Failure Slow ]
+crbug.com/122462 http/tests/inspector/inspect-element.html [ Failure Slow ]
 
 webkit.org/b/83647 [ Linux Win ] fast/multicol/cell-shrinkback.html [ ImageOnlyFailure ]
 
@@ -1177,7 +1188,7 @@ webkit.org/b/87886 [ Release ] perf/mouse-event.html [ Failure Pass ]
 webkit.org/b/88939 fast/events/before-unload-adopt-subframe-to-outside.html [ Failure Pass ]
 
 # The test has its own notion of timeouts that manifest timeouts as FAIL.
-webkit.org/b/88833 [ Win ] media/video-played-collapse.html [ Failure Pass ]
+webkit.org/b/88833 media/video-played-collapse.html [ Failure Pass ]
 
 webkit.org/b/88833 [ Win Debug ] media/track/track-kind.html [ Pass Timeout ]
 webkit.org/b/88833 media/track/track-prefer-captions.html [ Timeout ]
@@ -1411,8 +1422,8 @@ webkit.org/b/107341 [ Debug ] inspector/profiler/memory-instrumentation-cached-i
 
 webkit.org/b/107962 [ Release ] http/tests/loading/redirect-methods.html [ Pass Failure ]
 
-webkit.org/b/108876 [ Win ] media/track/track-cues-cuechange.html [ Slow ]
-webkit.org/b/108876 [ Win ] media/track/track-cues-enter-exit.html [ Slow ]
+webkit.org/b/108876 [ Linux Win ] media/track/track-cues-cuechange.html [ Slow ]
+webkit.org/b/108876 [ Linux Win ] media/track/track-cues-enter-exit.html [ Slow ]
 
 webkit.org/b/108912 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Pass Failure ]
 
@@ -1446,6 +1457,8 @@ crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-over
 # The html5lib tests are all too slow to run in Debug, largely due to v8 per-document boot-up.
 # V8 bug: https://code.google.com/p/v8/issues/detail?id=2567
 webkit.org/b/110876 [ Debug ] html5lib/generated/ [ Skip ]
+# Some of these tests are slow on the webkit.org Linux Release bot as well.
+webkit.org/b/112381 [ Win Linux Release ] html5lib/generated/run-tests16-data.html [ Slow ]
 
 webkit.org/b/111524 [ Debug ] fast/dom/HTMLDocument/document-special-properties.html [ Pass Timeout ]
 
@@ -1579,6 +1592,8 @@ crbug.com/237270 fast/js/stack-overflow-arrity-catch.html [ Failure Pass ]
 
 crbug.com/238082 [ Win Mac Debug ] media/media-continues-playing-after-replace-source.html [ Crash Timeout Pass ]
 crbug.com/88588 [ Mac Win Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pass ]
+
+Bug(ojan) [ Win Mac ] http/tests/history/redirect-js-document-location-0-seconds.html [ Failure Pass ]
 
 webkit.org/b/92811 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 webkit.org/b/92811 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
