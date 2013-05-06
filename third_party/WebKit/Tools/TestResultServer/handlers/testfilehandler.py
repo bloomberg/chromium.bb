@@ -30,9 +30,9 @@ import time
 import logging
 import re
 import urllib
-import webapp2
 
 from google.appengine.api import users
+from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext import db
 
@@ -60,7 +60,7 @@ def _replace_jsonp_callback(json, callback_name):
     return json
 
 
-class DeleteFile(webapp2.RequestHandler):
+class DeleteFile(webapp.RequestHandler):
     """Delete test file for a given builder and name from datastore."""
 
     def get(self):
@@ -81,7 +81,7 @@ class DeleteFile(webapp2.RequestHandler):
             % (master, builder, test_type, name))
 
 
-class GetFile(webapp2.RequestHandler):
+class GetFile(webapp.RequestHandler):
     """Get file content or list of files for given builder and name."""
 
     def _get_file_list(self, master, builder, test_type, name, callback_name=None):
@@ -210,7 +210,7 @@ class GetFile(webapp2.RequestHandler):
         self._serve_json(json, date)
 
 
-class Upload(webapp2.RequestHandler):
+class Upload(webapp.RequestHandler):
     """Upload test results file to datastore."""
 
     def post(self):
@@ -268,7 +268,7 @@ class Upload(webapp2.RequestHandler):
             self.response.out.write("OK")
 
 
-class UploadForm(webapp2.RequestHandler):
+class UploadForm(webapp.RequestHandler):
     """Show a form so user can upload a file."""
 
     def get(self):

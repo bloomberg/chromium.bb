@@ -33,7 +33,8 @@ except ImportError:
     print "ERROR: Add the TestResultServer, google_appengine and yaml/lib directories to your PYTHONPATH"
     raise
 
-import json
+from django.utils import simplejson
+
 import unittest
 
 
@@ -80,9 +81,9 @@ class JsonResultsTest(unittest.TestCase):
         self._builder = "Webkit"
 
     def test_strip_prefix_suffix(self):
-        json_string = "['contents']"
-        self.assertEqual(JsonResults._strip_prefix_suffix("ADD_RESULTS(" + json_string + ");"), json_string)
-        self.assertEqual(JsonResults._strip_prefix_suffix(json_string), json_string)
+        json = "['contents']"
+        self.assertEqual(JsonResults._strip_prefix_suffix("ADD_RESULTS(" + json + ");"), json)
+        self.assertEqual(JsonResults._strip_prefix_suffix(json), json)
 
     def _make_test_json(self, test_data):
         if not test_data:
@@ -93,7 +94,7 @@ class JsonResultsTest(unittest.TestCase):
         if not builds or not tests:
             return ""
 
-        json_string = JSON_RESULTS_TEMPLATE
+        json = JSON_RESULTS_TEMPLATE
 
         counts = []
         build_numbers = []
@@ -107,17 +108,17 @@ class JsonResultsTest(unittest.TestCase):
             chrome_revision.append("3000%s" % build)
             times.append("100000%s000" % build)
 
-        json_string = json_string.replace("[TESTDATA_COUNTS]", ",".join(counts))
-        json_string = json_string.replace("[TESTDATA_COUNT]", ",".join(builds))
-        json_string = json_string.replace("[TESTDATA_BUILDNUMBERS]", ",".join(build_numbers))
-        json_string = json_string.replace("[TESTDATA_WEBKITREVISION]", ",".join(webkit_revision))
-        json_string = json_string.replace("[TESTDATA_CHROMEREVISION]", ",".join(chrome_revision))
-        json_string = json_string.replace("[TESTDATA_TIMES]", ",".join(times))
+        json = json.replace("[TESTDATA_COUNTS]", ",".join(counts))
+        json = json.replace("[TESTDATA_COUNT]", ",".join(builds))
+        json = json.replace("[TESTDATA_BUILDNUMBERS]", ",".join(build_numbers))
+        json = json.replace("[TESTDATA_WEBKITREVISION]", ",".join(webkit_revision))
+        json = json.replace("[TESTDATA_CHROMEREVISION]", ",".join(chrome_revision))
+        json = json.replace("[TESTDATA_TIMES]", ",".join(times))
 
         version = str(test_data["version"]) if "version" in test_data else "4"
-        json_string = json_string.replace("[VERSION]", version)
-        json_string = json_string.replace("{[TESTDATA_TESTS]}", json.dumps(tests, separators=(',', ':'), sort_keys=True))
-        return json_string
+        json = json.replace("[VERSION]", version)
+        json = json.replace("{[TESTDATA_TESTS]}", simplejson.dumps(tests, separators=(',', ':'), sort_keys=True))
+        return json
 
     def _test_merge(self, aggregated_data, incremental_data, expected_data, max_builds=jsonresults.JSON_RESULTS_MAX_BUILDS):
         aggregated_results = self._make_test_json(aggregated_data)
@@ -132,7 +133,7 @@ class JsonResultsTest(unittest.TestCase):
 
     def _test_get_test_list(self, input_data, expected_data):
         input_results = self._make_test_json(input_data)
-        expected_results = JSON_RESULTS_TEST_LIST_TEMPLATE.replace("{[TESTDATA_TESTS]}", json.dumps(expected_data, separators=(',', ':')))
+        expected_results = JSON_RESULTS_TEST_LIST_TEMPLATE.replace("{[TESTDATA_TESTS]}", simplejson.dumps(expected_data, separators=(',', ':')))
         actual_results = JsonResults.get_test_list(self._builder, input_results)
         self.assertEqual(actual_results, expected_results)
 

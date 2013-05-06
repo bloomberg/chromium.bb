@@ -26,9 +26,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import webapp2
-
 from google.appengine.api import users
+from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 
 dashboards = [
@@ -45,7 +44,7 @@ menu = [
 ]
 
 
-class Menu(webapp2.RequestHandler):
+class Menu(webapp.RequestHandler):
     def get(self):
         user = users.get_current_user()
         if user:

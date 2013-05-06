@@ -26,7 +26,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import json
+from datetime import datetime
+from django.utils import simplejson
 import logging
 import sys
 import traceback
@@ -106,8 +107,8 @@ class JsonResults(object):
         return data
 
     @classmethod
-    def _generate_file_data(cls, data, sort_keys=False):
-        return json.dumps(data, separators=(',', ':'), sort_keys=sort_keys)
+    def _generate_file_data(cls, json, sort_keys=False):
+        return simplejson.dumps(json, separators=(',', ':'), sort_keys=sort_keys)
 
     @classmethod
     def _load_json(cls, file_data):
@@ -117,7 +118,7 @@ class JsonResults(object):
             return None
 
         try:
-            return json.loads(json_results_str)
+            return simplejson.loads(json_results_str)
         except:
             logging.debug(json_results_str)
             logging.error("Failed to load json results: %s", traceback.print_exception(*sys.exc_info()))
