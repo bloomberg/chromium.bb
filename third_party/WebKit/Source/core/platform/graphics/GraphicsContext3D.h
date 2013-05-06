@@ -56,11 +56,6 @@ const Platform3DObject NullPlatform3DObject = 0;
 namespace WebCore {
 class DrawingBuffer;
 class Extensions3D;
-#if USE(OPENGL_ES_2)
-class Extensions3DOpenGLES;
-#else
-class Extensions3DOpenGL;
-#endif
 class HostWindow;
 class Image;
 class ImageBuffer;
@@ -519,42 +514,26 @@ public:
     // by non-member functions.
     enum DataFormat {
         DataFormatRGBA8 = 0,
-        DataFormatRGBA16Little,
-        DataFormatRGBA16Big,
         DataFormatRGBA16F,
         DataFormatRGBA32F,
         DataFormatRGB8,
-        DataFormatRGB16Little,
-        DataFormatRGB16Big,
         DataFormatRGB16F,
         DataFormatRGB32F,
         DataFormatBGR8,
         DataFormatBGRA8,
-        DataFormatBGRA16Little,
-        DataFormatBGRA16Big,
         DataFormatARGB8,
-        DataFormatARGB16Little,
-        DataFormatARGB16Big,
         DataFormatABGR8,
         DataFormatRGBA5551,
         DataFormatRGBA4444,
         DataFormatRGB565,
         DataFormatR8,
-        DataFormatR16Little,
-        DataFormatR16Big,
         DataFormatR16F,
         DataFormatR32F,
         DataFormatRA8,
-        DataFormatRA16Little,
-        DataFormatRA16Big,
         DataFormatRA16F,
         DataFormatRA32F,
         DataFormatAR8,
-        DataFormatAR16Little,
-        DataFormatAR16Big,
         DataFormatA8,
-        DataFormatA16Little,
-        DataFormatA16Big,
         DataFormatA16F,
         DataFormatA32F,
         DataFormatNumFormats
@@ -562,7 +541,7 @@ public:
 
     // Check if the format is one of the formats from the ImageData or DOM elements.
     // The formats from ImageData is always RGBA8.
-    // The formats from DOM elements vary with Graphics ports. It can only be RGBA8 or BGRA8 for non-CG port while a little more for CG port.
+    // The formats from DOM elements vary with Graphics ports. It can only be RGBA8 or BGRA8.
     static ALWAYS_INLINE bool srcFormatComeFromDOMElementOrImageData(DataFormat SrcFormat)
     {
     return SrcFormat == DataFormatBGRA8 || SrcFormat == DataFormatRGBA8;
@@ -844,8 +823,6 @@ private:
 
     int m_currentWidth, m_currentHeight;
     bool isResourceSafe();
-
-    friend class Extensions3DOpenGLCommon;
 
     Attributes m_attrs;
     RenderStyle m_renderStyle;
