@@ -1462,7 +1462,6 @@
         'browser/ui/panels/display_settings_provider_win_unittest.cc',
         'browser/ui/panels/panel_mouse_watcher_unittest.cc',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
-        'browser/ui/search/instant_page_unittest.cc',
         'browser/ui/search/search_delegate_unittest.cc',
         'browser/ui/sync/one_click_signin_helper_unittest.cc',
         'browser/ui/sync/profile_signin_confirmation_helper_unittest.cc',
