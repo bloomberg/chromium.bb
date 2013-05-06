@@ -17,6 +17,7 @@ class CppChecker(object):
   EXTENSIONS = [
       '.h',
       '.cc',
+      '.cpp',
       '.m',
       '.mm',
   ]
