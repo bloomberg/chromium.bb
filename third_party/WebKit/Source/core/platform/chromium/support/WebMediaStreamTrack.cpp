@@ -27,6 +27,7 @@
 #include <public/WebMediaStreamTrack.h>
 
 #include "core/platform/mediastream/MediaStreamComponent.h"
+#include "core/platform/mediastream/MediaStreamSource.h"
 #include <public/WebMediaStream.h>
 #include <public/WebMediaStreamSource.h>
 #include <public/WebString.h>
