@@ -87,6 +87,8 @@ public:
     virtual void closeHelperPlugin();
     virtual bool needsWebLayerForVideo() const;
     virtual void setWebLayer(WebLayer*);
+    virtual void addTextTrack(WebInbandTextTrack*);
+    virtual void removeTextTrack(WebInbandTextTrack*);
 
     // MediaPlayerPrivateInterface methods:
     virtual void load(const WTF::String& url);

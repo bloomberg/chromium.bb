@@ -5,11 +5,13 @@
 #include "config.h"
 #include "WebMediaPlayerClientImpl.h"
 
+#include "InbandTextTrackPrivateImpl.h"
 #include "WebAudioSourceProvider.h"
 #include "WebDocument.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebHelperPluginImpl.h"
+#include "WebInbandTextTrack.h"
 #include "WebMediaPlayer.h"
 #include "WebMediaSourceImpl.h"
 #include "WebViewImpl.h"
@@ -289,6 +291,19 @@ void WebMediaPlayerClientImpl::setWebLayer(WebLayer* layer)
         m_videoLayer->setOpaque(m_opaque);
         GraphicsLayerChromium::registerContentsLayer(m_videoLayer);
     }
+}
+
+void WebMediaPlayerClientImpl::addTextTrack(WebInbandTextTrack* textTrack)
+{
+    m_mediaPlayer->addTextTrack(adoptRef(new InbandTextTrackPrivateImpl(textTrack)));
+}
+
+void WebMediaPlayerClientImpl::removeTextTrack(WebInbandTextTrack* textTrack)
+{
+    // The following static_cast is safe, because we created the object with the textTrack
+    // that was passed to addTextTrack.  (The object from which we are downcasting includes
+    // WebInbandTextTrack as one of the intefaces from which inherits.)
+    m_mediaPlayer->removeTextTrack(static_cast<InbandTextTrackPrivateImpl*>(textTrack->client()));
 }
 
 // MediaPlayerPrivateInterface -------------------------------------------------

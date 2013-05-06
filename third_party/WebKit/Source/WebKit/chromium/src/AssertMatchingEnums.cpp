@@ -66,6 +66,7 @@
 #include "WebGeolocationError.h"
 #include "WebGeolocationPosition.h"
 #include "WebIconURL.h"
+#include "WebInbandTextTrack.h"
 #include "WebInputElement.h"
 #include "WebMediaPlayer.h"
 #include "WebMediaPlayerClient.h"
@@ -359,6 +360,17 @@ COMPILE_ASSERT_MATCHING_ENUM(WebIconURL::TypeInvalid, InvalidIcon);
 COMPILE_ASSERT_MATCHING_ENUM(WebIconURL::TypeFavicon, Favicon);
 COMPILE_ASSERT_MATCHING_ENUM(WebIconURL::TypeTouch, TouchIcon);
 COMPILE_ASSERT_MATCHING_ENUM(WebIconURL::TypeTouchPrecomposed, TouchPrecomposedIcon);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::KindSubtitles, InbandTextTrackPrivate::Subtitles);
+COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::KindCaptions, InbandTextTrackPrivate::Captions);
+COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::KindDescriptions, InbandTextTrackPrivate::Descriptions);
+COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::KindChapters, InbandTextTrackPrivate::Chapters);
+COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::KindMetadata, InbandTextTrackPrivate::Metadata);
+COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::KindNone, InbandTextTrackPrivate::None);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::ModeDisabled, InbandTextTrackPrivate::Disabled);
+COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::ModeHidden, InbandTextTrackPrivate::Hidden);
+COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::ModeShowing, InbandTextTrackPrivate::Showing);
 
 #if ENABLE(INPUT_SPEECH)
 COMPILE_ASSERT_MATCHING_ENUM(WebInputElement::Idle, InputFieldSpeechButtonElement::Idle);

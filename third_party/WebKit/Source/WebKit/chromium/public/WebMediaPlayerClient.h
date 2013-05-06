@@ -36,6 +36,7 @@
 namespace WebKit {
 
 class WebFrame;
+class WebInbandTextTrack;
 class WebLayer;
 class WebMediaSource;
 class WebPlugin;
@@ -83,6 +84,9 @@ public:
     virtual void closeHelperPlugin() = 0;
     virtual bool needsWebLayerForVideo() const = 0;
     virtual void setWebLayer(WebLayer*) = 0;
+    virtual void addTextTrack(WebInbandTextTrack*) = 0;
+    virtual void removeTextTrack(WebInbandTextTrack*) = 0;
+
 protected:
     ~WebMediaPlayerClient() { }
 };
