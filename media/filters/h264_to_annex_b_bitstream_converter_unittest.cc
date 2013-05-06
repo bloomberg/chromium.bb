@@ -467,4 +467,44 @@ TEST_F(H264ToAnnexBBitstreamConverterTest, FailureTooSmallOutputBuffer) {
   // Classes allocated in stack are automatically destroyed.
 }
 
+// Generated from crash dump in http://crbug.com/234449 using xxd -i [file].
+static const uint8 kCorruptedPacketConfiguration[] = {
+  0x01, 0x64, 0x00, 0x15, 0xff, 0xe1, 0x00, 0x17, 0x67, 0x64, 0x00, 0x15,
+  0xac, 0xc8, 0xc1, 0x41, 0xfb, 0x0e, 0x10, 0x00, 0x00, 0x3e, 0x90, 0x00,
+  0x0e, 0xa6, 0x00, 0xf1, 0x62, 0xd3, 0x80, 0x01, 0x00, 0x06, 0x68, 0xea,
+  0xc0, 0xbc, 0xb2, 0x2c
+};
+
+static const uint8 kCorruptedPacketData[] = {
+  0x00, 0x00, 0x00, 0x15, 0x01, 0x9f, 0x6e, 0xbc, 0x85, 0x3f, 0x0f, 0x87,
+  0x47, 0xa8, 0xd7, 0x5b, 0xfc, 0xb8, 0xfd, 0x3f, 0x57, 0x0e, 0xac, 0xf5,
+  0x4c, 0x01, 0x2e, 0x57
+};
+
+TEST_F(H264ToAnnexBBitstreamConverterTest, CorruptedPacket) {
+  // Initialize converter.
+  scoped_ptr<uint8[]> output;
+  H264ToAnnexBBitstreamConverter converter;
+
+  // Parse the headers.
+  uint32 config_size = converter.ParseConfigurationAndCalculateSize(
+      kCorruptedPacketConfiguration,
+      sizeof(kCorruptedPacketConfiguration));
+  EXPECT_GT(config_size, 0U);
+
+  // Go on with converting the headers.
+  output.reset(new uint8[config_size]);
+  EXPECT_TRUE(converter.ConvertAVCDecoderConfigToByteStream(
+      kCorruptedPacketConfiguration,
+      sizeof(kCorruptedPacketConfiguration),
+      output.get(),
+      &config_size));
+
+  // Expect an error here.
+  uint32 output_size = converter.CalculateNeededOutputBufferSize(
+      kCorruptedPacketData,
+      sizeof(kCorruptedPacketData));
+  EXPECT_EQ(output_size, 0U);
+}
+
 }  // namespace media

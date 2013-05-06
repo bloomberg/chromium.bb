@@ -113,9 +113,9 @@ uint32 H264ToAnnexBBitstreamConverter::CalculateNeededOutputBufferSize(
 
   // Then add the needed size for the actual packet
   while (data_left > 0) {
-    // TODO(scherkus): Handle gracefully after collecting more data
-    // http://crbug.com/234449
-    CHECK_GE(data_left, nal_unit_length_field_width_);
+    if (data_left < nal_unit_length_field_width_) {
+      return 0;  // Error: not enough data for correct conversion.
+    }
 
     // Read the next NAL unit length from the input buffer
     uint8 size_of_len_field;
