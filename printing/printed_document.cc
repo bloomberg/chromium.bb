@@ -217,7 +217,7 @@ PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
                                       PrintedPagesSource* source,
                                       int cookie)
     : settings_(settings),
-      source_message_loop_(MessageLoop::current()),
+      source_message_loop_(base::MessageLoop::current()),
       name_(source->RenderSourceName()),
       cookie_(cookie) {
 }
