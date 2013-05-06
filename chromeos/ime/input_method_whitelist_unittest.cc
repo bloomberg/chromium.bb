@@ -19,10 +19,11 @@ class InputMethodWhitelistTest : public testing::Test {
 }  // namespace
 
 TEST_F(InputMethodWhitelistTest, TestInputMethodIdIsWhitelisted) {
-  EXPECT_TRUE(whitelist_.InputMethodIdIsWhitelisted("mozc"));
+  EXPECT_TRUE(whitelist_.InputMethodIdIsWhitelisted("pinyin"));
   EXPECT_TRUE(whitelist_.InputMethodIdIsWhitelisted("xkb:us:dvorak:eng"));
   EXPECT_FALSE(whitelist_.InputMethodIdIsWhitelisted("mozc,"));
-  EXPECT_FALSE(whitelist_.InputMethodIdIsWhitelisted("mozc,xkb:us:dvorak:eng"));
+  EXPECT_FALSE(whitelist_.InputMethodIdIsWhitelisted(
+      "mozc-pinyin,xkb:us:dvorak:eng"));
   EXPECT_FALSE(whitelist_.InputMethodIdIsWhitelisted("not-supported-id"));
   EXPECT_FALSE(whitelist_.InputMethodIdIsWhitelisted(","));
   EXPECT_FALSE(whitelist_.InputMethodIdIsWhitelisted(""));

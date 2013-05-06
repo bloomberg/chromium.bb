@@ -30,6 +30,11 @@ namespace input_method {
 
 namespace {
 
+const char nacl_mozc_us_id[] =
+    "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us";
+const char nacl_mozc_jp_id[] =
+    "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp";
+
 bool Contains(const std::vector<std::string>& container,
               const std::string& value) {
   return std::find(container.begin(), container.end(), value) !=
@@ -578,14 +583,14 @@ bool InputMethodManagerImpl::SwitchInputMethod(
   std::vector<std::string> input_method_ids_to_switch;
   switch (accelerator.key_code()) {
     case ui::VKEY_CONVERT:  // Henkan key on JP106 keyboard
-      input_method_ids_to_switch.push_back("mozc-jp");
+      input_method_ids_to_switch.push_back(nacl_mozc_jp_id);
       break;
     case ui::VKEY_NONCONVERT:  // Muhenkan key on JP106 keyboard
       input_method_ids_to_switch.push_back("xkb:jp::jpn");
       break;
     case ui::VKEY_DBE_SBCSCHAR:  // ZenkakuHankaku key on JP106 keyboard
     case ui::VKEY_DBE_DBCSCHAR:
-      input_method_ids_to_switch.push_back("mozc-jp");
+      input_method_ids_to_switch.push_back(nacl_mozc_jp_id);
       input_method_ids_to_switch.push_back("xkb:jp::jpn");
       break;
     case ui::VKEY_HANGUL:  // Hangul (or right Alt) key on Korean keyboard
