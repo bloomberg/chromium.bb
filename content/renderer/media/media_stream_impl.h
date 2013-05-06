@@ -96,7 +96,7 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual void OnDeviceOpenFailed(int request_id) OVERRIDE;
 
   // RenderViewObserver OVERRIDE
-  virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
 
  protected:
   // Stops a local MediaStream by notifying the MediaStreamDispatcher that the

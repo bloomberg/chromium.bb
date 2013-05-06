@@ -122,9 +122,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
     EnumerationRequestList requests;
   };
 
-  // RenderViewObserver OVERRIDE.
-  virtual bool Send(IPC::Message* message) OVERRIDE;
-
   // Messages from the browser.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   void OnStreamGenerated(
