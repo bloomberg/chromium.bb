@@ -33,7 +33,6 @@ from webkitpy.common.system.outputcapture import OutputCapture
 
 from webkitpy.layout_tests.models.test_configuration import *
 from webkitpy.layout_tests.models.test_expectations import *
-from webkitpy.layout_tests.models.test_configuration import *
 
 try:
     from collections import OrderedDict

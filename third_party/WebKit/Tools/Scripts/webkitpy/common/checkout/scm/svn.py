@@ -201,6 +201,9 @@ class SVN(SCM, SVNRepository):
             self._delete_parent_directories(os.path.dirname(abs_path))
         return result
 
+    def move(self, origin, destination):
+        return self._run_svn(["mv", "--force", origin, destination], return_exit_code=True)
+
     def exists(self, path):
         return not self._run_svn(["info", path], return_exit_code=True, decode_output=False)
 

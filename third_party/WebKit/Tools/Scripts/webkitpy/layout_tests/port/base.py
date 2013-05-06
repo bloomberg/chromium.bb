@@ -599,7 +599,7 @@ class Port(object):
     def _real_tests(self, paths):
         # When collecting test cases, skip these directories
         skipped_directories = set(['.svn', '_svn', 'resources', 'script-tests', 'reference', 'reftest'])
-        files = find_files.find(self._filesystem, self.layout_tests_dir(), paths, skipped_directories, Port._is_test_file, self.test_key)
+        files = find_files.find(self._filesystem, self.layout_tests_dir(), paths, skipped_directories, Port.is_test_file, self.test_key)
         return [self.relative_test_filename(f) for f in files]
 
     # When collecting test cases, we include any file with these extensions.
@@ -624,7 +624,7 @@ class Port(object):
         return extension in Port._supported_file_extensions
 
     @staticmethod
-    def _is_test_file(filesystem, dirname, filename):
+    def is_test_file(filesystem, dirname, filename):
         return Port._has_supported_extension(filesystem, filename) and not Port.is_reference_html_file(filesystem, dirname, filename)
 
     def test_key(self, test_name):
@@ -1297,7 +1297,7 @@ class Port(object):
     def _generate_all_test_configurations(self):
         """Generates a list of TestConfiguration instances, representing configurations
         for a platform across all OSes, architectures, build and graphics types."""
-        raise NotImplementedError('Port._generate_test_configurations')
+        raise NotImplementedError('Port._generate_all_test_configurations')
 
     def _driver_class(self):
         """Returns the port's driver implementation."""

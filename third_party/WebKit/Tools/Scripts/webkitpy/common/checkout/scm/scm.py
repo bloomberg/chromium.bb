@@ -142,6 +142,9 @@ class SCM:
     def delete_list(self, paths):
         self._subclass_must_implement()
 
+    def move(self, origin, destination):
+        self._subclass_must_implement()
+
     def exists(self, path):
         self._subclass_must_implement()
 
@@ -234,7 +237,7 @@ class SCM:
     def remote_merge_base(self):
         SCM._subclass_must_implement()
 
-    def commit_locally_with_message(self, message):
+    def commit_locally_with_message(self, message, commit_all_working_directory_changes=True):
         _log.error("Your source control manager does not support local commits.")
         sys.exit(1)
 

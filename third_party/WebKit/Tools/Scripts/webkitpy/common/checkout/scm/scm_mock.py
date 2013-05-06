@@ -96,7 +96,7 @@ class MockSCM(object):
     def committer_email_for_revision(self, revision):
         return "mock@webkit.org"
 
-    def commit_locally_with_message(self, message):
+    def commit_locally_with_message(self, message, commit_all_working_directory_changes=True):
         pass
 
     def commit_with_message(self, message, username=None, password=None, git_commit=None, force_squash=False, changed_files=None):
@@ -135,3 +135,7 @@ class MockSCM(object):
         for path in paths:
             if self._filesystem.exists(path):
                 self._filesystem.remove(path)
+
+    def move(self, origin, destination):
+        if self._filesystem:
+            self._filesystem.move(self.absolute_path(origin), self.absolute_path(destination))

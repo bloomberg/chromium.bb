@@ -587,6 +587,11 @@ class TestExpectationsModel(object):
                 return item[0].upper()
         raise ValueError(expectation)
 
+    def remove_expectation_line(self, test):
+        if not self.has_test(test):
+            return
+        self._clear_expectations_for_test(test)
+        del self._test_to_expectation_line[test]
 
     def add_expectation_line(self, expectation_line, in_skipped=False):
         """Returns a list of warnings encountered while matching modifiers."""
@@ -842,10 +847,11 @@ class TestExpectations(object):
     # FIXME: This constructor does too much work. We should move the actual parsing of
     # the expectations into separate routines so that linting and handling overrides
     # can be controlled separately, and the constructor can be more of a no-op.
-    def __init__(self, port, tests=None, include_overrides=True, expectations_to_lint=None):
+    def __init__(self, port, tests=None, include_overrides=True, expectations_to_lint=None, model_all_expectations=False):
         self._full_test_list = tests
         self._test_config = port.test_configuration()
         self._is_lint_mode = expectations_to_lint is not None
+        self._model_all_expectations = self._is_lint_mode or model_all_expectations
         self._model = TestExpectationsModel(self._shorten_filename)
         self._parser = TestExpectationParser(port, tests, self._is_lint_mode)
         self._port = port
@@ -994,7 +1000,7 @@ class TestExpectations(object):
             if not expectation_line.expectations:
                 continue
 
-            if self._is_lint_mode or self._test_config in expectation_line.matching_configurations:
+            if self._model_all_expectations or self._test_config in expectation_line.matching_configurations:
                 self._model.add_expectation_line(expectation_line)
 
     def add_skipped_tests(self, tests_to_skip):
@@ -1007,6 +1013,16 @@ class TestExpectations(object):
         for test_name in tests_to_skip:
             expectation_line = self._parser.expectation_for_skipped_test(test_name)
             self._model.add_expectation_line(expectation_line, in_skipped=True)
+
+    def add_expectation_line(self, expectation_line):
+        self._model.add_expectation_line(expectation_line)
+        self._expectations += [expectation_line]
+
+    def remove_expectation_line(self, test):
+        if not self._model.has_test(test):
+            return
+        self._expectations.remove(self._model.get_expectation_line(test))
+        self._model.remove_expectation_line(test)
 
     @staticmethod
     def list_to_string(expectation_lines, test_configuration_converter=None, reconstitute_only_these=None):

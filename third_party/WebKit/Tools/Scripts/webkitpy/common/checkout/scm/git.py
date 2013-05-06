@@ -168,6 +168,9 @@ class Git(SCM, SVNRepository):
     def delete_list(self, paths):
         return self._run_git(["rm", "-f"] + paths)
 
+    def move(self, origin, destination):
+        return self._run_git(["mv", "-f", origin, destination])
+
     def exists(self, path):
         return_code = self._run_git(["show", "HEAD:%s" % path], return_exit_code=True, decode_output=False)
         return return_code != self.ERROR_FILE_IS_MISSING
@@ -467,8 +470,11 @@ class Git(SCM, SVNRepository):
         first_remote_branch_ref = remote_branch_refs.split('\n')[0]
         return first_remote_branch_ref.split(':')[1]
 
-    def commit_locally_with_message(self, message):
-        self._run_git(['commit', '--all', '-F', '-'], input=message)
+    def commit_locally_with_message(self, message, commit_all_working_directory_changes=True):
+        command = ['commit', '-F', '-']
+        if commit_all_working_directory_changes:
+            command.insert(1, '--all')
+        self._run_git(command, input=message)
 
     def push_local_commits_to_server(self, username=None, password=None):
         dcommit_command = ['svn', 'dcommit']

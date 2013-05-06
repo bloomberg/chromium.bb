@@ -500,6 +500,21 @@ OcmYex&reD$;sO8*F9L)B
     def _shared_test_head_svn_revision(self):
         self.assertEqual(self.scm.head_svn_revision(), '5')
 
+    def _shared_test_move(self):
+        write_into_file_at_path('added_file', 'new stuff')
+        self.scm.add('added_file')
+        self.scm.move('added_file', 'moved_file')
+        self.assertIn('moved_file', self.scm.added_files())
+
+    def _shared_test_move_recursive(self):
+        os.mkdir("added_dir")
+        write_into_file_at_path('added_dir/added_file', 'new stuff')
+        write_into_file_at_path('added_dir/another_added_file', 'more new stuff')
+        self.scm.add('added_dir')
+        self.scm.move('added_dir', 'moved_dir')
+        self.assertIn('moved_dir/added_file', self.scm.added_files())
+        self.assertIn('moved_dir/another_added_file', self.scm.added_files())
+
 
 # Context manager that overrides the current timezone.
 class TimezoneOverride(object):
@@ -844,6 +859,12 @@ END
     def test_head_svn_revision(self):
         self._shared_test_head_svn_revision()
 
+    def test_move(self):
+        self._shared_test_move()
+
+    def test_move_recursive(self):
+        self._shared_test_move_recursive()
+
     def test_propset_propget(self):
         filepath = os.path.join(self.svn_checkout_path, "test_file")
         expected_mime_type = "x-application/foo-bar"
@@ -1018,7 +1039,7 @@ class GitTest(SCMTest):
     def test_rename_files(self):
         scm = self.tracking_scm
 
-        run_command(['git', 'mv', 'foo_file', 'bar_file'])
+        scm.move('foo_file', 'bar_file')
         scm.commit_locally_with_message('message')
 
         patch = scm.create_patch()
@@ -1185,6 +1206,31 @@ class GitSVNTest(SCMTest):
     def _three_local_commits(self):
         self._local_commit('test_file_commit0', 'more test content', 'another test commit')
         self._two_local_commits()
+
+    def test_locally_commit_all_working_copy_changes(self):
+        self._local_commit('test_file', 'test content', 'test commit')
+        write_into_file_at_path('test_file', 'changed test content')
+        self.assertTrue(self.scm.has_working_directory_changes())
+        self.scm.commit_locally_with_message('all working copy changes')
+        self.assertFalse(self.scm.has_working_directory_changes())
+
+    def test_locally_commit_no_working_copy_changes(self):
+        self._local_commit('test_file', 'test content', 'test commit')
+        write_into_file_at_path('test_file', 'changed test content')
+        self.assertTrue(self.scm.has_working_directory_changes())
+        self.assertRaises(ScriptError, self.scm.commit_locally_with_message, 'no working copy changes', False)
+
+    def test_locally_commit_selected_working_copy_changes(self):
+        self._local_commit('test_file_1', 'test content 1', 'test commit 1')
+        self._local_commit('test_file_2', 'test content 2', 'test commit 2')
+        write_into_file_at_path('test_file_1', 'changed test content 1')
+        write_into_file_at_path('test_file_2', 'changed test content 2')
+        self.assertTrue(self.scm.has_working_directory_changes())
+        run_command(['git', 'add', 'test_file_1'])
+        self.scm.commit_locally_with_message('selected working copy changes', commit_all_working_directory_changes=False)
+        self.assertTrue(self.scm.has_working_directory_changes())
+        self.assertTrue(self.scm.diff_for_file('test_file_1') == '')
+        self.assertFalse(self.scm.diff_for_file('test_file_2') == '')
 
     def test_revisions_changing_files_with_local_commit(self):
         self._one_local_commit()
@@ -1512,6 +1558,12 @@ class GitSVNTest(SCMTest):
 
     def test_head_svn_revision(self):
         self._shared_test_head_svn_revision()
+
+    def test_move(self):
+        self._shared_test_move()
+
+    def test_move_recursive(self):
+        self._shared_test_move_recursive()
 
     def test_to_object_name(self):
         relpath = 'test_file_commit1'
