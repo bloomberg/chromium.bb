@@ -48,6 +48,9 @@ public:
         : m_didEnterContext(false)
         , m_context(v8::Context::GetCurrent())
     {
+        // FIXME: Remove all empty creationContexts from caller sites.
+        // If a creationContext is empty, we will end up creating a new object
+        // in the context currently entered. This is wrong.
         if (creationContext.IsEmpty())
             return;
         v8::Handle<v8::Context> contextForWrapper = creationContext->CreationContext();
