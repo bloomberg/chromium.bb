@@ -17,6 +17,8 @@
  * Boston, MA 02110-1301, USA.
  */
 [
+    Constructor([Default=NullString] optional DOMString data),
+    CallWith=ScriptExecutionContext,
     CustomToV8,
     SkipVTableValidation,
 ] interface Text : CharacterData {
