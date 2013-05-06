@@ -5,9 +5,6 @@ window.requestAnimationFrame(function() {
     callbackInvoked = true;
 });
 
-if (window.testRunner)
-    testRunner.display();
-
 setTimeout(function() {
     shouldBeFalse("callbackInvoked");
 }, 100);

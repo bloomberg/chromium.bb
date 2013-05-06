@@ -14,9 +14,6 @@ secondCallbackId = window.requestAnimationFrame(function() {
     callbackFired = true;
 }, e);
 
-if (window.testRunner)
-    testRunner.display();
-
 setTimeout(function() {
     shouldBeFalse("callbackFired");
     shouldBeTrue("cancelFired");

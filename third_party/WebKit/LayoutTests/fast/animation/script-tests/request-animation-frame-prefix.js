@@ -33,14 +33,7 @@ window.webkitRequestAnimationFrame(function(timestamp) {
     });
 
     busyWait(10);
-    if (window.testRunner)
-        testRunner.display();
 });
-
-if (window.testRunner)
-    window.setTimeout(function() {
-        testRunner.display();
-    });
 
 if (window.testRunner)
     testRunner.waitUntilDone();
