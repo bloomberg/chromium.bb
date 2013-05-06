@@ -16,7 +16,6 @@ class Display;
 namespace aura {
 class Window;
 namespace client {
-class CursorClientObserver;
 
 // An interface that receives cursor change events.
 class AURA_EXPORT CursorClient {
@@ -60,10 +59,6 @@ class AURA_EXPORT CursorClient {
   // Used to pass the cursor resource module name to the cursor loader. This is
   // typically used to load non system cursors.
   virtual void SetCursorResourceModule(const string16& module_name) = 0;
-
-  // Used to add or remove a CursorClientObserver.
-  virtual void AddObserver(CursorClientObserver* observer) = 0;
-  virtual void RemoveObserver(CursorClientObserver* observer) = 0;
 
  protected:
   virtual ~CursorClient() {}

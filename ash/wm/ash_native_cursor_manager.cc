@@ -13,6 +13,10 @@
 
 namespace  {
 
+// The coordinate of the cursor used when the mouse events are disabled.
+const int kDisabledCursorLocationX = -10000;
+const int kDisabledCursorLocationY = -10000;
+
 void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
   ash::Shell::RootWindowList root_windows =
       ash::Shell::GetInstance()->GetAllRootWindows();
@@ -95,6 +99,8 @@ void AshNativeCursorManager::SetMouseEventsEnabled(
         disabled_cursor_location_);
   } else {
     disabled_cursor_location_ = aura::Env::GetInstance()->last_mouse_location();
+    aura::Env::GetInstance()->set_last_mouse_location(
+        gfx::Point(kDisabledCursorLocationX, kDisabledCursorLocationY));
   }
 
   SetVisibility(delegate->GetCurrentVisibility(), delegate);

@@ -199,9 +199,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Called to notify the RenderWidget that it has lost the mouse lock.
   virtual void LostMouseLock();
 
-  // Noifies the RenderWidget of the current mouse cursor visibility state.
-  void SendCursorVisibilityState(bool is_visible);
-
   // Tells us whether the page is rendered directly via the GPU process.
   bool is_accelerated_compositing_active() {
     return is_accelerated_compositing_active_;

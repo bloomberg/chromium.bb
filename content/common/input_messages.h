@@ -38,10 +38,6 @@ IPC_MESSAGE_ROUTED2(InputMsg_HandleInputEvent,
                     IPC::WebInputEventPointer /* event */,
                     bool /* is_keyboard_shortcut */)
 
-// Sends the cursor visibility state to the render widget.
-IPC_MESSAGE_ROUTED1(InputMsg_CursorVisibilityChange,
-                    bool /* is_visible */)
-
 // This message notifies the renderer that the next key event is bound to one
 // or more pre-defined edit commands. If the next key event is not handled
 // by webkit, the specified edit commands shall be executed against current

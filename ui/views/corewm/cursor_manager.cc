@@ -5,7 +5,6 @@
 #include "ui/views/corewm/cursor_manager.h"
 
 #include "base/logging.h"
-#include "ui/aura/client/cursor_client_observer.h"
 #include "ui/views/corewm/native_cursor_manager.h"
 #include "ui/views/corewm/native_cursor_manager_delegate.h"
 
@@ -87,8 +86,6 @@ void CursorManager::ShowCursor() {
   if (cursor_lock_count_ == 0 &&
       IsCursorVisible() != state_on_unlock_->visible()) {
     delegate_->SetVisibility(state_on_unlock_->visible(), this);
-    FOR_EACH_OBSERVER(aura::client::CursorClientObserver, observers_,
-                      OnCursorVisibilityChanged(true));
   }
 }
 
@@ -97,8 +94,6 @@ void CursorManager::HideCursor() {
   if (cursor_lock_count_ == 0 &&
       IsCursorVisible() != state_on_unlock_->visible()) {
     delegate_->SetVisibility(state_on_unlock_->visible(), this);
-    FOR_EACH_OBSERVER(aura::client::CursorClientObserver, observers_,
-                      OnCursorVisibilityChanged(false));
   }
 }
 
@@ -159,16 +154,6 @@ void CursorManager::SetCursorResourceModule(const string16& module_name) {
   delegate_->SetCursorResourceModule(module_name);
 }
 
-void CursorManager::AddObserver(
-    aura::client::CursorClientObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void CursorManager::RemoveObserver(
-    aura::client::CursorClientObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 gfx::NativeCursor CursorManager::GetCurrentCursor() const {
   return current_state_->cursor();
 }
@@ -186,8 +171,6 @@ void CursorManager::CommitCursor(gfx::NativeCursor cursor) {
 }
 
 void CursorManager::CommitVisibility(bool visible) {
-  FOR_EACH_OBSERVER(aura::client::CursorClientObserver, observers_,
-                    OnCursorVisibilityChanged(visible));
   current_state_->SetVisible(visible);
 }
 
