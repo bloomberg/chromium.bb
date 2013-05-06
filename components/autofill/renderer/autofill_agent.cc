@@ -469,10 +469,11 @@ void AutofillAgent::textFieldDidChange(const WebInputElement& element) {
   // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
   // it is needed to trigger autofill.
   weak_ptr_factory_.InvalidateWeakPtrs();
-  MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AutofillAgent::TextFieldDidChangeImpl,
-                   weak_ptr_factory_.GetWeakPtr(), element));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&AutofillAgent::TextFieldDidChangeImpl,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 element));
 }
 
 void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {

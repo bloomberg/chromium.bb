@@ -21,7 +21,7 @@ WebDataRequest::WebDataRequest(WebDataServiceConsumer* consumer,
       consumer_(consumer),
       result_(NULL) {
   handle_ = manager_->GetNextRequestHandle();
-  message_loop_ = MessageLoop::current();
+  message_loop_ = base::MessageLoop::current();
   manager_->RegisterRequest(this);
 }
 
@@ -112,11 +112,11 @@ void WebDataRequestManager::CancelRequest(WebDataServiceBase::Handle h) {
 
 void WebDataRequestManager::RequestCompleted(
     scoped_ptr<WebDataRequest> request) {
-  MessageLoop* loop = request->GetMessageLoop();
-  loop->PostTask(FROM_HERE, base::Bind(
-      &WebDataRequestManager::RequestCompletedOnThread,
-      this,
-      base::Passed(&request)));
+  base::MessageLoop* loop = request->GetMessageLoop();
+  loop->PostTask(FROM_HERE,
+                 base::Bind(&WebDataRequestManager::RequestCompletedOnThread,
+                            this,
+                            base::Passed(&request)));
 }
 
 void WebDataRequestManager::RequestCompletedOnThread(

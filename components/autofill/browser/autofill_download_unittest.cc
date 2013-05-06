@@ -138,7 +138,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
 };
 
 TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   // Create and register factory.
   net::TestURLFetcherFactory factory;
 
@@ -350,7 +350,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
 }
 
 TEST_F(AutofillDownloadTest, CacheQueryTest) {
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   // Create and register factory.
   net::TestURLFetcherFactory factory;
 

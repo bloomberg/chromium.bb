@@ -23,7 +23,7 @@ class AddressTest : public testing::Test {
   AddressTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(AddressTest);

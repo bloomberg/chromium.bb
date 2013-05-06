@@ -37,7 +37,7 @@ namespace {
 
 ACTION(QuitUIMessageLoop) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
@@ -87,8 +87,9 @@ class PersonalDataManagerTest : public testing::Test {
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->Run();
     db_thread_.Stop();
   }
 
@@ -100,14 +101,14 @@ class PersonalDataManagerTest : public testing::Test {
     // Verify that the web database has been updated and the notification sent.
     EXPECT_CALL(personal_data_observer_,
                 OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   void MakeProfileIncognito() {
     profile_->set_incognito(true);
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   scoped_ptr<TestingProfile> profile_;
@@ -194,7 +195,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results1.size());
@@ -210,7 +211,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results2.size());
@@ -249,7 +250,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<CreditCard*>& results1 = personal_data_->GetCreditCards();
   ASSERT_EQ(2U, results1.size());
@@ -265,7 +266,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(2U, results2.size());
@@ -396,7 +397,7 @@ TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results1.size());
@@ -410,7 +411,7 @@ TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(2U, results2.size());
@@ -440,7 +441,7 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Verify that we've loaded the profiles from the web database.
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
@@ -456,7 +457,7 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Make sure the two profiles have different GUIDs, both valid.
   const std::vector<AutofillProfile*>& results3 = personal_data_->GetProfiles();
@@ -531,7 +532,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results1.size());
@@ -558,7 +559,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
   ASSERT_EQ(3U, results2.size());
@@ -583,7 +584,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& results3 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results3.size());
@@ -621,7 +622,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   AutofillProfile expected;
   test::SetProfileInfo(&expected, "George", NULL,
@@ -866,7 +867,7 @@ TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   AutofillProfile expected;
   test::SetProfileInfo(&expected, "George", NULL,
@@ -946,7 +947,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   AutofillProfile expected;
   test::SetProfileInfo(&expected, "George", NULL,
@@ -986,7 +987,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
@@ -1031,7 +1032,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   AutofillProfile expected;
   test::SetProfileInfo(&expected, "George", NULL,
@@ -1070,7 +1071,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
@@ -1124,7 +1125,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   AutofillProfile expected;
   test::SetProfileInfo(
@@ -1174,7 +1175,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
@@ -1217,7 +1218,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   AutofillProfile expected;
   test::SetProfileInfo(&expected, "George", NULL,
@@ -1257,7 +1258,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
@@ -1304,7 +1305,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   AutofillProfile expected;
   test::SetProfileInfo(&expected, "George", NULL,
@@ -1345,7 +1346,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
@@ -1473,7 +1474,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   CreditCard expected;
   test::SetCreditCardInfo(&expected,
@@ -1506,7 +1507,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   CreditCard expected2;
   test::SetCreditCardInfo(&expected2,"", "5500000000000004", "02", "2012");
@@ -1544,7 +1545,7 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   CreditCard expected;
   test::SetCreditCardInfo(&expected,
@@ -1609,7 +1610,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   CreditCard expected;
   test::SetCreditCardInfo(&expected,
@@ -1641,7 +1642,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Expect that the newer information is saved.  In this case the year is
   // updated to "2012".
@@ -1681,7 +1682,7 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   CreditCard expected;
   test::SetCreditCardInfo(&expected,
@@ -1747,7 +1748,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   CreditCard expected;
   test::SetCreditCardInfo(&expected,
@@ -1826,7 +1827,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<CreditCard*>& results1 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results1.size());
@@ -1858,7 +1859,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Expect that the newer information is saved.  In this case the year is
   // added to the existing credit card.
@@ -1883,7 +1884,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithSeparators) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<CreditCard*>& results1 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results1.size());
@@ -1975,7 +1976,7 @@ TEST_F(PersonalDataManagerTest,
   // Wait for the refresh, which in this case is a no-op.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Expect that no new profile is saved.
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
@@ -2053,7 +2054,7 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   personal_data_->GetNonEmptyTypes(&non_empty_types);
   EXPECT_EQ(14U, non_empty_types.size());
@@ -2091,7 +2092,7 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   personal_data_->GetNonEmptyTypes(&non_empty_types);
   EXPECT_EQ(18U, non_empty_types.size());
@@ -2124,7 +2125,7 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   personal_data_->GetNonEmptyTypes(&non_empty_types);
   EXPECT_EQ(25U, non_empty_types.size());
@@ -2192,7 +2193,7 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   AutofillProfile expected;
   test::SetProfileInfo(&expected, "George", NULL,
@@ -2235,7 +2236,7 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 

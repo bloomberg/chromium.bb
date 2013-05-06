@@ -26,7 +26,7 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
         static_cast<const WDResult<T>*>(result);
     result_ = wrapped_result->GetValue();
 
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   WebDataService::Handle handle() { return handle_; }

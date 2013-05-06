@@ -222,7 +222,7 @@ class VisitedLinkTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 
@@ -438,8 +438,8 @@ TEST_F(VisitedLinkTest, Rebuild) {
   // complete before we set the task because the rebuild completion message
   // is posted to the message loop; until we Run() it, rebuild can not
   // complete.
-  master_->set_rebuild_complete_task(MessageLoop::QuitClosure());
-  MessageLoop::current()->Run();
+  master_->set_rebuild_complete_task(base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
 
   // Test that all URLs were written to the database properly.
   Reload();
@@ -458,8 +458,8 @@ TEST_F(VisitedLinkTest, BigImport) {
     master_->AddURL(TestURL(i));
 
   // Wait for the rebuild to complete.
-  master_->set_rebuild_complete_task(MessageLoop::QuitClosure());
-  MessageLoop::current()->Run();
+  master_->set_rebuild_complete_task(base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
 
   // Ensure that the right number of URLs are present
   int used_count = master_->GetUsedCount();
@@ -614,11 +614,11 @@ class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
 
   void WaitForCoalescense() {
     // Let the timer fire.
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        MessageLoop::QuitClosure(),
+        base::MessageLoop::QuitClosure(),
         base::TimeDelta::FromMilliseconds(110));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
  protected:

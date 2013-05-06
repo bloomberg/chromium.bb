@@ -146,7 +146,7 @@ class WhitelistManagerTest : public testing::Test {
   scoped_ptr<TestWhitelistManager> whitelist_manager_;
 
  private:
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   // The profile's request context must be released on the IO thread.
   content::TestBrowserThread io_thread_;
 };

@@ -41,7 +41,7 @@ const char kUnsafeTestUrl[] = "about:crash";
 
 void ContinueTestCase() {
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+      content::BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 // The MS C++ compiler complains about not being able to resolve which url()
