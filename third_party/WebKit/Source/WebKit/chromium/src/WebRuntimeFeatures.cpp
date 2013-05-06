@@ -47,22 +47,17 @@ void WebRuntimeFeatures::enableStableFeatures(bool enable)
     // change dance with content/ is over.
     ASSERT_UNUSED(enable, enable);
 
-    // These are copied directly from RenderThreadImpl::InitializeWebKit.
-    // All the "false" values should be removed, and all the flags
-    // which default to "true" in RuntimeEnabledFeatures.cpp
-    // should be moved here or enableTestingFeatures instead.
     enableApplicationCache(true);
     enableDatabase(true);
-    enableDeviceMotion(false);
     enableDeviceOrientation(true);
+    enableDirectoryUpload(true);
     enableEncryptedMedia(true);
-    enableExperimentalCanvasFeatures(false);
-    enableExperimentalWebSocket(false);
     enableFileSystem(true);
     enableFullScreenAPI(true);
     enableGamepad(true);
     enableGeolocation(true);
     enableIndexedDatabase(true);
+    enableInputTypeWeek(true);
     enableJavaScriptI18NAPI(true);
     enableLocalStorage(true);
     enableMediaPlayer(true);
@@ -72,12 +67,11 @@ void WebRuntimeFeatures::enableStableFeatures(bool enable)
     enablePeerConnection(true);
     enableQuota(true);
     enableScriptedSpeech(true);
-    enableSeamlessIFrames(false);
     enableSessionStorage(true);
     enableSpeechInput(true);
-    enableSpeechSynthesis(false);
+    enableTouch(true);
     enableWebAudio(true);
-    enableWebMIDI(false);
+    enableVideoTrack(true);
 }
 
 void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
@@ -99,39 +93,17 @@ void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
 
 void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
 {
-    // FIXME: This will be populated with features which
-    // are currently initialized true, but always set
-    // to false in enableStableFeatures.
     // This method should be used by ContentShell
     // to enable features which should be enabled for
     // the layout tests but are not yet "experimental".
-
-    // FIXME: These are exactly copied from TestInterfaces.cpp
-    // Most of these are redundant with enableStableFeatures
-    // and should be removed in a follow-up patch.
     enableCanvasPath(true);
-    enableCustomDOMElements(true);
     enableEncryptedMedia(true);
     enableExperimentalCanvasFeatures(true);
-    enableExperimentalContentSecurityPolicyFeatures(true);
     enableExperimentalShadowDOM(true);
-    enableFileSystem(true);
     enableFontLoadEvents(true);
-    enableGamepad(true);
-    enableGeolocation(true);
-    enableIndexedDatabase(true);
     enableInputTypeDateTime(true);
-    enableInputTypeWeek(true);
-    enableJavaScriptI18NAPI(true);
-    enableMediaSource(true);
-    enableMediaStream(true);
-    enablePeerConnection(true);
     enableRequestAutocomplete(true);
     enableScriptedSpeech(true);
-    enableSeamlessIFrames(true);
-    enableStyleScoped(true);
-    enableVideoTrack(true);
-    enableWebAudio(true);
     enableWebMIDI(true);
 }
 

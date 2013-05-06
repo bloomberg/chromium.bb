@@ -73,7 +73,6 @@ class RuntimeFeatureWriter(in_generator.Writer):
     defaults = {
         'condition' : None,
         'depends_on' : [],
-        'default': 'false',
         'custom': False,
     }
 
@@ -124,7 +123,7 @@ class RuntimeFeatureWriter(in_generator.Writer):
         }
 
     def _storage_definition(self, feature):
-        definition = "bool RuntimeEnabledFeatures::is%(name)sEnabled = %(default)s;" % feature
+        definition = "bool RuntimeEnabledFeatures::is%(name)sEnabled = false;" % feature
         return self.wrap_with_condition(definition, feature['condition'])
 
     def generate_implementation(self):

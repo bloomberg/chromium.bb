@@ -3,7 +3,7 @@
 // the method names must line up with the JavaScript method they enable for code
 // generation to work properly.
 
-ApplicationCache default=true
+ApplicationCache
 AudioContext condition=WEB_AUDIO
 AuthorShadowDOMForAnyElement
 CanvasPath
@@ -11,11 +11,11 @@ CSSCompositing condition=CSS_COMPOSITING
 CSSExclusions
 CSSRegions
 CustomDOMElements
-Database default=true
-DeviceMotion default=true
-DeviceOrientation default=true
+Database
+DeviceMotion
+DeviceOrientation
 DialogElement
-DirectoryUpload default=true
+DirectoryUpload
 EncryptedMedia condition=ENCRYPTED_MEDIA
 ExperimentalCanvasFeatures
 ExperimentalContentSecurityPolicyFeatures
@@ -23,32 +23,32 @@ ExperimentalShadowDOM
 ExperimentalWebSocket
 FileSystem
 FontLoadEvents
-Fullscreen default=true
-Geolocation default=true
+Fullscreen
+Geolocation
 IMEAPI
 IndexedDB
 InputTypeDateTime condition=INPUT_TYPE_DATETIME_INCOMPLETE
-InputTypeWeek default=true
+InputTypeWeek
 JavaScriptI18NAPI condition=JAVASCRIPT_I18N_API
 LangAttributeAwareFormControlUI
 LazyLayout
-LocalStorage default=true
+LocalStorage
 Media custom
 MediaSource
-MediaStream default=true
-PeerConnection default=true, depends_on=MediaStream
+MediaStream
+PeerConnection depends_on=MediaStream
 Quota
 RequestAutocomplete
 ScriptedSpeech
 SeamlessIFrames
-SessionStorage default=true
+SessionStorage
 SharedWorker custom
-SpeechInput default=true
+SpeechInput
 SpeechSynthesis
 StyleScoped
-Touch default=true
+Touch
 WebkitGetGamepads
 WebkitNotifications
-WebkitVideoTrack default=true
+WebkitVideoTrack
 WebMIDI
 WebPInAcceptHeader
