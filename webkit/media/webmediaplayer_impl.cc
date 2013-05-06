@@ -145,6 +145,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       starting_(false),
       chunk_demuxer_(NULL),
       pending_repaint_(false),
+      pending_size_change_(false),
       video_frame_provider_client_(NULL) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
@@ -824,10 +825,18 @@ void WebMediaPlayerImpl::WillDestroyCurrentMessageLoop() {
 
 void WebMediaPlayerImpl::Repaint() {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  GetClient()->repaint();
 
-  base::AutoLock auto_lock(lock_);
-  pending_repaint_ = false;
+  bool size_changed = false;
+  {
+    base::AutoLock auto_lock(lock_);
+    std::swap(pending_size_change_, size_changed);
+    pending_repaint_ = false;
+  }
+
+  if (size_changed)
+    GetClient()->sizeChanged();
+
+  GetClient()->repaint();
 }
 
 void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
@@ -1245,6 +1254,13 @@ void WebMediaPlayerImpl::OnDurationChange() {
 void WebMediaPlayerImpl::FrameReady(
     const scoped_refptr<media::VideoFrame>& frame) {
   base::AutoLock auto_lock(lock_);
+
+  if (current_frame_ &&
+      current_frame_->natural_size() != frame->natural_size() &&
+      !pending_size_change_) {
+    pending_size_change_ = true;
+  }
+
   current_frame_ = frame;
 
   if (pending_repaint_)

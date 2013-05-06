@@ -359,6 +359,7 @@ class WebMediaPlayerImpl
   media::SkCanvasVideoRenderer skcanvas_video_renderer_;
   scoped_refptr<media::VideoFrame> current_frame_;
   bool pending_repaint_;
+  bool pending_size_change_;
 
   // The compositor layer for displaying the video content when using composited
   // playback.
