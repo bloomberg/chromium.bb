@@ -1105,10 +1105,15 @@ class UploadPrebuiltsStageTest(AbstractStageTest,
 
   def testChromeUpload(self):
     """Test uploading of prebuilts for chrome build."""
-    self.build_config['build_type'] = constants.CHROME_PFQ_TYPE
+    self.options.chrome_rev = None
+    self.build_config = copy.deepcopy(config.config['x86-generic-chromium-pfq'])
     self.RunStage()
+    prefix = ['./upload_prebuilts', '--board', 'x86-generic']
+    self.assertCommandContains(prefix)
+    self.assertCommandContains(prefix + ['--slave-board', 'amd64-generic'])
+    self.assertCommandContains(prefix + ['--slave-board', 'daisy'])
     self.assertCommandContains(['./upload_prebuilts',
-                                self.archive_stage.version])
+                                '--set-version', self.archive_stage.version])
 
   def testPreflightUpload(self):
     """Test uploading of prebuilts for preflight build."""
