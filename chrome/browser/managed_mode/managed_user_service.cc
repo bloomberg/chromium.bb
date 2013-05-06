@@ -111,8 +111,9 @@ void ManagedUserService::URLFilterContext::SetManualURLs(
 }
 
 ManagedUserService::ManagedUserService(Profile* profile)
-    : profile_(profile), startup_elevation_(false) {
-}
+    : profile_(profile),
+      startup_elevation_(false),
+      skip_dialog_for_testing_(false) {}
 
 ManagedUserService::~ManagedUserService() {
 }
@@ -138,7 +139,8 @@ bool ManagedUserService::CanSkipPassphraseDialog(
 #if defined(OS_CHROMEOS)
   NOTREACHED();
 #endif
-  return IsElevatedForWebContents(web_contents) ||
+  return skip_dialog_for_testing_ ||
+         IsElevatedForWebContents(web_contents) ||
          IsPassphraseEmpty();
 }
 
@@ -149,7 +151,7 @@ void ManagedUserService::RequestAuthorization(
   NOTREACHED();
 #endif
 
-  if (CanSkipPassphraseDialog(web_contents)) {
+  if (skip_dialog_for_testing_ || CanSkipPassphraseDialog(web_contents)) {
     callback.Run(true);
     return;
   }

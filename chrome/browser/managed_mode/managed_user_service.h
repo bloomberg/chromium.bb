@@ -121,6 +121,10 @@ class ManagedUserService : public ProfileKeyedService,
     return startup_elevation_;
   }
 
+  void set_skip_dialog_for_testing(bool skip) {
+    skip_dialog_for_testing_ = skip;
+  }
+
   // extensions::ManagementPolicy::Provider implementation:
   virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
   virtual bool UserMayLoad(const extensions::Extension* extension,
@@ -203,6 +207,9 @@ class ManagedUserService : public ProfileKeyedService,
   // Stores the extension ids of the extensions which currently can be modified
   // by the managed user.
   std::set<std::string> elevated_for_extensions_;
+
+  // Skips the passphrase dialog in tests if set to true.
+  bool skip_dialog_for_testing_;
 
   URLFilterContext url_filter_context_;
 };

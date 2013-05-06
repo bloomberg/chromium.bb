@@ -8,11 +8,14 @@
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -187,10 +190,11 @@ TEST_F(ManagedUserServiceExtensionTest, NoContentPacks) {
 
 #if !defined(OS_CHROMEOS)
 TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
-  ManagedUserService managed_user_service(profile_.get());
-  managed_user_service.InitForTesting();
+  ManagedUserService* managed_user_service =
+      ManagedUserServiceFactory::GetForProfile(profile_.get());
+  managed_user_service->InitForTesting();
   ManagedModeURLFilter* url_filter =
-      managed_user_service.GetURLFilterForUIThread();
+      managed_user_service->GetURLFilterForUIThread();
   ManagedModeURLFilterObserver observer(url_filter);
   observer.Wait();
 
@@ -208,6 +212,16 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
                                    ManagedModeURLFilter::WARN);
   EXPECT_EQ(ManagedModeURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(example_url));
+
+  managed_user_service->set_skip_dialog_for_testing(true);
+
+  // Create a testing browser in order to make it possible to use the unpacked
+  // installer.
+  Browser::CreateParams profile_params(profile_.get(),
+                                       chrome::HOST_DESKTOP_TYPE_NATIVE);
+  scoped_ptr<Browser> browser(
+      chrome::CreateBrowserWithTestWindowForParams(&profile_params));
+  BrowserList::SetLastActive(browser.get());
 
   // Load a content pack.
   scoped_refptr<extensions::UnpackedInstaller> installer(
@@ -230,7 +244,7 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   ASSERT_TRUE(extension);
 
   ScopedVector<ManagedModeSiteList> site_lists =
-      GetActiveSiteLists(&managed_user_service);
+      GetActiveSiteLists(managed_user_service);
   ASSERT_EQ(1u, site_lists.size());
   std::vector<ManagedModeSiteList::Site> sites;
   site_lists[0]->GetSites(&sites);
@@ -253,7 +267,7 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   installer->Load(extension_path);
   observer.Wait();
 
-  site_lists = GetActiveSiteLists(&managed_user_service);
+  site_lists = GetActiveSiteLists(managed_user_service);
   ASSERT_EQ(2u, site_lists.size());
   sites.clear();
   site_lists[0]->GetSites(&sites);
@@ -278,13 +292,12 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
 #endif
 
   // Disable the first content pack.
-  managed_user_service.AddElevationForExtension(extension->id());
+  managed_user_service->AddElevationForExtension(extension->id());
   service_->DisableExtension(extension->id(),
                              extensions::Extension::DISABLE_USER_ACTION);
-  managed_user_service.RemoveElevationForExtension(extension->id());
   observer.Wait();
 
-  site_lists = GetActiveSiteLists(&managed_user_service);
+  site_lists = GetActiveSiteLists(managed_user_service);
   ASSERT_EQ(1u, site_lists.size());
   sites.clear();
   site_lists[0]->GetSites(&sites);

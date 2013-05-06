@@ -570,6 +570,8 @@
         'browser/extensions/extension_install_prompt.h',
         'browser/extensions/extension_install_ui.cc',
         'browser/extensions/extension_install_ui.h',
+        'browser/extensions/extension_installer.cc',
+        'browser/extensions/extension_installer.h',
         'browser/extensions/extension_keybinding_registry.cc',
         'browser/extensions/extension_keybinding_registry.h',
         'browser/extensions/extension_pref_store.cc',

@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/extension_installer.h"
 
 class ExtensionService;
 
@@ -64,7 +65,10 @@ class UnpackedInstaller
   virtual ~UnpackedInstaller();
 
   // Must be called from the UI thread.
-  void CheckRequirements();
+  void ShowInstallPrompt();
+
+  // Calls CheckRequirements.
+  void CallCheckRequirements();
 
   // Callback from RequirementsChecker.
   void OnRequirementsChecked(std::vector<std::string> requirement_errors);
@@ -87,11 +91,12 @@ class UnpackedInstaller
   void ReportExtensionLoadError(const std::string& error);
 
   // Called when an unpacked extension has been loaded and installed.
-  void OnLoaded();
+  void ConfirmInstall();
 
   // Helper to get the Extension::CreateFlags for the installing extension.
   int GetFlags();
 
+  // The service we will report results back to.
   base::WeakPtr<ExtensionService> service_weak_;
 
   // The pathname of the directory to load from, which is an absolute path
@@ -102,16 +107,15 @@ class UnpackedInstaller
   // loading.
   bool prompt_for_plugins_;
 
-  scoped_ptr<RequirementsChecker> requirements_checker_;
-
-  scoped_refptr<const Extension> extension_;
-
   // Whether to require the extension installed to have a modern manifest
   // version.
   bool require_modern_manifest_version_;
 
   // Whether to launch the extension once it's loaded.
   bool launch_on_load_;
+
+  // Gives access to common methods and data of an extension installer.
+  ExtensionInstaller installer_;
 
   DISALLOW_COPY_AND_ASSIGN(UnpackedInstaller);
 };
