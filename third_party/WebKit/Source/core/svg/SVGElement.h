@@ -105,7 +105,7 @@ public:
     virtual void synchronizeRequiredExtensions() { }
     virtual void synchronizeSystemLanguage() { }
 
-    virtual SVGAttributeToPropertyMap& localAttributeToPropertyMap();
+    virtual SVGAttributeToPropertyMap& localAttributeToPropertyMap() const;
 
 #ifndef NDEBUG
     bool isAnimatableAttribute(const QualifiedName&) const;

@@ -561,7 +561,7 @@ void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) cons
         nonConstThis->localAttributeToPropertyMap().synchronizeProperty(nonConstThis, name);
 }
 
-SVGAttributeToPropertyMap& SVGElement::localAttributeToPropertyMap()
+SVGAttributeToPropertyMap& SVGElement::localAttributeToPropertyMap() const
 {
     DEFINE_STATIC_LOCAL(SVGAttributeToPropertyMap, emptyMap, ());
     return emptyMap;

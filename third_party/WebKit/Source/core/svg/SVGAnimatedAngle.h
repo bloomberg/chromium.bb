@@ -35,7 +35,7 @@ DECLARE_ANIMATED_PROPERTY(SVGAnimatedAngle, SVGAngle, UpperProperty, LowerProper
 
 // Only used for SVGMarkerElements orientAttr, which maps to SVGAnimatedAngle orientAngle and SVGAnimatedEnumeration orientType.
 #define DEFINE_ANIMATED_ANGLE_AND_ENUMERATION(OwnerType, DOMAttribute, SVGDOMAttributeIdentifier, UpperProperty, LowerProperty) \
-DEFINE_ANIMATED_PROPERTY(AnimatedAngle, OwnerType, DOMAttribute, SVGDOMAttributeIdentifier, UpperProperty, LowerProperty)
+DEFINE_ANIMATED_PROPERTY(AnimatedAngle, OwnerType, DOMAttribute, SVGDOMAttributeIdentifier, UpperProperty, LowerProperty, SVGAnimatedAngle, SVGAngle)
 
 class SVGAnimationElement;
 
