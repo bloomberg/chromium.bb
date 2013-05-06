@@ -55,7 +55,7 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
       use_legacy_bookmarks_protocol_(false),
       num_get_updates_requests_(0) {
   SetNewTimestamp(0);
-  set_auth_token(kValidAuthToken);
+  SetAuthToken(kValidAuthToken, base::Time());
 }
 
 MockConnectionManager::~MockConnectionManager() {

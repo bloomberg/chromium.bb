@@ -28,6 +28,8 @@
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/about_signin_internals.h"
+#include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
@@ -422,8 +424,11 @@ SyncCredentials ProfileSyncService::GetCredentials() {
   DCHECK(!credentials.email.empty());
   TokenService* service = TokenServiceFactory::GetForProfile(profile_);
   if (service->HasTokenForService(GaiaConstants::kSyncService)) {
-      credentials.sync_token = service->GetTokenForService(
-          GaiaConstants::kSyncService);
+    credentials.sync_token = service->GetTokenForService(
+        GaiaConstants::kSyncService);
+    credentials.sync_token_time =
+        AboutSigninInternalsFactory::GetForProfile(profile_)->
+            GetTokenTime(GaiaConstants::kSyncService);
     UMA_HISTOGRAM_BOOLEAN("Sync.CredentialsLost", false);
   } else {
     // We've lost our sync credentials (crbug.com/121755), so just make up some

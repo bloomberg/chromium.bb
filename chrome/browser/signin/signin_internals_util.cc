@@ -67,10 +67,12 @@ std::string GetTruncatedHash(const std::string& str) {
 TokenInfo::TokenInfo(const std::string& token,
                      const std::string& status,
                      const std::string& time,
+                     const int64& time_internal,
                      const std::string& service)
     : token(token),
       status(status),
       time(time),
+      time_internal(time_internal),
       service(service) {
 }
 

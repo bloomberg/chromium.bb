@@ -67,6 +67,7 @@ void AboutSigninInternalsFactory::RegisterUserPrefs(
     const std::string value = pref + ".value";
     const std::string status = pref + ".status";
     const std::string time = pref + ".time";
+    const std::string time_internal = pref + ".time_internal";
     user_prefs->RegisterStringPref(
         value.c_str(),
         std::string(),
@@ -78,6 +79,10 @@ void AboutSigninInternalsFactory::RegisterUserPrefs(
     user_prefs->RegisterStringPref(
         time.c_str(),
         std::string(),
+        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+    user_prefs->RegisterInt64Pref(
+        time_internal.c_str(),
+        0,
         user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 }

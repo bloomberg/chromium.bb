@@ -224,16 +224,11 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
     client_id_.assign(client_id);
   }
 
-  // Returns true if the auth token is succesfully set and false otherwise.
-  bool set_auth_token(const std::string& auth_token) {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    if (previously_invalidated_token != auth_token) {
-      auth_token_.assign(auth_token);
-      previously_invalidated_token = std::string();
-      return true;
-    }
-    return false;
-  }
+  // Sets a new auth token and time. |auth_token_time| is an optional parameter
+  // that contains the date the auth token was fetched/refreshed, and is used
+  // for histogramms/logging only.
+  bool SetAuthToken(const std::string& auth_token,
+                    const base::Time& auth_token_time);
 
   // Our out-of-band invalidations channel can encounter auth errors,
   // and when it does so it tells us via this method to prevent making more
@@ -298,6 +293,10 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
 
   // The auth token to use in authenticated requests.
   std::string auth_token_;
+
+  // The time at which this auth token was last created/refreshed.
+  // Used for histogramming.
+  base::Time auth_token_time_;
 
   // The previous auth token that is invalid now.
   std::string previously_invalidated_token;

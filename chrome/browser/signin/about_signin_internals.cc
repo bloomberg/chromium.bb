@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "google_apis/gaia/gaia_constants.h"
 
+using base::Time;
 using namespace signin_internals_util;
 
 AboutSigninInternals::AboutSigninInternals() : profile_(NULL) {
@@ -25,8 +26,8 @@ AboutSigninInternals::AboutSigninInternals() : profile_(NULL) {
   for (size_t i = 0; i < kNumTokenPrefs; ++i) {
     signin_status_.token_info_map.insert(std::pair<std::string, TokenInfo>(
         kTokenPrefsArray[i],
-        TokenInfo(
-            std::string(), "Not Loaded", std::string(), kTokenPrefsArray[i])));
+        TokenInfo(std::string(), "Not Loaded", std::string(), 0,
+                  kTokenPrefsArray[i])));
   }
 }
 
@@ -66,15 +67,15 @@ void AboutSigninInternals::NotifySigninValueChanged(
   DCHECK(field_index >= 0 &&
          field_index < signin_status_.timed_signin_fields.size());
 
-  std::string time_as_str = UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
-      base::Time::NowFromSystemTime()));
+  Time now = Time::NowFromSystemTime();
+  std::string time_as_str = UTF16ToUTF8(base::TimeFormatFriendlyDate(now));
   TimedSigninStatusValue timed_value(value, time_as_str);
 
   signin_status_.timed_signin_fields[field_index] = timed_value;
 
   // Also persist these values in the prefs.
   const std::string value_pref = SigninStatusFieldToString(field) + ".value";
-  const std::string time_pref =  SigninStatusFieldToString(field) + ".time";
+  const std::string time_pref = SigninStatusFieldToString(field) + ".time";
   profile_->GetPrefs()->SetString(value_pref.c_str(), value);
   profile_->GetPrefs()->SetString(time_pref.c_str(), time_as_str);
 
@@ -111,10 +112,12 @@ void AboutSigninInternals::RefreshSigninPrefs() {
     const std::string value = pref + ".value";
     const std::string status = pref + ".status";
     const std::string time = pref + ".time";
+    const std::string time_internal = pref + ".time_internal";
 
     TokenInfo token_info(pref_service->GetString(value.c_str()),
                          pref_service->GetString(status.c_str()),
                          pref_service->GetString(time.c_str()),
+                         pref_service->GetInt64(time_internal.c_str()),
                          kTokenPrefsArray[i]);
 
     signin_status_.token_info_map[kTokenPrefsArray[i]] = token_info;
@@ -137,16 +140,22 @@ void AboutSigninInternals::NotifyTokenReceivedSuccess(
   // Also update preferences.
   const std::string value_pref = TokenPrefPath(token_name) + ".value";
   const std::string time_pref = TokenPrefPath(token_name) + ".time";
+  const std::string time_internal_pref =
+      TokenPrefPath(token_name) + ".time_internal";
   const std::string status_pref = TokenPrefPath(token_name) + ".status";
   profile_->GetPrefs()->SetString(value_pref.c_str(), token);
   profile_->GetPrefs()->SetString(status_pref.c_str(), "Successful");
 
   // Update timestamp if needed.
   if (update_time) {
-    const std::string time_as_str = UTF16ToUTF8(
-        base::TimeFormatFriendlyDateAndTime(base::Time::NowFromSystemTime()));
+    Time now = Time::NowFromSystemTime();
+    int64 time_as_int = now.ToInternalValue();
+    const std::string time_as_str =
+        UTF16ToUTF8(base::TimeFormatFriendlyDate(now));
     signin_status_.token_info_map[token_name].time = time_as_str;
+    signin_status_.token_info_map[token_name].time_internal = time_as_int;
     profile_->GetPrefs()->SetString(time_pref.c_str(), time_as_str);
+    profile_->GetPrefs()->SetInt64(time_internal_pref.c_str(), time_as_int);
   }
 
   NotifyObservers();
@@ -156,9 +165,10 @@ void AboutSigninInternals::NotifyTokenReceivedSuccess(
 void AboutSigninInternals::NotifyTokenReceivedFailure(
     const std::string& token_name,
     const std::string& error) {
+  Time now = Time::NowFromSystemTime();
+  int64 time_as_int = now.ToInternalValue();
   const std::string time_as_str =
-      UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
-          base::Time::NowFromSystemTime()));
+      UTF16ToUTF8(base::TimeFormatFriendlyDate(now));
 
   // This should have been initialized already.
   DCHECK(signin_status_.token_info_map.count(token_name));
@@ -166,13 +176,17 @@ void AboutSigninInternals::NotifyTokenReceivedFailure(
   signin_status_.token_info_map[token_name].token.clear();
   signin_status_.token_info_map[token_name].status = error;
   signin_status_.token_info_map[token_name].time = time_as_str;
+  signin_status_.token_info_map[token_name].time_internal = time_as_int;
 
   // Also update preferences.
   const std::string value_pref = TokenPrefPath(token_name) + ".value";
   const std::string time_pref = TokenPrefPath(token_name) + ".time";
+  const std::string time_internal_pref =
+      TokenPrefPath(token_name) + ".time_internal";
   const std::string status_pref = TokenPrefPath(token_name) + ".status";
   profile_->GetPrefs()->SetString(value_pref.c_str(), std::string());
   profile_->GetPrefs()->SetString(time_pref.c_str(), time_as_str);
+    profile_->GetPrefs()->SetInt64(time_internal_pref.c_str(), time_as_int);
   profile_->GetPrefs()->SetString(status_pref.c_str(), error);
 
   NotifyObservers();
@@ -219,4 +233,13 @@ void AboutSigninInternals::NotifyObservers() {
 
 scoped_ptr<DictionaryValue> AboutSigninInternals::GetSigninStatus() {
   return signin_status_.ToValue().Pass();
+}
+
+Time AboutSigninInternals::GetTokenTime(
+    const std::string& token_name) const {
+  TokenInfoMap::const_iterator iter =
+      signin_status_.token_info_map.find(token_name);
+  if (iter == signin_status_.token_info_map.end())
+    return base::Time();
+  return base::Time::FromInternalValue(iter->second.time_internal);
 }

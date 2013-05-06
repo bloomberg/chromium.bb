@@ -598,11 +598,14 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
   DCHECK(!credentials.sync_token.empty());
 
   observing_network_connectivity_changes_ = true;
-  if (!connection_manager_->set_auth_token(credentials.sync_token))
+  if (!connection_manager_->SetAuthToken(credentials.sync_token,
+                                         credentials.sync_token_time))
     return;  // Auth token is known to be invalid, so exit early.
 
   invalidator_->UpdateCredentials(credentials.email, credentials.sync_token);
   scheduler_->OnCredentialsUpdated();
+
+  // TODO(zea): pass the credential age to the debug info event listener.
 }
 
 void SyncManagerImpl::UpdateEnabledTypes(ModelTypeSet enabled_types) {

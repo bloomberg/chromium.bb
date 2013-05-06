@@ -61,8 +61,12 @@ enum ConnectionStatus {
 
 // Contains everything needed to talk to and identify a user account.
 struct SyncCredentials {
+  // The email associated with this account.
   std::string email;
+  // The raw authentication token's bytes.
   std::string sync_token;
+  // (optional) The time at which the token was fetched/refreshed.
+  base::Time sync_token_time;
 };
 
 // SyncManager encapsulates syncable::Directory and serves as the parent of all

@@ -82,6 +82,11 @@ class AboutSigninInternals
   //  }
   scoped_ptr<DictionaryValue> GetSigninStatus();
 
+  // Returns the time of the last fetch/refresh for the token specified by
+  // |token_name|. See signin_internals_util::kTokenPrefsArray for valid token
+  // names. If |token_name| is invalid, returns base::Time().
+  base::Time GetTokenTime(const std::string& token_name) const;
+
  private:
   void NotifyObservers();
 
