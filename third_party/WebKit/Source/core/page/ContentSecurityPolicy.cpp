@@ -164,15 +164,6 @@ UseCounter::Feature getUseCounterType(ContentSecurityPolicy::HeaderType type)
     return UseCounter::NumberOfFeatures;
 }
 
-const ScriptCallFrame& getFirstNonNativeFrame(PassRefPtr<ScriptCallStack> stack)
-{
-    int frameNumber = 0;
-    if (!stack->at(0).lineNumber() && stack->size() > 1 && stack->at(1).lineNumber())
-        frameNumber = 1;
-
-    return stack->at(frameNumber);
-}
-
 } // namespace
 
 static bool skipExactly(const UChar*& position, const UChar* end, UChar delimiter)
@@ -1718,11 +1709,11 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     init.lineNumber = 0;
     init.columnNumber = 0;
 
-    RefPtr<ScriptCallStack> stack = createScriptCallStack(2, false);
+    RefPtr<ScriptCallStack> stack = createScriptCallStack(1, false);
     if (!stack)
         return;
 
-    const ScriptCallFrame& callFrame = getFirstNonNativeFrame(stack);
+    const ScriptCallFrame& callFrame = stack->at(0);
 
     if (callFrame.lineNumber()) {
         KURL source = KURL(ParsedURLString, callFrame.sourceURL());
