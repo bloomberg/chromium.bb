@@ -67,15 +67,15 @@ ChromeSpeechRecognitionPreferences::Factory::BuildServiceInstanceFor(
 }
 
 void ChromeSpeechRecognitionPreferences::Factory::RegisterUserPrefs(
-    PrefRegistrySyncable* prefs) {
+    user_prefs::PrefRegistrySyncable* prefs) {
   prefs->RegisterBooleanPref(
       prefs::kSpeechRecognitionFilterProfanities,
       kDefaultFilterProfanities,
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   prefs->RegisterListPref(
       prefs::kSpeechRecognitionTrayNotificationShownContexts,
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool ChromeSpeechRecognitionPreferences::Factory::

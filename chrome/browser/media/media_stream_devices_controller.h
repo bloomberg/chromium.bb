@@ -9,13 +9,16 @@
 
 #include "content/public/browser/web_contents_delegate.h"
 
+class Profile;
+class TabSpecificContentSettings;
+
 namespace content {
 class WebContents;
 }
 
+namespace user_prefs {
 class PrefRegistrySyncable;
-class Profile;
-class TabSpecificContentSettings;
+}
 
 class MediaStreamDevicesController {
  public:
@@ -26,7 +29,7 @@ class MediaStreamDevicesController {
   virtual ~MediaStreamDevicesController();
 
   // Registers the prefs backing the audio and video policies.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Public method to be called before creating the MediaStreamInfoBarDelegate.
   // This function will check the content settings exceptions and take the

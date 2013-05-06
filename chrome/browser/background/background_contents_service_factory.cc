@@ -41,9 +41,10 @@ ProfileKeyedService* BackgroundContentsServiceFactory::BuildServiceInstanceFor(
 }
 
 void BackgroundContentsServiceFactory::RegisterUserPrefs(
-    PrefRegistrySyncable* user_prefs) {
-  user_prefs->RegisterDictionaryPref(prefs::kRegisteredBackgroundContents,
-                                     PrefRegistrySyncable::UNSYNCABLE_PREF);
+    user_prefs::PrefRegistrySyncable* user_prefs) {
+  user_prefs->RegisterDictionaryPref(
+      prefs::kRegisteredBackgroundContents,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 content::BrowserContext*

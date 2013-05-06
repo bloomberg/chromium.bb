@@ -139,12 +139,13 @@ void CheckDownloadUrlDone(
 
 // static
 void ChromeDownloadManagerDelegate::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
+    user_prefs::PrefRegistrySyncable* registry) {
   const base::FilePath& default_download_path =
       download_util::GetDefaultDownloadDirectory();
-  registry->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
-                                 default_download_path,
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterFilePathPref(
+      prefs::kSaveFileDefaultDirectory,
+      default_download_path,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)

@@ -13,7 +13,6 @@
 #include "base/string16.h"
 
 class GURL;
-class PrefRegistrySyncable;
 class Profile;
 class TemplateURL;
 class TemplateURLRef;
@@ -21,6 +20,10 @@ class TemplateURLRef;
 namespace content {
 class NavigationEntry;
 class WebContents;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace chrome {
@@ -72,7 +75,7 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
                           const content::NavigationEntry* nav_entry);
 
 // Registers Instant-related user preferences. Called at startup.
-void RegisterInstantUserPrefs(PrefRegistrySyncable* registry);
+void RegisterInstantUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
 // Returns prefs::kInstantExtendedEnabled in extended mode;
 // prefs::kInstantEnabled otherwise.

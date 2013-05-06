@@ -204,11 +204,12 @@ void PrefProxyConfigTrackerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
 // static
 void PrefProxyConfigTrackerImpl::RegisterUserPrefs(
-    PrefRegistrySyncable* pref_service) {
+    user_prefs::PrefRegistrySyncable* pref_service) {
   DictionaryValue* default_settings = ProxyConfigDictionary::CreateSystem();
-  pref_service->RegisterDictionaryPref(prefs::kProxy,
-                                       default_settings,
-                                       PrefRegistrySyncable::UNSYNCABLE_PREF);
+  pref_service->RegisterDictionaryPref(
+      prefs::kProxy,
+      default_settings,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::GetProxyConfig(

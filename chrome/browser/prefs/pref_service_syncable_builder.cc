@@ -42,7 +42,7 @@ PrefServiceSyncableBuilder::WithCommandLine(CommandLine* command_line) {
 }
 
 PrefServiceSyncable* PrefServiceSyncableBuilder::CreateSyncable(
-    PrefRegistrySyncable* pref_registry) {
+    user_prefs::PrefRegistrySyncable* pref_registry) {
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
   PrefServiceSyncable* pref_service = new PrefServiceSyncable(
       pref_notifier,

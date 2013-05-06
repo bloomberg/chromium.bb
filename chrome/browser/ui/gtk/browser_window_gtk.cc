@@ -1494,16 +1494,18 @@ GtkWidget* BrowserWindowGtk::titlebar_widget() const {
 }
 
 // static
-void BrowserWindowGtk::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void BrowserWindowGtk::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   bool custom_frame_default = false;
   // Avoid checking the window manager if we're not connected to an X server (as
   // is the case in Valgrind tests).
   if (ui::XDisplayExists())
     custom_frame_default = GetCustomFramePrefDefault();
 
-  registry->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
-                                custom_frame_default,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kUseCustomChromeFrame,
+      custom_frame_default,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 WebContents* BrowserWindowGtk::GetDisplayedTab() {

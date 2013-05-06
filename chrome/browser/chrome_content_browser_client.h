@@ -25,7 +25,9 @@ namespace extensions {
 class Extension;
 }
 
+namespace user_prefs {
 class PrefRegistrySyncable;
+}
 
 namespace chrome {
 
@@ -34,7 +36,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   ChromeContentBrowserClient();
   virtual ~ChromeContentBrowserClient();
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Notification that the application locale has changed. This allows us to
   // update our I/O thread cache of this value.

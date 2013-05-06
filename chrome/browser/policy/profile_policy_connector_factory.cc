@@ -108,11 +108,12 @@ void ProfilePolicyConnectorFactory::ProfileDestroyed(
 }
 
 void ProfilePolicyConnectorFactory::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
+    user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_CHROMEOS)
-  registry->RegisterBooleanPref(prefs::kUsedPolicyCertificatesOnce,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kUsedPolicyCertificatesOnce,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
 }
 

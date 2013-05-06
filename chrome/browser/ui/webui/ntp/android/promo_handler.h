@@ -9,11 +9,13 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class PrefRegistrySyncable;
-
 namespace base {
-  class DictionaryValue;
-  class ListValue;
+class DictionaryValue;
+class ListValue;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // The handler for JavaScript messages related to the Android NTP promo.
@@ -27,7 +29,7 @@ class PromoHandler : public content::WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // Register preferences.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   // NotificationObserver override and implementation.

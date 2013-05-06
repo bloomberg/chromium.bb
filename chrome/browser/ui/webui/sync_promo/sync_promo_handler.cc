@@ -78,13 +78,20 @@ SyncPromoHandler::~SyncPromoHandler() {
 }
 
 // static
-void SyncPromoHandler::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kSyncPromoViewCount, 0,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kSyncPromoShowNTPBubble, false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kSyncPromoErrorMessage, std::string(),
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+void SyncPromoHandler::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kSyncPromoViewCount,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kSyncPromoShowNTPBubble,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kSyncPromoErrorMessage,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void SyncPromoHandler::RegisterMessages() {

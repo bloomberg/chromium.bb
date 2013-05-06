@@ -970,14 +970,16 @@ bool PepperFlashSettingsManager::IsPepperFlashInUse(
 
 // static
 void PepperFlashSettingsManager::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kDeauthorizeContentLicenses,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kDeauthorizeContentLicenses,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  registry->RegisterBooleanPref(prefs::kPepperFlashSettingsEnabled,
-                                true,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPepperFlashSettingsEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 uint32 PepperFlashSettingsManager::DeauthorizeContentLicenses(

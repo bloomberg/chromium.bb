@@ -45,24 +45,28 @@ SyncPrefs::~SyncPrefs() {
 }
 
 // static
-void SyncPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void SyncPrefs::RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   // TODO(joi): Remove |prefs| parameter.
-  registry->RegisterBooleanPref(prefs::kSyncHasSetupCompleted,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kSyncSuppressStart,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterInt64Pref(prefs::kSyncLastSyncedTime,
-                              0,
-                              PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kSyncHasSetupCompleted,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kSyncSuppressStart,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterInt64Pref(
+      prefs::kSyncLastSyncedTime,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // All datatypes are on by default, but this gets set explicitly
   // when you configure sync (when turning it on), in
   // ProfileSyncService::OnUserChoseDatatypes.
-  registry->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced,
-                                true,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kSyncKeepEverythingSynced,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   syncer::ModelTypeSet user_types = syncer::UserTypes();
 
@@ -83,24 +87,29 @@ void SyncPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
     RegisterDataTypePreferredPref(registry, it.Get(), false);
   }
 
-  registry->RegisterBooleanPref(prefs::kSyncManaged,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
-                               std::string(),
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kSyncKeystoreEncryptionBootstrapToken,
-                               std::string(),
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kSyncManaged,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kSyncEncryptionBootstrapToken,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kSyncKeystoreEncryptionBootstrapToken,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #if defined(OS_CHROMEOS)
-  registry->RegisterStringPref(prefs::kSyncSpareBootstrapToken,
-                               "",
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kSyncSpareBootstrapToken,
+      "",
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
 
-  registry->RegisterStringPref(prefs::kSyncSessionsGUID,
-                               std::string(),
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kSyncSessionsGUID,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // We will start prompting people about new data types after the launch of
   // SESSIONS - all previously launched data types are treated as if they are
@@ -120,7 +129,7 @@ void SyncPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   model_set.Put(syncer::SESSIONS);
   registry->RegisterListPref(prefs::kSyncAcknowledgedSyncTypes,
                              syncer::ModelTypeSetToValue(model_set),
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static
@@ -427,16 +436,19 @@ void SyncPrefs::RegisterPrefGroups() {
 }
 
 // static
-void SyncPrefs::RegisterDataTypePreferredPref(PrefRegistrySyncable* registry,
-                                              syncer::ModelType type,
-                                              bool is_preferred) {
+void SyncPrefs::RegisterDataTypePreferredPref(
+    user_prefs::PrefRegistrySyncable* registry,
+    syncer::ModelType type,
+    bool is_preferred) {
   const char* pref_name = GetPrefNameForDataType(type);
   if (!pref_name) {
     NOTREACHED();
     return;
   }
-  registry->RegisterBooleanPref(pref_name, is_preferred,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      pref_name,
+      is_preferred,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool SyncPrefs::GetDataTypePreferred(syncer::ModelType type) const {

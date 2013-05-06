@@ -48,11 +48,14 @@ void NetPrefObserver::ApplySettings() {
 }
 
 // static
-void NetPrefObserver::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kNetworkPredictionEnabled,
-                                true,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kDisableSpdy,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+void NetPrefObserver::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kNetworkPredictionEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kDisableSpdy,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }

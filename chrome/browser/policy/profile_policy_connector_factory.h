@@ -71,7 +71,8 @@ class ProfilePolicyConnectorFactory : public ProfileKeyedBaseFactory {
   // ProfileKeyedBaseFactory:
   virtual void ProfileShutdown(content::BrowserContext* context) OVERRIDE;
   virtual void ProfileDestroyed(content::BrowserContext* context) OVERRIDE;
-  virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
+  virtual void RegisterUserPrefs(
+      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
   virtual void SetEmptyTestingFactory(
       content::BrowserContext* context) OVERRIDE;
   virtual void CreateServiceNow(content::BrowserContext* context) OVERRIDE;

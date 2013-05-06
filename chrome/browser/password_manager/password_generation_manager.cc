@@ -48,10 +48,11 @@ void PasswordGenerationManager::CreateForWebContents(
 
 // static
 void PasswordGenerationManager::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kPasswordGenerationEnabled,
-                                true,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kPasswordGenerationEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void PasswordGenerationManager::RegisterWithSyncService() {

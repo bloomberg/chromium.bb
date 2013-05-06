@@ -1089,19 +1089,22 @@ const LogoURLs google_logos = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kCountryIDAtInstall,
-                                kCountryIDUnknown,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kCountryIDAtInstall,
+      kCountryIDUnknown,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kSearchProviderOverrides,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(prefs::kSearchProviderOverridesVersion,
-                                -1,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kSearchProviderOverridesVersion,
+      -1,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   // Obsolete pref, for migration.
-  registry->RegisterIntegerPref(prefs::kGeoIDAtInstall,
-                                -1,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kGeoIDAtInstall,
+      -1,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 int GetDataVersion(PrefService* prefs) {

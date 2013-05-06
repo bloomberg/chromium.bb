@@ -24,7 +24,9 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 
+namespace user_prefs {
 class PrefRegistrySyncable;
+}
 
 // This is where handlers for protocols registered with
 // navigator.registerProtocolHandler() are registered. Each Profile owns an
@@ -232,7 +234,7 @@ class ProtocolHandlerRegistry : public ProfileKeyedService {
   virtual void Shutdown() OVERRIDE;
 
   // Registers the preferences that we store registered protocol handlers in.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   bool enabled() const { return enabled_; }
 

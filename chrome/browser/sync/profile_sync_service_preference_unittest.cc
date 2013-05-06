@@ -127,7 +127,7 @@ class ProfileSyncServicePreferenceTest
     prefs_->registry()->RegisterStringPref(
         not_synced_preference_name_.c_str(),
         not_synced_preference_default_value_,
-        PrefRegistrySyncable::UNSYNCABLE_PREF);
+        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 
   virtual void TearDown() {

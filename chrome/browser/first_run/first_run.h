@@ -18,11 +18,14 @@
 
 class CommandLine;
 class GURL;
-class PrefRegistrySyncable;
 class Profile;
 
 namespace base {
 class FilePath;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // This namespace contains the chrome first-run installation actions needed to
@@ -88,7 +91,7 @@ bool CreateSentinel();
 std::string GetPingDelayPrefName();
 
 // Register user preferences used by the MasterPrefs structure.
-void RegisterUserPrefs(PrefRegistrySyncable* registry);
+void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
 // Removes the sentinel file created in ConfigDone(). Returns false if the
 // sentinel file could not be removed.

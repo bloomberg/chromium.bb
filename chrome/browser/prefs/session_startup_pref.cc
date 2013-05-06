@@ -54,15 +54,18 @@ void URLListToPref(const base::ListValue* url_list, SessionStartupPref* pref) {
 }  // namespace
 
 // static
-void SessionStartupPref::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kRestoreOnStartup,
-                                TypeToPrefValue(GetDefaultStartupType()),
-                                PrefRegistrySyncable::SYNCABLE_PREF);
+void SessionStartupPref::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kRestoreOnStartup,
+      TypeToPrefValue(GetDefaultStartupType()),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kURLsToRestoreOnStartup,
-                             PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kRestoreOnStartupMigrated,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kRestoreOnStartupMigrated,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

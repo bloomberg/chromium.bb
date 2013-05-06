@@ -153,20 +153,26 @@ void ManagedUserService::RequestAuthorization(
 }
 
 // static
-void ManagedUserService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(prefs::kManagedModeManualHosts,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(prefs::kManagedModeManualURLs,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(prefs::kDefaultManagedModeFilteringBehavior,
-                                ManagedModeURLFilter::ALLOW,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kManagedModeLocalPassphrase,
-                               std::string(),
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kManagedModeLocalSalt,
-                               std::string(),
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+void ManagedUserService::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(
+      prefs::kManagedModeManualHosts,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kManagedModeManualURLs,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kDefaultManagedModeFilteringBehavior,
+      ManagedModeURLFilter::ALLOW,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kManagedModeLocalPassphrase,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kManagedModeLocalSalt,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 scoped_refptr<const ManagedModeURLFilter>

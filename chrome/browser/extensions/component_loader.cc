@@ -486,13 +486,16 @@ void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
 }
 
 // static
-void ComponentLoader::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(prefs::kEnterpriseWebStoreURL,
-                               std::string() /* default_value */,
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kEnterpriseWebStoreName,
-                               std::string() /* default_value */,
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+void ComponentLoader::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(
+      prefs::kEnterpriseWebStoreURL,
+      std::string() /* default_value */,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kEnterpriseWebStoreName,
+      std::string() /* default_value */,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace extensions

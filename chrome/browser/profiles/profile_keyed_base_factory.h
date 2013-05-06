@@ -10,16 +10,17 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/dependency_node.h"
 
-namespace content {
-class BrowserContext;
-};
-
-class PrefRegistrySyncable;
 class PrefService;
+class Profile;
 class ProfileDependencyManager;
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 // Base class for Factories that take a Profile object and return some service.
 //
 // Unless you're trying to make a new type of Factory, you probably don't want
@@ -59,7 +60,7 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe,
   // Register any user preferences on this service. This is called during
   // CreateProfileService() since preferences are registered on a per Profile
   // basis.
-  virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) {}
+  virtual void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {}
 
   // By default, we create instances of a service lazily and wait until
   // GetForProfile() is called on our subclass. Some services need to be

@@ -35,7 +35,7 @@ class MockAutofillManagerDelegate
 
   virtual PrefService* GetPrefs() { return &prefs_; }
 
-  PrefRegistrySyncable* GetPrefRegistry() {
+  user_prefs::PrefRegistrySyncable* GetPrefRegistry() {
     return prefs_.registry();
   }
 

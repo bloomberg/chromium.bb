@@ -28,15 +28,19 @@ const char kTestPageURL[] =
     "http://www.google.com/landing/cloudprint/enable.html?print=true";
 
 // static
-void CloudPrintURL::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(prefs::kCloudPrintServiceURL,
-                               kDefaultCloudPrintServiceURL,
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+void CloudPrintURL::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(
+      prefs::kCloudPrintServiceURL,
+      kDefaultCloudPrintServiceURL,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   std::string url = GaiaUrls::GetInstance()->service_login_url();
   url.append("?service=cloudprint&sarp=1&continue=");
   url.append(net::EscapeQueryParamValue(kDefaultCloudPrintServiceURL, false));
-  registry->RegisterStringPref(prefs::kCloudPrintSigninURL, url,
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kCloudPrintSigninURL,
+      url,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // Returns the root service URL for the cloud print service.  The default is to

@@ -13,8 +13,11 @@
 
 class LoginDatabase;
 class PrefService;
-class PrefRegistrySyncable;
 class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 // PasswordStoreX is used on Linux and other non-Windows, non-Mac OS X
 // operating systems. It uses a "native backend" to actually store the password
@@ -57,7 +60,7 @@ class PasswordStoreX : public PasswordStoreDefault {
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
   // Registers the pref setting used for the methods below.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns true if passwords have been tagged with the local profile id.
   static bool PasswordsUseLocalProfileId(PrefService* prefs);

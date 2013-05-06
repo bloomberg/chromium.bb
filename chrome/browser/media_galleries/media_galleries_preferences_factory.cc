@@ -35,7 +35,7 @@ ProfileKeyedService* MediaGalleriesPreferencesFactory::BuildServiceInstanceFor(
 }
 
 void MediaGalleriesPreferencesFactory::RegisterUserPrefs(
-    PrefRegistrySyncable* prefs) {
+    user_prefs::PrefRegistrySyncable* prefs) {
   chrome::MediaGalleriesPreferences::RegisterUserPrefs(prefs);
 }
 

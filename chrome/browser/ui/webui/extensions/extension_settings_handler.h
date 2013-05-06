@@ -28,7 +28,6 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class ExtensionService;
-class PrefRegistrySyncable;
 
 namespace base {
 class DictionaryValue;
@@ -44,6 +43,10 @@ namespace extensions {
 class Extension;
 class ExtensionHost;
 class ManagementPolicy;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // Information about a page running in an extension, for example a popup bubble,
@@ -75,7 +78,7 @@ class ExtensionSettingsHandler
   ExtensionSettingsHandler();
   virtual ~ExtensionSettingsHandler();
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Extension Detail JSON Struct for page. |pages| is injected for unit
   // testing.

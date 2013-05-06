@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
 #include "chrome/browser/extensions/component_loader.h"
+
+#include <string>
 
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -98,11 +98,11 @@ class ComponentLoaderTest : public ExtensionTest {
     prefs_.registry()->RegisterStringPref(
         prefs::kEnterpriseWebStoreURL,
         std::string(),
-        PrefRegistrySyncable::UNSYNCABLE_PREF);
+        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
     prefs_.registry()->RegisterStringPref(
         prefs::kEnterpriseWebStoreName,
         std::string(),
-        PrefRegistrySyncable::UNSYNCABLE_PREF);
+        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
     // Register the local state prefs.
 #if defined(OS_CHROMEOS)

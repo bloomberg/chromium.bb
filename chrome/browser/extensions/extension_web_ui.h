@@ -12,6 +12,8 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/web_ui_controller.h"
 
+class Profile;
+
 namespace content {
 class BrowserContext;
 class WebContents;
@@ -21,8 +23,9 @@ namespace extensions {
 class BookmarkManagerPrivateEventRouter;
 }
 
+namespace user_prefs {
 class PrefRegistrySyncable;
-class Profile;
+}
 
 // This class implements WebUI for extensions and allows extensions to put UI in
 // the main tab contents area. For example, each extension can specify an
@@ -57,7 +60,7 @@ class ExtensionWebUI : public content::WebUIController {
                                           const base::Value* override);
 
   // Called from BrowserPrefs
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Get the favicon for the extension by getting an icon from the manifest.
   // Note. |callback| is always run asynchronously.

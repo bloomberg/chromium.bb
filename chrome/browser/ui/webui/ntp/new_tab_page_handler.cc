@@ -170,10 +170,13 @@ void NewTabPageHandler::HandleLogTimeToClick(const ListValue* args) {
 }
 
 // static
-void NewTabPageHandler::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void NewTabPageHandler::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   // TODO(estade): should be syncable.
-  registry->RegisterIntegerPref(prefs::kNtpShownPage, APPS_PAGE_ID,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kNtpShownPage,
+      APPS_PAGE_ID,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

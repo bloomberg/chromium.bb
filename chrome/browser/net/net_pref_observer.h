@@ -8,6 +8,8 @@
 #include "base/basictypes.h"
 #include "base/prefs/pref_member.h"
 
+class PrefService;
+
 namespace chrome_browser_net {
 class Predictor;
 }
@@ -16,8 +18,9 @@ namespace prerender {
 class PrerenderManager;
 }
 
-class PrefService;
+namespace user_prefs {
 class PrefRegistrySyncable;
+}
 
 // Monitors network-related preferences for changes and applies them.
 // The supplied PrefService must outlive this NetPrefObserver.
@@ -32,7 +35,7 @@ class NetPrefObserver {
                   chrome_browser_net::Predictor* predictor);
   virtual ~NetPrefObserver();
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   void ApplySettings();

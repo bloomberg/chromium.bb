@@ -25,8 +25,11 @@
 class ExtensionEnableFlow;
 class ExtensionService;
 class PrefChangeRegistrar;
-class PrefRegistrySyncable;
 class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 // The handler for Javascript messages related to the "apps" view.
 class AppLauncherHandler : public content::WebUIMessageHandler,
@@ -104,7 +107,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   void HandleSetNotificationsDisabled(const base::ListValue* args);
 
   // Register app launcher preferences.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Records the given type of app launch for UMA.
   static void RecordAppLaunchType(extension_misc::AppLaunchBucket bucket,

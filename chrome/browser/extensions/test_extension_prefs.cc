@@ -77,12 +77,13 @@ PrefService* TestExtensionPrefs::pref_service() {
   return pref_service_.get();
 }
 
-const scoped_refptr<PrefRegistrySyncable>& TestExtensionPrefs::pref_registry() {
+const scoped_refptr<user_prefs::PrefRegistrySyncable>&
+TestExtensionPrefs::pref_registry() {
   return pref_registry_;
 }
 
 void TestExtensionPrefs::ResetPrefRegistry() {
-  pref_registry_ = new PrefRegistrySyncable;
+  pref_registry_ = new user_prefs::PrefRegistrySyncable;
   ExtensionPrefs::RegisterUserPrefs(pref_registry_);
 }
 

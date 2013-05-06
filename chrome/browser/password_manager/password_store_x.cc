@@ -271,12 +271,14 @@ ssize_t PasswordStoreX::MigrateLogins() {
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // static
-void PasswordStoreX::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void PasswordStoreX::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   // Normally we should be on the UI thread here, but in tests we might not.
-  registry->RegisterBooleanPref(prefs::kPasswordsUseLocalProfileId,
-                                // default: passwords don't use local ids
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPasswordsUseLocalProfileId,
+      // default: passwords don't use local ids
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

@@ -157,13 +157,16 @@ void NetworkProfileBubble::SetNotificationShown(bool shown) {
 }
 
 // static
-void NetworkProfileBubble::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kNetworkProfileWarningsLeft,
-                                kMaxWarnings,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterInt64Pref(prefs::kNetworkProfileLastWarningTime,
-                              0,
-                              PrefRegistrySyncable::UNSYNCABLE_PREF);
+void NetworkProfileBubble::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kNetworkProfileWarningsLeft,
+      kMaxWarnings,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterInt64Pref(
+      prefs::kNetworkProfileLastWarningTime,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

@@ -15,7 +15,10 @@
 
 class BookmarkModel;
 class BookmarkNode;
+
+namespace user_prefs {
 class PrefRegistrySyncable;
+}
 
 // A collection of bookmark utility functions used by various parts of the UI
 // that show bookmarks: bookmark manager, bookmark bar view ...
@@ -108,8 +111,8 @@ const BookmarkNode* ApplyEditsWithPossibleFolderChange(
     const string16& new_title,
     const GURL& new_url);
 
-// Register user preferences for BookmarksBar.
-void RegisterUserPrefs(PrefRegistrySyncable* registry);
+// Register user preferences for Bookmarks Bar.
+void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
 // Returns the parent for newly created folders/bookmarks. If |selection| has
 // one element and it is a folder, |selection[0]| is returned, otherwise

@@ -23,7 +23,6 @@
 class Browser;
 class BrowserWindow;
 class DevToolsControllerTest;
-class PrefRegistrySyncable;
 class Profile;
 
 namespace base {
@@ -42,6 +41,10 @@ namespace IPC {
 class Message;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 enum DevToolsDockSide {
   DEVTOOLS_DOCK_SIDE_UNDOCKED = 0,
   DEVTOOLS_DOCK_SIDE_BOTTOM,
@@ -55,7 +58,7 @@ class DevToolsWindow : private content::NotificationObserver,
  public:
   static const char kDevToolsApp[];
   static std::string GetDevToolsWindowPlacementPrefKey();
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
   static DevToolsWindow* GetDockedInstanceForInspectedTab(
       content::WebContents* inspected_tab);
   static bool IsDevToolsWindow(content::RenderViewHost* window_rvh);

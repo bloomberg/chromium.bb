@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/devtools/devtools_window.h"
+
 #include <algorithm>
 
 #include "base/command_line.h"
@@ -12,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -179,20 +180,26 @@ std::string DevToolsWindow::GetDevToolsWindowPlacementPrefKey() {
 }
 
 // static
-void DevToolsWindow::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kDevToolsOpenDocked,
-                                true,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kDevToolsDockSide,
-                               kDockSideBottom,
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(prefs::kDevToolsEditedFiles,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(prefs::kDevToolsFileSystemPaths,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+void DevToolsWindow::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kDevToolsOpenDocked,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kDevToolsDockSide,
+      kDockSideBottom,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kDevToolsEditedFiles,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kDevToolsFileSystemPaths,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  registry->RegisterDictionaryPref(GetDevToolsWindowPlacementPrefKey().c_str(),
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      GetDevToolsWindowPlacementPrefKey().c_str(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

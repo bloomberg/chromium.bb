@@ -16,15 +16,18 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 
-class PrefRegistrySyncable;
 class Profile;
 
 namespace base {
-  class DictionaryValue;
+class DictionaryValue;
 }
 
 namespace ui {
-  class Accelerator;
+class Accelerator;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace extensions {
@@ -43,7 +46,7 @@ class CommandService : public ProfileKeyedAPI,
   };
 
   // Register prefs for keybinding.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Constructs a CommandService object for the given profile.
   explicit CommandService(Profile* profile);

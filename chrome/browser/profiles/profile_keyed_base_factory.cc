@@ -74,8 +74,9 @@ void ProfileKeyedBaseFactory::RegisterUserPrefsOnProfile(
       registered_preferences_.find(profile);
   if (it == registered_preferences_.end()) {
     PrefService* prefs = components::UserPrefs::Get(profile);
-    PrefRegistrySyncable* registry = static_cast<PrefRegistrySyncable*>(
-        prefs->DeprecatedGetPrefRegistry());
+    user_prefs::PrefRegistrySyncable* registry =
+        static_cast<user_prefs::PrefRegistrySyncable*>(
+            prefs->DeprecatedGetPrefRegistry());
     RegisterUserPrefs(registry);
     registered_preferences_.insert(profile);
   }

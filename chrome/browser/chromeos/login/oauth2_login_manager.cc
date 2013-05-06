@@ -39,13 +39,12 @@ OAuth2LoginManager::OAuth2LoginManager(OAuthLoginManager::Delegate* delegate)
 OAuth2LoginManager::~OAuth2LoginManager() {
 }
 
-void OAuth2LoginManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(kOAuth1Token,
-                               "",
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(kOAuth1Secret,
-                               "",
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+void OAuth2LoginManager::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(
+      kOAuth1Token, "", user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      kOAuth1Secret, "", user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void OAuth2LoginManager::RestoreSession(

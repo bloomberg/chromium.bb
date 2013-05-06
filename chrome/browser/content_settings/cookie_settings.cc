@@ -67,10 +67,11 @@ CookieSettings::Factory::Factory()
 CookieSettings::Factory::~Factory() {}
 
 void CookieSettings::Factory::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kBlockThirdPartyCookies,
-                                false,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kBlockThirdPartyCookies,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 content::BrowserContext* CookieSettings::Factory::GetBrowserContextToUse(

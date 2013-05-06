@@ -16,9 +16,12 @@
 #include "net/url_request/url_request_context_getter.h"
 
 class GoogleServiceAuthError;
-class PrefRegistrySyncable;
 class Profile;
 class TokenService;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 namespace chromeos {
 
@@ -31,7 +34,7 @@ class OAuth2LoginManager : public OAuthLoginManager,
   explicit OAuth2LoginManager(OAuthLoginManager::Delegate* delegate);
   virtual ~OAuth2LoginManager();
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // OAuthLoginManager overrides.
   virtual void RestoreSession(

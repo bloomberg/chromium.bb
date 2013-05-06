@@ -72,13 +72,15 @@ namespace content_settings {
 //
 
 // static
-void PrefProvider::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void PrefProvider::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kContentSettingsVersion,
       ContentSettingsPattern::kContentSettingsPatternVersion,
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(prefs::kContentSettingsPatternPairs,
-                                   PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kContentSettingsPatternPairs,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 PrefProvider::PrefProvider(PrefService* prefs,

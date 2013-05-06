@@ -10,12 +10,15 @@
 #include "chrome/browser/ui/startup/startup_tab.h"
 #include "googleurl/src/gurl.h"
 
+class Profile;
+
 namespace base {
 class Value;
 }
 
+namespace user_prefs {
 class PrefRegistrySyncable;
-class Profile;
+}
 
 // PinnedTabCodec is used to read and write the set of pinned tabs to
 // preferences. When Chrome exits the sets of pinned tabs are written to prefs.
@@ -27,7 +30,7 @@ class Profile;
 class PinnedTabCodec {
  public:
   // Registers the preference used by this class.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Resets the preferences state.
   static void WritePinnedTabs(Profile* profile);

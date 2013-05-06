@@ -270,7 +270,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 }
 
-void RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   // User prefs. Please keep this list alphabetized.
   AlternateErrorPageTabObserver::RegisterUserPrefs(registry);
   autofill::AutofillDialogControllerImpl::RegisterUserPrefs(registry);
@@ -373,8 +373,10 @@ void RegisterUserPrefs(PrefRegistrySyncable* registry) {
 
   // Prefs registered only for migration (clearing or moving to a new
   // key) go here.
-  registry->RegisterDictionaryPref(kBackupPref, new DictionaryValue(),
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      kBackupPref,
+      new DictionaryValue(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void MigrateUserPrefs(Profile* profile) {

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/printing/print_dialog_cloud.h"
-#include "chrome/browser/printing/print_dialog_cloud_internal.h"
+
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -17,6 +17,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
+#include "chrome/browser/printing/print_dialog_cloud_internal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -689,15 +690,15 @@ void CreateDialogForFileImpl(content::BrowserContext* browser_context,
 
 namespace print_dialog_cloud {
 
-void RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kCloudPrintDialogWidth,
       kDefaultWidth,
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kCloudPrintDialogHeight,
       kDefaultHeight,
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // Called on the FILE or UI thread.  This is the main entry point into creating

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extension_prefs_unittest.h"
+#include "chrome/browser/extensions/extension_prefs_unittest.h"
 
 #include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
@@ -60,7 +60,8 @@ ExtensionPrefsTest::ExtensionPrefsTest()
 ExtensionPrefsTest::~ExtensionPrefsTest() {
 }
 
-void ExtensionPrefsTest::RegisterPreferences(PrefRegistrySyncable* registry) {}
+void ExtensionPrefsTest::RegisterPreferences(
+    user_prefs::PrefRegistrySyncable* registry) {}
 
 void ExtensionPrefsTest::SetUp() {
   ExtensionTest::SetUp();
@@ -729,15 +730,15 @@ ExtensionPrefsPrepopulatedTest::ExtensionPrefsPrepopulatedTest()
 ExtensionPrefsPrepopulatedTest::~ExtensionPrefsPrepopulatedTest() {}
 
 void ExtensionPrefsPrepopulatedTest::RegisterPreferences(
-    PrefRegistrySyncable* registry) {
+    user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(
-      kPref1, kDefaultPref1, PrefRegistrySyncable::UNSYNCABLE_PREF);
+      kPref1, kDefaultPref1, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
-      kPref2, kDefaultPref2, PrefRegistrySyncable::UNSYNCABLE_PREF);
+      kPref2, kDefaultPref2, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
-      kPref3, kDefaultPref3, PrefRegistrySyncable::UNSYNCABLE_PREF);
+      kPref3, kDefaultPref3, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
-      kPref4, kDefaultPref4, PrefRegistrySyncable::UNSYNCABLE_PREF);
+      kPref4, kDefaultPref4, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void ExtensionPrefsPrepopulatedTest::InstallExtControlledPref(

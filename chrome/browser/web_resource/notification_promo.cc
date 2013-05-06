@@ -316,12 +316,13 @@ void NotificationPromo::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void NotificationPromo::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void NotificationPromo::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   // TODO(dbeam): Registered only for migration. Remove in M28 when
   // we're reasonably sure all prefs are gone.
   // http://crbug.com/168887
-  registry->RegisterDictionaryPref(kPrefPromoObject,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      kPrefPromoObject, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

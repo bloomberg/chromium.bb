@@ -13,7 +13,7 @@ bool ShowAutolaunchPrompt(Browser* browser) {
   return false;
 }
 
-void RegisterAutolaunchUserPrefs(PrefRegistrySyncable* registry) {
+void RegisterAutolaunchUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Autolaunch is only implemented on Windows right now.
 }
 

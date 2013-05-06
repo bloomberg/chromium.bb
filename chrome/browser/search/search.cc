@@ -352,12 +352,16 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
          GetSearchTermsImpl(contents, entry).empty();
 }
 
-void RegisterInstantUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kInstantEnabled, false,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
+void RegisterInstantUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kInstantEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   // This default is overridden by SetInstantExtendedPrefDefault().
-  registry->RegisterBooleanPref(prefs::kInstantExtendedEnabled, false,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kInstantExtendedEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 const char* GetInstantPrefName() {

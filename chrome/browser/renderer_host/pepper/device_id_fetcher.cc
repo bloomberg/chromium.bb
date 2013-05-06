@@ -63,13 +63,17 @@ void DeviceIDFetcher::Start(BrowserPpapiHost* browser_host) {
 }
 
 // static
-void DeviceIDFetcher::RegisterUserPrefs(PrefRegistrySyncable* prefs) {
+void DeviceIDFetcher::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* prefs) {
   // TODO(wad): Once UI is connected, a final default can be set. At that point
   // change this pref from UNSYNCABLE to SYNCABLE.
-  prefs->RegisterBooleanPref(prefs::kEnableDRM, true,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kDRMSalt, "",
-                            PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEnableDRM,
+                             true,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(
+      prefs::kDRMSalt,
+      "",
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

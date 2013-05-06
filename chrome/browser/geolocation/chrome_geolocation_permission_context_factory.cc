@@ -74,11 +74,12 @@ ChromeGeolocationPermissionContextFactory::BuildServiceInstanceFor(
 }
 
 void ChromeGeolocationPermissionContextFactory::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
+    user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_ANDROID)
-  registry->RegisterBooleanPref(prefs::kGeolocationEnabled,
-                                true,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kGeolocationEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
 }
 

@@ -53,10 +53,12 @@ void IncognitoModePrefs::SetAvailability(PrefService* prefs,
 }
 
 // static
-void IncognitoModePrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kIncognitoModeAvailability,
-                                IncognitoModePrefs::ENABLED,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+void IncognitoModePrefs::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kIncognitoModeAvailability,
+      IncognitoModePrefs::ENABLED,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

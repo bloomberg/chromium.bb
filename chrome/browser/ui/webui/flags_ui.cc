@@ -208,9 +208,9 @@ void FlagsUI::RegisterPrefs(PrefRegistrySimple* registry) {
 
 #if defined(OS_CHROMEOS)
 // static
-void FlagsUI::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void FlagsUI::RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kEnabledLabsExperiments,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void FlagsUI::FinishInitialization(

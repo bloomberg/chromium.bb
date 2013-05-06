@@ -15,8 +15,11 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
 
-class PrefRegistrySyncable;
 class PrefService;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 namespace content_settings {
 
@@ -25,7 +28,7 @@ namespace content_settings {
 // default values.
 class DefaultProvider : public ObservableProvider {
  public:
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   DefaultProvider(PrefService* prefs,
                   bool incognito);

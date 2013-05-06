@@ -51,33 +51,38 @@ PluginPrefsFactory::BuildServiceInstanceFor(
   return plugin_prefs;
 }
 
-void PluginPrefsFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void PluginPrefsFactory::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   base::FilePath internal_dir;
   PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
-  registry->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
-                                 internal_dir,
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kPluginsEnabledNaCl,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kPluginsMigratedToPepperFlash,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterFilePathPref(
+      prefs::kPluginsLastInternalDirectory,
+      internal_dir,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPluginsEnabledInternalPDF,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPluginsEnabledNaCl,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPluginsMigratedToPepperFlash,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kPluginsRemovedOldComponentPepperFlashSettings,
       false,
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kPluginsPluginsList,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kPluginsDisabledPlugins,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kPluginsEnabledPlugins,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 content::BrowserContext* PluginPrefsFactory::GetBrowserContextToUse(

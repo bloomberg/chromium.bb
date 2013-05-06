@@ -22,7 +22,7 @@ class ScopedUserPrefUpdateTest : public testing::Test {
   virtual void SetUp() {
     prefs_.registry()->RegisterDictionaryPref(
         kPref,
-        PrefRegistrySyncable::UNSYNCABLE_PREF);
+        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
     registrar_.Init(&prefs_);
     registrar_.Add(kPref, observer_.GetCallback());
   }

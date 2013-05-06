@@ -18,7 +18,6 @@
 
 class BackingStore;
 class GURL;
-class PrefRegistrySyncable;
 class SkBitmap;
 
 namespace base {
@@ -36,6 +35,10 @@ struct InjectDetails;
 }  // namespace tabs
 }  // namespace api
 }  // namespace extensions
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 // Windows
 class WindowsGetFunction : public SyncExtensionFunction {
@@ -176,7 +179,7 @@ class TabsDetectLanguageFunction : public AsyncExtensionFunction,
 };
 class TabsCaptureVisibleTabFunction : public AsyncExtensionFunction {
  public:
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
   enum ImageFormat {

@@ -35,7 +35,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 
 class GURL;
-class PrefRegistrySyncable;
 
 struct ViewHostMsg_FrameNavigate_Params;
 
@@ -51,6 +50,10 @@ class RectF;
 
 namespace IPC {
 class Message;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace autofill {
@@ -82,7 +85,7 @@ class AutofillManager : public content::WebContentsObserver,
   static AutofillManager* FromWebContents(content::WebContents* contents);
 
   // Registers our Enable/Disable Autofill pref.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Set an external delegate.
   void SetExternalDelegate(AutofillExternalDelegate* delegate);

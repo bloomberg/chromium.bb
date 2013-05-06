@@ -92,13 +92,15 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
 MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher() {}
 
 void MediaCaptureDevicesDispatcher::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(prefs::kDefaultAudioCaptureDevice,
-                               std::string(),
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kDefaultVideoCaptureDevice,
-                               std::string(),
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(
+      prefs::kDefaultAudioCaptureDevice,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kDefaultVideoCaptureDevice,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void MediaCaptureDevicesDispatcher::AddObserver(Observer* observer) {

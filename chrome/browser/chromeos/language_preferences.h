@@ -38,7 +38,7 @@ struct LanguageMultipleChoicePreference {
     int item_message_id;  // Resource grd ID for the combobox item.
   } values_and_ids[kMaxItems];
   int label_message_id;  // Resource grd ID for the label.
-  PrefRegistrySyncable::PrefSyncStatus sync_status;
+  user_prefs::PrefRegistrySyncable::PrefSyncStatus sync_status;
 };
 
 // The struct is used for preferences of boolean values, like switches to
@@ -48,7 +48,7 @@ struct LanguageBooleanPrefs {
   bool default_pref_value;
   const char* ibus_config_name;
   int message_id;
-  PrefRegistrySyncable::PrefSyncStatus sync_status;
+  user_prefs::PrefRegistrySyncable::PrefSyncStatus sync_status;
 };
 
 // The struct is used for preferences of integer range values, like the
@@ -60,7 +60,7 @@ struct LanguageIntegerRangePreference {
   int max_pref_value;
   const char* ibus_config_name;
   int message_id;
-  PrefRegistrySyncable::PrefSyncStatus sync_status;
+  user_prefs::PrefRegistrySyncable::PrefSyncStatus sync_status;
 };
 
 // ---------------------------------------------------------------------------
@@ -125,7 +125,7 @@ struct PinyinIntegerPref {
   const char* pref_name;  // Chrome preference name.
   int default_pref_value;
   const char* ibus_config_name;
-  PrefRegistrySyncable::PrefSyncStatus sync_status;
+  user_prefs::PrefRegistrySyncable::PrefSyncStatus sync_status;
   // TODO(yusukes): Add message_id if needed.
 };
 

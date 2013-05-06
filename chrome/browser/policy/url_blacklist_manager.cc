@@ -399,11 +399,12 @@ bool URLBlacklistManager::IsRequestBlocked(
 }
 
 // static
-void URLBlacklistManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void URLBlacklistManager::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kUrlBlacklist,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kUrlWhitelist,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace policy

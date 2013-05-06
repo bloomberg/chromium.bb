@@ -10,6 +10,8 @@
 #include "base/values.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace user_prefs {
+
 namespace {
 
 // A helper function for RegisterLocalized*Pref that creates a Value*
@@ -219,3 +221,5 @@ scoped_refptr<PrefRegistrySyncable> PrefRegistrySyncable::ForkForIncognito() {
   registry->defaults_ = defaults_;
   return registry;
 }
+
+}  // namespace user_prefs

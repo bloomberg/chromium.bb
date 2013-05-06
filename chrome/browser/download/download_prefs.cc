@@ -81,26 +81,32 @@ DownloadPrefs::~DownloadPrefs() {
 }
 
 // static
-void DownloadPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kPromptForDownload,
-                                false,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kDownloadExtensionsToOpen,
-                               std::string(),
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kDownloadDirUpgraded,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(prefs::kSaveFileType,
-                                content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+void DownloadPrefs::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kPromptForDownload,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kDownloadExtensionsToOpen,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kDownloadDirUpgraded,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kSaveFileType,
+      content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // The default download path is userprofile\download.
   const base::FilePath& default_download_path =
       download_util::GetDefaultDownloadDirectory();
-  registry->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
-                                 default_download_path,
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterFilePathPref(
+      prefs::kDownloadDefaultDirectory,
+      default_download_path,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
 #if defined(OS_CHROMEOS)
   // Ensure that the download directory specified in the preferences exists.

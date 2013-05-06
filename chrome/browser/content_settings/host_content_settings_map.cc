@@ -138,16 +138,20 @@ void HostContentSettingsMap::RegisterExtensionService(
 #endif
 
 // static
-void HostContentSettingsMap::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex,
-                                0,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(prefs::kContentSettingsDefaultWhitelistVersion,
-                                0,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kContentSettingsClearOnExitMigrated,
-                                false,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
+void HostContentSettingsMap::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kContentSettingsWindowLastTabIndex,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kContentSettingsDefaultWhitelistVersion,
+      0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kContentSettingsClearOnExitMigrated,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // Register the prefs for the content settings providers.
   content_settings::DefaultProvider::RegisterUserPrefs(registry);

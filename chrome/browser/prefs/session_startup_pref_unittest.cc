@@ -19,14 +19,16 @@ class SessionStartupPrefTest : public testing::Test {
   virtual void SetUp() {
     pref_service_.reset(new TestingPrefServiceSyncable);
     SessionStartupPref::RegisterUserPrefs(registry());
-    registry()->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
-                                    true,
-                                    PrefRegistrySyncable::UNSYNCABLE_PREF);
+    registry()->RegisterBooleanPref(
+        prefs::kHomePageIsNewTabPage,
+        true,
+        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
     // Make the tests independent of the Mac startup pref migration (see
     // SessionStartupPref::MigrateMacDefaultPrefIfNecessary).
-    registry()->RegisterStringPref(prefs::kProfileCreatedByVersion,
-                                   "22.0.0.0",
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+    registry()->RegisterStringPref(
+        prefs::kProfileCreatedByVersion,
+        "22.0.0.0",
+        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 
   bool IsUseLastOpenDefault() {
@@ -38,7 +40,7 @@ class SessionStartupPrefTest : public testing::Test {
 #endif
   }
 
-  PrefRegistrySyncable* registry() {
+  user_prefs::PrefRegistrySyncable* registry() {
     return pref_service_->registry();
   }
 
@@ -87,8 +89,10 @@ TEST_F(SessionStartupPrefTest, URLListManagedOverridesUser) {
 // (so that, in effect, the default value "Open the homepage" was selected),
 // their preferences are migrated on upgrade to m19.
 TEST_F(SessionStartupPrefTest, DefaultMigration) {
-  registry()->RegisterStringPref(prefs::kHomePage, "http://google.com/",
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry()->RegisterStringPref(
+      prefs::kHomePage,
+      "http://google.com/",
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   pref_service_->SetString(prefs::kHomePage, "http://chromium.org/");
   pref_service_->SetBoolean(prefs::kHomePageIsNewTabPage, false);
 
@@ -112,8 +116,10 @@ TEST_F(SessionStartupPrefTest, DefaultMigration) {
 // and the NTP is being used for the homepage, their preferences are migrated
 // to "Open the New Tab Page" on upgrade to M19.
 TEST_F(SessionStartupPrefTest, DefaultMigrationHomepageIsNTP) {
-  registry()->RegisterStringPref(prefs::kHomePage, "http://google.com/",
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry()->RegisterStringPref(
+      prefs::kHomePage,
+      "http://google.com/",
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   pref_service_->SetString(prefs::kHomePage, "http://chromium.org/");
   pref_service_->SetBoolean(prefs::kHomePageIsNewTabPage, true);
 
@@ -134,8 +140,10 @@ TEST_F(SessionStartupPrefTest, DefaultMigrationHomepageIsNTP) {
 // Checks to make sure that if the user had previously selected "Open the
 // "homepage", their preferences are migrated on upgrade to M19.
 TEST_F(SessionStartupPrefTest, HomePageMigration) {
-  registry()->RegisterStringPref(prefs::kHomePage, "http://google.com/",
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry()->RegisterStringPref(
+      prefs::kHomePage,
+      "http://google.com/",
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // By design, it's impossible to set the 'restore on startup' pref to 0
   // ("open the homepage") using SessionStartupPref::SetStartupPref(), so set it
@@ -156,8 +164,10 @@ TEST_F(SessionStartupPrefTest, HomePageMigration) {
 // "homepage", and the NTP is being used for the homepage, their preferences
 // are migrated on upgrade to M19.
 TEST_F(SessionStartupPrefTest, HomePageMigrationHomepageIsNTP) {
-  registry()->RegisterStringPref(prefs::kHomePage, "http://google.com/",
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry()->RegisterStringPref(
+      prefs::kHomePage,
+      "http://google.com/",
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // By design, it's impossible to set the 'restore on startup' pref to 0
   // ("open the homepage") using SessionStartupPref::SetStartupPref(), so set it

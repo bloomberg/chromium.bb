@@ -11,10 +11,12 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class PrefRegistrySyncable;
-
 namespace base {
 class Value;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace extensions {
@@ -36,7 +38,7 @@ class ExtensionPrefsTest : public ExtensionTest {
   virtual void Verify() = 0;
 
   // This function is called to Register preference default values.
-  virtual void RegisterPreferences(PrefRegistrySyncable* registry);
+  virtual void RegisterPreferences(user_prefs::PrefRegistrySyncable* registry);
 
   virtual void SetUp() OVERRIDE;
 
@@ -59,7 +61,8 @@ class ExtensionPrefsPrepopulatedTest : public ExtensionPrefsTest {
   ExtensionPrefsPrepopulatedTest();
   virtual ~ExtensionPrefsPrepopulatedTest();
 
-  virtual void RegisterPreferences(PrefRegistrySyncable* registry) OVERRIDE;
+  virtual void RegisterPreferences(
+      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
 
   void InstallExtControlledPref(Extension* ext,
                                 const std::string& key,

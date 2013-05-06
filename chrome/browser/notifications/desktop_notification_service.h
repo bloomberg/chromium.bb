@@ -27,7 +27,6 @@ class ContentSettingsPattern;
 class Notification;
 class NotificationDelegate;
 class NotificationUIManager;
-class PrefRegistrySyncable;
 class Profile;
 
 namespace content {
@@ -37,6 +36,10 @@ struct ShowDesktopNotificationHostMsgParams;
 
 namespace gfx {
 class Image;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // The DesktopNotificationService is an object, owned by the Profile,
@@ -49,7 +52,7 @@ class DesktopNotificationService : public ProfileKeyedService {
   };
 
   // Register profile-specific prefs of notifications.
-  static void RegisterUserPrefs(PrefRegistrySyncable* prefs);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* prefs);
 
   DesktopNotificationService(Profile* profile,
                              NotificationUIManager* ui_manager);

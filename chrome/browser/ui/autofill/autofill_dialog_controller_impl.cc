@@ -261,10 +261,11 @@ base::WeakPtr<AutofillDialogControllerImpl>
 
 // static
 void AutofillDialogControllerImpl::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(::prefs::kAutofillDialogPayWithoutWallet,
-                                kPayWithoutWalletDefault,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      ::prefs::kAutofillDialogPayWithoutWallet,
+      kPayWithoutWalletDefault,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void AutofillDialogControllerImpl::Show() {

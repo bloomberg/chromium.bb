@@ -12,11 +12,14 @@
 #include "ppapi/shared_impl/ppp_flash_browser_operations_shared.h"
 
 class PluginPrefs;
-class PrefRegistrySyncable;
 class PrefService;
 
 namespace content {
 class BrowserContext;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace webkit {
@@ -63,7 +66,7 @@ class PepperFlashSettingsManager {
   static bool IsPepperFlashInUse(PluginPrefs* plugin_prefs,
                                  webkit::WebPluginInfo* plugin_info);
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Requests to deauthorize content licenses.
   // Client::OnDeauthorizeContentLicensesCompleted() will be called when the

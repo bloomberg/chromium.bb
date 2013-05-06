@@ -37,10 +37,13 @@
 #include "ui/base/ui_base_types.h"
 
 class Profile;
-class PrefRegistrySyncable;
 
 namespace content {
 class WebContents;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace autofill {
@@ -79,7 +82,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback);
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   void Show();
   void Hide();

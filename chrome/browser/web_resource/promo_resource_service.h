@@ -10,14 +10,17 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_resource/web_resource_service.h"
 
+class NotificationPromo;
+class PrefRegistrySimple;
+class PrefService;
+
 namespace base {
 class DictionaryValue;
 }
 
-class NotificationPromo;
-class PrefRegistrySimple;
+namespace user_prefs {
 class PrefRegistrySyncable;
-class PrefService;
+}
 
 // A PromoResourceService fetches data from a web resource server to be used to
 // dynamically change the appearance of the New Tab Page. For example, it has
@@ -26,7 +29,7 @@ class PrefService;
 class PromoResourceService : public WebResourceService {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
   static void MigrateUserPrefs(PrefService* user_prefs);
 
   PromoResourceService();

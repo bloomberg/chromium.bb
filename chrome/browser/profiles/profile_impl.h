@@ -21,7 +21,6 @@
 #include "content/public/browser/host_zoom_map.h"
 
 class NetPrefObserver;
-class PrefRegistrySyncable;
 class PrefService;
 class PrefServiceSyncable;
 class SSLConfigServiceManager;
@@ -51,6 +50,10 @@ class CloudPolicyManager;
 class ProfilePolicyConnector;
 }
 
+namespace user_prefs {
+class refRegistrySyncable;
+}
+
 // The default profile implementation.
 class ProfileImpl : public Profile {
  public:
@@ -59,7 +62,7 @@ class ProfileImpl : public Profile {
 
   virtual ~ProfileImpl();
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // content::BrowserContext implementation:
   virtual base::FilePath GetPath() OVERRIDE;
@@ -210,7 +213,7 @@ class ProfileImpl : public Profile {
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
   // |net_pref_observer_|, |io_data_| and others store pointers to |prefs_| and
   // shall be destructed first.
-  scoped_refptr<PrefRegistrySyncable> pref_registry_;
+  scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
   scoped_ptr<PrefServiceSyncable> prefs_;
   scoped_ptr<PrefServiceSyncable> otr_prefs_;
   ProfileImplIOData::Handle io_data_;

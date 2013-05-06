@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 
 class PluginPrefs;
-class PrefRegistrySyncable;
 class Profile;
 class ProfileKeyedService;
 
@@ -36,7 +35,8 @@ class PluginPrefsFactory : public RefcountedProfileKeyedServiceFactory {
       content::BrowserContext* context) const OVERRIDE;
 
   // ProfileKeyedServiceFactory methods:
-  virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
+  virtual void RegisterUserPrefs(
+      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;

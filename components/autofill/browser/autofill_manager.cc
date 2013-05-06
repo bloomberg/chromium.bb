@@ -222,25 +222,31 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
 AutofillManager::~AutofillManager() {}
 
 // static
-void AutofillManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kAutofillEnabled,
-                                true,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
+void AutofillManager::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kAutofillEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
-  registry->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
-                                true,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAutofillAuxiliaryProfilesEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #else
-  registry->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAutofillAuxiliaryProfilesEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
-  registry->RegisterDoublePref(prefs::kAutofillPositiveUploadRate,
-                               kAutofillPositiveUploadRateDefaultValue,
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(prefs::kAutofillNegativeUploadRate,
-                               kAutofillNegativeUploadRateDefaultValue,
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDoublePref(
+      prefs::kAutofillPositiveUploadRate,
+      kAutofillPositiveUploadRateDefaultValue,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDoublePref(
+      prefs::kAutofillNegativeUploadRate,
+      kAutofillNegativeUploadRateDefaultValue,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void AutofillManager::DidNavigateMainFrame(

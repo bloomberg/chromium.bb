@@ -21,7 +21,9 @@ namespace content {
 struct PasswordForm;
 }
 
+namespace user_prefs {
 class PrefRegistrySyncable;
+}
 
 // Per-tab manager for password generation. Will enable this feature only if
 //
@@ -44,7 +46,7 @@ class PasswordGenerationManager
       public content::WebContentsUserData<PasswordGenerationManager> {
  public:
   static void CreateForWebContents(content::WebContents* contents);
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
   virtual ~PasswordGenerationManager();
 
  protected:

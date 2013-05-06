@@ -58,9 +58,11 @@ ForeignSessionHandler::ForeignSessionHandler() {
 }
 
 // static
-void ForeignSessionHandler::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(prefs::kNtpCollapsedForeignSessions,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+void ForeignSessionHandler::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(
+      prefs::kNtpCollapsedForeignSessions,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

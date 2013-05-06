@@ -14,11 +14,14 @@
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_instance.h"
 
-class PrefRegistrySyncable;
 class Profile;
 
 namespace content {
 class BrowserPpapiHost;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace chrome {
@@ -37,7 +40,7 @@ class DeviceIDFetcher : public base::RefCountedThreadSafe<DeviceIDFetcher> {
   void Start(content::BrowserPpapiHost* browser_host);
 
   // Called to register the |kEnableDRM| and |kDRMSalt| preferences.
-  static void RegisterUserPrefs(PrefRegistrySyncable* prefs);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* prefs);
 
   // Return the path where the legacy device ID is stored (for ChromeOS only).
   static base::FilePath GetLegacyDeviceIDPath(

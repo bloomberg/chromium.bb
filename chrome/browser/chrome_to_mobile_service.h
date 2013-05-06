@@ -31,11 +31,14 @@ class OAuth2AccessTokenFetcher;
 class Browser;
 class CloudPrintURL;
 class MockChromeToMobileService;
-class PrefRegistrySyncable;
 class Profile;
 
 namespace net {
 class URLFetcher;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // ChromeToMobileService connects to the cloud print service to enumerate
@@ -98,7 +101,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   static bool UpdateAndGetCommandState(Browser* browser);
 
   // Register the user prefs associated with this service.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   explicit ChromeToMobileService(Profile* profile);
   virtual ~ChromeToMobileService();

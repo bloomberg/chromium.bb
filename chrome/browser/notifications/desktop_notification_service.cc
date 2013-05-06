@@ -238,12 +238,12 @@ bool NotificationPermissionInfoBarDelegate::Cancel() {
 
 // static
 void DesktopNotificationService::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
+    user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_CHROMEOS) || defined(ENABLE_MESSAGE_CENTER)
   registry->RegisterListPref(prefs::kMessageCenterDisabledExtensionIds,
-                             PrefRegistrySyncable::SYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kMessageCenterDisabledSystemComponentIds,
-                             PrefRegistrySyncable::SYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
 }
 

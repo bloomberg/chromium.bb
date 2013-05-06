@@ -1858,9 +1858,11 @@ void TabsCaptureVisibleTabFunction::SendResultFromBitmap(
 }
 
 void TabsCaptureVisibleTabFunction::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kDisableScreenshots, false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kDisableScreenshots,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool TabsDetectLanguageFunction::RunImpl() {

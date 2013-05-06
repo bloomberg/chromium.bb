@@ -38,12 +38,13 @@ ProfileKeyedService* GAIAInfoUpdateServiceFactory::BuildServiceInstanceFor(
 }
 
 void GAIAInfoUpdateServiceFactory::RegisterUserPrefs(
-    PrefRegistrySyncable* prefs) {
-  prefs->RegisterInt64Pref(prefs::kProfileGAIAInfoUpdateTime, 0,
-                           PrefRegistrySyncable::UNSYNCABLE_PREF);
+    user_prefs::PrefRegistrySyncable* prefs) {
+  prefs->RegisterInt64Pref(prefs::kProfileGAIAInfoUpdateTime,
+                           0,
+                           user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kProfileGAIAInfoPictureURL,
                             std::string(),
-                            PrefRegistrySyncable::UNSYNCABLE_PREF);
+                            user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool GAIAInfoUpdateServiceFactory::ServiceIsNULLWhileTesting() const {

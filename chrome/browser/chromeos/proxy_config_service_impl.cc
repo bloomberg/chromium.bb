@@ -594,10 +594,12 @@ void ProxyConfigServiceImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void ProxyConfigServiceImpl::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kUseSharedProxies,
-                                true,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+void ProxyConfigServiceImpl::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kUseSharedProxies,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 //------------------ ProxyConfigServiceImpl: private methods -------------------

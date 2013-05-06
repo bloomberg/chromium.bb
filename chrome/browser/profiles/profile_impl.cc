@@ -272,58 +272,72 @@ int ProfileImpl::create_readme_delay_ms = 60000;
 const char* const ProfileImpl::kPrefExitTypeNormal = "Normal";
 
 // static
-void ProfileImpl::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kAllowDeletingBrowserHistory,
-                                true,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kSigninAllowed,
-                                true,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kForceSafeSearch,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(prefs::kProfileAvatarIndex,
-                                -1,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kProfileName, std::string(), PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kProfileIsManaged,
-                                false,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
+void ProfileImpl::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kSavingBrowserHistoryDisabled,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAllowDeletingBrowserHistory,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kSigninAllowed,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kForceSafeSearch,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kProfileAvatarIndex,
+      -1,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kProfileName,
+                               std::string(),
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kProfileIsManaged,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kHomePage,
                                std::string(),
-                               PrefRegistrySyncable::SYNCABLE_PREF);
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(ENABLE_PRINTING)
-  registry->RegisterBooleanPref(prefs::kPrintingEnabled,
-                                true,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPrintingEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
-  registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled,
+  registry->RegisterBooleanPref(
+      prefs::kPrintPreviewDisabled,
 #if defined(GOOGLE_CHROME_BUILD)
-                                false,
+      false,
 #else
-                                true,
+      true,
 #endif
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // Initialize the cache prefs.
-  registry->RegisterFilePathPref(prefs::kDiskCacheDir,
-                                 base::FilePath(),
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(prefs::kDiskCacheSize,
-                                0,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(prefs::kMediaCacheSize,
-                                0,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterFilePathPref(
+      prefs::kDiskCacheDir,
+      base::FilePath(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kDiskCacheSize,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kMediaCacheSize,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // Deprecated. Kept around for migration.
-  registry->RegisterBooleanPref(prefs::kClearSiteDataOnExit,
-                                false,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kClearSiteDataOnExit,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 ProfileImpl::ProfileImpl(
@@ -334,7 +348,7 @@ ProfileImpl::ProfileImpl(
     : zoom_callback_(base::Bind(&ProfileImpl::OnZoomLevelChanged,
                                 base::Unretained(this))),
       path_(path),
-      pref_registry_(new PrefRegistrySyncable),
+      pref_registry_(new user_prefs::PrefRegistrySyncable),
       io_data_(this),
       host_content_settings_map_(NULL),
       last_session_exit_type_(EXIT_NORMAL),

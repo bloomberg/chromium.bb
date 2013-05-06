@@ -11,8 +11,11 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class PrefRegistrySyncable;
 class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 // Per-tab class to implement alternate error page functionality.
 class AlternateErrorPageTabObserver
@@ -22,7 +25,7 @@ class AlternateErrorPageTabObserver
  public:
   virtual ~AlternateErrorPageTabObserver();
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   explicit AlternateErrorPageTabObserver(content::WebContents* web_contents);

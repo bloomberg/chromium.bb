@@ -19,7 +19,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class DownloadPrefs;
-class PrefRegistrySyncable;
 class Profile;
 
 namespace content {
@@ -28,6 +27,10 @@ class DownloadManager;
 
 namespace extensions {
 class CrxInstaller;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 #if defined(COMPILER_GCC)
@@ -50,7 +53,7 @@ class ChromeDownloadManagerDelegate
  public:
   explicit ChromeDownloadManagerDelegate(Profile* profile);
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Should be called before the first call to ShouldCompleteDownload() to
   // disable SafeBrowsing checks for |item|.

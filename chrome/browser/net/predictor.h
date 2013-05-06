@@ -33,23 +33,23 @@
 #include "chrome/common/net/predictor_common.h"
 #include "net/base/host_port_pair.h"
 
-namespace base {
-class ListValue;
-}
+class IOThread;
+class PrefService;
+class Profile;
 
 namespace base {
+class ListValue;
 class WaitableEvent;
 }
 
 namespace net {
 class HostResolver;
 class URLRequestContextGetter;
-}  // namespace net
+}
 
-class IOThread;
-class PrefService;
+namespace user_prefs {
 class PrefRegistrySyncable;
-class Profile;
+}
 
 namespace chrome_browser_net {
 
@@ -102,7 +102,7 @@ class Predictor {
   static Predictor* CreatePredictor(bool preconnect_enabled,
                                     bool simple_shutdown);
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // ------------- Start UI thread methods.
 

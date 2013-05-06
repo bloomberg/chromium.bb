@@ -39,9 +39,11 @@ std::string GetPlatformKeybindingKeyForAccelerator(
 namespace extensions {
 
 // static
-void CommandService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(prefs::kExtensionCommands,
-                                   PrefRegistrySyncable::SYNCABLE_PREF);
+void CommandService::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(
+      prefs::kExtensionCommands,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 CommandService::CommandService(Profile* profile)

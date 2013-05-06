@@ -54,29 +54,34 @@ extern const char kShelfAlignmentLeft[] = "Left";
 extern const char kShelfAlignmentRight[] = "Right";
 extern const char kShelfAlignmentTop[] = "Top";
 
-void RegisterChromeLauncherUserPrefs(PrefRegistrySyncable* registry) {
+void RegisterChromeLauncherUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   // TODO: If we want to support multiple profiles this will likely need to be
   // pushed to local state and we'll need to track profile per item.
   registry->RegisterListPref(prefs::kPinnedLauncherApps,
-                               CreateDefaultPinnedAppsList(),
-                               PrefRegistrySyncable::SYNCABLE_PREF);
+                             CreateDefaultPinnedAppsList(),
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kShelfAutoHideBehavior,
-                                 kShelfAutoHideBehaviorNever,
-                                 PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kShelfAutoHideBehaviorLocal,
-                                 std::string(),
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+                               kShelfAutoHideBehaviorNever,
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kShelfAutoHideBehaviorLocal,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kShelfAlignment,
-                                 kShelfAlignmentBottom,
-                                 PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kShelfAlignmentLocal,
-                                 std::string(),
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kShowLogoutButtonInTray,
-                                  false,
-                                  PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(prefs::kShelfPreferences,
-                                     PrefRegistrySyncable::UNSYNCABLE_PREF);
+                               kShelfAlignmentBottom,
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kShelfAlignmentLocal,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kShowLogoutButtonInTray,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kShelfPreferences,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 base::DictionaryValue* CreateAppDict(const std::string& app_id) {

@@ -8,11 +8,14 @@
 #include "base/prefs/pref_service_builder.h"
 
 class CommandLine;
-class PrefRegistrySyncable;
 class PrefServiceSyncable;
 
 namespace policy {
 class PolicyService;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // A PrefServiceBuilder that also knows how to build a
@@ -34,7 +37,8 @@ class PrefServiceSyncableBuilder : public PrefServiceBuilder {
   // Specifies to use an actual command-line backed command-line pref store.
   PrefServiceSyncableBuilder& WithCommandLine(CommandLine* command_line);
 
-  virtual PrefServiceSyncable* CreateSyncable(PrefRegistrySyncable* registry);
+  virtual PrefServiceSyncable* CreateSyncable(
+      user_prefs::PrefRegistrySyncable* registry);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrefServiceSyncableBuilder);

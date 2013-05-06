@@ -19,7 +19,7 @@ PrefService* PrefServiceMockBuilder::Create(PrefRegistry* pref_registry) {
 }
 
 PrefServiceSyncable* PrefServiceMockBuilder::CreateSyncable(
-    PrefRegistrySyncable* pref_registry) {
+    user_prefs::PrefRegistrySyncable* pref_registry) {
   PrefServiceSyncable* service =
       PrefServiceSyncableBuilder::CreateSyncable(pref_registry);
   return service;

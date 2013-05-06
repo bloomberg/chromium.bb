@@ -18,6 +18,8 @@ class ListValue;
 class Value;
 }
 
+namespace user_prefs {
+
 // A PrefRegistry that forces users to choose whether each registered
 // preference is syncable or not.
 //
@@ -123,5 +125,7 @@ class USER_PREFS_EXPORT PrefRegistrySyncable : public PrefRegistry {
 
   DISALLOW_COPY_AND_ASSIGN(PrefRegistrySyncable);
 };
+
+}  // namespace user_prefs
 
 #endif  // COMPONENTS_USER_PREFS_PREF_REGISTRY_SYNCABLE_H_

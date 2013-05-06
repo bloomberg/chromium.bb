@@ -40,7 +40,6 @@ class GlobalMenuBar;
 class InfoBarContainerGtk;
 class InstantOverlayControllerGtk;
 class LocationBar;
-class PrefRegistrySyncable;
 class StatusBubbleGtk;
 class TabContentsContainerGtk;
 class TabStripGtk;
@@ -54,17 +53,19 @@ class ActiveTabPermissionGranter;
 class Extension;
 }
 
-// An implementation of BrowserWindow for GTK.
-// Cross-platform code will interact with this object when
-// it needs to manipulate the window.
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
-class BrowserWindowGtk
-    : public BrowserWindow,
-      public content::NotificationObserver,
-      public TabStripModelObserver,
-      public ui::ActiveWindowWatcherXObserver,
-      public InfoBarContainer::Delegate,
-      public extensions::ExtensionKeybindingRegistry::Delegate {
+// An implementation of BrowserWindow for GTK. Cross-platform code will interact
+// with this object when it needs to manipulate the window.
+class BrowserWindowGtk :
+    public BrowserWindow,
+    public content::NotificationObserver,
+    public TabStripModelObserver,
+    public ui::ActiveWindowWatcherXObserver,
+    public InfoBarContainer::Delegate,
+    public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   explicit BrowserWindowGtk(Browser* browser);
   virtual ~BrowserWindowGtk();
@@ -248,7 +249,7 @@ class BrowserWindowGtk
   // Returns the tab we're currently displaying in the tab contents container.
   content::WebContents* GetDisplayedTab();
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Tells GTK that the toolbar area is invalidated and needs redrawing. We
   // have this method as a hack because GTK doesn't queue the toolbar area for

@@ -24,7 +24,10 @@
 class ExtensionPrefValueMap;
 class ExtensionSorting;
 class PrefService;
+
+namespace user_prefs {
 class PrefRegistrySyncable;
+}
 
 namespace extensions {
 class ExtensionPrefsUninstallExtension;
@@ -517,7 +520,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // found.
   base::Time GetInstallTime(const std::string& extension_id) const;
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   ContentSettingsStore* content_settings_store() {
     return content_settings_store_.get();

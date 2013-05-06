@@ -48,14 +48,15 @@ ProfileKeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
   return bookmark_model;
 }
 
-void BookmarkModelFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void BookmarkModelFactory::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   // Don't sync this, as otherwise, due to a limitation in sync, it
   // will cause a deadlock (see http://crbug.com/97955).  If we truly
   // want to sync the expanded state of folders, it should be part of
   // bookmark sync itself (i.e., a property of the sync folder nodes).
   registry->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
                              new base::ListValue,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 content::BrowserContext* BookmarkModelFactory::GetBrowserContextToUse(

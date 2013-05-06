@@ -360,34 +360,36 @@ ProfileKeyedService* GesturePrefsObserverFactoryAura::BuildServiceInstanceFor(
 }
 
 void GesturePrefsObserverFactoryAura::RegisterOverscrollPrefs(
-    PrefRegistrySyncable* registry) {
+    user_prefs::PrefRegistrySyncable* registry) {
   const std::vector<OverscrollPref>& overscroll_prefs = GetOverscrollPrefs();
 
   for (size_t i = 0; i < overscroll_prefs.size(); ++i) {
     registry->RegisterDoublePref(
         overscroll_prefs[i].pref_name,
         content::GetOverscrollConfig(overscroll_prefs[i].config),
-        PrefRegistrySyncable::UNSYNCABLE_PREF);
+        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 }
 
 void GesturePrefsObserverFactoryAura::RegisterFlingCurveParameters(
-    PrefRegistrySyncable* registry) {
+    user_prefs::PrefRegistrySyncable* registry) {
   content::RendererPreferences def_prefs;
 
   for (size_t i = 0; i < arraysize(kFlingTouchpadPrefs); i++)
-    registry->RegisterDoublePref(kFlingTouchpadPrefs[i],
-                                 def_prefs.touchpad_fling_profile[i],
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+    registry->RegisterDoublePref(
+        kFlingTouchpadPrefs[i],
+        def_prefs.touchpad_fling_profile[i],
+        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   for (size_t i = 0; i < arraysize(kFlingTouchscreenPrefs); i++)
-    registry->RegisterDoublePref(kFlingTouchscreenPrefs[i],
-                                 def_prefs.touchscreen_fling_profile[i],
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+    registry->RegisterDoublePref(
+        kFlingTouchscreenPrefs[i],
+        def_prefs.touchscreen_fling_profile[i],
+        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void GesturePrefsObserverFactoryAura::RegisterWorkspaceCyclerPrefs(
-    PrefRegistrySyncable* registry) {
+    user_prefs::PrefRegistrySyncable* registry) {
 #if defined(USE_ASH)
   const std::vector<WorkspaceCyclerPref>& cycler_prefs =
       GetWorkspaceCyclerPrefs();
@@ -398,132 +400,133 @@ void GesturePrefsObserverFactoryAura::RegisterWorkspaceCyclerPrefs(
       registry->RegisterListPref(
           cycler_prefs[i].pref_name,
           WorkspaceCyclerConfiguration::GetListValue(property).DeepCopy(),
-          PrefRegistrySyncable::UNSYNCABLE_PREF);
+          user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
     } else {
       registry->RegisterDoublePref(
           cycler_prefs[i].pref_name,
           WorkspaceCyclerConfiguration::GetDouble(property),
-          PrefRegistrySyncable::UNSYNCABLE_PREF);
+          user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
     }
   }
 #endif  // USE_ASH
 }
 
 void GesturePrefsObserverFactoryAura::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
+    user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDoublePref(
       prefs::kFlingAccelerationCurveCoefficient0,
       GestureConfiguration::fling_acceleration_curve_coefficients(0),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kFlingAccelerationCurveCoefficient1,
       GestureConfiguration::fling_acceleration_curve_coefficients(1),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kFlingAccelerationCurveCoefficient2,
       GestureConfiguration::fling_acceleration_curve_coefficients(2),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kFlingAccelerationCurveCoefficient3,
       GestureConfiguration::fling_acceleration_curve_coefficients(3),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kFlingMaxCancelToDownTimeInMs,
       GestureConfiguration::fling_max_cancel_to_down_time_in_ms(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kFlingMaxTapGapTimeInMs,
       GestureConfiguration::fling_max_tap_gap_time_in_ms(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kTabScrubActivationDelayInMS,
       GestureConfiguration::tab_scrub_activation_delay_in_ms(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kFlingVelocityCap,
       GestureConfiguration::fling_velocity_cap(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kLongPressTimeInSeconds,
       GestureConfiguration::long_press_time_in_seconds(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kSemiLongPressTimeInSeconds,
       GestureConfiguration::semi_long_press_time_in_seconds(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMaxDistanceForTwoFingerTapInPixels,
       GestureConfiguration::max_distance_for_two_finger_tap_in_pixels(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMaxSecondsBetweenDoubleClick,
       GestureConfiguration::max_seconds_between_double_click(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMaxSeparationForGestureTouchesInPixels,
       GestureConfiguration::max_separation_for_gesture_touches_in_pixels(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMaxSwipeDeviationRatio,
       GestureConfiguration::max_swipe_deviation_ratio(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMaxTouchDownDurationInSecondsForClick,
       GestureConfiguration::max_touch_down_duration_in_seconds_for_click(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMaxTouchMoveInPixelsForClick,
       GestureConfiguration::max_touch_move_in_pixels_for_click(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMaxDistanceBetweenTapsForDoubleTap,
       GestureConfiguration::max_distance_between_taps_for_double_tap(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMinDistanceForPinchScrollInPixels,
       GestureConfiguration::min_distance_for_pinch_scroll_in_pixels(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMinFlickSpeedSquared,
       GestureConfiguration::min_flick_speed_squared(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMinPinchUpdateDistanceInPixels,
       GestureConfiguration::min_pinch_update_distance_in_pixels(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMinRailBreakVelocity,
       GestureConfiguration::min_rail_break_velocity(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMinScrollDeltaSquared,
       GestureConfiguration::min_scroll_delta_squared(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMinSwipeSpeed,
       GestureConfiguration::min_swipe_speed(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMinTouchDownDurationInSecondsForClick,
       GestureConfiguration::min_touch_down_duration_in_seconds_for_click(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kPointsBufferedForVelocity,
       GestureConfiguration::points_buffered_for_velocity(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kRailBreakProportion,
       GestureConfiguration::rail_break_proportion(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kRailStartProportion,
       GestureConfiguration::rail_start_proportion(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // Register for migration.
-  registry->RegisterDoublePref(kTouchScreenFlingAccelerationAdjustment,
-                               0.0,
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDoublePref(
+      kTouchScreenFlingAccelerationAdjustment,
+      0.0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   RegisterOverscrollPrefs(registry);
   RegisterFlingCurveParameters(registry);

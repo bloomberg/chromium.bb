@@ -34,7 +34,7 @@ PrefServiceSyncable::PrefServiceSyncable(
     PrefNotifierImpl* pref_notifier,
     PrefValueStore* pref_value_store,
     PersistentPrefStore* user_prefs,
-    PrefRegistrySyncable* pref_registry,
+    user_prefs::PrefRegistrySyncable* pref_registry,
     base::Callback<void(PersistentPrefStore::PrefReadError)>
         read_error_callback,
     bool async)
@@ -55,9 +55,9 @@ PrefServiceSyncable::PrefServiceSyncable(
                  base::Unretained(this)));
 
   // Add already-registered syncable preferences to PrefModelAssociator.
-  const PrefRegistrySyncable::PrefToStatus& syncable_preferences =
+  const user_prefs::PrefRegistrySyncable::PrefToStatus& syncable_preferences =
       pref_registry->syncable_preferences();
-  for (PrefRegistrySyncable::PrefToStatus::const_iterator it =
+  for (user_prefs::PrefRegistrySyncable::PrefToStatus::const_iterator it =
            syncable_preferences.begin();
        it != syncable_preferences.end();
        ++it) {
@@ -72,10 +72,10 @@ PrefServiceSyncable::PrefServiceSyncable(
 
 PrefServiceSyncable::~PrefServiceSyncable() {
   // Remove our callback from the registry, since it may outlive us.
-  PrefRegistrySyncable* registry =
-      static_cast<PrefRegistrySyncable*>(pref_registry_.get());
+  user_prefs::PrefRegistrySyncable* registry =
+      static_cast<user_prefs::PrefRegistrySyncable*>(pref_registry_.get());
   registry->SetSyncableRegistrationCallback(
-      PrefRegistrySyncable::SyncableRegistrationCallback());
+      user_prefs::PrefRegistrySyncable::SyncableRegistrationCallback());
 }
 
 PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
@@ -86,8 +86,8 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
       new OverlayUserPrefStore(user_pref_store_.get());
   PrefsTabHelper::InitIncognitoUserPrefStore(incognito_pref_store);
 
-  scoped_refptr<PrefRegistrySyncable> forked_registry =
-      static_cast<PrefRegistrySyncable*>(
+  scoped_refptr<user_prefs::PrefRegistrySyncable> forked_registry =
+      static_cast<user_prefs::PrefRegistrySyncable*>(
           pref_registry_.get())->ForkForIncognito();
   PrefServiceSyncable* incognito_service = new PrefServiceSyncable(
       pref_notifier,
@@ -146,11 +146,12 @@ void PrefServiceSyncable::UpdateCommandLinePrefStore(
 
 void PrefServiceSyncable::AddRegisteredSyncablePreference(
     const char* path,
-    const PrefRegistrySyncable::PrefSyncStatus sync_status) {
+    const user_prefs::PrefRegistrySyncable::PrefSyncStatus sync_status) {
   DCHECK(FindPreference(path));
-  if (sync_status == PrefRegistrySyncable::SYNCABLE_PREF) {
+  if (sync_status == user_prefs::PrefRegistrySyncable::SYNCABLE_PREF) {
     pref_sync_associator_.RegisterPref(path);
-  } else if (sync_status == PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF) {
+  } else if (sync_status ==
+             user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF) {
     priority_pref_sync_associator_.RegisterPref(path);
   } else {
     NOTREACHED() << "invalid sync_status: " << sync_status;

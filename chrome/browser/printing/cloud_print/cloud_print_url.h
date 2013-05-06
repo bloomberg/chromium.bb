@@ -8,13 +8,16 @@
 #include <string>
 
 class GURL;
-class PrefRegistrySyncable;
 class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 // Centralize URL management for the cloud print service.
 class CloudPrintURL {
  public:
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   explicit CloudPrintURL(Profile* profile) : profile_(profile) {}
 

@@ -851,10 +851,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   pref_path += extension->id();
   pref_path += ".manifest.version";
   // TODO(joi): Do registrations up front.
-  PrefRegistrySyncable* registry = static_cast<PrefRegistrySyncable*>(
-      extension_prefs->pref_service()->DeprecatedGetPrefRegistry());
+  user_prefs::PrefRegistrySyncable* registry =
+      static_cast<user_prefs::PrefRegistrySyncable*>(
+          extension_prefs->pref_service()->DeprecatedGetPrefRegistry());
   registry->RegisterStringPref(
-      pref_path.c_str(), std::string(), PrefRegistrySyncable::UNSYNCABLE_PREF);
+      pref_path.c_str(),
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   extension_prefs->pref_service()->Set(pref_path.c_str(), old_version);
 }
 

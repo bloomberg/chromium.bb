@@ -174,17 +174,21 @@ bool TranslatePrefs::ShouldAutoTranslate(PrefService* user_prefs,
   return prefs.IsLanguageWhitelisted(original_language, target_language);
 }
 
-void TranslatePrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void TranslatePrefs::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(kPrefTranslateLanguageBlacklist,
-                             PrefRegistrySyncable::SYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(kPrefTranslateSiteBlacklist,
-                             PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterDictionaryPref(kPrefTranslateWhitelists,
-                                   PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterDictionaryPref(kPrefTranslateDeniedCount,
-                                   PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterDictionaryPref(kPrefTranslateAcceptedCount,
-                                   PrefRegistrySyncable::SYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      kPrefTranslateWhitelists,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      kPrefTranslateDeniedCount,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      kPrefTranslateAcceptedCount,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs) {

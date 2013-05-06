@@ -8,7 +8,10 @@
 #include "content/public/browser/web_ui_controller.h"
 
 class Profile;
+
+namespace user_prefs {
 class PrefRegistrySyncable;
+}
 
 // The Web UI handler for chrome://signin.
 class SyncPromoUI : public content::WebUIController {
@@ -51,7 +54,7 @@ class SyncPromoUI : public content::WebUIController {
   static void SetUserSkippedSyncPromo(Profile* profile);
 
   // Registers the preferences the Sync Promo UI needs.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Gets the sync landing page URL.
   static std::string GetSyncLandingURL(const char* option, int value);

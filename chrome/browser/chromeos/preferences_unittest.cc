@@ -62,9 +62,10 @@ TEST(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
   ChromeDownloadManagerDelegate::RegisterUserPrefs(prefs.registry());
   // kSelectFileLastDirectory is registered for Profile. Here we register it for
   // testing.
-  prefs.registry()->RegisterStringPref(prefs::kSelectFileLastDirectory,
-                                       std::string(),
-                                       PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs.registry()->RegisterStringPref(
+      prefs::kSelectFileLastDirectory,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   StringPrefMember previous;
   previous.Init(prefs::kLanguagePreviousInputMethod, &prefs);

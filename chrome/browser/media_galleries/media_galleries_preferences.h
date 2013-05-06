@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/storage_monitor/removable_storage_observer.h"
 
-class PrefRegistrySyncable;
 class Profile;
 
 namespace base {
@@ -28,6 +27,10 @@ class DictionaryValue;
 namespace extensions {
 class Extension;
 class ExtensionPrefs;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace chrome {
@@ -190,7 +193,7 @@ class MediaGalleriesPreferences : public ProfileKeyedService,
   // ProfileKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns true if the media gallery preferences system has ever been used
   // for this profile. To be exact, it checks if a gallery has ever been added

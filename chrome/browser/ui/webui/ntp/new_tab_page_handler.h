@@ -11,8 +11,11 @@
 #include "content/public/browser/web_ui_message_handler.h"
 
 class PrefRegistrySimple;
-class PrefRegistrySyncable;
 class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 // Handler for general New Tab Page functionality that does not belong in a
 // more specialized handler.
@@ -22,7 +25,7 @@ class NewTabPageHandler : public content::WebUIMessageHandler,
   NewTabPageHandler();
 
   // Register NTP per-profile preferences.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Registers values (strings etc.) for the page.
   static void GetLocalizedValues(Profile* profile, DictionaryValue* values);

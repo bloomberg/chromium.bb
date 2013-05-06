@@ -228,7 +228,7 @@ void NewTabUI::OnShowBookmarkBarChanged() {
 }
 
 // static
-void NewTabUI::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void NewTabUI::RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if !defined(OS_ANDROID)
   AppLauncherHandler::RegisterUserPrefs(registry);
   NewTabPageHandler::RegisterUserPrefs(registry);

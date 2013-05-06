@@ -55,16 +55,19 @@ void ReportMetrics(bool password_manager_enabled) {
     content::RecordAction(UserMetricsAction("PasswordManager_Disabled"));
 }
 
-}  // anonymous namespace
+}  // namespace
 
 // static
-void PasswordManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kPasswordManagerEnabled,
-                                true,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kPasswordManagerAllowShowPasswords,
-                                true,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+void PasswordManager::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kPasswordManagerEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPasswordManagerAllowShowPasswords,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

@@ -9,7 +9,6 @@
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
-class PrefRegistrySyncable;
 class PrefServiceSyncableObserver;
 class Profile;
 
@@ -40,7 +39,7 @@ class PrefServiceSyncable : public PrefService {
       PrefNotifierImpl* pref_notifier,
       PrefValueStore* pref_value_store,
       PersistentPrefStore* user_prefs,
-      PrefRegistrySyncable* pref_registry,
+      user_prefs::PrefRegistrySyncable* pref_registry,
       base::Callback<void(PersistentPrefStore::PrefReadError)>
           read_error_callback,
       bool async);
@@ -82,7 +81,7 @@ class PrefServiceSyncable : public PrefService {
 
   void AddRegisteredSyncablePreference(
       const char* path,
-      const PrefRegistrySyncable::PrefSyncStatus sync_status);
+      const user_prefs::PrefRegistrySyncable::PrefSyncStatus sync_status);
 
   // Invoked internally when the IsSyncing() state changes.
   void OnIsSyncingChanged();

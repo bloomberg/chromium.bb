@@ -320,16 +320,19 @@ const BookmarkNode* ApplyEditsWithPossibleFolderChange(
   return node;
 }
 
-void RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kShowBookmarkBar,
-                                false,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kEditBookmarksEnabled,
-                                true,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kShowAppsShortcutInBookmarkBar,
-                                true,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
+void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kShowBookmarkBar,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kEditBookmarksEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kShowAppsShortcutInBookmarkBar,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 const BookmarkNode* GetParentForNewNodes(

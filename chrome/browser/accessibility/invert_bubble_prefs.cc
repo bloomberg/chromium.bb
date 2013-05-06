@@ -9,10 +9,11 @@
 
 namespace chrome {
 
-void RegisterInvertBubbleUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kInvertNotificationShown,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+void RegisterInvertBubbleUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kInvertNotificationShown,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace chrome

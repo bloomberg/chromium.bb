@@ -11,7 +11,6 @@
 class SigninManager;
 class SigninManagerBase;
 class PrefRegistrySimple;
-class PrefRegistrySyncable;
 class Profile;
 
 // Singleton that owns all SigninManagers and associates them with
@@ -41,7 +40,8 @@ class SigninManagerFactory : public ProfileKeyedServiceFactory {
   static SigninManagerFactory* GetInstance();
 
   // Implementation of ProfileKeyedServiceFactory (public so tests can call it).
-  virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
+  virtual void RegisterUserPrefs(
+      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
 
   // Registers the browser-global prefs used by SigninManager.
   static void RegisterPrefs(PrefRegistrySimple* registry);

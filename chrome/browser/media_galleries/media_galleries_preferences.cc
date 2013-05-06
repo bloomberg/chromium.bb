@@ -662,12 +662,13 @@ bool MediaGalleriesPreferences::APIHasBeenUsed(Profile* profile) {
 
 // static
 void MediaGalleriesPreferences::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
+    user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kMediaGalleriesRememberedGalleries,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterUint64Pref(prefs::kMediaGalleriesUniqueId,
-                               kInvalidMediaGalleryPrefId + 1,
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterUint64Pref(
+      prefs::kMediaGalleriesUniqueId,
+      kInvalidMediaGalleryPrefId + 1,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 extensions::ExtensionPrefs*

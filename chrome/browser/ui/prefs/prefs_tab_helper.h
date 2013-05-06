@@ -12,12 +12,15 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class OverlayUserPrefStore;
-class PrefRegistrySyncable;
 class PrefService;
 class Profile;
 
 namespace content {
 class WebContents;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // Per-tab class to handle user preferences.
@@ -27,7 +30,7 @@ class PrefsTabHelper : public content::NotificationObserver,
   virtual ~PrefsTabHelper();
 
   static void InitIncognitoUserPrefStore(OverlayUserPrefStore* pref_store);
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
   static void MigrateUserPrefs(PrefService* prefs);
 
  protected:

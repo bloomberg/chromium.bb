@@ -15,7 +15,9 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
+namespace user_prefs {
 class PrefRegistrySyncable;
+}
 
 namespace browser_sync {
 
@@ -31,7 +33,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   ForeignSessionHandler();
   virtual ~ForeignSessionHandler() {}
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static void OpenForeignSessionTab(content::WebUI* web_ui,
                                     const std::string& session_string_value,

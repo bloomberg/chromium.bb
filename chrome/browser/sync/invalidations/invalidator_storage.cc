@@ -95,17 +95,21 @@ DictionaryValue* ObjectIdAndStateToValue(
 }  // namespace
 
 // static
-void InvalidatorStorage::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void InvalidatorStorage::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kInvalidatorMaxInvalidationVersions,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kInvalidatorInvalidationState,
-                               std::string(),
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kInvalidatorClientId,
-                                 std::string(),
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(prefs::kSyncMaxInvalidationVersions,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kInvalidatorInvalidationState,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kInvalidatorClientId,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kSyncMaxInvalidationVersions,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 InvalidatorStorage::InvalidatorStorage(PrefService* pref_service)

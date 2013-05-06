@@ -7,10 +7,13 @@
 
 #include "content/public/browser/web_ui_controller.h"
 
-class PrefRegistrySyncable;
 
 namespace content {
 class BrowserContext;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // Provides configuration options for Instant web search and shows debug info.
@@ -20,7 +23,7 @@ class InstantUI : public content::WebUIController {
   // handlers.
   explicit InstantUI(content::WebUI* web_ui);
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstantUI);

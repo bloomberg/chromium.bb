@@ -21,8 +21,11 @@
 class Browser;
 class ManagedModeURLFilter;
 class ManagedModeSiteList;
-class PrefRegistrySyncable;
 class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 // This class handles all the information related to a given managed profile
 // (e.g. the installed content packs, the default URL filtering behavior, or
@@ -47,7 +50,7 @@ class ManagedUserService : public ProfileKeyedService,
   // Returns the elevation state for specific WebContents.
   bool IsElevatedForWebContents(const content::WebContents* web_contents) const;
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns the URL filter for the IO thread, for filtering network requests
   // (in ManagedModeResourceThrottle).

@@ -87,7 +87,8 @@ class DefaultRuleIterator : public RuleIterator {
 }  // namespace
 
 // static
-void DefaultProvider::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void DefaultProvider::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   // The registration of the preference prefs::kDefaultContentSettings should
   // also include the default values for default content settings. This allows
   // functional tests to get default content settings by reading the preference
@@ -95,9 +96,10 @@ void DefaultProvider::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   // TODO(markusheintz): Write pyauto hooks for the content settings map as
   // content settings should be read from the host content settings map.
   DictionaryValue* default_content_settings = new DictionaryValue();
-  registry->RegisterDictionaryPref(prefs::kDefaultContentSettings,
-                                   default_content_settings,
-                                   PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kDefaultContentSettings,
+      default_content_settings,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)

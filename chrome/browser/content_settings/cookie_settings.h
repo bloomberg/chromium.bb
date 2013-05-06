@@ -21,15 +21,12 @@ class ContentSettingsPattern;
 class CookieSettingsWrapper;
 class GURL;
 class PrefService;
-class PrefRegistrySyncable;
 class Profile;
 
 // A frontend to the cookie settings of |HostContentSettingsMap|. Handles
 // cookie-specific logic such as blocking third-party cookies. Written on the UI
 // thread and read on any thread. One instance per profile.
-
-class CookieSettings
-    : public RefcountedProfileKeyedService {
+class CookieSettings : public RefcountedProfileKeyedService {
  public:
   CookieSettings(
       HostContentSettingsMap* host_content_settings_map,
@@ -102,7 +99,7 @@ class CookieSettings
       bool setting_cookie,
       content_settings::SettingSource* source) const;
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   class Factory : public RefcountedProfileKeyedServiceFactory {
    public:
@@ -120,7 +117,8 @@ class CookieSettings
     virtual ~Factory();
 
     // |ProfileKeyedBaseFactory| methods:
-    virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
+    virtual void RegisterUserPrefs(
+        user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
     virtual content::BrowserContext* GetBrowserContextToUse(
         content::BrowserContext* context) const OVERRIDE;
     virtual scoped_refptr<RefcountedProfileKeyedService>

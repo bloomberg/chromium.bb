@@ -123,10 +123,12 @@ void PromoHandler::RegisterMessages() {
 }
 
 // static
-void PromoHandler::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kNtpPromoDesktopSessionFound,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+void PromoHandler::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kNtpPromoDesktopSessionFound,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void PromoHandler::Observe(int type,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "browser_actions_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 
 #include <cmath>
 #include <string>
@@ -271,7 +271,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
     if (!profile_->GetPrefs()->FindPreference(
         prefs::kBrowserActionContainerWidth))
       [BrowserActionsController registerUserPrefs:(
-          (PrefRegistrySyncable*)
+          (user_prefs::PrefRegistrySyncable*)
           profile_->GetPrefs()->DeprecatedGetPrefRegistry())];
 
     observer_.reset(new ExtensionServiceObserverBridge(self, browser_));
@@ -447,10 +447,11 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   return YES;
 }
 
-+ (void)registerUserPrefs:(PrefRegistrySyncable*)registry {
-  registry->RegisterDoublePref(prefs::kBrowserActionContainerWidth,
-                               0,
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
++ (void)registerUserPrefs:(user_prefs::PrefRegistrySyncable*)registry {
+  registry->RegisterDoublePref(
+      prefs::kBrowserActionContainerWidth,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 #pragma mark -

@@ -8,7 +8,10 @@
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 
 class PrefService;
+
+namespace user_prefs {
 class PrefRegistrySyncable;
+}
 
 // The handler for JavaScript messages related to the "sync promo" page.
 class SyncPromoHandler : public SyncSetupHandler {
@@ -18,7 +21,7 @@ class SyncPromoHandler : public SyncSetupHandler {
 
   // Called to register our preferences before we use them (so there will be a
   // default if not present yet).
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;

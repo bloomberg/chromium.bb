@@ -18,20 +18,23 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-class PrefRegistrySyncable;
 class PrefService;
 
 namespace chromeos {
 class CryptohomeClient;
-}  // namespace chromeos
+}
 
 namespace cryptohome {
 class AsyncMethodCaller;
-}  // namespace cryptohome
+}
 
 namespace policy {
 class EnterpriseInstallAttributes;
-}  // namespace policy
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 namespace extensions {
 
@@ -121,7 +124,7 @@ typedef EPKPChallengeMachineKey
 
 class EPKPChallengeUserKey : public EPKPChallengeKeyBase {
  public:
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
   virtual bool RunImpl() OVERRIDE;

@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class AboutSigninInternals;
-class PrefRegistrySyncable;
 class Profile;
 
 // Singleton that owns all AboutSigninInternals and associates them with
@@ -24,7 +23,8 @@ class AboutSigninInternalsFactory : public ProfileKeyedServiceFactory {
   static AboutSigninInternalsFactory* GetInstance();
 
   // Implementation of ProfileKeyedServiceFactory.
-  virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
+  virtual void RegisterUserPrefs(
+      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<AboutSigninInternalsFactory>;

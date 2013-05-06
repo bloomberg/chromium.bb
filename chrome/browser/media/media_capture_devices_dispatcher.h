@@ -13,14 +13,17 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/media_stream_request.h"
 
+class AudioStreamIndicator;
+class MediaStreamCaptureIndicator;
+class Profile;
+
 namespace extensions {
 class Extension;
 }
 
-class AudioStreamIndicator;
-class MediaStreamCaptureIndicator;
+namespace user_prefs {
 class PrefRegistrySyncable;
-class Profile;
+}
 
 // This singleton is used to receive updates about media events from the content
 // layer.
@@ -51,7 +54,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
   static MediaCaptureDevicesDispatcher* GetInstance();
 
   // Registers the preferences related to Media Stream default devices.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Methods for observers. Called on UI thread.
   // Observers should add themselves on construction and remove themselves

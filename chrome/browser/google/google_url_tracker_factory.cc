@@ -42,13 +42,15 @@ ProfileKeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
 }
 
 void GoogleURLTrackerFactory::RegisterUserPrefs(
-    PrefRegistrySyncable* user_prefs) {
-  user_prefs->RegisterStringPref(prefs::kLastKnownGoogleURL,
-                                 GoogleURLTracker::kDefaultGoogleHomepage,
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-  user_prefs->RegisterStringPref(prefs::kLastPromptedGoogleURL,
-                                 std::string(),
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+    user_prefs::PrefRegistrySyncable* user_prefs) {
+  user_prefs->RegisterStringPref(
+      prefs::kLastKnownGoogleURL,
+      GoogleURLTracker::kDefaultGoogleHomepage,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  user_prefs->RegisterStringPref(
+      prefs::kLastPromptedGoogleURL,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 content::BrowserContext* GoogleURLTrackerFactory::GetBrowserContextToUse(

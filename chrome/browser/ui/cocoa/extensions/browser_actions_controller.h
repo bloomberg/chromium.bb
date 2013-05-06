@@ -17,11 +17,14 @@ class Browser;
 class ExtensionToolbarModel;
 class ExtensionServiceObserverBridge;
 @class MenuButton;
-class PrefRegistrySyncable;
 class Profile;
 
 namespace extensions {
 class Extension;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // Sent when the visibility of the Browser Actions changes.
@@ -106,7 +109,7 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 - (BOOL)chevronIsHidden;
 
 // Registers the user preferences used by this class.
-+ (void)registerUserPrefs:(PrefRegistrySyncable*)prefs;
++ (void)registerUserPrefs:(user_prefs::PrefRegistrySyncable*)prefs;
 
 @end  // @interface BrowserActionsController
 

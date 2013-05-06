@@ -447,10 +447,11 @@ std::string GetPingDelayPrefName() {
                             installer::master_preferences::kDistroPingDelay);
 }
 
-void RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(GetPingDelayPrefName().c_str(),
-                                0,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      GetPingDelayPrefName().c_str(),
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool RemoveSentinel() {

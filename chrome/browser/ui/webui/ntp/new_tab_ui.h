@@ -17,11 +17,14 @@
 #include "content/public/browser/web_ui_controller.h"
 
 class GURL;
-class PrefRegistrySyncable;
 class Profile;
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // The WebUIController used for the New Tab page.
@@ -31,7 +34,7 @@ class NewTabUI : public content::WebUIController,
   explicit NewTabUI(content::WebUI* web_ui);
   virtual ~NewTabUI();
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns whether or not to show apps pages.
   static bool ShouldShowApps();

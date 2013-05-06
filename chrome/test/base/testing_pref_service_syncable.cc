@@ -10,40 +10,39 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-template<>
-TestingPrefServiceBase<PrefServiceSyncable, PrefRegistrySyncable>::
-TestingPrefServiceBase(TestingPrefStore* managed_prefs,
-                       TestingPrefStore* user_prefs,
-                       TestingPrefStore* recommended_prefs,
-                       PrefRegistrySyncable* pref_registry,
-                       PrefNotifierImpl* pref_notifier)
+template <>
+TestingPrefServiceBase<PrefServiceSyncable, user_prefs::PrefRegistrySyncable>::
+    TestingPrefServiceBase(TestingPrefStore* managed_prefs,
+                           TestingPrefStore* user_prefs,
+                           TestingPrefStore* recommended_prefs,
+                           user_prefs::PrefRegistrySyncable* pref_registry,
+                           PrefNotifierImpl* pref_notifier)
     : PrefServiceSyncable(
-        pref_notifier,
-        new PrefValueStore(
-            managed_prefs,
-            NULL,
-            NULL,
-            user_prefs,
-            recommended_prefs,
-            pref_registry->defaults(),
-            pref_notifier),
-        user_prefs,
-        pref_registry,
-        base::Bind(
-            &TestingPrefServiceBase<PrefServiceSyncable,
-                                    PrefRegistrySyncable>::HandleReadError),
-        false),
+          pref_notifier,
+          new PrefValueStore(managed_prefs,
+                             NULL,
+                             NULL,
+                             user_prefs,
+                             recommended_prefs,
+                             pref_registry->defaults(),
+                             pref_notifier),
+          user_prefs,
+          pref_registry,
+          base::Bind(&TestingPrefServiceBase<
+              PrefServiceSyncable,
+              user_prefs::PrefRegistrySyncable>::HandleReadError),
+          false),
       managed_prefs_(managed_prefs),
       user_prefs_(user_prefs),
-      recommended_prefs_(recommended_prefs) {
-}
+      recommended_prefs_(recommended_prefs) {}
 
 TestingPrefServiceSyncable::TestingPrefServiceSyncable()
-    : TestingPrefServiceBase<PrefServiceSyncable, PrefRegistrySyncable>(
+    : TestingPrefServiceBase<PrefServiceSyncable,
+                             user_prefs::PrefRegistrySyncable>(
         new TestingPrefStore(),
         new TestingPrefStore(),
         new TestingPrefStore(),
-        new PrefRegistrySyncable(),
+        new user_prefs::PrefRegistrySyncable(),
         new PrefNotifierImpl()) {
 }
 
@@ -51,9 +50,10 @@ TestingPrefServiceSyncable::TestingPrefServiceSyncable(
     TestingPrefStore* managed_prefs,
     TestingPrefStore* user_prefs,
     TestingPrefStore* recommended_prefs,
-    PrefRegistrySyncable* pref_registry,
+    user_prefs::PrefRegistrySyncable* pref_registry,
     PrefNotifierImpl* pref_notifier)
-    : TestingPrefServiceBase<PrefServiceSyncable, PrefRegistrySyncable>(
+    : TestingPrefServiceBase<PrefServiceSyncable,
+                             user_prefs::PrefRegistrySyncable>(
         managed_prefs,
         user_prefs,
         recommended_prefs,
@@ -64,6 +64,7 @@ TestingPrefServiceSyncable::TestingPrefServiceSyncable(
 TestingPrefServiceSyncable::~TestingPrefServiceSyncable() {
 }
 
-PrefRegistrySyncable* TestingPrefServiceSyncable::registry() {
-  return static_cast<PrefRegistrySyncable*>(DeprecatedGetPrefRegistry());
+user_prefs::PrefRegistrySyncable* TestingPrefServiceSyncable::registry() {
+  return static_cast<user_prefs::PrefRegistrySyncable*>(
+      DeprecatedGetPrefRegistry());
 }

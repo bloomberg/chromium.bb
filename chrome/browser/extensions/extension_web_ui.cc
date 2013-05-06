@@ -164,9 +164,11 @@ ExtensionWebUI::bookmark_manager_private_event_router() {
 // chrome:// URL overrides
 
 // static
-void ExtensionWebUI::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(kExtensionURLOverrides,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+void ExtensionWebUI::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(
+      kExtensionURLOverrides,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

@@ -1,6 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/net/http_server_properties_manager.h"
 
 #include "base/bind.h"
@@ -92,9 +93,10 @@ void HttpServerPropertiesManager::ShutdownOnUIThread() {
 
 // static
 void HttpServerPropertiesManager::RegisterUserPrefs(
-    PrefRegistrySyncable* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kHttpServerProperties,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+    user_prefs::PrefRegistrySyncable* prefs) {
+  prefs->RegisterDictionaryPref(
+      prefs::kHttpServerProperties,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // This is required for conformance with the HttpServerProperties interface.

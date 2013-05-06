@@ -23,7 +23,6 @@ class ExtensionSpecialStoragePolicy;
 class FaviconService;
 class HostContentSettingsMap;
 class PasswordStore;
-class PrefRegistrySyncable;
 class PromoCounter;
 class ProtocolHandlerRegistry;
 class TestingProfile;
@@ -62,6 +61,10 @@ class TopSites;
 
 namespace net {
 class SSLConfigService;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 class Profile : public content::BrowserContext {
@@ -134,7 +137,7 @@ class Profile : public content::BrowserContext {
 
   // Profile prefs are registered as soon as the prefs are loaded for the first
   // time.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Gets task runner for I/O operations associated with |profile|.
   static scoped_refptr<base::SequencedTaskRunner> GetTaskRunnerForProfile(

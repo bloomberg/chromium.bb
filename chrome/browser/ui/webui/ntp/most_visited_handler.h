@@ -17,11 +17,14 @@
 
 class GURL;
 class PageUsageData;
-class PrefRegistrySyncable;
 
 namespace base {
 class ListValue;
 class Value;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // The handler for Javascript messages related to the "most visited" view.
@@ -67,7 +70,7 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
     return most_visited_urls_;
   }
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   struct MostVisitedPage;

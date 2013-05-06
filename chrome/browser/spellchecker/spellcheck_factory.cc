@@ -71,24 +71,28 @@ ProfileKeyedService* SpellcheckServiceFactory::BuildServiceInstanceFor(
 }
 
 void SpellcheckServiceFactory::RegisterUserPrefs(
-    PrefRegistrySyncable* user_prefs) {
+    user_prefs::PrefRegistrySyncable* user_prefs) {
   // TODO(estade): IDS_SPELLCHECK_DICTIONARY should be an ASCII string.
   user_prefs->RegisterLocalizedStringPref(
       prefs::kSpellCheckDictionary,
       IDS_SPELLCHECK_DICTIONARY,
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kSpellCheckConfirmDialogShown,
-                                  false,
-                                  PrefRegistrySyncable::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService,
-                                  false,
-                                  PrefRegistrySyncable::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kEnableContinuousSpellcheck,
-                                  true,
-                                  PrefRegistrySyncable::SYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect,
-                                  false,
-                                  PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  user_prefs->RegisterBooleanPref(
+      prefs::kSpellCheckConfirmDialogShown,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  user_prefs->RegisterBooleanPref(
+      prefs::kSpellCheckUseSpellingService,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  user_prefs->RegisterBooleanPref(
+      prefs::kEnableContinuousSpellcheck,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  user_prefs->RegisterBooleanPref(
+      prefs::kEnableAutoSpellCorrect,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 content::BrowserContext* SpellcheckServiceFactory::GetBrowserContextToUse(

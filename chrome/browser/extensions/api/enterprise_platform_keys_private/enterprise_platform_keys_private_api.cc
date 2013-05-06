@@ -269,11 +269,14 @@ const char EPKPChallengeUserKey::kKeyName[] = "attest-ent-user";
 EPKPChallengeUserKey::~EPKPChallengeUserKey() {
 }
 
-void EPKPChallengeUserKey::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kAttestationEnabled, false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+void EPKPChallengeUserKey::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kAttestationEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kAttestationExtensionWhitelist,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool EPKPChallengeUserKey::RunImpl() {

@@ -8,11 +8,14 @@
 #include "base/basictypes.h"
 
 class Browser;
-class PrefRegistrySyncable;
 class Profile;
 
 namespace base {
 class FilePath;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // This class will try to detect if the profile is on a network share and if
@@ -58,7 +61,7 @@ class NetworkProfileBubble {
   static void SetNotificationShown(bool shown);
 
   // Register the pref that controls whether the bubble should be shown anymore.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Helper function wrapping the UMA_HISTOGRAM_ENUMERATION macro.
   static void RecordUmaEvent(MetricNetworkedProfileCheck event);

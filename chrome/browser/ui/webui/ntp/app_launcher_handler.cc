@@ -745,9 +745,10 @@ void AppLauncherHandler::OnLocalStatePreferenceChanged() {
 }
 
 // static
-void AppLauncherHandler::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void AppLauncherHandler::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kNtpAppPageNames,
-                             PrefRegistrySyncable::SYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void AppLauncherHandler::CleanupAfterUninstall() {

@@ -13,11 +13,14 @@
 
 class PrintPreviewHandlerTest;
 class PrefService;
-class PrefRegistrySyncable;
 
 namespace base {
 class DictionaryValue;
 class FilePath;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace printing {
@@ -40,7 +43,8 @@ class StickySettings {
 
   void SaveInPrefs(PrefService* profile);
   void RestoreFromPrefs(PrefService* profile);
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+
  private:
 
   scoped_ptr<base::FilePath> save_path_;

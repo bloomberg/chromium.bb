@@ -22,18 +22,21 @@
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/content_settings_types.h"
 
-namespace base {
-class Value;
-}  // namespace base
-
-namespace content_settings {
-class ProviderInterface;
-}  // namespace content_settings
-
 class ExtensionService;
 class GURL;
 class PrefService;
+
+namespace base {
+class Value;
+}
+
+namespace content_settings {
+class ProviderInterface;
+}
+
+namespace user_prefs {
 class PrefRegistrySyncable;
+}
 
 class HostContentSettingsMap
     : public content_settings::Observer,
@@ -57,7 +60,7 @@ class HostContentSettingsMap
   void RegisterExtensionService(ExtensionService* extension_service);
 #endif
 
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns the default setting for a particular content type. If |provider_id|
   // is not NULL, the id of the provider which provided the default setting is

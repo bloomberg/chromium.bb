@@ -2103,49 +2103,60 @@ bool ExtensionPrefs::NeedsStorageGarbageCollection() {
 }
 
 // static
-void ExtensionPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(kExtensionsPref,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+void ExtensionPrefs::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(
+      kExtensionsPref, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kExtensionToolbar,
-                             PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterIntegerPref(prefs::kExtensionToolbarSize,
-                                -1,  // default value
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(kExtensionsBlacklistUpdate,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kExtensionToolbarSize,
+      -1,  // default value
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      kExtensionsBlacklistUpdate,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kExtensionInstallAllowList,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kExtensionInstallDenyList,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(prefs::kExtensionInstallForceList,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kExtensionInstallForceList,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kExtensionAllowedTypes,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(kWebStoreLogin,
-                               std::string(),  // default value
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kExtensionBlacklistUpdateVersion,
-                               "0",  // default value
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kExtensionStorageGarbageCollect,
-                                false,  // default value
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterInt64Pref(prefs::kLastExtensionsUpdateCheck,
-                              0,  // default value
-                              PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterInt64Pref(prefs::kNextExtensionsUpdateCheck,
-                              0,  // default value
-                              PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      kWebStoreLogin,
+      std::string(),  // default value
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kExtensionBlacklistUpdateVersion,
+      "0",  // default value
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kExtensionStorageGarbageCollect,
+      false,  // default value
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterInt64Pref(
+      prefs::kLastExtensionsUpdateCheck,
+      0,  // default value
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterInt64Pref(
+      prefs::kNextExtensionsUpdateCheck,
+      0,  // default value
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kExtensionAllowedInstallSites,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(kExtensionsLastChromeVersion,
-                               std::string(),  // default value
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      kExtensionsLastChromeVersion,
+      std::string(),  // default value
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-#if defined (TOOLKIT_VIEWS)
-  registry->RegisterIntegerPref(prefs::kBrowserActionContainerWidth,
-                                0,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+#if defined(TOOLKIT_VIEWS)
+  registry->RegisterIntegerPref(
+      prefs::kBrowserActionContainerWidth,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
 }
 
