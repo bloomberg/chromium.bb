@@ -105,6 +105,11 @@ namespace WebCore {
             return !m_listener.isEmpty();
         }
 
+        void clearListenerObject()
+        {
+            m_listener.clear();
+        }
+
         DOMWrapperWorld* world() const { return m_world.get(); }
 
     protected:

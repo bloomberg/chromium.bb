@@ -110,10 +110,12 @@ static v8::Handle<v8::Value> V8LazyEventListenerToString(const v8::Arguments& ar
 
 void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
 {
-    if (hasExistingListenerObject())
+    if (context->isDocument() && !toDocument(context)->contentSecurityPolicy()->allowInlineEventHandlers(m_sourceURL, m_position.m_line)) {
+        clearListenerObject();
         return;
+    }
 
-    if (context->isDocument() && !toDocument(context)->contentSecurityPolicy()->allowInlineEventHandlers(m_sourceURL, m_position.m_line))
+    if (hasExistingListenerObject())
         return;
 
     ASSERT(context->isDocument());
