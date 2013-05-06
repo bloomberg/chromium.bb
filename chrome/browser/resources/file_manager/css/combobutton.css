@@ -7,6 +7,10 @@
   display: -webkit-box;
 }
 
+body[new-ui] .buttonbar button {
+  -webkit-margin-start: 10px;
+}
+
 .buttonbar .combobutton > .action {
   background-position: left center;
   background-repeat: no-repeat;
