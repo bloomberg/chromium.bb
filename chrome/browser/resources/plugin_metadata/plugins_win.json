@@ -1,5 +1,5 @@
 {
-  "x-version": 6,
+  "x-version": 7,
   "google-talk": {
     "mime_types": [
     ],
@@ -164,9 +164,9 @@
     ],
     "versions": [
       {
-        "version": "12.0.0.112",
+        "version": "12.0.2.122",
         "status": "requires_authorization",
-        "reference": "https://www.adobe.com/support/security/bulletins/apsb13-06.html"
+        "reference": "https://www.adobe.com/support/security/bulletins/apsb13-12.html"
       }
     ],
     "lang": "en-US",
