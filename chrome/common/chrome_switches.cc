@@ -335,6 +335,9 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 // attempt to use the existing connection.
 const char kDisableIPPooling[]              = "disable-ip-pooling";
 
+// Disable always using the local NTP for the first NTP load of a new window.
+const char kDisableLocalFirstLoadNTP[] = "disable-local-first-load-ntp";
+
 // Disable local-only Instant extended API.
 const char kDisableLocalOnlyInstantExtendedAPI[] =
     "disable-local-only-instant-extended-api";
@@ -557,6 +560,9 @@ const char kEnableIPCFuzzing[]              = "enable-ipc-fuzzing";
 // is needed for a domain which shares an IP with an existing connection,
 // attempt to use the existing connection.
 const char kEnableIPPooling[]               = "enable-ip-pooling";
+
+// Enable always using the local NTP for the first NTP load of a new window.
+const char kEnableLocalFirstLoadNTP[] = "enable-local-first-load-ntp";
 
 // Enable Instant extended API, but use only the local omnibox popup and NTP.
 const char kEnableLocalOnlyInstantExtendedAPI[] =
