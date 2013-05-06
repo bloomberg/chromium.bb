@@ -30,7 +30,6 @@
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>
-#include <wtf/StackBounds.h>
 #include <wtf/StackStats.h>
 #include <wtf/text/StringHash.h>
 #include <wtf/ThreadSpecific.h>

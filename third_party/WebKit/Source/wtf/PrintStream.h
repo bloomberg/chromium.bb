@@ -30,7 +30,6 @@
 #include <wtf/FastAllocBase.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/Platform.h>
-#include <wtf/RawPointer.h>
 #include <wtf/StdLibExtras.h>
 
 namespace WTF {
@@ -223,7 +222,6 @@ void printInternal(PrintStream&, long long);
 void printInternal(PrintStream&, unsigned long long);
 void printInternal(PrintStream&, float);
 void printInternal(PrintStream&, double);
-void printInternal(PrintStream&, RawPointer);
 
 template<typename T>
 void printInternal(PrintStream& out, const T& value)
