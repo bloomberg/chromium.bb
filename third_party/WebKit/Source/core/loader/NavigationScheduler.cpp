@@ -65,8 +65,6 @@ public:
         , m_isLocationChange(isLocationChange)
         , m_wasUserGesture(ScriptController::processingUserGesture())
     {
-        if (m_wasUserGesture)
-            m_userGestureToken = UserGestureIndicator::currentToken();
     }
     virtual ~ScheduledNavigation() { }
 
@@ -80,13 +78,7 @@ public:
     bool lockBackForwardList() const { return m_lockBackForwardList; }
     bool wasDuringLoad() const { return m_wasDuringLoad; }
     bool isLocationChange() const { return m_isLocationChange; }
-    PassOwnPtr<UserGestureIndicator> createUserGestureIndicator()
-    {
-        if (m_wasUserGesture &&  m_userGestureToken)
-            return adoptPtr(new UserGestureIndicator(m_userGestureToken));
-        else
-            return adoptPtr(new UserGestureIndicator(DefinitelyNotProcessingUserGesture));
-    }
+    bool wasUserGesture() const { return m_wasUserGesture; }
 
 protected:
     void clearUserGesture() { m_wasUserGesture = false; }
@@ -97,7 +89,6 @@ private:
     bool m_wasDuringLoad;
     bool m_isLocationChange;
     bool m_wasUserGesture;
-    RefPtr<UserGestureToken> m_userGestureToken;
 };
 
 class ScheduledURLNavigation : public ScheduledNavigation {
@@ -113,7 +104,7 @@ protected:
 
     virtual void fire(Frame* frame)
     {
-        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        UserGestureIndicator gestureIndicator(wasUserGesture() ? DefinitelyProcessingNewUserGesture : DefinitelyNotProcessingUserGesture);
         frame->loader()->changeLocation(m_securityOrigin.get(), KURL(ParsedURLString, m_url), m_referrer, lockBackForwardList(), false);
     }
 
@@ -123,7 +114,7 @@ protected:
             return;
         m_haveToldClient = true;
 
-        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        UserGestureIndicator gestureIndicator(wasUserGesture() ? DefinitelyProcessingNewUserGesture : DefinitelyNotProcessingUserGesture);
         frame->loader()->clientRedirected(KURL(ParsedURLString, m_url), delay(), currentTime() + timer->nextFireInterval(), lockBackForwardList());
     }
 
@@ -164,7 +155,7 @@ public:
 
     virtual void fire(Frame* frame)
     {
-        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        UserGestureIndicator gestureIndicator(wasUserGesture() ? DefinitelyProcessingNewUserGesture : DefinitelyNotProcessingUserGesture);
         bool refresh = equalIgnoringFragmentIdentifier(frame->document()->url(), KURL(ParsedURLString, url()));
         frame->loader()->changeLocation(securityOrigin(), KURL(ParsedURLString, url()), referrer(), lockBackForwardList(), refresh);
     }
@@ -185,7 +176,7 @@ public:
 
     virtual void fire(Frame* frame)
     {
-        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        UserGestureIndicator gestureIndicator(wasUserGesture() ? DefinitelyProcessingNewUserGesture : DefinitelyNotProcessingUserGesture);
         frame->loader()->changeLocation(securityOrigin(), KURL(ParsedURLString, url()), referrer(), lockBackForwardList(), true);
     }
 };
@@ -200,7 +191,7 @@ public:
 
     virtual void fire(Frame* frame)
     {
-        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        UserGestureIndicator gestureIndicator(wasUserGesture() ? DefinitelyProcessingNewUserGesture : DefinitelyNotProcessingUserGesture);
 
         if (!m_historySteps) {
             // Special case for go(0) from a frame -> reload only the frame
@@ -229,7 +220,7 @@ public:
 
     virtual void fire(Frame* frame)
     {
-        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        UserGestureIndicator gestureIndicator(wasUserGesture() ? DefinitelyProcessingNewUserGesture : DefinitelyNotProcessingUserGesture);
 
         // The submitForm function will find a target frame before using the redirection timer.
         // Now that the timer has fired, we need to repeat the security check which normally is done when
@@ -249,7 +240,7 @@ public:
             return;
         m_haveToldClient = true;
 
-        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        UserGestureIndicator gestureIndicator(wasUserGesture() ? DefinitelyProcessingNewUserGesture : DefinitelyNotProcessingUserGesture);
         frame->loader()->clientRedirected(m_submission->requestURL(), delay(), currentTime() + timer->nextFireInterval(), lockBackForwardList());
     }
 
