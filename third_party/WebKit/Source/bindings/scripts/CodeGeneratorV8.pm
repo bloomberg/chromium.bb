@@ -1166,7 +1166,7 @@ sub IsReadonly
 {
     my $attribute = shift;
     my $attrExt = $attribute->signature->extendedAttributes;
-    return ($attribute->type =~ /readonly/ || $attrExt->{"ReadOnly"}) && !$attrExt->{"Replaceable"};
+    return $attribute->isReadOnly && !$attrExt->{"Replaceable"};
 }
 
 sub GenerateDomainSafeFunctionGetter
