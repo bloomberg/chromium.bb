@@ -27,13 +27,13 @@ namespace bluetooth {
     DOMString address;
 
     // The human-readable name of the device.
-    DOMString name;
+    DOMString? name;
 
     // Indicates whether or not the device is paired with the system.
-    boolean paired;
+    boolean? paired;
 
     // Indicates whether the device is currently connected to the system.
-    boolean connected;
+    boolean? connected;
   };
 
   dictionary Profile {
