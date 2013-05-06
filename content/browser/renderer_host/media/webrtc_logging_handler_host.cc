@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/webrtc_logging_handler_host.h"
+#include "content/browser/renderer_host/media/webrtc_logging_handler_host.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/common/webrtc_logging_messages.h"
+#include "content/common/media/webrtc_logging_messages.h"
 
 namespace content {
 

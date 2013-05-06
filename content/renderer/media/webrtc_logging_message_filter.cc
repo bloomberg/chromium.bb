@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/webrtc_logging_message_filter.h"
+#include "content/renderer/media/webrtc_logging_message_filter.h"
 
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
-#include "content/common/webrtc_logging_messages.h"
-#include "content/renderer/webrtc_logging_handler_impl.h"
+#include "content/common/media/webrtc_logging_messages.h"
+#include "content/renderer/media/webrtc_logging_handler_impl.h"
 #include "ipc/ipc_logging.h"
 
 namespace content {

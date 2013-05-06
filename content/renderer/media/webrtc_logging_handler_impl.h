@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_WEBRTC_LOGGING_HANDLER_IMPL_H_
-#define CONTENT_RENDERER_WEBRTC_LOGGING_HANDLER_IMPL_H_
+#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_LOGGING_HANDLER_IMPL_H_
+#define CONTENT_RENDERER_MEDIA_WEBRTC_LOGGING_HANDLER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/shared_memory.h"
@@ -48,4 +48,4 @@ class CONTENT_EXPORT WebRtcLoggingHandlerImpl
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_WEBRTC_LOGGING_HANDLER_IMPL_H_
+#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_LOGGING_HANDLER_IMPL_H_
