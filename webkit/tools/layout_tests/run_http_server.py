@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 """Wrapper around
-   third_party/WebKit/Tools/Scripts/new-run-webkit-httpd"""
+   third_party/WebKit/Tools/Scripts/run-blink-httpd"""
 import os
 import subprocess
 import sys
@@ -15,7 +15,7 @@ def main():
                          os.path.dirname(os.path.abspath(sys.argv[0]))))))
     script_dir=os.path.join(src_dir, "third_party", "WebKit", "Tools",
                             "Scripts")
-    script = os.path.join(script_dir, 'new-run-webkit-httpd')
+    script = os.path.join(script_dir, 'run-blink-httpd')
     cmd.append(script)
     cmd.extend(sys.argv[1:])
     return subprocess.call(cmd)

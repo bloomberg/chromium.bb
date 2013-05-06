@@ -32,7 +32,7 @@ bool PrepareCommandLine(CommandLine* cmd_line) {
   script_path = script_path.AppendASCII("WebKit");
   script_path = script_path.AppendASCII("Tools");
   script_path = script_path.AppendASCII("Scripts");
-  script_path = script_path.AppendASCII("new-run-webkit-httpd");
+  script_path = script_path.AppendASCII("run-blink-httpd");
 
   cmd_line->AppendArgPath(script_path);
   return true;
