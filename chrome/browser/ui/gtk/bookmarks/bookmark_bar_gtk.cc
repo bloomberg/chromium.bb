@@ -1256,6 +1256,7 @@ void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender) {
     chrome::OpenAll(window_->GetNativeWindow(), page_navigator_, node,
                     NEW_BACKGROUND_TAB, browser_->profile());
   }
+  gdk_event_free(event);
 }
 
 gboolean BookmarkBarGtk::OnToolbarDragMotion(GtkWidget* toolbar,
