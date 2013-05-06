@@ -146,14 +146,14 @@ bool WebRuntimeFeatures::isMediaPlayerEnabled()
 void WebRuntimeFeatures::enableNotifications(bool enable)
 {
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
-    RuntimeEnabledFeatures::setWebkitNotificationsEnabled(enable);
+    RuntimeEnabledFeatures::setNotificationsEnabled(enable);
 #endif
 }
 
 bool WebRuntimeFeatures::isNotificationsEnabled()
 {
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
-    return RuntimeEnabledFeatures::webkitNotificationsEnabled();
+    return RuntimeEnabledFeatures::notificationsEnabled();
 #else
     return false;
 #endif
@@ -340,22 +340,22 @@ bool WebRuntimeFeatures::isEncryptedMediaEnabled()
 
 void WebRuntimeFeatures::enableVideoTrack(bool enable)
 {
-    RuntimeEnabledFeatures::setWebkitVideoTrackEnabled(enable);
+    RuntimeEnabledFeatures::setVideoTrackEnabled(enable);
 }
 
 bool WebRuntimeFeatures::isVideoTrackEnabled()
 {
-    return RuntimeEnabledFeatures::webkitVideoTrackEnabled();
+    return RuntimeEnabledFeatures::videoTrackEnabled();
 }
 
 void WebRuntimeFeatures::enableGamepad(bool enable)
 {
-    RuntimeEnabledFeatures::setWebkitGetGamepadsEnabled(enable);
+    RuntimeEnabledFeatures::setGamepadEnabled(enable);
 }
 
 bool WebRuntimeFeatures::isGamepadEnabled()
 {
-    return RuntimeEnabledFeatures::webkitGetGamepadsEnabled();
+    return RuntimeEnabledFeatures::gamepadEnabled();
 }
 
 void WebRuntimeFeatures::enableExperimentalShadowDOM(bool enable)

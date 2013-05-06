@@ -6,10 +6,10 @@
 ApplicationCache
 AudioContext condition=WEB_AUDIO
 AuthorShadowDOMForAnyElement
-CanvasPath
 CSSCompositing condition=CSS_COMPOSITING
 CSSExclusions
 CSSRegions
+CanvasPath
 CustomDOMElements
 Database
 DeviceMotion
@@ -24,6 +24,7 @@ ExperimentalWebSocket
 FileSystem
 FontLoadEvents
 Fullscreen
+Gamepad
 Geolocation
 IMEAPI
 IndexedDB
@@ -36,6 +37,7 @@ LocalStorage
 Media custom
 MediaSource
 MediaStream
+Notifications
 PeerConnection depends_on=MediaStream
 Quota
 RequestAutocomplete
@@ -47,8 +49,6 @@ SpeechInput
 SpeechSynthesis
 StyleScoped
 Touch
-WebkitGetGamepads
-WebkitNotifications
-WebkitVideoTrack
+VideoTrack
 WebMIDI
 WebPInAcceptHeader

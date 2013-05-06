@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 [
@@ -112,8 +112,8 @@ readonly attribute unsigned long webkitVideoDecodedByteCount;
     [EnabledAtRuntime=encryptedMedia] attribute MediaKeys mediaKeys;
 #endif
 
-[EnabledAtRuntime=webkitVideoTrack, RaisesException] TextTrack addTextTrack(DOMString kind, optional DOMString label, optional DOMString language);
-[EnabledAtRuntime=webkitVideoTrack] readonly attribute TextTrackList textTracks;
+[EnabledAtRuntime=videoTrack, RaisesException] TextTrack addTextTrack(DOMString kind, optional DOMString label, optional DOMString language);
+[EnabledAtRuntime=videoTrack] readonly attribute TextTrackList textTracks;
 
 [Reflect, TreatNullAs=NullString] attribute DOMString mediaGroup;
 [CustomSetter] attribute MediaController controller;

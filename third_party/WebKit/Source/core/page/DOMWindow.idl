@@ -436,13 +436,13 @@
     [Conditional=ENCRYPTED_MEDIA_V2, EnabledAtRuntime=encryptedMedia] attribute MediaKeyMessageEventConstructor MediaKeyMessageEvent;
     [Conditional=ENCRYPTED_MEDIA_V2, EnabledAtRuntime=encryptedMedia] attribute MediaKeyNeededEventConstructor MediaKeyNeededEvent;
 
-    [EnabledAtRuntime=webkitVideoTrack] attribute HTMLTrackElementConstructor HTMLTrackElement;
-    [EnabledAtRuntime=webkitVideoTrack] attribute TextTrackConstructor TextTrack;
-    [EnabledAtRuntime=webkitVideoTrack] attribute TextTrackCueConstructor TextTrackCue; // Usable with the new operator
-    [EnabledAtRuntime=webkitVideoTrack] attribute TextTrackCueListConstructor TextTrackCueList;
-    [EnabledAtRuntime=webkitVideoTrack] attribute TextTrackListConstructor TextTrackList;
-    [Conditional=WEBVTT_REGIONS, EnabledAtRuntime=webkitVideoTrack] attribute TextTrackRegionConstructor TextTrackRegion; // Usable with the new operator
-    [EnabledAtRuntime=webkitVideoTrack] attribute TrackEventConstructor TrackEvent;
+    [EnabledAtRuntime=videoTrack] attribute HTMLTrackElementConstructor HTMLTrackElement;
+    [EnabledAtRuntime=videoTrack] attribute TextTrackConstructor TextTrack;
+    [EnabledAtRuntime=videoTrack] attribute TextTrackCueConstructor TextTrackCue; // Usable with the new operator
+    [EnabledAtRuntime=videoTrack] attribute TextTrackCueListConstructor TextTrackCueList;
+    [EnabledAtRuntime=videoTrack] attribute TextTrackListConstructor TextTrackList;
+    [Conditional=WEBVTT_REGIONS, EnabledAtRuntime=videoTrack] attribute TextTrackRegionConstructor TextTrackRegion; // Usable with the new operator
+    [EnabledAtRuntime=videoTrack] attribute TrackEventConstructor TrackEvent;
 
     [EnabledAtRuntime=media] attribute HTMLAudioElementConstructorConstructor Audio; // Usable with the new operator
     [EnabledAtRuntime=media] attribute HTMLAudioElementConstructor HTMLAudioElement;

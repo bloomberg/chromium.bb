@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=webkitVideoTrack
+    EnabledAtRuntime=videoTrack
 ] interface HTMLTrackElement : HTMLElement {
     attribute DOMString kind;
     [Reflect, URL] attribute DOMString src;
