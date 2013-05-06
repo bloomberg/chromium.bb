@@ -276,7 +276,7 @@ TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
     SetFillsBoundsOpaquely(true);
 
     bubble_content_mask_.reset(
-        new TrayBubbleContentMask(bubble_border_->GetBorderCornerRadius() - 1));
+        new TrayBubbleContentMask(bubble_border_->GetBorderCornerRadius()));
   }
 }
 
