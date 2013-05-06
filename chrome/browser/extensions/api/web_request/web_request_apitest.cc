@@ -245,13 +245,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   RunPermissionTest("split", false, false, "redirected1", "");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, PostData1) {
+// TODO(vabr): Cure these flaky tests, http://crbug.com/238179.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_PostData1 DISABLED_PostData1
+#define MAYBE_PostData2 DISABLED_PostData2
+#else
+#define MAYBE_PostData1 PostData1
+#define MAYBE_PostData2 PostData2
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_PostData1) {
   // Test HTML form POST data access with the default and "url" encoding.
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_post1.html")) <<
       message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, PostData2) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_PostData2) {
   // Test HTML form POST data access with the multipart and plaintext encoding.
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_post2.html")) <<
       message_;
