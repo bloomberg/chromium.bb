@@ -1448,10 +1448,6 @@ DialogType.isModal = function(type) {
         this.dialogType == DialogType.FULL_PAGE;
 
     if (PathUtil.getRootType(path) === RootType.DRIVE) {
-      var tracker = this.directoryModel_.createDirectoryChangeTracker();
-      // Expected finish of setupPath to Drive.
-      tracker.exceptInitialChange = true;
-      tracker.start();
       if (!this.isDriveEnabled()) {
         if (pageLoading)
           this.show_();
@@ -1464,30 +1460,23 @@ DialogType.isModal = function(type) {
         this.finishSetupCurrentDirectory_(path, invokeHandlers);
         return;
       }
+
+      var tracker = this.directoryModel_.createDirectoryChangeTracker();
+      // Expected finish of setupPath to Drive.
+      tracker.exceptInitialChange = true;
+      tracker.start();
       if (pageLoading)
         this.delayShow_(500);
-      // Reflect immediatelly in the UI we are on Drive and display
-      // mounting UI.
-      this.directoryModel_.setupPath(path);
-
-      if (!this.isOnDrive()) {
-        // Since DRIVE is not mounted it should be resolved synchronously
-        // (no need in asynchronous calls to filesystem API). It is important
-        // to prevent race condition.
-        console.error('Expected path set up synchronously');
-      }
-
-      var self = this;
+      // Waits until the Drive is mounted.
       this.volumeManager_.mountDrive(function() {
         tracker.stop();
-        if (!tracker.hasChanged) {
-          self.finishSetupCurrentDirectory_(path, invokeHandlers);
-        }
-      }, function(error) {
+        if (!tracker.hasChanged)
+          this.finishSetupCurrentDirectory_(path, invokeHandlers);
+      }.bind(this), function(error) {
         tracker.stop();
       });
     } else {
-      if (invokeHandlers && pageLoading)
+      if (invokeHandlers)
         this.delayShow_(500);
       this.finishSetupCurrentDirectory_(path, invokeHandlers);
     }

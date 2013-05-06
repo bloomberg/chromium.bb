@@ -863,12 +863,6 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  */
 DirectoryModel.prototype.changeDirectoryEntry_ = function(initial, dirEntry,
                                                           opt_callback) {
-  if (dirEntry == DirectoryModel.fakeDriveEntry_ &&
-      this.volumeManager_.getDriveStatus() ==
-          VolumeManager.DriveStatus.UNMOUNTED) {
-    this.volumeManager_.mountDrive(function() {}, function() {});
-  }
-
   var previous = this.currentDirContents_.getDirectoryEntry();
   this.clearSearch_();
   this.changeDirectoryEntrySilent_(dirEntry, opt_callback);

@@ -803,15 +803,12 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestFileDisplay) {
   DoTestFileDisplay(&volume_);
 }
 
-// File is not selected on new UI Files.app. http://crbug.com/234230
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestKeyboardCopy) {
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
   ASSERT_TRUE(PrepareVolume());
   DoTestKeyboardCopy(&volume_);
 }
 
-// File is not selected on new UI Files.app. http://crbug.com/234230
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest,
-                       DISABLED_TestKeyboardDelete) {
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardDelete) {
   ASSERT_TRUE(PrepareVolume());
   DoTestKeyboardDelete(&volume_);
 }
