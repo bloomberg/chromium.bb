@@ -24,7 +24,7 @@ namespace {
 // Signifies a locally constructed resource, i.e. not from grit/.
 const int kLocalResource = -1;
 
-const char* kTranslatedStringsFilename = "translated-strings.js";
+const char kTranslatedStringsFilename[] = "translated-strings.js";
 
 const struct Resource{
   const char* filename;
