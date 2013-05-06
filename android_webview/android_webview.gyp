@@ -86,6 +86,7 @@
         '../skia/skia.gyp:skia',
         '../gpu/gpu.gyp:gles2_implementation',
         '../ui/gl/gl.gyp:gl',
+        '../webkit/gpu/webkit_gpu.gyp:webkit_gpu',
         'android_webview_pak',
       ],
       'include_dirs': [

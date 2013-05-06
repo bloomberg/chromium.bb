@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace android_webview {
 
@@ -29,6 +30,9 @@ AwMainDelegate::~AwMainDelegate() {
 
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   content::SetContentClient(&content_client_);
+
+  webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl
+      ::EnableVirtualizedContext();
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
   // Set the command line to enable synchronous API compatibility.
