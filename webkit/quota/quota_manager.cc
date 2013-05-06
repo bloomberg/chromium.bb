@@ -1036,6 +1036,7 @@ void QuotaManager::SetUsageCacheEnabled(QuotaClient::ID client_id,
                                         const GURL& origin,
                                         StorageType type,
                                         bool enabled) {
+  LazyInitialize();
   GetUsageTracker(type)->SetUsageCacheEnabled(client_id, origin, enabled);
 }
 
