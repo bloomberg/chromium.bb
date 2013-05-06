@@ -150,8 +150,8 @@
         'base/dragdrop/os_exchange_data.h',
         'base/dragdrop/os_exchange_data_provider_aurax11.cc',
         'base/dragdrop/os_exchange_data_provider_aurax11.h',
-        'base/dragdrop/os_exchange_data_provider_chromeos.cc',
-        'base/dragdrop/os_exchange_data_provider_chromeos.h',
+        'base/dragdrop/os_exchange_data_provider_aura.cc',
+        'base/dragdrop/os_exchange_data_provider_aura.h',
         'base/dragdrop/os_exchange_data_provider_win.cc',
         'base/dragdrop/os_exchange_data_provider_win.h',
         'base/events/event.cc',
@@ -702,6 +702,8 @@
         }, {
           'sources!': [
             'base/clipboard/clipboard_aura.cc',
+            'base/dragdrop/os_exchange_data_provider_aura.cc',
+            'base/dragdrop/os_exchange_data_provider_aura.h',
             'base/touch/touch_device_aurax11.cc',
           ],
         }],

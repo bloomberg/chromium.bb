@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_CHROMEOS_H_
-#define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_CHROMEOS_H_
+#ifndef UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_AURA_H_
+#define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_AURA_H_
 
 #include <map>
 
@@ -19,11 +19,11 @@ namespace ui {
 class Clipboard;
 
 // OSExchangeData::Provider implementation for aura on linux.
-class UI_EXPORT OSExchangeDataProviderChromeos
+class UI_EXPORT OSExchangeDataProviderAura
     : public OSExchangeData::Provider {
  public:
-  OSExchangeDataProviderChromeos();
-  virtual ~OSExchangeDataProviderChromeos();
+  OSExchangeDataProviderAura();
+  virtual ~OSExchangeDataProviderAura();
 
   // Overridden from OSExchangeData::Provider:
   virtual void SetString(const string16& data) OVERRIDE;
@@ -86,9 +86,9 @@ class UI_EXPORT OSExchangeDataProviderChromeos
   string16 html_;
   GURL base_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderChromeos);
+  DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderAura);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_CHROMEOS_H_
+#endif  // UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_AURA_H_

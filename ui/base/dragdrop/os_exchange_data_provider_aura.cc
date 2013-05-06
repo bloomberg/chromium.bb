@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/dragdrop/os_exchange_data_provider_chromeos.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -12,51 +12,51 @@
 
 namespace ui {
 
-OSExchangeDataProviderChromeos::OSExchangeDataProviderChromeos()
+OSExchangeDataProviderAura::OSExchangeDataProviderAura()
     : formats_(0) {
 }
 
-OSExchangeDataProviderChromeos::~OSExchangeDataProviderChromeos() {}
+OSExchangeDataProviderAura::~OSExchangeDataProviderAura() {}
 
-void OSExchangeDataProviderChromeos::SetString(const string16& data) {
+void OSExchangeDataProviderAura::SetString(const string16& data) {
   string_ = data;
   formats_ |= OSExchangeData::STRING;
 }
 
-void OSExchangeDataProviderChromeos::SetURL(const GURL& url,
+void OSExchangeDataProviderAura::SetURL(const GURL& url,
                                         const string16& title) {
   url_ = url;
   title_ = title;
   formats_ |= OSExchangeData::URL;
 }
 
-void OSExchangeDataProviderChromeos::SetFilename(const base::FilePath& path) {
+void OSExchangeDataProviderAura::SetFilename(const base::FilePath& path) {
   filenames_.clear();
   filenames_.push_back(OSExchangeData::FileInfo(path, base::FilePath()));
   formats_ |= OSExchangeData::FILE_NAME;
 }
 
-void OSExchangeDataProviderChromeos::SetFilenames(
+void OSExchangeDataProviderAura::SetFilenames(
     const std::vector<OSExchangeData::FileInfo>& filenames) {
   filenames_ = filenames;
   formats_ |= OSExchangeData::FILE_NAME;
 }
 
-void OSExchangeDataProviderChromeos::SetPickledData(
+void OSExchangeDataProviderAura::SetPickledData(
     OSExchangeData::CustomFormat format,
     const Pickle& data) {
   pickle_data_[format] = data;
   formats_ |= OSExchangeData::PICKLED_DATA;
 }
 
-bool OSExchangeDataProviderChromeos::GetString(string16* data) const {
+bool OSExchangeDataProviderAura::GetString(string16* data) const {
   if ((formats_ & OSExchangeData::STRING) == 0)
     return false;
   *data = string_;
   return true;
 }
 
-bool OSExchangeDataProviderChromeos::GetURLAndTitle(GURL* url,
+bool OSExchangeDataProviderAura::GetURLAndTitle(GURL* url,
                                                 string16* title) const {
   if ((formats_ & OSExchangeData::URL) == 0) {
     title->clear();
@@ -71,7 +71,7 @@ bool OSExchangeDataProviderChromeos::GetURLAndTitle(GURL* url,
   return true;
 }
 
-bool OSExchangeDataProviderChromeos::GetFilename(base::FilePath* path) const {
+bool OSExchangeDataProviderAura::GetFilename(base::FilePath* path) const {
   if ((formats_ & OSExchangeData::FILE_NAME) == 0)
     return false;
   DCHECK(!filenames_.empty());
@@ -79,7 +79,7 @@ bool OSExchangeDataProviderChromeos::GetFilename(base::FilePath* path) const {
   return true;
 }
 
-bool OSExchangeDataProviderChromeos::GetFilenames(
+bool OSExchangeDataProviderAura::GetFilenames(
     std::vector<OSExchangeData::FileInfo>* filenames) const {
   if ((formats_ & OSExchangeData::FILE_NAME) == 0)
     return false;
@@ -87,7 +87,7 @@ bool OSExchangeDataProviderChromeos::GetFilenames(
   return true;
 }
 
-bool OSExchangeDataProviderChromeos::GetPickledData(
+bool OSExchangeDataProviderAura::GetPickledData(
     OSExchangeData::CustomFormat format,
     Pickle* data) const {
   PickleData::const_iterator i = pickle_data_.find(format);
@@ -98,11 +98,11 @@ bool OSExchangeDataProviderChromeos::GetPickledData(
   return true;
 }
 
-bool OSExchangeDataProviderChromeos::HasString() const {
+bool OSExchangeDataProviderAura::HasString() const {
   return (formats_ & OSExchangeData::STRING) != 0;
 }
 
-bool OSExchangeDataProviderChromeos::HasURL() const {
+bool OSExchangeDataProviderAura::HasURL() const {
   if ((formats_ & OSExchangeData::URL) != 0) {
     return true;
   }
@@ -110,23 +110,23 @@ bool OSExchangeDataProviderChromeos::HasURL() const {
   return GetPlainTextURL(NULL);
 }
 
-bool OSExchangeDataProviderChromeos::HasFile() const {
+bool OSExchangeDataProviderAura::HasFile() const {
   return (formats_ & OSExchangeData::FILE_NAME) != 0;
 }
 
-bool OSExchangeDataProviderChromeos::HasCustomFormat(
+bool OSExchangeDataProviderAura::HasCustomFormat(
     OSExchangeData::CustomFormat format) const {
   return pickle_data_.find(format) != pickle_data_.end();
 }
 
-void OSExchangeDataProviderChromeos::SetHtml(const string16& html,
+void OSExchangeDataProviderAura::SetHtml(const string16& html,
                                          const GURL& base_url) {
   formats_ |= OSExchangeData::HTML;
   html_ = html;
   base_url_ = base_url;
 }
 
-bool OSExchangeDataProviderChromeos::GetHtml(string16* html,
+bool OSExchangeDataProviderAura::GetHtml(string16* html,
                                          GURL* base_url) const {
   if ((formats_ & OSExchangeData::HTML) == 0)
     return false;
@@ -135,27 +135,27 @@ bool OSExchangeDataProviderChromeos::GetHtml(string16* html,
   return true;
 }
 
-bool OSExchangeDataProviderChromeos::HasHtml() const {
+bool OSExchangeDataProviderAura::HasHtml() const {
   return ((formats_ & OSExchangeData::HTML) != 0);
 }
 
-void OSExchangeDataProviderChromeos::SetDragImage(
+void OSExchangeDataProviderAura::SetDragImage(
     const gfx::ImageSkia& image,
     const gfx::Vector2d& cursor_offset) {
   drag_image_ = image;
   drag_image_offset_ = cursor_offset;
 }
 
-const gfx::ImageSkia& OSExchangeDataProviderChromeos::GetDragImage() const {
+const gfx::ImageSkia& OSExchangeDataProviderAura::GetDragImage() const {
   return drag_image_;
 }
 
 const gfx::Vector2d&
-OSExchangeDataProviderChromeos::GetDragImageOffset() const {
+OSExchangeDataProviderAura::GetDragImageOffset() const {
   return drag_image_offset_;
 }
 
-bool OSExchangeDataProviderChromeos::GetPlainTextURL(GURL* url) const {
+bool OSExchangeDataProviderAura::GetPlainTextURL(GURL* url) const {
   if ((formats_ & OSExchangeData::STRING) == 0)
     return false;
 
@@ -173,7 +173,7 @@ bool OSExchangeDataProviderChromeos::GetPlainTextURL(GURL* url) const {
 
 // static
 OSExchangeData::Provider* OSExchangeData::CreateProvider() {
-  return new OSExchangeDataProviderChromeos();
+  return new OSExchangeDataProviderAura();
 }
 
 // static
