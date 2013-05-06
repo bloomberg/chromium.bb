@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src="../js/resources/js-test-pre.js"></script>
+<a href='about:blank' target='_blank'></a>
+<button>click me</button>
+<script>
+    description('Check that the NavigationScheduler correctly tracks user gestures');
+    if (window.testRunner) {
+        testRunner.setCanOpenWindows();
+        testRunner.setPopupBlockingEnabled(true);
+    }
+
+    function popup() {
+        // Previously, this made the NavigationController create an additional
+        // user gesture.
+        window.open('javascript:', '_self', '');
+        // Consume one gesture.
+        window.open('about:blank').close();
+        shouldBeUndefined("window.open('about:blank')");
+    }
+
+    var button = document.querySelector('button');
+    button.onclick = popup;
+
+    if (window.testRunner) {
+        eventSender.mouseMoveTo(button.offsetLeft + 2, button.offsetTop + 2);
+        eventSender.mouseDown();
+        eventSender.mouseUp();
+    }
+</script>
+<script src="../js/resources/js-test-post.js"></script>
