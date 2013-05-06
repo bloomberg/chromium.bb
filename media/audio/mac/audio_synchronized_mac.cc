@@ -795,8 +795,10 @@ OSStatus AudioSynchronizedStream::HandleOutputCallback(
     UInt32 bus_number,
     UInt32 number_of_frames,
     AudioBufferList* io_data) {
-  if (first_input_time_ < 0.0) {
-    // Input callback hasn't run yet -> silence.
+  // Input callback hasn't run yet or we've suddenly changed sample-rates
+  // -> silence.
+  if (first_input_time_ < 0.0 ||
+      static_cast<int>(number_of_frames) != params_.frames_per_buffer()) {
     ZeroBufferList(io_data);
     return noErr;
   }

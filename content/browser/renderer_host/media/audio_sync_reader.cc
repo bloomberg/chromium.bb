@@ -77,8 +77,16 @@ int AudioSyncReader::Read(AudioBus* source, AudioBus* dest) {
   // process.
   if (source && input_bus_) {
     DCHECK_EQ(source->channels(), input_bus_->channels());
-    DCHECK_LE(source->frames(), input_bus_->frames());
-    source->CopyTo(input_bus_.get());
+    // TODO(crogers): In some cases with device and sample-rate changes
+    // it's possible for an AOR to insert a resampler in the path.
+    // Because this is used with the Web Audio API, it'd be better
+    // to bypass the device change handling in AOR and instead let
+    // the renderer-side Web Audio code deal with this.
+    if (source->frames() == input_bus_->frames() &&
+        source->channels() == input_bus_->channels())
+      source->CopyTo(input_bus_.get());
+    else
+      input_bus_->Zero();
   }
 
   // Retrieve the actual number of bytes available from the shared memory.  If
