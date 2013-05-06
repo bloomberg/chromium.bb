@@ -134,7 +134,7 @@
               ]
             ],
             'extra_args': [
-              '--strip-debug',
+              '--strip-all',
             ],
             # TODO(bradchen): get rid of extra_deps64 and extra_deps32
             # once native_client/build/untrusted.gypi no longer needs them.
