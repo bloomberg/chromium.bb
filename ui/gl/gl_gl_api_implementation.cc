@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
@@ -97,6 +98,105 @@ RealGLApi::~RealGLApi() {
 
 void RealGLApi::Initialize(DriverGL* driver) {
   InitializeBase(driver);
+}
+
+static inline GLenum GetTexInternalFormat(GLenum internal_format) {
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+    if (internal_format == GL_BGRA_EXT || internal_format == GL_BGRA8_EXT)
+      return GL_RGBA8;
+  }
+  return internal_format;
+}
+
+// TODO(epenner): Could the above function be merged into this and removed?
+static inline GLenum GetTexInternalFormat(GLenum internal_format,
+                                          GLenum format,
+                                          GLenum type) {
+  GLenum gl_internal_format = GetTexInternalFormat(internal_format);
+
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
+    return gl_internal_format;
+
+  if (type == GL_FLOAT) {
+    switch (format) {
+      case GL_RGBA:
+        gl_internal_format = GL_RGBA32F_ARB;
+        break;
+      case GL_RGB:
+        gl_internal_format = GL_RGB32F_ARB;
+        break;
+      case GL_LUMINANCE_ALPHA:
+        gl_internal_format = GL_LUMINANCE_ALPHA32F_ARB;
+        break;
+      case GL_LUMINANCE:
+        gl_internal_format = GL_LUMINANCE32F_ARB;
+        break;
+      case GL_ALPHA:
+        gl_internal_format = GL_ALPHA32F_ARB;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  } else if (type == GL_HALF_FLOAT_OES) {
+    switch (format) {
+      case GL_RGBA:
+        gl_internal_format = GL_RGBA16F_ARB;
+        break;
+      case GL_RGB:
+        gl_internal_format = GL_RGB16F_ARB;
+        break;
+      case GL_LUMINANCE_ALPHA:
+        gl_internal_format = GL_LUMINANCE_ALPHA16F_ARB;
+        break;
+      case GL_LUMINANCE:
+        gl_internal_format = GL_LUMINANCE16F_ARB;
+        break;
+      case GL_ALPHA:
+        gl_internal_format = GL_ALPHA16F_ARB;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  return gl_internal_format;
+}
+
+static inline GLenum GetTexType(GLenum type) {
+   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+     if (type == GL_HALF_FLOAT_OES)
+       return GL_HALF_FLOAT_ARB;
+   }
+   return type;
+}
+
+void RealGLApi::glTexImage2DFn(
+    GLenum target, GLint level, GLint internalformat,
+    GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type,
+    const void* pixels) {
+  GLenum gl_internal_format = GetTexInternalFormat(
+      internalformat, format, type);
+  GLenum gl_type = GetTexType(type);
+  return driver_->fn.glTexImage2DFn(
+      target, level, gl_internal_format, width, height, border, format, gl_type,
+      pixels);
+}
+
+void RealGLApi::glTexSubImage2DFn(
+      GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+      GLsizei height, GLenum format, GLenum type, const void* pixels) {
+  GLenum gl_type = GetTexType(type);
+  return driver_->fn.glTexSubImage2DFn(
+      target, level, xoffset, yoffset, width, height, format, gl_type, pixels);
+}
+
+void RealGLApi::glTexStorage2DEXTFn(
+    GLenum target, GLsizei levels, GLenum internalformat, GLsizei width,
+    GLsizei height) {
+  GLenum gl_internal_format = GetTexInternalFormat(internalformat);
+  return driver_->fn.glTexStorage2DEXTFn(
+      target, levels, gl_internal_format, width, height);
 }
 
 TraceGLApi::~TraceGLApi() {
