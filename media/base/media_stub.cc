@@ -4,31 +4,16 @@
 
 #include "media/base/media.h"
 
-#include "base/logging.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "media/base/android/media_jni_registrar.h"
-#endif
+#include "base/files/file_path.h"
 
 // This file is intended for platforms that don't need to load any media
-// libraries (e.g., Android and iOS).
+// libraries (e.g., iOS).
 namespace media {
+namespace internal {
 
-bool InitializeMediaLibrary(const base::FilePath& module_dir) {
+bool InitializeMediaLibraryInternal(const base::FilePath& module_dir) {
   return true;
 }
 
-void InitializeMediaLibraryForTesting() {
-#if defined(OS_ANDROID)
-  // Register JNI bindings for android.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  RegisterJni(env);
-#endif
-}
-
-bool IsMediaLibraryInitialized() {
-  return true;
-}
-
+}  // namespace internal
 }  // namespace media

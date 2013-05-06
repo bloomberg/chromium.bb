@@ -4,8 +4,14 @@
 
 #include "base/command_line.h"
 #include "base/test/test_suite.h"
+#include "build/build_config.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "media/base/android/media_jni_registrar.h"
+#endif
 
 class TestSuiteNoAtExit : public base::TestSuite {
  public:
@@ -18,6 +24,13 @@ class TestSuiteNoAtExit : public base::TestSuite {
 void TestSuiteNoAtExit::Initialize() {
   // Run TestSuite::Initialize first so that logging is initialized.
   base::TestSuite::Initialize();
+
+#if defined(OS_ANDROID)
+  // Register JNI bindings for android.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  media::RegisterJni(env);
+#endif
+
   // Run this here instead of main() to ensure an AtExitManager is already
   // present.
   media::InitializeMediaLibraryForTesting();

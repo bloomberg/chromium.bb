@@ -22,6 +22,7 @@ using third_party_ffmpeg::StubPathMap;
 #endif  // !defined(USE_SYSTEM_FFMPEG)
 
 namespace media {
+namespace internal {
 
 // Handy to prevent shooting ourselves in the foot with macro wizardry.
 #if !defined(LIBAVCODEC_VERSION_MAJOR) || \
@@ -47,18 +48,11 @@ static const base::FilePath::CharType kSumoLib[] =
 #error "Do not know how to construct DSO name for this OS."
 #endif
 
-// Use a global to indicate whether the library has been initialized or not.  We
-// rely on function level static initialization in InitializeMediaLibrary() to
-// guarantee this is only set once in a thread safe manner.
-static bool g_media_library_is_initialized = false;
-
-static bool InitializeMediaLibraryInternal(const base::FilePath& module_dir) {
-  DCHECK(!g_media_library_is_initialized);
-
+bool InitializeMediaLibraryInternal(const base::FilePath& module_dir) {
 #if defined(USE_SYSTEM_FFMPEG)
   // No initialization is necessary when using system ffmpeg,
   // we just link directly with system ffmpeg libraries.
-  g_media_library_is_initialized = true;
+  return true;
 #else
   StubPathMap paths;
 
@@ -74,26 +68,9 @@ static bool InitializeMediaLibraryInternal(const base::FilePath& module_dir) {
   paths[kModuleFfmpegsumo].push_back(module_dir.Append(
       FILE_PATH_LITERAL(DSO_NAME("avformat", AVFORMAT_VERSION))).value());
 
-  g_media_library_is_initialized = InitializeStubs(paths);
+  return InitializeStubs(paths);
 #endif  // !defined(USE_SYSTEM_FFMPEG)
-  return g_media_library_is_initialized;
 }
 
-bool InitializeMediaLibrary(const base::FilePath& base_path) {
-  static const bool kMediaLibraryInitialized =
-      InitializeMediaLibraryInternal(base_path);
-  DCHECK_EQ(kMediaLibraryInitialized, g_media_library_is_initialized);
-  return kMediaLibraryInitialized;
-}
-
-void InitializeMediaLibraryForTesting() {
-  base::FilePath file_path;
-  CHECK(PathService::Get(base::DIR_EXE, &file_path));
-  CHECK(InitializeMediaLibrary(file_path));
-}
-
-bool IsMediaLibraryInitialized() {
-  return g_media_library_is_initialized;
-}
-
+}  // namespace internal
 }  // namespace media

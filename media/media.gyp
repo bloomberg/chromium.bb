@@ -259,6 +259,7 @@
         'base/djb2.h',
         'base/filter_collection.cc',
         'base/filter_collection.h',
+        'base/media.cc',
         'base/media.h',
         'base/media_log.cc',
         'base/media_log.h',
@@ -560,6 +561,7 @@
             ['include', '^audio/fake_audio_output_stream\\.'],
             ['include', '^base/audio_bus\\.'],
             ['include', '^base/channel_layout\\.'],
+            ['include', '^base/media\\.cc$'],
             ['include', '^base/media_stub\\.cc$'],
             ['include', '^base/media_switches\\.'],
             ['include', '^base/vector_math\\.'],
@@ -585,6 +587,10 @@
             'media_android_jni_headers',
             'player_android',
             'video_capture_android_jni_headers',
+          ],
+          'sources': [
+            'base/media.cc',
+            'base/media.h',
           ],
           'conditions': [
             ['android_webview_build == 0', {
@@ -1188,7 +1194,7 @@
             'base/simd/convert_yuv_to_rgb_sse.asm',
             'base/simd/convert_yuv_to_rgb_x86.cc',
             'base/simd/convert_yuva_to_argb_mmx.asm',
-            'base/simd/convert_yuva_to_argb_mmx.inc',            
+            'base/simd/convert_yuva_to_argb_mmx.inc',
             'base/simd/empty_register_state_mmx.asm',
             'base/simd/filter_yuv.h',
             'base/simd/filter_yuv_c.cc',

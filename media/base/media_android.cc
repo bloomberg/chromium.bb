@@ -6,31 +6,16 @@
 
 #include <cpu-features.h>
 
-#include "base/android/jni_android.h"
-#include "base/logging.h"
-#include "media/base/android/media_jni_registrar.h"
+#include "base/files/file_path.h"
 
 namespace media {
+namespace internal {
 
-// Caches the result of the check for NEON support.
-static bool g_media_library_is_initialized = false;
-
-bool InitializeMediaLibrary(const base::FilePath& module_dir) {
+bool InitializeMediaLibraryInternal(const base::FilePath& module_dir) {
   // No real initialization is necessary but we do need to check if
   // Neon is supported because the FFT library requires Neon.
-  g_media_library_is_initialized = (android_getCpuFeatures() &
-                                    ANDROID_CPU_ARM_FEATURE_NEON) != 0;
-  return g_media_library_is_initialized;
+  return (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
 }
 
-void InitializeMediaLibraryForTesting() {
-  // Register JNI bindings for android.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  RegisterJni(env);
-}
-
-bool IsMediaLibraryInitialized() {
-  return g_media_library_is_initialized;
-}
-
+}  // namespace internal
 }  // namespace media
