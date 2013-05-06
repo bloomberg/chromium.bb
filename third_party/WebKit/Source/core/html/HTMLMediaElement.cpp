@@ -470,6 +470,7 @@ Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(ContainerNode*
 void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint)
 {
     if (insertionPoint->inDocument()) {
+        m_inActiveDocument = false;
         LOG(Media, "HTMLMediaElement::removedFromDocument");
         configureMediaControls();
         if (m_networkState > NETWORK_EMPTY)

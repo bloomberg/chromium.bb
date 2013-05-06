@@ -1,0 +1,67 @@
+<!DOCTYPE  html>
+<html>
+    <head>
+        <script src=../media-file.js></script>
+        <script src=../media-controls.js></script>
+        <script src=../video-test.js></script>
+
+        <script>
+        function startTest()
+        {
+            document.getElementsByTagName('track')[0].track.mode  =  'showing';
+            document.getElementsByTagName('track')[1].track.mode  =  'showing';
+
+            initCF();
+        }
+
+        function initCF()
+        {
+            setTimeout("CFcrash()", 150);
+        }
+
+        document.addEventListener("DOMContentLoaded", startTest, false);
+
+        function CFcrash()
+        {
+            try {
+                tCFDoc5  =  document.implementation.createDocument("",  null);
+            } catch(e) {}
+
+            try {
+                tCFDoc5.replaceChild(tCF14,  tCFDoc5.childNodes[1 % tCFDoc5.childNodes.length]);
+            } catch(e) {
+                try {
+                    tCFDoc5.appendChild(tCF14);
+                } catch(e) {}
+            }
+
+            try {
+                delete tCFDoc5;
+            } catch(e) {}
+
+            setTimeout(function() {
+                try { gc(); } catch(e) {}
+
+                consoleWrite("");
+                consoleWrite("No crash. PASS.");
+                consoleWrite("");
+
+                endTest();
+            }, 0);
+        }
+        </script>
+    </head>
+
+    <body>
+        <p>Tests that removing track nodes while their parent is being deleted doesn't crash</p>
+        <label id=tCF14>
+        <video autoplay>
+            <!-- Can't use findMediaElement() as test doesn't crash, so source needs to be specified here -->
+            <source src="../content/test.ogv">
+            <source src="../content/test.mp4">
+            <track src="captions-webvtt/captions-fast.vtt">
+            <track src="captions-webvtt/captions-fast.vtt">
+        </video>
+        </label>
+    </body>
+</html>
