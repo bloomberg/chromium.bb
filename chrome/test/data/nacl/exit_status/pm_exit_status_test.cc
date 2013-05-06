@@ -17,8 +17,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <sys/nacl_syscalls.h>
-
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
