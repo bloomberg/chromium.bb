@@ -123,6 +123,8 @@ enum ThemeBackgroundImageTiling {
   THEME_BKGRND_IMAGE_REPEAT,
 };
 
+// Update IsThemeInfoEqual in chrome/renderer/searchbox/searchbox.cc
+// whenever any fields are added/removed.
 struct ThemeBackgroundInfo {
   ThemeBackgroundInfo();
   ~ThemeBackgroundInfo();
@@ -158,6 +160,8 @@ struct ThemeBackgroundInfo {
   bool has_attribution;
 };
 
+// Update AreMostVisitedItemsEqual in chrome/renderer/searchbox/searchbox.cc
+// whenever any fields are added/removed.
 struct InstantMostVisitedItem {
   // The URL of the Most Visited item.
   GURL url;
