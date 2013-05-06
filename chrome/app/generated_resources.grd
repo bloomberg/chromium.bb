@@ -6495,6 +6495,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_LOCAL_ONLY_INSTANT_EXTENDED_API_DESCRIPTION" desc="Description for the flag to enable the Instant extended API.">
         Enable the Instant extended API using only local resources.
       </message>
+      <message name="IDS_FLAGS_ENABLE_LOCAL_FIRST_LOAD_NTP" desc="Title for the flag to enable the local first load NTP.">
+        Enable local first-load NTP in Instant extended.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_LOCAL_FIRST_LOAD_NTP_DESCRIPTION" desc="Description for the flag to enable the Instant extended API.">
+        Whether or not the first new tab page load of a new window will automatically fall back to the local page when Instant Extended is enabled.
+      </message>
       <message name="IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME" desc="Title for the flag to turn on gesture tap highlighting">
         Gesture Tap Highlighting
       </message>

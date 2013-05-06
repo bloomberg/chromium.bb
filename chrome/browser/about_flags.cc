@@ -573,6 +573,14 @@ const Experiment kExperiments[] = {
                               switches::kDisableInstantExtendedAPI)
   },
   {
+    "enable-local-first-load-ntp",
+    IDS_FLAGS_ENABLE_LOCAL_FIRST_LOAD_NTP,
+    IDS_FLAGS_ENABLE_LOCAL_FIRST_LOAD_NTP_DESCRIPTION,
+    kOsDesktop,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableLocalFirstLoadNTP,
+                              switches::kDisableLocalFirstLoadNTP)
+  },
+  {
     "enable-local-only-instant-extended-api",
     IDS_FLAGS_ENABLE_LOCAL_ONLY_INSTANT_EXTENDED_API,
     IDS_FLAGS_ENABLE_LOCAL_ONLY_INSTANT_EXTENDED_API_DESCRIPTION,

@@ -250,6 +250,8 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_BackspaceFromQueryToSelectedUrlAndNavigate);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OnDefaultSearchProviderChanged);
+  FRIEND_TEST_ALL_PREFIXES(
+      InstantExtendedFirstTabTest, RedirectToLocalOnLoadFailure);
 
   Profile* profile() const;
   InstantOverlay* overlay() const;
@@ -288,6 +290,7 @@ class InstantController : public InstantPage::Delegate,
       const GURL& url,
       content::PageTransition transition,
       WindowOpenDisposition disposition) OVERRIDE;
+  virtual void InstantPageLoadFailed(content::WebContents* contents) OVERRIDE;
 
   // Invoked by the InstantLoader when the Instant page wants to delete a
   // Most Visited item.
@@ -302,6 +305,10 @@ class InstantController : public InstantPage::Delegate,
   // Invoked by the InstantLoader when the Instant page wants to undo all
   // Most Visited deletions.
   virtual void UndoAllMostVisitedDeletions() OVERRIDE;
+
+  // Helper function to navigate the given contents to the local fallback
+  // Instant URL and trim the history correctly.
+  void RedirectToLocalNTP(content::WebContents* contents);
 
   // Helper for OmniboxFocusChanged. Commit or discard the overlay.
   void OmniboxLostFocus(gfx::NativeView view_gaining_focus);
@@ -341,6 +348,9 @@ class InstantController : public InstantPage::Delegate,
   // If the active tab is an Instant search results page, sets |instant_tab_| to
   // point to it. Else, deletes any existing |instant_tab_|.
   void ResetInstantTab();
+
+  // Sends theme info, omnibox bounds, font info, etc. down to the Instant tab.
+  void UpdateInfoForInstantTab();
 
   // Hide the overlay. Also sends an onchange event (with blank query) to the
   // overlay, telling it to clear out results for any old queries.

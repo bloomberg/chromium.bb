@@ -35,6 +35,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/instant_commit_type.h"
 #include "chrome/browser/ui/search/instant_ntp.h"
@@ -803,8 +805,9 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPDoesntSupportInstant) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
 
-  // NTP contents should not be preloaded.
-  ASSERT_EQ(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  // NTP contents should have fallen back to the local page.
+  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  EXPECT_TRUE(instant()->ntp()->IsLocal());
 
   // Open new tab. Should use local NTP.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -2058,9 +2061,10 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OverlayDoesntSupportInstant) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   // Focus the omnibox. When the support determination response comes back,
-  // Instant will destroy the non-Instant page.
+  // Instant will destroy the non-Instant page and fall back to the local page.
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_EQ(NULL, instant()->GetOverlayContents());
+  ASSERT_NE(static_cast<InstantOverlay*>(NULL), instant()->overlay());
+  EXPECT_TRUE(instant()->overlay()->IsLocal());
 
   // The local overlay is used on the next Update().
   SetOmniboxText("query");
@@ -2072,9 +2076,10 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OverlayDoesntSupportInstant) {
   FocusOmnibox();
   EXPECT_FALSE(instant()->overlay()->IsLocal());
 
-  // Overlay destroyed again after determining support.
+  // Overlay falls back to local again after determining support.
   FocusOmniboxAndWaitForInstantOverlaySupport();
-  EXPECT_EQ(NULL, instant()->GetOverlayContents());
+  ASSERT_NE(static_cast<InstantOverlay*>(NULL), instant()->overlay());
+  EXPECT_TRUE(instant()->overlay()->IsLocal());
 }
 
 // Test that if Instant alters the input from URL to search, it's respected.
@@ -2284,4 +2289,52 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchProviderRunsForFallback) {
   //   - SWYT for "quer"
   //   - Search history suggestion for "query"
   EXPECT_EQ(2, CountSearchProviderSuggestions());
+}
+
+class InstantExtendedFirstTabTest : public InProcessBrowserTest,
+                                    public InstantTestBase {
+ public:
+  InstantExtendedFirstTabTest() {}
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kEnableInstantExtendedAPI);
+    command_line->AppendSwitch(switches::kDisableLocalFirstLoadNTP);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    InstantExtendedFirstTabTest, RedirectToLocalOnLoadFailure) {
+  // Create a new window to test the first NTP load.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+
+  const BrowserList* native_browser_list = BrowserList::GetInstance(
+      chrome::HOST_DESKTOP_TYPE_NATIVE);
+  ASSERT_EQ(2u, native_browser_list->size());
+  set_browser(native_browser_list->get(1));
+
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+
+  // Also make sure our instant_tab_ is loaded.
+  if (!instant()->instant_tab_) {
+    content::WindowedNotificationObserver instant_tab_observer(
+        chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+        content::NotificationService::AllSources());
+    instant_tab_observer.Wait();
+  }
+
+  // NTP contents should be preloaded.
+  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  EXPECT_TRUE(instant()->ntp()->IsLocal());
+
+  // Overlay contents should be preloaded.
+  ASSERT_NE(static_cast<InstantOverlay*>(NULL), instant()->overlay());
+  EXPECT_TRUE(instant()->overlay()->IsLocal());
+
+  // Instant tab contents should be preloaded.
+  ASSERT_NE(static_cast<InstantTab*>(NULL), instant()->instant_tab());
+  EXPECT_TRUE(instant()->instant_tab()->IsLocal());
 }

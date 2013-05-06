@@ -712,6 +712,47 @@ void InstantController::OmniboxNavigateToURL() {
     instant_tab_->Submit(string16());
 }
 
+void InstantController::InstantPageLoadFailed(content::WebContents* contents) {
+  if (!chrome::ShouldPreferRemoteNTPOnStartup() || !extended_enabled_) {
+    // We only need to fall back on errors if we're showing the online page
+    // at startup, as otherwise we fall back correctly when trying to show
+    // a page that hasn't yet indicated that it supports the InstantExtended
+    // API.
+    return;
+  }
+
+  if (IsContentsFrom(instant_tab(), contents)) {
+    // Verify we're not already on a local page and that the URL precisely
+    // equals the instant_url (minus the query params, as those will be filled
+    // in by template values).  This check is necessary to make sure we don't
+    // inadvertently redirect to the local NTP if someone, say, reloads a SRP
+    // while offline, as a committed results page still counts as an instant
+    // url.  We also check to make sure there's no forward history, as if
+    // someone hits the back button a lot when offline and returns to a NTP
+    // we don't want to redirect and nuke their forward history stack.
+    const GURL& current_url = contents->GetURL();
+    if (instant_tab_->IsLocal() ||
+        !chrome::MatchesOriginAndPath(GURL(GetInstantURL()), current_url) ||
+        !current_url.ref().empty() ||
+        contents->GetController().CanGoForward())
+      return;
+    LOG_INSTANT_DEBUG_EVENT(this, "InstantPageLoadFailed: instant_tab");
+    RedirectToLocalNTP(contents);
+  } else if (IsContentsFrom(ntp(), contents)) {
+    LOG_INSTANT_DEBUG_EVENT(this, "InstantPageLoadFailed: ntp");
+    bool is_local = ntp_->IsLocal();
+    DeletePageSoon(ntp_.Pass());
+    if (!is_local)
+      ResetNTP(GetLocalInstantURL());
+  } else if (IsContentsFrom(overlay(), contents)) {
+    LOG_INSTANT_DEBUG_EVENT(this, "InstantPageLoadFailed: overlay");
+    bool is_local = overlay_->IsLocal();
+    DeletePageSoon(overlay_.Pass());
+    if (!is_local)
+      ResetOverlay(GetLocalInstantURL());
+  }
+}
+
 content::WebContents* InstantController::GetOverlayContents() const {
   return overlay_ ? overlay_->contents() : NULL;
 }
@@ -1136,8 +1177,13 @@ void InstantController::InstantSupportDetermined(
         content::Source<InstantController>(this),
         content::NotificationService::NoDetails());
   } else if (IsContentsFrom(ntp(), contents)) {
-    if (!supports_instant)
+    if (!supports_instant) {
+      bool is_local = ntp_->IsLocal();
       DeletePageSoon(ntp_.Pass());
+      // Preload a local NTP in place of the broken online one.
+      if (!is_local)
+        ResetNTP(GetLocalInstantURL());
+    }
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_NTP_SUPPORT_DETERMINED,
@@ -1147,7 +1193,11 @@ void InstantController::InstantSupportDetermined(
   } else if (IsContentsFrom(overlay(), contents)) {
     if (!supports_instant) {
       HideInternal();
+      bool is_local = overlay_->IsLocal();
       DeletePageSoon(overlay_.Pass());
+      // Preload a local overlay in place of the broken online one.
+      if (!is_local && extended_enabled_)
+        ResetOverlay(GetLocalInstantURL());
     }
 
     content::NotificationService::current()->Notify(
@@ -1172,29 +1222,36 @@ void InstantController::InstantPageRenderViewGone(
 void InstantController::InstantPageAboutToNavigateMainFrame(
     const content::WebContents* contents,
     const GURL& url) {
-  DCHECK(IsContentsFrom(overlay(), contents));
+  if (IsContentsFrom(overlay(), contents)) {
+    // If the page does not yet support Instant, we allow redirects and other
+    // navigations to go through since the Instant URL can redirect - e.g. to
+    // country specific pages.
+    if (!overlay_->supports_instant())
+      return;
 
-  // If the page does not yet support Instant, we allow redirects and other
-  // navigations to go through since the Instant URL can redirect - e.g. to
-  // country specific pages.
-  if (!overlay_->supports_instant())
-    return;
+    GURL instant_url(overlay_->instant_url());
 
-  GURL instant_url(overlay_->instant_url());
+    // If we are navigating to the Instant URL, do nothing.
+    if (url == instant_url)
+      return;
 
-  // If we are navigating to the Instant URL, do nothing.
-  if (url == instant_url)
-    return;
-
-  // Commit the navigation if either:
-  //  - The page is in NTP mode (so it could only navigate on a user click) or
-  //  - The page is not in NTP mode and we are navigating to a URL with a
-  //    different host or path than the Instant URL. This enables the instant
-  //    page when it is showing search results to change the query parameters
-  //    and fragments of the URL without it navigating.
-  if (model_.mode().is_ntp() ||
-      (url.host() != instant_url.host() || url.path() != instant_url.path())) {
-    CommitIfPossible(INSTANT_COMMIT_NAVIGATED);
+    // Commit the navigation if either:
+    //  - The page is in NTP mode (so it could only navigate on a user click) or
+    //  - The page is not in NTP mode and we are navigating to a URL with a
+    //    different host or path than the Instant URL. This enables the instant
+    //    page when it is showing search results to change the query parameters
+    //    and fragments of the URL without it navigating.
+    if (model_.mode().is_ntp() ||
+        (url.host() != instant_url.host() ||
+         url.path() != instant_url.path())) {
+      CommitIfPossible(INSTANT_COMMIT_NAVIGATED);
+    }
+  } else if (IsContentsFrom(instant_tab(), contents)) {
+    // The Instant tab navigated.  Send it the data it needs to display
+    // properly.
+    UpdateInfoForInstantTab();
+  } else {
+    NOTREACHED();
   }
 }
 
@@ -1452,20 +1509,25 @@ void InstantController::ResetInstantTab() {
     if (!instant_tab_ || active_tab != instant_tab_->contents()) {
       instant_tab_.reset(new InstantTab(this));
       instant_tab_->Init(active_tab);
-      // Update theme info for this tab.
-      browser_->UpdateThemeInfo();
-      instant_tab_->SetDisplayInstantResults(instant_enabled_);
-      instant_tab_->SetOmniboxBounds(omnibox_bounds_);
-      instant_tab_->InitializeFonts();
-      StartListeningToMostVisitedChanges();
-      instant_tab_->KeyCaptureChanged(
-          omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
+      UpdateInfoForInstantTab();
     }
 
     // Hide the |overlay_| since we are now using |instant_tab_| instead.
     HideOverlay();
   } else {
     instant_tab_.reset();
+  }
+}
+
+void InstantController::UpdateInfoForInstantTab() {
+  if (instant_tab_) {
+    browser_->UpdateThemeInfo();
+    instant_tab_->SetDisplayInstantResults(instant_enabled_);
+    instant_tab_->SetOmniboxBounds(omnibox_bounds_);
+    instant_tab_->InitializeFonts();
+    StartListeningToMostVisitedChanges();
+    instant_tab_->KeyCaptureChanged(
+        omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
   }
 }
 
@@ -1691,4 +1753,15 @@ bool InstantController::FixSuggestion(InstantSuggestion* suggestion) const {
 bool InstantController::UsingLocalPage() const {
   return (instant_tab_ && instant_tab_->IsLocal()) ||
       (!instant_tab_ && overlay_ && overlay_->IsLocal());
+}
+
+void InstantController::RedirectToLocalNTP(content::WebContents* contents) {
+  contents->GetController().LoadURL(
+    chrome::GetLocalInstantURL(browser_->profile()),
+    content::Referrer(),
+    content::PAGE_TRANSITION_SERVER_REDIRECT,
+    std::string());  // No extra headers.
+  // TODO(dcblack): Remove extraneous history entry caused by 404s.
+  // Note that the base case of a 204 being returned doesn't push a history
+  // entry.
 }

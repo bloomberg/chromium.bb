@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/search/instant_tab.h"
+#include "content/public/browser/web_contents.h"
 
 InstantTab::InstantTab(InstantPage::Delegate* delegate)
     : InstantPage(delegate, "") {
@@ -13,7 +14,12 @@ InstantTab::~InstantTab() {
 
 void InstantTab::Init(content::WebContents* contents) {
   SetContents(contents);
-  DetermineIfPageSupportsInstant();
+  if (!contents->IsWaitingForResponse())
+    DetermineIfPageSupportsInstant();
+}
+
+bool InstantTab::ShouldProcessAboutToNavigateMainFrame() {
+  return true;
 }
 
 bool InstantTab::ShouldProcessSetSuggestions() {
