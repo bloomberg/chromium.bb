@@ -61,7 +61,7 @@ String PageRuleCollector::pageName(int /* pageIndex */) const
     return "";
 }
 
-PageRuleCollector::PageRuleCollector(const StyleResolver::State& state, int pageIndex)
+PageRuleCollector::PageRuleCollector(const StyleResolverState& state, int pageIndex)
     : m_state(state)
     , m_isLeftPage(isLeftPage(pageIndex))
     , m_isFirstPage(isFirstPage(pageIndex))

@@ -41,7 +41,7 @@ class StaticCSSRuleList;
 
 class ElementRuleCollector {
 public:
-    ElementRuleCollector(StyleResolver* styleResolver, const StyleResolver::State& state)
+    ElementRuleCollector(StyleResolver* styleResolver, const StyleResolverState& state)
         : m_state(state)
         , m_selectorFilter(styleResolver->selectorFilter())
         , m_inspectorCSSOMWrappers(styleResolver->inspectorCSSOMWrappers())
@@ -87,7 +87,7 @@ private:
     StaticCSSRuleList* ensureRuleList();
         
 private:
-    const StyleResolver::State& m_state;
+    const StyleResolverState& m_state;
     SelectorFilter& m_selectorFilter;
     InspectorCSSOMWrappers& m_inspectorCSSOMWrappers;
 

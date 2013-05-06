@@ -123,6 +123,7 @@ class RenderStyle: public RefCounted<RenderStyle> {
     friend class RenderSVGResource; // FIXME: Needs to alter the visited state by hand. Should clean the SVG code up and move it into RenderStyle perhaps.
     friend class RenderTreeAsText; // FIXME: Only needed so the render tree can keep lying and dump the wrong colors.  Rebaselining would allow this to be yanked.
     friend class StyleResolver; // Sets members directly.
+    friend class StyleResolverState; // Sets members directly.
 protected:
 
     // non-inherited attributes

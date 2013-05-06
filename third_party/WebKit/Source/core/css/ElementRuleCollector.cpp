@@ -96,7 +96,7 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     ASSERT(matchRequest.ruleSet);
     ASSERT(m_state.element());
 
-    const StyleResolver::State& state = m_state;
+    const StyleResolverState& state = m_state;
     Element* element = state.element();
     const StyledElement* styledElement = state.styledElement();
     const AtomicString& pseudoId = element->shadowPseudoId();
@@ -153,7 +153,7 @@ void ElementRuleCollector::collectMatchingRulesForRegion(const MatchRequest& mat
 
 void ElementRuleCollector::sortAndTransferMatchedRules()
 {
-    const StyleResolver::State& state = m_state;
+    const StyleResolverState& state = m_state;
 
     if (!m_matchedRules || m_matchedRules->isEmpty())
         return;
@@ -177,7 +177,7 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
 
 inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const ContainerNode* scope, PseudoId& dynamicPseudo)
 {
-    const StyleResolver::State& state = m_state;
+    const StyleResolverState& state = m_state;
 
     if (ruleData.hasFastCheckableSelector()) {
         // We know this selector does not include any pseudo elements.
@@ -220,7 +220,7 @@ void ElementRuleCollector::collectMatchingRulesForList(const Vector<RuleData>* r
     if (!rules)
         return;
 
-    const StyleResolver::State& state = m_state;
+    const StyleResolverState& state = m_state;
 
     unsigned size = rules->size();
     for (unsigned i = 0; i < size; ++i) {

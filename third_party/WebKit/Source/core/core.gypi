@@ -675,6 +675,8 @@
             'css/StylePropertyShorthand.h',
             'css/StyleResolver.cpp',
             'css/StyleResolver.h',
+            'css/StyleResolverState.cpp',
+            'css/StyleResolverState.h',
             'css/StyleRule.cpp',
             'css/StyleRule.h',
             'css/StyleRuleImport.cpp',
