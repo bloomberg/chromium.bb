@@ -64,8 +64,13 @@ class CppTypeGenerator(object):
 
     e.g VAR_STRING
     """
-    return '%s_%s' % (self.FollowRef(type_).unix_name.upper(),
-                      cpp_util.Classname(enum_value.upper()))
+    value = '%s_%s' % (self.FollowRef(type_).unix_name.upper(),
+                       cpp_util.Classname(enum_value.upper()))
+    # To avoid collisions with built-in OS_* preprocessor definitions, we add a
+    # trailing slash to enum names that start with OS_.
+    if value.startswith("OS_"):
+      value += "_"
+    return value
 
   def GetCppType(self, type_, is_ptr=False, is_in_container=False):
     """Translates a model.Property or model.Type into its C++ type.

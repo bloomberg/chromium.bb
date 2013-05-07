@@ -86,6 +86,15 @@ class RuntimeRequestUpdateCheckFunction : public AsyncExtensionFunction,
   bool did_reply_;
 };
 
+class RuntimeGetPlatformInfoFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("runtime.getPlatformInfo",
+                             RUNTIME_GETPLATFORMINFO);
+ protected:
+  virtual ~RuntimeGetPlatformInfoFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_RUNTIME_RUNTIME_API_H_

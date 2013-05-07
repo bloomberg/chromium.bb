@@ -79,6 +79,7 @@
           'power.idl',
           'push_messaging.idl',
           'rtc_private.idl',
+          'runtime.json',
           'serial.idl',
           'session_restore.json',
           'socket.idl',

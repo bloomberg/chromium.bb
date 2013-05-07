@@ -14,9 +14,13 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/extensions/api/runtime.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "googleurl/src/gurl.h"
+
+namespace GetPlatformInfo = extensions::api::runtime::GetPlatformInfo;
 
 namespace extensions {
 
@@ -262,6 +266,55 @@ void RuntimeRequestUpdateCheckFunction::ReplyUpdateFound(
   results_->Append(details);
   details->SetString("version", version);
   SendResponse(true);
+}
+
+bool RuntimeGetPlatformInfoFunction::RunImpl() {
+  GetPlatformInfo::Results::PlatformInfo info;
+
+  const char* os = chrome::OmahaQueryParams::getOS();
+  if (strcmp(os, "mac") == 0) {
+    info.os = GetPlatformInfo::Results::PlatformInfo::OS_MAC_;
+  } else if (strcmp(os, "win") == 0) {
+    info.os = GetPlatformInfo::Results::PlatformInfo::OS_WIN_;
+  } else if (strcmp(os, "android") == 0) {
+    info.os = GetPlatformInfo::Results::PlatformInfo::OS_ANDROID_;
+  } else if (strcmp(os, "cros") == 0) {
+    info.os = GetPlatformInfo::Results::PlatformInfo::OS_CROS_;
+  } else if (strcmp(os, "linux") == 0) {
+    info.os = GetPlatformInfo::Results::PlatformInfo::OS_LINUX_;
+  } else if (strcmp(os, "openbsd") == 0) {
+    info.os = GetPlatformInfo::Results::PlatformInfo::OS_OPENBSD_;
+  } else {
+    NOTREACHED();
+    return false;
+  }
+
+  const char* arch = chrome::OmahaQueryParams::getArch();
+  if (strcmp(arch, "arm") == 0) {
+    info.arch = GetPlatformInfo::Results::PlatformInfo::ARCH_ARM;
+  } else if (strcmp(arch, "x86") == 0) {
+    info.arch = GetPlatformInfo::Results::PlatformInfo::ARCH_X86_32;
+  } else if (strcmp(arch, "x64") == 0) {
+    info.arch = GetPlatformInfo::Results::PlatformInfo::ARCH_X86_64;
+  } else {
+    NOTREACHED();
+    return false;
+  }
+
+  const char* nacl_arch = chrome::OmahaQueryParams::getNaclArch();
+  if (strcmp(nacl_arch, "arm") == 0) {
+    info.nacl_arch = GetPlatformInfo::Results::PlatformInfo::NACL_ARCH_ARM;
+  } else if (strcmp(nacl_arch, "x86-32") == 0) {
+    info.nacl_arch = GetPlatformInfo::Results::PlatformInfo::NACL_ARCH_X86_32;
+  } else if (strcmp(nacl_arch, "x86-64") == 0) {
+    info.nacl_arch = GetPlatformInfo::Results::PlatformInfo::NACL_ARCH_X86_64;
+  } else {
+    NOTREACHED();
+    return false;
+  }
+
+  results_ = GetPlatformInfo::Results::Create(info);
+  return true;
 }
 
 }   // namespace extensions
