@@ -5,6 +5,7 @@
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 
 #include "base/i18n/rtl.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_piece.h"
 #include "base/utf_string_conversions.h"
@@ -24,12 +25,17 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
+#include "grit/app_locale_settings.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -59,6 +65,7 @@ enum SSLBlockingPageCommands {
   CMD_PROCEED,
   CMD_FOCUS,
   CMD_MORE,
+  CMD_SHOW_UNDERSTAND,  // Used by the Finch trial.
 };
 
 // Events for UMA.
@@ -74,6 +81,7 @@ enum SSLBlockingPageEvent {
   DONT_PROCEED_DATE,
   DONT_PROCEED_AUTHORITY,
   MORE,
+  SHOW_UNDERSTAND,
   UNUSED_BLOCKING_PAGE_EVENT,
 };
 
@@ -144,6 +152,13 @@ void RecordSSLBlockingPageTimeStats(
   }
 }
 
+// These are the constants for the Finch experiment.
+const char kStudyName[] = "InterstitialSSL517";
+const char kCondition15Control[] = "Condition15SSLControl";
+const char kCondition16Firefox[] = "Condition16SSLFirefox";
+const char kCondition17FancyFirefox[] = "Condition17SSLFancyFirefox";
+const char kCondition18NoImages[] = "Condition18SSLNoImages";
+
 }  // namespace
 
 // Note that we always create a navigation entry with SSL errors.
@@ -163,6 +178,8 @@ SSLBlockingPage::SSLBlockingPage(
       request_url_(request_url),
       overridable_(overridable),
       strict_enforcement_(strict_enforcement) {
+  trialCondition_ = base::FieldTrialList::FindFullName(kStudyName);
+
   RecordSSLBlockingPageEventStats(SHOW_ALL);
   if (overridable_ && !strict_enforcement_)
     RecordSSLBlockingPageEventStats(SHOW_OVERRIDABLE);
@@ -175,6 +192,10 @@ SSLBlockingPage::SSLBlockingPage(
 
 SSLBlockingPage::~SSLBlockingPage() {
   if (!callback_.is_null()) {
+    RecordSSLBlockingPageTimeStats(
+      false, cert_error_,
+      overridable_ && !strict_enforcement_, display_start_time_,
+      base::TimeTicks::Now());
     // The page is closed without the user having chosen what to do, default to
     // deny.
     NotifyDenyCertificate();
@@ -188,6 +209,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
       SSLErrorInfo::NetErrorToErrorType(cert_error_), ssl_info_.cert,
       request_url_);
 
+  int resource_id = IDR_SSL_ROAD_BLOCK_HTML;
   strings.SetString("headLine", error_info.title());
   strings.SetString("description", error_info.details());
   strings.SetString("moreInfoTitle",
@@ -197,7 +219,6 @@ std::string SSLBlockingPage::GetHTMLContents() {
   strings.SetString("exit",
                     l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_EXIT));
 
-  int resource_id = IDR_SSL_ROAD_BLOCK_HTML;
   if (overridable_ && !strict_enforcement_) {
     strings.SetString("title",
                       l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_TITLE));
@@ -206,10 +227,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
     strings.SetString("reasonForNotProceeding",
                       l10n_util::GetStringUTF16(
                           IDS_SSL_BLOCKING_PAGE_SHOULD_NOT_PROCEED));
-    // The value of errorType doesn't matter; we actually just check if it's
-    // empty or not in ssl_roadblock.
-    strings.SetString("errorType",
-                      l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_TITLE));
+    strings.SetString("errorType", "overridable");
   } else {
     strings.SetString("title",
                       l10n_util::GetStringUTF16(IDS_SSL_ERROR_PAGE_TITLE));
@@ -220,10 +238,35 @@ std::string SSLBlockingPage::GetHTMLContents() {
     } else {
       strings.SetString("reasonForNotProceeding", std::string());
     }
-    strings.SetString("errorType", std::string());
+    strings.SetString("errorType", "notoverridable");
   }
 
   strings.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
+
+  // Set up the Finch trial layouts.
+  strings.SetString("trialType", trialCondition_);
+  if (trialCondition_ == kCondition16Firefox ||
+      trialCondition_ == kCondition17FancyFirefox ||
+      trialCondition_ == kCondition18NoImages) {
+    strings.SetString("domain", request_url_.host());
+    std::string font_family = l10n_util::GetStringUTF8(IDS_WEB_FONT_FAMILY);
+#if defined(OS_WIN)
+    if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+      font_family = l10n_util::GetStringUTF8(IDS_WEB_FONT_FAMILY_XP);
+    }
+#endif
+#if defined(TOOLKIT_GTK)
+    font_family = ui::ResourceBundle::GetSharedInstance().GetFont(
+        ui::ResourceBundle::BaseFont).GetFontName() + ", " + font_family;
+#endif
+    strings.SetString("fontfamily", font_family);
+    if (trialCondition_ == kCondition16Firefox ||
+        trialCondition_ == kCondition18NoImages) {
+      resource_id = IDR_SSL_FIREFOX_HTML;
+    } else if (trialCondition_ == kCondition17FancyFirefox) {
+      resource_id = IDR_SSL_FANCY_FIREFOX_HTML;
+    }
+  }
 
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -260,6 +303,9 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
     display_start_time_ = base::TimeTicks::Now();
   } else if (cmd == CMD_MORE) {
     RecordSSLBlockingPageEventStats(MORE);
+  } else if (cmd == CMD_SHOW_UNDERSTAND) {
+    // Used in the Finch experiment.
+    RecordSSLBlockingPageEventStats(SHOW_UNDERSTAND);
   }
 }
 

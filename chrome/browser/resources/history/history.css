@@ -328,7 +328,7 @@ html[dir='rtl'] .site-domain {
 /* TODO(sergiu): If this is the final icon replace it with a separate resource.
  */
 .blocked-indicator {
-  background: url(../ssl_roadblock_icon.png) no-repeat;
+  background: url(../ssl/roadblock_icon.png) no-repeat;
   background-size: 30%;
 }
 

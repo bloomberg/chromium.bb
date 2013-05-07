@@ -7,11 +7,11 @@
 
   html {
     background-color: rgb(92, 0, 0);
-    background-image: url(ssl_roadblock_background.png);
+    background-image: url(roadblock_background.png);
     background-repeat: repeat-x;
     height: 100%;
   }
-  
+
   html[dir='rtl'] #twisty-closed {
     -webkit-transform: scaleX(-1);
   }
@@ -39,7 +39,7 @@
   .icon {
     position:absolute;
   }
-  
+
   .main {
     margin: 1em 80px;
   }
@@ -80,7 +80,7 @@
     var CMD_PROCEED = 1;
     var CMD_FOCUS = 2;
     var CMD_MORE = 3;
-    
+
     var showedMore = false;
     var keyPressState = 0;
     var gainFocus = false;
@@ -127,7 +127,7 @@
 
     // UI modifications and event listeners that take place after load.
     function setupEvents() {
-      if ($('error-type').textContent != '') {
+      if (templateData.errorType == "overridable") {
         // This is the blocking page you can click through.
         $('proceed-button').hidden = false;
         $('proceed-button').addEventListener('click', function() {
@@ -152,7 +152,7 @@
       }
 
       $('exit-button').addEventListener('click', function() {
-        sendCommand(CMD_DONT_PROCEED); 
+        sendCommand(CMD_DONT_PROCEED);
       });
 
       document.addEventListener('contextmenu', function(e) {
@@ -167,7 +167,7 @@
 <body>
   <div class="box">
     <div class="icon">
-      <img src="ssl_roadblock_icon.png" alt="SSL Error Icon">
+      <img src="roadblock_icon.png" alt="SSL Error Icon" id="roadblock-icon">
     </div>
     <div class="title" i18n-content="headLine"></div>
     <div class="main" i18n-values=".innerHTML:description;dir:textdirection"></div>
@@ -178,14 +178,14 @@
     </div>
     <div class="more" id="more-info-short">
       <span class="more-link">
-        <img id="twisty-closed" class="twisty" src="twisty_closed.png" 
+        <img id="twisty-closed" class="twisty" src="twisty_closed.png"
             border="0"><span i18n-content="moreInfoTitle" id="more-info-title"
             class="show-more-info-title"></span>
       </span>
     </div>
     <div class="more" id="more-info-long" hidden>
       <span class="more-link">
-        <img class="twisty" src="twisty_open.png" border="0"><span 
+        <img class="twisty" src="twisty_open.png" border="0"><span
             i18n-content="moreInfoTitle" class="more-info-title"></span>
       </span>
       <p i18n-values=".innerHTML:moreInfo1"></p>
@@ -195,7 +195,6 @@
       <p i18n-values=".innerHTML:moreInfo5"></p>
     </div>
   </div>
-  <span id="error-type" i18n-content="errorType" hidden></span>
 </table>
 </body>
 </html>

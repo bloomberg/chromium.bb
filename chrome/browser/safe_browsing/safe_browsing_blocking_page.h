@@ -111,6 +111,7 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
     SHOW,
     PROCEED,
     DONT_PROCEED,
+    SHOW_ADVANCED,
   };
 
   // Records a user action for this interstitial, using the form
@@ -261,6 +262,9 @@ class SafeBrowsingBlockingPageV2 : public SafeBrowsingBlockingPage {
                                 const string16& description1,
                                 const string16& description2,
                                 const string16& description3);
+
+  // For the FieldTrial: this contains the name of the condition.
+  std::string trialCondition_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV2);
 };

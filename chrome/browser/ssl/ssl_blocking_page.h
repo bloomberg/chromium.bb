@@ -73,6 +73,9 @@ class SSLBlockingPage : public content::InterstitialPageDelegate {
   bool strict_enforcement_;
   content::InterstitialPage* interstitial_page_;  // Owns us.
 
+  // For the FieldTrial: this contains the name of the condition.
+  std::string trialCondition_;
+
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);
 };
 

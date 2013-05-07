@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<!-- This SSL interstitial is designed to look like the Firefox SSL error, with
+     permission from Firefox to copy the appearance of the page for an A/B
+     experiment. -->
+<html i18n-values="dir:textdirection">
+<head>
+  <meta charset="utf-8">
+  <title>Untrusted Connection</title>
+  <style>
+  body {
+    background-color: #444444;
+    color: #555555;
+    margin: 0;
+    padding: 0 1em;
+  }
+  #box {
+    background-color: #ffffff;
+    border-top: 9px solid #ffbd09;
+    margin: 40px auto;
+    max-width: 52em;
+    min-width: 13em;
+    padding: 50px 0px 30px 0px;
+    position: relative;
+  }
+  #exit-button {
+    color: #ffffff;
+    background-color: #4285f4;
+    border: none;
+    padding: 15px;
+    margin-top: 15px;
+    font-weight: bold;
+    -webkit-border-radius: 3px;
+  }
+  h1 {
+    color: #000000;
+    font-size: 160%;
+    font-weight: normal;
+    margin: 0 0 .6em 0;
+  }
+  .icon {
+    position: absolute;
+  }
+  #inner-box {
+    margin: 0 80px 0 30px;
+  }
+  .main {
+    margin: 1em 0 0 95px;
+  }
+  .open {
+    display: none;
+  }
+  #proceed-button {
+    color: #ffffff;
+    background-color: #4285f4;
+    border: none;
+    padding: 15px;
+    margin-top: 5px;
+    font-weight: bold;
+    -webkit-border-radius: 3px;
+  }
+  .small {
+    margin: 1em 0 0 95px;
+    font-size: 87%;
+  }
+  .subtitle {
+    cursor: pointer;
+    font-size: 103%;
+    color: #4285f4;
+  }
+  .title {
+    margin: 0 0 0 95px;
+  }
+  .twisty {
+    cursor: pointer;
+    float:left;
+    padding-right: 8px;
+    padding-top: 3px;
+  }
+  #what-to-do {
+    border-bottom: #f0f0f0 2px solid;
+    padding-bottom: 20px;
+    padding-top: 2px;
+  }
+  #what-to-do-title {
+    color: #000000;
+    font-size: 110%;
+  }
+  </style>
+
+  <script>
+    // Should match SSLBlockingPageCommands in ssl_blocking_page.cc.
+    var CMD_DONT_PROCEED = 0;
+    var CMD_PROCEED = 1;
+    var CMD_FOCUS = 2;
+    var CMD_MORE = 3;
+    var CMD_UNDERSTAND = 4;
+
+    var showedMore = false;
+    var showedUnderstand = false;
+    var keyPressState = 0;
+    var gainFocus = false;
+
+    function $(o) {
+      return document.getElementById(o);
+    }
+
+    function sendCommand(cmd) {
+      window.domAutomationController.setAutomationId(1);
+      window.domAutomationController.send(cmd);
+    }
+
+    function toggleMoreInfo() {
+      var status = !$('more-info-content').hidden;
+      $('more-info-content').hidden = status;
+      if (status) {
+        $('more-info-twisty-closed').style.display = 'inline';
+        $('more-info-twisty-open').style.display = 'none';
+      } else {
+        $('more-info-twisty-open').style.display = 'inline';
+        $('more-info-twisty-closed').style.display = 'none';
+        if (!showedMore) {
+          sendCommand(CMD_MORE);
+          showedMore = true;
+        }
+      }
+    }
+
+    function toggleUnderstand() {
+      var status = !$('understand-content').hidden;
+      $('understand-content').hidden = status;
+      if (status) {
+        $('understand-twisty-closed').style.display = 'inline';
+        $('understand-twisty-open').style.display = 'none';
+      } else {
+        $('understand-twisty-open').style.display = 'inline';
+        $('understand-twisty-closed').style.display = 'none';
+        if (!showedUnderstand) {
+          sendCommand(CMD_UNDERSTAND);
+          showedUnderstand = true;
+        }
+      }
+    }
+
+
+    // Supports UMA timing, which starts after the warning is first viewed.
+    function handleFocusEvent() {
+      if (gainFocus == false) {
+        sendCommand(CMD_FOCUS);
+        gainFocus = true;
+      }
+    }
+
+    // UI modifications and event listeners that take place after load.
+    function setupEvents() {
+      if (templateData.errorType == 'overridable') {
+        $('proceed').hidden = false;
+        $('proceed-button').addEventListener('click', function() {
+          sendCommand(CMD_PROCEED);
+        });
+      } else {
+        document.addEventListener('keypress', keyPressHandler);
+      }
+
+      $('exit-button').addEventListener('click', function() {
+        sendCommand(CMD_DONT_PROCEED);
+      });
+
+      $('more-info-title').addEventListener('click', function() {
+        toggleMoreInfo();
+      });
+
+      $('more-info-twisty-open').addEventListener('click', function() {
+        toggleMoreInfo();
+      });
+
+      $('more-info-twisty-closed').addEventListener('click', function() {
+        toggleMoreInfo();
+      });
+
+      $('understand-title').addEventListener('click', function() {
+        toggleUnderstand();
+      });
+
+      $('understand-twisty-open').addEventListener('click', function() {
+        toggleUnderstand();
+      });
+
+      $('understand-twisty-closed').addEventListener('click', function() {
+        toggleUnderstand();
+      });
+
+      document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+      });
+    }
+
+    window.addEventListener('focus', handleFocusEvent);
+    document.addEventListener('DOMContentLoaded', setupEvents);
+  </script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily">
+<div id="box">
+  <div id="inner-box">
+    <div class="icon">
+      <img src="firefox_icon.png" alt="SSL Error Icon">
+    </div>
+
+    <div class="title">
+      <h1 class="titleText">This Connection is Untrusted</h1>
+    </div>
+
+    <div class="main">
+      <p>
+      You have asked Chrome to connect securely to <b><span
+      i18n-values=".innerHTML:domain"></span></b>, but we can't confirm that
+      your connection is secure.
+      </p>
+      <p>
+      Normally, when you try to connect securely, sites will present
+      trusted identification to prove that you are going to the right place.
+      However, this site's identity can't be verified.
+      </p>
+    </div>
+
+    <div class="small" id="what-to-do">
+      <h2 id="what-to-do-title">What Should I Do?</h2>
+      <p>If you usually connect to this site without problems, this error could
+        mean that someone is trying to impersonate the site, and you shouldn't
+        continue.</p>
+        <button id="exit-button">Get me out of here!</button>
+    </div>
+
+    <div class="small">
+      <img class="twisty" id="more-info-twisty-closed"
+          src="firefox_fancy_twisty_closed.png" border="0">
+      <img class="twisty open" id="more-info-twisty-open"
+          src="firefox_fancy_twisty_open.png" border="0">
+      <h2 id="more-info-title" class="subtitle">Technical Details</h2>
+      <div id="more-info-content" class="subtext" hidden>
+        <p i18n-values=".innerHTML:moreInfo1"></p>
+        <p i18n-values=".innerHTML:moreInfo2"></p>
+        <p i18n-values=".innerHTML:moreInfo3"></p>
+        <p i18n-values=".innerHTML:moreInfo4"></p>
+        <p i18n-values=".innerHTML:moreInfo5"></p>
+      </div>
+    </div>
+
+    <div class="small" id="proceed" hidden>
+      <img class="twisty" id="understand-twisty-closed"
+          src="firefox_fancy_twisty_closed.png" border="0">
+      <img class="twisty open" id="understand-twisty-open"
+          src="firefox_fancy_twisty_open.png" border="0">
+      <h2 id="understand-title" class="subtitle">I Understand the Risks</h2>
+      <div id="understand-content" class="subtext" hidden>
+        <p>If you understand what's going on, you can click the button below to
+        proceed to the site. <b>Even if you trust the site, this error could
+        mean that someone is tampering with your connection.</b></p>
+        <p>Don't proceed to the site unless you know there's a good reason why
+        this site doesn't use trusted identification.</p>
+        <button id="proceed-button">Proceed Anyway</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+

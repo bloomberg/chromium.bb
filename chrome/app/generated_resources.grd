@@ -11919,7 +11919,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_SAFE_BROWSING_PHISHING_V2_REPORT_ERROR" desc="SafeBrowsing Phishing v2, report error link">
         Report an incorrect warning
       </message>
-
       <message name="IDS_SAFE_BROWSING_MULTI_THREAT_TITLE" desc="SafeBrowsing Multi threat HTML title">
         Malware and phishing Detected!
       </message>
@@ -11973,6 +11972,32 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </if>
       <message name="IDS_SAFE_BROWSING_MULTI_MALWARE_PROCEED_BUTTON" desc="SafeBrowsing Malware, proceed button">
         Proceed anyway
+      </message>
+
+      <!-- Strings for a Safe Browsing field trial. They aren't being internationalized because the experiment is only running in English locales. -->
+      <message name="IDS_SAFE_BROWSING_MALWARE_FEAR_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 7">
+        Your computer might get malware if you proceed. Go back!
+      </message>
+      <message name="IDS_SAFE_BROWSING_PHISHING_FEAR_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 8">
+        You might be the victim of a phishing attack if you proceed. Go back!
+      </message>
+      <message name="IDS_SAFE_BROWSING_MALWARE_COLLAB_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 9">
+        Help Google stop the spread of malware. Go back!
+      </message>
+      <message name="IDS_SAFE_BROWSING_PHISHING_COLLAB_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 10">
+        Help Google stop phishing attacks. Go back!
+      </message>
+      <message name="IDS_SAFE_BROWSING_MALWARE_QUESTION_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 11">
+        Do you want to infect your computer with a virus? If not, go back!
+      </message>
+      <message name="IDS_SAFE_BROWSING_PHISHING_QUESTION_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 12">
+        Do you want to be the victim of a phishing attack? If not, go back!
+      </message>
+      <message name="IDS_SAFE_BROWSING_MALWARE_BACK_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 13">
+        The Website Ahead Contains Malware! Go Back!
+      </message>
+      <message name="IDS_SAFE_BROWSING_PHISHING_BACK_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 14">
+        Reported Phishing Website Ahead! Go Back!
       </message>
 
       <message name="IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT" desc="Info Bar message to prompt installing missing plugin">
