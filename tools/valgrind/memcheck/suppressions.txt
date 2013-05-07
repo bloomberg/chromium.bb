@@ -7147,3 +7147,9 @@
    fun:_ZN3net12_GLOBAL__N_150URLRequestFtpJobTest_FtpProxyRequestOrphanJob_Test8TestBodyEv
 }
 
+{
+  bug_238541
+  Memcheck:Leak
+  ...
+  fun:_ZN7content18VideoSourceHandler4OpenERKSsPNS_20FrameReaderInterfaceE
+}
