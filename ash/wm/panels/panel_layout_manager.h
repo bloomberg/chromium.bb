@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_icon_observer.h"
-#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -38,6 +38,7 @@ class Launcher;
 
 namespace internal {
 class PanelCalloutWidget;
+class ShelfLayoutManager;
 
 // PanelLayoutManager is responsible for organizing panels within the
 // workspace. It is associated with a specific container window (i.e.
@@ -55,7 +56,7 @@ class ASH_EXPORT PanelLayoutManager
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver,
       public keyboard::KeyboardControllerObserver,
-      public ShelfLayoutManager::Observer {
+      public ShelfLayoutManagerObserver {
  public:
   explicit PanelLayoutManager(aura::Window* panel_container);
   virtual ~PanelLayoutManager();
@@ -98,7 +99,7 @@ class ASH_EXPORT PanelLayoutManager
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE;
 
-  // Overridden from ShelfLayoutManager::Observer
+  // Overridden from ShelfLayoutManagerObserver
   virtual void WillChangeVisibilityState(
       ShelfVisibilityState new_state) OVERRIDE;
 

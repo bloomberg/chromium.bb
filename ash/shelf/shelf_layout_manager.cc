@@ -13,6 +13,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/session_state_delegate.h"
+#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -181,7 +182,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   if (update_shelf_observer_)
     update_shelf_observer_->Detach();
 
-  FOR_EACH_OBSERVER(Observer, observers_, WillDeleteShelf());
+  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_, WillDeleteShelf());
   Shell::GetInstance()->RemoveShellObserver(this);
   aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
 }
@@ -191,9 +192,9 @@ void ShelfLayoutManager::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
     return;
   auto_hide_behavior_ = behavior;
   UpdateVisibilityState();
-  FOR_EACH_OBSERVER(Observer, observers_,
+  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     OnAutoHideStateChanged(state_.auto_hide_state));
-  FOR_EACH_OBSERVER(Observer, observers_,
+  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     OnAutoHideBehaviorChanged(auto_hide_behavior_));
 }
 
@@ -325,7 +326,7 @@ void ShelfLayoutManager::UpdateAutoHideState() {
     if (auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
       // Hides happen immediately.
       SetState(state_.visibility_state);
-      FOR_EACH_OBSERVER(Observer, observers_,
+      FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                         OnAutoHideStateChanged(auto_hide_state));
     } else {
       auto_hide_timer_.Stop();
@@ -333,8 +334,9 @@ void ShelfLayoutManager::UpdateAutoHideState() {
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kAutoHideDelayMS),
           this, &ShelfLayoutManager::UpdateAutoHideStateNow);
-      FOR_EACH_OBSERVER(Observer, observers_, OnAutoHideStateChanged(
-          CalculateAutoHideState(state_.visibility_state)));
+      FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
+          OnAutoHideStateChanged(
+              CalculateAutoHideState(state_.visibility_state)));
     }
   } else {
     auto_hide_timer_.Stop();
@@ -346,11 +348,11 @@ void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
   UpdateShelfBackground(BackgroundAnimator::CHANGE_ANIMATE);
 }
 
-void ShelfLayoutManager::AddObserver(Observer* observer) {
+void ShelfLayoutManager::AddObserver(ShelfLayoutManagerObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void ShelfLayoutManager::RemoveObserver(Observer* observer) {
+void ShelfLayoutManager::RemoveObserver(ShelfLayoutManagerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -549,7 +551,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   if (state_.Equals(state))
     return;  // Nothing changed.
 
-  FOR_EACH_OBSERVER(Observer, observers_,
+  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     WillChangeVisibilityState(visibility_state));
 
   if (state.visibility_state == SHELF_AUTO_HIDE) {

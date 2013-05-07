@@ -171,6 +171,7 @@
         'shelf/background_animator.h',
         'shelf/shelf_layout_manager.cc',
         'shelf/shelf_layout_manager.h',
+        'shelf/shelf_layout_manager_observer.h',
         'shelf/shelf_types.h',
         'shelf/shelf_widget.cc',
         'shelf/shelf_widget.h',

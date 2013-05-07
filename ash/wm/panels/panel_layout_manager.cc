@@ -9,6 +9,7 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -463,7 +464,7 @@ void PanelLayoutManager::OnWindowActivated(aura::Window* gained_active,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PanelLayoutManager, ShelfLayoutManager::Observer implementation:
+// PanelLayoutManager, ShelfLayoutManagerObserver implementation:
 
 void PanelLayoutManager::WillChangeVisibilityState(
     ShelfVisibilityState new_state) {

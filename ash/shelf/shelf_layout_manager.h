@@ -33,6 +33,7 @@ class GestureEvent;
 
 namespace ash {
 class ScreenAsh;
+class ShelfLayoutManagerObserver;
 class ShelfWidget;
 namespace internal {
 
@@ -53,24 +54,6 @@ class ASH_EXPORT ShelfLayoutManager :
     public aura::client::ActivationChangeObserver,
     public keyboard::KeyboardControllerObserver {
  public:
-
-  // TODO(rharrison): Move this observer out of ash::internal::
-  //                  namespace. Tracked in crosbug.com/223936
-  class ASH_EXPORT Observer {
-   public:
-    // Called when the target ShelfLayoutManager will be deleted.
-    virtual void WillDeleteShelf() {}
-
-    // Called when the visibility change is scheduled.
-    virtual void WillChangeVisibilityState(ShelfVisibilityState new_state) {}
-
-    // Called when the auto hide state is changed.
-    virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) {}
-
-    // Called when the auto hide behavior is changed.
-    virtual void OnAutoHideBehaviorChanged(
-        ShelfAutoHideBehavior new_behavior) {}
-  };
 
   // We reserve a small area on the edge of the workspace area to ensure that
   // the resize handle at the edge of the window can be hit.
@@ -140,8 +123,8 @@ class ASH_EXPORT ShelfLayoutManager :
   void SetWindowOverlapsShelf(bool value);
   bool window_overlaps_shelf() const { return window_overlaps_shelf_; }
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(ShelfLayoutManagerObserver* observer);
+  void RemoveObserver(ShelfLayoutManagerObserver* observer);
 
   // Gesture dragging related functions:
   void StartGestureDrag(const ui::GestureEvent& gesture);
@@ -327,7 +310,7 @@ class ASH_EXPORT ShelfLayoutManager :
   // trigger showing the launcher.
   scoped_ptr<AutoHideEventFilter> event_filter_;
 
-  ObserverList<Observer> observers_;
+  ObserverList<ShelfLayoutManagerObserver> observers_;
 
   // The shelf reacts to gesture-drags, and can be set to auto-hide for certain
   // gestures. Some shelf behaviour (e.g. visibility state, background color

@@ -14,7 +14,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/launcher/launcher_types.h"
-#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
@@ -74,7 +74,7 @@ class ChromeLauncherControllerPerApp
       public AppSyncUIStateObserver,
       public ExtensionEnableFlowDelegate,
       public chrome::BrowserListObserver,
-      public ash::internal::ShelfLayoutManager::Observer {
+      public ash::ShelfLayoutManagerObserver {
  public:
   ChromeLauncherControllerPerApp(Profile* profile, ash::LauncherModel* model);
   virtual ~ChromeLauncherControllerPerApp();
@@ -309,7 +309,7 @@ class ChromeLauncherControllerPerApp
   virtual void SetAppImage(const std::string& app_id,
                            const gfx::ImageSkia& image) OVERRIDE;
 
-  // ash::internal::ShelfLayoutManager::Observer overrides:
+  // ash::ShelfLayoutManagerObserver overrides:
   virtual void OnAutoHideBehaviorChanged(
       ash::ShelfAutoHideBehavior new_behavior) OVERRIDE;
 

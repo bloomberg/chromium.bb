@@ -14,6 +14,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/session_state_delegate.h"
+#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -143,7 +144,7 @@ class ShelfDragCallback {
   DISALLOW_COPY_AND_ASSIGN(ShelfDragCallback);
 };
 
-class ShelfLayoutObserverTest : public ShelfLayoutManager::Observer {
+class ShelfLayoutObserverTest : public ShelfLayoutManagerObserver {
  public:
   ShelfLayoutObserverTest()
       : changed_auto_hide_state_(false) {
