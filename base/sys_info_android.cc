@@ -7,6 +7,7 @@
 #include <sys/system_properties.h>
 
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 
@@ -132,6 +133,12 @@ std::string SysInfo::GetDeviceName() {
   char device_model_str[PROP_VALUE_MAX];
   __system_property_get("ro.product.model", device_model_str);
   return std::string(device_model_str);
+}
+
+std::string SysInfo::OperatingSystemVersion() {
+  int32 major, minor, bugfix;
+  OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+  return StringPrintf("%d.%d.%d", major, minor, bugfix);
 }
 
 void SysInfo::OperatingSystemVersionNumbers(int32* major_version,
