@@ -1096,6 +1096,50 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="MouseEventPrefetch.MouseDownDuration_Click" units="ms">
+  <summary>
+    Measures the time elapsed between when the user mousedown-ed a link and when
+    the user clicked a link.
+  </summary>
+</histogram>
+
+<histogram name="MouseEventPrefetch.MouseDownFollowedByClick"
+    enum="MouseEventFollowedByClick">
+  <summary>
+    For each click handled by an HTML anchor tag link, whether Blink saw a
+    mousedown event preceding it.  This is only measured for clicks handled by
+    the anchor tag's default click event handler.
+  </summary>
+</histogram>
+
+<histogram name="MouseEventPrefetch.MouseDowns">
+  <summary>
+    The number of mousedown events detected at HTML anchor-tag links' default
+    event handler.
+  </summary>
+</histogram>
+
+<histogram name="MouseEventPrefetch.MouseOverDuration_Click" units="ms">
+  <summary>
+    Measures the time elapsed between when the user mouseover-ed a link and when
+    the user clicked a link.
+  </summary>
+</histogram>
+
+<histogram name="MouseEventPrefetch.MouseOverDuration_NoClick" units="ms">
+  <summary>
+    Measures the time elapsed between when the user mouseover-ed a link and when
+    the user mouseout-ed a link without click.
+  </summary>
+</histogram>
+
+<histogram name="MouseEventPrefetch.MouseOvers">
+  <summary>
+    The number of mouseover events detected at HTML anchor-tag links' default
+    event handler.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.MainFrameScheme" enum="NavigationScheme">
   <summary>The scheme of the URL for each main-frame navigation.</summary>
 </histogram>
@@ -9386,6 +9430,11 @@ other types of suffix sets.
     Allow stale data (avoid doing a re-post)
   </int>
   <int value="9" label="PRERENDER_LOAD">Speculative prerendering of a page</int>
+</enum>
+
+<enum name="MouseEventFollowedByClick" type="int">
+  <int value="0" label="Caught event before click"/>
+  <int value="1" label="Misses event before click"/>
 </enum>
 
 <enum name="NavigationScheme" type="int">
