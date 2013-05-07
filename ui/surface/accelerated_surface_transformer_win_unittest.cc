@@ -349,11 +349,11 @@ bool AssertSameColor(uint8 color_a, uint8 color_b) {
     set_color_error_tolerance(4);
 
     base::win::ScopedComPtr<IDirect3DSurface9> src, dst;
-    ASSERT_TRUE(d3d_utils::CreateTemporaryLockableSurface(
-        device(), src_size, src.Receive()))
+    ASSERT_TRUE(d3d_utils::CreateOrReuseLockableSurface(
+        device(), src_size, &src))
             << "Could not create src render target";
-    ASSERT_TRUE(d3d_utils::CreateTemporaryLockableSurface(
-        device(), dst_size, dst.Receive()))
+    ASSERT_TRUE(d3d_utils::CreateOrReuseLockableSurface(
+        device(), dst_size, &dst))
             << "Could not create dst render target";
 
     FillSymmetricRandomCheckerboard(src, src_size, checkerboard_size);
@@ -367,12 +367,12 @@ bool AssertSameColor(uint8 color_a, uint8 color_b) {
   void CreateRandomCheckerboardTexture(
       const gfx::Size& size,
       int checkerboard_size,
-      IDirect3DSurface9** reference_surface,
-      IDirect3DTexture9** result) {
+      base::win::ScopedComPtr<IDirect3DSurface9>* reference_surface,
+      base::win::ScopedComPtr<IDirect3DTexture9>* result) {
     base::win::ScopedComPtr<IDirect3DSurface9> dst;
-    ASSERT_TRUE(d3d_utils::CreateTemporaryLockableSurface(device(), size,
+    ASSERT_TRUE(d3d_utils::CreateOrReuseLockableSurface(device(), size,
         reference_surface));
-    ASSERT_TRUE(d3d_utils::CreateTemporaryRenderTargetTexture(device(), size,
+    ASSERT_TRUE(d3d_utils::CreateOrReuseRenderTargetTexture(device(), size,
         result, dst.Receive()));
     FillRandomCheckerboard(*reference_surface, size, checkerboard_size);
     ASSERT_HRESULT_SUCCEEDED(
@@ -411,8 +411,7 @@ bool AssertSameColor(uint8 color_a, uint8 color_b) {
     base::win::ScopedComPtr<IDirect3DSurface9> dst, reference_pattern;
     base::win::ScopedComPtr<IDirect3DTexture9> src;
 
-    CreateRandomCheckerboardTexture(size, 1, reference_pattern.Receive(),
-                                    src.Receive());
+    CreateRandomCheckerboardTexture(size, 1, &reference_pattern, &src);
 
     // Alloc a slightly larger image 75% of the time, to test that the
     // viewport is set properly.
@@ -420,8 +419,8 @@ bool AssertSameColor(uint8 color_a, uint8 color_b) {
     gfx::Size alloc_size((size.width() + kAlign - 1) / kAlign * kAlign,
                          (size.height() + kAlign - 1) / kAlign * kAlign);
 
-    ASSERT_TRUE(d3d_utils::CreateTemporaryLockableSurface(device(), alloc_size,
-        dst.Receive())) << "Could not create dst render target.";
+    ASSERT_TRUE(d3d_utils::CreateOrReuseLockableSurface(device(), alloc_size,
+        &dst)) << "Could not create dst render target.";
 
     ASSERT_TRUE(gpu_ops->CopyInverted(src, dst, size));
     AssertIsInvertedCopy(size, reference_pattern, dst);
@@ -479,8 +478,8 @@ bool AssertSameColor(uint8 color_a, uint8 color_b) {
     // (or maybe more pixels = more test trials). Results are usually to an
     // error of 1, but we must use a tolerance of 3.
     set_color_error_tolerance(3);
-    CreateRandomCheckerboardTexture(
-        src_size, checkerboard_size, reference.Receive(), src.Receive());
+    CreateRandomCheckerboardTexture(src_size, checkerboard_size, &reference,
+                                    &src);
 
     gfx::Size packed_y_size, packed_uv_size;
 
@@ -523,10 +522,9 @@ bool AssertSameColor(uint8 color_a, uint8 color_b) {
       // We'll call Copy to do the bilinear scaling if needed.
       base::win::ScopedComPtr<IDirect3DSurface9> reference_scaled;
       ASSERT_TRUE(
-          d3d_utils::CreateTemporaryLockableSurface(
-              device(), dst_size, reference_scaled.Receive()));
-      ASSERT_TRUE(
-          gpu_ops->Copy(src, reference_scaled, dst_size));
+          d3d_utils::CreateOrReuseLockableSurface(
+              device(), dst_size, &reference_scaled));
+      ASSERT_TRUE(gpu_ops->Copy(src, reference_scaled, dst_size));
       BeforeLockWorkaround();
       reference_rgb_scaled = ToSkBitmap(reference_scaled, false);
     }

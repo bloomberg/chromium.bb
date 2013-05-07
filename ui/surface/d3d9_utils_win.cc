@@ -4,6 +4,7 @@
 
 #include "ui/surface/d3d9_utils_win.h"
 
+#include "base/debug/trace_event.h"
 #include "base/files/file_path.h"
 #include "base/scoped_native_library.h"
 #include "base/win/scoped_comptr.h"
@@ -71,6 +72,7 @@ bool OpenSharedTexture(IDirect3DDevice9* device,
                        int64 surface_handle,
                        const gfx::Size& size,
                        IDirect3DTexture9** opened_texture) {
+  TRACE_EVENT0("gpu", "OpenSharedTexture");
   HANDLE handle = reinterpret_cast<HANDLE>(surface_handle);
   HRESULT hr = device->CreateTexture(size.width(),
                                      size.height(),
@@ -83,37 +85,49 @@ bool OpenSharedTexture(IDirect3DDevice9* device,
   return SUCCEEDED(hr);
 }
 
-bool CreateTemporaryLockableSurface(IDirect3DDevice9* device,
-                                    const gfx::Size& size,
-                                    IDirect3DSurface9** surface) {
-  HRESULT hr = device->CreateRenderTarget(
-        size.width(),
-        size.height(),
-        D3DFMT_A8R8G8B8,
-        D3DMULTISAMPLE_NONE,
-        0,
-        TRUE,
-        surface,
-        NULL);
-  return SUCCEEDED(hr);
+bool CreateOrReuseLockableSurface(
+    IDirect3DDevice9* device,
+    const gfx::Size& size,
+    base::win::ScopedComPtr<IDirect3DSurface9>* surface) {
+  if (!*surface || GetSize(*surface) != size) {
+    TRACE_EVENT0("gpu", "CreateRenderTarget");
+    surface->Release();
+    HRESULT hr = device->CreateRenderTarget(
+          size.width(),
+          size.height(),
+          D3DFMT_A8R8G8B8,
+          D3DMULTISAMPLE_NONE,
+          0,
+          TRUE,
+          surface->Receive(),
+          NULL);
+    if (FAILED(hr))
+      return false;
+  }
+  return true;
 }
 
-bool CreateTemporaryRenderTargetTexture(IDirect3DDevice9* device,
-                                        const gfx::Size& size,
-                                        IDirect3DTexture9** texture,
-                                        IDirect3DSurface9** render_target) {
-  HRESULT hr = device->CreateTexture(
-        size.width(),
-        size.height(),
-        1,  // Levels
-        D3DUSAGE_RENDERTARGET,
-        D3DFMT_A8R8G8B8,
-        D3DPOOL_DEFAULT,
-        texture,
-        NULL);
-  if (!SUCCEEDED(hr))
-    return false;
-  hr = (*texture)->GetSurfaceLevel(0, render_target);
+bool CreateOrReuseRenderTargetTexture(
+    IDirect3DDevice9* device,
+    const gfx::Size& size,
+    base::win::ScopedComPtr<IDirect3DTexture9>* texture,
+    IDirect3DSurface9** render_target) {
+  if (!*texture || GetSize(*texture) != size) {
+    TRACE_EVENT0("gpu", "CreateTexture");
+    texture->Release();
+    HRESULT hr = device->CreateTexture(
+          size.width(),
+          size.height(),
+          1,  // Levels
+          D3DUSAGE_RENDERTARGET,
+          D3DFMT_A8R8G8B8,
+          D3DPOOL_DEFAULT,
+          texture->Receive(),
+          NULL);
+    if (!SUCCEEDED(hr))
+      return false;
+  }
+  HRESULT hr = (*texture)->GetSurfaceLevel(0, render_target);
   return SUCCEEDED(hr);
 }
 

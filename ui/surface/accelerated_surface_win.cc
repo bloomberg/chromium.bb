@@ -456,10 +456,9 @@ bool AcceleratedPresenter::DoCopyToARGB(const gfx::Rect& requested_src_subrect,
   src_subrect.Intersect(gfx::Rect(back_buffer_size));
   base::win::ScopedComPtr<IDirect3DSurface9> final_surface;
   {
-    TRACE_EVENT0("gpu", "CreateTemporaryLockableSurface");
-    if (!d3d_utils::CreateTemporaryLockableSurface(present_thread_->device(),
-                                                   dst_size,
-                                                   final_surface.Receive())) {
+    if (!d3d_utils::CreateOrReuseLockableSurface(present_thread_->device(),
+                                                 dst_size,
+                                                 &final_surface)) {
       LOG(ERROR) << "Failed to create temporary lockable surface";
       return false;
     }
@@ -527,17 +526,12 @@ bool AcceleratedPresenter::DoCopyToYUV(
   gfx::Rect src_subrect = requested_src_subrect;
   src_subrect.Intersect(gfx::Rect(back_buffer_size));
 
-  base::win::ScopedComPtr<IDirect3DTexture9> resized_as_texture;
   base::win::ScopedComPtr<IDirect3DSurface9> resized;
-  {
-    TRACE_EVENT0("gpu", "CreateTemporaryRenderTargetTexture");
-    if (!d3d_utils::CreateTemporaryRenderTargetTexture(
-            present_thread_->device(),
-            dst_size,
-            resized_as_texture.Receive(),
-            resized.Receive())) {
-      return false;
-    }
+  base::win::ScopedComPtr<IDirect3DTexture9> resized_as_texture;
+  if (!gpu_ops->GetIntermediateTexture(dst_size,
+                                       resized_as_texture.Receive(),
+                                       resized.Receive())) {
+    return false;
   }
 
   // Shrink the source to fit entirely in the destination while preserving

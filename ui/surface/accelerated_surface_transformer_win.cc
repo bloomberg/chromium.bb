@@ -167,7 +167,7 @@ bool AcceleratedSurfaceTransformer::DoInit(IDirect3DDevice9* device) {
   }
   COMPILE_ASSERT(NUM_SHADERS == 6, must_compile_at_doinit);
 
-  base::win::ScopedComPtr<IDirect3DVertexDeclaration9> vertex_declaration;
+  ScopedComPtr<IDirect3DVertexDeclaration9> vertex_declaration;
   HRESULT hr = device_->CreateVertexDeclaration(g_vertexElements,
                                                 vertex_declaration.Receive());
   if (FAILED(hr))
@@ -221,6 +221,15 @@ void AcceleratedSurfaceTransformer::ReleaseAll() {
     vertex_shaders_[i] = NULL;
     pixel_shaders_[i] = NULL;
   }
+
+  user_scratch_texture_ = NULL;
+  uv_scratch_texture_ = NULL;
+  y_scratch_surface_ = NULL;
+  u_scratch_surface_ = NULL;
+  v_scratch_surface_ = NULL;
+  for (int i = 0; i < arraysize(scaler_scratch_surfaces_); i++)
+    scaler_scratch_surfaces_[i] = NULL;
+
   device_ = NULL;
 }
 void AcceleratedSurfaceTransformer::DetachAll() {
@@ -228,6 +237,15 @@ void AcceleratedSurfaceTransformer::DetachAll() {
     vertex_shaders_[i].Detach();
     pixel_shaders_[i].Detach();
   }
+
+  user_scratch_texture_.Detach();
+  uv_scratch_texture_.Detach();
+  y_scratch_surface_.Detach();
+  u_scratch_surface_.Detach();
+  v_scratch_surface_.Detach();
+  for (int i = 0; i < arraysize(scaler_scratch_surfaces_); i++)
+    scaler_scratch_surfaces_[i].Detach();
+
   device_.Detach();
 }
 
@@ -314,12 +332,28 @@ void AcceleratedSurfaceTransformer::DrawScreenAlignedQuad(
 
 }
 
+bool AcceleratedSurfaceTransformer::GetIntermediateTexture(
+    const gfx::Size& size,
+    IDirect3DTexture9** texture,
+    IDirect3DSurface9** texture_level_zero) {
+  if (!d3d_utils::CreateOrReuseRenderTargetTexture(device(),
+                                                   size,
+                                                   &user_scratch_texture_,
+                                                   texture_level_zero))
+    return false;
+
+  *texture = ScopedComPtr<IDirect3DTexture9>(user_scratch_texture_).Detach();
+  return true;
+}
+
 // Resize an RGB surface using repeated linear interpolation.
 bool AcceleratedSurfaceTransformer::ResizeBilinear(
     IDirect3DSurface9* src_surface,
     const gfx::Rect& src_subrect,
     IDirect3DSurface9* dst_surface,
     const gfx::Rect& dst_rect) {
+  COMPILE_ASSERT(arraysize(scaler_scratch_surfaces_) == 2, surface_count);
+
   gfx::Size src_size = src_subrect.size();
   gfx::Size dst_size = dst_rect.size();
 
@@ -329,22 +363,19 @@ bool AcceleratedSurfaceTransformer::ResizeBilinear(
   HRESULT hr = S_OK;
   // Set up intermediate buffers needed for downsampling.
   const int resample_count = GetResampleCount(src_subrect, dst_size);
-  base::win::ScopedComPtr<IDirect3DSurface9> temp_buffer[2];
   const gfx::Size half_size =
       GetHalfSizeNoLessThan(src_subrect.size(), dst_size);
   if (resample_count > 1) {
-    TRACE_EVENT0("gpu", "CreateTemporarySurface");
-    if (!d3d_utils::CreateTemporaryLockableSurface(device(),
-                                                   half_size,
-                                                   temp_buffer[0].Receive()))
+    if (!d3d_utils::CreateOrReuseLockableSurface(device(),
+                                                 half_size,
+                                                 &scaler_scratch_surfaces_[0]))
       return false;
   }
   if (resample_count > 2) {
-    TRACE_EVENT0("gpu", "CreateTemporarySurface");
     const gfx::Size quarter_size = GetHalfSizeNoLessThan(half_size, dst_size);
-    if (!d3d_utils::CreateTemporaryLockableSurface(device(),
-                                                   quarter_size,
-                                                   temp_buffer[1].Receive()))
+    if (!d3d_utils::CreateOrReuseLockableSurface(device(),
+                                                 quarter_size,
+                                                 &scaler_scratch_surfaces_[1]))
       return false;
   }
 
@@ -358,14 +389,14 @@ bool AcceleratedSurfaceTransformer::ResizeBilinear(
   for (int i = 0; i < resample_count; ++i) {
     TRACE_EVENT0("gpu", "StretchRect");
     IDirect3DSurface9* read_buffer =
-        (i == 0) ? src_surface : temp_buffer[read_buffer_index];
+        (i == 0) ? src_surface : scaler_scratch_surfaces_[read_buffer_index];
     IDirect3DSurface9* write_buffer;
     RECT write_rect;
     if (i == resample_count - 1) {
       write_buffer = dst_surface;
       write_rect = dst_rect.ToRECT();
     } else {
-      write_buffer = temp_buffer[write_buffer_index];
+      write_buffer = scaler_scratch_surfaces_[write_buffer_index];
       write_rect = gfx::Rect(write_size).ToRECT();
     }
 
@@ -468,7 +499,7 @@ bool AcceleratedSurfaceTransformer::ReadByGetRenderTargetData(
     int dst_num_rows,
     int dst_stride) {
   HRESULT hr = 0;
-  base::win::ScopedComPtr<IDirect3DSurface9> system_surface;
+  ScopedComPtr<IDirect3DSurface9> system_surface;
   gfx::Size src_size = d3d_utils::GetSize(gpu_surface);
 
   // Depending on pitch and alignment, we might be able to wrap |dst| in an
@@ -525,12 +556,23 @@ bool AcceleratedSurfaceTransformer::AllocYUVBuffers(
   // U and V are half the size (rounded up) of Y.
   *uv_size = gfx::Size((y_size->width() + 1) / 2, (y_size->height() + 1) / 2);
 
-  if (!d3d_utils::CreateTemporaryLockableSurface(device(), *y_size, dst_y))
+  if (!d3d_utils::CreateOrReuseLockableSurface(device(), *y_size,
+                                               &y_scratch_surface_)) {
     return false;
-  if (!d3d_utils::CreateTemporaryLockableSurface(device(), *uv_size, dst_u))
+  }
+  if (!d3d_utils::CreateOrReuseLockableSurface(device(), *uv_size,
+                                               &u_scratch_surface_)) {
     return false;
-  if (!d3d_utils::CreateTemporaryLockableSurface(device(), *uv_size, dst_v))
+  }
+  if (!d3d_utils::CreateOrReuseLockableSurface(device(), *uv_size,
+                                               &v_scratch_surface_)) {
     return false;
+  }
+
+  *dst_y = ScopedComPtr<IDirect3DSurface9>(y_scratch_surface_).Detach();
+  *dst_u = ScopedComPtr<IDirect3DSurface9>(u_scratch_surface_).Detach();
+  *dst_v = ScopedComPtr<IDirect3DSurface9>(v_scratch_surface_).Detach();
+
   return true;
 }
 
@@ -550,12 +592,12 @@ bool AcceleratedSurfaceTransformer::TransformRGBToYV12_MRT(
   // Create an intermediate surface to hold the UUVV values. This is color
   // target 1 for the first pass, and texture 0 for the second pass. Its
   // values are not read afterwards.
-  base::win::ScopedComPtr<IDirect3DTexture9> uv_as_texture;
-  base::win::ScopedComPtr<IDirect3DSurface9> uv_as_surface;
-  if (!d3d_utils::CreateTemporaryRenderTargetTexture(device(),
-                                                     packed_y_size,
-                                                     uv_as_texture.Receive(),
-                                                     uv_as_surface.Receive())) {
+
+  ScopedComPtr<IDirect3DSurface9> uv_as_surface;
+  if (!d3d_utils::CreateOrReuseRenderTargetTexture(device(),
+                                                   packed_y_size,
+                                                   &uv_scratch_texture_,
+                                                   uv_as_surface.Receive())) {
     return false;
   }
 
@@ -592,7 +634,7 @@ bool AcceleratedSurfaceTransformer::TransformRGBToYV12_MRT(
   device()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
   device()->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
 
-  device()->SetTexture(0, uv_as_texture);
+  device()->SetTexture(0, uv_scratch_texture_);
   device()->SetRenderTarget(0, dst_u);
   device()->SetRenderTarget(1, dst_v);
   DrawScreenAlignedQuad(packed_y_size);
@@ -614,7 +656,7 @@ bool AcceleratedSurfaceTransformer::TransformRGBToYV12_WithoutMRT(
 
   ScopedRenderTargetRestorer color0_restorer(device(), 0);
 
-  base::win::ScopedComPtr<IDirect3DTexture9> scaled_src_surface;
+  ScopedComPtr<IDirect3DTexture9> scaled_src_surface;
 
   // If scaling is requested, do it to a temporary texture. The MRT path
   // gets a scale for free, so we need to support it here too (even though
@@ -622,16 +664,15 @@ bool AcceleratedSurfaceTransformer::TransformRGBToYV12_WithoutMRT(
   if (d3d_utils::GetSize(src_surface) == dst_size) {
     scaled_src_surface = src_surface;
   } else {
-    base::win::ScopedComPtr<IDirect3DSurface9> dst_level0;
-    if (!d3d_utils::CreateTemporaryRenderTargetTexture(
-            device(), dst_size,
-            scaled_src_surface.Receive(), dst_level0.Receive())) {
+    ScopedComPtr<IDirect3DSurface9> dst_level0;
+    if (!d3d_utils::CreateOrReuseRenderTargetTexture(
+            device(), dst_size, &uv_scratch_texture_, dst_level0.Receive())) {
       return false;
     }
-
     if (!Copy(src_surface, dst_level0, dst_size)) {
       return false;
     }
+    scaled_src_surface = uv_scratch_texture_;
   }
 
   // Input texture is the same for all three passes.

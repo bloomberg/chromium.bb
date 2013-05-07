@@ -11,6 +11,7 @@
 #include <d3d9.h>
 
 #include "base/basictypes.h"
+#include "base/win/scoped_comptr.h"
 #include "ui/surface/surface_export.h"
 
 namespace base {
@@ -35,10 +36,11 @@ bool CreateDevice(const base::ScopedNativeLibrary& d3d_module,
                   uint32 presentation_interval,
                   IDirect3DDevice9Ex** device);
 
-// Calls the Vista+ (WDDM1.0) variant of CreateTexture that semantically
-// opens a texture allocated (possibly in another process) as shared. The
-// shared texture is identified by its surface handle. The resulting texture
-// is written into |opened_texture|.
+// Calls the Vista+ (WDDM1.0) variant of CreateTexture that semantically opens a
+// texture allocated as shared. In this way textures allocated by another
+// process can be used by a D3D context in this process. The shared texture is
+// identified by its surface handle. The resulting texture is written into
+// |opened_texture|.
 //
 // Returns true on success.
 SURFACE_EXPORT
@@ -47,24 +49,31 @@ bool OpenSharedTexture(IDirect3DDevice9* device,
                        const gfx::Size& size,
                        IDirect3DTexture9** opened_texture);
 
-// Create a one-off lockable surface of a specified size.
+// Ensures that |surface| is a lockable surface of a specified |size|. If
+// |*surface| is non-null and has dimensions that match |size|, it is reused.
+// Otherwise, a new resource is created and the old one (if any) is freed.
 //
 // Returns true on success.
 SURFACE_EXPORT
-bool CreateTemporaryLockableSurface(IDirect3DDevice9* device,
-                                    const gfx::Size& size,
-                                    IDirect3DSurface9** surface);
+bool CreateOrReuseLockableSurface(
+    IDirect3DDevice9* device,
+    const gfx::Size& size,
+    base::win::ScopedComPtr<IDirect3DSurface9>* surface);
 
-// Create a one-off renderable texture of a specified size. The texture object
-// as well as the surface object for the texture's level 0 is returned (callers
-// almost always need to use both).
+// Ensures that |texture| is a render target texture of a specified |size|. If
+// |*texture| is non-null and has dimensions that match |size|, it is reused.
+// Otherwise, a new resource is created and the old one (if any) is freed.
+//
+// A reference to level 0 of the resulting texture is placed into
+// |render_target|.
 //
 // Returns true on success.
 SURFACE_EXPORT
-bool CreateTemporaryRenderTargetTexture(IDirect3DDevice9* device,
-                                        const gfx::Size& size,
-                                        IDirect3DTexture9** texture,
-                                        IDirect3DSurface9** render_target);
+bool CreateOrReuseRenderTargetTexture(
+    IDirect3DDevice9* device,
+    const gfx::Size& size,
+    base::win::ScopedComPtr<IDirect3DTexture9>* texture,
+    IDirect3DSurface9** render_target);
 
 SURFACE_EXPORT
 gfx::Size GetSize(IDirect3DTexture9* texture);

@@ -51,11 +51,20 @@ class SURFACE_EXPORT AcceleratedSurfaceTransformer {
       IDirect3DSurface9* dst_surface,
       const gfx::Size& dst_size);
 
- // Draw a textured quad to a surface.
+  // Draw a textured quad to a surface.
   bool Copy(
       IDirect3DTexture9* src_texture,
       IDirect3DSurface9* dst_surface,
       const gfx::Size& dst_size);
+
+  // Get an intermediate buffer of a particular |size|, that can be used as the
+  // output of one transformation and the to another. The returned surface
+  // belongs to an internal cache, and is invalidated by a subsequent call to
+  // this method.
+  bool GetIntermediateTexture(
+      const gfx::Size& size,
+      IDirect3DTexture9** texture,
+      IDirect3DSurface9** texture_level_zero);
 
   // Resize a surface using repeated bilinear interpolation.
   bool ResizeBilinear(
@@ -82,8 +91,9 @@ class SURFACE_EXPORT AcceleratedSurfaceTransformer {
   // If |src_texture|'s dimensions do not match |dst_size|, the source will be
   // bilinearly interpolated during conversion.
   //
-  // Returns true if successful. Caller must be certain to free the buffers
-  // even if this function returns false.
+  // Returns true if successful. Caller must be certain to release the surfaces
+  // even if this function returns false. The returned surfaces belong to an
+  // internal cache, and are invalidated by a subsequent call to this method.
   bool TransformRGBToYV12(
       IDirect3DTexture9* src_texture,
       const gfx::Size& dst_size,
@@ -159,8 +169,9 @@ class SURFACE_EXPORT AcceleratedSurfaceTransformer {
   // roundings. The sizes of the buffers (in terms of ARGB pixels) are returned
   // as |packed_y_size| and |packed_uv_size|.
   //
-  // Returns true if successful. Caller must be certain to free the buffers
-  // even if this function returns false.
+  // Returns true if successful. Caller must be certain to release the surfaces
+  // even if this function returns false. The returned belong to an internal
+  // cache.
   bool AllocYUVBuffers(
       const gfx::Size& dst_size,
       gfx::Size* packed_y_size,
@@ -199,6 +210,15 @@ class SURFACE_EXPORT AcceleratedSurfaceTransformer {
   base::win::ScopedComPtr<IDirect3DDevice9> device_;
   base::win::ScopedComPtr<IDirect3DVertexShader9> vertex_shaders_[NUM_SHADERS];
   base::win::ScopedComPtr<IDirect3DPixelShader9> pixel_shaders_[NUM_SHADERS];
+
+  // Temporary and scratch surfaces; cached to avoid frequent reallocation.
+  base::win::ScopedComPtr<IDirect3DTexture9> user_scratch_texture_;
+  base::win::ScopedComPtr<IDirect3DTexture9> uv_scratch_texture_;
+  base::win::ScopedComPtr<IDirect3DSurface9> y_scratch_surface_;
+  base::win::ScopedComPtr<IDirect3DSurface9> u_scratch_surface_;
+  base::win::ScopedComPtr<IDirect3DSurface9> v_scratch_surface_;
+  base::win::ScopedComPtr<IDirect3DSurface9> scaler_scratch_surfaces_[2];
+
   bool device_supports_multiple_render_targets_;
   const BYTE* vertex_shader_sources_[NUM_SHADERS];
   const BYTE* pixel_shader_sources_[NUM_SHADERS];
