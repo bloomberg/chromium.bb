@@ -20,7 +20,7 @@ namespace app.window {
   dictionary CreateWindowOptions {
     // Id to identify the window. This will be used to remember the size
     // and position of the window and restore that geometry when a window
-    // with the same id (and no explicit size or position) is later opened.
+    // with the same id is later opened.
     DOMString? id;
 
     // Default width of the window. (Deprecated; regular bounds act like this
@@ -69,9 +69,9 @@ namespace app.window {
     // Frame type: 'none' or 'chrome' (defaults to 'chrome').
     DOMString? frame;
 
-    // Size of the content in the window (excluding the titlebar). If specified
-    // in addition to any of the deprecated left/top/width/height parameters,
-    // this field takes precedence.
+    // Size and position of the content in the window (excluding the titlebar).
+    // If an id is also specified and a window with a matching id has been shown
+    // before, the remembered bounds of the window will be used instead.
     Bounds? bounds;
 
     // Enable window background transparency.
@@ -167,27 +167,19 @@ namespace app.window {
     // all, in which case a default size and platform dependent position will
     // be used.
     //
-    // Another option is to use the top/left and width/height properties,
-    // which will always put the window at the specified coordinates with the
-    // specified size.
+    // Another option is to use the bounds property, which will put the window
+    // at the specified coordinates with the specified size. If the window has
+    // a frame, it's total size will be the size given plus the size of the
+    // frame; that is, the size in bounds is the content size, not the window
+    // size.
     //
-    // Yet another option is to give the window a (unique) id. This id is then
-    // used to remember the size and position of the window whenever it is
-    // moved or resized. This size and position is then used instead of the
-    // specified bounds on subsequent opening of a window with the same id. If
-    // you need to open a window with an id at a location other than the
-    // remembered default, you can create it hidden, move it to the desired
-    // location, then show it.
-    //
-    // You can also combine these various options, explicitly specifying for
-    // example the size while having the position be remembered or other
-    // combinations like that. Size and position are dealt with seperately,
-    // but individual coordinates are not. So if you specify a top (or left)
-    // coordinate, you should also specify a left (or top) coordinate, and
-    // similar for size.
-    //
-    // If you specify both a regular and a default value for the same option
-    // the regular value is the only one that takes effect.
+    // To automatically remember the positions of windows you can give them ids.
+    // If a window has an id, This id is used to remember the size and position
+    // of the window whenever it is moved or resized. This size and position is
+    // then used instead of the specified bounds on subsequent opening of a
+    // window with the same id. If you need to open a window with an id at a
+    // location other than the remembered default, you can create it hidden,
+    // move it to the desired location, then show it.
     static void create(DOMString url,
                        optional CreateWindowOptions options,
                        optional CreateWindowCallback callback);
