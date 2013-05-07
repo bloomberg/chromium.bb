@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/search/instant_controller.h"
 
+#include <iterator>
+
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -573,7 +576,8 @@ void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
 }
 
 void InstantController::HandleAutocompleteResults(
-    const std::vector<AutocompleteProvider*>& providers) {
+    const std::vector<AutocompleteProvider*>& providers,
+    const AutocompleteResult& autocomplete_result) {
   if (!extended_enabled_)
     return;
 
@@ -585,19 +589,11 @@ void InstantController::HandleAutocompleteResults(
   if (omnibox_focus_state_ == OMNIBOX_FOCUS_NONE)
     return;
 
-  DVLOG(1) << "AutocompleteResults:";
-  std::vector<InstantAutocompleteResult> results;
   for (ACProviders::const_iterator provider = providers.begin();
        provider != providers.end(); ++provider) {
     const bool from_search_provider =
         (*provider)->type() == AutocompleteProvider::TYPE_SEARCH;
 
-    // Unless we are talking to a local page, skip SearchProvider, since it only
-    // echoes suggestions.
-    if (from_search_provider && !UsingLocalPage())
-      continue;
-
-    // Only send autocomplete results when all the providers are done.
     // TODO(jeremycho): Pass search_provider() as a parameter to this function
     // and remove the static cast.
     const bool provider_done = from_search_provider ?
@@ -607,26 +603,33 @@ void InstantController::HandleAutocompleteResults(
       DVLOG(1) << "Waiting for " << (*provider)->GetName();
       return;
     }
-    for (ACMatches::const_iterator match = (*provider)->matches().begin();
-         match != (*provider)->matches().end(); ++match) {
+  }
+
+  DVLOG(1) << "AutocompleteResults:";
+  std::vector<InstantAutocompleteResult> results;
+  if (UsingLocalPage()) {
+    for (AutocompleteResult::const_iterator match(autocomplete_result.begin());
+         match != autocomplete_result.end(); ++match) {
       InstantAutocompleteResult result;
-      result.provider = UTF8ToUTF16((*provider)->GetName());
-      result.type = UTF8ToUTF16(AutocompleteMatch::TypeToString(match->type));
-      result.description = match->description;
-      result.destination_url = UTF8ToUTF16(match->destination_url.spec());
-
-      // Setting the search_query field tells the Instant page to treat the
-      // suggestion as a query.
-      if (AutocompleteMatch::IsSearchType(match->type))
-        result.search_query = match->contents;
-
-      result.transition = match->transition;
-      result.relevance = match->relevance;
-      DVLOG(1) << "    " << result.relevance << " " << result.type << " "
-               << result.provider << " " << result.destination_url << " '"
-               << result.description << "' '" << result.search_query << "' "
-               << result.transition;
+      PopulateInstantAutocompleteResultFromMatch(
+          *match, std::distance(autocomplete_result.begin(), match), &result);
       results.push_back(result);
+    }
+  } else {
+    for (ACProviders::const_iterator provider = providers.begin();
+         provider != providers.end(); ++provider) {
+      // We are talking to remote NTP, skip SearchProvider, since it only echoes
+      // suggestions.
+      if ((*provider)->type() == AutocompleteProvider::TYPE_SEARCH)
+        continue;
+
+      for (ACMatches::const_iterator match = (*provider)->matches().begin();
+           match != (*provider)->matches().end(); ++match) {
+        InstantAutocompleteResult result;
+        PopulateInstantAutocompleteResultFromMatch(*match, kNoMatchIndex,
+                                                   &result);
+        results.push_back(result);
+      }
     }
   }
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
@@ -1785,4 +1788,28 @@ void InstantController::RedirectToLocalNTP(content::WebContents* contents) {
   // TODO(dcblack): Remove extraneous history entry caused by 404s.
   // Note that the base case of a 204 being returned doesn't push a history
   // entry.
+}
+
+void InstantController::PopulateInstantAutocompleteResultFromMatch(
+    const AutocompleteMatch& match, size_t autocomplete_match_index,
+    InstantAutocompleteResult* result) {
+  DCHECK(result);
+  result->provider = UTF8ToUTF16(match.provider->GetName());
+  result->type = UTF8ToUTF16(AutocompleteMatch::TypeToString(match.type));
+  result->description = match.description;
+  result->destination_url = UTF8ToUTF16(match.destination_url.spec());
+
+  // Setting the search_query field tells the Instant page to treat the
+  // suggestion as a query.
+  if (AutocompleteMatch::IsSearchType(match.type))
+    result->search_query = match.contents;
+
+  result->transition = match.transition;
+  result->relevance = match.relevance;
+  result->autocomplete_match_index = autocomplete_match_index;
+
+  DVLOG(1) << "    " << result->relevance << " " << result->type << " "
+      << result->provider << " " << result->destination_url << " '"
+      << result->description << "' '" << result->search_query << "' "
+      << result->transition <<  " " << result->autocomplete_match_index;
 }

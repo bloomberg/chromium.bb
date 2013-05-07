@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "content/public/renderer/render_view.h"
@@ -1064,7 +1065,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
       string16 text = V8ValueToUTF16(
           suggestions_array->Get(i)->ToObject()->Get(v8::String::New("value")));
       suggestions.push_back(
-          InstantSuggestion(text, behavior, type, search_box->query()));
+          InstantSuggestion(text, behavior, type, search_box->query(),
+                            kNoMatchIndex));
     }
   }
 
@@ -1093,7 +1095,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestion(
   SearchBox* search_box = SearchBox::Get(render_view);
   std::vector<InstantSuggestion> suggestions;
   suggestions.push_back(
-      InstantSuggestion(text, behavior, type, search_box->query()));
+      InstantSuggestion(text, behavior, type, search_box->query(),
+                        kNoMatchIndex));
   search_box->SetSuggestions(suggestions);
 
   return v8::Undefined();
@@ -1121,7 +1124,8 @@ v8::Handle<v8::Value>
   SearchBox* search_box = SearchBox::Get(render_view);
   std::vector<InstantSuggestion> suggestions;
   suggestions.push_back(
-      InstantSuggestion(text, behavior, type, search_box->query()));
+      InstantSuggestion(text, behavior, type, search_box->query(),
+                        kNoMatchIndex));
   search_box->SetSuggestions(suggestions);
 
   return v8::Undefined();
@@ -1144,7 +1148,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetQuery(
   SearchBox* search_box = SearchBox::Get(render_view);
   std::vector<InstantSuggestion> suggestions;
   suggestions.push_back(
-      InstantSuggestion(text, behavior, type, search_box->query()));
+      InstantSuggestion(text, behavior, type, search_box->query(),
+                        kNoMatchIndex));
   search_box->SetSuggestions(suggestions);
 
   return v8::Undefined();
@@ -1172,13 +1177,15 @@ v8::Handle<v8::Value>
         InstantSuggestion(result.destination_url,
                           INSTANT_COMPLETE_REPLACE,
                           INSTANT_SUGGESTION_URL,
-                          search_box->query()));
+                          search_box->query(),
+                          result.autocomplete_match_index));
   } else {
     suggestions.push_back(
         InstantSuggestion(result.search_query,
                           INSTANT_COMPLETE_REPLACE,
                           INSTANT_SUGGESTION_SEARCH,
-                          string16()));
+                          string16(),
+                          result.autocomplete_match_index));
   }
 
   search_box->SetSuggestions(suggestions);

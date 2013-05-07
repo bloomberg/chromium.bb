@@ -25,6 +25,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -521,7 +522,8 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
                                   InstantSuggestion(ASCIIToUTF16("bar"),
                                                     INSTANT_COMPLETE_NOW,
                                                     INSTANT_SUGGESTION_SEARCH,
-                                                    string16()));
+                                                    string16(),
+                                                    kNoMatchIndex));
 
   // The provider should now be done.
   EXPECT_TRUE(provider_->done());
@@ -563,7 +565,8 @@ TEST_F(SearchProviderTest, FinalizeInstantURL) {
                                       ASCIIToUTF16("http://example.com/"),
                                       INSTANT_COMPLETE_NOW,
                                       INSTANT_SUGGESTION_URL,
-                                      string16()));
+                                      string16(),
+                                      kNoMatchIndex));
 
   // The provider should now be done.
   EXPECT_TRUE(provider_->done());
@@ -607,7 +610,8 @@ TEST_F(SearchProviderTest, FinalizeInstantURLWithURLText) {
                                       ASCIIToUTF16("http://example.com/"),
                                       INSTANT_COMPLETE_NOW,
                                       INSTANT_SUGGESTION_URL,
-                                      string16()));
+                                      string16(),
+                                      kNoMatchIndex));
 
   // The provider should now be done.
   EXPECT_TRUE(provider_->done());
@@ -640,7 +644,8 @@ TEST_F(SearchProviderTest, RememberInstantQuery) {
                                   InstantSuggestion(ASCIIToUTF16("bar"),
                                                     INSTANT_COMPLETE_NOW,
                                                     INSTANT_SUGGESTION_SEARCH,
-                                                    string16()));
+                                                    string16(),
+                                                    kNoMatchIndex));
 
   // There should be two matches, one for what you typed, the other for
   // 'foobar'.
@@ -680,7 +685,8 @@ TEST_F(SearchProviderTest, DifferingText) {
                                   InstantSuggestion(ASCIIToUTF16("bar"),
                                                     INSTANT_COMPLETE_NOW,
                                                     INSTANT_SUGGESTION_SEARCH,
-                                                    string16()));
+                                                    string16(),
+                                                    kNoMatchIndex));
 
   // Query with the same input text, but trailing whitespace.
   AutocompleteMatch instant_match;

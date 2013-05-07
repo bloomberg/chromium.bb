@@ -6,17 +6,20 @@
 
 InstantSuggestion::InstantSuggestion()
     : behavior(INSTANT_COMPLETE_NOW),
-      type(INSTANT_SUGGESTION_SEARCH) {
+      type(INSTANT_SUGGESTION_SEARCH),
+      autocomplete_match_index(kNoMatchIndex) {
 }
 
 InstantSuggestion::InstantSuggestion(const string16& in_text,
                                      InstantCompleteBehavior in_behavior,
                                      InstantSuggestionType in_type,
-                                     const string16& in_query)
+                                     const string16& in_query,
+                                     size_t in_autocomplete_match_index)
     : text(in_text),
       behavior(in_behavior),
       type(in_type),
-      query(in_query) {
+      query(in_query),
+      autocomplete_match_index(in_autocomplete_match_index) {
 }
 
 InstantSuggestion::~InstantSuggestion() {

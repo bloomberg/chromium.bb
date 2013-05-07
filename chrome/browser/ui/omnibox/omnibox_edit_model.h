@@ -518,6 +518,12 @@ class OmniboxEditModel {
   // model/view code is decoupled from Instant (among other things).
   bool is_temporary_text_set_by_instant_;
 
+  // The index of the selected AutocompleteMatch in AutocompleteResult. This is
+  // needed to get the metadata details of the temporary text set by instant on
+  // the Local NTP. If the Instant extended is disabled or an Instant NTP is
+  // used, this is set to OmniboxPopupModel::kNoMatch.
+  size_t selected_instant_autocomplete_match_index_;
+
   // True if the current temporary text set by Instant is a search query; false
   // if it is a URL that can be directly navigated to. This is only valid if
   // |is_temporary_text_set_by_instant_| is true. This field is needed because

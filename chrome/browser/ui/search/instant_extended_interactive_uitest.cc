@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
@@ -1052,7 +1053,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
           InstantSuggestion(ASCIIToUTF16("http://facemash.com/"),
                             INSTANT_COMPLETE_NOW,
                             INSTANT_SUGGESTION_URL,
-                            ASCIIToUTF16("face"))));
+                            ASCIIToUTF16("face"),
+                            kNoMatchIndex)));
 
   while (!omnibox()->model()->autocomplete_controller()->done()) {
     content::WindowedNotificationObserver autocomplete_observer(
@@ -1182,7 +1184,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
           InstantSuggestion(ASCIIToUTF16("www.exa"),
                             INSTANT_COMPLETE_NOW,
                             INSTANT_SUGGESTION_URL,
-                            ASCIIToUTF16("www.exa"))));
+                            ASCIIToUTF16("www.exa"),
+                            kNoMatchIndex)));
   EXPECT_EQ(
       "http://www.example.com/",
       omnibox()->model()->result().default_match()->destination_url.spec());

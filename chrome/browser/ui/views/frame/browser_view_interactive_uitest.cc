@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -258,7 +259,8 @@ IN_PROC_BROWSER_TEST_F(BrowserViewImmersiveInstantExtendedTest,
       InstantSuggestion(ASCIIToUTF16("query"),
                         INSTANT_COMPLETE_NOW,
                         INSTANT_SUGGESTION_SEARCH,
-                        ASCIIToUTF16("query")));
+                        ASCIIToUTF16("query"),
+                        kNoMatchIndex));
   while (!omnibox()->model()->autocomplete_controller()->done()) {
     content::WindowedNotificationObserver autocomplete_observer(
         chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,

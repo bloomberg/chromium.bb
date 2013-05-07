@@ -33,7 +33,10 @@
 #include "ui/gfx/rect.h"
 
 struct AutocompleteMatch;
+struct InstantAutocompleteResult;
+
 class AutocompleteProvider;
+class AutocompleteResult;
 class BrowserInstantController;
 class InstantNTP;
 class InstantOverlay;
@@ -112,7 +115,8 @@ class InstantController : public InstantPage::Delegate,
 
   // Send autocomplete results from |providers| to the overlay page.
   void HandleAutocompleteResults(
-      const std::vector<AutocompleteProvider*>& providers);
+      const std::vector<AutocompleteProvider*>& providers,
+      const AutocompleteResult& result);
 
   // Called when the default search provider changes. Resets InstantNTP and
   // InstantOverlay.
@@ -399,6 +403,15 @@ class InstantController : public InstantPage::Delegate,
   // Returns true iff |use_tab_for_suggestions_| is true and |instant_tab_|
   // exists.
   bool UseTabForSuggestions() const;
+
+  // Populates InstantAutocompleteResult with AutocompleteMatch details.
+  // |autocomplete_match_index| specifies the index of |match| in the
+  // AutocompleteResult. If the |match| is obtained from auto complete
+  // providers, then the |autocomplete_match_index| is set to kNoMatchIndex.
+  void PopulateInstantAutocompleteResultFromMatch(
+      const AutocompleteMatch& match,
+      size_t autocomplete_match_index,
+      InstantAutocompleteResult* result);
 
   BrowserInstantController* const browser_;
 

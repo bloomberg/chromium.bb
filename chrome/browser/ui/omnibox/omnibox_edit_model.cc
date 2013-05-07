@@ -127,6 +127,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       just_deleted_text_(false),
       has_temporary_text_(false),
       is_temporary_text_set_by_instant_(false),
+      selected_instant_autocomplete_match_index_(OmniboxPopupModel::kNoMatch),
       is_instant_temporary_text_a_search_query_(false),
       paste_state_(NONE),
       control_key_state_(UP),
@@ -221,6 +222,7 @@ void OmniboxEditModel::SetUserText(const string16& text) {
   paste_state_ = NONE;
   has_temporary_text_ = false;
   is_temporary_text_set_by_instant_ = false;
+  selected_instant_autocomplete_match_index_ = OmniboxPopupModel::kNoMatch;
   is_instant_temporary_text_a_search_query_ = false;
 }
 
@@ -263,6 +265,8 @@ void OmniboxEditModel::SetInstantSuggestion(
       view_->SetInstantSuggestion(string16());
       has_temporary_text_ = true;
       is_temporary_text_set_by_instant_ = true;
+      selected_instant_autocomplete_match_index_ =
+          suggestion.autocomplete_match_index;
       is_instant_temporary_text_a_search_query_ =
           suggestion.type == INSTANT_SUGGESTION_SEARCH;
       // Instant suggestions are never a keyword.
@@ -288,7 +292,8 @@ bool OmniboxEditModel::CommitSuggestedText(bool skip_inline_autocomplete) {
                        InstantSuggestion(suggestion,
                                          INSTANT_COMPLETE_NOW,
                                          INSTANT_SUGGESTION_SEARCH,
-                                         string16()),
+                                         string16(),
+                                         OmniboxPopupModel::kNoMatch),
                        skip_inline_autocomplete);
   return true;
 }
@@ -482,6 +487,7 @@ void OmniboxEditModel::Revert() {
   is_keyword_hint_ = false;
   has_temporary_text_ = false;
   is_temporary_text_set_by_instant_ = false;
+  selected_instant_autocomplete_match_index_ = OmniboxPopupModel::kNoMatch;
   is_instant_temporary_text_a_search_query_ = false;
   view_->SetWindowTextAndCaretPos(permanent_text_,
                                   has_focus() ? permanent_text_.length() : 0,
@@ -790,6 +796,7 @@ bool OmniboxEditModel::AcceptKeyword(EnteredKeywordModeMethod entered_method) {
   bool save_original_selection = !has_temporary_text_;
   has_temporary_text_ = true;
   is_temporary_text_set_by_instant_ = false;
+  selected_instant_autocomplete_match_index_ = OmniboxPopupModel::kNoMatch;
   is_instant_temporary_text_a_search_query_ = false;
   view_->OnTemporaryTextMaybeChanged(
       DisplayTextFromUserText(CurrentMatch().fill_into_edit),
@@ -932,6 +939,7 @@ void OmniboxEditModel::OnControlKeyChanged(bool pressed) {
       InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
       has_temporary_text_ = false;
       is_temporary_text_set_by_instant_ = false;
+      selected_instant_autocomplete_match_index_ = OmniboxPopupModel::kNoMatch;
       is_instant_temporary_text_a_search_query_ = false;
     }
     if ((old_state != DOWN_WITH_CHANGE) && popup_->IsOpen()) {
@@ -1001,6 +1009,7 @@ void OmniboxEditModel::OnPopupDataChanged(
       // Save the original selection and URL so it can be reverted later.
       has_temporary_text_ = true;
       is_temporary_text_set_by_instant_ = false;
+      selected_instant_autocomplete_match_index_ = OmniboxPopupModel::kNoMatch;
       is_instant_temporary_text_a_search_query_ = false;
       original_url_ = *destination_for_temporary_text_change;
       inline_autocomplete_text_.clear();
@@ -1107,6 +1116,7 @@ bool OmniboxEditModel::OnAfterPossibleChange(const string16& old_text,
     InternalSetUserText(UserTextFromDisplayText(new_text));
     has_temporary_text_ = false;
     is_temporary_text_set_by_instant_ = false;
+    selected_instant_autocomplete_match_index_ = OmniboxPopupModel::kNoMatch;
     is_instant_temporary_text_a_search_query_ = false;
 
     // Track when the user has deleted text so we won't allow inline
@@ -1204,7 +1214,8 @@ void OmniboxEditModel::OnResultChanged(bool default_match_changed) {
     InstantController* instant = controller_->GetInstant();
     if (instant && !in_revert_) {
       instant->HandleAutocompleteResults(
-          *autocomplete_controller()->providers());
+          *autocomplete_controller()->providers(),
+          autocomplete_controller()->result());
     }
   } else if (was_open) {
     // Accepts the temporary text as the user text, because it makes little
@@ -1212,6 +1223,7 @@ void OmniboxEditModel::OnResultChanged(bool default_match_changed) {
     InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
     has_temporary_text_ = false;
     is_temporary_text_set_by_instant_ = false;
+    selected_instant_autocomplete_match_index_ = OmniboxPopupModel::kNoMatch;
     is_instant_temporary_text_a_search_query_ = false;
     OnPopupBoundsChanged(gfx::Rect());
     delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_,
@@ -1282,38 +1294,46 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
   // text ourselves because the text may look like a URL, but Instant may expect
   // it to be a search (e.g.: a query for "amazon.com").
   if (is_temporary_text_set_by_instant_) {
-    const string16& text = view_->GetText();
-    AutocompleteInput input(text, string16::npos, string16(), GURL(), false,
-                            false, false, AutocompleteInput::BEST_MATCH);
-    // Only the destination_url and the transition of the match will be be used
-    // (to either navigate to the URL or let Instant commit its preview). The
-    // match won't be used for logging, displaying in the dropdown, etc. So,
-    // it's okay to pass in mostly bogus params (such as relevance = 0).
-    // TODO(sreeram): Always using NO_SUGGESTIONS_AVAILABLE is wrong when
-    // Instant is using the local fallback overlay. Fix.
-    if (is_instant_temporary_text_a_search_query_) {
-      const TemplateURL* default_provider =
-          TemplateURLServiceFactory::GetForProfile(profile_)->
-              GetDefaultSearchProvider();
-      if (default_provider && default_provider->SupportsReplacement()) {
-        *match = SearchProvider::CreateSearchSuggestion(profile_,
-            autocomplete_controller()->search_provider(), input, text, text, 0,
-            AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
-            TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, false,
-            default_provider->keyword());
-      } else {
-        // Can't create a new search match. Leave |match| as is, with an
-        // invalid destination_url. This shouldn't ever happen. For example,
-        // even if a group policy update in the midst of interacting with
-        // Instant leaves us without a valid search provider, Instant should've
-        // observed the update and reset |is_temporary_text_set_by_instant_|,
-        // so we still shouldn't get here. However, as protection against the
-        // unknowns and Instant regressions, we simply return an invalid match
-        // instead of crashing (hence no DCHECK).
-      }
+    if (selected_instant_autocomplete_match_index_ !=
+            OmniboxPopupModel::kNoMatch) {
+      // Great, we know the exact match struct. Just use that.
+      const AutocompleteResult& result = this->result();
+      *match = result.match_at(selected_instant_autocomplete_match_index_);
     } else {
-      *match = HistoryURLProvider::SuggestExactInput(
-        autocomplete_controller()->history_url_provider(), input, false);
+      const string16& text = view_->GetText();
+      AutocompleteInput input(text, string16::npos, string16(), GURL(), false,
+                              false, false, AutocompleteInput::BEST_MATCH);
+      // Only the destination_url and the transition of the match will be be
+      // used (to either navigate to the URL or let Instant commit its preview).
+      // The match won't be used for logging, displaying in the dropdown, etc.
+      // So, it's okay to pass in mostly bogus params (such as relevance = 0).
+      // TODO(sreeram): Always using NO_SUGGESTIONS_AVAILABLE is wrong when
+      // Instant is using the local fallback overlay. Fix.
+      if (is_instant_temporary_text_a_search_query_) {
+        const TemplateURL* default_provider =
+            TemplateURLServiceFactory::GetForProfile(profile_)->
+                GetDefaultSearchProvider();
+        if (default_provider && default_provider->SupportsReplacement()) {
+          *match = SearchProvider::CreateSearchSuggestion(profile_,
+              autocomplete_controller()->search_provider(), input, text, text,
+              0, AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+              TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, false,
+              default_provider->keyword());
+        } else {
+          // Can't create a new search match. Leave |match| as is, with an
+          // invalid destination_url. This shouldn't ever happen. For example,
+          // even if a group policy update in the midst of interacting with
+          // Instant leaves us without a valid search provider, Instant
+          // should've observed the update and reset
+          // |is_temporary_text_set_by_instant_|, so we still shouldn't get
+          // here. However, as protection against the unknowns and Instant
+          // regressions, we simply return an invalid match instead of crashing
+          // (hence no DCHECK).
+        }
+      } else {
+        *match = HistoryURLProvider::SuggestExactInput(
+            autocomplete_controller()->history_url_provider(), input, false);
+      }
     }
   } else if (popup_->IsOpen() || query_in_progress()) {
     InfoForCurrentSelection(match, alternate_nav_url);
@@ -1332,6 +1352,7 @@ void OmniboxEditModel::RevertTemporaryText(bool revert_popup) {
   just_deleted_text_ = false;
   has_temporary_text_ = false;
   is_temporary_text_set_by_instant_ = false;
+  selected_instant_autocomplete_match_index_ = OmniboxPopupModel::kNoMatch;
   is_instant_temporary_text_a_search_query_ = false;
 
   InstantController* instant = controller_->GetInstant();

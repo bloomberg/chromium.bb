@@ -19,6 +19,8 @@ typedef int InstantRestrictedID;
 // The size of the InstantMostVisitedItem cache.
 const size_t kMaxInstantMostVisitedItemCacheSize = 100;
 
+const size_t kNoMatchIndex = -1;
+
 // Ways that the Instant suggested text is autocompleted into the omnibox.
 enum InstantCompleteBehavior {
   // Autocomplete the suggestion immediately.
@@ -47,7 +49,8 @@ struct InstantSuggestion {
   InstantSuggestion(const string16& text,
                     InstantCompleteBehavior behavior,
                     InstantSuggestionType type,
-                    const string16& query);
+                    const string16& query,
+                    size_t autocomplete_match_index);
   ~InstantSuggestion();
 
   // Full suggested text.
@@ -62,6 +65,13 @@ struct InstantSuggestion {
   // Query for which this suggestion was generated. May be set to empty string
   // if unknown.
   string16 query;
+
+  // Index of the AutocompleteMatch in AutocompleteResult. Used to get the
+  // metadata details of the suggested text from AutocompleteResult. Set to a
+  // positive value if the suggestion is displayed on the Local NTP and
+  // set to kNoMatchIndex if the suggestion is displayed on the
+  // Instant NTP.
+  size_t autocomplete_match_index;
 };
 
 // Omnibox dropdown matches provided by the native autocomplete providers.
@@ -91,6 +101,12 @@ struct InstantAutocompleteResult {
 
   // The relevance score of this match, same as AutocompleteMatch::relevance.
   int relevance;
+
+  // The index of the match in AutocompleteResult. Used to get the instant
+  // suggestion metadata details. Set to kNoMatchIndex if the
+  // suggestion is displayed on the Instant NTP and set to a positive value if
+  // the suggestion is displayed on the Local NTP.
+  size_t autocomplete_match_index;
 };
 
 // An InstantAutocompleteResult along with its assigned restricted ID.
