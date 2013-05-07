@@ -77,7 +77,7 @@ print PARTIAL_WINDOW_FH "partial interface DOMWindow {\n";
 print PARTIAL_WINDOW_FH $constructorAttributesCode;
 print PARTIAL_WINDOW_FH "};\n";
 close PARTIAL_WINDOW_FH;
-$supplementalDependencies{$windowConstructorsFile} = "DOMWindow";
+$supplementalDependencies{$windowConstructorsFile} = "DOMWindow" if $interfaceNameToIdlFile{"DOMWindow"};
 
 # Resolves partial interfaces dependencies.
 foreach my $idlFile (keys %supplementalDependencies) {
