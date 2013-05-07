@@ -45,7 +45,7 @@
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "ui/compositor/compositor_switches.h"
 
 #if defined(OS_CHROMEOS)

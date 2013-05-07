@@ -45,7 +45,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/socket/tcp_listen_socket.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 
 using content::BrowserThread;
 using content::DevToolsManager;

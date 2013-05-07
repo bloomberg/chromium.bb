@@ -5,7 +5,7 @@
 #include "net/url_request/url_request_context_builder.h"
 
 #include "build/build_config.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

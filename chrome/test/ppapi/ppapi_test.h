@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/javascript_test_observer.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 
 namespace content {
 class RenderViewHost;

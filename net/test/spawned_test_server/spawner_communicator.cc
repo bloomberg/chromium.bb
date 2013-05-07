@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/test/spawner_communicator.h"
+#include "net/test/spawned_test_server/spawner_communicator.h"
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"

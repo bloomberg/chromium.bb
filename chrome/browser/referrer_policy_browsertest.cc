@@ -18,7 +18,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 // GTK requires a X11-level mouse event to open a context menu correctly.

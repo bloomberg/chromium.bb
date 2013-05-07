@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/test/remote_test_server.h"
+#include "net/test/spawned_test_server/remote_test_server.h"
 
 #include <vector>
 
@@ -18,7 +18,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
-#include "net/test/spawner_communicator.h"
+#include "net/test/spawned_test_server/spawner_communicator.h"
 
 namespace net {
 

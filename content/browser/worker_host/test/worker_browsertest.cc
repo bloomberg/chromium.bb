@@ -24,7 +24,7 @@
 #include "content/test/layout_browsertest.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/test_data_directory.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 
 namespace content {
 

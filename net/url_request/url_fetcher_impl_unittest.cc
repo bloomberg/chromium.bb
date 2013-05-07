@@ -19,7 +19,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"

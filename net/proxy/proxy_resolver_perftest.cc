@@ -12,7 +12,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_v8.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)

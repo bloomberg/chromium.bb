@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/search/instant_overlay_model_observer.h"
 #include "chrome/common/search_types.h"
 #include "googleurl/src/gurl.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 
 class InstantController;
 class InstantModel;

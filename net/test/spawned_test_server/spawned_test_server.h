@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TEST_SPAWNED_TEST_SERVER_H_
-#define NET_TEST_SPAWNED_TEST_SERVER_H_
+#ifndef NET_TEST_SPAWNED_TEST_SERVER_SPAWNED_TEST_SERVER_H_
+#define NET_TEST_SPAWNED_TEST_SERVER_SPAWNED_TEST_SERVER_H_
 
 #include "build/build_config.h"
 
 #if defined(OS_ANDROID)
-#include "net/test/remote_test_server.h"
+#include "net/test/spawned_test_server/remote_test_server.h"
 #else
-#include "net/test/local_test_server.h"
+#include "net/test/spawned_test_server/local_test_server.h"
 #endif
 
 namespace net {
@@ -23,5 +23,5 @@ typedef LocalTestServer SpawnedTestServer;
 
 }  // namespace net
 
-#endif  // NET_TEST_SPAWNED_TEST_SERVER_H_
+#endif  // NET_TEST_SPAWNED_TEST_SERVER_SPAWNED_TEST_SERVER_H_
 

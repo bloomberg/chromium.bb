@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TEST_REMOTE_TEST_SERVER_H_
-#define NET_TEST_REMOTE_TEST_SERVER_H_
+#ifndef NET_TEST_SPAWNED_TEST_SERVER_REMOTE_TEST_SERVER_H_
+#define NET_TEST_SPAWNED_TEST_SERVER_REMOTE_TEST_SERVER_H_
 
 #include <string>
 
-#include "net/test/base_test_server.h"
+#include "net/test/spawned_test_server/base_test_server.h"
 
 namespace net {
 
@@ -67,5 +67,5 @@ class RemoteTestServer : public BaseTestServer {
 
 }  // namespace net
 
-#endif  // NET_TEST_REMOTE_TEST_SERVER_H_
+#endif  // NET_TEST_SPAWNED_TEST_SERVER_REMOTE_TEST_SERVER_H_
 

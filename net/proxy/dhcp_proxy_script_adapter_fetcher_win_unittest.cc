@@ -12,7 +12,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/proxy/mock_proxy_script_fetcher.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

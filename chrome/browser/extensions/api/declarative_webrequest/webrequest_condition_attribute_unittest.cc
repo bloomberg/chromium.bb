@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "content/public/browser/resource_request_info.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

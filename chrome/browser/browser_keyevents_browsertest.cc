@@ -25,7 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/controls/textfield/textfield.h"
 

@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class CommandLine;

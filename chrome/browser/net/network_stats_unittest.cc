@@ -10,7 +10,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

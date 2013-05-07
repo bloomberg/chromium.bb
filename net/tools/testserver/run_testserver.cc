@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 
 static void PrintUsage() {
   printf("run_testserver --doc-root=relpath\n"

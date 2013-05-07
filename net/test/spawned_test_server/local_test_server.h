@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TEST_LOCAL_TEST_SERVER_H_
-#define NET_TEST_LOCAL_TEST_SERVER_H_
+#ifndef NET_TEST_SPAWNED_TEST_SERVER_LOCAL_TEST_SERVER_H_
+#define NET_TEST_SPAWNED_TEST_SERVER_LOCAL_TEST_SERVER_H_
 
 #include <string>
 
 #include "base/file_util.h"
 #include "base/process.h"
-#include "net/test/base_test_server.h"
+#include "net/test/spawned_test_server/base_test_server.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -114,4 +114,4 @@ class LocalTestServer : public BaseTestServer {
 
 }  // namespace net
 
-#endif  // NET_TEST_LOCAL_TEST_SERVER_H_
+#endif  // NET_TEST_SPAWNED_TEST_SERVER_LOCAL_TEST_SERVER_H_

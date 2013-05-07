@@ -42,7 +42,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_status_flags.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 
 #if defined(USE_NSS)
 #include "net/cert/nss_cert_database.h"
