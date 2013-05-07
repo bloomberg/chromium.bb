@@ -2263,6 +2263,10 @@ void MenuController::HandleMouseLocation(SubmenuView* source,
   if (showing_submenu_)
     return;
 
+  // Ignore mouse events if we're closing the menu.
+  if (exit_type_ != EXIT_NONE)
+    return;
+
   MenuPart part = GetMenuPart(source, mouse_location);
 
   UpdateScrolling(part);
