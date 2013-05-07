@@ -101,8 +101,7 @@ public:
 
     static String mainThreadScrollingReasonsAsText(MainThreadScrollingReasons);
     String mainThreadScrollingReasonsAsText() const;
-
-    Region computeNonFastScrollableRegion(const Frame*, const IntPoint& frameLocation) const;
+    Region computeShouldHandleScrollGestureOnMainThreadRegion(const Frame*, const IntPoint& frameLocation) const;
 
 protected:
     explicit ScrollingCoordinator(Page*);
@@ -126,7 +125,7 @@ private:
     
     static WebKit::WebLayer* scrollingWebLayerForScrollableArea(ScrollableArea*);
 
-    void setNonFastScrollableRegion(const Region&);
+    void setShouldHandleScrollGestureOnMainThreadRegion(const Region&);
     void setTouchEventTargetRects(const Vector<IntRect>&);
     void setWheelEventHandlerCount(unsigned);
 

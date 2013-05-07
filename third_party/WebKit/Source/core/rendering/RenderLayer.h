@@ -47,6 +47,7 @@
 #include "core/platform/ScrollableArea.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
+
 #include <wtf/OwnPtr.h>
 
 #include "core/rendering/RenderLayerFilterInfo.h"
@@ -58,6 +59,7 @@ class FilterOperations;
 class HitTestRequest;
 class HitTestResult;
 class HitTestingTransformState;
+class PlatformEvent;
 class RenderFlowThread;
 class RenderGeometryMap;
 class RenderLayerBacking;
@@ -375,6 +377,14 @@ public:
 
     LayoutRect rect() const { return LayoutRect(location(), size()); }
 
+    enum ResizerHitTestType {
+        ResizerForPointer,
+        ResizerForTouch
+    };
+
+    // See comments on isPointInResizeControl.
+    virtual IntRect resizerCornerRect(const IntRect& bounds, ResizerHitTestType resizerHitTestType) const;
+
     int scrollWidth() const;
     int scrollHeight() const;
 
@@ -419,7 +429,9 @@ public:
     int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
 
     bool hasOverflowControls() const;
-    bool isPointInResizeControl(const IntPoint& absolutePoint) const;
+    // isPointInResizeControl() is used for testing if a pointer/touch position is in the resize control
+    // area.
+    bool isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType resizerHitTestType) const;
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
     IntSize offsetFromResizeCorner(const IntPoint& absolutePoint) const;
 
@@ -433,7 +445,7 @@ public:
     void autoscroll(const IntPoint&);
 
     bool canResize() const;
-    void resize(const PlatformMouseEvent&, const LayoutSize&);
+    void resize(const PlatformEvent&, const LayoutSize&);
     bool inResizeMode() const { return m_inResizeMode; }
     void setInResizeMode(bool b) { m_inResizeMode = b; }
 
@@ -1021,6 +1033,7 @@ private:
 
     IntSize scrollbarOffset(const Scrollbar*) const;
     
+    void updateResizerAreaSet();
     void updateScrollableAreaSet(bool hasOverflow);
 
     void dirtyAncestorChainVisibleDescendantStatus();

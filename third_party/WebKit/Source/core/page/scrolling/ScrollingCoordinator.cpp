@@ -92,7 +92,7 @@ ScrollingCoordinator::~ScrollingCoordinator()
 
 }
 
-void ScrollingCoordinator::setNonFastScrollableRegion(const Region& region)
+void ScrollingCoordinator::setShouldHandleScrollGestureOnMainThreadRegion(const Region& region)
 {
     if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(m_page->mainFrame()->view())) {
         Vector<IntRect> rects = region.rects();
@@ -107,12 +107,16 @@ void ScrollingCoordinator::frameViewLayoutUpdated(FrameView* frameView)
 {
     ASSERT(m_page);
 
-    // Compute the region of the page that we can't do fast scrolling for. This currently includes
-    // all scrollable areas, such as subframes, overflow divs and list boxes, whose composited
+    // Compute the region of the page that we can't handle scroll gestures on impl thread:
+    // This currently includes:
+    // 1. All scrollable areas, such as subframes, overflow divs and list boxes, whose composited
     // scrolling are not enabled. We need to do this even if the frame view whose layout was updated
     // is not the main frame.
-    Region nonFastScrollableRegion = computeNonFastScrollableRegion(m_page->mainFrame(), IntPoint());
-    setNonFastScrollableRegion(nonFastScrollableRegion);
+    // 2. Resize control areas, e.g. the small rect at the right bottom of div/textarea/iframe when
+    // CSS property "resize" is enabled.
+    // 3. Plugin areas.
+    Region shouldHandleScrollGestureOnMainThreadRegion = computeShouldHandleScrollGestureOnMainThreadRegion(m_page->mainFrame(), IntPoint());
+    setShouldHandleScrollGestureOnMainThreadRegion(shouldHandleScrollGestureOnMainThreadRegion);
     Vector<IntRect> touchEventTargetRects;
     computeAbsoluteTouchEventTargetRects(m_page->mainFrame()->document(), touchEventTargetRects);
     setTouchEventTargetRects(touchEventTargetRects);
@@ -349,12 +353,12 @@ bool ScrollingCoordinator::coordinatesScrollingForFrameView(FrameView* frameView
     return renderView->usesCompositing();
 }
 
-Region ScrollingCoordinator::computeNonFastScrollableRegion(const Frame* frame, const IntPoint& frameLocation) const
+Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(const Frame* frame, const IntPoint& frameLocation) const
 {
-    Region nonFastScrollableRegion;
+    Region shouldHandleScrollGestureOnMainThreadRegion;
     FrameView* frameView = frame->view();
     if (!frameView)
-        return nonFastScrollableRegion;
+        return shouldHandleScrollGestureOnMainThreadRegion;
 
     IntPoint offset = frameLocation;
     offset.moveBy(frameView->frameRect().location());
@@ -367,7 +371,21 @@ Region ScrollingCoordinator::computeNonFastScrollableRegion(const Frame* frame, 
                 continue;
             IntRect box = scrollableArea->scrollableAreaBoundingBox();
             box.moveBy(offset);
-            nonFastScrollableRegion.unite(box);
+            shouldHandleScrollGestureOnMainThreadRegion.unite(box);
+        }
+    }
+
+    // We use GestureScrollBegin/Update/End for moving the resizer handle. So we mark these
+    // small resizer areas as non-fast-scrollable to allow the scroll gestures to be passed to
+    // main thread if they are targeting the resizer area. (Resizing is done in EventHandler.cpp
+    // on main thread).
+    if (const FrameView::ResizerAreaSet* resizerAreas = frameView->resizerAreas()) {
+        for (FrameView::ResizerAreaSet::const_iterator it = resizerAreas->begin(), end = resizerAreas->end(); it != end; ++it) {
+            RenderLayer* layer = *it;
+            IntRect bounds = layer->renderer()->absoluteBoundingBoxRect();
+            IntRect corner = layer->resizerCornerRect(bounds, RenderLayer::ResizerForTouch);
+            corner.moveBy(offset);
+            shouldHandleScrollGestureOnMainThreadRegion.unite(corner);
         }
     }
 
@@ -378,15 +396,15 @@ Region ScrollingCoordinator::computeNonFastScrollableRegion(const Frame* frame, 
 
             PluginView* pluginView = toPluginView((*it).get());
             if (pluginView->wantsWheelEvents())
-                nonFastScrollableRegion.unite(pluginView->frameRect());
+                shouldHandleScrollGestureOnMainThreadRegion.unite(pluginView->frameRect());
         }
     }
 
     FrameTree* tree = frame->tree();
     for (Frame* subFrame = tree->firstChild(); subFrame; subFrame = subFrame->tree()->nextSibling())
-        nonFastScrollableRegion.unite(computeNonFastScrollableRegion(subFrame, offset));
+        shouldHandleScrollGestureOnMainThreadRegion.unite(computeShouldHandleScrollGestureOnMainThreadRegion(subFrame, offset));
 
-    return nonFastScrollableRegion;
+    return shouldHandleScrollGestureOnMainThreadRegion;
 }
 
 static void accumulateRendererTouchEventTargetRects(Vector<IntRect>& rects, const RenderObject* renderer, const IntRect& parentRect = IntRect())

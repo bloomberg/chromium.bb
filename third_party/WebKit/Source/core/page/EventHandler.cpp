@@ -1205,7 +1205,7 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
         if (renderer) {
             if (RenderLayer* layer = renderer->enclosingLayer()) {
                 if (FrameView* view = m_frame->view())
-                    inResizer = layer->isPointInResizeControl(view->windowToContents(event.event().position()));
+                    inResizer = layer->isPointInResizeControl(view->windowToContents(event.event().position()), RenderLayer::ResizerForPointer);
             }
         }
         if ((editable || (renderer && renderer->isText() && node->canStartSelection())) && !inResizer && !scrollbar)
@@ -1369,7 +1369,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     if (FrameView* view = m_frame->view()) {
         RenderLayer* layer = m_clickNode->renderer() ? m_clickNode->renderer()->enclosingLayer() : 0;
         IntPoint p = view->windowToContents(mouseEvent.position());
-        if (layer && layer->isPointInResizeControl(p)) {
+        if (layer && layer->isPointInResizeControl(p, RenderLayer::ResizerForPointer)) {
             layer->setInResizeMode(true);
             m_resizeLayer = layer;
             m_offsetFromResizeCorner = layer->offsetFromResizeCorner(p);
@@ -2312,7 +2312,11 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     }
 
     if (eventTarget) {
-        bool eventSwallowed = eventTarget->dispatchGestureEvent(gestureEvent);
+        bool eventSwallowed = false;
+        if (handleScrollGestureOnResizer(eventTarget, gestureEvent))
+            eventSwallowed = true;
+        else
+            eventSwallowed = eventTarget->dispatchGestureEvent(gestureEvent);
         if (gestureEvent.type() == PlatformEvent::GestureScrollBegin || gestureEvent.type() == PlatformEvent::GestureScrollEnd) {
             if (eventSwallowed)
                 m_scrollGestureHandlingNode = eventTarget;
@@ -2448,6 +2452,33 @@ bool EventHandler::handleGestureLongTap(const PlatformGestureEvent& gestureEvent
     return false;
 }
 
+bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const PlatformGestureEvent& gestureEvent) {
+    if (gestureEvent.type() == PlatformEvent::GestureScrollBegin) {
+        RenderLayer* layer = eventTarget->renderer() ? eventTarget->renderer()->enclosingLayer() : 0;
+        IntPoint p = m_frame->view()->windowToContents(gestureEvent.position());
+        if (layer && layer->isPointInResizeControl(p, RenderLayer::ResizerForTouch)) {
+            layer->setInResizeMode(true);
+            m_resizeLayer = layer;
+            m_offsetFromResizeCorner = layer->offsetFromResizeCorner(p);
+            return true;
+        }
+    } else if (gestureEvent.type() == PlatformEvent::GestureScrollUpdate ||
+               gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation) {
+        if (m_resizeLayer && m_resizeLayer->inResizeMode()) {
+            m_resizeLayer->resize(gestureEvent, m_offsetFromResizeCorner);
+            return true;
+        }
+    } else if (gestureEvent.type() == PlatformEvent::GestureScrollEnd) {
+        if (m_resizeLayer && m_resizeLayer->inResizeMode()) {
+            m_resizeLayer->setInResizeMode(false);
+            m_resizeLayer = 0;
+            return false;
+        }
+    }
+
+    return false;
+}
+
 bool EventHandler::handleGestureTwoFingerTap(const PlatformGestureEvent& gestureEvent)
 {
     return sendContextMenuEventForGesture(gestureEvent);
@@ -2499,14 +2530,14 @@ bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureE
     HitTestResult result(viewPoint);
     document->renderView()->hitTest(request, result);
 
-    m_lastHitTestResultOverWidget = result.isOverWidget(); 
+    m_lastHitTestResultOverWidget = result.isOverWidget();
     m_scrollGestureHandlingNode = result.innerNode();
     m_previousGestureScrolledNode = 0;
 
     Node* node = m_scrollGestureHandlingNode.get();
     if (node)
         passGestureEventToWidgetIfPossible(gestureEvent, node->renderer());
-    
+
     return node && node->renderer();
 }
 

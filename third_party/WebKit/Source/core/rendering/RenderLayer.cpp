@@ -71,6 +71,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/HistogramSupport.h"
+#include "core/platform/PlatformGestureEvent.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/Scrollbar.h"
@@ -130,6 +131,7 @@ using namespace HTMLNames;
 
 const int MinimumWidthWhileResizing = 100;
 const int MinimumHeightWhileResizing = 40;
+const int ResizerControlExpandRatioForTouch = 2;
 
 bool ClipRect::intersects(const HitTestLocation& hitTestLocation) const
 {
@@ -205,6 +207,8 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
             scrollAnimator()->setCurrentPosition(FloatPoint(m_scrollOffset.width(), m_scrollOffset.height()));
         element->setSavedLayerScrollOffset(IntSize());
     }
+
+    updateResizerAreaSet();
 }
 
 RenderLayer::~RenderLayer()
@@ -215,8 +219,10 @@ RenderLayer::~RenderLayer()
     }
 
     if (Frame* frame = renderer()->frame()) {
-        if (FrameView* frameView = frame->view())
+        if (FrameView* frameView = frame->view()) {
             frameView->removeScrollableArea(this);
+            frameView->removeResizerArea(this);
+        }
     }
 
     if (!m_renderer->documentBeingDestroyed()) {
@@ -2483,7 +2489,7 @@ bool RenderLayer::canResize() const
     return (renderer()->hasOverflowClip() || renderer()->isRenderIFrame()) && renderer()->style()->resize() != RESIZE_NONE;
 }
 
-void RenderLayer::resize(const PlatformMouseEvent& evt, const LayoutSize& oldOffset)
+void RenderLayer::resize(const PlatformEvent& evt, const LayoutSize& oldOffset)
 {
     // FIXME: This should be possible on generated content but is not right now.
     if (!inResizeMode() || !canResize() || !renderer()->node())
@@ -2494,12 +2500,30 @@ void RenderLayer::resize(const PlatformMouseEvent& evt, const LayoutSize& oldOff
     RenderBox* renderer = toRenderBox(element->renderer());
 
     Document* document = element->document();
-    if (!document->frame()->eventHandler()->mousePressed())
-        return;
+
+    IntPoint pos;
+    const PlatformGestureEvent* gevt = 0;
+
+    switch (evt.type()) {
+    case PlatformEvent::MouseMoved:
+        if (!document->frame()->eventHandler()->mousePressed())
+            return;
+        pos = static_cast<const PlatformMouseEvent*>(&evt)->position();
+        break;
+    case PlatformEvent::GestureScrollUpdate:
+    case PlatformEvent::GestureScrollUpdateWithoutPropagation:
+        pos = static_cast<const PlatformGestureEvent*>(&evt)->position();
+        gevt = static_cast<const PlatformGestureEvent*>(&evt);
+        pos = gevt->position();
+        pos.move(gevt->deltaX(), gevt->deltaY());
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
 
     float zoomFactor = renderer->style()->effectiveZoom();
 
-    LayoutSize newOffset = offsetFromResizeCorner(document->view()->windowToContents(evt.position()));
+    LayoutSize newOffset = offsetFromResizeCorner(document->view()->windowToContents(pos));
     newOffset.setWidth(newOffset.width() / zoomFactor);
     newOffset.setHeight(newOffset.height() / zoomFactor);
     
@@ -2653,12 +2677,24 @@ IntRect RenderLayer::scrollCornerRect() const
     return IntRect();
 }
 
-static IntRect resizerCornerRect(const RenderLayer* layer, const IntRect& bounds)
+IntRect RenderLayer::resizerCornerRect(const IntRect& bounds, ResizerHitTestType resizerHitTestType) const
 {
-    ASSERT(layer->renderer()->isBox());
-    if (layer->renderer()->style()->resize() == RESIZE_NONE)
+    ASSERT(renderer()->isBox());
+    if (renderer()->style()->resize() == RESIZE_NONE)
         return IntRect();
-    return cornerRect(layer, bounds);
+    IntRect corner = cornerRect(this, bounds);
+
+    if (resizerHitTestType == ResizerForTouch) {
+        // We make the resizer virtually larger for touch hit testing. With the
+        // expanding ratio k = ResizerControlExpandRatioForTouch, we first move
+        // the resizer rect (of width w & height h), by (-w * (k-1), -h * (k-1)),
+        // then expand the rect by new_w/h = w/h * k.
+        int expand_ratio = ResizerControlExpandRatioForTouch - 1;
+        corner.move(-corner.width() * expand_ratio, -corner.height() * expand_ratio);
+        corner.expand(corner.width() * expand_ratio, corner.height() * expand_ratio);
+    }
+
+    return corner;
 }
 
 IntRect RenderLayer::scrollCornerAndResizerRect() const
@@ -2668,7 +2704,7 @@ IntRect RenderLayer::scrollCornerAndResizerRect() const
         return IntRect();
     IntRect scrollCornerAndResizer = scrollCornerRect();
     if (scrollCornerAndResizer.isEmpty())
-        scrollCornerAndResizer = resizerCornerRect(this, box->pixelSnappedBorderBoxRect());
+        scrollCornerAndResizer = resizerCornerRect(box->pixelSnappedBorderBoxRect(), ResizerForPointer);
     return scrollCornerAndResizer;
 }
 
@@ -2801,7 +2837,7 @@ LayoutUnit RenderLayer::horizontalScrollbarStart(int minX) const
     const RenderBox* box = renderBox();
     int x = minX + box->borderLeft();
     if (renderer()->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-        x += m_vBar ? m_vBar->width() : resizerCornerRect(this, box->pixelSnappedBorderBoxRect()).width();
+        x += m_vBar ? m_vBar->width() : resizerCornerRect(box->pixelSnappedBorderBoxRect(), ResizerForPointer).width();
     return x;
 }
 
@@ -3026,7 +3062,7 @@ void RenderLayer::positionOverflowControls(const IntSize& offsetFromRoot)
     if (m_scrollCorner)
         m_scrollCorner->setFrameRect(scrollCorner);
     if (m_resizer)
-        m_resizer->setFrameRect(resizerCornerRect(this, borderBox));
+        m_resizer->setFrameRect(resizerCornerRect(borderBox, ResizerForPointer));
 
     if (isComposited())
         backing()->positionOverflowControlsLayers(offsetFromRoot);
@@ -3230,7 +3266,7 @@ bool RenderLayer::overflowControlsIntersectRect(const IntRect& localRect) const
     if (scrollCornerRect().intersects(localRect))
         return true;
     
-    if (resizerCornerRect(this, borderBox).intersects(localRect))
+    if (resizerCornerRect(borderBox, ResizerForPointer).intersects(localRect))
         return true;
 
     return false;
@@ -3362,7 +3398,7 @@ void RenderLayer::paintResizer(GraphicsContext* context, const IntPoint& paintOf
     RenderBox* box = renderBox();
     ASSERT(box);
 
-    IntRect absRect = resizerCornerRect(this, box->pixelSnappedBorderBoxRect());
+    IntRect absRect = resizerCornerRect(box->pixelSnappedBorderBoxRect(), ResizerForPointer);
     absRect.moveBy(paintOffset);
     if (!absRect.intersects(damageRect))
         return;
@@ -3393,18 +3429,18 @@ void RenderLayer::paintResizer(GraphicsContext* context, const IntPoint& paintOf
     }
 }
 
-bool RenderLayer::isPointInResizeControl(const IntPoint& absolutePoint) const
+bool RenderLayer::isPointInResizeControl(const IntPoint& absolutePoint,
+                                         ResizerHitTestType resizerHitTestType) const
 {
     if (!canResize())
         return false;
-    
+
     RenderBox* box = renderBox();
     ASSERT(box);
 
     IntPoint localPoint = roundedIntPoint(absoluteToContents(absolutePoint));
-
-    IntRect localBounds(0, 0, box->pixelSnappedWidth(), box->pixelSnappedHeight());
-    return resizerCornerRect(this, localBounds).contains(localPoint);
+    IntRect localBounds (0, 0, box->pixelSnappedWidth(), box->pixelSnappedHeight());
+    return resizerCornerRect(localBounds, resizerHitTestType).contains(localPoint);
 }
 
 bool RenderLayer::hitTestOverflowControls(HitTestResult& result, const IntPoint& localPoint)
@@ -3417,7 +3453,7 @@ bool RenderLayer::hitTestOverflowControls(HitTestResult& result, const IntPoint&
     
     IntRect resizeControlRect;
     if (renderer()->style()->resize() != RESIZE_NONE) {
-        resizeControlRect = resizerCornerRect(this, box->pixelSnappedBorderBoxRect());
+        resizeControlRect = resizerCornerRect(box->pixelSnappedBorderBoxRect(), ResizerForPointer);
         if (resizeControlRect.contains(localPoint))
             return true;
     }
@@ -4629,7 +4665,7 @@ bool RenderLayer::hitTestResizerInFragments(const LayerFragments& layerFragments
 
     for (int i = layerFragments.size() - 1; i >= 0; --i) {
         const LayerFragment& fragment = layerFragments.at(i);
-        if (fragment.backgroundRect.intersects(hitTestLocation) && resizerCornerRect(this, pixelSnappedIntRect(fragment.layerBounds)).contains(hitTestLocation.roundedPoint()))
+        if (fragment.backgroundRect.intersects(hitTestLocation) && resizerCornerRect(pixelSnappedIntRect(fragment.layerBounds), ResizerForPointer).contains(hitTestLocation.roundedPoint()))
             return true;
     }
     
@@ -6123,6 +6159,7 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
         m_marquee.clear();
     }
 
+    updateResizerAreaSet();
     updateScrollbarsAfterStyleChange(oldStyle);
     updateStackingContextsAfterStyleChange(oldStyle);
     updateVisibilityAfterStyleChange(oldStyle);
@@ -6169,6 +6206,19 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
         compositor()->setCompositingLayersNeedRebuild();
     else if (isComposited())
         backing()->updateGraphicsLayerGeometry();
+}
+
+void RenderLayer::updateResizerAreaSet() {
+    Frame* frame = renderer()->frame();
+    if (!frame)
+        return;
+    FrameView* frameView = frame->view();
+    if (!frameView)
+        return;
+    if (canResize())
+        frameView->addResizerArea(this);
+    else
+        frameView->removeResizerArea(this);
 }
 
 void RenderLayer::updateScrollableAreaSet(bool hasOverflow)

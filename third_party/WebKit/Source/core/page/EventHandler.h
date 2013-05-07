@@ -294,6 +294,9 @@ private:
     bool isKeyEventAllowedInFullScreen(const PlatformKeyboardEvent&) const;
 
     bool handleGestureTapDown();
+
+    bool handleScrollGestureOnResizer(Node*, const PlatformGestureEvent&);
+
     bool passGestureEventToWidget(const PlatformGestureEvent&, Widget*);
     bool passGestureEventToWidgetIfPossible(const PlatformGestureEvent&, RenderObject*);
     bool sendScrollEventToView(const PlatformGestureEvent&, const FloatSize&);

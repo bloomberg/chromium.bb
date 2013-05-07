@@ -243,7 +243,7 @@ PassRefPtr<ClientRectList> Page::nonFastScrollableRects(const Frame* frame)
 
     Vector<IntRect> rects;
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-        rects = scrollingCoordinator->computeNonFastScrollableRegion(frame, IntPoint()).rects();
+        rects = scrollingCoordinator->computeShouldHandleScrollGestureOnMainThreadRegion(frame, IntPoint()).rects();
 
     Vector<FloatQuad> quads(rects.size());
     for (size_t i = 0; i < rects.size(); ++i)

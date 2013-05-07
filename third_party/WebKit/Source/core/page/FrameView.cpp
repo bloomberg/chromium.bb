@@ -3406,6 +3406,23 @@ String FrameView::trackedRepaintRectsAsText() const
     return ts.release();
 }
 
+void FrameView::addResizerArea(RenderLayer* resizerLayer)
+{
+    if (!m_resizerAreas)
+        m_resizerAreas = adoptPtr(new ResizerAreaSet);
+    m_resizerAreas->add(resizerLayer);
+}
+
+void FrameView::removeResizerArea(RenderLayer* resizerLayer)
+{
+    if (!m_resizerAreas)
+        return;
+
+    ResizerAreaSet::iterator it = m_resizerAreas->find(resizerLayer);
+    if (it != m_resizerAreas->end())
+        m_resizerAreas->remove(it);
+}
+
 bool FrameView::addScrollableArea(ScrollableArea* scrollableArea)
 {
     if (!m_scrollableAreas)
