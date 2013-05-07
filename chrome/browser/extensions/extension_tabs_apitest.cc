@@ -131,7 +131,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabCrashBrowser) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crash.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabOpener) {
+// Flaky on windows: http://crbug.com/238667
+#if defined(OS_WIN)
+#define MAYBE_TabOpener DISABLED_TabOpener
+#else
+#define MAYBE_TabOpener TabOpener
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabOpener) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "opener.html")) << message_;
 }
 
