@@ -232,7 +232,7 @@ class IBusEngineServiceImpl : public IBusEngineService {
   }
 
   // IBusEngineService override.
-  virtual void DeleteSurroundingText(int32 offset, uint32 length) {
+  virtual void DeleteSurroundingText(int32 offset, uint32 length) OVERRIDE {
     dbus::Signal signal(ibus::engine::kServiceInterface,
                         ibus::engine::kDeleteSurroundingTextSignal);
     dbus::MessageWriter writer(&signal);
@@ -574,7 +574,7 @@ class IBusEngineServiceDaemonlessImpl : public IBusEngineService {
   }
 
   // IBusEngineService override.
-  virtual void DeleteSurroundingText(int32 offset, uint32 length) {
+  virtual void DeleteSurroundingText(int32 offset, uint32 length) OVERRIDE {
     IBusInputContextHandlerInterface* input_context =
         IBusBridge::Get()->GetInputContextHandler();
     if (input_context)
