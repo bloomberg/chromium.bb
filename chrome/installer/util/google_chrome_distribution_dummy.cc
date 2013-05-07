@@ -86,11 +86,6 @@ string16 GoogleChromeDistribution::GetStateMediumKey() {
   return string16();
 }
 
-string16 GoogleChromeDistribution::GetStatsServerURL() {
-  NOTREACHED();
-  return string16();
-}
-
 std::string GoogleChromeDistribution::GetNetworkStatsServer() const {
   NOTREACHED();
   return std::string();

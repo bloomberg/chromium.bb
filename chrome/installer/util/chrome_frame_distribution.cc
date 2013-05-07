@@ -84,10 +84,6 @@ string16 ChromeFrameDistribution::GetStateMediumKey() {
   return key;
 }
 
-string16 ChromeFrameDistribution::GetStatsServerURL() {
-  return L"https://clients4.google.com/firefox/metrics/collect";
-}
-
 std::string ChromeFrameDistribution::GetNetworkStatsServer() const {
   return chrome_common_net::kEchoTestServerLocation;
 }

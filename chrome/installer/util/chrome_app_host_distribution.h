@@ -37,8 +37,6 @@ class ChromeAppHostDistribution : public BrowserDistribution {
 
   virtual string16 GetStateMediumKey() OVERRIDE;
 
-  virtual string16 GetStatsServerURL() OVERRIDE;
-
   virtual std::string GetNetworkStatsServer() const OVERRIDE;
 
   virtual std::string GetHttpPipeliningTestServer() const OVERRIDE;

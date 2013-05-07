@@ -196,10 +196,6 @@ string16 BrowserDistribution::GetStateMediumKey() {
   return L"Software\\Chromium";
 }
 
-string16 BrowserDistribution::GetStatsServerURL() {
-  return L"";
-}
-
 std::string BrowserDistribution::GetNetworkStatsServer() const {
   return "";
 }

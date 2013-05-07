@@ -78,8 +78,6 @@ class BrowserDistribution {
 
   virtual string16 GetStateMediumKey();
 
-  virtual string16 GetStatsServerURL();
-
   virtual std::string GetNetworkStatsServer() const;
 
   virtual std::string GetHttpPipeliningTestServer() const;

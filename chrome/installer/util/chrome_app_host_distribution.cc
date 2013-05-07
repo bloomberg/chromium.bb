@@ -96,10 +96,6 @@ string16 ChromeAppHostDistribution::GetStateMediumKey() {
   return key;
 }
 
-string16 ChromeAppHostDistribution::GetStatsServerURL() {
-  return L"https://clients4.google.com/firefox/metrics/collect";
-}
-
 std::string ChromeAppHostDistribution::GetNetworkStatsServer() const {
   return chrome_common_net::kEchoTestServerLocation;
 }
