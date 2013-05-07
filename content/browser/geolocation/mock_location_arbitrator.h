@@ -20,7 +20,7 @@ class MockGeolocationArbitrator : public GeolocationArbitrator {
   bool providers_started() const { return providers_started_; }
 
   // GeolocationArbitrator:
-  virtual void StartProviders(const GeolocationObserverOptions& options)
+  virtual void StartProviders(bool use_high_accuracy)
       OVERRIDE;
   virtual void StopProviders() OVERRIDE;
   virtual void OnPermissionGranted() OVERRIDE;

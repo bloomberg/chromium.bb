@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_IMPL_H_
 #define CONTENT_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_IMPL_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/time.h"
-#include "content/browser/geolocation/geolocation_observer.h"
 #include "content/browser/geolocation/location_arbitrator.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/common/content_export.h"
@@ -36,14 +36,15 @@ class CONTENT_EXPORT GeolocationArbitratorImpl
   // (regardles of relative accuracy). Public for tests.
   static const int64 kFixStaleTimeoutMilliseconds;
 
-  explicit GeolocationArbitratorImpl(GeolocationObserver* observer);
+  typedef base::Callback<void(const Geoposition&)> LocationUpdateCallback;
+
+  explicit GeolocationArbitratorImpl(const LocationUpdateCallback& callback);
   virtual ~GeolocationArbitratorImpl();
 
   static GURL DefaultNetworkProviderURL();
 
   // GeolocationArbitrator
-  virtual void StartProviders(const GeolocationObserverOptions& options)
-      OVERRIDE;
+  virtual void StartProviders(bool use_high_accuracy) OVERRIDE;
   virtual void StopProviders() OVERRIDE;
   virtual void OnPermissionGranted() OVERRIDE;
   virtual bool HasPermissionBeenGranted() const OVERRIDE;
@@ -82,9 +83,9 @@ class CONTENT_EXPORT GeolocationArbitratorImpl
                            bool from_same_provider) const;
 
   scoped_refptr<AccessTokenStore> access_token_store_;
-  GeolocationObserver* observer_;
+  LocationUpdateCallback callback_;
   ScopedVector<LocationProviderBase> providers_;
-  GeolocationObserverOptions current_provider_options_;
+  bool use_high_accuracy_;
   // The provider which supplied the current |position_|
   const LocationProviderBase* position_provider_;
   bool is_permission_granted_;

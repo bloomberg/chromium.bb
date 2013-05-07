@@ -9,8 +9,6 @@
 
 namespace content {
 
-struct GeolocationObserverOptions;
-
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
 // moment.
@@ -19,7 +17,7 @@ public:
   virtual ~GeolocationArbitrator() {};
 
   // See more details in geolocation_provider.
-  virtual void StartProviders(const GeolocationObserverOptions& options) = 0;
+  virtual void StartProviders(bool use_high_accuracy) = 0;
   virtual void StopProviders() = 0;
 
   // Called everytime permission is granted to a page for using geolocation.

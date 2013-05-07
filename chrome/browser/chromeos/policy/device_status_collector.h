@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -16,7 +18,7 @@
 #include "chrome/browser/idle.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/common/cancelable_task_tracker.h"
-#include "content/public/browser/geolocation.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/common/geoposition.h"
 
@@ -47,12 +49,14 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider,
  public:
   // TODO(bartfab): Remove this once crbug.com/125931 is addressed and a proper
   // way to mock geolocation exists.
-  typedef void(*LocationUpdateRequester)(
-      const content::GeolocationUpdateCallback& callback);
+  typedef base::Callback<void(
+      const content::GeolocationProvider::LocationUpdateCallback& callback)>
+          LocationUpdateRequester;
 
-  DeviceStatusCollector(PrefService* local_state,
-                        chromeos::system::StatisticsProvider* provider,
-                        LocationUpdateRequester location_update_requester);
+  DeviceStatusCollector(
+      PrefService* local_state,
+      chromeos::system::StatisticsProvider* provider,
+      LocationUpdateRequester* location_update_requester);
   virtual ~DeviceStatusCollector();
 
   void GetStatus(enterprise_management::DeviceStatusReportRequest* request);
@@ -89,6 +93,29 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider,
   unsigned int max_stored_future_activity_days_;
 
  private:
+  // A helper class to manage receiving geolocation notifications on the IO
+  // thread.
+  class Context : public base::RefCountedThreadSafe<Context> {
+   public:
+    Context();
+    virtual ~Context();
+
+    void GetLocationUpdate(
+        const content::GeolocationProvider::LocationUpdateCallback& callback);
+
+   private:
+    void GetLocationUpdateInternal();
+    void OnLocationUpdate(const content::Geoposition& geoposition);
+    void CallCollector(const content::Geoposition& geoposition);
+
+    // The callback which this class registers with
+    // content::GeolocationProvider.
+    content::GeolocationProvider::LocationUpdateCallback our_callback_;
+
+    // The callback passed in to GetLocationUpdate.
+    content::GeolocationProvider::LocationUpdateCallback owner_callback_;
+  };
+
   // Prevents the local store of activity periods from growing too large by
   // removing entries that are outside the reporting window.
   void PruneStoredActivityPeriods(base::Time base_time);
@@ -174,6 +201,8 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider,
   bool report_activity_times_;
   bool report_boot_mode_;
   bool report_location_;
+
+  scoped_refptr<Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceStatusCollector);
 };

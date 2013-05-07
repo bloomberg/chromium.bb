@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
@@ -75,10 +76,51 @@ int64 TimestampToDayKey(Time timestamp) {
 
 namespace policy {
 
+DeviceStatusCollector::Context::Context() {
+}
+
+DeviceStatusCollector::Context::~Context() {
+}
+
+void DeviceStatusCollector::Context::GetLocationUpdate(
+    const content::GeolocationProvider::LocationUpdateCallback& callback) {
+  owner_callback_ = callback;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&DeviceStatusCollector::Context::GetLocationUpdateInternal,
+                 this));
+}
+
+void DeviceStatusCollector::Context::GetLocationUpdateInternal() {
+  our_callback_ = base::Bind(
+      &DeviceStatusCollector::Context::OnLocationUpdate, this);
+  content::GeolocationProvider::GetInstance()->AddLocationUpdateCallback(
+      our_callback_, true);
+}
+
+void DeviceStatusCollector::Context::OnLocationUpdate(
+    const content::Geoposition& geoposition) {
+  content::GeolocationProvider::GetInstance()->RemoveLocationUpdateCallback(
+      our_callback_);
+  our_callback_.Reset();
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&DeviceStatusCollector::Context::CallCollector,
+                 this, geoposition));
+}
+
+void DeviceStatusCollector::Context::CallCollector(
+    const content::Geoposition& geoposition) {
+  owner_callback_.Run(geoposition);
+  owner_callback_.Reset();
+}
+
 DeviceStatusCollector::DeviceStatusCollector(
     PrefService* local_state,
     chromeos::system::StatisticsProvider* provider,
-    LocationUpdateRequester location_update_requester)
+    LocationUpdateRequester* location_update_requester)
     : max_stored_past_activity_days_(kMaxStoredPastActivityDays),
       max_stored_future_activity_days_(kMaxStoredFutureActivityDays),
       local_state_(local_state),
@@ -88,13 +130,17 @@ DeviceStatusCollector::DeviceStatusCollector(
       geolocation_update_in_progress_(false),
       statistics_provider_(provider),
       weak_factory_(this),
-      location_update_requester_(location_update_requester),
       report_version_info_(false),
       report_activity_times_(false),
       report_boot_mode_(false),
-      report_location_(false) {
-  if (!location_update_requester_)
-    location_update_requester_ = &content::RequestLocationUpdate;
+      report_location_(false),
+      context_(new Context()) {
+  if (location_update_requester) {
+    location_update_requester_ = *location_update_requester;
+  } else {
+    location_update_requester_ =
+        base::Bind(&Context::GetLocationUpdate, context_.get());
+  }
   idle_poll_timer_.Start(FROM_HERE,
                          TimeDelta::FromSeconds(kIdlePollIntervalSeconds),
                          this, &DeviceStatusCollector::CheckIdleState);
@@ -422,7 +468,7 @@ void DeviceStatusCollector::ScheduleGeolocationUpdateRequest() {
         TimeDelta::FromSeconds(kGeolocationPollIntervalSeconds);
     if (elapsed > interval) {
       geolocation_update_in_progress_ = true;
-      location_update_requester_(base::Bind(
+      location_update_requester_.Run(base::Bind(
           &DeviceStatusCollector::ReceiveGeolocationUpdate,
           weak_factory_.GetWeakPtr()));
     } else {
@@ -434,10 +480,9 @@ void DeviceStatusCollector::ScheduleGeolocationUpdateRequest() {
     }
   } else {
     geolocation_update_in_progress_ = true;
-    location_update_requester_(base::Bind(
+    location_update_requester_.Run(base::Bind(
         &DeviceStatusCollector::ReceiveGeolocationUpdate,
         weak_factory_.GetWeakPtr()));
-
   }
 }
 

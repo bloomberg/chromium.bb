@@ -55,7 +55,7 @@
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/geolocation.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -664,7 +664,10 @@ void OverrideGeolocation(double latitude, double longitude) {
   position.timestamp = base::Time::Now();
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
-  content::OverrideLocationForTesting(position, runner->QuitClosure());
+
+  content::GeolocationProvider::OverrideLocationForTesting(
+      position, runner->QuitClosure());
+
   runner->Run();
 }
 

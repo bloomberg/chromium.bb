@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "content/browser/geolocation/core_location_provider_mac.h"
-#include "content/browser/geolocation/geolocation_provider.h"
+#include "content/browser/geolocation/geolocation_provider_impl.h"
 
 using content::CoreLocationDataProviderMac;
 using content::Geoposition;
@@ -193,7 +193,7 @@ namespace content {
 
 CoreLocationDataProviderMac::CoreLocationDataProviderMac() {
   if (base::MessageLoop::current() !=
-      GeolocationProvider::GetInstance()->message_loop()) {
+      GeolocationProviderImpl::GetInstance()->message_loop()) {
     NOTREACHED() << "CoreLocation data provider must be created on "
         "the Geolocation thread.";
   }
@@ -228,7 +228,7 @@ void CoreLocationDataProviderMac::StopUpdating() {
 }
 
 void CoreLocationDataProviderMac::UpdatePosition(Geoposition *position) {
-  GeolocationProvider::GetInstance()->message_loop()->PostTask(
+  GeolocationProviderImpl::GetInstance()->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&CoreLocationDataProviderMac::PositionUpdated, this,
                  *position));
@@ -248,7 +248,7 @@ void CoreLocationDataProviderMac::StopUpdatingTask() {
 
 void CoreLocationDataProviderMac::PositionUpdated(Geoposition position) {
   DCHECK(base::MessageLoop::current() ==
-         GeolocationProvider::GetInstance()->message_loop());
+         GeolocationProviderImpl::GetInstance()->message_loop());
   if (provider_)
     provider_->SetPosition(&position);
 }

@@ -4,11 +4,13 @@
 
 #include "chrome/browser/extensions/api/location/location_manager.h"
 
+#include "base/bind.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/location.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
-#include "content/browser/geolocation/geolocation_provider.h"
+#include "content/public/browser/geolocation_provider.h"
+#include "content/public/common/geoposition.h"
 
 // TODO(vadimt): Add tests.
 namespace extensions {
@@ -18,8 +20,7 @@ namespace location = api::location;
 // Request created by chrome.location.watchLocation() call.
 // Lives in the IO thread, except for the constructor.
 class LocationRequest
-    : public content::GeolocationObserver,
-      public base::RefCountedThreadSafe<LocationRequest,
+    : public base::RefCountedThreadSafe<LocationRequest,
                                         BrowserThread::DeleteOnIOThread> {
  public:
   LocationRequest(
@@ -41,8 +42,7 @@ class LocationRequest
 
   void AddObserverOnIOThread();
 
-  // GeolocationObserver
-  virtual void OnLocationUpdate(const content::Geoposition& position) OVERRIDE;
+  void OnLocationUpdate(const content::Geoposition& position);
 
   // Request name.
   const std::string request_name_;
@@ -52,6 +52,8 @@ class LocationRequest
 
   // Owning location manager.
   const base::WeakPtr<LocationManager> location_manager_;
+
+  content::GeolocationProvider::LocationUpdateCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationRequest);
 };
@@ -66,6 +68,9 @@ LocationRequest::LocationRequest(
   // TODO(vadimt): use request_info.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  callback_ = base::Bind(&LocationRequest::OnLocationUpdate,
+                         base::Unretained(this));
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -75,22 +80,23 @@ LocationRequest::LocationRequest(
 
 void LocationRequest::GrantPermission() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  content::GeolocationProvider::GetInstance()->OnPermissionGranted();
+  content::GeolocationProvider::GetInstance()->UserDidOptIntoLocationServices();
 }
 
 LocationRequest::~LocationRequest() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  content::GeolocationProvider::GetInstance()->RemoveObserver(this);
+  content::GeolocationProvider::GetInstance()->RemoveLocationUpdateCallback(
+      callback_);
 }
 
 void LocationRequest::AddObserverOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  content::GeolocationObserverOptions options(true);
   // TODO(vadimt): This can get a location cached by GeolocationProvider,
   // contrary to the API definition which says that creating a location watch
   // will get new location.
-  content::GeolocationProvider::GetInstance()->AddObserver(this, options);
+  content::GeolocationProvider::GetInstance()->AddLocationUpdateCallback(
+      callback_, true);
 }
 
 void LocationRequest::OnLocationUpdate(const content::Geoposition& position) {

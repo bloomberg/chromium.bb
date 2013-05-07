@@ -124,7 +124,7 @@
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/favicon_status.h"
-#include "content/public/browser/geolocation.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
@@ -4134,7 +4134,8 @@ void TestingAutomationProvider::OverrideGeoposition(
   position.altitude = altitude;
   position.accuracy = 0.;
   position.timestamp = base::Time::Now();
-  content::OverrideLocationForTesting(
+
+  content::GeolocationProvider::OverrideLocationForTesting(
       position,
       base::Bind(&SendSuccessIfAlive, AsWeakPtr(), reply_message));
 }

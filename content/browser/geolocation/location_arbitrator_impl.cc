@@ -26,8 +26,8 @@ const int64 GeolocationArbitratorImpl::kFixStaleTimeoutMilliseconds =
     11 * base::Time::kMillisecondsPerSecond;
 
 GeolocationArbitratorImpl::GeolocationArbitratorImpl(
-    GeolocationObserver* observer)
-    : observer_(observer),
+    const LocationUpdateCallback& callback)
+    : callback_(callback),
       position_provider_(NULL),
       is_permission_granted_(false) {
 }
@@ -47,10 +47,9 @@ void GeolocationArbitratorImpl::OnPermissionGranted() {
   }
 }
 
-void GeolocationArbitratorImpl::StartProviders(
-    const GeolocationObserverOptions& options) {
+void GeolocationArbitratorImpl::StartProviders(bool use_high_accuracy) {
   // Stash options as OnAccessTokenStoresLoaded has not yet been called.
-  current_provider_options_ = options;
+  use_high_accuracy_ = use_high_accuracy;
   if (providers_.empty()) {
     DCHECK(DefaultNetworkProviderURL().is_valid());
     GetAccessTokenStore()->LoadAccessTokens(
@@ -64,7 +63,7 @@ void GeolocationArbitratorImpl::StartProviders(
 void GeolocationArbitratorImpl::DoStartProviders() {
   for (ScopedVector<LocationProviderBase>::iterator i = providers_.begin();
        i != providers_.end(); ++i) {
-    (*i)->StartProvider(current_provider_options_.use_high_accuracy);
+    (*i)->StartProvider(use_high_accuracy_);
   }
 }
 
@@ -117,7 +116,7 @@ void GeolocationArbitratorImpl::LocationUpdateAvailable(
     return;
   position_provider_ = provider;
   position_ = new_position;
-  observer_->OnLocationUpdate(position_);
+  callback_.Run(position_);
 }
 
 AccessTokenStore* GeolocationArbitratorImpl::NewAccessTokenStore() {

@@ -14,8 +14,7 @@ MockGeolocationArbitrator::MockGeolocationArbitrator()
       providers_started_(false) {
 }
 
-void MockGeolocationArbitrator::StartProviders(
-    const GeolocationObserverOptions& options) {
+void MockGeolocationArbitrator::StartProviders(bool use_high_accuracy) {
   providers_started_ = true;;
 }
 
