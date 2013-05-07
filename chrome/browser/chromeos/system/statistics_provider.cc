@@ -293,7 +293,7 @@ class StatisticsProviderStubImpl : public StatisticsProviderImpl {
     return false;
   }
 
-  virtual void LoadOemManifest() {
+  virtual void LoadOemManifest() OVERRIDE {
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (!command_line->HasSwitch(switches::kAppOemManifestFile))
       return;

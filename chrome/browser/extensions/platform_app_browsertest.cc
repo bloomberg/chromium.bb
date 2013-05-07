@@ -936,11 +936,11 @@ class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
   }
 
   // ShellWindowRegistry::Observer implementation.
-  virtual void OnShellWindowAdded(ShellWindow* shell_window) {
+  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE {
     opener_app_ids_.insert(shell_window->extension()->id());
   }
-  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) {}
-  virtual void OnShellWindowRemoved(ShellWindow* shell_window) {}
+  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE {}
+  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE {}
 
  protected:
   // A set of ids of apps we've seen open a shell window.

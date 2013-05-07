@@ -1348,7 +1348,7 @@ class DesktopAuraFullscreenChildWindowDestructionTest
         parent_destroyed_(false),
         child_destroyed_(false) {}
 
-  ~DesktopAuraFullscreenChildWindowDestructionTest() {
+  virtual ~DesktopAuraFullscreenChildWindowDestructionTest() {
     EXPECT_TRUE(parent_destroyed_);
     EXPECT_TRUE(child_destroyed_);
     full_screen_widget_ = NULL;

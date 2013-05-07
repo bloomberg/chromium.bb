@@ -38,7 +38,7 @@ class DisabledRichWebkitNotificationTest : public ExtensionApiTest {
 
 class NotificationIdleTest : public RichWebkitNotificationTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     RichWebkitNotificationTest::SetUpCommandLine(command_line);
 
     command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");

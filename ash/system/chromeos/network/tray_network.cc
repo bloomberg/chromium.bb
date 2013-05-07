@@ -131,7 +131,9 @@ class NetworkTrayView : public TrayItemView,
       network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
   }
 
-  std::string GetClassName() const { return "NetworkTrayView"; }
+  virtual std::string GetClassName() const OVERRIDE {
+    return "NetworkTrayView";
+  }
 
   void Update(const NetworkIconInfo& info) {
     if (UseNewNetworkHandlers())

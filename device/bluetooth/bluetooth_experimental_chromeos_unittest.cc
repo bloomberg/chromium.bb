@@ -136,51 +136,50 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
         last_entered_(999U) {}
   virtual ~TestPairingDelegate() {}
 
-  void RequestPinCode(BluetoothDevice* device) OVERRIDE {
+  virtual void RequestPinCode(BluetoothDevice* device) OVERRIDE {
     ++call_count_;
     ++request_pincode_count_;
     QuitMessageLoop();
   }
 
-  void RequestPasskey(BluetoothDevice* device) OVERRIDE {
+  virtual void RequestPasskey(BluetoothDevice* device) OVERRIDE {
     ++call_count_;
     ++request_passkey_count_;
     QuitMessageLoop();
   }
 
-  void DisplayPinCode(BluetoothDevice* device,
-                      const std::string& pincode) OVERRIDE {
+  virtual void DisplayPinCode(BluetoothDevice* device,
+                              const std::string& pincode) OVERRIDE {
     ++call_count_;
     ++display_pincode_count_;
     last_pincode_ = pincode;
     QuitMessageLoop();
   }
 
-  void DisplayPasskey(BluetoothDevice* device,
-                      uint32 passkey) OVERRIDE {
+  virtual void DisplayPasskey(BluetoothDevice* device,
+                              uint32 passkey) OVERRIDE {
     ++call_count_;
     ++display_passkey_count_;
     last_passkey_ = passkey;
     QuitMessageLoop();
   }
 
-  void KeysEntered(BluetoothDevice* device,
-                   uint32 entered) OVERRIDE {
+  virtual void KeysEntered(BluetoothDevice* device, uint32 entered) OVERRIDE {
     ++call_count_;
     ++keys_entered_count_;
     last_entered_ = entered;
     QuitMessageLoop();
   }
 
-  void ConfirmPasskey(BluetoothDevice* device,
-                      uint32 passkey) OVERRIDE {
+  virtual void ConfirmPasskey(BluetoothDevice* device,
+                              uint32 passkey) OVERRIDE {
     ++call_count_;
     ++confirm_passkey_count_;
     last_passkey_ = passkey;
     QuitMessageLoop();
   }
 
-  void DismissDisplayOrConfirm() OVERRIDE {
+  virtual void DismissDisplayOrConfirm() OVERRIDE {
     ++call_count_;
     ++dismiss_count_;
     QuitMessageLoop();

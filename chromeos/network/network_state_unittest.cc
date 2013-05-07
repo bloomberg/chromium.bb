@@ -17,12 +17,12 @@ namespace {
 
 class TestStringValue : public base::Value {
  public:
-  TestStringValue(const std::string& in_value)
+  explicit TestStringValue(const std::string& in_value)
       : base::Value(TYPE_STRING),
         value_(in_value) {
   }
 
-  ~TestStringValue() {
+  virtual ~TestStringValue() {
   }
 
   // Overridden from Value:

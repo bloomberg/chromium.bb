@@ -43,15 +43,15 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
     waiting_for_gesture_ack_callback_ = false;
   }
 
-  void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
-                                  const gfx::Rect& focus) OVERRIDE {
+  virtual void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
+                                          const gfx::Rect& focus) OVERRIDE {
     selection_changed_callback_arrived_ = true;
     TouchEditableImplAura::OnSelectionOrCursorChanged(anchor, focus);
     if (waiting_for_selection_changed_callback_)
       selection_changed_wait_run_loop_->Quit();
   }
 
-  void GestureEventAck(int gesture_event_type) OVERRIDE {
+  virtual void GestureEventAck(int gesture_event_type) OVERRIDE {
     gesture_ack_callback_arrived_ = true;
     TouchEditableImplAura::GestureEventAck(gesture_event_type);
     if (waiting_for_gesture_ack_callback_)

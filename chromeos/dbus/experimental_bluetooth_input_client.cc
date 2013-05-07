@@ -69,9 +69,10 @@ class ExperimentalBluetoothInputClientImpl
   virtual dbus::PropertySet* CreateProperties(
       dbus::ObjectProxy* object_proxy,
       const dbus::ObjectPath& object_path,
-      const std::string& interface_name) {
+      const std::string& interface_name) OVERRIDE {
     Properties* properties = new Properties(
-        object_proxy, interface_name,
+        object_proxy,
+        interface_name,
         base::Bind(&ExperimentalBluetoothInputClientImpl::OnPropertyChanged,
                    weak_ptr_factory_.GetWeakPtr(),
                    object_path));
@@ -90,16 +91,16 @@ class ExperimentalBluetoothInputClientImpl
  private:
   // Called by dbus::ObjectManager when an object with the input interface
   // is created. Informs observers.
-  void ObjectAdded(const dbus::ObjectPath& object_path,
-                   const std::string& interface_name) OVERRIDE {
+  virtual void ObjectAdded(const dbus::ObjectPath& object_path,
+                           const std::string& interface_name) OVERRIDE {
     FOR_EACH_OBSERVER(ExperimentalBluetoothInputClient::Observer, observers_,
                       InputAdded(object_path));
   }
 
   // Called by dbus::ObjectManager when an object with the input interface
   // is removed. Informs observers.
-  void ObjectRemoved(const dbus::ObjectPath& object_path,
-                     const std::string& interface_name) OVERRIDE {
+  virtual void ObjectRemoved(const dbus::ObjectPath& object_path,
+                             const std::string& interface_name) OVERRIDE {
     FOR_EACH_OBSERVER(ExperimentalBluetoothInputClient::Observer, observers_,
                       InputRemoved(object_path));
   }

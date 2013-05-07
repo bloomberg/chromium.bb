@@ -1533,7 +1533,7 @@
           ],
         },
         'conditions': [
-          ['OS=="linux" and chromeos==0 and use_aura==0', {
+          ['OS=="linux"', {
             'clang_chrome_plugins_flags': [
               '<@(clang_chrome_plugins_flags)'
             ],

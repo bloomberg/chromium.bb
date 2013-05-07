@@ -65,7 +65,7 @@ class TestStorageMonitorCros : public StorageMonitorCros {
 
   virtual ~TestStorageMonitorCros() {}
 
-  void Init() {
+  virtual void Init() OVERRIDE {
     SetMediaTransferProtocolManagerForTest(
         new chrome::TestMediaTransferProtocolManagerLinux());
     StorageMonitorCros::Init();

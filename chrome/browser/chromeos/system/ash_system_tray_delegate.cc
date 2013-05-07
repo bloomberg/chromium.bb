@@ -1402,18 +1402,18 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   // drive::JobListObserver overrides.
-  virtual void OnJobAdded(const drive::JobInfo& job_info) {
+  virtual void OnJobAdded(const drive::JobInfo& job_info) OVERRIDE {
     OnJobUpdated(job_info);
   }
 
   virtual void OnJobDone(const drive::JobInfo& job_info,
-                         drive::FileError error) {
+                         drive::FileError error) OVERRIDE {
     ash::DriveOperationStatus status;
     if (ConvertToFinishedDriveOperationStatus(job_info, error, &status))
       GetSystemTrayNotifier()->NotifyDriveJobUpdated(status);
   }
 
-  virtual void OnJobUpdated(const drive::JobInfo& job_info) {
+  virtual void OnJobUpdated(const drive::JobInfo& job_info) OVERRIDE {
     ash::DriveOperationStatus status;
     if (ConvertToDriveOperationStatus(job_info, &status))
       GetSystemTrayNotifier()->NotifyDriveJobUpdated(status);

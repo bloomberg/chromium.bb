@@ -290,12 +290,12 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     return kStubSystemSalt;
   }
 
-  virtual std::string EncryptWithSystemSalt(const std::string& token) {
+  virtual std::string EncryptWithSystemSalt(const std::string& token) OVERRIDE {
     return token;
   }
 
   virtual std::string DecryptWithSystemSalt(
-      const std::string& encrypted_token_hex) {
+      const std::string& encrypted_token_hex) OVERRIDE {
     return encrypted_token_hex;
   }
 
