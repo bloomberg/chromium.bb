@@ -17,6 +17,9 @@ class SearchModel {
  public:
   struct State {
     State() : top_bars_visible(true) {}
+    State(const SearchMode& mode, bool top_bars_visible)
+        : mode(mode),
+          top_bars_visible(top_bars_visible) {}
 
     bool operator==(const State& rhs) const {
       return mode == rhs.mode && top_bars_visible == rhs.top_bars_visible;

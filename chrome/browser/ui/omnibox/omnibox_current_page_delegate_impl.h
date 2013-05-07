@@ -29,7 +29,9 @@ class OmniboxCurrentPageDelegateImpl : public OmniboxCurrentPageDelegate {
       const AutocompleteMatch& match,
       WindowOpenDisposition disposition) OVERRIDE;
   virtual void NotifySearchTabHelper(bool user_input_in_progress,
-                                     bool cancelling) OVERRIDE;
+                                     bool cancelling,
+                                     bool popup_is_open,
+                                     bool user_text_is_empty) OVERRIDE;
   virtual void DoPrerender(const AutocompleteMatch& match) OVERRIDE;
 
  private:

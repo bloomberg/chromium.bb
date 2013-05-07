@@ -36,6 +36,8 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       is_search_enabled_(chrome::IsInstantExtendedAPIEnabled()),
       user_input_in_progress_(false),
+      popup_is_open_(false),
+      user_text_is_empty_(true),
       web_contents_(web_contents) {
   if (!is_search_enabled_)
     return;
@@ -51,11 +53,15 @@ SearchTabHelper::~SearchTabHelper() {
 }
 
 void SearchTabHelper::OmniboxEditModelChanged(bool user_input_in_progress,
-                                              bool cancelling) {
+                                              bool cancelling,
+                                              bool popup_is_open,
+                                              bool user_text_is_empty) {
   if (!is_search_enabled_)
     return;
 
   user_input_in_progress_ = user_input_in_progress;
+  popup_is_open_ = popup_is_open;
+  user_text_is_empty_ = user_text_is_empty;
   if (!user_input_in_progress && !cancelling)
     return;
 
@@ -101,7 +107,20 @@ void SearchTabHelper::UpdateMode() {
   }
   if (user_input_in_progress_)
     type = SearchMode::MODE_SEARCH_SUGGESTIONS;
-  model_.SetMode(SearchMode(type, origin));
+
+  if (type == SearchMode::MODE_NTP && origin == SearchMode::ORIGIN_NTP &&
+      !popup_is_open_ && !user_text_is_empty_) {
+    // We're switching back (|popup_is_open_| is false) to an NTP (type and
+    // mode are |NTP|) with suggestions (|user_text_is_empty_| is false), don't
+    // modify visibility of top bars.  This specific omnibox state is set when
+    // OmniboxEditModelChanged() is called from
+    // OmniboxEditModel::SetInputInProgress() which is called from
+    // OmniboxEditModel::Revert().
+    model_.SetState(SearchModel::State(SearchMode(type, origin),
+                                       model_.state().top_bars_visible));
+  } else {
+    model_.SetMode(SearchMode(type, origin));
+  }
 }
 
 void SearchTabHelper::OnSearchBoxShowBars(int page_id) {

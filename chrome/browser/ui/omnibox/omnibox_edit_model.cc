@@ -470,7 +470,8 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
   }
   controller_->OnInputInProgress(in_progress);
 
-  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
+  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_,
+                                   popup_->IsOpen(), user_text_.empty());
 }
 
 void OmniboxEditModel::Revert() {
@@ -848,7 +849,8 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
                                                 user_text_);
   }
 
-  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
+  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_,
+                                   popup_->IsOpen(), user_text_.empty());
 }
 
 void OmniboxEditModel::SetCaretVisibility(bool visible) {
@@ -869,7 +871,8 @@ void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
 
   // TODO(jered): Rip this out along with StartZeroSuggest.
   autocomplete_controller()->StopZeroSuggest();
-  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
+  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_,
+                                   popup_->IsOpen(), user_text_.empty());
 }
 
 void OmniboxEditModel::OnKillFocus() {
@@ -1211,7 +1214,8 @@ void OmniboxEditModel::OnResultChanged(bool default_match_changed) {
     is_temporary_text_set_by_instant_ = false;
     is_instant_temporary_text_a_search_query_ = false;
     OnPopupBoundsChanged(gfx::Rect());
-    delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
+    delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_,
+                                     popup_->IsOpen(), user_text_.empty());
   }
 }
 
