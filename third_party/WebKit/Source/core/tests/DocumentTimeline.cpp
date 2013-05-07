@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (c) 2013, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,35 +29,30 @@
  */
 
 #include "config.h"
-#include "core/dom/ElementRareData.h"
+#include "core/animation/DocumentTimeline.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/animation/Animation.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/QualifiedName.h"
+#include "core/platform/KURL.h"
 
-namespace WebCore {
+#include <gtest/gtest.h>
 
-struct SameSizeAsElementRareData : NodeRareData {
-    short indices[2];
-    unsigned bitfields;
-    LayoutSize sizeForResizing;
-    IntSize scrollOffset;
-    void* pointers[8];
-};
+using namespace WebCore;
 
-COMPILE_ASSERT(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData), ElementRareDataShouldStaySmall);
+namespace {
 
-void ElementRareData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+TEST(DocumentTimeline, AddAnAnimation)
 {
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    NodeRareData::reportMemoryUsage(memoryObjectInfo);
-
-    info.addMember(m_computedStyle, "computedStyle");
-    info.addMember(m_dataset, "dataset");
-    info.addMember(m_classList, "classList");
-    info.addMember(m_shadow, "shadow");
-    info.addMember(m_attributeMap, "attributeMap");
-    info.addMember(m_generatedBefore, "generatedBefore");
-    info.addMember(m_generatedAfter, "generatedAfter");
+    RefPtr<Document> d = Document::create(0, KURL());
+    RefPtr<Element> e = Element::create(nullQName() , d.get());
+    RefPtr<DocumentTimeline> timeline = DocumentTimeline::create(d.get());
+    RefPtr<Animation> anim = Animation::create(e.get(), AnimationEffect::create());
+    timeline->play(anim);
+    timeline->serviceAnimations(0);
+    StylePropertySet* styleSet = anim->cachedStyle();
+    ASSERT_EQ(0u, styleSet->propertyCount());
 }
 
-} // namespace WebCore
+}

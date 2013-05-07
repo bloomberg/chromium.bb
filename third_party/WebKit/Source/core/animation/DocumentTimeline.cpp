@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,35 +29,49 @@
  */
 
 #include "config.h"
-#include "core/dom/ElementRareData.h"
+#include "core/animation/DocumentTimeline.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "RuntimeEnabledFeatures.h"
+#include "core/dom/Document.h"
+#include "core/page/FrameView.h"
 
 namespace WebCore {
 
-struct SameSizeAsElementRareData : NodeRareData {
-    short indices[2];
-    unsigned bitfields;
-    LayoutSize sizeForResizing;
-    IntSize scrollOffset;
-    void* pointers[8];
-};
-
-COMPILE_ASSERT(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData), ElementRareDataShouldStaySmall);
-
-void ElementRareData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+PassRefPtr<DocumentTimeline> DocumentTimeline::create(Document* document)
 {
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    NodeRareData::reportMemoryUsage(memoryObjectInfo);
-
-    info.addMember(m_computedStyle, "computedStyle");
-    info.addMember(m_dataset, "dataset");
-    info.addMember(m_classList, "classList");
-    info.addMember(m_shadow, "shadow");
-    info.addMember(m_attributeMap, "attributeMap");
-    info.addMember(m_generatedBefore, "generatedBefore");
-    info.addMember(m_generatedAfter, "generatedAfter");
+    return adoptRef(new DocumentTimeline(document));
 }
 
-} // namespace WebCore
+DocumentTimeline::DocumentTimeline(Document* document)
+{
+    ASSERT(document);
+    m_document = document;
+}
+
+void DocumentTimeline::play(PassRefPtr<TimedItem> child)
+{
+    m_children.append(child);
+
+    if (m_document->view())
+        m_document->view()->scheduleAnimation();
+}
+
+TimedItem::ChildAnimationState DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
+{
+    Vector<size_t> expiredIndices;
+
+    for (size_t i = 0; i < m_children.size(); ++i)
+        if (m_children[i]->serviceAnimations(monotonicAnimationStartTime) ==
+            TimedItem::AnimationCompleted)
+            expiredIndices.append(i);
+
+    for (int i = expiredIndices.size() - 1; i >= 0; i--)
+        m_children.remove(expiredIndices[i]);
+
+    if (m_document->view())
+        m_document->view()->scheduleAnimation();
+
+    return AnimationInProgress;
+}
+
+} // namespace

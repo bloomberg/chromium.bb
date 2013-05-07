@@ -35,6 +35,8 @@
 
 namespace WebCore {
 
+class Animation;
+
 class Attr;
 class ClientRect;
 class ClientRectList;
@@ -595,6 +597,11 @@ public:
     void setSavedLayerScrollOffset(const IntSize&);
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
+
+    void addActiveAnimation(Animation*);
+    void removeActiveAnimation(Animation*);
+    bool hasActiveAnimations() const;
+    Vector<Animation*>* activeAnimations() const;
 
 protected:
     Element(const QualifiedName& tagName, Document* document, ConstructionType type)

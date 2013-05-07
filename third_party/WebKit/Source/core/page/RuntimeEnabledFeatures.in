@@ -49,6 +49,7 @@ SpeechSynthesis
 StyleScoped
 Touch
 VideoTrack
+WebAnimation
 WebAudio condition=WEB_AUDIO
 WebMIDI
 WebPInAcceptHeader

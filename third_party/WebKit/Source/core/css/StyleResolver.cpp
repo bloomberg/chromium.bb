@@ -32,9 +32,11 @@
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "MathMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "UserAgentStyleSheets.h"
 #include "WebKitFontFamilyNames.h"
 #include "XMLNames.h"
+#include "core/animation/Animation.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSCursorImageValue.h"
@@ -559,6 +561,9 @@ void StyleResolver::matchAllRules(ElementRuleCollector& collector, bool matchAut
 #else
     UNUSED_PARAM(includeSMILProperties);
 #endif
+
+    if (m_state.styledElement() && m_state.styledElement()->hasActiveAnimations())
+        collector.matchedResult().isCacheable = false;
 }
 
 inline void StyleResolver::initElement(Element* e)
@@ -857,6 +862,8 @@ RenderStyle* StyleResolver::locateSharedStyle()
     if (state.element() == state.document()->cssTarget())
         return 0;
     if (elementHasDirectionAuto(state.element()))
+        return 0;
+    if (state.element()->hasActiveAnimations())
         return 0;
 
     // Cache whether state.element is affected by any known class selectors.
@@ -1818,6 +1825,40 @@ Length StyleResolver::convertToFloatLength(CSSPrimitiveValue* primitiveValue, Re
 }
 
 template <StyleResolver::StyleApplicationPass pass>
+void StyleResolver::applyAnimatedProperties(const Element* target)
+{
+    if (!target->hasActiveAnimations())
+        return;
+
+    Vector<Animation*>* animations = target->activeAnimations();
+
+    for (size_t i = 0; i < animations->size(); ++i) {
+        RefPtr<Animation> animation = animations->at(i);
+        RefPtr<StylePropertySet> properties = animation->cachedStyle();
+        for (unsigned j = 0; j < properties->propertyCount(); ++j) {
+            StylePropertySet::PropertyReference current = properties->propertyAt(j);
+            CSSPropertyID property = current.id();
+            switch (pass) {
+            case VariableDefinitions:
+                ASSERT_NOT_REACHED();
+                continue;
+            case HighPriorityProperties:
+                if (property < CSSPropertyLineHeight)
+                    applyProperty(current.id(), current.value());
+                else if (property == CSSPropertyLineHeight)
+                    m_state.setLineHeightValue(current.value());
+                continue;
+            case LowPriorityProperties:
+                if (property > CSSPropertyLineHeight)
+                    applyProperty(current.id(), current.value());
+                continue;
+            }
+        }
+    }
+
+}
+
+template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyProperties(const StylePropertySet* properties, StyleRule* rule, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
     ASSERT((propertyWhitelistType != PropertyWhitelistRegion) || m_state.regionForStyling());
@@ -2030,6 +2071,9 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     // and (4) normal important.
     state.setLineHeightValue(0);
     applyMatchedProperties<HighPriorityProperties>(matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
+    // Animation contributions are processed here because CSS Animations are overridable by user !important rules.
+    if (RuntimeEnabledFeatures::webAnimationEnabled())
+        applyAnimatedProperties<HighPriorityProperties>(element);
     applyMatchedProperties<HighPriorityProperties>(matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
@@ -2058,6 +2102,8 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     
     // Now do the author and user normal priority properties and all the !important properties.
     applyMatchedProperties<LowPriorityProperties>(matchResult, false, matchResult.ranges.lastUARule + 1, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
+    if (RuntimeEnabledFeatures::webAnimationEnabled())
+        applyAnimatedProperties<LowPriorityProperties>(element);
     applyMatchedProperties<LowPriorityProperties>(matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);

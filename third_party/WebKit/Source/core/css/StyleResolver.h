@@ -386,6 +386,8 @@ private:
     void applyMatchedProperties(const MatchResult&, bool important, int startIndex, int endIndex, bool inheritedOnly);
     template <StyleApplicationPass pass>
     void applyProperties(const StylePropertySet* properties, StyleRule*, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
+    template <StyleApplicationPass pass>
+    void applyAnimatedProperties(const Element* target);
     void resolveVariables(CSSPropertyID, CSSValue*, Vector<std::pair<CSSPropertyID, String> >& knownExpressions);
     static bool isValidRegionStyleProperty(CSSPropertyID);
     static bool isValidCueStyleProperty(CSSPropertyID);

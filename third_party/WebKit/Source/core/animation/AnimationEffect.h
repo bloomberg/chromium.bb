@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,36 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/dom/ElementRareData.h"
+#ifndef AnimationEffect_h
+#define AnimationEffect_h
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/rendering/style/RenderStyle.h"
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 
 namespace WebCore {
 
-struct SameSizeAsElementRareData : NodeRareData {
-    short indices[2];
-    unsigned bitfields;
-    LayoutSize sizeForResizing;
-    IntSize scrollOffset;
-    void* pointers[8];
+class StylePropertySet;
+
+class AnimationEffect : public RefCounted<AnimationEffect> {
+
+public:
+    static PassRefPtr<AnimationEffect> create();
+
+    PassRefPtr<StylePropertySet> sample(double fraction, int iteration);
+
+private:
+    AnimationEffect();
 };
 
-COMPILE_ASSERT(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData), ElementRareDataShouldStaySmall);
-
-void ElementRareData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    NodeRareData::reportMemoryUsage(memoryObjectInfo);
-
-    info.addMember(m_computedStyle, "computedStyle");
-    info.addMember(m_dataset, "dataset");
-    info.addMember(m_classList, "classList");
-    info.addMember(m_shadow, "shadow");
-    info.addMember(m_attributeMap, "attributeMap");
-    info.addMember(m_generatedBefore, "generatedBefore");
-    info.addMember(m_generatedAfter, "generatedAfter");
-}
-
 } // namespace WebCore
+
+#endif // AnimationEffect_h

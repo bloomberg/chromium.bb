@@ -28,6 +28,7 @@
 #include "core/page/FrameView.h"
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/FontLoader.h"
 #include "core/css/StyleResolver.h"
@@ -2061,6 +2062,8 @@ void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
     for (Frame* frame = m_frame.get(); frame; frame = frame->tree()->traverseNext()) {
         frame->view()->serviceScrollAnimations();
         frame->animation()->serviceAnimations();
+        if (RuntimeEnabledFeatures::webAnimationEnabled())
+            frame->document()->timeline()->serviceAnimations(monotonicAnimationStartTime);
     }
 
     Vector<RefPtr<Document> > documents;

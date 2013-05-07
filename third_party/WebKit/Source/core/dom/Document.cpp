@@ -436,6 +436,7 @@ Document::Document(Frame* frame, const KURL& url, unsigned documentClass)
 #ifndef NDEBUG
     , m_didDispatchViewportPropertiesChanged(false)
 #endif
+    , m_timeline(DocumentTimeline::create(this))
     , m_templateDocumentHost(0)
     , m_fontloader(0)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)

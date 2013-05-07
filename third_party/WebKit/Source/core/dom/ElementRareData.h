@@ -22,6 +22,7 @@
 #ifndef ElementRareData_h
 #define ElementRareData_h
 
+#include "core/animation/Animation.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/NamedNodeMap.h"
@@ -32,6 +33,8 @@
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {
+
+class Animation;
 
 class ElementRareData : public NodeRareData {
 public:
@@ -122,6 +125,12 @@ public:
     IntSize savedLayerScrollOffset() const { return m_savedLayerScrollOffset; }
     void setSavedLayerScrollOffset(IntSize size) { m_savedLayerScrollOffset = size; }
 
+    Vector<Animation*>* activeAnimations() { return m_activeAnimations.get(); }
+    void setActiveAnimations(PassOwnPtr<Vector<Animation*> > animations)
+    {
+        m_activeAnimations = animations;
+    }
+
 #if ENABLE(SVG)
     bool hasPendingResources() const { return m_hasPendingResources; }
     void setHasPendingResources(bool has) { m_hasPendingResources = has; }
@@ -159,6 +168,8 @@ private:
     OwnPtr<ClassList> m_classList;
     OwnPtr<ElementShadow> m_shadow;
     OwnPtr<NamedNodeMap> m_attributeMap;
+
+    OwnPtr<Vector<Animation*> > m_activeAnimations;
 
     RefPtr<PseudoElement> m_generatedBefore;
     RefPtr<PseudoElement> m_generatedAfter;

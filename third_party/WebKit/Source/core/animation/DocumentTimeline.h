@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,36 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/dom/ElementRareData.h"
+#ifndef DocumentTimeline_h
+#define DocumentTimeline_h
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/animation/TimedItem.h"
+#include <wtf/RefPtr.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 
-struct SameSizeAsElementRareData : NodeRareData {
-    short indices[2];
-    unsigned bitfields;
-    LayoutSize sizeForResizing;
-    IntSize scrollOffset;
-    void* pointers[8];
+class Document;
+class Element;
+
+// DocumentTimeline is constructed and owned by Document, and tied to its lifecycle.
+class DocumentTimeline FINAL : public TimedItem {
+
+public:
+    static PassRefPtr<DocumentTimeline> create(Document*);
+    virtual TimedItem::ChildAnimationState serviceAnimations(double) OVERRIDE FINAL;
+    void play(PassRefPtr<TimedItem>);
+
+private:
+    DocumentTimeline(Document*);
+    Document* m_document;
+    Vector<RefPtr<TimedItem> > m_children;
 };
 
-COMPILE_ASSERT(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData), ElementRareDataShouldStaySmall);
+} // namespace
 
-void ElementRareData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    NodeRareData::reportMemoryUsage(memoryObjectInfo);
-
-    info.addMember(m_computedStyle, "computedStyle");
-    info.addMember(m_dataset, "dataset");
-    info.addMember(m_classList, "classList");
-    info.addMember(m_shadow, "shadow");
-    info.addMember(m_attributeMap, "attributeMap");
-    info.addMember(m_generatedBefore, "generatedBefore");
-    info.addMember(m_generatedAfter, "generatedAfter");
-}
-
-} // namespace WebCore
+#endif

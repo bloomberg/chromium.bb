@@ -333,6 +333,36 @@ NamedNodeMap* Element::attributes() const
     return rareData->attributeMap();
 }
 
+void Element::addActiveAnimation(Animation* animation)
+{
+    ElementRareData* rareData = ensureElementRareData();
+    if (!rareData->activeAnimations())
+        rareData->setActiveAnimations(adoptPtr(new Vector<Animation*>));
+    rareData->activeAnimations()->append(animation);
+}
+
+void Element::removeActiveAnimation(Animation* animation)
+{
+    ElementRareData* rareData = elementRareData();
+    ASSERT(rareData);
+    size_t position = rareData->activeAnimations()->find(animation);
+    ASSERT(position != notFound);
+    rareData->activeAnimations()->remove(position);
+}
+
+bool Element::hasActiveAnimations() const
+{
+    return hasRareData() && elementRareData()->activeAnimations()
+        && elementRareData()->activeAnimations()->size();
+}
+
+Vector<Animation*>* Element::activeAnimations() const
+{
+    if (!elementRareData())
+        return 0;
+    return elementRareData()->activeAnimations();
+}
+
 Node::NodeType Element::nodeType() const
 {
     return ELEMENT_NODE;

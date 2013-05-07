@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,36 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/dom/ElementRareData.h"
+#ifndef Animation_h
+#define Animation_h
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/animation/AnimationEffect.h"
+#include "core/animation/TimedItem.h"
+#include "core/css/StylePropertySet.h"
+#include <wtf/RefPtr.h>
 
 namespace WebCore {
 
-struct SameSizeAsElementRareData : NodeRareData {
-    short indices[2];
-    unsigned bitfields;
-    LayoutSize sizeForResizing;
-    IntSize scrollOffset;
-    void* pointers[8];
+class Element;
+
+class Animation FINAL : public TimedItem {
+
+public:
+    static PassRefPtr<Animation> create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect>);
+    virtual ~Animation();
+
+    virtual ChildAnimationState serviceAnimations(double time) OVERRIDE FINAL;
+
+    StylePropertySet* cachedStyle()
+    {
+        ASSERT(m_cachedStyle.get());
+        return m_cachedStyle.get();
+    }
+
+private:
+    Animation(PassRefPtr<Element>, PassRefPtr<AnimationEffect>);
+
+    RefPtr<Element> m_target;
+    RefPtr<AnimationEffect> m_effect;
+    bool m_isInTargetActiveAnimationsList;
+    RefPtr<StylePropertySet> m_cachedStyle;
 };
 
-COMPILE_ASSERT(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData), ElementRareDataShouldStaySmall);
+} // namespace
 
-void ElementRareData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    NodeRareData::reportMemoryUsage(memoryObjectInfo);
-
-    info.addMember(m_computedStyle, "computedStyle");
-    info.addMember(m_dataset, "dataset");
-    info.addMember(m_classList, "classList");
-    info.addMember(m_shadow, "shadow");
-    info.addMember(m_attributeMap, "attributeMap");
-    info.addMember(m_generatedBefore, "generatedBefore");
-    info.addMember(m_generatedAfter, "generatedAfter");
-}
-
-} // namespace WebCore
+#endif
