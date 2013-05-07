@@ -188,13 +188,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_CaptureVisibleTabRace) {
                                   "test_race.html")) << message_;
 }
 
-// http://crbug.com/238775
-#if defined(OS_WIN)
-#define MAYBE_CaptureVisibleFile DISABLED_CaptureVisibleFile
-#else
-#define MAYBE_CaptureVisibleFile CaptureVisibleFile
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleFile) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleFile) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_file.html")) << message_;
 }
