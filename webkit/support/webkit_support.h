@@ -294,10 +294,6 @@ enum {
 int NativeKeyCodeForWindowsKeyCode(int keycode, bool shift);
 #endif
 
-// - Timers
-
-double GetForegroundTabTimerInterval();
-
 // - Logging
 
 void EnableWebCoreLogChannels(const std::string& channels);

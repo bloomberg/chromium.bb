@@ -55,7 +55,6 @@
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/compositor_bindings/web_layer_tree_view_impl_for_testing.h"
 #include "webkit/fileapi/isolated_context.h"
-#include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/glue/webthread_impl.h"
@@ -834,11 +833,6 @@ int NativeKeyCodeForWindowsKeyCode(int keycode, bool shift) {
   return ui::GdkNativeKeyCodeForWindowsKeyCode(code, shift);
 }
 #endif
-
-// Timers
-double GetForegroundTabTimerInterval() {
-  return webkit_glue::kForegroundTabTimerInterval;
-}
 
 // Logging
 void EnableWebCoreLogChannels(const std::string& channels) {
