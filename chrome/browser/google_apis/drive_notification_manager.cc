@@ -31,6 +31,7 @@ DriveNotificationManager::DriveNotificationManager(Profile* profile)
     : profile_(profile),
       push_notification_registered_(false),
       push_notification_enabled_(false),
+      observers_notified_(false),
       polling_timer_(true /* retain_user_task */, false /* is_repeating */),
       weak_ptr_factory_(this) {
   RegisterDriveNotifications();
@@ -114,6 +115,11 @@ void DriveNotificationManager::NotifyObserversToUpdate(
   DVLOG(1) << "Notifying observers: " << NotificationSourceToString(source);
   FOR_EACH_OBSERVER(DriveNotificationObserver, observers_,
                     OnNotificationReceived());
+  if (!observers_notified_) {
+    UMA_HISTOGRAM_BOOLEAN("Drive.PushNotificationInitiallyEnabled",
+                          push_notification_enabled_);
+  }
+  observers_notified_ = true;
 
   // Note that polling_timer_ is not a repeating timer. Restarting manually
   // here is better as XMPP may be received right before the polling timer is
@@ -137,6 +143,9 @@ void DriveNotificationManager::RegisterDriveNotifications() {
   profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
   push_notification_registered_ = true;
   OnInvalidatorStateChange(profile_sync_service->GetInvalidatorState());
+
+  UMA_HISTOGRAM_BOOLEAN("Drive.PushNotificationRegistered",
+                        push_notification_registered_);
 }
 
 // static

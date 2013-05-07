@@ -67,8 +67,10 @@ class DriveNotificationManager
 
   // True when Drive File Sync Service is registered for Drive notifications.
   bool push_notification_registered_;
-  // True once the first drive notification is received with OK state.
+  // True if the XMPP-based push notification is currently enabled.
   bool push_notification_enabled_;
+  // True once observers are notified for the first time.
+  bool observers_notified_;
 
   // The timer is used for polling based notification. XMPP should usually be
   // used but notification is done per polling when XMPP is not working.
