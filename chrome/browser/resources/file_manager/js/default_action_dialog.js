@@ -69,11 +69,11 @@ cr.define('cr.filebrowser', function() {
     var div = this.document_.createElement('div');
     div.textContent = item.label;
 
-    if (item.iconType)
+    if (item.iconType) {
       div.setAttribute('file-type-icon', item.iconType);
-
-    if (item.iconUrl)
+    } else if (item.iconUrl) {
       div.style.backgroundImage = 'url(' + item.iconUrl + ')';
+    }
 
     if (item.class)
       div.classList.add(item.class);
