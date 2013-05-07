@@ -316,7 +316,14 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputShowsOverlay) {
   EXPECT_EQ(overlay, instant()->GetOverlayContents());
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, UsesOverlayIfTabNotReady) {
+// Flaky on Linux Tests bot.
+#if defined(OS_LINUX)
+#define MAYBE_UsesOverlayIfTabNotReady DISABLED_UsesOverlayIfTabNotReady
+#else
+#define MAYBE_UsesOverlayIfTabNotReady UsesOverlayIfTabNotReady
+#endif
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_UsesOverlayIfTabNotReady) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
 
