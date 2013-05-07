@@ -1850,3 +1850,13 @@
    ...
    fun:ash::test::FocusCyclerTest_CycleFocusThroughWindowWithPanes_Test::TestBody
 }
+{
+   bug_238339
+   Heapcheck:Leak
+   ...
+   fun:net::ProxyService::ResolveProxy
+   fun:net::URLRequestFtpJob::Start
+   fun:net::URLRequest::StartJob
+   fun:net::URLRequest::BeforeRequestComplete
+   fun:net::URLRequest::Start
+}
