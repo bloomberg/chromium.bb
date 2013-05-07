@@ -84,10 +84,8 @@ AudioCodec CodecIDToAudioCodec(AVCodecID codec_id) {
       return kCodecGSM_MS;
     case AV_CODEC_ID_PCM_MULAW:
       return kCodecPCM_MULAW;
-#ifndef CHROMIUM_OMIT_AV_CODEC_ID_OPUS
     case AV_CODEC_ID_OPUS:
       return kCodecOpus;
-#endif
     default:
       DVLOG(1) << "Unknown audio CodecID: " << codec_id;
   }
@@ -131,10 +129,8 @@ static AVCodecID AudioCodecToCodecID(AudioCodec audio_codec,
       return AV_CODEC_ID_GSM_MS;
     case kCodecPCM_MULAW:
       return AV_CODEC_ID_PCM_MULAW;
-#ifndef CHROMIUM_OMIT_AV_CODEC_ID_OPUS
     case kCodecOpus:
       return AV_CODEC_ID_OPUS;
-#endif
     default:
       DVLOG(1) << "Unknown AudioCodec: " << audio_codec;
   }
@@ -151,10 +147,8 @@ VideoCodec CodecIDToVideoCodec(AVCodecID codec_id) {
       return kCodecMPEG4;
     case AV_CODEC_ID_VP8:
       return kCodecVP8;
-#ifndef CHROMIUM_OMIT_AV_CODEC_ID_VP9
     case AV_CODEC_ID_VP9:
       return kCodecVP9;
-#endif
     default:
       DVLOG(1) << "Unknown video CodecID: " << codec_id;
   }
@@ -171,10 +165,8 @@ static AVCodecID VideoCodecToCodecID(VideoCodec video_codec) {
       return AV_CODEC_ID_MPEG4;
     case kCodecVP8:
       return AV_CODEC_ID_VP8;
-#ifndef CHROMIUM_OMIT_AV_CODEC_ID_VP9
     case kCodecVP9:
       return AV_CODEC_ID_VP9;
-#endif
     default:
       DVLOG(1) << "Unknown VideoCodec: " << video_codec;
   }

@@ -11,15 +11,12 @@
 #include "base/path_service.h"
 #include "base/strings/stringize_macros.h"
 #include "media/ffmpeg/ffmpeg_common.h"
-
-#if !defined(USE_SYSTEM_FFMPEG)
 #include "third_party/ffmpeg/ffmpeg_stubs.h"
 
 using third_party_ffmpeg::kNumStubModules;
 using third_party_ffmpeg::kModuleFfmpegsumo;
 using third_party_ffmpeg::InitializeStubs;
 using third_party_ffmpeg::StubPathMap;
-#endif  // !defined(USE_SYSTEM_FFMPEG)
 
 namespace media {
 namespace internal {
@@ -49,11 +46,6 @@ static const base::FilePath::CharType kSumoLib[] =
 #endif
 
 bool InitializeMediaLibraryInternal(const base::FilePath& module_dir) {
-#if defined(USE_SYSTEM_FFMPEG)
-  // No initialization is necessary when using system ffmpeg,
-  // we just link directly with system ffmpeg libraries.
-  return true;
-#else
   StubPathMap paths;
 
   // First try to initialize with Chrome's sumo library.
@@ -69,7 +61,6 @@ bool InitializeMediaLibraryInternal(const base::FilePath& module_dir) {
       FILE_PATH_LITERAL(DSO_NAME("avformat", AVFORMAT_VERSION))).value());
 
   return InitializeStubs(paths);
-#endif  // !defined(USE_SYSTEM_FFMPEG)
 }
 
 }  // namespace internal

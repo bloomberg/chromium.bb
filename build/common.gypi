@@ -799,9 +799,6 @@
     'spdy_proxy_auth_origin%': '<(spdy_proxy_auth_origin)',
     'spdy_proxy_auth_property%': '<(spdy_proxy_auth_property)',
 
-    # Use system ffmpeg instead of bundled one.
-    'use_system_ffmpeg%': 0,
-
     # Use system mesa instead of bundled one.
     'use_system_mesa%': 0,
 
