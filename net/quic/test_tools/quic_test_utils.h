@@ -13,8 +13,10 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_session.h"
+#include "net/quic/quic_spdy_decompressor.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
+#include "net/spdy/spdy_framer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
@@ -34,6 +36,8 @@ void CompareQuicDataWithHexError(const std::string& description,
 // Returns the length of the QuicPacket that will be created if it contains
 // a stream frame that has |payload| bytes.
 size_t GetPacketLengthForOneStream(bool include_version, size_t payload);
+
+string SerializeUncompressedHeaders(const SpdyHeaderBlock& headers);
 
 class MockFramerVisitor : public QuicFramerVisitorInterface {
  public:
@@ -322,8 +326,18 @@ class TestEntropyCalculator :
       QuicPacketSequenceNumber sequence_number) const OVERRIDE;
 };
 
-}  // namespace test
+class TestDecompressorVisitor : public QuicSpdyDecompressor::Visitor {
+ public:
+  virtual ~TestDecompressorVisitor() {}
+  virtual bool OnDecompressedData(base::StringPiece data) OVERRIDE;
 
+  string data() { return data_; }
+
+ private:
+  string data_;
+};
+
+}  // namespace test
 }  // namespace net
 
 #endif  // NET_QUIC_TEST_TOOLS_QUIC_TEST_UTILS_H_

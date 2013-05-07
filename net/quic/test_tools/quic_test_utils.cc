@@ -5,6 +5,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_utils.h"
@@ -13,7 +14,9 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
+#include "net/spdy/spdy_frame_builder.h"
 
+using base::StringPiece;
 using std::max;
 using std::min;
 using std::string;
@@ -374,6 +377,11 @@ size_t GetPacketLengthForOneStream(bool include_version, size_t payload) {
 QuicPacketEntropyHash TestEntropyCalculator::ReceivedEntropyHash(
     QuicPacketSequenceNumber sequence_number) const {
   return 1u;
+}
+
+bool TestDecompressorVisitor::OnDecompressedData(StringPiece data) {
+  data.AppendToString(&data_);
+  return true;
 }
 
 }  // namespace test

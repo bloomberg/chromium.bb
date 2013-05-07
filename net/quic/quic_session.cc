@@ -108,6 +108,20 @@ bool QuicSession::OnPacket(const IPEndPoint& self_address,
       stream->OnStreamFrame(frames[i]);
     }
   }
+
+  while (!decompression_blocked_streams_.empty()) {
+    QuicHeaderId header_id = decompression_blocked_streams_.begin()->first;
+    if (header_id == decompressor_.current_header_id()) {
+      QuicStreamId stream_id = decompression_blocked_streams_.begin()->second;
+      decompression_blocked_streams_.erase(header_id);
+      ReliableQuicStream* stream = GetStream(stream_id);
+      if (!stream) {
+        connection()->SendConnectionClose(
+            QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED);
+      }
+      stream->OnDecompressorAvailable();
+    }
+  }
   return true;
 }
 
@@ -300,6 +314,11 @@ size_t QuicSession::GetNumOpenStreams() const {
 
 void QuicSession::MarkWriteBlocked(QuicStreamId id) {
   write_blocked_streams_.AddBlockedObject(id);
+}
+
+void QuicSession::MarkDecompressionBlocked(QuicHeaderId header_id,
+                                           QuicStreamId stream_id) {
+  decompression_blocked_streams_[header_id] = stream_id;
 }
 
 void QuicSession::PostProcessAfterData() {

@@ -29,7 +29,7 @@ bool NullEncrypter::Encrypt(
   string buffer = associated_data.as_string();
   plaintext.AppendToString(&buffer);
   uint128 hash = QuicUtils::FNV1a_128_Hash(buffer.data(), buffer.length());
-  memcpy(output, &hash, sizeof(hash));
+  QuicUtils::SerializeUint128(hash, output);
   memcpy(output + sizeof(hash), plaintext.data(), plaintext.size());
   return true;
 }

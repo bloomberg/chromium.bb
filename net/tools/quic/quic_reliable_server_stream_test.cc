@@ -5,6 +5,7 @@
 #include "net/tools/quic/quic_reliable_server_stream.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "net/quic/quic_spdy_compressor.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/flip_server/epoll_server.h"
@@ -60,8 +61,18 @@ class QuicReliableServerStreamTest : public ::testing::Test {
   QuicConsumedData ValidateHeaders(StringPiece headers) {
     headers_string_ = SpdyUtils::SerializeResponseHeaders(
         response_headers_);
+    QuicSpdyDecompressor decompressor;
+    TestDecompressorVisitor visitor;
 
-    EXPECT_EQ(headers, headers_string_);
+    // First the header id, then the compressed data.
+    EXPECT_EQ(1, headers[0]);
+    EXPECT_EQ(0, headers[1]);
+    EXPECT_EQ(0, headers[2]);
+    EXPECT_EQ(0, headers[3]);
+    EXPECT_EQ(static_cast<size_t>(headers.length() - 4),
+              decompressor.DecompressData(headers.substr(4), &visitor));
+
+    EXPECT_EQ(headers_string_, visitor.data());
 
     return QuicConsumedData(headers.size(), false);
   }

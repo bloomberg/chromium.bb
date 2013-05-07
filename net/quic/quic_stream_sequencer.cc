@@ -82,7 +82,7 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
 
   if (byte_offset == num_bytes_consumed_) {
     DVLOG(1) << "Processing byte offset " << byte_offset;
-    size_t bytes_consumed = stream_->ProcessData(data, data_len);
+    size_t bytes_consumed = stream_->ProcessRawData(data, data_len);
     num_bytes_consumed_ += bytes_consumed;
 
     if (MaybeCloseStream()) {
@@ -139,6 +139,87 @@ bool QuicStreamSequencer::MaybeCloseStream() {
   return false;
 }
 
+int QuicStreamSequencer::GetReadableRegions(iovec* iov, int iov_len) {
+  FrameMap::iterator it = frames_.begin();
+  int index = 0;
+  uint64 offset = num_bytes_consumed_;
+  while (it != frames_.end() && index < iov_len) {
+    if (it->first != offset) return index;
+
+    iov[index].iov_base = static_cast<void*>(
+        const_cast<char*>(it->second.data()));
+    iov[index].iov_len = it->second.size();
+    offset += it->second.size();
+
+    ++index;
+    ++it;
+  }
+  return index;
+}
+
+int QuicStreamSequencer::Readv(const struct iovec* iov, int iov_len) {
+  FrameMap::iterator it = frames_.begin();
+  int iov_index = 0;
+  size_t iov_offset = 0;
+  size_t frame_offset = 0;
+  size_t initial_bytes_consumed = num_bytes_consumed_;
+
+  while (iov_index < iov_len &&
+         it != frames_.end() &&
+         it->first == num_bytes_consumed_) {
+    int bytes_to_read = min(iov[iov_index].iov_len - iov_offset,
+                            it->second.size() - frame_offset);
+
+    char* iov_ptr = static_cast<char*>(iov[iov_index].iov_base) + iov_offset;
+    memcpy(iov_ptr,
+           it->second.data() + frame_offset, bytes_to_read);
+    frame_offset += bytes_to_read;
+    iov_offset += bytes_to_read;
+
+    if (iov[iov_index].iov_len == iov_offset) {
+      // We've filled this buffer.
+      iov_offset = 0;
+      ++iov_index;
+    }
+    if (it->second.size() == frame_offset) {
+      // We've copied this whole frame
+      num_bytes_consumed_ += it->second.size();
+      frames_.erase(it);
+      it = frames_.begin();
+      frame_offset = 0;
+    }
+  }
+  // We've finished copying.  If we have a partial frame, update it.
+  if (frame_offset != 0) {
+    frames_.insert(make_pair(it->first + frame_offset,
+                             it->second.substr(frame_offset)));
+    frames_.erase(frames_.begin());
+    num_bytes_consumed_ += frame_offset;
+  }
+  return num_bytes_consumed_ - initial_bytes_consumed;
+}
+
+void QuicStreamSequencer::MarkConsumed(size_t num_bytes_consumed) {
+  size_t end_offset = num_bytes_consumed_ + num_bytes_consumed;
+  while (!frames_.empty()) {
+    FrameMap::iterator it = frames_.begin();
+    if (it->first + it->second.length() <= end_offset) {
+      // This chunk is entirely consumed.
+      frames_.erase(it);
+      continue;
+    }
+
+    if (it->first != end_offset) {
+      // Partially consume this frame.
+      frames_.insert(make_pair(end_offset,
+                               it->second.substr(end_offset - it->first)));
+      frames_.erase(it);
+    }
+    break;
+  }
+  num_bytes_consumed_ = end_offset;
+}
+
 bool QuicStreamSequencer::HasBytesToRead() const {
   FrameMap::const_iterator it = frames_.begin();
 
@@ -167,7 +248,8 @@ void QuicStreamSequencer::FlushBufferedFrames() {
   while (it != frames_.end()) {
     DVLOG(1) << "Flushing buffered packet at offset " << it->first;
     string* data = &it->second;
-    size_t bytes_consumed = stream_->ProcessData(data->c_str(), data->size());
+    size_t bytes_consumed = stream_->ProcessRawData(data->c_str(),
+                                                    data->size());
     num_bytes_consumed_ += bytes_consumed;
     if (MaybeCloseStream()) {
       return;
