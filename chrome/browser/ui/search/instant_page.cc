@@ -7,7 +7,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -66,7 +68,13 @@ void InstantPage::InitializeFonts() {
 }
 
 void InstantPage::DetermineIfPageSupportsInstant() {
-  Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(routing_id()));
+  if (IsLocal()) {
+    // Local pages always support Instant. That's why we keep them around.
+    int page_id = contents()->GetController().GetActiveEntry()->GetPageID();
+    OnInstantSupportDetermined(page_id, true);
+  } else {
+    Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(routing_id()));
+  }
 }
 
 void InstantPage::SendAutocompleteResults(
@@ -113,7 +121,8 @@ void InstantPage::SendMostVisitedItems(
 InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url)
     : delegate_(delegate),
       instant_url_(instant_url),
-      supports_instant_(false) {
+      supports_instant_(false),
+      instant_support_determined_(false) {
 }
 
 void InstantPage::SetContents(content::WebContents* contents) {
@@ -237,6 +246,7 @@ void InstantPage::OnInstantSupportDetermined(int page_id,
     return;
   }
 
+  instant_support_determined_ = true;
   supports_instant_ = supports_instant;
   delegate_->InstantSupportDetermined(contents(), supports_instant);
 

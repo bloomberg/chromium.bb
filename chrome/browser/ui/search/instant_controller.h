@@ -214,6 +214,7 @@ class InstantController : public InstantPage::Delegate,
   InstantOverlayModel* model() { return &model_; }
 
  private:
+  friend class InstantTestBase;
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UsesOverlayIfTabNotReady);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,

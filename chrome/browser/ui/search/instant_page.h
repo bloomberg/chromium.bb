@@ -115,6 +115,12 @@ class InstantPage : public content::WebContentsObserver {
   // support suddenly).
   bool supports_instant() const { return supports_instant_; }
 
+  // True if Instant support has been tested and determined for this page at
+  // least once. Note that Instant support may change in the future.
+  bool instant_support_determined() const {
+    return instant_support_determined_;
+  }
+
   // Returns true if the page is the local NTP (i.e. its URL is
   // chrome::kChromeSearchLocalNTPURL).
   bool IsLocal() const;
@@ -252,6 +258,7 @@ class InstantPage : public content::WebContentsObserver {
   Delegate* const delegate_;
   const std::string instant_url_;
   bool supports_instant_;
+  bool instant_support_determined_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantPage);
 };
