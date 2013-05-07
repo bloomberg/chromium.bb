@@ -33,7 +33,6 @@
 
 #include "bindings/v8/ScriptInstance.h"
 #include "bindings/v8/ScriptValue.h"
-#include "core/loader/FrameLoaderTypes.h"
 
 #include <v8.h>
 #include "wtf/Forward.h"
@@ -86,7 +85,7 @@ public:
     ScriptValue callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function>, v8::Handle<v8::Object>, int argc, v8::Handle<v8::Value> argv[]);
 
     // Returns true if argument is a JavaScript URL.
-    bool executeIfJavaScriptURL(const KURL&, ShouldReplaceDocumentIfJavaScriptURL shouldReplaceDocumentIfJavaScriptURL = ReplaceDocumentIfJavaScriptURL);
+    bool executeIfJavaScriptURL(const KURL&);
 
     // This function must be called from the main thread. It is safe to call it repeatedly.
     static void initializeThreading();
