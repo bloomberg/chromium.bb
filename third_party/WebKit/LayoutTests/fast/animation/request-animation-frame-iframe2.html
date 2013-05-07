@@ -20,13 +20,6 @@
             mainFrameCallbackInvoked = true;
         });
 
-        // Called from subframe.
-        function doDisplay()
-        {
-            if (window.testRunner)
-                testRunner.display();
-        }
-
         function doCheckResult()
         {
             shouldBeTrue("callbackInvoked");

@@ -289,8 +289,21 @@ WebLayerTreeView* WebViewHost::layerTreeView()
 
 void WebViewHost::scheduleAnimation()
 {
-    if (webView()->settings()->scrollAnimatorEnabled())
+    if (m_finished) {
+        return;
+    }
+    if (!m_animateScheduled) {
+        m_animateScheduled = true;
+        postDelayedTask(new HostMethodTask(this, &WebViewHost::animateNow), 1);
+    }
+}
+
+void WebViewHost::animateNow()
+{
+    if (m_animateScheduled) {
+        m_animateScheduled = false;
         webView()->animate(0.0);
+    }
 }
 
 void WebViewHost::didFocus()
@@ -659,6 +672,7 @@ void WebViewHost::setLocale(const std::string& locale)
 
 void WebViewHost::testFinished()
 {
+    m_finished = true;
     m_shell->testFinished(this);
 }
 
@@ -805,6 +819,8 @@ void WebViewHost::reset()
     m_lastPageIdUpdated = -1;
     m_hasWindow = false;
     m_inModalLoop = false;
+    m_animateScheduled = false;
+    m_finished = false;
 
     m_navigationController = adoptPtr(new TestNavigationController(this));
 

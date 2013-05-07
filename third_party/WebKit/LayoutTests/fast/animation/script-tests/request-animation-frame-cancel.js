@@ -7,9 +7,6 @@ var id = window.requestAnimationFrame(function() {
 
 window.cancelAnimationFrame(id);
 
-if (window.testRunner)
-    testRunner.display();
-
 setTimeout(function() {
     shouldBeFalse("callbackFired");
 }, 100);

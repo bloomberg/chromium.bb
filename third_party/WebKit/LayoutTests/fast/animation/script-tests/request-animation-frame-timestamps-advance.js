@@ -20,12 +20,4 @@ window.requestAnimationFrame(function(timestamp) {
         finishJSTest();
     });
     busyWait(10);
-    if (window.testRunner)
-        testRunner.display();
 });
-
-
-if (window.testRunner)
-    window.setTimeout(function() {
-        testRunner.display();
-    });
