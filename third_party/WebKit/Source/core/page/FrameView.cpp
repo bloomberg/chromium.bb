@@ -945,13 +945,7 @@ void FrameView::layout(bool allowSubtree)
             m_inSynchronousPostLayout = false;
         }
 
-        // Viewport-dependent media queries may cause us to need completely different style information.
-        // Check that here.
-        if (document->styleResolver()->affectedByViewportChange()) {
-            document->styleResolverChanged(RecalcStyleImmediately);
-            InspectorInstrumentation::mediaQueryResultChanged(document);
-        } else
-            document->evaluateMediaQueryList();
+        document->evaluateMediaQueryList();
 
         // If there is any pagination to apply, it will affect the RenderView's style, so we should
         // take care of that now.
@@ -2316,8 +2310,13 @@ void FrameView::performPostLayoutTasks()
 
     m_actionScheduler->resume();
 
-    // Refetch render view since it can be destroyed by updateWidget()
-    // call above.
+    // Viewport-dependent media queries may cause us to need completely different style information.
+    if (m_frame->document()->styleResolver()->affectedByViewportChange()) {
+        m_frame->document()->styleResolverChanged(DeferRecalcStyle);
+        InspectorInstrumentation::mediaQueryResultChanged(m_frame->document());
+    }
+
+    // Refetch render view since it can be destroyed by updateWidget() call above.
     renderView = this->renderView();
     if (renderView && !renderView->printing()) {
         IntSize currentSize;
