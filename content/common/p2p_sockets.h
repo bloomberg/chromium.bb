@@ -14,9 +14,7 @@ namespace content {
 enum P2PSocketType {
   P2P_SOCKET_UDP,
   P2P_SOCKET_TCP_SERVER,
-  P2P_SOCKET_STUN_TCP_SERVER,
   P2P_SOCKET_TCP_CLIENT,
-  P2P_SOCKET_STUN_TCP_CLIENT,
 };
 
 }  // namespace content

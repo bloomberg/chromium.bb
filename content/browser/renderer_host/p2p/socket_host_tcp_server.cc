@@ -21,9 +21,8 @@ const int kListenBacklog = 5;
 namespace content {
 
 P2PSocketHostTcpServer::P2PSocketHostTcpServer(
-    IPC::Sender* message_sender, int id, P2PSocketType client_type)
+    IPC::Sender* message_sender, int id)
     : P2PSocketHost(message_sender, id),
-      client_type_(client_type),
       socket_(new net::TCPServerSocket(NULL, net::NetLog::Source())),
       accept_callback_(
           base::Bind(&P2PSocketHostTcpServer::OnAccepted,
@@ -128,15 +127,11 @@ P2PSocketHost* P2PSocketHostTcpServer::AcceptIncomingTcpConnection(
 
   net::StreamSocket* socket = it->second;
   accepted_sockets_.erase(it);
-
-  scoped_ptr<P2PSocketHostTcpBase> result;
-  if (client_type_ == P2P_SOCKET_TCP_CLIENT) {
-    result.reset(new P2PSocketHostTcp(message_sender_, id));
-  } else {
-    result.reset(new P2PSocketHostStunTcp(message_sender_, id));
-  }
+  scoped_ptr<P2PSocketHostTcp> result(
+      new P2PSocketHostTcp(message_sender_, id));
   if (!result->InitAccepted(remote_address, socket))
     return NULL;
+
   return result.release();
 }
 

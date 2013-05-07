@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TCP_H_
 #define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TCP_H_
 
-#include <queue>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -25,10 +24,10 @@ class StreamSocket;
 
 namespace content {
 
-class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
+class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHost {
  public:
-  P2PSocketHostTcpBase(IPC::Sender* message_sender, int id);
-  virtual ~P2PSocketHostTcpBase();
+  P2PSocketHostTcp(IPC::Sender* message_sender, int id);
+  virtual ~P2PSocketHostTcp();
 
   bool InitAccepted(const net::IPEndPoint& remote_address,
                     net::StreamSocket* socket);
@@ -41,23 +40,15 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   virtual P2PSocketHost* AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address, int id) OVERRIDE;
 
- protected:
-  // Derived classes will provide the implementation.
-  virtual int ProcessInput(char* input, int input_len) = 0;
-  virtual void DoSend(const net::IPEndPoint& to,
-                      const std::vector<char>& data) = 0;
-
-  void WriteOrQueue(scoped_refptr<net::DrainableIOBuffer>& buffer);
-  void OnPacket(const std::vector<char>& data);
-  void OnError();
-
  private:
   friend class P2PSocketHostTcpTest;
   friend class P2PSocketHostTcpServerTest;
-  friend class P2PSocketHostStunTcpTest;
 
-  void DidCompleteRead(int result);
+  void OnError();
+
   void DoRead();
+  void DidCompleteRead(int result);
+  void OnPacket(std::vector<char>& data);
 
   void DoWrite();
   void HandleWriteResult(int result);
@@ -71,48 +62,15 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
 
   scoped_ptr<net::StreamSocket> socket_;
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;
+
   std::queue<scoped_refptr<net::DrainableIOBuffer> > write_queue_;
   scoped_refptr<net::DrainableIOBuffer> write_buffer_;
-
   bool write_pending_;
 
   bool connected_;
 
-  DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcpBase);
-};
-
-class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
- public:
-  P2PSocketHostTcp(IPC::Sender* message_sender, int id);
-  virtual ~P2PSocketHostTcp();
-
- protected:
-  virtual int ProcessInput(char* input, int input_len) OVERRIDE;
-  virtual void DoSend(const net::IPEndPoint& to,
-                      const std::vector<char>& data) OVERRIDE;
- private:
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcp);
 };
-
-// P2PSocketHostStunTcp class provides the framing of STUN messages when used
-// with TURN. These messages will not have length at front of the packet and
-// are padded to multiple of 4 bytes.
-// Formatting of messages is defined in RFC5766.
-class CONTENT_EXPORT P2PSocketHostStunTcp : public P2PSocketHostTcpBase {
- public:
-  P2PSocketHostStunTcp(IPC::Sender* message_sender, int id);
-  virtual ~P2PSocketHostStunTcp();
-
- protected:
-  virtual int ProcessInput(char* input, int input_len) OVERRIDE;
-  virtual void DoSend(const net::IPEndPoint& to,
-                      const std::vector<char>& data) OVERRIDE;
- private:
-  int GetExpectedPacketSize(const char* data, int len, int* pad_bytes);
-
-  DISALLOW_COPY_AND_ASSIGN(P2PSocketHostStunTcp);
-};
-
 
 }  // namespace content
 
