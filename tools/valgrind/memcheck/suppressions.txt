@@ -6858,7 +6858,7 @@
    fun:_Znw*
    fun:_ZN21WebDataServiceWrapperC1EP7Profile
    fun:_ZNK21WebDataServiceFactory23BuildServiceInstanceForEP7Profile
-   fun:_ZN26ProfileKeyedServiceFactory20GetServiceForProfileEP7Profileb
+   fun:_ZN26ProfileKeyedServiceFactory20GetServiceForProfileEPN7content14BrowserContextEb
    fun:_ZN21WebDataServiceFactory13GetForProfileEP7ProfileNS0_17ServiceAccessTypeE
    fun:_ZN14WebDataService18FromBrowserContextEPN7content14BrowserContextE
    fun:_ZN12TokenService10InitializeEPKcP7Profile
