@@ -73,7 +73,6 @@ class GpuDriverBugListTest : public testing::Test {
   GPUInfo gpu_info_;
 };
 
-#if !defined(OS_ANDROID)
 TEST_F(GpuDriverBugListTest, CurrentDriverBugListValidation) {
   scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
   std::string json;
@@ -109,7 +108,6 @@ TEST_F(GpuDriverBugListTest, CurrentListForImagination) {
       GpuControlList::kOsAndroid, "4.1", gpu_info);
   EXPECT_EQ(1u, bugs.count(gpu::USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS));
 }
-#endif
 
 }  // namespace content
 

@@ -52,7 +52,6 @@ class GpuSwitchingListTest : public testing::Test {
   GPUInfo gpu_info_;
 };
 
-#if !defined(OS_ANDROID)
 TEST_F(GpuSwitchingListTest, CurrentSwitchingListValidation) {
   base::FilePath data_file;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_file));
@@ -73,7 +72,6 @@ TEST_F(GpuSwitchingListTest, CurrentSwitchingListValidation) {
   EXPECT_TRUE(switching_list->LoadList(json_string, GpuControlList::kAllOs));
   EXPECT_FALSE(switching_list->contains_unknown_fields());
 }
-#endif
 
 TEST_F(GpuSwitchingListTest, GpuSwitching) {
   const std::string json = LONG_STRING_CONST(
