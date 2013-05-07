@@ -200,6 +200,8 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
     local_state_pref_change_registrar_.Init(g_browser_process->local_state());
     local_state_pref_change_registrar_.Add(apps::prefs::kShowAppLauncherPromo,
                                            callback);
+    local_state_pref_change_registrar_.Add(
+        apps::prefs::kAppLauncherHasBeenEnabled, callback);
   }
 }
 
@@ -348,6 +350,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   std::string app_launcher_promo_group_name =
       base::FieldTrialList::FindFullName(apps::kLauncherPromoTrialName);
   bool show_app_launcher_promo =
+      !apps::MaybeIsAppLauncherEnabled() &&
       local_state->GetBoolean(apps::prefs::kShowAppLauncherPromo) &&
       (app_launcher_promo_group_name == apps::kShowLauncherPromoOnceGroupName ||
        app_launcher_promo_group_name ==
