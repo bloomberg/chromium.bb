@@ -14,7 +14,7 @@ namespace {
 // GPU info has been collected in a GPU process.
 bool IsFeatureAllowed(content::GpuDataManager* manager,
                       content::GpuFeatureType feature) {
-  return (manager->GpuAccessAllowed() &&
+  return (manager->GpuAccessAllowed(NULL) &&
           !manager->IsFeatureBlacklisted(feature));
 }
 

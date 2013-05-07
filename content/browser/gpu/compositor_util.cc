@@ -20,7 +20,7 @@ bool CanDoAcceleratedCompositing() {
 
   // Don't run the field trial if gpu access has been blocked or
   // accelerated compositing is blacklisted.
-  if (!manager->GpuAccessAllowed() ||
+  if (!manager->GpuAccessAllowed(NULL) ||
       manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING))
     return false;
 

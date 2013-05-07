@@ -50,7 +50,9 @@ class GpuDataManager {
   // process, establish GPU channel, and GPU info collection, should be
   // blocked.
   // Can be called on any thread.
-  virtual bool GpuAccessAllowed() const = 0;
+  // If |reason| is not NULL and GPU access is blocked, upon return, |reason|
+  // contains a description of the reason why GPU access is blocked.
+  virtual bool GpuAccessAllowed(std::string* reason) const = 0;
 
   // Requests complete GPUinfo if it has not already been requested
   virtual void RequestCompleteGpuInfoIfNeeded() = 0;

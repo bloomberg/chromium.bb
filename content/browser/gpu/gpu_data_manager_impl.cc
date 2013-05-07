@@ -168,23 +168,40 @@ void GpuDataManagerImpl::GetGpuProcessHandles(
   GpuProcessHost::GetProcessHandles(callback);
 }
 
-bool GpuDataManagerImpl::GpuAccessAllowed() const {
+bool GpuDataManagerImpl::GpuAccessAllowed(std::string* reason) const {
   if (use_swiftshader_)
     return true;
 
-  if (!gpu_info_.gpu_accessible)
+  if (!gpu_info_.gpu_accessible) {
+    if (reason) {
+      *reason = "GPU process launch failed.";
+    }
     return false;
+  }
 
-  if (card_blacklisted_)
+  if (card_blacklisted_) {
+    if (reason) {
+      *reason = "GPU access is disabled ";
+      CommandLine* command_line = CommandLine::ForCurrentProcess();
+      if (command_line->HasSwitch(switches::kDisableGpu))
+        *reason += "through commandline switch --disable-gpu.";
+      else
+        *reason += "in chrome://settings.";
+    }
     return false;
+  }
 
   // We only need to block GPU process if more features are disallowed other
   // than those in the preliminary gpu feature flags because the latter work
   // through renderer commandline switches.
   std::set<int> features = preliminary_blacklisted_features_;
   MergeFeatureSets(&features, blacklisted_features_);
-  if (features.size() > preliminary_blacklisted_features_.size())
+  if (features.size() > preliminary_blacklisted_features_.size()) {
+    if (reason) {
+      *reason = "Features are disabled upon full but not preliminary GPU info.";
+    }
     return false;
+  }
 
   if (blacklisted_features_.size() == NUMBER_OF_GPU_FEATURE_TYPES) {
     // On Linux, we use cached GL strings to make blacklist decsions at browser
@@ -193,6 +210,9 @@ bool GpuDataManagerImpl::GpuAccessAllowed() const {
     // disabled, the GPU process will only initialize GL bindings, create a GL
     // context, and collect full GPU info.
 #if !defined(OS_LINUX)
+    if (reason) {
+      *reason = "All GPU features are blacklisted.";
+    }
     return false;
 #endif
   }
@@ -806,7 +826,7 @@ void GpuDataManagerImpl::NotifyGpuInfoUpdate() {
 }
 
 void GpuDataManagerImpl::EnableSwiftShaderIfNecessary() {
-  if (!GpuAccessAllowed() ||
+  if (!GpuAccessAllowed(NULL) ||
       blacklisted_features_.count(GPU_FEATURE_TYPE_WEBGL)) {
     if (!swiftshader_path_.empty() &&
         !CommandLine::ForCurrentProcess()->HasSwitch(

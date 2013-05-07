@@ -179,7 +179,7 @@ UpdateChecker::UpdateChecker(ComponentUpdateService* cus)
 void UpdateChecker::OnGpuInfoUpdate() {
   GpuDataManager *gpu_data_manager = GpuDataManager::GetInstance();
 
-  if (!gpu_data_manager->GpuAccessAllowed() ||
+  if (!gpu_data_manager->GpuAccessAllowed(NULL) ||
       gpu_data_manager->IsFeatureBlacklisted(content::GPU_FEATURE_TYPE_WEBGL) ||
       gpu_data_manager->ShouldUseSwiftShader()) {
     gpu_data_manager->RemoveObserver(this);

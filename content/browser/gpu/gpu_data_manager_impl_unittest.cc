@@ -113,7 +113,9 @@ TEST_F(GpuDataManagerImplTest, GpuSideBlacklisting) {
   ScopedGpuDataManagerImpl manager;
   ASSERT_TRUE(manager.get());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  std::string reason;
+  EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
+  EXPECT_TRUE(reason.empty());
 
   const std::string blacklist_json = LONG_STRING_CONST(
       {
@@ -145,14 +147,16 @@ TEST_F(GpuDataManagerImplTest, GpuSideBlacklisting) {
   gpu_info.gpu.device_id = 0x0640;
   manager->InitializeForTesting(blacklist_json, gpu_info);
 
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
+  EXPECT_TRUE(reason.empty());
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_WEBGL));
 
   gpu_info.gl_vendor = "NVIDIA";
   gpu_info.gl_renderer = "NVIDIA GeForce GT 120";
   manager->UpdateGpuInfo(gpu_info);
-  EXPECT_FALSE(manager->GpuAccessAllowed());
+  EXPECT_FALSE(manager->GpuAccessAllowed(&reason));
+  EXPECT_FALSE(reason.empty());
   EXPECT_EQ(2u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_WEBGL));
   EXPECT_TRUE(manager->IsFeatureBlacklisted(
@@ -163,7 +167,7 @@ TEST_F(GpuDataManagerImplTest, GpuSideExceptions) {
   ScopedGpuDataManagerImpl manager;
   ASSERT_TRUE(manager.get());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
 
   const std::string blacklist_json = LONG_STRING_CONST(
       {
@@ -192,13 +196,13 @@ TEST_F(GpuDataManagerImplTest, GpuSideExceptions) {
   gpu_info.gpu.device_id = 0x0640;
   manager->InitializeForTesting(blacklist_json, gpu_info);
 
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
 
   // Now assume gpu process launches and full GPU info is collected.
   gpu_info.gl_renderer = "NVIDIA GeForce GT 120";
   manager->UpdateGpuInfo(gpu_info);
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
 }
 
@@ -206,10 +210,13 @@ TEST_F(GpuDataManagerImplTest, DisableHardwareAcceleration) {
   ScopedGpuDataManagerImpl manager;
   ASSERT_TRUE(manager.get());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  std::string reason;
+  EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
+  EXPECT_TRUE(reason.empty());
 
   manager->DisableHardwareAcceleration();
-  EXPECT_FALSE(manager->GpuAccessAllowed());
+  EXPECT_FALSE(manager->GpuAccessAllowed(&reason));
+  EXPECT_FALSE(reason.empty());
   EXPECT_EQ(static_cast<size_t>(NUMBER_OF_GPU_FEATURE_TYPES),
             manager->GetBlacklistedFeatureCount());
 }
@@ -219,11 +226,11 @@ TEST_F(GpuDataManagerImplTest, SwiftShaderRendering) {
   ScopedGpuDataManagerImpl manager;
   ASSERT_TRUE(manager.get());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_FALSE(manager->ShouldUseSwiftShader());
 
   manager->DisableHardwareAcceleration();
-  EXPECT_FALSE(manager->GpuAccessAllowed());
+  EXPECT_FALSE(manager->GpuAccessAllowed(NULL));
   EXPECT_FALSE(manager->ShouldUseSwiftShader());
 
   // If SwiftShader is enabled, even if we blacklist GPU,
@@ -231,7 +238,7 @@ TEST_F(GpuDataManagerImplTest, SwiftShaderRendering) {
   const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
   manager->RegisterSwiftShaderPath(test_path);
   EXPECT_TRUE(manager->ShouldUseSwiftShader());
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(
       manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
@@ -242,17 +249,17 @@ TEST_F(GpuDataManagerImplTest, SwiftShaderRendering2) {
   ScopedGpuDataManagerImpl manager;
   ASSERT_TRUE(manager.get());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_FALSE(manager->ShouldUseSwiftShader());
 
   const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
   manager->RegisterSwiftShaderPath(test_path);
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_FALSE(manager->ShouldUseSwiftShader());
 
   manager->DisableHardwareAcceleration();
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_TRUE(manager->ShouldUseSwiftShader());
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(
@@ -289,7 +296,7 @@ TEST_F(GpuDataManagerImplTest, NoGpuInfoUpdateWithSwiftShader) {
   const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
   manager->RegisterSwiftShaderPath(test_path);
   EXPECT_TRUE(manager->ShouldUseSwiftShader());
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
 
   {
     base::RunLoop run_loop;
@@ -471,7 +478,7 @@ TEST_F(GpuDataManagerImplTest, SetGLStrings) {
   ScopedGpuDataManagerImpl manager;
   ASSERT_TRUE(manager.get());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
 
   const std::string blacklist_json = LONG_STRING_CONST(
       {
@@ -503,7 +510,7 @@ TEST_F(GpuDataManagerImplTest, SetGLStrings) {
   manager->InitializeForTesting(blacklist_json, gpu_info);
 
   // Not enough GPUInfo.
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
 
   // Now assume browser gets GL strings from local state.
@@ -511,7 +518,7 @@ TEST_F(GpuDataManagerImplTest, SetGLStrings) {
   // However, GPU process is not blocked because this is all browser side and
   // happens before renderer launching.
   manager->SetGLStrings(kGLVendorMesa, kGLRendererMesa, kGLVersionMesa801);
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_WEBGL));
 }
@@ -525,7 +532,7 @@ TEST_F(GpuDataManagerImplTest, SetGLStringsNoEffects) {
   ScopedGpuDataManagerImpl manager;
   ASSERT_TRUE(manager.get());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
 
   const std::string blacklist_json = LONG_STRING_CONST(
       {
@@ -562,7 +569,7 @@ TEST_F(GpuDataManagerImplTest, SetGLStringsNoEffects) {
   manager->InitializeForTesting(blacklist_json, gpu_info);
 
   // Full GPUInfo, the entry applies.
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_WEBGL));
 
@@ -570,7 +577,7 @@ TEST_F(GpuDataManagerImplTest, SetGLStringsNoEffects) {
   // SetGLStrings() has no effects because GPUInfo already got these strings.
   // (Otherwise the entry should not apply.)
   manager->SetGLStrings(kGLVendorMesa, kGLRendererMesa, kGLVersionMesa802);
-  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_WEBGL));
 }
@@ -603,6 +610,47 @@ TEST_F(GpuDataManagerImplTest, GpuDriverBugListMultiple) {
   std::string args = command_line.GetSwitchValueASCII(
       switches::kGpuDriverBugWorkarounds);
   EXPECT_STREQ("5,7", args.c_str());
+}
+
+TEST_F(GpuDataManagerImplTest, BlacklistAllFeatures) {
+  ScopedGpuDataManagerImpl manager;
+  ASSERT_TRUE(manager.get());
+  EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
+  std::string reason;
+  EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
+  EXPECT_TRUE(reason.empty());
+
+  const std::string blacklist_json = LONG_STRING_CONST(
+      {
+        "name": "gpu blacklist",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "features": [
+              "all"
+            ]
+          }
+        ]
+      }
+  );
+
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x10de;
+  gpu_info.gpu.device_id = 0x0640;
+  manager->InitializeForTesting(blacklist_json, gpu_info);
+
+  EXPECT_EQ(NUMBER_OF_GPU_FEATURE_TYPES,
+            manager->GetBlacklistedFeatureCount());
+  // TODO(zmo): remove the Linux specific behavior once we fix
+  // crbug.com/238466.
+#if defined(OS_LINUX)
+  EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
+  EXPECT_TRUE(reason.empty());
+#else
+  EXPECT_FALSE(manager->GpuAccessAllowed(&reason));
+  EXPECT_FALSE(reason.empty());
+#endif
 }
 
 }  // namespace content

@@ -193,7 +193,9 @@ bool SupportsAccelerated2dCanvas() {
 base::Value* GetFeatureStatus() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
-  bool gpu_access_blocked = !manager->GpuAccessAllowed();
+  std::string gpu_access_blocked_reason;
+  bool gpu_access_blocked =
+      !manager->GpuAccessAllowed(&gpu_access_blocked_reason);
 
   base::DictionaryValue* status = new base::DictionaryValue();
 
@@ -438,10 +440,10 @@ base::Value* GetFeatureStatus() {
     if (gpu_access_blocked) {
       base::DictionaryValue* problem = new base::DictionaryValue();
       problem->SetString("description",
-          "GPU process was unable to boot. Access to GPU disallowed.");
+          "GPU process was unable to boot: " + gpu_access_blocked_reason);
       problem->Set("crBugs", new base::ListValue());
       problem->Set("webkitBugs", new base::ListValue());
-      problem_list->Append(problem);
+      problem_list->Insert(0, problem);
     }
 
     for (size_t i = 0; i < kNumFeatures; ++i) {
