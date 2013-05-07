@@ -40,6 +40,9 @@ class CHROMEOS_EXPORT IBusInputContextHandlerInterface {
 
   // Called when the engine request hiding preedit string.
   virtual void HidePreeditText() = 0;
+
+  // Called when the engine request deleting surrounding string.
+  virtual void DeleteSurroundingText(int32 offset, uint32 length) = 0;
 };
 
 // A class to make the actual DBus calls for IBusInputContext service.

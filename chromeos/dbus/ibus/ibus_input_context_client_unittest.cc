@@ -57,6 +57,7 @@ class MockInputContextHandler : public IBusInputContextHandlerInterface {
   MOCK_METHOD0(HidePreeditText, void());
   MOCK_METHOD3(UpdatePreeditText,
                void(const IBusText& text, uint32 cursor_pos, bool visible));
+  MOCK_METHOD2(DeleteSurroundingText, void(int32 offset, uint32 length));
 };
 
 class MockProcessKeyEventHandler {

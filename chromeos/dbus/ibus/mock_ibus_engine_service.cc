@@ -68,6 +68,9 @@ void MockIBusEngineService::CommitText(const std::string& text) {
   ++commit_text_call_count_;
 }
 
+void MockIBusEngineService::DeleteSurroundingText(int32 offset,uint32 length) {
+}
+
 IBusEngineHandlerInterface* MockIBusEngineService::GetEngine() const {
   return current_engine_;
 }

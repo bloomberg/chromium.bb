@@ -33,6 +33,7 @@ class MockIBusEngineService : public IBusEngineService {
                                uint32 state) OVERRIDE;
   virtual void RequireSurroundingText() OVERRIDE;
   virtual void CommitText(const std::string& text) OVERRIDE;
+  virtual void DeleteSurroundingText(int32 offset, uint32 length) OVERRIDE;
 
   IBusEngineHandlerInterface* GetEngine() const;
 

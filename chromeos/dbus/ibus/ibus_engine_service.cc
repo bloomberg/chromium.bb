@@ -222,11 +222,22 @@ class IBusEngineServiceImpl : public IBusEngineService {
     exported_object_->SendSignal(&signal);
   }
 
+  // IBusEngineService override.
   virtual void CommitText(const std::string& text) OVERRIDE {
     dbus::Signal signal(ibus::engine::kServiceInterface,
                         ibus::engine::kCommitTextSignal);
     dbus::MessageWriter writer(&signal);
     AppendStringAsIBusText(text, &writer);
+    exported_object_->SendSignal(&signal);
+  }
+
+  // IBusEngineService override.
+  virtual void DeleteSurroundingText(int32 offset, uint32 length) {
+    dbus::Signal signal(ibus::engine::kServiceInterface,
+                        ibus::engine::kDeleteSurroundingTextSignal);
+    dbus::MessageWriter writer(&signal);
+    writer.AppendInt32(offset);
+    writer.AppendUint32(length);
     exported_object_->SendSignal(&signal);
   }
 
@@ -562,6 +573,13 @@ class IBusEngineServiceDaemonlessImpl : public IBusEngineService {
     }
   }
 
+  // IBusEngineService override.
+  virtual void DeleteSurroundingText(int32 offset, uint32 length) {
+    IBusInputContextHandlerInterface* input_context =
+        IBusBridge::Get()->GetInputContextHandler();
+    if (input_context)
+      input_context->DeleteSurroundingText(offset, length);
+  }
  private:
   DISALLOW_COPY_AND_ASSIGN(IBusEngineServiceDaemonlessImpl);
 };

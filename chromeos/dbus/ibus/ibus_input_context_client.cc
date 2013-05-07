@@ -294,6 +294,22 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
       handler_->HidePreeditText();
   }
 
+  // Handle DeleteSurroundingText signal.
+  void OnDeleteSurroundingText(dbus::Signal* signal) {
+    if (!handler_)
+      return;
+
+    dbus::MessageReader reader(signal);
+    int32 offset = 0;
+    uint32 length = 0;
+    if (!reader.PopInt32(&offset) || !reader.PopUint32(&length)) {
+      // The IBus message structure may be changed.
+      LOG(ERROR) << "Invalid signal: " << signal->ToString();
+      return;
+    }
+    handler_->DeleteSurroundingText(offset, length);
+  }
+
   // Connects signals to signal handlers.
   void ConnectSignals() {
     proxy_->ConnectToSignal(

@@ -168,6 +168,7 @@ class UI_EXPORT InputMethodIBus
   virtual void UpdatePreeditText(const chromeos::IBusText& text,
                                  uint32 cursor_pos,
                                  bool visible) OVERRIDE;
+  virtual void DeleteSurroundingText(int32 offset, uint32 length) OVERRIDE;
 
   void CreateInputContextDone(const dbus::ObjectPath& object_path);
   void CreateInputContextFail();

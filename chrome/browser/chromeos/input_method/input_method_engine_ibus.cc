@@ -389,8 +389,6 @@ bool InputMethodEngineIBus::DeleteSurroundingText(int context_id,
                                                   int offset,
                                                   size_t number_of_chars,
                                                   std::string* error) {
-  const uint32 kBackSpaceKeyCode = 14;
-
   if (!active_) {
     *error = kErrorNotActive;
     return false;
@@ -399,12 +397,12 @@ bool InputMethodEngineIBus::DeleteSurroundingText(int context_id,
     *error = kErrorWrongContext;
     return false;
   }
+
   if (offset < 0 && static_cast<size_t>(-1 * offset) != size_t(number_of_chars))
     return false;  // Currently we can only support preceding text.
 
   // TODO(nona): Return false if there is ongoing composition.
-  for (size_t i = 0; i < number_of_chars; ++i)
-    GetCurrentService()->ForwardKeyEvent(XK_BackSpace, kBackSpaceKeyCode, 0U);
+  GetCurrentService()->DeleteSurroundingText(offset, number_of_chars);
   return true;
 }
 

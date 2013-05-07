@@ -75,6 +75,7 @@ const char kUpdatePropertySignal[] = "UpdateProperty";
 const char kForwardKeyEventSignal[] = "ForwardKeyEvent";
 const char kRequireSurroundingTextSignal[] = "RequireSurroundingText";
 const char kCommitTextSignal[] = "CommitText";
+const char kDeleteSurroundingTextSignal[] = "DeleteSurroundingText";
 }  // namespace engine
 
 namespace panel {

@@ -142,6 +142,8 @@ class CHROMEOS_EXPORT IBusEngineService {
   virtual void RequireSurroundingText() = 0;
   // Emits CommitText signal.
   virtual void CommitText(const std::string& text) = 0;
+  // Emits DeleteSurroundingText signal.
+  virtual void DeleteSurroundingText(int32 offset, uint32 length) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
