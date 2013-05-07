@@ -72,8 +72,8 @@ public:
 
 private:
     bool requestPlugin(HTMLPlugInImageElement*, const KURL&, const String& serviceType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback);
-    Frame* loadOrRedirectSubframe(HTMLFrameOwnerElement*, const KURL&, const AtomicString& frameName, bool lockBackForwardList);
-    Frame* loadSubframe(HTMLFrameOwnerElement*, const KURL&, const String& name, const String& referrer);
+    bool loadOrRedirectSubframe(HTMLFrameOwnerElement*, const KURL&, const AtomicString& frameName, bool lockBackForwardList);
+    bool loadSubframe(HTMLFrameOwnerElement*, const KURL&, const String& name, const String& referrer);
     bool loadPlugin(HTMLPlugInImageElement*, const KURL&, const String& mimeType,
         const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback);
 
