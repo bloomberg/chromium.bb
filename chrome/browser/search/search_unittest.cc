@@ -80,14 +80,17 @@ TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfo) {
   EXPECT_EQ(ZERO, flags.size());
 }
 
-class InstantExtendedAPIEnabledTest : public testing::Test {
+class InstantExtendedAPIEnabledTest : public BrowserWithTestWindowTest {
  public:
   InstantExtendedAPIEnabledTest() : histogram_(NULL) {
   }
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
+    BrowserWithTestWindowTest::SetUp();
+
     field_trial_list_.reset(new base::FieldTrialList(
         new metrics::SHA1EntropyProvider("42")));
+
     base::StatisticsRecorder::Initialize();
     ResetInstantExtendedOptInStateGateForTest();
     previous_metrics_count_.resize(INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT, 0);
@@ -143,9 +146,9 @@ TEST_F(InstantExtendedAPIEnabledTest, EnabledViaCommandLineFlag) {
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
 #if defined(OS_IOS) || defined(OS_ANDROID)
-  EXPECT_EQ(1ul, EmbeddedSearchPageVersion());
+  EXPECT_EQ(1ul, EmbeddedSearchPageVersion(profile()));
 #else
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
+  EXPECT_EQ(2ul, EmbeddedSearchPageVersion(profile()));
 #endif
   ValidateMetrics(INSTANT_EXTENDED_OPT_IN);
 }
@@ -155,7 +158,7 @@ TEST_F(InstantExtendedAPIEnabledTest, EnabledViaFinchFlag) {
       "InstantExtended/Group1 espv:42/"));
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(42ul, EmbeddedSearchPageVersion());
+  EXPECT_EQ(42ul, EmbeddedSearchPageVersion(profile()));
   ValidateMetrics(INSTANT_EXTENDED_NOT_SET);
 }
 
@@ -165,7 +168,7 @@ TEST_F(InstantExtendedAPIEnabledTest, DisabledViaCommandLineFlag) {
       "InstantExtended/Group1 espv:2/"));
   EXPECT_FALSE(IsInstantExtendedAPIEnabled());
   EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion(profile()));
   ValidateMetrics(INSTANT_EXTENDED_OPT_OUT);
 }
 
@@ -173,7 +176,7 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyEnabledViaCommandLineFlag) {
   GetCommandLine()->AppendSwitch(switches::kEnableLocalOnlyInstantExtendedAPI);
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion(profile()));
   ValidateMetrics(INSTANT_EXTENDED_OPT_IN_LOCAL);
 }
 
@@ -182,7 +185,7 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyEnabledViaFinch) {
       "InstantExtended/Group1 local_only:1/"));
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion(profile()));
   ValidateMetrics(INSTANT_EXTENDED_NOT_SET);
 }
 
@@ -208,7 +211,7 @@ TEST_F(InstantExtendedAPIEnabledTest,
   GetCommandLine()->AppendSwitch(switches::kDisableInstantExtendedAPI);
   EXPECT_FALSE(IsInstantExtendedAPIEnabled());
   EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion(profile()));
   ValidateMetrics(INSTANT_EXTENDED_OPT_OUT);
 }
 
@@ -218,7 +221,7 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyCommandLineTrumpsFinch) {
       "InstantExtended/Group1 espv:2/"));
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion(profile()));
   ValidateMetrics(INSTANT_EXTENDED_OPT_IN_LOCAL);
 }
 
@@ -228,7 +231,7 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyFinchTrumpedByCommandLine) {
   GetCommandLine()->AppendSwitch(switches::kDisableInstantExtendedAPI);
   EXPECT_FALSE(IsInstantExtendedAPIEnabled());
   EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion(profile()));
   ValidateMetrics(INSTANT_EXTENDED_OPT_OUT);
 }
 
@@ -237,7 +240,7 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyFinchTrumpsFinch) {
       "InstantExtended/Group1 espv:1 local_only:1/"));
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion(profile()));
   ValidateMetrics(INSTANT_EXTENDED_NOT_SET);
 }
 
@@ -247,7 +250,7 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyDisabledViaCommandLineFlag) {
       "InstantExtended/Group1 espv:2/"));
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
+  EXPECT_EQ(2ul, EmbeddedSearchPageVersion(profile()));
   ValidateMetrics(INSTANT_EXTENDED_OPT_OUT_LOCAL);
 }
 
@@ -415,11 +418,21 @@ const SearchTestCase kInstantNTPTestCases[] = {
   {"http://foo.com/instant?strk=1",        false, "Insecure URL"},
   {"https://foo.com/instant",              false, "No search term replacement"},
   {"chrome://blank/",                      false, "Chrome scheme"},
-  {"chrome-search://foo",                   false, "Chrome-search scheme"},
+  {"chrome-search://foo",                  false, "Chrome-search scheme"},
   {chrome::kChromeSearchLocalNtpUrl,       true,  "Local new tab page"},
   {chrome::kChromeSearchLocalGoogleNtpUrl, true,  "Local new tab page"},
   {"https://bar.com/instant?strk=1",       false, "Random non-search page"},
 };
+
+TEST_F(SearchTest, InstantExtendedEmbeddedSearchDisabledForIncognito) {
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  EnableInstantExtendedAPIForTesting();
+  profile()->set_incognito(true);
+  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion(profile()));
+  EXPECT_FALSE(IsQueryExtractionEnabled(profile()));
+#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
+}
 
 TEST_F(SearchTest, InstantNTPExtendedEnabled) {
   EnableInstantExtendedAPIForTesting();

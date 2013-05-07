@@ -150,7 +150,8 @@ std::string UIThreadSearchTermsData::InstantEnabledParam() const {
 std::string UIThreadSearchTermsData::InstantExtendedEnabledParam() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  uint64 instant_extended_api_version = chrome::EmbeddedSearchPageVersion();
+  uint64 instant_extended_api_version =
+      chrome::EmbeddedSearchPageVersion(profile_);
   if (instant_extended_api_version) {
     return std::string(google_util::kInstantExtendedAPIParam) + "=" +
         base::Uint64ToString(instant_extended_api_version) + "&";

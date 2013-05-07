@@ -101,7 +101,11 @@ void TemplateURLServiceFactory::RegisterUserPrefs(
 
 content::BrowserContext* TemplateURLServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  // TODO(dougw): We need a separate instance of TemplateURLService in
+  // incognito profiles so that search-term-replacement can be disabled in
+  // incognito (see crbug.com/232065). Switch back to a shared instance once
+  // this is no longer necessary.
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 bool TemplateURLServiceFactory::ServiceIsNULLWhileTesting() const {

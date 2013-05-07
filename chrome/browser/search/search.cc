@@ -152,6 +152,34 @@ void RecordInstantExtendedOptInState() {
   }
 }
 
+// Helper for EmbeddedSearchPageVersion. Does not check if in incognito mode.
+uint64 EmbeddedSearchPageVersionHelper() {
+  // No server-side changes if the local-only Instant Extended is enabled.
+  if (IsLocalOnlyInstantExtendedAPIEnabled())
+    return kEmbeddedPageVersionDisabled;
+
+  // Check the command-line/about:flags setting first, which should have
+  // precedence and allows the trial to not be reported (if it's never queried).
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI))
+    return kEmbeddedPageVersionDisabled;
+  if (command_line->HasSwitch(switches::kEnableInstantExtendedAPI)) {
+    // The user has set the about:flags switch to Enabled - give the default
+    // UI version.
+    return kEmbeddedPageVersionDefault;
+  }
+
+  FieldTrialFlags flags;
+  if (GetFieldTrialInfo(
+          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+          &flags, NULL)) {
+    return GetUInt64ValueForFlagWithDefault(kEmbeddedPageVersionFlagName,
+                                            kEmbeddedPageVersionDefault,
+                                            flags);
+  }
+  return kEmbeddedPageVersionDisabled;
+}
+
 // Returns true if |contents| is rendered inside the Instant process for
 // |profile|.
 bool IsRenderedInInstantProcess(const content::WebContents* contents,
@@ -209,9 +237,6 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
 
 string16 GetSearchTermsImpl(const content::WebContents* contents,
                             const content::NavigationEntry* entry) {
-  if (!IsQueryExtractionEnabled())
-    return string16();
-
   // For security reasons, don't extract search terms if the page is not being
   // rendered in the privileged Instant renderer process. This is to protect
   // against a malicious page somehow scripting the search results page and
@@ -221,6 +246,10 @@ string16 GetSearchTermsImpl(const content::WebContents* contents,
   // Since iOS and Android doesn't use the instant framework, these checks are
   // disabled for the two platforms.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+
+  if (!IsQueryExtractionEnabled(profile))
+    return string16();
+
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   if (!IsRenderedInInstantProcess(contents, profile) &&
       (contents->GetController().GetLastCommittedEntry() == entry ||
@@ -258,43 +287,26 @@ bool IsInstantExtendedAPIEnabled() {
 #if defined(OS_IOS) || defined(OS_ANDROID)
   return false;
 #else
-  // On desktop, query extraction is part of Instant extended, so if one is
-  // enabled, the other is too.
-  return IsQueryExtractionEnabled() || IsLocalOnlyInstantExtendedAPIEnabled();
+  // TODO(dougw): Switch to EmbeddedSearchPageVersion after the proper
+  // solution to Issue 232065 has been implemented.
+  return EmbeddedSearchPageVersionHelper() ||
+      IsLocalOnlyInstantExtendedAPIEnabled();
 #endif  // defined(OS_IOS) || defined(OS_ANDROID)
 }
 
 // Determine what embedded search page version to request from the user's
 // default search provider. If 0, the embedded search UI should not be enabled.
-uint64 EmbeddedSearchPageVersion() {
-  // No server-side changes if the local-only Instant Extended is enabled.
-  if (IsLocalOnlyInstantExtendedAPIEnabled())
+uint64 EmbeddedSearchPageVersion(Profile* profile) {
+  // Disable for incognito. Temporary fix for Issue 232065.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  if (!profile || profile->IsOffTheRecord())
     return kEmbeddedPageVersionDisabled;
-
-  // Check the command-line/about:flags setting first, which should have
-  // precedence and allows the trial to not be reported (if it's never queried).
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI))
-    return kEmbeddedPageVersionDisabled;
-  if (command_line->HasSwitch(switches::kEnableInstantExtendedAPI)) {
-    // The user has set the about:flags switch to Enabled - give the default
-    // UI version.
-    return kEmbeddedPageVersionDefault;
-  }
-
-  FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
-    return GetUInt64ValueForFlagWithDefault(kEmbeddedPageVersionFlagName,
-                                            kEmbeddedPageVersionDefault,
-                                            flags);
-  }
-  return kEmbeddedPageVersionDisabled;
+#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
+  return EmbeddedSearchPageVersionHelper();
 }
 
-bool IsQueryExtractionEnabled() {
-  return EmbeddedSearchPageVersion() != kEmbeddedPageVersionDisabled;
+bool IsQueryExtractionEnabled(Profile* profile) {
+  return EmbeddedSearchPageVersion(profile) != kEmbeddedPageVersionDisabled;
 }
 
 bool IsLocalOnlyInstantExtendedAPIEnabled() {

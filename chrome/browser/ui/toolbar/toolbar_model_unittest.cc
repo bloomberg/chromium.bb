@@ -238,7 +238,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
 
 // Test that we don't replace any URLs when the query extraction is disabled.
 TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionDisabled) {
-  ASSERT_FALSE(chrome::IsQueryExtractionEnabled())
+  ASSERT_FALSE(chrome::IsQueryExtractionEnabled(profile()))
       << "This test expects query extraction to be disabled.";
 
   ResetDefaultTemplateURL();
