@@ -88,6 +88,14 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   // Create a frame view using the new dialog style.
   static NonClientFrameView* CreateNewStyleFrameView(Widget* widget);
+  // The semi-transparent border and shadow of the new style frame view does not
+  // work on child windows under Views/Win32. This is a kludge to get a
+  // reasonable-looking opaque border for the dialog. Note that this does not
+  // support arrows.
+  //
+  // TODO(wittman): Remove once WinAura is in place.
+  static NonClientFrameView* CreateNewStyleFrameView(Widget* widget,
+                                                     bool force_opaque_border);
 
   // Called when the window has been closed.
   virtual void OnClose() {}
