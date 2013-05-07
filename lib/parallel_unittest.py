@@ -15,7 +15,6 @@ import Queue
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % __file__))
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import partial_mock
 
@@ -269,50 +268,6 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
             ex_str = str(ex)
         self.assertTrue('Traceback' in ex_str)
         self.assertEqual(output_str, _GREETING)
-
-
-class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
-  """Test that child processes are halted when exceptions occur."""
-
-  def setUp(self):
-    self.failed = multiprocessing.Event()
-    self.passed = multiprocessing.Event()
-
-  def _Pass(self):
-    self.passed.set()
-    sys.stdout.write(_GREETING)
-
-  def _Exit(self):
-    sys.stdout.write(_GREETING)
-    self.passed.wait()
-    sys.exit(1)
-
-  def _Fail(self):
-    self.failed.wait(60)
-    self.failed.set()
-
-  def testExceptionRaising(self):
-    """Test that exceptions halt all running steps."""
-    steps = [self._Exit, self._Fail, self._Pass, self._Fail]
-    output_str, ex_str = None, None
-    with self.OutputCapturer() as capture:
-      try:
-        parallel.RunParallelSteps(steps, halt_on_error=True)
-      except parallel.BackgroundFailure as ex:
-        output_str = capture.GetStdout()
-        ex_str = str(ex)
-        logging.debug(ex_str)
-    self.assertTrue('Traceback' in ex_str)
-    self.assertTrue(self.passed.is_set())
-    self.assertEqual(output_str, _GREETING)
-    self.assertFalse(self.failed.is_set())
-
-  def testTempFileCleanup(self):
-    """Test that all temp files are cleaned up."""
-    with osutils.TempDir() as tempdir:
-      self.assertEqual(os.listdir(tempdir), [])
-      self.testExceptionRaising()
-      self.assertEqual(os.listdir(tempdir), [])
 
 
 if __name__ == '__main__':
