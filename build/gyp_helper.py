@@ -31,6 +31,7 @@ def apply_gyp_environment_from_file(file_path):
       'CXX_wrapper',
       'GYP_DEFINES',
       'GYP_GENERATOR_FLAGS',
+      'GYP_CROSSCOMPILE',
       'GYP_GENERATOR_OUTPUT',
       'GYP_GENERATORS',
   )
