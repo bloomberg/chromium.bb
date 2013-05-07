@@ -77,6 +77,7 @@
             'chromium/public/WebGestureCurveTarget.h',
             'chromium/public/WebGestureCurve.h',
             'chromium/public/WebGraphicsContext3D.h',
+            'chromium/public/WebGraphicsContext3DProvider.h',
             'chromium/public/WebHTTPBody.h',
             'chromium/public/WebHTTPHeaderVisitor.h',
             'chromium/public/WebHTTPLoadInfo.h',

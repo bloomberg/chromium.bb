@@ -60,6 +60,7 @@ class WebFileUtilities;
 class WebFlingAnimator;
 class WebGestureCurveTarget;
 class WebGestureCurve;
+class WebGraphicsContext3DProvider;
 class WebHyphenator;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
@@ -479,6 +480,10 @@ public:
     // May return null if GPU is not supported.
     // Returns the shared GrContext. This is a singleton object for the entire process.
     virtual GrContext* sharedOffscreenGrContext() { return 0; }
+
+    // Returns a newly allocated and initialized offscreen context provider. The provider may return a null
+    // graphics context if GPU is not supported.
+    virtual WebGraphicsContext3DProvider* createSharedOffscreenGraphicsContext3DProvider() { return 0; }
 
     // Returns true if the platform is capable of producing an offscreen context suitable for accelerating 2d canvas.
     // This will return false if the platform cannot promise that contexts will be preserved across operations like
