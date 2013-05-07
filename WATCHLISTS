@@ -536,7 +536,7 @@
                       'yuzo+watch@chromium.org'],
     'android_infra': ['bulach+watch@chromium.org',
                       'yfriedman+watch@chromium.org',
-                      'ilevy+watch@chromium.org',
+                      'ilevy-cc@chromium.org',
                       'klundberg+watch@chromium.org',
                       'craigdh+watch@chromium.org',
                       'frankf+watch@chromium.org'],
