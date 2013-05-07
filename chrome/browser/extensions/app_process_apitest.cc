@@ -481,9 +481,18 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
       contents->GetRenderProcessHost()->GetID()));
 }
 
+// Crashes on Windows and Mac. http://crbug.com/238670
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_ReloadIntoAppProcessWithJavaScript \
+    DISABLED_ReloadIntoAppProcessWithJavaScript
+#else
+#define MAYBE_ReloadIntoAppProcessWithJavaScript \
+    ReloadIntoAppProcessWithJavaScript
+#endif
+
 // Ensure that reloading a URL with JavaScript after installing or uninstalling
 // it as an app correctly swaps the process.  (http://crbug.com/80621)
-IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcessWithJavaScript) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcessWithJavaScript) {
   extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service()->process_map();
 
