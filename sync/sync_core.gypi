@@ -181,6 +181,8 @@
     'util/get_session_name.h',
     'util/get_session_name_ios.mm',
     'util/get_session_name_ios.h',
+    'util/get_session_name_linux.cc',
+    'util/get_session_name_linux.h',
     'util/get_session_name_mac.mm',
     'util/get_session_name_mac.h',
     'util/get_session_name_win.cc',
