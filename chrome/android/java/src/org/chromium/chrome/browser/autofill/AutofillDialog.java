@@ -412,6 +412,10 @@ public class AutofillDialog extends AlertDialog
         mContentView.changeLayoutTo(mode);
         updateButtons(mode);
         UiUtils.hideKeyboard(mContentView);
+        if (mFocusedField != null && !mContentView.isInEditingMode()) {
+            mFocusedField.removeTextChangedListener(mCurrentTextWatcher);
+            mFocusedField = null;
+        }
     }
 
     /**
@@ -738,7 +742,10 @@ public class AutofillDialog extends AlertDialog
     }
 
     /**
-     * Validates EditText fields in the editing mode when they get unfocused.
+     * Follow the EditText that is currently focused and add/remove text watcher for that EditText.
+     * Fields also get validated when one of them is defocused.
+     * @param v View that just got a focus change.
+     * @param hasFocus Whether the focus was gained.
      */
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
@@ -746,14 +753,12 @@ public class AutofillDialog extends AlertDialog
 
         if (!(v instanceof EditText)) return;
         EditText currentfield = (EditText) v;
-        if (!hasFocus) currentfield.removeTextChangedListener(mCurrentTextWatcher);
 
-        mFocusedField = currentfield;
-        // Validation is performed when user changes from one EditText view to another.
+        // New EditText just got focused.
+        if (hasFocus) mFocusedField = currentfield;
+
         int section = mContentView.getCurrentSection();
         AutofillDialogField[] fields = getFieldsForSection(section);
-        if (fields == null) return;
-
         int fieldType = AutofillDialogConstants.UNKNOWN_TYPE;
         int nativePointer = 0;
         for (AutofillDialogField field : fields) {
@@ -768,15 +773,21 @@ public class AutofillDialog extends AlertDialog
         assert (fieldType != AutofillDialogConstants.UNKNOWN_TYPE);
         if (fieldType == AutofillDialogConstants.UNKNOWN_TYPE) return;
 
-        addTextWatcher(currentfield, nativePointer);
-        mDelegate.editedOrActivatedField(mFocusedFieldNativePointer, this, mFocusedField.toString(),
-                false);
-
-        if (hasFocus) return;
-        String errorText = mDelegate.validateField(fieldType, currentfield.getText().toString());
-        currentfield.setError(errorText);
-        // Entire section is validated if the field is valid.
-        if (errorText == null) mDelegate.validateSection(section);
+        if (hasFocus) {
+            // Add text watcher to the currently selected EditText and send out the first
+            // editedOrActivated call because text watcher only sends it out after text changes.
+            addTextWatcher(currentfield, nativePointer);
+            mDelegate.editedOrActivatedField(mFocusedFieldNativePointer, this,
+                    mFocusedField.getText().toString(), false);
+        } else {
+            // Remove text watcher for the EditText that is being defocused, then validate that
+            // field. Entire section is validated if the field is valid.
+            currentfield.removeTextChangedListener(mCurrentTextWatcher);
+            String errorText =
+                    mDelegate.validateField(fieldType, currentfield.getText().toString());
+            currentfield.setError(errorText);
+            if (errorText == null) mDelegate.validateSection(section);
+        }
     }
 
     @Override
