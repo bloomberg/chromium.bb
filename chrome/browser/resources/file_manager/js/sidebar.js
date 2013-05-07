@@ -232,12 +232,13 @@ DirectoryTreeUtil.sortEntries = function(fileFilter, entries) {
 
 /**
  * Checks if tre tree should be hidden on the given directory.
+ *
  * @param {string} path Path to be checked.
  * @return {boolean} True if the tree should NOT be visible on the given
  *     directory. Otherwise, false.
  */
 DirectoryTreeUtil.shouldHideTree = function(path) {
-  return PathUtil.getRootType(path) == RootType.DOWNLOADS;
+  return !PathUtil.isDriveBasedPath(path);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
