@@ -16,7 +16,7 @@ from collections import deque
 def usage():
   print """\
 Usage:
-  tools/gyp-explain.py chrome_dll# gtest#
+  tools/gyp-explain.py [--dot] chrome_dll# gtest#
 """
 
 
@@ -51,6 +51,26 @@ def MatchNode(graph, substring):
   return candidates[0]
 
 
+def EscapeForDot(string):
+  suffix = '#target'
+  if string.endswith(suffix):
+    string = string[:-len(suffix)]
+  string = string.replace('\\', '\\\\')
+  return '"' + string + '"'
+
+
+def GenerateDot(fro, to, paths):
+  """Generates an input file for graphviz's dot program."""
+  prefixes = [os.path.commonprefix(path) for path in paths]
+  prefix = os.path.commonprefix(prefixes)
+  print '// Build with "dot -Tpng -ooutput.png this_file.dot"'
+  # "strict" collapses common paths.
+  print 'strict digraph {'
+  for path in paths:
+    print (' -> '.join(EscapeForDot(item[len(prefix):]) for item in path)), ';'
+  print '}'
+
+
 def Main(argv):
   # Check that dump.json exists and that it's not too old.
   dump_json_dirty = False
@@ -72,18 +92,25 @@ def Main(argv):
 
   g = json.load(open('dump.json'))
 
-  if len(argv) != 3:
+  if len(argv) not in (3, 4):
     usage()
     sys.exit(1)
+
+  generate_dot = argv[1] == '--dot'
+  if generate_dot:
+    argv.pop(1)
 
   fro = MatchNode(g, argv[1])
   to = MatchNode(g, argv[2])
 
   paths = list(GetPath(g, fro, to))
   if len(paths) > 0:
-    print 'These paths lead from %s to %s:' % (fro, to)
-    for path in paths:
-      print ' -> '.join(path)
+    if generate_dot:
+      GenerateDot(fro, to, paths)
+    else:
+      print 'These paths lead from %s to %s:' % (fro, to)
+      for path in paths:
+        print ' -> '.join(path)
   else:
     print 'No paths found from %s to %s.' % (fro, to)
 
