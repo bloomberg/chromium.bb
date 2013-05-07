@@ -1678,11 +1678,13 @@ bool ChromeLauncherControllerPerApp::IsIncognito(
 void ChromeLauncherControllerPerApp::ActivateOrAdvanceToNextBrowser() {
   // Create a list of all suitable running browsers.
   std::vector<Browser*> items;
+  // We use the list in the order of how the browsers got created - not the LRU
+  // order.
   const BrowserList* ash_browser_list =
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (BrowserList::const_reverse_iterator it =
-           ash_browser_list->begin_last_active();
-       it != ash_browser_list->end_last_active(); ++it) {
+  for (BrowserList::const_iterator it =
+           ash_browser_list->begin();
+       it != ash_browser_list->end(); ++it) {
     if (IsBrowserRepresentedInBrowserList(*it))
       items.push_back(*it);
   }

@@ -1307,6 +1307,25 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
   launcher_->ActivateLauncherItem(1);
   EXPECT_EQ(window2, ash::wm::GetActiveWindow());
 
+  // Create a third browser - make sure that we do not toggle simply between
+  // two windows.
+  Browser* browser3 = CreateBrowser(profile());
+  aura::Window* window3 = browser3->window()->GetNativeWindow();
+
+  EXPECT_EQ(3u, chrome::GetTotalBrowserCount());
+  EXPECT_NE(window1, window3);
+  EXPECT_NE(window2, window3);
+  EXPECT_EQ(window3, ash::wm::GetActiveWindow());
+
+  launcher_->ActivateLauncherItem(1);
+  EXPECT_EQ(window1, ash::wm::GetActiveWindow());
+  launcher_->ActivateLauncherItem(1);
+  EXPECT_EQ(window2, ash::wm::GetActiveWindow());
+  launcher_->ActivateLauncherItem(1);
+  EXPECT_EQ(window3, ash::wm::GetActiveWindow());
+  launcher_->ActivateLauncherItem(1);
+  EXPECT_EQ(window1, ash::wm::GetActiveWindow());
+
   // Create anther app and make sure that none of our browsers is active.
   LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB, NEW_WINDOW);
   EXPECT_NE(window1, ash::wm::GetActiveWindow());
@@ -1314,5 +1333,5 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
 
   // After activation our browser should be active again.
   launcher_->ActivateLauncherItem(1);
-  EXPECT_EQ(window2, ash::wm::GetActiveWindow());
+  EXPECT_EQ(window1, ash::wm::GetActiveWindow());
 }
