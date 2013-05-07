@@ -100,7 +100,7 @@ static v8::Handle<v8::Value> nameAttrGetterCallback(v8::Local<v8::String> name, 
 } // namespace TestExceptionV8Internal
 
 static const V8DOMConfiguration::BatchedAttribute V8TestExceptionAttrs[] = {
-    // Attribute 'name' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'name' (Type: 'attribute' ExtAttr: '')
     {"name", TestExceptionV8Internal::nameAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 

@@ -3984,21 +3984,21 @@ static v8::Handle<v8::Value> constructor(const v8::Arguments& args)
 } // namespace TestObjV8Internal
 
 static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
-    // Attribute 'readOnlyLongAttr' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'readOnlyLongAttr' (Type: 'attribute' ExtAttr: '')
     {"readOnlyLongAttr", TestObjV8Internal::readOnlyLongAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'readOnlyStringAttr' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'readOnlyStringAttr' (Type: 'attribute' ExtAttr: '')
     {"readOnlyStringAttr", TestObjV8Internal::readOnlyStringAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'readOnlyTestObjAttr' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'readOnlyTestObjAttr' (Type: 'attribute' ExtAttr: '')
     {"readOnlyTestObjAttr", TestObjV8Internal::readOnlyTestObjAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'staticReadOnlyLongAttr' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'staticReadOnlyLongAttr' (Type: 'attribute' ExtAttr: '')
     {"staticReadOnlyLongAttr", TestObjV8Internal::staticReadOnlyLongAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'staticStringAttr' (Type: 'attribute' ExtAttr: '')
     {"staticStringAttr", TestObjV8Internal::staticStringAttrAttrGetterCallback, TestObjV8Internal::staticStringAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'TestSubObj' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'TestSubObj' (Type: 'attribute' ExtAttr: '')
     {"TestSubObj", TestObjV8Internal::TestObjConstructorGetter, 0, 0, 0, &V8TestSubObj::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None | v8::DontEnum), 0 /* on instance */},
     // Attribute 'enumAttr' (Type: 'attribute' ExtAttr: '')
     {"enumAttr", TestObjV8Internal::enumAttrAttrGetterCallback, TestObjV8Internal::enumAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'readOnlyEnumAttr' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'readOnlyEnumAttr' (Type: 'attribute' ExtAttr: '')
     {"readOnlyEnumAttr", TestObjV8Internal::readOnlyEnumAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'shortAttr' (Type: 'attribute' ExtAttr: '')
     {"shortAttr", TestObjV8Internal::shortAttrAttrGetterCallback, TestObjV8Internal::shortAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -4094,9 +4094,9 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
     // Attribute 'conditionalAttr6' (Type: 'attribute' ExtAttr: 'Conditional')
     {"conditionalAttr6", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetterCallback, 0, 0, &V8TestObjectC::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None | v8::DontEnum), 0 /* on instance */},
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
-    // Attribute 'cachedAttribute1' (Type: 'readonly attribute' ExtAttr: 'CachedAttribute')
+    // Attribute 'cachedAttribute1' (Type: 'attribute' ExtAttr: 'CachedAttribute')
     {"cachedAttribute1", TestObjV8Internal::cachedAttribute1AttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'cachedAttribute2' (Type: 'readonly attribute' ExtAttr: 'CachedAttribute')
+    // Attribute 'cachedAttribute2' (Type: 'attribute' ExtAttr: 'CachedAttribute')
     {"cachedAttribute2", TestObjV8Internal::cachedAttribute2AttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'anyAttribute' (Type: 'attribute' ExtAttr: '')
     {"anyAttribute", TestObjV8Internal::anyAttributeAttrGetterCallback, TestObjV8Internal::anyAttributeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -4104,7 +4104,7 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
     {"floatArray", TestObjV8Internal::floatArrayAttrGetterCallback, TestObjV8Internal::floatArrayAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'doubleArray' (Type: 'attribute' ExtAttr: '')
     {"doubleArray", TestObjV8Internal::doubleArrayAttrGetterCallback, TestObjV8Internal::doubleArrayAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'contentDocument' (Type: 'readonly attribute' ExtAttr: 'CheckSecurityForNode')
+    // Attribute 'contentDocument' (Type: 'attribute' ExtAttr: 'CheckSecurityForNode')
     {"contentDocument", TestObjV8Internal::contentDocumentAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'mutablePoint' (Type: 'attribute' ExtAttr: '')
     {"mutablePoint", TestObjV8Internal::mutablePointAttrGetterCallback, TestObjV8Internal::mutablePointAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -4114,27 +4114,27 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
     {"strawberry", TestObjV8Internal::strawberryAttrGetterCallback, TestObjV8Internal::strawberryAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'strictFloat' (Type: 'attribute' ExtAttr: 'StrictTypeChecking')
     {"strictFloat", TestObjV8Internal::strictFloatAttrGetterCallback, TestObjV8Internal::strictFloatAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'description' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'description' (Type: 'attribute' ExtAttr: '')
     {"description", TestObjV8Internal::descriptionAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'id' (Type: 'attribute' ExtAttr: '')
     {"id", TestObjV8Internal::idAttrGetterCallback, TestObjV8Internal::idAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'hash' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'hash' (Type: 'attribute' ExtAttr: '')
     {"hash", TestObjV8Internal::hashAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'replaceableAttribute' (Type: 'readonly attribute' ExtAttr: 'Replaceable')
+    // Attribute 'replaceableAttribute' (Type: 'attribute' ExtAttr: 'Replaceable')
     {"replaceableAttribute", TestObjV8Internal::replaceableAttributeAttrGetterCallback, TestObjV8Internal::TestObjReplaceableAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'nullableDoubleAttribute' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'nullableDoubleAttribute' (Type: 'attribute' ExtAttr: '')
     {"nullableDoubleAttribute", TestObjV8Internal::nullableDoubleAttributeAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'nullableLongAttribute' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'nullableLongAttribute' (Type: 'attribute' ExtAttr: '')
     {"nullableLongAttribute", TestObjV8Internal::nullableLongAttributeAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'nullableBooleanAttribute' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'nullableBooleanAttribute' (Type: 'attribute' ExtAttr: '')
     {"nullableBooleanAttribute", TestObjV8Internal::nullableBooleanAttributeAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'nullableStringAttribute' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'nullableStringAttribute' (Type: 'attribute' ExtAttr: '')
     {"nullableStringAttribute", TestObjV8Internal::nullableStringAttributeAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'nullableLongSettableAttribute' (Type: 'attribute' ExtAttr: '')
     {"nullableLongSettableAttribute", TestObjV8Internal::nullableLongSettableAttributeAttrGetterCallback, TestObjV8Internal::nullableLongSettableAttributeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'nullableStringValue' (Type: 'attribute' ExtAttr: 'GetterRaisesException')
     {"nullableStringValue", TestObjV8Internal::nullableStringValueAttrGetterCallback, TestObjV8Internal::nullableStringValueAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'perWorldReadOnlyAttribute' (Type: 'readonly attribute' ExtAttr: 'PerWorldBindings')
+    // Attribute 'perWorldReadOnlyAttribute' (Type: 'attribute' ExtAttr: 'PerWorldBindings')
     {"perWorldReadOnlyAttribute", TestObjV8Internal::perWorldReadOnlyAttributeAttrGetterCallback, 0, TestObjV8Internal::perWorldReadOnlyAttributeAttrGetterCallbackForMainWorld, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'perWorldAttribute' (Type: 'attribute' ExtAttr: 'PerWorldBindings')
     {"perWorldAttribute", TestObjV8Internal::perWorldAttributeAttrGetterCallback, TestObjV8Internal::perWorldAttributeAttrSetterCallback, TestObjV8Internal::perWorldAttributeAttrGetterCallbackForMainWorld, TestObjV8Internal::perWorldAttributeAttrSetterCallbackForMainWorld, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -4156,11 +4156,11 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
     {"activityLoggedAttrGetter2", TestObjV8Internal::activityLoggedAttrGetter2AttrGetterCallback, TestObjV8Internal::activityLoggedAttrGetter2AttrSetterCallback, TestObjV8Internal::activityLoggedAttrGetter2AttrGetterCallbackForMainWorld, TestObjV8Internal::activityLoggedAttrGetter2AttrSetterCallbackForMainWorld, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'activityLoggedInIsolatedWorldsAttrGetter' (Type: 'attribute' ExtAttr: 'PerWorldBindings ActivityLog')
     {"activityLoggedInIsolatedWorldsAttrGetter", TestObjV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttrGetterCallback, TestObjV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttrSetterCallback, TestObjV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttrGetterCallbackForMainWorld, TestObjV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttrSetterCallbackForMainWorld, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'deprecatedStaticReadOnlyAttr' (Type: 'readonly attribute' ExtAttr: 'DeprecateAs')
+    // Attribute 'deprecatedStaticReadOnlyAttr' (Type: 'attribute' ExtAttr: 'DeprecateAs')
     {"deprecatedStaticReadOnlyAttr", TestObjV8Internal::deprecatedStaticReadOnlyAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'deprecatedStaticAttr' (Type: 'attribute' ExtAttr: 'DeprecateAs')
     {"deprecatedStaticAttr", TestObjV8Internal::deprecatedStaticAttrAttrGetterCallback, TestObjV8Internal::deprecatedStaticAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'deprecatedReadonlyAttr' (Type: 'readonly attribute' ExtAttr: 'DeprecateAs')
+    // Attribute 'deprecatedReadonlyAttr' (Type: 'attribute' ExtAttr: 'DeprecateAs')
     {"deprecatedReadonlyAttr", TestObjV8Internal::deprecatedReadonlyAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'deprecatedAttr' (Type: 'attribute' ExtAttr: 'DeprecateAs')
     {"deprecatedAttr", TestObjV8Internal::deprecatedAttrAttrGetterCallback, TestObjV8Internal::deprecatedAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

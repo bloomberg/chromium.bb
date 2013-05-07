@@ -191,7 +191,7 @@ static void TestActiveDOMObjectDomainSafeFunctionSetter(v8::Local<v8::String> na
 } // namespace TestActiveDOMObjectV8Internal
 
 static const V8DOMConfiguration::BatchedAttribute V8TestActiveDOMObjectAttrs[] = {
-    // Attribute 'excitingAttr' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'excitingAttr' (Type: 'attribute' ExtAttr: '')
     {"excitingAttr", TestActiveDOMObjectV8Internal::excitingAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 

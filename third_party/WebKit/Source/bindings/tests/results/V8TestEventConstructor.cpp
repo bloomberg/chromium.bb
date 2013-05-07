@@ -131,9 +131,9 @@ static v8::Handle<v8::Value> constructor(const v8::Arguments& args)
 } // namespace TestEventConstructorV8Internal
 
 static const V8DOMConfiguration::BatchedAttribute V8TestEventConstructorAttrs[] = {
-    // Attribute 'attr1' (Type: 'readonly attribute' ExtAttr: '')
+    // Attribute 'attr1' (Type: 'attribute' ExtAttr: '')
     {"attr1", TestEventConstructorV8Internal::attr1AttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'attr2' (Type: 'readonly attribute' ExtAttr: 'InitializedByEventConstructor')
+    // Attribute 'attr2' (Type: 'attribute' ExtAttr: 'InitializedByEventConstructor')
     {"attr2", TestEventConstructorV8Internal::attr2AttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
