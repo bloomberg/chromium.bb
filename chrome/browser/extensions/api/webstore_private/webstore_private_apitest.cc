@@ -436,8 +436,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest,
 
 // Tests partially installing a bundle (2 succeed, 1 fails due to an invalid
 // CRX, and 1 fails due to the manifests not matching).
+#if defined(OS_WIN)
+// Times out on Windows. http://crbug.com/238805
+#define MAYBE_InstallBundleInvalid DISABLED_InstallBundleInvalid
+#else
+#define MAYBE_InstallBundleInvalid InstallBundleInvalid
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest,
-                       InstallBundleInvalid) {
+                       MAYBE_InstallBundleInvalid) {
   extensions::BundleInstaller::SetAutoApproveForTesting(true);
 
   PackInvalidCRX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
