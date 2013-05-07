@@ -57,18 +57,16 @@ var parseHtmlSubset = (function() {
     }
   }
 
-  function assertElement(tags, node, errors) {
+  function assertElement(tags, node) {
     if (tags.indexOf(node.tagName) == -1)
-      errors.push(node.tagName + ' is not supported');
+      throw Error(node.tagName + ' is not supported');
   }
 
-  function assertAttribute(attrs, attrNode, node, errors) {
+  function assertAttribute(attrs, attrNode, node) {
     var n = attrNode.nodeName;
     var v = attrNode.nodeValue;
-    if (!attrs.hasOwnProperty(n) || !attrs[n](node, v)) {
-      errors.push(node.tagName + '[' + n + '="' + v + '"] is not supported');
-      node.removeAttribute(n);
-    }
+    if (!attrs.hasOwnProperty(n) || !attrs[n](node, v))
+      throw Error(node.tagName + '[' + n + '="' + v + '"] is not supported');
   }
 
   return function(s, opt_extraTags, opt_extraAttrs) {
@@ -77,18 +75,18 @@ var parseHtmlSubset = (function() {
     var tags = allowedTags.concat(extraTags);
     var attrs = merge(allowedAttributes, opt_extraAttrs || {});
 
-    var r = document.createRange();
-    r.selectNode(document.body);
-    // This does not execute any scripts.
+    var doc = document.implementation.createHTMLDocument('');
+    var r = doc.createRange();
+    r.selectNode(doc.body);
+    // This does not execute any scripts because the document has no view.
     var df = r.createContextualFragment(s);
-    var errors = [];
     walk(df, function(node) {
       switch (node.nodeType) {
         case Node.ELEMENT_NODE:
-          assertElement(tags, node, errors);
+          assertElement(tags, node);
           var nodeAttrs = node.attributes;
-          for (var i = nodeAttrs.length - 1; i >= 0; i--) {
-            assertAttribute(attrs, nodeAttrs[i], node, errors);
+          for (var i = 0; i < nodeAttrs.length; ++i) {
+            assertAttribute(attrs, nodeAttrs[i], node);
           }
           break;
 
@@ -101,8 +99,6 @@ var parseHtmlSubset = (function() {
           throw Error('Node type ' + node.nodeType + ' is not supported');
       }
     });
-    if (errors.length)
-      throw new Error(errors.join('\n'));
     return df;
   };
 })();
