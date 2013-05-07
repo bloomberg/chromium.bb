@@ -141,15 +141,13 @@ void CrasAudioSwitchHandler::UpdateDevicesAndSwitch(
   // .) the top input/output device is already active, or,
   // .) an input/output device was removed but not the active device,
   // then we don't need to switch the device, otherwise we do need to switch.
-  if (!(input_devices_.top().active ||
-      (input_device_removed && have_active_input_device))) {
+  if (!input_devices_.empty() && (!(input_devices_.top().active ||
+      (input_device_removed && have_active_input_device))))
     SwitchToDevice(input_devices_.top());
-  }
 
-  if (!(output_devices_.top().active ||
-      (output_device_removed && have_active_output_device))) {
+  if (!output_devices_.empty() && (!(output_devices_.top().active ||
+      (output_device_removed && have_active_output_device))))
     SwitchToDevice(output_devices_.top());
-  }
 }
 
 void CrasAudioSwitchHandler::HandleGetNodes(
