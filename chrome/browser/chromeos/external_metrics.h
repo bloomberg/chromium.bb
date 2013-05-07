@@ -64,6 +64,10 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   // in the form <histogram-name> <sample> <max>.
   void RecordLinearHistogram(const char* histogram_data);
 
+  // Passes a sparse histogram event to the UMA service.  |histogram_data| is
+  // in the form <histogram-name> <sample>.
+  void RecordSparseHistogram(const char* histogram_data);
+
   // Collects external events from metrics log file.  This is run at periodic
   // intervals.
   void CollectEvents();
