@@ -185,6 +185,18 @@ bool DeferredImageDecoder::frameHasAlphaAtIndex(size_t index) const
     return m_actualDecoder ? m_actualDecoder->frameHasAlphaAtIndex(index) : m_frameGenerator->hasAlpha();
 }
 
+bool DeferredImageDecoder::frameIsCompleteAtIndex(size_t index) const
+{
+    // TODO: Implement this for deferred decoding.
+    return m_actualDecoder && m_actualDecoder->frameIsCompleteAtIndex(index);
+}
+
+float DeferredImageDecoder::frameDurationAtIndex(size_t index) const
+{
+    // TODO: Implement this for deferred decoding.
+    return m_actualDecoder ? m_actualDecoder->frameDurationAtIndex(index) : 0;
+}
+
 unsigned DeferredImageDecoder::frameBytesAtIndex(size_t index) const
 {
     // If frame decoding is deferred then it is not managed by MemoryCache

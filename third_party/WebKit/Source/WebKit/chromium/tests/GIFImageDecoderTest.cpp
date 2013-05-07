@@ -241,6 +241,62 @@ TEST(GIFImageDecoderTest, progressiveDecode)
     EXPECT_TRUE(match);
 }
 
+TEST(GIFImageDecoderTest, allDataReceivedTruncation)
+{
+    OwnPtr<GIFImageDecoder> decoder(createDecoder());
+
+    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/animated.gif");
+    ASSERT_TRUE(data.get());
+
+    ASSERT_GE(data->size(), 10u);
+    RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), data->size() - 10);
+    decoder->setData(tempData.get(), true);
+
+    EXPECT_EQ(2u, decoder->frameCount());
+    EXPECT_FALSE(decoder->failed());
+
+    decoder->frameBufferAtIndex(0);
+    EXPECT_FALSE(decoder->failed());
+    decoder->frameBufferAtIndex(1);
+    EXPECT_TRUE(decoder->failed());
+}
+
+TEST(GIFImageDecoderTest, frameIsComplete)
+{
+    OwnPtr<GIFImageDecoder> decoder(createDecoder());
+
+    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/animated.gif");
+    ASSERT_TRUE(data.get());
+    decoder->setData(data.get(), true);
+
+    EXPECT_EQ(2u, decoder->frameCount());
+    EXPECT_FALSE(decoder->failed());
+    EXPECT_TRUE(decoder->frameIsCompleteAtIndex(0));
+    EXPECT_TRUE(decoder->frameIsCompleteAtIndex(1));
+}
+
+TEST(GIFImageDecoderTest, frameIsCompleteLoading)
+{
+    OwnPtr<GIFImageDecoder> decoder(createDecoder());
+
+    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/animated.gif");
+    ASSERT_TRUE(data.get());
+
+    ASSERT_GE(data->size(), 10u);
+    RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), data->size() - 10);
+    decoder->setData(tempData.get(), false);
+
+    EXPECT_EQ(2u, decoder->frameCount());
+    EXPECT_FALSE(decoder->failed());
+    EXPECT_TRUE(decoder->frameIsCompleteAtIndex(0));
+    EXPECT_FALSE(decoder->frameIsCompleteAtIndex(1));
+
+    decoder->setData(data.get(), true);
+    EXPECT_EQ(2u, decoder->frameCount());
+    EXPECT_TRUE(decoder->frameIsCompleteAtIndex(0));
+    EXPECT_TRUE(decoder->frameIsCompleteAtIndex(1));
+}
+
 #endif
 
 } // namespace

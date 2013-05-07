@@ -120,11 +120,13 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSou
 
 bool ImageDecoder::frameHasAlphaAtIndex(size_t index) const
 {
-    if (m_frameBufferCache.size() <= index)
-        return true;
-    if (m_frameBufferCache[index].status() == ImageFrame::FrameComplete)
-        return m_frameBufferCache[index].hasAlpha();
-    return true;
+    return !frameIsCompleteAtIndex(index) || m_frameBufferCache[index].hasAlpha();
+}
+
+bool ImageDecoder::frameIsCompleteAtIndex(size_t index) const
+{
+    return (index < m_frameBufferCache.size()) &&
+        (m_frameBufferCache[index].status() == ImageFrame::FrameComplete);
 }
 
 unsigned ImageDecoder::frameBytesAtIndex(size_t index) const
