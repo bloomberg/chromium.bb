@@ -55,11 +55,11 @@
 #endif  // defined(OS_LINUX) && !defined(USE_AURA)
 
 // http://crbug.com/145639
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_TabEvents DISABLED_TabEvents
 #else
 #define MAYBE_TabEvents TabEvents
-#endif  // defined(OS_CHROMEOS)
+#endif
 
 class ExtensionApiNewTabTest : public ExtensionApiTest {
  public:
