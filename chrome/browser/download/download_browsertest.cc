@@ -2856,7 +2856,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_PauseResumeCancel) {
 // TODO(benjhayden) test the equivalents on other platforms.
 
 // Test downloading a huge file and that PercentComplete is monotonic.
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_PercentComplete) {
+
+// Disable on mac: http://crbug.com/238831
+#if defined(OS_MACOSX)
+#define MAYBE_DownloadTest_PercentComplete DISABLED_DownloadTest_PercentComplete
+#else
+#define MAYBE_DownloadTest_PercentComplete DownloadTest_PercentComplete
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
   // Write a huge file.
   base::FilePath file_path(DestinationFile(
       browser(), base::FilePath(FILE_PATH_LITERAL("DownloadTest_BigZip.zip"))));
