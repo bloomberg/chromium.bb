@@ -57,16 +57,22 @@ static struct PP_Var CStrToVar(const char* str) {
  * Post a message back to our JavaScript
  */
 static void SendMessage(PP_Instance instance, const char* str) {
-  if (ppb_messaging_interface)
-    ppb_messaging_interface->PostMessage(instance, CStrToVar(str));
+  if (ppb_messaging_interface) {
+    struct PP_Var var = CStrToVar(str);
+    ppb_messaging_interface->PostMessage(instance, var);
+    ppb_var_interface->Release(var);
+  }
 }
 
 /**
  * Send a message to the JavaScript Console
  */
 static void LogMessage(PP_Instance instance, const char* str) {
-  if (ppb_console_interface)
-    ppb_console_interface->Log(instance, PP_LOGLEVEL_ERROR, CStrToVar(str));
+  if (ppb_console_interface) {
+    struct PP_Var var = CStrToVar(str);
+    ppb_console_interface->Log(instance, PP_LOGLEVEL_ERROR, var);
+    ppb_var_interface->Release(var);
+  }
 }
 
 /**
@@ -166,7 +172,7 @@ static PP_Bool Instance_HandleDocumentLoad(PP_Instance instance,
 
 /**
  * Entry points for the module.
- * Initialize needed interfaces: PPB_Core, PPB_Messaging and PPB_Var.
+ * Initialize needed interfaces: PPB_Console, PPB_Messaging and PPB_Var.
  * @param[in] a_module_id module ID
  * @param[in] get_browser pointer to PPB_GetInterface
  * @return PP_OK on success, any other value on failure.
