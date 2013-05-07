@@ -1186,6 +1186,7 @@ body[new-ui] #list-container list:focus > li[selected],
 body[new-ui] #list-container grid:focus > li[selected],
 body[new-ui] #default-actions-list:focus > li[selected] {
   background-color: rgb(77, 144, 254);
+  color: white;
 }
 
 #list-container list > li.accepts[selected],
