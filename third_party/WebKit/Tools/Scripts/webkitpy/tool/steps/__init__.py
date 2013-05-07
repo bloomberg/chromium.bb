@@ -50,7 +50,6 @@ from webkitpy.tool.steps.obsoletepatches import ObsoletePatches
 from webkitpy.tool.steps.options import Options
 from webkitpy.tool.steps.postdiff import PostDiff
 from webkitpy.tool.steps.postdiffforcommit import PostDiffForCommit
-from webkitpy.tool.steps.postdiffforrevert import PostDiffForRevert
 from webkitpy.tool.steps.preparechangelog import PrepareChangeLog
 from webkitpy.tool.steps.preparechangelogfordepsroll import PrepareChangeLogForDEPSRoll
 from webkitpy.tool.steps.preparechangelogforrevert import PrepareChangeLogForRevert
