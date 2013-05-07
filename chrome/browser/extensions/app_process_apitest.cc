@@ -278,7 +278,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessBackgroundInstances) {
 
 // Tests that bookmark apps do not use the app process model and are treated
 // like normal web pages instead.  http://crbug.com/104636.
-IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
+// Timing out on Windows. http://crbug.com/238777
+#if defined(OS_WIN)
+#define MAYBE_BookmarkAppGetsNormalProcess DISABLED_BookmarkAppGetsNormalProcess
+#else
+#define MAYBE_BookmarkAppGetsNormalProcess BookmarkAppGetsNormalProcess
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   extensions::ProcessMap* process_map = service->process_map();
