@@ -47,6 +47,17 @@ class GL_EXPORT RealGLApi : public GLApiBase {
   RealGLApi();
   virtual ~RealGLApi();
   void Initialize(DriverGL* driver);
+
+  virtual void glTexImage2DFn(
+      GLenum target, GLint level, GLint internalformat,
+      GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type,
+      const void* pixels) OVERRIDE;
+  virtual void glTexStorage2DEXTFn(
+      GLenum target, GLsizei levels, GLenum internalformat, GLsizei width,
+      GLsizei height) OVERRIDE;
+  virtual void glTexSubImage2DFn(
+      GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+      GLsizei height, GLenum format, GLenum type, const void* pixels) OVERRIDE;
 };
 
 // Inserts a TRACE for every GL call.

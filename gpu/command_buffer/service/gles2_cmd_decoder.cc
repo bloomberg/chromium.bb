@@ -244,84 +244,6 @@ static bool StringIsValidForGLES(const char* str) {
   return true;
 }
 
-static inline GLenum GetTexInternalFormat(GLenum internal_format) {
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    if (internal_format == GL_BGRA_EXT || internal_format == GL_BGRA8_EXT)
-      return GL_RGBA8;
-  }
-  return internal_format;
-}
-
-// TODO(epenner): Could the above function be merged into this and removed?
-static inline GLenum GetTexInternalFormat(GLenum internal_format,
-                                          GLenum format,
-                                          GLenum type) {
-  GLenum gl_internal_format = GetTexInternalFormat(internal_format);
-
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
-    return gl_internal_format;
-
-  if (type == GL_FLOAT) {
-    switch (format) {
-      case GL_RGBA:
-        gl_internal_format = GL_RGBA32F_ARB;
-        break;
-      case GL_RGB:
-        gl_internal_format = GL_RGB32F_ARB;
-        break;
-      case GL_LUMINANCE_ALPHA:
-        gl_internal_format = GL_LUMINANCE_ALPHA32F_ARB;
-        break;
-      case GL_LUMINANCE:
-        gl_internal_format = GL_LUMINANCE32F_ARB;
-        break;
-      case GL_ALPHA:
-        gl_internal_format = GL_ALPHA32F_ARB;
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  } else if (type == GL_HALF_FLOAT_OES) {
-    switch (format) {
-      case GL_RGBA:
-        gl_internal_format = GL_RGBA16F_ARB;
-        break;
-      case GL_RGB:
-        gl_internal_format = GL_RGB16F_ARB;
-        break;
-      case GL_LUMINANCE_ALPHA:
-        gl_internal_format = GL_LUMINANCE_ALPHA16F_ARB;
-        break;
-      case GL_LUMINANCE:
-        gl_internal_format = GL_LUMINANCE16F_ARB;
-        break;
-      case GL_ALPHA:
-        gl_internal_format = GL_ALPHA16F_ARB;
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-  return gl_internal_format;
-}
-
-static void WrappedTexImage2D(
-    GLenum target,
-    GLint level,
-    GLenum internal_format,
-    GLsizei width,
-    GLsizei height,
-    GLint border,
-    GLenum format,
-    GLenum type,
-    const void* pixels) {
-  glTexImage2D(
-      target, level, GetTexInternalFormat(internal_format, format, type),
-      width, height, border, format, type, pixels);
-}
-
 // Wrapper for glEnable/glDisable that doesn't suck.
 static void EnableDisable(GLenum pname, bool enable) {
   if (enable) {
@@ -1970,15 +1892,15 @@ bool BackTexture::AllocateStorage(
     memset(zero_data.get(), 0, image_size);
   }
 
-  WrappedTexImage2D(GL_TEXTURE_2D,
-                    0,  // mip level
-                    format,
-                    size.width(),
-                    size.height(),
-                    0,  // border
-                    format,
-                    GL_UNSIGNED_BYTE,
-                    zero_data.get());
+  glTexImage2D(GL_TEXTURE_2D,
+               0,  // mip level
+               format,
+               size.width(),
+               size.height(),
+               0,  // border
+               format,
+               GL_UNSIGNED_BYTE,
+               zero_data.get());
 
   size_ = size;
 
@@ -7401,7 +7323,7 @@ bool GLES2DecoderImpl::ClearLevel(
     if (is_texture_immutable || h != height) {
       glTexSubImage2D(target, level, 0, y, width, h, format, type, zero.get());
     } else {
-      WrappedTexImage2D(
+      glTexImage2D(
           target, level, format, width, h, 0, format, type, zero.get());
     }
     y += tile_height;
@@ -7892,7 +7814,7 @@ void GLES2DecoderImpl::DoTexImage2D(
   }
 
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glTexImage2D");
-  WrappedTexImage2D(
+  glTexImage2D(
       target, level, internal_format, width, height, border, format, type,
       pixels);
   GLenum error = LOCAL_PEEK_GL_ERROR("glTexImage2D");
@@ -8384,7 +8306,7 @@ error::Error GLES2DecoderImpl::DoTexSubImage2D(
     ScopedTextureUploadTimer timer(this);
     // NOTE: In OpenGL ES 2.0 border is always zero and format is always the
     // same as internal_foramt. If that changes we'll need to look them up.
-    WrappedTexImage2D(
+    glTexImage2D(
         target, level, format, width, height, 0, format, type, data);
   } else {
     ScopedTextureUploadTimer timer(this);
@@ -9718,7 +9640,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     // Ensure that the glTexImage2D succeeds.
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopyTextureCHROMIUM");
     glBindTexture(GL_TEXTURE_2D, dest_texture->service_id());
-    WrappedTexImage2D(
+    glTexImage2D(
         GL_TEXTURE_2D, level, internal_format, source_width, source_height,
         0, internal_format, dest_type, NULL);
     GLenum error = LOCAL_PEEK_GL_ERROR("glCopyTextureCHROMIUM");
@@ -9872,8 +9794,7 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
   }
 
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glTexStorage2DEXT");
-  glTexStorage2DEXT(target, levels, GetTexInternalFormat(internal_format),
-                    width, height);
+  glTexStorage2DEXT(target, levels, internal_format, width, height);
   GLenum error = LOCAL_PEEK_GL_ERROR("glTexStorage2DEXT");
   if (error == GL_NO_ERROR) {
     GLsizei level_width = width;
@@ -10268,10 +10189,9 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
   uint32 shm_data_size = pixels_size;
 
   // Setup the parameters.
-  GLenum gl_internal_format =
-      GetTexInternalFormat(internal_format, format, type);
-  gfx::AsyncTexImage2DParams tex_params = {target, level, gl_internal_format,
-                                           width, height, border, format, type};
+  gfx::AsyncTexImage2DParams tex_params = {
+      target, level, static_cast<GLenum>(internal_format),
+      width, height, border, format, type};
   gfx::AsyncMemoryParams mem_params = {shared_memory, shm_size,
                                        shm_data_offset, shm_data_size};
 
