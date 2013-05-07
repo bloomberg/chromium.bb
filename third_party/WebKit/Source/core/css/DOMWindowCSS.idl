@@ -28,6 +28,7 @@
  */
 
 [
+    NoInterfaceObject,
     InterfaceName=CSS,
     ImplementationLacksVTable
 ] interface DOMWindowCSS {

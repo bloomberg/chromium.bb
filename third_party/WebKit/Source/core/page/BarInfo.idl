@@ -27,6 +27,7 @@
  */
 
 [
+    NoInterfaceObject,
 ] interface BarInfo {
     readonly attribute boolean visible;
 };

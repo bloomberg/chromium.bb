@@ -69,6 +69,7 @@ IsIndex
 MasqueradesAsUndefined
 MeasureAs=*
 NamedConstructor=*
+NoInterfaceObject
 NotEnumerable
 PerWorldBindings
 RaisesException

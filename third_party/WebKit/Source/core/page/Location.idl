@@ -27,6 +27,7 @@
  */
 
 [
+    NoInterfaceObject,
     CheckSecurity,
     CustomNamedSetter,
     CustomDeleteProperty,

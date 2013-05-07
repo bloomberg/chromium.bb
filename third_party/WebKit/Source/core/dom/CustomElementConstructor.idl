@@ -23,6 +23,7 @@
  */
 
 [
+    NoInterfaceObject,
     EnabledAtRuntime=customDOMElements,
     WrapAsFunction,
     CustomCall

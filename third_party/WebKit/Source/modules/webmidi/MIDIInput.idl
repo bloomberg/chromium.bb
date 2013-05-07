@@ -29,6 +29,7 @@
  */
 
 [
+    NoInterfaceObject,
     ActiveDOMObject,
     EventTarget
 ] interface MIDIInput : MIDIPort {

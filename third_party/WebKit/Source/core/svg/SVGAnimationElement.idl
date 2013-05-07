@@ -24,6 +24,7 @@
  */
 
 [
+    NoInterfaceObject,
     Conditional=SVG,
 ] interface SVGAnimationElement : SVGElement,
                                                   SVGTests,

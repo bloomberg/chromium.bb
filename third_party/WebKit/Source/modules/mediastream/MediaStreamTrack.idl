@@ -23,6 +23,7 @@
  */
 
 [
+    NoInterfaceObject,
     EventTarget,
     ActiveDOMObject
 ] interface MediaStreamTrack {

@@ -23,6 +23,7 @@
  */
 
 [
+    NoInterfaceObject,
     EventTarget
 ] interface RTCDataChannel {
     readonly attribute DOMString label;

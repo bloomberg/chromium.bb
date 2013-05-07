@@ -28,7 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SharedWorkerContext : WorkerContext {
+[
+    NoInterfaceObject,
+] interface SharedWorkerContext : WorkerContext {
     readonly attribute DOMString name;
              attribute EventListener onconnect;
 };

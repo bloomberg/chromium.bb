@@ -29,7 +29,9 @@
  */
 
 // See: https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/ResourceTiming/Overview.html
-interface PerformanceResourceTiming : PerformanceEntry {
+[
+     NoInterfaceObject,
+] interface PerformanceResourceTiming : PerformanceEntry {
     readonly attribute DOMString initiatorType;
 
     readonly attribute double redirectStart;

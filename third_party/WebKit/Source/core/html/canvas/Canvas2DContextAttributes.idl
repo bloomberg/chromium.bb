@@ -24,6 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[EnabledAtRuntime=experimentalCanvasFeatures] interface Canvas2DContextAttributes {
+[
+    NoInterfaceObject,
+    EnabledAtRuntime=experimentalCanvasFeatures,
+] interface Canvas2DContextAttributes {
     attribute boolean alpha;
 };

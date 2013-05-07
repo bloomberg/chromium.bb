@@ -22,6 +22,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface RTCDataChannelEvent : Event {
+[
+    NoInterfaceObject,
+] interface RTCDataChannelEvent : Event {
     readonly attribute RTCDataChannel channel;
 };

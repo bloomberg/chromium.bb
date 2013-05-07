@@ -24,6 +24,7 @@
  */
 
 [
+    NoInterfaceObject,
     ImplementationLacksVTable
 ] interface Coordinates {
     readonly attribute double latitude;

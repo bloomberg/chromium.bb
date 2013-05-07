@@ -22,7 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface MediaStreamTrackEvent : Event {
+[
+    NoInterfaceObject,
+] interface MediaStreamTrackEvent : Event {
    readonly attribute MediaStreamTrack track;
 };
 

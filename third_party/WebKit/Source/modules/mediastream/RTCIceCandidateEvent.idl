@@ -22,7 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface RTCIceCandidateEvent : Event {
+[
+    NoInterfaceObject,
+] interface RTCIceCandidateEvent : Event {
     readonly attribute RTCIceCandidate candidate;
 };
 

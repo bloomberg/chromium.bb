@@ -29,6 +29,7 @@
  */
 
 [
+    NoInterfaceObject,
     EnabledAtRuntime=fontLoadEvents,
     ConstructorTemplate=Event
 ] interface CSSFontFaceLoadEvent : Event {

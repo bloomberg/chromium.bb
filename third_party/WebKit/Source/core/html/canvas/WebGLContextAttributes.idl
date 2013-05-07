@@ -25,6 +25,7 @@
  */
 
 [
+    NoInterfaceObject,
     Conditional=WEBGL,
 ] interface WebGLContextAttributes {
     attribute boolean alpha;

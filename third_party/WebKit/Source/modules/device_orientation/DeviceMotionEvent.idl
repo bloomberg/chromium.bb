@@ -23,7 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface DeviceMotionEvent : Event {
+[
+    NoInterfaceObject,
+] interface DeviceMotionEvent : Event {
     readonly attribute DeviceAcceleration acceleration;
     readonly attribute DeviceAcceleration accelerationIncludingGravity;
     readonly attribute DeviceRotationRate rotationRate;

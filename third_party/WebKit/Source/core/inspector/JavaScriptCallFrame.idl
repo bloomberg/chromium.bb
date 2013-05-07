@@ -24,6 +24,7 @@
  */
 
 [
+    NoInterfaceObject,
     DoNotCheckConstants,
     ImplementationLacksVTable
 ] interface JavaScriptCallFrame {

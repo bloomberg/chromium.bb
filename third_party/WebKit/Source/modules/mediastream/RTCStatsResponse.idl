@@ -22,7 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface RTCStatsResponse {
+[
+    NoInterfaceObject,
+] interface RTCStatsResponse {
     sequence<RTCStatsReport> result();
     getter RTCStatsReport namedItem([Default=Undefined] optional DOMString name);
 };

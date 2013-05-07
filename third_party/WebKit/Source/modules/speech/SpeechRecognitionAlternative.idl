@@ -24,6 +24,7 @@
  */
 
 [
+    NoInterfaceObject,
     ImplementationLacksVTable
 ] interface SpeechRecognitionAlternative {
     readonly attribute DOMString transcript;

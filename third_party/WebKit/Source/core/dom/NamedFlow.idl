@@ -28,6 +28,7 @@
  */
 
 [
+    NoInterfaceObject,
     EnabledAtRuntime=cssRegions,
     EventTarget,
     InterfaceName=WebKitNamedFlow,

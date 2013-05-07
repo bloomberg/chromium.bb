@@ -30,6 +30,7 @@
  */
 
 [
+    NoInterfaceObject,
     ActiveDOMObject,
     CallWith=ScriptExecutionContext,
     EventTarget

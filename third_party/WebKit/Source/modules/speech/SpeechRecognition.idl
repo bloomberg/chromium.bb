@@ -24,6 +24,7 @@
  */
 
 [
+    NoInterfaceObject,
     ActiveDOMObject,
     Constructor,
     CallWith=ScriptExecutionContext,

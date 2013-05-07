@@ -24,6 +24,7 @@
  */
 
 [
+    NoInterfaceObject,
     ImplementationLacksVTable
 ] interface MediaError {
       const unsigned short MEDIA_ERR_ABORTED = 1;

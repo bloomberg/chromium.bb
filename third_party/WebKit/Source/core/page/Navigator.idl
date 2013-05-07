@@ -18,6 +18,7 @@
 */
 
 [
+    NoInterfaceObject,
 ] interface Navigator {
     readonly attribute DOMString appCodeName;
     readonly attribute DOMString appName;

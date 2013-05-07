@@ -25,6 +25,7 @@
  */
 
 [
+    NoInterfaceObject,
 ] interface ScriptProfile {
     readonly attribute DOMString title;
     readonly attribute unsigned long uid;

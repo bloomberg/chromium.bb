@@ -30,8 +30,9 @@
  */
 
 [
+    NoInterfaceObject,
     ActiveDOMObject,
-    EventTarget
+    EventTarget,
 ] interface AbstractWorker {
 
     attribute EventListener onerror;

@@ -30,6 +30,7 @@
  */
 
 [
+    NoInterfaceObject,
     Constructor(DOMString scriptURL, [Default=NullString] optional DOMString name),
     CallWith=ScriptExecutionContext,
     RaisesException

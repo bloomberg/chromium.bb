@@ -24,6 +24,7 @@
  */
 
 [
+    NoInterfaceObject,
     Conditional=WEBVTT_REGIONS,
     EnabledAtRuntime=videoTrack,
     ImplementationLacksVTable

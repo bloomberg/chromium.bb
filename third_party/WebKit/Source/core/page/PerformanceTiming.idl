@@ -30,6 +30,7 @@
 
 // See: http://dev.w3.org/2006/webapi/WebTiming/
 [
+     NoInterfaceObject,
 ] interface PerformanceTiming {
     readonly attribute unsigned long long navigationStart;
     readonly attribute unsigned long long unloadEventStart;

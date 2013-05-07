@@ -23,6 +23,7 @@
  */
 
 [
+    NoInterfaceObject,
     Conditional=WEB_AUDIO,
     EventTarget,
     Constructor(unsigned long numberOfChannels, unsigned long numberOfFrames, float sampleRate),

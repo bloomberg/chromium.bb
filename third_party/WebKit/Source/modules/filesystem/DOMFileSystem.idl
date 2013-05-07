@@ -30,6 +30,7 @@
  */
 
 [
+    NoInterfaceObject,
     ActiveDOMObject
 ] interface DOMFileSystem {
     readonly attribute DOMString name;

@@ -24,6 +24,7 @@
  */
 
 [
+    NoInterfaceObject,
     Conditional=WEBGL,
     DoNotCheckConstants
 ] interface WebGLCompressedTexturePVRTC {

@@ -24,6 +24,7 @@
  */
  
 [
+    NoInterfaceObject,
     EnabledAtRuntime=speechSynthesis
 ] interface SpeechSynthesisVoice {
     readonly attribute DOMString voiceURI;

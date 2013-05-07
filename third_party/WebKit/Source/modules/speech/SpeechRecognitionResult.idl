@@ -24,6 +24,7 @@
  */
 
 [
+    NoInterfaceObject,
     ImplementationLacksVTable
 ] interface SpeechRecognitionResult {
     readonly attribute unsigned long length;

@@ -29,6 +29,7 @@
  */
 
 [
+    NoInterfaceObject,
     CustomToV8
 ] interface EntrySync {
     readonly attribute boolean isFile;

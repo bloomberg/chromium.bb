@@ -27,6 +27,7 @@
  */
 
 [
+    NoInterfaceObject,
 ] interface WorkerNavigator {
     readonly attribute DOMString appName;
     readonly attribute DOMString appVersion;

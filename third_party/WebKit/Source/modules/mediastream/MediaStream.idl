@@ -23,6 +23,7 @@
  */
 
 [
+    NoInterfaceObject,
     EventTarget,
     Constructor,
     Constructor(MediaStream stream),

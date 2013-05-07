@@ -29,6 +29,7 @@
  */
 
 [
+    NoInterfaceObject,
     CustomToV8
 ] interface Entry {
     readonly attribute boolean isFile;

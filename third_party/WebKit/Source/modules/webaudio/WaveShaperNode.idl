@@ -23,6 +23,7 @@
  */
 
 [
+    NoInterfaceObject,
     Conditional=WEB_AUDIO
 ] interface WaveShaperNode : AudioNode {
     attribute Float32Array curve;

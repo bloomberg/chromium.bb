@@ -23,6 +23,7 @@
  */
 
 [
+    NoInterfaceObject,
     Conditional=WEB_AUDIO
 ] interface BiquadFilterNode : AudioNode {
     // Filter type.

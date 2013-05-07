@@ -28,7 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface DirectoryEntrySync : EntrySync {
+[
+    NoInterfaceObject,
+] interface DirectoryEntrySync : EntrySync {
     [RaisesException] DirectoryReaderSync createReader();
     [RaisesException] FileEntrySync getFile([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, Dictionary flags);
     [RaisesException] DirectoryEntrySync getDirectory([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, Dictionary flags);

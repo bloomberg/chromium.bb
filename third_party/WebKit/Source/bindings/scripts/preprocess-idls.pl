@@ -28,13 +28,16 @@ my $defines;
 my $preprocessor;
 my $idlFilesList;
 my $supplementalDependencyFile;
+my $windowConstructorsFile;
 
 GetOptions('defines=s' => \$defines,
            'preprocessor=s' => \$preprocessor,
            'idlFilesList=s' => \$idlFilesList,
-           'supplementalDependencyFile=s' => \$supplementalDependencyFile);
+           'supplementalDependencyFile=s' => \$supplementalDependencyFile,
+           'windowConstructorsFile=s' => \$windowConstructorsFile);
 
 die('Must specify an output file using --supplementalDependencyFile.') unless defined($supplementalDependencyFile);
+die('Must specify an output file using --windowConstructorsFile.') unless defined($windowConstructorsFile);
 die('Must specify the file listing all IDLs using --idlFilesList.') unless defined($idlFilesList);
 
 open FH, "< $idlFilesList" or die "Cannot open $idlFilesList\n";
@@ -47,17 +50,34 @@ my %interfaceNameToIdlFile;
 my %idlFileToInterfaceName;
 my %supplementalDependencies;
 my %supplementals;
+my $constructorAttributesCode = "";
 foreach my $idlFile (@idlFiles) {
     my $fullPath = Cwd::realpath($idlFile);
-    my $partialInterfaceName = getPartialInterfaceNameFromIDLFile($fullPath);
+    my $idlFileContents = getFileContents($fullPath);
+    my $partialInterfaceName = getPartialInterfaceNameFromIDL($idlFileContents);
     if ($partialInterfaceName) {
         $supplementalDependencies{$fullPath} = $partialInterfaceName;
+        next;
     }
     my $interfaceName = fileparse(basename($idlFile), ".idl");
+    unless (isCallbackInterfaceFromIDL($idlFileContents)) {
+        my $extendedAttributes = getInterfaceExtendedAttributesFromIDL($idlFileContents);
+        unless ($extendedAttributes->{"NoInterfaceObject"}) {
+            $constructorAttributesCode .= GenerateConstructorAttribute($interfaceName, $extendedAttributes);
+        }
+    }
     $interfaceNameToIdlFile{$interfaceName} = $fullPath;
     $idlFileToInterfaceName{$fullPath} = $interfaceName;
     $supplementals{$fullPath} = [];
 }
+
+# Generate DOMWindow Constructors partial interface.
+open PARTIAL_WINDOW_FH, "> $windowConstructorsFile" or die "Cannot open $windowConstructorsFile\n";
+print PARTIAL_WINDOW_FH "partial interface DOMWindow {\n";
+print PARTIAL_WINDOW_FH $constructorAttributesCode;
+print PARTIAL_WINDOW_FH "};\n";
+close PARTIAL_WINDOW_FH;
+$supplementalDependencies{$windowConstructorsFile} = "DOMWindow";
 
 # Resolves partial interfaces dependencies.
 foreach my $idlFile (keys %supplementalDependencies) {
@@ -86,7 +106,38 @@ foreach my $idlFile (sort keys %supplementals) {
 }
 close FH;
 
-sub getPartialInterfaceNameFromIDLFile
+sub GenerateConstructorAttribute
+{
+    my $interfaceName = shift;
+    my $extendedAttributes = shift;
+
+    my $code = "    ";
+    my @extendedAttributesList;
+    foreach my $attributeName (keys %{$extendedAttributes}) {
+      next unless ($attributeName eq "Conditional" || $attributeName eq "EnabledAtRuntime" || $attributeName eq "EnabledPerContext");
+      my $extendedAttribute = $attributeName;
+      $extendedAttribute .= "=" . $extendedAttributes->{$attributeName} unless $extendedAttributes->{$attributeName} eq "VALUE_IS_MISSING";
+      push(@extendedAttributesList, $extendedAttribute);
+    }
+    $code .= "[" . join(', ', @extendedAttributesList) . "] " if @extendedAttributesList;
+
+    my $originalInterfaceName = $interfaceName;
+    $interfaceName = $extendedAttributes->{"InterfaceName"} if $extendedAttributes->{"InterfaceName"};
+    $code .= "attribute " . $originalInterfaceName . "Constructor $interfaceName;\n";
+
+    # In addition to the regular property, for every [NamedConstructor] extended attribute on an interface,
+    # a corresponding property MUST exist on the ECMAScript global object.
+    if ($extendedAttributes->{"NamedConstructor"}) {
+        my $constructorName = $extendedAttributes->{"NamedConstructor"};
+        $constructorName =~ s/\(.*//g; # Extract function name.
+        $code .= "    ";
+        $code .= "[" . join(', ', @extendedAttributesList) . "] " if @extendedAttributesList;
+        $code .= "attribute " . $originalInterfaceName . "ConstructorConstructor $constructorName;\n";
+    }
+    return $code;
+}
+
+sub getFileContents
 {
     my $idlFile = shift;
 
@@ -94,8 +145,51 @@ sub getPartialInterfaceNameFromIDLFile
     my @lines = <FILE>;
     close FILE;
 
-    my $fileContents = join('', @lines);
+    # Filter out preprocessor lines.
+    @lines = grep(!/^\s*#/, @lines);
+
+    return join('', @lines);
+}
+
+sub getPartialInterfaceNameFromIDL
+{
+    my $fileContents = shift;
+
     if ($fileContents =~ /partial\s+interface\s+(\w+)/gs) {
         return $1;
     }
+}
+
+sub isCallbackInterfaceFromIDL
+{
+    my $fileContents = shift;
+    return ($fileContents =~ /callback\s+interface\s+\w+/gs);
+}
+
+sub trim
+{
+    my $string = shift;
+    $string =~ s/^\s+|\s+$//g;
+    return $string;
+}
+
+sub getInterfaceExtendedAttributesFromIDL
+{
+    my $fileContents = shift;
+
+    my $extendedAttributes = {};
+
+    if ($fileContents =~ /\[(.*)\]\s+(interface|exception)\s+(\w+)/gs) {
+        my @parts = split(',', $1);
+        foreach my $part (@parts) {
+            my @keyValue = split('=', $part);
+            my $key = trim($keyValue[0]);
+            next unless length($key);
+            my $value = "VALUE_IS_MISSING";
+            $value = trim($keyValue[1]) if @keyValue > 1;
+            $extendedAttributes->{$key} = $value;
+        }
+    }
+
+    return $extendedAttributes;
 }

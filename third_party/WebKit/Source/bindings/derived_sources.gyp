@@ -103,6 +103,7 @@
        ],
        'outputs': [
          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
+         '<(SHARED_INTERMEDIATE_DIR)/DOMWindowConstructors.idl',
        ],
        'msvs_cygwin_shell': 0,
        'action': [
@@ -117,6 +118,8 @@
          '<(idl_files_list)',
          '--supplementalDependencyFile',
          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
+         '--windowConstructorsFile',
+         '<(SHARED_INTERMEDIATE_DIR)/DOMWindowConstructors.idl',
        ],
        'message': 'Resolving partial interfaces dependencies in all IDL files',
       }]
@@ -161,6 +164,7 @@
           'scripts/IDLAttributes.txt',
           '../core/scripts/preprocessor.pm',
           '<!@pymod_do_main(supplemental_idl_files <@(idl_files))',
+          '<(SHARED_INTERMEDIATE_DIR)/DOMWindowConstructors.idl',
         ],
         'outputs': [
           # FIXME:  The .cpp file should be in webkit/bindings once

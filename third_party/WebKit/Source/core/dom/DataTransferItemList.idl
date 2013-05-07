@@ -29,6 +29,7 @@
  */
 
 [
+    NoInterfaceObject,
     ImplementationLacksVTable
 ] interface DataTransferItemList {
     readonly attribute long length;

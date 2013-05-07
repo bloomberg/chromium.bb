@@ -31,6 +31,7 @@
 
 // See: http://dev.w3.org/2006/webapi/WebTiming/
 [
+    NoInterfaceObject,
     EventTarget,
 ] interface Performance {
     readonly attribute PerformanceNavigation navigation;

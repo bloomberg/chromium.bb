@@ -25,6 +25,7 @@
 
 // http://www.w3.org/TR/geolocation-API/#geolocation_interface
 [
+    NoInterfaceObject,
 ] interface Geolocation {
     [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void getCurrentPosition(PositionCallback successCallback,
                                      optional PositionErrorCallback errorCallback,

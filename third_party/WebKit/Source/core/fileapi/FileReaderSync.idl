@@ -29,6 +29,7 @@
  */
 
 [
+    NoInterfaceObject,
     Constructor
 ] interface FileReaderSync {
     [CallWith=ScriptExecutionContext, RaisesException] ArrayBuffer readAsArrayBuffer(Blob blob);

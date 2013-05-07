@@ -23,6 +23,7 @@
  */
 
 [
+    NoInterfaceObject,
     Conditional=WEB_AUDIO
 ] interface DelayNode : AudioNode {
     readonly attribute AudioParam delayTime;

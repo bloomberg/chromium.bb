@@ -25,6 +25,7 @@
  */
 
 [
+    NoInterfaceObject,
     EventTarget,
     CustomToV8,
     DoNotGenerateWrap
