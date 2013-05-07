@@ -60,6 +60,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
+#include "ui/base/win/dpi.h"
 
 // http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -288,6 +289,8 @@ BOOL CALLBACK GetMonitorDPICallback(HMONITOR, HDC hdc, LPRECT, LPARAM dwData) {
       GetDeviceCaps(hdc, HORZRES) / (size_x / kMillimetersPerInch) : 0;
   double dpi_y = (size_y > 0) ?
       GetDeviceCaps(hdc, VERTRES) / (size_y / kMillimetersPerInch) : 0;
+  dpi_x *= ui::win::GetUndocumentedDPIScale();
+  dpi_y *= ui::win::GetUndocumentedDPIScale();
   screen_info->max_dpi_x = std::max(dpi_x, screen_info->max_dpi_x);
   screen_info->max_dpi_y = std::max(dpi_y, screen_info->max_dpi_y);
   return TRUE;
