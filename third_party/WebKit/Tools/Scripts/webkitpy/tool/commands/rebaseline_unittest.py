@@ -123,14 +123,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
         self._write("userscripts/another-test-expected.html", "generic result")
         OutputCapture().assert_outputs(self, self.command._rebaseline_test_and_update_expectations, args=[self.options],
             expected_logs="Cannot rebaseline reftest: userscripts/another-test.html\n")
-
-    def test_rebaseline_directory(self):
-        self._write("userscripts/first-test.html", "test data")
-        self._write("userscripts/second-test.html", "test data")
-        self.options.test = "userscripts"
-        self.command._rebaseline_test_and_update_expectations(self.options)
-        expected_fetched_urls = [self.WEB_PREFIX + '/userscripts/first-test-actual.txt', self.WEB_PREFIX + '/userscripts/second-test-actual.txt']
-        self.assertItemsEqual(self.tool.web.urls_fetched, expected_fetched_urls)
+        self.assertDictEqual(self.command._scm_changes, {'add': [], 'remove-lines': []})
 
     def test_rebaseline_test_and_print_scm_changes(self):
         self.command._print_scm_changes = True
@@ -316,6 +309,7 @@ class TestRebaselineJson(_BaseTestCase):
 
     def test_rebaseline_all(self):
         options = MockOptions(optimize=True, verbose=True, move_overwritten_baselines=False, results_directory=None)
+        self._write("user-scripts/another-test.html", "Dummy test contents")
         self.command._rebaseline(options,  {"user-scripts/another-test.html": {"MOCK builder": ["txt", "png"]}})
 
         # Note that we have one run_in_parallel() call followed by a run_command()
@@ -325,6 +319,7 @@ class TestRebaselineJson(_BaseTestCase):
 
     def test_rebaseline_debug(self):
         options = MockOptions(optimize=True, verbose=True, move_overwritten_baselines=False, results_directory=None)
+        self._write("user-scripts/another-test.html", "Dummy test contents")
         self.command._rebaseline(options,  {"user-scripts/another-test.html": {"MOCK builder (Debug)": ["txt", "png"]}})
 
         # Note that we have one run_in_parallel() call followed by a run_command()
@@ -334,6 +329,7 @@ class TestRebaselineJson(_BaseTestCase):
 
     def test_move_overwritten(self):
         options = MockOptions(optimize=True, verbose=True, move_overwritten_baselines=True, results_directory=None)
+        self._write("user-scripts/another-test.html", "Dummy test contents")
         self.command._rebaseline(options,  {"user-scripts/another-test.html": {"MOCK builder": ["txt", "png"]}})
 
         # Note that we have one run_in_parallel() call followed by a run_command()
@@ -343,6 +339,7 @@ class TestRebaselineJson(_BaseTestCase):
 
     def test_no_optimize(self):
         options = MockOptions(optimize=False, verbose=True, move_overwritten_baselines=False, results_directory=None)
+        self._write("user-scripts/another-test.html", "Dummy test contents")
         self.command._rebaseline(options,  {"user-scripts/another-test.html": {"MOCK builder (Debug)": ["txt", "png"]}})
 
         # Note that we have only one run_in_parallel() call
@@ -351,6 +348,7 @@ class TestRebaselineJson(_BaseTestCase):
 
     def test_results_directory(self):
         options = MockOptions(optimize=False, verbose=True, move_overwritten_baselines=False, results_directory='/tmp')
+        self._write("user-scripts/another-test.html", "Dummy test contents")
         self.command._rebaseline(options,  {"user-scripts/another-test.html": {"MOCK builder": ["txt", "png"]}})
 
         # Note that we have only one run_in_parallel() call
@@ -411,23 +409,43 @@ class TestRebaseline(_BaseTestCase):
         self.command._builders_to_pull_from = lambda: [MockBuilder('MOCK builder')]
         self.command._tests_to_update = lambda builder: ['mock/path/to/test.html']
 
+        self._write("mock/path/to/test.html", "Dummy test contents")
+
         self._zero_out_test_expectations()
 
         old_exact_matches = builders._exact_matches
-        oc = OutputCapture()
         try:
             builders._exact_matches = {
                 "MOCK builder": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
             }
-            oc.capture_output()
             self.command.execute(MockOptions(optimize=False, builders=None, suffixes="txt,png", verbose=True, move_overwritten_baselines=False), [], self.tool)
         finally:
-            oc.restore_output()
             builders._exact_matches = old_exact_matches
 
         calls = filter(lambda x: x != ['qmake', '-v'] and x[0] != 'perl', self.tool.executive.calls)
         self.assertEqual(calls,
             [[['echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK builder', '--test', 'mock/path/to/test.html', '--verbose']]])
+
+    def test_rebaseline_directory(self):
+        self.command._builders_to_pull_from = lambda: [MockBuilder('MOCK builder')]
+        self.command._tests_to_update = lambda builder: ['userscripts']
+
+        self._write("userscripts/first-test.html", "test data")
+        self._write("userscripts/second-test.html", "test data")
+
+        old_exact_matches = builders._exact_matches
+        try:
+            builders._exact_matches = {
+                "MOCK builder": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
+            }
+            self.command.execute(MockOptions(optimize=False, builders=None, suffixes="txt,png", verbose=True, move_overwritten_baselines=False), [], self.tool)
+        finally:
+            builders._exact_matches = old_exact_matches
+
+        calls = filter(lambda x: x != ['qmake', '-v'] and x[0] != 'perl', self.tool.executive.calls)
+        self.assertEqual(calls,
+            [[['echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK builder', '--test', 'userscripts/first-test.html', '--verbose'],
+              ['echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK builder', '--test', 'userscripts/second-test.html', '--verbose']]])
 
 
 class TestRebaselineExpectations(_BaseTestCase):
@@ -443,6 +461,8 @@ class TestRebaselineExpectations(_BaseTestCase):
 
         self.tool.executive = MockExecutive2()
 
+        self._write("userscripts/another-test.html", "Dummy test contents")
+        self._write("userscripts/images.svg", "Dummy test contents")
         self.command._tests_to_rebaseline = lambda port: {'userscripts/another-test.html': set(['txt']), 'userscripts/images.svg': set(['png'])}
         self.command.execute(self.options, [], self.tool)
 
