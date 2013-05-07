@@ -118,7 +118,6 @@ public:
     virtual void setMinimumAccelerated2dCanvasSize(int);
     virtual void setMinimumFontSize(int);
     virtual void setMinimumLogicalFontSize(int);
-    virtual void setMinimumTimerInterval(double);
     virtual void setMockScrollbarsEnabled(bool);
     virtual void setNeedsSiteSpecificQuirks(bool);
     virtual void setOfflineWebApplicationCacheEnabled(bool);

@@ -554,11 +554,6 @@ void WebSettingsImpl::setValidationMessageTimerMagnification(int newValue)
     m_settings->setValidationMessageTimerMagnification(newValue);
 }
 
-void WebSettingsImpl::setMinimumTimerInterval(double interval)
-{
-    // FIXME: remove this once the embedder is no longer calling it.
-}
-
 void WebSettingsImpl::setFullScreenEnabled(bool enabled)
 {
     m_settings->setFullScreenEnabled(enabled);

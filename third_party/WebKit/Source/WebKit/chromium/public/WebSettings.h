@@ -125,7 +125,6 @@ public:
     virtual void setMinimumAccelerated2dCanvasSize(int) = 0;
     virtual void setMinimumFontSize(int) = 0;
     virtual void setMinimumLogicalFontSize(int) = 0;
-    virtual void setMinimumTimerInterval(double) = 0; // FIXME: remove this once the embedder is no longer calling it.
     virtual void setMockScrollbarsEnabled(bool) = 0;
     virtual void setNeedsSiteSpecificQuirks(bool) = 0;
     virtual void setOfflineWebApplicationCacheEnabled(bool) = 0;
