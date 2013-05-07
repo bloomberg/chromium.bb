@@ -122,8 +122,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Audio) {
       ExtensionApiTest::kFlagIgnoreManifestWarnings)) << message_;
 }
 
-#if defined(OS_MACOSX)
-// http://crbug.com/95274 - Video is flaky on Mac.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+// http://crbug.com/238733 - Video is flaky on Mac and Win.
 #define MAYBE_Video DISABLED_Video
 #else
 #define MAYBE_Video Video
