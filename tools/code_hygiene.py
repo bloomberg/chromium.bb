@@ -296,6 +296,7 @@ class RewriteChecker(GenericRegexChecker):
 
 VALID_INCLUDE_PREFIX = [
     'base/',
+    'breakpad/',
     'chrome/common/',
     'chrome/renderer/',
     'gen/native_client/',

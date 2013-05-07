@@ -3161,6 +3161,7 @@ nacl_env.Append(
     'src/trusted/validator_x86/nacl.scons',
     'src/trusted/weak_ref/nacl.scons',
     'src/untrusted/crash_dump/nacl.scons',
+    'src/untrusted/minidump_generator/nacl.scons',
     'src/untrusted/nacl/nacl.scons',
     'src/untrusted/valgrind/nacl.scons',
     ####  ALPHABETICALLY SORTED ####
@@ -3174,6 +3175,7 @@ irt_only_tests = [
     'tests/irt_compatibility/nacl.scons',
     'tests/random/nacl.scons',
     'tests/translator_size_limits/nacl.scons',
+    'tests/untrusted_minidump/nacl.scons',
     ]
 
 # These are tests that are worthwhile to run in both IRT and non-IRT variants.

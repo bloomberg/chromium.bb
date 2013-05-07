@@ -1,0 +1,27 @@
+# -*- python -*-
+# Copyright (c) 2013 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+if env.Bit('bitcode'):
+  # Preserve debugging info (which is not ABI-stable under PNaCl).
+  env.SetBits('nonstable_bitcode')
+if env.Bit('skip_nonstable_bitcode'):
+  Return()
+
+nexe = env.ComponentProgram('minidump_test', 'minidump_test.c',
+                            EXTRA_LIBS=['minidump_generator'])
+
+# Note that this doesn't check the crash dump that is produced yet.
+# TODO(mseaborn): Test that Breakpad can extract a stack backtrace.
+output_dump_file = env.File('minidump.dmp')
+node = env.CommandSelLdrTestNacl(
+    'minidump_test.out', nexe, [output_dump_file.abspath],
+    declares_exit_status=True,
+    sel_ldr_flags=['-e', # Enable exception handling for catching crash
+                   '-a', # Enable file access for writing minidump file
+                   ])
+env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests'],
+                       'run_minidump_test')
