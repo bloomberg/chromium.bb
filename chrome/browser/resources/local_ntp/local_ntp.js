@@ -1653,7 +1653,7 @@ function init() {
     document.body.onclick = function(event) {
       if (isFakeboxClick(event))
         searchboxApiHandle.startCapturingKeyStrokes();
-      else if (fakeboxIsFocused())
+      else if (isFakeboxFocused())
         searchboxApiHandle.stopCapturingKeyStrokes();
     };
     searchboxApiHandle.onkeycapturechange = function() {
