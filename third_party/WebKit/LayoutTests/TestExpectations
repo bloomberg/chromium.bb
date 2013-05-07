@@ -475,7 +475,7 @@ webkit.org/b/111004 [ Linux Debug ] accessibility/svg-remote-element.html [ Pass
 webkit.org/b/111004 [ Win7 Debug ] accessibility/svg-remote-element.html [ Failure ]
 
 # -----------------------------------------------------------------
-# Test failures with Skia GPU rendering of canvas 2D
+# End Accessibility layout tests
 # -----------------------------------------------------------------
 
 # This test is slow due to Mesa slowness.
@@ -483,9 +483,10 @@ crbug.com/233066 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip 
 
 crbug.com/174268 webgl [ Skip ]
 
-# -----------------------------------------------------------------
-# Other failures
-# -----------------------------------------------------------------
+# WebGL not yet supported by the software compositor.
+crbug.com/151713 virtual/softwarecompositing/backface-visibility/backface-visibility-webgl.html [ Skip ]
+crbug.com/151713 virtual/softwarecompositing/visibility/visibility-simple-webgl-layer.html [ Skip ]
+crbug.com/151713 virtual/softwarecompositing/webgl [ Skip ]
 
 # This test isn't hanging, it just takes 12-13 seconds to run. See BUGWK87839.
 crbug.com/30536 http/tests/misc/acid3.html [ Failure Slow ] # See "SVG Tests" section too
@@ -583,10 +584,6 @@ webkit.org/b/111510 [ MountainLion ] fast/regions/region-style-in-columns.html [
 
 webkit.org/b/111141 fast/regions/seamless-iframe-flowed-into-regions.html [ ImageOnlyFailure ]
 
-# -----------------------------------------------------------------
-# MAC PORT TESTS
-# -----------------------------------------------------------------
-
 # The following are flaky in that some times the timeout or crash, but we think
 # it is because of bugs in other parts of the code and not specific to what
 # these tests are doing.  The are being noted here so we can get the buildbots
@@ -600,10 +597,6 @@ crbug.com/9798 [ Win Release ] http/tests/navigation/no-referrer-reset.html [ Pa
 
 # Unexpected gray
 crbug.com/23476 [ Mac ] fast/frames/inline-object-inside-frameset.html [ Failure ImageOnlyFailure ]
-
-# -----------------------------------------------------------------
-# END MAC PORT TESTS
-# -----------------------------------------------------------------
 
 # We could fix this test for us and upstream it if the test shell user agent
 # would let us differentiate test_shell and WebKit DumpTreeNode.
@@ -1304,11 +1297,6 @@ webkit.org/b/97296 [ Win ] fast/text/international/hebrew-selection.html [ Image
 # These tests appear to be making the EWS bots flaky. See bug for details.
 webkit.org/b/96951 platform/chromium-linux/compositing/gestures [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
-# WebGL not yet supported by the software compositor.
-crbug.com/151713 virtual/softwarecompositing/backface-visibility/backface-visibility-webgl.html [ Skip ]
-crbug.com/151713 virtual/softwarecompositing/visibility/visibility-simple-webgl-layer.html [ Skip ]
-crbug.com/151713 virtual/softwarecompositing/webgl [ Skip ]
-
 webkit.org/b/98275 media/event-queue-crash.html [ Skip ]
 
 # CSS Device Adaptation is not enabled.
@@ -1495,9 +1483,6 @@ webkit.org/b/113128 fast/files/xhr-response-blob.html [ Failure Pass ]
 webkit.org/b/113178 [ Linux ] fast/css/font-family-pictograph.html [ Pass Failure ]
 
 webkit.org/b/112610 [ Win ] fast/text/word-space-with-kerning-3.html [ ImageOnlyFailure ]
-
-# Snapshotted plugins not enabled
-webkit.org/b/98696 plugins/snapshotting [ Skip ]
 
 crbug.com/223332 svg/css/root-shadow-offscreen.svg [ ImageOnlyFailure ]
 
