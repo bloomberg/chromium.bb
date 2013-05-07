@@ -19,6 +19,7 @@ namespace content {
 // Base class for P2P sockets.
 class CONTENT_EXPORT P2PSocketHost {
  public:
+  static const int kStunHeaderSize = 20;
   // Creates P2PSocketHost of the specific type.
   static P2PSocketHost* Create(IPC::Sender* message_sender,
                                int id, P2PSocketType type);
@@ -38,6 +39,7 @@ class CONTENT_EXPORT P2PSocketHost {
 
  protected:
   friend class P2PSocketHostTcpTest;
+  friend class P2PSocketHostStunTcpTest;
 
   enum StunMessageType {
     STUN_BINDING_REQUEST = 0x0001,
