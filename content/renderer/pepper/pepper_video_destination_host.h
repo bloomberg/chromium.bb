@@ -6,8 +6,10 @@
 #define CONTENT_RENDERER_PEPPER_PEPPER_VIDEO_DESTINATION_HOST_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/video_destination_handler.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/host/resource_host.h"
 
@@ -32,13 +34,15 @@ class CONTENT_EXPORT PepperVideoDestinationHost
   int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,
                         const std::string& stream_url);
   int32_t OnHostMsgPutFrame(ppapi::host::HostMessageContext* context,
-                            const ppapi::HostResource& image_data,
+                            const ppapi::HostResource& image_data_resource,
                             PP_TimeTicks timestamp);
   int32_t OnHostMsgClose(ppapi::host::HostMessageContext* context);
 
   RendererPpapiHost* renderer_ppapi_host_;
 
   base::WeakPtrFactory<PepperVideoDestinationHost> weak_factory_;
+
+  scoped_ptr<content::FrameWriterInterface> frame_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperVideoDestinationHost);
 };

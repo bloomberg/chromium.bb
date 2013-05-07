@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper/pepper_video_destination_host.h"
 
+#include "base/time.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -51,8 +52,15 @@ int32_t PepperVideoDestinationHost::OnHostMsgOpen(
   GURL gurl(stream_url);
   if (!gurl.is_valid())
     return PP_ERROR_BADARGUMENT;
-  // TODO(ronghuawu) Check that gurl is a valid MediaStream video track URL.
-  // TODO(ronghuawu) Open a MediaStream video track.
+
+  content::FrameWriterInterface* frame_writer = NULL;
+  if (!VideoDestinationHandler::Open(NULL /* factory */,
+                                     NULL /* registry */,
+                                     gurl.spec(),
+                                     &frame_writer))
+    return PP_ERROR_FAILED;
+  frame_writer_.reset(frame_writer);
+
   ReplyMessageContext reply_context = context->MakeReplyMessageContext();
   reply_context.params.set_result(PP_OK);
   host()->SendReply(reply_context,
@@ -62,26 +70,37 @@ int32_t PepperVideoDestinationHost::OnHostMsgOpen(
 
 int32_t PepperVideoDestinationHost::OnHostMsgPutFrame(
     HostMessageContext* context,
-    const ppapi::HostResource& image_data,
+    const ppapi::HostResource& image_data_resource,
     PP_TimeTicks timestamp) {
   ppapi::thunk::EnterResourceNoLock<ppapi::thunk::PPB_ImageData_API> enter(
-      image_data.host_resource(), true);
+      image_data_resource.host_resource(), true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
-  webkit::ppapi::PPB_ImageData_Impl* image_resource =
+  webkit::ppapi::PPB_ImageData_Impl* image_data_impl =
       static_cast<webkit::ppapi::PPB_ImageData_Impl*>(enter.object());
 
   if (!webkit::ppapi::PPB_ImageData_Impl::IsImageDataFormatSupported(
-          image_resource->format()))
+          image_data_impl->format()))
     return PP_ERROR_BADARGUMENT;
 
-  // TODO(ronghuawu) write image data to MediaStream video track.
+  if (!frame_writer_.get())
+    return PP_ERROR_FAILED;
+
+  // Convert PP_TimeTicks (a double, in seconds) to a TimeDelta (int64,
+  // microseconds) and then to a video timestamp (int64, nanoseconds). All times
+  // are relative to the Unix Epoch so don't subtract it to get a delta.
+  base::TimeDelta time_delta =
+      base::Time::FromDoubleT(timestamp) - base::Time();
+  int64_t timestamp_ns =
+      time_delta.InMicroseconds() * base::Time::kNanosecondsPerMicrosecond;
+  frame_writer_->PutFrame(image_data_impl, timestamp_ns);
+
   return PP_OK;
 }
 
 int32_t PepperVideoDestinationHost::OnHostMsgClose(
     HostMessageContext* context) {
-  // TODO(ronghuawu) Close the video stream.
+  frame_writer_.reset(NULL);
   return PP_OK;
 }
 
