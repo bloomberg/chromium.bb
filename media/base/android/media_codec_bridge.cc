@@ -281,8 +281,9 @@ AudioCodecBridge::AudioCodecBridge(const AudioCodec codec)
     : MediaCodecBridge(AudioCodecToMimeType(codec)) {
 }
 
-void AudioCodecBridge::Start(
-    const AudioCodec codec, int sample_rate, int channel_count) {
+bool AudioCodecBridge::Start(
+    const AudioCodec codec, int sample_rate, int channel_count,
+    const uint8* extra_data, size_t extra_data_size) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(AudioCodecToMimeType(codec));
 
@@ -292,16 +293,68 @@ void AudioCodecBridge::Start(
       JNI_MediaFormat::Java_MediaFormat_createAudioFormat(
           env, j_mime.obj(), sample_rate, channel_count));
   DCHECK(!j_format.is_null());
+
+  if (extra_data_size > 0) {
+    DCHECK_EQ(kCodecVorbis, codec);
+    if (extra_data[0] != 2) {
+      LOG(ERROR) << "Invalid number of headers before the codec header: "
+                 << extra_data[0];
+      return false;
+    }
+
+    size_t header_length[2];
+    // |total_length| keeps track of the total number of bytes before the last
+    // header.
+    size_t total_length = 1;
+    const uint8* current_pos = extra_data;
+    // Calculate the length of the first 2 headers.
+    for (int i = 0; i < 2; ++i) {
+      header_length[i] = 0;
+      while (total_length < extra_data_size) {
+        size_t size = *(++current_pos);
+        total_length += 1 + size;
+        if (total_length > 0x80000000) {
+          LOG(ERROR) << "Header size too large";
+          return false;
+        }
+        header_length[i] += size;
+        if (size < 0xFF)
+          break;
+      }
+      if (total_length >= extra_data_size) {
+        LOG(ERROR) << "Invalid header size in the extra data";
+        return false;
+      }
+    }
+    current_pos++;
+    // The first header is identification header.
+    jobject identification_header = env->NewDirectByteBuffer(
+        const_cast<uint8*>(current_pos), header_length[0]);
+    ScopedJavaLocalRef<jstring> j_csd_0 = ConvertUTF8ToJavaString(env, "csd-0");
+    JNI_MediaFormat::Java_MediaFormat_setByteBuffer(
+        env, j_format.obj(), j_csd_0.obj(), identification_header);
+    // The last header is codec header.
+    jobject codec_header = env->NewDirectByteBuffer(
+        const_cast<uint8*>(extra_data + total_length),
+        extra_data_size - total_length);
+    ScopedJavaLocalRef<jstring> j_csd_1 = ConvertUTF8ToJavaString(env, "csd-1");
+    JNI_MediaFormat::Java_MediaFormat_setByteBuffer(
+        env, j_format.obj(), j_csd_1.obj(), codec_header);
+    env->DeleteLocalRef(codec_header);
+    env->DeleteLocalRef(identification_header);
+  }
+
   JNI_MediaCodec::Java_MediaCodec_configure(
       env, media_codec(), j_format.obj(), NULL, NULL, 0);
   StartInternal();
+  return true;
 }
 
 VideoCodecBridge::VideoCodecBridge(const VideoCodec codec)
     : MediaCodecBridge(VideoCodecToMimeType(codec)) {
 }
 
-void VideoCodecBridge::Start(
+bool VideoCodecBridge::Start(
     const VideoCodec codec, const gfx::Size& size, jobject surface) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(VideoCodecToMimeType(codec));
@@ -315,6 +368,7 @@ void VideoCodecBridge::Start(
   JNI_MediaCodec::Java_MediaCodec_configure(
       env, media_codec(), j_format.obj(), surface, NULL, 0);
   StartInternal();
+  return true;
 }
 
 }  // namespace media

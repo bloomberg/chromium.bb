@@ -25,10 +25,12 @@ struct MEDIA_EXPORT MediaPlayerHostMsg_DemuxerReady_Params {
   int audio_channels;
   int audio_sampling_rate;
   bool is_audio_encrypted;
+  std::vector<uint8> audio_extra_data;
 
   VideoCodec video_codec;
   gfx::Size video_size;
   bool is_video_encrypted;
+  std::vector<uint8> video_extra_data;
 
   int duration_ms;
   std::string key_system;
@@ -42,7 +44,7 @@ struct MEDIA_EXPORT MediaPlayerHostMsg_ReadFromDemuxerAck_Params {
     DemuxerStream::Status status;
     bool end_of_stream;
     // TODO(ycheo): Use the shared memory to transfer the block data.
-    std::vector<unsigned char> data;
+    std::vector<uint8> data;
     base::TimeDelta timestamp;
     std::vector<char> key_id;
     std::vector<char> iv;

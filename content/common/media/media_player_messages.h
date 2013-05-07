@@ -30,10 +30,12 @@ IPC_STRUCT_TRAITS_BEGIN(media::MediaPlayerHostMsg_DemuxerReady_Params)
   IPC_STRUCT_TRAITS_MEMBER(audio_channels)
   IPC_STRUCT_TRAITS_MEMBER(audio_sampling_rate)
   IPC_STRUCT_TRAITS_MEMBER(is_audio_encrypted)
+  IPC_STRUCT_TRAITS_MEMBER(audio_extra_data)
 
   IPC_STRUCT_TRAITS_MEMBER(video_codec)
   IPC_STRUCT_TRAITS_MEMBER(video_size)
   IPC_STRUCT_TRAITS_MEMBER(is_video_encrypted)
+  IPC_STRUCT_TRAITS_MEMBER(video_extra_data)
 
   IPC_STRUCT_TRAITS_MEMBER(duration_ms)
   IPC_STRUCT_TRAITS_MEMBER(key_system)

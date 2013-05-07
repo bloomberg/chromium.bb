@@ -117,8 +117,8 @@ class AudioCodecBridge : public MediaCodecBridge {
   explicit AudioCodecBridge(const AudioCodec codec);
 
   // Start the audio codec bridge.
-  void Start(
-      const AudioCodec codec, int sample_rate, int channel_count);
+  bool Start(const AudioCodec codec, int sample_rate, int channel_count,
+             const uint8* extra_data, size_t extra_data_size);
 };
 
 class VideoCodecBridge : public MediaCodecBridge {
@@ -126,7 +126,8 @@ class VideoCodecBridge : public MediaCodecBridge {
   explicit VideoCodecBridge(const VideoCodec codec);
 
   // Start the video codec bridge.
-  void Start(
+  // TODO(qinmin): Pass codec specific data if available.
+  bool Start(
       const VideoCodec codec, const gfx::Size& size, jobject surface);
 };
 

@@ -298,7 +298,7 @@ void MediaSourceDelegate::OnBufferReady(
         statistics_.video_frames_decoded++;
       }
       params->access_units[index].timestamp = buffer->GetTimestamp();
-      params->access_units[index].data = std::vector<unsigned char>(
+      params->access_units[index].data = std::vector<uint8>(
           buffer->GetData(),
           buffer->GetData() + buffer->GetDataSize());
       if (buffer->GetDecryptConfig()) {
@@ -359,6 +359,8 @@ void MediaSourceDelegate::NotifyDemuxerReady(
         media::ChannelLayoutToChannelCount(config.channel_layout());
     params.audio_sampling_rate = config.samples_per_second();
     params.is_audio_encrypted = config.is_encrypted();
+    params.audio_extra_data = std::vector<uint8>(
+        config.extra_data(), config.extra_data() + config.extra_data_size());
   }
   DemuxerStream* video_stream = chunk_demuxer_->GetStream(DemuxerStream::VIDEO);
   if (video_stream) {
@@ -367,6 +369,8 @@ void MediaSourceDelegate::NotifyDemuxerReady(
     params.video_codec = config.codec();
     params.video_size = config.natural_size();
     params.is_video_encrypted = config.is_encrypted();
+    params.video_extra_data = std::vector<uint8>(
+        config.extra_data(), config.extra_data() + config.extra_data_size());
   }
   double duration_ms = chunk_demuxer_->GetDuration() * 1000;
   DCHECK(duration_ms >= 0);
