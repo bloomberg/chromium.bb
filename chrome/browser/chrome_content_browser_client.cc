@@ -137,7 +137,9 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chromeos/chromeos_switches.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
@@ -1905,7 +1907,20 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->user_gesture_required_for_media_playback = false;
 #endif
 #endif
+
   web_prefs->password_echo_enabled = browser_defaults::kPasswordEchoEnabled;
+#if defined(OS_CHROMEOS)
+  // Enable password echo during OOBE when keyboard driven flag is set.
+  if (chromeos::UserManager::IsInitialized() &&
+      !chromeos::UserManager::Get()->IsUserLoggedIn() &&
+      !chromeos::StartupUtils::IsOobeCompleted()) {
+    bool keyboard_driven_oobe = false;
+    chromeos::system::StatisticsProvider::GetInstance()->GetMachineFlag(
+        chrome::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+    if (keyboard_driven_oobe)
+       web_prefs->password_echo_enabled = true;
+  }
+#endif
 
 #if defined(OS_ANDROID)
   web_prefs->user_style_sheet_enabled = false;
