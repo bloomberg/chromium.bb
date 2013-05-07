@@ -10,10 +10,11 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
@@ -22,15 +23,21 @@ namespace google_apis {
 class AboutResource;
 class AppList;
 class ResourceList;
-}
+}  // namespace google_apis
 
 namespace drive {
 
 class ChangeList;
 class ChangeListLoaderObserver;
 class ChangeListProcessor;
+class DirectoryFetchInfo;
 class DriveWebAppsRegistry;
 class JobScheduler;
+class ResourceEntry;
+
+namespace internal {
+class ResourceMetadata;
+}  // namespace internal
 
 // Callback run as a response to SearchFromServer.
 typedef base::Callback<void(ScopedVector<ChangeList> change_lists,
@@ -198,7 +205,7 @@ class ChangeListLoader {
   // Part of LoadDirectoryFromServer().
   // Called after GetAboutResource() for getting remote changestamp is complete.
   // Note that it directly proceeds to DoLoadDirectoryFromServer() not going
-  // through CheckChangestampAndLoadDirectoryIfNeeed, because the purpose of
+  // through CheckChangestampAndLoadDirectoryIfNeeded, because the purpose of
   // LoadDirectoryFromServer is to force reloading regardless of changestamp.
   void LoadDirectoryFromServerAfterGetAbout(
       const std::string& directory_resource_id,
@@ -209,7 +216,7 @@ class ChangeListLoader {
   // Compares the directory's changestamp and |last_known_remote_changestamp_|.
   // Starts DoLoadDirectoryFromServer() if the local data is old and runs
   // |callback| when finished. If it is up to date, calls back immediately.
-  void CheckChangestampAndLoadDirectoryIfNeeed(
+  void CheckChangestampAndLoadDirectoryIfNeeded(
       const DirectoryFetchInfo& directory_fetch_info,
       int64 local_changestamp,
       const FileOperationCallback& callback);

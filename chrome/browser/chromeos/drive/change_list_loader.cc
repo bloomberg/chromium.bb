@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/logging.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -218,7 +219,7 @@ void ChangeListLoader::DoUpdateLoad(
     //   of a feed fetching.
     // - Even if the value is old, it just marks the directory as older. It may
     //   trigger one future unnecessary re-fetch, but it'll never lose data.
-    CheckChangestampAndLoadDirectoryIfNeeed(
+    CheckChangestampAndLoadDirectoryIfNeeded(
         directory_fetch_info,
         local_changestamp,
         base::Bind(&ChangeListLoader::OnDirectoryLoadComplete,
@@ -347,7 +348,7 @@ void ChangeListLoader::LoadFromServerIfNeededAfterGetAbout(
   } else {
     // If the caller is interested in a particular directory, start loading the
     // directory first.
-    CheckChangestampAndLoadDirectoryIfNeeed(
+    CheckChangestampAndLoadDirectoryIfNeeded(
         directory_fetch_info,
         local_changestamp,
         base::Bind(
@@ -502,7 +503,7 @@ void ChangeListLoader::LoadDirectoryFromServerAfterGetAbout(
   DoLoadDirectoryFromServer(directory_fetch_info, callback);
 }
 
-void ChangeListLoader::CheckChangestampAndLoadDirectoryIfNeeed(
+void ChangeListLoader::CheckChangestampAndLoadDirectoryIfNeeded(
     const DirectoryFetchInfo& directory_fetch_info,
     int64 local_changestamp,
     const FileOperationCallback& callback) {

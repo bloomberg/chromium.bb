@@ -15,10 +15,10 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "googleurl/src/gurl.h"
 
 namespace google_apis {
+class AboutResource;
 class ResourceList;
 }  // google_apis
 
