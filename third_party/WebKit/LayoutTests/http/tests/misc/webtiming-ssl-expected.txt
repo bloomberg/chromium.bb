@@ -4,7 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS timing.connectStart is >= timing.navigationStart
-FAIL timing.secureConnectionStart should be >= timing.connectStart. Was 0 (of type number).
+PASS timing.secureConnectionStart is >= timing.connectStart
 PASS timing.connectEnd is >= timing.secureConnectionStart
 PASS successfullyParsed is true
 

@@ -880,6 +880,9 @@ webkit.org/b/57593 [ Linux Win ] fast/preloader/document-write.html [ Failure Pa
 
 crbug.com/780807 http/tests/misc/webtiming-origins.html [ Failure Pass ]
 
+# Fail because resource load timing information is not passed DRT
+crbug.com/234867 http/tests/misc/webtiming-ssl.php [ Failure ]
+
 webkit.org/b/58193 [ Win7 ] http/tests/local/fileapi/send-sliced-dragged-file.html [ Pass Timeout ]
 
 # Need to figure out why this is slow.
