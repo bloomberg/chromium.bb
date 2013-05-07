@@ -9,6 +9,7 @@ import fcntl
 import httplib
 import logging
 import os
+import re
 import socket
 import traceback
 
@@ -82,20 +83,22 @@ def AllocateTestServerPort():
 def IsHostPortUsed(host_port):
   """Checks whether the specified host port is used or not.
 
+  Uses -n -P to inhibit the conversion of host/port numbers to host/port names.
+
   Args:
     host_port: Port on host we want to check.
 
   Returns:
     True if the port on host is already used, otherwise returns False.
   """
-  try:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(('127.0.0.1', host_port))
+  port_info = '(\*)|(127\.0\.0\.1)|(localhost):%d' % host_port
+  # TODO(jnd): Find a better way to filter the port. Note that connecting to the
+  # socket and closing it would leave it in the TIME_WAIT state. Setting
+  # SO_LINGER on it and then closing it makes the Python HTTP server crash.
+  re_port = re.compile(port_info, re.MULTILINE)
+  if re_port.search(cmd_helper.GetCmdOutput(['lsof', '-nPi:%d' % host_port])):
     return True
-  except socket.error as error:
-    return False
-  finally:
-    sock.close()
+  return False
 
 
 def IsDevicePortUsed(adb, device_port, state=''):
