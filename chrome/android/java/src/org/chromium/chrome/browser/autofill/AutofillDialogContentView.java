@@ -449,7 +449,7 @@ public class AutofillDialogContentView extends LinearLayout {
         }
 
         private View initView(
-                final int position, View convertView, final ViewGroup parent, boolean showButton) {
+                final int position, View convertView, final ViewGroup parent, boolean isDropDown) {
             if (convertView == null) {
                 convertView = View.inflate(getContext(), R.layout.autofill_menu_item, null);
             }
@@ -481,7 +481,7 @@ public class AutofillDialogContentView extends LinearLayout {
             }
 
             if (extraEdit != null) {
-                if (!TextUtils.isEmpty(mSuggestionTextExtra)) {
+                if (!isDropDown && !TextUtils.isEmpty(mSuggestionTextExtra)) {
                   extraEdit.setVisibility(VISIBLE);
                   extraEdit.setHint(mSuggestionTextExtra);
                   extraEdit.setCompoundDrawables(
@@ -492,7 +492,7 @@ public class AutofillDialogContentView extends LinearLayout {
             }
 
             if (button != null) {
-                if (showButton && item.mShowButton) {
+                if (isDropDown && item.mShowButton) {
                     button.setText(item.mButtonLabelResourceId);
                     button.setOnClickListener(new OnClickListener() {
                         // TODO(aruslan): http://crbug.com/236101.
