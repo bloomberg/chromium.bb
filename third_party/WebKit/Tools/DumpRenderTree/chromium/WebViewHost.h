@@ -224,7 +224,6 @@ private:
     // Can be used to update the title of the window.
     void setPageTitle(const WebKit::WebString&);
 
-    void animateNow();
     void enterFullScreenNow();
     void exitFullScreenNow();
 
@@ -262,8 +261,6 @@ private:
     bool m_inModalLoop;
 
     bool m_shutdownWasInvoked;
-    bool m_animateScheduled;
-    bool m_finished;
 
     WebKit::WebRect m_windowRect;
 

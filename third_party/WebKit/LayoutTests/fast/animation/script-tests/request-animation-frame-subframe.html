@@ -9,7 +9,9 @@
         parent.callbackInvoked = true;
     });
 
-    window.requestAnimationFrame(function() {
+    parent.doDisplay();
+    
+    setTimeout(function() {
         parent.doCheckResult();
     });
 
