@@ -445,7 +445,7 @@ long_press_handler(void *data)
 }
 
 static void
-menu_key_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
+menu_key_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 {
 	struct tablet_shell *shell = data;
 
@@ -456,7 +456,7 @@ menu_key_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
 }
 
 static void
-home_key_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
+home_key_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 {
 	struct tablet_shell *shell = data;
 

@@ -1335,7 +1335,7 @@ evdev_remove_devices(struct weston_seat *seat_base)
 	wl_list_for_each_safe(device, next, &seat->devices_list, link)
 		evdev_device_destroy(device);
 
-	if (seat->base.seat.keyboard)
+	if (seat->base.keyboard)
 		notify_keyboard_focus_out(&seat->base);
 }
 
@@ -1426,7 +1426,7 @@ rpi_restore(struct weston_compositor *base)
 }
 
 static void
-switch_vt_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
+switch_vt_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 {
 	struct rpi_compositor *ec = data;
 

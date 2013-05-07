@@ -1015,8 +1015,8 @@ weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
 
-	if (seat->seat.pointer->button_count != 1 ||
-	    seat->seat.pointer->focus != &window->surface->surface)
+	if (seat->pointer->button_count != 1 ||
+	    seat->pointer->focus != &window->surface->surface)
 		return;
 
 	detail = client_message->data.data32[2];

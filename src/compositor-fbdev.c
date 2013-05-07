@@ -826,7 +826,7 @@ fbdev_restore(struct weston_compositor *base)
 }
 
 static void
-switch_vt_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
+switch_vt_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 {
 	struct fbdev_compositor *ec = data;
 

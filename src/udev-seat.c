@@ -231,7 +231,7 @@ udev_seat_remove_devices(struct udev_seat *seat)
 	wl_list_for_each_safe(device, next, &seat->devices_list, link)
 		evdev_device_destroy(device);
 
-	if (seat->base.seat.keyboard)
+	if (seat->base.keyboard)
 		notify_keyboard_focus_out(&seat->base);
 }
 

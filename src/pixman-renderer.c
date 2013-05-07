@@ -456,7 +456,7 @@ pixman_renderer_destroy(struct weston_compositor *ec)
 }
 
 static void
-debug_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 	      void *data)
 {
 	struct weston_compositor *ec = data;

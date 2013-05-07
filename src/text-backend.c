@@ -571,7 +571,7 @@ input_method_context_grab_keyboard(struct wl_client *client,
 	struct input_method_context *context = resource->data;
 	struct wl_resource *cr;
 	struct weston_seat *seat = context->input_method->seat;
-	struct weston_keyboard *keyboard = &seat->keyboard;
+	struct weston_keyboard *keyboard = seat->keyboard;
 
 	cr = wl_client_add_object(client, &wl_keyboard_interface,
 				  NULL, id, context);
@@ -600,7 +600,7 @@ input_method_context_key(struct wl_client *client,
 {
 	struct input_method_context *context = resource->data;
 	struct weston_seat *seat = context->input_method->seat;
-	struct weston_keyboard *keyboard = seat->seat.keyboard;
+	struct weston_keyboard *keyboard = seat->keyboard;
 	struct weston_keyboard_grab *default_grab = &keyboard->default_grab;
 
 	default_grab->interface->key(default_grab, time, key, state_w);
@@ -618,7 +618,7 @@ input_method_context_modifiers(struct wl_client *client,
 	struct input_method_context *context = resource->data;
 
 	struct weston_seat *seat = context->input_method->seat;
-	struct weston_keyboard *keyboard = seat->seat.keyboard;
+	struct weston_keyboard *keyboard = seat->keyboard;
 	struct weston_keyboard_grab *default_grab = &keyboard->default_grab;
 
 	default_grab->interface->modifiers(default_grab,
@@ -712,7 +712,8 @@ input_method_context_create(struct text_input *model,
 static void
 input_method_context_end_keyboard_grab(struct input_method_context *context)
 {
-	struct weston_keyboard_grab *grab = &context->input_method->seat->keyboard.input_method_grab;
+	struct weston_keyboard_grab *grab =
+		&context->input_method->seat->keyboard->input_method_grab;
 	struct weston_keyboard *keyboard = grab->keyboard;
 
 	if (!grab->keyboard)
@@ -811,8 +812,8 @@ input_method_init_seat(struct weston_seat *seat)
 
 	if (seat->has_keyboard) {
 		seat->input_method->keyboard_focus_listener.notify = handle_keyboard_focus;
-		wl_signal_add(&seat->seat.keyboard->focus_signal, &seat->input_method->keyboard_focus_listener);
-		seat->keyboard.input_method_grab.interface = &input_method_context_grab;
+		wl_signal_add(&seat->keyboard->focus_signal, &seat->input_method->keyboard_focus_listener);
+		seat->keyboard->input_method_grab.interface = &input_method_context_grab;
 	}
 
 	seat->input_method->focus_listener_initialized = 1;

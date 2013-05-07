@@ -2251,7 +2251,7 @@ vt_func(struct weston_compositor *compositor, int event)
 }
 
 static void
-switch_vt_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
+switch_vt_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 {
 	struct drm_compositor *ec = data;
 
@@ -2315,7 +2315,7 @@ find_primary_gpu(struct drm_compositor *ec, const char *seat)
 }
 
 static void
-planes_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
+planes_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 {
 	struct drm_compositor *c = data;
 

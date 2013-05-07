@@ -122,7 +122,7 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 	/* If a pointer falls outside the outputs new geometry, move it to its
 	 * lower-right corner */
 	wl_list_for_each(seat, &output->compositor->seat_list, link) {
-		struct weston_pointer *pointer = seat->seat.pointer;
+		struct weston_pointer *pointer = seat->pointer;
 		int32_t x, y;
 
 		if (!pointer)
@@ -946,12 +946,12 @@ weston_surface_unmap(struct weston_surface *surface)
 	wl_list_remove(&surface->layer_link);
 
 	wl_list_for_each(seat, &surface->compositor->seat_list, link) {
-		if (seat->seat.keyboard &&
-		    seat->seat.keyboard->focus == &surface->surface)
-			weston_keyboard_set_focus(seat->seat.keyboard, NULL);
-		if (seat->seat.pointer &&
-		    seat->seat.pointer->focus == &surface->surface)
-			weston_pointer_set_focus(seat->seat.pointer,
+		if (seat->keyboard &&
+		    seat->keyboard->focus == &surface->surface)
+			weston_keyboard_set_focus(seat->keyboard, NULL);
+		if (seat->pointer &&
+		    seat->pointer->focus == &surface->surface)
+			weston_pointer_set_focus(seat->pointer,
 						 NULL,
 						 wl_fixed_from_int(0),
 						 wl_fixed_from_int(0));

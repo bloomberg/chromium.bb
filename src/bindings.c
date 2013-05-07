@@ -194,8 +194,7 @@ static const struct weston_keyboard_grab_interface binding_grab = {
 };
 
 static void
-install_binding_grab(struct wl_seat *seat,
-		     uint32_t time, uint32_t key)
+install_binding_grab(struct weston_seat *seat, uint32_t time, uint32_t key)
 {
 	struct binding_keyboard_grab *grab;
 
@@ -219,14 +218,14 @@ weston_compositor_run_key_binding(struct weston_compositor *compositor,
 	wl_list_for_each(b, &compositor->key_binding_list, link) {
 		if (b->key == key && b->modifier == seat->modifier_state) {
 			weston_key_binding_handler_t handler = b->handler;
-			handler(&seat->seat, time, key, b->data);
+			handler(seat, time, key, b->data);
 
 			/* If this was a key binding and it didn't
 			 * install a keyboard grab, install one now to
 			 * swallow the key release. */
-			if (seat->seat.keyboard->grab ==
-			    &seat->seat.keyboard->default_grab)
-				install_binding_grab(&seat->seat, time, key);
+			if (seat->keyboard->grab ==
+			    &seat->keyboard->default_grab)
+				install_binding_grab(seat, time, key);
 		}
 	}
 }
@@ -245,7 +244,7 @@ weston_compositor_run_button_binding(struct weston_compositor *compositor,
 	wl_list_for_each(b, &compositor->button_binding_list, link) {
 		if (b->button == button && b->modifier == seat->modifier_state) {
 			weston_button_binding_handler_t handler = b->handler;
-			handler(&seat->seat, time, button, b->data);
+			handler(seat, time, button, b->data);
 		}
 	}
 }
@@ -261,7 +260,7 @@ weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 	wl_list_for_each(b, &compositor->axis_binding_list, link) {
 		if (b->axis == axis && b->modifier == seat->modifier_state) {
 			weston_axis_binding_handler_t handler = b->handler;
-			handler(&seat->seat, time, axis, value, b->data);
+			handler(seat, time, axis, value, b->data);
 			return 1;
 		}
 	}
@@ -285,7 +284,7 @@ weston_compositor_run_debug_binding(struct weston_compositor *compositor,
 
 		count++;
 		handler = binding->handler;
-		handler(&seat->seat, time, key, binding->data);
+		handler(seat, time, key, binding->data);
 	}
 
 	return count;

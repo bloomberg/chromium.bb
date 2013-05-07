@@ -203,7 +203,7 @@ screenshooter_sigchld(struct weston_process *process, int status)
 }
 
 static void
-screenshooter_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+screenshooter_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 		      void *data)
 {
 	struct screenshooter *shooter = data;
@@ -452,7 +452,7 @@ weston_recorder_destroy(struct weston_recorder *recorder)
 }
 
 static void
-recorder_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
+recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 {
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *ec = ws->compositor;

@@ -168,10 +168,10 @@ weston_zoom_frame_xy(struct weston_animation *animation,
 		output->zoom.spring_xy.current = output->zoom.spring_xy.target;
 		output->zoom.current.x =
 			output->zoom.type == ZOOM_FOCUS_POINTER ?
-				seat->pointer.x : output->zoom.text_cursor.x;
+				seat->pointer->x : output->zoom.text_cursor.x;
 		output->zoom.current.y =
 			output->zoom.type == ZOOM_FOCUS_POINTER ?
-				seat->pointer.y : output->zoom.text_cursor.y;
+				seat->pointer->y : output->zoom.text_cursor.y;
 		wl_list_remove(&animation->link);
 		wl_list_init(&animation->link);
 	}
@@ -337,15 +337,15 @@ WL_EXPORT void
 weston_output_update_zoom(struct weston_output *output, uint32_t type)
 {
 	struct weston_seat *seat = weston_zoom_pick_seat(output->compositor);
-	wl_fixed_t x = seat->pointer.x;
-	wl_fixed_t y = seat->pointer.y;
+	wl_fixed_t x = seat->pointer->x;
+	wl_fixed_t y = seat->pointer->y;
 
 	zoom_area_center_from_pointer(output, &x, &y);
 
 	if (type == ZOOM_FOCUS_POINTER) {
 		if (wl_list_empty(&output->zoom.animation_xy.link)) {
-			output->zoom.current.x = seat->pointer.x;
-			output->zoom.current.y = seat->pointer.y;
+			output->zoom.current.x = seat->pointer->x;
+			output->zoom.current.y = seat->pointer->y;
 		} else {
 			output->zoom.to.x = x;
 			output->zoom.to.y = y;

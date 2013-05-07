@@ -68,7 +68,7 @@ static void
 notify_pointer_position(struct weston_test *test, struct wl_resource *resource)
 {
 	struct weston_seat *seat = get_seat(test);
-	struct weston_pointer *pointer = seat->seat.pointer;
+	struct weston_pointer *pointer = seat->pointer;
 
 	wl_test_send_pointer_position(resource, pointer->x, pointer->y);
 }
@@ -119,7 +119,7 @@ move_pointer(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_test *test = resource->data;
 	struct weston_seat *seat = get_seat(test);
-	struct weston_pointer *pointer = seat->seat.pointer;
+	struct weston_pointer *pointer = seat->pointer;
 
 	test->compositor->focus = 1;
 
@@ -155,7 +155,7 @@ activate_surface(struct wl_client *client, struct wl_resource *resource,
 
 	if (surface) {
 		weston_surface_activate(surface, seat);
-		notify_keyboard_focus_in(seat, &seat->keyboard.keys,
+		notify_keyboard_focus_in(seat, &seat->keyboard->keys,
 					 STATE_UPDATE_AUTOMATIC);
 	}
 	else {

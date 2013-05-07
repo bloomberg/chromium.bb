@@ -618,7 +618,7 @@ evdev_notify_keyboard_focus(struct weston_seat *seat,
 	uint32_t *k;
 	int ret;
 
-	if (!seat->seat.keyboard)
+	if (!seat->keyboard)
 		return;
 
 	memset(all_keys, 0, sizeof all_keys);

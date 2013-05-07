@@ -209,15 +209,15 @@ clipboard_set_selection(struct wl_listener *listener, void *data)
 	struct clipboard *clipboard =
 		container_of(listener, struct clipboard, selection_listener);
 	struct weston_seat *seat = data;
-	struct wl_data_source *source = seat->seat.selection_data_source;
+	struct wl_data_source *source = seat->selection_data_source;
 	const char **mime_types;
 	int p[2];
 
 	if (source == NULL) {
 		if (clipboard->source)
-			wl_seat_set_selection(&seat->seat,
-					      &clipboard->source->base,
-					      clipboard->source->serial);
+			weston_seat_set_selection(seat,
+						  &clipboard->source->base,
+						  clipboard->source->serial);
 		return;
 	} else if (source->accept == clipboard_source_accept) {
 		/* Callback for our data source. */
@@ -238,7 +238,7 @@ clipboard_set_selection(struct wl_listener *listener, void *data)
 
 	clipboard->source =
 		clipboard_source_create(clipboard, mime_types[0],
-					seat->seat.selection_serial, p[0]);
+					seat->selection_serial, p[0]);
 	if (clipboard->source == NULL)
 		return;
 }
@@ -268,7 +268,7 @@ clipboard_create(struct weston_seat *seat)
 	clipboard->selection_listener.notify = clipboard_set_selection;
 	clipboard->destroy_listener.notify = clipboard_destroy;
 
-	wl_signal_add(&seat->seat.selection_signal,
+	wl_signal_add(&seat->selection_signal,
 		      &clipboard->selection_listener);
 	wl_signal_add(&seat->destroy_signal,
 		      &clipboard->destroy_listener);

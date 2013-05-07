@@ -1860,7 +1860,7 @@ compile_shaders(struct weston_compositor *ec)
 }
 
 static void
-fragment_debug_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+fragment_debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 		       void *data)
 {
 	struct weston_compositor *ec = data;
