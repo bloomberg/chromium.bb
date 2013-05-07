@@ -31,9 +31,11 @@
 #include "URLTestHelpers.h"
 #include "WebCompositorInitializer.h"
 #include "WebFrame.h"
+#include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
+#include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/dom/Node.h"
 #include "core/page/FrameView.h"
@@ -41,7 +43,9 @@
 #include <public/WebContentLayer.h>
 #include <public/WebFloatPoint.h>
 #include <public/WebSize.h>
+#include <public/WebUnitTestSupport.h>
 #include <wtf/PassOwnPtr.h>
+
 
 using namespace WebKit;
 using namespace WebCore;
@@ -119,6 +123,79 @@ TEST(LinkHighlightTest, verifyWebViewImplIntegration)
     ASSERT_FALSE(webViewImpl->linkHighlight());
 
     webViewImpl->close();
+    Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+}
+
+class FakeWebFrameClient : public WebFrameClient {
+    // To make the destructor public.
+};
+
+class FakeCompositingWebViewClient : public WebViewClient {
+public:
+    virtual ~FakeCompositingWebViewClient()
+    {
+    }
+
+    virtual void initializeLayerTreeView() OVERRIDE
+    {
+        m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting(WebUnitTestSupport::TestViewTypeUnitTest));
+        ASSERT(m_layerTreeView);
+    }
+
+    virtual WebLayerTreeView* layerTreeView() OVERRIDE
+    {
+        return m_layerTreeView.get();
+    }
+
+    FakeWebFrameClient m_fakeWebFrameClient;
+
+private:
+    OwnPtr<WebLayerTreeView> m_layerTreeView;
+};
+
+static WebViewClient* compositingWebViewClient()
+{
+    DEFINE_STATIC_LOCAL(FakeCompositingWebViewClient, client, ());
+    return &client;
+}
+
+TEST(LinkHighlightTest, resetDuringNodeRemoval)
+{
+    WebKitTests::WebCompositorInitializer compositorInitializer(0);
+
+    const std::string baseURL("http://www.test.com/");
+    const std::string fileName("test_touch_link_highlight.html");
+
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("test_touch_link_highlight.html"));
+    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(FrameTestHelpers::createWebViewAndLoad(baseURL + fileName, true, 0, compositingWebViewClient()));
+
+    int pageWidth = 640;
+    int pageHeight = 480;
+    webViewImpl->resize(WebSize(pageWidth, pageHeight));
+    webViewImpl->layout();
+
+    WebGestureEvent touchEvent;
+    touchEvent.type = WebInputEvent::GestureTapDown;
+    touchEvent.x = 20;
+    touchEvent.y = 20;
+
+    PlatformGestureEventBuilder platformEvent(webViewImpl->mainFrameImpl()->frameView(), touchEvent);
+    Node* touchNode = webViewImpl->bestTapNode(platformEvent);
+    ASSERT_TRUE(touchNode);
+
+    webViewImpl->enableTapHighlight(platformEvent);
+    ASSERT_TRUE(webViewImpl->linkHighlight());
+
+    GraphicsLayerChromium* highlightLayer = webViewImpl->linkHighlight()->currentGraphicsLayerForTesting();
+    ASSERT_TRUE(highlightLayer);
+    EXPECT_TRUE(highlightLayer->linkHighlight());
+
+    touchNode->remove(IGNORE_EXCEPTION);
+    webViewImpl->layout();
+    EXPECT_FALSE(highlightLayer->linkHighlight());
+
+    webViewImpl->close();
+    Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
 }
 
 } // namespace
