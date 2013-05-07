@@ -39,37 +39,10 @@
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkPathMeasure.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {
-
-static void pathLengthApplierFunction(void* info, const PathElement* element)
-{
-    PathTraversalState& traversalState = *static_cast<PathTraversalState*>(info);
-    if (traversalState.m_success)
-        return;
-    FloatPoint* points = element->points;
-    float segmentLength = 0;
-    switch (element->type) {
-        case PathElementMoveToPoint:
-            segmentLength = traversalState.moveTo(points[0]);
-            break;
-        case PathElementAddLineToPoint:
-            segmentLength = traversalState.lineTo(points[0]);
-            break;
-        case PathElementAddQuadCurveToPoint:
-            segmentLength = traversalState.quadraticBezierTo(points[0], points[1]);
-            break;
-        case PathElementAddCurveToPoint:
-            segmentLength = traversalState.cubicBezierTo(points[0], points[1], points[2]);
-            break;
-        case PathElementCloseSubpath:
-            segmentLength = traversalState.closeSubpath();
-            break;
-    }
-    traversalState.m_totalLength += segmentLength; 
-    traversalState.processSegment();
-}
 
 Path::Path()
     : m_path()
@@ -199,27 +172,54 @@ void Path::transform(const AffineTransform& xform)
 
 float Path::length() const
 {
-    PathTraversalState traversalState(PathTraversalState::TraversalTotalLength);
-    apply(&traversalState, pathLengthApplierFunction);
-    return traversalState.m_totalLength;
+    SkScalar length = 0;
+    SkPathMeasure measure(m_path, false);
+
+    do {
+        length += measure.getLength();
+    } while (measure.nextContour());
+
+    return SkScalarToFloat(length);
 }
 
 FloatPoint Path::pointAtLength(float length, bool& ok) const
 {
-    PathTraversalState traversalState(PathTraversalState::TraversalPointAtLength);
-    traversalState.m_desiredLength = length;
-    apply(&traversalState, pathLengthApplierFunction);
-    ok = traversalState.m_success;
-    return traversalState.m_current;
+    FloatPoint point;
+    float normal;
+    ok = pointAndNormalAtLength(length, point, normal);
+    return point;
 }
 
 float Path::normalAngleAtLength(float length, bool& ok) const
 {
-    PathTraversalState traversalState(PathTraversalState::TraversalNormalAngleAtLength);
-    traversalState.m_desiredLength = length ? length : std::numeric_limits<float>::epsilon();
-    apply(&traversalState, pathLengthApplierFunction);
-    ok = traversalState.m_success;
-    return traversalState.m_normalAngle;
+    FloatPoint point;
+    float normal;
+    ok = pointAndNormalAtLength(length, point, normal);
+    return normal;
+}
+
+bool Path::pointAndNormalAtLength(float length, FloatPoint& point, float& normal) const
+{
+    SkPathMeasure measure(m_path, false);
+
+    do {
+        SkScalar contourLength = measure.getLength();
+        if (length <= contourLength) {
+            SkVector tangent;
+            SkPoint position;
+
+            if (measure.getPosTan(length, &position, &tangent)) {
+                normal = rad2deg(SkScalarToFloat(SkScalarATan2(tangent.fY, tangent.fX)));
+                point = FloatPoint(SkScalarToFloat(position.fX), SkScalarToFloat(position.fY));
+                return true;
+            }
+        }
+        length -= contourLength;
+    } while (measure.nextContour());
+
+    normal = 0;
+    point = FloatPoint(0, 0);
+    return false;
 }
 
 void Path::clear()
