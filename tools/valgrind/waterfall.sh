@@ -128,7 +128,7 @@ fetch_logs() {
 
 match_suppressions() {
   PYTHONPATH=$THISDIR/../python/google \
-             python "$THISDIR/test_suppressions.py" "$LOGS_DIR/report_"*
+             python "$THISDIR/test_suppressions.py" $@ "$LOGS_DIR/report_"*
 }
 
 match_gtest_excludes() {
@@ -161,7 +161,7 @@ then
   fetch_logs $WATERFALL_FYI_PAGE
 elif [ "$1" = "match" ]
 then
-  match_suppressions
+  match_suppressions ${@:2}
   match_gtest_excludes
 elif [ "$1" = "blame" ]
 then
