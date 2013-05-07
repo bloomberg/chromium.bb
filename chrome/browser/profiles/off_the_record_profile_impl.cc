@@ -150,7 +150,7 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   if (host_content_settings_map_)
     host_content_settings_map_->ShutdownOnUIThread();
 
-  if (pref_proxy_config_tracker_.get())
+  if (pref_proxy_config_tracker_)
     pref_proxy_config_tracker_->DetachFromPrefService();
 
   // Clears any data the network stack contains that may be related to the
@@ -304,7 +304,7 @@ HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
   // Retrieve the host content settings map of the parent profile in order to
   // ensure the preferences have been migrated.
   profile_->GetHostContentSettingsMap();
-  if (!host_content_settings_map_.get()) {
+  if (!host_content_settings_map_) {
     host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), true);
 #if defined(ENABLE_EXTENSIONS)
     ExtensionService* extension_service = GetExtensionService();
@@ -392,7 +392,7 @@ void OffTheRecordProfileImpl::OnLogin() {
 #endif  // defined(OS_CHROMEOS)
 
 PrefProxyConfigTracker* OffTheRecordProfileImpl::GetProxyConfigTracker() {
-  if (!pref_proxy_config_tracker_.get()) {
+  if (!pref_proxy_config_tracker_) {
     pref_proxy_config_tracker_.reset(
         ProxyServiceFactory::CreatePrefProxyConfigTracker(GetPrefs()));
   }

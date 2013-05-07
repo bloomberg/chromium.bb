@@ -406,9 +406,9 @@ ProfileIOData::~ProfileIOData() {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO))
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (main_request_context_.get())
+  if (main_request_context_)
     main_request_context_->AssertNoURLRequests();
-  if (extensions_request_context_.get())
+  if (extensions_request_context_)
     extensions_request_context_->AssertNoURLRequests();
   for (URLRequestContextMap::iterator it = app_request_context_map_.begin();
        it != app_request_context_map_.end(); ++it) {
@@ -697,7 +697,7 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
   resource_context_->host_resolver_ = io_thread_globals->host_resolver.get();
   resource_context_->request_context_ = main_request_context_.get();
 
-  if (profile_params_->resource_prefetch_predictor_observer_.get()) {
+  if (profile_params_->resource_prefetch_predictor_observer_) {
     resource_prefetch_predictor_observer_.reset(
         profile_params_->resource_prefetch_predictor_observer_.release());
   }
@@ -754,7 +754,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
       chrome::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
 #if defined(OS_CHROMEOS)
-  if (!is_incognito() && profile_params_.get()) {
+  if (!is_incognito() && profile_params_) {
     set_protocol = job_factory->SetProtocolHandler(
         chrome::kDriveScheme,
         new drive::DriveProtocolHandler(profile_params_->profile));
@@ -812,10 +812,10 @@ void ProfileIOData::ShutdownOnUIThread() {
   signin_allowed_.Destroy();
   session_startup_pref_.Destroy();
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  if (url_blacklist_manager_.get())
+  if (url_blacklist_manager_)
     url_blacklist_manager_->ShutdownOnUIThread();
 #endif
-  if (chrome_http_user_agent_settings_.get())
+  if (chrome_http_user_agent_settings_)
     chrome_http_user_agent_settings_->CleanupOnUIThread();
   bool posted = BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
   if (!posted)
@@ -856,7 +856,7 @@ void ProfileIOData::PopulateNetworkSessionParams(
 
 void ProfileIOData::SetCookieSettingsForTesting(
     CookieSettings* cookie_settings) {
-  DCHECK(!cookie_settings_.get());
+  DCHECK(!cookie_settings_);
   cookie_settings_ = cookie_settings;
 }
 

@@ -51,7 +51,7 @@ void GAIAInfoUpdateService::Update() {
   if (username.empty())
     return;
 
-  if (profile_image_downloader_.get())
+  if (profile_image_downloader_)
     return;
   profile_image_downloader_.reset(new ProfileDownloader(this));
   profile_image_downloader_->Start();

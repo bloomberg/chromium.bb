@@ -141,7 +141,7 @@ bool ProfileDownloader::GetProfileNameAndImageURL(const std::string& data,
   std::string error_message;
   scoped_ptr<base::Value> root_value(base::JSONReader::ReadAndReturnError(
       data, base::JSON_PARSE_RFC, &error_code, &error_message));
-  if (!root_value.get()) {
+  if (!root_value) {
     LOG(ERROR) << "Error while parsing user entry response: "
                << error_message;
     return false;

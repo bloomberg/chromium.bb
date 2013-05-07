@@ -124,7 +124,7 @@ SkBitmap BadgeIcon(const SkBitmap& app_icon_bitmap,
       skia::CreateBitmapCanvas(app_icon_bitmap.width(),
                                app_icon_bitmap.height(),
                                false));
-  DCHECK(offscreen_canvas.get());
+  DCHECK(offscreen_canvas);
   offscreen_canvas->drawBitmap(app_icon_bitmap, 0, 0);
   offscreen_canvas->drawBitmap(sk_icon,
                                app_icon_bitmap.width() - sk_icon.width(),
@@ -146,7 +146,7 @@ base::FilePath CreateChromeDesktopShortcutIconForProfile(
     const SkBitmap& avatar_bitmap_2x) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<SkBitmap> app_icon_bitmap(GetAppIconForSize(kShortcutIconSize));
-  if (!app_icon_bitmap.get())
+  if (!app_icon_bitmap)
     return base::FilePath();
 
   gfx::ImageFamily badged_bitmaps;
@@ -154,7 +154,7 @@ base::FilePath CreateChromeDesktopShortcutIconForProfile(
       BadgeIcon(*app_icon_bitmap, avatar_bitmap_1x, 1)));
 
   app_icon_bitmap = GetAppIconForSize(IconUtil::kLargeIconSize);
-  if (app_icon_bitmap.get()) {
+  if (app_icon_bitmap) {
     badged_bitmaps.Add(gfx::Image::CreateFrom1xBitmap(
         BadgeIcon(*app_icon_bitmap, avatar_bitmap_2x, 2)));
   }

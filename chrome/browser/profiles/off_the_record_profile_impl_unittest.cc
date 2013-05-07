@@ -37,7 +37,7 @@ class TestingProfileWithHostZoomMap : public TestingProfile {
   }
 
   virtual Profile* GetOffTheRecordProfile() OVERRIDE {
-    if (!off_the_record_profile_.get())
+    if (!off_the_record_profile_)
       off_the_record_profile_.reset(CreateOffTheRecordProfile());
     return off_the_record_profile_.get();
   }

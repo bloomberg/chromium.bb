@@ -972,7 +972,7 @@ bool ProfileManager::CompareProfilePathAndName(
 }
 
 ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
-  if (!profile_info_cache_.get()) {
+  if (!profile_info_cache_) {
     profile_info_cache_.reset(new ProfileInfoCache(
         g_browser_process->local_state(), user_data_dir_));
   }

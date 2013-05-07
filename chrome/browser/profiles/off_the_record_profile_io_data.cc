@@ -263,7 +263,7 @@ void OffTheRecordProfileIOData::
   extensions_context->set_cookie_store(extensions_cookie_store);
 
 #if !defined(DISABLE_FTP_SUPPORT)
-  DCHECK(ftp_factory_.get());
+  DCHECK(ftp_factory_);
   extensions_context->set_ftp_transaction_factory(ftp_factory_.get());
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 

@@ -54,7 +54,7 @@ ProfileImplIOData::Handle::Handle(Profile* profile)
 
 ProfileImplIOData::Handle::~Handle() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (io_data_->predictor_.get() != NULL) {
+  if (io_data_->predictor_ != NULL) {
     // io_data_->predictor_ might be NULL if Init() was never called
     // (i.e. we shut down before ProfileImpl::DoFinalInit() got called).
     PrefService* user_prefs = profile_->GetPrefs();
@@ -80,7 +80,7 @@ void ProfileImplIOData::Handle::Init(
       bool restore_old_session_cookies,
       quota::SpecialStoragePolicy* special_storage_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!io_data_->lazy_params_.get());
+  DCHECK(!io_data_->lazy_params_);
   DCHECK(predictor);
 
   LazyParams* lazy_params = new LazyParams;
@@ -288,7 +288,7 @@ ProfileImplIOData::ProfileImplIOData()
 ProfileImplIOData::~ProfileImplIOData() {
   DestroyResourceContext();
 
-  if (media_request_context_.get())
+  if (media_request_context_)
     media_request_context_->AssertNoURLRequests();
 }
 
@@ -456,7 +456,7 @@ void ProfileImplIOData::
   extensions_context->set_cookie_store(extensions_cookie_store);
 
 #if !defined(DISABLE_FTP_SUPPORT)
-  DCHECK(ftp_factory_.get());
+  DCHECK(ftp_factory_);
   extensions_context->set_ftp_transaction_factory(ftp_factory_.get());
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
@@ -621,7 +621,7 @@ ProfileImplIOData::InitializeMediaRequestContext(
 
 ChromeURLRequestContext*
 ProfileImplIOData::AcquireMediaRequestContext() const {
-  DCHECK(media_request_context_.get());
+  DCHECK(media_request_context_);
   return media_request_context_.get();
 }
 

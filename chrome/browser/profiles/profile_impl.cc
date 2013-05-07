@@ -621,7 +621,7 @@ ProfileImpl::~ProfileImpl() {
 #endif
 
   // Destroy OTR profile and its profile services first.
-  if (off_the_record_profile_.get()) {
+  if (off_the_record_profile_) {
     ProfileDestroyer::DestroyOffTheRecordProfileNow(
         off_the_record_profile_.get());
   } else {
@@ -631,10 +631,10 @@ ProfileImpl::~ProfileImpl() {
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
-  if (top_sites_.get())
+  if (top_sites_)
     top_sites_->Shutdown();
 
-  if (pref_proxy_config_tracker_.get())
+  if (pref_proxy_config_tracker_)
     pref_proxy_config_tracker_->DetachFromPrefService();
 
   if (host_content_settings_map_)
@@ -663,7 +663,7 @@ bool ProfileImpl::IsOffTheRecord() const {
 }
 
 Profile* ProfileImpl::GetOffTheRecordProfile() {
-  if (!off_the_record_profile_.get()) {
+  if (!off_the_record_profile_) {
     scoped_ptr<Profile> p(CreateOffTheRecordProfile());
     off_the_record_profile_.swap(p);
 
@@ -695,7 +695,7 @@ ExtensionService* ProfileImpl::GetExtensionService() {
 
 ExtensionSpecialStoragePolicy*
     ProfileImpl::GetExtensionSpecialStoragePolicy() {
-  if (!extension_special_storage_policy_.get()) {
+  if (!extension_special_storage_policy_) {
     extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(
         CookieSettings::Factory::GetForProfile(this));
   }
@@ -735,7 +735,7 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
 
   ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
 
-  DCHECK(!net_pref_observer_.get());
+  DCHECK(!net_pref_observer_);
   net_pref_observer_.reset(new NetPrefObserver(
       prefs_.get(),
       prerender::PrerenderManagerFactory::GetForProfile(this),
@@ -777,13 +777,13 @@ Profile::ExitType ProfileImpl::GetLastSessionExitType() {
 }
 
 PrefService* ProfileImpl::GetPrefs() {
-  DCHECK(prefs_.get());  // Should explicitly be initialized.
+  DCHECK(prefs_);  // Should explicitly be initialized.
   return prefs_.get();
 }
 
 PrefService* ProfileImpl::GetOffTheRecordPrefs() {
-  DCHECK(prefs_.get());
-  if (!otr_prefs_.get()) {
+  DCHECK(prefs_);
+  if (!otr_prefs_) {
     // The new ExtensionPrefStore is ref_counted and the new PrefService
     // stores a reference so that we do not leak memory here.
     otr_prefs_.reset(prefs_->CreateIncognitoPrefService(
@@ -865,13 +865,13 @@ net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
   // SSLConfigServiceManager is not initialized until DoFinalInit() which is
   // invoked after all ProfileKeyedServices have been initialized (see
   // http://crbug.com/171406).
-  DCHECK(ssl_config_service_manager_.get()) <<
+  DCHECK(ssl_config_service_manager_) <<
       "SSLConfigServiceManager is not initialized yet";
   return ssl_config_service_manager_->Get();
 }
 
 HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
-  if (!host_content_settings_map_.get()) {
+  if (!host_content_settings_map_) {
     host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), false);
   }
   return host_content_settings_map_.get();
@@ -912,7 +912,7 @@ Time ProfileImpl::GetStartTime() const {
 }
 
 history::TopSites* ProfileImpl::GetTopSites() {
-  if (!top_sites_.get()) {
+  if (!top_sites_) {
     top_sites_ = history::TopSites::Create(
         this, GetPath().Append(chrome::kTopSitesFilename));
   }
@@ -1038,7 +1038,7 @@ void ProfileImpl::OnLogin() {
 }
 
 void ProfileImpl::SetupChromeOSEnterpriseExtensionObserver() {
-  DCHECK(!chromeos_enterprise_extension_observer_.get());
+  DCHECK(!chromeos_enterprise_extension_observer_);
   chromeos_enterprise_extension_observer_.reset(
       new chromeos::EnterpriseExtensionObserver(this));
 }
@@ -1050,7 +1050,7 @@ void ProfileImpl::InitChromeOSPreferences() {
 #endif  // defined(OS_CHROMEOS)
 
 PrefProxyConfigTracker* ProfileImpl::GetProxyConfigTracker() {
-  if (!pref_proxy_config_tracker_.get()) {
+  if (!pref_proxy_config_tracker_) {
     pref_proxy_config_tracker_.reset(
         ProxyServiceFactory::CreatePrefProxyConfigTracker(GetPrefs()));
   }
