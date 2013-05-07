@@ -45,16 +45,6 @@ using namespace WebCore;
 
 namespace WebKit {
 
-void DragClientImpl::willPerformDragDestinationAction(DragDestinationAction, DragData*)
-{
-    // FIXME
-}
-
-void DragClientImpl::willPerformDragSourceAction(DragSourceAction, const IntPoint&, Clipboard*)
-{
-    // FIXME
-}
-
 DragDestinationAction DragClientImpl::actionMaskForDrag(DragData*)
 {
     if (m_webView->client() && m_webView->client()->acceptsLoadDrops())
@@ -62,12 +52,6 @@ DragDestinationAction DragClientImpl::actionMaskForDrag(DragData*)
 
     return static_cast<DragDestinationAction>(
         DragDestinationActionDHTML | DragDestinationActionEdit);
-}
-
-DragSourceAction DragClientImpl::dragSourceActionMaskForPoint(const IntPoint& windowPoint)
-{
-    // We want to handle drag operations for all source types.
-    return DragSourceActionAny;
 }
 
 void DragClientImpl::startDrag(DragImageRef dragImage,
@@ -93,11 +77,6 @@ void DragClientImpl::startDrag(DragImageRef dragImage,
         dragImage = scaleDragImage(dragImage, WebCore::FloatSize(scale, scale));
     }
     m_webView->startDragging(frame, dragData, static_cast<WebDragOperationsMask>(dragOperationMask), (dragImage && dragImage->bitmap) ? WebImage(*dragImage->bitmap) : WebImage(), offsetPoint);
-}
-
-void DragClientImpl::dragControllerDestroyed()
-{
-    // Our lifetime is bound to the WebViewImpl.
 }
 
 } // namespace WebKit

@@ -477,11 +477,8 @@ void TextFieldInputType::didSetValueByUserEdit(ValueChangeState state)
 {
     if (!element()->focused())
         return;
-    if (Frame* frame = element()->document()->frame()) {
-        if (state == ValueChangeStateNone)
-            frame->editor()->textFieldDidBeginEditing(element());
+    if (Frame* frame = element()->document()->frame())
         frame->editor()->textDidChangeInTextField(element());
-    }
 }
 
 void TextFieldInputType::spinButtonStepDown()

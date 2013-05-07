@@ -150,12 +150,6 @@ void Editor::handleKeyboardEvent(KeyboardEvent* event)
         c->handleKeyboardEvent(event);
 }
 
-void Editor::handleInputMethodKeydown(KeyboardEvent* event)
-{
-    if (EditorClient* c = client())
-        c->handleInputMethodKeydown(event);
-}
-
 bool Editor::handleTextEvent(TextEvent* event)
 {
     // Default event handling for Drag and Drop will be handled by DragController
@@ -970,7 +964,6 @@ void Editor::cut()
         return;
     }
     RefPtr<Range> selection = selectedRange();
-    willWriteSelectionToPasteboard(selection);
     if (shouldDeleteRange(selection.get())) {
         updateMarkersForWordsAffectedByEditing(true);
         if (enclosingTextFormControl(m_frame->selection()->start())) {
@@ -978,7 +971,6 @@ void Editor::cut()
                 canSmartCopyOrDelete() ? Pasteboard::CanSmartReplace : Pasteboard::CannotSmartReplace);
         } else
             Pasteboard::generalPasteboard()->writeSelection(selection.get(), canSmartCopyOrDelete(), m_frame, IncludeImageAltTextForClipboard);
-        didWriteSelectionToPasteboard();
         deleteSelectionWithSmartDelete(canSmartCopyOrDelete());
     }
 }
@@ -992,7 +984,6 @@ void Editor::copy()
         return;
     }
 
-    willWriteSelectionToPasteboard(selectedRange());
     if (enclosingTextFormControl(m_frame->selection()->start())) {
         Pasteboard::generalPasteboard()->writePlainText(selectedTextForClipboard(),
             canSmartCopyOrDelete() ? Pasteboard::CanSmartReplace : Pasteboard::CannotSmartReplace);
@@ -1003,8 +994,6 @@ void Editor::copy()
         else
             Pasteboard::generalPasteboard()->writeSelection(selectedRange().get(), canSmartCopyOrDelete(), m_frame, IncludeImageAltTextForClipboard);
     }
-
-    didWriteSelectionToPasteboard();
 }
 
 void Editor::paste()
@@ -1096,103 +1085,6 @@ bool Editor::isGrammarCheckingEnabled()
     return client() && client()->isGrammarCheckingEnabled();
 }
 
-void Editor::toggleGrammarChecking()
-{
-    if (client())
-        client()->toggleGrammarChecking();
-}
-
-int Editor::spellCheckerDocumentTag()
-{
-    return client() ? client()->spellCheckerDocumentTag() : 0;
-}
-
-#if USE(AUTOMATIC_TEXT_REPLACEMENT)
-
-void Editor::showSubstitutionsPanel()
-{
-    if (!client()) {
-        LOG_ERROR("No NSSpellChecker");
-        return;
-    }
-
-    if (client()->substitutionsPanelIsShowing()) {
-        client()->showSubstitutionsPanel(false);
-        return;
-    }
-    client()->showSubstitutionsPanel(true);
-}
-
-bool Editor::substitutionsPanelIsShowing()
-{
-    if (!client())
-        return false;
-    return client()->substitutionsPanelIsShowing();
-}
-
-void Editor::toggleSmartInsertDelete()
-{
-    if (client())
-        client()->toggleSmartInsertDelete();
-}
-
-bool Editor::isAutomaticQuoteSubstitutionEnabled()
-{
-    return client() && client()->isAutomaticQuoteSubstitutionEnabled();
-}
-
-void Editor::toggleAutomaticQuoteSubstitution()
-{
-    if (client())
-        client()->toggleAutomaticQuoteSubstitution();
-}
-
-bool Editor::isAutomaticLinkDetectionEnabled()
-{
-    return client() && client()->isAutomaticLinkDetectionEnabled();
-}
-
-void Editor::toggleAutomaticLinkDetection()
-{
-    if (client())
-        client()->toggleAutomaticLinkDetection();
-}
-
-bool Editor::isAutomaticDashSubstitutionEnabled()
-{
-    return client() && client()->isAutomaticDashSubstitutionEnabled();
-}
-
-void Editor::toggleAutomaticDashSubstitution()
-{
-    if (client())
-        client()->toggleAutomaticDashSubstitution();
-}
-
-bool Editor::isAutomaticTextReplacementEnabled()
-{
-    return client() && client()->isAutomaticTextReplacementEnabled();
-}
-
-void Editor::toggleAutomaticTextReplacement()
-{
-    if (client())
-        client()->toggleAutomaticTextReplacement();
-}
-
-bool Editor::isAutomaticSpellingCorrectionEnabled()
-{
-    return m_alternativeTextController->isAutomaticSpellingCorrectionEnabled();
-}
-
-void Editor::toggleAutomaticSpellingCorrection()
-{
-    if (client())
-        client()->toggleAutomaticSpellingCorrection();
-}
-
-#endif
-
 bool Editor::shouldEndEditing(Range* range)
 {
     return client() && client()->shouldEndEditing(range);
@@ -1241,18 +1133,6 @@ void Editor::didEndEditing()
 {
     if (client())
         client()->didEndEditing();
-}
-
-void Editor::willWriteSelectionToPasteboard(PassRefPtr<Range> range)
-{
-    if (client())
-        client()->willWriteSelectionToPasteboard(range.get());
-}
-
-void Editor::didWriteSelectionToPasteboard()
-{
-    if (client())
-        client()->didWriteSelectionToPasteboard();
 }
 
 void Editor::toggleBold()
@@ -1505,26 +1385,16 @@ void Editor::ignoreSpelling()
     RefPtr<Range> selectedRange = frame()->selection()->toNormalizedRange();
     if (selectedRange)
         frame()->document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::Spelling);
-
-    String text = selectedText();
-    ASSERT(text.length());
-    textChecker()->ignoreWordInSpellDocument(text);
 }
 
 void Editor::learnSpelling()
 {
     if (!client())
         return;
-        
-    // FIXME: On Mac OS X, when use "learn" button on "Spelling and Grammar" panel, we don't call this function. It should remove misspelling markers around the learned word, see <rdar://problem/5396072>.
 
     RefPtr<Range> selectedRange = frame()->selection()->toNormalizedRange();
     if (selectedRange)
         frame()->document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::Spelling);
-
-    String text = selectedText();
-    ASSERT(text.length());
-    textChecker()->learnWord(text);
 }
 
 void Editor::advanceToNextMisspelling(bool startBeforeSelection)
@@ -1680,7 +1550,6 @@ void Editor::advanceToNextMisspelling(bool startBeforeSelection)
         frame()->selection()->setSelection(VisibleSelection(badGrammarRange.get(), SEL_DEFAULT_AFFINITY));
         frame()->selection()->revealSelection();
         
-        client()->updateSpellingUIWithGrammarString(badGrammarPhrase, grammarDetail);
         frame()->document()->markers()->addMarker(badGrammarRange.get(), DocumentMarker::Grammar, grammarDetail.userDescription);
     } else if (!misspelledWord.isEmpty()) {
         // We found a misspelling, but not any earlier bad grammar. Select the misspelling, update the spelling panel, and store
@@ -1777,16 +1646,6 @@ Vector<String> Editor::guessesForUngrammaticalSelection()
 #endif
 }
 
-Vector<String> Editor::guessesForMisspelledWord(const String& word) const
-{
-    ASSERT(word.length());
-
-    Vector<String> guesses;
-    if (client())
-        textChecker()->getGuessesForWord(word, String(), guesses);
-    return guesses;
-}
-
 Vector<String> Editor::guessesForMisspelledOrUngrammatical(bool& misspelled, bool& ungrammatical)
 {
     if (unifiedTextCheckerEnabled()) {
@@ -1801,7 +1660,7 @@ Vector<String> Editor::guessesForMisspelledOrUngrammatical(bool& misspelled, boo
 
     if (misspelled) {
         ungrammatical = false;
-        return guessesForMisspelledWord(misspelledWord);
+        return Vector<String>();
     }
     if (isGrammarCheckingEnabled() && isSelectionUngrammatical()) {
         ungrammatical = true;
@@ -1848,12 +1707,8 @@ void Editor::markMisspellingsAndBadGrammar(const VisibleSelection &movingSelecti
     markMisspellingsAndBadGrammar(movingSelection, isContinuousSpellCheckingEnabled() && isGrammarCheckingEnabled(), movingSelection);
 }
 
-void Editor::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping, bool doReplacement)
+void Editor::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping)
 {
-#if !USE(AUTOMATIC_TEXT_REPLACEMENT)
-    UNUSED_PARAM(doReplacement);
-#endif
-
     if (unifiedTextCheckerEnabled()) {
         m_alternativeTextController->applyPendingCorrection(selectionAfterTyping);
 
@@ -1862,15 +1717,6 @@ void Editor::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart,
         if (isContinuousSpellCheckingEnabled())
             textCheckingOptions |= TextCheckingTypeSpelling;
 
-#if USE(AUTOMATIC_TEXT_REPLACEMENT)
-        if (doReplacement
-            && (isAutomaticQuoteSubstitutionEnabled()
-                || isAutomaticLinkDetectionEnabled()
-                || isAutomaticDashSubstitutionEnabled()
-                || isAutomaticTextReplacementEnabled()
-                || ((textCheckingOptions & TextCheckingTypeSpelling) && isAutomaticSpellingCorrectionEnabled())))
-            textCheckingOptions |= TextCheckingTypeReplacement;
-#endif
         if (!(textCheckingOptions & (TextCheckingTypeSpelling | TextCheckingTypeReplacement)))
             return;
 
@@ -2591,12 +2437,6 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     m_frame->selection()->setTypingStyle(typingStyle);
 }
 
-void Editor::textFieldDidBeginEditing(Element* e)
-{
-    if (client())
-        client()->textFieldDidBeginEditing(e);
-}
-
 void Editor::textFieldDidEndEditing(Element* e)
 {
     dismissCorrectionPanelAsIgnored();
@@ -2616,18 +2456,6 @@ bool Editor::doTextFieldCommandFromEvent(Element* e, KeyboardEvent* ke)
         return client()->doTextFieldCommandFromEvent(e, ke);
 
     return false;
-}
-
-void Editor::textWillBeDeletedInTextField(Element* input)
-{
-    if (client())
-        client()->textWillBeDeletedInTextField(input);
-}
-
-void Editor::textDidChangeInTextArea(Element* e)
-{
-    if (client())
-        client()->textDidChangeInTextArea(e);
 }
 
 void Editor::applyEditingStyleToBodyElement() const
@@ -2873,34 +2701,12 @@ TextCheckingTypeMask Editor::resolveTextCheckingTypeMask(TextCheckingTypeMask te
     if (shouldShowCorrectionPanel)
         checkingTypes |= TextCheckingTypeShowCorrectionPanel;
 
-#if USE(AUTOMATIC_TEXT_REPLACEMENT)
-    bool shouldPerformReplacement = textCheckingOptions & TextCheckingTypeReplacement;
-    if (shouldPerformReplacement) {
-        if (isAutomaticLinkDetectionEnabled())
-            checkingTypes |= TextCheckingTypeLink;
-        if (isAutomaticQuoteSubstitutionEnabled())
-            checkingTypes |= TextCheckingTypeQuote;
-        if (isAutomaticDashSubstitutionEnabled())
-            checkingTypes |= TextCheckingTypeDash;
-        if (isAutomaticTextReplacementEnabled())
-            checkingTypes |= TextCheckingTypeReplacement;
-        if (shouldMarkSpelling && isAutomaticSpellingCorrectionEnabled())
-            checkingTypes |= TextCheckingTypeCorrection;
-    }
-#endif
-
     return checkingTypes;
 }
 
 bool Editor::unifiedTextCheckerEnabled() const
 {
     return WebCore::unifiedTextCheckerEnabled(m_frame);
-}
-
-void Editor::willDetachPage()
-{
-    if (EditorClient* editorClient = client())
-        editorClient->frameWillDetachPage(frame());
 }
 
 Vector<String> Editor::dictationAlternativesForMarker(const DocumentMarker* marker)

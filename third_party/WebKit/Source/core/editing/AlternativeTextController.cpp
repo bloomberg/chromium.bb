@@ -355,25 +355,10 @@ void AlternativeTextController::timerFired(Timer<AlternativeTextController>*)
         }
     }
         break;
-    case AlternativeTextTypeSpellingSuggestions: {
+    case AlternativeTextTypeSpellingSuggestions:
         if (!m_alternativeTextInfo.rangeWithAlternative || plainText(m_alternativeTextInfo.rangeWithAlternative.get()) != m_alternativeTextInfo.originalText)
             break;
-        String paragraphText = plainText(TextCheckingParagraph(m_alternativeTextInfo.rangeWithAlternative).paragraphRange().get());
-        Vector<String> suggestions;
-        textChecker()->getGuessesForWord(m_alternativeTextInfo.originalText, paragraphText, suggestions);
-        if (suggestions.isEmpty()) {
-            m_alternativeTextInfo.rangeWithAlternative.clear();
-            break;
-        }
-        String topSuggestion = suggestions.first();
-        suggestions.remove(0);
-        m_alternativeTextInfo.isActive = true;
-        FloatRect boundingBox = rootViewRectForRange(m_alternativeTextInfo.rangeWithAlternative.get());
-        if (!boundingBox.isEmpty()) {
-            if (AlternativeTextClient* client = alternativeTextClient())
-                client->showCorrectionAlternative(m_alternativeTextInfo.type, boundingBox, m_alternativeTextInfo.originalText, topSuggestion, suggestions);
-        }
-    }
+        m_alternativeTextInfo.rangeWithAlternative.clear();
         break;
     case AlternativeTextTypeDictationAlternatives:
     {

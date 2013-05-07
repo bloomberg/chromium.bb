@@ -93,7 +93,6 @@ public:
     CompositeEditCommand* lastEditCommand() { return m_lastEditCommand.get(); }
 
     void handleKeyboardEvent(KeyboardEvent*);
-    void handleInputMethodKeydown(KeyboardEvent*);
     bool handleTextEvent(TextEvent*);
 
     bool canEdit() const;
@@ -206,19 +205,16 @@ public:
     bool isContinuousSpellCheckingEnabled() const;
     void toggleContinuousSpellChecking();
     bool isGrammarCheckingEnabled();
-    void toggleGrammarChecking();
     void ignoreSpelling();
     void learnSpelling();
-    int spellCheckerDocumentTag();
     bool isSelectionUngrammatical();
     String misspelledSelectionString() const;
     String misspelledWordAtCaretOrRange(Node* clickedNode) const;
-    Vector<String> guessesForMisspelledWord(const String&) const;
     Vector<String> guessesForUngrammaticalSelection();
     Vector<String> guessesForMisspelledOrUngrammatical(bool& misspelled, bool& ungrammatical);
     bool isSpellCheckingEnabledInFocusedNode() const;
     bool isSpellCheckingEnabledFor(Node*) const;
-    void markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping, bool doReplacement);
+    void markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping);
     void markMisspellings(const VisibleSelection&, RefPtr<Range>& firstMisspellingRange);
     void markBadGrammar(const VisibleSelection&);
     void markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, bool markGrammar, const VisibleSelection& grammarSelection);
@@ -226,22 +222,6 @@ public:
 
     bool isOverwriteModeEnabled() const { return m_overwriteModeEnabled; }
     void toggleOverwriteModeEnabled() { m_overwriteModeEnabled = !m_overwriteModeEnabled; }
-
-#if USE(AUTOMATIC_TEXT_REPLACEMENT)
-    void showSubstitutionsPanel();
-    bool substitutionsPanelIsShowing();
-    void toggleSmartInsertDelete();
-    bool isAutomaticQuoteSubstitutionEnabled();
-    void toggleAutomaticQuoteSubstitution();
-    bool isAutomaticLinkDetectionEnabled();
-    void toggleAutomaticLinkDetection();
-    bool isAutomaticDashSubstitutionEnabled();
-    void toggleAutomaticDashSubstitution();
-    bool isAutomaticTextReplacementEnabled();
-    void toggleAutomaticTextReplacement();
-    bool isAutomaticSpellingCorrectionEnabled();
-    void toggleAutomaticSpellingCorrection();
-#endif
 
     void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask, Range* spellingRange, Range* grammarRange);
     void changeBackToReplacedString(const String& replacedString);
@@ -261,9 +241,7 @@ public:
 
     void didBeginEditing();
     void didEndEditing();
-    void willWriteSelectionToPasteboard(PassRefPtr<Range>);
-    void didWriteSelectionToPasteboard();
-    
+
     void showFontPanel();
     void showStylesPanel();
     void showColorPanel();
@@ -356,12 +334,9 @@ public:
     bool markedTextMatchesAreHighlighted() const;
     void setMarkedTextMatchesAreHighlighted(bool);
 
-    void textFieldDidBeginEditing(Element*);
     void textFieldDidEndEditing(Element*);
     void textDidChangeInTextField(Element*);
     bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*);
-    void textWillBeDeletedInTextField(Element* input);
-    void textDidChangeInTextArea(Element*);
     WritingDirection baseWritingDirectionForSelectionStart() const;
 
     void replaceSelectionWithFragment(PassRefPtr<DocumentFragment>, bool selectReplacement, bool smartReplace, bool matchStyle);
@@ -379,8 +354,6 @@ public:
     Vector<String> dictationAlternativesForMarker(const DocumentMarker*);
     void applyDictationAlternativelternative(const String& alternativeString);
 private:
-    virtual void willDetachPage() OVERRIDE;
-
     RefPtr<CompositeEditCommand> m_lastEditCommand;
     RefPtr<Node> m_removedAnchor;
     RefPtr<Text> m_compositionNode;

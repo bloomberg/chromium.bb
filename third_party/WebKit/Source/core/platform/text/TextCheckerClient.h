@@ -42,20 +42,9 @@ public:
     virtual ~TextCheckerClient() {}
 
     virtual bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const = 0;
-    virtual void ignoreWordInSpellDocument(const String&) = 0;
-    virtual void learnWord(const String&) = 0;
     virtual void checkSpellingOfString(const UChar*, int length, int* misspellingLocation, int* misspellingLength) = 0;
     virtual String getAutoCorrectSuggestionForMisspelledWord(const String& misspelledWord) = 0;
     virtual void checkGrammarOfString(const UChar*, int length, Vector<GrammarDetail>&, int* badGrammarLocation, int* badGrammarLength) = 0;
-
-#if USE(UNIFIED_TEXT_CHECKING)
-    virtual void checkTextOfParagraph(const UChar* text, int length, TextCheckingTypeMask checkingTypes, Vector<TextCheckingResult>& results) = 0;
-#endif
-
-    // For spellcheckers that support multiple languages, it's often important to be able to identify the language in order to
-    // provide more accurate correction suggestions. Caller can pass in more text in "context" to aid such spellcheckers on language
-    // identification. Noramlly it's the text surrounding the "word" for which we are getting correction suggestions.
-    virtual void getGuessesForWord(const String& word, const String& context, Vector<String>& guesses) = 0;
     virtual void requestCheckingOfString(PassRefPtr<TextCheckingRequest>) = 0;
 };
 

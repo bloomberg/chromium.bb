@@ -342,31 +342,7 @@ void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)
         frame->editor()->toggleContinuousSpellChecking();
         break;
     case ContextMenuItemTagCheckGrammarWithSpelling:
-        frame->editor()->toggleGrammarChecking();
         break;
-#if USE(AUTOMATIC_TEXT_REPLACEMENT)
-    case ContextMenuItemTagShowSubstitutions:
-        frame->editor()->showSubstitutionsPanel();
-        break;
-    case ContextMenuItemTagSmartCopyPaste:
-        frame->editor()->toggleSmartInsertDelete();
-        break;
-    case ContextMenuItemTagSmartQuotes:
-        frame->editor()->toggleAutomaticQuoteSubstitution();
-        break;
-    case ContextMenuItemTagSmartDashes:
-        frame->editor()->toggleAutomaticDashSubstitution();
-        break;
-    case ContextMenuItemTagSmartLinks:
-        frame->editor()->toggleAutomaticLinkDetection();
-        break;
-    case ContextMenuItemTagTextReplacement:
-        frame->editor()->toggleAutomaticTextReplacement();
-        break;
-    case ContextMenuItemTagCorrectSpellingAutomatically:
-        frame->editor()->toggleAutomaticSpellingCorrection();
-        break;
-#endif
     case ContextMenuItemTagInspectElement:
         if (Page* page = frame->page())
             page->inspectorController()->inspect(m_hitTestResult.innerNonSharedNode());

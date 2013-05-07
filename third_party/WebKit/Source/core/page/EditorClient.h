@@ -58,8 +58,6 @@ struct GrammarDetail;
 class EditorClient {
 public:
     virtual ~EditorClient() {  }
-    virtual void pageDestroyed() = 0;
-    virtual void frameWillDetachPage(Frame*) = 0;
 
     virtual bool shouldDeleteRange(Range*) = 0;
     virtual bool smartInsertDeleteEnabled() = 0; 
@@ -67,8 +65,6 @@ public:
     virtual bool isContinuousSpellCheckingEnabled() = 0;
     virtual void toggleContinuousSpellChecking() = 0;
     virtual bool isGrammarCheckingEnabled() = 0;
-    virtual void toggleGrammarChecking() = 0;
-    virtual int spellCheckerDocumentTag() = 0;
 
     virtual bool shouldBeginEditing(Range*) = 0;
     virtual bool shouldEndEditing(Range*) = 0;
@@ -77,17 +73,12 @@ public:
     virtual bool shouldChangeSelectedRange(Range* fromRange, Range* toRange, EAffinity, bool stillSelecting) = 0;
     
     virtual bool shouldApplyStyle(StylePropertySet*, Range*) = 0;
-    virtual bool shouldMoveRangeAfterDelete(Range*, Range*) = 0;
 
     virtual void didBeginEditing() = 0;
     virtual void respondToChangedContents() = 0;
     virtual void respondToChangedSelection(Frame*) = 0;
     virtual void didEndEditing() = 0;
-    virtual void willWriteSelectionToPasteboard(Range*) = 0;
-    virtual void didWriteSelectionToPasteboard() = 0;
-    virtual void getClientPasteboardDataForRange(Range*, Vector<String>& pasteboardTypes, Vector<RefPtr<SharedBuffer> >& pasteboardData) = 0;
-    virtual void didSetSelectionTypesForPasteboard() = 0;
-    
+
     virtual void registerUndoStep(PassRefPtr<UndoStep>) = 0;
     virtual void registerRedoStep(PassRefPtr<UndoStep>) = 0;
     virtual void clearUndoRedoOperations() = 0;
@@ -101,39 +92,17 @@ public:
     virtual void redo() = 0;
 
     virtual void handleKeyboardEvent(KeyboardEvent*) = 0;
-    virtual void handleInputMethodKeydown(KeyboardEvent*) = 0;
-    
-    virtual void textFieldDidBeginEditing(Element*) = 0;
+
     virtual void textFieldDidEndEditing(Element*) = 0;
     virtual void textDidChangeInTextField(Element*) = 0;
     virtual bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*) = 0;
-    virtual void textWillBeDeletedInTextField(Element*) = 0;
-    virtual void textDidChangeInTextArea(Element*) = 0;
-
-#if USE(AUTOMATIC_TEXT_REPLACEMENT)
-    virtual void showSubstitutionsPanel(bool show) = 0;
-    virtual bool substitutionsPanelIsShowing() = 0;
-    virtual void toggleSmartInsertDelete() = 0;
-    virtual bool isAutomaticQuoteSubstitutionEnabled() = 0;
-    virtual void toggleAutomaticQuoteSubstitution() = 0;
-    virtual bool isAutomaticLinkDetectionEnabled() = 0;
-    virtual void toggleAutomaticLinkDetection() = 0;
-    virtual bool isAutomaticDashSubstitutionEnabled() = 0;
-    virtual void toggleAutomaticDashSubstitution() = 0;
-    virtual bool isAutomaticTextReplacementEnabled() = 0;
-    virtual void toggleAutomaticTextReplacement() = 0;
-    virtual bool isAutomaticSpellingCorrectionEnabled() = 0;
-    virtual void toggleAutomaticSpellingCorrection() = 0;
-#endif
 
     virtual TextCheckerClient* textChecker() = 0;
 
-    virtual void updateSpellingUIWithGrammarString(const String&, const GrammarDetail& detail) = 0;
     virtual void updateSpellingUIWithMisspelledWord(const String&) = 0;
     virtual void showSpellingUI(bool show) = 0;
     virtual bool spellingUIIsShowing() = 0;
     virtual void willSetInputMethodState() = 0;
-    virtual void setInputMethodState(bool enabled) = 0;
 
     // Support for global selections, used on platforms like the X Window System that treat
     // selection as a type of clipboard.

@@ -180,7 +180,6 @@ Page::~Page()
         frame->detachFromPage();
     }
 
-    m_editorClient->pageDestroyed();
     if (m_plugInClient)
         m_plugInClient->pageDestroyed();
     if (m_alternativeTextClient)

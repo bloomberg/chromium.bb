@@ -308,13 +308,9 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
     if (previous.isNotNull()) {
         VisiblePosition p1 = startOfWord(previous, LeftWordIfOnBoundary);
         VisiblePosition p2 = startOfWord(start, LeftWordIfOnBoundary);
-        if (p1 != p2) {
-            RefPtr<Range> range = makeRange(p1, p2);
-            String strippedPreviousWord;
-            if (range && (commandType == TypingCommand::InsertText || commandType == TypingCommand::InsertLineBreak || commandType == TypingCommand::InsertParagraphSeparator || commandType == TypingCommand::InsertParagraphSeparatorInQuotedContent))
-                strippedPreviousWord = plainText(range.get()).stripWhiteSpace();
-            frame->editor()->markMisspellingsAfterTypingToWord(p1, endingSelection(), !strippedPreviousWord.isEmpty());
-        } else if (commandType == TypingCommand::InsertText)
+        if (p1 != p2)
+            frame->editor()->markMisspellingsAfterTypingToWord(p1, endingSelection());
+        else if (commandType == TypingCommand::InsertText)
             frame->editor()->startAlternativeTextUITimer();
     }
 }

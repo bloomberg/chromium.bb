@@ -80,7 +80,6 @@ namespace WebCore {
         // Most compatible Windows virtual key code associated with the event.
         // Zero for Char events.
         int windowsVirtualKeyCode() const { return m_windowsVirtualKeyCode; }
-        void setWindowsVirtualKeyCode(int code) { m_windowsVirtualKeyCode = code; }
 
         int nativeVirtualKeyCode() const { return m_nativeVirtualKeyCode; }
         int macCharCode() const { return m_macCharCode; }

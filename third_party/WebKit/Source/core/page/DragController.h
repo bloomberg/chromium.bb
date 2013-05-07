@@ -76,7 +76,7 @@ namespace WebCore {
 
         Document* documentUnderMouse() const { return m_documentUnderMouse.get(); }
         DragDestinationAction dragDestinationAction() const { return m_dragDestinationAction; }
-        DragSourceAction delegateDragSourceAction(const IntPoint& rootViewPoint);
+        DragSourceAction delegateDragSourceAction();
         
         Node* draggableNode(const Frame*, Node*, const IntPoint&, DragState&) const;
         void dragEnded();

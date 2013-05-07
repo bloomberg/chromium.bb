@@ -918,7 +918,7 @@ DragSourceAction EventHandler::updateDragSourceActionsAllowed() const
     if (!view)
         return DragSourceActionNone;
 
-    return page->dragController()->delegateDragSourceAction(view->contentsToRootView(m_mouseDownPos));
+    return page->dragController()->delegateDragSourceAction();
 }
 
 HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTestRequest::HitTestRequestType hitType, const LayoutSize& padding)
@@ -3044,36 +3044,18 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
         return keydown->defaultHandled() || keydown->defaultPrevented() || changedFocusedFrame;
     }
 
-    // Run input method in advance of DOM event handling.  This may result in the IM
-    // modifying the page prior the keydown event, but this behaviour is necessary
-    // in order to match IE:
-    // 1. preventing default handling of keydown and keypress events has no effect on IM input;
-    // 2. if an input method handles the event, its keyCode is set to 229 in keydown event.
-    m_frame->editor()->handleInputMethodKeydown(keydown.get());
-    
-    bool handledByInputMethod = keydown->defaultHandled();
-    
-    if (handledByInputMethod) {
-        keyDownEvent.setWindowsVirtualKeyCode(CompositionEventKeyCode);
-        keydown = KeyboardEvent::create(keyDownEvent, m_frame->document()->defaultView());
-        keydown->setTarget(node);
-        keydown->setDefaultHandled();
-    }
-
     node->dispatchEvent(keydown, IGNORE_EXCEPTION);
     // If frame changed as a result of keydown dispatch, then return early to avoid sending a subsequent keypress message to the new frame.
     bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController()->focusedOrMainFrame();
     bool keydownResult = keydown->defaultHandled() || keydown->defaultPrevented() || changedFocusedFrame;
-    if (handledByInputMethod || keydownResult)
+    if (keydownResult)
         return keydownResult;
     
     // Focus may have changed during keydown handling, so refetch node.
     // But if we are dispatching a fake backward compatibility keypress, then we pretend that the keypress happened on the original node.
-    if (!keydownResult) {
-        node = eventTargetNodeForDocument(m_frame->document());
-        if (!node)
-            return false;
-    }
+    node = eventTargetNodeForDocument(m_frame->document());
+    if (!node)
+        return false;
 
     PlatformKeyboardEvent keyPressEvent = initialKeyEvent;
     keyPressEvent.disambiguateKeyDownEvent(PlatformEvent::Char);

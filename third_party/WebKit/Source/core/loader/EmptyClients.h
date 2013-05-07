@@ -289,17 +289,9 @@ public:
 class EmptyTextCheckerClient : public TextCheckerClient {
 public:
     virtual bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const OVERRIDE { return true; }
-    virtual void ignoreWordInSpellDocument(const String&) OVERRIDE { }
-    virtual void learnWord(const String&) OVERRIDE { }
     virtual void checkSpellingOfString(const UChar*, int, int*, int*) OVERRIDE { }
     virtual String getAutoCorrectSuggestionForMisspelledWord(const String&) OVERRIDE { return String(); }
     virtual void checkGrammarOfString(const UChar*, int, Vector<GrammarDetail>&, int*, int*) OVERRIDE { }
-
-#if USE(UNIFIED_TEXT_CHECKING)
-    virtual void checkTextOfParagraph(const UChar*, int, TextCheckingTypeMask, Vector<TextCheckingResult>&) OVERRIDE { };
-#endif
-
-    virtual void getGuessesForWord(const String&, const String&, Vector<String>&) OVERRIDE { }
     virtual void requestCheckingOfString(PassRefPtr<TextCheckingRequest>) OVERRIDE;
 };
 
@@ -308,8 +300,6 @@ class EmptyEditorClient : public EditorClient {
 public:
     EmptyEditorClient() { }
     virtual ~EmptyEditorClient() { }
-    virtual void pageDestroyed() OVERRIDE { }
-    virtual void frameWillDetachPage(Frame*) OVERRIDE { }
 
     virtual bool shouldDeleteRange(Range*) OVERRIDE { return false; }
     virtual bool smartInsertDeleteEnabled() OVERRIDE { return false; }
@@ -317,8 +307,6 @@ public:
     virtual bool isContinuousSpellCheckingEnabled() OVERRIDE { return false; }
     virtual void toggleContinuousSpellChecking() OVERRIDE { }
     virtual bool isGrammarCheckingEnabled() OVERRIDE { return false; }
-    virtual void toggleGrammarChecking() OVERRIDE { }
-    virtual int spellCheckerDocumentTag() OVERRIDE { return -1; }
 
     virtual bool shouldBeginEditing(Range*) OVERRIDE { return false; }
     virtual bool shouldEndEditing(Range*) OVERRIDE { return false; }
@@ -327,16 +315,11 @@ public:
     virtual bool shouldChangeSelectedRange(Range*, Range*, EAffinity, bool) OVERRIDE { return false; }
 
     virtual bool shouldApplyStyle(StylePropertySet*, Range*) OVERRIDE { return false; }
-    virtual bool shouldMoveRangeAfterDelete(Range*, Range*) OVERRIDE { return false; }
 
     virtual void didBeginEditing() OVERRIDE { }
     virtual void respondToChangedContents() OVERRIDE { }
     virtual void respondToChangedSelection(Frame*) OVERRIDE { }
     virtual void didEndEditing() OVERRIDE { }
-    virtual void willWriteSelectionToPasteboard(Range*) OVERRIDE { }
-    virtual void didWriteSelectionToPasteboard() OVERRIDE { }
-    virtual void getClientPasteboardDataForRange(Range*, Vector<String>&, Vector<RefPtr<SharedBuffer> >&) OVERRIDE { }
-    virtual void didSetSelectionTypesForPasteboard() OVERRIDE { }
 
     virtual void registerUndoStep(PassRefPtr<UndoStep>) OVERRIDE;
     virtual void registerRedoStep(PassRefPtr<UndoStep>) OVERRIDE;
@@ -351,40 +334,18 @@ public:
     virtual void redo() OVERRIDE { }
 
     virtual void handleKeyboardEvent(KeyboardEvent*) OVERRIDE { }
-    virtual void handleInputMethodKeydown(KeyboardEvent*) OVERRIDE { }
 
-    virtual void textFieldDidBeginEditing(Element*) OVERRIDE { }
     virtual void textFieldDidEndEditing(Element*) OVERRIDE { }
     virtual void textDidChangeInTextField(Element*) OVERRIDE { }
     virtual bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*) OVERRIDE { return false; }
-    virtual void textWillBeDeletedInTextField(Element*) OVERRIDE { }
-    virtual void textDidChangeInTextArea(Element*) OVERRIDE { }
-
-#if USE(AUTOMATIC_TEXT_REPLACEMENT)
-    virtual void showSubstitutionsPanel(bool) OVERRIDE { }
-    virtual bool substitutionsPanelIsShowing() OVERRIDE { return false; }
-    virtual void toggleSmartInsertDelete() OVERRIDE { }
-    virtual bool isAutomaticQuoteSubstitutionEnabled() OVERRIDE { return false; }
-    virtual void toggleAutomaticQuoteSubstitution() OVERRIDE { }
-    virtual bool isAutomaticLinkDetectionEnabled() OVERRIDE { return false; }
-    virtual void toggleAutomaticLinkDetection() OVERRIDE { }
-    virtual bool isAutomaticDashSubstitutionEnabled() OVERRIDE { return false; }
-    virtual void toggleAutomaticDashSubstitution() OVERRIDE { }
-    virtual bool isAutomaticTextReplacementEnabled() OVERRIDE { return false; }
-    virtual void toggleAutomaticTextReplacement() OVERRIDE { }
-    virtual bool isAutomaticSpellingCorrectionEnabled() OVERRIDE { return false; }
-    virtual void toggleAutomaticSpellingCorrection() OVERRIDE { }
-#endif
 
     TextCheckerClient* textChecker() { return &m_textCheckerClient; }
 
-    virtual void updateSpellingUIWithGrammarString(const String&, const GrammarDetail&) OVERRIDE { }
     virtual void updateSpellingUIWithMisspelledWord(const String&) OVERRIDE { }
     virtual void showSpellingUI(bool) OVERRIDE { }
     virtual bool spellingUIIsShowing() OVERRIDE { return false; }
 
     virtual void willSetInputMethodState() OVERRIDE { }
-    virtual void setInputMethodState(bool) OVERRIDE { }
 
 private:
     EmptyTextCheckerClient m_textCheckerClient;
@@ -403,12 +364,8 @@ class EmptyDragClient : public DragClient {
 public:
     EmptyDragClient() { }
     virtual ~EmptyDragClient() {}
-    virtual void willPerformDragDestinationAction(DragDestinationAction, DragData*) OVERRIDE { }
-    virtual void willPerformDragSourceAction(DragSourceAction, const IntPoint&, Clipboard*) OVERRIDE { }
     virtual DragDestinationAction actionMaskForDrag(DragData*) OVERRIDE { return DragDestinationActionNone; }
-    virtual DragSourceAction dragSourceActionMaskForPoint(const IntPoint&) OVERRIDE { return DragSourceActionNone; }
     virtual void startDrag(DragImageRef, const IntPoint&, const IntPoint&, Clipboard*, Frame*, bool) OVERRIDE { }
-    virtual void dragControllerDestroyed() OVERRIDE { }
 };
 
 class EmptyInspectorClient : public InspectorClient {

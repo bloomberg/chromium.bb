@@ -122,7 +122,6 @@ DragController::DragController(Page* page, DragClient* client)
 
 DragController::~DragController()
 {
-    m_client->dragControllerDestroyed();
 }
 
 PassOwnPtr<DragController> DragController::create(Page* page, DragClient* client)
@@ -187,8 +186,6 @@ void DragController::dragEnded()
     m_dragInitiator = 0;
     m_didInitiateDrag = false;
     m_page->dragCaretController()->clear();
-    
-    m_client->dragEnded();
 }
 
 DragSession DragController::dragEntered(DragData* dragData)
@@ -224,7 +221,6 @@ bool DragController::performDrag(DragData* dragData)
     ASSERT(dragData);
     m_documentUnderMouse = m_page->mainFrame()->documentAtPoint(dragData->clientPosition());
     if ((m_dragDestinationAction & DragDestinationActionDHTML) && m_documentIsHandlingDrag) {
-        m_client->willPerformDragDestinationAction(DragDestinationActionDHTML, dragData);
         RefPtr<Frame> mainFrame = m_page->mainFrame();
         bool preventedDefault = false;
         if (mainFrame->view()) {
@@ -250,7 +246,6 @@ bool DragController::performDrag(DragData* dragData)
     if (operationForLoad(dragData) == DragOperationNone)
         return false;
 
-    m_client->willPerformDragDestinationAction(DragDestinationActionLoad, dragData);
     m_page->mainFrame()->loader()->load(FrameLoadRequest(m_page->mainFrame(), ResourceRequest(dragData->asURL(m_page->mainFrame()))));
     return true;
 }
@@ -408,9 +403,10 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
     return false;
 }
 
-DragSourceAction DragController::delegateDragSourceAction(const IntPoint& rootViewPoint)
+DragSourceAction DragController::delegateDragSourceAction()
 {
-    m_dragSourceAction = m_client->dragSourceActionMaskForPoint(rootViewPoint);
+    // FIXME: This can probably be simplified since we always set this to DragSourceActionAny
+    m_dragSourceAction = DragSourceActionAny;
     return m_dragSourceAction;
 }
 
@@ -475,7 +471,6 @@ bool DragController::concludeEditDrag(DragData* dragData)
         style->setProperty(CSSPropertyColor, color.serialized(), false);
         if (!innerFrame->editor()->shouldApplyStyle(style.get(), innerRange.get()))
             return false;
-        m_client->willPerformDragDestinationAction(DragDestinationActionEdit, dragData);
         innerFrame->editor()->applyStyle(style.get(), EditActionSetColor);
         return true;
     }
@@ -513,7 +508,6 @@ bool DragController::concludeEditDrag(DragData* dragData)
             return false;
         }
 
-        m_client->willPerformDragDestinationAction(DragDestinationActionEdit, dragData);
         if (dragIsMove(innerFrame->selection(), dragData)) {
             // NSTextView behavior is to always smart delete on moving a selection,
             // but only to smart insert if the selection granularity is word granularity.
@@ -536,7 +530,6 @@ bool DragController::concludeEditDrag(DragData* dragData)
             return false;
         }
 
-        m_client->willPerformDragDestinationAction(DragDestinationActionEdit, dragData);
         if (setSelectionToDragCaret(innerFrame.get(), dragCaret, range, point))
             applyCommand(ReplaceSelectionCommand::create(m_documentUnderMouse.get(), createFragmentFromText(range.get(), text),  ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::MatchStyle | ReplaceSelectionCommand::PreventNesting));
     }
@@ -785,7 +778,6 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
                 clipboard->writeRange(selectionRange.get(), src);
             }
         }
-        m_client->willPerformDragSourceAction(DragSourceActionSelection, dragOrigin, clipboard);
         if (!dragImage) {
             dragImage = createDragImageForSelection(src);
             dragLoc = dragLocForSelectionDrag(src);
@@ -802,8 +794,6 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
             m_draggingImageURL = imageURL;
             prepareClipboardForImageDrag(src, clipboard, element, linkURL, imageURL, hitTestResult.altDisplayString());
         }
-
-        m_client->willPerformDragSourceAction(DragSourceActionImage, dragOrigin, clipboard);
 
         if (!dragImage) {
             IntRect imageRect = hitTestResult.imageRect();
@@ -829,7 +819,6 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
                 src->selection()->setSelection(VisibleSelection::selectionFromContentsOfNode(node));
         }
 
-        m_client->willPerformDragSourceAction(DragSourceActionLink, dragOrigin, clipboard);
         if (!dragImage) {
             dragImage = createDragImageForLink(linkURL, hitTestResult.textContent(), src);
             IntSize size = dragImageSize(dragImage);
@@ -839,7 +828,6 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
         doSystemDrag(dragImage, dragLoc, mouseDraggedPoint, clipboard, src, true);
     } else if (state.m_dragType == DragSourceActionDHTML) {
         ASSERT(m_dragSourceAction & DragSourceActionDHTML);
-        m_client->willPerformDragSourceAction(DragSourceActionDHTML, dragOrigin, clipboard);
         doSystemDrag(dragImage, dragLoc, dragOrigin, clipboard, src, false);
     } else {
         // draggableNode() determined an image or link node was draggable, but it turns out the

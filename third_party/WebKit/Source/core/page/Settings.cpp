@@ -107,11 +107,7 @@ static EditingBehaviorType editingBehaviorTypeForPlatform()
     ;
 }
 
-#if USE(UNIFIED_TEXT_CHECKING)
-static const bool defaultUnifiedTextCheckerEnabled = true;
-#else
 static const bool defaultUnifiedTextCheckerEnabled = false;
-#endif
 #if OS(DARWIN)
 static const bool defaultSmartInsertDeleteEnabled = true;
 #else

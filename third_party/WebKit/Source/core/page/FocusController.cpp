@@ -596,16 +596,13 @@ bool FocusController::setFocusedNode(Node* node, PassRefPtr<Frame> newFocusedFra
     if (!node) {
         if (oldDocument)
             oldDocument->setFocusedNode(0);
-        m_page->editorClient()->setInputMethodState(false);
         return true;
     }
 
     RefPtr<Document> newDocument = node->document();
 
-    if (newDocument && newDocument->focusedNode() == node) {
-        m_page->editorClient()->setInputMethodState(node->shouldUseInputMethod());
+    if (newDocument && newDocument->focusedNode() == node)
         return true;
-    }
     
     if (oldDocument && oldDocument != newDocument)
         oldDocument->setFocusedNode(0);
@@ -623,9 +620,6 @@ bool FocusController::setFocusedNode(Node* node, PassRefPtr<Frame> newFocusedFra
         if (!successfullyFocused)
             return false;
     }
-
-    if (newDocument->focusedNode() == node)
-        m_page->editorClient()->setInputMethodState(node->shouldUseInputMethod());
 
     return true;
 }

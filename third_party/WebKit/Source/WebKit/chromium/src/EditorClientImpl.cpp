@@ -83,15 +83,6 @@ EditorClientImpl::~EditorClientImpl()
 {
 }
 
-void EditorClientImpl::pageDestroyed()
-{
-    // Our lifetime is bound to the WebViewImpl.
-}
-
-void EditorClientImpl::frameWillDetachPage(WebCore::Frame* frame)
-{
-}
-
 bool EditorClientImpl::smartInsertDeleteEnabled()
 {
     if (m_webView->page())
@@ -158,17 +149,6 @@ bool EditorClientImpl::isGrammarCheckingEnabled()
 {
     const Frame* frame = m_webView->focusedWebCoreFrame();
     return frame && frame->settings() && (frame->settings()->asynchronousSpellCheckingEnabled() || frame->settings()->unifiedTextCheckerEnabled());
-}
-
-void EditorClientImpl::toggleGrammarChecking()
-{
-    notImplemented();
-}
-
-int EditorClientImpl::spellCheckerDocumentTag()
-{
-    ASSERT_NOT_REACHED();
-    return 0;
 }
 
 bool EditorClientImpl::shouldBeginEditing(Range* range)
@@ -240,12 +220,6 @@ bool EditorClientImpl::shouldApplyStyle(StylePropertySet* style, Range* range)
     return true;
 }
 
-bool EditorClientImpl::shouldMoveRangeAfterDelete(Range* range,
-                                                  Range* rangeToBeReplaced)
-{
-    return true;
-}
-
 void EditorClientImpl::didBeginEditing()
 {
     if (m_webView->client())
@@ -273,22 +247,6 @@ void EditorClientImpl::didEndEditing()
 {
     if (m_webView->client())
         m_webView->client()->didEndEditing();
-}
-
-void EditorClientImpl::didWriteSelectionToPasteboard()
-{
-}
-
-void EditorClientImpl::willWriteSelectionToPasteboard(WebCore::Range*)
-{
-}
-
-void EditorClientImpl::getClientPasteboardDataForRange(WebCore::Range*, Vector<String>&, Vector<RefPtr<WebCore::SharedBuffer> >&)
-{
-}
-
-void EditorClientImpl::didSetSelectionTypesForPasteboard()
-{
 }
 
 void EditorClientImpl::registerUndoStep(PassRefPtr<UndoStep> step)
@@ -645,15 +603,6 @@ void EditorClientImpl::handleKeyboardEvent(KeyboardEvent* evt)
         evt->setDefaultHandled();
 }
 
-void EditorClientImpl::handleInputMethodKeydown(KeyboardEvent* keyEvent)
-{
-    // We handle IME within chrome.
-}
-
-void EditorClientImpl::textFieldDidBeginEditing(Element* element)
-{
-}
-
 void EditorClientImpl::textFieldDidEndEditing(Element* element)
 {
     HTMLInputElement* inputElement = element->toInputElement();
@@ -690,28 +639,10 @@ bool EditorClientImpl::doTextFieldCommandFromEvent(Element* element,
     return false;
 }
 
-void EditorClientImpl::textWillBeDeletedInTextField(Element*)
-{
-}
-
-void EditorClientImpl::textDidChangeInTextArea(Element*)
-{
-}
-
 bool EditorClientImpl::shouldEraseMarkersAfterChangeSelection(TextCheckingType type) const
 {
     const Frame* frame = m_webView->focusedWebCoreFrame();
     return !frame || !frame->settings() || (!frame->settings()->asynchronousSpellCheckingEnabled() && !frame->settings()->unifiedTextCheckerEnabled());
-}
-
-void EditorClientImpl::ignoreWordInSpellDocument(const String&)
-{
-    notImplemented();
-}
-
-void EditorClientImpl::learnWord(const String&)
-{
-    notImplemented();
 }
 
 void EditorClientImpl::checkSpellingOfString(const UChar* text, int length,
@@ -801,28 +732,6 @@ void EditorClientImpl::checkGrammarOfString(const UChar* text, int length, WTF::
         *badGrammarLength = length;
 }
 
-void EditorClientImpl::checkTextOfParagraph(const UChar* text, int length,
-                                            TextCheckingTypeMask mask,
-                                            WTF::Vector<TextCheckingResult>& results)
-{
-    if (!m_webView->spellCheckClient())
-        return;
-
-    WebTextCheckingTypeMask webMask = static_cast<WebTextCheckingTypeMask>(mask);
-    WebVector<WebTextCheckingResult> webResults;
-    m_webView->spellCheckClient()->checkTextOfParagraph(WebString(text, length), webMask, &webResults);
-
-    results.resize(webResults.size());
-    for (size_t i = 0; i < webResults.size(); ++i)
-        results[i] = webResults[i];
-}
-
-void EditorClientImpl::updateSpellingUIWithGrammarString(const String&,
-                                                         const GrammarDetail& detail)
-{
-    notImplemented();
-}
-
 void EditorClientImpl::updateSpellingUIWithMisspelledWord(const String& misspelledWord)
 {
     if (m_webView->spellCheckClient())
@@ -842,13 +751,6 @@ bool EditorClientImpl::spellingUIIsShowing()
     return false;
 }
 
-void EditorClientImpl::getGuessesForWord(const String& word,
-                                         const String& context,
-                                         WTF::Vector<String>& guesses)
-{
-    notImplemented();
-}
-
 bool EditorClientImpl::supportsGlobalSelection()
 {
 #if OS(UNIX) && !OS(DARWIN)
@@ -862,10 +764,6 @@ void EditorClientImpl::willSetInputMethodState()
 {
     if (m_webView->client())
         m_webView->client()->resetInputMethod();
-}
-
-void EditorClientImpl::setInputMethodState(bool)
-{
 }
 
 } // namesace WebKit

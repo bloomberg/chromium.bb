@@ -48,13 +48,7 @@ class DragClientImpl : public WebCore::DragClient {
 public:
     DragClientImpl(WebViewImpl* webView) : m_webView(webView) { }
 
-    virtual void willPerformDragDestinationAction(
-        WebCore::DragDestinationAction, WebCore::DragData*);
-    virtual void willPerformDragSourceAction(
-        WebCore::DragSourceAction, const WebCore::IntPoint&, WebCore::Clipboard*);
     virtual WebCore::DragDestinationAction actionMaskForDrag(WebCore::DragData*);
-    virtual WebCore::DragSourceAction dragSourceActionMaskForPoint(
-        const WebCore::IntPoint& windowPoint);
     virtual void startDrag(
         WebCore::DragImageRef dragImage,
         const WebCore::IntPoint& dragImageOrigin,
@@ -62,7 +56,6 @@ public:
         WebCore::Clipboard* clipboard,
         WebCore::Frame* frame,
         bool isLinkDrag = false);
-    virtual void dragControllerDestroyed();
 
 private:
     WebViewImpl* m_webView;
