@@ -296,6 +296,10 @@ class Track {
   const uint8* codec_private() const { return codec_private_; }
   void set_language(const char* language);
   const char* language() const { return language_; }
+  void set_max_block_additional_id(uint64 max_block_additional_id) {
+    max_block_additional_id_ = max_block_additional_id;
+  }
+  uint64 max_block_additional_id() const { return max_block_additional_id_; }
   void set_name(const char* name);
   const char* name() const { return name_; }
   void set_number(uint64 number) { number_ = number; }
@@ -314,6 +318,7 @@ class Track {
   char* codec_id_;
   uint8* codec_private_;
   char* language_;
+  uint64 max_block_additional_id_;
   char* name_;
   uint64 number_;
   uint64 type_;
@@ -344,6 +349,11 @@ class VideoTrack : public Track {
     kSideBySideRightIsFirst = 11
   };
 
+  enum AlphaMode {
+    kNoAlpha = 0,
+    kAlpha  = 1
+  };
+
   // The |seed| parameter is used to synthesize a UID for the track.
   explicit VideoTrack(unsigned int* seed);
   virtual ~VideoTrack();
@@ -358,6 +368,9 @@ class VideoTrack : public Track {
   // Sets the video's stereo mode. Returns true on success.
   bool SetStereoMode(uint64 stereo_mode);
 
+  // Sets the video's alpha mode. Returns true on success.
+  bool SetAlphaMode(uint64 alpha_mode);
+
   void set_display_height(uint64 height) { display_height_ = height; }
   uint64 display_height() const { return display_height_; }
   void set_display_width(uint64 width) { display_width_ = width; }
@@ -367,6 +380,7 @@ class VideoTrack : public Track {
   void set_height(uint64 height) { height_ = height; }
   uint64 height() const { return height_; }
   uint64 stereo_mode() { return stereo_mode_; }
+  uint64 alpha_mode() { return alpha_mode_; }
   void set_width(uint64 width) { width_ = width; }
   uint64 width() const { return width_; }
 
@@ -380,6 +394,7 @@ class VideoTrack : public Track {
   double frame_rate_;
   uint64 height_;
   uint64 stereo_mode_;
+  uint64 alpha_mode_;
   uint64 width_;
 
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(VideoTrack);
@@ -661,6 +676,28 @@ class Cluster {
                 uint64 timecode,  // timecode units (absolute)
                 bool is_key);
 
+  // Adds a frame to be output in the file. The frame is written out through
+  // |writer_| if successful. Returns true on success.
+  // Inputs:
+  //   frame: Pointer to the data
+  //   length: Length of the data
+  //   additional: Pointer to the additional data
+  //   additional_length: Length of the additional data
+  //   add_id: Value of BlockAddID element
+  //   track_number: Track to add the data to. Value returned by Add track
+  //                 functions.  The range of allowed values is [1, 126].
+  //   abs_timecode: Absolute (not relative to cluster) timestamp of the
+  //                 frame, expressed in timecode units.
+  //   is_key:       Flag telling whether or not this frame is a key frame.
+  bool AddFrameWithAdditional(const uint8* frame,
+                              uint64 length,
+                              const uint8* additional,
+                              uint64 additional_length,
+                              uint64 add_id,
+                              uint64 track_number,
+                              uint64 abs_timecode,
+                              bool is_key);
+
   // Writes a frame of metadata to the output medium; returns true on
   // success.
   // Inputs:
@@ -706,6 +743,18 @@ class Cluster {
                                int64 timecode,
                                uint64 generic_arg);
 
+  //  Signature that matches WriteBlockWithAdditional
+  //  in the muxer utilities package.
+  typedef uint64 (*WriteBlockAdditional)(IMkvWriter* writer,
+                                         const uint8* data,
+                                         uint64 length,
+                                         const uint8* additional,
+                                         uint64 add_id,
+                                         uint64 additional_length,
+                                         uint64 track_number,
+                                         int64 timecode,
+                                         uint64 is_key);
+
   //  Used to implement AddFrame and AddMetadata.
   bool DoWriteBlock(const uint8* frame,
                     uint64 length,
@@ -713,6 +762,17 @@ class Cluster {
                     uint64 absolute_timecode,
                     uint64 generic_arg,
                     WriteBlock write_block);
+
+  // Used to implement AddFrameWithAdditional
+  bool DoWriteBlockWithAdditional(const uint8* frame,
+                                  uint64 length,
+                                  const uint8* additional,
+                                  uint64 additional_length,
+                                  uint64 add_id,
+                                  uint64 track_number,
+                                  uint64 absolute_timecode,
+                                  uint64 generic_arg,
+                                  WriteBlockAdditional write_block);
 
   // Outputs the Cluster header to |writer_|. Returns true on success.
   bool WriteClusterHeader();
@@ -907,6 +967,15 @@ class Segment {
                    uint64 track_number,
                    uint64 timestamp_ns,
                    uint64 duration_ns);
+
+  bool AddFrameWithAdditional(const uint8* frame,
+                              uint64 length,
+                              const uint8* additional,
+                              uint64 additional_length,
+                              uint64 add_id,
+                              uint64 track_number,
+                              uint64 timestamp,
+                              bool is_key);
 
   // Adds a video track to the segment. Returns the number of the track on
   // success, 0 on error. |number| is the number to use for the video track.

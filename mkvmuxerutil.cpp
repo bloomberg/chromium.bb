@@ -464,6 +464,95 @@ uint64 WriteMetadataBlock(IMkvWriter* writer,
   return blockg_elem_size;
 }
 
+// Writes a WebM Block with Additional. The structure is as follows
+// Indentation shows sub-levels
+// BlockGroup
+//  Block
+//    Data
+//  BlockAdditions
+//    BlockMore
+//      BlockAddID
+//        1 (Denotes Alpha)
+//      BlockAdditional
+//        Data
+uint64 WriteBlockWithAdditional(IMkvWriter* writer,
+                                const uint8* data,
+                                uint64 length,
+                                const uint8* additional,
+                                uint64 additional_length,
+                                uint64 add_id,
+                                uint64 track_number,
+                                int64 timecode,
+                                uint64 is_key) {
+  if (!data || !additional || length < 1 || additional_length < 1)
+    return 0;
+
+  const uint64 block_payload_size = 4 + length;
+  const uint64 block_elem_size = EbmlMasterElementSize(kMkvBlock,
+                                                       block_payload_size) +
+                                 block_payload_size;
+  const uint64 block_additional_elem_size = EbmlElementSize(kMkvBlockAdditional,
+                                                            additional,
+                                                            additional_length);
+  const uint64 block_addid_elem_size = EbmlElementSize(kMkvBlockAddID, add_id);
+
+  const uint64 block_more_payload_size = block_addid_elem_size +
+                                         block_additional_elem_size;
+  const uint64 block_more_elem_size = EbmlMasterElementSize(
+                                          kMkvBlockMore,
+                                          block_more_payload_size) +
+                                      block_more_payload_size;
+  const uint64 block_additions_payload_size = block_more_elem_size;
+  const uint64 block_additions_elem_size = EbmlMasterElementSize(
+                                               kMkvBlockMore,
+                                               block_additions_payload_size) +
+                                           block_additions_payload_size;
+  const uint64 block_group_payload_size = block_elem_size +
+                                          block_additions_elem_size;
+  const uint64 block_group_elem_size = EbmlMasterElementSize(
+                                           kMkvBlockGroup,
+                                           block_group_payload_size) +
+                                       block_group_payload_size;
+
+  if (!WriteEbmlMasterElement(writer, kMkvBlockGroup,
+                              block_group_payload_size))
+    return 0;
+
+  if (!WriteEbmlMasterElement(writer, kMkvBlock, block_payload_size))
+    return 0;
+
+  if (WriteUInt(writer, track_number))
+    return 0;
+
+  if (SerializeInt(writer, timecode, 2))
+    return 0;
+
+  uint64 flags = 0;
+  if (is_key)
+    flags |= 0x80;
+  if (SerializeInt(writer, flags, 1))
+    return 0;
+
+  if (writer->Write(data, static_cast<uint32>(length)))
+    return 0;
+
+  if (!WriteEbmlMasterElement(writer, kMkvBlockAdditions,
+                              block_additions_payload_size))
+    return 0;
+
+  if (!WriteEbmlMasterElement(writer, kMkvBlockMore, block_more_payload_size))
+    return 0;
+
+  if (!WriteEbmlElement(writer, kMkvBlockAddID, add_id))
+    return 0;
+
+  if (!WriteEbmlElement(writer, kMkvBlockAdditional,
+                        additional, additional_length))
+    return 0;
+
+  return block_group_elem_size;
+}
+
 uint64 WriteVoidElement(IMkvWriter* writer, uint64 size) {
   if (!writer)
     return false;
