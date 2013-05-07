@@ -18,6 +18,7 @@
 
 namespace net {
 
+class CommonCertSet;
 class KeyExchange;
 class ProofVerifier;
 class QuicClock;
@@ -134,6 +135,9 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   scoped_ptr<QuicDecrypter> decrypter;
   std::string server_config_id;
   std::string server_nonce;
+  // cached_certs contains the cached certificates that a client used when
+  // sending a client hello.
+  std::vector<std::string> cached_certs;
 };
 
 // QuicCryptoConfig contains common configuration between clients and servers.
@@ -159,6 +163,8 @@ class NET_EXPORT_PRIVATE QuicCryptoConfig {
   CryptoTagVector kexs;
   // Authenticated encryption with associated data (AEAD) algorithms.
   CryptoTagVector aead;
+
+  scoped_ptr<CommonCertSet> common_cert_set_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoConfig);
@@ -192,7 +198,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     bool SetServerConfig(base::StringPiece scfg);
 
     // SetProof stores a certificate chain and signature.
-    void SetProof(const std::vector<base::StringPiece>& certs,
+    void SetProof(const std::vector<std::string>& certs,
                   base::StringPiece signature);
 
     // SetProofValid records that the certificate chain and signature have been
@@ -237,6 +243,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // source-address token will be taken from it.
   void FillInchoateClientHello(const std::string& server_hostname,
                                const CachedState* cached,
+                               QuicCryptoNegotiatedParameters* out_params,
                                CryptoHandshakeMessage* out) const;
 
   // FillClientHello sets |out| to be a CHLO message based on the configuration

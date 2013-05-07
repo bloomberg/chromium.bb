@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_connection.h"
-#include "testing/gmock/include/gmock/gmock.h"
-
 #ifndef NET_TOOLS_QUIC_TEST_TOOLS_QUIC_TEST_UTILS_H_
 #define NET_TOOLS_QUIC_TEST_TOOLS_QUIC_TEST_UTILS_H_
+
+#include <string>
+
+#include "base/strings/string_piece.h"
+#include "net/quic/quic_connection.h"
+#include "net/quic/quic_spdy_decompressor.h"
+#include "net/spdy/spdy_framer.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
 
@@ -15,6 +20,8 @@ class IPEndPoint;
 
 namespace tools {
 namespace test {
+
+std::string SerializeUncompressedHeaders(const SpdyHeaderBlock& headers);
 
 class MockConnection : public QuicConnection {
  public:
@@ -63,6 +70,17 @@ class MockConnection : public QuicConnection {
   const bool has_mock_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnection);
+};
+
+class TestDecompressorVisitor : public QuicSpdyDecompressor::Visitor {
+ public:
+  virtual ~TestDecompressorVisitor() {}
+  virtual bool OnDecompressedData(base::StringPiece data) OVERRIDE;
+
+  std::string data() { return data_; }
+
+ private:
+  std::string data_;
 };
 
 }  // namespace test

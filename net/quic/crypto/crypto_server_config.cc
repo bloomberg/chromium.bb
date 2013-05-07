@@ -9,6 +9,7 @@
 #include "crypto/secure_hash.h"
 #include "net/quic/crypto/aes_128_gcm_decrypter.h"
 #include "net/quic/crypto/aes_128_gcm_encrypter.h"
+#include "net/quic/crypto/cert_compressor.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_server_config_protobuf.h"
 #include "net/quic/crypto/crypto_utils.h"
@@ -23,6 +24,7 @@
 #include "net/quic/crypto/strike_register.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_utils.h"
 
 using base::StringPiece;
 using crypto::SecureHash;
@@ -365,8 +367,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     const CryptoTag* their_proof_demands;
     size_t num_their_proof_demands;
 
-    if (valid_source_address_token &&
-        proof_source_.get() != NULL &&
+    if (proof_source_.get() != NULL &&
         !sni.empty() &&
         client_hello.GetTaglist(kPDMD, &their_proof_demands,
                                 &num_their_proof_demands) == QUIC_NO_ERROR) {
@@ -375,12 +376,6 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
           continue;
         }
 
-        // TODO(agl): in the future we will hopefully have a cached-info like
-        // mechanism where we can omit certificates that the client already has.
-        // In that case, the certificate chain may be small enough to include
-        // without a source-address token. But, for now, we always send the full
-        // chain and we always need a valid source-address token.
-
         const vector<string>* certs;
         string signature;
         if (!proof_source_->GetProof(sni.as_string(), config->serialized,
@@ -388,32 +383,24 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
           break;
         }
 
-        // TODO(agl): compress and omit certificates where possible based on
-        // the client's cached certificates.
-        size_t cert_bytes = 0;
-        for (vector<string>::const_iterator i = certs->begin();
-             i != certs->end(); ++i) {
-          cert_bytes += i->size();
+        StringPiece their_common_set_hashes;
+        StringPiece their_cached_cert_hashes;
+        client_hello.GetStringPiece(kCCS, &their_common_set_hashes);
+        client_hello.GetStringPiece(kCCRT, &their_cached_cert_hashes);
+
+        const string compressed = CertCompressor::CompressChain(
+            *certs, their_common_set_hashes, their_cached_cert_hashes,
+            config->common_cert_set_.get());
+
+        // kMaxUnverifiedSize is the number of bytes that the certificate chain
+        // and signature can consume before we will demand a valid
+        // source-address token.
+        static const size_t kMaxUnverifiedSize = 400;
+        if (valid_source_address_token ||
+            signature.size() + compressed.size() < kMaxUnverifiedSize) {
+          out->SetStringPiece(kCERT, compressed);
+          out->SetStringPiece(kPROF, signature);
         }
-        // There's a three byte length-prefix for each certificate.
-        cert_bytes += certs->size()*3;
-        scoped_ptr<char[]> buf(new char[cert_bytes]);
-
-        size_t j = 0;
-        for (vector<string>::const_iterator i = certs->begin();
-             i != certs->end(); ++i) {
-          size_t len = i->size();
-          buf[j++] = len;
-          buf[j++] = len >> 8;
-          buf[j++] = len >> 16;
-          memcpy(&buf[j], i->data(), i->size());
-          j += i->size();
-        }
-
-        DCHECK_EQ(j, cert_bytes);
-
-        out->SetStringPiece(kCERT, StringPiece(buf.get(), cert_bytes));
-        out->SetStringPiece(kPROF, signature);
         break;
       }
     }

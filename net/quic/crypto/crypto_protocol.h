@@ -72,6 +72,8 @@ const CryptoTag kORBT = TAG('O', 'B', 'I', 'T');  // Server orbit.
 const CryptoTag kPDMD = TAG('P', 'D', 'M', 'D');  // Proof demand.
 const CryptoTag kCERT = TAG('C', 'E', 'R', 'T');  // Certificate chain
 const CryptoTag kPROF = TAG('P', 'R', 'O', 'F');  // Proof (signature).
+const CryptoTag kCCS  = TAG('C', 'C', 'S', 0);    // Common certificate set
+const CryptoTag kCCRT = TAG('C', 'C', 'R', 'T');  // Cached certificate
 
 #undef TAG
 

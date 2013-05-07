@@ -1096,7 +1096,7 @@ size_t QuicFramer::GetMaxPlaintextSize(size_t ciphertext_size) {
   // safe.
   size_t min_plaintext_size = ciphertext_size;
 
-  for (int i = ENCRYPTION_NONE; i <= ENCRYPTION_FORWARD_SECURE; i++) {
+  for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; i++) {
     if (encrypter_[i].get() != NULL) {
       size_t size = encrypter_[i]->GetMaxPlaintextSize(ciphertext_size);
       if (size < min_plaintext_size) {

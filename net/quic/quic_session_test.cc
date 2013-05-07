@@ -212,6 +212,7 @@ TEST_F(QuicSessionTest, SendGoAway) {
   EXPECT_CALL(*connection_, SendRstStream(3u, QUIC_STREAM_PEER_GOING_AWAY));
   EXPECT_FALSE(session_.GetIncomingReliableStream(3u));
 }
+
 }  // namespace
 }  // namespace test
 }  // namespace net

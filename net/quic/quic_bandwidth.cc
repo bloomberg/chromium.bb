@@ -10,7 +10,7 @@
 namespace net {
 
 // Highest number that QuicBandwidth can hold.
-const int64 kQuicInfiniteBandwidth = 0x7fffffffffffffffll;
+const int64 kQuicInfiniteBandwidth = GG_INT64_C(0x7fffffffffffffff);
 
 // static
 QuicBandwidth QuicBandwidth::Zero() {
