@@ -1,0 +1,4 @@
+PASS All boxes are on the same line.
+The three boxes below should all appear on the same line.
+
+   

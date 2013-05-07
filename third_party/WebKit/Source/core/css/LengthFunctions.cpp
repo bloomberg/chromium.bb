@@ -49,7 +49,7 @@ LayoutUnit minimumValueForLength(const Length& length, LayoutUnit maximumValue, 
         if (roundPercentages)
             return static_cast<LayoutUnit>(round(maximumValue * length.percent() / 100.0f));
         // Don't remove the extra cast to float. It is needed for rounding on 32-bit Intel machines that use the FPU stack.
-        return LayoutUnit::fromFloatRound(static_cast<float>(maximumValue * length.percent() / 100.0f));
+        return static_cast<float>(maximumValue * length.percent() / 100.0f);
     case Calculated:
         return length.nonNanCalculatedValue(maximumValue);
     case ViewportPercentageWidth:
