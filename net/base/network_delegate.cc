@@ -99,9 +99,9 @@ bool NetworkDelegate::CanGetCookies(const URLRequest& request,
   return OnCanGetCookies(request, cookie_list);
 }
 
-  bool NetworkDelegate::CanSetCookie(const URLRequest& request,
-                                     const std::string& cookie_line,
-                                     CookieOptions* options) {
+bool NetworkDelegate::CanSetCookie(const URLRequest& request,
+                                   const std::string& cookie_line,
+                                   CookieOptions* options) {
   DCHECK(CalledOnValidThread());
   DCHECK(!(request.load_flags() & net::LOAD_DO_NOT_SAVE_COOKIES));
   return OnCanSetCookie(request, cookie_line, options);

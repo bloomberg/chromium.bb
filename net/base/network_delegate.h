@@ -214,7 +214,6 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
                               const std::string& cookie_line,
                               CookieOptions* options) = 0;
 
-
   // Called when a file access is attempted to allow the network delegate to
   // allow or block access to the given file path.  Returns true if access is
   // allowed.
