@@ -28,7 +28,7 @@ OUTFILE="$4"
 
 # Dump the symbols from the given binary.
 if [ ! -e "$OUTFILE" -o "$INFILE" -nt "$OUTFILE" ]; then
-  "$DUMPSYMS" "$INFILE" > "$OUTFILE"
+  "$DUMPSYMS" -r "$INFILE" > "$OUTFILE"
 fi
 
 if [ "$STRIP_BINARY" != "0" ]; then
