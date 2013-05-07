@@ -19,7 +19,6 @@
             targetWindow = document.getElementById("target").contentWindow;
 
             shouldBeUndefined("Object.getPrototypeOf(targetWindow)");
-            shouldBeUndefined("Object.getPrototypeOf(targetWindow.history)");
 
             if (window.testRunner)
                 testRunner.notifyDone();
@@ -27,7 +26,7 @@
     </script>
 </head>
 <body>
-    <div>This tests that you can't get the prototype of the window or history objects cross-origin using Object.getPrototypeOf().</div>
+    <div>This tests that you can't get the prototype of the window object cross-origin using Object.getPrototypeOf().</div>
     <iframe id="target" src="http://localhost:8000/security/resources/cross-frame-iframe-for-object-getPrototypeOf-test.html"></iframe>
     <pre id="console"></pre>
 </body>

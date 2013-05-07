@@ -23,18 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    CheckSecurity,
-    CustomNamedSetter,
-    CustomDeleteProperty,
-    CustomEnumerateProperty,
-] interface History {
+interface History {
     readonly attribute unsigned long length;
     [CachedAttribute, Custom] readonly attribute SerializedScriptValue state;
 
-    [DoNotCheckSecurity, CallWith=ScriptExecutionContext] void back();
-    [DoNotCheckSecurity, CallWith=ScriptExecutionContext] void forward();
-    [DoNotCheckSecurity, CallWith=ScriptExecutionContext] void go([Default=Undefined] optional long distance);
+    [CallWith=ScriptExecutionContext] void back();
+    [CallWith=ScriptExecutionContext] void forward();
+    [CallWith=ScriptExecutionContext] void go([Default=Undefined] optional long distance);
 
     [Custom, EnabledPerContext=pushState, RaisesException] void pushState(any data, DOMString title, optional DOMString url);
     [Custom, EnabledPerContext=pushState, RaisesException] void replaceState(any data, DOMString title, optional DOMString url);
