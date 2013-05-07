@@ -362,7 +362,6 @@ def main(argv):
         passes += ['-lowerinvoke',
                    '-simplifycfg']
       passes += ['-expand-varargs',
-                 '-expand-byval',
                  '-nacl-expand-ctors',
                  '-resolve-aliases',
                  '-nacl-expand-tls',
@@ -377,16 +376,20 @@ def main(argv):
       chain.add(DoStrip, 'stripped.' + bitcode_type)
 
     if env.getbool('STATIC'):
-      # ABI simplification passes.  We should not place arbitrary
-      # passes after '-expand-constant-expr' because they might
-      # reintroduce ConstantExprs.  However, '-expand-getelementptr'
-      # must follow '-expand-constant-expr' to expand the
-      # getelementptr instructions it creates.
+      # ABI simplification passes.
+      passes = []
+      if len(native_objects) == 0:
+        passes += ['-expand-byval']
+      # We should not place arbitrary passes after
+      # '-expand-constant-expr' because they might reintroduce
+      # ConstantExprs.  However, '-expand-getelementptr' must follow
+      # '-expand-constant-expr' to expand the getelementptr
+      # instructions it creates.
       # We place '-strip-metadata' after optimization passes since
       # optimizations depend on the metadata.
-      passes = ['-strip-metadata',
-                '-expand-constant-expr',
-                '-expand-getelementptr']
+      passes += ['-strip-metadata',
+                 '-expand-constant-expr',
+                 '-expand-getelementptr']
       if (not env.getbool('DISABLE_ABI_CHECK') and
           not env.getbool('ALLOW_CXX_EXCEPTIONS') and
           len(native_objects) == 0):
