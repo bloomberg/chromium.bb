@@ -27,7 +27,6 @@
 
 #include "WebCompositorInputHandlerImpl.h"
 
-#include "WebCompositorInitializer.h"
 #include "WebCompositorInputHandlerClient.h"
 #include "WebInputEvent.h"
 #include <gmock/gmock.h>
@@ -99,8 +98,7 @@ public:
 class WebCompositorInputHandlerImplTest : public testing::Test {
 public:
     WebCompositorInputHandlerImplTest()
-        : m_initializer(0)
-        , m_expectedDisposition(DidHandle)
+        : m_expectedDisposition(DidHandle)
     {
         m_inputHandler = adoptPtr(new WebCompositorInputHandlerImpl);
         m_inputHandler->bindToClient(&m_mockInputHandlerClient);
@@ -145,7 +143,6 @@ protected:
     OwnPtr<WebCompositorInputHandlerImpl> m_inputHandler;
     testing::StrictMock<MockWebCompositorInputHandlerClient> m_mockClient;
     WebGestureEvent gesture;
-    WebKitTests::WebCompositorInitializer m_initializer;
 
     enum ExpectedDisposition { DidHandle, DidNotHandle, DropEvent };
     ExpectedDisposition m_expectedDisposition;

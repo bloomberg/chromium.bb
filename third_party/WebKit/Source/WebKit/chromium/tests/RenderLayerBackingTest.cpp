@@ -30,7 +30,6 @@
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
 #include "URLTestHelpers.h"
-#include "WebCompositorInitializer.h"
 #include "WebDocument.h"
 #include "WebElement.h"
 #include "WebFrameClient.h"
@@ -73,7 +72,6 @@ class RenderLayerBackingTest : public testing::Test {
 public:
     RenderLayerBackingTest()
         : m_baseURL("http://www.test.com/")
-        , m_compositorInitializer(0)
     {
         // We cannot reuse FrameTestHelpers::createWebViewAndLoad here because the compositing
         // settings need to be set before the page is loaded.
@@ -111,7 +109,6 @@ protected:
     MockWebFrameClient m_mockWebFrameClient;
     MockWebViewClient m_mockWebViewClient;
     WebViewImpl* m_webViewImpl;
-    WebKitTests::WebCompositorInitializer m_compositorInitializer;
 };
 
 TEST_F(RenderLayerBackingTest, DISABLED_GraphicsLayerBackgroundColor)

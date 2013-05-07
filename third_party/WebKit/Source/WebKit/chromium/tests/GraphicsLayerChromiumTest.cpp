@@ -58,7 +58,6 @@ class GraphicsLayerChromiumTest : public testing::Test {
 public:
     GraphicsLayerChromiumTest()
     {
-        Platform::current()->compositorSupport()->initialize(0);
         m_graphicsLayer = adoptPtr(new GraphicsLayerChromium(&m_client));
         m_platformLayer = m_graphicsLayer->platformLayer();
         m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting(WebUnitTestSupport::TestViewTypeUnitTest));
@@ -71,7 +70,6 @@ public:
     {
         m_graphicsLayer.clear();
         m_layerTreeView.clear();
-        Platform::current()->compositorSupport()->shutdown();
     }
 
 protected:

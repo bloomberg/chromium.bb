@@ -29,7 +29,6 @@
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
 #include "URLTestHelpers.h"
-#include "WebCompositorInitializer.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebSettings.h"
@@ -73,7 +72,6 @@ class ScrollingCoordinatorChromiumTest : public testing::Test {
 public:
     ScrollingCoordinatorChromiumTest()
         : m_baseURL("http://www.test.com/")
-        , m_compositorInitializer(0)
     {
         // We cannot reuse FrameTestHelpers::createWebViewAndLoad here because the compositing
         // settings need to be set before the page is loaded.
@@ -122,7 +120,6 @@ protected:
     MockWebFrameClient m_mockWebFrameClient;
     FakeWebViewClient m_mockWebViewClient;
     WebViewImpl* m_webViewImpl;
-    WebKitTests::WebCompositorInitializer m_compositorInitializer;
 };
 
 TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingByDefault)

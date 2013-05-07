@@ -53,16 +53,6 @@ class WebTransformOperations;
 
 class WebCompositorSupport {
 public:
-    // Initializes the compositor. Threaded compositing is enabled by passing in
-    // a non-null WebThread. No compositor classes or methods should be used
-    // prior to calling initialize.
-    virtual void initialize(WebThread*) { }
-
-    // Shuts down the compositor. This must be called when all compositor data
-    // types have been deleted. No compositor classes or methods should be used
-    // after shutdown.
-    virtual void shutdown() { }
-
     // Creates an output surface for the compositor backed by a 3d context.
     virtual WebCompositorOutputSurface* createOutputSurfaceFor3D(WebKit::WebGraphicsContext3D*) { return 0; }
 

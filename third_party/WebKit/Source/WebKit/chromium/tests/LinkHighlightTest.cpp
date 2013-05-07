@@ -29,7 +29,6 @@
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
 #include "URLTestHelpers.h"
-#include "WebCompositorInitializer.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
@@ -40,6 +39,7 @@
 #include "core/dom/Node.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/IntRect.h"
+#include <public/Platform.h>
 #include <public/WebContentLayer.h>
 #include <public/WebFloatPoint.h>
 #include <public/WebSize.h>
@@ -54,8 +54,6 @@ namespace {
 
 TEST(LinkHighlightTest, verifyWebViewImplIntegration)
 {
-    WebKitTests::WebCompositorInitializer compositorInitializer(0);
-
     const std::string baseURL("http://www.test.com/");
     const std::string fileName("test_touch_link_highlight.html");
 
@@ -161,8 +159,6 @@ static WebViewClient* compositingWebViewClient()
 
 TEST(LinkHighlightTest, resetDuringNodeRemoval)
 {
-    WebKitTests::WebCompositorInitializer compositorInitializer(0);
-
     const std::string baseURL("http://www.test.com/");
     const std::string fileName("test_touch_link_highlight.html");
 
