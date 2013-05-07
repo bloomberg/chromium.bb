@@ -55,7 +55,12 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
     // Build a local notification object from the sync data.
     scoped_ptr<SyncedNotification> incoming(CreateNotificationFromSyncData(
         sync_data));
-    DCHECK(incoming.get());
+    if (!incoming) {
+      // TODO(petewil): Turn this into a NOTREACHED() call once we fix the
+      // underlying problem causing bad data.
+      LOG(WARNING) << "Badly formed sync data in incoming notification";
+      continue;
+    }
 
     // Process each incoming remote notification.
     const std::string& key = incoming->GetKey();
@@ -187,8 +192,15 @@ scoped_ptr<SyncedNotification>
   // Check for mandatory fields in the sync_data object.
   if (!specifics.has_coalesced_notification() ||
       !specifics.coalesced_notification().has_key() ||
-      !specifics.coalesced_notification().has_read_state())
+      !specifics.coalesced_notification().has_read_state()) {
+    DVLOG(1) << "Synced Notification missing mandatory fields "
+             << "has coalesced notification? "
+             << specifics.has_coalesced_notification()
+             << " has key? " << specifics.coalesced_notification().has_key()
+             << " has read state? "
+             << specifics.coalesced_notification().has_read_state();
     return scoped_ptr<SyncedNotification>();
+  }
 
   // TODO(petewil): Is this the right set?  Should I add more?
   bool is_well_formed_unread_notification =
@@ -203,8 +215,14 @@ scoped_ptr<SyncedNotification>
 
   // if the notification is poorly formed, return a null pointer
   if (!is_well_formed_unread_notification &&
-      !is_well_formed_dismissed_notification)
+      !is_well_formed_dismissed_notification) {
+    DVLOG(1) << "Synced Notification is not well formed."
+             << " unread well formed? "
+             << is_well_formed_unread_notification
+             << " dismissed well formed? "
+             << is_well_formed_dismissed_notification;
     return scoped_ptr<SyncedNotification>();
+  }
 
   // Create a new notification object based on the supplied sync_data.
   scoped_ptr<SyncedNotification> notification(
