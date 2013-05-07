@@ -28,13 +28,19 @@ enum TexCoordPrecision {
   TexCoordPrecisionHigh,
 };
 
+// Note: The highp_threshold_cache must be provided by the caller to make
+// the caching multi-thread/context safe in an easy low-overhead manner.
+// The caller must make sure to clear highp_threshold_cache to 0, so it can be
+// reinitialized, if a new or different context is used.
 CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
     WebKit::WebGraphicsContext3D* context,
+    int *highp_threshold_cache,
     int highp_threshold_min,
     gfx::Point max_coordinate);
 
 CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
     WebKit::WebGraphicsContext3D* context,
+    int *highp_threshold_cache,
     int highp_threshold_min,
     gfx::Size max_size);
 

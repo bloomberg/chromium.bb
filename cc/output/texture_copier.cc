@@ -18,7 +18,8 @@ AcceleratedTextureCopier::AcceleratedTextureCopier(
     int highp_threshold_min)
     : context_(context)
     , using_bind_uniforms_(using_bind_uniforms)
-    , highp_threshold_min_(highp_threshold_min) {
+    , highp_threshold_min_(highp_threshold_min)
+    , highp_threshold_cache_(0) {
   DCHECK(context_);
   GLC(context_, fbo_ = context_->createFramebuffer());
   GLC(context_, position_buffer_ = context_->createBuffer());
@@ -79,7 +80,7 @@ void AcceleratedTextureCopier::CopyTexture(Parameters parameters) {
           GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 
   TexCoordPrecision texCoordPrecision = TexCoordPrecisionRequired(
-      context_, highp_threshold_min_, parameters.size);
+      context_, &highp_threshold_cache_, highp_threshold_min_, parameters.size);
   if (texCoordPrecision == TexCoordPrecisionHigh) {
     if (!blit_program_highp_->initialized())
       blit_program_highp_->Initialize(context_, using_bind_uniforms_);

@@ -128,6 +128,7 @@ GLRenderer::GLRenderer(RendererClient* client,
       visible_(true),
       is_scissor_enabled_(false),
       highp_threshold_min_(highp_threshold_min),
+      highp_threshold_cache_(0),
       on_demand_tile_raster_resource_id_(0) {
   DCHECK(context_);
 }
@@ -771,7 +772,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   }
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, highp_threshold_min_,
+      context_, &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   int shader_quad_location = -1;
@@ -1251,7 +1252,8 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
   float vertex_tex_scale_y = tile_rect.height() / clamp_geom_rect.height();
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, highp_threshold_min_, quad->texture_size);
+      context_, &highp_threshold_cache_, highp_threshold_min_,
+      quad->texture_size);
 
   // Map to normalized texture coordinates.
   gfx::Size texture_size = quad->texture_size;
@@ -1369,7 +1371,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, highp_threshold_min_,
+      context_, &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   const VideoYUVProgram* program = GetVideoYUVProgram(tex_coord_precision);
@@ -1441,7 +1443,7 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
   DCHECK(capabilities_.using_egl_image);
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, highp_threshold_min_,
+      context_, &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   const VideoStreamTextureProgram* program =
@@ -1615,7 +1617,7 @@ void GLRenderer::FlushTextureQuadCache() {
 void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
                                     const TextureDrawQuad* quad) {
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, highp_threshold_min_,
+      context_, &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   // Choose the correct texture program binding
@@ -1670,7 +1672,7 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
 void GLRenderer::DrawTextureQuad(const DrawingFrame* frame,
                                  const TextureDrawQuad* quad) {
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, highp_threshold_min_,
+      context_, &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   TexTransformTextureProgramBinding binding;
@@ -1724,7 +1726,7 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, highp_threshold_min_,
+      context_,  &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   TexTransformTextureProgramBinding binding;
@@ -1870,7 +1872,8 @@ void GLRenderer::CopyTextureToFramebuffer(const DrawingFrame* frame,
                                           gfx::Rect rect,
                                           const gfx::Transform& draw_matrix) {
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, highp_threshold_min_, rect.bottom_right());
+      context_, &highp_threshold_cache_, highp_threshold_min_,
+      rect.bottom_right());
   const RenderPassProgram* program = GetRenderPassProgram(tex_coord_precision);
 
   GLC(Context(), Context()->bindTexture(GL_TEXTURE_2D, texture_id));

@@ -65,6 +65,7 @@ class CC_EXPORT AcceleratedTextureCopier : public TextureCopier {
   scoped_ptr<BlitProgram> blit_program_highp_;
   bool using_bind_uniforms_;
   int highp_threshold_min_;
+  int highp_threshold_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedTextureCopier);
 };

@@ -79,18 +79,23 @@ static std::string SetVertexTexCoordPrecision(const char* shader_string) {
 }
 
 TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
+                                            int *highp_threshold_cache,
                                             int highp_threshold_min,
                                             int x, int y) {
-  // Initialize range and precision with minimum spec values for when
-  // GetShaderPrecisionFormat is a test stub.
-  // TODO(brianderson): Implement better stubs of GetShaderPrecisionFormat
-  // everywhere.
-  GLint range[2] = { 14, 14 };
-  GLint precision = 10;
-  GLC(context, context->getShaderPrecisionFormat(GL_FRAGMENT_SHADER,
-                                                 GL_MEDIUM_FLOAT,
-                                                 range, &precision));
-  int highp_threshold = std::max(1 << precision, highp_threshold_min);
+  if (*highp_threshold_cache == 0) {
+    // Initialize range and precision with minimum spec values for when
+    // GetShaderPrecisionFormat is a test stub.
+    // TODO(brianderson): Implement better stubs of GetShaderPrecisionFormat
+    // everywhere.
+    GLint range[2] = { 14, 14 };
+    GLint precision = 10;
+    GLC(context, context->getShaderPrecisionFormat(GL_FRAGMENT_SHADER,
+                                                   GL_MEDIUM_FLOAT,
+                                                   range, &precision));
+    *highp_threshold_cache = 1 << precision;
+  }
+
+  int highp_threshold = std::max(*highp_threshold_cache, highp_threshold_min);
   if (x > highp_threshold || y > highp_threshold)
     return TexCoordPrecisionHigh;
   return TexCoordPrecisionMedium;
@@ -99,16 +104,20 @@ TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
 }  // namespace
 
 TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
+                                            int *highp_threshold_cache,
                                             int highp_threshold_min,
                                             gfx::Point max_coordinate) {
-  return TexCoordPrecisionRequired(context, highp_threshold_min,
+  return TexCoordPrecisionRequired(context,
+                                   highp_threshold_cache, highp_threshold_min,
                                    max_coordinate.x(), max_coordinate.y());
 }
 
 TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
+                                            int *highp_threshold_cache,
                                             int highp_threshold_min,
                                             gfx::Size max_size) {
-  return TexCoordPrecisionRequired(context, highp_threshold_min,
+  return TexCoordPrecisionRequired(context,
+                                   highp_threshold_cache, highp_threshold_min,
                                    max_size.width(), max_size.height());
 }
 
