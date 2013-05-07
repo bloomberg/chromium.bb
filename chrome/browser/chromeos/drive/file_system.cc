@@ -1475,16 +1475,6 @@ void FileSystem::GetCacheEntryByResourceId(
   cache_->GetCacheEntry(resource_id, md5, callback);
 }
 
-void FileSystem::IterateCache(
-    const CacheIterateCallback& iteration_callback,
-    const base::Closure& completion_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!iteration_callback.is_null());
-  DCHECK(!completion_callback.is_null());
-
-  cache_->Iterate(iteration_callback, completion_callback);
-}
-
 void FileSystem::OnDisableDriveHostedFilesChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* pref_service = profile_->GetPrefs();

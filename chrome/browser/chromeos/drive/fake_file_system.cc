@@ -253,12 +253,6 @@ void FakeFileSystem::GetCacheEntryByResourceId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeFileSystem::IterateCache(
-    const CacheIterateCallback& iteration_callback,
-    const base::Closure& completion_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 void FakeFileSystem::Reload() {
 }
 
