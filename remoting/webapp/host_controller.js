@@ -12,9 +12,6 @@ remoting.HostController = function() {
   /** @type {remoting.HostController} */
   var that = this;
 
-  /** @type {boolean} @private */
-  this.pluginSupported_ = true;
-
   /** @type {remoting.HostNativeMessaging} @private */
   this.plugin_ = new remoting.HostNativeMessaging();
 
@@ -39,12 +36,10 @@ remoting.HostController = function() {
         console.log('Host version: ' + version);
       }
     };
-    that.pluginSupported_ = true;
     try {
       that.plugin_.getDaemonVersion(printVersion);
     } catch (err) {
       console.log('Host version not available.');
-      that.pluginSupported_ = false;
     }
   }
 
@@ -71,16 +66,6 @@ remoting.HostController.AsyncResult = {
   FAILED: 1,
   CANCELLED: 2,
   FAILED_DIRECTORY: 3
-};
-
-/**
- * Checks whether or not the host plugin is valid.
- *
- * @return {boolean} True if the plugin is supported and loaded; false
- *     otherwise.
- */
-remoting.HostController.prototype.isPluginSupported = function() {
-  return this.pluginSupported_;
 };
 
 /**
