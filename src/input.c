@@ -1529,8 +1529,6 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 {
 	memset(seat, 0, sizeof *seat);
 
-	wl_signal_init(&seat->seat.destroy_signal);
-
 	seat->seat.selection_data_source = NULL;
 	wl_list_init(&seat->seat.base_resource_list);
 	wl_signal_init(&seat->seat.selection_signal);
@@ -1580,8 +1578,6 @@ weston_seat_release(struct weston_seat *seat)
 	if (seat->xkb_state.state != NULL)
 		xkb_state_unref(seat->xkb_state.state);
 	xkb_info_destroy(&seat->xkb_info);
-
-	wl_signal_emit(&seat->seat.destroy_signal, seat);
 
 	if (seat->seat.pointer)
 		weston_pointer_release(seat->seat.pointer);

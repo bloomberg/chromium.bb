@@ -330,7 +330,6 @@ struct weston_touch {
 
 struct wl_seat {
 	struct wl_list base_resource_list;
-	struct wl_signal destroy_signal;
 
 	struct weston_pointer *pointer;
 	struct weston_keyboard *keyboard;

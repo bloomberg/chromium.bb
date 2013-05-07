@@ -471,7 +471,7 @@ focus_state_create(struct weston_seat *seat, struct workspace *ws)
 
 	state->seat_destroy_listener.notify = focus_state_seat_destroy;
 	state->surface_destroy_listener.notify = focus_state_surface_destroy;
-	wl_signal_add(&seat->seat.destroy_signal,
+	wl_signal_add(&seat->destroy_signal,
 		      &state->seat_destroy_listener);
 	wl_list_init(&state->surface_destroy_listener.link);
 

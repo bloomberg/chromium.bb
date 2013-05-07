@@ -270,7 +270,7 @@ clipboard_create(struct weston_seat *seat)
 
 	wl_signal_add(&seat->seat.selection_signal,
 		      &clipboard->selection_listener);
-	wl_signal_add(&seat->seat.destroy_signal,
+	wl_signal_add(&seat->destroy_signal,
 		      &clipboard->destroy_listener);
 
 	return clipboard;

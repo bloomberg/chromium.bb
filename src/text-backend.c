@@ -874,7 +874,7 @@ handle_seat_created(struct wl_listener *listener,
 				      input_method, bind_input_method);
 
 	input_method->destroy_listener.notify = input_method_notifier_destroy;
-	wl_signal_add(&seat->seat.destroy_signal, &input_method->destroy_listener);
+	wl_signal_add(&seat->destroy_signal, &input_method->destroy_listener);
 
 	seat->input_method = input_method;
 
