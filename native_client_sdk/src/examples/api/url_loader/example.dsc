@@ -2,15 +2,19 @@
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {
-      'NAME' : 'geturl',
+      'NAME' : 'url_loader',
       'TYPE' : 'main',
-      'SOURCES' : ['geturl.cc', 'geturl_handler.cc', 'geturl_handler.h'],
+      'SOURCES' : [
+        'url_loader.cc',
+        'url_loader_handler.cc',
+        'url_loader_handler.h'
+      ],
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DATA': [
     'example.js',
-    'geturl_success.html',
+    'url_loader_success.html',
   ],
   'DEST': 'examples/api',
   'NAME': 'url_loader',

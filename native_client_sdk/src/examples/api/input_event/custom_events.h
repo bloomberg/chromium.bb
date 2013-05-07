@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-namespace event_queue {
-
 // These functions and classes are used to define a non-Pepper set of
 // events.  This is typical of what many developers might do, since it
 // would be common to convert a Pepper event into some other more
@@ -186,7 +184,5 @@ class TouchEvent : public Event {
   std::vector<Touch> touches;
   double timestamp_;
 };
-
-}  // end namespace
 
 #endif  // CUSTOM_EVENTS_H

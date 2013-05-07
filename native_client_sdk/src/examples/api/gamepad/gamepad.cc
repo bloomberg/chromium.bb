@@ -2,37 +2,71 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gamepad.h"
-
 #include <stdio.h>
 #include <stdlib.h>
+
 #include <cassert>
-#include <cmath>
-#include <cstring>
-#include <string>
+
 #include "ppapi/c/ppb_gamepad.h"
-#include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/graphics_2d.h"
+#include "ppapi/cpp/image_data.h"
+#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/size.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
-namespace {
+class GamepadInstance : public pp::Instance {
+ public:
+  explicit GamepadInstance(PP_Instance instance);
+  virtual ~GamepadInstance();
 
-// This is called by the browser when the 2D context has been flushed to the
-// browser window.
-void FlushCallback(void* data, int32_t result) {
-  static_cast<gamepad::Gamepad*>(data)->set_flush_pending(false);
-  static_cast<gamepad::Gamepad*>(data)->Paint();
-}
+  // Update the graphics context to the new size, and regenerate |pixel_buffer_|
+  // to fit the new size as well.
+  virtual void DidChangeView(const pp::View& view);
 
-}  // namespace
+  // Flushes its contents of |pixel_buffer_| to the 2D graphics context.
+  void Paint();
 
-namespace gamepad {
+  int width() const {
+    return pixel_buffer_ ? pixel_buffer_->size().width() : 0;
+  }
+  int height() const {
+    return pixel_buffer_ ? pixel_buffer_->size().height() : 0;
+  }
 
-Gamepad::Gamepad(PP_Instance instance)
+  // Indicate whether a flush is pending.  This can only be called from the
+  // main thread; it is not thread safe.
+  bool flush_pending() const { return flush_pending_; }
+  void set_flush_pending(bool flag) { flush_pending_ = flag; }
+
+ private:
+  // Create and initialize the 2D context used for drawing.
+  void CreateContext(const pp::Size& size);
+  // Destroy the 2D drawing context.
+  void DestroyContext();
+  // Push the pixels to the browser, then attempt to flush the 2D context.  If
+  // there is a pending flush on the 2D context, then update the pixels only
+  // and do not flush.
+  void FlushPixelBuffer();
+
+  void FlushCallback(int32_t result);
+
+  bool IsContextValid() const { return graphics_2d_context_ != NULL; }
+
+  pp::CompletionCallbackFactory<GamepadInstance> callback_factory_;
+  pp::Graphics2D* graphics_2d_context_;
+  pp::ImageData* pixel_buffer_;
+  const PPB_Gamepad* gamepad_;
+  bool flush_pending_;
+};
+
+GamepadInstance::GamepadInstance(PP_Instance instance)
     : pp::Instance(instance),
+      callback_factory_(this),
       graphics_2d_context_(NULL),
       pixel_buffer_(NULL),
-      flush_pending_(false),
-      quit_(false) {
+      flush_pending_(false) {
   pp::Module* module = pp::Module::Get();
   assert(module);
   gamepad_ = static_cast<const PPB_Gamepad*>(
@@ -40,13 +74,12 @@ Gamepad::Gamepad(PP_Instance instance)
   assert(gamepad_);
 }
 
-Gamepad::~Gamepad() {
-  quit_ = true;
+GamepadInstance::~GamepadInstance() {
   DestroyContext();
   delete pixel_buffer_;
 }
 
-void Gamepad::DidChangeView(const pp::View& view) {
+void GamepadInstance::DidChangeView(const pp::View& view) {
   pp::Rect position = view.GetRect();
   if (position.size().width() == width() &&
       position.size().height() == height())
@@ -83,7 +116,7 @@ void FillRect(pp::ImageData* image,
   }
 }
 
-void Gamepad::Paint() {
+void GamepadInstance::Paint() {
   // Clear the background.
   FillRect(pixel_buffer_, 0, 0, width(), height(), 0xfff0f0f0);
 
@@ -123,7 +156,7 @@ void Gamepad::Paint() {
   FlushPixelBuffer();
 }
 
-void Gamepad::CreateContext(const pp::Size& size) {
+void GamepadInstance::CreateContext(const pp::Size& size) {
   if (IsContextValid())
     return;
   graphics_2d_context_ = new pp::Graphics2D(this, size, false);
@@ -132,14 +165,14 @@ void Gamepad::CreateContext(const pp::Size& size) {
   }
 }
 
-void Gamepad::DestroyContext() {
+void GamepadInstance::DestroyContext() {
   if (!IsContextValid())
     return;
   delete graphics_2d_context_;
   graphics_2d_context_ = NULL;
 }
 
-void Gamepad::FlushPixelBuffer() {
+void GamepadInstance::FlushPixelBuffer() {
   if (!IsContextValid())
     return;
   // Note that the pixel lock is held while the buffer is copied into the
@@ -148,7 +181,25 @@ void Gamepad::FlushPixelBuffer() {
   if (flush_pending())
     return;
   set_flush_pending(true);
-  graphics_2d_context_->Flush(pp::CompletionCallback(&FlushCallback, this));
+  graphics_2d_context_->Flush(
+      callback_factory_.NewCallback(&GamepadInstance::FlushCallback));
 }
 
-}  // namespace gamepad
+void GamepadInstance::FlushCallback(int32_t result) {
+  set_flush_pending(false);
+  Paint();
+}
+
+class GamepadModule : public pp::Module {
+ public:
+  GamepadModule() : pp::Module() {}
+  virtual ~GamepadModule() {}
+
+  virtual pp::Instance* CreateInstance(PP_Instance instance) {
+    return new GamepadInstance(instance);
+  }
+};
+
+namespace pp {
+Module* CreateModule() { return new GamepadModule(); }
+}  // namespace pp

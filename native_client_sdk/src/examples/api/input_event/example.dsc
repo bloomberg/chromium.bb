@@ -7,7 +7,7 @@
       'SOURCES' : [
         'custom_events.cc',
         'custom_events.h',
-        'input_events.cc',
+        'input_event.cc',
         'shared_queue.h',
       ],
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
@@ -18,7 +18,7 @@
   ],
   'DEST': 'examples/api',
   'NAME': 'input_event',
-  'TITLE': 'Input Events',
+  'TITLE': 'Input Event',
   'GROUP': 'API',
 }
 

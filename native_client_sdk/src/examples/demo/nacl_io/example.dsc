@@ -7,12 +7,12 @@
       'SOURCES' : [
         'handlers.c',
         'handlers.h',
-        'hello_nacl_io.c',
-        'hello_nacl_io.h',
+        'nacl_io_demo.c',
+        'nacl_io_demo.h',
         'queue.c',
         'queue.h',
       ],
-      'LIBS': ['ppapi', 'pthread', 'nacl_io']
+      'LIBS': ['nacl_io', 'ppapi', 'pthread']
     }
   ],
   'DATA': [

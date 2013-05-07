@@ -6,8 +6,6 @@
 
 #include "custom_events.h"
 
-namespace event_queue {
-
 // Convert a given modifier to a descriptive string.  Note that the actual
 // declared type of modifier in each of the event classes is uint32_t, but it is
 // expected to be interpreted as a bitfield of 'or'ed PP_InputEvent_Modifier
@@ -150,5 +148,3 @@ std::string TouchEvent::ToString() const {
   stream << " time:" << timestamp_ << "\n";
   return stream.str();
 }
-
-}  // end namespace

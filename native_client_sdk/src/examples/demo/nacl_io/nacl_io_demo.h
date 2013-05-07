@@ -3,8 +3,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef HELLO_NACL_IO_H_
-#define HELLO_NACL_IO_H_
+#ifndef NACL_IO_DEMO_H_
+#define NACL_IO_DEMO_H_
 
 #include <stdarg.h>
 #include "ppapi/c/pp_var.h"
@@ -15,4 +15,4 @@ char* PrintfToNewString(const char* format, ...);
 struct PP_Var PrintfToVar(const char* format, ...);
 uint32_t VarToCStr(struct PP_Var var, char* buffer, uint32_t length);
 
-#endif /* HELLO_NACL_IO_H_ */
+#endif /* NACL_IO_DEMO_H_ */

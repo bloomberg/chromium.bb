@@ -26,26 +26,15 @@ const uint32_t kSampleFrameCount = 4096u;
 const uint32_t kChannels = 2u;
 }  // namespace
 
-namespace sine_synth {
-// The Instance class.  One of these exists for each instance of your NaCl
-// module on the web page.  The browser will ask the Module object to create
-// a new Instance for each occurrence of the <embed> tag that has these
-// attributes:
-//     type="application/x-nacl"
-//     src="sine_synth.nmf"
-class SineSynthInstance : public pp::Instance {
+class AudioInstance : public pp::Instance {
  public:
-  explicit SineSynthInstance(PP_Instance instance)
+  explicit AudioInstance(PP_Instance instance)
       : pp::Instance(instance),
         frequency_(kDefaultFrequency),
         theta_(0),
         sample_frame_count_(kSampleFrameCount) {}
-  virtual ~SineSynthInstance() {}
+  virtual ~AudioInstance() {}
 
-  // Called by the browser once the NaCl module is loaded and ready to
-  // initialize.  Creates a Pepper audio context and initializes it. Returns
-  // true on success.  Returning false causes the NaCl module to be deleted and
-  // no other functions to be called.
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 
   // Called by the browser to handle the postMessage() call in Javascript.
@@ -71,26 +60,24 @@ class SineSynthInstance : public pp::Instance {
   static void SineWaveCallback(void* samples,
                                uint32_t buffer_size,
                                void* data) {
-    SineSynthInstance* sine_synth_instance =
-        reinterpret_cast<SineSynthInstance*>(data);
-    const double frequency = sine_synth_instance->frequency();
+    AudioInstance* instance = reinterpret_cast<AudioInstance*>(data);
+    const double frequency = instance->frequency();
     const double delta = kTwoPi * frequency / PP_AUDIOSAMPLERATE_44100;
     const int16_t max_int16 = std::numeric_limits<int16_t>::max();
 
     int16_t* buff = reinterpret_cast<int16_t*>(samples);
 
     // Make sure we can't write outside the buffer.
-    assert(buffer_size >= (sizeof(*buff) * kChannels *
-                           sine_synth_instance->sample_frame_count_));
+    assert(buffer_size >=
+           (sizeof(*buff) * kChannels * instance->sample_frame_count_));
 
-    for (size_t sample_i = 0;
-         sample_i < sine_synth_instance->sample_frame_count_;
-         ++sample_i, sine_synth_instance->theta_ += delta) {
+    for (size_t sample_i = 0; sample_i < instance->sample_frame_count_;
+         ++sample_i, instance->theta_ += delta) {
       // Keep theta_ from going beyond 2*Pi.
-      if (sine_synth_instance->theta_ > kTwoPi) {
-        sine_synth_instance->theta_ -= kTwoPi;
+      if (instance->theta_ > kTwoPi) {
+        instance->theta_ -= kTwoPi;
       }
-      double sin_value(std::sin(sine_synth_instance->theta_));
+      double sin_value(std::sin(instance->theta_));
       int16_t scaled_value = static_cast<int16_t>(sin_value * max_int16);
       for (size_t channel = 0; channel < kChannels; ++channel) {
         *buff++ = scaled_value;
@@ -109,9 +96,9 @@ class SineSynthInstance : public pp::Instance {
   uint32_t sample_frame_count_;
 };
 
-bool SineSynthInstance::Init(uint32_t argc,
-                             const char* argn[],
-                             const char* argv[]) {
+bool AudioInstance::Init(uint32_t argc,
+                         const char* argn[],
+                         const char* argv[]) {
   // Ask the device for an appropriate sample count size.
   sample_frame_count_ = pp::AudioConfig::RecommendSampleFrameCount(
       this, PP_AUDIOSAMPLERATE_44100, kSampleFrameCount);
@@ -123,7 +110,7 @@ bool SineSynthInstance::Init(uint32_t argc,
   return true;
 }
 
-void SineSynthInstance::HandleMessage(const pp::Var& var_message) {
+void AudioInstance::HandleMessage(const pp::Var& var_message) {
   if (!var_message.is_string()) {
     return;
   }
@@ -148,32 +135,21 @@ void SineSynthInstance::HandleMessage(const pp::Var& var_message) {
   }
 }
 
-void SineSynthInstance::SetFrequency(double frequency) {
+void AudioInstance::SetFrequency(double frequency) {
   frequency_ = frequency;
   PostMessage(pp::Var(frequency_));
 }
 
-// The Module class.  The browser calls the CreateInstance() method to create
-// an instance of your NaCl module on the web page.  The browser creates a new
-// instance for each <embed> tag with type="application/x-nacl".
-class SineSynthModule : public pp::Module {
+class AudioModule : public pp::Module {
  public:
-  SineSynthModule() : pp::Module() {}
-  ~SineSynthModule() {}
+  AudioModule() : pp::Module() {}
+  ~AudioModule() {}
 
-  // Create and return a HelloWorldInstance object.
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
-    return new SineSynthInstance(instance);
+    return new AudioInstance(instance);
   }
 };
 
-}  // namespace sine_synth
-
-// Factory function called by the browser when the module is first loaded.
-// The browser keeps a singleton of this module.  It calls the
-// CreateInstance() method on the object you return to make instances.  There
-// is one instance per <embed> tag on the page.  This is the main binding
-// point for your NaCl module with the browser.
 namespace pp {
-Module* CreateModule() { return new sine_synth::SineSynthModule(); }
+Module* CreateModule() { return new AudioModule(); }
 }  // namespace pp

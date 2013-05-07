@@ -26,7 +26,6 @@
 #undef PostMessage
 #endif
 
-namespace event_queue {
 const char* const kDidChangeView = "DidChangeView\n";
 const char* const kHandleInputEvent = "DidHandleInputEvent\n";
 const char* const kDidChangeFocus = "DidChangeFocus\n";
@@ -74,9 +73,9 @@ unsigned int ConvertEventModifier(uint32_t pp_modifier) {
   return custom_modifier;
 }
 
-class EventInstance : public pp::Instance {
+class InputEventInstance : public pp::Instance {
  public:
-  explicit EventInstance(PP_Instance instance)
+  explicit InputEventInstance(PP_Instance instance)
       : pp::Instance(instance), event_thread_(NULL), callback_factory_(this) {
     RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL |
                        PP_INPUTEVENT_CLASS_TOUCH);
@@ -85,7 +84,7 @@ class EventInstance : public pp::Instance {
 
   // Not guaranteed to be called in Pepper, but a good idea to cancel the
   // queue and signal to workers to die if it is called.
-  virtual ~EventInstance() { CancelQueueAndWaitForWorker(); }
+  virtual ~InputEventInstance() { CancelQueueAndWaitForWorker(); }
 
   // Create the 'worker thread'.
   bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
@@ -114,13 +113,6 @@ class EventInstance : public pp::Instance {
     PostMessage(pp::Var(kDidChangeView));
   }
 
-  /// Called by the browser to handle the postMessage() call in Javascript.
-  /// Detects which method is being called from the message contents, and
-  /// calls the appropriate function.  Posts the result back to the browser
-  /// asynchronously.
-  /// @param[in] var_message The message posted by the browser.  The only
-  ///     supported message is |kCancelMessage|.  If we receive this, we
-  ///     cancel the shared queue.
   virtual void HandleMessage(const pp::Var& var_message) {
     std::string message = var_message.AsString();
     if (kCancelMessage == message) {
@@ -281,7 +273,8 @@ class EventInstance : public pp::Instance {
   // PostStringToBrowser will be called, which will call PostMessage
   // to send the converted event back to the browser.
   static void* ProcessEventOnWorkerThread(void* param) {
-    EventInstance* event_instance = static_cast<EventInstance*>(param);
+    InputEventInstance* event_instance =
+        static_cast<InputEventInstance*>(param);
     while (1) {
       // Grab a generic Event* so that down below we can call
       // event->ToString(), which will use the correct virtual method
@@ -300,8 +293,8 @@ class EventInstance : public pp::Instance {
       // Need to invoke callback on main thread.
       pp::Module::Get()->core()->CallOnMainThread(
           0,
-          event_instance->callback_factory()
-              .NewCallback(&EventInstance::PostStringToBrowser, event_string));
+          event_instance->callback_factory().NewCallback(
+              &InputEventInstance::PostStringToBrowser, event_string));
     }  // end of while loop.
     return 0;
   }
@@ -309,7 +302,7 @@ class EventInstance : public pp::Instance {
   // Return the callback factory.
   // Allows the static method (ProcessEventOnWorkerThread) to use
   // the |event_instance| pointer to get the factory.
-  pp::CompletionCallbackFactory<EventInstance>& callback_factory() {
+  pp::CompletionCallbackFactory<InputEventInstance>& callback_factory() {
     return callback_factory_;
   }
 
@@ -327,27 +320,19 @@ class EventInstance : public pp::Instance {
   }
   pthread_t* event_thread_;
   LockingQueue<Event*> event_queue_;
-  pp::CompletionCallbackFactory<EventInstance> callback_factory_;
+  pp::CompletionCallbackFactory<InputEventInstance> callback_factory_;
 };
 
-// The EventModule provides an implementation of pp::Module that creates
-// EventInstance objects when invoked.  This is part of the glue code that makes
-// our example accessible to ppapi.
-class EventModule : public pp::Module {
+class InputEventModule : public pp::Module {
  public:
-  EventModule() : pp::Module() {}
-  virtual ~EventModule() {}
+  InputEventModule() : pp::Module() {}
+  virtual ~InputEventModule() {}
 
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
-    return new EventInstance(instance);
+    return new InputEventInstance(instance);
   }
 };
 
-}  // namespace
-
-// Implement the required pp::CreateModule function that creates our specific
-// kind of Module (in this case, EventModule).  This is part of the glue code
-// that makes our example accessible to ppapi.
 namespace pp {
-Module* CreateModule() { return new event_queue::EventModule(); }
+Module* CreateModule() { return new InputEventModule(); }
 }

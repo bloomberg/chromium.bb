@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXAMPLES_GETURL_GETURL_HANDLER_H_
-#define EXAMPLES_GETURL_GETURL_HANDLER_H_
+#ifndef URL_LOADER_HANDLER_H_
+#define URL_LOADER_HANDLER_H_
 
 #include <string>
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/url_request_info.h"
-#include "ppapi/cpp/instance.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #define READ_BUFFER_SIZE 32768
 
-// GetURLHandler is used to download data from |url|. When download is
+// URLLoaderHandler is used to download data from |url|. When download is
 // finished or when an error occurs, it posts a message back to the browser
 // with the results encoded in the message as a string and self-destroys.
 //
@@ -26,21 +26,22 @@
 // bug: http://code.google.com/p/chromium/issues/detail?id=103947
 //
 // EXAMPLE USAGE:
-// GetURLHandler* handler* = GetURLHandler::Create(instance,url);
+// URLLoaderHandler* handler* = URLLoaderHandler::Create(instance,url);
 // handler->Start();
 //
-class GetURLHandler {
+class URLLoaderHandler {
  public:
-  // Creates instance of GetURLHandler on the heap.
-  // GetURLHandler objects shall be created only on the heap (they
+  // Creates instance of URLLoaderHandler on the heap.
+  // URLLoaderHandler objects shall be created only on the heap (they
   // self-destroy when all data is in).
-  static GetURLHandler* Create(pp::Instance* instance_, const std::string& url);
+  static URLLoaderHandler* Create(pp::Instance* instance_,
+                                  const std::string& url);
   // Initiates page (URL) download.
   void Start();
 
  private:
-  GetURLHandler(pp::Instance* instance_, const std::string& url);
-  ~GetURLHandler();
+  URLLoaderHandler(pp::Instance* instance_, const std::string& url);
+  ~URLLoaderHandler();
 
   // Callback for the pp::URLLoader::Open().
   // Called by pp::URLLoader when response headers are received or when an
@@ -78,10 +79,10 @@ class GetURLHandler {
   pp::URLLoader url_loader_;  // URLLoader provides an API to download URLs.
   char* buffer_;              // Temporary buffer for reads.
   std::string url_response_body_;  // Contains accumulated downloaded data.
-  pp::CompletionCallbackFactory<GetURLHandler> cc_factory_;
+  pp::CompletionCallbackFactory<URLLoaderHandler> cc_factory_;
 
-  GetURLHandler(const GetURLHandler&);
-  void operator=(const GetURLHandler&);
+  URLLoaderHandler(const URLLoaderHandler&);
+  void operator=(const URLLoaderHandler&);
 };
 
-#endif  // EXAMPLES_GETURL_GETURL_HANDLER_H_
+#endif  // URL_LOADER_HANDLER_H_

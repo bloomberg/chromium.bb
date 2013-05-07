@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-#include "hello_nacl_io.h"
+#include "nacl_io_demo.h"
 
 #include <assert.h>
 #include <stdio.h>

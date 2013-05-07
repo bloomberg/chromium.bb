@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/** @file hello_world.c
+/** @file debugging.c
  * This example, is a modified version of hello world.  It will start a second
  * thread and cause that thread to crash via a NULL dereference.
  */

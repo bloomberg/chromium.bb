@@ -2,9 +2,9 @@
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {
-      'NAME' : 'file_histogram',
+      'NAME' : 'var_array_buffer',
       'TYPE' : 'main',
-      'SOURCES' : ['file_histogram.cc'],
+      'SOURCES' : ['var_array_buffer.cc'],
       'LIBS' : ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],

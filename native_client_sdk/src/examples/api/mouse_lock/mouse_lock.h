@@ -8,12 +8,12 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/fullscreen.h"
-#include "ppapi/cpp/mouse_lock.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/mouse_lock.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/var.h"
@@ -23,8 +23,6 @@
 // Allow 'this' in initializer list
 #pragma warning(disable : 4355)
 #endif
-
-namespace mouselock {
 
 class MouseLockInstance : public pp::Instance, public pp::MouseLock {
  public:
@@ -102,5 +100,3 @@ class MouseLockInstance : public pp::Instance, public pp::MouseLock {
   bool was_fullscreen_;
   uint32_t* background_scanline_;
 };
-
-}  // namespace mouselock

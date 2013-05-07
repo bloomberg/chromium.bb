@@ -2,9 +2,9 @@
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {
-      'NAME' : 'hello_world_gles',
+      'NAME' : 'graphics_3d',
       'TYPE' : 'main',
-      'SOURCES' : ['hello_world.cc', 'matrix.cc', 'matrix.h'],
+      'SOURCES' : ['graphics_3d.cc', 'matrix.cc', 'matrix.h'],
       'CXXFLAGS': [
         '-I../../src',
         '-I../../src/ppapi/lib/gl'

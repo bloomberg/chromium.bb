@@ -4,7 +4,7 @@
     {
       'NAME' : 'gamepad',
       'TYPE' : 'main',
-      'SOURCES' : ['gamepad.cc', 'gamepad_module.cc', 'gamepad.h'],
+      'SOURCES' : ['gamepad.cc'],
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],

@@ -9,8 +9,6 @@
 #include <cassert>
 #include <deque>
 
-namespace event_queue {
-
 // This file provides a queue that uses a mutex and condition variable so that
 // one thread can put pointers into the queue and another thread can pull items
 // out of the queue.
@@ -145,7 +143,5 @@ template <class T> class LockingQueue {
   // This is used by methods that already have the lock.
   bool is_empty_no_locking() const { return the_queue_.empty(); }
 };
-
-}  // end of unnamed namespace
 
 #endif  // SHARED_QUEUE_H

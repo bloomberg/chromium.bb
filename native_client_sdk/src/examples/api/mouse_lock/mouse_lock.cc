@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cmath>
-#include <cstdlib>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <cmath>
+#include <cstdlib>
 
 #include <algorithm>
 
-#include "mouselock.h"
+#include "mouse_lock.h"
 
 #ifdef WIN32
 #undef min
@@ -34,8 +34,6 @@ const uint32_t kReturnKeyCode = 13;
 const uint32_t kBackgroundColor = 0xff606060;
 const uint32_t kForegroundColor = 0xfff08080;
 }  // namespace
-
-namespace mouselock {
 
 MouseLockInstance::~MouseLockInstance() {
   free(background_scanline_);
@@ -345,8 +343,6 @@ void MouseLockInstance::Log(const char* format, ...) {
   console->Log(pp_instance(), PP_LOGLEVEL_ERROR, value.pp_var());
 }
 
-}  // namespace mouselock
-
 // This object is the global object representing this plugin library as long
 // as it is loaded.
 class MouseLockModule : public pp::Module {
@@ -356,7 +352,7 @@ class MouseLockModule : public pp::Module {
 
   // Override CreateInstance to create your customized Instance object.
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
-    return new mouselock::MouseLockInstance(instance);
+    return new MouseLockInstance(instance);
   }
 };
 

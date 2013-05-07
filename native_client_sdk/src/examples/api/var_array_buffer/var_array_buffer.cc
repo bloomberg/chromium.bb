@@ -2,28 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/// @file file_histogram.cc
-/// This example demonstrates loading, running and scripting a very simple NaCl
-/// module.  To load the NaCl module, the browser first looks for the
-/// CreateModule() factory method (at the end of this file).  It calls
-/// CreateModule() once to load the module code from your .nexe.  After the
-/// .nexe code is loaded, CreateModule() is not called again.
-///
-/// Once the .nexe code is loaded, the browser than calls the CreateInstance()
-/// method on the object returned by CreateModule().  It calls CreateInstance()
-/// each time it encounters an <embed> tag that references your NaCl module.
-///
-/// The browser can talk to your NaCl module via the postMessage() Javascript
-/// function.  When you call postMessage() on your NaCl module from the browser,
-/// this becomes a call to the HandleMessage() method of your pp::Instance
-/// subclass.  You can send messages back to the browser by calling the
-/// PostMessage() method on your pp::Instance.  Note that these two methods
-/// (postMessage() in Javascript and PostMessage() in C++) are asynchronous.
-/// This means they return immediately - there is no waiting for the message
-/// to be handled.  This has implications in your program design, particularly
-/// when mutating property values that are exposed to both the browser and the
-/// NaCl module.
-
 #include <algorithm>
 #include <deque>
 #include <string>
@@ -55,22 +33,14 @@ const size_t kHistogramSize = 256u;
 
 }  // namespace
 
-/// The Instance class.  One of these exists for each instance of your NaCl
-/// module on the web page.  The browser will ask the Module object to create
-/// a new Instance for each occurrence of the <embed> tag that has these
-/// attributes:
-///     type="application/x-nacl"
-///     src="file_histogram.nmf"
-class FileHistogramInstance : public pp::Instance {
+class VarArrayBufferInstance : public pp::Instance {
  public:
-  /// The constructor creates the plugin-side instance.
-  /// @param[in] instance the handle to the browser-side plugin instance.
-  explicit FileHistogramInstance(PP_Instance instance)
+  explicit VarArrayBufferInstance(PP_Instance instance)
       : pp::Instance(instance),
         callback_factory_(this),
         flushing_(false),
         histogram_() {}
-  virtual ~FileHistogramInstance() {}
+  virtual ~VarArrayBufferInstance() {}
 
  private:
   /// Handler for messages coming in from the browser via postMessage().  The
@@ -121,7 +91,7 @@ class FileHistogramInstance : public pp::Instance {
     assert(!flushing_);
     graphics_2d_context_.ReplaceContents(image_data);
     graphics_2d_context_.Flush(
-        callback_factory_.NewCallback(&FileHistogramInstance::DidFlush));
+        callback_factory_.NewCallback(&VarArrayBufferInstance::DidFlush));
     flushing_ = true;
   }
 
@@ -186,7 +156,7 @@ class FileHistogramInstance : public pp::Instance {
   }
 
   pp::Graphics2D graphics_2d_context_;
-  pp::CompletionCallbackFactory<FileHistogramInstance> callback_factory_;
+  pp::CompletionCallbackFactory<VarArrayBufferInstance> callback_factory_;
 
   /// A queue of images to paint. We must maintain a queue because we can not
   /// call pp::Graphics2D::Flush while a Flush is already pending.
@@ -204,27 +174,16 @@ class FileHistogramInstance : public pp::Instance {
   double histogram_[kHistogramSize];
 };
 
-/// The Module class.  The browser calls the CreateInstance() method to create
-/// an instance of your NaCl module on the web page.  The browser creates a new
-/// instance for each <embed> tag with type="application/x-nacl".
-class FileHistogramModule : public pp::Module {
+class VarArrayBufferModule : public pp::Module {
  public:
-  FileHistogramModule() : pp::Module() {}
-  virtual ~FileHistogramModule() {}
+  VarArrayBufferModule() : pp::Module() {}
+  virtual ~VarArrayBufferModule() {}
 
-  /// Create and return a FileHistogramInstance object.
-  /// @param[in] instance The browser-side instance.
-  /// @return the plugin-side instance.
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
-    return new FileHistogramInstance(instance);
+    return new VarArrayBufferInstance(instance);
   }
 };
 
 namespace pp {
-/// Factory function called by the browser when the module is first loaded.
-/// The browser keeps a singleton of this module.  It calls the
-/// CreateInstance() method on the object you return to make instances.  There
-/// is one instance per <embed> tag on the page.  This is the main binding
-/// point for your NaCl module with the browser.
-Module* CreateModule() { return new FileHistogramModule(); }
+Module* CreateModule() { return new VarArrayBufferModule(); }
 }  // namespace pp

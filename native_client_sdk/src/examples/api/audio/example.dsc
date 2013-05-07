@@ -2,9 +2,9 @@
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {
-      'NAME' : 'sine_synth',
+      'NAME' : 'audio',
       'TYPE' : 'main',
-      'SOURCES' : ['sine_synth.cc'],
+      'SOURCES' : ['audio.cc'],
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],

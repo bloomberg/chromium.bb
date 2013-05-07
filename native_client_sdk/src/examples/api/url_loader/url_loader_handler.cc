@@ -9,7 +9,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
 
-#include "geturl_handler.h"
+#include "url_loader_handler.h"
 
 #ifdef WIN32
 #undef min
@@ -20,12 +20,13 @@
 #pragma warning(disable : 4355)
 #endif
 
-GetURLHandler* GetURLHandler::Create(pp::Instance* instance,
-                                     const std::string& url) {
-  return new GetURLHandler(instance, url);
+URLLoaderHandler* URLLoaderHandler::Create(pp::Instance* instance,
+                                           const std::string& url) {
+  return new URLLoaderHandler(instance, url);
 }
 
-GetURLHandler::GetURLHandler(pp::Instance* instance, const std::string& url)
+URLLoaderHandler::URLLoaderHandler(pp::Instance* instance,
+                                   const std::string& url)
     : instance_(instance),
       url_(url),
       url_request_(instance),
@@ -37,17 +38,18 @@ GetURLHandler::GetURLHandler(pp::Instance* instance, const std::string& url)
   url_request_.SetRecordDownloadProgress(true);
 }
 
-GetURLHandler::~GetURLHandler() {
+URLLoaderHandler::~URLLoaderHandler() {
   delete[] buffer_;
   buffer_ = NULL;
 }
 
-void GetURLHandler::Start() {
-  pp::CompletionCallback cc = cc_factory_.NewCallback(&GetURLHandler::OnOpen);
+void URLLoaderHandler::Start() {
+  pp::CompletionCallback cc =
+      cc_factory_.NewCallback(&URLLoaderHandler::OnOpen);
   url_loader_.Open(url_request_, cc);
 }
 
-void GetURLHandler::OnOpen(int32_t result) {
+void URLLoaderHandler::OnOpen(int32_t result) {
   if (result != PP_OK) {
     ReportResultAndDie(url_, "pp::URLLoader::Open() failed", false);
     return;
@@ -60,7 +62,7 @@ void GetURLHandler::OnOpen(int32_t result) {
   // order to allocate memory for the response body in advance (this will
   // reduce heap traffic and also the amount of memory allocated).
   // It is not a problem if this fails, it just means that the
-  // url_response_body_.insert() call in GetURLHandler::AppendDataBytes()
+  // url_response_body_.insert() call in URLLoaderHandler::AppendDataBytes()
   // will allocate the memory later on.
   int64_t bytes_received = 0;
   int64_t total_bytes_to_be_received = 0;
@@ -77,7 +79,7 @@ void GetURLHandler::OnOpen(int32_t result) {
   ReadBody();
 }
 
-void GetURLHandler::AppendDataBytes(const char* buffer, int32_t num_bytes) {
+void URLLoaderHandler::AppendDataBytes(const char* buffer, int32_t num_bytes) {
   if (num_bytes <= 0)
     return;
   // Make sure we don't get a buffer overrun.
@@ -89,7 +91,7 @@ void GetURLHandler::AppendDataBytes(const char* buffer, int32_t num_bytes) {
       url_response_body_.end(), buffer, buffer + num_bytes);
 }
 
-void GetURLHandler::OnRead(int32_t result) {
+void URLLoaderHandler::OnRead(int32_t result) {
   if (result == PP_OK) {
     // Streaming the file is complete, delete the read buffer since it is
     // no longer needed.
@@ -108,7 +110,7 @@ void GetURLHandler::OnRead(int32_t result) {
   }
 }
 
-void GetURLHandler::ReadBody() {
+void URLLoaderHandler::ReadBody() {
   // Note that you specifically want an "optional" callback here. This will
   // allow ReadBody() to return synchronously, ignoring your completion
   // callback, if data is available. For fast connections and large files,
@@ -116,7 +118,7 @@ void GetURLHandler::ReadBody() {
   // However, in the case of a synchronous return, we need to be sure to run
   // the callback we created since the loader won't do anything with it.
   pp::CompletionCallback cc =
-      cc_factory_.NewOptionalCallback(&GetURLHandler::OnRead);
+      cc_factory_.NewOptionalCallback(&URLLoaderHandler::OnRead);
   int32_t result = PP_OK;
   do {
     result = url_loader_.ReadResponseBody(buffer_, READ_BUFFER_SIZE, cc);
@@ -139,20 +141,20 @@ void GetURLHandler::ReadBody() {
   }
 }
 
-void GetURLHandler::ReportResultAndDie(const std::string& fname,
-                                       const std::string& text,
-                                       bool success) {
+void URLLoaderHandler::ReportResultAndDie(const std::string& fname,
+                                          const std::string& text,
+                                          bool success) {
   ReportResult(fname, text, success);
   delete this;
 }
 
-void GetURLHandler::ReportResult(const std::string& fname,
-                                 const std::string& text,
-                                 bool success) {
+void URLLoaderHandler::ReportResult(const std::string& fname,
+                                    const std::string& text,
+                                    bool success) {
   if (success)
-    printf("GetURLHandler::ReportResult(Ok).\n");
+    printf("URLLoaderHandler::ReportResult(Ok).\n");
   else
-    printf("GetURLHandler::ReportResult(Err). %s\n", text.c_str());
+    printf("URLLoaderHandler::ReportResult(Err). %s\n", text.c_str());
   fflush(stdout);
   if (instance_) {
     pp::Var var_result(fname + "\n" + text);

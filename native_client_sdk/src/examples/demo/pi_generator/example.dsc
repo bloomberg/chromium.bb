@@ -4,11 +4,7 @@
     {
       'NAME' : 'pi_generator',
       'TYPE' : 'main',
-      'SOURCES' : [
-        'pi_generator.cc',
-        'pi_generator.h',
-        'pi_generator_module.cc'
-      ],
+      'SOURCES' : ['pi_generator.cc'],
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],

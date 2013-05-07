@@ -3,11 +3,6 @@
  * found in the LICENSE file.
  */
 
-/** @file hello_world_gles.cc
- * This example demonstrates loading and running a simple 3D openGL ES 2.0
- * application.
- */
-
 //-----------------------------------------------------------------------------
 // The spinning Cube
 //-----------------------------------------------------------------------------
@@ -21,11 +16,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_graphics_3d.h"
 #include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
@@ -33,12 +28,12 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_opengles2.h"
+#include "ppapi/c/ppb_url_loader.h"
+#include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
-#include "ppapi/c/ppb_url_loader.h"
-#include "ppapi/c/ppb_url_request_info.h"
 
 #include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"

@@ -10,7 +10,7 @@
       'NAME' : 'debugging',
       'TYPE' : 'main',
       'SOURCES' : [
-        'hello_world.c',
+        'debugging.c',
       ],
       'CCFLAGS': ['-fno-omit-frame-pointer'],
       'DEPS' : ['error_handling'],
