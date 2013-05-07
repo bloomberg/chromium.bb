@@ -13,7 +13,7 @@ using content::BrowserThread;
 namespace drive {
 
 DebugInfoCollector::DebugInfoCollector(FileSystemInterface* file_system,
-                                       FileCache* file_cache)
+                                       internal::FileCache* file_cache)
     : file_system_(file_system),
       file_cache_(file_cache) {
   DCHECK(file_system_);

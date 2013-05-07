@@ -24,7 +24,7 @@ void EmptyFileOperationCallback(FileError error) {}
 
 RemoveOperation::RemoveOperation(
     JobScheduler* job_scheduler,
-    FileCache* cache,
+    internal::FileCache* cache,
     internal::ResourceMetadata* metadata,
     OperationObserver* observer)
   : job_scheduler_(job_scheduler),

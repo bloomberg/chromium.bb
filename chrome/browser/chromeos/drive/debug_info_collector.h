@@ -18,7 +18,7 @@ namespace drive {
 class DebugInfoCollector {
  public:
   DebugInfoCollector(FileSystemInterface* file_system,
-                     FileCache* file_cache);
+                     internal::FileCache* file_cache);
   ~DebugInfoCollector();
 
   // Iterates all files in the file cache and calls |iteration_callback| for
@@ -33,7 +33,7 @@ class DebugInfoCollector {
 
  private:
   FileSystemInterface* file_system_;  // Not owned.
-  FileCache* file_cache_;  // Not owned.
+  internal::FileCache* file_cache_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(DebugInfoCollector);
 };

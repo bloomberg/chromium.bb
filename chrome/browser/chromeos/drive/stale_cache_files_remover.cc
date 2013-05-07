@@ -29,7 +29,7 @@ void EmitErrorLog(const std::string& resource_id,
 
 StaleCacheFilesRemover::StaleCacheFilesRemover(
     FileSystemInterface* file_system,
-    FileCache* cache)
+    internal::FileCache* cache)
     : cache_(cache),
       file_system_(file_system),
       weak_ptr_factory_(this) {

@@ -16,13 +16,16 @@ class GURL;
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace drive {
 
-class FileCache;
 class JobScheduler;
 class ResourceEntry;
+
+namespace internal {
+class FileCache;
+}  // namespace internal
 
 namespace file_system {
 
@@ -33,7 +36,7 @@ class OperationObserver;
 // metadata to reflect the new state.
 class UpdateOperation {
  public:
-  UpdateOperation(FileCache* cache,
+  UpdateOperation(internal::FileCache* cache,
                   internal::ResourceMetadata* metadata,
                   JobScheduler* scheduler,
                   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
@@ -94,7 +97,7 @@ class UpdateOperation {
                               const base::FilePath& drive_file_path,
                               scoped_ptr<ResourceEntry> entry);
 
-  FileCache* cache_;
+  internal::FileCache* cache_;
   internal::ResourceMetadata* metadata_;
   JobScheduler* scheduler_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

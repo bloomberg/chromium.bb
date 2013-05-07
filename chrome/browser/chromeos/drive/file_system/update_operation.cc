@@ -19,7 +19,7 @@ namespace drive {
 namespace file_system {
 
 UpdateOperation::UpdateOperation(
-    FileCache* cache,
+    internal::FileCache* cache,
     internal::ResourceMetadata* metadata,
     JobScheduler* scheduler,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,

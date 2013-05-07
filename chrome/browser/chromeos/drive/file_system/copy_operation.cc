@@ -60,7 +60,7 @@ CopyOperation::CopyOperation(
     JobScheduler* job_scheduler,
     FileSystemInterface* file_system,
     internal::ResourceMetadata* metadata,
-    FileCache* cache,
+    internal::FileCache* cache,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer)
   : job_scheduler_(job_scheduler),
@@ -208,7 +208,7 @@ void CopyOperation::ScheduleTransferRegularFileAfterGetEntryInfo(
   cache_->StoreLocallyModified(entry->resource_id(),
                                entry->file_specific_info().file_md5(),
                                local_file_path,
-                               FileCache::FILE_OPERATION_COPY,
+                               internal::FileCache::FILE_OPERATION_COPY,
                                callback);
 }
 

@@ -19,7 +19,6 @@ class FilePath;
 
 namespace drive {
 
-class FileCache;
 class JobScheduler;
 class ResourceEntry;
 

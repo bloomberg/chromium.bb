@@ -24,6 +24,7 @@
 using ::testing::StrictMock;
 
 namespace drive {
+namespace internal {
 namespace {
 
 struct TestCacheResource {
@@ -1409,4 +1410,5 @@ TEST_F(FileCacheTest, UpdatePinnedCache) {
       FileCache::CACHE_TYPE_PERSISTENT);
 }
 
-}   // namespace drive
+}  // namespace internal
+}  // namespace drive

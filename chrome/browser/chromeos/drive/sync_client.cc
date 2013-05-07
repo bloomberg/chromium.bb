@@ -55,7 +55,7 @@ void CollectBacklog(std::vector<std::string>* to_fetch,
 }  // namespace
 
 SyncClient::SyncClient(FileSystemInterface* file_system,
-                       FileCache* cache)
+                       internal::FileCache* cache)
     : file_system_(file_system),
       cache_(cache),
       delay_(base::TimeDelta::FromSeconds(kDelaySeconds)),

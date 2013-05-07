@@ -63,7 +63,7 @@ class SyncClientTest : public testing::Test {
     // Initialize the cache.
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
-    cache_.reset(new FileCache(
+    cache_.reset(new internal::FileCache(
         temp_dir_.path(),
         pool->GetSequencedTaskRunner(pool->GetSequenceToken()),
         NULL /* free_disk_space_getter */));
@@ -117,7 +117,7 @@ class SyncClientTest : public testing::Test {
     const std::string resource_id_fetched = "resource_id_fetched";
     const std::string md5_fetched = "md5";
     cache_->Store(resource_id_fetched, md5_fetched, temp_file,
-                  FileCache::FILE_OPERATION_COPY,
+                  internal::FileCache::FILE_OPERATION_COPY,
                   google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(FILE_ERROR_OK, error);
@@ -130,7 +130,7 @@ class SyncClientTest : public testing::Test {
     const std::string resource_id_dirty = "resource_id_dirty";
     const std::string md5_dirty = "";  // Don't care.
     cache_->Store(resource_id_dirty, md5_dirty, temp_file,
-                  FileCache::FILE_OPERATION_COPY,
+                  internal::FileCache::FILE_OPERATION_COPY,
                   google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(FILE_ERROR_OK, error);
@@ -213,7 +213,7 @@ class SyncClientTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<StrictMock<MockFileSystem> > mock_file_system_;
-  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<SyncClient> sync_client_;
 };
 

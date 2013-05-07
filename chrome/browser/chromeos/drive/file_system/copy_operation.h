@@ -13,17 +13,20 @@
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace google_apis {
 class ResourceEntry;
-}
+}  // namespace google_apis
 
 namespace drive {
 
-class FileCache;
 class JobScheduler;
 class ResourceEntry;
+
+namespace internal {
+class FileCache;
+}  // namespace internal
 
 namespace file_system {
 
@@ -39,7 +42,7 @@ class CopyOperation {
   CopyOperation(JobScheduler* job_scheduler,
                 FileSystemInterface* file_system,
                 internal::ResourceMetadata* metadata,
-                FileCache* cache,
+                internal::FileCache* cache,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                 OperationObserver* observer);
   virtual ~CopyOperation();
@@ -179,7 +182,7 @@ class CopyOperation {
   JobScheduler* job_scheduler_;
   FileSystemInterface* file_system_;
   internal::ResourceMetadata* metadata_;
-  FileCache* cache_;
+  internal::FileCache* cache_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
 

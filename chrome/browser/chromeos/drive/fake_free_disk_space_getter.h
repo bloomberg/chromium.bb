@@ -14,7 +14,7 @@ namespace drive {
 
 // This class is used to report fake free disk space. In particular, this
 // class can be used to simulate a case where disk is full, or nearly full.
-class FakeFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
+class FakeFreeDiskSpaceGetter : public internal::FreeDiskSpaceGetterInterface {
  public:
   FakeFreeDiskSpaceGetter();
   virtual ~FakeFreeDiskSpaceGetter();

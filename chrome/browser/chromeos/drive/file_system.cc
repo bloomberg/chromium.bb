@@ -237,7 +237,7 @@ struct FileSystem::AddUploadedFileParams {
 
 FileSystem::FileSystem(
     Profile* profile,
-    FileCache* cache,
+    internal::FileCache* cache,
     google_apis::DriveServiceInterface* drive_service,
     JobScheduler* scheduler,
     DriveWebAppsRegistry* webapps_registry,
@@ -852,7 +852,7 @@ void FileSystem::GetResolvedFileByPath(
         FROM_HERE,
         base::Bind(&CreateDocumentJsonFileOnBlockingPool,
                    cache_->GetCacheDirectoryPath(
-                       FileCache::CACHE_TYPE_TMP_DOCUMENTS),
+                       internal::FileCache::CACHE_TYPE_TMP_DOCUMENTS),
                    GURL(entry_ptr->file_specific_info().alternate_url()),
                    entry_ptr->resource_id(),
                    temp_file_path),
@@ -998,8 +998,8 @@ void FileSystem::GetResolvedFileByPathAfterFreeDiskSpace(
   }
 
   // We have enough disk space. Create download destination file.
-  const base::FilePath temp_download_directory =
-      cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_TMP_DOWNLOADS);
+  const base::FilePath temp_download_directory = cache_->GetCacheDirectoryPath(
+      internal::FileCache::CACHE_TYPE_TMP_DOWNLOADS);
   base::FilePath* file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
@@ -1073,7 +1073,7 @@ void FileSystem::GetResolvedFileByPathAfterDownloadFile(
   cache_->Store(entry->resource_id(),
                 entry->file_specific_info().file_md5(),
                 downloaded_file_path,
-                FileCache::FILE_OPERATION_MOVE,
+                internal::FileCache::FILE_OPERATION_MOVE,
                 base::Bind(&FileSystem::GetResolvedFileByPathAfterStore,
                            weak_ptr_factory_.GetWeakPtr(),
                            base::Passed(&params),
@@ -1401,7 +1401,7 @@ void FileSystem::AddUploadedFileToCache(
   cache_->Store(params.resource_id,
                 params.md5,
                 params.file_content_path,
-                FileCache::FILE_OPERATION_COPY,
+                internal::FileCache::FILE_OPERATION_COPY,
                 base::Bind(&IgnoreError, params.callback));
 }
 

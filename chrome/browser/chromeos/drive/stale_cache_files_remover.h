@@ -17,7 +17,10 @@ namespace drive{
 
 class FileCacheEntry;
 class FileSystemInterface;
+
+namespace internal {
 class FileCache;
+}  // namespace internal
 
 // This class removes stale cache files, which are present locally, but no
 // longer present on the server. This can happen if files are removed from the
@@ -25,7 +28,7 @@ class FileCache;
 class StaleCacheFilesRemover : public FileSystemObserver {
  public:
   StaleCacheFilesRemover(FileSystemInterface* file_system,
-                         FileCache* cache);
+                         internal::FileCache* cache);
   virtual ~StaleCacheFilesRemover();
 
  private:
@@ -49,7 +52,7 @@ class StaleCacheFilesRemover : public FileSystemObserver {
       const base::FilePath& drive_file_path,
       scoped_ptr<ResourceEntry> entry);
 
-  FileCache* cache_;  // Not owned.
+  internal::FileCache* cache_;  // Not owned.
   FileSystemInterface* file_system_;  // Not owned.
 
   // Note: This should remain the last member so it'll be destroyed and

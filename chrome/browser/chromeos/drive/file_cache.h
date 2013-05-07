@@ -27,13 +27,6 @@ class SequencedTaskRunner;
 namespace drive {
 
 class FileCacheEntry;
-class FileCacheMetadata;
-class FileCacheObserver;
-
-// Callback for GetFileFromCache.
-typedef base::Callback<void(FileError error,
-                            const base::FilePath& cache_file_path)>
-    GetFileFromCacheCallback;
 
 // Callback for GetCacheEntry.
 // |success| indicates if the operation was successful.
@@ -41,6 +34,16 @@ typedef base::Callback<void(FileError error,
 // set to TEST_CACHE_STATE_NONE.
 typedef base::Callback<void(bool success, const FileCacheEntry& cache_entry)>
     GetCacheEntryCallback;
+
+namespace internal {
+
+class FileCacheMetadata;
+class FileCacheObserver;
+
+// Callback for GetFileFromCache.
+typedef base::Callback<void(FileError error,
+                            const base::FilePath& cache_file_path)>
+    GetFileFromCacheCallback;
 
 // Callback for RequestInitialize.
 // |success| indicates if the operation was successful.
@@ -405,6 +408,7 @@ class FileCache {
 // TODO(satorux): Share the constant.
 const int64 kMinFreeSpace = 512 * 1LL << 20;
 
+}  // namespace internal
 }  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CACHE_H_

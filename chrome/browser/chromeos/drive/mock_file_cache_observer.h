@@ -12,8 +12,8 @@
 
 namespace drive {
 
-// Mock for FileCache::Observer.
-class MockCacheObserver : public FileCacheObserver {
+// Mock for FileCacheObserver.
+class MockCacheObserver : public internal::FileCacheObserver {
  public:
   MockCacheObserver();
   virtual ~MockCacheObserver();

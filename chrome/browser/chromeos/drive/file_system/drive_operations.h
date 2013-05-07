@@ -12,13 +12,16 @@
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace drive {
 
 class FileSystemInterface;
-class FileCache;
 class JobScheduler;
+
+namespace internal {
+class FileCache;
+}  // namespace internal
 
 namespace file_system {
 
@@ -39,7 +42,7 @@ class DriveOperations {
   // Allocates the operation objects and initializes the operation pointers.
   void Init(JobScheduler* job_scheduler,
             FileSystemInterface* file_system,
-            FileCache* cache,
+            internal::FileCache* cache,
             internal::ResourceMetadata* metadata,
             scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
             OperationObserver* observer);

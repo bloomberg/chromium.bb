@@ -29,6 +29,8 @@ typedef base::Callback<void(const std::string& resource_id,
                             const FileCacheEntry& cache_entry)>
     CacheIterateCallback;
 
+namespace internal {
+
 // FileCacheMetadata is interface to maintain metadata of FileCache's cached
 // files. This class only manages metadata. File operations are done by
 // FileCache.
@@ -91,6 +93,7 @@ class FileCacheMetadata {
   DISALLOW_COPY_AND_ASSIGN(FileCacheMetadata);
 };
 
+}  // namespace internal
 }  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CACHE_METADATA_H_

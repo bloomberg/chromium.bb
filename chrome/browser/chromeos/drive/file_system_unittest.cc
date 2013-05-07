@@ -43,7 +43,7 @@ using ::testing::_;
 namespace drive {
 namespace {
 
-const int64 kLotsOfSpace = kMinFreeSpace * 10;
+const int64 kLotsOfSpace = internal::kMinFreeSpace * 10;
 
 struct SearchResultPair {
   const char* path;
@@ -143,9 +143,9 @@ class DriveFileSystemTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    cache_.reset(new FileCache(util::GetCacheRootPath(profile_.get()),
-                               blocking_task_runner_,
-                               fake_free_disk_space_getter_.get()));
+    cache_.reset(new internal::FileCache(util::GetCacheRootPath(profile_.get()),
+                                         blocking_task_runner_,
+                                         fake_free_disk_space_getter_.get()));
 
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
@@ -162,7 +162,7 @@ class DriveFileSystemTest : public testing::Test {
 
   void SetUpResourceMetadataAndFileSystem() {
     resource_metadata_.reset(new internal::ResourceMetadata(
-        cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
+        cache_->GetCacheDirectoryPath(internal::FileCache::CACHE_TYPE_META),
         blocking_task_runner_));
 
     file_system_.reset(new FileSystem(profile_.get(),
@@ -316,7 +316,7 @@ class DriveFileSystemTest : public testing::Test {
         fake_drive_service_->GetRootResourceId();
     scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
         resource_metadata(new internal::ResourceMetadata(
-            cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
+            cache_->GetCacheDirectoryPath(internal::FileCache::CACHE_TYPE_META),
             blocking_task_runner_));
 
     FileError error = FILE_ERROR_FAILED;
@@ -446,7 +446,7 @@ class DriveFileSystemTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
 
-  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<FileSystem> file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
@@ -1000,7 +1000,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
 
   // Pretend we have enough space.
   fake_free_disk_space_getter_->set_fake_free_disk_space(
-      file_size + kMinFreeSpace);
+      file_size + internal::kMinFreeSpace);
 
   FileError error = FILE_ERROR_FAILED;
   file_system_->TransferFileFromRemoteToLocal(
@@ -1556,7 +1556,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
 
   // Pretend we have enough space.
   fake_free_disk_space_getter_->set_fake_free_disk_space(
-      file_size + kMinFreeSpace);
+      file_size + internal::kMinFreeSpace);
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
@@ -1616,12 +1616,12 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   // but then start reporting we have space. This is to emulate that
   // the disk space was freed up by removing temporary files.
   fake_free_disk_space_getter_->set_fake_free_disk_space(
-      file_size + kMinFreeSpace);
+      file_size + internal::kMinFreeSpace);
   fake_free_disk_space_getter_->set_fake_free_disk_space(0);
   fake_free_disk_space_getter_->set_fake_free_disk_space(
-      file_size + kMinFreeSpace);
+      file_size + internal::kMinFreeSpace);
   fake_free_disk_space_getter_->set_fake_free_disk_space(
-      file_size + kMinFreeSpace);
+      file_size + internal::kMinFreeSpace);
 
   // Store something of the file size in the temporary cache directory.
   const std::string content(file_size, 'x');
@@ -1633,7 +1633,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
 
   FileError error = FILE_ERROR_FAILED;
   cache_->Store("<resource_id>", "<md5>", tmp_file,
-                FileCache::FILE_OPERATION_COPY,
+                internal::FileCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -1666,9 +1666,11 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   // the disk space becomes full after the file is downloaded for some reason
   // (ex. the actual file was larger than the expected size).
   fake_free_disk_space_getter_->set_fake_free_disk_space(
-      file_size + kMinFreeSpace);
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kMinFreeSpace - 1);
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kMinFreeSpace - 1);
+      file_size + internal::kMinFreeSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      internal::kMinFreeSpace - 1);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      internal::kMinFreeSpace - 1);
 
   FileError error = FILE_ERROR_OK;
   base::FilePath file_path;
@@ -1696,7 +1698,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
                 entry->file_specific_info().file_md5(),
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
-                FileCache::FILE_OPERATION_COPY,
+                internal::FileCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -1860,7 +1862,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
                 entry->file_specific_info().file_md5(),
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
-                FileCache::FILE_OPERATION_COPY,
+                internal::FileCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -1908,7 +1910,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
                 // Anything works.
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
-                FileCache::FILE_OPERATION_COPY,
+                internal::FileCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -2098,7 +2100,7 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
 
   // Pretend we have enough space.
   fake_free_disk_space_getter_->set_fake_free_disk_space(
-      file_size + kMinFreeSpace);
+      file_size + internal::kMinFreeSpace);
 
   // Open kFileInRoot ("drive/root/File 1.txt").
   FileError error = FILE_ERROR_FAILED;
@@ -2209,7 +2211,7 @@ TEST_F(DriveFileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
                 entry->file_specific_info().file_md5(),
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
-                FileCache::FILE_OPERATION_COPY,
+                internal::FileCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);

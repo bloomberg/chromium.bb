@@ -24,7 +24,7 @@
 namespace drive {
 namespace {
 
-const int64 kLotsOfSpace = kMinFreeSpace * 10;
+const int64 kLotsOfSpace = internal::kMinFreeSpace * 10;
 
 }  // namespace
 
@@ -54,14 +54,14 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    cache_.reset(new FileCache(util::GetCacheRootPath(profile_.get()),
-                               blocking_task_runner_,
-                               fake_free_disk_space_getter_.get()));
+    cache_.reset(new internal::FileCache(util::GetCacheRootPath(profile_.get()),
+                                         blocking_task_runner_,
+                                         fake_free_disk_space_getter_.get()));
 
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
     resource_metadata_.reset(new internal::ResourceMetadata(
-        cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
+        cache_->GetCacheDirectoryPath(internal::FileCache::CACHE_TYPE_META),
         blocking_task_runner_));
 
     file_system_.reset(new FileSystem(profile_.get(),
@@ -100,7 +100,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<FileSystem> file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
@@ -121,7 +121,8 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
 
   // Create a stale cache file.
   FileError error = FILE_ERROR_OK;
-  cache_->Store(resource_id, md5, dummy_file, FileCache::FILE_OPERATION_COPY,
+  cache_->Store(resource_id, md5, dummy_file,
+                internal::FileCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

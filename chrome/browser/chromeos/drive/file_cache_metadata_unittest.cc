@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
+namespace internal {
 
 class FileCacheMetadataTest : public testing::Test {
  public:
@@ -359,4 +360,5 @@ TEST(FileCacheMetadataExtraTest, CannotOpenDB) {
   EXPECT_FALSE(metadata->Initialize(cache_paths));
 }
 
+}  // namespace internal
 }  // namespace drive

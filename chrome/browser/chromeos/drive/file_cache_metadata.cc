@@ -14,6 +14,7 @@
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace drive {
+namespace internal {
 
 namespace {
 
@@ -573,4 +574,5 @@ void FileCacheMetadata::AssertOnSequencedWorkerPool() {
          blocking_task_runner_->RunsTasksOnCurrentThread());
 }
 
+}  // namespace internal
 }  // namespace drive

@@ -22,6 +22,7 @@
 using content::BrowserThread;
 
 namespace drive {
+namespace internal {
 namespace {
 
 const base::FilePath::CharType kFileCacheMetaDir[] = FILE_PATH_LITERAL("meta");
@@ -1236,4 +1237,5 @@ FileCache::CacheSubDirectoryType FileCache::GetSubDirectoryType(
   return cache_entry.is_persistent() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
 }
 
+}  // namespace internal
 }  // namespace drive

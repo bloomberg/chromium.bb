@@ -33,7 +33,6 @@ namespace drive {
 class DebugInfoCollector;
 class DownloadHandler;
 class DriveWebAppsRegistry;
-class FileCache;
 class FileSystemInterface;
 class FileSystemProxy;
 class FileWriteHelper;
@@ -42,6 +41,7 @@ class StaleCacheFilesRemover;
 class SyncClient;
 
 namespace internal {
+class FileCache;
 class ResourceMetadata;
 }  // namespace internal
 
@@ -158,7 +158,7 @@ class DriveSystemService
   bool drive_disabled_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<FileCache, util::DestroyHelper> cache_;
+  scoped_ptr<internal::FileCache, util::DestroyHelper> cache_;
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;

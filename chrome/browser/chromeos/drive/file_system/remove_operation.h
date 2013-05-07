@@ -8,24 +8,25 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
 
 namespace base {
 class FilePath;
-}
-
-namespace google_apis {
-}
+}  // namespace base
 
 namespace drive {
 
-class FileCache;
 class FileSystem;
 class JobScheduler;
 class ResourceEntry;
+
+namespace internal {
+class FileCache;
+class ResourceMetadata;
+}  // namespace internal
 
 namespace file_system {
 
@@ -37,7 +38,7 @@ class OperationObserver;
 class RemoveOperation {
  public:
   RemoveOperation(JobScheduler* job_scheduler,
-                  FileCache* cache,
+                  internal::FileCache* cache,
                   internal::ResourceMetadata* metadata,
                   OperationObserver* observer);
   virtual ~RemoveOperation();
@@ -73,7 +74,7 @@ class RemoveOperation {
       const base::FilePath& directory_path);
 
   JobScheduler* job_scheduler_;
-  FileCache* cache_;
+  internal::FileCache* cache_;
   internal::ResourceMetadata* metadata_;
   OperationObserver* observer_;
 
