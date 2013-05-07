@@ -59,14 +59,17 @@ WorkerThreadableWebSocketChannel::WorkerThreadableWebSocketChannel(WorkerContext
     : m_workerContext(context)
     , m_workerClientWrapper(ThreadableWebSocketChannelClientWrapper::create(context, client))
     , m_bridge(Bridge::create(m_workerClientWrapper, m_workerContext, taskMode))
-    , m_callFrameAtConnection("", "", 0)
+    , m_lineNumberAtConnection(0)
 {
     // We assume that we can take the JS callstack at WebSocket connection here.
-    ScriptCallFrame frame("", "", 0);
     RefPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
-    if (callStack && callStack->size() > 0)
-        frame = callStack->at(0);
-    m_bridge->initialize(frame);
+    String sourceURL;
+    unsigned lineNumber = 0;
+    if (callStack && callStack->size()) {
+        sourceURL = callStack->at(0).sourceURL();
+        lineNumber = callStack->at(0).lineNumber();
+    }
+    m_bridge->initialize(sourceURL, lineNumber);
 }
 
 WorkerThreadableWebSocketChannel::~WorkerThreadableWebSocketChannel()
@@ -77,8 +80,11 @@ WorkerThreadableWebSocketChannel::~WorkerThreadableWebSocketChannel()
 
 void WorkerThreadableWebSocketChannel::connect(const KURL& url, const String& protocol)
 {
-    RefPtr<ScriptCallStack> callstack = createScriptCallStack(1, true);
-    m_callFrameAtConnection = (callstack && callstack->size() > 0) ? callstack->at(0) : ScriptCallFrame("", "", 0);
+    RefPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
+    if (callStack && callStack->size()) {
+        m_sourceURLAtConnection = callStack->at(0).sourceURL();
+        m_lineNumberAtConnection = callStack->at(0).lineNumber();
+    }
     if (m_bridge)
         m_bridge->connect(url, protocol);
 }
@@ -129,24 +135,25 @@ void WorkerThreadableWebSocketChannel::close(int code, const String& reason)
         m_bridge->close(code, reason);
 }
 
-void WorkerThreadableWebSocketChannel::fail(const String& reason, MessageLevel level, PassOwnPtr<CallStackWrapper> callStack)
+void WorkerThreadableWebSocketChannel::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
-    if (m_bridge)
-        m_bridge->fail(reason, level, callStack);
-}
+    if (!m_bridge)
+        return;
 
-void WorkerThreadableWebSocketChannel::fail(const String& reason, MessageLevel level)
-{
-    RefPtr<ScriptCallStack> callStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
-    if (!callStack || !callStack->size()) {
-        Vector<ScriptCallFrame> frames;
-        frames.append(m_callFrameAtConnection);
-        callStack = ScriptCallStack::create(frames);
+    RefPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
+    if (callStack && callStack->size())  {
+        // In order to emulate the ConsoleMessage behavior,
+        // we should ignore the specified url and line number if
+        // we can get the JavaScript context.
+        m_bridge->fail(reason, level, callStack->at(0).sourceURL(), callStack->at(0).lineNumber());
+    } else if (sourceURL.isEmpty() && !lineNumber) {
+        // No information is specified by the caller - use the url
+        // and the line number at the connection.
+        m_bridge->fail(reason, level, m_sourceURLAtConnection, m_lineNumberAtConnection);
+    } else {
+        // Use the specified information.
+        m_bridge->fail(reason, level, sourceURL, lineNumber);
     }
-    Vector<ScriptCallFrame> frames;
-    for (size_t i = 0; i < callStack->size(); ++i)
-        frames.append(callStack->at(i));
-    fail(reason, level, adoptPtr<CallStackWrapper>(callStack ? new CallStackWrapper(frames) : 0));
 }
 
 void WorkerThreadableWebSocketChannel::disconnect()
@@ -169,7 +176,7 @@ void WorkerThreadableWebSocketChannel::resume()
         m_bridge->resume();
 }
 
-WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, WorkerLoaderProxy& loaderProxy, ScriptExecutionContext* context, const String& taskMode, const ScriptCallFrame& frame)
+WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, WorkerLoaderProxy& loaderProxy, ScriptExecutionContext* context, const String& taskMode, const String& sourceURL, unsigned lineNumber)
     : m_workerClientWrapper(clientWrapper)
     , m_loaderProxy(loaderProxy)
     , m_mainWebSocketChannel(0)
@@ -177,9 +184,9 @@ WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<ThreadableWebSocketChann
 {
     if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
         // FIXME: Create an "experimental" WebSocketChannel instead of a MainThreadWebSocketChannel.
-        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(toDocument(context), this, frame);
+        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(toDocument(context), this, sourceURL, lineNumber);
     } else
-        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(toDocument(context), this, frame);
+        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(toDocument(context), this, sourceURL, lineNumber);
     ASSERT(isMainThread());
 }
 
@@ -254,12 +261,12 @@ void WorkerThreadableWebSocketChannel::Peer::close(int code, const String& reaso
     m_mainWebSocketChannel->close(code, reason);
 }
 
-void WorkerThreadableWebSocketChannel::Peer::fail(const String& reason, MessageLevel level, PassOwnPtr<CallStackWrapper> callStack)
+void WorkerThreadableWebSocketChannel::Peer::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
     ASSERT(isMainThread());
     if (!m_mainWebSocketChannel)
         return;
-    m_mainWebSocketChannel->fail(reason, level, callStack);
+    m_mainWebSocketChannel->fail(reason, level, sourceURL, lineNumber);
 }
 
 void WorkerThreadableWebSocketChannel::Peer::disconnect()
@@ -430,7 +437,7 @@ void WorkerThreadableWebSocketChannel::Bridge::mainThreadInitialize(ScriptExecut
 
     RefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper = prpClientWrapper;
 
-    Peer* peer = Peer::create(clientWrapper, *loaderProxy, context, taskMode, ScriptCallFrame("", sourceURL, lineNumber));
+    Peer* peer = Peer::create(clientWrapper, *loaderProxy, context, taskMode, sourceURL, lineNumber);
     bool sent = loaderProxy->postTaskForModeToWorkerContext(
         WorkerThreadableWebSocketChannel::WorkerContextDidInitializeTask::create(peer, loaderProxy, clientWrapper), taskMode);
     if (!sent) {
@@ -439,13 +446,13 @@ void WorkerThreadableWebSocketChannel::Bridge::mainThreadInitialize(ScriptExecut
     }
 }
 
-void WorkerThreadableWebSocketChannel::Bridge::initialize(const ScriptCallFrame& frame)
+void WorkerThreadableWebSocketChannel::Bridge::initialize(const String& sourceURL, unsigned lineNumber)
 {
     ASSERT(!m_peer);
     setMethodNotCompleted();
     RefPtr<Bridge> protect(this);
     m_loaderProxy.postTaskToLoader(
-        createCallbackTask(&Bridge::mainThreadInitialize, AllowCrossThreadAccess(&m_loaderProxy), m_workerClientWrapper, m_taskMode, frame.sourceURL(), frame.lineNumber()));
+        createCallbackTask(&Bridge::mainThreadInitialize, AllowCrossThreadAccess(&m_loaderProxy), m_workerClientWrapper, m_taskMode, sourceURL, lineNumber));
     waitForMethodCompletion();
     // m_peer may be null when the nested runloop exited before a peer has created.
     m_peer = m_workerClientWrapper->peer();
@@ -584,20 +591,20 @@ void WorkerThreadableWebSocketChannel::Bridge::close(int code, const String& rea
     m_loaderProxy.postTaskToLoader(createCallbackTask(&WorkerThreadableWebSocketChannel::mainThreadClose, AllowCrossThreadAccess(m_peer), code, reason));
 }
 
-void WorkerThreadableWebSocketChannel::mainThreadFail(ScriptExecutionContext* context, Peer* peer, const String& reason, MessageLevel level, PassOwnPtr<CallStackWrapper> callStack)
+void WorkerThreadableWebSocketChannel::mainThreadFail(ScriptExecutionContext* context, Peer* peer, const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
     ASSERT(isMainThread());
     ASSERT_UNUSED(context, context->isDocument());
     ASSERT(peer);
 
-    peer->fail(reason, level, callStack);
+    peer->fail(reason, level, sourceURL, lineNumber);
 }
 
-void WorkerThreadableWebSocketChannel::Bridge::fail(const String& reason, MessageLevel level, PassOwnPtr<CallStackWrapper> callStack)
+void WorkerThreadableWebSocketChannel::Bridge::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
     if (!m_peer)
         return;
-    m_loaderProxy.postTaskToLoader(createCallbackTask(&WorkerThreadableWebSocketChannel::mainThreadFail, AllowCrossThreadAccess(m_peer), reason, level, callStack));
+    m_loaderProxy.postTaskToLoader(createCallbackTask(&WorkerThreadableWebSocketChannel::mainThreadFail, AllowCrossThreadAccess(m_peer), reason, level, sourceURL, lineNumber));
 }
 
 void WorkerThreadableWebSocketChannel::mainThreadDestroy(ScriptExecutionContext* context, PassOwnPtr<Peer> peer)

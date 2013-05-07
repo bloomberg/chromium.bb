@@ -31,7 +31,6 @@
 #ifndef WorkerThreadableWebSocketChannel_h
 #define WorkerThreadableWebSocketChannel_h
 
-#include "core/inspector/ScriptCallFrame.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/workers/WorkerContext.h"
 #include "modules/websockets/WebSocketChannel.h"
@@ -72,8 +71,7 @@ public:
     virtual WebSocketChannel::SendResult send(const Blob&) OVERRIDE;
     virtual unsigned long bufferedAmount() const OVERRIDE;
     virtual void close(int code, const String& reason) OVERRIDE;
-    virtual void fail(const String& reason, MessageLevel) OVERRIDE;
-    virtual void fail(const String& reason, MessageLevel, PassOwnPtr<CallStackWrapper>) OVERRIDE;
+    virtual void fail(const String& reason, MessageLevel, const String&, unsigned) OVERRIDE;
     virtual void disconnect() OVERRIDE; // Will suppress didClose().
     virtual void suspend() OVERRIDE;
     virtual void resume() OVERRIDE;
@@ -83,12 +81,11 @@ public:
     class Peer : public WebSocketChannelClient {
         WTF_MAKE_NONCOPYABLE(Peer); WTF_MAKE_FAST_ALLOCATED;
     public:
-        // The ScriptCallFrame parameter provides the source filename and
-        // the line number information at the connection initiation, which may
+        // sourceURLAtConnection and lineNumberAtConnection parameters may
         // be shown when the connection fails.
-        static Peer* create(PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, WorkerLoaderProxy& loaderProxy, ScriptExecutionContext* context, const String& taskMode, const ScriptCallFrame& frame)
+        static Peer* create(PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, WorkerLoaderProxy& loaderProxy, ScriptExecutionContext* context, const String& taskMode, const String& sourceURLAtConnection, unsigned lineNumberAtConnection)
         {
-            return new Peer(clientWrapper, loaderProxy, context, taskMode, frame);
+            return new Peer(clientWrapper, loaderProxy, context, taskMode, sourceURLAtConnection, lineNumberAtConnection);
         }
         ~Peer();
 
@@ -98,7 +95,7 @@ public:
         void send(const Blob&);
         void bufferedAmount();
         void close(int code, const String& reason);
-        void fail(const String& reason, MessageLevel, PassOwnPtr<CallStackWrapper>);
+        void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
         void disconnect();
         void suspend();
         void resume();
@@ -113,7 +110,7 @@ public:
         virtual void didReceiveMessageError() OVERRIDE;
 
     private:
-        Peer(PassRefPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, ScriptExecutionContext*, const String& taskMode, const ScriptCallFrame&);
+        Peer(PassRefPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, ScriptExecutionContext*, const String& taskMode, const String& sourceURL, unsigned lineNumber);
 
         RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
         WorkerLoaderProxy& m_loaderProxy;
@@ -138,17 +135,16 @@ private:
             return adoptRef(new Bridge(workerClientWrapper, workerContext, taskMode));
         }
         ~Bridge();
-        // The ScriptCallFrame parameter provides the source filename and
-        // the line number information at the connection initiation, which may
+        // sourceURLAtConnection and lineNumberAtConnection parameters may
         // be shown when the connection fails.
-        void initialize(const ScriptCallFrame&);
+        void initialize(const String& sourceURLAtConnection, unsigned lineNumberAtConnection);
         void connect(const KURL&, const String& protocol);
         WebSocketChannel::SendResult send(const String& message);
         WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength);
         WebSocketChannel::SendResult send(const Blob&);
         unsigned long bufferedAmount();
         void close(int code, const String& reason);
-        void fail(const String& reason, MessageLevel, PassOwnPtr<CallStackWrapper>);
+        void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
         void disconnect();
         void suspend();
         void resume();
@@ -188,7 +184,7 @@ private:
     static void mainThreadSendBlob(ScriptExecutionContext*, Peer*, const KURL&, const String& type, long long size);
     static void mainThreadBufferedAmount(ScriptExecutionContext*, Peer*);
     static void mainThreadClose(ScriptExecutionContext*, Peer*, int code, const String& reason);
-    static void mainThreadFail(ScriptExecutionContext*, Peer*, const String& reason, MessageLevel, PassOwnPtr<CallStackWrapper>);
+    static void mainThreadFail(ScriptExecutionContext*, Peer*, const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
     static void mainThreadDestroy(ScriptExecutionContext*, PassOwnPtr<Peer>);
     static void mainThreadSuspend(ScriptExecutionContext*, Peer*);
     static void mainThreadResume(ScriptExecutionContext*, Peer*);
@@ -198,7 +194,8 @@ private:
     RefPtr<WorkerContext> m_workerContext;
     RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
     RefPtr<Bridge> m_bridge;
-    ScriptCallFrame m_callFrameAtConnection;
+    String m_sourceURLAtConnection;
+    unsigned m_lineNumberAtConnection;
 };
 
 } // namespace WebCore

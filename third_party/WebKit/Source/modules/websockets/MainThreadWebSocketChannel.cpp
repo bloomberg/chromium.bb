@@ -72,7 +72,7 @@ namespace WebCore {
 
 const double TCPMaximumSegmentLifetime = 2 * 60.0;
 
-MainThreadWebSocketChannel::MainThreadWebSocketChannel(Document* document, WebSocketChannelClient* client, const ScriptCallFrame& callFrame)
+MainThreadWebSocketChannel::MainThreadWebSocketChannel(Document* document, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
     : m_document(document)
     , m_client(client)
     , m_resumeTimer(this, &MainThreadWebSocketChannel::resumeTimerFired)
@@ -89,7 +89,8 @@ MainThreadWebSocketChannel::MainThreadWebSocketChannel(Document* document, WebSo
     , m_closeEventCode(CloseEventCodeAbnormalClosure)
     , m_outgoingFrameQueueStatus(OutgoingFrameQueueOpen)
     , m_blobLoaderStatus(BlobLoaderNotStarted)
-    , m_callFrameAtConnection(callFrame)
+    , m_sourceURLAtConnection(sourceURL)
+    , m_lineNumberAtConnection(lineNumber)
 {
     if (Page* page = m_document->page())
         m_identifier = createUniqueIdentifier();
@@ -114,8 +115,10 @@ void MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
     ref();
     m_handle = SocketStreamHandle::create(m_handshake->url(), this);
     RefPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
-    if (callStack && callStack->size() > 0)
-        m_callFrameAtConnection = callStack->at(0);
+    if (callStack && callStack->size()) {
+        m_sourceURLAtConnection = callStack->at(0).sourceURL();
+        m_lineNumberAtConnection = callStack->at(0).lineNumber();
+    }
 }
 
 String MainThreadWebSocketChannel::subprotocol()
@@ -198,43 +201,15 @@ void MainThreadWebSocketChannel::close(int code, const String& reason)
         m_closingTimer.startOneShot(2 * TCPMaximumSegmentLifetime);
 }
 
-void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level)
-{
-    fail(reason, level, PassOwnPtr<CallStackWrapper>());
-}
-
-void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, PassOwnPtr<CallStackWrapper> wrapper)
+void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
     LOG(Network, "MainThreadWebSocketChannel %p fail() reason='%s'", this, reason.utf8().data());
     ASSERT(!m_suspended);
     if (m_document) {
         InspectorInstrumentation::didReceiveWebSocketFrameError(m_document, m_identifier, reason);
         const String message = "WebSocket connection to '" + m_handshake->url().elidedString() + "' failed: " + reason;
-        RefPtr<ScriptCallStack> callStack = wrapper ? wrapper->createCallStack() : 0;
-        if (callStack && callStack->size() > 0) {
-            String url = callStack->at(0).sourceURL();
-            unsigned lineNumber = callStack->at(0).lineNumber();
-            static_cast<ScriptExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, level, message, url, lineNumber);
-        } else {
-            RefPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
-            if (callStack && callStack->size() > 0) {
-                // We are in a JS callstack.
-                // So, the addConsoleMessage method will show the stack appropriately.
-                m_document->addConsoleMessage(JSMessageSource, level, message);
-            } else {
-                // We are not in a JS callstack.
-                // Then show the source file and the line number at the connection initiation.
-                const String& url = m_callFrameAtConnection.sourceURL();
-                unsigned lineNumber = m_callFrameAtConnection.lineNumber();
-                static_cast<ScriptExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, level, message, url, lineNumber);
-            }
-        }
+        static_cast<ScriptExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, level, message, sourceURL, lineNumber);
     }
-    failInternal();
-}
-
-void MainThreadWebSocketChannel::failInternal()
-{
     // Hybi-10 specification explicitly states we must not continue to handle incoming data
     // once the WebSocket connection is failed (section 7.1.7).
     RefPtr<MainThreadWebSocketChannel> protect(this); // The client can close the channel, potentially removing the last reference.
