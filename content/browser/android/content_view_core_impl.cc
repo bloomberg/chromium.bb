@@ -16,6 +16,7 @@
 #include "cc/layers/layer.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
+#include "content/browser/android/media_player_manager_impl.h"
 #include "content/browser/android/sync_input_event_filter.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -588,32 +589,23 @@ void ContentViewCoreImpl::ShowDisambiguationPopup(
                                                java_bitmap.obj());
 }
 
-void ContentViewCoreImpl::RequestExternalVideoSurface(int player_id) {
+void ContentViewCoreImpl::NotifyExternalSurface(
+    int player_id, bool is_request, const gfx::RectF& rect) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
 
-  Java_ContentViewCore_requestExternalVideoSurface(
-      env, obj.obj(), static_cast<jint>(player_id));
-}
-
-void ContentViewCoreImpl::NotifyGeometryChange(int player_id,
-                                               const gfx::RectF& rect) {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-
-  Java_ContentViewCore_notifyGeometryChange(env,
-                                            obj.obj(),
-                                            static_cast<jint>(player_id),
-                                            static_cast<jfloat>(rect.x()),
-                                            static_cast<jfloat>(rect.y()),
-                                            static_cast<jfloat>(rect.width()),
-                                            static_cast<jfloat>(rect.height()));
+  Java_ContentViewCore_notifyExternalSurface(
+      env,
+      obj.obj(),
+      static_cast<jint>(player_id),
+      static_cast<jboolean>(is_request),
+      static_cast<jfloat>(rect.x()),
+      static_cast<jfloat>(rect.y()),
+      static_cast<jfloat>(rect.width()),
+      static_cast<jfloat>(rect.height()));
 }
 
 gfx::Size ContentViewCoreImpl::GetPhysicalBackingSize() const {

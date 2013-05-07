@@ -55,15 +55,10 @@ void WebContentsViewAndroid::SetContentViewCore(
 }
 
 #if defined(GOOGLE_TV)
-void WebContentsViewAndroid::RequestExternalVideoSurface(int player_id) {
+void WebContentsViewAndroid::NotifyExternalSurface(
+    int player_id, bool is_request, const gfx::RectF& rect) {
   if (content_view_core_)
-    content_view_core_->RequestExternalVideoSurface(player_id);
-}
-
-void WebContentsViewAndroid::NotifyGeometryChange(int player_id,
-                                                  const gfx::RectF& rect) {
-  if (content_view_core_)
-    content_view_core_->NotifyGeometryChange(player_id, rect);
+    content_view_core_->NotifyExternalSurface(player_id, is_request, rect);
 }
 #endif
 

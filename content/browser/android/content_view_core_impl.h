@@ -269,8 +269,10 @@ class ContentViewCoreImpl : public ContentViewCore,
   void ShowDisambiguationPopup(
       const gfx::Rect& target_rect, const SkBitmap& zoomed_bitmap);
 
-  void RequestExternalVideoSurface(int player_id);
-  void NotifyGeometryChange(int player_id, const gfx::RectF& rect);
+  // Notifies the java object about the external surface, requesting for one if
+  // necessary.
+  void NotifyExternalSurface(
+      int player_id, bool is_request, const gfx::RectF& rect);
 
   // --------------------------------------------------------------------------
   // Methods called from native code

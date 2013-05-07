@@ -30,8 +30,9 @@ class WebContentsViewAndroid : public WebContentsViewPort,
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
 
 #if defined(GOOGLE_TV)
-  void RequestExternalVideoSurface(int player_id);
-  void NotifyGeometryChange(int player_id, const gfx::RectF& rect);
+  void NotifyExternalSurface(int player_id,
+                             bool is_request,
+                             const gfx::RectF& rect);
 #endif
 
   // WebContentsView implementation --------------------------------------------

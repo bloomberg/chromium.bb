@@ -46,7 +46,8 @@ class WebMediaPlayerProxyImplAndroid
   virtual void EnterFullscreen(int player_id) OVERRIDE;
   virtual void ExitFullscreen(int player_id) OVERRIDE;
 #if defined(GOOGLE_TV)
-  virtual void RequestExternalSurface(int player_id) OVERRIDE;
+  virtual void RequestExternalSurface(
+      int player_id, const gfx::RectF& geometry) OVERRIDE;
   virtual void DemuxerReady(
       int player_id,
       const media::MediaPlayerHostMsg_DemuxerReady_Params& params) OVERRIDE;

@@ -173,13 +173,10 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_ExitFullscreen,
                     int /* player_id */)
 
 #if defined(GOOGLE_TV)
-// Request the player to use external surface for rendering.
-IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestExternalSurface,
-                    int /* player_id */)
-
-// Request the player to use external surface for rendering.
-IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_NotifyGeometryChange,
+// Notify the player about the external surface, requesting it if necessary.
+IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_NotifyExternalSurface,
                     int /* player_id */,
+                    bool /* is_request */,
                     gfx::RectF /* rect */)
 
 // Inform the media source player that the demuxer is ready.

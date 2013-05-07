@@ -46,10 +46,8 @@ bool MediaPlayerManagerImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyAllMediaPlayers,
                         DestroyAllMediaPlayers)
 #if defined(GOOGLE_TV)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_RequestExternalSurface,
-                        OnRequestExternalSurface)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyGeometryChange,
-                        OnNotifyGeometryChange)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyExternalSurface,
+                        OnNotifyExternalSurface)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DemuxerReady,
                         OnDemuxerReady)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ReadFromDemuxerAck,
@@ -234,25 +232,15 @@ void MediaPlayerManagerImpl::DetachExternalVideoSurface(int player_id) {
     player->SetVideoSurface(NULL);
 }
 
-void MediaPlayerManagerImpl::OnRequestExternalSurface(int player_id) {
+void MediaPlayerManagerImpl::OnNotifyExternalSurface(
+    int player_id, bool is_request, const gfx::RectF& rect) {
   if (!web_contents_)
     return;
 
   WebContentsViewAndroid* view =
       static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
   if (view)
-    view->RequestExternalVideoSurface(player_id);
-}
-
-void MediaPlayerManagerImpl::OnNotifyGeometryChange(int player_id,
-                                                       const gfx::RectF& rect) {
-  if (!web_contents_)
-    return;
-
-  WebContentsViewAndroid* view =
-      static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
-  if (view)
-    view->NotifyGeometryChange(player_id, rect);
+    view->NotifyExternalSurface(player_id, is_request, rect);
 }
 
 void MediaPlayerManagerImpl::OnDemuxerReady(

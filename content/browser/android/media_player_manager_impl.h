@@ -97,8 +97,8 @@ class MediaPlayerManagerImpl
   void OnReleaseResources(int player_id);
   void OnDestroyPlayer(int player_id);
 #if defined(GOOGLE_TV)
-  void OnRequestExternalSurface(int player_id);
-  void OnNotifyGeometryChange(int player_id, const gfx::RectF& rect);
+  void OnNotifyExternalSurface(
+      int player_id, bool is_request, const gfx::RectF& rect);
   void OnDemuxerReady(
       int player_id,
       const media::MediaPlayerHostMsg_DemuxerReady_Params& params);

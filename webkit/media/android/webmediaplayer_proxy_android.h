@@ -51,7 +51,8 @@ class WebMediaPlayerProxyAndroid {
 
 #if defined(GOOGLE_TV)
   // Request an external surface for out-of-band compositing.
-  virtual void RequestExternalSurface(int player_id) = 0;
+  virtual void RequestExternalSurface(int player_id,
+                                      const gfx::RectF& geometry) = 0;
 
   // Inform the media source player that the demuxer is ready.
   virtual void DemuxerReady(

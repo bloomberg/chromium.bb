@@ -141,7 +141,7 @@ void WebMediaPlayerAndroid::play() {
   if (hasVideo() && needs_external_surface_) {
     DCHECK(!needs_establish_peer_);
     if (proxy_)
-      proxy_->RequestExternalSurface(player_id_);
+      proxy_->RequestExternalSurface(player_id_, last_computed_rect_);
   }
 #endif
   if (hasVideo() && needs_establish_peer_)
@@ -471,7 +471,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
     needs_external_surface_ = true;
     SetNeedsEstablishPeer(false);
     if (!paused() && proxy_)
-      proxy_->RequestExternalSurface(player_id_);
+      proxy_->RequestExternalSurface(player_id_, last_computed_rect_);
   }
 #endif
 
