@@ -88,9 +88,10 @@ embedder.requestClose_ = function(webview, testName) {
 };
 
 /** @private */
-embedder.assertCorrectEvent_ = function(e) {
+embedder.assertCorrectEvent_ = function(e, guestName) {
   chrome.test.assertEq('newwindow', e.type);
   chrome.test.assertTrue(!!e.targetUrl);
+  chrome.test.assertEq(guestName, e.name);
 };
 
 // Tests begin.
@@ -104,7 +105,7 @@ var testNewWindowName = function(testName,
 
   var onNewWindow = function(e) {
     chrome.test.log('Embedder notified on newwindow');
-    embedder.assertCorrectEvent_(e);
+    embedder.assertCorrectEvent_(e, guestName);
 
     var newwebview = document.createElement('webview');
     newwebview.setAttribute('name', webViewName);
@@ -169,7 +170,7 @@ embedder.tests.testNewWindowClose = function testNewWindowClose() {
 
   var onNewWindow = function(e) {
     chrome.test.log('Embedder notified on newwindow');
-    embedder.assertCorrectEvent_(e);
+    embedder.assertCorrectEvent_(e, '');
 
     var newwebview = document.createElement('webview');
     document.querySelector('#webview-tag-container').appendChild(newwebview);

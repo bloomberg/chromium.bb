@@ -460,18 +460,20 @@ class CONTENT_EXPORT BrowserPluginGuest
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;
 
-  // Tracks the target URL of the new window and whether or not it has changed
-  // since the WebContents has been created and before the new window has been
-  // attached to a BrowserPlugin. Once the first navigation commits, we no
-  // longer track this URL.
-  struct TargetURL {
+  // Tracks the name, and target URL of the new window and whether or not it has
+  // changed since the WebContents has been created and before the new window
+  // has been attached to a BrowserPlugin. Once the first navigation commits, we
+  // no longer track this information.
+  struct NewWindowInfo {
     bool changed;
     GURL url;
-    explicit TargetURL(const GURL& url) :
+    std::string name;
+    NewWindowInfo(const GURL& url, const std::string& name) :
         changed(false),
-        url(url) {}
+        url(url),
+        name(name) {}
   };
-  typedef std::map<BrowserPluginGuest*, TargetURL> PendingWindowMap;
+  typedef std::map<BrowserPluginGuest*, NewWindowInfo> PendingWindowMap;
   PendingWindowMap pending_new_windows_;
   base::WeakPtr<BrowserPluginGuest> opener_;
   // A counter to generate a unique request id for a permission request.
