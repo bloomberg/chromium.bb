@@ -348,6 +348,9 @@ LRESULT InputMethodWin::OnImeRequest(UINT message,
     case IMR_DOCUMENTFEED:
       *handled = TRUE;
       return OnDocumentFeed(reinterpret_cast<RECONVERTSTRING*>(lparam));
+    case IMR_QUERYCHARPOSITION:
+      *handled = TRUE;
+      return OnQueryCharPosition(reinterpret_cast<IMECHARPOSITION*>(lparam));
     default:
       return 0;
   }
@@ -513,6 +516,27 @@ LRESULT InputMethodWin::OnReconvertString(RECONVERTSTRING* reconv) {
   // IMR_DOCUMENTFEED should return reconv, but some applications return
   // need_size.
   return reinterpret_cast<LRESULT>(reconv);
+}
+
+LRESULT InputMethodWin::OnQueryCharPosition(IMECHARPOSITION* char_positon) {
+  if (!char_positon)
+    return 0;
+
+  if (char_positon->dwSize < sizeof(IMECHARPOSITION))
+    return 0;
+
+  ui::TextInputClient* client = GetTextInputClient();
+  if (!client)
+    return 0;
+
+  gfx::Rect rect;
+  if (!client->GetCompositionCharacterBounds(char_positon->dwCharPos, &rect))
+    return 0;
+
+  char_positon->pt.x = rect.x();
+  char_positon->pt.y = rect.y();
+  char_positon->cLineHeight = rect.height();
+  return 1;  // returns non-zero value when succeeded.
 }
 
 void InputMethodWin::ConfirmCompositionText() {

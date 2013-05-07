@@ -81,8 +81,9 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
   // For both WM_DEADCHAR and WM_SYSDEADCHAR
   LRESULT OnDeadChar(UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
 
-  LRESULT OnDocumentFeed(RECONVERTSTRING *reconv);
-  LRESULT OnReconvertString(RECONVERTSTRING *reconv);
+  LRESULT OnDocumentFeed(RECONVERTSTRING* reconv);
+  LRESULT OnReconvertString(RECONVERTSTRING* reconv);
+  LRESULT OnQueryCharPosition(IMECHARPOSITION* char_positon);
 
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
