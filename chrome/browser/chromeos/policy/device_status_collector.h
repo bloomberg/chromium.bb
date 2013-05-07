@@ -98,12 +98,15 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider,
   class Context : public base::RefCountedThreadSafe<Context> {
    public:
     Context();
-    virtual ~Context();
 
     void GetLocationUpdate(
         const content::GeolocationProvider::LocationUpdateCallback& callback);
 
    private:
+    friend class base::RefCountedThreadSafe<Context>;
+
+    ~Context();
+
     void GetLocationUpdateInternal();
     void OnLocationUpdate(const content::Geoposition& geoposition);
     void CallCollector(const content::Geoposition& geoposition);
