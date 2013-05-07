@@ -845,7 +845,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_MediaAccessAPIDeny) {
       "platform_apps/web_view/media_access/deny")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow) {
+// Disabled for being flaky: http://crbug.com/238662
+#if defined(OS_CHROMEOS)
+#define MAYBE_MediaAccessAPIAllow DISABLED_MediaAccessAPIAllow
+#else
+#define MAYBE_MediaAccessAPIAllow MediaAccessAPIAllow
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_MediaAccessAPIAllow) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   ExtensionTestMessageListener launched_listener("Launched", false);
   LoadAndLaunchPlatformApp("web_view/media_access/allow");
