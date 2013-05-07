@@ -874,6 +874,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="InstantExtended.InstantNavigation"
+    enum="InstantExtended_InstantNavigation">
+  <summary>
+    Records a histogram for instant extended (Local NTP and Online NTP) and
+    non-extended navigations.
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.IDB.IOError" enum="LevelDBIOErrorMethods">
   <summary>
     Methods where leveldb's Chromium environment has IO errors when being used
@@ -9262,6 +9270,14 @@ other types of suffix sets.
   <int value="2" label="Transaction()"/>
   <int value="3" label="DeleteDatabase()"/>
   <int value="4" label="Open()"/>
+</enum>
+
+<enum name="InstantExtended_InstantNavigation" type="int">
+  <int value="0" label="Local click"/>
+  <int value="1" label="Local submit"/>
+  <int value="2" label="Online click"/>
+  <int value="3" label="Online submit"/>
+  <int value="4" label="Non-extended navigation"/>
 </enum>
 
 <enum name="IntelMaxMicroArchitecture" type="int">
