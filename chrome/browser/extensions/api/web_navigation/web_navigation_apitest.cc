@@ -390,20 +390,33 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, GetFrame) {
       RunExtensionSubtest("webnavigation", "test_getFrame.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ClientRedirect) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_ClientRedirect DISABLED_ClientRedirect
+#else
+#define MAYBE_ClientRedirect ClientRedirect
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_ClientRedirect) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_clientRedirect.html"))
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_ServerRedirect DISABLED_ServerRedirect
+#else
+#define MAYBE_ServerRedirect ServerRedirect
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_ServerRedirect) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_serverRedirect.html"))
           << message_;
 }
 
-// http://crbug.com/235171
-#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(USE_AURA))
+// http://crbug.com/235171 and http://crbug.com/238737 for windows.
+#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(USE_AURA)) || \
+    defined(OS_WIN)
 #define MAYBE_ServerRedirectSingleProcess DISABLED_ServerRedirectSingleProcess
 #else
 #define MAYBE_ServerRedirectSingleProcess ServerRedirectSingleProcess
@@ -439,18 +452,36 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest,
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ForwardBack) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_ForwardBack DISABLED_ForwardBack
+#else
+#define MAYBE_ForwardBack ForwardBack
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_ForwardBack) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_forwardBack.html"))
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, IFrame) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_IFrame DISABLED_IFrame
+#else
+#define MAYBE_IFrame IFrame
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_IFrame) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_iframe.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SrcDoc) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_SrcDoc DISABLED_SrcDoc
+#else
+#define MAYBE_SrcDoc SrcDoc
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_SrcDoc) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_srcdoc.html")) << message_;
 }
@@ -460,28 +491,58 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, OpenTab) {
       RunExtensionSubtest("webnavigation", "test_openTab.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ReferenceFragment) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_ReferenceFragment DISABLED_ReferenceFragment
+#else
+#define MAYBE_ReferenceFragment ReferenceFragment
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_ReferenceFragment) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_referenceFragment.html"))
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SimpleLoad) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_SimpleLoad DISABLED_SimpleLoad
+#else
+#define MAYBE_SimpleLoad SimpleLoad
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_SimpleLoad) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_simpleLoad.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Failures) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_Failures DISABLED_Failures
+#else
+#define MAYBE_Failures Failures
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Failures) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_failures.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, FilteredTest) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_FilteredTest DISABLED_FilteredTest
+#else
+#define MAYBE_FilteredTest FilteredTest
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_FilteredTest) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_filtered.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_UserAction DISABLED_UserAction
+#else
+#define MAYBE_UserAction UserAction
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_UserAction) {
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_userAction.html")) << message_;
@@ -515,7 +576,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, RequestOpenTab) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_RequestOpenTab DISABLED_RequestOpenTab
+#else
+#define MAYBE_RequestOpenTab RequestOpenTab
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_RequestOpenTab) {
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_requestOpenTab.html"))
       << message_;
@@ -547,7 +614,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, RequestOpenTab) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlank) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_TargetBlank DISABLED_TargetBlank
+#else
+#define MAYBE_TargetBlank TargetBlank
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_TargetBlank) {
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_targetBlank.html"))
       << message_;
@@ -578,7 +651,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlank) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlankIncognito) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_TargetBlankIncognito DISABLED_TargetBlankIncognito
+#else
+#define MAYBE_TargetBlankIncognito TargetBlankIncognito
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_TargetBlankIncognito) {
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionSubtest(
       "webnavigation", "test_targetBlank.html",
@@ -608,13 +687,25 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlankIncognito) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, History) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_History DISABLED_History
+#else
+#define MAYBE_History History
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_History) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_history.html"))
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcess) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_CrossProcess DISABLED_CrossProcess
+#else
+#define MAYBE_CrossProcess CrossProcess
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_CrossProcess) {
   LoadExtension(test_data_dir_.AppendASCII("webnavigation").AppendASCII("app"));
   LoadExtension(test_data_dir_.AppendASCII("webnavigation"));
 
@@ -635,7 +726,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcess) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessFragment) {
+// http://crbug.com/238737
+#if defined(OS_WIN)
+#define MAYBE_CrossProcessFragment DISABLED_CrossProcessFragment
+#else
+#define MAYBE_CrossProcessFragment CrossProcessFragment
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_CrossProcessFragment) {
   LoadExtension(test_data_dir_.AppendASCII("webnavigation"));
 
   ExtensionService* service = extensions::ExtensionSystem::Get(
