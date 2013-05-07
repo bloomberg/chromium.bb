@@ -137,6 +137,9 @@ void MessageCenterSettingsController::GetNotifierList(
                    base::Unretained(this), url),
         favicon_tracker_.get());
   }
+
+  // Screenshot notification feature is only for ChromeOS. See crbug.com/238358
+#if defined(OS_CHROMEOS)
   const string16 screenshot_name =
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME);
   message_center::Notifier* const screenshot_notifier =
@@ -149,6 +152,8 @@ void MessageCenterSettingsController::GetNotifierList(
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_SCREENSHOT_NOTIFICATION_ICON);
   notifiers->push_back(screenshot_notifier);
+#endif
+
   if (comparator) {
     std::sort(notifiers->begin() + app_count, notifiers->end(), *comparator);
   } else {
