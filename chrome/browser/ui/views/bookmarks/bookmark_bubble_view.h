@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
+#include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
 #include "googleurl/src/gurl.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"

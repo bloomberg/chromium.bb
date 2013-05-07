@@ -279,6 +279,8 @@
         'browser/ui/bookmarks/bookmark_tab_helper_delegate.h',
         'browser/ui/bookmarks/bookmark_utils.cc',
         'browser/ui/bookmarks/bookmark_utils.h',
+        'browser/ui/bookmarks/recently_used_folders_combo_model.cc',
+        'browser/ui/bookmarks/recently_used_folders_combo_model.h',
         'browser/ui/browser.cc',
         'browser/ui/browser.h',
         'browser/ui/browser_commands.cc',
