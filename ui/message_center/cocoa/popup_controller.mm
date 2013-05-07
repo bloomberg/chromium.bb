@@ -43,6 +43,10 @@ enum {
   return self;
 }
 
+- (MCNotificationController*)notificationController {
+  return notificationController_.get();
+}
+
 - (const message_center::Notification*)notification {
   return [notificationController_ notification];
 }

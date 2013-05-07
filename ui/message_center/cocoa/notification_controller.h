@@ -51,6 +51,10 @@ MESSAGE_CENTER_EXPORT
 - (id)initWithNotification:(const message_center::Notification*)notification
     messageCenter:(message_center::MessageCenter*)messageCenter;
 
+// If the model object changes, this method will update the views to reflect
+// the new model object. Returns the updated frame of the notification.
+- (NSRect)updateNotification:(const message_center::Notification*)notification;
+
 // Action for clicking on the notification's |closeButton_|.
 - (void)close:(id)sender;
 

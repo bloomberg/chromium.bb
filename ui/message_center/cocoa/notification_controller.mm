@@ -20,6 +20,7 @@ namespace {
 const int kTextTopPaddingAdjustment = -6;
 
 }  // namespace
+
 @interface MCNotificationController (Private)
 // Configures a NSBox to be borderless, titleless, and otherwise appearance-
 // free.
@@ -81,19 +82,55 @@ const int kTextTopPaddingAdjustment = -6;
   [rootView addSubview:title_];
 
   // Create the message body.
-  [self configureBodyInFrame:rootFrame maxY:NSMinY([title_ frame])];
+  [self configureBodyInFrame:rootFrame];
   [rootView addSubview:message_];
+
+  // Populate the data.
+  [self updateNotification:notification_];
+}
+
+- (NSRect)updateNotification:(const message_center::Notification*)notification {
+  DCHECK_EQ(notification->id(), notificationID_);
+  notification_ = notification;
+
+  NSRect rootFrame = NSMakeRect(0, 0,
+      message_center::kNotificationPreferredImageSize,
+      message_center::kNotificationIconSize);
+
+  // Update the icon.
+  [icon_ setImage:notification_->icon().AsNSImage()];
+
+  // Set the title and recalculate the frame.
+  [title_ setStringValue:base::SysUTF16ToNSString(notification_->title())];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:title_];
+  NSRect titleFrame = [title_ frame];
+  titleFrame.origin.y = NSMaxY(rootFrame) - message_center::kTextTopPadding -
+                        NSHeight(titleFrame);
+
+  // Set the message and recalculate the frame.
+  [message_ setStringValue:base::SysUTF16ToNSString(notification_->message())];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:message_];
+  NSRect messageFrame = [message_ frame];
+  messageFrame.origin.y = NSMinY(titleFrame) - message_center::kTextTopPadding -
+                          NSHeight(messageFrame);
+  messageFrame.size.height = NSHeight([message_ frame]);
 
   // In this basic notification UI, the message body is the bottom-most
   // vertical element. If it is out of the rootView's bounds, resize the view.
-  if (NSMinY([message_ frame]) <
+  if (NSMinY(messageFrame) <
           message_center::kTextTopPadding + kTextTopPaddingAdjustment) {
-    rootFrame.size.height += message_center::kTextTopPadding +
-                             kTextTopPaddingAdjustment -
-                             NSMinY([message_ frame]);
+    CGFloat delta = message_center::kTextTopPadding +
+                    kTextTopPaddingAdjustment - NSMinY(messageFrame);
+    rootFrame.size.height += delta;
+    titleFrame.origin.y += delta;
+    messageFrame.origin.y += delta;
   }
 
-  [rootView setFrame:rootFrame];
+  [[self view] setFrame:rootFrame];
+  [title_ setFrame:titleFrame];
+  [message_ setFrame:messageFrame];
+
+  return rootFrame;
 }
 
 - (void)close:(id)sender {
@@ -131,7 +168,6 @@ const int kTextTopPaddingAdjustment = -6;
 
   // Inside the image box put the actual icon view.
   icon_.reset([[NSImageView alloc] initWithFrame:imageFrame]);
-  [icon_ setImage:notification_->icon().AsNSImage()];
   [imageBox setContentView:icon_];
 
   return imageBox.autorelease();
@@ -163,35 +199,19 @@ const int kTextTopPaddingAdjustment = -6;
 
 - (void)configureTitleInFrame:(NSRect)rootFrame {
   NSRect frame = [self currentContentRect];
-
-  title_.reset([self newLabelWithFrame:NSMakeRect(0, 0, NSWidth(frame), 0)]);
+  frame.size.height = 0;
+  title_.reset([self newLabelWithFrame:frame]);
   [title_ setAutoresizingMask:NSViewMinYMargin];
-  [title_ setStringValue:base::SysUTF16ToNSString(notification_->title())];
   [title_ setFont:[NSFont messageFontOfSize:message_center::kTitleFontSize]];
-
-  CGFloat delta =
-      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:title_];
-  frame.size.height = delta;
-  frame.origin.y = NSMaxY(rootFrame) - message_center::kTextTopPadding +
-                   kTextTopPaddingAdjustment - delta;
-  [title_ setFrame:frame];
 }
 
-- (void)configureBodyInFrame:(NSRect)rootFrame maxY:(CGFloat)maxY {
+- (void)configureBodyInFrame:(NSRect)rootFrame {
   NSRect frame = [self currentContentRect];
-
-  message_.reset([self newLabelWithFrame:NSMakeRect(0, 0, NSWidth(frame), 0)]);
+  frame.size.height = 0;
+  message_.reset([self newLabelWithFrame:frame]);
   [message_ setAutoresizingMask:NSViewMinYMargin];
-  [message_ setStringValue:base::SysUTF16ToNSString(notification_->message())];
   [message_ setFont:
       [NSFont messageFontOfSize:message_center::kMessageFontSize]];
-
-  CGFloat delta =
-      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:message_];
-  frame.size.height = delta;
-  frame.origin.y = maxY - message_center::kTextTopPadding +
-                   kTextTopPaddingAdjustment - delta;
-  [message_ setFrame:frame];
 }
 
 - (NSTextField*)newLabelWithFrame:(NSRect)frame {

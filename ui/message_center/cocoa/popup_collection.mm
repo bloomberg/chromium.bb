@@ -4,7 +4,8 @@
 
 #import "ui/message_center/cocoa/popup_collection.h"
 
-#include "ui/message_center/cocoa/popup_controller.h"
+#import "ui/message_center/cocoa/notification_controller.h"
+#import "ui/message_center/cocoa/popup_controller.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_observer.h"
@@ -17,12 +18,20 @@
 // Returns YES if the notification was actually displayed.
 - (BOOL)addNotification:(const message_center::Notification*)notification;
 
+// Updates the contents of the notification with the given ID.
+- (void)updateNotification:(const std::string&)notificationID;
+
 // Removes a popup from the screen and lays out new notifications that can
 // now potentially fit on the screen.
 - (void)removeNotification:(const std::string&)notificationID;
 
 // Closes all the popups.
 - (void)removeAllNotifications;
+
+// Positions popup notifications for the |index|th notification in |popups_|.
+// This will put the proper amount of space between popup |index - 1| and
+// |index| and then any subsequent notifications.
+- (void)layoutNotificationsStartingAt:(NSUInteger)index;
 @end
 
 namespace {
@@ -58,7 +67,7 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
 
   virtual void OnNotificationUpdated(
       const std::string& notification_id) OVERRIDE {
-    // TODO(rsesek): Refactor MCNotificationController to support updating.
+    [popup_collection_ updateNotification:notification_id];
   }
 
  private:
@@ -130,57 +139,128 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
   return NO;
 }
 
-- (void)removeNotification:(const std::string&)notificationID {
-  // The set of notification IDs that are currently displayed.
-  std::set<std::string> onScreen;
-
-  // Find the popup for the given ID.
-  NSUInteger index = 0;
-  MCPopupController* popup = nil;
-  for (MCPopupController* candidate in popups_.get()) {
-    if ([candidate notificationID] == notificationID) {
-      popup = candidate;
-    } else {
-      onScreen.insert([candidate notificationID]);
-    }
-
-    // If the popup has not yet been found, increase the index.
-    if (!popup)
-      ++index;
-  }
-
-  if (!popup)
+- (void)updateNotification:(const std::string&)notificationID {
+  // Find the controller for this notification ID.
+  NSUInteger index = [popups_ indexOfObjectPassingTest:
+      ^BOOL(id popup, NSUInteger i, BOOL* stop) {
+          return [popup notificationID] == notificationID;
+      }];
+  // The notification may not be on screen.
+  if (index == NSNotFound)
     return;
 
-  // Calculate its height and then close it.
-  CGFloat delta = NSHeight([[popup window] frame]) +
-      message_center::kMarginBetweenItems;
-  [popup close];
-  [popups_ removeObjectAtIndex:index];
-
-  // Shift all the popups up.
-  for ( ; index < [popups_ count]; ++index) {
-    NSWindow* window = [[popups_ objectAtIndex:index] window];
-    NSPoint origin = [window frame].origin;
-    origin.y += delta;
-    [window setFrameOrigin:origin];
-  }
-
-  // Display any new popups that can now fit on screen.
-  const auto& allPopups = messageCenter_->GetPopupNotifications();
-  for (auto it = allPopups.begin(); it != allPopups.end(); ++it) {
-    if (onScreen.find((*it)->id()) == onScreen.end()) {
-      // If there's no room left on screen to display notifications, stop
-      // trying.
-      if (![self addNotification:*it])
-        break;
+  // Find the corresponding model object for the ID. This may be a replaced
+  // notification, so the controller's current model object may be stale.
+  const message_center::Notification* notification = NULL;
+  const auto& modelPopups = messageCenter_->GetPopupNotifications();
+  for (auto it = modelPopups.begin(); it != modelPopups.end(); ++it) {
+    if ((*it)->id() == notificationID) {
+      notification = *it;
+      break;
     }
   }
+  DCHECK(notification);
+  if (!notification)
+    return;
+
+  MCPopupController* popup = [popups_ objectAtIndex:index];
+
+  CGFloat oldHeight =
+      NSHeight([[[popup notificationController] view] frame]);
+  CGFloat newHeight = NSHeight(
+      [[popup notificationController] updateNotification:notification]);
+
+  // The notification has changed height. This requires updating the popup
+  // window and any popups that come below it.
+  if (oldHeight != newHeight) {
+    NSRect popupFrame = [[popup window] frame];
+    popupFrame.size.height += newHeight - oldHeight;
+    [[popup window] setFrame:popupFrame display:YES];
+
+    // Start re-layout of notifications at this index, so that it readjusts
+    // the Y origin of this notification.
+    [self layoutNotificationsStartingAt:index];
+  }
+}
+
+- (void)removeNotification:(const std::string&)notificationID {
+  NSUInteger index = [popups_ indexOfObjectPassingTest:
+      ^BOOL(id popup, NSUInteger index, BOOL* stop) {
+          return [popup notificationID] == notificationID;
+      }];
+  // The notification may not be on screen.
+  if (index == NSNotFound)
+    return;
+
+  [[popups_ objectAtIndex:index] close];
+  [popups_ removeObjectAtIndex:index];
+
+  if (index < [popups_ count])
+    [self layoutNotificationsStartingAt:index];
 }
 
 - (void)removeAllNotifications {
   [popups_ makeObjectsPerformSelector:@selector(close)];
   [popups_ removeAllObjects];
+}
+
+- (void)layoutNotificationsStartingAt:(NSUInteger)index {
+  NSRect screenFrame = [self screenFrame];
+  std::set<std::string> onScreen;
+
+  // Calcluate the bottom edge of the |index - 1|th popup.
+  CGFloat maxY = 0;
+  if (index == 0)
+    maxY = NSMaxY(screenFrame);
+  else
+    maxY = NSMinY([[[popups_ objectAtIndex:index - 1] window] frame]);
+
+  // Collect the IDs of popups that are currently on screen.
+  for (NSUInteger i = 0; i < index; ++i)
+    onScreen.insert([[popups_ objectAtIndex:i] notificationID]);
+
+  // Iterate between [index, count) notifications and reposition each. If one
+  // does not fit on screen, close it and any other on-screen popups that come
+  // after it.
+  NSUInteger removeAt = NSNotFound;
+  for (NSUInteger i = index; i < [popups_ count]; ++i) {
+    MCPopupController* popup = [popups_ objectAtIndex:i];
+    NSRect frame = [[popup window] frame];
+    frame.origin.y = maxY - message_center::kMarginBetweenItems -
+                     NSHeight(frame);
+
+    // If this popup does not fit on screen, stop repositioning and close this
+    // and subsequent popups.
+    if (NSMinY(frame) < NSMinY(screenFrame)) {
+      removeAt = i;
+      break;
+    }
+
+    [[popup window] setFrame:frame display:YES];
+    onScreen.insert([popup notificationID]);
+
+    // Set the new maximum Y to be the bottom of this notification.
+    maxY = NSMinY(frame);
+  }
+
+  if (removeAt != NSNotFound) {
+    // Remove any popups that are on screen but no longer fit.
+    while ([popups_ count] >= removeAt) {
+      [[popups_ lastObject] close];
+      [popups_ removeLastObject];
+    }
+  } else {
+    // Display any new popups that can now fit on screen.
+    const auto& allPopups = messageCenter_->GetPopupNotifications();
+    for (auto it = allPopups.begin(); it != allPopups.end(); ++it) {
+      if (onScreen.find((*it)->id()) == onScreen.end()) {
+        // If there's no room left on screen to display notifications, stop
+        // trying.
+        if (![self addNotification:*it])
+          break;
+      }
+    }
+  }
 }
 
 @end

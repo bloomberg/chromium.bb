@@ -139,3 +139,32 @@ TEST_F(NotificationControllerTest, Close) {
   EXPECT_EQ("an_id", messageCenter.last_removed_id());
   EXPECT_TRUE(messageCenter.last_removed_by_user());
 }
+
+TEST_F(NotificationControllerTest, Update) {
+  scoped_ptr<message_center::Notification> notification(
+      new message_center::Notification(
+          message_center::NOTIFICATION_TYPE_SIMPLE,
+          "",
+          ASCIIToUTF16("A simple title"),
+          ASCIIToUTF16("This message isn't too long and should fit in the"
+                       "default bounds."),
+          string16(),
+          std::string(),
+          NULL));
+  scoped_nsobject<MCNotificationController> controller(
+      [[MCNotificationController alloc] initWithNotification:notification.get()
+                                               messageCenter:NULL]);
+
+  // Set up the default layout.
+  [controller view];
+  EXPECT_EQ(NSHeight([[controller view] frame]),
+            message_center::kNotificationIconSize);
+  EXPECT_FALSE([[controller iconView] image]);
+
+  // Update the icon.
+  notification->set_icon(gfx::Image([TestIcon() retain]));
+  [controller updateNotification:notification.get()];
+  EXPECT_EQ(TestIcon(), [[controller iconView] image]);
+  EXPECT_EQ(NSHeight([[controller view] frame]),
+            message_center::kNotificationIconSize);
+}

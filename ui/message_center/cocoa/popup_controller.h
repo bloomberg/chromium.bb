@@ -32,7 +32,10 @@ MESSAGE_CENTER_EXPORT
 - (id)initWithNotification:(const message_center::Notification*)notification
     messageCenter:(message_center::MessageCenter*)messageCenter;
 
-// Accessor for the notification.
+// Accessor for the view controller.
+- (MCNotificationController*)notificationController;
+
+// Accessor for the notification model object.
 - (const message_center::Notification*)notification;
 
 // Gets the notification ID. This string is owned by the NotificationController
