@@ -87,6 +87,7 @@ crbug.com/233888 virtual/softwarecompositing/reflections/nested-reflection-anima
 crbug.com/233889 plugins/reentrant-update-widget-positions.html [ Timeout ]
 crbug.com/235449 fast/loader/stateobjects/state-attribute-history-getter.html [ Pass Failure ]
 crbug.com/235448 fast/loader/stateobjects/popstate-fires-on-history-traversal.html [ Pass Failure ]
+crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Skip ]
 
 # -----------------------------------------------------------------
 # To be rebaselined
