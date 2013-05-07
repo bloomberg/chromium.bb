@@ -24,6 +24,7 @@ except ImportError:
   pass
 
 
+from third_party import colorama
 from third_party import upload
 import breakpad  # pylint: disable=W0611
 import fix_encoding
@@ -41,6 +42,8 @@ DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 GIT_INSTRUCTIONS_URL = 'http://code.google.com/p/chromium/wiki/UsingNewGit'
 CHANGE_ID = 'Change-Id:'
 
+# Shortcut since it quickly becomes redundant.
+Fore = colorama.Fore
 
 # Initialized in main()
 settings = None
@@ -1101,7 +1104,17 @@ def CMDcomments(parser, args):
   if cl.GetIssue():
     data = cl.RpcServer().get_issue_properties(cl.GetIssue(), True)
     for message in sorted(data['messages'], key=lambda x: x['date']):
-      print '\n%s  %s' % (message['date'].split('.', 1)[0], message['sender'])
+      if message['disapproval']:
+        color = Fore.RED
+      elif message['approval']:
+        color = Fore.GREEN
+      elif message['sender'] == data['owner_email']:
+        color = Fore.MAGENTA
+      else:
+        color = Fore.BLUE
+      print '\n%s%s  %s%s' % (
+          color, message['date'].split('.', 1)[0], message['sender'],
+          Fore.RESET)
       if message['text'].strip():
         print '\n'.join('  ' + l for l in message['text'].splitlines())
   return 0
@@ -1994,6 +2007,7 @@ def main(argv):
         '\nYour python version %s is unsupported, please upgrade.\n' %
         sys.version.split(' ', 1)[0])
     return 2
+
   # Reload settings.
   global settings
   settings = Settings()
@@ -2040,5 +2054,8 @@ def main(argv):
 
 
 if __name__ == '__main__':
+  # These affect sys.stdout so do it outside of main() to simplify mocks in
+  # unit testing.
   fix_encoding.fix_encoding()
+  colorama.init()
   sys.exit(main(sys.argv[1:]))

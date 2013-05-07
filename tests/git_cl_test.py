@@ -455,23 +455,24 @@ class TestGitCl(TestCase):
 
   def test_reviewer_send_mail_no_rev(self):
     # Fails without a reviewer.
-    class FileMock(object):
-      buf = StringIO.StringIO()
-      def write(self, content):
-        self.buf.write(content)
-
-    mock = FileMock()
+    stdout = StringIO.StringIO()
+    stderr = StringIO.StringIO()
     try:
       self.calls = self._upload_no_rev_calls(None, None)
       def RunEditor(desc, _, **kwargs):
         return desc
       self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
-      self.mock(sys, 'stderr', mock)
+      self.mock(sys, 'stdout', stdout)
+      self.mock(sys, 'stderr', stderr)
       git_cl.main(['upload', '--send-mail'])
       self.fail()
     except SystemExit:
-      self.assertEquals(
-          'Must specify reviewers to send email.\n', mock.buf.getvalue())
+      self.assertEqual(
+          'Using 50% similarity for rename/copy detection. Override with '
+          '--similarity.\n',
+          stdout.getvalue())
+      self.assertEqual(
+          'Must specify reviewers to send email.\n', stderr.getvalue())
 
   def test_dcommit(self):
     self.calls = (
