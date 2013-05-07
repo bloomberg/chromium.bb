@@ -59,7 +59,7 @@ TEST_F(PictureImageLayerImplTest, CalculateContentsScale) {
   float contents_scale_x;
   float contents_scale_y;
   gfx::Size content_bounds;
-  layer->CalculateContentsScale(2.f, false,
+  layer->CalculateContentsScale(2.f, 3.f, 4.f, false,
                                 &contents_scale_x, &contents_scale_y,
                                 &content_bounds);
   EXPECT_FLOAT_EQ(1.f, contents_scale_x);
@@ -77,7 +77,7 @@ TEST_F(PictureImageLayerImplTest, AreVisibleResourcesReady) {
   float contents_scale_x;
   float contents_scale_y;
   gfx::Size content_bounds;
-  layer->CalculateContentsScale(2.f, false,
+  layer->CalculateContentsScale(2.f, 3.f, 4.f, false,
                                 &contents_scale_x, &contents_scale_y,
                                 &content_bounds);
   layer->UpdateTilePriorities();

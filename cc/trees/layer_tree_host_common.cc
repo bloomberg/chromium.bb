@@ -609,8 +609,12 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
 template <typename LayerType>
 static inline void CalculateContentsScale(LayerType* layer,
                                           float contents_scale,
+                                          float device_scale_factor,
+                                          float page_scale_factor,
                                           bool animating_transform_to_screen) {
   layer->CalculateContentsScale(contents_scale,
+                                device_scale_factor,
+                                page_scale_factor,
                                 animating_transform_to_screen,
                                 &layer->draw_properties().contents_scale_x,
                                 &layer->draw_properties().contents_scale_y,
@@ -620,6 +624,8 @@ static inline void CalculateContentsScale(LayerType* layer,
   if (mask_layer) {
     mask_layer->CalculateContentsScale(
         contents_scale,
+        device_scale_factor,
+        page_scale_factor,
         animating_transform_to_screen,
         &mask_layer->draw_properties().contents_scale_x,
         &mask_layer->draw_properties().contents_scale_y,
@@ -631,6 +637,8 @@ static inline void CalculateContentsScale(LayerType* layer,
   if (replica_mask_layer) {
     replica_mask_layer->CalculateContentsScale(
         contents_scale,
+        device_scale_factor,
+        page_scale_factor,
         animating_transform_to_screen,
         &replica_mask_layer->draw_properties().contents_scale_x,
         &replica_mask_layer->draw_properties().contents_scale_y,
@@ -646,6 +654,8 @@ static inline void UpdateLayerContentsScale(
     bool animating_transform_to_screen) {
   CalculateContentsScale(layer,
                          ideal_contents_scale,
+                         device_scale_factor,
+                         page_scale_factor,
                          animating_transform_to_screen);
 }
 
@@ -685,7 +695,11 @@ static inline void UpdateLayerContentsScale(
     raster_scale = 1.f;
 
   float contents_scale = raster_scale * device_scale_factor * page_scale_factor;
-  CalculateContentsScale(layer, contents_scale, animating_transform_to_screen);
+  CalculateContentsScale(layer,
+                         contents_scale,
+                         device_scale_factor,
+                         page_scale_factor,
+                         animating_transform_to_screen);
 }
 
 template <typename LayerType, typename LayerList>

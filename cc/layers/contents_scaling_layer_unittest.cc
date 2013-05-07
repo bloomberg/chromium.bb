@@ -30,16 +30,6 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
     return last_needs_display_rect_;
   }
 
-  void UpdateContentsScale(float contents_scale) {
-    // Simulate CalcDrawProperties.
-    CalculateContentsScale(
-        contents_scale,
-        false,  // animating_transform_to_screen
-        &draw_properties().contents_scale_x,
-        &draw_properties().contents_scale_y,
-        &draw_properties().content_bounds);
-  }
-
  private:
   virtual ~MockContentsScalingLayer() {}
 

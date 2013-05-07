@@ -142,6 +142,8 @@ class FakeTiledLayerWithScaledBounds : public FakeTiledLayer {
 
   void SetContentBounds(gfx::Size content_bounds);
   virtual void CalculateContentsScale(float ideal_contents_scale,
+                                      float device_scale_factor,
+                                      float page_scale_factor,
                                       bool animating_transform_to_screen,
                                       float* contents_scale_x,
                                       float* contents_scale_y,

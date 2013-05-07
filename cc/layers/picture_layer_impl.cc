@@ -328,6 +328,8 @@ void PictureLayerImpl::DidLoseOutputSurface() {
 
 void PictureLayerImpl::CalculateContentsScale(
     float ideal_contents_scale,
+    float device_scale_factor,
+    float page_scale_factor,
     bool animating_transform_to_screen,
     float* contents_scale_x,
     float* contents_scale_y,
@@ -343,8 +345,8 @@ void PictureLayerImpl::CalculateContentsScale(
   float min_source_scale =
       min_contents_scale / min_page_scale / min_device_scale;
 
-  float ideal_page_scale = layer_tree_impl()->total_page_scale_factor();
-  float ideal_device_scale = layer_tree_impl()->device_scale_factor();
+  float ideal_page_scale = page_scale_factor;
+  float ideal_device_scale = device_scale_factor;
   float ideal_source_scale =
       ideal_contents_scale / ideal_page_scale / ideal_device_scale;
 
