@@ -349,7 +349,7 @@ data_device_end_drag_grab(struct weston_seat *seat)
 {
 	if (seat->drag_surface) {
 		seat->drag_surface = NULL;
-		wl_signal_emit(&seat->drag_icon_signal, NULL);
+		weston_seat_update_drag_surface(seat, 0, 0);
 		wl_list_remove(&seat->drag_icon_listener.link);
 	}
 
@@ -451,7 +451,7 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		seat->drag_icon_listener.notify = destroy_data_device_icon;
 		wl_signal_add(&icon_resource->destroy_signal,
 			      &seat->drag_icon_listener);
-		wl_signal_emit(&seat->drag_icon_signal, icon_resource);
+		weston_seat_update_drag_surface(seat, 0, 0);
 	}
 
 	weston_pointer_set_focus(seat->pointer, NULL,

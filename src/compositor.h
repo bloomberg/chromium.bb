@@ -476,11 +476,8 @@ struct weston_seat {
 	struct weston_surface *drag_surface;
 	struct wl_listener drag_surface_destroy_listener;
 	struct wl_listener drag_icon_listener;
-	struct wl_signal drag_icon_signal;
 
 	uint32_t num_tp;
-
-	struct wl_listener new_drag_icon_listener;
 
 	void (*led_update)(struct weston_seat *ws, enum weston_led leds);
 

@@ -1309,17 +1309,6 @@ bind_seat(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	wl_seat_send_capabilities(resource, caps);
 }
 
-static void
-device_handle_new_drag_icon(struct wl_listener *listener, void *data)
-{
-	struct weston_seat *seat;
-
-	seat = container_of(listener, struct weston_seat,
-			    new_drag_icon_listener);
-
-	weston_seat_update_drag_surface(seat, 0, 0);
-}
-
 int
 weston_compositor_xkb_init(struct weston_compositor *ec,
 			   struct xkb_rule_names *names)
@@ -1520,7 +1509,6 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 	wl_list_init(&seat->base_resource_list);
 	wl_signal_init(&seat->selection_signal);
 	wl_list_init(&seat->drag_resource_list);
-	wl_signal_init(&seat->drag_icon_signal);
 	wl_signal_init(&seat->destroy_signal);
 
 	seat->has_pointer = 0;
@@ -1540,10 +1528,6 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 	seat->num_tp = 0;
 
 	wl_list_insert(ec->seat_list.prev, &seat->link);
-
-	seat->new_drag_icon_listener.notify = device_handle_new_drag_icon;
-	wl_signal_add(&seat->drag_icon_signal,
-		      &seat->new_drag_icon_listener);
 
 	clipboard_create(seat);
 
