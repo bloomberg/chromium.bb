@@ -2872,6 +2872,7 @@
             'browser/history/history_indexer.idl',
           ],
           'sources!': [
+            'browser/first_run/first_run_dialog.h',
             'browser/history/history_publisher_none.cc',
             'browser/importer/nss_decryptor_system_nss.cc',
             'browser/importer/nss_decryptor_system_nss.h',

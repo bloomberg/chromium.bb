@@ -10,7 +10,8 @@ class Profile;
 namespace first_run {
 
 // Shows the first run dialog. Only called if IsOrganicFirstRun() is true.
-void ShowFirstRunDialog(Profile* profile);
+// Returns true if the dialog was shown.
+bool ShowFirstRunDialog(Profile* profile);
 
 }  // namespace first_run
 

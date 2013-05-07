@@ -214,9 +214,9 @@ void RecordBreakpadStatusUMA(MetricsService* metrics);
 // present on the current platform.
 void WarnAboutMinimumSystemRequirements();
 
-// Records the time from our process' startup to the present time in
-// the Startup.BrowserMessageLoopStartTime UMA histogram.
-void RecordBrowserStartupTime();
+// Record time from process startup to present time in an UMA histogram.
+// |is_first_run| - is the current launch part of a first run.
+void RecordBrowserStartupTime(bool is_first_run);
 
 // Records a time value to an UMA histogram in the context of the
 // PreReadExperiment field-trial. This also reports to the appropriate

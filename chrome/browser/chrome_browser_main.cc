@@ -1625,7 +1625,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // These should be invoked as close to the start of the browser's
   // UI thread message loop as possible to get a stable measurement
   // across versions.
-  RecordBrowserStartupTime();
+  RecordBrowserStartupTime(do_first_run_tasks_);
   startup_timer_->SignalStartupComplete(
       performance_monitor::StartupTimer::STARTUP_NORMAL);
 
@@ -1746,7 +1746,7 @@ void ChromeBrowserMainParts::AddParts(ChromeBrowserMainExtraParts* parts) {
 
 // Misc ------------------------------------------------------------------------
 
-void RecordBrowserStartupTime() {
+void RecordBrowserStartupTime(bool is_first_run) {
   // Don't record any metrics if UI was displayed before this point e.g.
   // warning dialogs.
   if (startup_metric_utils::WasNonBrowserUIDisplayed())
@@ -1758,13 +1758,14 @@ void RecordBrowserStartupTime() {
   const base::Time* process_creation_time =
       base::CurrentProcessInfo::CreationTime();
 
-  if (process_creation_time)
+  if (!is_first_run && process_creation_time) {
     RecordPreReadExperimentTime("Startup.BrowserMessageLoopStartTime",
         base::Time::Now() - *process_creation_time);
+  }
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
   // Record collected startup metrics.
-  startup_metric_utils::OnBrowserStartupComplete();
+  startup_metric_utils::OnBrowserStartupComplete(is_first_run);
 
   // Deletes self.
   new LoadCompleteListener();

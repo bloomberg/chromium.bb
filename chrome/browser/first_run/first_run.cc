@@ -20,7 +20,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
-#include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
@@ -46,7 +45,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
@@ -741,16 +739,6 @@ void DoPostImportTasks(Profile* profile, bool make_chrome_default) {
     ShellIntegration::SetAsDefaultBrowser();
   }
 
-  base::FilePath local_state_path;
-  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
-  bool local_state_file_exists = file_util::PathExists(local_state_path);
-
-  // Launch the first run dialog only for certain builds, and only if the user
-  // has not already set preferences.
-  if (internal::IsOrganicFirstRun() && !local_state_file_exists) {
-    startup_metric_utils::SetNonBrowserUIDisplayed();
-    ShowFirstRunDialog(profile);
-  }
   // Display the first run bubble if there is a default search provider.
   TemplateURLService* template_url =
       TemplateURLServiceFactory::GetForProfile(profile);
@@ -759,7 +747,7 @@ void DoPostImportTasks(Profile* profile, bool make_chrome_default) {
   SetShouldShowWelcomePage();
   SetShouldDoPersonalDataManagerFirstRun();
 
-  internal::DoPostImportPlatformSpecificTasks();
+  internal::DoPostImportPlatformSpecificTasks(profile);
 }
 
 bool DidPerformProfileImport(bool* exited_successfully) {

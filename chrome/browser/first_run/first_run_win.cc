@@ -397,7 +397,7 @@ bool ImportSettingsWin(Profile* profile,
 namespace first_run {
 namespace internal {
 
-void DoPostImportPlatformSpecificTasks() {
+void DoPostImportPlatformSpecificTasks(Profile* /* profile */) {
   // Trigger the Active Setup command for system-level Chromes to finish
   // configuring this user's install (e.g. per-user shortcuts).
   // Delay the task slightly to give Chrome launch I/O priority while also

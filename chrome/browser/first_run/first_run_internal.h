@@ -100,7 +100,7 @@ void SetDefaultBrowser(installer::MasterPreferences* install_prefs);
 
 // -- Platform-specific functions --
 
-void DoPostImportPlatformSpecificTasks();
+void DoPostImportPlatformSpecificTasks(Profile* profile);
 
 // Gives the full path to the sentinel file. The file might not exist.
 // This function has a common implementation on OS_POSIX and a windows specific

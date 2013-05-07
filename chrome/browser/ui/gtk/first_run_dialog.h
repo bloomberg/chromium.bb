@@ -15,10 +15,11 @@ typedef struct _GtkWidget GtkWidget;
 class FirstRunDialog {
  public:
   // Displays the first run UI for reporting opt-in, import data etc.
+  // Returns true if the dialog was shown.
   static bool Show();
 
  private:
-  FirstRunDialog(bool show_reporting_dialog, int* response);
+  FirstRunDialog();
   virtual ~FirstRunDialog();
 
   CHROMEGTK_CALLBACK_1(FirstRunDialog, void, OnResponseDialog, int);

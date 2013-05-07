@@ -68,17 +68,16 @@ void SetWelcomePosition(GtkFloatingContainer* container,
 
 namespace first_run {
 
-void ShowFirstRunDialog(Profile* profile) {
-  FirstRunDialog::Show();
+bool ShowFirstRunDialog(Profile* profile) {
+  return FirstRunDialog::Show();
 }
 
 }  // namespace first_run
 
 // static
 bool FirstRunDialog::Show() {
-#if !defined(GOOGLE_CHROME_BUILD)
-  return true;  // Nothing to do
-#else
+  bool dialog_shown = false;
+#if defined(GOOGLE_CHROME_BUILD)
   // If the metrics reporting is managed, we won't ask.
   const PrefService::Preference* metrics_reporting_pref =
       g_browser_process->local_state()->FindPreference(
@@ -86,30 +85,26 @@ bool FirstRunDialog::Show() {
   bool show_reporting_dialog = !metrics_reporting_pref ||
       !metrics_reporting_pref->IsManaged();
 
-  if (!show_reporting_dialog)
-    return true;  // Nothing to do
+  if (show_reporting_dialog) {
+    // Object deletes itself.
+    new FirstRunDialog();
+    dialog_shown = true;
 
-  int response = -1;
-  // Object deletes itself.
-  new FirstRunDialog(show_reporting_dialog, &response);
-
-  // TODO(port): it should be sufficient to just run the dialog:
-  // int response = gtk_dialog_run(GTK_DIALOG(dialog));
-  // but that spins a nested message loop and hoses us.  :(
-  // http://code.google.com/p/chromium/issues/detail?id=12552
-  // Instead, run a loop and extract the response manually.
-  MessageLoop::current()->Run();
-
-  return (response == GTK_RESPONSE_ACCEPT);
+    // TODO(port): it should be sufficient to just run the dialog:
+    // int response = gtk_dialog_run(GTK_DIALOG(dialog));
+    // but that spins a nested message loop and hoses us.  :(
+    // http://code.google.com/p/chromium/issues/detail?id=12552
+    // Instead, run a loop directly here.
+    MessageLoop::current()->Run();
+  }
 #endif  // defined(GOOGLE_CHROME_BUILD)
+  return dialog_shown;
 }
 
-FirstRunDialog::FirstRunDialog(bool show_reporting_dialog, int* response)
+FirstRunDialog::FirstRunDialog()
     : dialog_(NULL),
       report_crashes_(NULL),
-      make_default_(NULL),
-      show_reporting_dialog_(show_reporting_dialog),
-      response_(response) {
+      make_default_(NULL) {
   ShowReportingDialog();
 }
 
@@ -117,16 +112,6 @@ FirstRunDialog::~FirstRunDialog() {
 }
 
 void FirstRunDialog::ShowReportingDialog() {
-  // The purpose of the dialog is to ask the user to enable stats and crash
-  // reporting. This setting may be controlled through configuration management
-  // in enterprise scenarios. If that is the case, skip the dialog entirely,
-  // it's not worth bothering the user for only the default browser question
-  // (which is likely to be forced in enterprise deployments anyway).
-  if (!show_reporting_dialog_) {
-    OnResponseDialog(NULL, GTK_RESPONSE_ACCEPT);
-    return;
-  }
-
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_FIRSTRUN_DLG_TITLE).c_str(),
       NULL,  // No parent
@@ -177,7 +162,6 @@ void FirstRunDialog::ShowReportingDialog() {
 void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
   if (dialog_)
     gtk_widget_hide_all(dialog_);
-  *response_ = response;
 
   // Mark that first run has ran.
   first_run::CreateSentinel();

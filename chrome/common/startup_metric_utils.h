@@ -33,7 +33,8 @@ void RecordMainEntryPointTime();
 
 // Called just before the message loop is about to start. Entry point to record
 // startup stats.
-void OnBrowserStartupComplete();
+// |is_first_run| - is the current launch part of a first run.
+void OnBrowserStartupComplete(bool is_first_run);
 
 // Called when the initial page load has finished in order to record startup
 // stats.
