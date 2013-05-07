@@ -201,12 +201,21 @@ WebRtcAudioCapturer::~WebRtcAudioCapturer() {
 void WebRtcAudioCapturer::AddSink(
     WebRtcAudioCapturerSink* track) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(track);
   DVLOG(1) << "WebRtcAudioCapturer::AddSink()";
   base::AutoLock auto_lock(lock_);
   // Verify that |track| is not already added to the list.
   DCHECK(std::find_if(
       tracks_.begin(), tracks_.end(),
       WebRtcAudioCapturerSinkOwner::WrapsSink(track)) == tracks_.end());
+
+  if (buffer_.get()) {
+    track->SetCaptureFormat(buffer_->params());
+  } else {
+    DLOG(WARNING) << "The format of the capturer has not been correctly "
+                  <<  "initialized";
+  }
+
   // Create (and add to the list) a new WebRtcAudioCapturerSinkOwner which owns
   // the |track| and delagates all calls to the WebRtcAudioCapturerSink
   // interface.
@@ -379,7 +388,9 @@ void WebRtcAudioCapturer::OnCaptureError() {
 
 media::AudioParameters WebRtcAudioCapturer::audio_parameters() const {
   base::AutoLock auto_lock(lock_);
-  return buffer_->params();
+  // |buffer_| can be NULL when SetCapturerSource() or Initialize() has not
+  // been called.
+  return buffer_.get() ? buffer_->params() : media::AudioParameters();
 }
 
 }  // namespace content

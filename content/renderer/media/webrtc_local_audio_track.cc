@@ -30,7 +30,6 @@ WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
       track_source_(track_source) {
   DCHECK(capturer);
   capturer_->AddSink(this);
-  params_ = capturer_->audio_parameters();
   DVLOG(1) << "WebRtcLocalAudioTrack::WebRtcLocalAudioTrack()";
 }
 
@@ -72,6 +71,11 @@ void WebRtcLocalAudioTrack::SetCaptureFormat(
     const media::AudioParameters& params) {
   base::AutoLock auto_lock(lock_);
   params_ = params;
+
+  // Update all the existing sinks with the new format.
+  for (SinkList::const_iterator it = sinks_.begin();
+       it != sinks_.end(); ++it)
+    (*it)->SetCaptureFormat(params);
 }
 
 // webrtc::AudioTrackInterface implementation.
