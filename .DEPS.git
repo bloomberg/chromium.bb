@@ -438,28 +438,6 @@ hooks = [
     'action':
          [
     'python',
-    'src/chrome/installer/linux/internal/sysroot_scripts/install-debian.wheezy.sysroot.py',
-    '--arch=amd64',
-    '--linux-only'
-],
-    'pattern':
-         '.'
-},
-    {
-    'action':
-         [
-    'python',
-    'src/chrome/installer/linux/internal/sysroot_scripts/install-debian.wheezy.sysroot.py',
-    '--arch=i386',
-    '--linux-only'
-],
-    'pattern':
-         '.'
-},
-    {
-    'action':
-         [
-    'python',
     'src/tools/clang/scripts/update.py',
     '--mac-only'
 ],
