@@ -33,6 +33,7 @@
 
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/inspector/ScriptCallFrame.h"
+#include "core/page/ConsoleTypes.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/SocketStreamHandleClient.h"
 #include "modules/websockets/WebSocketChannel.h"
@@ -42,6 +43,7 @@
 #include "modules/websockets/WebSocketPerMessageDeflate.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
@@ -59,7 +61,11 @@ class MainThreadWebSocketChannel : public RefCounted<MainThreadWebSocketChannel>
                                  , public FileReaderLoaderClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<MainThreadWebSocketChannel> create(Document* document, WebSocketChannelClient* client) { return adoptRef(new MainThreadWebSocketChannel(document, client)); }
+    // You can specify the source file and the line number information
+    // explicitly by passing the last parameter.
+    // In the usual case, they are set automatically and you don't have to
+    // pass it.
+    static PassRefPtr<MainThreadWebSocketChannel> create(Document* document, WebSocketChannelClient* client, const ScriptCallFrame& frame = ScriptCallFrame("", "", 0)) { return adoptRef(new MainThreadWebSocketChannel(document, client, frame)); }
     virtual ~MainThreadWebSocketChannel();
 
     bool send(const char* data, int length);
@@ -75,7 +81,8 @@ public:
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
     virtual void close(int code, const String& reason) OVERRIDE;
-    virtual void fail(const String& reason) OVERRIDE;
+    virtual void fail(const String& reason, MessageLevel) OVERRIDE;
+    virtual void fail(const String& reason, MessageLevel, PassOwnPtr<CallStackWrapper>) OVERRIDE;
     virtual void disconnect() OVERRIDE;
 
     virtual void suspend() OVERRIDE;
@@ -104,7 +111,7 @@ protected:
     virtual void derefWebSocketChannel() OVERRIDE { deref(); }
 
 private:
-    MainThreadWebSocketChannel(Document*, WebSocketChannelClient*);
+    MainThreadWebSocketChannel(Document*, WebSocketChannelClient*, const ScriptCallFrame&);
 
     bool appendToBuffer(const char* data, size_t len);
     void skipBuffer(size_t len);
@@ -112,6 +119,7 @@ private:
     void resumeTimerFired(Timer<MainThreadWebSocketChannel>*);
     void startClosingHandshake(int code, const String& reason);
     void closingTimerFired(Timer<MainThreadWebSocketChannel>*);
+    void failInternal();
 
     bool processFrame();
 
@@ -140,6 +148,7 @@ private:
     void enqueueRawFrame(WebSocketFrame::OpCode, const char* data, size_t dataLength);
     void enqueueBlobFrame(WebSocketFrame::OpCode, const Blob&);
 
+    void failAsError(const String& reason) { fail(reason, ErrorMessageLevel); }
     void processOutgoingFrameQueue();
     void abortOutgoingFrameQueue();
 

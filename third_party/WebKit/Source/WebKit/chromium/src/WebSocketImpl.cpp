@@ -31,11 +31,12 @@
 #include "config.h"
 #include "WebSocketImpl.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "WebArrayBuffer.h"
 #include "WebDocument.h"
 #include "WebSocketClient.h"
 #include "core/dom/Document.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/ConsoleTypes.h"
 #include "core/platform/KURL.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 #include "modules/websockets/WebSocketChannel.h"
@@ -115,7 +116,7 @@ void WebSocketImpl::close(int code, const WebString& reason)
 
 void WebSocketImpl::fail(const WebString& reason)
 {
-    m_private->fail(reason);
+    m_private->fail(reason, ErrorMessageLevel);
 }
 
 void WebSocketImpl::disconnect()

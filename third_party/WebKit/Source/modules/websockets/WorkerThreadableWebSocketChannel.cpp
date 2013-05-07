@@ -32,11 +32,14 @@
 
 #include "modules/websockets/WorkerThreadableWebSocketChannel.h"
 
+#include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/Blob.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/inspector/ScriptCallFrame.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerRunLoop.h"
@@ -56,8 +59,14 @@ WorkerThreadableWebSocketChannel::WorkerThreadableWebSocketChannel(WorkerContext
     : m_workerContext(context)
     , m_workerClientWrapper(ThreadableWebSocketChannelClientWrapper::create(context, client))
     , m_bridge(Bridge::create(m_workerClientWrapper, m_workerContext, taskMode))
+    , m_callFrameAtConnection("", "", 0)
 {
-    m_bridge->initialize();
+    // We assume that we can take the JS callstack at WebSocket connection here.
+    ScriptCallFrame frame("", "", 0);
+    RefPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
+    if (callStack && callStack->size() > 0)
+        frame = callStack->at(0);
+    m_bridge->initialize(frame);
 }
 
 WorkerThreadableWebSocketChannel::~WorkerThreadableWebSocketChannel()
@@ -68,6 +77,8 @@ WorkerThreadableWebSocketChannel::~WorkerThreadableWebSocketChannel()
 
 void WorkerThreadableWebSocketChannel::connect(const KURL& url, const String& protocol)
 {
+    RefPtr<ScriptCallStack> callstack = createScriptCallStack(1, true);
+    m_callFrameAtConnection = (callstack && callstack->size() > 0) ? callstack->at(0) : ScriptCallFrame("", "", 0);
     if (m_bridge)
         m_bridge->connect(url, protocol);
 }
@@ -118,10 +129,24 @@ void WorkerThreadableWebSocketChannel::close(int code, const String& reason)
         m_bridge->close(code, reason);
 }
 
-void WorkerThreadableWebSocketChannel::fail(const String& reason)
+void WorkerThreadableWebSocketChannel::fail(const String& reason, MessageLevel level, PassOwnPtr<CallStackWrapper> callStack)
 {
     if (m_bridge)
-        m_bridge->fail(reason);
+        m_bridge->fail(reason, level, callStack);
+}
+
+void WorkerThreadableWebSocketChannel::fail(const String& reason, MessageLevel level)
+{
+    RefPtr<ScriptCallStack> callStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
+    if (!callStack || !callStack->size()) {
+        Vector<ScriptCallFrame> frames;
+        frames.append(m_callFrameAtConnection);
+        callStack = ScriptCallStack::create(frames);
+    }
+    Vector<ScriptCallFrame> frames;
+    for (size_t i = 0; i < callStack->size(); ++i)
+        frames.append(callStack->at(i));
+    fail(reason, level, adoptPtr<CallStackWrapper>(callStack ? new CallStackWrapper(frames) : 0));
 }
 
 void WorkerThreadableWebSocketChannel::disconnect()
@@ -144,7 +169,7 @@ void WorkerThreadableWebSocketChannel::resume()
         m_bridge->resume();
 }
 
-WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, WorkerLoaderProxy& loaderProxy, ScriptExecutionContext* context, const String& taskMode)
+WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, WorkerLoaderProxy& loaderProxy, ScriptExecutionContext* context, const String& taskMode, const ScriptCallFrame& frame)
     : m_workerClientWrapper(clientWrapper)
     , m_loaderProxy(loaderProxy)
     , m_mainWebSocketChannel(0)
@@ -152,9 +177,9 @@ WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<ThreadableWebSocketChann
 {
     if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
         // FIXME: Create an "experimental" WebSocketChannel instead of a MainThreadWebSocketChannel.
-        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(toDocument(context), this);
+        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(toDocument(context), this, frame);
     } else
-        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(toDocument(context), this);
+        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(toDocument(context), this, frame);
     ASSERT(isMainThread());
 }
 
@@ -229,12 +254,12 @@ void WorkerThreadableWebSocketChannel::Peer::close(int code, const String& reaso
     m_mainWebSocketChannel->close(code, reason);
 }
 
-void WorkerThreadableWebSocketChannel::Peer::fail(const String& reason)
+void WorkerThreadableWebSocketChannel::Peer::fail(const String& reason, MessageLevel level, PassOwnPtr<CallStackWrapper> callStack)
 {
     ASSERT(isMainThread());
     if (!m_mainWebSocketChannel)
         return;
-    m_mainWebSocketChannel->fail(reason);
+    m_mainWebSocketChannel->fail(reason, level, callStack);
 }
 
 void WorkerThreadableWebSocketChannel::Peer::disconnect()
@@ -366,9 +391,7 @@ WorkerThreadableWebSocketChannel::Bridge::~Bridge()
 
 class WorkerThreadableWebSocketChannel::WorkerContextDidInitializeTask : public ScriptExecutionContext::Task {
 public:
-    static PassOwnPtr<ScriptExecutionContext::Task> create(WorkerThreadableWebSocketChannel::Peer* peer,
-                                                           WorkerLoaderProxy* loaderProxy,
-                                                           PassRefPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper)
+    static PassOwnPtr<ScriptExecutionContext::Task> create(WorkerThreadableWebSocketChannel::Peer* peer, WorkerLoaderProxy* loaderProxy, PassRefPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper)
     {
         return adoptPtr(new WorkerContextDidInitializeTask(peer, loaderProxy, workerClientWrapper));
     }
@@ -388,9 +411,7 @@ public:
     virtual bool isCleanupTask() const OVERRIDE { return true; }
 
 private:
-    WorkerContextDidInitializeTask(WorkerThreadableWebSocketChannel::Peer* peer,
-                                   WorkerLoaderProxy* loaderProxy,
-                                   PassRefPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper)
+    WorkerContextDidInitializeTask(WorkerThreadableWebSocketChannel::Peer* peer, WorkerLoaderProxy* loaderProxy, PassRefPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper)
         : m_peer(peer)
         , m_loaderProxy(loaderProxy)
         , m_workerClientWrapper(workerClientWrapper)
@@ -402,14 +423,14 @@ private:
     RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
 };
 
-void WorkerThreadableWebSocketChannel::Bridge::mainThreadInitialize(ScriptExecutionContext* context, WorkerLoaderProxy* loaderProxy, PassRefPtr<ThreadableWebSocketChannelClientWrapper> prpClientWrapper, const String& taskMode)
+void WorkerThreadableWebSocketChannel::Bridge::mainThreadInitialize(ScriptExecutionContext* context, WorkerLoaderProxy* loaderProxy, PassRefPtr<ThreadableWebSocketChannelClientWrapper> prpClientWrapper, const String& taskMode, const String& sourceURL, unsigned lineNumber)
 {
     ASSERT(isMainThread());
     ASSERT_UNUSED(context, context->isDocument());
 
     RefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper = prpClientWrapper;
 
-    Peer* peer = Peer::create(clientWrapper, *loaderProxy, context, taskMode);
+    Peer* peer = Peer::create(clientWrapper, *loaderProxy, context, taskMode, ScriptCallFrame("", sourceURL, lineNumber));
     bool sent = loaderProxy->postTaskForModeToWorkerContext(
         WorkerThreadableWebSocketChannel::WorkerContextDidInitializeTask::create(peer, loaderProxy, clientWrapper), taskMode);
     if (!sent) {
@@ -418,14 +439,13 @@ void WorkerThreadableWebSocketChannel::Bridge::mainThreadInitialize(ScriptExecut
     }
 }
 
-void WorkerThreadableWebSocketChannel::Bridge::initialize()
+void WorkerThreadableWebSocketChannel::Bridge::initialize(const ScriptCallFrame& frame)
 {
     ASSERT(!m_peer);
     setMethodNotCompleted();
     RefPtr<Bridge> protect(this);
     m_loaderProxy.postTaskToLoader(
-        createCallbackTask(&Bridge::mainThreadInitialize,
-                           AllowCrossThreadAccess(&m_loaderProxy), m_workerClientWrapper, m_taskMode));
+        createCallbackTask(&Bridge::mainThreadInitialize, AllowCrossThreadAccess(&m_loaderProxy), m_workerClientWrapper, m_taskMode, frame.sourceURL(), frame.lineNumber()));
     waitForMethodCompletion();
     // m_peer may be null when the nested runloop exited before a peer has created.
     m_peer = m_workerClientWrapper->peer();
@@ -564,20 +584,20 @@ void WorkerThreadableWebSocketChannel::Bridge::close(int code, const String& rea
     m_loaderProxy.postTaskToLoader(createCallbackTask(&WorkerThreadableWebSocketChannel::mainThreadClose, AllowCrossThreadAccess(m_peer), code, reason));
 }
 
-void WorkerThreadableWebSocketChannel::mainThreadFail(ScriptExecutionContext* context, Peer* peer, const String& reason)
+void WorkerThreadableWebSocketChannel::mainThreadFail(ScriptExecutionContext* context, Peer* peer, const String& reason, MessageLevel level, PassOwnPtr<CallStackWrapper> callStack)
 {
     ASSERT(isMainThread());
     ASSERT_UNUSED(context, context->isDocument());
     ASSERT(peer);
 
-    peer->fail(reason);
+    peer->fail(reason, level, callStack);
 }
 
-void WorkerThreadableWebSocketChannel::Bridge::fail(const String& reason)
+void WorkerThreadableWebSocketChannel::Bridge::fail(const String& reason, MessageLevel level, PassOwnPtr<CallStackWrapper> callStack)
 {
     if (!m_peer)
         return;
-    m_loaderProxy.postTaskToLoader(createCallbackTask(&WorkerThreadableWebSocketChannel::mainThreadFail, AllowCrossThreadAccess(m_peer), reason));
+    m_loaderProxy.postTaskToLoader(createCallbackTask(&WorkerThreadableWebSocketChannel::mainThreadFail, AllowCrossThreadAccess(m_peer), reason, level, callStack));
 }
 
 void WorkerThreadableWebSocketChannel::mainThreadDestroy(ScriptExecutionContext* context, PassOwnPtr<Peer> peer)

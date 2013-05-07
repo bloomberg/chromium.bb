@@ -31,9 +31,14 @@
 #ifndef WebSocketChannel_h
 #define WebSocketChannel_h
 
+#include "core/inspector/ScriptCallFrame.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/page/ConsoleTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -73,6 +78,16 @@ public:
         CloseEventCodeMaximumUserDefined = 4999
     };
 
+    // A holder class for Vector<ScriptCallFrame> for readability.
+    class CallStackWrapper {
+    public:
+        CallStackWrapper(const Vector<ScriptCallFrame>& frames): m_frames(frames) { }
+        PassRefPtr<ScriptCallStack> createCallStack() { return ScriptCallStack::create(m_frames); }
+
+    private:
+        Vector<ScriptCallFrame> m_frames;
+    };
+
     virtual void connect(const KURL&, const String& protocol) = 0;
     virtual String subprotocol() = 0; // Will be available after didConnect() callback is invoked.
     virtual String extensions() = 0; // Will be available after didConnect() callback is invoked.
@@ -81,8 +96,21 @@ public:
     virtual SendResult send(const Blob&) = 0;
     virtual unsigned long bufferedAmount() const = 0;
     virtual void close(int code, const String& reason) = 0;
+
     // Log the reason text and close the connection. Will call didClose().
-    virtual void fail(const String& reason) = 0;
+    // The MessageLevel parameter will be used for the level of the message
+    // shown at the devtool console. The CallStackWrapper parameter is
+    // callstack information. it may be shown with the reason text at the
+    // devtool console. If the parameter is null, the instance may fill
+    // the callstack information and show it with the reason text if possible.
+    virtual void fail(const String& reason, MessageLevel, PassOwnPtr<CallStackWrapper>) = 0;
+
+    // Log the reason text and close the connection. Will call didClose().
+    // The MessageLevel parameter will be used for the level of the message
+    // shown at the devtool console. The instance may fill the callstack
+    // information and show it with the reason text if possible.
+    virtual void fail(const String& reason, MessageLevel) = 0;
+
     virtual void disconnect() = 0; // Will suppress didClose().
 
     virtual void suspend() = 0;
