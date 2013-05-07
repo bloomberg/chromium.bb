@@ -71,8 +71,10 @@ function isVideoPlaying() {
 function allElementsRoughlyEqualTo_(elements, element_to_compare) {
   if (elements.length == 0)
     return false;
+
+  var PIXEL_DIFF_TOLERANCE = 100;
   for (var i = 0; i < elements.length; i++) {
-    if (Math.abs(elements[i] - element_to_compare) > 3) {
+    if (Math.abs(elements[i] - element_to_compare) > PIXEL_DIFF_TOLERANCE) {
       return false;
     }
   }
