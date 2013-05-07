@@ -144,7 +144,7 @@
              'loislo+blink@chromium.org', 'yurys+blink@chromium.org' ],
     'indexed_db': ['alecflett@chromium.org','dgrogan@chromium.org',
                    'jsbell@chromium.org'],
-    'rendering': [ 'jchaffraix+rendering@chromium.org' ],
+    'rendering': [ 'jchaffraix+rendering@chromium.org', 'leviw+renderwatch@chromium.org' ],
     'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
     'prerender': [ 'gavinp+prerender@chromium.org' ],
     'track': ['vcarbune@chromium.org'],
