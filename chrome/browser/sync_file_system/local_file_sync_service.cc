@@ -199,7 +199,15 @@ void LocalFileSyncService::PrepareForProcessRemoteChange(
         extensions::ExtensionSystem::Get(profile_)->extension_service();
     const extensions::Extension* extension = extension_service->GetInstalledApp(
         url.origin());
-    DCHECK(extension);
+    if (!extension) {
+      LOG(WARNING) << "PrepareForProcessRemoteChange called for non-existing "
+                   << " origin:" << url.origin().spec();
+      // The extension has been uninstalled and this method is called
+      // before the remote changes for the origin are removed.
+      callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC,
+                   SyncFileMetadata(), FileChangeList());
+      return;
+    }
     GURL site_url = extension_service->GetSiteForExtensionId(extension->id());
     DCHECK(!site_url.is_empty());
     scoped_refptr<fileapi::FileSystemContext> file_system_context =
