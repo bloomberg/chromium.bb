@@ -52,13 +52,17 @@ h3 {
   -webkit-padding-start: 64px;
   background-image:
       url('../../../../ui/webui/resources/images/2x/search.png');
-  background-position: 16px center;
+  background-position: left 16px center;
   background-repeat: no-repeat;
   background-size: 32px;
   border: 0;
   line-height: 1.5;
   margin-top: 16px;
   width: 100%;
+}
+
+html[dir='rtl'] #search-field {
+  background-position: right 16px center;
 }
 
 /* Hide the search field if it is empty (!valid) and there are no results. */
