@@ -52,7 +52,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/pyautolib/pyautolib.h"
 #include "content/public/common/security_style.h"
-#include "net/test/spawned_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 %}
 
 // Handle type uint32 conversions as int
