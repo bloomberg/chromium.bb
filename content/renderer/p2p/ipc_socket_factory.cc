@@ -4,6 +4,8 @@
 
 #include "content/renderer/p2p/ipc_socket_factory.h"
 
+#include <deque>
+
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
@@ -17,9 +19,8 @@ namespace content {
 
 namespace {
 
-// TODO(hclam): This shouldn't be a pre-defined value. Bug: crbug.com/181321.
-const int kMaxPendingPackets = 32;
-const int kWritableSignalThreshold = 0;
+// TODO(miu): This needs tuning.  http://crbug.com/237960
+const size_t kMaximumInFlightBytes = 64 * 1024;  // 64 KB
 
 // IpcPacketSocket implements talk_base::AsyncPacketSocket interface
 // using P2PSocketClient that works over IPC-channel. It must be used
@@ -66,6 +67,11 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
     IS_ERROR,
   };
 
+  // Update trace of send throttling internal state. This should be called
+  // immediately after any changes to |send_bytes_available_| and/or
+  // |in_flight_packet_sizes_|.
+  void TraceSendThrottlingState() const;
+
   void InitAcceptedTcp(P2PSocketClient* client,
                        const talk_base::SocketAddress& local_address,
                        const talk_base::SocketAddress& remote_address);
@@ -89,9 +95,14 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   // Current state of the object.
   InternalState state_;
 
-  // Number which have been sent to the browser, but for which we haven't
-  // received response.
-  int send_packets_pending_;
+  // Track the number of bytes allowed to be sent non-blocking. This is used to
+  // throttle the sending of packets to the browser process. For each packet
+  // sent, the value is decreased. As callbacks to OnSendComplete() (as IPCs
+  // from the browser process) are made, the value is increased back. This
+  // allows short bursts of high-rate sending without dropping packets, but
+  // quickly restricts the client to a sustainable steady-state rate.
+  size_t send_bytes_available_;
+  std::deque<size_t> in_flight_packet_sizes_;
 
   // Set to true once EWOULDBLOCK was returned from Send(). Indicates that the
   // caller expects SignalWritable notification.
@@ -107,15 +118,23 @@ IpcPacketSocket::IpcPacketSocket()
     : type_(P2P_SOCKET_UDP),
       message_loop_(base::MessageLoop::current()),
       state_(IS_UNINITIALIZED),
-      send_packets_pending_(0),
+      send_bytes_available_(kMaximumInFlightBytes),
       writable_signal_expected_(false),
-      error_(0) {}
+      error_(0) {
+  COMPILE_ASSERT(kMaximumInFlightBytes > 0, would_send_at_zero_rate);
+}
 
 IpcPacketSocket::~IpcPacketSocket() {
   if (state_ == IS_OPENING || state_ == IS_OPEN ||
       state_ == IS_ERROR) {
     Close();
   }
+}
+
+void IpcPacketSocket::TraceSendThrottlingState() const {
+  TRACE_COUNTER1("p2p", "P2PSendBytesAvailable", send_bytes_available_);
+  TRACE_COUNTER1("p2p", "P2PSendPacketsInFlight",
+                 in_flight_packet_sizes_.size());
 }
 
 bool IpcPacketSocket::Init(P2PSocketType type, P2PSocketClient* client,
@@ -157,6 +176,7 @@ void IpcPacketSocket::InitAcceptedTcp(
   local_address_ = local_address;
   remote_address_ = remote_address;
   state_ = IS_OPEN;
+  TraceSendThrottlingState();
   client_->set_delegate(this);
 }
 
@@ -195,16 +215,18 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
       break;
   }
 
-  if (send_packets_pending_ > kMaxPendingPackets) {
-    TRACE_EVENT_INSTANT1("p2p", "MaxPendingPacketsWouldBlock",
+  if (data_size == 0) {
+    NOTREACHED();
+    return 0;
+  }
+
+  if (data_size > send_bytes_available_) {
+    TRACE_EVENT_INSTANT1("p2p", "MaxPendingBytesWouldBlock",
                          TRACE_EVENT_SCOPE_THREAD, "id", client_->socket_id());
     writable_signal_expected_ = true;
     error_ = EWOULDBLOCK;
     return -1;
   }
-
-  const char* data_char = reinterpret_cast<const char*>(data);
-  std::vector<char> data_vector(data_char, data_char + data_size);
 
   net::IPEndPoint address_chrome;
   if (!jingle_glue::SocketAddressToIPEndPoint(address, &address_chrome)) {
@@ -212,7 +234,12 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
     return -1;
   }
 
-  ++send_packets_pending_;
+  send_bytes_available_ -= data_size;
+  in_flight_packet_sizes_.push_back(data_size);
+  TraceSendThrottlingState();
+
+  const char* data_char = reinterpret_cast<const char*>(data);
+  std::vector<char> data_vector(data_char, data_char + data_size);
   client_->Send(address_chrome, data_vector);
 
   // Fake successful send. The caller ignores result anyway.
@@ -286,6 +313,7 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& address) {
   }
 
   state_ = IS_OPEN;
+  TraceSendThrottlingState();
 
   SignalAddressReady(this, local_address_);
   if (type_ == P2P_SOCKET_TCP_CLIENT)
@@ -311,11 +339,13 @@ void IpcPacketSocket::OnIncomingTcpConnection(
 void IpcPacketSocket::OnSendComplete() {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
-  --send_packets_pending_;
-  DCHECK_GE(send_packets_pending_, 0);
+  CHECK(!in_flight_packet_sizes_.empty());
+  send_bytes_available_ += in_flight_packet_sizes_.front();
+  DCHECK_LE(send_bytes_available_, kMaximumInFlightBytes);
+  in_flight_packet_sizes_.pop_front();
+  TraceSendThrottlingState();
 
-  if (writable_signal_expected_ &&
-      send_packets_pending_ <= kWritableSignalThreshold) {
+  if (writable_signal_expected_ && send_bytes_available_ > 0) {
     SignalReadyToSend(this);
     writable_signal_expected_ = false;
   }
