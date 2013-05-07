@@ -5,7 +5,10 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
+#include "content/public/browser/browser_thread.h"
+#include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -38,6 +41,23 @@ TEST(SpellcheckMessageFilterMacTest, CombineResults) {
   EXPECT_EQ(SpellCheckResult::SPELLING, remote_results[1].type);
   EXPECT_EQ(20, remote_results[1].location);
   EXPECT_EQ(remote_suggestion, remote_results[1].replacement);
+}
+
+TEST(SpellCheckMessageFilterMacTest, TestOverrideThread) {
+  static const uint32 kSpellcheckMessages[] = {
+    SpellCheckHostMsg_RequestTextCheck::ID,
+  };
+  scoped_refptr<SpellCheckMessageFilterMac> filter(
+      new SpellCheckMessageFilterMac(0));
+  content::BrowserThread::ID thread;
+  IPC::Message message;
+  for (size_t i = 0; i < arraysize(kSpellcheckMessages); ++i) {
+    message.SetHeaderValues(
+        0, kSpellcheckMessages[i], IPC::Message::PRIORITY_NORMAL);
+    thread = content::BrowserThread::IO;
+    filter->OverrideThreadForMessage(message, &thread);
+    EXPECT_EQ(content::BrowserThread::UI, thread);
+  }
 }
 
 }  // namespace

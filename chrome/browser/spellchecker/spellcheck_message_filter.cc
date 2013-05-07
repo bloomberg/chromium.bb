@@ -25,8 +25,12 @@ SpellCheckMessageFilter::SpellCheckMessageFilter(int render_process_id)
 
 void SpellCheckMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
+  // IPC messages arrive on IO thread, but spellcheck data lives on UI thread.
+  // The message filter overrides the thread for these messages because they
+  // access spellcheck data.
   if (message.type() == SpellCheckHostMsg_RequestDictionary::ID ||
-      message.type() == SpellCheckHostMsg_NotifyChecked::ID)
+      message.type() == SpellCheckHostMsg_NotifyChecked::ID ||
+      message.type() == SpellCheckHostMsg_RespondDocumentMarkers::ID)
     *thread = BrowserThread::UI;
 #if !defined(OS_MACOSX)
   if (message.type() == SpellCheckHostMsg_CallSpellingService::ID)
