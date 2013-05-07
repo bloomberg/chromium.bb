@@ -9,9 +9,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/google_apis/test_server/http_request.h"
-#include "chrome/browser/google_apis/test_server/http_response.h"
-#include "chrome/browser/google_apis/test_server/http_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -24,6 +21,9 @@
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/download_test_observer.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/http_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using content::BrowserContext;

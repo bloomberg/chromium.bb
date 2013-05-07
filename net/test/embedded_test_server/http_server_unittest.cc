@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/test_server/http_server.h"
+#include "net/test/embedded_test_server/http_server.h"
 
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/google_apis/test_server/http_request.h"
-#include "chrome/browser/google_apis/test_server/http_response.h"
 #include "net/http/http_response_headers.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_test_util.h"
@@ -69,14 +69,15 @@ class HttpServerTest : public testing::Test,
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
     ++num_responses_received_;
     if (num_responses_received_ == num_responses_expected_)
-      message_loop_.Quit();
+      MessageLoop::current()->Quit();
   }
 
   // Waits until the specified number of responses are received.
   void WaitForResponses(int num_responses) {
     num_responses_received_ = 0;
     num_responses_expected_ = num_responses;
-    message_loop_.Run();  // Will be terminated in OnURLFetchComplete().
+    // Will be terminated in OnURLFetchComplete().
+    MessageLoop::current()->Run();
   }
 
   // Handles |request| sent to |path| and returns the response per |content|,
@@ -105,7 +106,6 @@ class HttpServerTest : public testing::Test,
   int num_responses_expected_;
   std::string request_relative_url_;
   base::Thread io_thread_;
-  MessageLoop message_loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   scoped_ptr<HttpServer> server_;
 };

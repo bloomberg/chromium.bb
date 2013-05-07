@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/test_server/http_connection.h"
+#include "net/test/embedded_test_server/http_connection.h"
 
-#include "chrome/browser/google_apis/test_server/http_response.h"
 #include "net/socket/stream_listen_socket.h"
+#include "net/test/embedded_test_server/http_response.h"
 
 namespace google_apis {
 namespace test_server {

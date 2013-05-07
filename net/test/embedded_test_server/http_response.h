@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_RESPONSE_H_
-#define CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_RESPONSE_H_
+#ifndef NET_TEST_EMBEDDED_TEST_SERVER_HTTP_RESPONSE_H_
+#define NET_TEST_EMBEDDED_TEST_SERVER_HTTP_RESPONSE_H_
 
 #include <map>
 #include <string>
@@ -68,4 +68,4 @@ class HttpResponse {
 }  // namespace test_servers
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_RESPONSE_H_
+#endif  // NET_TEST_EMBEDDED_TEST_SERVER_HTTP_RESPONSE_H_

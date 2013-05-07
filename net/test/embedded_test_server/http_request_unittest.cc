@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/test_server/http_request.h"
+#include "net/test/embedded_test_server/http_request.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

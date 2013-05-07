@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_CONNECTION_H_
-#define CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_CONNECTION_H_
+#ifndef NET_TEST_EMBEDDED_TEST_SERVER_HTTP_CONNECTION_H_
+#define NET_TEST_EMBEDDED_TEST_SERVER_HTTP_CONNECTION_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
-#include "chrome/browser/google_apis/test_server/http_request.h"
+#include "net/test/embedded_test_server/http_request.h"
 
 namespace net {
 class StreamListenSocket;
@@ -56,4 +56,4 @@ class HttpConnection {
 }  // namespace test_server
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_CONNECTION_H_
+#endif  // NET_TEST_EMBEDDED_TEST_SERVER_HTTP_CONNECTION_H_
