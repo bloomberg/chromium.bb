@@ -611,7 +611,7 @@ void DesktopNotificationService::SetSystemComponentEnabled(
 }
 
 void DesktopNotificationService::OnDisabledSystemComponentIdsChanged() {
-  disabled_extension_ids_.clear();
+  disabled_system_component_ids_.clear();
   CopySetFromPrefToMemory(profile_->GetPrefs(),
                           prefs::kMessageCenterDisabledSystemComponentIds,
                           &disabled_system_component_ids_);
