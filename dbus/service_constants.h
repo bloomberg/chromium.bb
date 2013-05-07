@@ -161,6 +161,8 @@ const char kSessionManagerStorePolicy[] = "StorePolicy";
 const char kSessionManagerRetrievePolicy[] = "RetrievePolicy";
 const char kSessionManagerStoreUserPolicy[] = "StoreUserPolicy";
 const char kSessionManagerRetrieveUserPolicy[] = "RetrieveUserPolicy";
+const char kSessionManagerStorePolicyForUser[] = "StorePolicyForUser";
+const char kSessionManagerRetrievePolicyForUser[] = "RetrievePolicyForUser";
 const char kSessionManagerStoreDeviceLocalAccountPolicy[] =
     "StoreDeviceLocalAccountPolicy";
 const char kSessionManagerRetrieveDeviceLocalAccountPolicy[] =
