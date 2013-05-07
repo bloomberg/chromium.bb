@@ -111,8 +111,8 @@ lose_keyboard_focus(struct wl_listener *listener, void *data)
 static void
 lose_touch_focus(struct wl_listener *listener, void *data)
 {
-	struct wl_touch *touch =
-		container_of(listener, struct wl_touch, focus_listener);
+	struct weston_touch *touch =
+		container_of(listener, struct weston_touch, focus_listener);
 
 	touch->focus_resource = NULL;
 }
@@ -171,13 +171,11 @@ static const struct weston_pointer_grab_interface
 	default_grab_button
 };
 
-static void default_grab_touch_down(struct wl_touch_grab *grab,
-		uint32_t time,
-		int touch_id,
-		wl_fixed_t sx,
-		wl_fixed_t sy)
+static void
+default_grab_touch_down(struct weston_touch_grab *grab, uint32_t time,
+			int touch_id, wl_fixed_t sx, wl_fixed_t sy)
 {
-	struct wl_touch *touch = grab->touch;
+	struct weston_touch *touch = grab->touch;
 	struct wl_display *display;
 	uint32_t serial;
 
@@ -185,15 +183,16 @@ static void default_grab_touch_down(struct wl_touch_grab *grab,
 		display = wl_client_get_display(touch->focus_resource->client);
 		serial = wl_display_next_serial(display);
 		wl_touch_send_down(touch->focus_resource, serial, time,
-				&touch->focus->resource, touch_id, sx, sy);
+				   &touch->focus->resource,
+				   touch_id, sx, sy);
 	}
 }
 
-static void default_grab_touch_up(struct wl_touch_grab *grab,
-		uint32_t time,
-		int touch_id)
+static void
+default_grab_touch_up(struct weston_touch_grab *grab,
+		      uint32_t time, int touch_id)
 {
-	struct wl_touch *touch = grab->touch;
+	struct weston_touch *touch = grab->touch;
 	struct wl_display *display;
 	uint32_t serial;
 
@@ -204,21 +203,19 @@ static void default_grab_touch_up(struct wl_touch_grab *grab,
 	}
 }
 
-static void default_grab_touch_motion(struct wl_touch_grab *grab,
-		uint32_t time,
-		int touch_id,
-		wl_fixed_t sx,
-		wl_fixed_t sy)
+static void
+default_grab_touch_motion(struct weston_touch_grab *grab, uint32_t time,
+			  int touch_id, wl_fixed_t sx, wl_fixed_t sy)
 {
-	struct wl_touch *touch = grab->touch;
+	struct weston_touch *touch = grab->touch;
 
 	if (touch->focus_resource) {
 		wl_touch_send_motion(touch->focus_resource, time,
-				touch_id, sx, sy);
+				     touch_id, sx, sy);
 	}
 }
 
-static const struct wl_touch_grab_interface default_touch_grab_interface = {
+static const struct weston_touch_grab_interface default_touch_grab_interface = {
 	default_grab_touch_down,
 	default_grab_touch_up,
 	default_grab_touch_motion
@@ -340,7 +337,7 @@ weston_keyboard_release(struct weston_keyboard *keyboard)
 }
 
 WL_EXPORT void
-wl_touch_init(struct wl_touch *touch)
+weston_touch_init(struct weston_touch *touch)
 {
 	memset(touch, 0, sizeof *touch);
 	wl_list_init(&touch->resource_list);
@@ -352,7 +349,7 @@ wl_touch_init(struct wl_touch *touch)
 }
 
 WL_EXPORT void
-wl_touch_release(struct wl_touch *touch)
+weston_touch_release(struct weston_touch *touch)
 {
 	/* XXX: What about touch->resource_list? */
 	if (touch->focus_resource)
@@ -383,7 +380,7 @@ wl_seat_release(struct wl_seat *seat)
 	if (seat->keyboard)
 		weston_keyboard_release(seat->keyboard);
 	if (seat->touch)
-		wl_touch_release(seat->touch);
+		weston_touch_release(seat->touch);
 }
 
 static void
@@ -434,7 +431,7 @@ wl_seat_set_keyboard(struct wl_seat *seat, struct weston_keyboard *keyboard)
 }
 
 WL_EXPORT void
-wl_seat_set_touch(struct wl_seat *seat, struct wl_touch *touch)
+wl_seat_set_touch(struct wl_seat *seat, struct weston_touch *touch)
 {
 	if (touch && (seat->touch || touch->seat))
 		return; /* XXX: error? */
@@ -609,14 +606,14 @@ weston_pointer_set_current(struct weston_pointer *pointer,
 }
 
 WL_EXPORT void
-wl_touch_start_grab(struct wl_touch *touch, struct wl_touch_grab *grab)
+weston_touch_start_grab(struct weston_touch *touch, struct weston_touch_grab *grab)
 {
 	touch->grab = grab;
 	grab->touch = touch;
 }
 
 WL_EXPORT void
-wl_touch_end_grab(struct wl_touch *touch)
+weston_touch_end_grab(struct weston_touch *touch)
 {
 	touch->grab = &touch->default_grab;
 }
@@ -1081,8 +1078,8 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
              wl_fixed_t x, wl_fixed_t y, int touch_type)
 {
 	struct weston_compositor *ec = seat->compositor;
-	struct wl_touch *touch = seat->seat.touch;
-	struct wl_touch_grab *grab = touch->grab;
+	struct weston_touch *touch = seat->seat.touch;
+	struct weston_touch_grab *grab = touch->grab;
 	struct weston_surface *es;
 	wl_fixed_t sx, sy;
 
@@ -1548,7 +1545,7 @@ weston_seat_init_touch(struct weston_seat *seat)
 	if (seat->has_touch)
 		return;
 
-	wl_touch_init(&seat->touch);
+	weston_touch_init(&seat->touch);
 	wl_seat_set_touch(&seat->seat, &seat->touch);
 
 	seat->has_touch = 1;
