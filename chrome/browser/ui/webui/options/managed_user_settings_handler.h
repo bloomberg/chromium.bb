@@ -55,6 +55,10 @@ class ManagedUserSettingsHandler : public OptionsPageUIHandler {
   // exception.
   void SetManualException(const base::ListValue* args);
 
+  // Open the WebStore in elevated mode to allow the installation of content
+  // packs without asking for authorization.
+  void OpenContentPacksURL(const base::ListValue* args);
+
   // Updates the current view by reading the entries from the managed mode
   // service and updating the WebUI model.
   void UpdateViewFromModel();

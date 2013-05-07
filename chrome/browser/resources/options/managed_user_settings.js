@@ -79,7 +79,7 @@ cr.define('options', function() {
       };
 
       $('get-content-packs-button').onclick = function(event) {
-        window.open(loadTimeData.getString('getContentPacksURL'));
+        chrome.send('openContentPacksURL');
       };
 
       if (!cr.isChromeOS) {

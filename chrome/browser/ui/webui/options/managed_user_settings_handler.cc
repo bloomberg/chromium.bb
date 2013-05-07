@@ -17,15 +17,19 @@
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/url_canon.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
@@ -167,7 +171,6 @@ void ManagedUserSettingsHandler::GetLocalizedValues(
     { "manualExceptionsTabTitle", IDS_MANUAL_EXCEPTION_TAB_TITLE },
     { "contentPacksTabLabel", IDS_CONTENT_PACKS_TAB_LABEL },
     { "getContentPacks", IDS_GET_CONTENT_PACKS_BUTTON },
-    { "getContentPacksURL", IDS_GET_CONTENT_PACKS_URL },
     // Content pack restriction options.
     { "contentPackSettings", IDS_CONTENT_PACK_SETTINGS_LABEL },
     { "outsideContentPacksAllow", IDS_OUTSIDE_CONTENT_PACKS_ALLOW_RADIO },
@@ -214,6 +217,10 @@ void ManagedUserSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setManagedUserSetting",
       base::Bind(&ManagedUserSettingsHandler::SetSetting,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "openContentPacksURL",
+      base::Bind(&ManagedUserSettingsHandler::OpenContentPacksURL,
                  base::Unretained(this)));
 }
 
@@ -329,6 +336,24 @@ void ManagedUserSettingsHandler::CheckManualExceptionValidity(
       "ManagedUserSettings.patternValidityCheckComplete",
       base::StringValue(pattern_string),
       base::FundamentalValue(is_valid));
+}
+
+void ManagedUserSettingsHandler::OpenContentPacksURL(
+    const ListValue* args) {
+  // Make sure that the managed user is currently in elevated state.
+  content::WebContents* web_contents = web_ui()->GetWebContents();
+  ManagedModeNavigationObserver* observer =
+      ManagedModeNavigationObserver::FromWebContents(web_contents);
+  if (!observer->is_elevated())
+    return;
+
+  content::WebContents* new_web_contents = chrome::AddSelectedTabWithURL(
+      chrome::FindBrowserWithWebContents(web_contents),
+      GURL(l10n_util::GetStringUTF8(IDS_GET_CONTENT_PACKS_URL)),
+      content::PAGE_TRANSITION_LINK);
+  ManagedModeNavigationObserver* new_observer =
+      ManagedModeNavigationObserver::FromWebContents(new_web_contents);
+  new_observer->set_elevated(true);
 }
 
 void ManagedUserSettingsHandler::UpdateViewFromModel() {

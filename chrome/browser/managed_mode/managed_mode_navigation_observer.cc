@@ -533,7 +533,7 @@ void ManagedModeNavigationObserver::DidCommitProvisionalLoadForFrame(
     }
   }
 
-  if (behavior == ManagedModeURLFilter::BLOCK) {
+  if (behavior == ManagedModeURLFilter::BLOCK && !is_elevated_) {
     DCHECK_EQ(RECORDING_URLS_AFTER_PREVIEW, state_);
     // Add the infobar.
     if (!preview_infobar_delegate_) {
@@ -559,8 +559,14 @@ void ManagedModeNavigationObserver::OnRequestBlocked(
 
   ManagedModeNavigationObserver* navigation_observer =
       ManagedModeNavigationObserver::FromWebContents(web_contents);
-  if (navigation_observer)
+  if (navigation_observer) {
+    if (navigation_observer->is_elevated()) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE, base::Bind(callback, true));
+      return;
+    }
     navigation_observer->SetStateToRecordingAfterPreview();
+  }
 
   // Create a history entry for the attempt and mark it as such.
   history::HistoryAddPageArgs add_page_args(
