@@ -36,6 +36,20 @@ indexes:
 - kind: Statistics
   ancestor: yes
   properties:
+  - name: cmd_base
+  - name: end_date
+  - name: run_time
+
+- kind: Statistics
+  ancestor: yes
+  properties:
+  - name: cmd_base
+  - name: end_datetime
+    direction: desc
+
+- kind: Statistics
+  ancestor: yes
+  properties:
   - name: end_date
 
 - kind: Statistics
@@ -71,6 +85,12 @@ indexes:
 - kind: Statistics
   ancestor: yes
   properties:
+  - name: end_datetime
+    direction: desc
+
+- kind: Statistics
+  ancestor: yes
+  properties:
   - name: end_time
 
 - kind: Statistics
@@ -102,18 +122,11 @@ indexes:
   properties:
   - name: username
   - name: end_date
-    direction: desc
+  - name: run_time
 
 - kind: Statistics
   ancestor: yes
   properties:
   - name: username
   - name: end_date
-  - name: run_time
-
-- kind: Statistics
-  ancestor: yes
-  properties:
-  - name: cmd_base
-  - name: end_date
-  - name: run_time
+    direction: desc
