@@ -2831,14 +2831,14 @@ class OrderOfIncludesTest(CppStyleTestBase):
                                          '#include "foo.h"\n'
                                          '\n'
                                          '#include <wtf/Assertions.h>\n',
-                                         '')
+                                         'wtf includes should be "wtf/file.h" instead of <wtf/file.h>.'
+                                         '  [build/include] [4]')
         self.assert_language_rules_check('foo.cpp',
                                          '#include "config.h"\n'
                                          '#include "foo.h"\n'
                                          '\n'
                                          '#include "wtf/Assertions.h"\n',
-                                         'wtf includes should be <wtf/file.h> instead of "wtf/file.h".'
-                                         '  [build/include] [4]')
+                                         '')
 
     def test_check_cc_includes(self):
         self.assert_language_rules_check('bar/chromium/foo.cpp',

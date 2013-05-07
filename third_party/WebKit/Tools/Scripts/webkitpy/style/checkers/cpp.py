@@ -2857,9 +2857,9 @@ def check_include_line(filename, file_extension, clean_lines, line_number, inclu
               'Streams are highly discouraged.')
 
     # Look for specific includes to fix.
-    if include.startswith('wtf/') and not is_system:
+    if include.startswith('wtf/') and is_system:
         error(line_number, 'build/include', 4,
-              'wtf includes should be <wtf/file.h> instead of "wtf/file.h".')
+              'wtf includes should be "wtf/file.h" instead of <wtf/file.h>.')
 
     if filename.find('/chromium/') != -1 and include.startswith('cc/CC'):
         error(line_number, 'build/include', 4,
