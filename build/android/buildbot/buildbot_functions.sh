@@ -52,6 +52,7 @@ function bb_baseline_setup {
   . build/android/envsetup.sh
 
   local extra_gyp_defines="$(bb_get_json_prop "$FACTORY_PROPERTIES" \
+     extra_gyp_defines) $(bb_get_json_prop "$SLAVE_PROPERTIES" \
      extra_gyp_defines)"
   export GYP_DEFINES+=" fastbuild=1 $extra_gyp_defines"
   if echo $extra_gyp_defines | grep -qE 'clang|asan'; then
