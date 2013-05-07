@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: document.clear() is deprecated. This method doesn't do anything.
 Original line 1
 
 New line 1

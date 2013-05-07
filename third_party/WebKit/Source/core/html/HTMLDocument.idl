@@ -35,7 +35,7 @@
 
     [Replaceable] readonly attribute HTMLAllCollection all;
 
-    void clear();
+    [DeprecateAs=DocumentClear] void clear();
 
     readonly attribute long width;
     readonly attribute long height;

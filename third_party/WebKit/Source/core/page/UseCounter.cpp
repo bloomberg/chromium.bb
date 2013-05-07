@@ -145,6 +145,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case WebAudioLooping:
         return "AudioBufferSourceNode 'looping' attribute is deprecated.  Use 'loop' instead.";
 
+    case DocumentClear:
+        return "document.clear() is deprecated. This method doesn't do anything.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
