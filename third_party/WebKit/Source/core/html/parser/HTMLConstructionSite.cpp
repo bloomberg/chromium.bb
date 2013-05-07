@@ -83,12 +83,17 @@ static inline bool isAllWhitespace(const String& string)
     return string.isAllSpecialCharacters<isHTMLSpace>();
 }
 
-static inline void executeInsertTask(HTMLConstructionSiteTask& task)
+// The |lazyAttach| parameter to this function exists for historical reasons.
+// There used to be two code paths, one that used lazyAttach and one that
+// didn't. We should make the two code paths consistent and either use
+// lazyAttach or non-lazyAttach, but we wanted to make that change separately.
+static inline void insert(HTMLConstructionSiteTask& task, bool lazyAttach)
 {
-    ASSERT(task.operation == HTMLConstructionSiteTask::Insert);
-
     if (task.parent->hasTagName(templateTag))
         task.parent = toHTMLTemplateElement(task.parent.get())->content();
+
+    if (ContainerNode* parent = task.child->parentNode())
+        parent->parserRemoveChild(task.child.get());
 
     if (task.nextChild)
         task.parent->parserInsertBefore(task.child.get(), task.nextChild.get());
@@ -98,8 +103,19 @@ static inline void executeInsertTask(HTMLConstructionSiteTask& task)
     // JavaScript run from beforeload (or DOM Mutation or event handlers)
     // might have removed the child, in which case we should not attach it.
 
-    if (task.child->parentNode() && task.parent->attached() && !task.child->attached())
-        task.child->attach();
+    if (task.child->parentNode() && task.parent->attached() && !task.child->attached()) {
+        if (lazyAttach)
+            task.child->lazyAttach();
+        else
+            task.child->attach();
+    }
+}
+
+static inline void executeInsertTask(HTMLConstructionSiteTask& task)
+{
+    ASSERT(task.operation == HTMLConstructionSiteTask::Insert);
+
+    insert(task, false);
 
     task.child->beginParsingChildren();
 
@@ -120,13 +136,37 @@ static inline void executeReparentTask(HTMLConstructionSiteTask& task)
         task.child->lazyAttach();
 }
 
+static inline void executeInsertAlreadyParsedChildTask(HTMLConstructionSiteTask& task)
+{
+    ASSERT(task.operation == HTMLConstructionSiteTask::InsertAlreadyParsedChild);
+
+    insert(task, true);
+}
+
+static inline void executeTakeAllChildrenTask(HTMLConstructionSiteTask& task)
+{
+    ASSERT(task.operation == HTMLConstructionSiteTask::TakeAllChildren);
+
+    task.parent->takeAllChildrenFrom(task.oldParent());
+    // Notice that we don't need to manually attach the moved children
+    // because takeAllChildrenFrom does that work for us.
+}
+
 static inline void executeTask(HTMLConstructionSiteTask& task)
 {
     if (task.operation == HTMLConstructionSiteTask::Insert)
         return executeInsertTask(task);
 
+    // All the cases below this point are only used by the adoption agency.
+
+    if (task.operation == HTMLConstructionSiteTask::InsertAlreadyParsedChild)
+        return executeInsertAlreadyParsedChildTask(task);
+
     if (task.operation == HTMLConstructionSiteTask::Reparent)
         return executeReparentTask(task);
+
+    if (task.operation == HTMLConstructionSiteTask::TakeAllChildren)
+        return executeTakeAllChildrenTask(task);
 
     ASSERT_NOT_REACHED();
 }
@@ -546,6 +586,35 @@ void HTMLConstructionSite::reparent(HTMLElementStack::ElementRecord* newParent, 
     HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Reparent);
     task.parent = newParent->element();
     task.child = child->element();
+    m_taskQueue.append(task);
+}
+
+void HTMLConstructionSite::reparent(HTMLElementStack::ElementRecord* newParent, HTMLStackItem* child)
+{
+    HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Reparent);
+    task.parent = newParent->element();
+    task.child = child->element();
+    m_taskQueue.append(task);
+}
+
+void HTMLConstructionSite::insertAlreadyParsedChild(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* child)
+{
+    if (newParent->causesFosterParenting()) {
+        fosterParent(child->element());
+        return;
+    }
+
+    HTMLConstructionSiteTask task(HTMLConstructionSiteTask::InsertAlreadyParsedChild);
+    task.parent = newParent->element();
+    task.child = child->element();
+    m_taskQueue.append(task);
+}
+
+void HTMLConstructionSite::takeAllChildren(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* oldParent)
+{
+    HTMLConstructionSiteTask task(HTMLConstructionSiteTask::TakeAllChildren);
+    task.parent = newParent->element();
+    task.child = oldParent->element();
     m_taskQueue.append(task);
 }
 

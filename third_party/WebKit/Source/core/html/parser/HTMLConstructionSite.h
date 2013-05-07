@@ -41,13 +41,23 @@ namespace WebCore {
 struct HTMLConstructionSiteTask {
     enum Operation {
         Insert,
+        InsertAlreadyParsedChild,
         Reparent,
+        TakeAllChildren,
     };
 
     explicit HTMLConstructionSiteTask(Operation op)
         : operation(op)
         , selfClosing(false)
     {
+    }
+
+    ContainerNode* oldParent()
+    {
+        // It's sort of ugly, but we store the |oldParent| in the |child| field
+        // of the task so that we don't bloat the HTMLConstructionSiteTask
+        // object in the common case of the Insert operation.
+        return toContainerNode(child.get());
     }
 
     Operation operation;
@@ -108,6 +118,12 @@ public:
     void insertHTMLBodyStartTagInBody(AtomicHTMLToken*);
 
     void reparent(HTMLElementStack::ElementRecord* newParent, HTMLElementStack::ElementRecord* child);
+    void reparent(HTMLElementStack::ElementRecord* newParent, HTMLStackItem* child);
+    // insertAlreadyParsedChild assumes that |child| has already been parsed (i.e., we're just
+    // moving it around in the tree rather than parsing it for the first time). That means
+    // this function doesn't call beginParsingChildren / finishParsingChildren.
+    void insertAlreadyParsedChild(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* child);
+    void takeAllChildren(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* oldParent);
 
     PassRefPtr<HTMLStackItem> createElementFromSavedToken(HTMLStackItem*);
 
