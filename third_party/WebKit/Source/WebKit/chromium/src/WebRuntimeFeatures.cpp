@@ -249,15 +249,6 @@ bool WebRuntimeFeatures::isScriptedSpeechEnabled()
     return RuntimeEnabledFeatures::scriptedSpeechEnabled();
 }
 
-void WebRuntimeFeatures::enableXHRResponseBlob(bool enable)
-{
-}
-
-bool WebRuntimeFeatures::isXHRResponseBlobEnabled()
-{
-    return true;
-}
-
 void WebRuntimeFeatures::enableFileSystem(bool enable)
 {
     RuntimeEnabledFeatures::setFileSystemEnabled(enable);

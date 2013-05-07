@@ -183,9 +183,6 @@ public:
     WEBKIT_EXPORT static void enableWebPInAcceptHeader(bool);
     WEBKIT_EXPORT static bool isWebPInAcceptHeaderEnabled();
 
-    WEBKIT_EXPORT static void enableXHRResponseBlob(bool);
-    WEBKIT_EXPORT static bool isXHRResponseBlobEnabled();
-
 private:
     WebRuntimeFeatures();
 };
