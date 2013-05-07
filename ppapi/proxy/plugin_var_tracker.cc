@@ -189,10 +189,12 @@ void PluginVarTracker::DidDeleteInstance(PP_Instance instance) {
 }
 
 void PluginVarTracker::DidDeleteDispatcher(PluginDispatcher* dispatcher) {
-  for (size_t i = 0; i < live_vars_.size(); ++i) {
-    if (live_vars_[i].var.get() == NULL)
+  for (VarMap::iterator it = live_vars_.begin();
+       it != live_vars_.end();
+       ++it) {
+    if (it->second.var.get() == NULL)
       continue;
-    ProxyObjectVar* object = live_vars_[i].var->AsProxyObjectVar();
+    ProxyObjectVar* object = it->second.var->AsProxyObjectVar();
     if (object && object->dispatcher() == dispatcher)
       object->clear_dispatcher();
   }
