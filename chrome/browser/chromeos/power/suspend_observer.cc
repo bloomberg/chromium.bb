@@ -53,11 +53,14 @@ void SuspendObserver::ScreenIsLocked() {
 
   // Stop blocking suspend after the screen is locked.
   if (!screen_lock_callback_.is_null()) {
+    LOG(WARNING) << "Locking screen due to suspend.";
     // Run the callback asynchronously.  ScreenIsLocked() is currently
     // called asynchronously after RequestLockScreen(), but this guards
     // against it being made synchronous later.
     MessageLoop::current()->PostTask(FROM_HERE, screen_lock_callback_);
     screen_lock_callback_.Reset();
+  } else {
+    LOG(WARNING) << "Locking screen without suspend.";
   }
 }
 

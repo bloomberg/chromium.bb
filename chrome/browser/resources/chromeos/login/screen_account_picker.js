@@ -91,8 +91,11 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       // is reduced. See http://crosbug.com/11116 http://crosbug.com/18307
       // $('pod-row').startInitAnimation();
 
-      chrome.send('accountPickerReady');
-      chrome.send('loginVisible', ['account-picker']);
+      // Ensure that login is actually visible.
+      window.webkitRequestAnimationFrame(function() {
+        chrome.send('accountPickerReady');
+        chrome.send('loginVisible', ['account-picker']);
+      });
     },
 
     /**
