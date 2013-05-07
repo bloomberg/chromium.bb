@@ -1639,8 +1639,7 @@ sub ShouldKeepAttributeAlive
     my ($interface, $attribute, $returnType) = @_;
     my $attrName = $attribute->signature->name;
 
-    # FIXME: Rename the IDL attribute to [KeepAttributeAliveForGC].
-    return 1 if $attribute->signature->extendedAttributes->{"CacheAttributeForGC"};
+    return 1 if $attribute->signature->extendedAttributes->{"KeepAttributeAliveForGC"};
 
     # Basically, for readonly or replaceable attributes, we have to guarantee
     # that JS wrappers don't get garbage-collected prematually when their
