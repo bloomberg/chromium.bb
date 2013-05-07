@@ -1644,9 +1644,8 @@ sub ShouldKeepAttributeAlive
     # Basically, for readonly or replaceable attributes, we have to guarantee
     # that JS wrappers don't get garbage-collected prematually when their
     # lifetime is strongly tied to their owner.
-    # FIXME: Remove the "location" hack.
     return 0 if !IsWrapperType($returnType);
-    return 0 if !IsReadonly($attribute) && !$attribute->signature->extendedAttributes->{"Replaceable"} && $attrName ne "location";
+    return 0 if !IsReadonly($attribute) && !$attribute->signature->extendedAttributes->{"Replaceable"};
 
     # However, there are a couple of exceptions.
 

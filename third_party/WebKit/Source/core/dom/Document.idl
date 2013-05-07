@@ -137,7 +137,7 @@
 
     [PerWorldBindings] NodeList getElementsByName([Default=Undefined] optional DOMString elementName);
 
-    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] attribute Location location;
+    [Custom, Replaceable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] readonly attribute Location location;
 
     // IE extensions
 

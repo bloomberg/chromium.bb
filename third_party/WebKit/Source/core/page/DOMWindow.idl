@@ -45,7 +45,7 @@
     [Replaceable, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds] readonly attribute Navigator navigator;
     [Replaceable] readonly attribute Navigator clientInformation;
     readonly attribute Crypto crypto;
-    [DoNotCheckSecurity, CustomSetter, Unforgeable] attribute Location location;
+    [DoNotCheckSecurity, CustomSetter, Unforgeable, Replaceable] readonly attribute Location location;
     [MeasureAs=WindowEvent, NotEnumerable, Replaceable, CustomGetter, CustomSetter] readonly attribute Event event;
 
     DOMSelection getSelection();
