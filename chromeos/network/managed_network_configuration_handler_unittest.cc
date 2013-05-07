@@ -15,6 +15,7 @@
 #include "chromeos/dbus/mock_shill_service_client.h"
 #include "chromeos/dbus/shill_profile_client_stub.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_profile_handler_stub.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "dbus/object_path.h"
@@ -33,6 +34,8 @@ using ::testing::_;
 
 namespace test_utils = ::chromeos::onc::test_utils;
 
+namespace chromeos {
+
 namespace {
 
 std::string ValueToString(const base::Value* value) {
@@ -40,6 +43,10 @@ std::string ValueToString(const base::Value* value) {
   str << *value;
   return str.str();
 }
+
+const char kSharedProfilePath[] = "/profile/default";
+const char kUser1[] = "user1";
+const char kUser1ProfilePath[] = "/profile/user1/shill";
 
 // Matcher to match base::Value.
 MATCHER_P(IsEqualTo,
@@ -49,10 +56,80 @@ MATCHER_P(IsEqualTo,
   return value->Equals(&arg);
 }
 
+class ShillProfileTestClient {
+ public:
+  typedef ShillClientHelper::DictionaryValueCallbackWithoutStatus
+      DictionaryValueCallbackWithoutStatus;
+  typedef ShillClientHelper::ErrorCallback ErrorCallback;
+
+  void AddProfile(const std::string& profile_path,
+                  const std::string& userhash) {
+    if (profile_entries_.HasKey(profile_path))
+      return;
+
+    base::DictionaryValue* profile = new base::DictionaryValue;
+    profile_entries_.SetWithoutPathExpansion(profile_path, profile);
+    profile_to_user_[profile_path] = userhash;
+  }
+
+  void AddEntry(const std::string& profile_path,
+                const std::string& entry_path,
+                const base::DictionaryValue& entry) {
+    base::DictionaryValue* entries = NULL;
+    profile_entries_.GetDictionaryWithoutPathExpansion(profile_path, &entries);
+    ASSERT_TRUE(entries);
+
+    base::DictionaryValue* new_entry = entry.DeepCopy();
+    new_entry->SetStringWithoutPathExpansion(flimflam::kProfileProperty,
+                                             profile_path);
+    entries->SetWithoutPathExpansion(entry_path, new_entry);
+  }
+
+  void GetProperties(const dbus::ObjectPath& profile_path,
+                     const DictionaryValueCallbackWithoutStatus& callback,
+                     const ErrorCallback& error_callback) {
+    base::DictionaryValue* entries = NULL;
+    profile_entries_.GetDictionaryWithoutPathExpansion(profile_path.value(),
+                                                       &entries);
+    ASSERT_TRUE(entries);
+
+    scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+    base::ListValue* entry_paths = new base::ListValue;
+    result->SetWithoutPathExpansion(flimflam::kEntriesProperty,
+                                    entry_paths);
+    for (base::DictionaryValue::Iterator it(*entries); !it.IsAtEnd();
+         it.Advance()) {
+      entry_paths->AppendString(it.key());
+    }
+
+    ASSERT_GT(profile_to_user_.count(profile_path.value()), 0UL);
+    const std::string& userhash = profile_to_user_[profile_path.value()];
+    result->SetStringWithoutPathExpansion(shill::kUserHashProperty, userhash);
+
+    callback.Run(*result);
+  }
+
+  void GetEntry(const dbus::ObjectPath& profile_path,
+                const std::string& entry_path,
+                const DictionaryValueCallbackWithoutStatus& callback,
+                const ErrorCallback& error_callback) {
+    base::DictionaryValue* entries = NULL;
+    profile_entries_.GetDictionaryWithoutPathExpansion(profile_path.value(),
+                                                       &entries);
+    ASSERT_TRUE(entries);
+
+    base::DictionaryValue* entry = NULL;
+    entries->GetDictionaryWithoutPathExpansion(entry_path, &entry);
+    ASSERT_TRUE(entry);
+    callback.Run(*entry);
+  }
+
+ protected:
+  base::DictionaryValue profile_entries_;
+  std::map<std::string, std::string> profile_to_user_;
+};
+
 }  // namespace
-
-
-namespace chromeos {
 
 class ManagedNetworkConfigurationHandlerTest : public testing::Test {
  public:
@@ -76,15 +153,15 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
         .WillRepeatedly(Return(&mock_profile_client_));
 
     ON_CALL(mock_profile_client_, GetProperties(_,_,_))
-        .WillByDefault(Invoke(&stub_profile_client_,
-                              &ShillProfileClientStub::GetProperties));
+        .WillByDefault(Invoke(&profiles_stub_,
+                              &ShillProfileTestClient::GetProperties));
 
     ON_CALL(mock_profile_client_, GetEntry(_,_,_,_))
-        .WillByDefault(Invoke(&stub_profile_client_,
-                              &ShillProfileClientStub::GetEntry));
+        .WillByDefault(Invoke(&profiles_stub_,
+                              &ShillProfileTestClient::GetEntry));
 
     NetworkConfigurationHandler::Initialize();
-    ManagedNetworkConfigurationHandler::Initialize();
+    ManagedNetworkConfigurationHandler::Initialize(&stub_profile_handler_);
     message_loop_.RunUntilIdle();
   }
 
@@ -94,16 +171,29 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     DBusThreadManager::Shutdown();
   }
 
+  void VerifyAndClearExpectations() {
+    Mock::VerifyAndClearExpectations(&mock_manager_client_);
+    Mock::VerifyAndClearExpectations(&mock_service_client_);
+    Mock::VerifyAndClearExpectations(&mock_profile_client_);
+  }
+
+  void InitializeStandardProfiles() {
+    profiles_stub_.AddProfile(kUser1ProfilePath, kUser1);
+    stub_profile_handler_.AddProfile(NetworkProfile(kUser1ProfilePath, kUser1));
+    stub_profile_handler_.AddProfile(
+        NetworkProfile(kSharedProfilePath, std::string()));
+  }
+
   void SetUpEntry(const std::string& path_to_shill_json,
                   const std::string& profile_path,
                   const std::string& entry_path) {
-    stub_profile_client_.AddEntry(
-        profile_path,
-        entry_path,
-        *test_utils::ReadTestDictionary(path_to_shill_json));
+    scoped_ptr<base::DictionaryValue> entry =
+        test_utils::ReadTestDictionary(path_to_shill_json);
+    profiles_stub_.AddEntry(profile_path, entry_path, *entry);
   }
 
   void SetPolicy(onc::ONCSource onc_source,
+                 const std::string& userhash,
                  const std::string& path_to_onc) {
     scoped_ptr<base::DictionaryValue> policy;
     if (path_to_onc.empty())
@@ -115,7 +205,8 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     policy->GetListWithoutPathExpansion(
         onc::toplevel_config::kNetworkConfigurations, &network_configs);
 
-    managed_handler()->SetPolicy(onc::ONC_SOURCE_USER_POLICY, *network_configs);
+    managed_handler()->SetPolicy(
+        onc::ONC_SOURCE_USER_POLICY, userhash, *network_configs);
   }
 
   ManagedNetworkConfigurationHandler* managed_handler() {
@@ -126,63 +217,67 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   StrictMock<MockShillManagerClient> mock_manager_client_;
   StrictMock<MockShillServiceClient> mock_service_client_;
   StrictMock<MockShillProfileClient> mock_profile_client_;
-  ShillProfileClientStub stub_profile_client_;
+  NetworkProfileHandlerStub stub_profile_handler_;
+  ShillProfileTestClient profiles_stub_;
   MessageLoop message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ManagedNetworkConfigurationHandlerTest);
 };
 
+TEST_F(ManagedNetworkConfigurationHandlerTest, ProfileInitialization) {
+  InitializeStandardProfiles();
+  message_loop_.RunUntilIdle();
+}
+
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnconfigured) {
+  InitializeStandardProfiles();
   scoped_ptr<base::DictionaryValue> expected_shill_properties =
       test_utils::ReadTestDictionary(
           "policy/shill_policy_on_unconfigured_wifi1.json");
 
   EXPECT_CALL(mock_profile_client_,
-              GetProperties(dbus::ObjectPath("/profile/chronos/shill"),
-                            _, _)).Times(1);
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(mock_manager_client_,
               ConfigureServiceForProfile(
-                  dbus::ObjectPath("/profile/chronos/shill"),
+                  dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),
-                  _, _)).Times(1);
+                  _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, "policy/policy_wifi1.onc");
+  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
-  EXPECT_CALL(mock_profile_client_,
-              GetProperties(_, _, _)).Times(1);
+  InitializeStandardProfiles();
+  EXPECT_CALL(mock_profile_client_, GetProperties(_, _, _));
 
-  EXPECT_CALL(mock_manager_client_,
-              ConfigureServiceForProfile(_, _, _, _)).Times(1);
+  EXPECT_CALL(mock_manager_client_, ConfigureServiceForProfile(_, _, _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, "policy/policy_wifi1.onc");
+  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
-  Mock::VerifyAndClearExpectations(&mock_profile_client_);
-  Mock::VerifyAndClearExpectations(&mock_manager_client_);
+  VerifyAndClearExpectations();
 
   SetUpEntry("policy/shill_policy_on_unmanaged_user_wifi1.json",
-             "/profile/chronos/shill",
+             kUser1ProfilePath,
              "some_entry_path");
 
-  EXPECT_CALL(mock_profile_client_,
-              GetProperties(_, _, _)).Times(1);
+  EXPECT_CALL(mock_profile_client_, GetProperties(_, _, _));
 
   EXPECT_CALL(mock_profile_client_,
-              GetEntry(dbus::ObjectPath("/profile/chronos/shill"),
+              GetEntry(dbus::ObjectPath(kUser1ProfilePath),
                        "some_entry_path",
-                       _, _)).Times(1);
+                       _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, "policy/policy_wifi1.onc");
+  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnmanaged) {
+  InitializeStandardProfiles();
   SetUpEntry("policy/shill_unmanaged_user_wifi1.json",
-             "/profile/chronos/shill",
+             kUser1ProfilePath,
              "old_entry_path");
 
   scoped_ptr<base::DictionaryValue> expected_shill_properties =
@@ -190,27 +285,27 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnmanaged) {
           "policy/shill_policy_on_unmanaged_user_wifi1.json");
 
   EXPECT_CALL(mock_profile_client_,
-              GetProperties(dbus::ObjectPath("/profile/chronos/shill"),
-                            _, _)).Times(1);
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(mock_profile_client_,
-              GetEntry(dbus::ObjectPath("/profile/chronos/shill"),
+              GetEntry(dbus::ObjectPath(kUser1ProfilePath),
                        "old_entry_path",
-                       _, _)).Times(1);
+                       _, _));
 
   EXPECT_CALL(mock_manager_client_,
               ConfigureServiceForProfile(
-                  dbus::ObjectPath("/profile/chronos/shill"),
+                  dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),
-                  _, _)).Times(1);
+                  _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, "policy/policy_wifi1.onc");
+  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
+  InitializeStandardProfiles();
   SetUpEntry("policy/shill_managed_wifi1.json",
-             "/profile/chronos/shill",
+             kUser1ProfilePath,
              "old_entry_path");
 
   scoped_ptr<base::DictionaryValue> expected_shill_properties =
@@ -223,27 +318,27 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
       flimflam::kPassphraseProperty, NULL);
 
   EXPECT_CALL(mock_profile_client_,
-              GetProperties(dbus::ObjectPath("/profile/chronos/shill"),
-                            _, _)).Times(1);
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(mock_profile_client_,
-              GetEntry(dbus::ObjectPath("/profile/chronos/shill"),
+              GetEntry(dbus::ObjectPath(kUser1ProfilePath),
                        "old_entry_path",
-                       _, _)).Times(1);
+                       _, _));
 
   EXPECT_CALL(mock_manager_client_,
               ConfigureServiceForProfile(
-                  dbus::ObjectPath("/profile/chronos/shill"),
+                  dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),
-                  _, _)).Times(1);
+                  _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, "policy/policy_wifi1.onc");
+  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
+  InitializeStandardProfiles();
   SetUpEntry("policy/shill_policy_on_unmanaged_user_wifi1.json",
-             "/profile/chronos/shill",
+             kUser1ProfilePath,
              "old_entry_path");
 
   scoped_ptr<base::DictionaryValue> expected_shill_properties =
@@ -256,62 +351,84 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
       flimflam::kPassphraseProperty, NULL);
 
   EXPECT_CALL(mock_profile_client_,
-              GetProperties(dbus::ObjectPath("/profile/chronos/shill"),
-                            _, _)).Times(1);
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(mock_profile_client_,
-              GetEntry(dbus::ObjectPath("/profile/chronos/shill"),
+              GetEntry(dbus::ObjectPath(kUser1ProfilePath),
                        "old_entry_path",
-                       _, _)).Times(1);
+                       _, _));
 
   EXPECT_CALL(mock_manager_client_,
               ConfigureServiceForProfile(
-                  dbus::ObjectPath("/profile/chronos/shill"),
+                  dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),
-                  _, _)).Times(1);
+                  _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, "policy/policy_wifi1.onc");
+  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUnmanageManaged) {
+  InitializeStandardProfiles();
   SetUpEntry("policy/shill_policy_on_unmanaged_user_wifi1.json",
-             "/profile/chronos/shill",
+             kUser1ProfilePath,
              "old_entry_path");
 
   EXPECT_CALL(mock_profile_client_,
-              GetProperties(dbus::ObjectPath("/profile/chronos/shill"),
-                            _, _)).Times(1);
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(mock_profile_client_,
-              GetEntry(dbus::ObjectPath("/profile/chronos/shill"),
+              GetEntry(dbus::ObjectPath(kUser1ProfilePath),
                        "old_entry_path",
-                       _, _)).Times(1);
+                       _, _));
 
   EXPECT_CALL(mock_profile_client_,
-              DeleteEntry(dbus::ObjectPath("/profile/chronos/shill"),
+              DeleteEntry(dbus::ObjectPath(kUser1ProfilePath),
                           "old_entry_path",
-                          _, _)).Times(1);
+                          _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, "");
+  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "");
   message_loop_.RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmanaged) {
+  InitializeStandardProfiles();
   SetUpEntry("policy/shill_unmanaged_user_wifi1.json",
-             "/profile/chronos/shill",
+             kUser1ProfilePath,
              "old_entry_path");
 
   EXPECT_CALL(mock_profile_client_,
-              GetProperties(dbus::ObjectPath("/profile/chronos/shill"),
-                            _, _)).Times(1);
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(mock_profile_client_,
-              GetEntry(dbus::ObjectPath("/profile/chronos/shill"),
+              GetEntry(dbus::ObjectPath(kUser1ProfilePath),
                        "old_entry_path",
-                       _, _)).Times(1);
+                       _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, "");
+  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "");
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(ManagedNetworkConfigurationHandlerTest, LateProfileLoading) {
+  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+
+  message_loop_.RunUntilIdle();
+  VerifyAndClearExpectations();
+
+  scoped_ptr<base::DictionaryValue> expected_shill_properties =
+      test_utils::ReadTestDictionary(
+          "policy/shill_policy_on_unconfigured_wifi1.json");
+
+  EXPECT_CALL(mock_profile_client_,
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
+
+  EXPECT_CALL(mock_manager_client_,
+              ConfigureServiceForProfile(
+                  dbus::ObjectPath(kUser1ProfilePath),
+                  IsEqualTo(expected_shill_properties.get()),
+                  _, _));
+
+  InitializeStandardProfiles();
   message_loop_.RunUntilIdle();
 }
 

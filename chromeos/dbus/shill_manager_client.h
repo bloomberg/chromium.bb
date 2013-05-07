@@ -56,6 +56,12 @@ class CHROMEOS_EXPORT ShillManagerClient {
     virtual void AddGeoNetwork(const std::string& technology,
                                const base::DictionaryValue& network) = 0;
 
+    // Does not create an actual profile in the ProfileClient but update the
+    // profiles list and sends a notification to observers. This should only be
+    // called by the ProfileStub. In all other cases, use
+    // ShillProfileClient::TestInterface::AddProfile.
+    virtual void AddProfile(const std::string& profile_path) = 0;
+
     // Used to reset all properties; does not notify observers.
     virtual void ClearProperties() = 0;
 

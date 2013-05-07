@@ -45,7 +45,8 @@ class CHROMEOS_EXPORT ShillProfileClient {
   // GetTestInterface(), only implemented in the stub implementation.
   class TestInterface {
    public:
-    virtual void AddProfile(const std::string& profile_path) = 0;
+    virtual void AddProfile(const std::string& profile_path,
+                            const std::string& userhash) = 0;
     virtual void AddEntry(const std::string& profile_path,
                           const std::string& entry_path,
                           const base::DictionaryValue& properties) = 0;
@@ -60,7 +61,7 @@ class CHROMEOS_EXPORT ShillProfileClient {
   // Factory function, creates a new instance which is owned by the caller.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static ShillProfileClient* Create(DBusClientImplementationType type,
-                                       dbus::Bus* bus);
+                                    dbus::Bus* bus);
 
   // Adds a property changed |observer| for the profile at |profile_path|.
   virtual void AddPropertyChangedObserver(

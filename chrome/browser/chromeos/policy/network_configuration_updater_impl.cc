@@ -50,6 +50,7 @@ void NetworkConfigurationUpdaterImpl::OnUserPolicyInitialized(
     bool allow_trusted_certs_from_policy,
     const std::string& hashed_username) {
   VLOG(1) << "User policy initialized.";
+  hashed_username_ = hashed_username;
   if (allow_trusted_certs_from_policy)
     SetAllowTrustedCertsFromPolicy();
   ApplyNetworkConfiguration(chromeos::onc::ONC_SOURCE_USER_POLICY);
@@ -93,7 +94,9 @@ void NetworkConfigurationUpdaterImpl::ApplyNetworkConfiguration(
   ParseAndValidateOncForImport(
       onc_blob, onc_source, "", &network_configs, &certificates);
 
-  network_config_handler_->SetPolicy(onc_source, network_configs);
+  std::string userhash = onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY ?
+      hashed_username_ : std::string();
+  network_config_handler_->SetPolicy(onc_source, userhash, network_configs);
 
   scoped_ptr<net::CertificateList> web_trust_certs(new net::CertificateList);
   certificate_handler_->ImportCertificates(

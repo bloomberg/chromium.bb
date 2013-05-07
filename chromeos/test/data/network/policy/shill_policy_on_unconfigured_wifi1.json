@@ -2,7 +2,7 @@
   "GUID": "policy_wifi1",
   "Mode": "managed",
   "Passphrase": "policy's passphrase",
-  "Profile": "/profile/chronos/shill",
+  "Profile": "/profile/user1/shill",
   "SSID": "wifi1",
   "Security": "psk",
   "Type": "wifi",

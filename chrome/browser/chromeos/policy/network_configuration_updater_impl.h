@@ -25,8 +25,6 @@ class PolicyMap;
 // This implementation pushes policies to the
 // ManagedNetworkConfigurationHandler. User policies are only pushed after
 // OnUserPolicyInitialized() was called.
-// TODO(pneubeck): Certificates are not implemented yet, they are silently
-// ignored.
 class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater {
  public:
   NetworkConfigurationUpdaterImpl(
@@ -57,6 +55,9 @@ class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater {
 
   // Pointer to the global singleton or mock provided to the constructor.
   chromeos::ManagedNetworkConfigurationHandler* network_config_handler_;
+
+  // User hash of the user that the user policy applies to.
+  std::string hashed_username_;
 
   scoped_ptr<chromeos::CertificateHandler> certificate_handler_;
 

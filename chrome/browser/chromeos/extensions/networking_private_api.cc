@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/networking_private.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
@@ -100,7 +101,14 @@ bool NetworkingPrivateGetManagedPropertiesFunction::RunImpl() {
       api::GetManagedProperties::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  // The profile of the requesting browser.
+  Profile* requesting_profile = profile();
+  // TODO(pneubeck): Use ProfileHelper to obtain the userhash, once it provides
+  // that functionality. crbug/238623.
+  std::string userhash = requesting_profile->GetPath().BaseName().value();
+
   ManagedNetworkConfigurationHandler::Get()->GetManagedProperties(
+      userhash,
       params->network_guid,  // service path
       base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Success,
                  this),

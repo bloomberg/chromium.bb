@@ -5,9 +5,11 @@
 #ifndef CHROMEOS_DBUS_SHILL_PROFILE_CLIENT_STUB_H_
 #define CHROMEOS_DBUS_SHILL_PROFILE_CLIENT_STUB_H_
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 
 namespace chromeos {
@@ -41,18 +43,23 @@ class ShillProfileClientStub : public ShillProfileClient,
   virtual ShillProfileClient::TestInterface* GetTestInterface() OVERRIDE;
 
   // ShillProfileClient::TestInterface overrides.
-  virtual void AddProfile(const std::string& profile_path) OVERRIDE;
+  virtual void AddProfile(const std::string& profile_path,
+                          const std::string& userhash) OVERRIDE;
   virtual void AddEntry(const std::string& profile_path,
                         const std::string& entry_path,
                         const base::DictionaryValue& properties) OVERRIDE;
   virtual bool AddService(const std::string& service_path) OVERRIDE;
 
  private:
-  base::DictionaryValue* GetProfile(const dbus::ObjectPath& profile_path,
-                                    const ErrorCallback& error_callback);
+  struct ProfileProperties;
+  typedef std::map<std::string, ProfileProperties*> ProfileMap;
 
-  // This maps profile path -> entry path -> Shill properties.
-  base::DictionaryValue profile_entries_;
+  ProfileProperties* GetProfile(const dbus::ObjectPath& profile_path,
+                                const ErrorCallback& error_callback);
+
+  // The values are owned by this class and are explicitly destroyed where
+  // necessary.
+  ProfileMap profiles_;
 
   DISALLOW_COPY_AND_ASSIGN(ShillProfileClientStub);
 };

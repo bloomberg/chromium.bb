@@ -95,6 +95,7 @@ class ShillManagerClientStub : public ShillManagerClient,
                                          bool initializing) OVERRIDE;
   virtual void AddGeoNetwork(const std::string& technology,
                              const base::DictionaryValue& network) OVERRIDE;
+  virtual void AddProfile(const std::string& profile_path) OVERRIDE;
   virtual void ClearProperties() OVERRIDE;
 
  private:

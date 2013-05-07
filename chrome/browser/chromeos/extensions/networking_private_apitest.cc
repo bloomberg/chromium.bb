@@ -4,6 +4,8 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -13,6 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
@@ -28,7 +31,18 @@ using testing::_;
 
 namespace chromeos {
 
-const char kUserProfilePath[] = "/profile/chronos/shill";
+namespace {
+
+const char kUser1ProfilePath[] = "/profile/user1/shill";
+
+void AssignString(std::string* out,
+                  DBusMethodCallStatus call_status,
+                  const std::string& result) {
+  CHECK_EQ(call_status, DBUS_METHOD_CALL_SUCCESS);
+  *out = result;
+}
+
+}  // namespace
 
 class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
  public:
@@ -38,6 +52,14 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(::switches::kWhitelistedExtensionID,
                                     "epcifkihnkjgphfkloaaleeakhpmgdmn");
     command_line->AppendSwitch(switches::kUseNewNetworkConfigurationHandlers);
+
+    // TODO(pneubeck): Remove the following hack, once the NetworkingPrivateAPI
+    // uses the ProfileHelper to obtain the userhash crbug/238623.
+    std::string login_user =
+        command_line->GetSwitchValueNative(switches::kLoginUser);
+    // Do the same as CryptohomeClientStubImpl::GetSanitizedUsername
+    std::string sanitized_user = login_user + "-profile";
+    command_line->AppendSwitchASCII(switches::kLoginProfile, sanitized_user);
   }
 
   bool RunNetworkingSubtest(const std::string& subtest) {
@@ -55,28 +77,45 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 
+  void InitializeSanitizedUsername() {
+    chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+    chromeos::User* user = user_manager->GetActiveUser();
+    CHECK(user);
+    std::string userhash;
+    DBusThreadManager::Get()->GetCryptohomeClient()->GetSanitizedUsername(
+        user->email(),
+        base::Bind(&AssignString, &userhash_));
+    content::RunAllPendingInMessageLoop();
+    CHECK(!userhash_.empty());
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
 
+    InitializeSanitizedUsername();
+
+    ShillDeviceClient::TestInterface* device_test =
+        DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     ShillProfileClient::TestInterface* profile_test =
         DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
-    profile_test->AddProfile(kUserProfilePath);
+    ShillServiceClient::TestInterface* service_test =
+        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
 
     g_browser_process->browser_policy_connector()->
         GetNetworkConfigurationUpdater()->OnUserPolicyInitialized(
-            false, "hash");
-    ShillDeviceClient::TestInterface* device_test =
-        DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
+            false, userhash_);
     device_test->ClearDevices();
+    service_test->ClearServices();
+
+    // Sends a notification about the added profile.
+    profile_test->AddProfile(kUser1ProfilePath, userhash_);
+
     device_test->AddDevice("/device/stub_wifi_device1",
                            flimflam::kTypeWifi, "stub_wifi_device1");
     device_test->AddDevice("/device/stub_cellular_device1",
                            flimflam::kTypeCellular, "stub_cellular_device1");
 
-    ShillServiceClient::TestInterface* service_test =
-        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
-    service_test->ClearServices();
     const bool add_to_watchlist = true;
     service_test->AddService("stub_ethernet", "eth0",
                              flimflam::kTypeEthernet, flimflam::kStateOnline,
@@ -101,6 +140,10 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
     service_test->SetServiceProperty("stub_wifi2",
                                      flimflam::kSignalStrengthProperty,
                                      base::FundamentalValue(80));
+    service_test->SetServiceProperty("stub_wifi2",
+                                     flimflam::kProfileProperty,
+                                     base::StringValue(kUser1ProfilePath));
+    profile_test->AddService("stub_wifi2");
 
     service_test->AddService("stub_cellular1", "cellular1",
                              flimflam::kTypeCellular, flimflam::kStateIdle,
@@ -122,10 +165,13 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
                              flimflam::kTypeVPN,
                              flimflam::kStateOnline,
                              add_to_watchlist);
+
+    content::RunAllPendingInMessageLoop();
   }
 
  protected:
   policy::MockConfigurationPolicyProvider provider_;
+  std::string userhash_;
 };
 
 // Place each subtest into a separate browser test so that the stub networking
@@ -190,25 +236,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
   const std::string uidata_blob =
       "{ \"user_settings\": {"
       "      \"WiFi\": {"
-      "        \"Passphrase\": \"top secret\" }"
+      "        \"Passphrase\": \"FAKE_CREDENTIAL_VPaJDV9x\" }"
       "    }"
       "}";
   service_test->SetServiceProperty("stub_wifi2",
-                                   flimflam::kGuidProperty,
-                                   base::StringValue("stub_wifi2"));
-  service_test->SetServiceProperty("stub_wifi2",
                                    flimflam::kUIDataProperty,
                                    base::StringValue(uidata_blob));
-  service_test->SetServiceProperty("stub_wifi2",
-                                   flimflam::kProfileProperty,
-                                   base::StringValue(kUserProfilePath));
   service_test->SetServiceProperty("stub_wifi2",
                                    flimflam::kAutoConnectProperty,
                                    base::FundamentalValue(false));
 
   ShillProfileClient::TestInterface* profile_test =
       DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
-
+  // Update the profile entry.
   profile_test->AddService("stub_wifi2");
 
   content::RunAllPendingInMessageLoop();

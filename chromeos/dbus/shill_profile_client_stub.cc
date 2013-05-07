@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "dbus/bus.h"
@@ -20,17 +21,14 @@
 
 namespace chromeos {
 
+struct ShillProfileClientStub::ProfileProperties {
+  base::DictionaryValue entries;
+  base::DictionaryValue properties;
+};
+
 namespace {
 
 const char kSharedProfilePath[] = "/profile/default";
-
-void PassEmptyDictionary(
-    const ShillProfileClient::DictionaryValueCallbackWithoutStatus& callback) {
-  base::DictionaryValue dictionary;
-  if (callback.is_null())
-    return;
-  callback.Run(dictionary);
-}
 
 void PassDictionary(
     const ShillProfileClient::DictionaryValueCallbackWithoutStatus& callback,
@@ -40,24 +38,14 @@ void PassDictionary(
   callback.Run(*dictionary);
 }
 
-base::DictionaryValue* GetOrCreateDictionary(const std::string& key,
-                                             base::DictionaryValue* dict) {
-  base::DictionaryValue* nested_dict = NULL;
-  dict->GetDictionaryWithoutPathExpansion(key, &nested_dict);
-  if (!nested_dict) {
-    nested_dict = new base::DictionaryValue;
-    dict->SetWithoutPathExpansion(key, nested_dict);
-  }
-  return nested_dict;
-}
-
 }  // namespace
 
 ShillProfileClientStub::ShillProfileClientStub() {
-  AddProfile(kSharedProfilePath);
+  AddProfile(kSharedProfilePath, std::string());
 }
 
 ShillProfileClientStub::~ShillProfileClientStub() {
+  STLDeleteValues(&profiles_);
 }
 
 void ShillProfileClientStub::AddPropertyChangedObserver(
@@ -74,14 +62,14 @@ void ShillProfileClientStub::GetProperties(
     const dbus::ObjectPath& profile_path,
     const DictionaryValueCallbackWithoutStatus& callback,
     const ErrorCallback& error_callback) {
-  base::DictionaryValue* profile = GetProfile(profile_path, error_callback);
+  ProfileProperties* profile = GetProfile(profile_path, error_callback);
   if (!profile)
     return;
 
-  scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
+  scoped_ptr<base::DictionaryValue> properties(profile->properties.DeepCopy());
   base::ListValue* entry_paths = new base::ListValue;
   properties->SetWithoutPathExpansion(flimflam::kEntriesProperty, entry_paths);
-  for (base::DictionaryValue::Iterator it(*profile); !it.IsAtEnd();
+  for (base::DictionaryValue::Iterator it(profile->entries); !it.IsAtEnd();
        it.Advance()) {
     entry_paths->AppendString(it.key());
   }
@@ -96,12 +84,12 @@ void ShillProfileClientStub::GetEntry(
     const std::string& entry_path,
     const DictionaryValueCallbackWithoutStatus& callback,
     const ErrorCallback& error_callback) {
-  base::DictionaryValue* profile = GetProfile(profile_path, error_callback);
+  ProfileProperties* profile = GetProfile(profile_path, error_callback);
   if (!profile)
     return;
 
   base::DictionaryValue* entry = NULL;
-  profile->GetDictionaryWithoutPathExpansion(entry_path, &entry);
+  profile->entries.GetDictionaryWithoutPathExpansion(entry_path, &entry);
   if (!entry) {
     error_callback.Run("Error.InvalidProfileEntry", "Invalid profile entry");
     return;
@@ -116,11 +104,11 @@ void ShillProfileClientStub::DeleteEntry(const dbus::ObjectPath& profile_path,
                                          const std::string& entry_path,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
-  base::DictionaryValue* profile = GetProfile(profile_path, error_callback);
+  ProfileProperties* profile = GetProfile(profile_path, error_callback);
   if (!profile)
     return;
 
-  if (!profile->RemoveWithoutPathExpansion(entry_path, NULL)) {
+  if (!profile->entries.RemoveWithoutPathExpansion(entry_path, NULL)) {
     error_callback.Run("Error.InvalidProfileEntry", "Invalid profile entry");
     return;
   }
@@ -132,18 +120,27 @@ ShillProfileClient::TestInterface* ShillProfileClientStub::GetTestInterface() {
   return this;
 }
 
-void ShillProfileClientStub::AddProfile(const std::string& profile_path) {
-  profile_entries_.SetWithoutPathExpansion(profile_path,
-                                           new base::DictionaryValue);
+void ShillProfileClientStub::AddProfile(const std::string& profile_path,
+                                        const std::string& userhash) {
+  if (GetProfile(dbus::ObjectPath(profile_path), ErrorCallback()))
+    return;
+
+  ProfileProperties* profile = new ProfileProperties;
+  profile->properties.SetStringWithoutPathExpansion(shill::kUserHashProperty,
+                                                    userhash);
+  profiles_[profile_path] = profile;
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      AddProfile(profile_path);
 }
 
 void ShillProfileClientStub::AddEntry(const std::string& profile_path,
                                       const std::string& entry_path,
                                       const base::DictionaryValue& properties) {
-  base::DictionaryValue* profile = GetOrCreateDictionary(profile_path,
-                                                         &profile_entries_);
-  profile->SetWithoutPathExpansion(entry_path,
-                                   properties.DeepCopy());
+  ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path),
+                                          ErrorCallback());
+  DCHECK(profile);
+  profile->entries.SetWithoutPathExpansion(entry_path,
+                                           properties.DeepCopy());
 }
 
 bool ShillProfileClientStub::AddService(const std::string& service_path) {
@@ -164,15 +161,17 @@ bool ShillProfileClientStub::AddService(const std::string& service_path) {
   return true;
 }
 
-base::DictionaryValue* ShillProfileClientStub::GetProfile(
+ShillProfileClientStub::ProfileProperties* ShillProfileClientStub::GetProfile(
     const dbus::ObjectPath& profile_path,
     const ErrorCallback& error_callback) {
-  base::DictionaryValue* profile = NULL;
-  profile_entries_.GetDictionaryWithoutPathExpansion(profile_path.value(),
-                                                     &profile);
-  if (!profile)
-    error_callback.Run("Error.InvalidProfile", "Invalid profile");
-  return profile;
+  ProfileMap::const_iterator found = profiles_.find(profile_path.value());
+  if (found == profiles_.end()) {
+    if (!error_callback.is_null())
+      error_callback.Run("Error.InvalidProfile", "Invalid profile");
+    return NULL;
+  }
+
+  return found->second;
 }
 
 }  // namespace chromeos

@@ -217,9 +217,7 @@ class CHROMEOS_EXPORT Validator : public Mapper {
 
   bool CertPatternInDevicePolicy(const std::string& cert_type);
 
-  std::string WarningHeader();
-  std::string ErrorHeader();
-  std::string MessageHeader(bool is_error);
+  std::string MessageHeader();
 
   const bool error_on_unknown_field_;
   const bool error_on_wrong_recommended_;
