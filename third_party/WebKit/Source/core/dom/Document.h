@@ -303,8 +303,8 @@ public:
     }
 
     bool hasManifest() const;
-    
-    virtual PassRefPtr<Element> createElement(const AtomicString& tagName, ExceptionCode&);
+
+    PassRefPtr<Element> createElement(const AtomicString& name, ExceptionCode&);
     PassRefPtr<DocumentFragment> createDocumentFragment();
     PassRefPtr<Text> createTextNode(const String& data);
     PassRefPtr<Comment> createComment(const String& data);
@@ -414,7 +414,7 @@ public:
     static bool hasSVGRootNode() { return false; }
 #endif
 
-    virtual bool isFrameSet() const { return false; }
+    bool isFrameSet() const;
 
     bool isSrcdocDocument() const { return m_isSrcdocDocument; }
 

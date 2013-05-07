@@ -53,29 +53,15 @@
 #include "config.h"
 #include "core/html/HTMLDocument.h"
 
-#include "CSSPropertyNames.h"
-#include "HTMLElementFactory.h"
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
-#include "core/css/StyleResolver.h"
-#include "core/dom/DocumentType.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/parser/HTMLDocumentParser.h"
-#include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/CookieJar.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoader.h"
 #include "core/page/FocusController.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
-#include "core/platform/HashTools.h"
 #include "core/platform/KURL.h"
-#include <wtf/text/CString.h>
 
 namespace WebCore {
 
@@ -269,24 +255,9 @@ void HTMLDocument::setVlinkColor(const String& value)
     }
 }
 
-PassRefPtr<DocumentParser> HTMLDocument::createParser()
-{
-    bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(this->page());
-    return HTMLDocumentParser::create(this, reportErrors);
-}
-
 // --------------------------------------------------------------------------
 // not part of the DOM
 // --------------------------------------------------------------------------
-
-PassRefPtr<Element> HTMLDocument::createElement(const AtomicString& name, ExceptionCode& ec)
-{
-    if (!isValidName(name)) {
-        ec = INVALID_CHARACTER_ERR;
-        return 0;
-    }
-    return HTMLElementFactory::createHTMLElement(QualifiedName(nullAtom, name.lower(), xhtmlNamespaceURI), this, 0, false);
-}
 
 void HTMLDocument::addItemToMap(HashCountedSet<AtomicStringImpl*>& map, const AtomicString& name)
 {
@@ -398,12 +369,6 @@ void HTMLDocument::clear()
     // FIXME: This does nothing, and that seems unlikely to be correct.
     // We've long had a comment saying that IE doesn't support this.
     // But I do see it in the documentation for Mozilla.
-}
-
-bool HTMLDocument::isFrameSet() const
-{
-    HTMLElement* bodyElement = body();
-    return bodyElement && bodyElement->hasTagName(framesetTag);
 }
 
 }

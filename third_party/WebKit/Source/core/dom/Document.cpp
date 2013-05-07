@@ -117,6 +117,7 @@
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/HTMLTitleElement.h"
 #include "core/html/PluginDocument.h"
+#include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
 #include "core/inspector/InspectorCounters.h"
@@ -759,8 +760,8 @@ PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionC
         return 0;
     }
 
-    if (isXHTMLDocument())
-        return HTMLElementFactory::createHTMLElement(QualifiedName(nullAtom, name, xhtmlNamespaceURI), this, 0, false);
+    if (isXHTMLDocument() || isHTMLDocument())
+        return HTMLElementFactory::createHTMLElement(QualifiedName(nullAtom, isHTMLDocument() ? name.lower() : name, xhtmlNamespaceURI), this, 0, false);
 
     return createElement(QualifiedName(nullAtom, name, nullAtom), false);
 }
@@ -2017,8 +2018,20 @@ void Document::setVisuallyOrdered()
 
 PassRefPtr<DocumentParser> Document::createParser()
 {
+    if (isHTMLDocument()) {
+        bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(this->page());
+        return HTMLDocumentParser::create(toHTMLDocument(this), reportErrors);
+    }
     // FIXME: this should probably pass the frame instead
     return XMLDocumentParser::create(this, view());
+}
+
+bool Document::isFrameSet() const
+{
+    if (!isHTMLDocument())
+        return false;
+    HTMLElement* bodyElement = body();
+    return bodyElement && bodyElement->hasTagName(framesetTag);
 }
 
 ScriptableDocumentParser* Document::scriptableDocumentParser() const
