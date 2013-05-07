@@ -356,33 +356,6 @@ weston_touch_release(struct weston_touch *touch)
 		wl_list_remove(&touch->focus_listener.link);
 }
 
-WL_EXPORT void
-wl_seat_init(struct wl_seat *seat)
-{
-	memset(seat, 0, sizeof *seat);
-
-	wl_signal_init(&seat->destroy_signal);
-
-	seat->selection_data_source = NULL;
-	wl_list_init(&seat->base_resource_list);
-	wl_signal_init(&seat->selection_signal);
-	wl_list_init(&seat->drag_resource_list);
-	wl_signal_init(&seat->drag_icon_signal);
-}
-
-WL_EXPORT void
-wl_seat_release(struct wl_seat *seat)
-{
-	wl_signal_emit(&seat->destroy_signal, seat);
-
-	if (seat->pointer)
-		weston_pointer_release(seat->pointer);
-	if (seat->keyboard)
-		weston_keyboard_release(seat->keyboard);
-	if (seat->touch)
-		weston_touch_release(seat->touch);
-}
-
 static void
 seat_send_updated_caps(struct wl_seat *seat)
 {
@@ -1554,7 +1527,16 @@ weston_seat_init_touch(struct weston_seat *seat)
 WL_EXPORT void
 weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 {
-	wl_seat_init(&seat->seat);
+	memset(seat, 0, sizeof *seat);
+
+	wl_signal_init(&seat->seat.destroy_signal);
+
+	seat->seat.selection_data_source = NULL;
+	wl_list_init(&seat->seat.base_resource_list);
+	wl_signal_init(&seat->seat.selection_signal);
+	wl_list_init(&seat->seat.drag_resource_list);
+	wl_signal_init(&seat->seat.drag_icon_signal);
+
 	seat->has_pointer = 0;
 	seat->has_keyboard = 0;
 	seat->has_touch = 0;
@@ -1599,7 +1581,15 @@ weston_seat_release(struct weston_seat *seat)
 		xkb_state_unref(seat->xkb_state.state);
 	xkb_info_destroy(&seat->xkb_info);
 
-	wl_seat_release(&seat->seat);
+	wl_signal_emit(&seat->seat.destroy_signal, seat);
+
+	if (seat->seat.pointer)
+		weston_pointer_release(seat->seat.pointer);
+	if (seat->seat.keyboard)
+		weston_keyboard_release(seat->seat.keyboard);
+	if (seat->seat.touch)
+		weston_touch_release(seat->seat.touch);
+
 	wl_signal_emit(&seat->destroy_signal, seat);
 }
 

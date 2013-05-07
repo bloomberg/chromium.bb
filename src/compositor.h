@@ -355,12 +355,6 @@ struct wl_seat {
 };
 
 void
-wl_seat_init(struct wl_seat *seat);
-
-void
-wl_seat_release(struct wl_seat *seat);
-
-void
 wl_seat_set_pointer(struct wl_seat *seat, struct weston_pointer *pointer);
 void
 wl_seat_set_keyboard(struct wl_seat *seat, struct weston_keyboard *keyboard);
