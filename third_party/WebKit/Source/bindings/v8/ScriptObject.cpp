@@ -62,21 +62,7 @@ v8::Local<v8::Object> ScriptObject::v8Object() const
     return v8::Local<v8::Object>(v8::Object::Cast(*v8Value()));
 }
 
-bool ScriptGlobalObject::set(ScriptState* scriptState, const char* name, const ScriptObject& value)
-{
-    ScriptScope scope(scriptState);
-    scope.global()->Set(v8::String::NewSymbol(name), value.v8Value());
-    return scope.success();
-}
-
 bool ScriptGlobalObject::set(ScriptState* scriptState, const char* name, InspectorFrontendHost* value)
-{
-    ScriptScope scope(scriptState);
-    scope.global()->Set(v8::String::NewSymbol(name), toV8(value, v8::Handle<v8::Object>(), scriptState->isolate()));
-    return scope.success();
-}
-
-bool ScriptGlobalObject::set(ScriptState* scriptState, const char* name, InjectedScriptHost* value)
 {
     ScriptScope scope(scriptState);
     scope.global()->Set(v8::String::NewSymbol(name), toV8(value, v8::Handle<v8::Object>(), scriptState->isolate()));
@@ -95,12 +81,6 @@ bool ScriptGlobalObject::get(ScriptState* scriptState, const char* name, ScriptO
 
     value = ScriptObject(scriptState, v8::Handle<v8::Object>(v8::Object::Cast(*v8Value)));
     return true;
-}
-
-bool ScriptGlobalObject::remove(ScriptState* scriptState, const char* name)
-{
-    ScriptScope scope(scriptState);
-    return scope.global()->Delete(v8::String::NewSymbol(name));
 }
 
 } // namespace WebCore

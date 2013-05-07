@@ -55,11 +55,8 @@ namespace WebCore {
 
     class ScriptGlobalObject {
     public:
-        static bool set(ScriptState*, const char* name, const ScriptObject&);
         static bool set(ScriptState*, const char* name, InspectorFrontendHost*);
-        static bool set(ScriptState*, const char* name, InjectedScriptHost*);
         static bool get(ScriptState*, const char* name, ScriptObject&);
-        static bool remove(ScriptState*, const char* name);
     private:
         ScriptGlobalObject() { }
     };
