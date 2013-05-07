@@ -103,9 +103,6 @@ public:
 
     virtual void setContentsRect(const IntRect&);
 
-    static void registerContentsLayer(WebKit::WebLayer*);
-    static void unregisterContentsLayer(WebKit::WebLayer*);
-
     virtual void setContentsToImage(Image*) OVERRIDE;
     virtual void setContentsToMedia(PlatformLayer*) OVERRIDE;
     virtual void setContentsToCanvas(PlatformLayer*) OVERRIDE;
@@ -147,27 +144,7 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
-private:
-    void updateNames();
-    void updateChildList();
-    void updateLayerPosition();
-    void updateLayerSize();
-    void updateAnchorPoint();
-    void updateTransform();
-    void updateChildrenTransform();
-    void updateMasksToBounds();
-    void updateLayerPreserves3D();
-    void updateLayerIsDrawable();
-    void updateLayerBackgroundColor();
-
-    void updateContentsImage();
-    void updateContentsVideo();
-    void updateContentsRect();
-
-    void setContentsTo(ContentsLayerPurpose, WebKit::WebLayer*);
-    void setupContentsLayer(WebKit::WebLayer*);
-    void clearContentsLayerIfUnregistered();
-    WebKit::WebLayer* contentsLayerIfRegistered();
+    virtual void setAnimationDelegateForLayer(WebKit::WebLayer*) OVERRIDE;
 };
 
 } // namespace WebCore

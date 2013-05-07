@@ -32,8 +32,16 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/LayoutRect.h"
+#include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
 #include "core/platform/graphics/transforms/RotateTransformOperation.h"
 #include "core/platform/text/TextStream.h"
+
+#include <public/Platform.h>
+#include <public/WebCompositorSupport.h>
+#include <public/WebFloatPoint.h>
+#include <public/WebFloatRect.h>
+#include <public/WebSize.h>
+
 #include <wtf/HashMap.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/CString.h>
@@ -43,6 +51,9 @@
 #ifndef NDEBUG
 #include <stdio.h>
 #endif
+
+using WebKit::WebLayer;
+using WebKit::Platform;
 
 namespace WebCore {
 
@@ -517,6 +528,269 @@ int GraphicsLayer::validateTransformOperations(const KeyframeValueList& valueLis
     hasBigRotation = maxRotAngle >= 180.0;
     
     return firstIndex;
+}
+
+void GraphicsLayer::updateNames()
+{
+    String debugName = "Layer for " + m_nameBase;
+    m_layer->layer()->setDebugName(debugName);
+
+    if (m_transformLayer) {
+        String debugName = "TransformLayer for " + m_nameBase;
+        m_transformLayer->setDebugName(debugName);
+    }
+    if (WebLayer* contentsLayer = contentsLayerIfRegistered()) {
+        String debugName = "ContentsLayer for " + m_nameBase;
+        contentsLayer->setDebugName(debugName);
+    }
+    if (m_linkHighlight) {
+        String debugName = "LinkHighlight for " + m_nameBase;
+        m_linkHighlight->layer()->setDebugName(debugName);
+    }
+}
+
+void GraphicsLayer::updateChildList()
+{
+    WebLayer* childHost = m_transformLayer ? m_transformLayer.get() : m_layer->layer();
+    childHost->removeAllChildren();
+
+    clearContentsLayerIfUnregistered();
+
+    if (m_transformLayer) {
+        // Add the primary layer first. Even if we have negative z-order children, the primary layer always comes behind.
+        childHost->addChild(m_layer->layer());
+    } else if (m_contentsLayer) {
+        // FIXME: add the contents layer in the correct order with negative z-order children.
+        // This does not cause visible rendering issues because currently contents layers are only used
+        // for replaced elements that don't have children.
+        childHost->addChild(m_contentsLayer);
+    }
+
+    const Vector<GraphicsLayer*>& childLayers = children();
+    size_t numChildren = childLayers.size();
+    for (size_t i = 0; i < numChildren; ++i) {
+        GraphicsLayer* curChild = childLayers[i];
+
+        childHost->addChild(curChild->platformLayer());
+    }
+
+    if (m_linkHighlight)
+        childHost->addChild(m_linkHighlight->layer());
+
+    if (m_transformLayer && m_contentsLayer) {
+        // If we have a transform layer, then the contents layer is parented in the
+        // primary layer (which is itself a child of the transform layer).
+        m_layer->layer()->removeAllChildren();
+        m_layer->layer()->addChild(m_contentsLayer);
+    }
+}
+
+void GraphicsLayer::updateLayerPosition()
+{
+    platformLayer()->setPosition(m_position);
+}
+
+void GraphicsLayer::updateLayerSize()
+{
+    IntSize layerSize(m_size.width(), m_size.height());
+    if (m_transformLayer) {
+        m_transformLayer->setBounds(layerSize);
+        m_layer->layer()->setPosition(FloatPoint());
+    }
+
+    m_layer->layer()->setBounds(layerSize);
+
+    // Note that we don't resize m_contentsLayer-> It's up the caller to do that.
+}
+
+void GraphicsLayer::updateAnchorPoint()
+{
+    platformLayer()->setAnchorPoint(FloatPoint(m_anchorPoint.x(), m_anchorPoint.y()));
+    platformLayer()->setAnchorPointZ(m_anchorPoint.z());
+}
+
+void GraphicsLayer::updateTransform()
+{
+    platformLayer()->setTransform(TransformSkMatrix44Conversions::convert(m_transform));
+}
+
+void GraphicsLayer::updateChildrenTransform()
+{
+    platformLayer()->setSublayerTransform(TransformSkMatrix44Conversions::convert(m_childrenTransform));
+}
+
+void GraphicsLayer::updateMasksToBounds()
+{
+    m_layer->layer()->setMasksToBounds(m_masksToBounds);
+}
+
+void GraphicsLayer::updateLayerPreserves3D()
+{
+    if (m_preserves3D && !m_transformLayer) {
+        m_transformLayer = adoptPtr(Platform::current()->compositorSupport()->createLayer());
+        m_transformLayer->setPreserves3D(true);
+        setAnimationDelegateForLayer(m_transformLayer.get());
+        m_layer->layer()->transferAnimationsTo(m_transformLayer.get());
+
+        // Copy the position from this layer.
+        updateLayerPosition();
+        updateLayerSize();
+        updateAnchorPoint();
+        updateTransform();
+        updateChildrenTransform();
+
+        m_layer->layer()->setPosition(FloatPoint::zero());
+
+        m_layer->layer()->setAnchorPoint(FloatPoint(0.5f, 0.5f));
+        m_layer->layer()->setTransform(SkMatrix44::I());
+
+        // Set the old layer to opacity of 1. Further down we will set the opacity on the transform layer.
+        m_layer->layer()->setOpacity(1);
+
+        // Move this layer to be a child of the transform layer.
+        if (parent())
+            parent()->platformLayer()->replaceChild(m_layer->layer(), m_transformLayer.get());
+        m_transformLayer->addChild(m_layer->layer());
+
+        updateChildList();
+    } else if (!m_preserves3D && m_transformLayer) {
+        // Replace the transformLayer in the parent with this layer.
+        m_layer->layer()->removeFromParent();
+        if (parent())
+            parent()->platformLayer()->replaceChild(m_transformLayer.get(), m_layer->layer());
+
+        setAnimationDelegateForLayer(m_layer->layer());
+        m_transformLayer->transferAnimationsTo(m_layer->layer());
+
+        // Release the transform layer.
+        m_transformLayer->setAnimationDelegate(0);
+        m_transformLayer.clear();
+
+        updateLayerPosition();
+        updateLayerSize();
+        updateAnchorPoint();
+        updateTransform();
+        updateChildrenTransform();
+
+        updateChildList();
+    }
+
+    m_layer->layer()->setPreserves3D(m_preserves3D);
+    platformLayer()->setOpacity(m_opacity);
+    updateNames();
+}
+
+void GraphicsLayer::updateLayerIsDrawable()
+{
+    // For the rest of the accelerated compositor code, there is no reason to make a
+    // distinction between drawsContent and contentsVisible. So, for m_layer->layer(), these two
+    // flags are combined here. m_contentsLayer shouldn't receive the drawsContent flag
+    // so it is only given contentsVisible.
+
+    m_layer->layer()->setDrawsContent(m_drawsContent && m_contentsVisible);
+    if (WebLayer* contentsLayer = contentsLayerIfRegistered())
+        contentsLayer->setDrawsContent(m_contentsVisible);
+
+    if (m_drawsContent) {
+        m_layer->layer()->invalidate();
+        if (m_linkHighlight)
+            m_linkHighlight->invalidate();
+    }
+}
+
+void GraphicsLayer::updateLayerBackgroundColor()
+{
+    m_layer->layer()->setBackgroundColor(m_backgroundColor.rgb());
+}
+
+void GraphicsLayer::updateContentsRect()
+{
+    WebLayer* contentsLayer = contentsLayerIfRegistered();
+    if (!contentsLayer)
+        return;
+
+    contentsLayer->setPosition(FloatPoint(m_contentsRect.x(), m_contentsRect.y()));
+    contentsLayer->setBounds(IntSize(m_contentsRect.width(), m_contentsRect.height()));
+}
+
+static HashSet<int>* s_registeredLayerSet;
+
+void GraphicsLayer::registerContentsLayer(WebLayer* layer)
+{
+    if (!s_registeredLayerSet)
+        s_registeredLayerSet = new HashSet<int>;
+    if (s_registeredLayerSet->contains(layer->id()))
+        CRASH();
+    s_registeredLayerSet->add(layer->id());
+}
+
+void GraphicsLayer::unregisterContentsLayer(WebLayer* layer)
+{
+    ASSERT(s_registeredLayerSet);
+    if (!s_registeredLayerSet->contains(layer->id()))
+        CRASH();
+    s_registeredLayerSet->remove(layer->id());
+}
+
+void GraphicsLayer::setContentsTo(ContentsLayerPurpose purpose, WebLayer* layer)
+{
+    bool childrenChanged = false;
+    if (layer) {
+        ASSERT(s_registeredLayerSet);
+        if (!s_registeredLayerSet->contains(layer->id()))
+            CRASH();
+        if (m_contentsLayerId != layer->id()) {
+            setupContentsLayer(layer);
+            m_contentsLayerPurpose = purpose;
+            childrenChanged = true;
+        }
+        updateContentsRect();
+    } else {
+        if (m_contentsLayer) {
+            childrenChanged = true;
+
+            // The old contents layer will be removed via updateChildList.
+            m_contentsLayer = 0;
+        }
+    }
+
+    if (childrenChanged)
+        updateChildList();
+}
+
+void GraphicsLayer::setupContentsLayer(WebLayer* contentsLayer)
+{
+    m_contentsLayer = contentsLayer;
+    m_contentsLayerId = m_contentsLayer->id();
+
+    if (m_contentsLayer) {
+        m_contentsLayer->setAnchorPoint(FloatPoint(0, 0));
+        m_contentsLayer->setUseParentBackfaceVisibility(true);
+
+        // It is necessary to call setDrawsContent as soon as we receive the new contentsLayer, for
+        // the correctness of early exit conditions in setDrawsContent() and setContentsVisible().
+        m_contentsLayer->setDrawsContent(m_contentsVisible);
+
+        // Insert the content layer first. Video elements require this, because they have
+        // shadow content that must display in front of the video.
+        m_layer->layer()->insertChild(m_contentsLayer, 0);
+    }
+    updateNames();
+}
+
+void GraphicsLayer::clearContentsLayerIfUnregistered()
+{
+    if (!m_contentsLayerId || s_registeredLayerSet->contains(m_contentsLayerId))
+        return;
+
+    m_contentsLayer = 0;
+    m_contentsLayerId = 0;
+}
+
+WebLayer* GraphicsLayer::contentsLayerIfRegistered()
+{
+    clearContentsLayerIfUnregistered();
+    return m_contentsLayer;
 }
 
 double GraphicsLayer::backingStoreMemoryEstimate() const

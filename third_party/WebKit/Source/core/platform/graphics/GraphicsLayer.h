@@ -442,6 +442,9 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
+    static void registerContentsLayer(WebKit::WebLayer*);
+    static void unregisterContentsLayer(WebKit::WebLayer*);
+
 protected:
     // Should be called from derived class destructors. Should call willBeDestroyed() on super.
     virtual void willBeDestroyed();
@@ -475,6 +478,29 @@ protected:
     virtual void dumpAdditionalProperties(TextStream&, int /*indent*/, LayerTreeAsTextBehavior) const { }
 
     virtual void getDebugBorderInfo(Color&, float& width) const;
+
+    // Helper functions used by settors to keep layer's the state consistent.
+    void updateNames();
+    void updateChildList();
+    void updateLayerPosition();
+    void updateLayerSize();
+    void updateAnchorPoint();
+    void updateTransform();
+    void updateChildrenTransform();
+    void updateMasksToBounds();
+    void updateLayerPreserves3D();
+    void updateLayerIsDrawable();
+    void updateLayerBackgroundColor();
+    void updateContentsRect();
+
+    void setContentsTo(ContentsLayerPurpose, WebKit::WebLayer*);
+    void setupContentsLayer(WebKit::WebLayer*);
+    void clearContentsLayerIfUnregistered();
+    WebKit::WebLayer* contentsLayerIfRegistered();
+
+    // Temporary virtual helper while migrating code. Set the animation
+    // delegate to "this" from the derived class.
+    virtual void setAnimationDelegateForLayer(WebKit::WebLayer*) = 0;
 
     GraphicsLayerClient* m_client;
     String m_name;
