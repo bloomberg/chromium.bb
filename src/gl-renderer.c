@@ -72,6 +72,7 @@ struct gl_surface_state {
 struct gl_renderer {
 	struct weston_renderer base;
 	int fragment_shader_debug;
+	int fan_debug;
 
 	EGLDisplay egl_display;
 	EGLContext egl_context;
@@ -648,6 +649,7 @@ repaint_region(struct weston_surface *es, pixman_region32_t *region,
 		pixman_region32_t *surf_region)
 {
 	struct weston_compositor *ec = es->compositor;
+	struct gl_renderer *gr = get_renderer(ec);
 	GLfloat *v;
 	unsigned int *vtxcnt;
 	int i, first, nfans;
@@ -675,7 +677,7 @@ repaint_region(struct weston_surface *es, pixman_region32_t *region,
 
 	for (i = 0, first = 0; i < nfans; i++) {
 		glDrawArrays(GL_TRIANGLE_FAN, first, vtxcnt[i]);
-		if (ec->fan_debug)
+		if (gr->fan_debug)
 			triangle_fan_debug(es, first, vtxcnt[i]);
 		first += vtxcnt[i];
 	}
@@ -762,7 +764,7 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-	if (ec->fan_debug) {
+	if (gr->fan_debug) {
 		use_shader(gr, &gr->solid_shader);
 		shader_uniforms(&gr->solid_shader, es, output);
 	}
@@ -1015,14 +1017,14 @@ gl_renderer_repaint_output(struct weston_output *output,
 	/* if debugging, redraw everything outside the damage to clean up
 	 * debug lines from the previous draw on this buffer:
 	 */
-	if (compositor->fan_debug) {
+	if (gr->fan_debug) {
 		pixman_region32_t undamaged;
 		pixman_region32_init(&undamaged);
 		pixman_region32_subtract(&undamaged, &output->region,
 					 output_damage);
-		compositor->fan_debug = 0;
+		gr->fan_debug = 0;
 		repaint_surfaces(output, &undamaged);
-		compositor->fan_debug = 1;
+		gr->fan_debug = 1;
 		pixman_region32_fini(&undamaged);
 	}
 
@@ -1887,6 +1889,17 @@ fragment_debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 		weston_output_damage(output);
 }
 
+static void
+fan_debug_repaint_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+		      void *data)
+{
+	struct weston_compositor *compositor = data;
+	struct gl_renderer *gr = get_renderer(compositor);
+
+	gr->fan_debug = !gr->fan_debug;
+	weston_compositor_damage_all(compositor);
+}
+
 static int
 gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 {
@@ -1986,6 +1999,8 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 
 	weston_compositor_add_debug_binding(ec, KEY_S,
 					    fragment_debug_binding, ec);
+	weston_compositor_add_debug_binding(ec, KEY_F,
+					    fan_debug_repaint_binding, ec);
 
 	weston_log("GL ES 2 renderer features:\n");
 	weston_log_continue(STAMP_SPACE "read-back format: %s\n",

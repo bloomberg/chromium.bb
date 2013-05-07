@@ -3901,16 +3901,6 @@ backlight_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 	output->set_backlight(output, output->backlight_current);
 }
 
-static void
-fan_debug_repaint_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
-		      void *data)
-{
-	struct desktop_shell *shell = data;
-	struct weston_compositor *compositor = shell->compositor;
-	compositor->fan_debug = !compositor->fan_debug;
-	weston_compositor_damage_all(compositor);
-}
-
 struct debug_binding_grab {
 	struct weston_keyboard_grab grab;
 	struct weston_seat *seat;
@@ -4226,8 +4216,6 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	/* Debug bindings */
 	weston_compositor_add_key_binding(ec, KEY_SPACE, mod | MODIFIER_SHIFT,
 					  debug_binding, shell);
-	weston_compositor_add_debug_binding(ec, KEY_F,
-					    fan_debug_repaint_binding, shell);
 }
 
 WL_EXPORT int
