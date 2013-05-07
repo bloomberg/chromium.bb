@@ -60,16 +60,11 @@
     [RaisesException] boolean hasSelectorForAttributeInShadow(Element host, DOMString attributeName);
     [RaisesException] boolean hasSelectorForPseudoClassInShadow(Element host, DOMString pseudoClass);
 
-    // CSS Animation testing.
+    // CSS Animation and Transition testing.
     unsigned long numberOfActiveAnimations();
     [RaisesException] void suspendAnimations(Document document);
     [RaisesException] void resumeAnimations(Document document);
-    [RaisesException] boolean pauseAnimationAtTimeOnElement(DOMString animationName, double pauseTime, Element element);
-    [RaisesException] boolean pauseAnimationAtTimeOnPseudoElement(DOMString animationName, double pauseTime, Element element, DOMString pseudoId);
-
-    // CSS Transition testing.
-    [RaisesException] boolean pauseTransitionAtTimeOnElement(DOMString propertyName, double pauseTime, Element element);
-    [RaisesException] boolean pauseTransitionAtTimeOnPseudoElement(DOMString property, double pauseTime, Element element, DOMString pseudoId);
+    [RaisesException] void pauseAnimations(double pauseTime);
 
     [RaisesException] Node nextSiblingByWalker(Node node);
     [RaisesException] Node firstChildByWalker(Node node);

@@ -474,51 +474,31 @@ bool CompositeAnimation::isAnimatingProperty(CSSPropertyID property, bool accele
     return false;
 }
 
-bool CompositeAnimation::pauseAnimationAtTime(const AtomicString& name, double t)
+void CompositeAnimation::pauseAnimationsForTesting(double t)
 {
     m_keyframeAnimations.checkConsistency();
 
-    RefPtr<KeyframeAnimation> keyframeAnim = m_keyframeAnimations.get(name.impl());
-    if (!keyframeAnim || !keyframeAnim->running())
-        return false;
+    AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
+    for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
+        RefPtr<KeyframeAnimation> keyframeAnim = it->value;
+        if (!keyframeAnim || !keyframeAnim->running())
+            continue;
 
-    double count = keyframeAnim->m_animation->iterationCount();
-    if ((t >= 0.0) && ((count == CSSAnimationData::IterationCountInfinite) || (t <= count * keyframeAnim->duration()))) {
-        keyframeAnim->freezeAtTime(t);
-        return true;
+        double count = keyframeAnim->m_animation->iterationCount();
+        if ((t >= 0.0) && ((count == CSSAnimationData::IterationCountInfinite) || (t <= count * keyframeAnim->duration())))
+            keyframeAnim->freezeAtTime(t);
     }
 
-    return false;
-}
+    CSSPropertyTransitionsMap::const_iterator transitionsEnd = m_transitions.end();
+    for (CSSPropertyTransitionsMap::const_iterator it = m_transitions.begin(); it != transitionsEnd; ++it) {
+        RefPtr<ImplicitAnimation> implAnim = it->value;
 
-bool CompositeAnimation::pauseTransitionAtTime(CSSPropertyID property, double t)
-{
-    if ((property < firstCSSProperty) || (property >= firstCSSProperty + numCSSProperties))
-        return false;
+        if (!implAnim->running())
+            continue;
 
-    ImplicitAnimation* implAnim = m_transitions.get(property);
-    if (!implAnim) {
-        // Check to see if this property is being animated via a shorthand.
-        // This code is only used for testing, so performance is not critical here.
-        HashSet<CSSPropertyID> shorthandProperties = CSSPropertyAnimation::animatableShorthandsAffectingProperty(property);
-        bool anyPaused = false;
-        HashSet<CSSPropertyID>::const_iterator end = shorthandProperties.end();
-        for (HashSet<CSSPropertyID>::const_iterator it = shorthandProperties.begin(); it != end; ++it) {
-            if (pauseTransitionAtTime(*it, t))
-                anyPaused = true;
-        }
-        return anyPaused;
+        if ((t >= 0.0) && (t <= implAnim->duration()))
+            implAnim->freezeAtTime(t);
     }
-
-    if (!implAnim->running())
-        return false;
-
-    if ((t >= 0.0) && (t <= implAnim->duration())) {
-        implAnim->freezeAtTime(t);
-        return true;
-    }
-
-    return false;
 }
 
 unsigned CompositeAnimation::numberOfActiveAnimations() const

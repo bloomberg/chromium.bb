@@ -85,8 +85,7 @@ public:
     bool isRunningAnimationOnRenderer(RenderObject*, CSSPropertyID, bool isRunningNow) const;
     bool isRunningAcceleratedAnimationOnRenderer(RenderObject*, CSSPropertyID, bool isRunningNow) const;
 
-    bool pauseAnimationAtTime(RenderObject*, const AtomicString& name, double t);
-    bool pauseTransitionAtTime(RenderObject*, const String& property, double t);
+    void pauseAnimationsForTesting(double t);
     unsigned numberOfActiveAnimations(Document*) const;
 
     PassRefPtr<RenderStyle> getAnimatedStyleForRenderer(RenderObject* renderer);

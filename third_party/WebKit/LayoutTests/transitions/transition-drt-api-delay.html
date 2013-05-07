@@ -24,7 +24,7 @@
     function endTest() {
       if (window.testRunner) {
         var target = document.getElementById('target');
-        internals.pauseTransitionAtTimeOnElement("left", 2.0, target);
+        internals.pauseAnimations(2);
         var left = window.getComputedStyle(target).left;
         var result = "PASS";
         if (left != "125px") {

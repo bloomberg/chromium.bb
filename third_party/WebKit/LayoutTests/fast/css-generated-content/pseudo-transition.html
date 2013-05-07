@@ -60,14 +60,12 @@ function testTransition(id)
     window.div = div;
     shouldBe('div.offsetWidth', '52');
     if (window.internals) {
-        internals.pauseTransitionAtTimeOnPseudoElement('width', 1.0, div, id);
+        internals.pauseAnimations(1);
         shouldBeCloseTo('div.offsetWidth', 20, 1);
-        internals.pauseTransitionAtTimeOnPseudoElement('top', 1.0, div, id);
         computedTop = getPseudoComputedTop(id);
         shouldBeCloseTo('computedTop', 170, 1);
-        internals.pauseTransitionAtTimeOnPseudoElement('width', 2.0, div, id);
+        internals.pauseAnimations(2);
         shouldBeCloseTo('div.offsetWidth', 12, 1);
-        internals.pauseTransitionAtTimeOnPseudoElement('top', 2.0, div, id);
         computedTop = getPseudoComputedTop(id);
         shouldBeCloseTo('computedTop', 200, 1);
     } else {

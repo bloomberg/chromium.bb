@@ -74,8 +74,7 @@ function runTest(expected)
         var expectedValue = expected[i][3];
         var dependsOn = expected[i][4];
         if (window.internals) {
-            internals.pauseTransitionAtTimeOnElement(property, time, document.getElementById(dependsOn));
-            internals.pauseTransitionAtTimeOnElement(property, time, document.getElementById(elementId));
+            internals.pauseAnimations(time);
             var actual = window.getComputedStyle(document.getElementById(elementId)).getPropertyCSSValue(property).getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
             var result = document.getElementById("result");
             if (actual == expectedValue)

@@ -85,11 +85,11 @@ function testAnimation(id)
     window.div = div;
     shouldBe('div.offsetWidth', '52');
     if (window.internals) {
-        internals.pauseAnimationAtTimeOnPseudoElement('example', 1.0, div, id);
+        internals.pauseAnimations(1);
         shouldBeCloseTo('div.offsetWidth', 20, 1);
         computedTop = getPseudoComputedTop(id);
         shouldBeCloseTo('computedTop', 170, 1);
-        internals.pauseAnimationAtTimeOnPseudoElement('example', 2.0, div, id);
+        internals.pauseAnimations(2);
         shouldBeCloseTo('div.offsetWidth', 12, 1);
         computedTop = getPseudoComputedTop(id);
         shouldBeCloseTo('computedTop', 200, 1);

@@ -304,40 +304,13 @@ void AnimationControllerPrivate::resumeAnimationsForDocument(Document* document)
     updateAnimationTimer();
 }
 
-bool AnimationControllerPrivate::pauseAnimationAtTime(RenderObject* renderer, const AtomicString& name, double t)
+void AnimationControllerPrivate::pauseAnimationsForTesting(double t)
 {
-    if (!renderer)
-        return false;
-
-    RefPtr<CompositeAnimation> compAnim = accessCompositeAnimation(renderer);
-    if (!compAnim)
-        return false;
-
-    if (compAnim->pauseAnimationAtTime(name, t)) {
-        renderer->node()->setNeedsStyleRecalc(SyntheticStyleChange);
-        startUpdateStyleIfNeededDispatcher();
-        return true;
+    RenderObjectAnimationMap::const_iterator animationsEnd = m_compositeAnimations.end();
+    for (RenderObjectAnimationMap::const_iterator it = m_compositeAnimations.begin(); it != animationsEnd; ++it) {
+        it->value->pauseAnimationsForTesting(t);
+        it->key->node()->setNeedsStyleRecalc(SyntheticStyleChange);
     }
-
-    return false;
-}
-
-bool AnimationControllerPrivate::pauseTransitionAtTime(RenderObject* renderer, const String& property, double t)
-{
-    if (!renderer)
-        return false;
-
-    RefPtr<CompositeAnimation> compAnim = accessCompositeAnimation(renderer);
-    if (!compAnim)
-        return false;
-
-    if (compAnim->pauseTransitionAtTime(cssPropertyID(property), t)) {
-        renderer->node()->setNeedsStyleRecalc(SyntheticStyleChange);
-        startUpdateStyleIfNeededDispatcher();
-        return true;
-    }
-
-    return false;
 }
 
 double AnimationControllerPrivate::beginAnimationUpdateTime()
@@ -540,19 +513,14 @@ void AnimationController::notifyAnimationStarted(RenderObject*, double startTime
     m_data->receivedStartTimeResponse(startTime);
 }
 
-bool AnimationController::pauseAnimationAtTime(RenderObject* renderer, const AtomicString& name, double t)
+void AnimationController::pauseAnimationsForTesting(double t)
 {
-    return m_data->pauseAnimationAtTime(renderer, name, t);
+    m_data->pauseAnimationsForTesting(t);
 }
 
 unsigned AnimationController::numberOfActiveAnimations(Document* document) const
 {
     return m_data->numberOfActiveAnimations(document);
-}
-
-bool AnimationController::pauseTransitionAtTime(RenderObject* renderer, const String& property, double t)
-{
-    return m_data->pauseTransitionAtTime(renderer, property, t);
 }
 
 bool AnimationController::isRunningAnimationOnRenderer(RenderObject* renderer, CSSPropertyID property, bool isRunningNow) const

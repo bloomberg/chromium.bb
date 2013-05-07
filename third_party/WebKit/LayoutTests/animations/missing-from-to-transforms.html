@@ -58,13 +58,6 @@
       60% { -webkit-transform: translateX(20px); }
     }
 
-    #box5 {
-      -webkit-animation-name: anim5;
-      background-color: orange;
-    }
-    @-webkit-keyframes anim5 {
-    }
-    
     #result {
       margin-top: 20px;
     }
@@ -88,20 +81,12 @@
       ["anim4", 1.6, "box4", "webkitTransform.4", 15, 2]
     ];
 
-    runAnimationTest(expectedValues, function() {
-      if (window.testRunner) {
-          var box5Element = document.getElementById('box5');
-          if (internals.pauseAnimationAtTimeOnElement("anim5", 0.1, box5Element))
-              result += "FAIL - box5 animation was running<br>";
-          else 
-              result += "PASS - box5 animation was not running<br>";
-      }
-    });
+    runAnimationTest(expectedValues);
     
   </script>
 </head>
 <body>
-This test performs animations of the transform property on five boxes over 2 seconds.
+This test performs animations of the transform property on four boxes over 2 seconds.
 Box 1 has all keyframes. Box 2 has a missing "from" keyframe.
 Box 3 has a missing "to" keyframe.
 Box 4 has both "from" and "to" keyframes missing, but other keyframes which
@@ -115,8 +100,6 @@ The test takes 3 snapshots each and expects each result to be within a specified
 <div class="box" id="box3">
 </div>
 <div class="box" id="box4">
-</div>
-<div class="box" id="box5">
 </div>
 <div id="result">
 </div>

@@ -54,9 +54,7 @@
         function doTest()
         {
             if (window.testRunner) {
-                var target = document.getElementById("target");
-                if (!internals.pauseAnimationAtTimeOnElement("anim", 2.0, target))
-                    throw("Transition is not running");
+                internals.pauseAnimations(2);
         
                 checkResults();
                 testRunner.notifyDone();

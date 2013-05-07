@@ -52,30 +52,23 @@
         keyframes.name = "anim";
         document.getElementById('box').style.webkitAnimationName = "anim";
 
-        runAnimationTest(expectedValues);
+        runAnimationTest(expectedValues, null, null, 'do-not-use-pause-api');
     }
     
     function setup()
     {
         if (window.testRunner) {
-          testRunner.dumpAsText();
-          testRunner.waitUntilDone();
-          var box = document.getElementById('box');
-          if (internals.pauseAnimationAtTimeOnElement("bar", 0.5, box))
-              document.getElementById("pre-result").innerHTML = "FAIL: animation is running";
-          else
-              document.getElementById("pre-result").innerHTML = "PASS: animation is not running";
+            testRunner.dumpAsText();
+            testRunner.waitUntilDone();
         }
-        
         setTimeout(change, 200);
     }
     
   </script>
 </head>
 <body onload="setup()">
-This test starts by making sure the animation is not running, because the animation-name and the
-name of they @keyframes rule do not match. Then it changes the name of the @keyframes rule so they 
-match and makes sure the animation is now running.
+This test changes the name of the @keyframes rule so that it matches 
+and makes sure the animation starts running.
 <div id="box">
 </div>
 <div id="pre-result">

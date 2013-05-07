@@ -1208,27 +1208,6 @@ void CSSPropertyAnimation::ensurePropertyMap()
     addShorthandProperties();
 }
 
-static bool gatherEnclosingShorthandProperties(CSSPropertyID property, AnimationPropertyWrapperBase* wrapper, HashSet<CSSPropertyID>& propertySet)
-{
-    if (!wrapper->isShorthandWrapper())
-        return false;
-
-    ShorthandPropertyWrapper* shorthandWrapper = static_cast<ShorthandPropertyWrapper*>(wrapper);
-
-    bool contained = false;
-    for (size_t i = 0; i < shorthandWrapper->propertyWrappers().size(); ++i) {
-        AnimationPropertyWrapperBase* currWrapper = shorthandWrapper->propertyWrappers()[i];
-
-        if (gatherEnclosingShorthandProperties(property, currWrapper, propertySet) || currWrapper->property() == property)
-            contained = true;
-    }
-
-    if (contained)
-        propertySet.add(wrapper->property());
-
-    return contained;
-}
-
 // Returns true if we need to start animation timers
 bool CSSPropertyAnimation::blendProperties(const AnimationBase* anim, CSSPropertyID prop, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress)
 {
@@ -1250,18 +1229,6 @@ bool CSSPropertyAnimation::animationOfPropertyIsAccelerated(CSSPropertyID prop)
     ensurePropertyMap();
     AnimationPropertyWrapperBase* wrapper = wrapperForProperty(prop);
     return wrapper ? wrapper->animationIsAccelerated() : false;
-}
-
-// Note: this is inefficient. It's only called from pauseTransitionAtTime().
-HashSet<CSSPropertyID> CSSPropertyAnimation::animatableShorthandsAffectingProperty(CSSPropertyID property)
-{
-    ensurePropertyMap();
-
-    HashSet<CSSPropertyID> foundProperties;
-    for (int i = 0; i < getNumProperties(); ++i)
-        gatherEnclosingShorthandProperties(property, (*gPropertyWrappers)[i], foundProperties);
-
-    return foundProperties;
 }
 
 bool CSSPropertyAnimation::propertiesEqual(CSSPropertyID prop, const RenderStyle* a, const RenderStyle* b)

@@ -96,16 +96,11 @@ public:
     String shadowPseudoId(Element*, ExceptionCode&);
     void setShadowPseudoId(Element*, const String&, ExceptionCode&);
 
-    // CSS Animation testing.
+    // CSS Animation / Transition testing.
     unsigned numberOfActiveAnimations() const;
     void suspendAnimations(Document*, ExceptionCode&) const;
     void resumeAnimations(Document*, ExceptionCode&) const;
-    bool pauseAnimationAtTimeOnElement(const String& animationName, double pauseTime, Element*, ExceptionCode&);
-    bool pauseAnimationAtTimeOnPseudoElement(const String& animationName, double pauseTime, Element*, const String& pseudoId, ExceptionCode&);
-
-    // CSS Transition testing.
-    bool pauseTransitionAtTimeOnElement(const String& propertyName, double pauseTime, Element*, ExceptionCode&);
-    bool pauseTransitionAtTimeOnPseudoElement(const String& property, double pauseTime, Element*, const String& pseudoId, ExceptionCode&);
+    void pauseAnimations(double pauseTime, ExceptionCode&);
 
     PassRefPtr<Element> createContentElement(ExceptionCode&);
     bool isValidContentSelect(Element* insertionPoint, ExceptionCode&);

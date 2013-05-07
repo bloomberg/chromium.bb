@@ -54,7 +54,7 @@
       function setupTest()
       {
         document.getElementById('test').className = 'animating box';
-        runAnimationTest(expectedValues, animationStarted);
+        runAnimationTest(expectedValues, animationStarted, undefined, 'do-not-use-pause-api');
       }
       
       window.addEventListener('load', function() {

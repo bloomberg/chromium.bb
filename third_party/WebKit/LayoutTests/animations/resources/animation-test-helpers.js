@@ -10,17 +10,15 @@ Function parameters:
     event [optional]: which DOM event to wait for before starting the test ("webkitAnimationStart" by default)
 
     Each sub-array must contain these items in this order:
-    - the name of the CSS animation (may be null) [1]
+    FIXME: Remove the name element as it is no longer required.
+    - deprecated: the name of the CSS animation (may be null)
     - the time in seconds at which to snapshot the CSS property
-    - the id of the element on which to get the CSS property value [2]
-    - the name of the CSS property to get [3]
+    - the id of the element on which to get the CSS property value [1]
+    - the name of the CSS property to get [2]
     - the expected value for the CSS property
     - the tolerance to use when comparing the effective CSS property value with its expected value
 
-    [1] If null is passed, a regular setTimeout() will be used instead to snapshot the animated property in the future,
-    instead of fast forwarding using the pauseAnimationAtTimeOnElement() JS API from Internals.
-    
-    [2] If a single string is passed, it is the id of the element to test. If an array with 2 elements is passed they
+    [1] If a single string is passed, it is the id of the element to test. If an array with 2 elements is passed they
     are the ids of 2 elements, whose values are compared for equality. In this case the expected value is ignored
     but the tolerance is used in the comparison. If the second element is prefixed with "static:", no animation on that
     element is required, allowing comparison with an unanimated "expected value" element.
@@ -28,7 +26,7 @@ Function parameters:
     If a string with a '.' is passed, this is an element in an iframe. The string before the dot is the iframe id
     and the string after the dot is the element name in that iframe.
 
-    [3] If the CSS property name is "webkitTransform", expected value must be an array of 1 or more numbers corresponding to the matrix elements,
+    [2] If the CSS property name is "webkitTransform", expected value must be an array of 1 or more numbers corresponding to the matrix elements,
     or a string which will be compared directly (useful if the expected value is "none")
     If the CSS property name is "webkitTransform.N", expected value must be a number corresponding to the Nth element of the matrix
 
@@ -240,15 +238,8 @@ function checkExpectedValue(expected, index)
         }
     }
 
-    if (animationName && hasPauseAnimationAPI && !internals.pauseAnimationAtTimeOnElement(animationName, time, document.getElementById(elementId))) {
-        result += "FAIL - animation \"" + animationName + "\" is not running" + "<br>";
-        return;
-    }
-    
-    if (compareElements && !element2Static && animationName && hasPauseAnimationAPI && !internals.pauseAnimationAtTimeOnElement(animationName, time, document.getElementById(elementId2))) {
-        result += "FAIL - animation \"" + animationName + "\" is not running" + "<br>";
-        return;
-    }
+    if (animationName && hasPauseAnimationAPI)
+        internals.pauseAnimations(time);
     
     var computedValue, computedValue2;
     if (compareElements) {
@@ -386,12 +377,9 @@ function startTest(expected, callback)
     var maxTime = 0;
 
     for (var i = 0; i < expected.length; ++i) {
-        var animationName = expected[i][0];
         var time = expected[i][1];
 
-        // We can only use the animation fast-forward mechanism if there's an animation name
-        // and Internals implements pauseAnimationAtTimeOnElement()
-        if (animationName && hasPauseAnimationAPI)
+        if (hasPauseAnimationAPI)
             checkExpectedValue(expected, i);
         else {
             if (time > maxTime)

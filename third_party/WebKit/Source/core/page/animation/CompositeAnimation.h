@@ -75,8 +75,7 @@ public:
     void overrideImplicitAnimations(CSSPropertyID);
     void resumeOverriddenImplicitAnimations(CSSPropertyID);
 
-    bool pauseAnimationAtTime(const AtomicString& name, double t);
-    bool pauseTransitionAtTime(CSSPropertyID, double);
+    void pauseAnimationsForTesting(double t);
     unsigned numberOfActiveAnimations() const;
 
 private:

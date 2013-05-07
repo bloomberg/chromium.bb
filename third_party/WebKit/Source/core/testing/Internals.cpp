@@ -435,66 +435,14 @@ void Internals::resumeAnimations(Document* document, ExceptionCode& ec) const
     controller->resumeAnimations();
 }
 
-bool Internals::pauseAnimationAtTimeOnElement(const String& animationName, double pauseTime, Element* element, ExceptionCode& ec)
+void Internals::pauseAnimations(double pauseTime, ExceptionCode& ec)
 {
-    if (!element || pauseTime < 0) {
+    if (pauseTime < 0) {
         ec = INVALID_ACCESS_ERR;
-        return false;
-    }
-    AnimationController* controller = frame()->animation();
-    return controller->pauseAnimationAtTime(element->renderer(), AtomicString(animationName), pauseTime);
-}
-
-bool Internals::pauseAnimationAtTimeOnPseudoElement(const String& animationName, double pauseTime, Element* element, const String& pseudoId, ExceptionCode& ec)
-{
-    if (!element || pauseTime < 0) {
-        ec = INVALID_ACCESS_ERR;
-        return false;
+        return;
     }
 
-    if (pseudoId != "before" && pseudoId != "after") {
-        ec = INVALID_ACCESS_ERR;
-        return false;
-    }
-
-    PseudoElement* pseudoElement = element->pseudoElement(pseudoId == "before" ? BEFORE : AFTER);
-    if (!pseudoElement) {
-        ec = INVALID_ACCESS_ERR;
-        return false;
-    }
-
-    return frame()->animation()->pauseAnimationAtTime(pseudoElement->renderer(), AtomicString(animationName), pauseTime);
-}
-
-bool Internals::pauseTransitionAtTimeOnElement(const String& propertyName, double pauseTime, Element* element, ExceptionCode& ec)
-{
-    if (!element || pauseTime < 0) {
-        ec = INVALID_ACCESS_ERR;
-        return false;
-    }
-    AnimationController* controller = frame()->animation();
-    return controller->pauseTransitionAtTime(element->renderer(), propertyName, pauseTime);
-}
-
-bool Internals::pauseTransitionAtTimeOnPseudoElement(const String& property, double pauseTime, Element* element, const String& pseudoId, ExceptionCode& ec)
-{
-    if (!element || pauseTime < 0) {
-        ec = INVALID_ACCESS_ERR;
-        return false;
-    }
-
-    if (pseudoId != "before" && pseudoId != "after") {
-        ec = INVALID_ACCESS_ERR;
-        return false;
-    }
-
-    PseudoElement* pseudoElement = element->pseudoElement(pseudoId == "before" ? BEFORE : AFTER);
-    if (!pseudoElement) {
-        ec = INVALID_ACCESS_ERR;
-        return false;
-    }
-
-    return frame()->animation()->pauseTransitionAtTime(pseudoElement->renderer(), property, pauseTime);
+    frame()->animation()->pauseAnimationsForTesting(pauseTime);
 }
 
 bool Internals::hasShadowInsertionPoint(const Node* root, ExceptionCode& ec) const

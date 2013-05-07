@@ -236,8 +236,7 @@ function runTest(expected, usePauseAPI)
         if (hasPauseTransitionAPI && usePauseAPI) {
             if (tryToPauseTransition) {
               var element = document.getElementById(elementId);
-              if (!internals.pauseTransitionAtTimeOnElement(property, time, element))
-                window.console.log("Failed to pause '" + property + "' transition on element '" + elementId + "'");
+              internals.pauseAnimations(time);
             }
             checkExpectedValue(expected, i);
         } else {
