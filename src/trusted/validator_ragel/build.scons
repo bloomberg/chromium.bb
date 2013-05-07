@@ -3,6 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
+import hashlib
+import os
 import sys
 
 from SCons.Errors import UserError
@@ -197,6 +200,9 @@ if ragel_involved:
          rl_file,
          xml_file,
          '${TARGET}'])
+    # We need to at least update timestamp if dfagen is started.
+    # It is needed for presubmit script.
+    env.AlwaysBuild(c_file)
 
     return c_file, xml_file
 
@@ -258,6 +264,9 @@ if ragel_involved:
   env.AlwaysBuild(env.Alias('dfacheckdecoder', check_decoders))
 
   if python_can_load_dll:
+
+    dfacheckvalidator_tests = []
+
     for bitness, xml in [('32', validator32_xml), ('64', validator64_xml)]:
       superinstruction = env.AutoDepsCommand(
           'superinstructions_x86_%s.txt' % bitness,
@@ -275,6 +284,9 @@ if ragel_involved:
          '--objdump', objdump,
          '--validator_dll', validator_dll,
          superinstruction])
+
+      env.AlwaysBuild(superinstruction_verified)
+      dfacheckvalidator_tests.append(superinstruction_verified)
 
       env32 = env.Clone(BUILD_TARGET_NAME='x86-32')
       env64 = env.Clone(BUILD_TARGET_NAME='x86-64')
@@ -295,8 +307,67 @@ if ragel_involved:
          '--errors', '${TARGET}'])
 
       # Never run decoder tests in parallel because they can take all CPU.
+      env.AlwaysBuild(regular_instructions_test)
       SideEffect('check_validator', regular_instructions_test)
+      dfacheckvalidator_tests.append(regular_instructions_test)
 
-      env.AlwaysBuild(env.Alias(
-        'dfacheckvalidator',
-        [superinstruction_verified, regular_instructions_test]))
+    # There are three categories of protected files: validator files, generated
+    # files (those of validator files that lie withing 'gen' directory) and
+    # generating files (programs and input data used to produce generated
+    # files).
+    #
+    # When validator files are changed, exhaustive validator tests have to be
+    # rerun.  When generating files are changed, dfagen must be run to ensure
+    # that generated files are up to date. Presubmit script uses
+    # protected_files.json to perform these checks.
+
+    # Files which directly affect the validator behavior.
+    protected_files = [
+      'gen/validator_x86_32.c',
+      'gen/validator_x86_64.c',
+      'validator_internal.h',
+      'decoder.h',
+      'decoding.h',
+      'validator.h']
+
+    # Files which are used to generate gen/{decoder,validator}_x86_{32,64}.c
+    # files.
+    generating_files = [
+      INSTRUCTION_DEFINITIONS,
+      'validator_x86_32.rl',
+      'validator_x86_64.rl',
+      'parse_instruction.rl',
+      'byte_machines.py',
+      'gen_dfa.py',
+      'codegen.py']
+
+    def CanonicalizeFilename(filename):
+      return 'native_client/' + env.File(filename).get_path().replace('\\', '/')
+
+    def CalculateHashSums(target, source, env):
+      target_filename = target[0].get_abspath()
+      protected_files = {
+        'validator':{},
+        'generated':[],
+        'generating':[]
+      }
+      for filename in source:
+        canonical_filename = CanonicalizeFilename(filename)
+        with open(filename.get_abspath(), 'r') as file_stream:
+          sha512 = hashlib.sha512(file_stream.read()).hexdigest()
+          protected_files['validator'][canonical_filename] = sha512
+        if canonical_filename.rsplit('/', 2)[1] == 'gen':
+          protected_files['generated'].append(canonical_filename)
+      for filename in Flatten(generating_files):
+        canonical_filename = CanonicalizeFilename(filename)
+        protected_files['generating'].append(canonical_filename)
+      with open(target_filename, 'w') as target_file:
+        json.dump(protected_files, target_file, sort_keys=True, indent=2)
+
+    calculate_hash_sums = env.Command(
+        target='%s/protected_files.json' % gen_dir,
+        source=protected_files,
+        action=CalculateHashSums)
+    env.Depends(calculate_hash_sums, dfacheckvalidator_tests)
+
+    env.Alias('dfacheckvalidator', calculate_hash_sums)
