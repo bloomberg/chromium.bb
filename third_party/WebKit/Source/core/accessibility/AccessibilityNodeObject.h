@@ -170,8 +170,7 @@ protected:
     virtual String title() const;
     virtual String helpText() const;
 
-    // Position and size.
-    virtual LayoutRect boundingBoxRect() const;
+    // Location and click point in frame-relative coordinates.
     virtual LayoutRect elementRect() const;
 
     // High-level accessibility tree access.

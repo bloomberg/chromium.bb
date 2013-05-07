@@ -160,7 +160,7 @@ AccessibilityObject* AccessibilityListBox::elementAccessibilityHitTest(const Int
     if (!node)
         return 0;
     
-    LayoutRect parentRect = boundingBoxRect();
+    LayoutRect parentRect = elementRect();
     
     AccessibilityObject* listBoxOption = 0;
     unsigned length = m_children.size();
