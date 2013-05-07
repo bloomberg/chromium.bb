@@ -342,7 +342,7 @@ talk_base::AsyncPacketSocket*
 ChromiumPacketSocketFactory::CreateServerTcpSocket(
     const talk_base::SocketAddress& local_address,
     int min_port, int max_port,
-    bool ssl) {
+    int opts) {
   // We don't use TCP sockets for remoting connections.
   NOTREACHED();
   return NULL;
@@ -354,7 +354,7 @@ ChromiumPacketSocketFactory::CreateClientTcpSocket(
       const talk_base::SocketAddress& remote_address,
       const talk_base::ProxyInfo& proxy_info,
       const std::string& user_agent,
-      bool ssl) {
+      int opts) {
   // We don't use TCP sockets for remoting connections.
   NOTREACHED();
   return NULL;

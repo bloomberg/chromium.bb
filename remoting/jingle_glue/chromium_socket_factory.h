@@ -6,7 +6,7 @@
 #define REMOTING_JINGLE_GLUE_CHROMIUM_SOCKET_FACTORY_H_
 
 #include "base/compiler_specific.h"
-#include "third_party/libjingle/source/talk/base/packetsocketfactory.h"
+#include "third_party/libjingle/source/talk/p2p/base/packetsocketfactory.h"
 
 namespace remoting {
 
@@ -21,13 +21,13 @@ class ChromiumPacketSocketFactory : public talk_base::PacketSocketFactory {
   virtual talk_base::AsyncPacketSocket* CreateServerTcpSocket(
       const talk_base::SocketAddress& local_address,
       int min_port, int max_port,
-      bool ssl) OVERRIDE;
+      int opts) OVERRIDE;
   virtual talk_base::AsyncPacketSocket* CreateClientTcpSocket(
       const talk_base::SocketAddress& local_address,
       const talk_base::SocketAddress& remote_address,
       const talk_base::ProxyInfo& proxy_info,
       const std::string& user_agent,
-      bool ssl) OVERRIDE;
+      int opts) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromiumPacketSocketFactory);

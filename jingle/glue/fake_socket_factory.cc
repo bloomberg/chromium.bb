@@ -176,7 +176,7 @@ talk_base::AsyncPacketSocket* FakeSocketFactory::CreateUdpSocket(
 
 talk_base::AsyncPacketSocket* FakeSocketFactory::CreateServerTcpSocket(
     const talk_base::SocketAddress& local_address, int min_port, int max_port,
-    bool ssl) {
+    int opts) {
   // TODO(sergeyu): Implement fake TCP sockets.
   NOTIMPLEMENTED();
   return NULL;
@@ -186,7 +186,7 @@ talk_base::AsyncPacketSocket* FakeSocketFactory::CreateClientTcpSocket(
     const talk_base::SocketAddress& local_address,
     const talk_base::SocketAddress& remote_address,
     const talk_base::ProxyInfo& proxy_info, const std::string& user_agent,
-    bool ssl) {
+    int opts) {
   // TODO(sergeyu): Implement fake TCP sockets.
   NOTIMPLEMENTED();
   return NULL;

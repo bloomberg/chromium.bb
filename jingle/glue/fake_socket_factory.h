@@ -14,7 +14,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "net/base/ip_endpoint.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
-#include "third_party/libjingle/source/talk/base/packetsocketfactory.h"
+#include "third_party/libjingle/source/talk/p2p/base/packetsocketfactory.h"
 
 namespace base {
 class MessageLoop;
@@ -102,13 +102,13 @@ class FakeSocketFactory : public talk_base::PacketSocketFactory {
       int min_port, int max_port) OVERRIDE;
   virtual talk_base::AsyncPacketSocket* CreateServerTcpSocket(
       const talk_base::SocketAddress& local_address, int min_port, int max_port,
-      bool ssl) OVERRIDE;
+      int opts) OVERRIDE;
   virtual talk_base::AsyncPacketSocket* CreateClientTcpSocket(
       const talk_base::SocketAddress& local_address,
       const talk_base::SocketAddress& remote_address,
       const talk_base::ProxyInfo& proxy_info,
       const std::string& user_agent,
-      bool ssl) OVERRIDE;
+      int opts) OVERRIDE;
 
  private:
   scoped_refptr<FakeSocketManager> socket_manager_;

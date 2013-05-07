@@ -368,15 +368,16 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateUdpSocket(
 
 talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateServerTcpSocket(
     const talk_base::SocketAddress& local_address, int min_port, int max_port,
-    bool ssl) {
+    int opts) {
   // TODO(sergeyu): Implement SSL support.
-  if (ssl)
+  if (opts & talk_base::PacketSocketFactory::OPT_SSLTCP)
     return NULL;
 
-  talk_base::SocketAddress crome_address;
+  P2PSocketType type = (opts & talk_base::PacketSocketFactory::OPT_STUN) ?
+      P2P_SOCKET_STUN_TCP_CLIENT : P2P_SOCKET_TCP_CLIENT;
   P2PSocketClient* socket_client = new P2PSocketClient(socket_dispatcher_);
   scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
-  if (!socket->Init(P2P_SOCKET_TCP_SERVER, socket_client, local_address,
+  if (!socket->Init(type, socket_client, local_address,
                     talk_base::SocketAddress())) {
     return NULL;
   }
@@ -387,15 +388,16 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
     const talk_base::SocketAddress& local_address,
     const talk_base::SocketAddress& remote_address,
     const talk_base::ProxyInfo& proxy_info,
-    const std::string& user_agent, bool ssl) {
+    const std::string& user_agent, int opts) {
   // TODO(sergeyu): Implement SSL support.
-  if (ssl)
+  if (opts & talk_base::PacketSocketFactory::OPT_SSLTCP)
     return NULL;
 
-  talk_base::SocketAddress crome_address;
+  P2PSocketType type = (opts & talk_base::PacketSocketFactory::OPT_STUN) ?
+      P2P_SOCKET_STUN_TCP_SERVER : P2P_SOCKET_TCP_SERVER;
   P2PSocketClient* socket_client = new P2PSocketClient(socket_dispatcher_);
   scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
-  if (!socket->Init(P2P_SOCKET_TCP_CLIENT, socket_client, local_address,
+  if (!socket->Init(type, socket_client, local_address,
                     remote_address))
     return NULL;
   return socket.release();

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
-#include "third_party/libjingle/source/talk/base/packetsocketfactory.h"
+#include "third_party/libjingle/source/talk/p2p/base/packetsocketfactory.h"
 
 namespace content {
 
@@ -33,13 +33,13 @@ class IpcPacketSocketFactory : public talk_base::PacketSocketFactory {
       const talk_base::SocketAddress& local_address,
       int min_port,
       int max_port,
-      bool ssl) OVERRIDE;
+      int opts) OVERRIDE;
   virtual talk_base::AsyncPacketSocket* CreateClientTcpSocket(
       const talk_base::SocketAddress& local_address,
       const talk_base::SocketAddress& remote_address,
       const talk_base::ProxyInfo& proxy_info,
       const std::string& user_agent,
-      bool ssl) OVERRIDE;
+      int opts) OVERRIDE;
 
  private:
   P2PSocketDispatcher* socket_dispatcher_;
