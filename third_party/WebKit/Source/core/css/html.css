@@ -481,13 +481,6 @@ input[type="search"]::-webkit-search-results-decoration {
     margin: auto 0;
 }
 
-input[type="search"]::-webkit-search-results-button {
-    -webkit-appearance: searchfield-results-button;
-    display: block;
-    -webkit-flex: none;
-    -webkit-user-modify: read-only !important;
-}
-
 #if defined(ENABLE_DATALIST_ELEMENT) && ENABLE_DATALIST_ELEMENT
 datalist {
     display: none;

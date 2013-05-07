@@ -71,7 +71,6 @@
 #include "core/platform/PlatformScreen.h"
 #include "core/platform/chromium/PopupContainer.h"
 #include "core/platform/chromium/PopupMenuChromium.h"
-#include "core/platform/chromium/SearchPopupMenuChromium.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Icon.h"
 #include "core/platform/graphics/IntRect.h"
@@ -980,11 +979,6 @@ PassRefPtr<PopupMenu> ChromeClientImpl::createPopupMenu(PopupMenuClient* client)
         return adoptRef(new ExternalPopupMenu(client, m_webView->client()));
 
     return adoptRef(new PopupMenuChromium(client));
-}
-
-PassRefPtr<SearchPopupMenu> ChromeClientImpl::createSearchPopupMenu(PopupMenuClient* client) const
-{
-    return adoptRef(new SearchPopupMenuChromium(client));
 }
 
 #if ENABLE(PAGE_POPUP)

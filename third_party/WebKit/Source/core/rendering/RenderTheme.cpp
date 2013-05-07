@@ -227,8 +227,6 @@ void RenderTheme::adjustStyle(StyleResolver* styleResolver, RenderStyle* style, 
         return adjustSearchFieldDecorationStyle(styleResolver, style, e);
     case SearchFieldResultsDecorationPart:
         return adjustSearchFieldResultsDecorationStyle(styleResolver, style, e);
-    case SearchFieldResultsButtonPart:
-        return adjustSearchFieldResultsButtonStyle(styleResolver, style, e);
     case ProgressBarPart:
         return adjustProgressBarStyle(styleResolver, style, e);
     case MeterPart:
@@ -360,8 +358,6 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
         return paintSearchFieldDecoration(o, paintInfo, r);
     case SearchFieldResultsDecorationPart:
         return paintSearchFieldResultsDecoration(o, paintInfo, r);
-    case SearchFieldResultsButtonPart:
-        return paintSearchFieldResultsButton(o, paintInfo, r);
 #if ENABLE(INPUT_SPEECH)
     case InputSpeechButtonPart:
         return paintInputFieldSpeechButton(o, paintInfo, r);
@@ -407,7 +403,6 @@ bool RenderTheme::paintBorderOnly(RenderObject* o, const PaintInfo& paintInfo, c
     case SearchFieldCancelButtonPart:
     case SearchFieldDecorationPart:
     case SearchFieldResultsDecorationPart:
-    case SearchFieldResultsButtonPart:
 #if ENABLE(INPUT_SPEECH)
     case InputSpeechButtonPart:
 #endif
@@ -450,7 +445,6 @@ bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, 
     case SearchFieldCancelButtonPart:
     case SearchFieldDecorationPart:
     case SearchFieldResultsDecorationPart:
-    case SearchFieldResultsButtonPart:
 #if ENABLE(INPUT_SPEECH)
     case InputSpeechButtonPart:
 #endif
@@ -1038,10 +1032,6 @@ void RenderTheme::adjustSearchFieldDecorationStyle(StyleResolver*, RenderStyle*,
 }
 
 void RenderTheme::adjustSearchFieldResultsDecorationStyle(StyleResolver*, RenderStyle*, Element*) const
-{
-}
-
-void RenderTheme::adjustSearchFieldResultsButtonStyle(StyleResolver*, RenderStyle*, Element*) const
 {
 }
 

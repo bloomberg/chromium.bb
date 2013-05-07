@@ -71,25 +71,9 @@ public:
     virtual void disconnectClient() { }
 };
 
-class EmptySearchPopupMenu : public SearchPopupMenu {
-public:
-    virtual PopupMenu* popupMenu() { return m_popup.get(); }
-    virtual void saveRecentSearches(const AtomicString&, const Vector<String>&) { }
-    virtual void loadRecentSearches(const AtomicString&, Vector<String>&) { }
-    virtual bool enabled() { return false; }
-
-private:
-    RefPtr<EmptyPopupMenu> m_popup;
-};
-
 PassRefPtr<PopupMenu> EmptyChromeClient::createPopupMenu(PopupMenuClient*) const
 {
     return adoptRef(new EmptyPopupMenu());
-}
-
-PassRefPtr<SearchPopupMenu> EmptyChromeClient::createSearchPopupMenu(PopupMenuClient*) const
-{
-    return adoptRef(new EmptySearchPopupMenu());
 }
 
 #if ENABLE(INPUT_TYPE_COLOR)

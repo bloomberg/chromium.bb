@@ -144,7 +144,6 @@ public:
 
     bool hasOpenedPopup() const;
     PassRefPtr<PopupMenu> createPopupMenu(PopupMenuClient*) const;
-    PassRefPtr<SearchPopupMenu> createSearchPopupMenu(PopupMenuClient*) const;
 
     void registerPopupOpeningObserver(PopupOpeningObserver*);
     void unregisterPopupOpeningObserver(PopupOpeningObserver*);

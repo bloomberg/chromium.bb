@@ -128,46 +128,39 @@ PassRefPtr<RenderStyle> TextControlInnerTextElement::customStyleForRenderer()
 
 // ----------------------------
 
-inline SearchFieldResultsButtonElement::SearchFieldResultsButtonElement(Document* document)
+inline SearchFieldDecorationElement::SearchFieldDecorationElement(Document* document)
     : HTMLDivElement(divTag, document)
 {
 }
 
-PassRefPtr<SearchFieldResultsButtonElement> SearchFieldResultsButtonElement::create(Document* document)
+PassRefPtr<SearchFieldDecorationElement> SearchFieldDecorationElement::create(Document* document)
 {
-    return adoptRef(new SearchFieldResultsButtonElement(document));
+    return adoptRef(new SearchFieldDecorationElement(document));
 }
 
-const AtomicString& SearchFieldResultsButtonElement::shadowPseudoId() const
+const AtomicString& SearchFieldDecorationElement::shadowPseudoId() const
 {
-    DEFINE_STATIC_LOCAL(AtomicString, resultsId, ("-webkit-search-results-button", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, resultsDecorationId, ("-webkit-search-results-decoration", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, decorationId, ("-webkit-search-decoration", AtomicString::ConstructFromLiteral));
     Element* host = shadowHost();
     if (!host)
-        return resultsId;
+        return resultsDecorationId;
     if (HTMLInputElement* input = host->toInputElement()) {
         if (input->maxResults() < 0)
             return decorationId;
-        if (input->maxResults() > 0)
-            return resultsId;
         return resultsDecorationId;
     }
-    return resultsId;
+    return resultsDecorationId;
 }
 
-void SearchFieldResultsButtonElement::defaultEventHandler(Event* event)
+void SearchFieldDecorationElement::defaultEventHandler(Event* event)
 {
-    // On mousedown, bring up a menu, if needed
+    // On mousedown, focus the search field
     HTMLInputElement* input = static_cast<HTMLInputElement*>(shadowHost());
     if (input && event->type() == eventNames().mousedownEvent && event->isMouseEvent() && static_cast<MouseEvent*>(event)->button() == LeftButton) {
         input->focus();
         input->select();
         RenderSearchField* renderer = toRenderSearchField(input->renderer());
-        if (renderer->popupIsVisible())
-            renderer->hidePopup();
-        else if (input->maxResults() > 0)
-            renderer->showPopup();
         event->setDefaultHandled();
     }
 
@@ -175,7 +168,7 @@ void SearchFieldResultsButtonElement::defaultEventHandler(Event* event)
         HTMLDivElement::defaultEventHandler(event);
 }
 
-bool SearchFieldResultsButtonElement::willRespondToMouseClickEvents()
+bool SearchFieldDecorationElement::willRespondToMouseClickEvents()
 {
     return true;
 }

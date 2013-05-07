@@ -35,7 +35,6 @@
 #include "WebNavigationPolicy.h"
 #include "core/page/ChromeClient.h"
 #include "core/platform/PopupMenu.h"
-#include "core/platform/SearchPopupMenu.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include <public/WebColor.h>
 #include <wtf/PassOwnPtr.h>
@@ -172,7 +171,6 @@ public:
 
     virtual bool hasOpenedPopup() const OVERRIDE;
     virtual PassRefPtr<WebCore::PopupMenu> createPopupMenu(WebCore::PopupMenuClient*) const;
-    virtual PassRefPtr<WebCore::SearchPopupMenu> createSearchPopupMenu(WebCore::PopupMenuClient*) const;
 #if ENABLE(PAGE_POPUP)
     virtual WebCore::PagePopup* openPagePopup(WebCore::PagePopupClient*, const WebCore::IntRect&) OVERRIDE;
     virtual void closePagePopup(WebCore::PagePopup*) OVERRIDE;

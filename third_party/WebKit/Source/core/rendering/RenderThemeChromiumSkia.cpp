@@ -69,7 +69,6 @@ static const float maxCancelButtonSize = 21;
 static const float defaultSearchFieldResultsDecorationSize = 13;
 static const float minSearchFieldResultsDecorationSize = 9;
 static const float maxSearchFieldResultsDecorationSize = 30;
-static const float defaultSearchFieldResultsButtonWidth = 18;
 
 RenderThemeChromiumSkia::RenderThemeChromiumSkia()
 {
@@ -318,40 +317,6 @@ bool RenderThemeChromiumSkia::paintSearchFieldResultsDecoration(RenderObject* ma
     IntRect paintingRect = convertToPaintingRect(inputRenderBox, magnifierObject, magnifierRect, r);
 
     static Image* magnifierImage = Image::loadPlatformResource("searchMagnifier").leakRef();
-    paintInfo.context->drawImage(magnifierImage, magnifierObject->style()->colorSpace(), paintingRect);
-    return false;
-}
-
-void RenderThemeChromiumSkia::adjustSearchFieldResultsButtonStyle(StyleResolver*, RenderStyle* style, Element*) const
-{
-    // Scale the button size based on the font size
-    float fontScale = style->fontSize() / defaultControlFontPixelSize;
-    int magnifierHeight = lroundf(std::min(std::max(minSearchFieldResultsDecorationSize, defaultSearchFieldResultsDecorationSize * fontScale),
-                                           maxSearchFieldResultsDecorationSize));
-    int magnifierWidth = lroundf(magnifierHeight * defaultSearchFieldResultsButtonWidth / defaultSearchFieldResultsDecorationSize);
-    style->setWidth(Length(magnifierWidth, Fixed));
-    style->setHeight(Length(magnifierHeight, Fixed));
-}
-
-bool RenderThemeChromiumSkia::paintSearchFieldResultsButton(RenderObject* magnifierObject, const PaintInfo& paintInfo, const IntRect& r)
-{
-    // Get the renderer of <input> element.
-    Node* input = magnifierObject->node()->shadowHost();
-    RenderObject* baseRenderer = input ? input->renderer() : magnifierObject;
-    if (!baseRenderer->isBox())
-        return false;
-    RenderBox* inputRenderBox = toRenderBox(baseRenderer);
-    LayoutRect inputContentBox = inputRenderBox->contentBoxRect();
-
-    // Make sure the scaled decoration will fit in its parent's box.
-    LayoutUnit magnifierHeight = std::min<LayoutUnit>(inputContentBox.height(), r.height());
-    LayoutUnit magnifierWidth = std::min<LayoutUnit>(inputContentBox.width(), magnifierHeight * defaultSearchFieldResultsButtonWidth / defaultSearchFieldResultsDecorationSize);
-    LayoutRect magnifierRect(magnifierObject->offsetFromAncestorContainer(inputRenderBox).width(),
-                             inputContentBox.y() + (inputContentBox.height() - magnifierHeight + 1) / 2,
-                             magnifierWidth, magnifierHeight);
-    IntRect paintingRect = convertToPaintingRect(inputRenderBox, magnifierObject, magnifierRect, r);
-
-    static Image* magnifierImage = Image::loadPlatformResource("searchMagnifierResults").leakRef();
     paintInfo.context->drawImage(magnifierImage, magnifierObject->style()->colorSpace(), paintingRect);
     return false;
 }

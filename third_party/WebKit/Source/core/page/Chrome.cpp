@@ -460,12 +460,6 @@ PassRefPtr<PopupMenu> Chrome::createPopupMenu(PopupMenuClient* client) const
     return m_client->createPopupMenu(client);
 }
 
-PassRefPtr<SearchPopupMenu> Chrome::createSearchPopupMenu(PopupMenuClient* client) const
-{
-    notifyPopupOpeningObservers();
-    return m_client->createSearchPopupMenu(client);
-}
-
 void Chrome::registerPopupOpeningObserver(PopupOpeningObserver* observer)
 {
     ASSERT(observer);

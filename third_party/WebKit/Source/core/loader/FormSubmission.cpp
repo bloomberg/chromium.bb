@@ -190,10 +190,8 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
             control->appendFormData(*domFormData, isMultiPartForm);
         if (element->hasLocalName(inputTag)) {
             HTMLInputElement* input = static_cast<HTMLInputElement*>(control);
-            if (input->isTextField()) {
+            if (input->isTextField())
                 formValues.append(pair<String, String>(input->name().string(), input->value()));
-                input->addSearchResult();
-            }
             if (input->isPasswordField() && !input->value().isEmpty())
                 containsPasswordData = true;
         }

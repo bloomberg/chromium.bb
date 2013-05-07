@@ -68,15 +68,15 @@ private:
     virtual bool isMouseFocusable() const { return false; }
 };
 
-class SearchFieldResultsButtonElement FINAL : public HTMLDivElement {
+class SearchFieldDecorationElement FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<SearchFieldResultsButtonElement> create(Document*);
+    static PassRefPtr<SearchFieldDecorationElement> create(Document*);
 
     virtual void defaultEventHandler(Event*);
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
 private:
-    SearchFieldResultsButtonElement(Document*);
+    SearchFieldDecorationElement(Document*);
     virtual const AtomicString& shadowPseudoId() const;
     virtual bool isMouseFocusable() const { return false; }
 };

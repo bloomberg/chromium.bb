@@ -78,7 +78,7 @@ public:
         UnprefixedTransitionEndEvent,
         PrefixedAndUnprefixedTransitionEndEvent,
         AutoFocusAttribute,
-        AutoSaveAttribute,
+        UnusedSlot01, // Prior to 4/2013, we used this slot for AutoSaveAttribute.
         DataListElement,
         FormAttribute,
         IncrementalAttribute,

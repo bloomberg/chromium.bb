@@ -129,7 +129,7 @@ public:
     virtual HTMLElement* innerTextElement() const;
     HTMLElement* innerBlockElement() const;
     HTMLElement* innerSpinButtonElement() const;
-    HTMLElement* resultsButtonElement() const;
+    HTMLElement* searchDecorationElement() const;
     HTMLElement* cancelButtonElement() const;
 #if ENABLE(INPUT_SPEECH)
     HTMLElement* speechButtonElement() const;
@@ -235,7 +235,6 @@ public:
     bool canReceiveDroppedFiles() const;
     void setCanReceiveDroppedFiles(bool);
 
-    void addSearchResult();
     void onSearch();
 
     void updateClearButtonVisibility();

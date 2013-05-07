@@ -220,7 +220,7 @@ public:
     virtual HTMLElement* innerBlockElement() const { return 0; }
     virtual HTMLElement* innerTextElement() const { return 0; }
     virtual HTMLElement* innerSpinButtonElement() const { return 0; }
-    virtual HTMLElement* resultsButtonElement() const { return 0; }
+    virtual HTMLElement* searchDecorationElement() const { return 0; }
     virtual HTMLElement* cancelButtonElement() const { return 0; }
 #if ENABLE(INPUT_SPEECH)
     virtual HTMLElement* speechButtonElement() const { return 0; }
@@ -234,7 +234,6 @@ public:
     virtual bool rendererIsNeeded();
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) const;
     virtual PassRefPtr<RenderStyle> customStyleForRenderer(PassRefPtr<RenderStyle>);
-    virtual void addSearchResult();
     virtual void attach();
     virtual void detach();
     virtual void minOrMaxAttributeChanged();

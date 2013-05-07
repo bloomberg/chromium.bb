@@ -530,9 +530,6 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
         case SearchFieldResultsDecorationPart:
             m_value.ident = CSSValueSearchfieldResultsDecoration;
             break;
-        case SearchFieldResultsButtonPart:
-            m_value.ident = CSSValueSearchfieldResultsButton;
-            break;
         case SearchFieldCancelButtonPart:
             m_value.ident = CSSValueSearchfieldCancelButton;
             break;

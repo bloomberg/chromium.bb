@@ -38,7 +38,6 @@
 #include "core/page/Settings.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/PlatformKeyboardEvent.h"
-#include "core/platform/SearchPopupMenu.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/rendering/HitTestResult.h"
@@ -56,8 +55,6 @@ using namespace HTMLNames;
 
 RenderSearchField::RenderSearchField(Element* element)
     : RenderTextControlSingleLine(element)
-    , m_searchPopupIsVisible(false)
-    , m_searchPopup(0)
 {
     ASSERT(element->isHTMLElement());
     ASSERT(element->toInputElement());
@@ -66,15 +63,11 @@ RenderSearchField::RenderSearchField(Element* element)
 
 RenderSearchField::~RenderSearchField()
 {
-    if (m_searchPopup) {
-        m_searchPopup->popupMenu()->disconnectClient();
-        m_searchPopup = 0;
-    }
 }
 
-inline HTMLElement* RenderSearchField::resultsButtonElement() const
+inline HTMLElement* RenderSearchField::searchDecorationElement() const
 {
-    return inputElement()->resultsButtonElement();
+    return inputElement()->searchDecorationElement();
 }
 
 inline HTMLElement* RenderSearchField::cancelButtonElement() const
@@ -82,77 +75,13 @@ inline HTMLElement* RenderSearchField::cancelButtonElement() const
     return inputElement()->cancelButtonElement();
 }
 
-void RenderSearchField::addSearchResult()
-{
-    HTMLInputElement* input = inputElement();
-    if (input->maxResults() <= 0)
-        return;
-
-    String value = input->value();
-    if (value.isEmpty())
-        return;
-
-    int size = static_cast<int>(m_recentSearches.size());
-    for (int i = size - 1; i >= 0; --i) {
-        if (m_recentSearches[i] == value)
-            m_recentSearches.remove(i);
-    }
-
-    m_recentSearches.insert(0, value);
-    while (static_cast<int>(m_recentSearches.size()) > input->maxResults())
-        m_recentSearches.removeLast();
-
-    const AtomicString& name = autosaveName();
-    if (!m_searchPopup)
-        m_searchPopup = document()->page()->chrome()->createSearchPopupMenu(this);
-
-    m_searchPopup->saveRecentSearches(name, m_recentSearches);
-}
-
-void RenderSearchField::showPopup()
-{
-    if (m_searchPopupIsVisible)
-        return;
-
-    if (!m_searchPopup)
-        m_searchPopup = document()->page()->chrome()->createSearchPopupMenu(this);
-
-    if (!m_searchPopup->enabled())
-        return;
-
-    m_searchPopupIsVisible = true;
-
-    const AtomicString& name = autosaveName();
-    m_searchPopup->loadRecentSearches(name, m_recentSearches);
-
-    // Trim the recent searches list if the maximum size has changed since we last saved.
-    HTMLInputElement* input = inputElement();
-    if (static_cast<int>(m_recentSearches.size()) > input->maxResults()) {
-        do {
-            m_recentSearches.removeLast();
-        } while (static_cast<int>(m_recentSearches.size()) > input->maxResults());
-
-        m_searchPopup->saveRecentSearches(name, m_recentSearches);
-    }
-
-    FloatQuad quad(localToAbsoluteQuad(FloatQuad(borderBoundingBox())));
-    IntSize size = pixelSnappedIntRect(frameRect()).size();
-    m_searchPopup->popupMenu()->show(quad, size, document()->view(), -1);
-}
-
-void RenderSearchField::hidePopup()
-{
-    if (m_searchPopup)
-        m_searchPopup->popupMenu()->hide();
-}
-
 LayoutUnit RenderSearchField::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const
 {
-    HTMLElement* resultsButton = resultsButtonElement();
-    if (RenderBox* resultsRenderer = resultsButton ? resultsButton->renderBox() : 0) {
-        resultsRenderer->updateLogicalHeight();
-        nonContentHeight = max(nonContentHeight, resultsRenderer->borderAndPaddingLogicalHeight() + resultsRenderer->marginLogicalHeight());
-        lineHeight = max(lineHeight, resultsRenderer->logicalHeight());
+    HTMLElement* searchDecoration = searchDecorationElement();
+    if (RenderBox* decorationRenderer = searchDecoration ? searchDecoration->renderBox() : 0) {
+        decorationRenderer->updateLogicalHeight();
+        nonContentHeight = max(nonContentHeight, decorationRenderer->borderAndPaddingLogicalHeight() + decorationRenderer->marginLogicalHeight());
+        lineHeight = max(lineHeight, decorationRenderer->logicalHeight());
     }
     HTMLElement* cancelButton = cancelButtonElement();
     if (RenderBox* cancelRenderer = cancelButton ? cancelButton->renderBox() : 0) {
@@ -170,9 +99,6 @@ void RenderSearchField::updateFromElement()
 
     if (cancelButtonElement())
         updateCancelButtonVisibility();
-
-    if (m_searchPopupIsVisible)
-        m_searchPopup->popupMenu()->updateFromElement();
 }
 
 void RenderSearchField::updateCancelButtonVisibility() const
@@ -194,172 +120,6 @@ void RenderSearchField::updateCancelButtonVisibility() const
 EVisibility RenderSearchField::visibilityForCancelButton() const
 {
     return (style()->visibility() == HIDDEN || inputElement()->value().isEmpty()) ? HIDDEN : VISIBLE;
-}
-
-const AtomicString& RenderSearchField::autosaveName() const
-{
-    return toElement(node())->getAttribute(autosaveAttr);
-}
-
-// PopupMenuClient methods
-void RenderSearchField::valueChanged(unsigned listIndex, bool fireEvents)
-{
-    ASSERT(static_cast<int>(listIndex) < listSize());
-    HTMLInputElement* input = inputElement();
-    if (static_cast<int>(listIndex) == (listSize() - 1)) {
-        if (fireEvents) {
-            m_recentSearches.clear();
-            const AtomicString& name = autosaveName();
-            if (!name.isEmpty()) {
-                if (!m_searchPopup)
-                    m_searchPopup = document()->page()->chrome()->createSearchPopupMenu(this);
-                m_searchPopup->saveRecentSearches(name, m_recentSearches);
-            }
-        }
-    } else {
-        input->setValue(itemText(listIndex));
-        if (fireEvents)
-            input->onSearch();
-        input->select();
-    }
-}
-
-String RenderSearchField::itemText(unsigned listIndex) const
-{
-    int size = listSize();
-    if (size == 1) {
-        ASSERT(!listIndex);
-        return searchMenuNoRecentSearchesText();
-    }
-    if (!listIndex)
-        return searchMenuRecentSearchesText();
-    if (itemIsSeparator(listIndex))
-        return String();
-    if (static_cast<int>(listIndex) == (size - 1))
-        return searchMenuClearRecentSearchesText();
-    return m_recentSearches[listIndex - 1];
-}
-
-String RenderSearchField::itemLabel(unsigned) const
-{
-    return String();
-}
-
-String RenderSearchField::itemIcon(unsigned) const
-{
-    return String();
-}
-
-bool RenderSearchField::itemIsEnabled(unsigned listIndex) const
-{
-     if (!listIndex || itemIsSeparator(listIndex))
-        return false;
-    return true;
-}
-
-PopupMenuStyle RenderSearchField::itemStyle(unsigned) const
-{
-    return menuStyle();
-}
-
-PopupMenuStyle RenderSearchField::menuStyle() const
-{
-    return PopupMenuStyle(style()->visitedDependentColor(CSSPropertyColor), style()->visitedDependentColor(CSSPropertyBackgroundColor), style()->font(), style()->visibility() == VISIBLE,
-        style()->display() == NONE, style()->textIndent(), style()->direction(), isOverride(style()->unicodeBidi()), PopupMenuStyle::CustomBackgroundColor);
-}
-
-int RenderSearchField::clientInsetLeft() const
-{
-    // Inset the menu by the radius of the cap on the left so that
-    // it only runs along the straight part of the bezel.
-    return height() / 2;
-}
-
-int RenderSearchField::clientInsetRight() const
-{
-    // Inset the menu by the radius of the cap on the right so that
-    // it only runs along the straight part of the bezel (unless it needs
-    // to be wider).
-    return height() / 2;
-}
-
-LayoutUnit RenderSearchField::clientPaddingLeft() const
-{
-    LayoutUnit padding = paddingLeft();
-    if (RenderBox* box = innerBlockElement() ? innerBlockElement()->renderBox() : 0)
-        padding += box->x();
-    return padding;
-}
-
-LayoutUnit RenderSearchField::clientPaddingRight() const
-{
-    LayoutUnit padding = paddingRight();
-    if (RenderBox* containerBox = containerElement() ? containerElement()->renderBox() : 0) {
-        if (RenderBox* innerBlockBox = innerBlockElement() ? innerBlockElement()->renderBox() : 0)
-            padding += containerBox->width() - (innerBlockBox->x() + innerBlockBox->width());
-    }
-    return padding;
-}
-
-int RenderSearchField::listSize() const
-{
-    // If there are no recent searches, then our menu will have 1 "No recent searches" item.
-    if (!m_recentSearches.size())
-        return 1;
-    // Otherwise, leave room in the menu for a header, a separator, and the "Clear recent searches" item.
-    return m_recentSearches.size() + 3;
-}
-
-int RenderSearchField::selectedIndex() const
-{
-    return -1;
-}
-
-void RenderSearchField::popupDidHide()
-{
-    m_searchPopupIsVisible = false;
-}
-
-bool RenderSearchField::itemIsSeparator(unsigned listIndex) const
-{
-    // The separator will be the second to last item in our list.
-    return static_cast<int>(listIndex) == (listSize() - 2);
-}
-
-bool RenderSearchField::itemIsLabel(unsigned listIndex) const
-{
-    return !listIndex;
-}
-
-bool RenderSearchField::itemIsSelected(unsigned) const
-{
-    return false;
-}
-
-void RenderSearchField::setTextFromItem(unsigned listIndex)
-{
-    inputElement()->setValue(itemText(listIndex));
-}
-
-FontSelector* RenderSearchField::fontSelector() const
-{
-    return document()->styleResolver()->fontSelector();
-}
-
-HostWindow* RenderSearchField::hostWindow() const
-{
-    return document()->view()->hostWindow();
-}
-
-PassRefPtr<Scrollbar> RenderSearchField::createScrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize controlSize)
-{
-    RefPtr<Scrollbar> widget;
-    bool hasCustomScrollbarStyle = style()->hasPseudoStyle(SCROLLBAR);
-    if (hasCustomScrollbarStyle)
-        widget = RenderScrollbar::createCustomScrollbar(scrollableArea, orientation, this->node());
-    else
-        widget = Scrollbar::createNativeScrollbar(scrollableArea, orientation, controlSize);
-    return widget.release();
 }
 
 LayoutUnit RenderSearchField::computeLogicalHeightLimit() const

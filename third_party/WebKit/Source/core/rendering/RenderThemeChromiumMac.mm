@@ -1719,54 +1719,6 @@ bool RenderThemeChromiumMac::paintSearchFieldResultsDecoration(RenderObject* o, 
     return false;
 }
 
-const int resultsArrowWidth = 5;
-void RenderThemeChromiumMac::adjustSearchFieldResultsButtonStyle(StyleResolver*, RenderStyle* style, Element*) const
-{
-    IntSize size = sizeForSystemFont(style, resultsButtonSizes());
-    style->setWidth(Length(size.width() + resultsArrowWidth, Fixed));
-    style->setHeight(Length(size.height(), Fixed));
-    style->setBoxShadow(nullptr);
-}
-
-bool RenderThemeChromiumMac::paintSearchFieldResultsButton(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
-{
-    Node* input = o->node()->shadowHost();
-    if (!input)
-        input = o->node();
-    if (!input->renderer()->isBox())
-        return false;
-
-    LocalCurrentGraphicsContext localContext(paintInfo.context);
-    setSearchCellState(input->renderer(), r);
-
-    NSSearchFieldCell* search = this->search();
-
-    updateActiveState([search searchButtonCell], o);
-
-    if (![search searchMenuTemplate])
-        [search setSearchMenuTemplate:searchMenuTemplate()];
-
-    GraphicsContextStateSaver stateSaver(*paintInfo.context);
-    float zoomLevel = o->style()->effectiveZoom();
-
-    FloatRect localBounds = [search searchButtonRectForBounds:NSRect(input->renderBox()->pixelSnappedBorderBoxRect())];
-    localBounds = convertToPaintingRect(input->renderer(), o, localBounds, r);
-
-    IntRect unzoomedRect(localBounds);
-    if (zoomLevel != 1.0f) {
-        unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
-        unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
-        paintInfo.context->translate(unzoomedRect.x(), unzoomedRect.y());
-        paintInfo.context->scale(FloatSize(zoomLevel, zoomLevel));
-        paintInfo.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
-    }
-
-    [[search searchButtonCell] drawWithFrame:unzoomedRect inView:documentViewFor(o)];
-    [[search searchButtonCell] setControlView:nil];
-
-    return false;
-}
-
 #if ENABLE(DATALIST_ELEMENT)
 IntSize RenderThemeChromiumMac::sliderTickSize() const
 {

@@ -23,27 +23,20 @@
 #ifndef RenderSearchField_h
 #define RenderSearchField_h
 
-#include "core/platform/PopupMenuClient.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 
 namespace WebCore {
 
 class HTMLInputElement;
-class SearchPopupMenu;
 
-class RenderSearchField FINAL : public RenderTextControlSingleLine, private PopupMenuClient {
+class RenderSearchField FINAL : public RenderTextControlSingleLine {
 public:
     RenderSearchField(Element*);
     virtual ~RenderSearchField();
 
     void updateCancelButtonVisibility() const;
 
-    void addSearchResult();
     void stopSearchEventTimer();
-
-    bool popupIsVisible() const { return m_searchPopupIsVisible; }
-    void showPopup();
-    void hidePopup();
 
 private:
     virtual void centerContainerIfNeeded(RenderBox*) const OVERRIDE;
@@ -51,42 +44,9 @@ private:
     virtual LayoutUnit computeLogicalHeightLimit() const OVERRIDE;
     virtual void updateFromElement() OVERRIDE;
     EVisibility visibilityForCancelButton() const;
-    const AtomicString& autosaveName() const;
 
-    // PopupMenuClient methods
-    virtual void valueChanged(unsigned listIndex, bool fireEvents = true) OVERRIDE;
-    virtual void selectionChanged(unsigned, bool) OVERRIDE { }
-    virtual void selectionCleared() OVERRIDE { }
-    virtual String itemText(unsigned listIndex) const OVERRIDE;
-    virtual String itemLabel(unsigned listIndex) const OVERRIDE;
-    virtual String itemIcon(unsigned listIndex) const OVERRIDE;
-    virtual String itemToolTip(unsigned) const OVERRIDE { return String(); }
-    virtual String itemAccessibilityText(unsigned) const OVERRIDE { return String(); }
-    virtual bool itemIsEnabled(unsigned listIndex) const OVERRIDE;
-    virtual PopupMenuStyle itemStyle(unsigned listIndex) const OVERRIDE;
-    virtual PopupMenuStyle menuStyle() const OVERRIDE;
-    virtual int clientInsetLeft() const OVERRIDE;
-    virtual int clientInsetRight() const OVERRIDE;
-    virtual LayoutUnit clientPaddingLeft() const OVERRIDE;
-    virtual LayoutUnit clientPaddingRight() const OVERRIDE;
-    virtual int listSize() const OVERRIDE;
-    virtual int selectedIndex() const OVERRIDE;
-    virtual void popupDidHide() OVERRIDE;
-    virtual bool itemIsSeparator(unsigned listIndex) const OVERRIDE;
-    virtual bool itemIsLabel(unsigned listIndex) const OVERRIDE;
-    virtual bool itemIsSelected(unsigned listIndex) const OVERRIDE;
-    virtual bool valueShouldChangeOnHotTrack() const OVERRIDE { return false; }
-    virtual void setTextFromItem(unsigned listIndex) OVERRIDE;
-    virtual FontSelector* fontSelector() const OVERRIDE;
-    virtual HostWindow* hostWindow() const OVERRIDE;
-    virtual PassRefPtr<Scrollbar> createScrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize) OVERRIDE;
-
-    HTMLElement* resultsButtonElement() const;
+    HTMLElement* searchDecorationElement() const;
     HTMLElement* cancelButtonElement() const;
-
-    bool m_searchPopupIsVisible;
-    RefPtr<SearchPopupMenu> m_searchPopup;
-    Vector<String> m_recentSearches;
 };
 
 inline RenderSearchField* toRenderSearchField(RenderObject* object)

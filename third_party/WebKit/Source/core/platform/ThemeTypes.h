@@ -54,7 +54,7 @@ enum ControlPart {
     MenulistPart, MenulistButtonPart, MenulistTextPart, MenulistTextFieldPart, MeterPart, ProgressBarPart, ProgressBarValuePart,
     SliderHorizontalPart, SliderVerticalPart, SliderThumbHorizontalPart,
     SliderThumbVerticalPart, CaretPart, SearchFieldPart, SearchFieldDecorationPart,
-    SearchFieldResultsDecorationPart, SearchFieldResultsButtonPart,
+    SearchFieldResultsDecorationPart,
     SearchFieldCancelButtonPart, TextFieldPart,
     RelevancyLevelIndicatorPart, ContinuousCapacityLevelIndicatorPart, DiscreteCapacityLevelIndicatorPart, RatingLevelIndicatorPart,
     TextAreaPart, CapsLockIndicatorPart

@@ -294,9 +294,6 @@ protected:
     virtual void adjustSearchFieldResultsDecorationStyle(StyleResolver*, RenderStyle*, Element*) const;
     virtual bool paintSearchFieldResultsDecoration(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
 
-    virtual void adjustSearchFieldResultsButtonStyle(StyleResolver*, RenderStyle*, Element*) const;
-    virtual bool paintSearchFieldResultsButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-
     virtual void adjustMediaControlStyle(StyleResolver*, RenderStyle*, Element*) const;
     virtual bool paintMediaFullscreenButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMediaPlayButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }

@@ -202,9 +202,9 @@ HTMLElement* HTMLInputElement::innerSpinButtonElement() const
     return m_inputType->innerSpinButtonElement();
 }
 
-HTMLElement* HTMLInputElement::resultsButtonElement() const
+HTMLElement* HTMLInputElement::searchDecorationElement() const
 {
-    return m_inputType->resultsButtonElement();
+    return m_inputType->searchDecorationElement();
 }
 
 HTMLElement* HTMLInputElement::cancelButtonElement() const
@@ -670,9 +670,6 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
             reattachIfAttached();
         setNeedsStyleRecalc();
         UseCounter::count(document(), UseCounter::ResultsAttribute);
-    } else if (name == autosaveAttr) {
-        setNeedsStyleRecalc();
-        UseCounter::count(document(), UseCounter::AutoSaveAttribute);
     } else if (name == incrementalAttr) {
         setNeedsStyleRecalc();
         UseCounter::count(document(), UseCounter::IncrementalAttribute);
@@ -1151,10 +1148,8 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
     }
 
     if (m_inputType->shouldSubmitImplicitly(evt)) {
-        if (isSearchField()) {
-            addSearchResult();
+        if (isSearchField())
             onSearch();
-        }
         // Form submission finishes editing, just as loss of focus does.
         // If there was a change, send the event now.
         if (wasChangedSinceLastFormControlChangeEvent())
@@ -1398,11 +1393,6 @@ bool HTMLInputElement::matchesReadOnlyPseudoClass() const
 bool HTMLInputElement::matchesReadWritePseudoClass() const
 {
     return m_inputType->supportsReadOnly() && !isReadOnly();
-}
-
-void HTMLInputElement::addSearchResult()
-{
-    m_inputType->addSearchResult();
 }
 
 void HTMLInputElement::onSearch()

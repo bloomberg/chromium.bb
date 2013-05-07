@@ -32,7 +32,6 @@
 #include "core/platform/PopupMenu.h"
 #include "core/platform/PopupMenuClient.h"
 #include "core/platform/ScrollTypes.h"
-#include "core/platform/SearchPopupMenu.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "modules/webdatabase/DatabaseDetails.h"
@@ -241,7 +240,6 @@ public:
     // Checks if there is an opened popup, called by RenderMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
     virtual PassRefPtr<PopupMenu> createPopupMenu(PopupMenuClient*) const = 0;
-    virtual PassRefPtr<SearchPopupMenu> createSearchPopupMenu(PopupMenuClient*) const = 0;
 #if ENABLE(PAGE_POPUP)
     // Creates a PagePopup object, and shows it beside originBoundsInRootView.
     // The return value can be 0.

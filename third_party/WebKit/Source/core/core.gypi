@@ -2658,8 +2658,6 @@
             'platform/chromium/ScrollbarThemeChromiumMac.mm',
             'platform/chromium/ScrollbarThemeChromiumWin.cpp',
             'platform/chromium/ScrollbarThemeChromiumWin.h',
-            'platform/chromium/SearchPopupMenuChromium.cpp',
-            'platform/chromium/SearchPopupMenuChromium.h',
             'platform/chromium/SharedTimerChromium.cpp',
             'platform/chromium/SoundChromiumPosix.cpp',
             'platform/chromium/SoundChromiumWin.cpp',

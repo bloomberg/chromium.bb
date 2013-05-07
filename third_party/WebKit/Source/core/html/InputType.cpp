@@ -555,10 +555,6 @@ void InputType::accessKeyAction(bool)
     element()->focus(false);
 }
 
-void InputType::addSearchResult()
-{
-}
-
 void InputType::attach()
 {
 }
