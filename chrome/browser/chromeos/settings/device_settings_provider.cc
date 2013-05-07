@@ -495,10 +495,11 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
               kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
               entry->kiosk_app().update_url());
         }
-      } else if (entry->has_id()) {
+      } else if (entry->has_deprecated_public_session_id()) {
         // Deprecated public session specification.
         entry_dict->SetStringWithoutPathExpansion(
-            kAccountsPrefDeviceLocalAccountsKeyId, entry->id());
+            kAccountsPrefDeviceLocalAccountsKeyId,
+            entry->deprecated_public_session_id());
         entry_dict->SetIntegerWithoutPathExpansion(
             kAccountsPrefDeviceLocalAccountsKeyType,
             DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION);

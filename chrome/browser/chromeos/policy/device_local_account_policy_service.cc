@@ -171,8 +171,8 @@ void DeviceLocalAccountPolicyService::UpdateAccountList(
         entry->type() ==
             em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION) {
       account_id = entry->account_id();
-    } else if (entry->has_id()) {
-      account_id = entry->id();
+    } else if (entry->has_deprecated_public_session_id()) {
+      account_id = entry->deprecated_public_session_id();
     }
 
     if (account_id.empty())

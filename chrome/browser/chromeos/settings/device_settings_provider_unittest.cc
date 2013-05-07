@@ -267,7 +267,8 @@ TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
   em::DeviceLocalAccountInfoProto* account =
       device_policy_.payload().mutable_device_local_accounts()->add_account();
-  account->set_id(policy::PolicyBuilder::kFakeUsername);
+  account->set_deprecated_public_session_id(
+      policy::PolicyBuilder::kFakeUsername);
   device_policy_.Build();
   device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
   ReloadDeviceSettings();

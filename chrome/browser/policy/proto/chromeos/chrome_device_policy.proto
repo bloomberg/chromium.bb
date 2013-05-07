@@ -245,8 +245,7 @@ message DeviceLocalAccountInfoProto {
   // code should instead set type to ACCOUNT_TYPE_PUBLIC_SESSION and write the
   // identifier to the |account_id| field below. If the |type| field is present,
   // |deprecated_public_session_id| will be ignored.
-  // TODO(mnissler): Rename this field to indicate it's deprecated.
-  optional string id = 1;
+  optional string deprecated_public_session_id = 1;
 
   // Identifier for the device-local account. This is an opaque identifier that
   // is used to distinguish different device-local accounts configured. All
