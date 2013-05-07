@@ -343,4 +343,29 @@ TEST_F(ImageDecodingStoreTest, overwriteDiscardableCacheWithNonDiscardable)
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), cachedImage);
 }
 
+TEST_F(ImageDecodingStoreTest, clear)
+{
+    insertCache(SkISize::Make(1, 1));
+    insertCache(SkISize::Make(2, 2));
+    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+
+    ImageDecodingStore::instance()->clear();
+    EXPECT_EQ(0u, ImageDecodingStore::instance()->cacheEntries());
+}
+
+TEST_F(ImageDecodingStoreTest, clearInUse)
+{
+    insertCache(SkISize::Make(1, 1));
+    insertCache(SkISize::Make(2, 2));
+    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+
+    const ScaledImageFragment* cachedImage = lockCache(SkISize::Make(1, 1));
+    ASSERT_TRUE(cachedImage);
+    ImageDecodingStore::instance()->clear();
+    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+
+    unlockCache(cachedImage);
+    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+}
+
 } // namespace

@@ -71,6 +71,7 @@ public:
     // Remove all cache entries indexed by ImageFrameGenerator.
     void removeCacheIndexedByGenerator(const ImageFrameGenerator*);
 
+    void clear();
     void setCacheLimitInBytes(size_t);
     size_t memoryUsageInBytes();
     unsigned cacheEntries();

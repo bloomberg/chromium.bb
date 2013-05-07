@@ -213,6 +213,23 @@ void ImageDecodingStore::removeCacheIndexedByGenerator(const ImageFrameGenerator
     }
 }
 
+void ImageDecodingStore::clear()
+{
+    size_t cacheLimitInBytes;
+    {
+        MutexLocker lock(m_mutex);
+        cacheLimitInBytes = m_cacheLimitInBytes;
+        m_cacheLimitInBytes = 0;
+    }
+
+    prune();
+
+    {
+        MutexLocker lock(m_mutex);
+        m_cacheLimitInBytes = cacheLimitInBytes;
+    }
+}
+
 void ImageDecodingStore::setCacheLimitInBytes(size_t cacheLimit)
 {
     {
