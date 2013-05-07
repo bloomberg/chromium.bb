@@ -1799,8 +1799,10 @@ bool RenderWidgetHostViewAura::LockMouse() {
     cursor_client->LockCursor();
   }
 
-  synthetic_move_sent_ = true;
-  window_->MoveCursorTo(gfx::Rect(window_->bounds().size()).CenterPoint());
+  if (ShouldMoveToCenter()) {
+    synthetic_move_sent_ = true;
+    window_->MoveCursorTo(gfx::Rect(window_->bounds().size()).CenterPoint());
+  }
   if (aura::client::GetTooltipClient(root_window))
     aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(false);
   return true;
@@ -2311,7 +2313,6 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
         synthetic_move_sent_ = true;
         window_->MoveCursorTo(center);
       }
-
       // Forward event to renderer.
       if (CanRendererHandleEvent(event) &&
           !(event->flags() & ui::EF_FROM_TOUCH))
@@ -2866,6 +2867,7 @@ void RenderWidgetHostViewAura::SchedulePaintIfNotInClip(
 
 bool RenderWidgetHostViewAura::ShouldMoveToCenter() {
   gfx::Rect rect = window_->bounds();
+  rect = ConvertRectToScreen(rect);
   int border_x = rect.width() * kMouseLockBorderPercentage / 100;
   int border_y = rect.height() * kMouseLockBorderPercentage / 100;
 

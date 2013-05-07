@@ -843,7 +843,8 @@ void DesktopRootWindowHostX11::OnCursorVisibilityChanged(bool show) {
 }
 
 void DesktopRootWindowHostX11::MoveCursorTo(const gfx::Point& location) {
-  NOTIMPLEMENTED();
+  XWarpPointer(xdisplay_, None, x_root_window_, 0, 0, 0, 0,
+               bounds_.x() + location.x(), bounds_.y() + location.y());
 }
 
 void DesktopRootWindowHostX11::SetFocusWhenShown(bool focus_when_shown) {

@@ -93,6 +93,10 @@ WebKit::WebMouseEvent MakeWebMouseEvent(ui::MouseEvent* event) {
   webkit_event.windowX = webkit_event.x = event->x();
   webkit_event.windowY = webkit_event.y = event->y();
 
+#if defined(OS_WIN)
+  if (event->native_event().message)
+    return webkit_event;
+#endif
   const gfx::Point root_point = event->root_location();
   webkit_event.globalX = root_point.x();
   webkit_event.globalY = root_point.y();

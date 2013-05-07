@@ -85,6 +85,7 @@ class ChromeChannelListener : public IPC::Listener {
                           OnDisplayFileSaveAsDialog)
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_DisplaySelectFolder,
                           OnDisplayFolderPicker)
+      IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetCursorPos, OnSetCursorPos)
       IPC_MESSAGE_UNHANDLED(__debugbreak())
     IPC_END_MESSAGE_MAP()
     return true;
@@ -132,6 +133,16 @@ class ChromeChannelListener : public IPC::Listener {
                    base::Unretained(app_view_),
                    title));
   }
+
+  void OnSetCursorPos(int x, int y) {
+    VLOG(1) << "In IPC OnSetCursorPos: " << x << ", " << y;
+    ui_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromeAppViewAsh::OnSetCursorPos,
+                   base::Unretained(app_view_),
+                   x, y));
+  }
+
 
   scoped_refptr<base::MessageLoopProxy> ui_proxy_;
   ChromeAppViewAsh* app_view_;
@@ -523,6 +534,19 @@ void ChromeAppViewAsh::OnDisplayFolderPicker(const string16& title) {
   // operation.
   FilePickerSessionBase* file_picker_ = new FolderPickerSession(this, title);
   file_picker_->Run();
+}
+
+void ChromeAppViewAsh::OnSetCursorPos(int x, int y) {
+  if (ui_channel_) {
+    ::SetCursorPos(x, y);
+    DVLOG(1) << "In UI OnSetCursorPos: " << x << ", " << y;
+    ui_channel_->Send(new MetroViewerHostMsg_SetCursorPosAck());
+    // Generate a fake mouse move which matches the SetCursor coordinates as
+    // the browser expects to receive a mouse move for these coordinates.
+    // It is not clear why we don't receive a real mouse move in response to
+    // the SetCursorPos calll above.
+    ui_channel_->Send(new MetroViewerHostMsg_MouseMoved(x, y, 0));
+  }
 }
 
 void ChromeAppViewAsh::OnOpenFileCompleted(

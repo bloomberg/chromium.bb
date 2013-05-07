@@ -148,6 +148,7 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
                            const std::vector<base::FilePath>& files);
   void OnSelectFolderDone(bool success, const base::FilePath& folder);
   void OnWindowActivated(bool active);
+  void OnSetCursorPosAck();
   // RootWindowHost overrides:
   virtual void SetDelegate(RootWindowHostDelegate* delegate) OVERRIDE;
   virtual RootWindow* GetRootWindow() OVERRIDE;
@@ -198,6 +199,10 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   OpenMultipleFilesCompletion multi_file_open_completion_callback_;
   SaveFileCompletion file_saveas_completion_callback_;
   SelectFolderCompletion select_folder_completion_callback_;
+
+  // Set to true if we need to ignore mouse messages until the SetCursorPos
+  // operation is acked by the viewer.
+  bool ignore_mouse_moves_until_set_cursor_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteRootWindowHostWin);
 };

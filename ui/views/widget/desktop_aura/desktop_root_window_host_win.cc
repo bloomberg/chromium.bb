@@ -8,6 +8,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_property.h"
@@ -473,7 +474,17 @@ void DesktopRootWindowHostWin::SetCursor(gfx::NativeCursor cursor) {
 }
 
 bool DesktopRootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
-  return false;
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(GetRootWindow());
+  if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
+    *location_return = gfx::Point(0, 0);
+    return false;
+  }
+  POINT pt = {0};
+  ::GetCursorPos(&pt);
+  *location_return =
+      gfx::Point(static_cast<int>(pt.x), static_cast<int>(pt.y));
+  return true;
 }
 
 bool DesktopRootWindowHostWin::ConfineCursorToRootWindow() {
@@ -487,6 +498,9 @@ void DesktopRootWindowHostWin::OnCursorVisibilityChanged(bool show) {
 }
 
 void DesktopRootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
+  POINT cursor_location = location.ToPOINT();
+  ::ClientToScreen(GetHWND(), &cursor_location);
+  ::SetCursorPos(cursor_location.x, cursor_location.y);
 }
 
 void DesktopRootWindowHostWin::SetFocusWhenShown(bool focus_when_shown) {

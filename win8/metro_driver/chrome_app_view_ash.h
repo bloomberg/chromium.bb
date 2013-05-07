@@ -53,6 +53,7 @@ class ChromeAppViewAsh
   void OnDisplayFileSaveAsDialog(
       const MetroViewerHostMsg_SaveAsDialogParams& params);
   void OnDisplayFolderPicker(const string16& title);
+  void OnSetCursorPos(int x, int y);
 
   // This function is invoked when the open file operation completes. The
   // result of the operation is passed in along with the OpenFilePickerSession

@@ -136,3 +136,12 @@ IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_DisplaySelectFolder,
 // activation etc.
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_WindowActivated,
                      bool) /* active */
+
+// Sent to the viewer process to set the cursor position.
+IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_SetCursorPos,
+                     int,  /* x */
+                     int)  /* y */
+
+// Ack sent by the viewer process indicating that the SetCursorPos operation
+// was completed.
+IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_SetCursorPosAck)

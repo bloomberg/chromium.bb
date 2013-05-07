@@ -12,6 +12,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/events/event.h"
@@ -113,7 +114,9 @@ RemoteRootWindowHostWin* RemoteRootWindowHostWin::Create(
 }
 
 RemoteRootWindowHostWin::RemoteRootWindowHostWin(const gfx::Rect& bounds)
-    : delegate_(NULL), host_(NULL) {
+    : delegate_(NULL),
+      host_(NULL),
+      ignore_mouse_moves_until_set_cursor_ack_(false) {
   prop_.reset(new ui::ViewProp(NULL, kRootWindowHostWinKey, this));
 }
 
@@ -156,6 +159,8 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
                         OnSelectFolderDone)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_WindowActivated,
                         OnWindowActivated)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetCursorPosAck,
+                        OnSetCursorPosAck)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -293,6 +298,12 @@ void RemoteRootWindowHostWin::ReleaseCapture() {
 }
 
 bool RemoteRootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(GetRootWindow());
+  if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
+    *location_return = gfx::Point(0, 0);
+    return false;
+  }
   POINT pt;
   GetCursorPos(&pt);
   *location_return =
@@ -319,6 +330,28 @@ void RemoteRootWindowHostWin::OnCursorVisibilityChanged(bool show) {
 }
 
 void RemoteRootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
+  VLOG(1) << "In MoveCursorTo: " << location.x() << ", " << location.y();
+  if (!host_)
+    return;
+
+  // This function can be called in cases like when the mouse cursor is
+  // restricted within a viewport (For e.g. LockCursor) which assumes that
+  // subsequent mouse moves would be received starting with the new cursor
+  // coordinates. This is a challenge for Windows ASH for the reasons
+  // outlined below.
+  // Other cases which don't expect this behavior should continue to work
+  // without issues.
+
+  // The mouse events are received by the viewer process and sent to the
+  // browser. If we invoke the SetCursor API here we continue to receive
+  // mouse messages from the viewer which were posted before the SetCursor
+  // API executes which messes up the state in the browser. To workaround
+  // this we invoke the SetCursor API in the viewer process and ignore
+  // mouse messages until we received an ACK from the viewer indicating that
+  // the SetCursor operation completed.
+  ignore_mouse_moves_until_set_cursor_ack_ = true;
+  VLOG(1) << "In MoveCursorTo. Sending IPC";
+  host_->Send(new MetroViewerHostMsg_SetCursorPos(location.x(), location.y()));
 }
 
 void RemoteRootWindowHostWin::SetFocusWhenShown(bool focus_when_shown) {
@@ -338,6 +371,9 @@ void RemoteRootWindowHostWin::PrepareForShutdown() {
 }
 
 void RemoteRootWindowHostWin::OnMouseMoved(int32 x, int32 y, int32 flags) {
+  if (ignore_mouse_moves_until_set_cursor_ack_)
+    return;
+
   gfx::Point location(x, y);
   ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location, flags);
   delegate_->OnHostMouseEvent(&event);
@@ -459,6 +495,11 @@ void RemoteRootWindowHostWin::OnSelectFolderDone(
 
 void RemoteRootWindowHostWin::OnWindowActivated(bool active) {
   active ? GetRootWindow()->Focus() : GetRootWindow()->Blur();
+}
+
+void RemoteRootWindowHostWin::OnSetCursorPosAck() {
+  DCHECK(ignore_mouse_moves_until_set_cursor_ack_);
+  ignore_mouse_moves_until_set_cursor_ack_ = false;
 }
 
 void RemoteRootWindowHostWin::DispatchKeyboardMessage(ui::EventType type,
