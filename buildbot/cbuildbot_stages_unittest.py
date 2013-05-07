@@ -12,6 +12,7 @@ import cPickle
 import json
 import mox
 import os
+import shutil
 import signal
 import StringIO
 import sys
@@ -1581,6 +1582,7 @@ class BaseCQTest(StageTest):
                      autospec=True)
     self.PatchObject(repository.RepoRepository, 'ExportManifest',
                      return_value=self.MANIFEST_CONTENTS, autospec=True)
+    self.PatchObject(shutil, 'rmtree', autospec=True)
     self.PatchObject(validation_pool.ValidationPool, 'MAX_TIMEOUT', 0.5)
     rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     rc_mock.SetDefaultCmdResult()
