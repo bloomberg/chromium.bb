@@ -240,6 +240,7 @@ InstantController::InstantController(BrowserInstantController* browser,
       extended_enabled_(extended_enabled),
       instant_enabled_(false),
       use_local_page_only_(true),
+      preload_ntp_(true),
       model_(this),
       use_tab_for_suggestions_(false),
       last_omnibox_text_has_inline_autocompletion_(false),
@@ -529,13 +530,12 @@ scoped_ptr<content::WebContents> InstantController::ReleaseNTPContents() {
 
   scoped_ptr<content::WebContents> ntp_contents = ntp_->ReleaseContents();
 
-  if (!use_local_page_only_) {
-    // Preload a new Instant NTP, unless using the local NTP which is not
-    // preloaded to conserve memory.
+  // Preload a new Instant NTP.
+  if (preload_ntp_)
     ResetNTP(GetInstantURL());
-  } else {
+  else
     ntp_.reset();
-  }
+
   return ntp_contents.Pass();
 }
 
@@ -647,7 +647,7 @@ void InstantController::HandleAutocompleteResults(
 void InstantController::OnDefaultSearchProviderChanged() {
   if (ntp_ && extended_enabled_) {
     ntp_.reset();
-    if (!use_local_page_only_)
+    if (preload_ntp_)
       ResetNTP(GetInstantURL());
   }
 
@@ -1008,6 +1008,7 @@ void InstantController::SetInstantEnabled(bool instant_enabled,
 
   instant_enabled_ = instant_enabled;
   use_local_page_only_ = use_local_page_only;
+  preload_ntp_ = !use_local_page_only_ || chrome::ShouldPreloadLocalOnlyNTP();
 
   // Preload the overlay.
   HideInternal();
@@ -1015,9 +1016,9 @@ void InstantController::SetInstantEnabled(bool instant_enabled,
   if (extended_enabled_ || instant_enabled_)
     ResetOverlay(GetInstantURL());
 
-  // Preload the Instant NTP unless using the local NTP, to conserve memory.
+  // Preload the Instant NTP.
   ntp_.reset();
-  if (extended_enabled_ && !use_local_page_only)
+  if (extended_enabled_ && preload_ntp_)
     ResetNTP(GetInstantURL());
 
   if (instant_tab_)

@@ -64,6 +64,7 @@ const InstantExtendedDefault kInstantExtendedActivationDefault =
     INSTANT_DEFAULT_ON;
 
 const char kLocalOnlyFlagName[] = "local_only";
+const char kPreloadLocalOnlyNTPFlagName[] = "preload_local_only_ntp";
 
 // Key for specifying remote NTP behavior trials.
 const char kUseRemoteNTPOnStartupFlagName[] = "use_remote_ntp_on_startup";
@@ -515,6 +516,17 @@ bool ShouldPreferRemoteNTPOnStartup() {
                                           flags);
   }
   return false;
+}
+
+bool ShouldPreloadLocalOnlyNTP() {
+  FieldTrialFlags flags;
+  if (GetFieldTrialInfo(
+          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+          &flags, NULL)) {
+    return GetBoolValueForFlagWithDefault(kPreloadLocalOnlyNTPFlagName, false,
+                                          flags);
+  }
+  return true;
 }
 
 bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {

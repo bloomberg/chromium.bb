@@ -244,7 +244,8 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ValidatesSuggestions);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            OmniboxCommitsWhenShownFullHeight);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalNTPIsNotPreloaded);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalOnlyNTPIsPreloaded);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalOnlyNTPIsNotPreloaded);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OverlayRenderViewGone);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OverlayDoesntSupportInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
@@ -408,6 +409,9 @@ class InstantController : public InstantPage::Delegate,
 
   // If true, the Instant URL is set to kChromeSearchLocalNtpUrl.
   bool use_local_page_only_;
+
+  // If true, preload an NTP into |ntp_|.
+  bool preload_ntp_;
 
   // The state of the overlay page, i.e., the page owned by |overlay_|. Ignored
   // if |instant_tab_| is in use.

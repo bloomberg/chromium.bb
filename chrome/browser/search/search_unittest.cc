@@ -251,6 +251,25 @@ TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyDisabledViaCommandLineFlag) {
   ValidateMetrics(INSTANT_EXTENDED_OPT_OUT_LOCAL);
 }
 
+class ShouldPreloadLocalOnlyNTPtest : public InstantExtendedAPIEnabledTest {
+};
+
+TEST_F(ShouldPreloadLocalOnlyNTPtest, PreloadByDefault) {
+  EXPECT_TRUE(ShouldPreloadLocalOnlyNTP());
+}
+
+TEST_F(ShouldPreloadLocalOnlyNTPtest, SuppressPreload) {
+  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
+      "InstantExtended/Group1 preload_local_only_ntp:0/"));
+  EXPECT_FALSE(ShouldPreloadLocalOnlyNTP());
+}
+
+TEST_F(ShouldPreloadLocalOnlyNTPtest, ForcePreload) {
+  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
+      "InstantExtended/Group1 preload_local_only_ntp:1/"));
+  EXPECT_TRUE(ShouldPreloadLocalOnlyNTP());
+}
+
 class SearchTest : public BrowserWithTestWindowTest {
  protected:
   virtual void SetUp() OVERRIDE {

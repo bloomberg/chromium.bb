@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -742,6 +743,36 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NTPIsPreloaded) {
   ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
   content::WebContents* ntp_contents = instant()->ntp_->contents();
   EXPECT_TRUE(ntp_contents);
+}
+
+// Test that the local NTP is preloaded.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, LocalOnlyNTPIsPreloaded) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+
+  // The second argument says to use only the local overlay and NTP.
+  instant()->SetInstantEnabled(false, true);
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+
+  // NTP contents should be preloaded.
+  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  content::WebContents* ntp_contents = instant()->ntp_->contents();
+  EXPECT_NE(static_cast<content::WebContents*>(NULL), ntp_contents);
+  EXPECT_TRUE(instant()->ntp()->IsLocal());
+}
+
+// Test that the local NTP is not preloaded.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, LocalOnlyNTPIsNotPreloaded) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
+      "InstantExtended/Group1 local_only:1 preload_local_only_ntp:0/"));
+
+  // The second argument says to use only the local overlay and NTP.
+  instant()->SetInstantEnabled(false, true);
+
+  // NTP contents should not be preloaded.
+  EXPECT_EQ(NULL, instant()->ntp());
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInNewTab) {
@@ -1739,18 +1770,6 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, AutocompleteProvidersDone) {
   EXPECT_EQ(overlay, instant()->GetOverlayContents());
   EXPECT_TRUE(UpdateSearchState(overlay));
   EXPECT_EQ(1, on_native_suggestions_calls_);
-}
-
-// Test that the local NTP is not preloaded.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, LocalNTPIsNotPreloaded) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-
-  EXPECT_EQ(instant_url(), instant()->ntp_->contents()->GetURL());
-
-  // The second argument says to use only the local overlay and NTP.
-  instant()->SetInstantEnabled(false, true);
-
-  EXPECT_EQ(NULL, instant()->ntp());
 }
 
 // Verify top bars visibility when searching on |DEFAULT| pages and switching
