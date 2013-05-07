@@ -100,7 +100,11 @@ class UI_EXPORT TextInputClient {
   // Deletes contents in the given UTF-16 based character range. Current
   // composition text will be confirmed before deleting the range.
   // The input caret will be moved to the place where the range gets deleted.
-  // Returns false if the oepration is not supported.
+  // ExtendSelectionAndDelete should be used instead as far as you are deleting
+  // characters around current caret. This function with the range based on
+  // GetSelectionRange has a race condition due to asynchronous IPCs between
+  // browser and renderer.
+  // Returns false if the operation is not supported.
   virtual bool DeleteRange(const ui::Range& range) = 0;
 
   // Retrieves the text content in a given UTF-16 based character range.
@@ -123,7 +127,10 @@ class UI_EXPORT TextInputClient {
       base::i18n::TextDirection direction) = 0;
 
   // Deletes the current selection plus the specified number of characters
-  // before and after the selection or caret.
+  // before and after the selection or caret. This function should be used
+  // instead of calling DeleteRange with GetSelectionRange, because
+  // GetSelectionRange may not be the latest value due to asynchronous of IPC
+  // between browser and renderer.
   virtual void ExtendSelectionAndDelete(size_t before, size_t after) = 0;
 
   // Ensure the caret is within |rect|.  |rect| is in screen coordinates and

@@ -1058,9 +1058,14 @@ bool NativeTextfieldViews::ChangeTextDirectionAndLayoutAlignment(
 void NativeTextfieldViews::ExtendSelectionAndDelete(
     size_t before,
     size_t after) {
-  // TODO(horo): implement this method if it is required.
-  // http://crbug.com/149155
-  NOTIMPLEMENTED();
+  ui::Range range = GetSelectedRange();
+  DCHECK_GE(range.start(), before);
+
+  range.set_start(range.start() - before);
+  range.set_end(range.end() + after);
+  ui::Range text_range;
+  if (GetTextRange(&text_range) && text_range.Contains(range))
+    DeleteRange(range);
 }
 
 void NativeTextfieldViews::EnsureCaretInRect(const gfx::Rect& rect) {

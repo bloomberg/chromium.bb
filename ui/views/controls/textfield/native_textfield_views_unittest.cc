@@ -1278,6 +1278,12 @@ TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
   EXPECT_EQ(1, on_before_user_action_);
   EXPECT_EQ(1, on_after_user_action_);
 
+  textfield_->clear();
+  textfield_->SetText(ASCIIToUTF16("0123456789"));
+  EXPECT_TRUE(client->SetSelectionRange(ui::Range(5, 5)));
+  client->ExtendSelectionAndDelete(4, 2);
+  EXPECT_STR_EQ("0789", textfield_->text());
+
   // On{Before,After}UserAction should be called by whatever user action
   // triggers clearing or setting a selection if appropriate.
   on_before_user_action_ = on_after_user_action_ = 0;
