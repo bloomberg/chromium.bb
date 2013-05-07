@@ -8,6 +8,7 @@ vars = {
   "gyp_rev": "1603",
   "lss_rev": "18",
 
+  "breakpad_rev": "1172",
   "lcov_rev": "149720",
   "python_26_rev": "53573",
   "tools_rev": "11040",
@@ -19,6 +20,9 @@ vars = {
 }
 
 deps = {
+  "breakpad/src":
+    ((Var("googlecode_url") % "google-breakpad") + "/trunk/src@" +
+     Var('breakpad_rev')),
   "native_client/tools/perf_expectations":
     Var("chromium_trunk") + "/src/tools/perf_expectations@" + Var("chrome_rev"),
   "testing/gtest":
