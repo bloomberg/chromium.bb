@@ -109,7 +109,7 @@ void WebViewPlugin::destroy() {
     delegate_ = NULL;
   }
   container_ = NULL;
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 NPObject* WebViewPlugin::scriptableObject() {

@@ -29,7 +29,7 @@ void AppCacheTestHelper::OnGroupAndNewestCacheStored(
     bool success,
     bool /*would_exceed_quota*/) {
   ASSERT_TRUE(success);
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 void AppCacheTestHelper::AddGroupAndCache(AppCacheService* appcache_service,
@@ -49,7 +49,7 @@ void AppCacheTestHelper::AddGroupAndCache(AppCacheService* appcache_service,
                                                         appcache,
                                                         this);
   // OnGroupAndNewestCacheStored will quit the message loop.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 void AppCacheTestHelper::GetOriginsWithCaches(AppCacheService* appcache_service,
@@ -61,7 +61,7 @@ void AppCacheTestHelper::GetOriginsWithCaches(AppCacheService* appcache_service,
                                  base::Unretained(this)));
 
   // OnGotAppCacheInfo will quit the message loop.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 void AppCacheTestHelper::OnGotAppCacheInfo(int rv) {
@@ -73,7 +73,7 @@ void AppCacheTestHelper::OnGotAppCacheInfo(int rv) {
        origin != appcache_info_->infos_by_origin.end(); ++origin) {
     origins_->insert(origin->first);
   }
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 }  // namespace appcache

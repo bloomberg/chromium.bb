@@ -31,7 +31,7 @@ class FileSystemUsageCacheTest : public testing::Test {
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::ScopedTempDir data_dir_;
   FileSystemUsageCache usage_cache_;
 

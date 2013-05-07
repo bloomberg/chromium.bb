@@ -104,7 +104,7 @@ class BlobURLRequestJobTest : public testing::Test {
     }
 
     void RequestComplete() {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
 
     scoped_refptr<net::IOBuffer> received_data_;
@@ -133,10 +133,9 @@ class BlobURLRequestJobTest : public testing::Test {
   };
 
   BlobURLRequestJobTest()
-      : message_loop_(MessageLoop::TYPE_IO),
+      : message_loop_(base::MessageLoop::TYPE_IO),
         blob_data_(new BlobData()),
-        expected_status_code_(0) {
-  }
+        expected_status_code_(0) {}
 
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -176,7 +175,7 @@ class BlobURLRequestJobTest : public testing::Test {
         true,  // create
         base::Bind(&BlobURLRequestJobTest::OnValidateFileSystem,
                    base::Unretained(this)));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     ASSERT_TRUE(file_system_root_url_.is_valid());
 
     // Prepare files on file system.
@@ -263,7 +262,7 @@ class BlobURLRequestJobTest : public testing::Test {
       request_->SetExtraRequestHeaders(extra_headers);
     request_->Start();
 
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     // Verify response.
     EXPECT_TRUE(request_->status().is_success());
@@ -301,7 +300,7 @@ class BlobURLRequestJobTest : public testing::Test {
   base::Time temp_file_system_file_modification_time1_;
   base::Time temp_file_system_file_modification_time2_;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<BlobData> blob_data_;
   net::URLRequestJobFactoryImpl url_request_job_factory_;

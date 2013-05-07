@@ -366,15 +366,14 @@ static int ToMessageID(WebLocalizedString::Name name) {
 }
 
 WebKitPlatformSupportImpl::WebKitPlatformSupportImpl()
-    : main_loop_(MessageLoop::current()),
+    : main_loop_(base::MessageLoop::current()),
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
       shared_timer_suspended_(0),
       current_thread_slot_(&DestroyCurrentThread),
       compositor_support_(new webkit::WebCompositorSupportImpl),
-      fling_curve_configuration_(new FlingCurveConfiguration) {
-}
+      fling_curve_configuration_(new FlingCurveConfiguration) {}
 
 WebKitPlatformSupportImpl::~WebKitPlatformSupportImpl() {
 }

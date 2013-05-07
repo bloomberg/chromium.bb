@@ -29,7 +29,7 @@ const fileapi::FileSystemType kFileSystemType =
 class UploadFileSystemFileElementReaderTest : public testing::Test {
  public:
   UploadFileSystemFileElementReaderTest()
-      : message_loop_(MessageLoop::TYPE_IO) {}
+      : message_loop_(base::MessageLoop::TYPE_IO) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -43,7 +43,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
         true,  // create
         base::Bind(&UploadFileSystemFileElementReaderTest::OnValidateFileSystem,
                    base::Unretained(this)));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     ASSERT_TRUE(file_system_root_url_.is_valid());
 
     // Prepare a file on file system.
@@ -117,7 +117,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
     file_system_root_url_ = root;
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<FileSystemContext> file_system_context_;
   GURL file_system_root_url_;

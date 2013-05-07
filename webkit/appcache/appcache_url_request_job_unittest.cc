@@ -153,7 +153,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
   static void SetUpTestCase() {
     io_thread_.reset(new base::Thread("AppCacheURLRequestJobTest Thread"));
-    base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     io_thread_->StartWithOptions(options);
   }
 
@@ -173,7 +173,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   }
 
   void SetUpTest() {
-    DCHECK(MessageLoop::current() == io_thread_->message_loop());
+    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
     DCHECK(task_stack_.empty());
     orig_http_factory_ = net::URLRequest::Deprecated::RegisterProtocolFactory(
         "http", MockHttpJobFactory);
@@ -188,9 +188,9 @@ class AppCacheURLRequestJobTest : public testing::Test {
   }
 
   void TearDownTest() {
-    DCHECK(MessageLoop::current() == io_thread_->message_loop());
-    net::URLRequest::Deprecated::RegisterProtocolFactory(
-        "http", orig_http_factory_);
+    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
+    net::URLRequest::Deprecated::RegisterProtocolFactory("http",
+                                                         orig_http_factory_);
     orig_http_factory_ = NULL;
     request_.reset();
     url_request_delegate_.reset();
@@ -212,8 +212,9 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void TestFinished() {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
-    DCHECK(MessageLoop::current() == io_thread_->message_loop());
-    MessageLoop::current()->PostTask(FROM_HERE,
+    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
         base::Bind(&AppCacheURLRequestJobTest::TestFinishedUnwound,
                    base::Unretained(this)));
   }
@@ -232,7 +233,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   }
 
   void ScheduleNextTask() {
-    DCHECK(MessageLoop::current() == io_thread_->message_loop());
+    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
     if (task_stack_.empty()) {
       TestFinished();
       return;
@@ -243,7 +244,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     if (immediate)
       task.Run();
     else
-      MessageLoop::current()->PostTask(FROM_HERE, task);
+      base::MessageLoop::current()->PostTask(FROM_HERE, task);
   }
 
   // Wrappers to call AppCacheResponseReader/Writer Read and Write methods

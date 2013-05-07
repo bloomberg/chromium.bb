@@ -44,7 +44,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   // Use the current thread as IO thread so that we can directly call
   // operations in the tests.
   SyncableFileOperationRunnerTest()
-    : message_loop_(MessageLoop::TYPE_IO),
+    : message_loop_(base::MessageLoop::TYPE_IO),
       file_system_(GURL("http://example.com"), kServiceName,
                    base::MessageLoopProxy::current(),
                    base::MessageLoopProxy::current()),
@@ -127,7 +127,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
 
   base::ScopedTempDir dir_;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   CannedSyncableFileSystem file_system_;
   scoped_refptr<LocalFileSyncContext> sync_context_;
 
@@ -155,13 +155,13 @@ TEST_F(SyncableFileOperationRunnerTest, SimpleQueue) {
   file_system_.NewOperation()->Truncate(
       URL(kFile), 1,
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   // Read operations are not blocked (and are executed before queued ones).
   file_system_.NewOperation()->FileExists(
       URL(kFile), ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_NOT_FOUND));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // End syncing (to enable write).
@@ -169,14 +169,14 @@ TEST_F(SyncableFileOperationRunnerTest, SimpleQueue) {
   ASSERT_TRUE(sync_status()->IsWritable(URL(kFile)));
 
   ResetCallbackStatus();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, callback_count_);
 
   // Now the file must have been created and updated.
   ResetCallbackStatus();
   file_system_.NewOperation()->FileExists(
       URL(kFile), ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 }
 
@@ -196,13 +196,13 @@ TEST_F(SyncableFileOperationRunnerTest, WriteToParentAndChild) {
   file_system_.NewOperation()->Remove(
       URL(kParent), true /* recursive */,
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   // Read operations are not blocked (and are executed before queued ones).
   file_system_.NewOperation()->DirectoryExists(
       URL(kDir), ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Writes to unrelated files must succeed as well.
@@ -210,7 +210,7 @@ TEST_F(SyncableFileOperationRunnerTest, WriteToParentAndChild) {
   file_system_.NewOperation()->CreateDirectory(
       URL(kOther), false /* exclusive */, false /* recursive */,
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // End syncing (to enable write).
@@ -218,7 +218,7 @@ TEST_F(SyncableFileOperationRunnerTest, WriteToParentAndChild) {
   ASSERT_TRUE(sync_status()->IsWritable(URL(kDir)));
 
   ResetCallbackStatus();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, callback_count_);
 }
 
@@ -239,7 +239,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   file_system_.NewOperation()->Move(
       URL(kDir), URL("dest-move"),
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Only "dest-copy1" should exist.
@@ -256,13 +256,13 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   file_system_.NewOperation()->Copy(
       URL(kDir), URL("dest-copy2"),
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   // Finish syncing the "dest-copy2" directory to unlock Copy.
   sync_status()->EndSyncing(URL("dest-copy2"));
   ResetCallbackStatus();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Now we should have "dest-copy2".
@@ -272,7 +272,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   // Finish syncing the kParent to unlock Move.
   sync_status()->EndSyncing(URL(kParent));
   ResetCallbackStatus();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Now we should have "dest-move".
@@ -292,14 +292,14 @@ TEST_F(SyncableFileOperationRunnerTest, Write) {
   file_system_.NewOperation()->Write(
       &url_request_context_,
       URL(kFile), kBlobURL, 0, GetWriteCallback(FROM_HERE));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   sync_status()->EndSyncing(URL(kFile));
   ResetCallbackStatus();
 
   while (!write_complete_)
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, write_status_);
   EXPECT_EQ(kData.size(), write_bytes_);
@@ -317,7 +317,7 @@ TEST_F(SyncableFileOperationRunnerTest, QueueAndCancel) {
   file_system_.NewOperation()->Truncate(
       URL(kFile), 1,
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_ABORT));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   ResetCallbackStatus();
@@ -325,7 +325,7 @@ TEST_F(SyncableFileOperationRunnerTest, QueueAndCancel) {
   // This shouldn't crash nor leak memory.
   sync_context_->ShutdownOnUIThread();
   sync_context_ = NULL;
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, callback_count_);
 }
 
@@ -348,7 +348,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
   file_system_.NewOperation()->AsLocalFileSystemOperation()->CopyInForeignFile(
       temp_path, URL(kFile),
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   // End syncing (to enable write).
@@ -356,7 +356,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
   ASSERT_TRUE(sync_status()->IsWritable(URL(kFile)));
 
   ResetCallbackStatus();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Now the file must have been created and have the same content as temp_path.
@@ -364,7 +364,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
   file_system_.DoVerifyFile(
       URL(kFile), kTestData,
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 }
 

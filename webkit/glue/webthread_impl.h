@@ -43,7 +43,7 @@ class WebThreadImpl : public WebThreadBase {
   virtual void enterRunLoop();
   virtual void exitRunLoop();
 
-  MessageLoop* message_loop() const { return thread_->message_loop(); }
+  base::MessageLoop* message_loop() const { return thread_->message_loop(); }
 
  private:
   virtual bool IsCurrentThread() const OVERRIDE;

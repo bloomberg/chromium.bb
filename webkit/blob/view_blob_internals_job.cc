@@ -110,9 +110,10 @@ ViewBlobInternalsJob::~ViewBlobInternalsJob() {
 }
 
 void ViewBlobInternalsJob::Start() {
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&ViewBlobInternalsJob::DoWorkAsync,
-                            weak_factory_.GetWeakPtr()));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ViewBlobInternalsJob::DoWorkAsync,
+                 weak_factory_.GetWeakPtr()));
 }
 
 bool ViewBlobInternalsJob::IsRedirectResponse(GURL* location,

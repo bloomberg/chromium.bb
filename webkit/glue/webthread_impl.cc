@@ -18,8 +18,9 @@ namespace webkit_glue {
 WebThreadBase::WebThreadBase() { }
 WebThreadBase::~WebThreadBase() { }
 
-class WebThreadBase::TaskObserverAdapter : public MessageLoop::TaskObserver {
-public:
+class WebThreadBase::TaskObserverAdapter :
+    public base::MessageLoop::TaskObserver {
+ public:
   TaskObserverAdapter(WebThread::TaskObserver* observer)
       : observer_(observer) { }
 
@@ -41,7 +42,7 @@ void WebThreadBase::addTaskObserver(TaskObserver* observer) {
       std::make_pair(observer, static_cast<TaskObserverAdapter*>(NULL)));
   if (result.second)
     result.first->second = new TaskObserverAdapter(observer);
-  MessageLoop::current()->AddTaskObserver(result.first->second);
+  base::MessageLoop::current()->AddTaskObserver(result.first->second);
 }
 
 void WebThreadBase::removeTaskObserver(TaskObserver* observer) {
@@ -49,7 +50,7 @@ void WebThreadBase::removeTaskObserver(TaskObserver* observer) {
   TaskObserverMap::iterator iter = task_observer_map_.find(observer);
   if (iter == task_observer_map_.end())
     return;
-  MessageLoop::current()->RemoveTaskObserver(iter->second);
+  base::MessageLoop::current()->RemoveTaskObserver(iter->second);
   delete iter->second;
   task_observer_map_.erase(iter);
 }
@@ -112,14 +113,15 @@ void WebThreadImplForMessageLoop::postDelayedTask(
 
 void WebThreadImplForMessageLoop::enterRunLoop() {
   CHECK(IsCurrentThread());
-  CHECK(!MessageLoop::current()->is_running()); // We don't support nesting.
-  MessageLoop::current()->Run();
+  CHECK(!base::MessageLoop::current()
+            ->is_running());  // We don't support nesting.
+  base::MessageLoop::current()->Run();
 }
 
 void WebThreadImplForMessageLoop::exitRunLoop() {
   CHECK(IsCurrentThread());
-  CHECK(MessageLoop::current()->is_running());
-  MessageLoop::current()->Quit();
+  CHECK(base::MessageLoop::current()->is_running());
+  base::MessageLoop::current()->Quit();
 }
 
 bool WebThreadImplForMessageLoop::IsCurrentThread() const {

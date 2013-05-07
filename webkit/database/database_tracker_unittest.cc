@@ -543,7 +543,7 @@ class DatabaseTracker_TestHelper_Test {
     const base::string16 kDescription = ASCIIToUTF16("database_description");
 
     // Initialize the tracker database.
-    MessageLoop message_loop;
+    base::MessageLoop message_loop;
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     base::FilePath origin1_db_dir;
@@ -621,7 +621,7 @@ class DatabaseTracker_TestHelper_Test {
     const base::string16 kDescription = ASCIIToUTF16("database_description");
 
     // Initialize the tracker database.
-    MessageLoop message_loop;
+    base::MessageLoop message_loop;
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     base::FilePath origin1_db_dir;

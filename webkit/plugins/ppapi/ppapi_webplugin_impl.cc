@@ -123,7 +123,7 @@ void WebPluginImpl::destroy() {
     instance_ = NULL;
   }
 
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 NPObject* WebPluginImpl::scriptableObject() {

@@ -77,9 +77,8 @@ class MockAppCacheStorageTest : public testing::Test {
   };
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
-
 
 TEST_F(MockAppCacheStorageTest, LoadCache_Miss) {
   // Attempt to load a cache that doesn't exist. Should
@@ -88,7 +87,7 @@ TEST_F(MockAppCacheStorageTest, LoadCache_Miss) {
   MockStorageDelegate delegate;
   service.storage()->LoadCache(111, &delegate);
   EXPECT_NE(111, delegate.loaded_cache_id_);
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(111, delegate.loaded_cache_id_);
   EXPECT_FALSE(delegate.loaded_cache_);
 }
@@ -122,7 +121,7 @@ TEST_F(MockAppCacheStorageTest, CreateGroup) {
   service.storage()->LoadOrCreateGroup(manifest_url, &delegate);
   EXPECT_NE(manifest_url, delegate.loaded_manifest_url_);
   EXPECT_FALSE(delegate.loaded_group_.get());
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(manifest_url, delegate.loaded_manifest_url_);
   EXPECT_TRUE(delegate.loaded_group_.get());
   EXPECT_TRUE(delegate.loaded_group_->HasOneRef());
@@ -141,7 +140,7 @@ TEST_F(MockAppCacheStorageTest, LoadGroup_NearHit) {
   // to be "unstored" and "currently in use".
   GURL manifest_url("http://blah/");
   service.storage()->LoadOrCreateGroup(manifest_url, &delegate);
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(manifest_url, delegate.loaded_manifest_url_);
   EXPECT_TRUE(delegate.loaded_group_.get());
 
@@ -193,7 +192,7 @@ TEST_F(MockAppCacheStorageTest, LoadGroupAndCache_FarHit) {
   storage->LoadCache(cache_id, &delegate);
   EXPECT_NE(cache_id, delegate.loaded_cache_id_);
   EXPECT_NE(cache_ptr, delegate.loaded_cache_.get());
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(cache_id, delegate.loaded_cache_id_);
   EXPECT_EQ(cache_ptr, delegate.loaded_cache_.get());
   delegate.loaded_cache_ = NULL;
@@ -204,7 +203,7 @@ TEST_F(MockAppCacheStorageTest, LoadGroupAndCache_FarHit) {
   storage->LoadOrCreateGroup(manifest_url, &delegate);
   EXPECT_NE(manifest_url, delegate.loaded_manifest_url_);
   EXPECT_FALSE(delegate.loaded_group_.get());
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(manifest_url, delegate.loaded_manifest_url_);
   EXPECT_EQ(group_ptr, delegate.loaded_group_.get());
 }
@@ -233,7 +232,7 @@ TEST_F(MockAppCacheStorageTest, StoreNewGroup) {
   EXPECT_FALSE(delegate.stored_group_success_);
   EXPECT_TRUE(storage->stored_caches_.empty());
   EXPECT_TRUE(storage->stored_groups_.empty());
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_TRUE(delegate.stored_group_success_);
   EXPECT_FALSE(storage->stored_caches_.empty());
   EXPECT_FALSE(storage->stored_groups_.empty());
@@ -276,7 +275,7 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroup) {
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
   EXPECT_TRUE(storage->IsCacheStored(old_cache));
   EXPECT_FALSE(storage->IsCacheStored(new_cache));
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_TRUE(delegate.stored_group_success_);
   EXPECT_EQ(size_t(1), storage->stored_caches_.size());
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
@@ -319,7 +318,7 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroupExistingCache) {
   EXPECT_FALSE(delegate.stored_group_success_);
   EXPECT_EQ(size_t(1), storage->stored_caches_.size());
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_TRUE(delegate.stored_group_success_);
   EXPECT_EQ(size_t(1), storage->stored_caches_.size());
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
@@ -360,7 +359,7 @@ TEST_F(MockAppCacheStorageTest, MakeGroupObsolete) {
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
   EXPECT_FALSE(cache->HasOneRef());
   EXPECT_FALSE(group->HasOneRef());
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_TRUE(delegate.obsoleted_success_);
   EXPECT_EQ(group.get(), delegate.obsoleted_group_.get());
   EXPECT_TRUE(group->is_obsolete());
@@ -405,7 +404,7 @@ TEST_F(MockAppCacheStorageTest, FindNoMainResponse) {
   EXPECT_NE(url, delegate.found_url_);
   storage->FindResponseForMainRequest(url, GURL(), &delegate);
   EXPECT_NE(url, delegate.found_url_);
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(url, delegate.found_url_);
   EXPECT_TRUE(delegate.found_manifest_url_.is_empty());
   EXPECT_EQ(kNoCacheId, delegate.found_cache_id_);
@@ -442,7 +441,7 @@ TEST_F(MockAppCacheStorageTest, BasicFindMainResponse) {
   EXPECT_NE(kEntryUrl, delegate.found_url_);
   storage->FindResponseForMainRequest(kEntryUrl, GURL(), &delegate);
   EXPECT_NE(kEntryUrl, delegate.found_url_);
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(kEntryUrl, delegate.found_url_);
   EXPECT_EQ(kManifestUrl, delegate.found_manifest_url_);
   EXPECT_EQ(kCacheId, delegate.found_cache_id_);
@@ -499,7 +498,7 @@ TEST_F(MockAppCacheStorageTest, BasicFindMainFallbackResponse) {
   EXPECT_NE(kTestUrl, delegate.found_url_);
   storage->FindResponseForMainRequest(kTestUrl, GURL(), &delegate);
   EXPECT_NE(kTestUrl, delegate.found_url_);
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(kTestUrl, delegate.found_url_);
   EXPECT_EQ(kManifestUrl, delegate.found_manifest_url_);
   EXPECT_EQ(kCacheId, delegate.found_cache_id_);
@@ -556,7 +555,7 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseWithMultipleCandidates) {
   EXPECT_NE(kEntryUrl, delegate.found_url_);
   storage->FindResponseForMainRequest(kEntryUrl, GURL(), &delegate);
   EXPECT_NE(kEntryUrl, delegate.found_url_);
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(kEntryUrl, delegate.found_url_);
   EXPECT_EQ(kManifestUrl2, delegate.found_manifest_url_);
   EXPECT_EQ(kCacheId2, delegate.found_cache_id_);
@@ -603,7 +602,7 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
   EXPECT_NE(kEntryUrl, delegate.found_url_);
   storage->FindResponseForMainRequest(kEntryUrl, GURL(), &delegate);
   EXPECT_NE(kEntryUrl, delegate.found_url_);
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(kEntryUrl, delegate.found_url_);
   EXPECT_TRUE(delegate.found_manifest_url_.is_empty());
   EXPECT_EQ(kNoCacheId, delegate.found_cache_id_);
@@ -617,7 +616,7 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
   EXPECT_NE(kOnlineNamespaceUrl, delegate.found_url_);
   storage->FindResponseForMainRequest(kOnlineNamespaceUrl, GURL(), &delegate);
   EXPECT_NE(kOnlineNamespaceUrl, delegate.found_url_);
-  MessageLoop::current()->RunUntilIdle();  // Do async task execution.
+  base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(kOnlineNamespaceUrl, delegate.found_url_);
   EXPECT_TRUE(delegate.found_manifest_url_.is_empty());
   EXPECT_EQ(kNoCacheId, delegate.found_cache_id_);

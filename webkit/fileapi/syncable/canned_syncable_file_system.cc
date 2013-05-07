@@ -40,7 +40,7 @@ namespace sync_file_system {
 
 namespace {
 
-void Quit() { MessageLoop::current()->Quit(); }
+void Quit() { base::MessageLoop::current()->Quit(); }
 
 template <typename R>
 void AssignAndQuit(base::TaskRunner* original_task_runner,
@@ -61,7 +61,7 @@ R RunOnThread(
       base::Bind(task, base::Bind(&AssignAndQuit<R>,
                                   base::MessageLoopProxy::current(),
                                   &result)));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   return result;
 }
 
@@ -74,7 +74,7 @@ void RunOnThread(base::SingleThreadTaskRunner* task_runner,
           base::Bind(&base::MessageLoopProxy::PostTask,
                      base::MessageLoopProxy::current(),
                      FROM_HERE, base::Bind(&Quit)))));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 void EnsureRunningOn(base::SingleThreadTaskRunner* runner) {
@@ -133,8 +133,10 @@ class WriteHelper {
         blob_data_(new ScopedTextBlob(*request_context, blob_url, blob_data)) {}
 
   ~WriteHelper() {
-    if (request_context_)
-      MessageLoop::current()->DeleteSoon(FROM_HERE, request_context_.release());
+    if (request_context_) {
+      base::MessageLoop::current()->DeleteSoon(FROM_HERE,
+                                               request_context_.release());
+    }
   }
 
   void DidWrite(const base::Callback<void(int64 result)>& completion_callback,
@@ -250,7 +252,7 @@ PlatformFileError CannedSyncableFileSystem::OpenFileSystem() {
       service_name_, origin_, type_, true /* create */,
       base::Bind(&CannedSyncableFileSystem::DidOpenFileSystem,
                  base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   if (file_system_context_->sync_context()) {
     // Register 'this' as a sync status observer.
     RunOnThread(io_task_runner_,
@@ -281,7 +283,7 @@ SyncStatusCode CannedSyncableFileSystem::MaybeInitializeFileSystemContext(
       origin_, service_name_, file_system_context_,
       base::Bind(&CannedSyncableFileSystem::DidInitializeFileSystemContext,
                  base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   return sync_status_;
 }
 
@@ -587,13 +589,13 @@ void CannedSyncableFileSystem::DidOpenFileSystem(
   result_ = result;
   root_url_ = root;
   is_filesystem_opened_ = true;
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 void CannedSyncableFileSystem::DidInitializeFileSystemContext(
     SyncStatusCode status) {
   sync_status_ = status;
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 void CannedSyncableFileSystem::InitializeSyncStatusObserver() {

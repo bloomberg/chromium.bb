@@ -152,9 +152,9 @@ class TestEnvironment {
  public:
 #if defined(OS_ANDROID)
   // Android UI message loop goes through Java, so don't use it in tests.
-  typedef MessageLoop MessageLoopType;
+  typedef base::MessageLoop MessageLoopType;
 #else
-  typedef MessageLoopForUI MessageLoopType;
+  typedef base::MessageLoopForUI MessageLoopType;
 #endif
 
   TestEnvironment(bool unit_test_mode,
@@ -265,19 +265,17 @@ base::FilePath GetWebKitRootDirFilePath() {
 class WebKitClientMessageLoopImpl
     : public WebDevToolsAgentClient::WebKitClientMessageLoop {
  public:
-  WebKitClientMessageLoopImpl() : message_loop_(MessageLoop::current()) {}
-  virtual ~WebKitClientMessageLoopImpl() {
-    message_loop_ = NULL;
-  }
+  WebKitClientMessageLoopImpl() : message_loop_(base::MessageLoop::current()) {}
+  virtual ~WebKitClientMessageLoopImpl() { message_loop_ = NULL; }
   virtual void run() {
-    MessageLoop::ScopedNestableTaskAllower allow(message_loop_);
+    base::MessageLoop::ScopedNestableTaskAllower allow(message_loop_);
     message_loop_->Run();
   }
   virtual void quitNow() {
     message_loop_->QuitNow();
   }
  private:
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 };
 
 TestEnvironment* test_environment;
@@ -522,15 +520,15 @@ bool BeingDebugged() {
 // Wrappers for MessageLoop
 
 void RunMessageLoop() {
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 void QuitMessageLoop() {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 void QuitMessageLoopNow() {
-  MessageLoop::current()->QuitNow();
+  base::MessageLoop::current()->QuitNow();
 }
 
 void RunAllPendingMessages() {
@@ -538,16 +536,16 @@ void RunAllPendingMessages() {
 }
 
 bool MessageLoopNestableTasksAllowed() {
-  return MessageLoop::current()->NestableTasksAllowed();
+  return base::MessageLoop::current()->NestableTasksAllowed();
 }
 
 void MessageLoopSetNestableTasksAllowed(bool allowed) {
-  MessageLoop::current()->SetNestableTasksAllowed(allowed);
+  base::MessageLoop::current()->SetNestableTasksAllowed(allowed);
 }
 
 void DispatchMessageLoop() {
-  MessageLoop* current = MessageLoop::current();
-  MessageLoop::ScopedNestableTaskAllower allow(current);
+  base::MessageLoop* current = base::MessageLoop::current();
+  base::MessageLoop::ScopedNestableTaskAllower allow(current);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -556,14 +554,14 @@ WebDevToolsAgentClient::WebKitClientMessageLoop* CreateDevToolsMessageLoop() {
 }
 
 void PostDelayedTask(void (*func)(void*), void* context, int64 delay_ms) {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(func, context),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 void PostDelayedTask(TaskAdaptor* task, int64 delay_ms) {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TaskAdaptor::Run, base::Owned(task)),
       base::TimeDelta::FromMilliseconds(delay_ms));

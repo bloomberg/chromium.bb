@@ -27,7 +27,7 @@
 namespace webkit {
 namespace npapi {
 
-PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
+PluginInstance::PluginInstance(PluginLib* plugin, const std::string& mime_type)
     : plugin_(plugin),
       npp_(0),
       host_(PluginHost::Singleton()),
@@ -52,7 +52,7 @@ PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
 #endif
       currently_handled_event_(NULL),
 #endif
-      message_loop_(MessageLoop::current()),
+      message_loop_(base::MessageLoop::current()),
       load_manually_(false),
       in_close_streams_(false),
       next_timer_id_(1),
@@ -463,7 +463,7 @@ uint32 PluginInstance::ScheduleTimer(uint32 interval,
   timers_[timer_id] = info;
 
   // Schedule the callback.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PluginInstance::OnTimerCall, this, func, npp_, timer_id),
       base::TimeDelta::FromMilliseconds(interval));
@@ -505,7 +505,7 @@ void PluginInstance::OnTimerCall(void (*func)(NPP id, uint32 timer_id),
   // Reschedule repeating timers after invoking the callback so callback is not
   // re-entered if it pumps the message loop.
   if (info.repeat) {
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PluginInstance::OnTimerCall, this, func, npp_, timer_id),
         base::TimeDelta::FromMilliseconds(info.interval));

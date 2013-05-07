@@ -76,7 +76,7 @@ class FileSystemQuotaClientTest : public testing::Test {
                        const std::string& origin_url,
                        quota::StorageType type) {
     GetOriginUsageAsync(quota_client, origin_url, type);
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     return usage_;
   }
 
@@ -87,7 +87,7 @@ class FileSystemQuotaClientTest : public testing::Test {
         type,
         base::Bind(&FileSystemQuotaClientTest::OnGetOrigins,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     return origins_;
   }
 
@@ -99,7 +99,7 @@ class FileSystemQuotaClientTest : public testing::Test {
         type, host,
         base::Bind(&FileSystemQuotaClientTest::OnGetOrigins,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     return origins_;
   }
 
@@ -249,7 +249,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   }
 
   base::ScopedTempDir data_dir_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::WeakPtrFactory<FileSystemQuotaClientTest> weak_factory_;
   int64 usage_;
@@ -434,7 +434,7 @@ TEST_F(FileSystemQuotaClientTest, GetUsage_MultipleTasks) {
   GetOriginUsageAsync(quota_client.get(), kDummyURL1, kTemporary);
   RunAdditionalOriginUsageTask(quota_client.get(), kDummyURL1, kTemporary);
   RunAdditionalOriginUsageTask(quota_client.get(), kDummyURL1, kTemporary);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(11 + 22 + file_paths_cost, usage());
   EXPECT_EQ(2, additional_callback_count());
 
@@ -443,7 +443,7 @@ TEST_F(FileSystemQuotaClientTest, GetUsage_MultipleTasks) {
   RunAdditionalOriginUsageTask(quota_client.get(), kDummyURL1, kTemporary);
   GetOriginUsageAsync(quota_client.get(), kDummyURL1, kTemporary);
   RunAdditionalOriginUsageTask(quota_client.get(), kDummyURL1, kTemporary);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(11 + 22 + file_paths_cost, usage());
   EXPECT_EQ(2, additional_callback_count());
 }
@@ -545,15 +545,15 @@ TEST_F(FileSystemQuotaClientTest, DeleteOriginTest) {
           "https://bar.com/", kPersistent);
 
   DeleteOriginData(quota_client.get(), "http://foo.com/", kTemporary);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(quota::kQuotaStatusOk, status());
 
   DeleteOriginData(quota_client.get(), "http://bar.com/", kPersistent);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(quota::kQuotaStatusOk, status());
 
   DeleteOriginData(quota_client.get(), "http://buz.com/", kTemporary);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(quota::kQuotaStatusOk, status());
 
   EXPECT_EQ(0, GetOriginUsage(

@@ -24,19 +24,17 @@ namespace {
 class WebKitClientMessageLoopImpl
     : public WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop {
  public:
-  WebKitClientMessageLoopImpl() : message_loop_(MessageLoop::current()) { }
-  virtual ~WebKitClientMessageLoopImpl() {
-    message_loop_ = NULL;
-  }
+  WebKitClientMessageLoopImpl() : message_loop_(base::MessageLoop::current()) {}
+  virtual ~WebKitClientMessageLoopImpl() { message_loop_ = NULL; }
   virtual void run() {
-    MessageLoop::ScopedNestableTaskAllower allow(message_loop_);
+    base::MessageLoop::ScopedNestableTaskAllower allow(message_loop_);
     message_loop_->Run();
   }
   virtual void quitNow() {
     message_loop_->QuitNow();
   }
  private:
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 };
 
 } //  namespace
@@ -77,7 +75,7 @@ WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
 }
 
 void TestShellDevToolsAgent::AsyncCall(const TestShellDevToolsCallArgs &args) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&TestShellDevToolsAgent::Call, weak_factory_.GetWeakPtr(),
                  args));

@@ -378,7 +378,7 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
       PostMessageToJavaScriptImpl(serialized_val);
     }
   } else {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&MessageChannel::PostMessageToJavaScriptImpl,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -391,7 +391,7 @@ void MessageChannel::StopQueueingJavaScriptMessages() {
   // since we haven't finished initializing the WebPluginImpl yet, so
   // the plugin isn't available in the DOM.
   early_message_queue_state_ = DRAIN_PENDING;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&MessageChannel::DrainEarlyMessageQueue,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -465,7 +465,8 @@ void MessageChannel::PostMessageToNative(PP_Var message_data) {
     // Make a copy of the message data for the Task we will run.
     PP_Var var_copy(CopyPPVar(message_data));
 
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
         base::Bind(&MessageChannel::PostMessageToNativeImpl,
                    weak_ptr_factory_.GetWeakPtr(),
                    var_copy));

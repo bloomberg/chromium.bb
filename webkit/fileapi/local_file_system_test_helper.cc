@@ -79,7 +79,7 @@ void LocalFileSystemTestOriginHelper::SetUp(
 
 void LocalFileSystemTestOriginHelper::TearDown() {
   file_system_context_ = NULL;
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 base::FilePath LocalFileSystemTestOriginHelper::GetOriginRootPath() const {

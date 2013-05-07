@@ -62,7 +62,7 @@ void NeverCalled(int unused) { ADD_FAILURE(); }
 class FileSystemFileStreamReaderTest : public testing::Test {
  public:
   FileSystemFileStreamReaderTest()
-      : message_loop_(MessageLoop::TYPE_IO) {}
+      : message_loop_(base::MessageLoop::TYPE_IO) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -73,14 +73,14 @@ class FileSystemFileStreamReaderTest : public testing::Test {
     file_system_context_->sandbox_provider()->ValidateFileSystemRoot(
         GURL(kURLOrigin), kFileSystemTypeTemporary, true,  // create
         base::Bind(&OnValidateFileSystem));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     WriteFile(kTestFileName, kTestData, kTestDataSize,
               &test_file_modification_time_);
   }
 
   virtual void TearDown() OVERRIDE {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
  protected:
@@ -144,7 +144,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
         base::FilePath().AppendASCII(file_name));
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::Time test_file_modification_time_;

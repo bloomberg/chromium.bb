@@ -444,8 +444,8 @@ void WebURLLoaderImpl::Context::Start(
                          &sync_load_response->error_code);
     } else {
       AddRef();  // Balanced in OnCompletedRequest
-      MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(&Context::HandleDataURL, this));
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(&Context::HandleDataURL, this));
     }
     return;
   }

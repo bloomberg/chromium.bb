@@ -124,7 +124,7 @@ void TestWebViewDelegate::runModal() {
   }
 
   shell_->set_is_modal(true);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   for (WindowList::const_iterator i = wl->begin(); i != wl->end(); ++i)
     EnableWindow(*i, TRUE);

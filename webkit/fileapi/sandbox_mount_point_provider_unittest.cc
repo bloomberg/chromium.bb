@@ -58,7 +58,7 @@ class SandboxMountPointProviderOriginEnumeratorTest : public testing::Test {
   }
 
   base::ScopedTempDir data_dir_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<SandboxMountPointProvider> sandbox_provider_;
 };
 
@@ -117,7 +117,7 @@ TEST_F(SandboxMountPointProviderOriginEnumeratorTest, EnumerateOrigins) {
 }
 
 TEST(SandboxMountPointProviderTest, AccessPermissions) {
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   SandboxMountPointProvider provider(
       NULL, base::MessageLoopProxy::current(), base::FilePath(),
       CreateAllowFileAccessOptions(), NULL);

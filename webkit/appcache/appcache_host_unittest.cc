@@ -141,7 +141,7 @@ class AppCacheHostTest : public testing::Test {
     last_callback_param_ = param;
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   // Mock classes for the 'host' to work with
   MockAppCacheService service_;

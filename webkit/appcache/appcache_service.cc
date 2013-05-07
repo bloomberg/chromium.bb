@@ -61,7 +61,7 @@ class AppCacheService::AsyncHelper
   void CallCallback(int rv) {
     if (!callback_.is_null()) {
       // Defer to guarantee async completion.
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(&DeferredCallback, callback_, rv));
     }
     callback_.Reset();

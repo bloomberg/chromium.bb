@@ -168,7 +168,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
   static void SetUpTestCase() {
     io_thread_.reset(new base::Thread("AppCacheRequestHandlerTest Thread"));
-    base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     io_thread_->StartWithOptions(options);
   }
 
@@ -193,7 +193,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   }
 
   void SetUpTest() {
-    DCHECK(MessageLoop::current() == io_thread_->message_loop());
+    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
     orig_http_factory_ = net::URLRequest::Deprecated::RegisterProtocolFactory(
         "http", MockHttpJobFactory);
     mock_service_.reset(new MockAppCacheService);
@@ -211,7 +211,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   }
 
   void TearDownTest() {
-    DCHECK(MessageLoop::current() == io_thread_->message_loop());
+    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
     DCHECK(!mock_factory_job_);
     net::URLRequest::Deprecated::RegisterProtocolFactory(
         "http", orig_http_factory_);
@@ -230,8 +230,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
   void TestFinished() {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
-    DCHECK(MessageLoop::current() == io_thread_->message_loop());
-    MessageLoop::current()->PostTask(
+    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&AppCacheRequestHandlerTest::TestFinishedUnwound,
                    base::Unretained(this)));
@@ -247,12 +247,12 @@ class AppCacheRequestHandlerTest : public testing::Test {
   }
 
   void ScheduleNextTask() {
-    DCHECK(MessageLoop::current() == io_thread_->message_loop());
+    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
     if (task_stack_.empty()) {
       TestFinished();
       return;
     }
-    MessageLoop::current()->PostTask(FROM_HERE, task_stack_.top());
+    base::MessageLoop::current()->PostTask(FROM_HERE, task_stack_.top());
     task_stack_.pop();
   }
 

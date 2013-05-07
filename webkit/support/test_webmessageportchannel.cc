@@ -61,9 +61,10 @@ void TestWebMessagePortChannel::postMessage(const WebString& data,
     WebMessagePortChannelArray* ports) {
   if (remote_ == NULL)
     return;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&TestWebMessagePortChannel::queueMessage, remote_.get(),
+      base::Bind(&TestWebMessagePortChannel::queueMessage,
+                 remote_.get(),
                  new Message(data, ports)));
 }
 

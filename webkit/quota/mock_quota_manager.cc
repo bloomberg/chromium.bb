@@ -94,7 +94,7 @@ void MockQuotaManager::GetOriginsModifiedSince(
       origins_to_return->insert(current->origin);
   }
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&MockQuotaManager::DidGetModifiedSince,
                  weak_factory_.GetWeakPtr(),
@@ -120,7 +120,7 @@ void MockQuotaManager::DeleteOriginData(
     }
   }
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&MockQuotaManager::DidDeleteOriginData,
                  weak_factory_.GetWeakPtr(),

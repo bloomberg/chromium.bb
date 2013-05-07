@@ -68,7 +68,7 @@ FileSystemURLRequestJob::FileSystemURLRequestJob(
 FileSystemURLRequestJob::~FileSystemURLRequestJob() {}
 
 void FileSystemURLRequestJob::Start() {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FileSystemURLRequestJob::StartAsync,
                  weak_factory_.GetWeakPtr()));

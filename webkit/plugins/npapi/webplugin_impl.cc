@@ -270,7 +270,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 
 void WebPluginImpl::destroy() {
   SetContainer(NULL);
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 NPObject* WebPluginImpl::scriptableObject() {
@@ -349,9 +349,10 @@ void WebPluginImpl::updateGeometry(
       // geometry received by a call to setFrameRect in the Webkit
       // layout code path. To workaround this issue we download the
       // plugin source url on a timer.
-      MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&WebPluginImpl::OnDownloadPluginSrcUrl,
-                                weak_factory_.GetWeakPtr()));
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&WebPluginImpl::OnDownloadPluginSrcUrl,
+                     weak_factory_.GetWeakPtr()));
     }
   }
 

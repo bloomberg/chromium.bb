@@ -91,7 +91,7 @@ AppCacheResponseIO::~AppCacheResponseIO() {
 }
 
 void AppCacheResponseIO::ScheduleIOCompletionCallback(int result) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&AppCacheResponseIO::OnIOComplete,
                             weak_factory_.GetWeakPtr(), result));
 }

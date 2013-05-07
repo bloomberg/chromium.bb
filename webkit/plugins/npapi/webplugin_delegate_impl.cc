@@ -40,7 +40,7 @@ WebPluginDelegateImpl* WebPluginDelegateImpl::Create(
 
 void WebPluginDelegateImpl::PluginDestroyed() {
   if (handle_event_depth_) {
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   } else {
     delete this;
   }

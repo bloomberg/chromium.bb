@@ -114,7 +114,7 @@ class TestWebKitPlatformSupport
 };
 
 TEST(WebkitGlueTest, SuspendResumeSharedTimer) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   TestWebKitPlatformSupport platform_support;
 
   // Set a timer to fire as soon as possible.

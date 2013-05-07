@@ -312,7 +312,7 @@ void PluginLib::Unload() {
       LOG_IF(ERROR, PluginList::DebugPluginLoading())
           << "Scheduling delayed unload for plugin "
           << web_plugin_info_.path.value();
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&FreePluginLibraryHelper,
                      web_plugin_info_.path,

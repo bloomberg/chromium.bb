@@ -52,7 +52,7 @@ void NeverCalled(int) { ADD_FAILURE(); }
 void EmptyCallback() {}
 
 void QuitLoop() {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 }  // namespace
@@ -60,7 +60,7 @@ void QuitLoop() {
 class LocalFileStreamReaderTest : public testing::Test {
  public:
   LocalFileStreamReaderTest()
-      : message_loop_(MessageLoop::TYPE_IO),
+      : message_loop_(base::MessageLoop::TYPE_IO),
         file_thread_("FileUtilProxyTestFileThread") {}
 
   virtual void SetUp() OVERRIDE {
@@ -75,7 +75,7 @@ class LocalFileStreamReaderTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     // Give another chance for deleted streams to perform Close.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     file_thread_.Stop();
   }
 
@@ -112,11 +112,11 @@ class LocalFileStreamReaderTest : public testing::Test {
   void EnsureFileTaskFinished() {
     file_task_runner()->PostTaskAndReply(
         FROM_HERE, base::Bind(&EmptyCallback), base::Bind(&QuitLoop));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::Thread file_thread_;
   base::ScopedTempDir dir_;
   base::Time test_file_modification_time_;

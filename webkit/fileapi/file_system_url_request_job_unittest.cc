@@ -50,7 +50,7 @@ void FillBuffer(char* buffer, size_t len) {
 class FileSystemURLRequestJobTest : public testing::Test {
  protected:
   FileSystemURLRequestJobTest()
-    : message_loop_(MessageLoop::TYPE_IO),  // simulate an IO thread
+    : message_loop_(base::MessageLoop::TYPE_IO),  // simulate an IO thread
       weak_factory_(this) {
   }
 
@@ -66,7 +66,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
         base::Bind(&FileSystemURLRequestJobTest::OnValidateFileSystem,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     net::URLRequest::Deprecated::RegisterProtocolFactory(
         "filesystem", &FileSystemURLRequestJobFactory);
@@ -80,7 +80,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
       pending_job_ = NULL;
     }
     // FileReader posts a task to close the file in destructor.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void OnValidateFileSystem(base::PlatformFileError result) {
@@ -105,7 +105,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     request_->Start();
     ASSERT_TRUE(request_->is_pending());  // verify that we're starting async
     if (run_to_completion)
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
   }
 
   void TestRequest(const GURL& url) {
@@ -188,7 +188,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   }
 
   // Put the message loop at the top, so that it's the last thing deleted.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<FileSystemContext> file_system_context_;
@@ -303,7 +303,7 @@ TEST_F(FileSystemURLRequestJobTest, FileDirRedirect) {
 
   // We've deferred the redirect; now cancel the request to avoid following it.
   request_->Cancel();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(FileSystemURLRequestJobTest, InvalidURL) {
@@ -332,8 +332,8 @@ TEST_F(FileSystemURLRequestJobTest, Cancel) {
   TestRequestNoRun(CreateFileSystemURL("file1.dat"));
 
   // Run StartAsync() and only StartAsync().
-  MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
+  base::MessageLoop::current()->RunUntilIdle();
   // If we get here, success! we didn't crash!
 }
 

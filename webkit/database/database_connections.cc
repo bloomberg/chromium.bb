@@ -134,8 +134,9 @@ void DatabaseConnectionsWrapper::WaitForAllDatabasesToClose() {
   DCHECK(main_thread_->BelongsToCurrentThread());
   if (HasOpenConnections()) {
     base::AutoReset<bool> auto_reset(&waiting_for_dbs_to_close_, true);
-    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-    MessageLoop::current()->Run();
+    base::MessageLoop::ScopedNestableTaskAllower allow(
+        base::MessageLoop::current());
+    base::MessageLoop::current()->Run();
   }
 }
 
@@ -168,7 +169,7 @@ void DatabaseConnectionsWrapper::RemoveOpenConnection(
   base::AutoLock auto_lock(open_connections_lock_);
   open_connections_.RemoveConnection(origin_identifier, database_name);
   if (waiting_for_dbs_to_close_ && open_connections_.IsEmpty())
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 }  // namespace webkit_database

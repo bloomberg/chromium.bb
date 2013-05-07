@@ -217,7 +217,7 @@ void PPB_Scrollbar_Impl::invalidateScrollbarRect(
   // Note: we use a WeakPtrFactory here so that a lingering callback can not
   // modify the lifetime of this object. Otherwise, WebKit::WebPluginScrollbar
   // could outlive WebKit::WebPluginContainer, which is against its contract.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PPB_Scrollbar_Impl::NotifyInvalidate,
                  weak_ptr_factory_.GetWeakPtr()));

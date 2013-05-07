@@ -249,7 +249,7 @@ void SimpleFileSystem::createSnapshotFileAndReadMetadata(
 // static
 void SimpleFileSystem::InitializeOnIOThread(
     webkit_blob::BlobStorageController* blob_storage_controller) {
-  g_io_thread = MessageLoop::current();
+  g_io_thread = base::MessageLoop::current();
   g_blob_storage_controller = blob_storage_controller;
 }
 

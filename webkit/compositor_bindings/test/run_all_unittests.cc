@@ -9,7 +9,7 @@
 int main(int argc, char** argv) {
   ::testing::InitGoogleMock(&argc, argv);
   TestSuite test_suite(argc, argv);
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   int result = test_suite.Run();
 
   return result;

@@ -88,8 +88,9 @@ int32_t PPB_Flash_MessageLoop_Impl::InternalRun(
   // destroyed when the nested message loop exits.
   scoped_refptr<State> state_protector(state_);
   {
-    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-    MessageLoop::current()->Run();
+    base::MessageLoop::ScopedNestableTaskAllower allow(
+        base::MessageLoop::current());
+    base::MessageLoop::current()->Run();
   }
   // Don't access data members of the class below.
 
@@ -102,7 +103,7 @@ void PPB_Flash_MessageLoop_Impl::InternalQuit(int32_t result) {
   state_->set_quit_called();
   state_->set_result(result);
 
-  MessageLoop::current()->QuitNow();
+  base::MessageLoop::current()->QuitNow();
 
   if (!state_->run_callback().is_null())
     state_->run_callback().Run(result);

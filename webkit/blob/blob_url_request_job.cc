@@ -85,7 +85,7 @@ BlobURLRequestJob::BlobURLRequestJob(
 
 void BlobURLRequestJob::Start() {
   // Continue asynchronously.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&BlobURLRequestJob::DidStart, weak_factory_.GetWeakPtr()));
 }

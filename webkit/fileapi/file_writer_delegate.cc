@@ -125,10 +125,11 @@ void FileWriterDelegate::Read() {
   bytes_written_ = 0;
   bytes_read_ = 0;
   if (request_->Read(io_buffer_.get(), io_buffer_->size(), &bytes_read_)) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&FileWriterDelegate::OnDataReceived,
-                   weak_factory_.GetWeakPtr(), bytes_read_));
+                   weak_factory_.GetWeakPtr(),
+                   bytes_read_));
   } else if (!request_->status().is_io_pending()) {
     OnError(base::PLATFORM_FILE_ERROR_FAILED);
   }
@@ -156,10 +157,11 @@ void FileWriterDelegate::Write() {
                                  base::Bind(&FileWriterDelegate::OnDataWritten,
                                             weak_factory_.GetWeakPtr()));
   if (write_response > 0)
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&FileWriterDelegate::OnDataWritten,
-                   weak_factory_.GetWeakPtr(), write_response));
+                   weak_factory_.GetWeakPtr(),
+                   write_response));
   else if (net::ERR_IO_PENDING != write_response)
     OnError(NetErrorToPlatformFileError(write_response));
 }

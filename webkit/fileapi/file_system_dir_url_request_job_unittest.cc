@@ -42,7 +42,7 @@ static const char kFileSystemURLPrefix[] =
 class FileSystemDirURLRequestJobTest : public testing::Test {
  protected:
   FileSystemDirURLRequestJobTest()
-    : message_loop_(MessageLoop::TYPE_IO),  // simulate an IO thread
+    : message_loop_(base::MessageLoop::TYPE_IO),  // simulate an IO thread
       weak_factory_(this) {
   }
 
@@ -57,7 +57,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
         base::Bind(&FileSystemDirURLRequestJobTest::OnValidateFileSystem,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     net::URLRequest::Deprecated::RegisterProtocolFactory(
         "filesystem", &FileSystemDirURLRequestJobFactory);
@@ -86,7 +86,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     request_->Start();
     ASSERT_TRUE(request_->is_pending());  // verify that we're starting async
     if (run_to_completion)
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
   }
 
   void TestRequest(const GURL& url) {
@@ -204,7 +204,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   // Put the message loop at the top, so that it's the last thing deleted.
   // Delete all MessageLoopProxy objects before the MessageLoop, to help prevent
   // leaks caused by tasks posted during shutdown.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   base::ScopedTempDir temp_dir_;
   net::URLRequestContext empty_context_;
@@ -280,8 +280,8 @@ TEST_F(FileSystemDirURLRequestJobTest, Cancel) {
   CreateDirectory("foo");
   TestRequestNoRun(CreateFileSystemURL("foo/"));
   // Run StartAsync() and only StartAsync().
-  MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
+  base::MessageLoop::current()->RunUntilIdle();
   // If we get here, success! we didn't crash!
 }
 

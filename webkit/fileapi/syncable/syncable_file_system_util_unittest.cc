@@ -114,7 +114,7 @@ TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
   const std::string serialized = kSyncableFileSystemRootURI +
       CreateNormalizedFilePath(kPath).AsUTF8Unsafe();
   FileSystemURL deserialized;
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
 
   // Setting up a full syncable filesystem environment.
   CannedSyncableFileSystem file_system(GURL(kOrigin), kServiceName,
@@ -143,7 +143,7 @@ TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
   RevokeSyncableFileSystem(kServiceName);
   sync_context->ShutdownOnUIThread();
   sync_context = NULL;
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace sync_file_system

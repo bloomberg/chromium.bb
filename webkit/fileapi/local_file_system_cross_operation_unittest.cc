@@ -42,7 +42,7 @@ class CrossOperationTestHelper {
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
     quota_manager_ = NULL;
     quota_manager_proxy_ = NULL;
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void SetUp() {
@@ -215,7 +215,7 @@ class CrossOperationTestHelper {
   const FileSystemType src_type_;
   const FileSystemType dest_type_;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<FileSystemContext> file_system_context_;
   scoped_refptr<quota::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<quota::MockQuotaManager> quota_manager_;

@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
 
   // Allocate a message loop for this thread.  Although it is not used
   // directly, its constructor sets up some necessary state.
-  MessageLoopForUI main_message_loop;
+  base::MessageLoopForUI main_message_loop;
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
   bool suppress_error_dialogs = (
@@ -255,7 +255,7 @@ int main(int argc, char* argv[]) {
       shell->DumpStatsTableOnExit();
 
     webkit_glue::SetJavaScriptFlags(TestShell::GetJSFlagsForLoad(0));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   TestShell::ShutdownTestShell();

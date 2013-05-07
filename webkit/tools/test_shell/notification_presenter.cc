@@ -71,7 +71,7 @@ bool TestNotificationPresenter::show(const WebNotification& notification) {
 
 
   WebNotification event_target(notification);
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&DeferredDisplayDispatch, event_target));
   return true;
 }

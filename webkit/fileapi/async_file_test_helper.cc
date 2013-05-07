@@ -228,7 +228,7 @@ quota::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(
       origin,
       FileSystemTypeToQuotaStorageType(type),
       base::Bind(&DidGetUsageAndQuota, &status, usage, quota));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   return status;
 }
 

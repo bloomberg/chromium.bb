@@ -489,7 +489,7 @@ class QuotaDatabaseTest : public testing::Test {
     db->CommitTransaction();
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(QuotaDatabaseTest, LazyOpen) {

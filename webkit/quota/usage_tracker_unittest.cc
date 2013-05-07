@@ -53,7 +53,8 @@ class MockQuotaClient : public QuotaClient {
                               const GetUsageCallback& callback) OVERRIDE {
     EXPECT_EQ(kStorageTypeTemporary, type);
     int64 usage = GetUsage(origin);
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, usage));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, usage));
   }
 
   virtual void GetOriginsForType(StorageType type,
@@ -64,8 +65,8 @@ class MockQuotaClient : public QuotaClient {
          itr != usage_map_.end(); ++itr) {
       origins.insert(itr->first);
     }
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, origins, type));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, origins, type));
   }
 
   virtual void GetOriginsForHost(StorageType type,
@@ -78,8 +79,8 @@ class MockQuotaClient : public QuotaClient {
       if (net::GetHostOrSpecFromURL(itr->first) == host)
         origins.insert(itr->first);
     }
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, origins, type));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, origins, type));
   }
 
   virtual void DeleteOriginData(const GURL& origin,
@@ -87,7 +88,7 @@ class MockQuotaClient : public QuotaClient {
                                 const DeletionCallback& callback) OVERRIDE {
     EXPECT_EQ(kStorageTypeTemporary, type);
     usage_map_.erase(origin);
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, kQuotaStatusOk));
   }
 
@@ -186,7 +187,7 @@ class UsageTrackerTest : public testing::Test {
     return client_list;
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
   MockQuotaClient quota_client_;

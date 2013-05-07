@@ -275,7 +275,7 @@ class IsolatedFileUtilTest : public testing::Test {
 
   base::ScopedTempDir data_dir_;
   base::ScopedTempDir partition_dir_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   std::string filesystem_id_;
   scoped_refptr<FileSystemContext> file_system_context_;
   std::map<base::FilePath, base::FilePath> toplevel_root_map_;

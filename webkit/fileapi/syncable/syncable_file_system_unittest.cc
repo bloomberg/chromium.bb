@@ -90,7 +90,7 @@ class SyncableFileSystemTest : public testing::Test {
   }
 
   base::ScopedTempDir data_dir_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   CannedSyncableFileSystem file_system_;
   scoped_refptr<LocalFileSyncContext> sync_context_;

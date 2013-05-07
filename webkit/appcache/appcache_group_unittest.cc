@@ -97,7 +97,7 @@ class TestAppCacheHost : public AppCacheHost {
 
 class AppCacheGroupTest : public testing::Test {
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(AppCacheGroupTest, AddRemoveCache) {

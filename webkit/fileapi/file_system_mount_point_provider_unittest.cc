@@ -172,7 +172,7 @@ class FileSystemMountPointProviderTest : public testing::Test {
 
  private:
   base::ScopedTempDir data_dir_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::WeakPtrFactory<FileSystemMountPointProviderTest> weak_factory_;
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;

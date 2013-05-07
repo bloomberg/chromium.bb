@@ -68,7 +68,7 @@ class DomStorageAreaTest : public testing::Test {
   };
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(DomStorageAreaTest, DomStorageAreaBasics) {
@@ -183,7 +183,7 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
     EXPECT_TRUE(area->commit_batch_.get());
     EXPECT_EQ(0, area->commit_batches_in_flight_);
 
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     EXPECT_FALSE(area->commit_batch_.get());
     EXPECT_EQ(0, area->commit_batches_in_flight_);
@@ -232,7 +232,7 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
   EXPECT_TRUE(area->commit_batch_.get());
   EXPECT_FALSE(area->commit_batch_->clear_all_first);
   EXPECT_EQ(2u, area->commit_batch_->changed_values.size());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(area->HasUncommittedChanges());
   EXPECT_FALSE(area->commit_batch_.get());
   EXPECT_EQ(0, area->commit_batches_in_flight_);
@@ -248,7 +248,7 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
   EXPECT_TRUE(area->commit_batch_.get());
   EXPECT_TRUE(area->commit_batch_->clear_all_first);
   EXPECT_TRUE(area->commit_batch_->changed_values.empty());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(area->commit_batch_.get());
   EXPECT_EQ(0, area->commit_batches_in_flight_);
   // Verify the changes made it to the database.
@@ -264,11 +264,12 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
   // another task in the queue that will execute after the timer task,
   // but before the CommitChanges task. From within our injected task,
   // we'll make an additional SetItem() call.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&DomStorageAreaTest::InjectedCommitSequencingTask,
-                 base::Unretained(this), area));
-  MessageLoop::current()->RunUntilIdle();
+                 base::Unretained(this),
+                 area));
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(area->HasOneRef());
   EXPECT_FALSE(area->HasUncommittedChanges());
   // Verify the changes made it to the database.
@@ -299,7 +300,7 @@ TEST_F(DomStorageAreaTest, CommitChangesAtShutdown) {
   area->backing_->ReadAllValues(&values);
   EXPECT_TRUE(values.empty());  // not committed yet
   area->Shutdown();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(area->HasOneRef());
   EXPECT_FALSE(area->backing_.get());
   // The VerifyChangesCommittedDatabase destructor verifies values
@@ -327,7 +328,7 @@ TEST_F(DomStorageAreaTest, DeleteOrigin) {
   // Commit something in the database and then delete.
   NullableString16 old_value;
   area->SetItem(kKey, kValue, &old_value);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(file_util::PathExists(db_file_path));
   area->DeleteOrigin();
   EXPECT_EQ(0u, area->Length());
@@ -342,14 +343,14 @@ TEST_F(DomStorageAreaTest, DeleteOrigin) {
   area->DeleteOrigin();
   EXPECT_TRUE(area->HasUncommittedChanges());
   EXPECT_EQ(0u, area->Length());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(area->HasUncommittedChanges());
   EXPECT_FALSE(file_util::PathExists(db_file_path));
 
   // Put some uncommitted changes to a an existing database in
   // and then delete.
   area->SetItem(kKey, kValue, &old_value);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(file_util::PathExists(db_file_path));
   area->SetItem(kKey2, kValue2, &old_value);
   EXPECT_TRUE(area->HasUncommittedChanges());
@@ -357,13 +358,13 @@ TEST_F(DomStorageAreaTest, DeleteOrigin) {
   area->DeleteOrigin();
   EXPECT_TRUE(area->HasUncommittedChanges());
   EXPECT_EQ(0u, area->Length());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(area->HasUncommittedChanges());
   // Since the area had uncommitted changes at the time delete
   // was called, the file will linger until the shutdown time.
   EXPECT_TRUE(file_util::PathExists(db_file_path));
   area->Shutdown();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(file_util::PathExists(db_file_path));
 }
 
@@ -407,7 +408,7 @@ TEST_F(DomStorageAreaTest, PurgeMemory) {
   EXPECT_EQ(original_map, area->map_.get());
 
   // Commit the changes from above,
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(area->HasUncommittedChanges());
   new_backing = static_cast<LocalStorageDatabaseAdapter*>(
       area->backing_.get())->db_.get();

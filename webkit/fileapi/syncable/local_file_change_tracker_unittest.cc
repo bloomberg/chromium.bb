@@ -34,8 +34,9 @@ namespace sync_file_system {
 class LocalFileChangeTrackerTest : public testing::Test {
  public:
   LocalFileChangeTrackerTest()
-      : message_loop_(MessageLoop::TYPE_IO),
-        file_system_(GURL("http://example.com"), "test",
+      : message_loop_(base::MessageLoop::TYPE_IO),
+        file_system_(GURL("http://example.com"),
+                     "test",
                      base::MessageLoopProxy::current(),
                      base::MessageLoopProxy::current()) {}
 
@@ -98,7 +99,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
     change_tracker()->CollectLastDirtyChanges(file_system_context());
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   CannedSyncableFileSystem file_system_;
   scoped_refptr<LocalFileSyncContext> sync_context_;

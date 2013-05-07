@@ -214,12 +214,13 @@ PP_Bool ReadImageData(PP_Resource device_context_2d,
 }
 
 void RunMessageLoop(PP_Instance instance) {
-  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-  MessageLoop::current()->Run();
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
+  base::MessageLoop::current()->Run();
 }
 
 void QuitMessageLoop(PP_Instance instance) {
-  MessageLoop::current()->QuitNow();
+  base::MessageLoop::current()->QuitNow();
 }
 
 uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {

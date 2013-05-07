@@ -1218,9 +1218,10 @@ bool PluginInstance::IsAcceptingWheelEvents() const {
 void PluginInstance::ScheduleAsyncDidChangeView() {
   if (view_change_weak_ptr_factory_.HasWeakPtrs())
     return;  // Already scheduled.
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&PluginInstance::SendAsyncDidChangeView,
-                            view_change_weak_ptr_factory_.GetWeakPtr()));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&PluginInstance::SendAsyncDidChangeView,
+                 view_change_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PluginInstance::SendAsyncDidChangeView() {
@@ -1492,7 +1493,7 @@ void PluginInstance::FlashSetFullscreen(bool fullscreen, bool delay_report) {
     if (!delay_report) {
       ReportGeometry();
     } else {
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(&PluginInstance::ReportGeometry, this));
     }
   }
@@ -2319,7 +2320,8 @@ void PluginInstance::SelectionChanged(PP_Instance instance) {
   // uses a weak pointer rather than exploiting the fact that this class is
   // refcounted because we don't actually want this operation to affect the
   // lifetime of the instance.
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
       base::Bind(&PluginInstance::RequestSurroundingText,
                  AsWeakPtr(),
                  static_cast<size_t>(kExtraCharsForTextInput)));

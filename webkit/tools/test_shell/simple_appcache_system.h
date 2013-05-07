@@ -98,10 +98,14 @@ class SimpleAppCacheSystem {
                             GURL* manifest_url);
 
   // Helpers
-  MessageLoop* io_message_loop() { return io_message_loop_; }
-  MessageLoop* ui_message_loop() { return ui_message_loop_; }
-  bool is_io_thread() { return MessageLoop::current() == io_message_loop_; }
-  bool is_ui_thread() { return MessageLoop::current() == ui_message_loop_; }
+  base::MessageLoop* io_message_loop() { return io_message_loop_; }
+  base::MessageLoop* ui_message_loop() { return ui_message_loop_; }
+  bool is_io_thread() {
+    return base::MessageLoop::current() == io_message_loop_;
+  }
+  bool is_ui_thread() {
+    return base::MessageLoop::current() == ui_message_loop_;
+  }
   bool is_initialized() {
     return io_message_loop_ && is_initailized_on_ui_thread();
   }
@@ -110,8 +114,8 @@ class SimpleAppCacheSystem {
   }
 
   base::FilePath cache_directory_;
-  MessageLoop* io_message_loop_;
-  MessageLoop* ui_message_loop_;
+  base::MessageLoop* io_message_loop_;
+  base::MessageLoop* ui_message_loop_;
   scoped_refptr<SimpleBackendProxy> backend_proxy_;
   scoped_refptr<SimpleFrontendProxy> frontend_proxy_;
   appcache::AppCacheFrontendImpl frontend_impl_;

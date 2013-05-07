@@ -59,12 +59,12 @@ class LocalFileSyncContextTest : public testing::Test {
 
     io_thread_.reset(new base::Thread("Thread_IO"));
     io_thread_->StartWithOptions(
-        base::Thread::Options(MessageLoop::TYPE_IO, 0));
+        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
     file_thread_.reset(new base::Thread("Thread_File"));
     file_thread_->Start();
 
-    ui_task_runner_ = MessageLoop::current()->message_loop_proxy();
+    ui_task_runner_ = base::MessageLoop::current()->message_loop_proxy();
     io_task_runner_ = io_thread_->message_loop_proxy();
     file_task_runner_ = file_thread_->message_loop_proxy();
   }
@@ -95,7 +95,7 @@ class LocalFileSyncContextTest : public testing::Test {
                                 SyncFileMetadata* metadata,
                                 FileChangeList* changes) {
     StartPrepareForSync(file_system_context, url, metadata, changes);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     return status_;
   }
 
@@ -118,7 +118,7 @@ class LocalFileSyncContextTest : public testing::Test {
     status_ = status;
     *metadata_out = sync_file_info.metadata;
     *changes_out = sync_file_info.changes;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   SyncStatusCode ApplyRemoteChange(FileSystemContext* file_system_context,
@@ -141,12 +141,12 @@ class LocalFileSyncContextTest : public testing::Test {
         file_system_context, change, local_path, url,
         base::Bind(&LocalFileSyncContextTest::DidApplyRemoteChange,
                    base::Unretained(this)));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     return status_;
   }
 
   void DidApplyRemoteChange(SyncStatusCode status) {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
     status_ = status;
   }
 
@@ -171,7 +171,7 @@ class LocalFileSyncContextTest : public testing::Test {
 
   base::PlatformFileError WaitUntilModifyFileIsDone() {
     while (!async_modify_finished_)
-      MessageLoop::current()->RunUntilIdle();
+      base::MessageLoop::current()->RunUntilIdle();
     return file_error_;
   }
 
@@ -192,7 +192,7 @@ class LocalFileSyncContextTest : public testing::Test {
   // These need to remain until the very end.
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
@@ -373,7 +373,7 @@ TEST_F(LocalFileSyncContextTest, PrepareSyncWhileWriting) {
 
   // The PrepareForSync must have been started; wait until DidPrepareForSync
   // is done.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   ASSERT_FALSE(has_inflight_prepare_for_sync_);
 
   // Now PrepareForSync should have run and returned OK.

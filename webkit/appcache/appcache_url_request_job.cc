@@ -71,7 +71,7 @@ void AppCacheURLRequestJob::MaybeBeginDelivery() {
   if (has_been_started() && has_delivery_orders()) {
     // Start asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&AppCacheURLRequestJob::BeginDelivery,
                    weak_factory_.GetWeakPtr()));

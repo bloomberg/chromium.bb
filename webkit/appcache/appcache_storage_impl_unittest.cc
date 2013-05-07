@@ -159,9 +159,11 @@ class AppCacheStorageImplTest : public testing::Test {
       EXPECT_EQ(kOrigin, origin);
       EXPECT_EQ(quota::kStorageTypeTemporary, type);
       if (async_) {
-        MessageLoop::current()->PostTask(
-            FROM_HERE, base::Bind(&MockQuotaManager::CallCallback,
-                                  base::Unretained(this), callback));
+        base::MessageLoop::current()->PostTask(
+            FROM_HERE,
+            base::Bind(&MockQuotaManager::CallCallback,
+                       base::Unretained(this),
+                       callback));
         return;
       }
       CallCallback(callback);
@@ -240,14 +242,16 @@ class AppCacheStorageImplTest : public testing::Test {
     // We also have to wait for InitTask completion call to be performed
     // on the IO thread prior to running the test. Its guaranteed to be
     // queued by this time.
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheStorageImplTest::RunMethod<Method>,
-                              base::Unretained(this), method));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AppCacheStorageImplTest::RunMethod<Method>,
+                   base::Unretained(this),
+                   method));
   }
 
   static void SetUpTestCase() {
     io_thread.reset(new base::Thread("AppCacheTest.IOThread"));
-    base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     ASSERT_TRUE(io_thread->StartWithOptions(options));
 
     db_thread.reset(new base::Thread("AppCacheTest::DBThread"));
@@ -274,7 +278,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void SetUpTest() {
-    DCHECK(MessageLoop::current() == io_thread->message_loop());
+    DCHECK(base::MessageLoop::current() == io_thread->message_loop());
     service_.reset(new AppCacheService(NULL));
     service_->Initialize(
         base::FilePath(), db_thread->message_loop_proxy(), NULL);
@@ -284,7 +288,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void TearDownTest() {
-    DCHECK(MessageLoop::current() == io_thread->message_loop());
+    DCHECK(base::MessageLoop::current() == io_thread->message_loop());
     storage()->CancelDelegateCallbacks(delegate());
     group_ = NULL;
     cache_ = NULL;
@@ -298,10 +302,11 @@ class AppCacheStorageImplTest : public testing::Test {
   void TestFinished() {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
-    DCHECK(MessageLoop::current() == io_thread->message_loop());
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheStorageImplTest::TestFinishedUnwound,
-                              base::Unretained(this)));
+    DCHECK(base::MessageLoop::current() == io_thread->message_loop());
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AppCacheStorageImplTest::TestFinishedUnwound,
+                   base::Unretained(this)));
   }
 
   void TestFinishedUnwound() {
@@ -314,11 +319,11 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void ScheduleNextTask() {
-    DCHECK(MessageLoop::current() == io_thread->message_loop());
+    DCHECK(base::MessageLoop::current() == io_thread->message_loop());
     if (task_stack_.empty()) {
       return;
     }
-    MessageLoop::current()->PostTask(FROM_HERE, task_stack_.top());
+    base::MessageLoop::current()->PostTask(FROM_HERE, task_stack_.top());
     task_stack_.pop();
   }
 

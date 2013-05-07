@@ -104,7 +104,7 @@ void TestWebViewDelegate::show(WebNavigationPolicy policy) {
 
 void TestWebViewDelegate::closeWidgetSoon() {
   if (this == shell_->delegate()) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&gtk_widget_destroy, GTK_WIDGET(shell_->mainWnd())));
   } else if (this == shell_->popup_delegate()) {

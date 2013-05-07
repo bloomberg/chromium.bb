@@ -63,7 +63,7 @@ class AppCacheResponseTest : public testing::Test {
 
   static void SetUpTestCase() {
     io_thread_.reset(new base::Thread("AppCacheResponseTest Thread"));
-    base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     io_thread_->StartWithOptions(options);
   }
 
@@ -83,7 +83,7 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void SetUpTest() {
-    DCHECK(MessageLoop::current() == io_thread_->message_loop());
+    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
     DCHECK(task_stack_.empty());
     storage_delegate_.reset(new MockStorageDelegate(this));
     service_.reset(new MockAppCacheService());
@@ -99,7 +99,7 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void TearDownTest() {
-    DCHECK(MessageLoop::current() == io_thread_->message_loop());
+    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
     while (!task_stack_.empty())
       task_stack_.pop();
 
@@ -116,8 +116,8 @@ class AppCacheResponseTest : public testing::Test {
   void TestFinished() {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
-    DCHECK(MessageLoop::current() == io_thread_->message_loop());
-    MessageLoop::current()->PostTask(
+    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&AppCacheResponseTest::TestFinishedUnwound,
                               base::Unretained(this)));
   }
@@ -136,7 +136,7 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void ScheduleNextTask() {
-    DCHECK(MessageLoop::current() == io_thread_->message_loop());
+    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
     if (task_stack_.empty()) {
       TestFinished();
       return;
@@ -147,7 +147,7 @@ class AppCacheResponseTest : public testing::Test {
     if (immediate)
       task.Run();
     else
-      MessageLoop::current()->PostTask(FROM_HERE, task);
+      base::MessageLoop::current()->PostTask(FROM_HERE, task);
   }
 
   // Wrappers to call AppCacheResponseReader/Writer Read and Write methods
@@ -641,7 +641,7 @@ class AppCacheResponseTest : public testing::Test {
     reader_.reset();
 
     // Wait a moment to verify no callbacks.
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&AppCacheResponseTest::VerifyNoCallbacks,
                               base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(10));

@@ -100,9 +100,8 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsWrapperTest) {
   const base::string16 kOriginId(ASCIIToUTF16("origin_id"));
   const base::string16 kName(ASCIIToUTF16("database_name"));
 
-  MessageLoop message_loop;
-  scoped_refptr<DatabaseConnectionsWrapper> obj(
-      new DatabaseConnectionsWrapper);
+  base::MessageLoop message_loop;
+  scoped_refptr<DatabaseConnectionsWrapper> obj(new DatabaseConnectionsWrapper);
   EXPECT_FALSE(obj->HasOpenConnections());
   obj->AddOpenConnection(kOriginId, kName);
   EXPECT_TRUE(obj->HasOpenConnections());
@@ -118,7 +117,7 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsWrapperTest) {
   // being removed on the current thread.
   obj->AddOpenConnection(kOriginId, kName);
   bool did_task_execute = false;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&RemoveConnectionTask, kOriginId, kName, obj,
                  &did_task_execute));
@@ -132,7 +131,7 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsWrapperTest) {
   base::Thread thread("WrapperTestThread");
   thread.Start();
   did_task_execute = false;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ScheduleRemoveConnectionTask, &thread, kOriginId, kName, obj,
                  &did_task_execute));

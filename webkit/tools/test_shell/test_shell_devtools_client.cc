@@ -65,7 +65,7 @@ void TestShellDevToolsClient::undockWindow() {
 }
 
 void TestShellDevToolsClient::AsyncCall(const TestShellDevToolsCallArgs &args) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&TestShellDevToolsClient::Call, weak_factory_.GetWeakPtr(),
                  args));

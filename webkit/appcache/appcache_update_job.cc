@@ -1343,7 +1343,7 @@ void AppCacheUpdateJob::DeleteSoon() {
   group_->SetUpdateStatus(AppCacheGroup::IDLE);
   group_ = NULL;
 
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 }  // namespace appcache

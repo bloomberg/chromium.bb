@@ -48,11 +48,11 @@ class Result {
     if (status == base::PLATFORM_FILE_OK) {
       bytes_written_ += bytes;
       if (write_status_ != FileWriterDelegate::SUCCESS_IO_PENDING)
-        MessageLoop::current()->Quit();
+        base::MessageLoop::current()->Quit();
     } else {
       EXPECT_EQ(base::PLATFORM_FILE_OK, status_);
       status_ = status;
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   }
 
@@ -71,7 +71,7 @@ const int kDataSize = ARRAYSIZE_UNSAFE(kData) - 1;
 class FileWriterDelegateTest : public PlatformTest {
  public:
   FileWriterDelegateTest()
-      : loop_(MessageLoop::TYPE_IO),
+      : loop_(base::MessageLoop::TYPE_IO),
         test_helper_(GURL("http://example.com"), kFileSystemTypeTest) {}
 
  protected:
@@ -122,7 +122,7 @@ class FileWriterDelegateTest : public PlatformTest {
   static net::URLRequest::ProtocolFactory Factory;
 
   // This should be alive until the very end of this instance.
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 
   net::URLRequestContext empty_context_;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
@@ -153,7 +153,7 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
   }
 
   virtual void Start() OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&FileWriterDelegateTestJob::NotifyHeadersComplete, this));
   }
@@ -237,7 +237,7 @@ TEST_F(FileWriterDelegateTest, MAYBE_WriteSuccessWithoutQuotaLimit) {
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
   file_writer_delegate_->Start(request_.Pass());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
   file_writer_delegate_.reset();
@@ -264,7 +264,7 @@ TEST_F(FileWriterDelegateTest, MAYBE_WriteSuccessWithJustQuota) {
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
   file_writer_delegate_->Start(request_.Pass());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
   file_writer_delegate_.reset();
 
@@ -283,7 +283,7 @@ TEST_F(FileWriterDelegateTest, DISABLED_WriteFailureByQuota) {
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
   file_writer_delegate_->Start(request_.Pass());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result_->write_status());
   file_writer_delegate_.reset();
 
@@ -303,7 +303,7 @@ TEST_F(FileWriterDelegateTest, WriteZeroBytesSuccessfullyWithZeroQuota) {
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
   file_writer_delegate_->Start(request_.Pass());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
   file_writer_delegate_.reset();
 
@@ -353,10 +353,10 @@ TEST_F(FileWriterDelegateTest, MAYBE_WriteSuccessWithoutQuotaLimitConcurrent) {
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
   file_writer_delegate_->Start(request_.Pass());
   file_writer_delegate2->Start(request2.Pass());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   if (result_->write_status() == FileWriterDelegate::SUCCESS_IO_PENDING ||
       result2->write_status() == FileWriterDelegate::SUCCESS_IO_PENDING)
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result2->write_status());
@@ -393,7 +393,7 @@ TEST_F(FileWriterDelegateTest, MAYBE_WritesWithQuotaAndOffset) {
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
   file_writer_delegate_->Start(request_.Pass());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
   file_writer_delegate_.reset();
 
@@ -408,7 +408,7 @@ TEST_F(FileWriterDelegateTest, MAYBE_WritesWithQuotaAndOffset) {
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
   file_writer_delegate_->Start(request_.Pass());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(kDataSize, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(kDataSize, result_->bytes_written());
@@ -422,7 +422,7 @@ TEST_F(FileWriterDelegateTest, MAYBE_WritesWithQuotaAndOffset) {
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
   file_writer_delegate_->Start(request_.Pass());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
   file_writer_delegate_.reset();
 
@@ -438,7 +438,7 @@ TEST_F(FileWriterDelegateTest, MAYBE_WritesWithQuotaAndOffset) {
 
   int64 pre_write_usage = ComputeCurrentOriginUsage();
   file_writer_delegate_->Start(request_.Pass());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
   file_writer_delegate_.reset();
 
@@ -455,7 +455,7 @@ TEST_F(FileWriterDelegateTest, MAYBE_WritesWithQuotaAndOffset) {
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
   file_writer_delegate_->Start(request_.Pass());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result_->write_status());
   file_writer_delegate_.reset();
 

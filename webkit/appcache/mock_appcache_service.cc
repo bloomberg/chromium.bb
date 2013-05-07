@@ -17,9 +17,10 @@ static void DeferredCallCallback(
 void MockAppCacheService::DeleteAppCachesForOrigin(
     const GURL& origin, const net::CompletionCallback& callback) {
   ++delete_called_count_;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&DeferredCallCallback, callback,
+      base::Bind(&DeferredCallCallback,
+                 callback,
                  mock_delete_appcaches_for_origin_result_));
 }
 

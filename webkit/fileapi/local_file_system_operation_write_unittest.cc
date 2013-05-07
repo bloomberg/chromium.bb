@@ -76,7 +76,7 @@ class LocalFileSystemOperationWriteTest
  public:
   LocalFileSystemOperationWriteTest()
       : test_helper_(GURL("http://example.com"), kFileSystemTypeTest),
-        loop_(MessageLoop::TYPE_IO),
+        loop_(base::MessageLoop::TYPE_IO),
         status_(base::PLATFORM_FILE_OK),
         cancel_status_(base::PLATFORM_FILE_ERROR_FAILED),
         bytes_written_(0),
@@ -147,14 +147,14 @@ class LocalFileSystemOperationWriteTest
     if (status == base::PLATFORM_FILE_OK) {
       add_bytes_written(bytes, complete);
       if (complete)
-        MessageLoop::current()->Quit();
+        base::MessageLoop::current()->Quit();
     } else {
       EXPECT_FALSE(complete_);
       EXPECT_EQ(status_, base::PLATFORM_FILE_OK);
       complete_ = true;
       status_ = status;
-      if (MessageLoop::current()->is_running())
-        MessageLoop::current()->Quit();
+      if (base::MessageLoop::current()->is_running())
+        base::MessageLoop::current()->Quit();
     }
   }
 
@@ -169,7 +169,7 @@ class LocalFileSystemOperationWriteTest
   scoped_refptr<MockQuotaManager> quota_manager_;
   LocalFileSystemTestOriginHelper test_helper_;
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 
   base::ScopedTempDir dir_;
   base::FilePath virtual_path_;
@@ -196,7 +196,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteSuccess) {
   NewOperation()->Write(
       &url_request_context_, URLForPath(virtual_path_), blob_url,
       0, RecordWriteCallback());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(14, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
@@ -215,7 +215,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteZero) {
   NewOperation()->Write(
       &url_request_context_, URLForPath(virtual_path_),
       blob_url, 0, RecordWriteCallback());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   url_request_context_.blob_storage_controller()->RemoveBlob(blob_url);
 
@@ -230,7 +230,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
   NewOperation()->Write(
       &url_request_context_, URLForPath(virtual_path_),
       GURL("blob:invalid"), 0, RecordWriteCallback());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(0, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_FAILED, status());
@@ -247,7 +247,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidFile) {
       &url_request_context_,
       URLForPath(base::FilePath(FILE_PATH_LITERAL("nonexist"))),
       blob_url, 0, RecordWriteCallback());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(0, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
@@ -269,7 +269,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteDir) {
 
   NewOperation()->Write(&url_request_context_, URLForPath(virtual_dir_path),
                         blob_url, 0, RecordWriteCallback());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(0, bytes_written());
   // TODO(kinuko): This error code is platform- or fileutil- dependent
@@ -290,7 +290,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteFailureByQuota) {
   NewOperation()->Write(
       &url_request_context_, URLForPath(virtual_path_), blob_url,
       0, RecordWriteCallback());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(10, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status());
@@ -310,7 +310,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
   // We use RunAllPendings() instead of Run() here, because we won't dispatch
   // callbacks after Cancel() is issued (so no chance to Quit) nor do we need
   // to run another write cycle.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Issued Cancel() before receiving any response from Write(),
   // so nothing should have happen.
@@ -335,7 +335,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
   // We use RunAllPendings() instead of Run() here, because we won't dispatch
   // callbacks after Cancel() is issued (so no chance to Quit) nor do we need
   // to run another write cycle.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Issued Cancel() before receiving any response from Write(),
   // so nothing should have happen.

@@ -319,8 +319,10 @@ void PPB_Graphics3D_Impl::OnContextLost() {
 
   // Send context lost to plugin. This may have been caused by a PPAPI call, so
   // avoid re-entering.
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &PPB_Graphics3D_Impl::SendContextLost, weak_ptr_factory_.GetWeakPtr()));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&PPB_Graphics3D_Impl::SendContextLost,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PPB_Graphics3D_Impl::SendContextLost() {

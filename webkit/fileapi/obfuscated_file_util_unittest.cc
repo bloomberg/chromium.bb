@@ -242,7 +242,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   int64 SizeInUsageFile() {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     int64 usage = 0;
     return usage_cache()->GetUsage(test_helper_.GetUsageCachePath(), &usage) ?
         usage : -1;
@@ -369,7 +369,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
           expected_usage_(expected_usage) {}
 
     ~UsageVerifyHelper() {
-      MessageLoop::current()->RunUntilIdle();
+      base::MessageLoop::current()->RunUntilIdle();
       Check();
     }
 
@@ -655,7 +655,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
  private:
   base::ScopedTempDir data_dir_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
   scoped_refptr<FileSystemContext> file_system_context_;
   GURL origin_;

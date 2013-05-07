@@ -107,7 +107,7 @@ class LocalFileSystemQuotaTest
   }
 
   int64 SizeByQuotaUtil() {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     return test_helper_.GetCachedOriginUsage();
   }
 
@@ -115,7 +115,7 @@ class LocalFileSystemQuotaTest
     quota_status_ = AsyncFileTestHelper::GetUsageAndQuota(
             quota_manager_, test_helper_.origin(), test_helper_.type(),
             &usage_, &quota_);
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   bool FileExists(const base::FilePath& virtual_path) {
@@ -183,7 +183,7 @@ class LocalFileSystemQuotaTest
   LocalFileSystemTestOriginHelper test_helper_;
 
   base::ScopedTempDir work_dir_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
 
   base::WeakPtrFactory<LocalFileSystemQuotaTest> weak_factory_;
@@ -234,7 +234,7 @@ TEST_F(LocalFileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
   NewOperation()->Truncate(
       URLForPath(grandchild_file2_path_), 2,
       base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   const int64 all_file_size = 5000 + 400 + 30 + 2;
 
@@ -248,7 +248,7 @@ TEST_F(LocalFileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
   NewOperation()->Move(
       URLForPath(src_dir_path), URLForPath(dest_dir_path),
       RecordStatusCallback());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(DirectoryExists(dest_dir_path.Append(
@@ -287,7 +287,7 @@ TEST_F(LocalFileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   NewOperation()->Truncate(
       URLForPath(grandchild_file2_path_), 5,
       base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   const int64 child_file_size = 8000 + 700;
   const int64 grandchild_file_size = 60 + 5;
@@ -304,9 +304,8 @@ TEST_F(LocalFileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   NewOperation()->Copy(
       URLForPath(src_dir_path), URLForPath(dest_dir1_path),
       RecordStatusCallback());
-  MessageLoop::current()->RunUntilIdle();
-  expected_usage += all_file_size +
-      child_path_cost_ + grandchild_path_cost_;
+  base::MessageLoop::current()->RunUntilIdle();
+  expected_usage += all_file_size + child_path_cost_ + grandchild_path_cost_;
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(DirectoryExists(src_dir_path.Append(
@@ -331,7 +330,7 @@ TEST_F(LocalFileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   NewOperation()->Copy(
       URLForPath(child_dir_path_), URLForPath(dest_dir2_path),
       RecordStatusCallback());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   expected_usage += grandchild_file_size + grandchild_path_cost_;

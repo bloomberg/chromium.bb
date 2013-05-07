@@ -90,7 +90,7 @@ class FileSystemContextTest : public testing::Test {
 
  private:
   base::ScopedTempDir data_dir_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<quota::SpecialStoragePolicy> storage_policy_;
   scoped_refptr<quota::MockQuotaManager> mock_quota_manager_;
 };

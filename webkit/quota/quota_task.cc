@@ -53,7 +53,7 @@ void QuotaTask::DeleteSoon() {
   if (delete_scheduled_)
     return;
   delete_scheduled_ = true;
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 // QuotaTaskObserver -------------------------------------------------------

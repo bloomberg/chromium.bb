@@ -39,7 +39,7 @@ class CopyOrMoveFileValidatorTestHelper {
 
   ~CopyOrMoveFileValidatorTestHelper() {
     file_system_context_ = NULL;
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void SetUp() {
@@ -158,7 +158,7 @@ class CopyOrMoveFileValidatorTestHelper {
   std::string src_fsid_;
   std::string dest_fsid_;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<FileSystemContext> file_system_context_;
 
   FileSystemURL copy_src_;
@@ -194,8 +194,8 @@ class TestCopyOrMoveFileValidatorFactory
     virtual void StartValidation(
         const ResultCallback& result_callback) OVERRIDE {
       // Post the result since a real validator must do work asynchronously.
-      MessageLoop::current()->PostTask(FROM_HERE, base::Bind(result_callback,
-                                                             result_));
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(result_callback, result_));
     }
 
    private:

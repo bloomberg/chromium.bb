@@ -175,7 +175,7 @@ bool PluginStream::WriteToPlugin(const char* buf, const int length,
     delivery_data_.resize(previous_size + remaining);
     data_offset_ = data_offset;
     memcpy(&delivery_data_[previous_size], buf + written, remaining);
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&PluginStream::OnDelayDelivery, this));
   }
 
