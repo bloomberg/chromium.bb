@@ -563,15 +563,6 @@ PlatformLayer* GraphicsLayerChromium::platformLayer() const
     return m_transformLayer ? m_transformLayer.get() : m_layer->layer();
 }
 
-void GraphicsLayerChromium::setAppliesPageScale(bool)
-{
-}
-
-bool GraphicsLayerChromium::appliesPageScale() const
-{
-    return false;
-}
-
 void GraphicsLayerChromium::paint(GraphicsContext& context, const IntRect& clip)
 {
     paintGraphicsLayerContents(context, clip);

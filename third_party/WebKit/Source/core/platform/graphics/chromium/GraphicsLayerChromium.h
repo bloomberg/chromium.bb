@@ -121,9 +121,6 @@ public:
 
     virtual WebKit::WebLayer* platformLayer() const;
 
-    virtual void setAppliesPageScale(bool appliesScale) OVERRIDE;
-    virtual bool appliesPageScale() const OVERRIDE;
-
     void setScrollableArea(ScrollableArea* scrollableArea) { m_scrollableArea = scrollableArea; }
     ScrollableArea* scrollableArea() const { return m_scrollableArea; }
 

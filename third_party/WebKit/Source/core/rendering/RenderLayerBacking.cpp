@@ -193,10 +193,8 @@ void RenderLayerBacking::createPrimaryGraphicsLayer()
     
     m_graphicsLayer = createGraphicsLayer(layerName);
 
-    if (m_isMainFrameRenderViewLayer) {
+    if (m_isMainFrameRenderViewLayer)
         m_graphicsLayer->setContentsOpaque(true);
-        m_graphicsLayer->setAppliesPageScale();
-    }
 
     updateOpacity(renderer()->style());
     updateTransform(renderer()->style());
@@ -1014,8 +1012,6 @@ bool RenderLayerBacking::updateBackgroundLayer(bool needsBackgroundLayer)
             layerName = m_owningLayer->debugName() + " (contents containment)";
 #endif
             m_contentsContainmentLayer = createGraphicsLayer(layerName);
-            m_contentsContainmentLayer->setAppliesPageScale(true);
-            m_graphicsLayer->setAppliesPageScale(false);
             layerChanged = true;
         }
     } else {
@@ -1028,7 +1024,6 @@ bool RenderLayerBacking::updateBackgroundLayer(bool needsBackgroundLayer)
             m_contentsContainmentLayer->removeFromParent();
             m_contentsContainmentLayer = nullptr;
             layerChanged = true;
-            m_graphicsLayer->setAppliesPageScale(true);
         }
     }
     

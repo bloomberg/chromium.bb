@@ -410,9 +410,6 @@ public:
     virtual void setMaintainsPixelAlignment(bool maintainsAlignment) { m_maintainsPixelAlignment = maintainsAlignment; }
     virtual bool maintainsPixelAlignment() const { return m_maintainsPixelAlignment; }
     
-    virtual void setAppliesPageScale(bool appliesScale = true) { m_appliesPageScale = appliesScale; }
-    virtual bool appliesPageScale() const { return m_appliesPageScale; }
-
     float pageScaleFactor() const { return m_client ? m_client->pageScaleFactor() : 1; }
     float deviceScaleFactor() const { return m_client ? m_client->deviceScaleFactor() : 1; }
 
@@ -530,7 +527,6 @@ protected:
     bool m_drawsContent : 1;
     bool m_contentsVisible : 1;
     bool m_maintainsPixelAlignment : 1;
-    bool m_appliesPageScale : 1; // Set for the layer which has the page scale applied to it.
     bool m_showDebugBorder : 1;
     bool m_showRepaintCounter : 1;
     
