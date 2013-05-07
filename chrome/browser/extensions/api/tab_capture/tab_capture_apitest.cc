@@ -92,8 +92,14 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_EndToEnd) {
                                   "end_to_end.html")) << message_;
 }
 
+// Flaky http://crbug.com/224249
+#if defined(OS_WIN)
+#define MAYBE_GetUserMediaTest DISABLED_GetUserMediaTest
+#else
+#define MAYBE_GetUserMediaTest GetUserMediaTest
+#endif
 // Test that we can't get tabCapture streams using GetUserMedia directly.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, GetUserMediaTest) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GetUserMediaTest) {
   ExtensionTestMessageListener listener("ready", true);
 
   ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
@@ -117,9 +123,15 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, GetUserMediaTest) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+// Flaky http://crbug.com/224249
+#if defined(OS_WIN)
+#define MAYBE_ActiveTabPermission DISABLED_ActiveTabPermission
+#else
+#define MAYBE_ActiveTabPermission ActiveTabPermission
+#endif
 // Make sure tabCapture.capture only works if the tab has been granted
 // permission via an extension icon click or the extension is whitelisted.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ActiveTabPermission) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ActiveTabPermission) {
   ExtensionTestMessageListener before_open_tab("ready1", true);
   ExtensionTestMessageListener before_grant_permission("ready2", true);
   ExtensionTestMessageListener before_open_new_tab("ready3", true);
