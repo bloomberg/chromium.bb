@@ -44,10 +44,7 @@ INITIAL_ENV = {
   'BASE_USR'        : '${BASE_LIBMODE}/usr',
   'BASE_SDK'        : '${BASE_LIBMODE}/sdk',
   'BASE_LIB'        : '${BASE_LIBMODE}/lib',
-  'BASE_USR_ARCH'   : '${BASE_USR_%ARCH%}',
-  'BASE_USR_ARM'   : '${BASE_LIBMODE}/usr-bc-arm',
-  'BASE_LIB_ARCH'   : '${BASE_LIB_%ARCH%}',
-  'BASE_LIB_ARM'   : '${BASE_LIBMODE}/lib-bc-arm',
+
 
   'BASE_LLVM_BIN'   : '${BASE_LLVM}/bin',
   'TRANSLATOR_BIN'  :
@@ -88,7 +85,6 @@ INITIAL_ENV = {
   'LIBMODE_GLIBC'       : '${LIBMODE==glibc ? 1 : 0}',
   'LIBMODE_NEWLIB'      : '${LIBMODE==newlib ? 1 : 0}',
 
-  'IRT_LINK'            : '0',
   # Logging settings
   'LOGGING'            : '0', # True if logging is enabled.
   'LOG_VERBOSE'        : '0', # Log to stdout (--pnacl-driver-verbose)
