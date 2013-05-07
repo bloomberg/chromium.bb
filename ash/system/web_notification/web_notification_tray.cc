@@ -236,7 +236,6 @@ bool WebNotificationTray::ShowMessageCenter() {
   message_center_bubble->SetMaxHeight(max_height);
   message_center_bubble_.reset(
       new internal::WebNotificationBubbleWrapper(this, message_center_bubble));
-  SetBubbleVisible(true);
 
   status_area_widget()->SetHideSystemNotifications(true);
   GetShelfLayoutManager()->UpdateAutoHideState();
@@ -249,7 +248,6 @@ void WebNotificationTray::HideMessageCenter() {
     return;
   message_center_bubble_.reset();
   should_block_shelf_auto_hide_ = false;
-  SetBubbleVisible(false);
   show_message_center_on_unlock_ = false;
   status_area_widget()->SetHideSystemNotifications(false);
   GetShelfLayoutManager()->UpdateAutoHideState();
