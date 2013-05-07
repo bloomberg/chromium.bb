@@ -686,11 +686,10 @@ void FileSystem::GetEntryInfoByPathAfterGetEntry1(
     return;
   }
 
-  // Start loading if needed. Note that directory_fetch_info is empty here,
-  // as we don't need to fetch the contents of a directory when we just need
-  // to get an entry of the directory.
-  change_list_loader_->LoadIfNeeded(
-      DirectoryFetchInfo(),
+  // If the information about the path is not in the local ResourceMetadata,
+  // try fetching information of the directory and retry.
+  LoadDirectoryIfNeeded(
+      file_path.DirName(),
       base::Bind(&FileSystem::GetEntryInfoByPathAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,
@@ -738,40 +737,49 @@ void FileSystem::ReadDirectoryByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // As described in GetEntryInfoByPath(), ResourceMetadata may know
-  // about the entry even if the file system is not yet fully loaded, hence we
-  // should just ask ResourceMetadata first.
-  resource_metadata_->GetEntryInfoByPath(
+  LoadDirectoryIfNeeded(
       directory_path,
-      base::Bind(&FileSystem::ReadDirectoryByPathAfterGetEntry,
+      base::Bind(&FileSystem::ReadDirectoryByPathAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_path,
                  callback));
 }
 
-void FileSystem::ReadDirectoryByPathAfterGetEntry(
+void FileSystem::LoadDirectoryIfNeeded(const base::FilePath& directory_path,
+                                       const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // As described in GetEntryInfoByPath(), ResourceMetadata may know
+  // about the entry even if the file system is not yet fully loaded, hence we
+  // should just ask ResourceMetadata first.
+  resource_metadata_->GetEntryInfoByPath(
+      directory_path,
+      base::Bind(&FileSystem::LoadDirectoryIfNeededAfterGetEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 directory_path,
+                 callback));
+}
+
+void FileSystem::LoadDirectoryIfNeededAfterGetEntry(
     const base::FilePath& directory_path,
-    const ReadDirectoryWithSettingCallback& callback,
+    const FileOperationCallback& callback,
     FileError error,
     scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != FILE_ERROR_OK) {
-    // If we don't know about the directory, start loading.
-    change_list_loader_->LoadIfNeeded(
-        DirectoryFetchInfo(),
-        base::Bind(&FileSystem::ReadDirectoryByPathAfterLoad,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   directory_path,
-                   callback));
+  if (error != FILE_ERROR_OK ||
+      entry->resource_id() == util::kDriveOtherDirSpecialResourceId) {
+    // If we don't know about the directory, or it is the "drive/other"
+    // directory that has to gather all orphan entries, start loading full
+    // resource list.
+    change_list_loader_->LoadIfNeeded(DirectoryFetchInfo(), callback);
     return;
   }
 
   if (!entry->file_info().is_directory()) {
-    callback.Run(FILE_ERROR_NOT_A_DIRECTORY,
-                 hide_hosted_docs_,
-                 scoped_ptr<ResourceEntryVector>());
+    callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 
@@ -780,12 +788,7 @@ void FileSystem::ReadDirectoryByPathAfterGetEntry(
   DirectoryFetchInfo directory_fetch_info(
       entry->resource_id(),
       entry->directory_specific_info().changestamp());
-  change_list_loader_->LoadIfNeeded(
-      directory_fetch_info,
-      base::Bind(&FileSystem::ReadDirectoryByPathAfterLoad,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_path,
-                 callback));
+  change_list_loader_->LoadIfNeeded(directory_fetch_info, callback);
 }
 
 void FileSystem::ReadDirectoryByPathAfterLoad(

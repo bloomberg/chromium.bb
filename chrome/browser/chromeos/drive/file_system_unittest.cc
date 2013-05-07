@@ -296,19 +296,17 @@ class DriveFileSystemTest : public testing::Test {
   }
 
   // Flag for specifying the timestamp of the test filesystem cache.
-  enum SaveTestFileSystemParam {
+  enum SetUpTestFileSystemParam {
     USE_OLD_TIMESTAMP,
     USE_SERVER_TIMESTAMP,
   };
 
-  // Saves a file representing a filesystem with directories:
-  // drive/root, drive/root/Dir1, drive/root/Dir1/SubDir2
-  // and files
-  // drive/root/File1, drive/root/Dir1/File2, drive/root/Dir1/SubDir2/File3.
-  // If |use_up_to_date_timestamp| is true, sets the changestamp to 654321,
-  // equal to that of "account_metadata.json" test data, indicating the cache is
-  // holding the latest file system info.
-  bool SaveTestFileSystem(SaveTestFileSystemParam param) {
+  // Sets up a filesystem with directories: drive/root, drive/root/Dir1,
+  // drive/root/Dir1/SubDir2 and files drive/root/File1, drive/root/Dir1/File2,
+  // drive/root/Dir1/SubDir2/File3. If |use_up_to_date_timestamp| is true, sets
+  // the changestamp to 654321, equal to that of "account_metadata.json" test
+  // data, indicating the cache is holding the latest file system info.
+  bool SetUpTestFileSystem(SetUpTestFileSystemParam param) {
     // Destroy the existing resource metadata to close DB.
     resource_metadata_.reset();
 
@@ -461,6 +459,10 @@ class DriveFileSystemTest : public testing::Test {
 };
 
 TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
+  // "Fast fetch" will fire an OnirectoryChanged event.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+
   int counter = 0;
   const GetEntryInfoCallback& callback = base::Bind(
       &AsyncInitializationCallback, &counter, 2, &message_loop_);
@@ -475,8 +477,9 @@ TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
   // Although GetEntryInfoByPath() was called twice, the account metadata
   // should only be loaded once. In the past, there was a bug that caused
   // it to be loaded twice.
-  EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
+  // See the comment in GetMyDriveRoot test case why this is 2.
+  EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
 }
 
 TEST_F(DriveFileSystemTest, GetGrandRootEntry) {
@@ -503,18 +506,25 @@ TEST_F(DriveFileSystemTest, GetOtherDirEntry) {
 }
 
 TEST_F(DriveFileSystemTest, GetMyDriveRoot) {
+  // "Fast fetch" will fire an OnirectoryChanged event.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root"));
   scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
 
-  // The changestamp should be propagated to the root directory.
-  EXPECT_EQ(fake_drive_service_->largest_changestamp(),
-            entry->directory_specific_info().changestamp());
+  // Absence of "drive/root" in the local metadata triggers the "fast fetch"
+  // of "drive" directory. Fetch of "drive" grand root directory has a special
+  // implementation. Instead of normal GetResourceListInDirectory(), it is
+  // emulated by calling GetAboutResource() so that the resource_id of
+  // "drive/root" is listed.
+  // Together with the normal GetAboutResource() call to retrieve the largest
+  // changestamp, the method is called twice.
+  EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
 
-  // The resource load should happen because "My Drive"'s root is not the grand
-  // root entry and hence does not present until the initial loading.
-  EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
+  // After "fast fetch" is done, full resource list is fetched.
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
 }
 
@@ -834,12 +844,12 @@ TEST_F(DriveFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
 }
 
 TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
-  ASSERT_TRUE(SaveTestFileSystem(USE_SERVER_TIMESTAMP));
+  ASSERT_TRUE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
 
   // Kicks loading of cached file system and query for server update.
   EXPECT_TRUE(ReadDirectoryByPathSync(util::GetDriveMyDriveRootPath()));
 
-  // SaveTestFileSystem and "account_metadata.json" have the same changestamp,
+  // SetUpTestFileSystem and "account_metadata.json" have the same changestamp,
   // so no request for new feeds (i.e., call to GetResourceList) should happen.
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
@@ -853,7 +863,7 @@ TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
 }
 
 TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
-  ASSERT_TRUE(SaveTestFileSystem(USE_OLD_TIMESTAMP));
+  ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
 
   // Make GetResourceList fail for simulating offline situation. This will leave
   // the file system "loaded from cache, but not synced with server" state.
@@ -889,6 +899,45 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(1, fake_drive_service_->change_list_load_count());
+}
+
+TEST_F(DriveFileSystemTest, ReadDirectoryWhileRefreshing) {
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(_))
+      .Times(AtLeast(1));
+
+  // Enter the "refreshing" state so the fast fetch will be performed.
+  ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
+  file_system_->CheckForUpdates();
+
+  // The list of resources in "drive/root/Dir1" should be fetched.
+  EXPECT_TRUE(ReadDirectoryByPathSync(base::FilePath(
+      FILE_PATH_LITERAL("drive/root/Dir1"))));
+  EXPECT_EQ(1, fake_drive_service_->directory_load_count());
+}
+
+TEST_F(DriveFileSystemTest, GetEntryInfoExistingWhileRefreshing) {
+  // Enter the "refreshing" state.
+  ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
+  file_system_->CheckForUpdates();
+
+  // If an entry is already found in local metadata, no directory fetch happens.
+  EXPECT_TRUE(GetEntryInfoByPathSync(base::FilePath(
+      FILE_PATH_LITERAL("drive/root/Dir1/File2"))));
+  EXPECT_EQ(0, fake_drive_service_->directory_load_count());
+}
+
+TEST_F(DriveFileSystemTest, GetEntryInfoNonExistentWhileRefreshing) {
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(_))
+      .Times(AtLeast(1));
+
+  // Enter the "refreshing" state so the fast fetch will be performed.
+  ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
+  file_system_->CheckForUpdates();
+
+  // If an entry is not found, parent directory's resource list is fetched.
+  EXPECT_FALSE(GetEntryInfoByPathSync(base::FilePath(
+      FILE_PATH_LITERAL("drive/root/Dir1/NonExistentFile"))));
+  EXPECT_EQ(1, fake_drive_service_->directory_load_count());
 }
 
 TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
@@ -2174,7 +2223,7 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
 // TODO(satorux): Testing if WebAppsRegistry is loaded here is awkward. We
 // should move this to change_list_loader_unittest.cc. crbug.com/161703
 TEST_F(DriveFileSystemTest, WebAppsRegistryIsLoaded) {
-  ASSERT_TRUE(SaveTestFileSystem(USE_SERVER_TIMESTAMP));
+  ASSERT_TRUE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
 
   // No apps should be found as the webapps registry is empty.
   ScopedVector<DriveWebAppInfo> apps;
