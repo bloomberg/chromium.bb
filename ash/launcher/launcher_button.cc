@@ -300,7 +300,7 @@ void LauncherButton::AddState(State state) {
           base::TimeDelta::FromMilliseconds(kHopUpMS));
     }
     state_ |= state;
-    UpdateState();
+    Layout();
     if (state & STATE_ATTENTION)
       bar_->ShowAttention(true);
   }
@@ -316,7 +316,7 @@ void LauncherButton::ClearState(State state) {
           base::TimeDelta::FromMilliseconds(kHopDownMS));
     }
     state_ &= ~state;
-    UpdateState();
+    Layout();
     if (state & STATE_ATTENTION)
       bar_->ShowAttention(false);
   }
