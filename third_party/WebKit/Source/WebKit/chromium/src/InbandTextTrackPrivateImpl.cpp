@@ -40,6 +40,7 @@ InbandTextTrackPrivateImpl::InbandTextTrackPrivateImpl(WebInbandTextTrack* track
     : m_track(adoptPtr(track))
 {
     ASSERT(track);
+    track->setClient(this);
 }
 
 InbandTextTrackPrivateImpl::~InbandTextTrackPrivateImpl()
