@@ -37,7 +37,7 @@ namespace base {
 class BASE_EXPORT FileEnumerator {
  public:
   // Note: copy & assign supported.
-  class FileInfo {
+  class BASE_EXPORT FileInfo {
    public:
     FileInfo();
     ~FileInfo();
