@@ -139,14 +139,14 @@ public:
 
     // Functions for getting/setting the size webkit should use to layout the contents. By default this is the same as the visible
     // content size. Explicitly setting a layout size value will cause webkit to layout the contents using this size instead.
-    IntSize layoutSize() const;
-    int layoutWidth() const { return layoutSize().width(); }
-    int layoutHeight() const { return layoutSize().height(); }
+    IntSize layoutSize(VisibleContentRectIncludesScrollbars = ExcludeScrollbars) const;
+    int layoutWidth(VisibleContentRectIncludesScrollbars scrollbarInclusion = ExcludeScrollbars) const { return layoutSize(scrollbarInclusion).width(); }
+    int layoutHeight(VisibleContentRectIncludesScrollbars scrollbarInclusion = ExcludeScrollbars) const { return layoutSize(scrollbarInclusion).height(); }
     IntSize fixedLayoutSize() const;
     void setFixedLayoutSize(const IntSize&);
     bool useFixedLayout() const;
     void setUseFixedLayout(bool enable);
-    
+
     // Functions for getting/setting the size of the document contained inside the ScrollView (as an IntSize or as individual width and height
     // values).
     virtual IntSize contentsSize() const OVERRIDE; // Always at least as big as the visibleWidth()/visibleHeight().

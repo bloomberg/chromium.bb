@@ -245,11 +245,16 @@ static bool monochromeMediaFeatureEval(CSSValue* value, RenderStyle* style, Fram
     return colorMediaFeatureEval(value, style, frame, op);
 }
 
+static IntSize viewportSize(FrameView* view)
+{
+    return view->layoutSize(ScrollableArea::IncludeScrollbars);
+}
+
 static bool orientationMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix)
 {
     FrameView* view = frame->view();
-    int width = view->layoutWidth();
-    int height = view->layoutHeight();
+    int width = viewportSize(view).width();
+    int height = viewportSize(view).height();
     if (value && value->isPrimitiveValue()) {
         const int id = static_cast<CSSPrimitiveValue*>(value)->getIdent();
         if (width > height) // Square viewport is portrait.
@@ -265,7 +270,7 @@ static bool aspect_ratioMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* f
 {
     if (value) {
         FrameView* view = frame->view();
-        return compareAspectRatioValue(value, view->layoutWidth(), view->layoutHeight(), op);
+        return compareAspectRatioValue(value, viewportSize(view).width(), viewportSize(view).height(), op);
     }
 
     // ({,min-,max-}aspect-ratio)
@@ -475,8 +480,8 @@ static bool heightMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* f
 {
     FrameView* view = frame->view();
 
+    int height = viewportSize(view).height();
     if (value) {
-        int height = view->layoutHeight();
         if (RenderView* renderView = frame->document()->renderView())
             height = adjustForAbsoluteZoom(height, renderView);
         RenderStyle* rootStyle = frame->document()->documentElement()->renderStyle();
@@ -484,15 +489,15 @@ static bool heightMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* f
         return computeLength(value, !frame->document()->inQuirksMode(), style, rootStyle, length) && compareValue(height, length, op);
     }
 
-    return view->layoutHeight() != 0;
+    return height;
 }
 
 static bool widthMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame, MediaFeaturePrefix op)
 {
     FrameView* view = frame->view();
 
+    int width = viewportSize(view).width();
     if (value) {
-        int width = view->layoutWidth();
         if (RenderView* renderView = frame->document()->renderView())
             width = adjustForAbsoluteZoom(width, renderView);
         RenderStyle* rootStyle = frame->document()->documentElement()->renderStyle();
@@ -500,7 +505,7 @@ static bool widthMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* fr
         return computeLength(value, !frame->document()->inQuirksMode(), style, rootStyle, length) && compareValue(width, length, op);
     }
 
-    return view->layoutWidth() != 0;
+    return width;
 }
 
 // rest of the functions are trampolines which set the prefix according to the media feature expression used
