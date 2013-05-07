@@ -878,11 +878,49 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Instant.InstantControllerEvent" enum="InstantControllerEvent">
+  <summary>
+    Records various events of interest in the InstantController. E.g. When URLs
+    are blacklisted.
+  </summary>
+</histogram>
+
+<histogram name="Instant.SessionsStorageNamespace"
+    enum="InstantSessionStorageNamespace">
+  <summary>
+    How often an Instant preview is committed onto a different tab than it was
+    created from.
+  </summary>
+</histogram>
+
+<histogram name="Instant.TimeToFirstShow" units="milliseconds">
+  <summary>
+    The time between the first Omnibox interaction and when the Instant preview
+    shows. If the instant preview was already showing when the user interacted
+    with the omnibox, this histogram is not recorded.
+  </summary>
+</histogram>
+
 <histogram name="InstantExtended.InstantNavigation"
     enum="InstantExtended_InstantNavigation">
   <summary>
     Records a histogram for instant extended (Local NTP and Online NTP) and
     non-extended navigations.
+  </summary>
+</histogram>
+
+<histogram name="InstantExtended.OptInState" enum="InstantExtended_OptInState">
+  <summary>
+    Records, on startup, whether the user has chosen to opt-in to or opt-out of
+    InstantExtended via chrome://flags.
+  </summary>
+</histogram>
+
+<histogram name="InstantExtended.PrefValue" enum="BooleanEnabled">
+  <summary>
+    Records, on startup, the value of the &quot;Allow your search engine to
+    provide Instant result&quot; preference setting for the first profile
+    loaded.
   </summary>
 </histogram>
 
@@ -9331,12 +9369,32 @@ other types of suffix sets.
   <int value="4" label="Open()"/>
 </enum>
 
+<enum name="InstantControllerEvent" type="int">
+  <int value="0" label="URL_ADDED_TO_BLACKLIST"/>
+  <int value="1" label="URL_REMOVED_FROM_BLACKLIST"/>
+  <int value="2" label="URL_BLOCKED_BY_BLACKLIST"/>
+</enum>
+
 <enum name="InstantExtended_InstantNavigation" type="int">
   <int value="0" label="Local click"/>
   <int value="1" label="Local submit"/>
   <int value="2" label="Online click"/>
   <int value="3" label="Online submit"/>
   <int value="4" label="Non-extended navigation"/>
+</enum>
+
+<enum name="InstantExtended_OptInState" type="int">
+  <int value="0" label="Default"/>
+  <int value="1" label="Opted in"/>
+  <int value="2" label="Opted out"/>
+  <int value="3" label="Opted in local"/>
+  <int value="4" label="Opted out local"/>
+  <int value="5" label="Opted out both"/>
+</enum>
+
+<enum name="InstantSessionStorageNamespace" type="int">
+  <int value="0" label="different"/>
+  <int value="1" label="identical"/>
 </enum>
 
 <enum name="IntelMaxMicroArchitecture" type="int">
@@ -11183,6 +11241,12 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity.Pipeline.CanarySuccess"/>
   <affected-histogram name="NetConnectivity.Pipeline.Depth"/>
   <affected-histogram name="NetConnectivity.Pipeline.Success"/>
+</fieldtrial>
+
+<fieldtrial name="Instant">
+  <group name="Extended" label="Suggestions + Results"/>
+  <group name="Instant" label="Results"/>
+  <affected-histogram name="Instant.SessionsStorageNamespace"/>
 </fieldtrial>
 
 <fieldtrial name="LateBindingExperiment">
