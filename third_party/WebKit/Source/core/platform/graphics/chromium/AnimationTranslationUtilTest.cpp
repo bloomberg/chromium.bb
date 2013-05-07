@@ -26,7 +26,6 @@
 
 #include "core/platform/graphics/chromium/AnimationTranslationUtil.h"
 
-#include <gtest/gtest.h>
 #include "core/platform/animation/CSSAnimationData.h"
 #include "core/platform/graphics/GraphicsLayer.h" // For KeyframeValueList
 #include "core/platform/graphics/IntSize.h"
@@ -35,8 +34,9 @@
 #include "core/platform/graphics/transforms/ScaleTransformOperation.h"
 #include "core/platform/graphics/transforms/TransformOperations.h"
 #include "core/platform/graphics/transforms/TranslateTransformOperation.h"
+#include "wtf/RefPtr.h"
+#include <gtest/gtest.h>
 #include <public/WebAnimation.h>
-#include <wtf/RefPtr.h>
 
 using namespace WebCore;
 using namespace WebKit;

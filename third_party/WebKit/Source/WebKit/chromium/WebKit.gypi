@@ -31,16 +31,12 @@
 {
     'variables': {
         'webkit_unittest_files': [
-            'tests/AnimationTranslationUtilTest.cpp',
             'tests/ArenaTestHelpers.h',
             'tests/AssociatedURLLoaderTest.cpp',
             'tests/Canvas2DLayerBridgeTest.cpp',
             'tests/Canvas2DLayerManagerTest.cpp',
             'tests/ChromeClientImplTest.cpp',
-            'tests/ClipboardChromiumTest.cpp',
             'tests/CompositorFakeWebGraphicsContext3D.h',
-            'tests/DateTimeFormatTest.cpp',
-            'tests/DecimalTest.cpp',
             'tests/DeferredImageDecoderTest.cpp',
             'tests/DragImageTest.cpp',
             'tests/DrawingBufferTest.cpp',

@@ -27,9 +27,9 @@
 #include "core/platform/text/DateTimeFormat.h"
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
 #include <gtest/gtest.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
 
 using namespace WebCore;
 

@@ -31,16 +31,16 @@
 #include "config.h"
 #include "core/platform/Decimal.h"
 
+#include "wtf/MathExtras.h"
+#include "wtf/text/CString.h"
 #include <gtest/gtest.h>
-#include <wtf/MathExtras.h>
-#include <wtf/text/CString.h>
 
 namespace WebCore {
 
 std::ostream& operator<<(std::ostream& os, const Decimal& decimal)
 {
     Decimal::EncodedData data = decimal.value();
-    return os 
+    return os
         << "encode(" << String::number(data.coefficient()).ascii().data()
         << ", " << String::number(data.exponent()).ascii().data()
         << ", " << (data.sign() == Decimal::Negative ? "Negative" : "Positive")
