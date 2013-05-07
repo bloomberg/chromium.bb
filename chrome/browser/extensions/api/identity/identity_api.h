@@ -153,12 +153,8 @@ class IdentityLaunchWebAuthFlowFunction : public AsyncExtensionFunction,
 
   IdentityLaunchWebAuthFlowFunction();
 
-  // URL checking helpers. Public for testing.
-  // Checks to see if the current URL ends the flow.
-  bool IsFinalRedirectURL(const GURL& url) const;
-
-  // Unit tests may override extension_id.
-  void InitFinalRedirectURLPrefixesForTest(const std::string& extension_id);
+  // Tests may override extension_id.
+  void InitFinalRedirectURLPrefixForTest(const std::string& extension_id);
 
  private:
   virtual ~IdentityLaunchWebAuthFlowFunction();
@@ -168,11 +164,11 @@ class IdentityLaunchWebAuthFlowFunction : public AsyncExtensionFunction,
   virtual void OnAuthFlowFailure(WebAuthFlow::Failure failure) OVERRIDE;
   virtual void OnAuthFlowURLChange(const GURL& redirect_url) OVERRIDE;
 
-  // Helper to initialize final URLs vector.
-  void InitFinalRedirectURLPrefixes(const std::string& extension_id);
+  // Helper to initialize final URL prefix.
+  void InitFinalRedirectURLPrefix(const std::string& extension_id);
 
   scoped_ptr<WebAuthFlow> auth_flow_;
-  std::vector<GURL> final_prefixes_;
+  GURL final_url_prefix_;
 };
 
 class IdentityTokenCacheValue {

@@ -959,7 +959,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, NonInteractiveSuccess) {
       utils::CreateEmptyExtension());
   function->set_extension(empty_extension.get());
 
-  function->InitFinalRedirectURLPrefixesForTest("abcdefghij");
+  function->InitFinalRedirectURLPrefixForTest("abcdefghij");
   scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       function,
       "[{\"interactive\": false,"
@@ -980,7 +980,7 @@ IN_PROC_BROWSER_TEST_F(
       utils::CreateEmptyExtension());
   function->set_extension(empty_extension.get());
 
-  function->InitFinalRedirectURLPrefixesForTest("abcdefghij");
+  function->InitFinalRedirectURLPrefixForTest("abcdefghij");
   scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       function,
       "[{\"interactive\": true,"
@@ -1001,7 +1001,7 @@ IN_PROC_BROWSER_TEST_F(
       utils::CreateEmptyExtension());
   function->set_extension(empty_extension.get());
 
-  function->InitFinalRedirectURLPrefixesForTest("abcdefghij");
+  function->InitFinalRedirectURLPrefixForTest("abcdefghij");
   scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       function,
       "[{\"interactive\": true,"

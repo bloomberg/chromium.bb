@@ -391,7 +391,7 @@ bool IdentityLaunchWebAuthFlowFunction::RunImpl() {
 
   // Set up acceptable target URLs. (Does not include chrome-extension
   // scheme for this version of the API.)
-  InitFinalRedirectURLPrefixes(GetExtension()->id());
+  InitFinalRedirectURLPrefix(GetExtension()->id());
 
   gfx::Rect initial_bounds;
 
@@ -407,27 +407,17 @@ bool IdentityLaunchWebAuthFlowFunction::RunImpl() {
   return true;
 }
 
-bool IdentityLaunchWebAuthFlowFunction::IsFinalRedirectURL(
-    const GURL& url) const {
-  std::vector<GURL>::const_iterator iter;
-  for (iter = final_prefixes_.begin(); iter != final_prefixes_.end(); ++iter) {
-    if (url.GetWithEmptyPath() == *iter) {
-      return true;
-    }
+void IdentityLaunchWebAuthFlowFunction::InitFinalRedirectURLPrefixForTest(
+    const std::string& extension_id) {
+  InitFinalRedirectURLPrefix(extension_id);
+}
+
+void IdentityLaunchWebAuthFlowFunction::InitFinalRedirectURLPrefix(
+    const std::string& extension_id) {
+  if (final_url_prefix_.is_empty()) {
+    final_url_prefix_ = GURL(base::StringPrintf(
+        kChromiumDomainRedirectUrlPattern, extension_id.c_str()));
   }
-  return false;
-}
-
-void IdentityLaunchWebAuthFlowFunction::InitFinalRedirectURLPrefixesForTest(
-    const std::string& extension_id) {
-  final_prefixes_.clear();
-  InitFinalRedirectURLPrefixes(extension_id);
-}
-
-void IdentityLaunchWebAuthFlowFunction::InitFinalRedirectURLPrefixes(
-    const std::string& extension_id) {
-  final_prefixes_.push_back(GURL(base::StringPrintf(
-      kChromiumDomainRedirectUrlPattern, extension_id.c_str())));
 }
 
 void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure(
@@ -450,7 +440,7 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure(
 
 void IdentityLaunchWebAuthFlowFunction::OnAuthFlowURLChange(
     const GURL& redirect_url) {
-  if (IsFinalRedirectURL(redirect_url)) {
+  if (redirect_url.GetWithEmptyPath() == final_url_prefix_) {
     SetResult(Value::CreateStringValue(redirect_url.spec()));
     SendResponse(true);
     Release();  // Balanced in RunImpl.

@@ -730,8 +730,6 @@
         'browser/extensions/api/discovery/discovery_api_unittest.cc',
         'browser/extensions/api/extension_action/extension_browser_actions_api_unittest.cc',
         'browser/extensions/api/file_system/file_system_api_unittest.cc',
-        'browser/extensions/api/identity/experimental_identity_api_unittest.cc',
-        'browser/extensions/api/identity/identity_api_unittest.cc',
         'browser/extensions/api/identity/identity_mint_queue_unittest.cc',
         'browser/extensions/api/identity/web_auth_flow_unittest.cc',
         'browser/extensions/api/idle/idle_api_unittest.cc',

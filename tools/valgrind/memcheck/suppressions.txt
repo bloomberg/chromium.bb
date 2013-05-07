@@ -7117,18 +7117,6 @@
    fun:_ZN5drive4util*DriveFileReaderTest_*_Test8TestBodyEv
 }
 {
-   bug_238160
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN63ExperimentalIdentityLaunchWebAuthFlowTest_RedirectMatching_Test8TestBodyEv
-}
-{
-  bug_238160_b
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN51IdentityLaunchWebAuthFlowTest_RedirectMatching_Test8TestBodyEv
-}
-{
    bug_238170a
    Memcheck:Uninitialized
    fun:_ZN7WebCore20ElementRuleCollector20collectMatchingRulesERKNS_12MatchRequestERNS_13StyleResolver9RuleRangeE
