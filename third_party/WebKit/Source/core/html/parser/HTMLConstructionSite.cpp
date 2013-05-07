@@ -584,37 +584,37 @@ void HTMLConstructionSite::insertTextNode(const String& characters, WhitespaceMo
 void HTMLConstructionSite::reparent(HTMLElementStack::ElementRecord* newParent, HTMLElementStack::ElementRecord* child)
 {
     HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Reparent);
-    task.parent = newParent->element();
-    task.child = child->element();
+    task.parent = newParent->node();
+    task.child = child->node();
     m_taskQueue.append(task);
 }
 
 void HTMLConstructionSite::reparent(HTMLElementStack::ElementRecord* newParent, HTMLStackItem* child)
 {
     HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Reparent);
-    task.parent = newParent->element();
-    task.child = child->element();
+    task.parent = newParent->node();
+    task.child = child->node();
     m_taskQueue.append(task);
 }
 
 void HTMLConstructionSite::insertAlreadyParsedChild(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* child)
 {
     if (newParent->causesFosterParenting()) {
-        fosterParent(child->element());
+        fosterParent(child->node());
         return;
     }
 
     HTMLConstructionSiteTask task(HTMLConstructionSiteTask::InsertAlreadyParsedChild);
-    task.parent = newParent->element();
-    task.child = child->element();
+    task.parent = newParent->node();
+    task.child = child->node();
     m_taskQueue.append(task);
 }
 
 void HTMLConstructionSite::takeAllChildren(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* oldParent)
 {
     HTMLConstructionSiteTask task(HTMLConstructionSiteTask::TakeAllChildren);
-    task.parent = newParent->element();
-    task.child = oldParent->element();
+    task.parent = newParent->node();
+    task.child = oldParent->node();
     m_taskQueue.append(task);
 }
 
