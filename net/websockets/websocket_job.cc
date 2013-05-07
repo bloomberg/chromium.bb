@@ -474,10 +474,11 @@ void WebSocketJob::SaveCookiesAndNotifyHeadersComplete() {
 
 void WebSocketJob::NotifyHeadersComplete() {
   // Remove cookie headers, with malformed headers preserved.
-  // Actual handshake should be done in WebKit.
+  // Actual handshake should be done in Blink.
   handshake_response_->RemoveHeaders(
       kSetCookieHeaders, arraysize(kSetCookieHeaders));
   std::string handshake_response = handshake_response_->GetResponse();
+  handshake_response_.reset();
   std::vector<char> received_data(handshake_response.begin(),
                                   handshake_response.end());
   received_data.insert(received_data.end(),
@@ -508,24 +509,24 @@ void WebSocketJob::SaveNextCookie() {
     return;
   }
 
-  bool allow = true;
+  if (!socket_ || !delegate_ || state_ != CONNECTING)
+    return;
+
   CookieOptions options;
   GURL url = GetURLForCookies();
   std::string cookie = response_cookies_[response_cookies_save_index_];
-  if (delegate_ && !delegate_->CanSetCookie(socket_, url, cookie, &options))
-    allow = false;
+  response_cookies_save_index_++;
 
-  if (socket_ && delegate_ && state_ == CONNECTING) {
-    response_cookies_save_index_++;
-    if (allow && socket_->context()->cookie_store()) {
-      options.set_include_httponly();
-      socket_->context()->cookie_store()->SetCookieWithOptionsAsync(
-          url, cookie, options,
-          base::Bind(&WebSocketJob::SaveCookieCallback,
-                     weak_ptr_factory_.GetWeakPtr()));
-    } else {
-      SaveNextCookie();
-    }
+  // TODO(tyoshino): Use loop. See URLRequestHttpJob::SaveNextCookie().
+  if (delegate_->CanSetCookie(socket_, url, cookie, &options) &&
+      socket_->context()->cookie_store()) {
+    options.set_include_httponly();
+    socket_->context()->cookie_store()->SetCookieWithOptionsAsync(
+        url, cookie, options,
+        base::Bind(&WebSocketJob::SaveCookieCallback,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    SaveNextCookie();
   }
 }
 
