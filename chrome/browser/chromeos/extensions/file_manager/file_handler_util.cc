@@ -817,13 +817,18 @@ bool ExtensionTaskExecutor::ExecuteAndNotify(
   if (!FileBrowserHasAccessPermissionForFiles(file_urls))
     return false;
 
-  scoped_refptr<const Extension> handler = GetExtension();
-  if (!handler.get())
+  // Find the target extension.
+  scoped_refptr<const Extension> extension = GetExtension();
+  if (!extension.get())
     return false;
 
-  int handler_pid = ExtractProcessFromExtensionId(profile(), handler->id());
-  if (handler_pid <= 0) {
-    if (!extensions::BackgroundInfo::HasLazyBackgroundPage(handler))
+  // Forbid calling undeclared handlers.
+  if (!FindFileBrowserHandler(extension, action_id_))
+    return false;
+
+  int extension_pid = ExtractProcessFromExtensionId(profile(), extension->id());
+  if (extension_pid <= 0) {
+    if (!extensions::BackgroundInfo::HasLazyBackgroundPage(extension))
       return false;
   }
 
@@ -833,7 +838,7 @@ bool ExtensionTaskExecutor::ExecuteAndNotify(
   // send. The file access permissions will be granted to the extension in the
   // file system context for the files in |file_urls|.
   GURL site = extensions::ExtensionSystem::Get(profile())->extension_service()->
-      GetSiteForExtensionId(handler->id());
+      GetSiteForExtensionId(extension->id());
   scoped_refptr<fileapi::FileSystemContext> file_system_context_handler =
       BrowserContext::GetStoragePartitionForSite(profile(), site)->
       GetFileSystemContext();
@@ -844,9 +849,9 @@ bool ExtensionTaskExecutor::ExecuteAndNotify(
           &ExtensionTaskExecutor::RequestFileEntryOnFileThread,
           this,
           file_system_context_handler,
-          Extension::GetBaseURLFromExtensionId(handler->id()),
-          handler,
-          handler_pid,
+          Extension::GetBaseURLFromExtensionId(extension->id()),
+          extension,
+          extension_pid,
           file_urls));
   return true;
 }

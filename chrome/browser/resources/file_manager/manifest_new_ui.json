@@ -32,6 +32,35 @@
     "https://drive.google.com/"
   ],
   "file_browser_handlers": [
+    // Automatically opens a volume and later close Files.app when unmounted.
+    // TODO(mtomasz): Implement a better filtering than using file_filters.
+    {
+      "id": "auto-open",
+      "default_title": "__MSG_OPEN_ACTION__",
+      "default_icon": "images/filetype_generic.png",
+      "file_filters": [
+        "filesystem:*"
+      ]
+    },
+    // Selects the passed file after launching Files.app.
+    {
+      "id": "select",
+      "default_title": "__MSG_OPEN_ACTION__",
+      "default_icon": "images/filetype_generic.png",
+      "file_filters": [
+        "filesystem:*"
+      ]
+    },
+    // Opens the passed directory after launching Files.app.
+    // TODO(mtomasz): Implement a directories filtering instead of files.
+    {
+      "id": "open",
+      "default_title": "__MSG_OPEN_ACTION__",
+      "default_icon": "images/filetype_generic.png",
+      "file_filters": [
+        "filesystem:*"
+      ]
+    },
     {
       "id": "play",
       "default_title": "__MSG_PLAY_MEDIA__",
