@@ -48,6 +48,8 @@ PassRefPtr<GestureEvent> GestureEvent::create(PassRefPtr<AbstractView> view, con
         eventType = eventNames().gesturescrollupdateEvent; break;
     case PlatformEvent::GestureTap:
         eventType = eventNames().gesturetapEvent; break;
+    case PlatformEvent::GestureTapUnconfirmed:
+        eventType = eventNames().gesturetapunconfirmedEvent; break;
     case PlatformEvent::GestureTapDown:
         eventType = eventNames().gesturetapdownEvent; break;
     case PlatformEvent::GestureTwoFingerTap:

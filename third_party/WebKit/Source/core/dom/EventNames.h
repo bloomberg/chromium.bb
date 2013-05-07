@@ -73,6 +73,7 @@ namespace WebCore {
     macro(focusin) \
     macro(focusout) \
     macro(gesturetap) \
+    macro(gesturetapunconfirmed) \
     macro(gesturetapdown) \
     macro(gesturescrollstart) \
     macro(gesturescrollend) \
@@ -290,6 +291,7 @@ namespace WebCore {
         inline bool isGestureEventType(const AtomicString& eventType) const
         {
             return eventType == gesturetapEvent
+                || eventType == gesturetapunconfirmedEvent
                 || eventType == gesturetapdownEvent
                 || eventType == gesturescrollstartEvent
                 || eventType == gesturescrollendEvent
