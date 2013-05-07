@@ -214,11 +214,15 @@ void ToastContentsView::StartFadeIn() {
 
 void ToastContentsView::OnBoundsAnimationEndedOrCancelled(
     const ui::Animation* animation) {
-  if (collection_)
-    collection_->DecrementDeferCounter();
-
   if (is_closing_ && closing_animation_ == animation && GetWidget())
     GetWidget()->Close();
+
+  // This cannot be called before GetWidget()->Close(). Decrementing defer count
+  // will invoke update, which may invoke another close animation with
+  // incrementing defer counter. Close() after such process will cause a
+  // mismatch between increment/decrement. See crbug.com/238477
+  if (collection_)
+    collection_->DecrementDeferCounter();
 }
 
 // ui::AnimationDelegate
