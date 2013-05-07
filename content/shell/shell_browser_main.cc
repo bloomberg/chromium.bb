@@ -17,10 +17,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/shell/common/shell_switches.h"
+#include "content/shell/common/webkit_test_helpers.h"
 #include "content/shell/shell.h"
-#include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_controller.h"
-#include "content/shell/webkit_test_helpers.h"
 #include "net/base/net_util.h"
 #include "webkit/support/webkit_support.h"
 

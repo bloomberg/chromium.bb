@@ -11,12 +11,12 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/layouttest_support.h"
+#include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
 #include "content/shell/shell_browser_main.h"
 #include "content/shell/shell_content_browser_client.h"
-#include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_platform_support.h"
-#include "content/public/test/layouttest_support.h"
 #include "net/cookies/cookie_monster.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -30,7 +30,7 @@
 #include "content/public/common/content_ipc_logging.h"
 #define IPC_LOG_TABLE_ADD_ENTRY(msg_id, logger) \
     content::RegisterIPCLogger(msg_id, logger)
-#include "content/shell/shell_messages.h"
+#include "content/shell/common/shell_messages.h"
 #endif
 
 #if defined(OS_ANDROID)

@@ -4,7 +4,7 @@
 
 #include "content/shell/notify_done_forwarder.h"
 
-#include "content/shell/shell_messages.h"
+#include "content/shell/common/shell_messages.h"
 #include "content/shell/webkit_test_controller.h"
 
 namespace content {

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/shell_content_client.h"
+#include "content/shell/common/shell_content_client.h"
 
 #include "base/command_line.h"
 #include "base/strings/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
-#include "content/shell/shell_switches.h"
+#include "content/shell/common/shell_switches.h"
 #include "grit/shell_resources.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"

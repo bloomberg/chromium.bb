@@ -9,8 +9,8 @@
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/shell/common/shell_switches.h"
 #include "content/shell/shell_javascript_dialog.h"
-#include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_controller.h"
 #include "net/base/net_util.h"
 

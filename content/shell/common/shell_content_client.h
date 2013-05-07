@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_SHELL_CONTENT_CLIENT_H_
-#define CONTENT_SHELL_SHELL_CONTENT_CLIENT_H_
+#ifndef CONTENT_SHELL_COMMON_SHELL_CONTENT_CLIENT_H_
+#define CONTENT_SHELL_COMMON_SHELL_CONTENT_CLIENT_H_
 
 #include <string>
 #include <vector>
@@ -29,4 +29,4 @@ class ShellContentClient : public ContentClient {
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_SHELL_CONTENT_CLIENT_H_
+#endif  // CONTENT_SHELL_COMMON_SHELL_CONTENT_CLIENT_H_

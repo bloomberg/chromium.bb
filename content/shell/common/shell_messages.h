@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "content/public/common/common_param_traits.h"
-#include "content/shell/shell_test_configuration.h"
+#include "content/shell/common/shell_test_configuration.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/skia/include/core/SkBitmap.h"

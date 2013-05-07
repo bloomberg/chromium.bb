@@ -15,8 +15,8 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "content/shell/common/shell_switches.h"
 #include "content/shell/shell_download_manager_delegate.h"
-#include "content/shell/shell_switches.h"
 #include "content/shell/shell_url_request_context_getter.h"
 
 #if defined(OS_WIN)

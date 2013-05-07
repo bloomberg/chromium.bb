@@ -4,8 +4,8 @@
 
 // Defines all the "content_shell" command-line switches.
 
-#ifndef CONTENT_SHELL_SHELL_SWITCHES_H_
-#define CONTENT_SHELL_SHELL_SWITCHES_H_
+#ifndef CONTENT_SHELL_COMMON_SHELL_SWITCHES_H_
+#define CONTENT_SHELL_COMMON_SHELL_SWITCHES_H_
 
 namespace switches {
 
@@ -22,4 +22,4 @@ extern const char kOutputLayoutTestDifferences[];
 
 }  // namespace switches
 
-#endif  // CONTENT_SHELL_SHELL_SWITCHES_H_
+#endif  // CONTENT_SHELL_COMMON_SHELL_SWITCHES_H_

@@ -5,8 +5,8 @@
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 
 #include "base/command_line.h"
+#include "content/shell/common/shell_switches.h"
 #include "content/shell/shell_login_dialog.h"
-#include "content/shell/shell_switches.h"
 
 namespace content {
 
