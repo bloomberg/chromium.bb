@@ -191,15 +191,25 @@ const int numNodeListInvalidationTypes = InvalidateOnAnyAttrChange + 1;
 
 typedef HashCountedSet<Node*> TouchEventTargetSet;
 
+enum DocumentClass {
+    DefaultDocumentClass = 0,
+    HTMLDocumentClass = 1,
+    XHTMLDocumentClass = 1 << 1,
+    ImageDocumentClass = 1 << 2,
+    PluginDocumentClass = 1 << 3,
+    MediaDocumentClass = 1 << 4,
+    SVGDocumentClass = 1 << 5,
+};
+
 class Document : public ContainerNode, public TreeScope, public ScriptExecutionContext {
 public:
     static PassRefPtr<Document> create(Frame* frame, const KURL& url)
     {
-        return adoptRef(new Document(frame, url, false, false));
+        return adoptRef(new Document(frame, url));
     }
     static PassRefPtr<Document> createXHTML(Frame* frame, const KURL& url)
     {
-        return adoptRef(new Document(frame, url, true, false));
+        return adoptRef(new Document(frame, url, XHTMLDocumentClass));
     }
     virtual ~Document();
 
@@ -391,19 +401,19 @@ public:
     PassRefPtr<HTMLCollection> windowNamedItems(const AtomicString& name);
     PassRefPtr<HTMLCollection> documentNamedItems(const AtomicString& name);
 
-    // Other methods (not part of DOM)
-    bool isHTMLDocument() const { return m_isHTML; }
-    bool isXHTMLDocument() const { return m_isXHTML; }
-    virtual bool isImageDocument() const { return false; }
+    bool isHTMLDocument() const { return m_documentClass & HTMLDocumentClass; }
+    bool isXHTMLDocument() const { return m_documentClass & XHTMLDocumentClass; }
+    bool isImageDocument() const { return m_documentClass & ImageDocumentClass; }
+    bool isSVGDocument() const { return m_documentClass & SVGDocumentClass; }
+    bool isPluginDocument() const { return m_documentClass & PluginDocumentClass; }
+    bool isMediaDocument() const { return m_documentClass & MediaDocumentClass; }
+
 #if ENABLE(SVG)
-    virtual bool isSVGDocument() const { return false; }
     bool hasSVGRootNode() const;
 #else
-    static bool isSVGDocument() { return false; }
     static bool hasSVGRootNode() { return false; }
 #endif
-    virtual bool isPluginDocument() const { return false; }
-    virtual bool isMediaDocument() const { return false; }
+
     virtual bool isFrameSet() const { return false; }
 
     bool isSrcdocDocument() const { return m_isSrcdocDocument; }
@@ -1108,7 +1118,7 @@ public:
     PassRefPtr<FontLoader> fontloader();
 
 protected:
-    Document(Frame*, const KURL&, bool isXHTML, bool isHTML);
+    Document(Frame*, const KURL&, unsigned documentClass = DefaultDocumentClass);
 
     virtual void didUpdateSecurityOrigin() OVERRIDE;
 
@@ -1355,8 +1365,7 @@ private:
 
     bool m_useSecureKeyboardEntryWhenActive;
 
-    bool m_isXHTML;
-    bool m_isHTML;
+    unsigned m_documentClass;
 
     bool m_isViewSource;
     bool m_sawElementsInKnownNamespaces;
