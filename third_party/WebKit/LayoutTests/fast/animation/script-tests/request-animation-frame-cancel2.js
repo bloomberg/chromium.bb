@@ -14,16 +14,13 @@ secondCallbackId = window.requestAnimationFrame(function() {
     callbackFired = true;
 }, e);
 
-setTimeout(function() {
+requestAnimationFrame(function() {
     shouldBeFalse("callbackFired");
     shouldBeTrue("cancelFired");
-}, 100);
-
-if (window.testRunner)
-    testRunner.waitUntilDone();
-
-setTimeout(function() {
     isSuccessfullyParsed();
     if (window.testRunner)
         testRunner.notifyDone();
-}, 200);
+});
+
+if (window.testRunner)
+    testRunner.waitUntilDone();

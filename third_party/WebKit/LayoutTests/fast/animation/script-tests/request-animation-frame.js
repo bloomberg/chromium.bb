@@ -4,17 +4,11 @@ var e = document.getElementById("e");
 var callbackInvoked = false;
 window.requestAnimationFrame(function() {
     callbackInvoked = true;
-}, e);
-
-setTimeout(function() {
     shouldBeTrue("callbackInvoked");
-}, 100);
-
-if (window.testRunner)
-    testRunner.waitUntilDone();
-
-setTimeout(function() {
     isSuccessfullyParsed();
     if (window.testRunner)
         testRunner.notifyDone();
-}, 200);
+}, e);
+
+if (window.testRunner)
+    testRunner.waitUntilDone();

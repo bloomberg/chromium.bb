@@ -23,12 +23,9 @@ window.requestAnimationFrame(function(timestamp) {
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-setTimeout(function() {
+requestAnimationFrame(function() {
     shouldBeDefined("firstTimestamp");
-}, 100);
-
-setTimeout(function() {
     isSuccessfullyParsed();
     if (window.testRunner)
         testRunner.notifyDone();
-}, 200);
+});

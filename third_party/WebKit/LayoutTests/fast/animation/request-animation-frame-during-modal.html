@@ -25,16 +25,16 @@ onload = function()
     if (window.testRunner) {;
         testRunner.display();
     }
+
+    window.requestAnimationFrame(function() {
+        isSuccessfullyParsed();
+        if (window.testRunner)
+            testRunner.notifyDone();
+    });
 }
 
 if (window.testRunner)
     testRunner.waitUntilDone();
-
-setTimeout(function() {
-    isSuccessfullyParsed();
-    if (window.testRunner)
-        testRunner.notifyDone();
-}, 200);
 
 </script>
 </body>

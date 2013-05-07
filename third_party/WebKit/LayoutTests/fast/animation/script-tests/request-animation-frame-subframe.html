@@ -9,13 +9,13 @@
         parent.callbackInvoked = true;
     });
 
-    setTimeout(function() {
+    window.requestAnimationFrame(function() {
         parent.doCheckResult();
-    }, 100);
+    });
 
-    setTimeout(function() {
+    window.requestAnimationFrame(function() {
         parent.doTestDone();
-    }, 200);    
+    });
 </script>
 </body>
 </html>

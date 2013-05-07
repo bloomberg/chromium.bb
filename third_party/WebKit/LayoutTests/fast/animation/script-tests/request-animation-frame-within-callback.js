@@ -9,6 +9,11 @@ window.requestAnimationFrame(function() {
     window.requestAnimationFrame(function() {
         shouldBeFalse("sameFrame");
     }, e);
+    requestAnimationFrame(function() {
+        isSuccessfullyParsed();
+        if (window.testRunner)
+            testRunner.notifyDone();
+    });
 }, e);
 window.requestAnimationFrame(function() {
     sameFrame = false;
@@ -17,8 +22,3 @@ window.requestAnimationFrame(function() {
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-setTimeout(function() {
-    isSuccessfullyParsed();
-    if (window.testRunner)
-        testRunner.notifyDone();
-}, 200);
