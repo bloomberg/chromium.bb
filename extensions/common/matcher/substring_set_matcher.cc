@@ -4,7 +4,6 @@
 
 #include "extensions/common/matcher/substring_set_matcher.h"
 
-#include <algorithm>
 #include <queue>
 
 #include "base/logging.h"
@@ -12,51 +11,12 @@
 
 namespace extensions {
 
-namespace {
-
-// Compare StringPattern instances based on their string patterns.
-bool ComparePatterns(const StringPattern* a, const StringPattern* b) {
-  return a->pattern() <= b->pattern();
-}
-
-// Given the set of patterns, compute how many nodes will the corresponding
-// Aho-Corasick tree have. Note that |patterns| need to be sorted.
-uint32 TreeSize(const std::vector<const StringPattern*>& patterns) {
-  uint32 result = 1u;  // 1 for the root node.
-  if (patterns.empty())
-    return result;
-
-  std::vector<const StringPattern*>::const_iterator last = patterns.begin();
-  std::vector<const StringPattern*>::const_iterator current = last + 1;
-  // For the first pattern, each letter is a label of an edge to a new node.
-  result += (*last)->pattern().size();
-
-  // For the subsequent patterns, only count the edges which were not counted
-  // yet. For this it suffices to test against the previous pattern, because the
-  // patterns are sorted.
-  for (; current != patterns.end(); ++last, ++current) {
-    const std::string& last_pattern = (*last)->pattern();
-    const std::string& current_pattern = (*current)->pattern();
-    const uint32 prefix_bound =
-        std::min(last_pattern.size(), current_pattern.size());
-
-    uint32 common_prefix = 0;
-    while (common_prefix < prefix_bound &&
-           last_pattern[common_prefix] == current_pattern[common_prefix])
-      ++common_prefix;
-    result += current_pattern.size() - common_prefix;
-  }
-  return result;
-}
-
-}  // namespace
-
 //
 // SubstringSetMatcher
 //
 
 SubstringSetMatcher::SubstringSetMatcher() {
-  RebuildAhoCorasickTree(SubstringPatternVector());
+  RebuildAhoCorasickTree();
 }
 
 SubstringSetMatcher::~SubstringSetMatcher() {}
@@ -89,44 +49,27 @@ void SubstringSetMatcher::RegisterAndUnregisterPatterns(
     patterns_.erase((*i)->id());
   }
 
-  // Now we compute the total number of tree nodes needed.
-  SubstringPatternVector sorted_patterns;
-  sorted_patterns.resize(patterns_.size());
-
-  size_t next = 0;
-  for (SubstringPatternMap::const_iterator i = patterns_.begin();
-       i != patterns_.end();
-       ++i, ++next) {
-    sorted_patterns[next] = i->second;
-  }
-
-  std::sort(sorted_patterns.begin(), sorted_patterns.end(), ComparePatterns);
-  tree_.reserve(TreeSize(sorted_patterns));
-
-  RebuildAhoCorasickTree(sorted_patterns);
+  RebuildAhoCorasickTree();
 }
 
 bool SubstringSetMatcher::Match(const std::string& text,
                                 std::set<StringPattern::ID>* matches) const {
-  const size_t old_number_of_matches = matches->size();
+  size_t old_number_of_matches = matches->size();
 
   // Handle patterns matching the empty string.
   matches->insert(tree_[0].matches().begin(), tree_[0].matches().end());
 
-  uint32 current_node = 0;
-  for (std::string::const_iterator i = text.begin(); i != text.end(); ++i) {
-    uint32 edge_from_current = tree_[current_node].GetEdge(*i);
-    while (edge_from_current == AhoCorasickNode::kNoSuchEdge &&
-           current_node != 0) {
+  int current_node = 0;
+  size_t text_length = text.length();
+  for (size_t i = 0; i < text_length; ++i) {
+    while (!tree_[current_node].HasEdge(text[i]) && current_node != 0)
       current_node = tree_[current_node].failure();
-      edge_from_current = tree_[current_node].GetEdge(*i);
-    }
-    if (edge_from_current != AhoCorasickNode::kNoSuchEdge) {
-      current_node = edge_from_current;
+    if (tree_[current_node].HasEdge(text[i])) {
+      current_node = tree_[current_node].GetEdge(text[i]);
       matches->insert(tree_[current_node].matches().begin(),
                       tree_[current_node].matches().end());
     } else {
-      DCHECK_EQ(0u, current_node);
+      DCHECK_EQ(0, current_node);
     }
   }
 
@@ -138,8 +81,7 @@ bool SubstringSetMatcher::IsEmpty() const {
   return patterns_.empty() && tree_.size() == 1u;
 }
 
-void SubstringSetMatcher::RebuildAhoCorasickTree(
-    const SubstringPatternVector& sorted_patterns) {
+void SubstringSetMatcher::RebuildAhoCorasickTree() {
   tree_.clear();
 
   // Initialize root note of tree.
@@ -148,10 +90,9 @@ void SubstringSetMatcher::RebuildAhoCorasickTree(
   tree_.push_back(root);
 
   // Insert all patterns.
-  for (SubstringPatternVector::const_iterator i = sorted_patterns.begin();
-       i != sorted_patterns.end();
-       ++i) {
-    InsertPatternIntoAhoCorasickTree(*i);
+  for (SubstringPatternSet::const_iterator i = patterns_.begin();
+       i != patterns_.end(); ++i) {
+    InsertPatternIntoAhoCorasickTree(i->second);
   }
 
   CreateFailureEdges();
@@ -160,27 +101,26 @@ void SubstringSetMatcher::RebuildAhoCorasickTree(
 void SubstringSetMatcher::InsertPatternIntoAhoCorasickTree(
     const StringPattern* pattern) {
   const std::string& text = pattern->pattern();
-  const std::string::const_iterator text_end = text.end();
+  size_t text_length = text.length();
 
   // Iterators on the tree and the text.
-  uint32 current_node = 0;
-  std::string::const_iterator i = text.begin();
+  int current_node = 0;
+  size_t text_pos = 0;
 
   // Follow existing paths for as long as possible.
-  uint32 edge_from_current = tree_[current_node].GetEdge(*i);
-  while (i != text_end &&
-         edge_from_current != AhoCorasickNode::kNoSuchEdge) {
-    current_node = edge_from_current;
-    ++i;
-    edge_from_current = tree_[current_node].GetEdge(*i);
+  while (text_pos < text_length &&
+         tree_[current_node].HasEdge(text[text_pos])) {
+    current_node = tree_[current_node].GetEdge(text[text_pos]);
+    ++text_pos;
   }
 
   // Create new nodes if necessary.
-  while (i != text_end) {
-    tree_.push_back(AhoCorasickNode());
-    tree_[current_node].SetEdge(*i, tree_.size() - 1);
+  while (text_pos < text_length) {
+    AhoCorasickNode new_node;
+    tree_.push_back(new_node);
+    tree_[current_node].SetEdge(text[text_pos], tree_.size() - 1);
     current_node = tree_.size() - 1;
-    ++i;
+    ++text_pos;
   }
 
   // Register match.
@@ -190,14 +130,14 @@ void SubstringSetMatcher::InsertPatternIntoAhoCorasickTree(
 void SubstringSetMatcher::CreateFailureEdges() {
   typedef AhoCorasickNode::Edges Edges;
 
-  std::queue<uint32> queue;
+  std::queue<int> queue;
 
   AhoCorasickNode& root = tree_[0];
   root.set_failure(0);
-  const Edges& root_edges = root.edges();
+  const AhoCorasickNode::Edges& root_edges = root.edges();
   for (Edges::const_iterator e = root_edges.begin(); e != root_edges.end();
        ++e) {
-    const uint32& leads_to = e->second;
+    int leads_to = e->second;
     tree_[leads_to].set_failure(0);
     queue.push(leads_to);
   }
@@ -207,22 +147,16 @@ void SubstringSetMatcher::CreateFailureEdges() {
     queue.pop();
     for (Edges::const_iterator e = current_node.edges().begin();
          e != current_node.edges().end(); ++e) {
-      const char& edge_label = e->first;
-      const uint32& leads_to = e->second;
+      char edge_label = e->first;
+      int leads_to = e->second;
       queue.push(leads_to);
 
-      uint32 failure = current_node.failure();
-      uint32 edge_from_failure = tree_[failure].GetEdge(edge_label);
-      while (edge_from_failure == AhoCorasickNode::kNoSuchEdge &&
-             failure != 0) {
+      int failure = current_node.failure();
+      while (!tree_[failure].HasEdge(edge_label) && failure != 0)
         failure = tree_[failure].failure();
-        edge_from_failure = tree_[failure].GetEdge(edge_label);
-      }
 
-      const uint32 follow_in_case_of_failure =
-          edge_from_failure != AhoCorasickNode::kNoSuchEdge
-              ? edge_from_failure
-              : 0;
+      int follow_in_case_of_failure = tree_[failure].HasEdge(e->first) ?
+          tree_[failure].GetEdge(edge_label) : 0;
       tree_[leads_to].set_failure(follow_in_case_of_failure);
       tree_[leads_to].AddMatches(tree_[follow_in_case_of_failure].matches());
     }
@@ -230,7 +164,7 @@ void SubstringSetMatcher::CreateFailureEdges() {
 }
 
 SubstringSetMatcher::AhoCorasickNode::AhoCorasickNode()
-    : failure_(kNoSuchEdge) {}
+    : failure_(-1) {}
 
 SubstringSetMatcher::AhoCorasickNode::~AhoCorasickNode() {}
 
@@ -249,12 +183,16 @@ SubstringSetMatcher::AhoCorasickNode::operator=(
   return *this;
 }
 
-uint32 SubstringSetMatcher::AhoCorasickNode::GetEdge(char c) const {
-  Edges::const_iterator i = edges_.find(c);
-  return i == edges_.end() ? kNoSuchEdge : i->second;
+bool SubstringSetMatcher::AhoCorasickNode::HasEdge(char c) const {
+  return edges_.find(c) != edges_.end();
 }
 
-void SubstringSetMatcher::AhoCorasickNode::SetEdge(char c, uint32 node) {
+int SubstringSetMatcher::AhoCorasickNode::GetEdge(char c) const {
+  std::map<char, int>::const_iterator i = edges_.find(c);
+  return i == edges_.end() ? -1 : i->second;
+}
+
+void SubstringSetMatcher::AhoCorasickNode::SetEdge(char c, int node) {
   edges_[c] = node;
 }
 
