@@ -259,25 +259,16 @@ void ShillManagerClientStub::GetService(
 }
 
 void ShillManagerClientStub::VerifyDestination(
-    const std::string& certificate,
-    const std::string& public_key,
-    const std::string& nonce,
-    const std::string& signed_data,
-    const std::string& device_serial,
+    const VerificationProperties& properties,
     const BooleanCallback& callback,
     const ErrorCallback& error_callback) {
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, true));
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
 }
 
 void ShillManagerClientStub::VerifyAndEncryptCredentials(
-    const std::string& certificate,
-    const std::string& public_key,
-    const std::string& nonce,
-    const std::string& signed_data,
-    const std::string& device_serial,
+    const VerificationProperties& properties,
     const std::string& service_path,
     const StringCallback& callback,
     const ErrorCallback& error_callback) {
@@ -288,18 +279,14 @@ void ShillManagerClientStub::VerifyAndEncryptCredentials(
 }
 
 void ShillManagerClientStub::VerifyAndEncryptData(
-    const std::string& certificate,
-    const std::string& public_key,
-    const std::string& nonce,
-    const std::string& signed_data,
-    const std::string& device_serial,
+    const VerificationProperties& properties,
     const std::string& data,
     const StringCallback& callback,
     const ErrorCallback& error_callback) {
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, "encrypted_data"));
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   base::Bind(callback, "encrypted_data"));
 }
 
 void ShillManagerClientStub::ConnectToBestServices(

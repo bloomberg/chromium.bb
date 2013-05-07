@@ -175,70 +175,61 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                                   error_callback);
   }
 
-  virtual void VerifyDestination(const std::string& certificate,
-                                 const std::string& public_key,
-                                 const std::string& nonce,
-                                 const std::string& signed_data,
-                                 const std::string& device_serial,
+  virtual void VerifyDestination(const VerificationProperties& properties,
                                  const BooleanCallback& callback,
                                  const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  shill::kVerifyDestinationFunction);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(certificate);
-    writer.AppendString(public_key);
-    writer.AppendString(nonce);
-    writer.AppendString(signed_data);
-    writer.AppendString(device_serial);
-    helper_.CallBooleanMethodWithErrorCallback(&method_call,
-                                               callback,
-                                               error_callback);
+    writer.AppendString(properties.certificate);
+    writer.AppendString(properties.public_key);
+    writer.AppendString(properties.nonce);
+    writer.AppendString(properties.signed_data);
+    writer.AppendString(properties.device_serial);
+    writer.AppendString(properties.device_ssid);
+    writer.AppendString(properties.device_bssid);
+    helper_.CallBooleanMethodWithErrorCallback(
+        &method_call, callback, error_callback);
   }
 
   virtual void VerifyAndEncryptCredentials(
-      const std::string& certificate,
-      const std::string& public_key,
-      const std::string& nonce,
-      const std::string& signed_data,
-      const std::string& device_serial,
+      const VerificationProperties& properties,
       const std::string& service_path,
       const StringCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  shill::kVerifyAndEncryptCredentialsFunction);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(certificate);
-    writer.AppendString(public_key);
-    writer.AppendString(nonce);
-    writer.AppendString(signed_data);
-    writer.AppendString(device_serial);
+    writer.AppendString(properties.certificate);
+    writer.AppendString(properties.public_key);
+    writer.AppendString(properties.nonce);
+    writer.AppendString(properties.signed_data);
+    writer.AppendString(properties.device_serial);
+    writer.AppendString(properties.device_ssid);
+    writer.AppendString(properties.device_bssid);
     writer.AppendObjectPath(dbus::ObjectPath(service_path));
-    helper_.CallStringMethodWithErrorCallback(&method_call,
-                                              callback,
-                                              error_callback);
+    helper_.CallStringMethodWithErrorCallback(
+        &method_call, callback, error_callback);
   }
 
   virtual void VerifyAndEncryptData(
-      const std::string& certificate,
-      const std::string& public_key,
-      const std::string& nonce,
-      const std::string& signed_data,
-      const std::string& device_serial,
+      const VerificationProperties& properties,
       const std::string& data,
       const StringCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  shill::kVerifyAndEncryptDataFunction);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(certificate);
-    writer.AppendString(public_key);
-    writer.AppendString(nonce);
-    writer.AppendString(signed_data);
-    writer.AppendString(device_serial);
+    writer.AppendString(properties.certificate);
+    writer.AppendString(properties.public_key);
+    writer.AppendString(properties.nonce);
+    writer.AppendString(properties.signed_data);
+    writer.AppendString(properties.device_serial);
+    writer.AppendString(properties.device_ssid);
+    writer.AppendString(properties.device_bssid);
     writer.AppendString(data);
-    helper_.CallStringMethodWithErrorCallback(&method_call,
-                                              callback,
-                                              error_callback);
+    helper_.CallStringMethodWithErrorCallback(
+        &method_call, callback, error_callback);
   }
 
   virtual void ConnectToBestServices(
@@ -276,6 +267,13 @@ ShillManagerClient* ShillManagerClient::Create(
     return new ShillManagerClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new ShillManagerClientStub();
+}
+
+// ShillManagerClient::VerificationProperties implementation.
+ShillManagerClient::VerificationProperties::VerificationProperties() {
+}
+
+ShillManagerClient::VerificationProperties::~VerificationProperties() {
 }
 
 }  // namespace chromeos

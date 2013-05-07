@@ -433,21 +433,26 @@ TEST_F(ShillManagerClientTest, VerifyDestination) {
   arguments.push_back("nonce");
   arguments.push_back("signed_data");
   arguments.push_back("device_serial");
+  arguments.push_back("device_ssid");
+  arguments.push_back("device_bssid");
   PrepareForMethodCall(shill::kVerifyDestinationFunction,
                        base::Bind(&ExpectStringArguments, arguments),
                        response.get());
 
-
   // Call method.
   MockErrorCallback mock_error_callback;
-  client_->VerifyDestination(arguments[0],
-                             arguments[1],
-                             arguments[2],
-                             arguments[3],
-                             arguments[4],
-                             base::Bind(&ExpectBoolResultWithoutStatus,
-                                        expected),
-                             mock_error_callback.GetCallback());
+  ShillManagerClient::VerificationProperties properties;
+  properties.certificate = arguments[0];
+  properties.public_key = arguments[1];
+  properties.nonce = arguments[2];
+  properties.signed_data = arguments[3];
+  properties.device_serial = arguments[4];
+  properties.device_ssid = arguments[5];
+  properties.device_bssid = arguments[6];
+  client_->VerifyDestination(
+      properties,
+      base::Bind(&ExpectBoolResultWithoutStatus, expected),
+      mock_error_callback.GetCallback());
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
@@ -467,6 +472,8 @@ TEST_F(ShillManagerClientTest, VerifyAndEncryptCredentials) {
   arguments.push_back("nonce");
   arguments.push_back("signed_data");
   arguments.push_back("device_serial");
+  arguments.push_back("device_ssid");
+  arguments.push_back("device_bssid");
   std::string service_path = "/";
   dbus::ObjectPath service_path_obj(service_path);
   PrepareForMethodCall(shill::kVerifyAndEncryptCredentialsFunction,
@@ -475,18 +482,21 @@ TEST_F(ShillManagerClientTest, VerifyAndEncryptCredentials) {
                                   service_path_obj),
                        response.get());
 
-
   // Call method.
   MockErrorCallback mock_error_callback;
-  client_->VerifyAndEncryptCredentials(arguments[0],
-                                    arguments[1],
-                                    arguments[2],
-                                    arguments[3],
-                                    arguments[4],
-                                    service_path,
-                                    base::Bind(&ExpectStringResultWithoutStatus,
-                                               expected),
-                                    mock_error_callback.GetCallback());
+  ShillManagerClient::VerificationProperties properties;
+  properties.certificate = arguments[0];
+  properties.public_key = arguments[1];
+  properties.nonce = arguments[2];
+  properties.signed_data = arguments[3];
+  properties.device_serial = arguments[4];
+  properties.device_ssid = arguments[5];
+  properties.device_bssid = arguments[6];
+  client_->VerifyAndEncryptCredentials(
+      properties,
+      service_path,
+      base::Bind(&ExpectStringResultWithoutStatus, expected),
+      mock_error_callback.GetCallback());
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
@@ -506,23 +516,28 @@ TEST_F(ShillManagerClientTest, VerifyAndEncryptData) {
   arguments.push_back("nonce");
   arguments.push_back("signed_data");
   arguments.push_back("device_serial");
+  arguments.push_back("device_ssid");
+  arguments.push_back("device_bssid");
   arguments.push_back("data");
   PrepareForMethodCall(shill::kVerifyAndEncryptDataFunction,
                        base::Bind(&ExpectStringArguments, arguments),
                        response.get());
 
-
   // Call method.
   MockErrorCallback mock_error_callback;
-  client_->VerifyAndEncryptData(arguments[0],
-                             arguments[1],
-                             arguments[2],
-                             arguments[3],
-                             arguments[4],
-                             arguments[5],
-                             base::Bind(&ExpectStringResultWithoutStatus,
-                                        expected),
-                             mock_error_callback.GetCallback());
+  ShillManagerClient::VerificationProperties properties;
+  properties.certificate = arguments[0];
+  properties.public_key = arguments[1];
+  properties.nonce = arguments[2];
+  properties.signed_data = arguments[3];
+  properties.device_serial = arguments[4];
+  properties.device_ssid = arguments[5];
+  properties.device_bssid = arguments[6];
+  client_->VerifyAndEncryptData(
+      properties,
+      arguments[7],
+      base::Bind(&ExpectStringResultWithoutStatus, expected),
+      mock_error_callback.GetCallback());
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.

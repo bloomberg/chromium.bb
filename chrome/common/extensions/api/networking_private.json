@@ -43,6 +43,14 @@
           "deviceSerial": {
             "type": "string",
             "description": "A string containing the serial number of the device."
+          },
+          "deviceSsid": {
+            "type": "string",
+            "description": "A string containing the SSID of the device.  Only set if the device has already been setup once."
+          },
+          "deviceBssid": {
+            "type": "string",
+            "description": "A string containing the BSSID of the device.  Only set if the device has already been setup."
           }
         }
       }

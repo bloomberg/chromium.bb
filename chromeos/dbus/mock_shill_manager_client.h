@@ -49,30 +49,20 @@ class MockShillManagerClient : public ShillManagerClient {
   MOCK_METHOD3(GetService, void(const base::DictionaryValue& properties,
                                 const ObjectPathCallback& callback,
                                 const ErrorCallback& error_callback));
-  MOCK_METHOD7(VerifyDestination, void(const std::string& certificate,
-                                       const std::string& public_key,
-                                       const std::string& nonce,
-                                       const std::string& signed_data,
-                                       const std::string& device_serial,
-                                       const BooleanCallback& callback,
-                                       const ErrorCallback& error_callback));
-  MOCK_METHOD8(VerifyAndEncryptCredentials,
-               void(const std::string& certificate,
-                    const std::string& public_key,
-                    const std::string& nonce,
-                    const std::string& signed_data,
-                    const std::string& device_serial,
+  MOCK_METHOD3(VerifyDestination,
+               void(const VerificationProperties& properties,
+                    const BooleanCallback& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD4(VerifyAndEncryptCredentials,
+               void(const VerificationProperties& properties,
                     const std::string& service_path,
                     const StringCallback& callback,
                     const ErrorCallback& error_callback));
-  MOCK_METHOD8(VerifyAndEncryptData, void(const std::string& certificate,
-                                       const std::string& public_key,
-                                       const std::string& nonce,
-                                       const std::string& signed_data,
-                                       const std::string& device_serial,
-                                       const std::string& data,
-                                       const StringCallback& callback,
-                                       const ErrorCallback& error_callback));
+  MOCK_METHOD4(VerifyAndEncryptData,
+               void(const VerificationProperties& properties,
+                    const std::string& data,
+                    const StringCallback& callback,
+                    const ErrorCallback& error_callback));
   MOCK_METHOD2(ConnectToBestServices,
                void(const base::Closure& callback,
                     const ErrorCallback& error_callback));

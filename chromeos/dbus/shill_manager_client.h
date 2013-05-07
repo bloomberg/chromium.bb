@@ -63,6 +63,38 @@ class CHROMEOS_EXPORT ShillManagerClient {
     virtual ~TestInterface() {}
   };
 
+  // Properties used to verify the origin device.
+  struct VerificationProperties {
+    VerificationProperties();
+    ~VerificationProperties();
+
+    // A string containing a PEM-encoded X.509 certificate for use in verifying
+    // the signed data.
+    std::string certificate;
+
+    // A string containing a PEM-encoded RSA public key to be used to compare
+    // with the one in signedData
+    std::string public_key;
+
+    // A string containing a base64-encoded random binary data for use in
+    // verifying the signed data.
+    std::string nonce;
+
+    // A string containing the identifying data string signed by the device.
+    std::string signed_data;
+
+    // A string containing the serial number of the device.
+    std::string device_serial;
+
+    // A string containing the SSID of the device. Only set if the device has
+    // already been setup once.
+    std::string device_ssid;
+
+    // A string containing the BSSID of the device. Only set if the device has
+    // already been setup.
+    std::string device_bssid;
+  };
+
   virtual ~ShillManagerClient();
 
   // Factory function, creates a new instance which is owned by the caller.
@@ -142,11 +174,7 @@ class CHROMEOS_EXPORT ShillManagerClient {
 
   // Verify that the given data corresponds to a trusted device, and return true
   // to the callback if it is.
-  virtual void VerifyDestination(const std::string& certificate,
-                                 const std::string& public_key,
-                                 const std::string& nonce,
-                                 const std::string& signed_data,
-                                 const std::string& device_serial,
+  virtual void VerifyDestination(const VerificationProperties& properties,
                                  const BooleanCallback& callback,
                                  const ErrorCallback& error_callback) = 0;
 
@@ -155,11 +183,7 @@ class CHROMEOS_EXPORT ShillManagerClient {
   // by the given |service_path|, encrypted using the |public_key| for the
   // trusted device. If the device is not trusted, return the empty string.
   virtual void VerifyAndEncryptCredentials(
-      const std::string& certificate,
-      const std::string& public_key,
-      const std::string& nonce,
-      const std::string& signed_data,
-      const std::string& device_serial,
+      const VerificationProperties& properties,
       const std::string& service_path,
       const StringCallback& callback,
       const ErrorCallback& error_callback) = 0;
@@ -167,15 +191,10 @@ class CHROMEOS_EXPORT ShillManagerClient {
   // Verify that the given data corresponds to a trusted device, and return the
   // |data| encrypted using the |public_key| for the trusted device. If the
   // device is not trusted, return the empty string.
-  virtual void VerifyAndEncryptData(
-      const std::string& certificate,
-      const std::string& public_key,
-      const std::string& nonce,
-      const std::string& signed_data,
-      const std::string& device_serial,
-      const std::string& data,
-      const StringCallback& callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void VerifyAndEncryptData(const VerificationProperties& properties,
+                                    const std::string& data,
+                                    const StringCallback& callback,
+                                    const ErrorCallback& error_callback) = 0;
 
   // For each technology present, connect to the "best" service available.
   // Called once the user is logged in and certificates are loaded.

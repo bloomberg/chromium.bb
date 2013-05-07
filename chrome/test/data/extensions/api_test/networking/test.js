@@ -13,7 +13,9 @@ var verificationProperties = {
   "publicKey": "public_key",
   "nonce": "nonce",
   "signedData": "signed_data",
-  "deviceSerial": "device_serial"
+  "deviceSerial": "device_serial",
+  "deviceSsid": "Device 0123",
+  "deviceBssid": "00:01:02:03:04:05"
 };
 
 var privateHelpers = {

@@ -35,11 +35,7 @@ void FakeShillManagerClient::RemovePropertyChangedObserver(
 }
 
 void FakeShillManagerClient::VerifyAndEncryptData(
-    const std::string& certificate,
-    const std::string& public_key,
-    const std::string& nonce,
-    const std::string& signed_data,
-    const std::string& device_serial,
+    const VerificationProperties& properties,
     const std::string& data,
     const StringCallback& callback,
     const ErrorCallback& error_callback) {
@@ -75,11 +71,7 @@ void FakeShillManagerClient::GetProperties(
 }
 
 void FakeShillManagerClient::VerifyAndEncryptCredentials(
-    const std::string& certificate,
-    const std::string& public_key,
-    const std::string& nonce,
-    const std::string& signed_data,
-    const std::string& device_serial,
+    const VerificationProperties& properties,
     const std::string& service_path,
     const StringCallback& callback,
     const ErrorCallback& error_callback) {
@@ -98,11 +90,7 @@ void FakeShillManagerClient::ConfigureService(
 }
 
 void FakeShillManagerClient::VerifyDestination(
-    const std::string& certificate,
-    const std::string& public_key,
-    const std::string& nonce,
-    const std::string& signed_data,
-    const std::string& device_serial,
+    const VerificationProperties& properties,
     const BooleanCallback& callback,
     const ErrorCallback& error_callback) {
 }
