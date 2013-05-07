@@ -469,6 +469,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // suppress_next_char_events_.
   void SuppressNextCharEvents();
 
+  // Indicates whether the renderer drives the RenderWidgetHosts's size or the
+  // other way around.
+  bool should_auto_resize() { return should_auto_resize_; }
+
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 

@@ -783,7 +783,8 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
 
 void RenderWidgetHostViewAura::MaybeCreateResizeLock() {
   gfx::Size desired_size = window_->bounds().size();
-  if (!resize_lock_.get() &&
+  if (!host_->should_auto_resize() &&
+      !resize_lock_.get() &&
       desired_size != current_frame_size_ &&
       host_->is_accelerated_compositing_active()) {
     aura::RootWindow* root_window = window_->GetRootWindow();
