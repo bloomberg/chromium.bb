@@ -424,7 +424,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 
   std::string instant_pref_name = chrome::GetInstantPrefName();
   int instant_message_id = instant_pref_name == prefs::kInstantEnabled ?
-      IDS_INSTANT_PREF_WITH_WARNING : IDS_INSTANT_EXTENDED_PREF_WITH_WARNING;
+      IDS_INSTANT_PREF : IDS_INSTANT_EXTENDED_PREF;
   values->SetString("instant_enabled", instant_pref_name);
   values->SetString(
       "instantPrefAndWarning",
@@ -633,10 +633,46 @@ void BrowserOptionsHandler::OnSigninAllowedPrefChange() {
 
 void BrowserOptionsHandler::OnSearchSuggestPrefChange() {
   Profile* profile = Profile::FromWebUI(web_ui());
+
+  bool instant_extended =
+      chrome::GetInstantPrefName() == prefs::kInstantExtendedEnabled;
+
+  string16 checkbox_label;
+  if (chrome::IsInstantCheckboxEnabled(profile)) {
+    int instant_message_id = instant_extended ?
+        IDS_INSTANT_EXTENDED_PREF : IDS_INSTANT_PREF;
+
+    checkbox_label = l10n_util::GetStringUTF16(instant_message_id);
+  } else if (!chrome::DefaultSearchProviderSupportsInstant(profile)) {
+    int instant_message_id = instant_extended ?
+        IDS_INSTANT_EXTENDED_PREF_PREDICTION_NOT_SUPPORTED :
+        IDS_INSTANT_PREF_PREDICTION_NOT_SUPPORTED;
+
+    const TemplateURL* default_url =
+        template_url_service_->GetDefaultSearchProvider();
+    string16 search_provider;
+    if (default_url)
+      search_provider = default_url->short_name();
+    if (search_provider.empty()) {
+      search_provider = l10n_util::GetStringUTF16(
+          IDS_INSTANT_PREF_SEARCH_ENGINE_NAME_NOT_FOUND);
+    }
+
+    checkbox_label = l10n_util::GetStringFUTF16(instant_message_id,
+                                                search_provider);
+  } else {
+    int instant_message_id = instant_extended ?
+        IDS_INSTANT_EXTENDED_PREF_PREDICTION_DISABLED :
+        IDS_INSTANT_PREF_PREDICTION_DISABLED;
+
+    checkbox_label = l10n_util::GetStringUTF16(instant_message_id);
+  }
+
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.updateInstantState",
       base::FundamentalValue(chrome::IsInstantCheckboxEnabled(profile)),
-      base::FundamentalValue(chrome::IsInstantCheckboxChecked(profile)));
+      base::FundamentalValue(chrome::IsInstantCheckboxChecked(profile)),
+      StringValue(checkbox_label));
 }
 
 void BrowserOptionsHandler::PageLoadStarted() {

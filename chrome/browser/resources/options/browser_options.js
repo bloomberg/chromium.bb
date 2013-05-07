@@ -699,10 +699,11 @@ cr.define('options', function() {
         expander.textContent = loadTimeData.getString('hideAdvancedSettings');
     },
 
-    updateInstantState_: function(enabled, checked) {
+    updateInstantState_: function(enabled, checked, checkboxLabel) {
       var checkbox = $('instant-enabled-control');
       checkbox.disabled = !enabled;
       checkbox.checked = checked;
+       $('instant-enabled-label').textContent = checkboxLabel;
     },
 
     /**

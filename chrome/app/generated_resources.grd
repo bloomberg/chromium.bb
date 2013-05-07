@@ -6802,7 +6802,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Audio input/output menu
       </message>
       <message name="IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_DESCRIPTION" desc="Description for a flag for audio switching.">
-        Modifies the volume item in the status tray to add a menu allowing choosing a specific audio input and output device. Requires "Enable new audio handler" flag.  
+        Modifies the volume item in the status tray to add a menu allowing choosing a specific audio input and output device. Requires "Enable new audio handler" flag.
       </message>
       <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_NAME" desc="Title for the flag to enable locally managed users.">
         Enable locally managed users
@@ -6937,7 +6937,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
      <message name="IDS_FLAGS_FORCE_MAXIMIZE_MODE_DESCRIPTION" desc="Description for the flag which forces the window manager to use maximized mode wherever possible.">
        Forces the window manager to use maximize mode wherever possible.
      </message>
- 
+
       <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_NAME" desc="Name for the flag which allows to minimize a window upon launcher item click under certain conditions.">
         Disallow launcher to minimize-on-click
       </message>
@@ -7264,11 +7264,30 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Set which search engine is used when searching from the
         <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>omnibox<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
-      <message name="IDS_INSTANT_EXTENDED_PREF_WITH_WARNING" desc="Preference for enabling instant when the instant extended flag is set.">
-        Allow your search engine to provide Instant results.
+      <message name="IDS_INSTANT_PREF_SEARCH_ENGINE_NAME_NOT_FOUND" desc="Place-holder text for when the search engine name could not be resolved, intended to be inserted as the SEARCH_ENGINE_NAME parameter in IDS_INSTANT_PREF_PREDICTION_NOT_SUPPORTED and IDS_INSTANT_EXTENDED_PREF_PREDICTION_NOT_SUPPORTED.">
+        Your search engine
       </message>
-      <message name="IDS_INSTANT_PREF_WITH_WARNING" desc="Preference for enabling instant, along with the warning that used to be displayed beneath it.">
+
+      <!-- Instant checkbox strings -->
+      <message name="IDS_INSTANT_PREF" desc="Preference for enabling instant, along with the warning that used to be displayed beneath it.">
         Enable Instant for faster searching.
+      </message>
+      <message name="IDS_INSTANT_PREF_PREDICTION_DISABLED" desc="Greyed-out preference for enabling instant when search query prediction is disabled by the user.">
+        Enable Instant for faster searching (a prediction service must be enabled).
+      </message>
+      <message name="IDS_INSTANT_PREF_PREDICTION_NOT_SUPPORTED" desc="Greyed-out preference for enabling instant when instant is not supported by the current search provider.">
+        Enable Instant for faster searching (<ph name="SEARCH_ENGINE_NAME">$1<ex>Yahoo!</ex></ph> does not support Instant).
+      </message>
+
+      <!-- Instant extended checkbox strings -->
+      <message name="IDS_INSTANT_EXTENDED_PREF" desc="Preference for enabling instant when search query prediction is enabled.">
+        Display Instant results.
+      </message>
+      <message name="IDS_INSTANT_EXTENDED_PREF_PREDICTION_DISABLED" desc="Greyed-out preference for enabling instant when search query prediction is disabled by the user.">
+        Display Instant results (a prediction service must be enabled).
+      </message>
+      <message name="IDS_INSTANT_EXTENDED_PREF_PREDICTION_NOT_SUPPORTED" desc="Greyed-out preference for enabling instant when instant is not supported by the current search provider.">
+        Display Instant results (<ph name="SEARCH_ENGINE_NAME">$1<ex>Yahoo!</ex></ph> does not support Instant).
       </message>
 
       <!-- Conflicts page -->
@@ -15088,7 +15107,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Enable Offline Cache Mode
     </message>
     <message name="IDS_FLAGS_ENABLE_OFFLINE_MODE_DESCRIPTION" desc="Description of the flag to make reads in offline mode come from the cache even if it's stale">
-      Reads from web resources when the source is unavailable will be satisfied from available stale cache entries.  
+      Reads from web resources when the source is unavailable will be satisfied from available stale cache entries.
     </message>
 
     <message name="IDS_FLAGS_ENABLE_TRANSLATE_ALPHA_LANGUAGES_NAME"
