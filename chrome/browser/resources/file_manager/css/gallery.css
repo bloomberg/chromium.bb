@@ -599,16 +599,16 @@ body .gallery > .toolbar button {
 }
 
 /* Show labels if there is enough space. */
-@media (min-width: 1000px) {
+@media (min-width: 1050px) {
 
-  .gallery .edit-main button {
+  body .gallery .edit-main button {
     background-position: 5px center;
     min-width: 0;  /* Reset. */
     padding: 0 10px 0 35px;
     width: auto;
   }
 
-  .gallery > .toolbar button span {
+  body .gallery > .toolbar button span {
     display: inline;
   }
 
