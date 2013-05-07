@@ -156,7 +156,6 @@
         'msvs_external_rule': 1,
         'inputs': [
           'scripts/generate-bindings.pl',
-          'scripts/CodeGenerator.pm',
           'scripts/CodeGeneratorV8.pm',
           'scripts/IDLParser.pm',
           'scripts/IDLAttributes.txt',

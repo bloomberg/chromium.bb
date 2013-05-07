@@ -115,9 +115,8 @@ use File::Basename;
 use File::Find;
 use File::Spec;
 
-my $codeGenerator;
 my $idlDocument;
-my $useDirectories;
+my $idlDirectories;
 my $preprocessor;
 my $defines;
 my $verbose;
@@ -218,15 +217,13 @@ my $headerTemplate = <<EOF;
 */
 EOF
 
-# Default constructor
 sub new
 {
     my $object = shift;
     my $reference = { };
 
-    $codeGenerator = shift;
     $idlDocument = shift;
-    $useDirectories = shift;
+    $idlDirectories = shift;
     $preprocessor = shift;
     $defines = shift;
     $verbose = shift;
@@ -243,7 +240,7 @@ sub IDLFileForInterface
     my $interfaceName = shift;
 
     unless ($idlFiles) {
-        my @directories = map { $_ = "$sourceRoot/$_" if -d "$sourceRoot/$_"; $_ } @$useDirectories;
+        my @directories = map { $_ = "$sourceRoot/$_" if -d "$sourceRoot/$_"; $_ } @$idlDirectories;
         push(@directories, ".");
 
         $idlFiles = { };
@@ -5061,12 +5058,12 @@ sub WriteData
 {
     my $object = shift;
     my $interface = shift;
-    my $outputDir = shift;
-    my $outputHeadersDir = shift;
+    my $outputDirectory = shift;
+    my $outputHeadersDirectory = shift;
 
     my $name = $interface->name;
-    my $headerFileName = "$outputHeadersDir/V8$name.h";
-    my $implFileName = "$outputDir/V8$name.cpp";
+    my $headerFileName = "$outputHeadersDirectory/V8$name.h";
+    my $implFileName = "$outputDirectory/V8$name.cpp";
 
     # Update a .cpp file if the contents are changed.
     my $contents = join "", @implContentHeader;

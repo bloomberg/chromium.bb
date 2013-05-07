@@ -37,7 +37,7 @@ use Text::ParseWords;
 use Cwd;
 
 use IDLParser;
-use CodeGenerator;
+use CodeGeneratorV8;
 
 my @idlDirectories;
 my $outputDirectory;
@@ -108,8 +108,6 @@ if ($supplementalDependencyFile) {
     }
 
     if (!$idlFound) {
-        my $codeGen = CodeGenerator->new(\@idlDirectories, $outputDirectory, $outputHeadersDirectory, $preprocessor, $verbose);
-
         # We generate empty .h and .cpp files just to tell build scripts that .h and .cpp files are created.
         generateEmptyHeaderAndCpp($targetInterfaceName, $outputHeadersDirectory, $outputDirectory);
         exit 0;
@@ -186,8 +184,13 @@ foreach my $idlFile (@supplementedIdlFiles) {
 
 # Generate desired output for the target IDL file.
 my @dependentIdlFiles = ($targetDocument->fileName(), @supplementedIdlFiles);
-my $codeGen = CodeGenerator->new(\@idlDirectories, $outputDirectory, $outputHeadersDirectory, $preprocessor, $verbose, \@dependentIdlFiles);
-$codeGen->ProcessDocument($targetDocument, $defines);
+my $codeGenerator = CodeGeneratorV8->new($targetDocument, \@idlDirectories, $preprocessor, $defines, $verbose, \@dependentIdlFiles);
+my $interfaces = $targetDocument->interfaces;
+foreach my $interface (@$interfaces) {
+    print "Generating bindings code for IDL interface \"" . $interface->name . "\"...\n" if $verbose;
+    $codeGenerator->GenerateInterface($interface);
+    $codeGenerator->WriteData($interface, $outputDirectory, $outputHeadersDirectory);
+}
 
 sub generateEmptyHeaderAndCpp
 {
