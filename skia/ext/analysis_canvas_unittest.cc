@@ -179,17 +179,9 @@ TEST(AnalysisCanvasTest, SimpleDrawRect) {
   EXPECT_NE(static_cast<SkColor>(SK_ColorTRANSPARENT), outputColor);
   EXPECT_EQ(color, outputColor);
 
-  // Paint with the same color, tile should remain solid.
   canvas.rotate(50);
   canvas.drawRect(SkRect::MakeWH(255, 255), paint);
 
-  EXPECT_TRUE(canvas.getColorIfSolid(&outputColor));
-  EXPECT_EQ(color, outputColor);
-
-  color = SkColorSetARGB(255, 12, 23, 34);
-  paint.setColor(color);
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-  canvas.drawRect(SkRect::MakeWH(255, 255), paint);
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
 }
 

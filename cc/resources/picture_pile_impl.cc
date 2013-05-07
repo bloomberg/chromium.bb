@@ -96,15 +96,25 @@ void PicturePileImpl::Raster(
   gfx::Rect content_rect = total_content_rect;
   content_rect.Intersect(canvas_rect);
 
-  // Clear an inflated content rect, to ensure that we always sample
-  // a correct pixel.
-  gfx::Rect inflated_content_rect = total_content_rect;
-  inflated_content_rect.Inset(0, 0, -1, -1);
+  // Clear one texel inside the right/bottom edge of the content rect,
+  // as it may only be partially covered by the picture playback.
+  // Also clear one texel outside the right/bottom edge of the content rect,
+  // as it may get blended in by linear filtering when zoomed in.
+  gfx::Rect deflated_content_rect = total_content_rect;
+  deflated_content_rect.Inset(0, 0, 1, 1);
 
-  SkPaint background_paint;
-  background_paint.setColor(background_color_);
-  background_paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-  canvas->drawRect(RectToSkRect(inflated_content_rect), background_paint);
+  gfx::Rect canvas_outside_content_rect = canvas_rect;
+  canvas_outside_content_rect.Subtract(deflated_content_rect);
+
+  if (!canvas_outside_content_rect.IsEmpty()) {
+    gfx::Rect inflated_content_rect = total_content_rect;
+    inflated_content_rect.Inset(0, 0, -1, -1);
+    canvas->clipRect(gfx::RectToSkRect(inflated_content_rect),
+                     SkRegion::kReplace_Op);
+    canvas->clipRect(gfx::RectToSkRect(deflated_content_rect),
+                     SkRegion::kDifference_Op);
+    canvas->drawColor(background_color_, SkXfermode::kSrc_Mode);
+  }
 
   // Rasterize the collection of relevant picture piles.
   gfx::Rect layer_rect = gfx::ToEnclosingRect(
