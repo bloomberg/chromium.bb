@@ -193,7 +193,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleFile) {
                                   "test_file.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleNoFile) {
+// Flaky on windows: http://crbug.com/238667
+#if defined(OS_WIN)
+#define MAYBE_CaptureVisibleNoFile DISABLED_CaptureVisibleNoFile
+#else
+#define MAYBE_CaptureVisibleNoFile CaptureVisibleNoFile
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleNoFile) {
   ASSERT_TRUE(RunExtensionSubtest(
       "tabs/capture_visible_tab", "test_nofile.html",
       ExtensionApiTest::kFlagNone)) << message_;
