@@ -1074,8 +1074,7 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
   LocalSyncOperationType operation =
       LocalSyncOperationResolver::Resolve(
           local_file_change,
-          has_remote_change,
-          remote_change.change,
+          has_remote_change ? &remote_change.change : NULL,
           param->has_drive_metadata ? &drive_metadata : NULL);
 
   DVLOG(1) << "ApplyLocalChange for " << url.DebugString()

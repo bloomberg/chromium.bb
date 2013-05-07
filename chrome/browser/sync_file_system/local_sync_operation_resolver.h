@@ -30,41 +30,33 @@ enum LocalSyncOperationType {
 
 class LocalSyncOperationResolver {
  public:
+  // |remote_file_change| is non-null when we have a remote change for the file,
+  // and |drive_metadata| is also non-null when we have metadata.
   static LocalSyncOperationType Resolve(
       const FileChange& local_file_change,
-      bool has_remote_change,
-      const FileChange& remote_file_change,
-      DriveMetadata* drive_metadata);
+      const FileChange* remote_file_change,
+      const DriveMetadata* drive_metadata);
 
  private:
   static LocalSyncOperationType ResolveForAddOrUpdateFile(
-      bool has_remote_change,
-      const FileChange& remote_file_change,
+      const FileChange* remote_file_change,
       SyncFileType remote_file_type_in_metadata);
   static LocalSyncOperationType ResolveForAddOrUpdateFileInConflict(
-      bool has_remote_change,
-      const FileChange& remote_file_change);
+      const FileChange* remote_file_change);
   static LocalSyncOperationType ResolveForAddDirectory(
-      bool has_remote_change,
-      const FileChange& remote_file_change,
+      const FileChange* remote_file_change,
       SyncFileType remote_file_type_in_metadata);
-  static LocalSyncOperationType ResolveForAddDirectoryInConflict(
-      bool has_remote_change,
-      const FileChange& remote_file_change);
+  static LocalSyncOperationType ResolveForAddDirectoryInConflict();
   static LocalSyncOperationType ResolveForDeleteFile(
-      bool has_remote_change,
-      const FileChange& remote_file_change,
+      const FileChange* remote_file_change,
       SyncFileType remote_file_type_in_metadata);
   static LocalSyncOperationType ResolveForDeleteFileInConflict(
-      bool has_remote_change,
-      const FileChange& remote_file_change);
+      const FileChange* remote_file_change);
   static LocalSyncOperationType ResolveForDeleteDirectory(
-      bool has_remote_change,
-      const FileChange& remote_file_change,
+      const FileChange* remote_file_change,
       SyncFileType remote_file_type_in_metadata);
   static LocalSyncOperationType ResolveForDeleteDirectoryInConflict(
-      bool has_remote_change,
-      const FileChange& remote_file_change);
+      const FileChange* remote_file_change);
 
   FRIEND_TEST_ALL_PREFIXES(LocalSyncOperationResolverTest,
                            ResolveForAddOrUpdateFile);
