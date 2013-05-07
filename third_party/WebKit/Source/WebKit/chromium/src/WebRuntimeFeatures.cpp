@@ -44,15 +44,16 @@ namespace WebKit {
 void WebRuntimeFeatures::enableStableFeatures(bool enable)
 {
     enableApplicationCache(enable);
+    enableAudioContext(enable);
     enableDatabase(enable);
     enableDeviceOrientation(enable);
     enableDirectoryUpload(enable);
     enableEncryptedMedia(enable);
     enableFileSystem(enable);
-    enableFullScreenAPI(enable);
+    enableFullscreen(enable);
     enableGamepad(enable);
     enableGeolocation(enable);
-    enableIndexedDatabase(enable);
+    enableIndexedDB(enable);
     enableInputTypeWeek(enable);
     enableJavaScriptI18NAPI(enable);
     enableLocalStorage(enable);
@@ -66,7 +67,6 @@ void WebRuntimeFeatures::enableStableFeatures(bool enable)
     enableSessionStorage(enable);
     enableSpeechInput(enable);
     enableTouch(enable);
-    enableWebAudio(enable);
     enableVideoTrack(enable);
 }
 
@@ -179,22 +179,22 @@ bool WebRuntimeFeatures::isGeolocationEnabled()
     return RuntimeEnabledFeatures::geolocationEnabled();
 }
 
-void WebRuntimeFeatures::enableIndexedDatabase(bool enable)
+void WebRuntimeFeatures::enableIndexedDB(bool enable)
 {
     RuntimeEnabledFeatures::setIndexedDBEnabled(enable);
 }
 
-bool WebRuntimeFeatures::isIndexedDatabaseEnabled()
+bool WebRuntimeFeatures::isIndexedDBEnabled()
 {
     return RuntimeEnabledFeatures::indexedDBEnabled();
 }
 
-void WebRuntimeFeatures::enableWebAudio(bool enable)
+void WebRuntimeFeatures::enableAudioContext(bool enable)
 {
     RuntimeEnabledFeatures::setAudioContextEnabled(enable);
 }
 
-bool WebRuntimeFeatures::isWebAudioEnabled()
+bool WebRuntimeFeatures::isAudioContextEnabled()
 {
     return RuntimeEnabledFeatures::audioContextEnabled();
 }
@@ -299,12 +299,12 @@ bool WebRuntimeFeatures::isPeerConnectionEnabled()
     return RuntimeEnabledFeatures::peerConnectionEnabled();
 }
 
-void WebRuntimeFeatures::enableFullScreenAPI(bool enable)
+void WebRuntimeFeatures::enableFullscreen(bool enable)
 {
     RuntimeEnabledFeatures::setFullscreenEnabled(enable);
 }
 
-bool WebRuntimeFeatures::isFullScreenAPIEnabled()
+bool WebRuntimeFeatures::isFullscreenEnabled()
 {
     return RuntimeEnabledFeatures::fullscreenEnabled();
 }
@@ -434,7 +434,7 @@ void WebRuntimeFeatures::enableSeamlessIFrames(bool enable)
     return RuntimeEnabledFeatures::setSeamlessIFramesEnabled(enable);
 }
 
-bool WebRuntimeFeatures::areSeamlessIFramesEnabled()
+bool WebRuntimeFeatures::isSeamlessIFramesEnabled()
 {
     return RuntimeEnabledFeatures::seamlessIFramesEnabled();
 }
@@ -554,7 +554,7 @@ void WebRuntimeFeatures::enableExperimentalCanvasFeatures(bool enable)
     RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(enable);
 }
 
-bool WebRuntimeFeatures::areExperimentalCanvasFeaturesEnabled()
+bool WebRuntimeFeatures::isExperimentalCanvasFeaturesEnabled()
 {
     return RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
 }

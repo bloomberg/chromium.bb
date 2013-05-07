@@ -45,8 +45,16 @@ public:
     WEBKIT_EXPORT static void enableExperimentalFeatures(bool);
     WEBKIT_EXPORT static void enableTestOnlyFeatures(bool);
 
+    // FIXME: Delete after removing all callers in Content.
+    static void enableFullScreenAPI(bool enable) { enableFullscreen(enable); }
+    static void enableIndexedDatabase(bool enable) { enableIndexedDB(enable); }
+    static void enableWebAudio(bool enable) { enableAudioContext(enable); }
+
     WEBKIT_EXPORT static void enableApplicationCache(bool);
     WEBKIT_EXPORT static bool isApplicationCacheEnabled();
+
+    WEBKIT_EXPORT static void enableAudioContext(bool);
+    WEBKIT_EXPORT static bool isAudioContextEnabled();
 
     WEBKIT_EXPORT static void enableCanvasPath(bool);
     WEBKIT_EXPORT static bool isCanvasPathEnabled();
@@ -82,7 +90,7 @@ public:
     WEBKIT_EXPORT static bool isEncryptedMediaEnabled();
 
     WEBKIT_EXPORT static void enableExperimentalCanvasFeatures(bool);
-    WEBKIT_EXPORT static bool areExperimentalCanvasFeaturesEnabled();
+    WEBKIT_EXPORT static bool isExperimentalCanvasFeaturesEnabled();
 
     WEBKIT_EXPORT static void enableExperimentalContentSecurityPolicyFeatures(bool);
     WEBKIT_EXPORT static bool isExperimentalContentSecurityPolicyFeaturesEnabled();
@@ -99,8 +107,8 @@ public:
     WEBKIT_EXPORT static void enableFontLoadEvents(bool);
     WEBKIT_EXPORT static bool isFontLoadEventsEnabled();
 
-    WEBKIT_EXPORT static void enableFullScreenAPI(bool);
-    WEBKIT_EXPORT static bool isFullScreenAPIEnabled();
+    WEBKIT_EXPORT static void enableFullscreen(bool);
+    WEBKIT_EXPORT static bool isFullscreenEnabled();
 
     WEBKIT_EXPORT static void enableGamepad(bool);
     WEBKIT_EXPORT static bool isGamepadEnabled();
@@ -111,8 +119,8 @@ public:
     WEBKIT_EXPORT static void enableIMEAPI(bool);
     WEBKIT_EXPORT static bool isIMEAPIEnabled();
 
-    WEBKIT_EXPORT static void enableIndexedDatabase(bool);
-    WEBKIT_EXPORT static bool isIndexedDatabaseEnabled();
+    WEBKIT_EXPORT static void enableIndexedDB(bool);
+    WEBKIT_EXPORT static bool isIndexedDBEnabled();
 
     WEBKIT_EXPORT static void enableInputTypeDateTime(bool);
     WEBKIT_EXPORT static bool isInputTypeDateTimeEnabled();
@@ -154,7 +162,7 @@ public:
     WEBKIT_EXPORT static bool isScriptedSpeechEnabled();
 
     WEBKIT_EXPORT static void enableSeamlessIFrames(bool);
-    WEBKIT_EXPORT static bool areSeamlessIFramesEnabled();
+    WEBKIT_EXPORT static bool isSeamlessIFramesEnabled();
 
     WEBKIT_EXPORT static void enableSessionStorage(bool);
     WEBKIT_EXPORT static bool isSessionStorageEnabled();
@@ -173,9 +181,6 @@ public:
 
     WEBKIT_EXPORT static void enableVideoTrack(bool);
     WEBKIT_EXPORT static bool isVideoTrackEnabled();
-
-    WEBKIT_EXPORT static void enableWebAudio(bool);
-    WEBKIT_EXPORT static bool isWebAudioEnabled();
 
     WEBKIT_EXPORT static void enableWebMIDI(bool);
     WEBKIT_EXPORT static bool isWebMIDIEnabled();
