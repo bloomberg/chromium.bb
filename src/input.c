@@ -30,19 +30,6 @@
 #include "../shared/os-compatibility.h"
 #include "compositor.h"
 
-static struct wl_resource *
-find_resource_for_client(struct wl_list *list, struct wl_client *client)
-{
-        struct wl_resource *r;
-
-        wl_list_for_each(r, list, link) {
-                if (r->client == client)
-                        return r;
-        }
-
-        return NULL;
-}
-
 static void
 empty_region(pixman_region32_t *region)
 {
@@ -1063,8 +1050,8 @@ touch_set_focus(struct weston_seat *ws, struct wl_surface *surface)
 
 	if (surface) {
 		resource =
-			find_resource_for_client(&seat->touch->resource_list,
-						 surface->resource.client);
+			find_resource_for_surface(&seat->touch->resource_list,
+						  surface);
 		if (!resource) {
 			weston_log("couldn't find resource\n");
 			return;
