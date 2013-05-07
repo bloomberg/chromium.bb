@@ -368,7 +368,10 @@ def main(argv):
                    '-nacl-expand-tls',
                    # Global cleanup needs to run after expand-tls because
                    # __tls_template_start etc are extern_weak before expansion
-                   '-nacl-global-cleanup']
+                   '-nacl-global-cleanup',
+                   # Strip dead prototytes to appease the intrinsic ABI checks
+                   # (expand-varargs leaves around var-arg intrinsics).
+                   '-strip-dead-prototypes']
       chain.add(DoLLVMPasses(passes), 'expand_features.' + bitcode_type)
 
     if env.getone('OPT_LEVEL') != '' and env.getone('OPT_LEVEL') != '0':
