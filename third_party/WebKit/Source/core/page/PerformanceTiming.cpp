@@ -213,17 +213,16 @@ unsigned long long PerformanceTiming::secureConnectionStart() const
 unsigned long long PerformanceTiming::requestStart() const
 {
     ResourceLoadTiming* timing = resourceLoadTiming();
-    if (!timing)
+    if (!timing || timing->sendStart < 0)
         return connectEnd();
 
-    ASSERT(timing->sendStart >= 0);
     return resourceLoadTimeRelativeToAbsolute(timing->sendStart);
 }
 
 unsigned long long PerformanceTiming::responseStart() const
 {
     ResourceLoadTiming* timing = resourceLoadTiming();
-    if (!timing)
+    if (!timing || timing->receiveHeadersEnd < 0)
         return requestStart();
 
     // FIXME: Response start needs to be the time of the first received byte.
@@ -232,7 +231,6 @@ unsigned long long PerformanceTiming::responseStart() const
     // sized cookies, the HTTP headers fit into a single packet so this time
     // is basically equivalent. But for some responses, particularly those with
     // headers larger than a single packet, this time will be too late.
-    ASSERT(timing->receiveHeadersEnd >= 0);
     return resourceLoadTimeRelativeToAbsolute(timing->receiveHeadersEnd);
 }
 
