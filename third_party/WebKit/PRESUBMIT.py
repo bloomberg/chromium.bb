@@ -122,8 +122,10 @@ def _CheckTestExpectations(input_api, output_api):
 
 
 def _CheckStyle(input_api, output_api):
-    args = (['check-webkit-style', '--diff-files'] +
-            [f.LocalPath() for f in input_api.AffectedFiles()])
+    style_checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+        'Tools', 'Scripts', 'check-webkit-style')
+    args = ([input_api.python_executable, style_checker_path, '--diff-files']
+        + [f.LocalPath() for f in input_api.AffectedFiles()])
     results = []
 
     try:
