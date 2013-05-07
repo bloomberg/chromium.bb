@@ -54,6 +54,10 @@ vars = {
   # the commit queue can handle CLs rolling openssl
   # and whatever else without interference from each other.
   "ios_webkit_revision": "147503",
+
+  # Destination for Debian sysroots for Official builds.
+  "linux_sysroot_dir":
+    "src/chrome/installer/linux/internal/sysroot_scripts/",
 }
 
 deps = {
@@ -641,6 +645,50 @@ hooks = [
     # target_arch=arm in thier GYP_DEFINES.
     "pattern": ".",
     "action": ["python", "src/build/linux/install-arm-sysroot.py",
+               "--linux-only"],
+  },
+  {
+    # Downloads the Debian Wheezy amd64 sysroot to
+    # chrome/installer/linux/internal/debian_wheezy_amd64-sysroot.
+    # This sysroot updates at about the same rate that the chrome build deps
+    # change.
+    # This script is a no-op except for linux users who have the following in
+    # their GYP_DEFINES:
+    #
+    # * branding=Chrome
+    # * buildtype=Official 
+    # * target_arch=x64
+    #
+    # and not:
+    #
+    # * chromeos=1
+    #
+    "pattern": ".",
+    "action": ["python",
+               Var("linux_sysroot_dir") + "install-debian.wheezy.sysroot.py",
+               "--arch=amd64",
+               "--linux-only"],
+  },
+  {
+    # Downloads the Debian Wheezy i386 sysroot to
+    # chrome/installer/linux/internal/debian_wheezy_i386-sysroot.
+    # This sysroot updates at about the same rate that the chrome build deps
+    # change.
+    # This script is a no-op except for linux users who have the following in
+    # their GYP_DEFINES:
+    #
+    # * branding=Chrome
+    # * buildtype=Official 
+    # * target_arch=ia32
+    #
+    # and not:
+    #
+    # * chromeos=1
+    #
+    "pattern": ".",
+    "action": ["python",
+               Var("linux_sysroot_dir") + "install-debian.wheezy.sysroot.py",
+               "--arch=i386",
                "--linux-only"],
   },
   {
