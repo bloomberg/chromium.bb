@@ -31,9 +31,23 @@
 
 namespace WebCore {
 
+static const UChar32 kInvalidUnicode = -1;
+
 inline bool isHexDigit(UChar cc)
 {
     return (cc >= '0' && cc <= '9') || (cc >= 'a' && cc <= 'f') || (cc >= 'A' && cc <= 'F');
+}
+
+inline UChar asHexDigit(UChar cc)
+{
+    if (cc >= '0' && cc <= '9')
+      return cc - '0';
+    if (cc >= 'a' && cc <= 'z')
+      return 10 + cc - 'a';
+    if (cc >= 'A' && cc <= 'Z')
+      return 10 + cc - 'A';
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 inline void unconsumeCharacters(SegmentedString& source, const StringBuilder& consumedCharacters)
@@ -120,13 +134,10 @@ bool consumeCharacterReference(SegmentedString& source, StringBuilder& decodedCh
             return false;
         }
         case Hex: {
-            if (cc >= '0' && cc <= '9')
-                result = result * 16 + cc - '0';
-            else if (cc >= 'a' && cc <= 'f')
-                result = result * 16 + 10 + cc - 'a';
-            else if (cc >= 'A' && cc <= 'F')
-                result = result * 16 + 10 + cc - 'A';
-            else if (cc == ';') {
+            if (isHexDigit(cc)) {
+                if (result != kInvalidUnicode)
+                    result = result * 16 + asHexDigit(cc);
+            } else if (cc == ';') {
                 source.advanceAndASSERT(cc);
                 decodedCharacter.append(ParserFunctions::legalEntityFor(result));
                 return true;
@@ -140,9 +151,10 @@ bool consumeCharacterReference(SegmentedString& source, StringBuilder& decodedCh
             break;
         }
         case Decimal: {
-            if (cc >= '0' && cc <= '9')
-                result = result * 10 + cc - '0';
-            else if (cc == ';') {
+            if (cc >= '0' && cc <= '9') {
+                if (result != kInvalidUnicode)
+                    result = result * 10 + cc - '0';
+            } else if (cc == ';') {
                 source.advanceAndASSERT(cc);
                 decodedCharacter.append(ParserFunctions::legalEntityFor(result));
                 return true;
@@ -159,6 +171,10 @@ bool consumeCharacterReference(SegmentedString& source, StringBuilder& decodedCh
             return ParserFunctions::consumeNamedEntity(source, decodedCharacter, notEnoughCharacters, additionalAllowedCharacter, cc);
         }
         }
+
+        if (result > UCHAR_MAX_VALUE)
+            result = kInvalidUnicode;
+
         consumedCharacters.append(cc);
         source.advanceAndASSERT(cc);
     }

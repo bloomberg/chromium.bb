@@ -61,7 +61,7 @@ public:
     inline static UChar32 legalEntityFor(UChar32 value)
     {
         // FIXME: A number of specific entity values generate parse errors.
-        if (!value || value > 0x10FFFF || (value >= 0xD800 && value <= 0xDFFF))
+        if (value <= 0 || value > 0x10FFFF || (value >= 0xD800 && value <= 0xDFFF))
             return 0xFFFD;
         if (U_IS_BMP(value))
             return adjustEntity(value);
