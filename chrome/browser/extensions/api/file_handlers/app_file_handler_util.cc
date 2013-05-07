@@ -43,6 +43,17 @@ bool FileHandlerCanHandleFileWithExtension(
   return false;
 }
 
+bool FileHandlerCanHandleFileWithMimeType(
+    const FileHandlerInfo& handler,
+    const std::string& mime_type) {
+  for (std::set<std::string>::const_iterator type = handler.types.begin();
+       type != handler.types.end(); ++type) {
+    if (net::MatchesMimeType(*type, mime_type))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 typedef std::vector<FileHandlerInfo> FileHandlerList;
@@ -77,10 +88,10 @@ const FileHandlerInfo* FirstFileHandlerForFile(
   return NULL;
 }
 
-std::vector<const FileHandlerInfo*> FindFileHandlersForMimeTypes(
-    const Extension& app, const std::set<std::string>& mime_types) {
+std::vector<const FileHandlerInfo*> FindFileHandlersForFiles(
+    const Extension& app, const PathAndMimeTypeSet& files) {
   std::vector<const FileHandlerInfo*> handlers;
-  if (mime_types.empty())
+  if (files.empty())
     return handlers;
 
   // Look for file handlers which can handle all the MIME types specified.
@@ -91,9 +102,9 @@ std::vector<const FileHandlerInfo*> FindFileHandlersForMimeTypes(
   for (FileHandlerList::const_iterator data = file_handlers->begin();
        data != file_handlers->end(); ++data) {
     bool handles_all_types = true;
-    for (std::set<std::string>::const_iterator type_iter = mime_types.begin();
-         type_iter != mime_types.end(); ++type_iter) {
-      if (!FileHandlerCanHandleFileWithMimeType(*data, *type_iter)) {
+    for (PathAndMimeTypeSet::const_iterator it = files.begin();
+         it != files.end(); ++it) {
+      if (!FileHandlerCanHandleFile(*data, it->second, it->first)) {
         handles_all_types = false;
         break;
       }
@@ -110,17 +121,6 @@ bool FileHandlerCanHandleFile(
     const base::FilePath& path) {
   return FileHandlerCanHandleFileWithMimeType(handler, mime_type) ||
       FileHandlerCanHandleFileWithExtension(handler, path);
-}
-
-bool FileHandlerCanHandleFileWithMimeType(
-    const FileHandlerInfo& handler,
-    const std::string& mime_type) {
-  for (std::set<std::string>::const_iterator type = handler.types.begin();
-       type != handler.types.end(); ++type) {
-    if (net::MatchesMimeType(*type, mime_type))
-      return true;
-  }
-  return false;
 }
 
 GrantedFileEntry CreateFileEntry(
