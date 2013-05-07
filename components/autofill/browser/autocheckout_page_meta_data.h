@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_BROWSER_AUTOCHECKOUT_PAGE_META_DATA_H_
 #define COMPONENTS_AUTOFILL_BROWSER_AUTOCHECKOUT_PAGE_META_DATA_H_
 
-#include "base/memory/scoped_ptr.h"
+#include "base/basictypes.h"
 #include "components/autofill/common/web_element_descriptor.h"
 
 namespace autofill {
@@ -36,9 +36,9 @@ struct AutocheckoutPageMetaData {
   // belong to any autofill flow, it is set to -1.
   int total_pages;
 
-  // The proceed element of the multipage Autofill flow. Can be null if the
-  // current page is the last page of a flow or isn't a member of a flow.
-  scoped_ptr<WebElementDescriptor> proceed_element_descriptor;
+  // The proceed element of the multipage Autofill flow. It can be empty
+  // if current page is the last page of a flow or isn't a member of a flow.
+  WebElementDescriptor proceed_element_descriptor;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutocheckoutPageMetaData);

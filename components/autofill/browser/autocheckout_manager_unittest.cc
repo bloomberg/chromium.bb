@@ -131,11 +131,9 @@ scoped_ptr<FormStructure> CreateTestFormStructureWithDefaultValues() {
   return form_structure.Pass();
 }
 
-scoped_ptr<WebElementDescriptor> CreateProceedElement() {
-  scoped_ptr<WebElementDescriptor> proceed_element(new WebElementDescriptor());
+void PopulateProceedElement(WebElementDescriptor* proceed_element) {
   proceed_element->descriptor = "#foo";
   proceed_element->retrieval_method = WebElementDescriptor::ID;
-  return proceed_element.Pass();
 }
 
 scoped_ptr<AutocheckoutPageMetaData> CreateStartOfFlowMetaData() {
@@ -143,7 +141,7 @@ scoped_ptr<AutocheckoutPageMetaData> CreateStartOfFlowMetaData() {
       new AutocheckoutPageMetaData());
   start_of_flow->current_page_number = 0;
   start_of_flow->total_pages = 3;
-  start_of_flow->proceed_element_descriptor = CreateProceedElement().Pass();
+  PopulateProceedElement(&start_of_flow->proceed_element_descriptor);
   return start_of_flow.Pass();
 }
 
@@ -151,14 +149,14 @@ scoped_ptr<AutocheckoutPageMetaData> CreateInFlowMetaData() {
   scoped_ptr<AutocheckoutPageMetaData> in_flow(new AutocheckoutPageMetaData());
   in_flow->current_page_number = 1;
   in_flow->total_pages = 3;
-  in_flow->proceed_element_descriptor = CreateProceedElement().Pass();
+  PopulateProceedElement(&in_flow->proceed_element_descriptor);
   return in_flow.Pass();
 }
 
 scoped_ptr<AutocheckoutPageMetaData> CreateNotInFlowMetaData() {
   scoped_ptr<AutocheckoutPageMetaData> not_in_flow(
       new AutocheckoutPageMetaData());
-  not_in_flow->proceed_element_descriptor = CreateProceedElement().Pass();
+  PopulateProceedElement(&not_in_flow->proceed_element_descriptor );
   return not_in_flow.Pass();
 }
 
@@ -167,7 +165,7 @@ scoped_ptr<AutocheckoutPageMetaData> CreateEndOfFlowMetaData() {
       new AutocheckoutPageMetaData());
   end_of_flow->current_page_number = 2;
   end_of_flow->total_pages = 3;
-  end_of_flow->proceed_element_descriptor = CreateProceedElement().Pass();
+  PopulateProceedElement(&end_of_flow->proceed_element_descriptor);
   return end_of_flow.Pass();
 }
 
@@ -176,7 +174,7 @@ scoped_ptr<AutocheckoutPageMetaData> CreateOnePageFlowMetaData() {
       new AutocheckoutPageMetaData());
   one_page_flow->current_page_number = 0;
   one_page_flow->total_pages = 1;
-  one_page_flow->proceed_element_descriptor = CreateProceedElement().Pass();
+  PopulateProceedElement(&one_page_flow->proceed_element_descriptor);
   return one_page_flow.Pass();
 }
 

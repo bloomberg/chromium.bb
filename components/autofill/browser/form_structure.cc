@@ -542,12 +542,8 @@ void FormStructure::ParseQueryResponse(
   page_meta_data->current_page_number = parse_handler.current_page_number();
   page_meta_data->total_pages = parse_handler.total_pages();
   if (parse_handler.proceed_element_descriptor()) {
-    page_meta_data->proceed_element_descriptor.reset(
-        new autofill::WebElementDescriptor(
-            *parse_handler.proceed_element_descriptor()));
-  } else {
-    page_meta_data->proceed_element_descriptor.reset(
-        new autofill::WebElementDescriptor());
+    page_meta_data->proceed_element_descriptor =
+        *parse_handler.proceed_element_descriptor();
   }
 
   metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);

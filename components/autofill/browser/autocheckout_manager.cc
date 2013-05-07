@@ -179,7 +179,7 @@ void AutocheckoutManager::FillForms() {
   host->Send(new AutofillMsg_FillFormsAndClick(
       host->GetRoutingID(),
       filled_forms,
-      *page_meta_data_->proceed_element_descriptor));
+      page_meta_data_->proceed_element_descriptor));
 }
 
 void AutocheckoutManager::OnClickFailed(AutocheckoutStatus status) {
