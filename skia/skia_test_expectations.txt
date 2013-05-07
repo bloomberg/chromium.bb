@@ -53,4 +53,7 @@
 crbug.com/237634 virtual/gpu/fast/canvas/image-pattern-rotate.html [ ImageOnlyFailure ]
 crbug.com/237634 virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
 
+# Font metric calculations were fixed in r9005
+crbug.com/238630 css2.1/t100801-c548-ln-ht-02-b-ag.html [ Failure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
