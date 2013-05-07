@@ -18,17 +18,6 @@
 class PrefRegistrySimple;
 class PrefService;
 
-namespace {
-
-// Default value for the volume pref, as a percent in the range [0.0, 100.0].
-const double kDefaultVolumeGainPercent = 75.0;
-
-// Values used for muted preference.
-const int kPrefMuteOff = 0;
-const int kPrefMuteOn = 1;
-
-}  // namespace
-
 namespace chromeos {
 
 class AudioDevicesPrefHandler;
@@ -43,9 +32,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
     // Called when output mute state changed.
     virtual void OnOutputMuteChanged();
-
-    // Called when input mute state changed.
-    virtual void OnInputGainChanged();
 
     // Called when input mute state changed.
     virtual void OnInputMuteChanged();
@@ -93,19 +79,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Returns true if audio input is muted.
   virtual bool IsInputMuted();
 
-  // Gets volume level in 0-100% range (0 being pure silence) for the current
-  // active node.
+  // Gets volume level in 0-100% range, 0 being pure silence.
   virtual int GetOutputVolumePercent();
-
-  // Gets volume level in 0-100% range (0 being pure silence) for a device.
-  virtual int GetOutputVolumePercentForDevice(uint64 device_id);
-
-  // Gets gain level in 0-100% range (0 being pure silence) for the current
-  // active node.
-  virtual int GetInputGainPercent();
-
-  // Gets volume level in 0-100% range (0 being pure silence) for a device.
-  virtual int GetInputGainPercentForDevice(uint64 device_id);
 
   // Returns node_id of the active output node.
   virtual uint64 GetActiveOutputNode() const;
@@ -127,9 +102,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // the threshold, then the sound is unmuted.
   virtual void SetOutputVolumePercent(int volume_percent);
 
-  // Sets gain level from 0-100%.
-  virtual void SetInputGainPercent(int gain_percent);
-
   // Adjusts volume up (positive percentage) or down (negative percentage).
   virtual void AdjustOutputVolumeByPercent(int adjust_by_percent);
 
@@ -145,20 +117,16 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Sets the active audio input node to the node with |node_id|.
   virtual void SetActiveInputNode(uint64 node_id);
 
-  // Sets volume/gain level from a device.
-  virtual void SetVolumeGainPercentForDevice(uint64 device_id, int value);
-
  protected:
   explicit CrasAudioHandler(
       scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
   virtual ~CrasAudioHandler();
 
  private:
-  // Overriden from CrasAudioClient::Observer.
+  // Overriden from CrasAudioHandler::Observer.
   virtual void AudioClientRestarted() OVERRIDE;
   virtual void OutputVolumeChanged(int volume) OVERRIDE;
   virtual void OutputMuteChanged(bool mute_on) OVERRIDE;
-  virtual void InputGainChanged(int gain) OVERRIDE;
   virtual void InputMuteChanged(bool mute_on) OVERRIDE;
   virtual void NodesChanged() OVERRIDE;
   virtual void ActiveOutputNodeChanged(uint64 node_id) OVERRIDE;
@@ -178,9 +146,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Sets output volume to specified value and notifies observers.
   void SetOutputVolumeInternal(int volume);
 
-  // Sets output volume to specified value and notifies observers.
-  void SetInputGainInternal(int gain);
-
   // Calling dbus to get nodes data.
   void GetNodes();
 
@@ -197,7 +162,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   bool output_mute_on_;
   bool input_mute_on_;
   int output_volume_;
-  int input_gain_;
   uint64 active_output_node_id_;
   uint64 active_input_node_id_;
   bool has_alternative_input_;

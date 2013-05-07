@@ -60,45 +60,18 @@ void AudioGetInfoFunction::OnGetInfoCompleted(const OutputInfo& output_info,
   if (success)
     results_ = api::audio::GetInfo::Results::Create(output_info, input_info);
   else
-    SetError("Error occurred when querying audio device information.");
+    SetError("Error occured when querying audio device information.");
   SendResponse(success);
 }
 
 bool AudioSetActiveDevicesFunction::RunImpl() {
-  scoped_ptr<api::audio::SetActiveDevices::Params> params(
-      api::audio::SetActiveDevices::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  AudioService* service =
-      AudioAPI::GetFactoryInstance()->GetForProfile(profile())->GetService();
-  DCHECK(service);
-
-  service->SetActiveDevices(params->ids);
-  return true;
+  // TODO: implement this.
+  return false;
 }
 
 bool AudioSetPropertiesFunction::RunImpl() {
-  scoped_ptr<api::audio::SetProperties::Params> params(
-      api::audio::SetProperties::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  AudioService* service =
-      AudioAPI::GetFactoryInstance()->GetForProfile(profile())->GetService();
-  DCHECK(service);
-
-  int volume_value = params->properties.volume.get() ?
-      *params->properties.volume : -1;
-
-  int gain_value = params->properties.gain.get() ?
-      *params->properties.gain : -1;
-
-  if (!service->SetDeviceProperties(params->id,
-                                    params->properties.is_muted,
-                                    volume_value,
-                                    gain_value))
-    return false;
-  else
-    return true;
+  // TODO: implement this.
+  return false;
 }
 
 }  // namespace extensions

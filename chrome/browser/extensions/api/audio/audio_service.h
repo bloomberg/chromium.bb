@@ -13,7 +13,6 @@ namespace extensions {
 
 typedef std::vector<linked_ptr<api::audio::OutputDeviceInfo> > OutputInfo;
 typedef std::vector<linked_ptr<api::audio::InputDeviceInfo> > InputInfo;
-typedef std::vector<std::string> DeviceIdList;
 
 class AudioService {
  public:
@@ -42,16 +41,6 @@ class AudioService {
   // Start to query audio device information. Should be called on UI thread.
   // The |callback| will be invoked once the query is completed.
   virtual void StartGetInfo(const GetInfoCallback& callback) = 0;
-
-  // Set the devices in the following list as active. This will only pick
-  // the first input and first active devices to set to active.
-  virtual void SetActiveDevices(const DeviceIdList& device_list) = 0;
-
-  // Set the muted and volume/gain properties of a device.
-  virtual bool SetDeviceProperties(const std::string& device_id,
-                                   bool muted,
-                                   int volume,
-                                   int gain) = 0;
 
  protected:
   AudioService() {}

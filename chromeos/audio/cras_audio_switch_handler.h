@@ -40,8 +40,6 @@ class CHROMEOS_EXPORT CrasAudioSwitchHandler
   // Gets the global instance. Initialize must be called first.
   static CrasAudioSwitchHandler* Get();
 
-  void UpdateActiveDevice();
-
  private:
   explicit CrasAudioSwitchHandler();
   virtual ~CrasAudioSwitchHandler();
