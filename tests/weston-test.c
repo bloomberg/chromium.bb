@@ -68,7 +68,7 @@ static void
 notify_pointer_position(struct weston_test *test, struct wl_resource *resource)
 {
 	struct weston_seat *seat = get_seat(test);
-	struct wl_pointer *pointer = seat->seat.pointer;
+	struct weston_pointer *pointer = seat->seat.pointer;
 
 	wl_test_send_pointer_position(resource, pointer->x, pointer->y);
 }
@@ -119,7 +119,7 @@ move_pointer(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_test *test = resource->data;
 	struct weston_seat *seat = get_seat(test);
-	struct wl_pointer *pointer = seat->seat.pointer;
+	struct weston_pointer *pointer = seat->seat.pointer;
 
 	test->compositor->focus = 1;
 

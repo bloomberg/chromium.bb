@@ -227,10 +227,10 @@ struct shell_surface {
 };
 
 struct shell_grab {
-	struct wl_pointer_grab grab;
+	struct weston_pointer_grab grab;
 	struct shell_surface *shsurf;
 	struct wl_listener shsurf_destroy_listener;
-	struct wl_pointer *pointer;
+	struct weston_pointer *pointer;
 };
 
 struct weston_move_grab {
@@ -252,7 +252,7 @@ struct shell_seat {
 	struct wl_listener seat_destroy_listener;
 
 	struct {
-		struct wl_pointer_grab grab;
+		struct weston_pointer_grab grab;
 		struct wl_list surfaces_list;
 		struct wl_client *client;
 		int32_t initial_up;
@@ -304,13 +304,13 @@ destroy_shell_grab_shsurf(struct wl_listener *listener, void *data)
 }
 
 static void
-popup_grab_end(struct wl_pointer *pointer);
+popup_grab_end(struct weston_pointer *pointer);
 
 static void
 shell_grab_start(struct shell_grab *grab,
-		 const struct wl_pointer_grab_interface *interface,
+		 const struct weston_pointer_grab_interface *interface,
 		 struct shell_surface *shsurf,
-		 struct wl_pointer *pointer,
+		 struct weston_pointer *pointer,
 		 enum desktop_shell_cursor cursor)
 {
 	struct desktop_shell *shell = shsurf->shell;
@@ -326,10 +326,10 @@ shell_grab_start(struct shell_grab *grab,
 	grab->pointer = pointer;
 	grab->grab.focus = &shsurf->surface->surface;
 
-	wl_pointer_start_grab(pointer, &grab->grab);
+	weston_pointer_start_grab(pointer, &grab->grab);
 	desktop_shell_send_grab_cursor(shell->child.desktop_shell, cursor);
-	wl_pointer_set_focus(pointer, &shell->grab_surface->surface,
-			     wl_fixed_from_int(0), wl_fixed_from_int(0));
+	weston_pointer_set_focus(pointer, &shell->grab_surface->surface,
+				 wl_fixed_from_int(0), wl_fixed_from_int(0));
 }
 
 static void
@@ -338,7 +338,7 @@ shell_grab_end(struct shell_grab *grab)
 	if (grab->shsurf)
 		wl_list_remove(&grab->shsurf_destroy_listener.link);
 
-	wl_pointer_end_grab(grab->pointer);
+	weston_pointer_end_grab(grab->pointer);
 }
 
 static void
@@ -1017,18 +1017,18 @@ bind_workspace_manager(struct wl_client *client,
 }
 
 static void
-noop_grab_focus(struct wl_pointer_grab *grab,
+noop_grab_focus(struct weston_pointer_grab *grab,
 		struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y)
 {
 	grab->focus = NULL;
 }
 
 static void
-move_grab_motion(struct wl_pointer_grab *grab,
+move_grab_motion(struct weston_pointer_grab *grab,
 		 uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_move_grab *move = (struct weston_move_grab *) grab;
-	struct wl_pointer *pointer = grab->pointer;
+	struct weston_pointer *pointer = grab->pointer;
 	struct shell_surface *shsurf = move->base.shsurf;
 	struct weston_surface *es;
 	int dx = wl_fixed_to_int(pointer->x + move->dx);
@@ -1046,12 +1046,12 @@ move_grab_motion(struct wl_pointer_grab *grab,
 }
 
 static void
-move_grab_button(struct wl_pointer_grab *grab,
+move_grab_button(struct weston_pointer_grab *grab,
 		 uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct shell_grab *shell_grab = container_of(grab, struct shell_grab,
 						    grab);
-	struct wl_pointer *pointer = grab->pointer;
+	struct weston_pointer *pointer = grab->pointer;
 	enum wl_pointer_button_state state = state_w;
 
 	if (pointer->button_count == 0 &&
@@ -1061,7 +1061,7 @@ move_grab_button(struct wl_pointer_grab *grab,
 	}
 }
 
-static const struct wl_pointer_grab_interface move_grab_interface = {
+static const struct weston_pointer_grab_interface move_grab_interface = {
 	noop_grab_focus,
 	move_grab_motion,
 	move_grab_button,
@@ -1116,11 +1116,11 @@ struct weston_resize_grab {
 };
 
 static void
-resize_grab_motion(struct wl_pointer_grab *grab,
+resize_grab_motion(struct weston_pointer_grab *grab,
 		   uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
-	struct wl_pointer *pointer = grab->pointer;
+	struct weston_pointer *pointer = grab->pointer;
 	struct shell_surface *shsurf = resize->base.shsurf;
 	int32_t width, height;
 	wl_fixed_t from_x, from_y;
@@ -1168,11 +1168,11 @@ static const struct weston_shell_client shell_client = {
 };
 
 static void
-resize_grab_button(struct wl_pointer_grab *grab,
+resize_grab_button(struct weston_pointer_grab *grab,
 		   uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
-	struct wl_pointer *pointer = grab->pointer;
+	struct weston_pointer *pointer = grab->pointer;
 	enum wl_pointer_button_state state = state_w;
 
 	if (pointer->button_count == 0 &&
@@ -1182,7 +1182,7 @@ resize_grab_button(struct wl_pointer_grab *grab,
 	}
 }
 
-static const struct wl_pointer_grab_interface resize_grab_interface = {
+static const struct weston_pointer_grab_interface resize_grab_interface = {
 	noop_grab_focus,
 	resize_grab_motion,
 	resize_grab_button,
@@ -1237,7 +1237,7 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 }
 
 static void
-busy_cursor_grab_focus(struct wl_pointer_grab *base,
+busy_cursor_grab_focus(struct weston_pointer_grab *base,
 		       struct wl_surface *surface, int32_t x, int32_t y)
 {
 	struct shell_grab *grab = (struct shell_grab *) base;
@@ -1249,13 +1249,13 @@ busy_cursor_grab_focus(struct wl_pointer_grab *base,
 }
 
 static void
-busy_cursor_grab_motion(struct wl_pointer_grab *grab,
+busy_cursor_grab_motion(struct weston_pointer_grab *grab,
 			uint32_t time, int32_t x, int32_t y)
 {
 }
 
 static void
-busy_cursor_grab_button(struct wl_pointer_grab *base,
+busy_cursor_grab_button(struct weston_pointer_grab *base,
 			uint32_t time, uint32_t button, uint32_t state)
 {
 	struct shell_grab *grab = (struct shell_grab *) base;
@@ -1275,14 +1275,14 @@ busy_cursor_grab_button(struct wl_pointer_grab *base,
 	}
 }
 
-static const struct wl_pointer_grab_interface busy_cursor_grab_interface = {
+static const struct weston_pointer_grab_interface busy_cursor_grab_interface = {
 	busy_cursor_grab_focus,
 	busy_cursor_grab_motion,
 	busy_cursor_grab_button,
 };
 
 static void
-set_busy_cursor(struct shell_surface *shsurf, struct wl_pointer *pointer)
+set_busy_cursor(struct shell_surface *shsurf, struct weston_pointer *pointer)
 {
 	struct shell_grab *grab;
 
@@ -1295,7 +1295,7 @@ set_busy_cursor(struct shell_surface *shsurf, struct wl_pointer *pointer)
 }
 
 static void
-end_busy_cursor(struct shell_surface *shsurf, struct wl_pointer *pointer)
+end_busy_cursor(struct shell_surface *shsurf, struct weston_pointer *pointer)
 {
 	struct shell_grab *grab = (struct shell_grab *) pointer->grab;
 
@@ -1367,7 +1367,7 @@ ping_handler(struct weston_surface *surface, uint32_t serial)
 static void
 handle_pointer_focus(struct wl_listener *listener, void *data)
 {
-	struct wl_pointer *pointer = data;
+	struct weston_pointer *pointer = data;
 	struct weston_surface *surface =
 		(struct weston_surface *) pointer->focus;
 	struct weston_compositor *compositor;
@@ -1409,7 +1409,7 @@ shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 	struct desktop_shell *shell = shsurf->shell;
 	struct weston_seat *seat;
 	struct weston_compositor *ec = shsurf->surface->compositor;
-	struct wl_pointer *pointer;
+	struct weston_pointer *pointer;
 	int was_unresponsive;
 
 	if (shsurf->ping_timer == NULL)
@@ -1856,7 +1856,7 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	set_fullscreen(shsurf, method, framerate, output);
 }
 
-static const struct wl_pointer_grab_interface popup_grab_interface;
+static const struct weston_pointer_grab_interface popup_grab_interface;
 
 static void
 destroy_shell_seat(struct wl_listener *listener, void *data)
@@ -1867,7 +1867,7 @@ destroy_shell_seat(struct wl_listener *listener, void *data)
 	struct shell_surface *shsurf, *prev = NULL;
 
 	if (shseat->popup_grab.grab.interface == &popup_grab_interface) {
-		wl_pointer_end_grab(shseat->popup_grab.grab.pointer);
+		weston_pointer_end_grab(shseat->popup_grab.grab.pointer);
 		shseat->popup_grab.client = NULL;
 
 		wl_list_for_each(shsurf, &shseat->popup_grab.surfaces_list, popup.grab_link) {
@@ -1919,29 +1919,29 @@ get_shell_seat(struct weston_seat *seat)
 }
 
 static void
-popup_grab_focus(struct wl_pointer_grab *grab,
+popup_grab_focus(struct weston_pointer_grab *grab,
 		 struct wl_surface *surface,
 		 wl_fixed_t x,
 		 wl_fixed_t y)
 {
-	struct wl_pointer *pointer = grab->pointer;
+	struct weston_pointer *pointer = grab->pointer;
 	struct shell_seat *shseat =
 	    container_of(grab, struct shell_seat, popup_grab.grab);
 	struct wl_client *client = shseat->popup_grab.client;
 
 	if (surface && surface->resource.client == client) {
-		wl_pointer_set_focus(pointer, surface, x, y);
+		weston_pointer_set_focus(pointer, surface, x, y);
 		grab->focus = surface;
 	} else {
-		wl_pointer_set_focus(pointer, NULL,
-				     wl_fixed_from_int(0),
-				     wl_fixed_from_int(0));
+		weston_pointer_set_focus(pointer, NULL,
+					 wl_fixed_from_int(0),
+					 wl_fixed_from_int(0));
 		grab->focus = NULL;
 	}
 }
 
 static void
-popup_grab_motion(struct wl_pointer_grab *grab,
+popup_grab_motion(struct weston_pointer_grab *grab,
 		  uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct wl_resource *resource;
@@ -1952,7 +1952,7 @@ popup_grab_motion(struct wl_pointer_grab *grab,
 }
 
 static void
-popup_grab_button(struct wl_pointer_grab *grab,
+popup_grab_button(struct weston_pointer_grab *grab,
 		  uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct wl_resource *resource;
@@ -1977,23 +1977,23 @@ popup_grab_button(struct wl_pointer_grab *grab,
 		shseat->popup_grab.initial_up = 1;
 }
 
-static const struct wl_pointer_grab_interface popup_grab_interface = {
+static const struct weston_pointer_grab_interface popup_grab_interface = {
 	popup_grab_focus,
 	popup_grab_motion,
 	popup_grab_button,
 };
 
 static void
-popup_grab_end(struct wl_pointer *pointer)
+popup_grab_end(struct weston_pointer *pointer)
 {
-	struct wl_pointer_grab *grab = pointer->grab;
+	struct weston_pointer_grab *grab = pointer->grab;
 	struct shell_seat *shseat =
 	    container_of(grab, struct shell_seat, popup_grab.grab);
 	struct shell_surface *shsurf;
 	struct shell_surface *prev = NULL;
 
 	if (pointer->grab->interface == &popup_grab_interface) {
-		wl_pointer_end_grab(grab->pointer);
+		weston_pointer_end_grab(grab->pointer);
 		shseat->popup_grab.client = NULL;
 		shseat->popup_grab.grab.interface = NULL;
 		assert(!wl_list_empty(&shseat->popup_grab.surfaces_list));
@@ -2025,7 +2025,7 @@ add_popup_grab(struct shell_surface *shsurf, struct shell_seat *shseat)
 		if (shseat->seat->pointer.button_count > 0)
 			shseat->popup_grab.initial_up = 0;
 
-		wl_pointer_start_grab(seat->pointer, &shseat->popup_grab.grab);
+		weston_pointer_start_grab(seat->pointer, &shseat->popup_grab.grab);
 	}
 	wl_list_insert(&shseat->popup_grab.surfaces_list, &shsurf->popup.grab_link);
 }
@@ -2038,7 +2038,7 @@ remove_popup_grab(struct shell_surface *shsurf)
 	wl_list_remove(&shsurf->popup.grab_link);
 	wl_list_init(&shsurf->popup.grab_link);
 	if (wl_list_empty(&shseat->popup_grab.surfaces_list)) {
-		wl_pointer_end_grab(shseat->popup_grab.grab.pointer);
+		weston_pointer_end_grab(shseat->popup_grab.grab.pointer);
 		shseat->popup_grab.grab.interface = NULL;
 	}
 }
@@ -2668,12 +2668,12 @@ terminate_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 }
 
 static void
-rotate_grab_motion(struct wl_pointer_grab *grab,
+rotate_grab_motion(struct weston_pointer_grab *grab,
 		   uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	struct rotate_grab *rotate =
 		container_of(grab, struct rotate_grab, base.grab);
-	struct wl_pointer *pointer = grab->pointer;
+	struct weston_pointer *pointer = grab->pointer;
 	struct shell_surface *shsurf = rotate->base.shsurf;
 	struct weston_surface *surface;
 	float cx, cy, dx, dy, cposx, cposy, dposx, dposy, r;
@@ -2734,12 +2734,12 @@ rotate_grab_motion(struct wl_pointer_grab *grab,
 }
 
 static void
-rotate_grab_button(struct wl_pointer_grab *grab,
-		 uint32_t time, uint32_t button, uint32_t state_w)
+rotate_grab_button(struct weston_pointer_grab *grab,
+		   uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct rotate_grab *rotate =
 		container_of(grab, struct rotate_grab, base.grab);
-	struct wl_pointer *pointer = grab->pointer;
+	struct weston_pointer *pointer = grab->pointer;
 	struct shell_surface *shsurf = rotate->base.shsurf;
 	enum wl_pointer_button_state state = state_w;
 
@@ -2753,7 +2753,7 @@ rotate_grab_button(struct wl_pointer_grab *grab,
 	}
 }
 
-static const struct wl_pointer_grab_interface rotate_grab_interface = {
+static const struct weston_pointer_grab_interface rotate_grab_interface = {
 	noop_grab_focus,
 	rotate_grab_motion,
 	rotate_grab_button,
