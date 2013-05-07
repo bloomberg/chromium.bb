@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -71,9 +72,7 @@ bool DefaultLocaleHandler::Validate(
   }
 
   // Treat all folders under _locales as valid locales.
-  file_util::FileEnumerator locales(path,
-                                    false,
-                                    file_util::FileEnumerator::DIRECTORIES);
+  base::FileEnumerator locales(path, false, base::FileEnumerator::DIRECTORIES);
 
   std::set<std::string> all_locales;
   extension_l10n_util::GetAllLocales(&all_locales);

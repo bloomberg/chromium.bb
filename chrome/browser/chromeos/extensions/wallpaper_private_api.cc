@@ -10,6 +10,7 @@
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -885,8 +886,8 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::GetList(
     base::FilePath wallpaper_dir;
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
     if (file_util::DirectoryExists(wallpaper_dir)) {
-      file_util::FileEnumerator files(wallpaper_dir, false,
-                                      file_util::FileEnumerator::FILES);
+      base::FileEnumerator files(wallpaper_dir, false,
+                                 base::FileEnumerator::FILES);
       for (base::FilePath current = files.Next(); !current.empty();
            current = files.Next()) {
         std::string file_name = current.BaseName().RemoveExtension().value();
@@ -899,8 +900,8 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::GetList(
     base::FilePath custom_thumbnails_dir = chromeos::WallpaperManager::Get()->
         GetCustomWallpaperPath(chromeos::kThumbnailWallpaperSubDir, email, "");
     if (file_util::DirectoryExists(custom_thumbnails_dir)) {
-      file_util::FileEnumerator files(custom_thumbnails_dir, false,
-                                      file_util::FileEnumerator::FILES);
+      base::FileEnumerator files(custom_thumbnails_dir, false,
+                                 base::FileEnumerator::FILES);
       std::set<std::string> file_name_set;
       for (base::FilePath current = files.Next(); !current.empty();
            current = files.Next()) {

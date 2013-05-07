@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -62,10 +63,8 @@ bool InitCachePaths(const std::vector<base::FilePath>& cache_paths) {
 // Do not remove recursively as we don't want to touch <gcache>/tmp/downloads,
 // which is used for user initiated downloads like "Save As"
 void RemoveAllFiles(const base::FilePath& directory) {
-  using file_util::FileEnumerator;
-
-  FileEnumerator enumerator(directory, false /* recursive */,
-                            FileEnumerator::FILES);
+  base::FileEnumerator enumerator(directory, false /* recursive */,
+                                  base::FileEnumerator::FILES);
   for (base::FilePath file_path = enumerator.Next(); !file_path.empty();
        file_path = enumerator.Next()) {
     DVLOG(1) << "Removing " << file_path.value();
@@ -131,11 +130,9 @@ void DeleteFilesSelectively(const base::FilePath& path_to_delete_pattern,
   // base name of |path_to_delete_pattern|.
   // If a file is not |path_to_keep|, delete it.
   bool success = true;
-  file_util::FileEnumerator enumerator(
-      path_to_delete_pattern.DirName(),
+  base::FileEnumerator enumerator(path_to_delete_pattern.DirName(),
       false,  // not recursive
-      file_util::FileEnumerator::FILES |
-      file_util::FileEnumerator::SHOW_SYM_LINKS,
+      base::FileEnumerator::FILES | base::FileEnumerator::SHOW_SYM_LINKS,
       path_to_delete_pattern.BaseName().value());
   for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {

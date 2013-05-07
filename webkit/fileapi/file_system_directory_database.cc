@@ -10,6 +10,7 @@
 #include <stack>
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
@@ -281,17 +282,13 @@ bool DatabaseCheckHelper::ScanDirectory() {
     base::FilePath dir_path = pending_directories.top();
     pending_directories.pop();
 
-    file_util::FileEnumerator file_enum(
+    base::FileEnumerator file_enum(
         dir_path.empty() ? path_ : path_.Append(dir_path),
         false /* not recursive */,
-        file_util::FileEnumerator::DIRECTORIES |
-        file_util::FileEnumerator::FILES);
+        base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES);
 
     base::FilePath absolute_file_path;
     while (!(absolute_file_path = file_enum.Next()).empty()) {
-      file_util::FileEnumerator::FindInfo find_info;
-      file_enum.GetFindInfo(&find_info);
-
       base::FilePath relative_file_path;
       if (!path_.AppendRelativePath(absolute_file_path, &relative_file_path))
         return false;
@@ -300,7 +297,7 @@ bool DatabaseCheckHelper::ScanDirectory() {
                     relative_file_path) != kExcludes + arraysize(kExcludes))
         continue;
 
-      if (file_util::FileEnumerator::IsDirectory(find_info)) {
+      if (file_enum.GetInfo().IsDirectory()) {
         pending_directories.push(relative_file_path);
         continue;
       }

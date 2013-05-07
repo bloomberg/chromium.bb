@@ -5,6 +5,7 @@
 #include <list>
 #include <utility>
 
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/file_util_icu.h"
@@ -63,18 +64,17 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
            current < file_list_.size();
            previous++, current++) {
         // Directories should come before files.
-        if (file_util::FileEnumerator::IsDirectory(file_list_[previous]) &&
-            !file_util::FileEnumerator::IsDirectory(file_list_[current])) {
+        if (file_list_[previous].IsDirectory() &&
+            !file_list_[current].IsDirectory()) {
           continue;
         }
         EXPECT_NE(FILE_PATH_LITERAL(".."),
-            file_util::FileEnumerator::GetFilename(
-                file_list_[current]).BaseName().value());
-        EXPECT_EQ(file_util::FileEnumerator::IsDirectory(file_list_[previous]),
-                  file_util::FileEnumerator::IsDirectory(file_list_[current]));
+                  file_list_[current].GetName().BaseName().value());
+        EXPECT_EQ(file_list_[previous].IsDirectory(),
+                  file_list_[current].IsDirectory());
         EXPECT_TRUE(file_util::LocaleAwareCompareFilenames(
-            file_util::FileEnumerator::GetFilename(file_list_[previous]),
-            file_util::FileEnumerator::GetFilename(file_list_[current])));
+            file_list_[previous].GetName(),
+            file_list_[current].GetName()));
       }
     }
   }
@@ -87,7 +87,7 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
   int error_;
   bool recursive_;
   bool quit_loop_after_each_file_;
-  std::vector<file_util::FileEnumerator::FindInfo> file_list_;
+  std::vector<base::FileEnumerator::FileInfo> file_list_;
   std::vector<base::FilePath> paths_;
 };
 

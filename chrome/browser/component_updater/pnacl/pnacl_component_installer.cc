@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
@@ -126,8 +127,8 @@ bool GetLatestPnaclDirectory(PnaclComponentInstaller* pci,
   // Enumerate all versions starting from the base directory.
   base::FilePath base_dir = pci->GetPnaclBaseDirectory();
   bool found = false;
-  file_util::FileEnumerator
-      file_enumerator(base_dir, false, file_util::FileEnumerator::DIRECTORIES);
+  base::FileEnumerator
+      file_enumerator(base_dir, false, base::FileEnumerator::DIRECTORIES);
   for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
     Version version(path.BaseName().MaybeAsASCII());

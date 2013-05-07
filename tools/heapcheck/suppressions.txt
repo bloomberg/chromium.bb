@@ -595,8 +595,8 @@
    fun:std::string::_S_construct_aux
    fun:std::string::_S_construct
    fun:*basic_string*
-   fun:file_util::FileEnumerator::ReadDirectory
-   fun:file_util::FileEnumerator::Next
+   fun:base::FileEnumerator::ReadDirectory
+   fun:base::FileEnumerator::Next
    fun:::RelayReadDirectory::RunWork
    fun:::MessageLoopRelay::ProcessOnTargetThread
 }

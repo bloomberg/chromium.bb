@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -19,9 +20,8 @@ void CorruptDatabase(const base::FilePath& db_path,
                      leveldb::FileType type,
                      ptrdiff_t offset,
                      size_t size) {
-  file_util::FileEnumerator file_enum(db_path, false /* not recursive */,
-      file_util::FileEnumerator::DIRECTORIES |
-      file_util::FileEnumerator::FILES);
+  base::FileEnumerator file_enum(db_path, false /* not recursive */,
+      base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES);
   base::FilePath file_path;
   base::FilePath picked_file_path;
   uint64 picked_file_number = kuint64max;
@@ -81,9 +81,8 @@ void CorruptDatabase(const base::FilePath& db_path,
 
 void DeleteDatabaseFile(const base::FilePath& db_path,
                         leveldb::FileType type) {
-  file_util::FileEnumerator file_enum(db_path, false /* not recursive */,
-      file_util::FileEnumerator::DIRECTORIES |
-      file_util::FileEnumerator::FILES);
+  base::FileEnumerator file_enum(db_path, false /* not recursive */,
+      base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES);
   base::FilePath file_path;
   while (!(file_path = file_enum.Next()).empty()) {
     uint64 number = kuint64max;

@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
@@ -419,8 +420,7 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
 #endif
 
   // Get search engine definition from file system.
-  file_util::FileEnumerator engines(app_path, false,
-                                    file_util::FileEnumerator::FILES);
+  base::FileEnumerator engines(app_path, false, base::FileEnumerator::FILES);
   for (base::FilePath engine_path = engines.Next();
        !engine_path.value().empty(); engine_path = engines.Next()) {
     files->push_back(engine_path);

@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -77,10 +78,10 @@ content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
   }
 
   // Find most recent formal assessment results.
-  file_util::FileEnumerator file_enumerator(
+  base::FileEnumerator file_enumerator(
       base::FilePath(winsat_results_path),
       false,  // not recursive
-      file_util::FileEnumerator::FILES,
+      base::FileEnumerator::FILES,
       FILE_PATH_LITERAL("* * Formal.Assessment (*).WinSAT.xml"));
 
   base::FilePath current_results;

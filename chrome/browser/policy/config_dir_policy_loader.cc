@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -100,8 +101,8 @@ base::Time ConfigDirPolicyLoader::LastModificationTime() {
       continue;
 
     // Enumerate the files and find the most recent modification timestamp.
-    file_util::FileEnumerator file_enumerator(path, false,
-                                              file_util::FileEnumerator::FILES);
+    base::FileEnumerator file_enumerator(path, false,
+                                         base::FileEnumerator::FILES);
     for (base::FilePath config_file = file_enumerator.Next();
          !config_file.empty();
          config_file = file_enumerator.Next()) {
@@ -118,8 +119,8 @@ void ConfigDirPolicyLoader::LoadFromPath(const base::FilePath& path,
                                          PolicyBundle* bundle) {
   // Enumerate the files and sort them lexicographically.
   std::set<base::FilePath> files;
-  file_util::FileEnumerator file_enumerator(path, false,
-                                            file_util::FileEnumerator::FILES);
+  base::FileEnumerator file_enumerator(path, false,
+                                       base::FileEnumerator::FILES);
   for (base::FilePath config_file_path = file_enumerator.Next();
        !config_file_path.empty(); config_file_path = file_enumerator.Next())
     files.insert(config_file_path);

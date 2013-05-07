@@ -116,27 +116,17 @@ void URLRequestFileDirJob::OnListFile(
   }
 
 #if defined(OS_WIN)
-  int64 size = (static_cast<unsigned __int64>(data.info.nFileSizeHigh) << 32) |
-      data.info.nFileSizeLow;
-
-  // Note that we should not convert ftLastWriteTime to the local time because
-  // ICU's datetime formatting APIs expect time in UTC and take into account
-  // the timezone before formatting.
-  data_.append(GetDirectoryListingEntry(
-      data.info.cFileName,
-      std::string(),
-      ((data.info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0),
-      size,
-      base::Time::FromFileTime(data.info.ftLastWriteTime)));
+  std::string raw_bytes;  // Empty on Windows means UTF-8 encoded name.
 #elif defined(OS_POSIX)
   // TOOD(jungshik): The same issue as for the directory name.
-  data_.append(GetDirectoryListingEntry(
-      WideToUTF16(base::SysNativeMBToWide(data.info.filename)),
-      data.info.filename,
-      S_ISDIR(data.info.stat.st_mode),
-      data.info.stat.st_size,
-      base::Time::FromTimeT(data.info.stat.st_mtime)));
+  const std::string& raw_bytes = data.info.GetName().value();
 #endif
+  data_.append(GetDirectoryListingEntry(
+      data.info.GetName().LossyDisplayName(),
+      raw_bytes,
+      data.info.IsDirectory(),
+      data.info.GetSize(),
+      data.info.GetLastModifiedTime()));
 
   // TODO(darin): coalesce more?
   CompleteRead();

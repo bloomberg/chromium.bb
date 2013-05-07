@@ -10,6 +10,7 @@
 #include "base/at_exit.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
@@ -454,8 +455,8 @@ class ChromiumEnv : public Env, public UMALogger {
   virtual Status GetChildren(const std::string& dir,
                              std::vector<std::string>* result) {
     result->clear();
-    ::file_util::FileEnumerator iter(
-        CreateFilePath(dir), false, ::file_util::FileEnumerator::FILES);
+    base::FileEnumerator iter(
+        CreateFilePath(dir), false, base::FileEnumerator::FILES);
     base::FilePath current = iter.Next();
     while (!current.empty()) {
       result->push_back(FilePathToString(current.BaseName()));

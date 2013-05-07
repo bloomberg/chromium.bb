@@ -26,6 +26,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -39,7 +40,6 @@
 using base::TimeTicks;
 using file_util::CloseFile;
 using file_util::DirectoryExists;
-using file_util::FileEnumerator;
 using file_util::OpenFile;
 using file_util::PathExists;
 using std::queue;
@@ -389,7 +389,7 @@ int main(int argc, char* argv[]) {
 
   if (DirectoryExists(inPath)) {
     LOG(INFO) << "(input path is a directory)";
-    FileEnumerator dirItr(inPath, true, FileEnumerator::FILES);
+    base::FileEnumerator dirItr(inPath, true, base::FileEnumerator::FILES);
     for (base::FilePath f = dirItr.Next(); !f.empty(); f = dirItr.Next()) {
       sim.QueueTest(f);
     }

@@ -20,7 +20,6 @@
 #include <stdio.h>
 
 #include <set>
-#include <stack>
 #include <string>
 #include <vector>
 
@@ -117,9 +116,9 @@ BASE_EXPORT bool CopyFileUnsafe(const base::FilePath& from_path,
 
 // Copies the given path, and optionally all subdirectories and their contents
 // as well.
-// If there are files existing under to_path, always overwrite.
-// Returns true if successful, false otherwise.
-// Don't use wildcards on the names, it may stop working without notice.
+//
+// If there are files existing under to_path, always overwrite. Returns true
+// if successful, false otherwise. Wildcards on the names are not supported.
 //
 // If you only need to copy a file use CopyFile, it's faster.
 BASE_EXPORT bool CopyDirectory(const base::FilePath& from_path,
@@ -421,113 +420,6 @@ class ScopedFDClose {
 
 typedef scoped_ptr_malloc<int, ScopedFDClose> ScopedFD;
 #endif  // OS_POSIX
-
-// A class for enumerating the files in a provided path. The order of the
-// results is not guaranteed.
-//
-// DO NOT USE FROM THE MAIN THREAD of your application unless it is a test
-// program where latency does not matter. This class is blocking.
-class BASE_EXPORT FileEnumerator {
- public:
-#if defined(OS_WIN)
-  typedef WIN32_FIND_DATA FindInfo;
-#elif defined(OS_POSIX)
-  typedef struct {
-    struct stat stat;
-    std::string filename;
-  } FindInfo;
-#endif
-
-  enum FileType {
-    FILES                 = 1 << 0,
-    DIRECTORIES           = 1 << 1,
-    INCLUDE_DOT_DOT       = 1 << 2,
-#if defined(OS_POSIX)
-    SHOW_SYM_LINKS        = 1 << 4,
-#endif
-  };
-
-  // |root_path| is the starting directory to search for. It may or may not end
-  // in a slash.
-  //
-  // If |recursive| is true, this will enumerate all matches in any
-  // subdirectories matched as well. It does a breadth-first search, so all
-  // files in one directory will be returned before any files in a
-  // subdirectory.
-  //
-  // |file_type|, a bit mask of FileType, specifies whether the enumerator
-  // should match files, directories, or both.
-  //
-  // |pattern| is an optional pattern for which files to match. This
-  // works like shell globbing. For example, "*.txt" or "Foo???.doc".
-  // However, be careful in specifying patterns that aren't cross platform
-  // since the underlying code uses OS-specific matching routines.  In general,
-  // Windows matching is less featureful than others, so test there first.
-  // If unspecified, this will match all files.
-  // NOTE: the pattern only matches the contents of root_path, not files in
-  // recursive subdirectories.
-  // TODO(erikkay): Fix the pattern matching to work at all levels.
-  FileEnumerator(const base::FilePath& root_path,
-                 bool recursive,
-                 int file_type);
-  FileEnumerator(const base::FilePath& root_path,
-                 bool recursive,
-                 int file_type,
-                 const base::FilePath::StringType& pattern);
-  ~FileEnumerator();
-
-  // Returns an empty string if there are no more results.
-  base::FilePath Next();
-
-  // Write the file info into |info|.
-  void GetFindInfo(FindInfo* info);
-
-  // Looks inside a FindInfo and determines if it's a directory.
-  static bool IsDirectory(const FindInfo& info);
-
-  static base::FilePath GetFilename(const FindInfo& find_info);
-  static int64 GetFilesize(const FindInfo& find_info);
-  static base::Time GetLastModifiedTime(const FindInfo& find_info);
-
- private:
-  // Returns true if the given path should be skipped in enumeration.
-  bool ShouldSkip(const base::FilePath& path);
-
-
-#if defined(OS_WIN)
-  // True when find_data_ is valid.
-  bool has_find_data_;
-  WIN32_FIND_DATA find_data_;
-  HANDLE find_handle_;
-#elif defined(OS_POSIX)
-  struct DirectoryEntryInfo {
-    base::FilePath filename;
-    struct stat stat;
-  };
-
-  // Read the filenames in source into the vector of DirectoryEntryInfo's
-  static bool ReadDirectory(std::vector<DirectoryEntryInfo>* entries,
-                            const base::FilePath& source, bool show_links);
-
-  // The files in the current directory
-  std::vector<DirectoryEntryInfo> directory_entries_;
-
-  // The next entry to use from the directory_entries_ vector
-  size_t current_directory_entry_;
-#endif
-
-  base::FilePath root_path_;
-  bool recursive_;
-  int file_type_;
-  base::FilePath::StringType pattern_;  // Empty when we want to find
-                                        // everything.
-
-  // A stack that keeps track of which subdirectories we still need to
-  // enumerate in the breadth-first search.
-  std::stack<base::FilePath> pending_paths_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileEnumerator);
-};
 
 #if defined(OS_LINUX)
 // Broad categories of file systems as returned by statfs() on Linux.

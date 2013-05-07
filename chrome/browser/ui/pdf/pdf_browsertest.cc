@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/hash.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -314,10 +315,10 @@ IN_PROC_BROWSER_TEST_P(PDFBrowserTest, Loading) {
                 content::Source<NavigationController>(controller));
   std::string base_url = std::string("files/");
 
-  file_util::FileEnumerator file_enumerator(
+  base::FileEnumerator file_enumerator(
       ui_test_utils::GetTestFilePath(GetPDFTestDir(), base::FilePath()),
       false,
-      file_util::FileEnumerator::FILES,
+      base::FileEnumerator::FILES,
       FILE_PATH_LITERAL("*.pdf"));
   for (base::FilePath file_path = file_enumerator.Next();
        !file_path.empty();

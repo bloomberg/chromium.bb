@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/platform_file.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
@@ -219,7 +220,7 @@ void FileSelectHelper::OnListFile(
   // Directory upload returns directories via a "." file, so that
   // empty directories are included.  This util call just checks
   // the flags in the structure; there's no file I/O going on.
-  if (file_util::FileEnumerator::IsDirectory(data.info))
+  if (data.info.IsDirectory())
     entry->results_.push_back(data.path.Append(FILE_PATH_LITERAL(".")));
   else
     entry->results_.push_back(data.path);

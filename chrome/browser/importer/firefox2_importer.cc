@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/message_loop.h"
@@ -624,9 +625,9 @@ void Firefox2Importer::HTMLUnescape(string16* text) {
 void Firefox2Importer::FindXMLFilesInDir(
     const base::FilePath& dir,
     std::vector<base::FilePath>* xml_files) {
-  file_util::FileEnumerator file_enum(dir, false,
-                                      file_util::FileEnumerator::FILES,
-                                      FILE_PATH_LITERAL("*.xml"));
+  base::FileEnumerator file_enum(dir, false,
+                                 base::FileEnumerator::FILES,
+                                 FILE_PATH_LITERAL("*.xml"));
   base::FilePath file(file_enum.Next());
   while (!file.empty()) {
     xml_files->push_back(file);

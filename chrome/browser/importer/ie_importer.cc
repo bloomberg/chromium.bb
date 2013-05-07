@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -816,8 +817,8 @@ void IEImporter::ParseFavoritesFolder(
   // Favorites path length.  Make sure it doesn't include the trailing \.
   size_t favorites_path_len =
       favorites_path.StripTrailingSeparators().value().size();
-  file_util::FileEnumerator file_enumerator(
-      favorites_path, true, file_util::FileEnumerator::FILES);
+  base::FileEnumerator file_enumerator(
+      favorites_path, true, base::FileEnumerator::FILES);
   while (!(file = file_enumerator.Next()).value().empty() && !cancelled())
     file_list.push_back(file.value());
 

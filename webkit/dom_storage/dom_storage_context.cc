@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/time.h"
@@ -17,8 +18,6 @@
 #include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/dom_storage/session_storage_database.h"
 #include "webkit/quota/special_storage_policy.h"
-
-using file_util::FileEnumerator;
 
 namespace dom_storage {
 
@@ -87,18 +86,17 @@ void DomStorageContext::GetLocalStorageUsage(
     bool include_file_info) {
   if (localstorage_directory_.empty())
     return;
-  FileEnumerator enumerator(localstorage_directory_, false,
-                            FileEnumerator::FILES);
+  base::FileEnumerator enumerator(localstorage_directory_, false,
+                                  base::FileEnumerator::FILES);
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     if (path.MatchesExtension(DomStorageArea::kDatabaseFileExtension)) {
       LocalStorageUsageInfo info;
       info.origin = DomStorageArea::OriginFromDatabaseFileName(path);
       if (include_file_info) {
-        FileEnumerator::FindInfo find_info;
-        enumerator.GetFindInfo(&find_info);
-        info.data_size = FileEnumerator::GetFilesize(find_info);
-        info.last_modified = FileEnumerator::GetLastModifiedTime(find_info);
+        base::FileEnumerator::FileInfo find_info = enumerator.GetInfo();
+        info.data_size = find_info.GetSize();
+        info.last_modified = find_info.GetLastModifiedTime();
       }
       infos->push_back(info);
     }

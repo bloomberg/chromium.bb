@@ -10,6 +10,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
@@ -290,8 +291,8 @@ int main(int argc, char* argv[]) {
 
   message_loop.RunUntilIdle();
 
-  file_util::FileEnumerator file_iterator(profile.GetPath(), false,
-      file_util::FileEnumerator::FILES);
+  base::FileEnumerator file_iterator(profile.GetPath(), false,
+                                     base::FileEnumerator::FILES);
   base::FilePath path = file_iterator.Next();
   while (!path.empty()) {
     base::FilePath dst_file = dst_dir.Append(path.BaseName());

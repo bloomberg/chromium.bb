@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -133,9 +134,9 @@ bool FileSystemOriginDatabase::RepairDatabase(const std::string& db_path) {
 
   // See if the repaired entries match with what we have on disk.
   std::set<base::FilePath> directories;
-  file_util::FileEnumerator file_enum(file_system_directory_,
-                                      false /* recursive */,
-                                      file_util::FileEnumerator::DIRECTORIES);
+  base::FileEnumerator file_enum(file_system_directory_,
+                                 false /* recursive */,
+                                 base::FileEnumerator::DIRECTORIES);
   base::FilePath path_each;
   while (!(path_each = file_enum.Next()).empty())
     directories.insert(path_each.BaseName());

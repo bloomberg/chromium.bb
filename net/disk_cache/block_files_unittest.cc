@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "net/disk_cache/block_files.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/disk_cache_test_base.h"
@@ -15,7 +16,7 @@ namespace {
 
 // Returns the number of files in this folder.
 int NumberOfFiles(const base::FilePath& path) {
-  file_util::FileEnumerator iter(path, false, file_util::FileEnumerator::FILES);
+  base::FileEnumerator iter(path, false, base::FileEnumerator::FILES);
   int count = 0;
   for (base::FilePath file = iter.Next(); !file.value().empty();
        file = iter.Next()) {

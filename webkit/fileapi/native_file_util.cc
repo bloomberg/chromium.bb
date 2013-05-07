@@ -5,6 +5,7 @@
 #include "webkit/fileapi/native_file_util.h"
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 
@@ -55,27 +56,27 @@ class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   virtual bool IsDirectory() OVERRIDE;
 
  private:
-  file_util::FileEnumerator file_enum_;
-  file_util::FileEnumerator::FindInfo file_util_info_;
+  base::FileEnumerator file_enum_;
+  base::FileEnumerator::FileInfo file_util_info_;
 };
 
 base::FilePath NativeFileEnumerator::Next() {
   base::FilePath rv = file_enum_.Next();
   if (!rv.empty())
-    file_enum_.GetFindInfo(&file_util_info_);
+    file_util_info_ = file_enum_.GetInfo();
   return rv;
 }
 
 int64 NativeFileEnumerator::Size() {
-  return file_util::FileEnumerator::GetFilesize(file_util_info_);
+  return file_util_info_.GetSize();
 }
 
 base::Time NativeFileEnumerator::LastModifiedTime() {
-  return file_util::FileEnumerator::GetLastModifiedTime(file_util_info_);
+  return file_util_info_.GetLastModifiedTime();
 }
 
 bool NativeFileEnumerator::IsDirectory() {
-  return file_util::FileEnumerator::IsDirectory(file_util_info_);
+  return file_util_info_.IsDirectory();
 }
 
 PlatformFileError NativeFileUtil::CreateOrOpen(
@@ -163,8 +164,7 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
                                          bool recursive) {
   return make_scoped_ptr(new NativeFileEnumerator(
       root_path, recursive,
-      file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::DIRECTORIES))
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES))
       .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 

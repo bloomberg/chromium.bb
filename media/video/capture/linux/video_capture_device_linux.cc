@@ -19,6 +19,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/stringprintf.h"
 
 namespace media {
@@ -100,15 +101,14 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   device_names->clear();
 
   base::FilePath path("/dev/");
-  file_util::FileEnumerator enumerator(
-      path, false, file_util::FileEnumerator::FILES, "video*");
+  base::FileEnumerator enumerator(
+      path, false, base::FileEnumerator::FILES, "video*");
 
   while (!enumerator.Next().empty()) {
-    file_util::FileEnumerator::FindInfo info;
-    enumerator.GetFindInfo(&info);
+    base::FileEnumerator::FileInfo info = enumerator.GetInfo();
 
     Name name;
-    name.unique_id = path.value() + info.filename;
+    name.unique_id = path.value() + info.GetName().value();
     if ((fd = open(name.unique_id.c_str() , O_RDONLY)) < 0) {
       // Failed to open this device.
       continue;
@@ -123,7 +123,7 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
         name.device_name = base::StringPrintf("%s", cap.card);
         device_names->push_back(name);
       } else {
-        DVLOG(1) << "No usable formats reported by " << info.filename;
+        DVLOG(1) << "No usable formats reported by " << info.GetName().value();
       }
     }
     close(fd);

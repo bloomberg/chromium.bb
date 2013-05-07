@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_file_value_serializer.h"
@@ -127,9 +128,9 @@ bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
     temp_install_dir_.Append(kLocaleFolder);
 
   // Not all folders under _locales have to be valid locales.
-  file_util::FileEnumerator locales(locales_path,
-                                    false,
-                                    file_util::FileEnumerator::DIRECTORIES);
+  base::FileEnumerator locales(locales_path,
+                               false,
+                               base::FileEnumerator::DIRECTORIES);
 
   std::set<std::string> all_locales;
   extension_l10n_util::GetAllLocales(&all_locales);

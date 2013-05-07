@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -60,26 +61,22 @@ namespace {
 void GetGCacheContents(const base::FilePath& root_path,
                        base::ListValue* gcache_contents,
                        base::DictionaryValue* gcache_summary) {
-  using file_util::FileEnumerator;
   // Use this map to sort the result list by the path.
   std::map<base::FilePath, DictionaryValue*> files;
 
-  const int options = (file_util::FileEnumerator::FILES |
-                       file_util::FileEnumerator::DIRECTORIES |
-                       file_util::FileEnumerator::SHOW_SYM_LINKS);
-  FileEnumerator enumerator(root_path, true /* recursive */, options);
+  const int options = (base::FileEnumerator::FILES |
+                       base::FileEnumerator::DIRECTORIES |
+                       base::FileEnumerator::SHOW_SYM_LINKS);
+  base::FileEnumerator enumerator(root_path, true /* recursive */, options);
 
   int64 total_size = 0;
   for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
-    FileEnumerator::FindInfo find_info;
-    enumerator.GetFindInfo(&find_info);
-    int64 size = FileEnumerator::GetFilesize(find_info);
-    const bool is_directory = FileEnumerator::IsDirectory(find_info);
-    const bool is_symbolic_link =
-        file_util::IsLink(FileEnumerator::GetFilename(find_info));
-    const base::Time last_modified =
-        FileEnumerator::GetLastModifiedTime(find_info);
+    base::FileEnumerator::FileInfo find_info = enumerator.GetInfo();
+    int64 size = find_info.GetSize();
+    const bool is_directory = find_info.IsDirectory();
+    const bool is_symbolic_link = file_util::IsLink(find_info.GetName());
+    const base::Time last_modified = find_info.GetLastModifiedTime();
 
     base::DictionaryValue* entry = new base::DictionaryValue;
     entry->SetString("path", current.value());
@@ -93,7 +90,7 @@ void GetGCacheContents(const base::FilePath& root_path,
     // Print lower 9 bits in octal format.
     entry->SetString(
         "permission",
-        base::StringPrintf("%03o", find_info.stat.st_mode & 0x1ff));
+        base::StringPrintf("%03o", find_info.stat().st_mode & 0x1ff));
     files[current] = entry;
 
     total_size += size;

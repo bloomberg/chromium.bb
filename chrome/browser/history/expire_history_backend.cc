@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
@@ -754,8 +755,8 @@ void ExpireHistoryBackend::DoExpireHistoryIndexFiles() {
   base::FilePath::StringType history_index_files_pattern =
       TextDatabase::file_base();
   history_index_files_pattern.append(FILE_PATH_LITERAL("*"));
-  file_util::FileEnumerator file_enumerator(
-      text_db_->GetDir(), false, file_util::FileEnumerator::FILES,
+  base::FileEnumerator file_enumerator(
+      text_db_->GetDir(), false, base::FileEnumerator::FILES,
       history_index_files_pattern);
   for (base::FilePath file = file_enumerator.Next(); !file.empty();
        file = file_enumerator.Next()) {

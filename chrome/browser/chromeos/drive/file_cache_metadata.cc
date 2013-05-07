@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -70,11 +71,10 @@ void ScanCacheDirectory(
   DCHECK(cache_map);
   DCHECK(processed_file_map);
 
-  file_util::FileEnumerator enumerator(
+  base::FileEnumerator enumerator(
       cache_paths[sub_dir_type],
       false,  // not recursive
-      file_util::FileEnumerator::FILES |
-      file_util::FileEnumerator::SHOW_SYM_LINKS,
+      base::FileEnumerator::FILES | base::FileEnumerator::SHOW_SYM_LINKS,
       util::kWildCard);
   for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {

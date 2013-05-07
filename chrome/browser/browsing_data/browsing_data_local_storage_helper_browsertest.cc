@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/thread_test_helper.h"
@@ -129,10 +130,10 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
   BrowserThread::GetBlockingPool()->FlushForTesting();
 
   // Ensure the file has been deleted.
-  file_util::FileEnumerator file_enumerator(
+  base::FileEnumerator file_enumerator(
       GetLocalStoragePathForTestingProfile(),
       false,
-      file_util::FileEnumerator::FILES);
+      base::FileEnumerator::FILES);
   int num_files = 0;
   for (base::FilePath file_path = file_enumerator.Next();
        !file_path.empty();

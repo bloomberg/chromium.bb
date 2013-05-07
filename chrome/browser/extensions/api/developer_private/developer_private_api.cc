@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -79,9 +80,8 @@ GURL ToDataURL(const base::FilePath& path) {
 }
 
 std::vector<base::FilePath> ListFolder(const base::FilePath path) {
-  file_util::FileEnumerator files(path, false,
-      file_util::FileEnumerator::DIRECTORIES
-      | file_util::FileEnumerator::FILES);
+  base::FileEnumerator files(path, false,
+      base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES);
   std::vector<base::FilePath> paths;
 
   for (base::FilePath current_path = files.Next(); !current_path.empty();

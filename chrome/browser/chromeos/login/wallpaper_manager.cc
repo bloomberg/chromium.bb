@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -684,8 +685,7 @@ void WallpaperManager::ClearObsoleteWallpaperPrefs() {
 void WallpaperManager::DeleteAllExcept(const base::FilePath& path) {
   base::FilePath dir = path.DirName();
   if (file_util::DirectoryExists(dir)) {
-    file_util::FileEnumerator files(dir, false,
-                                    file_util::FileEnumerator::FILES);
+    base::FileEnumerator files(dir, false, base::FileEnumerator::FILES);
     for (base::FilePath current = files.Next(); !current.empty();
          current = files.Next()) {
       if (current != path)

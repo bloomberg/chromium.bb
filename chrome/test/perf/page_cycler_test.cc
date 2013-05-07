@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -68,8 +69,8 @@ void PopulateBufferCache(const base::FilePath& test_dir) {
   const base::FilePath svn_dir(FILE_PATH_LITERAL(".svn"));
 
   for (size_t idx = 0; idx < dirs.size(); ++idx) {
-    file_util::FileEnumerator dir_enumerator(dirs[idx], false,
-                                      file_util::FileEnumerator::DIRECTORIES);
+    base::FileEnumerator dir_enumerator(dirs[idx], false,
+                                        base::FileEnumerator::DIRECTORIES);
     base::FilePath path;
     for (path = dir_enumerator.Next();
          !path.empty();
@@ -89,8 +90,8 @@ void PopulateBufferCache(const base::FilePath& test_dir) {
 
   std::vector<base::FilePath>::const_iterator iter;
   for (iter = dirs.begin(); iter != dirs.end(); ++iter) {
-    file_util::FileEnumerator file_enumerator(*iter, false,
-                                              file_util::FileEnumerator::FILES);
+    base::FileEnumerator file_enumerator(*iter, false,
+                                         base::FileEnumerator::FILES);
     base::FilePath path;
     for (path = file_enumerator.Next();
          !path.empty();
