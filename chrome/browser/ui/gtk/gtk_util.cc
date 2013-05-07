@@ -460,6 +460,7 @@ void AppModalDismissedUngroupWindows() {
       GtkWindowGroup* group = gtk_window_get_group(transient_parent);
       gtk_window_group_add_window(group, *it);
     }
+    g_list_free(windows);
   }
 }
 

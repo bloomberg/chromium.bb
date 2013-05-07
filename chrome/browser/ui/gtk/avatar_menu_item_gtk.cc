@@ -238,6 +238,7 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
     char* markup = g_markup_printf_escaped(
         "<span weight='bold'>%s</span>", UTF16ToUTF8(elided_name).c_str());
     gtk_label_set_markup(GTK_LABEL(name_label), markup);
+    g_free(markup);
   }
 
   gtk_misc_set_alignment(GTK_MISC(name_label), 0, 0);
