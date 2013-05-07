@@ -4,7 +4,6 @@
 // generation to work properly.
 
 ApplicationCache
-AudioContext condition=WEB_AUDIO
 AuthorShadowDOMForAnyElement
 CSSCompositing condition=CSS_COMPOSITING
 CSSExclusions
@@ -50,5 +49,6 @@ SpeechSynthesis
 StyleScoped
 Touch
 VideoTrack
+WebAudio condition=WEB_AUDIO
 WebMIDI
 WebPInAcceptHeader

@@ -48,13 +48,9 @@ public:
     // FIXME: Delete after removing all callers in Content.
     static void enableFullScreenAPI(bool enable) { enableFullscreen(enable); }
     static void enableIndexedDatabase(bool enable) { enableIndexedDB(enable); }
-    static void enableWebAudio(bool enable) { enableAudioContext(enable); }
 
     WEBKIT_EXPORT static void enableApplicationCache(bool);
     WEBKIT_EXPORT static bool isApplicationCacheEnabled();
-
-    WEBKIT_EXPORT static void enableAudioContext(bool);
-    WEBKIT_EXPORT static bool isAudioContextEnabled();
 
     WEBKIT_EXPORT static void enableCanvasPath(bool);
     WEBKIT_EXPORT static bool isCanvasPathEnabled();
@@ -181,6 +177,9 @@ public:
 
     WEBKIT_EXPORT static void enableVideoTrack(bool);
     WEBKIT_EXPORT static bool isVideoTrackEnabled();
+
+    WEBKIT_EXPORT static void enableWebAudio(bool);
+    WEBKIT_EXPORT static bool isWebAudioEnabled();
 
     WEBKIT_EXPORT static void enableWebMIDI(bool);
     WEBKIT_EXPORT static bool isWebMIDIEnabled();

@@ -27,8 +27,8 @@
 [
     Conditional=WEB_AUDIO,
 ] partial interface DOMWindow {
-    [EnabledAtRuntime=audioContext] attribute AudioContextConstructor webkitAudioContext;
-    [EnabledAtRuntime=audioContext] attribute OfflineAudioContextConstructor webkitOfflineAudioContext;
+    [EnabledAtRuntime=WebAudio] attribute AudioContextConstructor webkitAudioContext;
+    [EnabledAtRuntime=WebAudio] attribute OfflineAudioContextConstructor webkitOfflineAudioContext;
     attribute PannerNodeConstructor webkitAudioPannerNode;
     attribute AudioProcessingEventConstructor AudioProcessingEvent;
     attribute OfflineAudioCompletionEventConstructor OfflineAudioCompletionEvent;

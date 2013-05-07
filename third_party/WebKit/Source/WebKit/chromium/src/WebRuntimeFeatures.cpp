@@ -44,7 +44,6 @@ namespace WebKit {
 void WebRuntimeFeatures::enableStableFeatures(bool enable)
 {
     enableApplicationCache(enable);
-    enableAudioContext(enable);
     enableDatabase(enable);
     enableDeviceOrientation(enable);
     enableDirectoryUpload(enable);
@@ -68,6 +67,7 @@ void WebRuntimeFeatures::enableStableFeatures(bool enable)
     enableSpeechInput(enable);
     enableTouch(enable);
     enableVideoTrack(enable);
+    enableWebAudio(enable);
 }
 
 void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
@@ -189,14 +189,14 @@ bool WebRuntimeFeatures::isIndexedDBEnabled()
     return RuntimeEnabledFeatures::indexedDBEnabled();
 }
 
-void WebRuntimeFeatures::enableAudioContext(bool enable)
+void WebRuntimeFeatures::enableWebAudio(bool enable)
 {
-    RuntimeEnabledFeatures::setAudioContextEnabled(enable);
+    RuntimeEnabledFeatures::setWebAudioEnabled(enable);
 }
 
-bool WebRuntimeFeatures::isAudioContextEnabled()
+bool WebRuntimeFeatures::isWebAudioEnabled()
 {
-    return RuntimeEnabledFeatures::audioContextEnabled();
+    return RuntimeEnabledFeatures::webAudioEnabled();
 }
 
 void WebRuntimeFeatures::enableTouch(bool enable)
