@@ -613,6 +613,16 @@ function hideNtp() {
 
 
 /**
+ * Shows the NTP (destroys the activeBox if exists and reloads the custom
+ * theme).
+ */
+function showNtp() {
+  hideActiveSuggestions();
+  document.body.classList.remove(CLASSES.HIDE_NTP);
+  onThemeChange();
+}
+
+/**
  * Clears the custom theme (if any).
  */
 function clearCustomTheme() {
@@ -777,6 +787,13 @@ var KEY_UP_ARROW = 38;
  */
 var KEY_DOWN_ARROW = 40;
 
+
+/**
+ * "Esc" keycode.
+ * @type {number}
+ * @const
+ */
+var KEY_ESC = 27;
 
 /**
  * Pixels of padding inside a suggestion div for displaying its icon.
@@ -1205,6 +1222,24 @@ SuggestionsBox.prototype = {
   },
 
   /**
+   * @return {boolean} True if a suggestion is selected by default or because
+   * the user arrowed down to it.
+   */
+  hasSelectedSuggestion: function() {
+    return this.selectedIndex_ != -1;
+  },
+
+  /**
+   * Clears the selected suggestion.
+   */
+  clearSelection: function() {
+    this.selectedIndex_ = -1;
+    var oldSelection = this.container_.querySelector('.' + CLASSES.SELECTED);
+    if (oldSelection)
+      oldSelection.classList.remove(CLASSES.SELECTED);
+  },
+
+  /**
    * Changes the current selected suggestion index.
    * @param {number} index The new selection to suggest.
    * @private
@@ -1225,7 +1260,7 @@ SuggestionsBox.prototype = {
     var oldSelection = this.container_.querySelector('.' + CLASSES.SELECTED);
     if (oldSelection)
       oldSelection.classList.remove(CLASSES.SELECTED);
-    if (this.selectedIndex_ == -1) {
+    if (!this.hasSelectedSuggestion()) {
       searchboxApiHandle.setValue(this.inputValue_);
     } else {
       this.suggestions_[this.selectedIndex_].select(true);
@@ -1442,19 +1477,24 @@ function setSuggestionStyles() {
 
 
 /**
- * Makes keys navigate through suggestions.
+ * Handles key press events.
  * @param {Object} e The key being pressed.
  */
 function handleKeyPress(e) {
-  if (!activeBox)
-    return;
-
   switch (e.keyCode) {
     case KEY_UP_ARROW:
-      activeBox.selectPrevious();
+      if (activeBox)
+        activeBox.selectPrevious();
       break;
     case KEY_DOWN_ARROW:
-      activeBox.selectNext();
+      if (activeBox)
+        activeBox.selectNext();
+      break;
+    case KEY_ESC:
+      if (activeBox && activeBox.hasSelectedSuggestion())
+        activeBox.clearSelection();
+      else
+        showNtp();
       break;
   }
 }
@@ -1643,7 +1683,7 @@ function init() {
   searchboxApiHandle.onsubmit = function() {
     var value = searchboxApiHandle.value;
     if (!value) {
-      // Interpret onsubmit with an empty query as an ESC key press.
+      // Hide the drop down right away when the user hit enter key on a URL.
       hideActiveSuggestions();
     }
   };

@@ -78,6 +78,10 @@ void InstantPage::UpOrDownKeyPressed(int count) {
   Send(new ChromeViewMsg_SearchBoxUpOrDownKeyPressed(routing_id(), count));
 }
 
+void InstantPage::EscKeyPressed() {
+  Send(new ChromeViewMsg_SearchBoxEscKeyPressed(routing_id()));
+}
+
 void InstantPage::CancelSelection(const string16& user_text,
                                   size_t selection_start,
                                   size_t selection_end,

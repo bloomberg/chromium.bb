@@ -196,6 +196,7 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnAutocompleteResults)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
                         OnUpOrDownKeyPressed)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxEscKeyPressed, OnEscKeyPressed)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxCancelSelection,
                         OnCancelSelection)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
@@ -327,6 +328,14 @@ void SearchBox::OnUpOrDownKeyPressed(int count) {
     DVLOG(1) << render_view() << " OnKeyPress: " << count;
     extensions_v8::SearchBoxExtension::DispatchUpOrDownKeyPress(
         render_view()->GetWebView()->mainFrame(), count);
+  }
+}
+
+void SearchBox::OnEscKeyPressed() {
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    DVLOG(1) << render_view() << " OnEscKeyPressed ";
+    extensions_v8::SearchBoxExtension::DispatchEscKeyPress(
+        render_view()->GetWebView()->mainFrame());
   }
 }
 

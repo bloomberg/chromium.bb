@@ -161,6 +161,9 @@ class InstantPage : public content::WebContentsObserver {
   // a repeat count, negative for moving up, positive for moving down.
   void UpOrDownKeyPressed(int count);
 
+  // Tells the page that the user pressed Esc key in the omnibox.
+  void EscKeyPressed();
+
   // Tells the page that the user pressed Esc in the omnibox after having
   // arrowed down in the suggestions. The page should reset the selection to
   // the first suggestion. Arguments are the same as those for Update().

@@ -16,6 +16,7 @@ var firstMostVisitedItemId = 0;
 var onNativeSuggestionsCalls = 0;
 var onChangeCalls = 0;
 var submitCount = 0;
+var onEscKeyPressedCalls = 0;
 
 function getApiHandle() {
   if (window.navigator && window.navigator.searchBox)
@@ -78,6 +79,7 @@ function handleKeyPress(event) {
   var VKEY_DOWN = 0x28;
 
   if (event.keyCode == VKEY_ESCAPE) {
+    onEscKeyPressedCalls++;
     if (suggestionIndex != -1) {
       suggestionIndex = -1;
       apiHandle.setAutocompleteText(suggestion, behavior);

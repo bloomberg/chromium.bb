@@ -129,6 +129,7 @@ class SearchBox : public content::RenderViewObserver,
   void OnAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results);
   void OnUpOrDownKeyPressed(int count);
+  void OnEscKeyPressed();
   void OnCancelSelection(const string16& query,
                          bool verbatim,
                          size_t selection_start,

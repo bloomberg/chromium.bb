@@ -111,7 +111,8 @@ class InstantExtendedTest : public InProcessBrowserTest,
         first_most_visited_item_id_(0),
         on_native_suggestions_calls_(0),
         on_change_calls_(0),
-        submit_count_(0) {
+        submit_count_(0),
+        on_esc_key_press_event_calls_(0) {
   }
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -162,7 +163,9 @@ class InstantExtendedTest : public InProcessBrowserTest,
            GetIntFromJS(contents, "submitCount",
                         &submit_count_) &&
            GetStringFromJS(contents, "apiHandle.value",
-                           &query_value_);
+                           &query_value_) &&
+           GetIntFromJS(contents, "onEscKeyPressedCalls",
+                        &on_esc_key_press_event_calls_);
   }
 
   TemplateURL* GetDefaultSearchProviderTemplateURL() {
@@ -212,6 +215,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
   int on_native_suggestions_calls_;
   int on_change_calls_;
   int submit_count_;
+  int on_esc_key_press_event_calls_;
   std::string query_value_;
 };
 
@@ -1958,7 +1962,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, EmptyAutocompleteResults) {
 }
 
 // Test that hitting Esc to clear the omnibox works. http://crbug.com/231744.
-// TODO(sreeram): reenable once ESC bug is actually fixed.
+// TODO(kmadhusu): Investigate and re-enable this test.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_EscapeClearsOmnibox) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
@@ -1967,10 +1971,11 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_EscapeClearsOmnibox) {
   content::WindowedNotificationObserver instant_tab_observer(
       chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
-  ui_test_utils::NavigateToURLWithDisposition(browser(),
-                                              GURL(chrome::kChromeUINewTabURL),
-                                              CURRENT_TAB,
-                                              ui_test_utils::BROWSER_TEST_NONE);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   instant_tab_observer.Wait();
 
   content::WebContents* contents =
@@ -1996,6 +2001,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_EscapeClearsOmnibox) {
   EXPECT_TRUE(UpdateSearchState(contents));
   EXPECT_LT(0, on_change_calls_);
   EXPECT_EQ(0, submit_count_);
+  EXPECT_LT(0, on_esc_key_press_event_calls_);
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OnDefaultSearchProviderChanged) {
