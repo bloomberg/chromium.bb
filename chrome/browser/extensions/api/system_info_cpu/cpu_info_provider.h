@@ -41,6 +41,7 @@ class CpuInfoProvider
  private:
   friend class SystemInfoProvider<api::experimental_system_info_cpu::CpuInfo>;
   friend class MockCpuInfoProviderImpl;
+  friend class TestCpuInfoProvider;
 
   // The amount of time that CPU spent on performing different kinds of work.
   // It is used to calculate the usage percent for processors.

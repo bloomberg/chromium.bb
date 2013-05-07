@@ -753,6 +753,7 @@
         'browser/extensions/api/storage/settings_test_util.cc',
         'browser/extensions/api/storage/settings_test_util.h',
         'browser/extensions/api/streams_private/streams_private_manifest_unittest.cc',
+        'browser/extensions/api/system_info_cpu/cpu_info_provider_unittest.cc',
         'browser/extensions/api/system_info_memory/memory_info_provider_unittest.cc',
         'browser/extensions/api/system_info_storage/storage_info_provider_linux_unittest.cc',
         'browser/extensions/api/system_info_storage/storage_info_provider_unittest.cc',
