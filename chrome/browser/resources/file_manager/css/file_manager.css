@@ -1227,7 +1227,8 @@ body[new-ui] #default-actions-list:focus > li[selected]:hover {
   background-color: transparent;
 }
 
-#directory-tree .tree-item.accepts > li.tree-row,
+#directory-tree .tree-item.accepts > .tree-row,
+body[new-ui] #volume-list > .accepts,
 #list-container list > li.accepts,
 #list-container grid > li.accepts {
   -webkit-animation: acceptsBlink 200ms linear 1s 3;
