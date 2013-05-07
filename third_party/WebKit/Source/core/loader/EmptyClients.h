@@ -160,9 +160,6 @@ public:
 
     virtual void formStateDidChange(const Node*) OVERRIDE { }
 
-    virtual void elementDidFocus(const Node*) OVERRIDE { }
-    virtual void elementDidBlur(const Node*) OVERRIDE { }
-
     virtual void setCursor(const Cursor&) OVERRIDE { }
     virtual void setCursorHiddenUntilMouseMoves(bool) OVERRIDE { }
 
@@ -182,6 +179,9 @@ public:
     virtual void popupOpened(PopupContainer* popupContainer, const IntRect& bounds,
                              bool handleExternal) { }
     virtual void popupClosed(PopupContainer* popupContainer) OVERRIDE { }
+
+    virtual void annotatedRegionsChanged() OVERRIDE { }
+    virtual bool paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&) OVERRIDE { return false; }
 };
 
 class EmptyFrameLoaderClient : public FrameLoaderClient {

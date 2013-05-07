@@ -271,9 +271,6 @@ void ResourceLoader::cancel(const ResourceError& error)
     // left off without redoing any of this work.
     if (!m_cancelled) {
         m_cancelled = true;
-        
-        if (FormData* data = m_request.httpBody())
-            data->removeGeneratedFilesIfNeeded();
 
         m_documentLoader->cancelPendingSubstituteLoad(this);
         if (m_handle) {
@@ -370,8 +367,6 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
             if (reachedTerminalState())
                 return;
 
-            if (FormData* data = m_request.httpBody())
-                data->removeGeneratedFilesIfNeeded();
             if (m_options.sendLoadCallbacks == SendCallbacks)
                 frameLoader()->notifier()->didReceiveResponse(this, response);
             return;
@@ -384,8 +379,6 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
     if (reachedTerminalState())
         return;
 
-    if (FormData* data = m_request.httpBody())
-        data->removeGeneratedFilesIfNeeded();
     if (m_options.sendLoadCallbacks == SendCallbacks)
         frameLoader()->notifier()->didReceiveResponse(this, response);
 
@@ -480,9 +473,6 @@ void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
     if (m_cancelled)
         return;
     ASSERT(!m_reachedTerminalState);
-
-    if (FormData* data = m_request.httpBody())
-        data->removeGeneratedFilesIfNeeded();
 
     if (!m_notifiedLoadComplete) {
         m_notifiedLoadComplete = true;

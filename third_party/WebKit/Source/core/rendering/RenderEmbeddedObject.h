@@ -51,15 +51,11 @@ public:
     bool hasFallbackContent() const { return m_hasFallbackContent; }
     void setHasFallbackContent(bool hasFallbackContent) { m_hasFallbackContent = hasFallbackContent; }
 
-    void handleUnavailablePluginIndicatorEvent(Event*);
-
     bool allowsAcceleratedCompositing() const;
 
 protected:
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
-
-    virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const OVERRIDE FINAL;
 
     const RenderObjectChildList* children() const { return &m_children; }
     RenderObjectChildList* children() { return &m_children; }
@@ -81,9 +77,6 @@ private:
     virtual bool scroll(ScrollDirection, ScrollGranularity, float multiplier, Node** stopNode) OVERRIDE FINAL;
     virtual bool logicalScroll(ScrollLogicalDirection, ScrollGranularity, float multiplier, Node** stopNode) OVERRIDE FINAL;
 
-    void setUnavailablePluginIndicatorIsPressed(bool);
-    bool isInUnavailablePluginIndicator(MouseEvent*) const;
-    bool isInUnavailablePluginIndicator(const LayoutPoint&) const;
     bool getReplacementTextGeometry(const LayoutPoint& accumulatedOffset, FloatRect& contentRect, Path&, FloatRect& replacementTextRect, Font&, TextRun&, float& textWidth) const;
 
     virtual bool canHaveChildren() const OVERRIDE FINAL;
@@ -95,8 +88,6 @@ private:
     bool m_showsUnavailablePluginIndicator;
     PluginUnavailabilityReason m_pluginUnavailabilityReason;
     String m_unavailablePluginReplacementText;
-    bool m_unavailablePluginIndicatorIsPressed;
-    bool m_mouseDownWasInUnavailablePluginIndicator;
     RenderObjectChildList m_children;
 };
 

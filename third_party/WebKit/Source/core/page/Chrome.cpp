@@ -449,39 +449,6 @@ void Chrome::scheduleAnimation()
 
 // --------
 
-void ChromeClient::annotatedRegionsChanged()
-{
-}
-
-void ChromeClient::populateVisitedLinks()
-{
-}
-
-FloatRect ChromeClient::customHighlightRect(Node*, const AtomicString&, const FloatRect&)
-{
-    return FloatRect();
-}
-
-void ChromeClient::paintCustomHighlight(Node*, const AtomicString&, const FloatRect&, const FloatRect&, bool, bool)
-{
-}
-
-bool ChromeClient::shouldReplaceWithGeneratedFileForUpload(const String&, String&)
-{
-    return false;
-}
-
-String ChromeClient::generateReplacementFile(const String&)
-{
-    ASSERT_NOT_REACHED();
-    return String();
-}
-
-bool ChromeClient::paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&)
-{
-    return false;
-}
-
 bool Chrome::hasOpenedPopup() const
 {
     return m_client->hasOpenedPopup();

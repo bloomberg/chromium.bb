@@ -172,8 +172,6 @@ public:
     // didProgrammaticallyScroll should be called whenever a Frame is programmatically scrolled.
     virtual void didProgrammaticallyScroll(Frame*, const IntPoint& newScrollPosition) const { }
 
-    virtual bool shouldUnavailablePluginMessageBeButton(RenderEmbeddedObject::PluginUnavailabilityReason) const { return false; }
-    virtual void unavailablePluginButtonClicked(Element*, RenderEmbeddedObject::PluginUnavailabilityReason) const { }
     virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned modifierFlags) = 0;
 
     virtual void setToolTip(const String&, TextDirection) = 0;
@@ -181,19 +179,9 @@ public:
     virtual void print(Frame*) = 0;
     virtual bool shouldRubberBandInDirection(ScrollDirection) const = 0;
 
-    virtual Color underlayColor() const { return Color(); }
+    virtual void annotatedRegionsChanged() = 0;
 
-    virtual void annotatedRegionsChanged();
-
-    virtual void populateVisitedLinks();
-
-    virtual FloatRect customHighlightRect(Node*, const AtomicString& type, const FloatRect& lineRect);
-    virtual void paintCustomHighlight(Node*, const AtomicString& type, const FloatRect& boxRect, const FloatRect& lineRect, bool behindText, bool entireLine);
-            
-    virtual bool shouldReplaceWithGeneratedFileForUpload(const String& path, String& generatedFilename);
-    virtual String generateReplacementFile(const String& path);
-
-    virtual bool paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&);
+    virtual bool paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&) = 0;
 
 #if ENABLE(INPUT_TYPE_COLOR)
     virtual PassOwnPtr<ColorChooser> createColorChooser(ColorChooserClient*, const Color&) = 0;
@@ -217,9 +205,6 @@ public:
     // Notification that the given form element has changed. This function
     // will be called frequently, so handling should be very fast.
     virtual void formStateDidChange(const Node*) = 0;
-        
-    virtual void elementDidFocus(const Node*) { };
-    virtual void elementDidBlur(const Node*) { };
 
     // Allows ports to customize the type of graphics layers created by this page.
     virtual GraphicsLayerFactory* graphicsLayerFactory() const { return 0; }
@@ -250,7 +235,6 @@ public:
 
     virtual void enterFullScreenForElement(Element*) { }
     virtual void exitFullScreenForElement(Element*) { }
-    virtual void setRootFullScreenLayer(GraphicsLayer*) { }
 
     virtual void needTouchEvents(bool) = 0;
 
@@ -277,9 +261,6 @@ public:
 
     virtual void postAccessibilityNotification(AccessibilityObject*, AXObjectCache::AXNotification) { }
 
-    virtual void notifyScrollerThumbIsVisibleInRect(const IntRect&) { }
-    virtual void recommendedScrollbarStyleDidChange(int /*newStyle*/) { }
-
     enum DialogType {
         AlertDialog = 0,
         ConfirmDialog = 1,
@@ -296,15 +277,9 @@ public:
     virtual void requestPointerUnlock() { }
     virtual bool isPointerLocked() { return false; }
 
-    virtual void logDiagnosticMessage(const String& message, const String& description, const String& status) { UNUSED_PARAM(message); UNUSED_PARAM(description); UNUSED_PARAM(status); }
-
     virtual FloatSize minimumWindowSize() const { return FloatSize(100, 100); };
 
     virtual bool isEmptyChromeClient() const { return false; }
-
-    virtual String plugInStartLabelTitle() const { return String(); }
-    virtual String plugInStartLabelSubtitle() const { return String(); }
-    virtual String plugInExtraStyleSheet() const { return String(); }
 
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) { };
 

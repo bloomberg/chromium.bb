@@ -2570,16 +2570,6 @@ void FrameView::setVisibleContentScaleFactor(float visibleContentScaleFactor)
     updateScrollbars(scrollOffset());
 }
 
-void FrameView::setVisibleScrollerThumbRect(const IntRect& scrollerThumb)
-{
-    Page* page = m_frame->page();
-    if (!page)
-        return;
-    if (page->mainFrame() != m_frame)
-        return;
-    page->chrome()->client()->notifyScrollerThumbIsVisibleInRect(scrollerThumb);
-}
-
 bool FrameView::scrollbarsCanBeActive() const
 {
     if (!m_frame)
@@ -2662,7 +2652,6 @@ void FrameView::scrollbarStyleChanged(int newStyle, bool forceUpdate)
         return;
     if (page->mainFrame() != m_frame)
         return;
-    page->chrome()->client()->recommendedScrollbarStyleDidChange(newStyle);
 
     if (forceUpdate)
         ScrollView::scrollbarStyleChanged(newStyle, forceUpdate);

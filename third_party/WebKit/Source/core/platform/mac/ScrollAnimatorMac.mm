@@ -1286,7 +1286,6 @@ void ScrollAnimatorMac::setVisibleScrollerThumbRect(const IntRect& scrollerThumb
     if (rectInViewCoordinates == m_visibleScrollerThumbRect)
         return;
 
-    m_scrollableArea->setVisibleScrollerThumbRect(rectInViewCoordinates);
     m_visibleScrollerThumbRect = rectInViewCoordinates;
 }
 

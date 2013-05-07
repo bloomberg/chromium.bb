@@ -2508,18 +2508,12 @@ bool Node::dispatchWheelEvent(const PlatformWheelEvent& event)
 
 void Node::dispatchFocusEvent(PassRefPtr<Node> oldFocusedNode, FocusDirection)
 {
-    if (document()->page())
-        document()->page()->chrome()->client()->elementDidFocus(this);
-
     RefPtr<FocusEvent> event = FocusEvent::create(eventNames().focusEvent, false, false, document()->defaultView(), 0, oldFocusedNode);
     EventDispatcher::dispatchEvent(this, FocusEventDispatchMediator::create(event.release()));
 }
 
 void Node::dispatchBlurEvent(PassRefPtr<Node> newFocusedNode)
 {
-    if (document()->page())
-        document()->page()->chrome()->client()->elementDidBlur(this);
-
     RefPtr<FocusEvent> event = FocusEvent::create(eventNames().blurEvent, false, false, document()->defaultView(), 0, newFocusedNode);
     EventDispatcher::dispatchEvent(this, BlurEventDispatchMediator::create(event.release()));
 }

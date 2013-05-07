@@ -90,7 +90,6 @@ public:
     virtual void paintOverhangAreas(ScrollView*, GraphicsContext*, const IntRect&, const IntRect&, const IntRect&) { }
 
 #if ENABLE(RUBBER_BANDING)
-    virtual void setUpOverhangAreasLayerContents(GraphicsLayer*, const Color&) { }
     virtual void setUpContentShadowLayer(GraphicsLayer*) { }
 #endif
 

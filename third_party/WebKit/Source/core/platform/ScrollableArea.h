@@ -146,7 +146,6 @@ public:
 
     virtual bool shouldSuspendScrollAnimations() const { return true; }
     virtual void scrollbarStyleChanged(int /*newStyle*/, bool /*forceUpdate*/) { }
-    virtual void setVisibleScrollerThumbRect(const IntRect&) { }
 
     virtual bool scrollbarsCanBeActive() const = 0;
     

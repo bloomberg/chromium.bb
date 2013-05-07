@@ -42,7 +42,6 @@ namespace WebCore {
 
 inline FormData::FormData()
     : m_identifier(0)
-    , m_hasGeneratedFiles(false)
     , m_alwaysStream(false)
     , m_containsPasswordData(false)
 {
@@ -52,28 +51,13 @@ inline FormData::FormData(const FormData& data)
     : RefCounted<FormData>()
     , m_elements(data.m_elements)
     , m_identifier(data.m_identifier)
-    , m_hasGeneratedFiles(false)
     , m_alwaysStream(false)
     , m_containsPasswordData(data.m_containsPasswordData)
 {
-    // We shouldn't be copying FormData that hasn't already removed its generated files
-    // but just in case, make sure the new FormData is ready to generate its own files.
-    if (data.m_hasGeneratedFiles) {
-        size_t n = m_elements.size();
-        for (size_t i = 0; i < n; ++i) {
-            FormDataElement& e = m_elements[i];
-            if (e.m_type == FormDataElement::encodedFile)
-                e.m_generatedFilename = String();
-        }
-    }
 }
 
 FormData::~FormData()
 {
-    // This cleanup should've happened when the form submission finished.
-    // Just in case, let's assert, and do the cleanup anyway in release builds.
-    ASSERT(!m_hasGeneratedFiles);
-    removeGeneratedFilesIfNeeded();
 }
 
 PassRefPtr<FormData> FormData::create()
@@ -136,7 +120,7 @@ PassRefPtr<FormData> FormData::deepCopy() const
             formData->m_elements.uncheckedAppend(FormDataElement(e.m_data));
             break;
         case FormDataElement::encodedFile:
-            formData->m_elements.uncheckedAppend(FormDataElement(e.m_filename, e.m_fileStart, e.m_fileLength, e.m_expectedFileModificationTime, e.m_shouldGenerateFile));
+            formData->m_elements.uncheckedAppend(FormDataElement(e.m_filename, e.m_fileStart, e.m_fileLength, e.m_expectedFileModificationTime));
             break;
         case FormDataElement::encodedBlob:
             formData->m_elements.uncheckedAppend(FormDataElement(e.m_url));
@@ -159,14 +143,14 @@ void FormData::appendData(const void* data, size_t size)
     memcpy(e.m_data.data() + oldSize, data, size);
 }
 
-void FormData::appendFile(const String& filename, bool shouldGenerateFile)
+void FormData::appendFile(const String& filename)
 {
-    m_elements.append(FormDataElement(filename, 0, BlobDataItem::toEndOfFile, invalidFileTime(), shouldGenerateFile));
+    m_elements.append(FormDataElement(filename, 0, BlobDataItem::toEndOfFile, invalidFileTime()));
 }
 
-void FormData::appendFileRange(const String& filename, long long start, long long length, double expectedModificationTime, bool shouldGenerateFile)
+void FormData::appendFileRange(const String& filename, long long start, long long length, double expectedModificationTime)
 {
-    m_elements.append(FormDataElement(filename, start, length, expectedModificationTime, shouldGenerateFile));
+    m_elements.append(FormDataElement(filename, start, length, expectedModificationTime));
 }
 
 void FormData::appendBlob(const KURL& blobURL)
@@ -201,8 +185,6 @@ void FormData::appendKeyValuePairItems(const FormDataList& list, const TextEncod
             Vector<char> header;
             FormDataBuilder::beginMultiPartHeader(header, m_boundary.data(), key.data());
 
-            bool shouldGenerateFile = false;
-
             // If the current type is blob, then we also need to include the filename
             if (value.blob()) {
                 String name;
@@ -210,17 +192,6 @@ void FormData::appendKeyValuePairItems(const FormDataList& list, const TextEncod
                     File* file = toFile(value.blob());
                     // For file blob, use the filename (or relative path if it is present) as the name.
                     name = file->webkitRelativePath().isEmpty() ? file->name() : file->webkitRelativePath();
-
-                    // Let the application specify a filename if it's going to generate a replacement file for the upload.
-                    const String& path = file->path();
-                    if (!path.isEmpty()) {
-                        if (Page* page = document->page()) {
-                            String generatedFileName;
-                            shouldGenerateFile = page->chrome()->client()->shouldReplaceWithGeneratedFileForUpload(path, generatedFileName);
-                            if (shouldGenerateFile)
-                                name = generatedFileName;
-                        }
-                    }
 
                     // If a filename is passed in FormData.append(), use it instead of the file blob's name.
                     if (!value.filename().isNull())
@@ -254,7 +225,7 @@ void FormData::appendKeyValuePairItems(const FormDataList& list, const TextEncod
                     File* file = toFile(value.blob());
                     // Do not add the file if the path is empty.
                     if (!file->path().isEmpty())
-                        appendFile(file->path(), shouldGenerateFile);
+                        appendFile(file->path());
                     if (!file->fileSystemURL().isEmpty())
                         appendURL(file->fileSystemURL());
                 }
@@ -298,47 +269,6 @@ String FormData::flattenToString() const
     return Latin1Encoding().decode(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 }
 
-void FormData::generateFiles(Document* document)
-{
-    ASSERT(!m_hasGeneratedFiles);
-
-    if (m_hasGeneratedFiles)
-        return;
-
-    Page* page = document->page();
-    if (!page)
-        return;
-    ChromeClient* client = page->chrome()->client();
-
-    size_t n = m_elements.size();
-    for (size_t i = 0; i < n; ++i) {
-        FormDataElement& e = m_elements[i];
-        if (e.m_type == FormDataElement::encodedFile && e.m_shouldGenerateFile) {
-            e.m_generatedFilename = client->generateReplacementFile(e.m_filename);
-            m_hasGeneratedFiles = true;
-        }
-    }
-}
-
-void FormData::removeGeneratedFilesIfNeeded()
-{
-    if (!m_hasGeneratedFiles)
-        return;
-
-    size_t n = m_elements.size();
-    for (size_t i = 0; i < n; ++i) {
-        FormDataElement& e = m_elements[i];
-        if (e.m_type == FormDataElement::encodedFile && !e.m_generatedFilename.isEmpty()) {
-            ASSERT(e.m_shouldGenerateFile);
-            String directory = directoryName(e.m_generatedFilename);
-            deleteFile(e.m_generatedFilename);
-            deleteEmptyDirectory(directory);
-            e.m_generatedFilename = String();
-        }
-    }
-    m_hasGeneratedFiles = false;
-}
-
 void FormData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Loader);
@@ -352,7 +282,6 @@ void FormDataElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) cons
     info.addMember(m_data, "data");
     info.addMember(m_filename, "filename");
     info.addMember(m_url, "url");
-    info.addMember(m_generatedFilename, "generatedFilename");
 }
 
 } // namespace WebCore

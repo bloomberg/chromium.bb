@@ -189,10 +189,8 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
 
     RenderObject* r = renderer();
     if (r && r->isEmbeddedObject()) {
-        if (toRenderEmbeddedObject(r)->showsUnavailablePluginIndicator()) {
-            toRenderEmbeddedObject(r)->handleUnavailablePluginIndicatorEvent(event);
+        if (toRenderEmbeddedObject(r)->showsUnavailablePluginIndicator())
             return;
-        }
 
         if (displayState() < Playing)
             return;
