@@ -133,6 +133,6 @@ inline v8::Handle<v8::Value> toV8(PassRefPtr< TestInterface > impl, v8::Handle<v
 
 }
 
-#endif // V8TestInterface_h
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
 
+#endif // V8TestInterface_h

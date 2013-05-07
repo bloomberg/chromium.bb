@@ -130,6 +130,6 @@ inline v8::Handle<v8::Value> toV8(PassRefPtr< TestSerializedScriptValueInterface
 
 }
 
-#endif // V8TestSerializedScriptValueInterface_h
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
 
+#endif // V8TestSerializedScriptValueInterface_h

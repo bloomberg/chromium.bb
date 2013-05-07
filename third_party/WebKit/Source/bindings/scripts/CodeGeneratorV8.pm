@@ -321,7 +321,7 @@ sub GenerateInterface
     $header{root} = new Block("ROOT", "", "");
     $header{conditional} = new Block("Conditional", "$conditionalIf", "$conditionalEndif");
     $header{includes} = new Block("Includes", "", "");
-    $header{nameSpaceWebCore} = new Block("Namespace WebCore", "\n\nnamespace WebCore {\n", "}\n");
+    $header{nameSpaceWebCore} = new Block("Namespace WebCore", "\nnamespace WebCore {\n", "}\n");
     $header{class} = new Block("Class definition", "", "");
     $header{classPublic} = new Block("Class public:", "public:", "");
     $header{classPrivate} = new Block("Class private:", "private:", "");
@@ -336,7 +336,7 @@ sub GenerateInterface
     # - Add default header template
     $header{root}->addHeader($headerTemplate . "\n");
     $header{root}->addHeader("#ifndef $defineName\n#define $defineName\n");
-    $header{root}->addFooter("#endif // $defineName\n");
+    $header{root}->addFooter("#endif // $defineName");
 
     # Start actual generation
     if ($interface->isCallback) {
@@ -635,9 +635,6 @@ sub GenerateHeader
         }
     }
 
-    # - Add default header template
-    AddToHeader(GenerateHeaderContentHeader($interface));
-
     AddToHeaderIncludes("bindings/v8/WrapperTypeInfo.h");
     AddToHeaderIncludes("bindings/v8/V8Binding.h");
     AddToHeaderIncludes("bindings/v8/V8DOMWrapper.h");
@@ -652,44 +649,43 @@ sub GenerateHeader
 
     foreach my $headerInclude (sort keys(%headerIncludeFiles)) {
         if ($headerInclude =~ /wtf|v8\.h/) {
-            AddToHeader("#include \<${headerInclude}\>\n");
+            $header{includes}->add("#include \<${headerInclude}\>\n");
         } else {
-            AddToHeader("#include \"${headerInclude}\"\n");
+            $header{includes}->add("#include \"${headerInclude}\"\n");
         }
     }
 
-    AddToHeader("\nnamespace WebCore {\n");
-    AddToHeader("\ntemplate<typename PropertyType> class SVGPropertyTearOff;\n") if $svgPropertyType;
+    $header{nameSpaceWebCore}->addHeader("\ntemplate<typename PropertyType> class SVGPropertyTearOff;\n") if $svgPropertyType;
     if ($svgNativeType) {
         if ($svgNativeType =~ /SVGStaticListPropertyTearOff/) {
-            AddToHeader("\ntemplate<typename PropertyType> class SVGStaticListPropertyTearOff;\n");
+            $header{nameSpaceWebCore}->addHeader("\ntemplate<typename PropertyType> class SVGStaticListPropertyTearOff;\n");
         } else {
-            AddToHeader("\ntemplate<typename PropertyType> class SVGListPropertyTearOff;\n");
+            $header{nameSpaceWebCore}->addHeader("\ntemplate<typename PropertyType> class SVGListPropertyTearOff;\n");
         }
     }
 
-    AddToHeader("\n");
-    AddToHeader("class FloatRect;\n") if $svgPropertyType && $svgPropertyType eq "FloatRect";
-    AddToHeader("class Dictionary;\n") if IsConstructorTemplate($interface, "Event");
+    $header{nameSpaceWebCore}->addHeader("class FloatRect;\n") if $svgPropertyType && $svgPropertyType eq "FloatRect";
+    $header{nameSpaceWebCore}->addHeader("\nclass Dictionary;") if IsConstructorTemplate($interface, "Event");
 
     my $nativeType = GetNativeTypeForConversions($interface);
     if ($interface->extendedAttributes->{"NamedConstructor"}) {
-        AddToHeader(<<END);
+        $header{nameSpaceWebCore}->addHeader(<<END);
+
 class V8${nativeType}Constructor {
 public:
     static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static WrapperTypeInfo info;
 };
-
 END
     }
 
-    AddToHeader("class $v8InterfaceName {\n");
-    AddToHeader("public:\n");
+    $header{class}->addHeader("class $v8InterfaceName {");
+    $header{class}->addFooter("};");
 
-    AddToHeader("    static const bool hasDependentLifetime = ");
+    my $code = "";
+    $code .= "    static const bool hasDependentLifetime = ";
     if ($hasDependentLifetime) {
-        AddToHeader("true;\n");
+        $code .= "true;\n";
     } elsif (@{$interface->parents}) {
         # Even if this type doesn't have the [DependentLifetime] attribute its parents may.
         # Let the compiler statically determine this for us.
@@ -697,13 +693,14 @@ END
         foreach (@{$interface->parents}) {
             my $parent = $_;
             AddToHeaderIncludes("V8${parent}.h");
-            AddToHeader("${separator}V8${parent}::hasDependentLifetime");
+            $code .= "${separator}V8${parent}::hasDependentLifetime";
             $separator = " || ";
         }
-        AddToHeader(";\n");
+        $code .= ";\n";
     } else {
-        AddToHeader("false;\n");
+        $code .= "false;\n";
     }
+    $header{classPublic}->add($code);
 
     my $fromFunctionOpening = "";
     my $fromFunctionClosing = "";
@@ -712,7 +709,7 @@ END
         $fromFunctionClosing = ")";
     }
 
-    AddToHeader(<<END);
+    $header{classPublic}->add(<<END);
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
     static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
@@ -725,25 +722,25 @@ END
 END
 
     if (NeedsCustomOpaqueRootForGC($interface)) {
-        AddToHeader("    static void* opaqueRootForGC(void*, v8::Persistent<v8::Object>, v8::Isolate*);\n");
+        $header{classPublic}->add("    static void* opaqueRootForGC(void*, v8::Persistent<v8::Object>, v8::Isolate*);\n");
     }
 
     if (InheritsExtendedAttribute($interface, "ActiveDOMObject")) {
-        AddToHeader("    static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);\n");
+        $header{classPublic}->add("    static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);\n");
     }
 
     if (InheritsExtendedAttribute($interface, "EventTarget")) {
-        AddToHeader("    static EventTarget* toEventTarget(v8::Handle<v8::Object>);\n");
+        $header{classPublic}->add("    static EventTarget* toEventTarget(v8::Handle<v8::Object>);\n");
     }
 
     if ($interfaceName eq "DOMWindow") {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static v8::Persistent<v8::ObjectTemplate> GetShadowObjectTemplate(v8::Isolate*, WrapperWorldType);
 END
     }
 
     if ($interfaceName eq "HTMLDocument") {
-      AddToHeader(<<END);
+      $header{classPublic}->add(<<END);
     static v8::Local<v8::Object> wrapInShadowObject(v8::Local<v8::Object> wrapper, Node* impl, v8::Isolate*);
 END
     }
@@ -755,11 +752,11 @@ END
 
         if (HasCustomMethod($attrExt) && !$attrExt->{"ImplementedBy"} && $function->{overloadIndex} == 1) {
             my $conditionalString = GenerateConditionalString($function->signature);
-            AddToHeader("#if ${conditionalString}\n") if $conditionalString;
-            AddToHeader(<<END);
+            $header{classPublic}->add("#if ${conditionalString}\n") if $conditionalString;
+            $header{classPublic}->add(<<END);
     static v8::Handle<v8::Value> ${name}MethodCustom(const v8::Arguments&);
 END
-            AddToHeader("#endif // ${conditionalString}\n") if $conditionalString;
+            $header{classPublic}->add("#endif // ${conditionalString}\n") if $conditionalString;
         }
         if ($attrExt->{"EnabledPerContext"}) {
             push(@enabledPerContextFunctions, $function);
@@ -767,11 +764,11 @@ END
     }
 
     if (IsConstructable($interface)) {
-        AddToHeader("    static v8::Handle<v8::Value> constructorCallback(const v8::Arguments&);\n");
+        $header{classPublic}->add("    static v8::Handle<v8::Value> constructorCallback(const v8::Arguments&);\n");
 END
     }
     if (HasCustomConstructor($interface)) {
-        AddToHeader("    static v8::Handle<v8::Value> constructorCustom(const v8::Arguments&);\n");
+        $header{classPublic}->add("    static v8::Handle<v8::Value> constructorCustom(const v8::Arguments&);\n");
     }
 
     my @enabledPerContextAttributes;
@@ -780,18 +777,18 @@ END
         my $attrExt = $attribute->signature->extendedAttributes;
         my $conditionalString = GenerateConditionalString($attribute->signature);
         if (HasCustomGetter($attrExt) && !$attrExt->{"ImplementedBy"}) {
-            AddToHeader("#if ${conditionalString}\n") if $conditionalString;
-            AddToHeader(<<END);
+            $header{classPublic}->add("#if ${conditionalString}\n") if $conditionalString;
+            $header{classPublic}->add(<<END);
     static v8::Handle<v8::Value> ${name}AttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);
 END
-            AddToHeader("#endif // ${conditionalString}\n") if $conditionalString;
+            $header{classPublic}->add("#endif // ${conditionalString}\n") if $conditionalString;
         }
         if (HasCustomSetter($attrExt) && !$attrExt->{"ImplementedBy"}) {
-            AddToHeader("#if ${conditionalString}\n") if $conditionalString;
-            AddToHeader(<<END);
+            $header{classPublic}->add("#if ${conditionalString}\n") if $conditionalString;
+            $header{classPublic}->add(<<END);
     static void ${name}AttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::AccessorInfo&);
 END
-            AddToHeader("#endif // ${conditionalString}\n") if $conditionalString;
+            $header{classPublic}->add("#endif // ${conditionalString}\n") if $conditionalString;
         }
         if ($attrExt->{"EnabledPerContext"}) {
             push(@enabledPerContextAttributes, $attribute);
@@ -803,70 +800,65 @@ END
     GenerateHeaderCustomInternalFieldIndices($interface);
 
     if ($interface->name eq "DOMWindow") {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static bool namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType, v8::Local<v8::Value> data);
     static bool indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t index, v8::AccessType, v8::Local<v8::Value> data);
 END
     }
 
     if (@enabledPerContextAttributes) {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static void installPerContextProperties(v8::Handle<v8::Object>, ${nativeType}*, v8::Isolate*);
 END
     } else {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static void installPerContextProperties(v8::Handle<v8::Object>, ${nativeType}*, v8::Isolate*) { }
 END
     }
 
     if (@enabledPerContextFunctions) {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*);
 END
     } else {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
 END
     }
 
     if ($interfaceName eq "HTMLElement") {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     friend v8::Handle<v8::Object> createV8HTMLWrapper(HTMLElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     friend v8::Handle<v8::Object> createV8HTMLDirectWrapper(HTMLElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 END
     } elsif ($interfaceName eq "SVGElement") {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     friend v8::Handle<v8::Object> createV8SVGWrapper(SVGElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     friend v8::Handle<v8::Object> createV8SVGDirectWrapper(SVGElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     friend v8::Handle<v8::Object> createV8SVGFallbackWrapper(SVGElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 END
     } elsif ($interfaceName eq "HTMLUnknownElement") {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     friend v8::Handle<v8::Object> createV8HTMLFallbackWrapper(HTMLUnknownElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 END
     } elsif ($interfaceName eq "Element") {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     // This is a performance optimization hack. See V8Element::wrap.
     friend v8::Handle<v8::Object> wrap(Node*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 END
     }
 
-        AddToHeader(<<END);
-private:
-END
-
     my $noToV8 = $interface->extendedAttributes->{"DoNotGenerateToV8"};
     my $noWrap = $interface->extendedAttributes->{"DoNotGenerateWrap"} || $noToV8;
     if (!$noWrap) {
         my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
-        AddToHeader(<<END);
+        $header{classPrivate}->add(<<END);
     friend v8::Handle<v8::Object> wrap(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     static v8::Handle<v8::Object> createWrapper(${createWrapperArgumentType}, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 END
     }
 
-    AddToHeader(<<END);
-};
+    $header{nameSpaceWebCore}->add(<<END);
 
 template<>
 class WrapperTypeTraits<${nativeType} > {
@@ -881,7 +873,7 @@ END
         die "Can't suppress toV8 for subclass\n" if @parents;
     } elsif ($noWrap) {
         die "Must have custom toV8\n" if !$customWrap;
-        AddToHeader(<<END);
+        $header{nameSpaceWebCore}->add(<<END);
 class ${nativeType};
 v8::Handle<v8::Value> toV8(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 v8::Handle<v8::Value> toV8ForMainWorld(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
@@ -906,12 +898,12 @@ END
         my $returningCreatedWrapperClosing = $interface->extendedAttributes->{"WrapAsFunction"} ? ", \"${interfaceName}\", isolate)" : "";
 
         if ($customWrap) {
-            AddToHeader(<<END);
+            $header{nameSpaceWebCore}->add(<<END);
 
 v8::Handle<v8::Object> wrap(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 END
         } else {
-            AddToHeader(<<END);
+            $header{nameSpaceWebCore}->add(<<END);
 
 inline v8::Handle<v8::Object> wrap(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -922,7 +914,7 @@ inline v8::Handle<v8::Object> wrap(${nativeType}* impl, v8::Handle<v8::Object> c
 END
         }
 
-        AddToHeader(<<END);
+        $header{nameSpaceWebCore}->add(<<END);
 
 inline v8::Handle<v8::Value> toV8(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -977,7 +969,7 @@ inline v8::Handle<v8::Value> toV8FastForMainWorld(PassRefPtr< ${nativeType} > im
 END
     }
 
-    AddToHeader(<<END);
+    $header{nameSpaceWebCore}->add(<<END);
 
 template<class HolderContainer, class Wrappable>
 inline v8::Handle<v8::Value> toV8Fast(PassRefPtr< ${nativeType} > impl, const HolderContainer& container, Wrappable* wrappable)
@@ -989,17 +981,12 @@ inline v8::Handle<v8::Value> toV8(PassRefPtr< ${nativeType} > impl, v8::Handle<v
 {
     return toV8(impl.get(), creationContext, isolate);
 }
+
 END
 
     if (IsConstructorTemplate($interface, "Event")) {
-        AddToHeader("\nbool fill${interfaceName}Init(${interfaceName}Init&, const Dictionary&);\n");
+        $header{nameSpaceWebCore}->add("bool fill${interfaceName}Init(${interfaceName}Init&, const Dictionary&);\n\n");
     }
-
-    AddToHeader("\n}\n\n");
-    AddToHeader("#endif // $v8InterfaceName" . "_h\n");
-
-    my $conditionalString = GenerateConditionalString($interface);
-    AddToHeader("#endif // ${conditionalString}\n\n") if $conditionalString;
 }
 
 sub GetInternalFields
@@ -1033,12 +1020,12 @@ sub GenerateHeaderCustomInternalFieldIndices
     my @customInternalFields = GetInternalFields($interface);
     my $customFieldCounter = 0;
     foreach my $customInternalField (@customInternalFields) {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static const int ${customInternalField} = v8DefaultWrapperInternalFieldCount + ${customFieldCounter};
 END
         $customFieldCounter++;
     }
-    AddToHeader(<<END);
+    $header{classPublic}->add(<<END);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + ${customFieldCounter};
 END
 }
@@ -1055,38 +1042,38 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     my $hasCustomEnumerator = $interface->extendedAttributes->{"CustomEnumerateProperty"};
 
     if ($hasIndexedGetter) {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static v8::Handle<v8::Value> indexedPropertyGetter(uint32_t, const v8::AccessorInfo&);
 END
     }
 
     if ($hasCustomIndexedSetter) {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static v8::Handle<v8::Value> indexedPropertySetter(uint32_t, v8::Local<v8::Value>, const v8::AccessorInfo&);
 END
     }
     if ($hasCustomDeleters) {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static v8::Handle<v8::Boolean> indexedPropertyDeleter(uint32_t, const v8::AccessorInfo&);
 END
     }
     if ($hasCustomNamedGetter) {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static v8::Handle<v8::Value> namedPropertyGetter(v8::Local<v8::String>, const v8::AccessorInfo&);
 END
     }
     if ($hasCustomNamedSetter) {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static v8::Handle<v8::Value> namedPropertySetter(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::AccessorInfo&);
 END
     }
     if ($hasCustomDeleters) {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static v8::Handle<v8::Boolean> namedPropertyDeleter(v8::Local<v8::String>, const v8::AccessorInfo&);
 END
     }
     if ($hasCustomEnumerator) {
-        AddToHeader(<<END);
+        $header{classPublic}->add(<<END);
     static v8::Handle<v8::Array> namedPropertyEnumerator(const v8::AccessorInfo&);
     static v8::Handle<v8::Integer> namedPropertyQuery(v8::Local<v8::String>, const v8::AccessorInfo&);
 END
@@ -1098,12 +1085,12 @@ sub GenerateHeaderCustomCall
     my $interface = shift;
 
     if ($interface->extendedAttributes->{"CustomCall"}) {
-        AddToHeader("    static v8::Handle<v8::Value> callAsFunctionCallback(const v8::Arguments&);\n");
+        $header{classPublic}->add("    static v8::Handle<v8::Value> callAsFunctionCallback(const v8::Arguments&);\n");
     }
     if ($interface->name eq "Location") {
-        AddToHeader("    static v8::Handle<v8::Value> assignAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);\n");
-        AddToHeader("    static v8::Handle<v8::Value> reloadAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);\n");
-        AddToHeader("    static v8::Handle<v8::Value> replaceAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);\n");
+        $header{classPublic}->add("    static v8::Handle<v8::Value> assignAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);\n");
+        $header{classPublic}->add("    static v8::Handle<v8::Value> reloadAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);\n");
+        $header{classPublic}->add("    static v8::Handle<v8::Value> replaceAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);\n");
     }
 }
 
@@ -4048,6 +4035,7 @@ sub GenerateCallbackHeader
     my $interfaceName = $interface->name;
     my $v8InterfaceName = "V8$interfaceName";
 
+    $header{root}->addFooter("\n");
 
     my @unsortedIncludes = ();
     push(@unsortedIncludes, "#include \"bindings/v8/ActiveDOMCallback.h\"");
@@ -4058,6 +4046,7 @@ sub GenerateCallbackHeader
     push(@unsortedIncludes, "#include <v8.h>");
     push(@unsortedIncludes, "#include <wtf/Forward.h>");
     $header{includes}->add(join("\n", sort @unsortedIncludes));
+    unshift(@{$header{nameSpaceWebCore}->{header}}, "\n");
     $header{nameSpaceWebCore}->addHeader("class ScriptExecutionContext;\n\n");
     $header{class}->addHeader("class $v8InterfaceName : public $interfaceName, public ActiveDOMCallback {");
     $header{class}->addFooter("};\n");
@@ -5108,12 +5097,7 @@ sub WriteData
 
     # Update a .h file if the contents are changed.
     $contents = join "", @headerContent;
-    # FIXME: use $header{root}->toString() in both cases after generator use class Block for non-callback header.
-    if ($interface->isCallback) {
-        UpdateFile($headerFileName, $header{root}->toString());
-    } else {
-        UpdateFile($headerFileName, $contents);
-    }
+    UpdateFile($headerFileName, $header{root}->toString());
 
     @headerContent = ();
 }
