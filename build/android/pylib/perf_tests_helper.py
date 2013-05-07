@@ -19,7 +19,7 @@ RESULT_TYPES = {'unimportant': 'RESULT ',
 
 def _EscapePerfResult(s):
   """Escapes |s| for use in a perf result."""
-  return re.sub('[\:|=/#&]', '_', s)
+  return re.sub('[\:|=/#&,]', '_', s)
 
 
 def GeomMeanAndStdDevFromHistogram(histogram_json):
@@ -64,6 +64,11 @@ def _MeanAndStdDevFromList(values):
   else:
     value = values[0]
   return value, avg, sd
+
+
+def PrintPages(page_list):
+  """Prints list of pages to stdout in the format required by perf tests."""
+  print 'Pages: [%s]' % ','.join([_EscapePerfResult(p) for p in page_list])
 
 
 def PrintPerfResult(measurement, trace, values, units, result_type='default',
