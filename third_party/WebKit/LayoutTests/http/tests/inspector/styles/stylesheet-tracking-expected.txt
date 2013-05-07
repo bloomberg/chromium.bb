@@ -1,0 +1,52 @@
+Tests that the styleSheetAdded and styleSheetRemoved events are reported into the frontend. Bug 105828.
+
+Text
+2 headers known:
+    URL=.../inspector/styles/resources/stylesheet-tracking.css
+    origin=regular
+    URL=.../inspector/styles/stylesheet-tracking.html
+    origin=regular
+=== Adding iframe... ===
+Stylesheets added:
+    URL=.../inspector/styles/resources/stylesheet-tracking-iframe.html
+    origin=regular
+=== Adding iframe stylesheet... ===
+Stylesheets added:
+    URL=.../inspector/styles/resources/stylesheet-tracking-iframe.html
+    origin=regular
+=== Removing iframe stylesheet... ===
+Stylesheets removed:
+    URL=.../inspector/styles/resources/stylesheet-tracking-iframe.html
+    origin=regular
+=== Adding stylesheet... ===
+Stylesheets added:
+    URL=.../inspector/styles/resources/stylesheet-tracking-import-1.css
+    origin=regular
+    URL=.../inspector/styles/resources/stylesheet-tracking-import-2.css
+    origin=regular
+    URL=.../inspector/styles/resources/stylesheet-tracking-import.css
+    origin=regular
+    URL=.../inspector/styles/stylesheet-tracking.html
+    origin=regular
+=== Removing @import... ===
+Stylesheets removed:
+    URL=.../inspector/styles/resources/stylesheet-tracking-import-1.css
+    origin=regular
+    URL=.../inspector/styles/resources/stylesheet-tracking-import-2.css
+    origin=regular
+    URL=.../inspector/styles/resources/stylesheet-tracking-import.css
+    origin=regular
+=== Removing stylesheet... ===
+Stylesheets removed:
+    URL=.../inspector/styles/stylesheet-tracking.html
+    origin=regular
+=== Adding rule... ===
+Stylesheets added:
+    URL=.../inspector/styles/stylesheet-tracking.html
+    origin=inspector
+Rule added
+=== Removing iframe... ===
+Stylesheets removed:
+    URL=.../inspector/styles/resources/stylesheet-tracking-iframe.html
+    origin=regular
+

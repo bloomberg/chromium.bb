@@ -43,7 +43,7 @@ void didModifyDOMAttrImpl(InstrumentingAgents*, Element*, const AtomicString& na
 void didRemoveDOMAttrImpl(InstrumentingAgents*, Element*, const AtomicString& name);
 void characterDataModifiedImpl(InstrumentingAgents*, CharacterData*);
 void didInvalidateStyleAttrImpl(InstrumentingAgents*, Node*);
-void activeStyleSheetsUpdatedImpl(InstrumentingAgents*, const Vector<RefPtr<StyleSheet> >&);
+void activeStyleSheetsUpdatedImpl(InstrumentingAgents*, Document*, const Vector<RefPtr<StyleSheet> >&);
 void frameWindowDiscardedImpl(InstrumentingAgents*, DOMWindow*);
 void mediaQueryResultChangedImpl(InstrumentingAgents*);
 void didCreateNamedFlowImpl(InstrumentingAgents*, Document*, NamedFlow*);
@@ -204,7 +204,7 @@ inline void activeStyleSheetsUpdated(Document* document, const Vector<RefPtr<Sty
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        activeStyleSheetsUpdatedImpl(instrumentingAgents, newSheets);
+        activeStyleSheetsUpdatedImpl(instrumentingAgents, document, newSheets);
 }
 
 inline void frameWindowDiscarded(Frame* frame, DOMWindow* domWindow)

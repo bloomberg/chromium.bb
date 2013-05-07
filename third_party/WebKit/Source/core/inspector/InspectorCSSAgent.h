@@ -109,7 +109,8 @@ public:
     void willRemoveNamedFlow(Document*, NamedFlow*);
     void didUpdateRegionLayout(Document*, NamedFlow*);
     void regionLayoutUpdated(NamedFlow*, int documentNodeId);
-    void activeStyleSheetsUpdated(const Vector<RefPtr<StyleSheet> >& newSheets);
+    void activeStyleSheetsUpdated(Document*, const Vector<RefPtr<StyleSheet> >& newSheets);
+    void frameDetachedFromParent(Frame*);
 
     virtual void getComputedStyleForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >&);
     virtual void getInlineStylesForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributes);

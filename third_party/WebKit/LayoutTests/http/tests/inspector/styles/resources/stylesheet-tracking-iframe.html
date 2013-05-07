@@ -1,0 +1,28 @@
+<html>
+<head>
+<style type="text/css" media="screen">
+  body { background:green; }
+</style>
+<script>
+function handleMessage(event)
+{
+    switch (event.data) {
+    case "addStyleSheet":
+        var style = document.createElement("style");
+        style.textContent = "body { background-color: yellow; }";
+        document.head.appendChild(style);
+        break;
+    case "removeStyleSheet":
+        document.head.removeChild(document.head.children[0]);
+        break;
+    }
+}
+
+window.addEventListener("message", handleMessage, false);
+</script>
+</head>
+
+<body>
+</body>
+
+</html>

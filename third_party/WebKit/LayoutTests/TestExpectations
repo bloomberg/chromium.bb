@@ -34,7 +34,7 @@ webkit.org/b/102463 [ Debug ] fast/forms/validation-message-appearance.html [ Pa
 webkit.org/b/103744 [ Debug ] svg/dom/viewspec-parser-7.html [ Timeout ]
 webkit.org/b/103744 [ Debug ] svg/dom/viewspec-parser-6.html [ Timeout ]
 crbug.com/24182 [ Debug ] inspector/styles/device-metrics-fit-window.html [ Slow ]
-crbug.com/24182 [ Debug ] inspector/styles/stylesheet-tracking.html [ Slow ]
+crbug.com/24182 [ Debug ] http/tests/inspector/styles/stylesheet-tracking.html [ Slow ]
 webkit.org/b/106606 [ Debug ] fast/canvas/webgl/context-release-upon-reload.html [ Slow ]
 webkit.org/b/106606 [ Debug ] virtual/gpu/fast/canvas/webgl/context-release-upon-reload.html [ Pass Timeout ]
 webkit.org/b/109400 [ Win ] http/tests/css/css-image-loading.html [ Pass Timeout ]

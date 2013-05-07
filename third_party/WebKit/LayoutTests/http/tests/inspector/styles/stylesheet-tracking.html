@@ -1,8 +1,7 @@
 <html>
 <head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/elements-test.js"></script>
-<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../inspector-test.js"></script>
+<script src="../elements-test.js"></script>
 <link rel="stylesheet" href="resources/stylesheet-tracking.css" />
 
 <style>
@@ -18,7 +17,7 @@ function addStyleSheet()
     var styleElement = document.createElement("style");
     styleElement.id = "style";
     styleElement.type = "text/css";
-    styleElement.textContent = "@import url(\"resources/styles-new-API.css\");\na { color: green; }"
+    styleElement.textContent = "@import url(\"resources/stylesheet-tracking-import.css\");\na { color: green; }"
     document.head.appendChild(styleElement);
 }
 
@@ -32,9 +31,38 @@ function removeStyleSheet()
     document.head.removeChild(document.getElementById("style"));
 }
 
+function loadIframe()
+{
+    var iframe = document.createElement("iframe");
+    iframe.setAttribute("seamless", "seamless");
+    iframe.src = "resources/stylesheet-tracking-iframe.html";
+    document.body.appendChild(iframe);
+}
+
+function iframe()
+{
+    return document.getElementsByTagName("iframe")[0];
+}
+
+function addIframeStyleSheet()
+{
+    iframe().contentWindow.postMessage("addStyleSheet", "*");
+}
+
+function removeIframeStyleSheet()
+{
+    iframe().contentWindow.postMessage("removeStyleSheet", "*");
+}
+
+function removeIframe()
+{
+    var element = iframe();
+    element.parentElement.removeChild(element);
+}
+
 function test()
 {
-    var inspectorResource;
+    var inspectedNode;
 
     WebInspector.showPanel("elements");
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded, null);
@@ -43,12 +71,32 @@ function test()
     InspectorTest.addResult(headers.length + " headers known:");
     sortAndDumpData(headers);
 
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    InspectorTest.selectNodeAndWaitForStyles("inspected", step0);
 
-    var inspectedNode;
-    function step1(node)
+    function step0(node)
     {
         inspectedNode = node;
+        InspectorTest.addResult("=== Adding iframe... ===");
+        InspectorTest.evaluateInPage("loadIframe()");
+        waitStyleSheetAdded(1, iframeAdded);
+
+        function iframeAdded()
+        {
+            InspectorTest.addResult("=== Adding iframe stylesheet... ===");
+            waitStyleSheetAdded(1, removeIframeStyleSheet);
+            InspectorTest.evaluateInPage("addIframeStyleSheet()");
+        }
+
+        function removeIframeStyleSheet()
+        {
+            InspectorTest.addResult("=== Removing iframe stylesheet... ===");
+            waitStyleSheetRemoved(1, step1)
+            InspectorTest.evaluateInPage("removeIframeStyleSheet()");
+        }
+    }
+
+    function step1()
+    {
         InspectorTest.addResult("=== Adding stylesheet... ===");
         waitStyleSheetAdded(4, step2);
         InspectorTest.evaluateInPage("addStyleSheet()");
@@ -71,18 +119,31 @@ function test()
     function step4()
     {
         InspectorTest.addResult("=== Adding rule... ===");
+        waitStyleSheetAdded(1);
         WebInspector.cssModel.addRule(inspectedNode.id, "#inspected", successCallback, failureCallback);
 
         function successCallback()
         {
             InspectorTest.addResult("Rule added");
-            InspectorTest.completeTest();
+            step5();
         }
         function failureCallback()
         {
             InspectorTest.addResult("Failed to add rule.");
             InspectorTest.completeTest();
         }
+    }
+
+    function step5()
+    {
+        InspectorTest.addResult("=== Removing iframe... ===");
+        InspectorTest.evaluateInPage("removeIframe()");
+        waitStyleSheetRemoved(1, step6);
+    }
+
+    function step6()
+    {
+        InspectorTest.completeTest();
     }
 
     var addedCallback;
@@ -102,6 +163,9 @@ function test()
         --addedSheetCount;
         if (addedSheetCount > 0)
             return;
+        else if (addedSheetCount < 0)
+            InspectorTest.addResult("Unexpected styleSheetAdded()");
+
         InspectorTest.addResult("Stylesheets added:");
         sortAndDumpData(addedSheets);
         addedSheets = [];
@@ -129,6 +193,9 @@ function test()
         --removedSheetCount;
         if (removedSheetCount > 0)
             return;
+        else if (removedSheetCount < 0)
+            InspectorTest.addResult("Unexpected styleSheetRemoved()");
+
         InspectorTest.addResult("Stylesheets removed:");
         sortAndDumpData(removedSheets);
         removedSheets = [];

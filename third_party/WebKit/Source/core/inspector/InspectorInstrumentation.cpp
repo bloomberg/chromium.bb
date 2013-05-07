@@ -216,10 +216,10 @@ void didInvalidateStyleAttrImpl(InstrumentingAgents* instrumentingAgents, Node* 
         domDebuggerAgent->didInvalidateStyleAttr(node);
 }
 
-void activeStyleSheetsUpdatedImpl(InstrumentingAgents* instrumentingAgents, const Vector<RefPtr<StyleSheet> >& newSheets)
+void activeStyleSheetsUpdatedImpl(InstrumentingAgents* instrumentingAgents, Document* document, const Vector<RefPtr<StyleSheet> >& newSheets)
 {
     if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
-        cssAgent->activeStyleSheetsUpdated(newSheets);
+        cssAgent->activeStyleSheetsUpdated(document, newSheets);
 }
 
 void frameWindowDiscardedImpl(InstrumentingAgents* instrumentingAgents, DOMWindow* window)
@@ -849,6 +849,8 @@ void frameDetachedFromParentImpl(InstrumentingAgents* instrumentingAgents, Frame
         canvasAgent->frameDetachedFromParent(frame);
     if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
         pageAgent->frameDetachedFromParent(frame);
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
+        cssAgent->frameDetachedFromParent(frame);
 }
 
 void didCommitLoadImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, DocumentLoader* loader)

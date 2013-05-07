@@ -736,11 +736,11 @@ void InspectorCSSAgent::regionLayoutUpdated(NamedFlow* namedFlow, int documentNo
     m_frontend->regionLayoutUpdated(buildObjectForNamedFlow(&errorString, namedFlow, documentNodeId));
 }
 
-void InspectorCSSAgent::activeStyleSheetsUpdated(const Vector<RefPtr<StyleSheet> >& newSheets)
+void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document, const Vector<RefPtr<StyleSheet> >& newSheets)
 {
     HashSet<CSSStyleSheet*> removedSheets;
     for (CSSStyleSheetToInspectorStyleSheet::iterator it = m_cssStyleSheetToInspectorStyleSheet.begin(); it != m_cssStyleSheetToInspectorStyleSheet.end(); ++it) {
-        if (it->value->canBind())
+        if (it->value->canBind() && (!it->key->ownerDocument() || it->key->ownerDocument() == document))
             removedSheets.add(it->key);
     }
 
@@ -780,6 +780,15 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(const Vector<RefPtr<StyleSheet>
                 m_frontend->styleSheetAdded(newStyleSheet->buildObjectForStyleSheetInfo());
         }
     }
+}
+
+void InspectorCSSAgent::frameDetachedFromParent(Frame* frame)
+{
+    Document* document = frame->document();
+    if (!document)
+        return;
+    Vector<RefPtr<StyleSheet> > newSheets;
+    activeStyleSheetsUpdated(document, newSheets);
 }
 
 bool InspectorCSSAgent::forcePseudoState(Element* element, CSSSelector::PseudoType pseudoType)
