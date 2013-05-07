@@ -31,17 +31,18 @@
 #include "config.h"
 #include "core/platform/graphics/skia/SkiaFontWin.h"
 
-#include "SkCanvas.h"
-#include "SkDevice.h"
-#include "SkPaint.h"
-#include "SkShader.h"
-#include "SkTemplates.h"
 #include "core/platform/graphics/Gradient.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Pattern.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkShader.h"
+#include "third_party/skia/include/core/SkTemplates.h"
 
 namespace WebCore {
 
@@ -83,13 +84,13 @@ static void skiaDrawText(GraphicsContext* context,
     }
 }
 
-static void setupPaintForFont(SkPaint* paint, PlatformContextSkia* pcs,
+static void setupPaintForFont(SkPaint* paint, GraphicsContext* context,
                               SkTypeface* face, float size, uint32_t textFlags)
 {
     paint->setTextSize(SkFloatToScalar(size));
     paint->setTypeface(face);
 
-    if (!pcs->couldUseLCDRenderedText()) {
+    if (!context->couldUseLCDRenderedText()) {
         textFlags &= ~SkPaint::kLCDRenderText_Flag;
         // If we *just* clear our request for LCD, then GDI seems to
         // sometimes give us AA text, and sometimes give us BW text. Since the
@@ -119,17 +120,16 @@ static void paintSkiaText(GraphicsContext* context, HFONT hfont,
                           const GOFFSET* offsets,
                           const SkPoint* origin)
 {
-    PlatformContextSkia* platformContext = context->platformContext();
-    TextDrawingModeFlags textMode = platformContext->getTextDrawingMode();
+    TextDrawingModeFlags textMode = context->textDrawingModeSkia();
     // Ensure font load for printing, because PDF device needs it.
-    if (platformContext->isVector())
+    if (context->isPrintingDevice())
         FontPlatformData::ensureFontLoaded(hfont);
 
     // Filling (if necessary). This is the common case.
     SkPaint paint;
-    platformContext->setupPaintForFilling(&paint);
+    context->setupPaintForFilling(&paint);
     paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-    setupPaintForFont(&paint, platformContext, face, size, textFlags);
+    setupPaintForFont(&paint, context, face, size, textFlags);
 
     bool didFill = false;
 
@@ -140,13 +140,13 @@ static void paintSkiaText(GraphicsContext* context, HFONT hfont,
 
     // Stroking on top (if necessary).
     if ((textMode & TextModeStroke)
-        && platformContext->getStrokeStyle() != NoStroke
-        && platformContext->getStrokeThickness() > 0) {
+        && context->strokeStyleSkia() != NoStroke
+        && context->strokeThicknessSkia() > 0) {
 
         paint.reset();
-        platformContext->setupPaintForStroking(&paint, 0, 0);
+        context->setupPaintForStroking(&paint, 0, 0);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-        setupPaintForFont(&paint, platformContext, face, size, textFlags);
+        setupPaintForFont(&paint, context, face, size, textFlags);
 
         if (didFill) {
             // If there is a shadow and we filled above, there will already be

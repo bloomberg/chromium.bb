@@ -34,7 +34,7 @@
 #include "SkColor.h"
 #include "SkScalar.h"
 #include "core/platform/ThemeTypes.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

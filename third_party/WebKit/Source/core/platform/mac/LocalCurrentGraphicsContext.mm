@@ -21,14 +21,14 @@
 #include "core/platform/mac/LocalCurrentGraphicsContext.h"
 
 #include <AppKit/NSGraphicsContext.h>
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "platform_canvas.h"
 
 namespace WebCore {
 
 LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext* graphicsContext)
     : m_didSetGraphicsContext(false)
-    , m_skiaBitLocker(graphicsContext->platformContext()->canvas())
+    , m_skiaBitLocker(graphicsContext->canvas())
 {
     m_savedGraphicsContext = graphicsContext;
     graphicsContext->save();
@@ -65,7 +65,7 @@ CGContextRef LocalCurrentGraphicsContext::cgContext()
 }
 
 ContextContainer::ContextContainer(GraphicsContext* graphicsContext) 
-    : m_skiaBitLocker(graphicsContext->platformContext()->canvas())
+    : m_skiaBitLocker(graphicsContext->canvas())
 {
 }
 

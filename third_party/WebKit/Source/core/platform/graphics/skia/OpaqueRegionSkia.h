@@ -42,7 +42,7 @@
 namespace WebCore {
 class GraphicsContext;
 
-// This class is an encapsulation of functionality for PlatformContextSkia, and its methods are mirrored
+// This class is an encapsulation of functionality for GraphicsContext, and its methods are mirrored
 // there for the outside world. It tracks paints and computes what area will be opaque.
 class OpaqueRegionSkia {
 public:

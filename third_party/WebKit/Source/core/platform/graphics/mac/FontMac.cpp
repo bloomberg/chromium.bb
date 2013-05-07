@@ -36,7 +36,6 @@
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/SimpleFontData.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -135,36 +134,35 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         y += SkFloatToScalar(adv[i].height());
     }
 
-    PlatformContextSkia* platformContext = gc->platformContext();
     if (font->platformData().orientation() == Vertical) {
-        platformContext->save();
-        platformContext->rotate(-90);
+        gc->save();
+        gc->rotate(-0.5 * SK_ScalarPI);
         SkMatrix rotator;
         rotator.reset();
         rotator.setRotate(90);
         rotator.mapPoints(pos, numGlyphs);
     }
-    TextDrawingModeFlags textMode = gc->platformContext()->getTextDrawingMode();
+    TextDrawingModeFlags textMode = gc->textDrawingModeSkia();
 
     // We draw text up to two times (once for fill, once for stroke).
     if (textMode & TextModeFill) {
         SkPaint paint;
-        gc->platformContext()->setupPaintForFilling(&paint);
+        gc->setupPaintForFilling(&paint);
         setupPaint(&paint, font, this, shouldAntialias, shouldSmoothFonts);
-        gc->platformContext()->adjustTextRenderMode(&paint);
+        gc->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
         gc->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, paint);
     }
 
     if ((textMode & TextModeStroke)
-        && gc->platformContext()->getStrokeStyle() != NoStroke
-        && gc->platformContext()->getStrokeThickness() > 0) {
+        && gc->strokeStyleSkia() != NoStroke
+        && gc->strokeThicknessSkia() > 0) {
 
         SkPaint paint;
-        gc->platformContext()->setupPaintForStroking(&paint, 0, 0);
+        gc->setupPaintForStroking(&paint, 0, 0);
         setupPaint(&paint, font, this, shouldAntialias, shouldSmoothFonts);
-        gc->platformContext()->adjustTextRenderMode(&paint);
+        gc->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
         if (textMode & TextModeFill) {
@@ -176,7 +174,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         gc->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, paint);
     }
     if (font->platformData().orientation() == Vertical)
-        platformContext->restore();
+        gc->restore();
 }
 
 } // namespace WebCore

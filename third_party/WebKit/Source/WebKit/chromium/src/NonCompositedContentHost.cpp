@@ -33,7 +33,6 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include <public/WebContentLayer.h>
 #include <public/WebFloatPoint.h>
 

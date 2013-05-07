@@ -29,7 +29,7 @@
 
 #include "core/platform/Scrollbar.h"
 #include "core/platform/ScrollbarThemeComposite.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <public/WebRect.h>
 
 using namespace WebCore;

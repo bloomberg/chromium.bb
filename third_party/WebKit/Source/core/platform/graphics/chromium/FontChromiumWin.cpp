@@ -35,10 +35,10 @@
 #include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/FontFallbackList.h"
 #include "core/platform/graphics/GlyphBuffer.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
 #include "core/platform/graphics/chromium/UniscribeHelperTextRun.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/graphics/skia/SkiaFontWin.h"
 
 #include <windows.h>
@@ -64,10 +64,10 @@ void Font::drawGlyphs(GraphicsContext* graphicsContext,
                       int numGlyphs,
                       const FloatPoint& point) const
 {
-    SkColor color = graphicsContext->platformContext()->effectiveFillColor();
+    SkColor color = graphicsContext->effectiveFillColor();
     unsigned char alpha = SkColorGetA(color);
     // Skip 100% transparent text; no need to draw anything.
-    if (!alpha && graphicsContext->platformContext()->getStrokeStyle() == NoStroke && !graphicsContext->hasShadow())
+    if (!alpha && graphicsContext->strokeStyleSkia() == NoStroke && !graphicsContext->hasShadow())
         return;
 
     // We draw the glyphs in chunks to avoid having to do a heap allocation for
@@ -180,13 +180,12 @@ void Font::drawComplexText(GraphicsContext* graphicsContext,
                            int from,
                            int to) const
 {
-    PlatformGraphicsContext* context = graphicsContext->platformContext();
     UniscribeHelperTextRun state(run, *this);
 
-    SkColor color = graphicsContext->platformContext()->effectiveFillColor();
+    SkColor color = graphicsContext->effectiveFillColor();
     unsigned char alpha = SkColorGetA(color);
     // Skip 100% transparent text; no need to draw anything.
-    if (!alpha && graphicsContext->platformContext()->getStrokeStyle() == NoStroke)
+    if (!alpha && graphicsContext->strokeStyleSkia() == NoStroke)
         return;
 
     HDC hdc = 0;

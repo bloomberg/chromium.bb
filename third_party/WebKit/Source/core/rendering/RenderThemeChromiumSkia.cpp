@@ -35,7 +35,6 @@
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"

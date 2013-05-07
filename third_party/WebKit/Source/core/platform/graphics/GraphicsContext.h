@@ -28,6 +28,8 @@
 #ifndef GraphicsContext_h
 #define GraphicsContext_h
 
+#include "core/platform/chromium/TraceEvent.h"
+
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/DashArray.h"
 #include "core/platform/graphics/FloatRect.h"
@@ -40,19 +42,16 @@
 #include "core/platform/graphics/skia/OpaqueRegionSkia.h"
 
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
+#include "third_party/skia/include/effects/SkDashPathEffect.h"
 
 #include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>
-
-namespace WebCore {
-class PlatformContextSkia;
-}
-typedef WebCore::PlatformContextSkia PlatformGraphicsContext;
 
 namespace WebCore {
 
@@ -68,6 +67,7 @@ namespace WebCore {
     class RoundedRect;
     class KURL;
     class GraphicsContext3D;
+    class PlatformContextSkiaState;
     class TextRun;
     class TransformationMatrix;
 
@@ -95,6 +95,8 @@ namespace WebCore {
         InterpolationMedium,
         InterpolationHigh
     };
+
+    enum CompositeOperator;
 
     struct GraphicsContextState {
         GraphicsContextState()
@@ -155,10 +157,42 @@ namespace WebCore {
     class GraphicsContext {
         WTF_MAKE_NONCOPYABLE(GraphicsContext); WTF_MAKE_FAST_ALLOCATED;
     public:
+        enum AntiAliasingMode {
+            NotAntiAliased,
+            AntiAliased
+        };
+        enum AccessMode {
+            ReadOnly,
+            ReadWrite
+        };
+
         explicit GraphicsContext(SkCanvas*);
         ~GraphicsContext();
 
-        PlatformGraphicsContext* platformContext() const;
+        // Returns the canvas used for painting, NOT guaranteed to be non-null.
+        // Accessing the backing canvas this way flushes all queued save ops,
+        // so it should be avoided. Use the corresponding draw/matrix/clip methods instead.
+        SkCanvas* canvas()
+        {
+            // Flush any pending saves.
+            realizeSave(SkCanvas::kMatrixClip_SaveFlag);
+
+            return m_canvas;
+        }
+        const SkCanvas* canvas() const { return m_canvas; }
+
+        const SkBitmap* bitmap() const
+        {
+            TRACE_EVENT0("skia", "GraphicsContext::bitmap");
+            return &m_canvas->getDevice()->accessBitmap(false);
+        }
+
+        const SkBitmap& layerBitmap(AccessMode access = ReadOnly) const
+        {
+            return m_canvas->getTopDevice()->accessBitmap(access == ReadWrite);
+        }
+
+        SkDevice* createCompatibleDevice(const IntSize&, bool hasAlpha) const;
 
         float strokeThickness() const;
         void setStrokeThickness(float);
@@ -186,6 +220,38 @@ namespace WebCore {
         void setFillGradient(PassRefPtr<Gradient>);
         Gradient* fillGradient() const;
 
+        // Skia state methods.
+        SkDrawLooper* drawLooper() const;
+        StrokeStyle strokeStyleSkia() const;
+        float strokeThicknessSkia() const;
+        TextDrawingModeFlags textDrawingModeSkia() const;
+        SkColor effectiveFillColor() const;
+        int getNormalizedAlpha() const;
+        bool getClipBounds(SkRect* bounds) const { return m_canvas->getClipBounds(bounds); }
+        const SkMatrix& getTotalMatrix() const { return m_canvas->getTotalMatrix(); }
+        bool isPrintingDevice() const { return m_canvas->getTopDevice()->getDeviceCapabilities() & SkDevice::kVector_Capability; }
+
+        bool readPixels(SkBitmap* bitmap, int x, int y, SkCanvas::Config8888 config8888 = SkCanvas::kNative_Premul_Config8888)
+        {
+            return m_canvas->readPixels(bitmap, x, y, config8888);
+        }
+
+
+        bool clipRect(const SkRect& rect, AntiAliasingMode aa = NotAntiAliased, SkRegion::Op op = SkRegion::kIntersect_Op)
+        {
+            realizeSave(SkCanvas::kClip_SaveFlag);
+
+            return m_canvas->clipRect(rect, op, aa == AntiAliased);
+        }
+
+        void setMatrix(const SkMatrix& matrix)
+        {
+            realizeSave(SkCanvas::kMatrix_SaveFlag);
+
+            m_canvas->setMatrix(matrix);
+        }
+
+
         void setShadowsIgnoreTransforms(bool);
         bool shadowsIgnoreTransforms() const;
 
@@ -199,6 +265,10 @@ namespace WebCore {
         // In some cases we have to disable to to ensure a high-quality output of the glyphs.
         void setShouldSubpixelQuantizeFonts(bool);
         bool shouldSubpixelQuantizeFonts() const;
+
+        // Turn off LCD text for the paint if not supported on this context.
+        void adjustTextRenderMode(SkPaint*);
+        bool couldUseLCDRenderedText();
 
         // Change the way document markers are rendered.
         // Any deviceScaleFactor higher than 1.5 is enough to justify setting this flag.
@@ -217,8 +287,6 @@ namespace WebCore {
         bool printing() const { return m_printing; }
         void setPrinting(bool printing) { m_printing = printing; }
 
-        const GraphicsContextState& state() const;
-
         bool isAccelerated() const { return m_accelerated; }
         void setAccelerated(bool accelerated) { m_accelerated = accelerated; }
 
@@ -235,6 +303,15 @@ namespace WebCore {
 
         void saveLayer(const SkRect* bounds, const SkPaint*, SkCanvas::SaveFlags = SkCanvas::kARGB_ClipLayer_SaveFlag);
         void restoreLayer();
+
+        // Sets up the paint for the current fill style.
+        void setupPaintForFilling(SkPaint*) const;
+
+        // Sets up the paint for stroking. Returns an int representing the effective
+        // width of the pen. If a non-zero length is provided,
+        // the number of dashes/dots on a dashed/dotted line will be adjusted to
+        // start and end that length with a dash/dot.
+        float setupPaintForStroking(SkPaint*, SkRect*, int length) const;
 
         // These draw methods will do both stroking and filling.
         // FIXME: ...except drawRect(), which fills properly but always strokes
@@ -405,8 +482,6 @@ namespace WebCore {
         static bool supportsTransparencyLayers();
         static void addCornerArc(SkPath*, const SkRect&, const IntSize&, int);
         static void setPathFromConvexPoints(SkPath* path, size_t numPoints, const FloatPoint* points);
-        void drawOuterPath(const SkPath&, SkPaint&, int);
-        void drawInnerPath(const SkPath&, SkPaint&, int);
         static void setRadii(SkVector* radii, IntSize topLeft, IntSize topRight, IntSize bottomRight, IntSize bottomLeft);
 
 #if OS(DARWIN)
@@ -435,10 +510,83 @@ namespace WebCore {
             return value;
         }
 
-        OwnPtr<PlatformContextSkia> m_data;
+        // Sets up the common flags on a paint for antialiasing, effects, etc.
+        // This is implicitly called by setupPaintFill and setupPaintStroke, but
+        // you may wish to call it directly sometimes if you don't want that other
+        // behavior.
+        void setupPaintCommon(SkPaint*) const;
 
+        // Helpers for drawing a focus ring (drawFocusRing)
+        void drawOuterPath(const SkPath&, SkPaint&, int);
+        void drawInnerPath(const SkPath&, SkPaint&, int);
+
+        // State access methods
+        void setDrawLooper(SkDrawLooper*);
+        void setDashPathEffect(SkDashPathEffect*);
+        SkColor effectiveStrokeColor() const;
+
+        // SkCanvas wrappers.
+        bool isDrawingToLayer() const { return m_canvas->isDrawingToLayer(); }
+
+        bool clipPath(const SkPath& path, AntiAliasingMode aa = NotAntiAliased, SkRegion::Op op = SkRegion::kIntersect_Op)
+        {
+            realizeSave(SkCanvas::kClip_SaveFlag);
+
+            return m_canvas->clipPath(path, op, aa == AntiAliased);
+        }
+
+        bool clipRRect(const SkRRect& rect, AntiAliasingMode aa = NotAntiAliased, SkRegion::Op op = SkRegion::kIntersect_Op)
+        {
+            realizeSave(SkCanvas::kClip_SaveFlag);
+
+            return m_canvas->clipRRect(rect, op, aa == AntiAliased);
+        }
+
+        bool concat(const SkMatrix& matrix)
+        {
+            realizeSave(SkCanvas::kMatrix_SaveFlag);
+
+            return m_canvas->concat(matrix);
+        }
+
+        // Used when restoring and the state has an image clip. Only shows the pixels in
+        // m_canvas that are also in imageBuffer.
+        // The clipping rectangle is given in absolute coordinates.
+        void applyClipFromImage(const SkRect&, const SkBitmap&);
+
+        // common code between setupPaintFor[Filling,Stroking]
+        void setupShader(SkPaint*, Gradient*, Pattern*, SkColor) const;
+
+        // Apply deferred saves
+        void realizeSave(SkCanvas::SaveFlags flags)
+        {
+            if (m_deferredSaveFlags & flags) {
+                m_canvas->save((SkCanvas::SaveFlags)m_deferredSaveFlags);
+                m_deferredSaveFlags = 0;
+            }
+        }
+
+        // null indicates painting is disabled. Never delete this object.
+        SkCanvas* m_canvas;
+
+        // The two versions of state will be merged and rationalize in a follow on patch.
+        // FIXME: crbug.com/235470
+        // Pointer to the current drawing state. This is a cached value of
+        // mStateStack.back().
         GraphicsContextState m_state;
+        PlatformContextSkiaState* m_skiaState;
+        // States stack. Enables local drawing state change with save()/restore() calls.
         Vector<GraphicsContextState> m_stack;
+        Vector<PlatformContextSkiaState> m_stateStack;
+
+        // Currently pending save flags.
+        // FIXME: While defined as a bitmask of SkCanvas::SaveFlags, this is mostly used as a bool.
+        //        It will come in handy when adding granular save() support (clip vs. matrix vs. paint).
+        // crbug.com/233713
+        struct DeferredSaveState;
+        unsigned m_deferredSaveFlags;
+        Vector<DeferredSaveState> m_saveStateStack;
+
         unsigned m_transparencyCount;
 
         // Tracks the region painted opaque via the GraphicsContext.

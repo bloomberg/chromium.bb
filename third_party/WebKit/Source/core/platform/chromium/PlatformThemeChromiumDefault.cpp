@@ -99,7 +99,7 @@ SkColor PlatformThemeChromiumDefault::outlineColor(const SkScalar hsv1[3], const
 
 void PlatformThemeChromiumDefault::paintArrowButton(GraphicsContext* gc, const IntRect& rect, ArrowDirection direction, ControlStates states)
 {
-    SkCanvas* const canvas = gc->platformContext()->canvas();
+    SkCanvas* const canvas = gc->canvas();
     int widthMiddle, lengthMiddle;
     SkPaint paint;
     if (direction == North || direction == South) {

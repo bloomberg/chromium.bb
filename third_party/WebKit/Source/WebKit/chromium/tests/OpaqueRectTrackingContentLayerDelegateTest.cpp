@@ -29,7 +29,6 @@
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "skia/ext/platform_canvas.h"
 #include <public/WebFloatRect.h>
 #include <public/WebRect.h>

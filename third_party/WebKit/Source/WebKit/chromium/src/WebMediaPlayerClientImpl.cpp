@@ -28,7 +28,6 @@
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include <public/Platform.h>
@@ -618,16 +617,14 @@ void WebMediaPlayerClientImpl::paintCurrentFrameInContext(GraphicsContext* conte
     // Since we're accessing platformContext() directly we have to manually
     // check.
     if (m_webMediaPlayer && !context->paintingDisabled()) {
-        PlatformGraphicsContext* platformContext = context->platformContext();
-
         // On Android, video frame is emitted as GL_TEXTURE_EXTERNAL_OES texture. We use a different path to
         // paint the video frame into the context.
 #if defined(OS_ANDROID)
         RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
-        paintOnAndroid(context, context3D.get(), rect, platformContext->getNormalizedAlpha());
+        paintOnAndroid(context, context3D.get(), rect, context->getNormalizedAlpha());
 #else
-        WebCanvas* canvas = platformContext->canvas();
-        m_webMediaPlayer->paint(canvas, rect, platformContext->getNormalizedAlpha());
+        WebCanvas* canvas = context->canvas();
+        m_webMediaPlayer->paint(canvas, rect, context->getNormalizedAlpha());
 #endif
     }
 }
@@ -805,8 +802,7 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
 
     // Copy video texture to bitmap texture.
     WebGraphicsContext3D* webGraphicsContext3D = GraphicsContext3DPrivate::extractWebGraphicsContext3D(context3D);
-    PlatformGraphicsContext* platformContext = context->platformContext();
-    WebCanvas* canvas = platformContext->canvas();
+    WebCanvas* canvas = context->canvas();
     unsigned int textureId = static_cast<unsigned int>(m_texture->getTextureHandle());
     if (!m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, textureId, 0, GraphicsContext3D::RGBA, true, false)) { return; }
 

@@ -33,7 +33,7 @@
 
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/Scrollbar.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <public/default/WebThemeEngine.h>
 #include <public/Platform.h>
 #include <public/WebRect.h>
@@ -58,7 +58,7 @@ void ScrollbarThemeChromiumDefault::paintTrackPiece(GraphicsContext* gc, Scrollb
     WebKit::WebThemeEngine::State state = scrollbar->hoveredPart() == partType ? WebKit::WebThemeEngine::StateHover : WebKit::WebThemeEngine::StateNormal;
     IntRect alignRect = trackRect(scrollbar, false);
     WebKit::WebThemeEngine::ExtraParams extraParams;
-    WebKit::WebCanvas* canvas = gc->platformContext()->canvas();
+    WebKit::WebCanvas* canvas = gc->canvas();
     extraParams.scrollbarTrack.trackX = alignRect.x();
     extraParams.scrollbarTrack.trackY = alignRect.y();
     extraParams.scrollbarTrack.trackWidth = alignRect.width();
@@ -70,7 +70,7 @@ void ScrollbarThemeChromiumDefault::paintButton(GraphicsContext* gc, ScrollbarTh
 {
     WebKit::WebThemeEngine::Part paintPart;
     WebKit::WebThemeEngine::State state = WebKit::WebThemeEngine::StateNormal;
-    WebKit::WebCanvas* canvas = gc->platformContext()->canvas();
+    WebKit::WebCanvas* canvas = gc->canvas();
     bool checkMin = false;
     bool checkMax = false;
     if (scrollbar->orientation() == HorizontalScrollbar) {
@@ -105,7 +105,7 @@ void ScrollbarThemeChromiumDefault::paintButton(GraphicsContext* gc, ScrollbarTh
 void ScrollbarThemeChromiumDefault::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     WebKit::WebThemeEngine::State state;
-    WebKit::WebCanvas* canvas = gc->platformContext()->canvas();
+    WebKit::WebCanvas* canvas = gc->canvas();
     if (scrollbar->pressedPart() == ThumbPart)
         state = WebKit::WebThemeEngine::StatePressed;
     else if (scrollbar->hoveredPart() == ThumbPart)

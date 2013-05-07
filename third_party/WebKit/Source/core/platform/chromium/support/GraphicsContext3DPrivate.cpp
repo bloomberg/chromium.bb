@@ -35,9 +35,9 @@
 #include "GrContext.h"
 #include "GrGLInterface.h"
 #include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebGraphicsMemoryAllocation.h>
 #include <wtf/text/CString.h>
@@ -188,7 +188,7 @@ void GraphicsContext3DPrivate::paintFramebufferToCanvas(int framebuffer, int wid
     unsigned char* pixels = 0;
     size_t bufferSize = 4 * width * height;
 
-    const SkBitmap* canvasBitmap = imageBuffer->context()->platformContext()->bitmap();
+    const SkBitmap* canvasBitmap = imageBuffer->context()->bitmap();
     const SkBitmap* readbackBitmap = 0;
     ASSERT(canvasBitmap->config() == SkBitmap::kARGB_8888_Config);
     if (canvasBitmap->width() == width && canvasBitmap->height() == height) {

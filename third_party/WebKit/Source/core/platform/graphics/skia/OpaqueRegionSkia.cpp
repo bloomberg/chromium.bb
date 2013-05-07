@@ -33,7 +33,6 @@
 #include "core/platform/graphics/skia/OpaqueRegionSkia.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 #include "SkCanvas.h"
 #include "SkColorFilter.h"
@@ -153,11 +152,11 @@ static inline bool paintIsOpaque(const SkPaint& paint, OpaqueRegionSkia::DrawTyp
 static inline bool getDeviceClipAsRect(const GraphicsContext* context, SkRect& deviceClipRect)
 {
     // Get the current clip in device coordinate space.
-    if (context->platformContext()->canvas()->getClipType() != SkCanvas::kRect_ClipType)
+    if (context->canvas()->getClipType() != SkCanvas::kRect_ClipType)
         return false;
 
     SkIRect deviceClipIRect;
-    if (context->platformContext()->canvas()->getClipDeviceBounds(&deviceClipIRect))
+    if (context->canvas()->getClipDeviceBounds(&deviceClipIRect))
         deviceClipRect.set(deviceClipIRect);
     else
         deviceClipRect.setEmpty();
@@ -282,7 +281,7 @@ void OpaqueRegionSkia::didDraw(const GraphicsContext* context, const SkRect& rec
     SkRect targetRect = rect;
 
     // Apply the transform to device coordinate space.
-    SkMatrix canvasTransform = context->platformContext()->canvas()->getTotalMatrix();
+    SkMatrix canvasTransform = context->canvas()->getTotalMatrix();
     if (!canvasTransform.mapRect(&targetRect))
         fillsBounds = false;
 

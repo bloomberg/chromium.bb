@@ -39,7 +39,6 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/chromium/FontUtilsChromiumWin.h"
 #include "core/platform/graphics/chromium/TransparencyWin.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/win/SystemInfo.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
@@ -105,7 +104,7 @@ private:
     {
         if (!context->isCertainlyOpaque()) // Might have transparent background.
             return TransparencyWin::WhiteLayer;
-        if (context->platformContext()->canvas()->isDrawingToLayer()) // Needs antialiasing help.
+        if (context->canvas()->isDrawingToLayer()) // Needs antialiasing help.
             return TransparencyWin::OpaqueCompositeLayer;
         // Nothing interesting.
         return transformMode == TransparencyWin::KeepTransform ? TransparencyWin::NoLayer : TransparencyWin::OpaqueCompositeLayer;
@@ -307,7 +306,7 @@ bool RenderThemeChromiumWin::paintButton(RenderObject* o, const PaintInfo& i, co
     const ThemeData& themeData = getThemeData(o);
 
     ThemePainter painter(i.context, r);
-    WebKit::WebCanvas* canvas = painter.context()->platformContext()->canvas();
+    WebKit::WebCanvas* canvas = painter.context()->canvas();
     WebKit::Platform::current()->themeEngine()->paintButton(canvas, themeData.m_part, themeData.m_state, themeData.m_classicState, WebKit::WebRect(painter.drawRect()));
     return false;
 }
@@ -322,7 +321,7 @@ bool RenderThemeChromiumWin::paintSliderTrack(RenderObject* o, const PaintInfo& 
     const ThemeData& themeData = getThemeData(o);
 
     ThemePainter painter(i.context, r);
-    WebKit::WebCanvas* canvas = painter.context()->platformContext()->canvas();
+    WebKit::WebCanvas* canvas = painter.context()->canvas();
     WebKit::Platform::current()->themeEngine()->paintTrackbar(canvas, themeData.m_part, themeData.m_state, themeData.m_classicState, WebKit::WebRect(painter.drawRect()));
 
 #if ENABLE(DATALIST_ELEMENT)
@@ -337,7 +336,7 @@ bool RenderThemeChromiumWin::paintSliderThumb(RenderObject* o, const PaintInfo& 
     const ThemeData& themeData = getThemeData(o);
 
     ThemePainter painter(i.context, r);
-    WebKit::WebCanvas* canvas = painter.context()->platformContext()->canvas();
+    WebKit::WebCanvas* canvas = painter.context()->canvas();
     WebKit::Platform::current()->themeEngine()->paintTrackbar(canvas, themeData.m_part, themeData.m_state, themeData.m_classicState, WebKit::WebRect(painter.drawRect()));
 
     return false;
@@ -402,7 +401,7 @@ bool RenderThemeChromiumWin::paintMenuListButton(RenderObject* o, const PaintInf
 
     // Get the correct theme data for a textfield and paint the menu.
     ThemePainter painter(i.context, rect);
-    WebKit::WebCanvas* canvas = painter.context()->platformContext()->canvas();
+    WebKit::WebCanvas* canvas = painter.context()->canvas();
     WebKit::Platform::current()->themeEngine()->paintMenuList(canvas, CP_DROPDOWNBUTTON, determineState(o), determineClassicState(o), WebKit::WebRect(painter.drawRect()));
     return false;
 }
@@ -579,7 +578,7 @@ bool RenderThemeChromiumWin::paintTextFieldInternal(RenderObject* o,
     {
         const ThemeData& themeData = getThemeData(o);
         ThemePainter painter(i.context, r);
-        WebKit::WebCanvas* canvas = painter.context()->platformContext()->canvas();
+        WebKit::WebCanvas* canvas = painter.context()->canvas();
         WebKit::Platform::current()->themeEngine()->paintTextField(canvas, themeData.m_part, themeData.m_state, themeData.m_classicState, WebKit::WebRect(painter.drawRect()), backgroundColor.rgb(), fillContentArea, drawEdges);
         // End of block commits the painter before restoring context.
     }
@@ -604,7 +603,7 @@ bool RenderThemeChromiumWin::paintInnerSpinButton(RenderObject* object, const Pa
         half.setHeight(rect.height() / 2);
         const ThemeData& upThemeData = getThemeData(object, SpinButtonUp);
         ThemePainter upPainter(info.context, half);
-        WebKit::WebCanvas* canvas = upPainter.context()->platformContext()->canvas();
+        WebKit::WebCanvas* canvas = upPainter.context()->canvas();
         WebKit::Platform::current()->themeEngine()->paintSpinButton(canvas, upThemeData.m_part, upThemeData.m_state, upThemeData.m_classicState, WebKit::WebRect(upPainter.drawRect()));
     }
 
@@ -612,7 +611,7 @@ bool RenderThemeChromiumWin::paintInnerSpinButton(RenderObject* object, const Pa
         half.setY(rect.y() + rect.height() / 2);
         const ThemeData& downThemeData = getThemeData(object, SpinButtonDown);
         ThemePainter downPainter(info.context, half);
-        WebKit::WebCanvas* canvas = downPainter.context()->platformContext()->canvas();
+        WebKit::WebCanvas* canvas = downPainter.context()->canvas();
         WebKit::Platform::current()->themeEngine()->paintSpinButton(canvas, downThemeData.m_part, downThemeData.m_state, downThemeData.m_classicState, WebKit::WebRect(downPainter.drawRect()));
     }
     return false;
@@ -650,7 +649,7 @@ bool RenderThemeChromiumWin::paintProgressBar(RenderObject* o, const PaintInfo& 
     double animatedSeconds = renderProgress->animationStartTime() ?  WTF::currentTime() - renderProgress->animationStartTime() : 0;
     ThemePainter painter(i.context, r);
     DirectionFlippingScope scope(o, i, r);
-    WebKit::WebCanvas* canvas = painter.context()->platformContext()->canvas();
+    WebKit::WebCanvas* canvas = painter.context()->canvas();
     WebKit::Platform::current()->themeEngine()->paintProgressBar(canvas, WebKit::WebRect(r), WebKit::WebRect(valueRect), renderProgress->isDeterminate(), animatedSeconds);
     return false;
 }

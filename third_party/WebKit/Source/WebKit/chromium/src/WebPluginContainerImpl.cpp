@@ -87,8 +87,6 @@
 #include <public/WebURLRequest.h>
 #include <public/WebVector.h>
 
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
-
 using namespace WebCore;
 
 namespace WebKit {
@@ -131,7 +129,7 @@ void WebPluginContainerImpl::paint(GraphicsContext* gc, const IntRect& damageRec
     IntPoint origin = view->contentsToWindow(IntPoint(0, 0));
     gc->translate(static_cast<float>(-origin.x()), static_cast<float>(-origin.y()));
 
-    WebCanvas* canvas = gc->platformContext()->canvas();
+    WebCanvas* canvas = gc->canvas();
 
     IntRect windowRect = view->contentsToWindow(damageRect);
     m_webPlugin->paint(canvas, windowRect);
@@ -319,7 +317,7 @@ bool WebPluginContainerImpl::printPage(int pageNumber,
                                        WebCore::GraphicsContext* gc)
 {
     gc->save();
-    WebCanvas* canvas = gc->platformContext()->canvas();
+    WebCanvas* canvas = gc->canvas();
     bool ret = m_webPlugin->printPage(pageNumber, canvas);
     gc->restore();
     return ret;

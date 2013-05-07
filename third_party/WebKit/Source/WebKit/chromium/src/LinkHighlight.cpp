@@ -36,7 +36,6 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/Color.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerModelObject.h"

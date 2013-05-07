@@ -39,7 +39,6 @@
 #include "SkTableColorFilter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 namespace WebCore {
 

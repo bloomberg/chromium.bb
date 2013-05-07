@@ -47,7 +47,6 @@
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "core/platform/graphics/skia/MemoryInstrumentationSkia.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/image-encoders/skia/JPEGImageEncoder.h"
 #include "core/platform/image-encoders/skia/PNGImageEncoder.h"
@@ -122,7 +121,7 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, ColorSpace,
         return;
     }
 
-    SkAutoTUnref<SkDevice> device(compatibleContext->platformContext()->createCompatibleDevice(size, hasAlpha));
+    SkAutoTUnref<SkDevice> device(compatibleContext->createCompatibleDevice(size, hasAlpha));
     if (!device.get()) {
         success = false;
         return;
@@ -205,7 +204,7 @@ static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
 
 PassRefPtr<Image> ImageBuffer::copyImage(BackingStoreCopy copyBehavior, ScaleBehavior) const
 {
-    const SkBitmap& bitmap = *context()->platformContext()->bitmap();
+    const SkBitmap& bitmap = *context()->bitmap();
     // FIXME: Start honoring ScaleBehavior to scale 2x buffers down to 1x.
     return BitmapImage::create(NativeImageSkia::create(copyBehavior == CopyBackingStore ? deepSkBitmapCopy(bitmap) : bitmap, m_resolutionScale));
 }
@@ -261,7 +260,7 @@ static bool drawNeedsCopy(GraphicsContext* src, GraphicsContext* dst)
 void ImageBuffer::draw(GraphicsContext* context, ColorSpace styleColorSpace, const FloatRect& destRect, const FloatRect& srcRect,
     CompositeOperator op, BlendMode, bool useLowQualityScale)
 {
-    const SkBitmap& bitmap = *m_context->platformContext()->bitmap();
+    const SkBitmap& bitmap = *m_context->bitmap();
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
     context->drawImage(image.get(), styleColorSpace, destRect, srcRect, op, DoNotRespectImageOrientation, useLowQualityScale);
 }
@@ -269,7 +268,7 @@ void ImageBuffer::draw(GraphicsContext* context, ColorSpace styleColorSpace, con
 void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const AffineTransform& patternTransform,
                               const FloatPoint& phase, ColorSpace styleColorSpace, CompositeOperator op, const FloatRect& destRect)
 {
-    const SkBitmap& bitmap = *m_context->platformContext()->bitmap();
+    const SkBitmap& bitmap = *m_context->bitmap();
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
     image->drawPattern(context, srcRect, patternTransform, phase, styleColorSpace, op, destRect);
 }
@@ -280,7 +279,7 @@ void ImageBuffer::platformTransformColorSpace(const Vector<int>& lookUpTable)
     if (context()->isAccelerated())
         return;
 
-    const SkBitmap& bitmap = *context()->platformContext()->bitmap();
+    const SkBitmap& bitmap = *context()->bitmap();
     if (bitmap.isNull())
         return;
 
@@ -299,8 +298,7 @@ void ImageBuffer::platformTransformColorSpace(const Vector<int>& lookUpTable)
 }
 
 template <Multiply multiplied>
-PassRefPtr<Uint8ClampedArray> getImageData(const IntRect& rect, PlatformContextSkia* context,
-                                   const IntSize& size)
+PassRefPtr<Uint8ClampedArray> getImageData(const IntRect& rect, GraphicsContext* context, const IntSize& size)
 {
     float area = 4.0f * rect.width() * rect.height();
     if (area > static_cast<float>(std::numeric_limits<int>::max()))
@@ -333,12 +331,12 @@ PassRefPtr<Uint8ClampedArray> getImageData(const IntRect& rect, PlatformContextS
 
 PassRefPtr<Uint8ClampedArray> ImageBuffer::getUnmultipliedImageData(const IntRect& rect, CoordinateSystem) const
 {
-    return getImageData<Unmultiplied>(rect, context()->platformContext(), m_size);
+    return getImageData<Unmultiplied>(rect, context(), m_size);
 }
 
 PassRefPtr<Uint8ClampedArray> ImageBuffer::getPremultipliedImageData(const IntRect& rect, CoordinateSystem) const
 {
-    return getImageData<Premultiplied>(rect, context()->platformContext(), m_size);
+    return getImageData<Premultiplied>(rect, context(), m_size);
 }
 
 void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint, CoordinateSystem)
@@ -414,7 +412,7 @@ String ImageBuffer::toDataURL(const String& mimeType, const double* quality, Coo
     ASSERT(MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType));
 
     Vector<char> encodedImage;
-    if (!encodeImage(*context()->platformContext()->bitmap(), mimeType, quality, &encodedImage))
+    if (!encodeImage(*context()->bitmap(), mimeType, quality, &encodedImage))
         return "data:,";
 
     Vector<char> base64Data;

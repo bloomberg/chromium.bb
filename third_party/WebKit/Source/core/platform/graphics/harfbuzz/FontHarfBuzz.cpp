@@ -37,7 +37,6 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/harfbuzz/HarfBuzzShaper.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 #include "SkCanvas.h"
 #include "SkPaint.h"
@@ -92,15 +91,14 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         y += SkFloatToScalar(adv[i].height());
     }
 
-    PlatformContextSkia* platformContext = gc->platformContext();
-    TextDrawingModeFlags textMode = gc->platformContext()->getTextDrawingMode();
+    TextDrawingModeFlags textMode = gc->textDrawingModeSkia();
 
     // We draw text up to two times (once for fill, once for stroke).
     if (textMode & TextModeFill) {
         SkPaint paint;
-        gc->platformContext()->setupPaintForFilling(&paint);
+        gc->setupPaintForFilling(&paint);
         font->platformData().setupPaint(&paint);
-        gc->platformContext()->adjustTextRenderMode(&paint);
+        gc->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
         if (isVertical) {
@@ -116,13 +114,13 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     }
 
     if ((textMode & TextModeStroke)
-        && gc->platformContext()->getStrokeStyle() != NoStroke
-        && gc->platformContext()->getStrokeThickness() > 0) {
+        && gc->strokeStyleSkia() != NoStroke
+        && gc->strokeThicknessSkia() > 0) {
 
         SkPaint paint;
-        gc->platformContext()->setupPaintForStroking(&paint, 0, 0);
+        gc->setupPaintForStroking(&paint, 0, 0);
         font->platformData().setupPaint(&paint);
-        gc->platformContext()->adjustTextRenderMode(&paint);
+        gc->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
         if (textMode & TextModeFill) {
@@ -157,22 +155,22 @@ void Font::drawComplexText(GraphicsContext* gc, const TextRun& run,
     if (!run.length())
         return;
 
-    TextDrawingModeFlags textMode = gc->platformContext()->getTextDrawingMode();
+    TextDrawingModeFlags textMode = gc->textDrawingModeSkia();
     bool fill = textMode & TextModeFill;
     bool stroke = (textMode & TextModeStroke)
-               && gc->platformContext()->getStrokeStyle() != NoStroke
-               && gc->platformContext()->getStrokeThickness() > 0;
+        && gc->strokeStyleSkia() != NoStroke
+        && gc->strokeThicknessSkia() > 0;
 
     if (!fill && !stroke)
         return;
 
     SkPaint strokePaint, fillPaint;
     if (fill) {
-        gc->platformContext()->setupPaintForFilling(&fillPaint);
+        gc->setupPaintForFilling(&fillPaint);
         setupForTextPainting(&fillPaint, gc->fillColor().rgb());
     }
     if (stroke) {
-        gc->platformContext()->setupPaintForStroking(&strokePaint, 0, 0);
+        gc->setupPaintForStroking(&strokePaint, 0, 0);
         setupForTextPainting(&strokePaint, gc->strokeColor().rgb());
     }
 

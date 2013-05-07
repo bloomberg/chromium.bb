@@ -32,10 +32,10 @@
 #include <math.h>
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/PathTraversalState.h"
 #include "core/platform/graphics/StrokeStyleApplier.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -113,7 +113,7 @@ bool Path::strokeContains(StrokeStyleApplier* applier, const FloatPoint& point) 
     applier->strokeStyle(scratch);
 
     SkPaint paint;
-    scratch->platformContext()->setupPaintForStroking(&paint, 0, 0);
+    scratch->setupPaintForStroking(&paint, 0, 0);
     SkPath strokePath;
     paint.getFillPath(m_path, &strokePath);
 
@@ -138,7 +138,7 @@ FloatRect Path::strokeBoundingRect(StrokeStyleApplier* applier) const
         applier->strokeStyle(scratch);
 
     SkPaint paint;
-    scratch->platformContext()->setupPaintForStroking(&paint, 0, 0);
+    scratch->setupPaintForStroking(&paint, 0, 0);
     SkPath boundingPath;
     paint.getFillPath(m_path, &boundingPath);
 

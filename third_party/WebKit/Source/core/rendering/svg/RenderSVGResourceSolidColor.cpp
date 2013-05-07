@@ -25,7 +25,6 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/SVGRenderSupport.h"

@@ -146,8 +146,6 @@ public:
     // context, or a temporary one.
     GraphicsContext* context() const { return m_drawContext; }
 
-    PlatformGraphicsContext* platformContext() const { return m_drawContext ? m_drawContext->platformContext() : 0; }
-
     // When the mode is TextComposite, this sets the color that the text will
     // get. See the enum above for more.
     void setTextCompositeColor(Color color);

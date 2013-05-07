@@ -34,7 +34,6 @@
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/win/SystemInfo.h"
 #include <public/Platform.h>
 #include <public/WebRect.h>
@@ -106,7 +105,7 @@ void ScrollbarThemeChromiumWin::paintTrackPiece(GraphicsContext* gc, ScrollbarTh
 
     IntRect alignRect = trackRect(scrollbar, false);
 
-    WebKit::WebCanvas* canvas = gc->platformContext()->canvas();
+    WebKit::WebCanvas* canvas = gc->canvas();
     // Draw the track area before/after the thumb on the scroll bar.
     WebKit::Platform::current()->themeEngine()->paintScrollbarTrack(canvas, partId, getThemeState(scrollbar, partType), getClassicThemeState(scrollbar, partType), WebKit::WebRect(rect), WebKit::WebRect(alignRect));
 }
@@ -121,7 +120,7 @@ void ScrollbarThemeChromiumWin::paintButton(GraphicsContext* gc, ScrollbarThemeC
     else
         partId = horz ? DFCS_SCROLLRIGHT : DFCS_SCROLLDOWN;
 
-    WebKit::WebCanvas* canvas = gc->platformContext()->canvas();
+    WebKit::WebCanvas* canvas = gc->canvas();
     // Draw the thumb (the box you drag in the scroll bar to scroll).
     WebKit::Platform::current()->themeEngine()->paintScrollbarArrow(canvas, getThemeArrowState(scrollbar, part), partId | getClassicThemeState(scrollbar, part), WebKit::WebRect(rect));
 }
@@ -130,7 +129,7 @@ void ScrollbarThemeChromiumWin::paintThumb(GraphicsContext* gc, ScrollbarThemeCl
 {
     bool horz = scrollbar->orientation() == HorizontalScrollbar;
 
-    WebKit::WebCanvas* canvas = gc->platformContext()->canvas();
+    WebKit::WebCanvas* canvas = gc->canvas();
     // Draw the thumb (the box you drag in the scroll bar to scroll).
     WebKit::Platform::current()->themeEngine()->paintScrollbarThumb(canvas, horz ? SBP_THUMBBTNHORZ : SBP_THUMBBTNVERT, getThemeState(scrollbar, ThumbPart), getClassicThemeState(scrollbar, ThumbPart), WebKit::WebRect(rect));
 

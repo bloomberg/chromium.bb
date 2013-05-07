@@ -40,7 +40,6 @@ namespace WebCore {
 
 class FontPlatformData;
 class GraphicsContext;
-class PlatformContextSkia;
 
 // Note that the offsets parameter is optional. If not null it represents a
 // per glyph offset (such as returned by ScriptPlace Windows API function).

@@ -37,8 +37,8 @@
 #include "SkMatrix.h"
 #include "SkRegion.h"
 #include "core/platform/SharedBuffer.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 namespace WebCore {
 
@@ -107,7 +107,7 @@ Color SkPMColorToWebCoreColor(SkPMColor pm)
     return SkPMColorToColor(pm);
 }
 
-void ClipRectToCanvas(const PlatformContextSkia* context, const SkRect& srcRect, SkRect* destRect)
+void ClipRectToCanvas(const GraphicsContext* context, const SkRect& srcRect, SkRect* destRect)
 {
     if (!context->getClipBounds(destRect) || !destRect->intersect(srcRect))
         destRect->setEmpty();

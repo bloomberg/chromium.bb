@@ -33,7 +33,7 @@
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/mac/LocalCurrentGraphicsContext.h"
 #include "core/platform/mac/NSScrollerImpDetails.h"
 #include "core/platform/mac/ScrollAnimatorMac.h"
@@ -199,7 +199,7 @@ bool ScrollbarThemeChromiumMac::paint(ScrollbarThemeClient* scrollbar, GraphicsC
         trackInfo.enableState = kThemeTrackNothingToScroll;
     trackInfo.trackInfo.scrollbar.pressState = scrollbarPartToHIPressedState(scrollbar->pressedPart());
 
-    SkCanvas* canvas = context->platformContext()->canvas();
+    SkCanvas* canvas = context->canvas();
     CGAffineTransform currentCTM = gfx::SkMatrixToCGAffineTransform(canvas->getTotalMatrix());
 
     // The Aqua scrollbar is buggy when rotated and scaled.  We will just draw into a bitmap if we detect a scale or rotation.
@@ -221,7 +221,7 @@ bool ScrollbarThemeChromiumMac::paint(ScrollbarThemeClient* scrollbar, GraphicsC
     }
 
     // Draw thumbless.
-    gfx::SkiaBitLocker bitLocker(drawingContext->platformContext()->canvas());
+    gfx::SkiaBitLocker bitLocker(drawingContext->canvas());
     CGContextRef cgContext = bitLocker.cgContext();
     HIThemeDrawTrack(&trackInfo, 0, cgContext, kHIThemeOrientationNormal);
 
@@ -246,7 +246,7 @@ bool ScrollbarThemeChromiumMac::paint(ScrollbarThemeClient* scrollbar, GraphicsC
         scrollbarInfo.visibleSize = scrollbar->visibleSize();
         scrollbarInfo.totalSize = scrollbar->totalSize();
 
-        WebKit::WebCanvas* webCanvas = drawingContext->platformContext()->canvas();
+        WebKit::WebCanvas* webCanvas = drawingContext->canvas();
         WebKit::Platform::current()->themeEngine()->paintScrollbarThumb(
             webCanvas,
             scrollbarStateToThemeState(scrollbar),

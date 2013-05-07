@@ -35,7 +35,6 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/chromium/TransparencyWin.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 
 #include "SkColorPriv.h"
@@ -51,10 +50,10 @@ const int maxCachedBufferPixelSize = 65536;
 
 inline const SkBitmap& bitmapForContext(const GraphicsContext& context)
 {
-    return context.platformContext()->layerBitmap();
+    return context.layerBitmap();
 }
 
-void compositeToCopy(const GraphicsContext& sourceLayers,
+void compositeToCopy(GraphicsContext& sourceLayers,
                      GraphicsContext& destContext,
                      const AffineTransform& matrix)
 {
@@ -71,7 +70,7 @@ void compositeToCopy(const GraphicsContext& sourceLayers,
         int y;
     };
     Vector<DeviceInfo> devices;
-    SkCanvas* sourceCanvas = sourceLayers.platformContext()->canvas();
+    SkCanvas* sourceCanvas = sourceLayers.canvas();
     SkCanvas::LayerIter iter(sourceCanvas, false);
     while (!iter.done()) {
         devices.append(DeviceInfo(iter.device(), iter.x(), iter.y()));
@@ -209,7 +208,7 @@ void TransparencyWin::computeLayerSize()
         // FIXME: support clipping for other modes
         IntRect clippedSourceRect = m_sourceRect;
         SkRect clipBounds;
-        if (m_destContext->platformContext()->getClipBounds(&clipBounds)) {
+        if (m_destContext->getClipBounds(&clipBounds)) {
             FloatRect clipRect(clipBounds.left(), clipBounds.top(), clipBounds.width(), clipBounds.height());
             clippedSourceRect.intersect(enclosingIntRect(clipRect));
         }
@@ -411,8 +410,7 @@ void TransparencyWin::compositeOpaqueComposite()
     if (!m_validLayer)
         return;
 
-    PlatformContextSkia* destPlatformContext = m_destContext->platformContext();
-    destPlatformContext->save();
+    m_destContext->save();
 
     SkBitmap* bitmap = const_cast<SkBitmap*>(
         &bitmapForContext(*m_layerBuffer->context()));
@@ -447,7 +445,7 @@ void TransparencyWin::compositeOpaqueComposite()
         // just draw the image from inside the destination context.
         SkMatrix identity;
         identity.reset();
-        destPlatformContext->setMatrix(identity);
+        m_destContext->setMatrix(identity);
 
         destRect.set(m_transformedSourceRect.x(), m_transformedSourceRect.y(), m_transformedSourceRect.maxX(), m_transformedSourceRect.maxY());
     } else
@@ -461,7 +459,7 @@ void TransparencyWin::compositeOpaqueComposite()
     // may have been cached and it could be larger than what we're using.
     SkIRect sourceRect = { 0, 0, m_layerSize.width(), m_layerSize.height() };
     m_destContext->drawBitmapRect(*bitmap, &sourceRect, destRect, &paint);
-    destPlatformContext->restore();
+    m_destContext->restore();
 }
 
 void TransparencyWin::compositeTextComposite()
@@ -469,7 +467,7 @@ void TransparencyWin::compositeTextComposite()
     if (!m_validLayer)
         return;
 
-    const SkBitmap& bitmap = m_layerBuffer->context()->platformContext()->layerBitmap(PlatformContextSkia::ReadWrite);
+    const SkBitmap& bitmap = m_layerBuffer->context()->layerBitmap(GraphicsContext::ReadWrite);
     SkColor textColor = m_textCompositeColor.rgb();
     for (int y = 0; y < m_layerSize.height(); y++) {
         uint32_t* row = bitmap.getAddr32(0, y);
@@ -483,20 +481,19 @@ void TransparencyWin::compositeTextComposite()
     }
 
     // Now the layer has text with the proper color and opacity.
-    PlatformContextSkia* destPlatformContext = m_destContext->platformContext();
-    destPlatformContext->save();
+    m_destContext->save();
 
     // We want to use Untransformed space (see above)
     SkMatrix identity;
     identity.reset();
-    destPlatformContext->setMatrix(identity);
+    m_destContext->setMatrix(identity);
     SkRect destRect = { m_transformedSourceRect.x(), m_transformedSourceRect.y(), m_transformedSourceRect.maxX(), m_transformedSourceRect.maxY() };
 
     // Note that we need to specify the source layer subset, since the bitmap
     // may have been cached and it could be larger than what we're using.
     SkIRect sourceRect = { 0, 0, m_layerSize.width(), m_layerSize.height() };
     m_destContext->drawBitmapRect(bitmap, &sourceRect, destRect, 0);
-    destPlatformContext->restore();
+    m_destContext->restore();
 }
 
 void TransparencyWin::makeLayerOpaque()
@@ -504,7 +501,7 @@ void TransparencyWin::makeLayerOpaque()
     if (!m_validLayer)
         return;
 
-    SkBitmap& bitmap = const_cast<SkBitmap&>(m_drawContext->platformContext()->layerBitmap(PlatformContextSkia::ReadWrite));
+    SkBitmap& bitmap = const_cast<SkBitmap&>(m_drawContext->layerBitmap(GraphicsContext::ReadWrite));
     for (int y = 0; y < m_layerSize.height(); y++) {
         uint32_t* row = bitmap.getAddr32(0, y);
         for (int x = 0; x < m_layerSize.width(); x++)
