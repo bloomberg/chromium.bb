@@ -97,6 +97,17 @@ bool ValidateFolderName(const base::FilePath::StringType& name) {
   return name == name_sanitized;
 }
 
+const Extension* GetExtensionByPath(const ExtensionSet* extensions,
+                                    const base::FilePath& path) {
+  base::FilePath extension_path = base::MakeAbsoluteFilePath(path);
+  for (ExtensionSet::const_iterator iter = extensions->begin();
+       iter != extensions->end(); ++iter) {
+    if ((*iter)->path() == extension_path)
+      return *iter;
+  }
+  return NULL;
+}
+
 }  // namespace
 
 namespace AllowFileAccess = api::developer_private::AllowFileAccess;
@@ -1104,8 +1115,32 @@ bool DeveloperPrivateLoadProjectFunction::RunImpl() {
   path = path.Append(project_name);
   ExtensionService* service = profile()->GetExtensionService();
   UnpackedInstaller::Create(service)->Load(path);
-  SendResponse(true);
+
+  const ExtensionSet* extensions = service->extensions();
+  // Released by GetUnpackedExtension.
+  AddRef();
+  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DeveloperPrivateLoadProjectFunction::GetUnpackedExtension,
+                 this, path, extensions));
   return true;
+}
+
+void DeveloperPrivateLoadProjectFunction::GetUnpackedExtension(
+    const base::FilePath& path,
+    const ExtensionSet* extensions) {
+  const Extension* extension = GetExtensionByPath(extensions, path);
+  bool success = true;
+  if (extension) {
+    SetResult(base::Value::CreateStringValue(extension->id()));
+  } else {
+    SetError("unable to load the project");
+    success = false;
+  }
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&DeveloperPrivateLoadProjectFunction::SendResponse,
+                 this,
+                 success));
+  Release();
 }
 
 DeveloperPrivateLoadProjectFunction::DeveloperPrivateLoadProjectFunction() {}

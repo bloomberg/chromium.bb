@@ -169,8 +169,9 @@ namespace developerPrivate {
                                     optional VoidCallback callback);
 
     // Loads the unpacked app / extension.
+    // |callback| called with itemId of the loaded item.
     static void loadProject(DOMString project_name,
-                            optional VoidCallback callback);
+                            PathCallback callback);
 
     // Open Dialog to browse to an entry.
     // |select_type| : Select a file or a folder.

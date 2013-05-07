@@ -428,7 +428,7 @@ class DeveloperPrivateGetProjectsInfoFunction : public AsyncExtensionFunction {
    virtual bool RunImpl() OVERRIDE;
 };
 
-class DeveloperPrivateLoadProjectFunction : public SyncExtensionFunction {
+class DeveloperPrivateLoadProjectFunction : public AsyncExtensionFunction {
   public:
    DECLARE_EXTENSION_FUNCTION("developerPrivate.loadProject",
                               DEVELOPERPRIVATE_LOADPROJECT);
@@ -440,6 +440,9 @@ class DeveloperPrivateLoadProjectFunction : public SyncExtensionFunction {
 
    // ExtensionFunction
    virtual bool RunImpl() OVERRIDE;
+
+   void GetUnpackedExtension(const base::FilePath& path,
+                             const ExtensionSet* extensions);
 };
 
 }  // namespace api

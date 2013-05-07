@@ -272,10 +272,19 @@
     "extension_types": ["extension", "packaged_app"],
     "location": "component"
   },
-  "management": {
-    "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
-  },
+  "management": [
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "packaged_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"],
+      "whitelist": [
+          "gonnpeheodhmhdjiimoiheniambmdcco"  // Apps Editor.
+      ]
+    }
+  ],
   "mediaGalleries": {
     "channel": "stable",
     "extension_types": [ "platform_app" ]
