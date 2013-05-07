@@ -27,7 +27,7 @@ class SyncJsControllerTest : public testing::Test {
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(SyncJsControllerTest, Messages) {

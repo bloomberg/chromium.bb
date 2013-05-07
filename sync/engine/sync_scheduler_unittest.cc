@@ -57,26 +57,25 @@ void QuitLoopNow() {
   // indefinitely in the presence of repeated timers with low delays
   // and a slow test (e.g., ThrottlingDoesThrottle [which has a poll
   // delay of 5ms] run under TSAN on the trybots).
-  MessageLoop::current()->QuitNow();
+  base::MessageLoop::current()->QuitNow();
 }
 
 void RunLoop() {
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 void PumpLoop() {
   // Do it this way instead of RunAllPending to pump loop exactly once
   // (necessary in the presence of timers; see comment in
   // QuitLoopNow).
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&QuitLoopNow));
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&QuitLoopNow));
   RunLoop();
 }
 
 void PumpLoopFor(base::TimeDelta time) {
   // Allow the loop to run for the specified amount of time.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          base::Bind(&QuitLoopNow),
-                                          time);
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&QuitLoopNow), time);
   RunLoop();
 }
 
@@ -233,7 +232,7 @@ class SyncSchedulerTest : public testing::Test {
   }
 
   base::WeakPtrFactory<SyncSchedulerTest> weak_ptr_factory_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   TestDirectorySetterUpper dir_maker_;
   scoped_ptr<MockConnectionManager> connection_;
   scoped_ptr<SyncSessionContext> context_;
@@ -253,7 +252,7 @@ void RecordSyncShareImpl(SyncSession* s, SyncShareRecords* record) {
 
 ACTION_P(RecordSyncShare, record) {
   RecordSyncShareImpl(arg0, record);
-  if (MessageLoop::current()->is_running())
+  if (base::MessageLoop::current()->is_running())
     QuitLoopNow();
   return true;
 }
@@ -262,7 +261,7 @@ ACTION_P2(RecordSyncShareMultiple, record, quit_after) {
   RecordSyncShareImpl(arg0, record);
   EXPECT_LE(record->times.size(), quit_after);
   if (record->times.size() >= quit_after &&
-      MessageLoop::current()->is_running()) {
+      base::MessageLoop::current()->is_running()) {
     QuitLoopNow();
   }
   return true;
@@ -1197,12 +1196,12 @@ TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
   scheduler()->ScheduleNudgeAsync(
       zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(BOOKMARKS), FROM_HERE);
   // Should save the nudge for until after the server is reachable.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   scheduler()->OnConnectionStatusChange();
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
@@ -1230,7 +1229,7 @@ TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
   scheduler()->OnConnectionStatusChange();
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // This was supposed to test the scenario where we receive a nudge while a
@@ -1265,7 +1264,7 @@ TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {
   connection()->UpdateConnectionStatus();
   scheduler()->ScheduleNudgeAsync(
       zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(BOOKMARKS), FROM_HERE);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // Tests that we don't crash trying to run two canaries at once if we receive

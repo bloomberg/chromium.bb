@@ -39,7 +39,7 @@ class NonBlockingInvalidatorTestDelegate {
           invalidation_state_tracker) {
     DCHECK(!invalidator_.get());
     base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
+    options.message_loop_type = base::MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);
     request_context_getter_ =
         new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy());
@@ -86,7 +86,7 @@ class NonBlockingInvalidatorTestDelegate {
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::Thread io_thread_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<NonBlockingInvalidator> invalidator_;

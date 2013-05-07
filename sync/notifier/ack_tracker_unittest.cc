@@ -109,7 +109,7 @@ class AckTrackerTest : public testing::Test {
 
   // AckTracker uses base::Timer internally, which depends on the existence of a
   // MessageLoop.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 // Tests that various combinations of Track()/Ack() behave as

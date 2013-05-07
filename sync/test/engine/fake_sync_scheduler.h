@@ -53,7 +53,7 @@ class FakeSyncScheduler : public SyncScheduler {
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
 
  private:
-    MessageLoop* const created_on_loop_;
+  base::MessageLoop* const created_on_loop_;
 };
 
 }  // namespace syncer

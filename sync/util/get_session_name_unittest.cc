@@ -26,7 +26,7 @@ class GetSessionNameTest : public ::testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   std::string session_name_;
 };
 

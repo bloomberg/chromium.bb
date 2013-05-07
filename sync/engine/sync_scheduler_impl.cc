@@ -211,7 +211,7 @@ void SyncSchedulerImpl::OnServerConnectionErrorFixed() {
 
 void SyncSchedulerImpl::Start(Mode mode) {
   DCHECK(CalledOnValidThread());
-  std::string thread_name = MessageLoop::current()->thread_name();
+  std::string thread_name = base::MessageLoop::current()->thread_name();
   if (thread_name.empty())
     thread_name = "<Main thread>";
   SDVLOG(2) << "Start called from thread "

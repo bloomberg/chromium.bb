@@ -199,7 +199,7 @@ class SyncerProtoUtilTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   TestDirectorySetterUpper dir_maker_;
 };
 

@@ -227,7 +227,7 @@ class RegistrationManagerTest : public testing::Test {
 
  private:
   // Needed by timers in RegistrationManager.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationManagerTest);
 };

@@ -34,7 +34,7 @@ class JsSyncEncryptionHandlerObserverTest : public testing::Test {
  private:
   // This must be destroyed after the member variables below in order
   // for WeakHandles to be destroyed properly.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
  protected:
   StrictMock<MockJsEventHandler> mock_js_event_handler_;

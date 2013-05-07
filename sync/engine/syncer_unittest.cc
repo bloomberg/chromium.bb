@@ -537,7 +537,7 @@ class SyncerTest : public testing::Test,
     return directory()->GetCryptographer(trans);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   // Some ids to aid tests. Only the root one's value is specific. The rest
   // are named for test clarity.

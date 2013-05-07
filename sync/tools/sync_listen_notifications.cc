@@ -157,10 +157,10 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
       logging::DELETE_OLD_LOG_FILE,
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
-  MessageLoop ui_loop;
+  base::MessageLoop ui_loop;
   base::Thread io_thread("IO thread");
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread.StartWithOptions(options);
 
   // Parse command line.

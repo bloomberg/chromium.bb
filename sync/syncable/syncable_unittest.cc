@@ -97,7 +97,7 @@ class SyncableGeneralTest : public testing::Test {
   virtual void TearDown() {
   }
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
   NullDirectoryChangeDelegate delegate_;
   FakeEncryptor encryptor_;
@@ -446,7 +446,7 @@ TEST_F(SyncableGeneralTest, BookmarkTagTest) {
 // the unit tests fast.
 class SyncableDirectoryTest : public testing::Test {
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   static const char kName[];
 
   virtual void SetUp() {
@@ -2103,7 +2103,7 @@ class SyncableDirectoryManagement : public testing::Test {
   virtual void TearDown() {
   }
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
@@ -2172,7 +2172,7 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
 };
 
 TEST(SyncableDirectory, StressTransactions) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FakeEncryptor encryptor;

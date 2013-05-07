@@ -33,7 +33,7 @@ class SyncHttpBridgeTest : public testing::Test {
 
   virtual void SetUp() {
     base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
+    options.message_loop_type = base::MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);
   }
 
@@ -69,7 +69,7 @@ class SyncHttpBridgeTest : public testing::Test {
   void RunSyncThreadBridgeUseTest(base::WaitableEvent* signal_when_created,
                                   base::WaitableEvent* signal_when_released);
 
-  static void TestSameHttpNetworkSession(MessageLoop* main_message_loop,
+  static void TestSameHttpNetworkSession(base::MessageLoop* main_message_loop,
                                          SyncHttpBridgeTest* test) {
     scoped_refptr<HttpBridge> http_bridge(test->BuildBridge());
     EXPECT_TRUE(test->GetTestRequestContextGetter());
@@ -80,12 +80,10 @@ class SyncHttpBridgeTest : public testing::Test {
               http_bridge->GetRequestContextGetterForTest()->
                   GetURLRequestContext()->
                   http_transaction_factory()->GetSession());
-    main_message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    main_message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
-  MessageLoop* GetIOThreadLoop() {
-    return io_thread_.message_loop();
-  }
+  base::MessageLoop* GetIOThreadLoop() { return io_thread_.message_loop(); }
 
   // Note this is lazy created, so don't call this before your bridge.
   net::TestURLRequestContextGetter* GetTestRequestContextGetter() {
@@ -107,7 +105,7 @@ class SyncHttpBridgeTest : public testing::Test {
 
   // Separate thread for IO used by the HttpBridge.
   base::Thread io_thread_;
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 };
 
 // An HttpBridge that doesn't actually make network requests and just calls
@@ -127,7 +125,7 @@ class ShuntedHttpBridge : public HttpBridge {
         test_(test), never_finishes_(never_finishes) { }
  protected:
   virtual void MakeAsynchronousPost() OVERRIDE {
-    ASSERT_TRUE(MessageLoop::current() == test_->GetIOThreadLoop());
+    ASSERT_TRUE(base::MessageLoop::current() == test_->GetIOThreadLoop());
     if (never_finishes_)
       return;
 
@@ -140,7 +138,7 @@ class ShuntedHttpBridge : public HttpBridge {
   virtual ~ShuntedHttpBridge() {}
 
   void CallOnURLFetchComplete() {
-    ASSERT_TRUE(MessageLoop::current() == test_->GetIOThreadLoop());
+    ASSERT_TRUE(base::MessageLoop::current() == test_->GetIOThreadLoop());
     // We return no cookies and a dummy content response.
     net::ResponseCookies cookies;
 
@@ -180,11 +178,12 @@ void SyncHttpBridgeTest::RunSyncThreadBridgeUseTest(
 TEST_F(SyncHttpBridgeTest, TestUsesSameHttpNetworkSession) {
   // Run this test on the IO thread because we can only call
   // URLRequestContextGetter::GetURLRequestContext on the IO thread.
-  io_thread()->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&SyncHttpBridgeTest::TestSameHttpNetworkSession,
-                 MessageLoop::current(), this));
-  MessageLoop::current()->Run();
+  io_thread()->message_loop()
+      ->PostTask(FROM_HERE,
+                 base::Bind(&SyncHttpBridgeTest::TestSameHttpNetworkSession,
+                            base::MessageLoop::current(),
+                            this));
+  base::MessageLoop::current()->Run();
 }
 
 // Test the HttpBridge without actually making any network requests.

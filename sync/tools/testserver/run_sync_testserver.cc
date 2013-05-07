@@ -70,7 +70,7 @@ static bool GetPortFromSwitch(const std::string& switch_name, uint16* port) {
 
 int main(int argc, const char* argv[]) {
   base::AtExitManager at_exit_manager;
-  MessageLoopForIO message_loop;
+  base::MessageLoopForIO message_loop;
 
   // Process command line
   CommandLine::Init(argc, argv);

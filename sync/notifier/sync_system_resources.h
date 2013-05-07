@@ -69,7 +69,7 @@ class SyncInvalidationScheduler : public invalidation::Scheduler {
   // Holds all posted tasks that have not yet been run.
   std::set<invalidation::Closure*> posted_tasks_;
 
-  const MessageLoop* created_on_loop_;
+  const base::MessageLoop* created_on_loop_;
   bool is_started_;
   bool is_stopped_;
 

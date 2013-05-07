@@ -194,7 +194,7 @@ class SyncerCommandTestBase : public testing::Test,
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<sessions::SyncSessionContext> context_;
   scoped_ptr<MockConnectionManager> mock_server_;
   scoped_ptr<sessions::SyncSession> session_;

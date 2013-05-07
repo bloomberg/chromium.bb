@@ -8,7 +8,7 @@
 
 namespace syncer {
 
-PassiveModelWorker::PassiveModelWorker(const MessageLoop* sync_loop)
+PassiveModelWorker::PassiveModelWorker(const base::MessageLoop* sync_loop)
     : sync_loop_(sync_loop) {}
 
 PassiveModelWorker::~PassiveModelWorker() {
@@ -16,7 +16,7 @@ PassiveModelWorker::~PassiveModelWorker() {
 
 SyncerError PassiveModelWorker::DoWorkAndWaitUntilDone(
     const WorkCallback& work) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   // Simply do the work on the current thread.
   return work.Run();
 }

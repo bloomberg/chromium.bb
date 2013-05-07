@@ -76,7 +76,7 @@ class InvalidationNotifierTestDelegate {
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<InvalidationNotifier> invalidator_;
 };
 

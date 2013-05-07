@@ -130,7 +130,7 @@ class SyncSessionTest : public testing::Test,
     return ModelTypeSet(AUTOFILL);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   bool controller_invocations_allowed_;
   scoped_ptr<SyncSession> session_;
   scoped_ptr<SyncSessionContext> context_;

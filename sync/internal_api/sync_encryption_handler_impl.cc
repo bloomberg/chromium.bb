@@ -650,7 +650,7 @@ void SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(trans);
   if (!ApplyNigoriUpdateImpl(nigori, trans)) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&SyncEncryptionHandlerImpl::RewriteNigori,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -739,7 +739,7 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
   // Note that triggering migration will have no effect if we're already
   // properly migrated with the newest keystore keys.
   if (ShouldTriggerMigration(nigori, *cryptographer)) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&SyncEncryptionHandlerImpl::RewriteNigori,
                    weak_ptr_factory_.GetWeakPtr()));

@@ -337,7 +337,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   scoped_ptr<SyncEncryptionHandlerImpl> encryption_handler_;
   StrictMock<SyncEncryptionHandlerObserverMock> observer_;
   TestIdFactory ids_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 // Verify that the encrypted types are being written to and read from the

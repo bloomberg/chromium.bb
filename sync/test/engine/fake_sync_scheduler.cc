@@ -7,7 +7,7 @@
 namespace syncer {
 
 FakeSyncScheduler::FakeSyncScheduler()
-    : created_on_loop_(MessageLoop::current()) {}
+    : created_on_loop_(base::MessageLoop::current()) {}
 
 FakeSyncScheduler::~FakeSyncScheduler() {}
 

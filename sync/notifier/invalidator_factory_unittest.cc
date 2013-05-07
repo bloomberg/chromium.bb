@@ -37,7 +37,7 @@ class InvalidatorFactoryTest : public testing::Test {
     EXPECT_EQ(0, fake_handler_.GetInvalidationCount());
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   FakeInvalidationHandler fake_handler_;
   notifier::NotifierOptions notifier_options_;
   scoped_ptr<InvalidatorFactory> factory_;

@@ -405,7 +405,7 @@ class SyncInvalidationListenerTest : public testing::Test {
   ObjectIdSet registered_ids_;
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   FakeInvalidationStateTracker fake_tracker_;
   notifier::FakePushClient* const fake_push_client_;
 

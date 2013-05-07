@@ -62,19 +62,19 @@ void SyncLogger::SetSystemResources(invalidation::SystemResources* resources) {
 
 SyncInvalidationScheduler::SyncInvalidationScheduler()
     : weak_factory_(this),
-      created_on_loop_(MessageLoop::current()),
+      created_on_loop_(base::MessageLoop::current()),
       is_started_(false),
       is_stopped_(false) {
   CHECK(created_on_loop_);
 }
 
 SyncInvalidationScheduler::~SyncInvalidationScheduler() {
-  CHECK_EQ(created_on_loop_, MessageLoop::current());
+  CHECK_EQ(created_on_loop_, base::MessageLoop::current());
   CHECK(is_stopped_);
 }
 
 void SyncInvalidationScheduler::Start() {
-  CHECK_EQ(created_on_loop_, MessageLoop::current());
+  CHECK_EQ(created_on_loop_, base::MessageLoop::current());
   CHECK(!is_started_);
   is_started_ = true;
   is_stopped_ = false;
@@ -82,7 +82,7 @@ void SyncInvalidationScheduler::Start() {
 }
 
 void SyncInvalidationScheduler::Stop() {
-  CHECK_EQ(created_on_loop_, MessageLoop::current());
+  CHECK_EQ(created_on_loop_, base::MessageLoop::current());
   is_stopped_ = true;
   is_started_ = false;
   weak_factory_.InvalidateWeakPtrs();
@@ -93,7 +93,7 @@ void SyncInvalidationScheduler::Stop() {
 void SyncInvalidationScheduler::Schedule(invalidation::TimeDelta delay,
                                          invalidation::Closure* task) {
   DCHECK(invalidation::IsCallbackRepeatable(task));
-  CHECK_EQ(created_on_loop_, MessageLoop::current());
+  CHECK_EQ(created_on_loop_, base::MessageLoop::current());
 
   if (!is_started_) {
     delete task;
@@ -101,18 +101,18 @@ void SyncInvalidationScheduler::Schedule(invalidation::TimeDelta delay,
   }
 
   posted_tasks_.insert(task);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE, base::Bind(&SyncInvalidationScheduler::RunPostedTask,
                             weak_factory_.GetWeakPtr(), task),
       delay);
 }
 
 bool SyncInvalidationScheduler::IsRunningOnThread() const {
-  return created_on_loop_ == MessageLoop::current();
+  return created_on_loop_ == base::MessageLoop::current();
 }
 
 invalidation::Time SyncInvalidationScheduler::GetCurrentTime() const {
-  CHECK_EQ(created_on_loop_, MessageLoop::current());
+  CHECK_EQ(created_on_loop_, base::MessageLoop::current());
   return base::Time::Now();
 }
 
@@ -122,7 +122,7 @@ void SyncInvalidationScheduler::SetSystemResources(
 }
 
 void SyncInvalidationScheduler::RunPostedTask(invalidation::Closure* task) {
-  CHECK_EQ(created_on_loop_, MessageLoop::current());
+  CHECK_EQ(created_on_loop_, base::MessageLoop::current());
   task->Run();
   posted_tasks_.erase(task);
   delete task;

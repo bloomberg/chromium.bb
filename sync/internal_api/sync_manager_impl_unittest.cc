@@ -231,7 +231,7 @@ class SyncApiTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   TestUserShare test_user_share_;
 };
 
@@ -1016,7 +1016,7 @@ class SyncManagerTest : public testing::Test,
 
  private:
   // Needed by |sync_manager_|.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   // Needed by |sync_manager_|.
   base::ScopedTempDir temp_dir_;
   // Sync Id's for the roots of the enabled datatypes.

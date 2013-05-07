@@ -83,7 +83,7 @@ class SyncSystemResourcesTest : public testing::Test {
   }
 
   // Needed by |sync_system_resources_|.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   MockStateWriter mock_state_writer_;
   SyncSystemResources sync_system_resources_;
 
