@@ -640,7 +640,7 @@ TEST_F(GpuDataManagerImplTest, BlacklistAllFeatures) {
   gpu_info.gpu.device_id = 0x0640;
   manager->InitializeForTesting(blacklist_json, gpu_info);
 
-  EXPECT_EQ(NUMBER_OF_GPU_FEATURE_TYPES,
+  EXPECT_EQ(static_cast<size_t>(NUMBER_OF_GPU_FEATURE_TYPES),
             manager->GetBlacklistedFeatureCount());
   // TODO(zmo): remove the Linux specific behavior once we fix
   // crbug.com/238466.
