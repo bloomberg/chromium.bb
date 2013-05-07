@@ -94,8 +94,9 @@ RenderWidgetHostBrowserTest.GetSnapshotFromRendererTest
 # http://crbug.com/233118
 FileSystemLayoutTest.*
 IndexedDBBrowserTest.*
-IndexedDBLayoutTest.*
+IndexedDBBrowserTestWithMissingSSTFile.DestroyTest
 IndexedDBBrowserTestWithVersion0Schema.MigrationTest
 IndexedDBBrowserTestWithVersion123456Schema.DestroyTest
 IndexedDBBrowserTestWithVersion987654SSVData.DestroyTest
+IndexedDBLayoutTest.*
 BlobLayoutTest.XhrResponseBlob
