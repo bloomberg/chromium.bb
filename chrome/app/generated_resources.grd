@@ -15208,6 +15208,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_MEDIA_GALLERIES_UNATTACHED_LOCATIONS" desc="Header for media gallery permissions to locations not currently attached, i.e. removable devices which aren't plugged in">
       Unattached locations
     </message>
+    <message name="IDS_MEDIA_GALLERIES_UNLABELED_DEVICE" desc="Default name used for a device for which we can't find a better label.">
+      Unlabeled device
+    </message>
     <message name="IDS_MEDIA_GALLERIES_LAST_ATTACHED" desc="Explanatory text indicating to the user when a particular location was last attached, i.e. a removable device that isn't plugged in. The date presented will be a day in a localized format providing year, month, and day.">
       last attached on <ph name="DATE">$1<ex>1/22/11</ex></ph>
     </message>

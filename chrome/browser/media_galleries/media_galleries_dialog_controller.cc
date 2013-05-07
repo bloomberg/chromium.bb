@@ -110,13 +110,14 @@ string16 MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
   if (name.empty())
     name = gallery.volume_label;
   if (name.empty()) {
-    name = MediaStorageUtil::GetDisplayNameForDevice(
-      gallery.total_size_in_bytes,
-      MediaStorageUtil::GetFullProductName(UTF16ToUTF8(gallery.vendor_name),
-                                           UTF16ToUTF8(gallery.model_name)));
+    name = MediaStorageUtil::GetFullProductName(
+        UTF16ToUTF8(gallery.vendor_name), UTF16ToUTF8(gallery.model_name));
   }
+  if (name.empty())
+    name = l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_UNLABELED_DEVICE);
 
-  return name;
+  return MediaStorageUtil::GetDisplayNameForDevice(gallery.total_size_in_bytes,
+                                                   name);
 }
 
 // static
