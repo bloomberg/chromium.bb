@@ -324,6 +324,13 @@ void CompositingIOSurfaceMac::SwitchToContextOnNewWindow(
   context_ = new_context;
 }
 
+void CompositingIOSurfaceMac::SetDeviceScaleFactor(float scale_factor) {
+  // TODO: After a resolution change, the DPI-ness of the view and the
+  // IOSurface might not be in sync.
+  io_surface_size_ = gfx::ToFlooredSize(
+      gfx::ScaleSize(pixel_io_surface_size_, 1.0 / scale_factor));
+}
+
 bool CompositingIOSurfaceMac::is_vsync_disabled() const {
   return context_->is_vsync_disabled();
 }
@@ -384,11 +391,10 @@ void CompositingIOSurfaceMac::DrawIOSurface(
       gfx::ScaleSize(window_size, scale_factor));
   glViewport(0, 0, pixel_window_size.width(), pixel_window_size.height());
 
-  // TODO: After a resolution change, the DPI-ness of the view and the
-  // IOSurface might not be in sync.
-  io_surface_size_ = gfx::ToFlooredSize(
-      gfx::ScaleSize(pixel_io_surface_size_, 1.0 / scale_factor));
-  quad_.set_size(io_surface_size_, pixel_io_surface_size_);
+  SetDeviceScaleFactor(scale_factor);
+
+  SurfaceQuad quad;
+  quad.set_size(io_surface_size_, pixel_io_surface_size_);
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -408,7 +414,7 @@ void CompositingIOSurfaceMac::DrawIOSurface(
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
 
-    DrawQuad(quad_);
+    DrawQuad(quad);
 
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_GL_ERROR();
 

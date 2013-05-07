@@ -1328,6 +1328,15 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceRelease() {
 
 bool RenderWidgetHostViewMac::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
+  // Update device scale factor for the IOSurface before checking if there
+  // is a match. When initially created, the IOSurface is unaware of its
+  // scale factor, which can result in compatible IOSurfaces not being used
+  // http://crbug.com/237293
+  if (compositing_iosurface_.get() &&
+      compositing_iosurface_->HasIOSurface()) {
+    compositing_iosurface_->SetDeviceScaleFactor(ScaleFactor(cocoa_view_));
+  }
+
   return last_frame_was_accelerated_ &&
          compositing_iosurface_.get() &&
          compositing_iosurface_->HasIOSurface() &&

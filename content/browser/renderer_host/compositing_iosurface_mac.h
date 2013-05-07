@@ -114,6 +114,8 @@ class CompositingIOSurfaceMac {
   // In cocoa view units / DIPs.
   const gfx::Size& io_surface_size() const { return io_surface_size_; }
 
+  void SetDeviceScaleFactor(float scale_factor);
+
   bool is_vsync_disabled() const;
 
   // Get vsync scheduling parameters.
@@ -332,8 +334,6 @@ class CompositingIOSurfaceMac {
 
   // Timer for finishing a copy operation.
   base::Timer finish_copy_timer_;
-
-  SurfaceQuad quad_;
 
   // CVDisplayLink for querying Vsync timing info and throttling swaps.
   CVDisplayLinkRef display_link_;
