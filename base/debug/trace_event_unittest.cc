@@ -75,9 +75,13 @@ class TraceEventTestFixture : public testing::Test {
   }
 
   void BeginTrace() {
+    BeginSpecificTrace("*");
+  }
+
+  void BeginSpecificTrace(const std::string& filter) {
     event_watch_notification_ = 0;
     notifications_received_ = 0;
-    TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+    TraceLog::GetInstance()->SetEnabled(CategoryFilter(filter),
                                         TraceLog::RECORD_UNTIL_FULL);
   }
 
@@ -915,6 +919,8 @@ TEST_F(TraceEventTestFixture, Categories) {
   // Category groups containing more than one category.
   TRACE_EVENT_INSTANT0("c5,c6", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("c7,c8", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("c9"), "name",
+                       TRACE_EVENT_SCOPE_THREAD);
 
   EndTraceAndFlush();
   std::vector<std::string> cat_groups;
@@ -931,6 +937,9 @@ TEST_F(TraceEventTestFixture, Categories) {
                         cat_groups.end(), "c5,c6") != cat_groups.end());
   EXPECT_TRUE(std::find(cat_groups.begin(),
                         cat_groups.end(), "c7,c8") != cat_groups.end());
+  EXPECT_TRUE(std::find(cat_groups.begin(),
+                        cat_groups.end(),
+                        "disabled-by-default-c9") != cat_groups.end());
   // Make sure metadata isn't returned.
   EXPECT_TRUE(std::find(cat_groups.begin(),
                         cat_groups.end(), "__metadata") == cat_groups.end());
@@ -1384,6 +1393,38 @@ TEST_F(TraceEventTestFixture, ThreadNameChanges) {
   EXPECT_EQ(expected_name, tmp);
 }
 
+// Test that the disabled trace categories are included/excluded from the
+// trace output correctly.
+TEST_F(TraceEventTestFixture, DisabledCategories) {
+  ManualTestSetUp();
+
+  BeginTrace();
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("cc"), "first",
+                       TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("included", "first", TRACE_EVENT_SCOPE_THREAD);
+  EndTraceAndFlush();
+  {
+    const DictionaryValue* item = NULL;
+    ListValue& trace_parsed = trace_parsed_;
+    EXPECT_NOT_FIND_("disabled-by-default-cc");
+    EXPECT_FIND_("included");
+  }
+  Clear();
+
+  BeginSpecificTrace("disabled-by-default-cc");
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("cc"), "second",
+                       TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("other_included", "second", TRACE_EVENT_SCOPE_THREAD);
+  EndTraceAndFlush();
+
+  {
+    const DictionaryValue* item = NULL;
+    ListValue& trace_parsed = trace_parsed_;
+    EXPECT_FIND_("disabled-by-default-cc");
+    EXPECT_FIND_("other_included");
+  }
+}
+
 // Test trace calls made after tracing singleton shut down.
 //
 // The singleton is destroyed by our base::AtExitManager, but there can be
@@ -1594,9 +1635,12 @@ TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
   trace_log->SetEnabled(CategoryFilter("foo2"), TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo2"));
   EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("baz"));
+  // The "" becomes the default catergory set when applied.
   trace_log->SetEnabled(CategoryFilter(""), TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo"));
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("baz"));
+  EXPECT_STREQ("-*Debug,-*Test",
+               trace_log->GetCurrentCategoryFilter().ToString().c_str());
   trace_log->SetDisabled();
   trace_log->SetDisabled();
   trace_log->SetDisabled();
@@ -1610,7 +1654,23 @@ TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
   trace_log->SetEnabled(CategoryFilter("moo"), TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("baz"));
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("moo"));
-  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo"));
+  EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("foo"));
+  EXPECT_STREQ("-foo,-bar",
+               trace_log->GetCurrentCategoryFilter().ToString().c_str());
+  trace_log->SetDisabled();
+  trace_log->SetDisabled();
+
+  // Make sure disabled categories aren't cleared if we set in the second.
+  trace_log->SetEnabled(CategoryFilter("disabled-by-default-cc,foo"),
+                        TraceLog::RECORD_UNTIL_FULL);
+  EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("bar"));
+  trace_log->SetEnabled(CategoryFilter("disabled-by-default-gpu"),
+                        TraceLog::RECORD_UNTIL_FULL);
+  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("disabled-by-default-cc"));
+  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("disabled-by-default-gpu"));
+  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("bar"));
+  EXPECT_STREQ("disabled-by-default-cc,disabled-by-default-gpu",
+               trace_log->GetCurrentCategoryFilter().ToString().c_str());
   trace_log->SetDisabled();
   trace_log->SetDisabled();
 }
@@ -1790,6 +1850,8 @@ TEST_F(TraceEventTestFixture, CategoryFilter) {
   std::string category_filter_str = default_cf.ToString();
   EXPECT_STREQ("-*Debug,-*Test", category_filter_str.c_str());
   EXPECT_TRUE(default_cf.IsCategoryGroupEnabled("not-excluded-category"));
+  EXPECT_FALSE(
+      default_cf.IsCategoryGroupEnabled("disabled-by-default-category"));
   EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("Category1,CategoryDebug"));
   EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("CategoryDebug,Category1"));
   EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("CategoryTest,Category2"));
@@ -1819,14 +1881,13 @@ TEST_F(TraceEventTestFixture, CategoryFilter) {
 
   cf.Merge(default_cf);
   category_filter_str = cf.ToString();
-  EXPECT_STREQ("included,inc_pattern*,-excluded,-exc_pattern*,-*Debug,-*Test",
+  EXPECT_STREQ("-excluded,-exc_pattern*,-*Debug,-*Test",
                 category_filter_str.c_str());
   cf.Clear();
-  EXPECT_FALSE(cf.HasIncludedPatterns());
 
   CategoryFilter reconstructed_cf(category_filter_str);
   category_filter_str = reconstructed_cf.ToString();
-  EXPECT_STREQ("included,inc_pattern*,-excluded,-exc_pattern*,-*Debug,-*Test",
+  EXPECT_STREQ("-excluded,-exc_pattern*,-*Debug,-*Test",
                category_filter_str.c_str());
 
   // One included category.
@@ -1838,6 +1899,25 @@ TEST_F(TraceEventTestFixture, CategoryFilter) {
   CategoryFilter one_exc_cf("-only_exc_cat");
   category_filter_str = one_exc_cf.ToString();
   EXPECT_STREQ("-only_exc_cat", category_filter_str.c_str());
+
+  // Enabling a disabled- category does not require all categories to be traced
+  // to be included.
+  CategoryFilter disabled_cat("disabled-by-default-cc,-excluded");
+  EXPECT_STREQ("disabled-by-default-cc,-excluded",
+               disabled_cat.ToString().c_str());
+  EXPECT_TRUE(disabled_cat.IsCategoryGroupEnabled("disabled-by-default-cc"));
+  EXPECT_TRUE(disabled_cat.IsCategoryGroupEnabled("some_other_group"));
+  EXPECT_FALSE(disabled_cat.IsCategoryGroupEnabled("excluded"));
+
+  // Enabled a disabled- category and also including makes all categories to
+  // be traced require including.
+  CategoryFilter disabled_inc_cat("disabled-by-default-cc,included");
+  EXPECT_STREQ("included,disabled-by-default-cc",
+               disabled_inc_cat.ToString().c_str());
+  EXPECT_TRUE(
+      disabled_inc_cat.IsCategoryGroupEnabled("disabled-by-default-cc"));
+  EXPECT_TRUE(disabled_inc_cat.IsCategoryGroupEnabled("included"));
+  EXPECT_FALSE(disabled_inc_cat.IsCategoryGroupEnabled("other_included"));
 
   // Test that IsEmptyOrContainsLeadingOrTrailingWhitespace actually catches
   // categories that are explicitly forbiden.

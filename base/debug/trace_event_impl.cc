@@ -903,15 +903,7 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
                   << "set of options.";
     }
 
-    // Tracing is already enabled, so just merge in enabled categories.
-    // We only expand the set of enabled categories upon nested SetEnable().
-    if (category_filter_.HasIncludedPatterns() &&
-        category_filter.HasIncludedPatterns()) {
-      category_filter_.Merge(category_filter);
-    } else {
-      // If either old or new included categories are empty, allow all events.
-      category_filter_.Clear();
-    }
+    category_filter_.Merge(category_filter);
     EnableIncludedCategoryGroups();
     return;
   }
@@ -1307,8 +1299,9 @@ bool CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
           str.at(str.length() - 1) == ' ';
 }
 
-static bool DoesCategoryGroupContainCategory(const char* category_group,
-                                             const char* category) {
+bool CategoryFilter::DoesCategoryGroupContainCategory(
+    const char* category_group,
+    const char* category) const {
   DCHECK(category);
   CStringTokenizer category_group_tokens(category_group,
                           category_group + strlen(category_group), ",");
@@ -1336,6 +1329,7 @@ CategoryFilter::CategoryFilter(const std::string& filter_string) {
 
 CategoryFilter::CategoryFilter(const CategoryFilter& cf)
     : included_(cf.included_),
+      disabled_(cf.disabled_),
       excluded_(cf.excluded_) {
 }
 
@@ -1347,6 +1341,7 @@ CategoryFilter& CategoryFilter::operator=(const CategoryFilter& rhs) {
     return *this;
 
   included_ = rhs.included_;
+  disabled_ = rhs.disabled_;
   excluded_ = rhs.excluded_;
   return *this;
 }
@@ -1365,29 +1360,23 @@ void CategoryFilter::Initialize(const std::string& filter_string) {
       // Remove '-' from category string.
       category = category.substr(1);
       excluded_.push_back(category);
+    } else if (category.compare(0, strlen(TRACE_DISABLED_BY_DEFAULT("")),
+                                TRACE_DISABLED_BY_DEFAULT("")) == 0) {
+      disabled_.push_back(category);
     } else {
       included_.push_back(category);
     }
   }
 }
 
-void CategoryFilter::WriteString(std::string* out,
+void CategoryFilter::WriteString(const StringList& values,
+                                 std::string* out,
                                  bool included) const {
-  std::vector<std::string>::const_iterator ci;
-  std::vector<std::string>::const_iterator end;
-  if (included) {
-    ci = included_.begin();
-    end = included_.end();
-  } else {
-    ci = excluded_.begin();
-    end = excluded_.end();
-  }
-
-  // Prepend commas for all excluded categories IF we have included categories.
-  bool prepend_comma_for_first_excluded = !included && !included_.empty();
+  bool prepend_comma = !out->empty();
   int token_cnt = 0;
-  for (; ci != end; ++ci) {
-    if (token_cnt > 0 || prepend_comma_for_first_excluded)
+  for (StringList::const_iterator ci = values.begin();
+       ci != values.end(); ++ci) {
+    if (token_cnt > 0 || prepend_comma)
       StringAppendF(out, ",");
     StringAppendF(out, "%s%s", (included ? "" : "-"), ci->c_str());
     ++token_cnt;
@@ -1396,9 +1385,9 @@ void CategoryFilter::WriteString(std::string* out,
 
 std::string CategoryFilter::ToString() const {
   std::string filter_string;
-  WriteString(&filter_string, true);
-  WriteString(&filter_string, false);
-
+  WriteString(included_, &filter_string, true);
+  WriteString(disabled_, &filter_string, true);
+  WriteString(excluded_, &filter_string, false);
   return filter_string;
 }
 
@@ -1406,13 +1395,24 @@ bool CategoryFilter::IsCategoryGroupEnabled(
     const char* category_group_name) const {
   // TraceLog should call this method only as  part of enabling/disabling
   // categories.
-  std::vector<std::string>::const_iterator ci = included_.begin();
-  for (; ci != included_.end(); ++ci) {
+  StringList::const_iterator ci;
+
+  // Check the disabled- filters and the disabled-* wildcard first so that a
+  // "*" filter does not include the disabled.
+  for (ci = disabled_.begin(); ci != disabled_.end(); ++ci) {
     if (DoesCategoryGroupContainCategory(category_group_name, ci->c_str()))
       return true;
   }
-  ci = excluded_.begin();
-  for (; ci != excluded_.end(); ++ci) {
+  if (DoesCategoryGroupContainCategory(category_group_name,
+                                       TRACE_DISABLED_BY_DEFAULT("*")))
+    return false;
+
+  for (ci = included_.begin(); ci != included_.end(); ++ci) {
+    if (DoesCategoryGroupContainCategory(category_group_name, ci->c_str()))
+      return true;
+  }
+
+  for (ci = excluded_.begin(); ci != excluded_.end(); ++ci) {
     if (DoesCategoryGroupContainCategory(category_group_name, ci->c_str()))
       return false;
   }
@@ -1421,21 +1421,33 @@ bool CategoryFilter::IsCategoryGroupEnabled(
   return included_.empty();
 }
 
+bool CategoryFilter::HasIncludedPatterns() const {
+  return !included_.empty();
+}
+
 void CategoryFilter::Merge(const CategoryFilter& nested_filter) {
-  included_.insert(included_.end(),
-                   nested_filter.included_.begin(),
-                   nested_filter.included_.end());
+  // Keep included patterns only if both filters have an included entry.
+  // Otherwise, one of the filter was specifying "*" and we want to honour the
+  // broadest filter.
+  if (HasIncludedPatterns() && nested_filter.HasIncludedPatterns()) {
+    included_.insert(included_.end(),
+                     nested_filter.included_.begin(),
+                     nested_filter.included_.end());
+  } else {
+    included_.clear();
+  }
+
+  disabled_.insert(disabled_.end(),
+                   nested_filter.disabled_.begin(),
+                   nested_filter.disabled_.end());
   excluded_.insert(excluded_.end(),
                    nested_filter.excluded_.begin(),
                    nested_filter.excluded_.end());
 }
 
-bool CategoryFilter::HasIncludedPatterns() const {
-  return !included_.empty();
-}
-
 void CategoryFilter::Clear() {
   included_.clear();
+  disabled_.clear();
   excluded_.clear();
 }
 

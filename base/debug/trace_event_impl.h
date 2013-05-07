@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_vector.h"
@@ -233,9 +234,6 @@ class BASE_EXPORT CategoryFilter {
   // Merges nested_filter with the current CategoryFilter
   void Merge(const CategoryFilter& nested_filter);
 
-  // Determines whether or not we have explicitly allowed category patterns.
-  bool HasIncludedPatterns() const;
-
   // Clears both included/excluded pattern lists. This would be equivalent to
   // creating a CategoryFilter with an empty string, through the constructor.
   // i.e: CategoryFilter("").
@@ -244,15 +242,26 @@ class BASE_EXPORT CategoryFilter {
   // are not excluding anything.
   void Clear();
 
+ private:
+  FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture, CategoryFilter);
+
   static bool IsEmptyOrContainsLeadingOrTrailingWhitespace(
       const std::string& str);
 
- private:
-  void Initialize(const std::string& filter_string);
-  void WriteString(std::string* out, bool included) const;
+  typedef std::vector<std::string> StringList;
 
-  std::vector<std::string> included_;
-  std::vector<std::string> excluded_;
+  void Initialize(const std::string& filter_string);
+  void WriteString(const StringList& values,
+                   std::string* out,
+                   bool included) const;
+  bool HasIncludedPatterns() const;
+
+  bool DoesCategoryGroupContainCategory(const char* category_group,
+                                        const char* category) const;
+
+  StringList included_;
+  StringList disabled_;
+  StringList excluded_;
 };
 
 class TraceSamplingThread;
