@@ -96,8 +96,7 @@ void PopulateSpdyResponseHeaderBlock(const BalsaHeaders& headers,
   PopulateSpdyHeaderBlock(headers, block, true);
 }
 
-// static
-SpdyHeaderBlock SpdyUtils::RequestHeadersToSpdyHeaders(
+string SpdyUtils::SerializeRequestHeaders(
     const BalsaHeaders& request_headers) {
   string scheme;
   string host_and_port;
@@ -130,38 +129,24 @@ SpdyHeaderBlock SpdyUtils::RequestHeadersToSpdyHeaders(
   if (block.find("host") != block.end()) {
     block.erase(block.find("host"));
   }
-  return block;
+
+  int length = SpdyFramer::GetSerializedLength(kSpdyVersion3, &block);
+  SpdyFrameBuilder builder(length);
+  SpdyFramer::WriteHeaderBlock(&builder, kSpdyVersion3, &block);
+  scoped_ptr<SpdyFrame> headers(builder.take());
+  return string(headers->data(), length);
 }
 
-// static
-string SpdyUtils::SerializeRequestHeaders(const BalsaHeaders& request_headers) {
-  SpdyHeaderBlock block = RequestHeadersToSpdyHeaders(request_headers);
-  return SerializeUncompressedHeaders(block);
-}
-
-// static
-SpdyHeaderBlock SpdyUtils::ResponseHeadersToSpdyHeaders(
+string SpdyUtils::SerializeResponseHeaders(
     const BalsaHeaders& response_headers) {
   SpdyHeaderBlock block;
   PopulateSpdyResponseHeaderBlock(response_headers, &block);
-  return block;
-}
 
-// static
-string SpdyUtils::SerializeResponseHeaders(
-    const BalsaHeaders& response_headers) {
-  SpdyHeaderBlock block = ResponseHeadersToSpdyHeaders(response_headers);
-
-  return SerializeUncompressedHeaders(block);
-}
-
-// static
-string SpdyUtils::SerializeUncompressedHeaders(const SpdyHeaderBlock& headers) {
-  int length = SpdyFramer::GetSerializedLength(kSpdyVersion3, &headers);
+  int length = SpdyFramer::GetSerializedLength(kSpdyVersion3, &block);
   SpdyFrameBuilder builder(length);
-  SpdyFramer::WriteHeaderBlock(&builder, kSpdyVersion3, &headers);
-  scoped_ptr<SpdyFrame> block(builder.take());
-  return string(block->data(), length);
+  SpdyFramer::WriteHeaderBlock(&builder, kSpdyVersion3, &block);
+  scoped_ptr<SpdyFrame> headers(builder.take());
+  return string(headers->data(), length);
 }
 
 bool IsSpecialSpdyHeader(SpdyHeaderBlock::const_iterator header,

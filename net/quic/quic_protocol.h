@@ -38,7 +38,6 @@ typedef uint64 QuicPublicResetNonceProof;
 typedef uint8 QuicPacketEntropyHash;
 typedef uint32 QuicVersionTag;
 typedef std::vector<QuicVersionTag> QuicVersionTagList;
-typedef uint32 QuicHeaderId;
 
 // TODO(rch): Consider Quic specific names for these constants.
 // Maximum size in bytes of a QUIC packet.
@@ -82,8 +81,6 @@ const size_t kStartOfHashData = 0;
 
 // Limit on the delta between stream IDs.
 const QuicStreamId kMaxStreamIdDelta = 100;
-// Limit on the delta between header IDs.
-const QuicHeaderId kMaxHeaderIdDelta = 100;
 
 // Reserved ID for the crypto stream.
 // TODO(rch): ensure that this is not usable by any other streams.
@@ -188,12 +185,8 @@ enum QuicErrorCode {
   QUIC_TOO_MANY_OPEN_STREAMS,
   // Received public reset for this connection.
   QUIC_PUBLIC_RESET,
-  // Invalid protocol version.
+  // Invalid protocol version
   QUIC_INVALID_VERSION,
-  // Stream reset before headers decompressed.
-  QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED,
-  // The Header ID for a stream was too far from the previous.
-  QUIC_INVALID_HEADER_ID,
 
   // We hit our prenegotiated (or default) timeout
   QUIC_CONNECTION_TIMED_OUT,

@@ -80,44 +80,6 @@ class QuicStreamSequencerTest : public ::testing::Test {
         sequencer_(new QuicStreamSequencerPeer(&stream_)) {
   }
 
-  bool VerifyReadableRegions(const char** expected, size_t num_expected) {
-    iovec iovecs[5];
-    size_t num_iovecs = sequencer_->GetReadableRegions(iovecs,
-                                                       arraysize(iovecs));
-    return VerifyIovecs(iovecs, num_iovecs, expected, num_expected);
-  }
-
-  bool VerifyIovecs(iovec* iovecs,
-                    size_t num_iovecs,
-                    const char** expected,
-                    size_t num_expected) {
-    if (num_expected != num_iovecs) {
-      LOG(ERROR) << "Incorrect number of iovecs.  Expected: "
-                 << num_expected << " Actual: " << num_iovecs;
-      return false;
-    }
-    for (size_t i = 0; i < num_expected; ++i) {
-      if (!VerifyIovec(iovecs[i], expected[i])) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  bool VerifyIovec(const iovec& iovec, StringPiece expected) {
-    if (iovec.iov_len != expected.length()) {
-      LOG(ERROR) << "Invalid length: " << iovec.iov_len
-                 << " vs " << expected.length();
-      return false;
-    }
-    if (memcmp(iovec.iov_base, expected.data(), expected.length()) != 0) {
-      LOG(ERROR) << "Invalid data: " << static_cast<char*>(iovec.iov_base)
-                 << " vs " << expected.data();
-      return false;
-    }
-    return true;
-  }
-
   QuicSession* session_;
   testing::StrictMock<MockStream> stream_;
   scoped_ptr<QuicStreamSequencerPeer> sequencer_;
@@ -249,119 +211,6 @@ TEST_F(QuicStreamSequencerTest, OutOfOrderFramesProcessedWithBuffering) {
   EXPECT_EQ(0u, sequencer_->frames()->size());
 }
 
-TEST_F(QuicStreamSequencerTest, OutOfOrderFramesBlockignWithReadv) {
-  sequencer_->SetMemoryLimit(9);
-  char buffer[20];
-  iovec iov[2];
-  iov[0].iov_base = &buffer[0];
-  iov[0].iov_len = 1;
-  iov[1].iov_base = &buffer[1];
-  iov[1].iov_len = 2;
-
-  // Push abc - process.
-  // Push jkl - buffer (not next data)
-  // Push def - don't process.
-  // Push mno - drop (too far out)
-  // Push ghi - buffer (def not processed)
-  // Read 2.
-  // Push mno - buffer (not all read)
-  // Read all
-  // Push pqr - process
-
-  InSequence s;
-  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(3));
-  EXPECT_CALL(stream_, ProcessData(StrEq("def"), 3)).WillOnce(Return(0));
-  EXPECT_CALL(stream_, ProcessData(StrEq("pqr"), 3)).WillOnce(Return(3));
-
-  EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
-  EXPECT_TRUE(sequencer_->OnFrame(3, "def", 3));
-  EXPECT_TRUE(sequencer_->OnFrame(9, "jkl", 3));
-  EXPECT_FALSE(sequencer_->OnFrame(12, "mno", 3));
-  EXPECT_TRUE(sequencer_->OnFrame(6, "ghi", 3));
-
-  // Read 3 bytes.
-  EXPECT_EQ(3, sequencer_->Readv(iov, 2));
-  EXPECT_EQ(0, strncmp(buffer, "def", 3));
-
-  // Now we have space to bufer this.
-  EXPECT_TRUE(sequencer_->OnFrame(12, "mno", 3));
-
-  // Read the remaining 9 bytes.
-  iov[1].iov_len = 19;
-  EXPECT_EQ(9, sequencer_->Readv(iov, 2));
-  EXPECT_EQ(0, strncmp(buffer, "ghijklmno", 9));
-
-  EXPECT_TRUE(sequencer_->OnFrame(15, "pqr", 3));
-}
-
-// Same as above, just using a different method for reading.
-TEST_F(QuicStreamSequencerTest, OutOfOrderFramesBlockignWithGetReadableRegion) {
-  sequencer_->SetMemoryLimit(9);
-
-  InSequence s;
-  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(3));
-  EXPECT_CALL(stream_, ProcessData(StrEq("def"), 3)).WillOnce(Return(0));
-  EXPECT_CALL(stream_, ProcessData(StrEq("pqr"), 3)).WillOnce(Return(3));
-
-  EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
-  EXPECT_TRUE(sequencer_->OnFrame(3, "def", 3));
-  EXPECT_TRUE(sequencer_->OnFrame(9, "jkl", 3));
-  EXPECT_FALSE(sequencer_->OnFrame(12, "mno", 3));
-  EXPECT_TRUE(sequencer_->OnFrame(6, "ghi", 3));
-
-  // Read 3 bytes.
-  const char* expected[] = {"def", "ghi", "jkl"};
-  ASSERT_TRUE(VerifyReadableRegions(expected, arraysize(expected)));
-  char buffer[9];
-  iovec read_iov = { &buffer[0], 3 };
-  ASSERT_EQ(3, sequencer_->Readv(&read_iov, 1));
-
-  // Now we have space to bufer this.
-  EXPECT_TRUE(sequencer_->OnFrame(12, "mno", 3));
-
-  // Read the remaining 9 bytes.
-  const char* expected2[] = {"ghi", "jkl", "mno"};
-  ASSERT_TRUE(VerifyReadableRegions(expected2, arraysize(expected2)));
-  read_iov.iov_len = 9;
-  ASSERT_EQ(9, sequencer_->Readv(&read_iov, 1));
-
-  EXPECT_TRUE(sequencer_->OnFrame(15, "pqr", 3));
-}
-
-// Same as above, just using a different method for reading.
-TEST_F(QuicStreamSequencerTest, MarkConsumed) {
-  sequencer_->SetMemoryLimit(9);
-
-  InSequence s;
-  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(0));
-
-  EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
-  EXPECT_TRUE(sequencer_->OnFrame(3, "def", 3));
-  EXPECT_TRUE(sequencer_->OnFrame(6, "ghi", 3));
-
-  // Peek into the data.
-  const char* expected[] = {"abc", "def", "ghi"};
-  ASSERT_TRUE(VerifyReadableRegions(expected, arraysize(expected)));
-
-  // Consume 1 byte.
-  sequencer_->MarkConsumed(1);
-  // Verify data.
-  const char* expected2[] = {"bc", "def", "ghi"};
-  ASSERT_TRUE(VerifyReadableRegions(expected2, arraysize(expected2)));
-
-  // Consume 2 bytes.
-  sequencer_->MarkConsumed(2);
-  // Verify data.
-  const char* expected3[] = {"def", "ghi"};
-  ASSERT_TRUE(VerifyReadableRegions(expected3, arraysize(expected3)));
-
-  // Consume 5 bytes.
-  sequencer_->MarkConsumed(5);
-  // Verify data.
-  const char* expected4[] = {"i"};
-  ASSERT_TRUE(VerifyReadableRegions(expected4, arraysize(expected4)));
-}
-
 TEST_F(QuicStreamSequencerTest, BasicCloseOrdered) {
   InSequence s;
   EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(3));
@@ -453,42 +302,6 @@ TEST_F(QuicStreamSequencerTest, CloseBeforeTermianteEqual) {
   EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(3));
   EXPECT_CALL(stream_, TerminateFromPeer(false));
   EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
-}
-
-TEST_F(QuicStreamSequencerTest, TerminateWithReadv) {
-  char buffer[3];
-
-  sequencer_->CloseStreamAtOffset(3, true);
-  EXPECT_EQ(3u, sequencer_->close_offset());
-
-  EXPECT_FALSE(sequencer_->IsHalfClosed());
-
-  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(0));
-  EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
-
-  iovec iov = { &buffer[0], 3 };
-  int bytes_read = sequencer_->Readv(&iov, 1);
-  EXPECT_EQ(3, bytes_read);
-  EXPECT_TRUE(sequencer_->IsHalfClosed());
-  EXPECT_FALSE(sequencer_->IsClosed());
-}
-
-TEST_F(QuicStreamSequencerTest, CloseWithReadv) {
-  char buffer[3];
-
-  sequencer_->CloseStreamAtOffset(3, false);
-  EXPECT_EQ(3u, sequencer_->close_offset());
-
-  EXPECT_FALSE(sequencer_->IsClosed());
-
-  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(0));
-  EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
-
-  iovec iov = { &buffer[0], 3 };
-  int bytes_read = sequencer_->Readv(&iov, 1);
-  EXPECT_EQ(3, bytes_read);
-  EXPECT_TRUE(sequencer_->IsHalfClosed());
-  EXPECT_TRUE(sequencer_->IsClosed());
 }
 
 TEST_F(QuicStreamSequencerTest, MutipleOffsets) {

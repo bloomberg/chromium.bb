@@ -11,10 +11,6 @@
 
 #include <list>
 
-#include "base/strings/string_piece.h"
-#include "net/base/iovec.h"
-#include "net/base/net_export.h"
-#include "net/quic/quic_spdy_decompressor.h"
 #include "net/quic/quic_stream_sequencer.h"
 
 namespace net {
@@ -27,8 +23,7 @@ class IPEndPoint;
 class QuicSession;
 
 // All this does right now is send data to subclasses via the sequencer.
-class NET_EXPORT_PRIVATE ReliableQuicStream : public
-    QuicSpdyDecompressor::Visitor {
+class NET_EXPORT_PRIVATE ReliableQuicStream {
  public:
   // Visitor receives callbacks from the stream.
   class Visitor {
@@ -70,28 +65,16 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // stream close from the peer.
   virtual void TerminateFromPeer(bool half_close);
 
-  virtual uint32 ProcessRawData(const char* data, uint32 data_len);
-  virtual uint32 ProcessHeaderData();
-
   virtual uint32 ProcessData(const char* data, uint32 data_len) = 0;
-
-  virtual bool OnDecompressedData(base::StringPiece data) OVERRIDE;
 
   // Called to close the stream from this end.
   virtual void Close(QuicRstStreamErrorCode error);
 
   // This block of functions wraps the sequencer's functions of the same
-  // name.  These methods return uncompressed data until that has
-  // been fully processed.  Then they simply delegate to the sequencer.
-  virtual int Readv(const struct iovec* iov, int iov_len);
-  virtual int GetReadableRegions(iovec* iov, int iov_len);
+  // name.
   virtual bool IsHalfClosed() const;
   virtual bool IsClosed() const;
   virtual bool HasBytesToRead() const;
-
-  // Called by the session when a decompression blocked stream
-  // becomes unblocked.
-  virtual void OnDecompressorAvailable();
 
   QuicStreamId id() const { return id_; }
 
@@ -101,13 +84,13 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   bool read_side_closed() const { return read_side_closed_; }
   bool write_side_closed() const { return write_side_closed_; }
 
-  uint64 stream_bytes_read() { return stream_bytes_read_; }
-  uint64 stream_bytes_written() { return stream_bytes_written_; }
-
   const IPEndPoint& GetPeerAddress() const;
 
   Visitor* visitor() { return visitor_; }
   void set_visitor(Visitor* visitor) { visitor_ = visitor; }
+
+  uint64 stream_bytes_read() const { return stream_bytes_read_; }
+  uint64 stream_bytes_written() const { return stream_bytes_written_; }
 
  protected:
   // Returns a pair with the number of bytes consumed from data, and a boolean
@@ -153,16 +136,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // framing, encryption overhead etc.
   uint64 stream_bytes_read_;
   uint64 stream_bytes_written_;
-  // True if the headers have been completely decompresssed.
-  bool headers_complete_;
-  // ID of the header block sent by the peer, once parsed.
-  QuicHeaderId headers_id_;
-  // Buffer into which we write bytes from the headers_id_
-  // until it is fully parsed.
-  string headers_id_buffer_;
-  // Contains a copy of the decompressed headers_ until they are consumed
-  // via ProcessData or Readv.
-  string decompressed_headers_;
 
   // Stream error code received from a RstStreamFrame or error code sent by the
   // visitor or sequencer in the RstStreamFrame.

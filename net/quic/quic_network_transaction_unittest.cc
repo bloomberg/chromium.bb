@@ -63,7 +63,6 @@ class QuicNetworkTransactionTest : public PlatformTest {
       : clock_(new MockClock),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_service_(ProxyService::CreateDirect()),
-        compressor_(new QuicSpdyCompressor()),
         auth_handler_factory_(
             HttpAuthHandlerFactory::CreateDefault(&host_resolver_)) {
   }
@@ -170,7 +169,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     headers[":status"] = status;
     headers[":version"] = "HTTP/1.1";
     headers["content-type"] = "text/plain";
-    return compressor_->CompressHeaders(headers) + body;
+    return SerializeHeaderBlock(headers) + body;
   }
 
   std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers) {
@@ -242,7 +241,6 @@ class QuicNetworkTransactionTest : public PlatformTest {
   MockCertVerifier cert_verifier_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
   scoped_ptr<ProxyService> proxy_service_;
-  scoped_ptr<QuicSpdyCompressor> compressor_;
   scoped_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   MockRandom random_generator_;
   HttpServerPropertiesImpl http_server_properties;

@@ -128,9 +128,8 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 };
 
 SimpleQuicFramer::SimpleQuicFramer()
-    : framer_(kQuicVersion1,
-              QuicTime::Zero(),
-              true) {
+    : framer_(kQuicVersion1, QuicTime::Zero(), true),
+      visitor_(NULL) {
 }
 
 SimpleQuicFramer::~SimpleQuicFramer() {

@@ -59,11 +59,7 @@ void QuicSpdyClientStream::TerminateFromPeer(bool half_close) {
 ssize_t QuicSpdyClientStream::SendRequest(const BalsaHeaders& headers,
                                           StringPiece body,
                                           bool fin) {
-  SpdyHeaderBlock header_block =
-      SpdyUtils::RequestHeadersToSpdyHeaders(headers);
-
-  string headers_string =
-      session()->compressor()->CompressHeaders(header_block);
+  string headers_string = SpdyUtils::SerializeRequestHeaders(headers);
 
   bool has_body = !body.empty();
 

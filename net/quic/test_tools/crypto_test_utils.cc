@@ -4,7 +4,7 @@
 
 #include "net/quic/test_tools/crypto_test_utils.h"
 
-#include "net/quic/crypto/common_cert_set.h"
+#include "base/strings/string_piece.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_server_config.h"
 #include "net/quic/crypto/quic_decrypter.h"
@@ -213,68 +213,6 @@ string CryptoTestUtils::GetValueForTag(const CryptoHandshakeMessage& message,
     return string();
   }
   return it->second;
-}
-
-class MockCommonCertSet : public CommonCertSet {
- public:
-  MockCommonCertSet(StringPiece cert, uint64 hash, uint32 index)
-      : cert_(cert.as_string()),
-        hash_(hash),
-        index_(index) {
-  }
-
-  virtual StringPiece GetCommonHashes() OVERRIDE {
-    CHECK(false) << "not implemented";
-    return StringPiece();
-  }
-
-  virtual StringPiece GetCert(uint64 hash, uint32 index) OVERRIDE {
-    if (hash == hash_ && index == index_) {
-      return cert_;
-    }
-    return StringPiece();
-  }
-
-  virtual bool MatchCert(StringPiece cert,
-                         StringPiece common_set_hashes,
-                         uint64* out_hash,
-                         uint32* out_index) OVERRIDE {
-    if (cert != cert_) {
-      return false;
-    }
-
-    if (common_set_hashes.size() % sizeof(uint64) != 0) {
-      return false;
-    }
-    bool client_has_set = false;
-    for (size_t i = 0; i < common_set_hashes.size(); i += sizeof(uint64)) {
-      uint64 hash;
-      memcpy(&hash, common_set_hashes.data() + i, sizeof(hash));
-      if (hash == hash_) {
-        client_has_set = true;
-        break;
-      }
-    }
-
-    if (!client_has_set) {
-      return false;
-    }
-
-    *out_hash = hash_;
-    *out_index = index_;
-    return true;
-  }
-
- private:
-  const string cert_;
-  const uint64 hash_;
-  const uint32 index_;
-};
-
-CommonCertSet* CryptoTestUtils::MockCommonCertSet(StringPiece cert,
-                                                  uint64 hash,
-                                                  uint32 index) {
-  return new class MockCommonCertSet(cert, hash, index);
 }
 
 void CryptoTestUtils::CompareClientAndServerKeys(

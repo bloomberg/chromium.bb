@@ -4,7 +4,6 @@
 
 #include "net/tools/quic/quic_spdy_server_stream.h"
 
-#include "net/quic/quic_session.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/tools/quic/spdy_utils.h"
 
@@ -63,11 +62,8 @@ void QuicSpdyServerStream::TerminateFromPeer(bool half_close) {
 
 void QuicSpdyServerStream::SendHeaders(
     const BalsaHeaders& response_headers) {
-  SpdyHeaderBlock header_block =
-      SpdyUtils::ResponseHeadersToSpdyHeaders(response_headers);
   string headers =
-      session()->compressor()->CompressHeaders(header_block);
-
+      SpdyUtils::SerializeResponseHeaders(response_headers);
   WriteData(headers, false);
 }
 

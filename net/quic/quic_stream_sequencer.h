@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/base/iovec.h"
 #include "net/quic/quic_protocol.h"
 
 using std::map;
@@ -57,18 +56,6 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // Once data is buffered, it's up to the stream to read it when the stream
   // can handle more data.  The following three functions make that possible.
 
-  // Fills in up to iov_len iovecs with the next readable regions.  Returns the
-  // number of iovs used.  Non-destructive of the underlying data.
-  int GetReadableRegions(iovec* iov, int iov_len);
-
-  // Copies the data into the iov_len buffers provided.  Returns the number of
-  // bytes read.  Any buffered data no longer in use will be released.
-  int Readv(const struct iovec* iov, int iov_len);
-
-  // Consumes |num_bytes| data.  Used in conjunction with |GetReadableRegions|
-  // to do zero-copy reads.
-  void MarkConsumed(size_t num_bytes);
-
   // Returns true if the sequncer has bytes available for reading.
   bool HasBytesToRead() const;
 
@@ -81,15 +68,13 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // Returns true if the sequencer has received this frame before.
   bool IsDuplicate(const QuicStreamFrame& frame) const;
 
-  // Calls |ProcessRawData| on |stream_| for each buffered frame that may
-  // be processed.
-  void FlushBufferedFrames();
-
  private:
   friend class test::QuicStreamSequencerPeer;
 
   // TODO(alyssar) use something better than strings.
   typedef map<QuicStreamOffset, string> FrameMap;
+
+  void FlushBufferedFrames();
 
   bool MaybeCloseStream();
 

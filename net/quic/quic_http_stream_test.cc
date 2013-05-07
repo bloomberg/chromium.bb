@@ -205,7 +205,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     headers[":status"] = status;
     headers[":version"] = "HTTP/1.1";
     headers["content-type"] = "text/plain";
-    response_data_ = session_->compressor()->CompressHeaders(headers) + body;
+    response_data_ = SerializeHeaderBlock(headers) + body;
   }
 
   std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers) {
@@ -554,9 +554,10 @@ TEST_F(QuicHttpStreamTest, DestroyedEarly) {
             stream_->ReadResponseHeaders(callback_.callback()));
 
   // Send the response with a body.
-  SetResponseString("404 OK", "hello world!");
+  const char kResponseHeaders[] = "HTTP/1.1 404 OK\r\n"
+      "Content-Type: text/plain\r\n\r\nhello world!";
   scoped_ptr<QuicEncryptedPacket> resp(
-      ConstructDataPacket(2, false, kFin, 0, response_data_));
+      ConstructDataPacket(2, false, kFin, 0, kResponseHeaders));
 
   // In the course of processing this packet, the QuicHttpStream close itself.
   ProcessPacket(*resp);

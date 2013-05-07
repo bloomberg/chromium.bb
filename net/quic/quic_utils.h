@@ -15,19 +15,9 @@ namespace net {
 
 class NET_EXPORT_PRIVATE QuicUtils {
  public:
-  // returns the 64 bit FNV1a hash of the data.  See
-  // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
-  static uint64 FNV1a_64_Hash(const char* data, int len);
-
   // returns the 128 bit FNV1a hash of the data.  See
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
   static uint128 FNV1a_128_Hash(const char* data, int len);
-
-  // SerializeUint128 writes |v| in little-endian form to |out|.
-  static void SerializeUint128(uint128 v, uint8* out);
-
-  // ParseUint128 parses a little-endian uint128 from |in| and returns it.
-  static uint128 ParseUint128(const uint8* in);
 
   // Returns the name of the QuicRstStreamErrorCode as a char*
   static const char* StreamErrorToString(QuicRstStreamErrorCode error);

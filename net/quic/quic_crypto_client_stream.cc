@@ -85,8 +85,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         num_client_hellos_++;
 
         if (!cached->is_complete()) {
-          crypto_config_->FillInchoateClientHello(
-              server_hostname_, cached, &crypto_negotiated_params_, &out);
+          crypto_config_->FillInchoateClientHello(server_hostname_, cached,
+                                                  &out);
           next_state_ = STATE_RECV_REJ;
           DLOG(INFO) << "Client Sending: " << out.DebugString();
           SendHandshakeMessage(out);

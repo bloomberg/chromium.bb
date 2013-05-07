@@ -17,8 +17,6 @@
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_spdy_compressor.h"
-#include "net/quic/quic_spdy_decompressor.h"
 #include "net/quic/reliable_quic_stream.h"
 
 namespace net {
@@ -122,11 +120,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   void MarkWriteBlocked(QuicStreamId id);
 
-  // Marks that |stream_id| is blocked waiting to decompress the
-  // headers identified by |decompression_id|.
-  void MarkDecompressionBlocked(QuicHeaderId decompression_id,
-                                QuicStreamId stream_id);
-
   bool goaway_received() const {
     return goaway_received_;
   }
@@ -134,9 +127,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   bool goaway_sent() const {
     return goaway_sent_;
   }
-
-  QuicSpdyDecompressor* decompressor() { return &decompressor_; }
-  QuicSpdyCompressor* compressor() { return &compressor_; }
 
  protected:
   // Creates a new stream, owned by the caller, to handle a peer-initiated
@@ -192,9 +182,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   std::vector<ReliableQuicStream*> closed_streams_;
 
-  QuicSpdyDecompressor decompressor_;
-  QuicSpdyCompressor compressor_;
-
   // Returns the maximum number of streams this connection can open.
   const size_t max_open_streams_;
 
@@ -209,10 +196,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // A list of streams which need to write more data.
   BlockedList<QuicStreamId> write_blocked_streams_;
-
-  // A map of headers waiting to be compressed, and the streams
-  // they are associated with.
-  map<uint32, QuicStreamId> decompression_blocked_streams_;
 
   QuicStreamId largest_peer_created_stream_id_;
 

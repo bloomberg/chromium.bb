@@ -8,14 +8,12 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/strings/string_piece.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
 
-class CommonCertSet;
 class ProofSource;
 class ProofVerifier;
 class QuicClock;
@@ -64,12 +62,6 @@ class CryptoTestUtils {
 
   // Returns a |ProofVerifier| that uses the QUIC testing root CA.
   static ProofVerifier* ProofVerifierForTesting();
-
-  // MockCommonCertSet returns a CommonCertSet that contains a single set with
-  // hash |hash|, consisting of the certificate |cert| at index |index|.
-  static CommonCertSet* MockCommonCertSet(base::StringPiece cert,
-                                          uint64 hash,
-                                          uint32 index);
 
  private:
   static void CompareClientAndServerKeys(QuicCryptoClientStream* client,

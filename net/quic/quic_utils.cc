@@ -10,23 +10,6 @@
 namespace net {
 
 // static
-uint64 QuicUtils::FNV1a_64_Hash(const char* data, int len) {
-  static const uint64 kOffset = 14695981039346656037u;
-  static const uint64 kPrime = 1099511628211u;
-
-  const uint8* octets = reinterpret_cast<const uint8*>(data);
-
-  uint64 hash = kOffset;
-
-  for (int i = 0; i < len; ++i) {
-    hash = hash ^ octets[i];
-    hash = hash * kPrime;
-  }
-
-  return hash;
-}
-
-// static
 uint128 QuicUtils::FNV1a_128_Hash(const char* data, int len) {
   // The following two constants are defined as part of the hash algorithm.
   // see http://www.isthe.com/chongo/tech/comp/fnv/
@@ -46,23 +29,6 @@ uint128 QuicUtils::FNV1a_128_Hash(const char* data, int len) {
   }
 
   return hash;
-}
-
-// static
-void QuicUtils::SerializeUint128(uint128 v, uint8* out) {
-  const uint64 lo = Uint128Low64(v);
-  const uint64 hi = Uint128High64(v);
-  // This assumes that the system is little-endian.
-  memcpy(out, &lo, sizeof(lo));
-  memcpy(out + sizeof(lo), &hi, sizeof(hi));
-}
-
-// static
-uint128 QuicUtils::ParseUint128(const uint8* in) {
-  uint64 lo, hi;
-  memcpy(&lo, in, sizeof(lo));
-  memcpy(&hi, in + sizeof(lo), sizeof(hi));
-  return uint128(hi, lo);
 }
 
 #define RETURN_STRING_LITERAL(x) \
@@ -122,8 +88,6 @@ const char* QuicUtils::ErrorToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_TOO_MANY_OPEN_STREAMS);
     RETURN_STRING_LITERAL(QUIC_PUBLIC_RESET);
     RETURN_STRING_LITERAL(QUIC_INVALID_VERSION);
-    RETURN_STRING_LITERAL(QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED);
-    RETURN_STRING_LITERAL(QUIC_INVALID_HEADER_ID);
     RETURN_STRING_LITERAL(QUIC_CONNECTION_TIMED_OUT);
     RETURN_STRING_LITERAL(QUIC_PROOF_INVALID);
     RETURN_STRING_LITERAL(QUIC_CRYPTO_DUPLICATE_TAG);

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/flip_server/balsa_headers.h"
@@ -28,15 +27,6 @@ class SpdyUtils {
 
   static bool FillBalsaResponseHeaders(const SpdyHeaderBlock& header_block,
                                        BalsaHeaders* response_headers);
-
-  static SpdyHeaderBlock RequestHeadersToSpdyHeaders(
-      const BalsaHeaders& request_headers);
-
-  static SpdyHeaderBlock ResponseHeadersToSpdyHeaders(
-      const BalsaHeaders& response_headers);
-
-  static std::string SerializeUncompressedHeaders(
-      const SpdyHeaderBlock& headers);
 };
 
 }  // namespace tools

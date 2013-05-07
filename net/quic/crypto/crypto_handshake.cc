@@ -12,8 +12,6 @@
 #include "base/strings/string_split.h"
 #include "crypto/secure_hash.h"
 #include "net/base/net_util.h"
-#include "net/quic/crypto/cert_compressor.h"
-#include "net/quic/crypto/common_cert_set.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/curve25519_key_exchange.h"
@@ -25,7 +23,6 @@
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_utils.h"
 
 using base::StringPiece;
 using std::map;
@@ -108,7 +105,6 @@ QuicErrorCode CryptoHandshakeMessage::GetTaglist(CryptoTag tag,
                                                  const CryptoTag** out_tags,
                                                  size_t* out_len) const {
   CryptoTagValueMap::const_iterator it = tag_value_map_.find(tag);
-  *out_len = 0;
   QuicErrorCode ret = QUIC_NO_ERROR;
 
   if (it == tag_value_map_.end()) {
@@ -321,8 +317,7 @@ QuicCryptoNegotiatedParameters::~QuicCryptoNegotiatedParameters() {
 const char QuicCryptoConfig::kLabel[] = "QUIC key expansion";
 
 QuicCryptoConfig::QuicCryptoConfig()
-    : version(0),
-      common_cert_set_(new CommonCertSetQUIC) {
+    : version(0) {
 }
 
 QuicCryptoConfig::~QuicCryptoConfig() {}
@@ -366,15 +361,15 @@ bool QuicCryptoClientConfig::CachedState::SetServerConfig(
 }
 
 void QuicCryptoClientConfig::CachedState::SetProof(
-    const vector<string>& certs, StringPiece signature) {
+    const vector<StringPiece>& certs, StringPiece signature) {
   bool has_changed = signature != server_config_sig_;
 
-  if (certs_.size() != certs.size()) {
+  if (certs.size() != certs_.size()) {
     has_changed = true;
   }
   if (!has_changed) {
     for (size_t i = 0; i < certs_.size(); i++) {
-      if (certs_[i] != certs[i]) {
+      if (certs[i] != certs_[i]) {
         has_changed = true;
         break;
       }
@@ -387,7 +382,11 @@ void QuicCryptoClientConfig::CachedState::SetProof(
 
   // If the proof has changed then it needs to be revalidated.
   server_config_valid_ = false;
-  certs_ = certs;
+  certs_.clear();
+  for (vector<StringPiece>::const_iterator i = certs.begin();
+       i != certs.end(); ++i) {
+    certs_.push_back(i->as_string());
+  }
   server_config_sig_ = signature.as_string();
 }
 
@@ -452,7 +451,6 @@ QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
 void QuicCryptoClientConfig::FillInchoateClientHello(
     const string& server_hostname,
     const CachedState* cached,
-    QuicCryptoNegotiatedParameters* out_params,
     CryptoHandshakeMessage* out) const {
   out->set_tag(kCHLO);
 
@@ -470,26 +468,6 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   }
 
   out->SetTaglist(kPDMD, kX509, 0);
-
-  if (common_cert_set_.get()) {
-    out->SetStringPiece(kCCS, common_cert_set_->GetCommonHashes());
-  }
-
-  const vector<string>& certs = cached->certs();
-  if (!certs.empty()) {
-    vector<uint64> hashes;
-    hashes.reserve(certs.size());
-    for (vector<string>::const_iterator i = certs.begin();
-         i != certs.end(); ++i) {
-      hashes.push_back(QuicUtils::FNV1a_64_Hash(i->data(), i->size()));
-    }
-    out->SetVector(kCCRT, hashes);
-    // We save |certs| in the QuicCryptoNegotiatedParameters so that, if the
-    // client config is being used for multiple connections, another connection
-    // doesn't update the cached certificates and cause us to be unable to
-    // process the server's compressed certificate chain.
-    out_params->cached_certs = certs;
-  }
 }
 
 QuicErrorCode QuicCryptoClientConfig::FillClientHello(
@@ -503,7 +481,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     string* error_details) const {
   DCHECK(error_details != NULL);
 
-  FillInchoateClientHello(server_hostname, cached, out_params, out);
+  FillInchoateClientHello(server_hostname, cached, out);
 
   const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
   if (!scfg) {
@@ -642,11 +620,26 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
   StringPiece proof, cert_bytes;
   if (rej.GetStringPiece(kPROF, &proof) &&
       rej.GetStringPiece(kCERT, &cert_bytes)) {
-    vector<string> certs;
-    if (!CertCompressor::DecompressChain(cert_bytes, out_params->cached_certs,
-                                         common_cert_set_.get(), &certs)) {
-      *error_details = "Certificate data invalid";
-      return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+    vector<StringPiece> certs;
+    while (!cert_bytes.empty()) {
+      if (cert_bytes.size() < 3) {
+        *error_details = "Certificate length truncated";
+        return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+      }
+      size_t len = static_cast<size_t>(cert_bytes[0]) |
+                   static_cast<size_t>(cert_bytes[1]) << 8 |
+                   static_cast<size_t>(cert_bytes[2]) << 16;
+      if (len == 0) {
+        *error_details = "Zero length certificate";
+        return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+      }
+      cert_bytes.remove_prefix(3);
+      if (cert_bytes.size() < len) {
+        *error_details = "Certificate truncated";
+        return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+      }
+      certs.push_back(StringPiece(cert_bytes.data(), len));
+      cert_bytes.remove_prefix(len);
     }
 
     cached->SetProof(certs, proof);
