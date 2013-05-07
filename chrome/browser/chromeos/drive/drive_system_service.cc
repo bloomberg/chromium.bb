@@ -139,7 +139,7 @@ DriveSystemService::DriveSystemService(
 
   file_system_.reset(test_file_system ? test_file_system :
                      new FileSystem(profile_,
-                                    cache(),
+                                    cache_.get(),
                                     drive_service_.get(),
                                     scheduler_.get(),
                                     webapps_registry(),
@@ -148,10 +148,11 @@ DriveSystemService::DriveSystemService(
   file_write_helper_.reset(new FileWriteHelper(file_system()));
   download_handler_.reset(new DownloadHandler(file_write_helper(),
                                               file_system()));
-  sync_client_.reset(new SyncClient(file_system(), cache()));
+  sync_client_.reset(new SyncClient(file_system(), cache_.get()));
   stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system(),
-                                                              cache()));
-  debug_info_collector_.reset(new DebugInfoCollector(file_system(), cache()));
+                                                              cache_.get()));
+  debug_info_collector_.reset(
+      new DebugInfoCollector(file_system(), cache_.get()));
 }
 
 DriveSystemService::~DriveSystemService() {

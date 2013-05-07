@@ -98,7 +98,6 @@ class DriveSystemService
     return drive_service_.get();
   }
 
-  FileCache* cache() { return cache_.get(); }
   DebugInfoCollector* debug_info_collector() {
     return debug_info_collector_.get();
   }
