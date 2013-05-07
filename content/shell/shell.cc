@@ -81,9 +81,10 @@ Shell::~Shell() {
                                            base::MessageLoop::QuitClosure());
 }
 
-Shell* Shell::CreateShell(WebContents* web_contents) {
+Shell* Shell::CreateShell(WebContents* web_contents,
+                          const gfx::Size& initial_size) {
   Shell* shell = new Shell(web_contents);
-  shell->PlatformCreateWindow(kTestWindowWidth, kTestWindowHeight);
+  shell->PlatformCreateWindow(initial_size.width(), initial_size.height());
 
   shell->web_contents_.reset(web_contents);
   web_contents->SetDelegate(shell);
@@ -142,7 +143,7 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
   else
     create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
   WebContents* web_contents = WebContents::Create(create_params);
-  Shell* shell = CreateShell(web_contents);
+  Shell* shell = CreateShell(web_contents, create_params.initial_size);
   if (!url.is_empty())
     shell->LoadURL(url);
   return shell;
@@ -272,7 +273,7 @@ void Shell::WebContentsCreated(WebContents* source_contents,
                                const string16& frame_name,
                                const GURL& target_url,
                                WebContents* new_contents) {
-  CreateShell(new_contents);
+  CreateShell(new_contents, source_contents->GetView()->GetContainerSize());
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     NotifyDoneForwarder::CreateForWebContents(new_contents);
 }

@@ -153,7 +153,8 @@ class Shell : public WebContentsDelegate,
   explicit Shell(WebContents* web_contents);
 
   // Helper to create a new Shell given a newly created WebContents.
-  static Shell* CreateShell(WebContents* web_contents);
+  static Shell* CreateShell(WebContents* web_contents,
+                            const gfx::Size& initial_size);
 
   // Helper for one time initialization of application
   static void PlatformInitialize(const gfx::Size& default_window_size);
