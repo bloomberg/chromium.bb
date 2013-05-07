@@ -10,20 +10,32 @@
 
 #include <iomanip>
 
+#include "base/atomicops.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
+#include "third_party/libjingle/overrides/logging/log_message_delegate.h"
 #include "third_party/libjingle/source/talk/base/stream.h"
 #include "third_party/libjingle/source/talk/base/stringencode.h"
 #include "third_party/libjingle/source/talk/base/stringutils.h"
 
-// LOG_E can't call VLOG directly like LOG_V can since VLOG expands into usage
-// of the __FILE__ macro (for filtering) and the actual VLOG call from LOG_E
-// happens inside LogEHelper. Note that the second parameter to the LAZY_STREAM
-// macro is true since the filter check is already done for LOG_E.
-#define LOG_E_BASE(file_name, line_number, sev) \
+// From this file we can't use VLOG since it expands into usage of the __FILE__
+// macro (for correct filtering). The actual logging call from LOG_E is in
+// ~LogEHelper, and from DIAGNOSTIC_LOG in ~DiagnosticLogMessage. Note that the
+// second parameter to the LAZY_STREAM macro is true since the filter check has
+// already been done for LOG_E and DIAGNOSTIC_LOG.
+#define LOG_LAZY_STREAM_DIRECT(file_name, line_number, sev) \
   LAZY_STREAM(logging::LogMessage(file_name, line_number, \
                                   -sev).stream(), true)
+#define LOG_E_BASE LOG_LAZY_STREAM_DIRECT
 
 namespace talk_base {
+
+LogMessageDelegate* g_logging_delegate = NULL;
+#ifndef NDEBUG
+COMPILE_ASSERT(sizeof(base::subtle::Atomic32) == sizeof(base::PlatformThreadId),
+               atomic32_not_same_size_as_platformthreadid);
+base::subtle::Atomic32 g_init_logging_delegate_thread_id = 0;
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Constant Labels
@@ -123,6 +135,24 @@ LogEHelper::~LogEHelper() {
   print_stream_ << extra_;
   const std::string& str = print_stream_.str();
   LOG_E_BASE(file_name_.c_str(), line_, severity_) << str;
+}
+
+DiagnosticLogMessage::DiagnosticLogMessage(const char* file,
+                                           int line,
+                                           LoggingSeverity severity,
+                                           bool log_to_chrome)
+    : file_name_(file),
+      line_(line),
+      severity_(severity),
+      log_to_chrome_(log_to_chrome) {
+}
+
+DiagnosticLogMessage::~DiagnosticLogMessage() {
+  const std::string& str = print_stream_.str();
+  if (log_to_chrome_)
+    LOG_LAZY_STREAM_DIRECT(file_name_, line_, severity_) << str;
+  if (g_logging_delegate)
+    g_logging_delegate->LogMessage(str);
 }
 
 // Note: this function is a copy from the overriden libjingle implementation.
@@ -241,6 +271,19 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
   if (state) {
     state->unprintable_count_[input] = consecutive_unprintable;
   }
+}
+
+void InitDiagnosticLoggingDelegate(LogMessageDelegate* delegate) {
+#ifndef NDEBUG
+  // Ensure that this function is always called from the same thread.
+  base::subtle::NoBarrier_CompareAndSwap(&g_init_logging_delegate_thread_id, 0,
+      static_cast<base::subtle::Atomic32>(base::PlatformThread::CurrentId()));
+  DCHECK_EQ(g_init_logging_delegate_thread_id,
+            base::PlatformThread::CurrentId());
+#endif
+  CHECK(!g_logging_delegate);
+  CHECK(delegate);
+  g_logging_delegate = delegate;
 }
 
 }  // namespace talk_base

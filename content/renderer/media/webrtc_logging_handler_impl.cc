@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "content/renderer/media/webrtc_logging_message_filter.h"
+#include "third_party/libjingle/overrides/talk/base/logging.h"
 
 namespace content {
 
@@ -18,6 +19,11 @@ WebRtcLoggingHandlerImpl::WebRtcLoggingHandlerImpl(
 }
 
 WebRtcLoggingHandlerImpl::~WebRtcLoggingHandlerImpl() {
+}
+
+void WebRtcLoggingHandlerImpl::LogMessage(const std::string& message) {
+  // TODO(grunell): Implement.
+  NOTIMPLEMENTED();
 }
 
 void WebRtcLoggingHandlerImpl::OnFilterRemoved() {

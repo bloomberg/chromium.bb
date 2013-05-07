@@ -27,8 +27,11 @@
 #include <string>
 
 #include "base/logging.h"
+#include "third_party/libjingle/source/talk/base/scoped_ref_ptr.h"
 
 namespace talk_base {
+
+class LogMessageDelegate;
 
 ///////////////////////////////////////////////////////////////////////////////
 // ConstantLabel can be used to easily generate string names from constant
@@ -114,6 +117,25 @@ class LogEHelper {
   std::ostringstream print_stream_;
 };
 
+// Class that writes a log message to the logging delegate (WebRTC logging
+// stream in Chrome) and to Chrome's logging stream.
+class DiagnosticLogMessage {
+ public:
+  DiagnosticLogMessage(const char* file, int line, LoggingSeverity severity,
+                       bool log_to_chrome);
+  ~DiagnosticLogMessage();
+
+  std::ostream& stream() { return print_stream_; }
+
+ private:
+  const char* file_name_;
+  const int line_;
+  const LoggingSeverity severity_;
+  const bool log_to_chrome_;
+
+  std::ostringstream print_stream_;
+};
+
 // This class is used to explicitly ignore values in the conditional
 // logging macros.  This avoids compiler warnings like "value computed
 // is not used" and "statement has no effect".
@@ -143,6 +165,10 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
                   const void* data, size_t len, bool hex_mode,
                   LogMultilineState* state);
 
+// Registers a delegate to receive diagnostic logging messages. Not thread safe,
+// must be called from the same thread.
+void InitDiagnosticLoggingDelegate(LogMessageDelegate* delegate);
+
 }  // namespace talk_base
 
 //////////////////////////////////////////////////////////////////////
@@ -151,6 +177,10 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
 //////////////////////////////////////////////////////////////////////
 
 #if defined(LOGGING_INSIDE_LIBJINGLE)
+
+#define DIAGNOSTIC_LOG(sev) \
+  talk_base::DiagnosticLogMessage( \
+      __FILE__, __LINE__, sev, VLOG_IS_ON(sev)).stream()
 
 #define LOG_CHECK_LEVEL(sev) VLOG_IS_ON(talk_base::sev)
 #define LOG_CHECK_LEVEL_V(sev) VLOG_IS_ON(sev)

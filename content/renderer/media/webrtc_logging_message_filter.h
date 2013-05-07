@@ -26,9 +26,8 @@ class CONTENT_EXPORT WebRtcLoggingMessageFilter
   explicit WebRtcLoggingMessageFilter(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
 
-  virtual void SetDelegate(
-      scoped_refptr<WebRtcLoggingHandlerImpl>& logging_handler);
-  virtual void RemoveDelegate();
+  // We take owbership of |logging_handler|. See also comment below.
+  virtual void SetDelegate(WebRtcLoggingHandlerImpl* logging_handler);
 
   virtual void OpenLog();
 
@@ -47,7 +46,11 @@ class CONTENT_EXPORT WebRtcLoggingMessageFilter
 
   void Send(IPC::Message* message);
 
-  scoped_refptr<WebRtcLoggingHandlerImpl> logging_handler_;
+  // Owned by this class. The only other pointer to it is in libjingle's logging
+  // file. That's a global pointer used on different threads, so we will leak
+  // this object when we go away to ensure that it outlives any log messages
+  // coming from libjingle.
+  WebRtcLoggingHandlerImpl* logging_handler_;
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 

@@ -245,6 +245,9 @@
         'overrides/talk/base/basictypes.h',
         'overrides/talk/base/constructormagic.h',
 
+        # This file is in Chromium only.
+        'overrides/logging/log_message_delegate.h',
+
         # Overrides logging.h/.cc because libjingle logging should be done to
         # the same place as the chromium logging.
         'overrides/talk/base/logging.cc',

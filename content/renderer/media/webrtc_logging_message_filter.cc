@@ -9,12 +9,14 @@
 #include "content/common/media/webrtc_logging_messages.h"
 #include "content/renderer/media/webrtc_logging_handler_impl.h"
 #include "ipc/ipc_logging.h"
+#include "third_party/libjingle/overrides/talk/base/logging.h"
 
 namespace content {
 
 WebRtcLoggingMessageFilter::WebRtcLoggingMessageFilter(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
-    : io_message_loop_(io_message_loop),
+    : logging_handler_(NULL),
+      io_message_loop_(io_message_loop),
       channel_(NULL) {
 }
 
@@ -41,22 +43,20 @@ void WebRtcLoggingMessageFilter::OnFilterAdded(IPC::Channel* channel) {
 void WebRtcLoggingMessageFilter::OnFilterRemoved() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   channel_ = NULL;
-  RemoveDelegate();
+  logging_handler_->OnFilterRemoved();
 }
 
 void WebRtcLoggingMessageFilter::OnChannelClosing() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   channel_ = NULL;
-  RemoveDelegate();
+  logging_handler_->OnFilterRemoved();
 }
 
 void WebRtcLoggingMessageFilter::SetDelegate(
-    scoped_refptr<WebRtcLoggingHandlerImpl>& logging_handler) {
+    WebRtcLoggingHandlerImpl* logging_handler) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(!logging_handler_);
   logging_handler_ = logging_handler;
-}
-
-void WebRtcLoggingMessageFilter::RemoveDelegate() {
-  logging_handler_ = NULL;
 }
 
 void WebRtcLoggingMessageFilter::OpenLog() {
