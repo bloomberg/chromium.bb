@@ -38,7 +38,6 @@
     [RaisesException] CSSStyleDeclaration computedStyleIncludingVisitedInfo(Node node);
 
     [RaisesException] ShadowRoot ensureShadowRoot(Element host);
-    [RaisesException] ShadowRoot createShadowRoot(Element host);
     [RaisesException] ShadowRoot shadowRoot(Element host);
     [RaisesException] ShadowRoot youngestShadowRoot(Element host);
     [RaisesException] ShadowRoot oldestShadowRoot(Element host);

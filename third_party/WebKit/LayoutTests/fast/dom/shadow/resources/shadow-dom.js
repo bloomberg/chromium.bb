@@ -26,11 +26,7 @@ function createDOM(tagName, attributes)
         var child = childElements[i];
         if (child.isShadowRoot) {
             ++shadowRootCount;
-            var shadowRoot;
-            if (element.webkitCreateShadowRoot)
-                shadowRoot = element.webkitCreateShadowRoot(element);
-            else
-                shadowRoot = internals.createShadowRoot(element);
+            var shadowRoot = element.webkitCreateShadowRoot(element);
             if (child.attributes) {
                 for (var attribute in child.attributes) {
                     // Shadow Root does not have setAttribute.

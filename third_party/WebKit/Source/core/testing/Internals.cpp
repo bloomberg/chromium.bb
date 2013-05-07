@@ -639,15 +639,6 @@ ShadowRoot* Internals::ensureShadowRoot(Element* host, ExceptionCode& ec)
     return host->createShadowRoot(ec).get();
 }
 
-ShadowRoot* Internals::createShadowRoot(Element* host, ExceptionCode& ec)
-{
-    if (!host) {
-        ec = INVALID_ACCESS_ERR;
-        return 0;
-    }
-    return host->createShadowRoot(ec).get();
-}
-
 ShadowRoot* Internals::shadowRoot(Element* host, ExceptionCode& ec)
 {
     // FIXME: Internals::shadowRoot() in tests should be converted to youngestShadowRoot() or oldestShadowRoot().
