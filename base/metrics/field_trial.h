@@ -129,10 +129,12 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
 
   // Changes the field trial to use one-time randomization, i.e. produce the
   // same result for the current trial on every run of this client, with a
-  // custom randomization seed for the trial. The |randomization_seed| value
-  // should never be the same for two trials, else this would result in
-  // correlated group assignments. Must be called right after construction,
-  // before any groups are added.
+  // custom randomization seed for the trial (instead of a hash of the trial
+  // name, which is used otherwise). The |randomization_seed| value should never
+  // be the same for two trials, else this would result in correlated group
+  // assignments. Note: Using a custom randomization seed is only supported by
+  // the PermutedEntropyProvider (which is used when UMA is not enabled). Must
+  // be called right after construction, before any groups are added.
   void UseOneTimeRandomizationWithCustomSeed(uint32 randomization_seed);
 
   // Disables this trial, meaning it always determines the default group
