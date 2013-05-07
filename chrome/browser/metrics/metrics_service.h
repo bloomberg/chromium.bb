@@ -502,6 +502,8 @@ class MetricsService
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdCorrectlyFormatted);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, LowEntropySource0NotReset);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest,
+                           PermutedEntropyCacheClearedWhenLowEntropyReset);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceBrowserTest,
                            CheckLowEntropySourceUsed);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceReportingTest,

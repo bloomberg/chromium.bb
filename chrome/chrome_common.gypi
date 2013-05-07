@@ -744,6 +744,7 @@
         'common/metrics/proto/histogram_event.proto',
         'common/metrics/proto/omnibox_event.proto',
         'common/metrics/proto/perf_data.proto',
+        'common/metrics/proto/permuted_entropy_cache.proto',
         'common/metrics/proto/profiler_event.proto',
         'common/metrics/proto/system_profile.proto',
         'common/metrics/proto/user_action_event.proto',

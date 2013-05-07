@@ -1296,6 +1296,8 @@ const char kMetricsClientID[] = "user_experience_metrics.client_id";
 const char kMetricsSessionID[] = "user_experience_metrics.session_id";
 const char kMetricsLowEntropySource[] =
     "user_experience_metrics.low_entropy_source";
+const char kMetricsPermutedEntropyCache[] =
+    "user_experience_metrics.permuted_entropy_cache";
 
 // Date/time when the current metrics profile ID was created
 // (which hopefully corresponds to first run).

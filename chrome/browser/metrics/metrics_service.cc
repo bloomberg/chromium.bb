@@ -549,9 +549,18 @@ scoped_ptr<const base::FieldTrial::EntropyProvider>
   if (entropy_source_returned_ == LAST_ENTROPY_NONE)
     entropy_source_returned_ = LAST_ENTROPY_LOW;
   DCHECK_EQ(LAST_ENTROPY_LOW, entropy_source_returned_);
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  return scoped_ptr<const base::FieldTrial::EntropyProvider>(
+      new metrics::CachingPermutedEntropyProvider(
+          g_browser_process->local_state(),
+          GetLowEntropySource(),
+          kMaxLowEntropySize));
+#else
   return scoped_ptr<const base::FieldTrial::EntropyProvider>(
       new metrics::PermutedEntropyProvider(GetLowEntropySource(),
                                            kMaxLowEntropySize));
+#endif
 }
 
 void MetricsService::ForceClientIdCreation() {
@@ -1026,12 +1035,12 @@ int MetricsService::GetLowEntropySource() {
   if (low_entropy_source_ != kLowEntropySourceNotSet)
     return low_entropy_source_;
 
-  PrefService* pref = g_browser_process->local_state();
+  PrefService* local_state = g_browser_process->local_state();
   const CommandLine* command_line(CommandLine::ForCurrentProcess());
   // Only try to load the value from prefs if the user did not request a reset.
   // Otherwise, skip to generating a new value.
   if (!command_line->HasSwitch(switches::kResetVariationState)) {
-    const int value = pref->GetInteger(prefs::kMetricsLowEntropySource);
+    const int value = local_state->GetInteger(prefs::kMetricsLowEntropySource);
     if (value != kLowEntropySourceNotSet) {
       // Ensure the prefs value is in the range [0, kMaxLowEntropySize). Old
       // versions of the code would generate values in the range of [1, 8192],
@@ -1045,7 +1054,8 @@ int MetricsService::GetLowEntropySource() {
 
   UMA_HISTOGRAM_BOOLEAN("UMA.GeneratedLowEntropySource", true);
   low_entropy_source_ = GenerateLowEntropySource();
-  pref->SetInteger(prefs::kMetricsLowEntropySource, low_entropy_source_);
+  local_state->SetInteger(prefs::kMetricsLowEntropySource, low_entropy_source_);
+  metrics::CachingPermutedEntropyProvider::ClearCache(local_state);
 
   return low_entropy_source_;
 }

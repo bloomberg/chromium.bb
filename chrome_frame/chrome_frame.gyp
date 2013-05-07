@@ -569,6 +569,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'chrome_frame_ie',
         'chrome_frame_strings',
         'chrome_tab_idl',

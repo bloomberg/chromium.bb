@@ -91,6 +91,7 @@
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
+#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/browser/autofill_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -198,6 +199,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   KeywordEditorController::RegisterPrefs(registry);
   MetricsLog::RegisterPrefs(registry);
   MetricsService::RegisterPrefs(registry);
+  metrics::CachingPermutedEntropyProvider::RegisterPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   ProfileInfoCache::RegisterPrefs(registry);
   ProfileManager::RegisterPrefs(registry);

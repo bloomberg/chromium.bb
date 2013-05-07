@@ -13,7 +13,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/field_trial.h"
+#include "base/threading/thread_checker.h"
+#include "chrome/common/metrics/proto/permuted_entropy_cache.pb.h"
 #include "third_party/mt19937ar/mt19937ar.h"
+
+class PrefService;
+class PrefRegistrySimple;
 
 namespace metrics {
 
@@ -83,6 +88,54 @@ class PermutedEntropyProvider : public base::FieldTrial::EntropyProvider {
   size_t low_entropy_source_max_;
 
   DISALLOW_COPY_AND_ASSIGN(PermutedEntropyProvider);
+};
+
+// CachingPermutedEntropyProvider is an entropy provider that uses the same
+// algorithm as the PermutedEntropyProvider, but caches the results in Local
+// State between runs.
+class CachingPermutedEntropyProvider
+    : public base::FieldTrial::EntropyProvider {
+ public:
+  // Creates a CachingPermutedEntropyProvider using the given |local_state|
+  // prefs service with the specified |low_entropy_source|, which should have a
+  // value in the range of [0, low_entropy_source_max).
+  CachingPermutedEntropyProvider(PrefService* local_state,
+                                 uint16 low_entropy_source,
+                                 size_t low_entropy_source_max);
+  virtual ~CachingPermutedEntropyProvider();
+
+  // Registers pref keys used by this class in the Local State pref registry.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Clears the cache in local state. Should be called when the low entropy
+  // source value gets reset.
+  static void ClearCache(PrefService* local_state);
+
+  // base::FieldTrial::EntropyProvider implementation:
+  virtual double GetEntropyForTrial(const std::string& trial_name,
+                                    uint32 randomization_seed) const OVERRIDE;
+
+ private:
+  // Reads the cache from local state.
+  void ReadFromLocalState() const;
+
+  // Updates local state with the state of the cache.
+  void UpdateLocalState() const;
+
+  // Adds |randomization_seed| -> |value| to the cache.
+  void AddToCache(uint32 randomization_seed, uint16 value) const;
+
+  // Finds the value corresponding to |randomization_seed|, setting |value| and
+  // returning true if found.
+  bool FindValue(uint32 randomization_seed, uint16* value) const;
+
+  base::ThreadChecker thread_checker_;
+  PrefService* local_state_;
+  uint16 low_entropy_source_;
+  size_t low_entropy_source_max_;
+  mutable PermutedEntropyCache cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(CachingPermutedEntropyProvider);
 };
 
 }  // namespace metrics
