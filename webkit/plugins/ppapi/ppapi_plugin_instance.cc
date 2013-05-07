@@ -453,6 +453,9 @@ void PluginInstance::Delete() {
     original_instance_interface_->DidDestroy(pp_instance());
   else
     instance_interface_->DidDestroy(pp_instance());
+  // Ensure we don't attempt to call functions on the destroyed instance.
+  original_instance_interface_.reset();
+  instance_interface_.reset();
 
   if (fullscreen_container_) {
     fullscreen_container_->Destroy();
@@ -1190,6 +1193,10 @@ bool PluginInstance::PluginHasFocus() const {
 }
 
 void PluginInstance::SendFocusChangeNotification() {
+  // This call can happen during PluginInstance destruction, because WebKit
+  // informs the plugin it's losing focus. See crbug.com/236574
+  if (!delegate_ || !instance_interface_)
+    return;
   bool has_focus = PluginHasFocus();
   delegate()->PluginFocusChanged(this, has_focus);
   instance_interface_->DidChangeFocus(pp_instance(), PP_FromBool(has_focus));
