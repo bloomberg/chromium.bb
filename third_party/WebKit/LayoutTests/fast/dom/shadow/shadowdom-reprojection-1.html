@@ -16,7 +16,9 @@ function text(contents) {
 }
 
 function shadowRoot() {
-    return createShadowRootWithAttributes({'applyAuthorStyles': true}, Array.prototype.slice.call(arguments));
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift({'applyAuthorStyles': true});
+    return createShadowRoot.apply(this, args);
 }
 
 document.body.appendChild(

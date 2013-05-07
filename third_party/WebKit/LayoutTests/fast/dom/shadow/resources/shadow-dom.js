@@ -1,13 +1,11 @@
 function createShadowRoot()
 {
+    var children = Array.prototype.slice.call(arguments);
+    if ((children[0] instanceof Object) && !(children[0] instanceof Node))
+        return {'isShadowRoot': true,
+                'attributes': children[0],
+                'children': children.slice(1)};
     return {'isShadowRoot': true,
-            'children': Array.prototype.slice.call(arguments)};
-}
-
-function createShadowRootWithAttributes(attributes, children)
-{
-    return {'isShadowRoot': true,
-            'attributes': attributes,
             'children': children};
 }
 
