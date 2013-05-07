@@ -1989,6 +1989,11 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
       CreateSyncableFileSystemURL(origin, kServiceName, path));
   DCHECK(url.is_valid());
 
+  // Note that we create a normalized path from url.path() rather than
+  // path here (as FileSystemURL does extra normalization).
+  base::FilePath::StringType normalized_path =
+    fileapi::VirtualPath::GetNormalizedFilePath(url.path());
+
   std::string local_resource_id;
   std::string local_file_md5;
 
@@ -2002,8 +2007,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
   }
 
   PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
-  PathToChangeMap::iterator found =
-      path_to_change->find(fileapi::VirtualPath::GetNormalizedFilePath(path));
+  PathToChangeMap::iterator found = path_to_change->find(normalized_path);
   PendingChangeQueue::iterator overridden_queue_item = pending_changes_.end();
   if (found != path_to_change->end()) {
     if (found->second.changestamp >= changestamp)
@@ -2068,7 +2072,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
         pending_changes_.insert(ChangeQueueItem(changestamp, sync_type, url));
     DCHECK(inserted_to_queue.second);
 
-    (*path_to_change)[fileapi::VirtualPath::GetNormalizedFilePath(path)] =
+    (*path_to_change)[normalized_path] =
         RemoteChange(
             changestamp, remote_resource_id, remote_file_md5,
             updated_time, sync_type, url, file_change,
@@ -2076,6 +2080,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
   }
 
   DVLOG(3) << "Append remote change: " << path.value()
+           << " (" << normalized_path << ")"
            << "@" << changestamp << " "
            << file_change.DebugString();
 
