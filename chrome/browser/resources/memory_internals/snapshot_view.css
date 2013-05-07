@@ -2,23 +2,28 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#snapshot_view table {
+#snapshot-view {
   width: 100%;
 }
 
-#snapshot_view tr:nth-child(odd) {
+#snapshot-view tr:nth-child(odd) {
   background: rgb(239, 243, 255);
 }
 
-#snapshot_view td {
+#snapshot-view td {
   vertical-align: top;
 }
 
-#snapshot_view td.memory {
+#snapshot-view .process-memory {
   text-align: right;
 }
 
+#snapshot-view #process-template {
+  display: none;
+}
+
 #json {
+  display: none;
   height: 100px;
   width: 100%;
 }

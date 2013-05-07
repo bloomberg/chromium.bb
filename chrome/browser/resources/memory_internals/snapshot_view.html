@@ -6,14 +6,19 @@
 </div>
 
 <h2>Processes</h2>
-<div id="snapshot_view">
-  <table>
+<div id="os-view">OS: <span id="os-value">unknown</span></div>
+<div id="uptime-view">Uptime: <span id="uptime-value">unknown</span></div>
+<table id="snapshot-view">
+  <tbody>
     <tr>
       <th>PID
       <th>Name
       <th>Private Memory [KB]
-  </table>
-</div>
+    <tr id="process-template">
+      <td class="process-id">
+      <td class="process-info">
+      <td class="process-memory">
+</table>
 
 <h3>JSON</h3>
 <textarea id="json" readonly></textarea>

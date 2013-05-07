@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/defaults.h"
@@ -79,6 +80,11 @@ void MemoryInternalsProxy::UpdateUIOnUIThread(const string16& update) {
 
 void MemoryInternalsProxy::OnDetailsAvailable(const ProcessData& browser) {
   base::DictionaryValue details;
+
+  // System information, which is independent from processes.
+  details.SetInteger("uptime", base::SysInfo::Uptime());
+  details.SetString("os", base::SysInfo::OperatingSystemName());
+  details.SetString("os_version", base::SysInfo::OperatingSystemVersion());
 
   base::ListValue* processes = new ListValue();
   details.Set("processes", processes);
