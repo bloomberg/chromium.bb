@@ -7,7 +7,6 @@ per-file autofill.gypi=kaiwang@chromium.org
 per-file tracing*=jbauman@chromium.org
 per-file tracing*=nduca@chromium.org
 
-per-file navigation_interception.gypi=jknotten@chromium.org
 per-file navigation_interception.gypi=joth@chromium.org
 per-file navigation_interception.gypi=mkosiba@chromium.org
 
