@@ -24,6 +24,7 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/delete_directive_handler.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/history/typed_url_syncable_service.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/cancelable_task_tracker.h"
@@ -157,6 +158,11 @@ class HistoryService : public CancelableRequestProvider,
 
   // Reads the number of times this URL has been visited.
   bool GetVisitCountForURL(const GURL& url, int* visit_count);
+
+  // Returns a pointer to the TypedUrlSyncableService owned by HistoryBackend.
+  // This method should only be called from the history thread, because the
+  // returned service is intended to be accessed only via the history thread.
+  history::TypedUrlSyncableService* GetTypedUrlSyncableService() const;
 
   // Return the quick history index.
   history::InMemoryURLIndex* InMemoryIndex() const {

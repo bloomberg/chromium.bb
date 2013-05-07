@@ -179,6 +179,10 @@ class ExpireHistoryTest : public testing::Test,
     // store them so we can tell that the correct notifications were sent.
     notifications_.push_back(std::make_pair(type, details_deleted));
   }
+  virtual void NotifySyncURLsDeleted(
+      bool all_history,
+      bool archived,
+      URLRows* rows) OVERRIDE {}
 };
 
 // The example data consists of 4 visits. The middle two visits are to the

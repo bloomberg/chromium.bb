@@ -867,6 +867,7 @@
         'browser/history/top_sites_database_unittest.cc',
         'browser/history/top_sites_impl_unittest.cc',
         'browser/history/top_sites_likely_impl_unittest.cc',
+        'browser/history/typed_url_syncable_service_unittest.cc',
         'browser/history/url_database_unittest.cc',
         'browser/history/visit_database_unittest.cc',
         'browser/history/visit_filter_unittest.cc',

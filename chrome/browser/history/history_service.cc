@@ -362,6 +362,11 @@ bool HistoryService::GetVisitCountForURL(const GURL& url, int* visit_count) {
   return true;
 }
 
+history::TypedUrlSyncableService* HistoryService::GetTypedUrlSyncableService()
+    const {
+  return history_backend_->GetTypedUrlSyncableService();
+}
+
 void HistoryService::Shutdown() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // It's possible that bookmarks haven't loaded and history is waiting for

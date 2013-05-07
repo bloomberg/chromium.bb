@@ -753,6 +753,8 @@
         'browser/history/top_sites_impl.h',
         'browser/history/top_sites_likely_impl.cc',
         'browser/history/top_sites_likely_impl.h',
+        'browser/history/typed_url_syncable_service.cc',
+        'browser/history/typed_url_syncable_service.h',
         'browser/history/url_database.cc',
         'browser/history/url_database.h',
         'browser/history/url_index_private_data.cc',

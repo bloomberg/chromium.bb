@@ -28,6 +28,7 @@
 
 class BookmarkService;
 class TestingProfile;
+class TypedUrlSyncableService;
 struct ThumbnailScore;
 
 namespace history {
@@ -429,6 +430,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   virtual bool GetURL(const GURL& url, history::URLRow* url_row);
 
+  // Returns the syncable service for syncing typed urls. The returned service
+  // is owned by |this| object.
+  virtual TypedUrlSyncableService* GetTypedUrlSyncableService() const;
+
   // Deleting ------------------------------------------------------------------
 
   virtual void DeleteURLs(const std::vector<GURL>& urls);
@@ -783,6 +788,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   virtual void BroadcastNotifications(int type,
                                       HistoryDetails* details_deleted) OVERRIDE;
 
+  virtual void NotifySyncURLsDeleted(bool all_history,
+                                     bool archived,
+                                     URLRows* rows) OVERRIDE;
+
   // Deleting all history ------------------------------------------------------
 
   // Deletes all history. This is a special case of deleting that is separated
@@ -895,6 +904,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Used to provide the Android ContentProvider APIs.
   scoped_ptr<AndroidProviderBackend> android_provider_backend_;
 #endif
+
+  // Used to manage syncing of the typed urls datatype. This will be NULL
+  // before Init is called.
+  scoped_ptr<TypedUrlSyncableService> typed_url_syncable_service_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryBackend);
 };

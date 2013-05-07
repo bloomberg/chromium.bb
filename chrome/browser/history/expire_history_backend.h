@@ -36,6 +36,11 @@ class BroadcastNotificationDelegate {
   virtual void BroadcastNotifications(int type,
                                       HistoryDetails* details_deleted) = 0;
 
+  // Trigger handling of deleted urls in typed url sync code
+  virtual void NotifySyncURLsDeleted(bool all_history,
+                                     bool archived,
+                                     URLRows* rows) = 0;
+
  protected:
   virtual ~BroadcastNotificationDelegate() {}
 };

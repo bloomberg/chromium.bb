@@ -33,6 +33,7 @@
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/select_favicon_frames.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/typed_url_syncable_service.h"
 #include "chrome/browser/history/visit_filter.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -296,6 +297,7 @@ void HistoryBackend::Init(const std::string& languages, bool force_fail) {
   if (!force_fail)
     InitImpl(languages);
   delegate_->DBLoaded(id_);
+  typed_url_syncable_service_.reset(new TypedUrlSyncableService(this));
 }
 
 void HistoryBackend::SetOnBackendDestroyTask(MessageLoop* message_loop,
@@ -887,6 +889,9 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
 
   // Broadcast a notification of the visit.
   if (visit_id) {
+    if (typed_url_syncable_service_.get())
+      typed_url_syncable_service_->OnUrlVisited(transition, &url_info);
+
     URLVisitedDetails* details = new URLVisitedDetails;
     details->transition = transition;
     details->row = url_info;
@@ -981,6 +986,9 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
     }
   }
 
+  if (typed_url_syncable_service_.get())
+    typed_url_syncable_service_->OnUrlsModified(&modified->changed_urls);
+
   // Broadcast a notification for typed URLs that have been modified. This
   // will be picked up by the in-memory URL database on the main thread.
   //
@@ -1038,6 +1046,8 @@ void HistoryBackend::SetPageTitle(const GURL& url,
   // Broadcast notifications for any URLs that have changed. This will
   // update the in-memory database and the InMemoryURLIndex.
   if (!details->changed_urls.empty()) {
+    if (typed_url_syncable_service_.get())
+      typed_url_syncable_service_->OnUrlsModified(&details->changed_urls);
     BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                            details.release());
     ScheduleCommit();
@@ -1173,6 +1183,10 @@ void HistoryBackend::QueryURL(scoped_refptr<QueryURLRequest> request,
     }
   }
   request->ForwardResult(request->handle(), success, row, visits);
+}
+
+TypedUrlSyncableService* HistoryBackend::GetTypedUrlSyncableService() const {
+  return typed_url_syncable_service_.get();
 }
 
 // Segment usage ---------------------------------------------------------------
@@ -2866,11 +2880,18 @@ void HistoryBackend::BroadcastNotifications(
     int type,
     HistoryDetails* details_deleted) {
   // |delegate_| may be NULL if |this| is in the process of closing (closed by
-  // HistoryService -> HistroyBackend::Closing().
+  // HistoryService -> HistoryBackend::Closing().
   if (delegate_.get())
     delegate_->BroadcastNotifications(type, details_deleted);
   else
     delete details_deleted;
+}
+
+void HistoryBackend::NotifySyncURLsDeleted(bool all_history,
+                                           bool archived,
+                                           URLRows* rows) {
+  if (typed_url_syncable_service_.get())
+    typed_url_syncable_service_->OnUrlsDeleted(all_history, archived, rows);
 }
 
 // Deleting --------------------------------------------------------------------
@@ -2953,6 +2974,7 @@ void HistoryBackend::DeleteAllHistory() {
   // will pick this up and clear itself.
   URLsDeletedDetails* details = new URLsDeletedDetails;
   details->all_history = true;
+  NotifySyncURLsDeleted(true, false, NULL);
   BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_DELETED, details);
 }
 
