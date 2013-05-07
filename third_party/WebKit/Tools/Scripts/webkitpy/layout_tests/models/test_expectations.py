@@ -967,9 +967,7 @@ class TestExpectations(object):
         modified_expectations = []
 
         for expectation in self._expectations:
-            if expectation.name != test or expectation.is_flaky() or not expectation.parsed_expectations:
-                continue
-            if iter(expectation.parsed_expectations).next() not in (FAIL, IMAGE):
+            if expectation.name != test or not expectation.parsed_expectations:
                 continue
             if test_configuration not in expectation.matching_configurations:
                 continue
