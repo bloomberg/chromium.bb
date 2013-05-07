@@ -1477,7 +1477,8 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   // -- they should always use grey text if they are to autocomplete at all. So
   // we clamp non-verbatim results to just below the verbatim score to ensure
   // that none of them are inline autocompleted.
-  if ((type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED) &&
+  if (type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED &&
+      type != AutocompleteMatch::SEARCH_OTHER_ENGINE &&
       chrome::IsInstantExtendedAPIEnabled()) {
     relevance = std::min(kNonURLVerbatimRelevance - 1, relevance);
   }
