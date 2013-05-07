@@ -525,7 +525,7 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
   base::DictionaryValue delta_update_status;
   delta_update_status.SetBoolean(
       "push-notification-enabled",
-      drive_notification_manager->IsPushNotificationEnabled());
+      drive_notification_manager->push_notification_enabled());
   delta_update_status.SetString(
       "last-update-check-time",
       google_apis::util::FormatTimeAsStringLocaltime(

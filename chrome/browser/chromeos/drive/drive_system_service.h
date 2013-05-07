@@ -93,6 +93,7 @@ class DriveSystemService
 
   // google_apis::DriveNotificationObserver implementation.
   virtual void OnNotificationReceived() OVERRIDE;
+  virtual void OnPushNotificationEnabled(bool enabled) OVERRIDE;
 
   google_apis::DriveServiceInterface* drive_service() {
     return drive_service_.get();

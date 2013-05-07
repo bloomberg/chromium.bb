@@ -14,6 +14,9 @@ class DriveNotificationObserver {
   // Called when a notification from Google Drive is received.
   virtual void OnNotificationReceived() = 0;
 
+  // Called when XMPP-based push notification is enabled or disabled.
+  virtual void OnPushNotificationEnabled(bool enabled) {}
+
  protected:
   virtual ~DriveNotificationObserver() {}
 };

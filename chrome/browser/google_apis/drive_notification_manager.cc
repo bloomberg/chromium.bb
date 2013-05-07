@@ -61,6 +61,8 @@ void DriveNotificationManager::OnInvalidatorStateChange(
   } else {
     DVLOG(1) << "XMPP Notifications disabled (state=" << state << ")";
   }
+  FOR_EACH_OBSERVER(DriveNotificationObserver, observers_,
+                    OnPushNotificationEnabled(push_notification_enabled_));
 }
 
 void DriveNotificationManager::OnIncomingInvalidation(
@@ -91,10 +93,6 @@ void DriveNotificationManager::AddObserver(
 void DriveNotificationManager::RemoveObserver(
     DriveNotificationObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-bool DriveNotificationManager::IsPushNotificationEnabled() {
-  return push_notification_enabled_;
 }
 
 void DriveNotificationManager::RestartPollingTimer() {

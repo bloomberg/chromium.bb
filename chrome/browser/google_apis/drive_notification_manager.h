@@ -40,8 +40,15 @@ class DriveNotificationManager
   void AddObserver(DriveNotificationObserver* observer);
   void RemoveObserver(DriveNotificationObserver* observer);
 
-  // True when XMPP notifications registered and enabled. False otherwise.
-  bool IsPushNotificationEnabled();
+  // True when XMPP notification is currently enabled.
+  bool push_notification_enabled() const {
+    return push_notification_enabled_;
+  }
+
+  // True when XMPP notification has been registered.
+  bool push_notification_registered() const {
+    return push_notification_registered_;
+  }
 
  private:
   enum NotificationSource {

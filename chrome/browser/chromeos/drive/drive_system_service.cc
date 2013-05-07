@@ -194,6 +194,11 @@ void DriveSystemService::OnNotificationReceived() {
   file_system_->CheckForUpdates();
 }
 
+void DriveSystemService::OnPushNotificationEnabled(bool enabled) {
+  const char* status = (enabled ? "enabled" : "disabled");
+  util::Log("Push notification is %s", status);
+}
+
 bool DriveSystemService::IsDriveEnabled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -344,8 +349,13 @@ void DriveSystemService::InitializeAfterResourceMetadataInitialized(
   // Register for Google Drive invalidation notifications.
   google_apis::DriveNotificationManager* drive_notification_manager =
       google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
-  if (drive_notification_manager)
+  if (drive_notification_manager) {
     drive_notification_manager->AddObserver(this);
+    const bool registered =
+        drive_notification_manager->push_notification_registered();
+    const char* status = (registered ? "registered" : "not registered");
+    util::Log("Push notification is %s", status);
+  }
 
   AddDriveMountPoint();
 }
