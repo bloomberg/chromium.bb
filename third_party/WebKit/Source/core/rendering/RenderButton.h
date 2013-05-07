@@ -55,6 +55,8 @@ public:
     void setText(const String&);
     String text() const;
 
+    virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode) const OVERRIDE;
+
 private:
     virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle);
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);

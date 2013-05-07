@@ -155,4 +155,22 @@ LayoutRect RenderButton::controlClipRect(const LayoutPoint& additionalOffset) co
     return LayoutRect(additionalOffset.x() + borderLeft(), additionalOffset.y() + borderTop(), width() - borderLeft() - borderRight(), height() - borderTop() - borderBottom());
 }
 
+int RenderButton::baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
+{
+    ASSERT(linePositionMode == PositionOnContainingLine);
+    // We want to call the RenderBlock version of firstLineBoxBaseline to
+    // avoid RenderFlexibleBox synthesizing a baseline that we don't want.
+    // We use this check as a proxy for "are there any line boxes in this button"
+    if (!hasLineIfEmpty() && RenderBlock::firstLineBoxBaseline() == -1) {
+        // To ensure that we have a consistent baseline when we have no children,
+        // even when we have the anonymous RenderBlock child, we calculate the
+        // baseline for the empty case manually here.
+        if (direction == HorizontalLine)
+            return marginTop() + borderTop() + paddingTop() + contentHeight();
+
+        return marginRight() + borderRight() + paddingRight() + contentWidth();
+    }
+    return RenderFlexibleBox::baselinePosition(baseline, firstLine, direction, linePositionMode);
+}
+
 } // namespace WebCore
