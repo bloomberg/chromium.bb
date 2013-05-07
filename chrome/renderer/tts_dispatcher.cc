@@ -25,15 +25,14 @@ using WebKit::WebVector;
 int TtsDispatcher::next_utterance_id_ = 1;
 
 TtsDispatcher::TtsDispatcher(WebSpeechSynthesizerClient* client)
-    : synthesizer_client_(client),
-      main_loop_(base::MessageLoopProxy::current()) {
-  RenderThread::Get()->AddFilter(this);
+    : synthesizer_client_(client) {
+  RenderThread::Get()->AddObserver(this);
 }
 
 TtsDispatcher::~TtsDispatcher() {
 }
 
-bool TtsDispatcher::OnMessageReceived(const IPC::Message& message) {
+bool TtsDispatcher::OnControlMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TtsDispatcher, message)
     IPC_MESSAGE_HANDLER(TtsMsg_SetVoiceList, OnSetVoiceList)

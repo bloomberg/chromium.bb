@@ -8,13 +8,16 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/hash_tables.h"
-#include "content/public/renderer/render_view.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "content/public/renderer/render_process_observer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSpeechSynthesizer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSpeechSynthesizerClient.h"
 
-class RenderViewImpl;
+namespace IPC {
+class Message;
+}
+
 struct TtsVoice;
 
 // TtsDispatcher is a delegate for methods used by WebKit for
@@ -22,15 +25,15 @@ struct TtsVoice;
 // TtsDispatcherHost (owned by RenderViewHost).
 class TtsDispatcher
     : public WebKit::WebSpeechSynthesizer,
-      public IPC::ChannelProxy::MessageFilter {
+      public content::RenderProcessObserver {
  public:
   explicit TtsDispatcher(WebKit::WebSpeechSynthesizerClient* client);
 
  private:
   virtual ~TtsDispatcher();
 
-  // IPC::ChannelProxy::MessageFilter override.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  // RenderProcessObserver override.
+  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebKit::WebSpeechSynthesizer implementation.
   virtual void updateVoiceList() OVERRIDE;
@@ -58,11 +61,6 @@ class TtsDispatcher
   // The WebKit client class that we use to send events back to the JS world.
   // Weak reference, this will be valid as long as this object exists.
   WebKit::WebSpeechSynthesizerClient* synthesizer_client_;
-
-  // Message loop for the main render thread. Utilized to
-  // ensure that callbacks into WebKit happen on the main thread
-  // instead of the originating IO thread.
-  scoped_refptr<base::MessageLoopProxy> main_loop_;
 
   // Next utterance id, used to map response IPCs to utterance objects.
   static int next_utterance_id_;
