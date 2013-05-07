@@ -17,6 +17,11 @@ class AudioServiceImpl : public AudioService {
 
   // Start to query audio device information.
   virtual void StartGetInfo(const GetInfoCallback& callback) OVERRIDE;
+  virtual void SetActiveDevices(const DeviceIdList& device_list) OVERRIDE;
+  virtual bool SetDeviceProperties(const std::string& device_id,
+                                   bool muted,
+                                   int volume,
+                                   int gain) OVERRIDE;
 };
 
 void AudioServiceImpl::AddObserver(Observer* observer) {
@@ -35,6 +40,16 @@ void AudioServiceImpl::StartGetInfo(const GetInfoCallback& callback) {
   // TODO: implement this for platforms other than Chrome OS.
   if (!callback.is_null())
     callback.Run(OutputInfo(), InputInfo(), false);
+}
+
+void AudioServiceImpl::SetActiveDevices(const DeviceIdList& device_list) {
+}
+
+bool AudioServiceImpl::SetDeviceProperties(const std::string& device_id,
+                                           bool muted,
+                                           int volume,
+                                           int gain) {
+  return false;
 }
 
 }  // namespace extensions

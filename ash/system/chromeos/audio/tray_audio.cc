@@ -596,6 +596,12 @@ void TrayAudio::OnOutputMuteChanged() {
   }
 }
 
+void TrayAudio::OnInputGainChanged() {
+}
+
+void TrayAudio::OnInputMuteChanged() {
+}
+
 void TrayAudio::OnAudioNodesChanged() {
   Update();
 }
