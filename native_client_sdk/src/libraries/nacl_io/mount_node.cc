@@ -80,6 +80,14 @@ int MountNode::Write(size_t offs, const void* buf, size_t count) {
 
 void* MountNode::MMap(void* addr, size_t length, int prot, int flags,
                       size_t offset) {
+  // Never allow mmap'ing PROT_EXEC. The passthrough node supports this, but we
+  // don't. Fortunately, glibc will fallback if this fails, so dlopen will
+  // continue to work.
+  if (prot & PROT_EXEC) {
+    errno = EPERM;
+    return MAP_FAILED;
+  }
+
   // This default mmap support is just enough to make dlopen work.
   // This implementation just reads from the mount into the mmap'd memory area.
   void* new_addr = addr;
