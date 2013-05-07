@@ -28,13 +28,11 @@ my $defines;
 my $preprocessor;
 my $idlFilesList;
 my $supplementalDependencyFile;
-my $supplementalMakefileDeps;
 
 GetOptions('defines=s' => \$defines,
            'preprocessor=s' => \$preprocessor,
            'idlFilesList=s' => \$idlFilesList,
-           'supplementalDependencyFile=s' => \$supplementalDependencyFile,
-           'supplementalMakefileDeps=s' => \$supplementalMakefileDeps);
+           'supplementalDependencyFile=s' => \$supplementalDependencyFile);
 
 die('Must specify an output file using --supplementalDependencyFile.') unless defined($supplementalDependencyFile);
 die('Must specify the file listing all IDLs using --idlFilesList.') unless defined($idlFilesList);
@@ -87,27 +85,6 @@ foreach my $idlFile (sort keys %supplementals) {
     print FH $idlFile, " @{$supplementals{$idlFile}}\n";
 }
 close FH;
-
-
-if ($supplementalMakefileDeps) {
-    open MAKE_FH, "> $supplementalMakefileDeps" or die "Cannot open $supplementalMakefileDeps\n";
-    my @all_dependencies = [];
-    foreach my $idlFile (sort keys %supplementals) {
-        my $basename = $idlFileToInterfaceName{$idlFile};
-
-        my @dependencies = map { basename($_) } @{$supplementals{$idlFile}};
-
-        print MAKE_FH "JS${basename}.h: @{dependencies}\n";
-        print MAKE_FH "DOM${basename}.h: @{dependencies}\n";
-        print MAKE_FH "WebDOM${basename}.h: @{dependencies}\n";
-        foreach my $dependency (@dependencies) {
-            print MAKE_FH "${dependency}:\n";
-        }
-    }
-
-    close MAKE_FH;
-}
-
 
 sub getPartialInterfaceNameFromIDLFile
 {
