@@ -25,9 +25,23 @@ struct NET_EXPORT WebSocketFrameHeader {
   static const OpCode kOpCodeContinuation;
   static const OpCode kOpCodeText;
   static const OpCode kOpCodeBinary;
+  static const OpCode kOpCodeDataUnused;
   static const OpCode kOpCodeClose;
   static const OpCode kOpCodePing;
   static const OpCode kOpCodePong;
+  static const OpCode kOpCodeControlUnused;
+
+  // Efficiently determine whether a given opcode is one of the data opcodes
+  // known to this implementation.
+  static bool IsKnownDataOpCode(OpCode opCode) {
+    return (opCode & ~3) == 0 && opCode != 3;
+  }
+
+  // Efficiently determine whether a given opcode is one of the control opcodes
+  // known to this implementation.
+  static bool IsKnownControlOpCode(OpCode opCode) {
+    return (opCode & ~3) == 8 && opCode != 0x0B;
+  }
 
   // These values must be a compile-time constant. "enum hack" is used here
   // to make MSVC happy.
@@ -36,6 +50,32 @@ struct NET_EXPORT WebSocketFrameHeader {
     kMaximumExtendedLengthSize = 8,
     kMaskingKeyLength = 4
   };
+
+  // Constructor to avoid a lot of repetitive initialisation.
+  explicit WebSocketFrameHeader(OpCode opCode)
+    : final(false),
+      reserved1(false),
+      reserved2(false),
+      reserved3(false),
+      opcode(opCode),
+      masked(false),
+      payload_length(0) {}
+
+  // Backwards-compatible constructor to avoid breaking Chromedriver.
+  // The above constructor should be used in preference, as there is no good
+  // default value for "opcode".
+  // TODO(ricea): Remove this once Chromedriver have stopped using it.
+  WebSocketFrameHeader()
+    : final(false),
+      reserved1(false),
+      reserved2(false),
+      reserved3(false),
+      opcode(kOpCodeDataUnused),
+      masked(false),
+      payload_length(0) {}
+
+  // Create a clone of this object on the heap.
+  scoped_ptr<WebSocketFrameHeader> Clone();
 
   // Members below correspond to each item in WebSocket frame header.
   // See <http://tools.ietf.org/html/rfc6455#section-5.2> for details.
@@ -46,6 +86,9 @@ struct NET_EXPORT WebSocketFrameHeader {
   OpCode opcode;
   bool masked;
   uint64 payload_length;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebSocketFrameHeader);
 };
 
 // Contains payload data of part of a WebSocket frame.

@@ -40,8 +40,8 @@ class NET_EXPORT WebSocketFrameParser {
               size_t length,
               ScopedVector<WebSocketFrameChunk>* frame_chunks);
 
-  // Returns WEB_SOCKET_OK if the parser has not failed to decode WebSocket
-  // frames. Otherwise returns WebSocketError which is defined in
+  // Returns kWebSocketNormalClosure if the parser has not failed to decode
+  // WebSocket frames. Otherwise returns WebSocketError which is defined in
   // websocket_errors.h. We can convert net::WebSocketError to net::Error by
   // using WebSocketErrorToNetError().
   WebSocketError websocket_error() const { return websocket_error_; }

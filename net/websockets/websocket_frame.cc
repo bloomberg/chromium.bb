@@ -44,9 +44,25 @@ const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodeContinuation =
     0x0;
 const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodeText = 0x1;
 const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodeBinary = 0x2;
+const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodeDataUnused =
+    0x3;
 const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodeClose = 0x8;
 const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodePing = 0x9;
 const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodePong = 0xA;
+const WebSocketFrameHeader::OpCode WebSocketFrameHeader::kOpCodeControlUnused =
+    0xB;
+
+scoped_ptr<WebSocketFrameHeader> WebSocketFrameHeader::Clone() {
+  scoped_ptr<WebSocketFrameHeader> ret(new WebSocketFrameHeader(opcode));
+  ret->final = final;
+  ret->reserved1 = reserved1;
+  ret->reserved2 = reserved2;
+  ret->reserved3 = reserved3;
+  ret->opcode = opcode;
+  ret->masked = masked;
+  ret->payload_length = payload_length;
+  return ret.Pass();
+}
 
 WebSocketFrameChunk::WebSocketFrameChunk() : final_chunk(false) {
 }

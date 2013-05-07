@@ -45,13 +45,8 @@ TEST(WebSocketFrameHeaderTest, FrameLengths) {
   static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
 
   for (int i = 0; i < kNumTests; ++i) {
-    WebSocketFrameHeader header;
+    WebSocketFrameHeader header(WebSocketFrameHeader::kOpCodeText);
     header.final = true;
-    header.reserved1 = false;
-    header.reserved2 = false;
-    header.reserved3 = false;
-    header.opcode = WebSocketFrameHeader::kOpCodeText;
-    header.masked = false;
     header.payload_length = kTests[i].frame_length;
 
     std::vector<char> expected_output(
@@ -93,12 +88,8 @@ TEST(WebSocketFrameHeaderTest, FrameLengthsWithMasking) {
             masking_key.key);
 
   for (int i = 0; i < kNumTests; ++i) {
-    WebSocketFrameHeader header;
+    WebSocketFrameHeader header(WebSocketFrameHeader::kOpCodeText);
     header.final = true;
-    header.reserved1 = false;
-    header.reserved2 = false;
-    header.reserved3 = false;
-    header.opcode = WebSocketFrameHeader::kOpCodeText;
     header.masked = true;
     header.payload_length = kTests[i].frame_length;
 
@@ -141,13 +132,8 @@ TEST(WebSocketFrameHeaderTest, FrameOpCodes) {
   static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
 
   for (int i = 0; i < kNumTests; ++i) {
-    WebSocketFrameHeader header;
+    WebSocketFrameHeader header(kTests[i].opcode);
     header.final = true;
-    header.reserved1 = false;
-    header.reserved2 = false;
-    header.reserved3 = false;
-    header.opcode = kTests[i].opcode;
-    header.masked = false;
     header.payload_length = 0;
 
     std::vector<char> expected_output(
@@ -182,13 +168,11 @@ TEST(WebSocketFrameHeaderTest, FinalBitAndReservedBits) {
   static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
 
   for (int i = 0; i < kNumTests; ++i) {
-    WebSocketFrameHeader header;
+    WebSocketFrameHeader header(WebSocketFrameHeader::kOpCodeText);
     header.final = kTests[i].final;
     header.reserved1 = kTests[i].reserved1;
     header.reserved2 = kTests[i].reserved2;
     header.reserved3 = kTests[i].reserved3;
-    header.opcode = WebSocketFrameHeader::kOpCodeText;
-    header.masked = false;
     header.payload_length = 0;
 
     std::vector<char> expected_output(
@@ -225,11 +209,8 @@ TEST(WebSocketFrameHeaderTest, InsufficientBufferSize) {
   static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
 
   for (int i = 0; i < kNumTests; ++i) {
-    WebSocketFrameHeader header;
+    WebSocketFrameHeader header(WebSocketFrameHeader::kOpCodeText);
     header.final = true;
-    header.reserved1 = false;
-    header.reserved2 = false;
-    header.reserved3 = false;
     header.opcode = WebSocketFrameHeader::kOpCodeText;
     header.masked = kTests[i].masked;
     header.payload_length = kTests[i].payload_length;
@@ -421,6 +402,64 @@ TEST_F(WebSocketFrameTestMaskBenchmark, BenchmarkMaskLongPayload) {
   scoped_ptr<char[]> payload(new char[kLongPayloadSize]);
   std::fill(payload.get(), payload.get() + kLongPayloadSize, 'a');
   Benchmark(payload.get(), kLongPayloadSize);
+}
+
+// "IsKnownDataOpCode" is implemented using bit-mangling for efficiency, so we
+// need to check that the results match the actual op-codes defined.
+TEST(WebSocketFrameHeaderTest, IsKnownDataOpCode) {
+  // Make the test less verbose.
+  typedef WebSocketFrameHeader Frame;
+
+  // Known opcode, is used for data frames
+  EXPECT_TRUE(Frame::IsKnownDataOpCode(Frame::kOpCodeContinuation));
+  EXPECT_TRUE(Frame::IsKnownDataOpCode(Frame::kOpCodeText));
+  EXPECT_TRUE(Frame::IsKnownDataOpCode(Frame::kOpCodeBinary));
+
+  // Known opcode, is used for control frames
+  EXPECT_FALSE(Frame::IsKnownDataOpCode(Frame::kOpCodeClose));
+  EXPECT_FALSE(Frame::IsKnownDataOpCode(Frame::kOpCodePing));
+  EXPECT_FALSE(Frame::IsKnownDataOpCode(Frame::kOpCodePong));
+
+  // Check that unused opcodes return false
+  EXPECT_FALSE(Frame::IsKnownDataOpCode(Frame::kOpCodeDataUnused));
+  EXPECT_FALSE(Frame::IsKnownDataOpCode(Frame::kOpCodeControlUnused));
+
+  // Check that opcodes with the 4 bit set return false
+  EXPECT_FALSE(Frame::IsKnownDataOpCode(0x6));
+  EXPECT_FALSE(Frame::IsKnownDataOpCode(0xF));
+
+  // Check that out-of-range opcodes return false
+  EXPECT_FALSE(Frame::IsKnownDataOpCode(-1));
+  EXPECT_FALSE(Frame::IsKnownDataOpCode(0xFF));
+}
+
+// "IsKnownControlOpCode" is implemented using bit-mangling as with
+// "IsKnownDataOpCode".
+TEST(WebSocketFrameHeaderTest, IsKnownControlOpCode) {
+  // Make the test less verbose.
+  typedef WebSocketFrameHeader Frame;
+
+  // Known opcode, is used for data frames
+  EXPECT_FALSE(Frame::IsKnownControlOpCode(Frame::kOpCodeContinuation));
+  EXPECT_FALSE(Frame::IsKnownControlOpCode(Frame::kOpCodeText));
+  EXPECT_FALSE(Frame::IsKnownControlOpCode(Frame::kOpCodeBinary));
+
+  // Known opcode, is used for control frames
+  EXPECT_TRUE(Frame::IsKnownControlOpCode(Frame::kOpCodeClose));
+  EXPECT_TRUE(Frame::IsKnownControlOpCode(Frame::kOpCodePing));
+  EXPECT_TRUE(Frame::IsKnownControlOpCode(Frame::kOpCodePong));
+
+  // Check that unused opcodes return false
+  EXPECT_FALSE(Frame::IsKnownControlOpCode(Frame::kOpCodeDataUnused));
+  EXPECT_FALSE(Frame::IsKnownControlOpCode(Frame::kOpCodeControlUnused));
+
+  // Check that opcodes with the 4 bit set return false
+  EXPECT_FALSE(Frame::IsKnownControlOpCode(0x6));
+  EXPECT_FALSE(Frame::IsKnownControlOpCode(0xF));
+
+  // Check that out-of-range opcodes return false
+  EXPECT_FALSE(Frame::IsKnownControlOpCode(-1));
+  EXPECT_FALSE(Frame::IsKnownControlOpCode(0xFF));
 }
 
 }  // namespace net
