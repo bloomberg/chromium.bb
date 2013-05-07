@@ -92,6 +92,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
     // tellNativeScrollingHasEnded() to set it to false.
     private boolean mNativeScrolling;
 
+    private boolean mFlingMayBeActive;
+
     private boolean mSeenFirstScrollEvent;
 
     private boolean mPinchInProgress = false;
@@ -288,6 +290,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         if (didUIStealScroll) return true;
                         if (!mNativeScrolling) {
                             sendShowPressCancelIfNecessary(e1);
+                            endFling(e2.getEventTime());
                             if (sendMotionEventAsGesture(GESTURE_SCROLL_START, e1, null)) {
                                 mNativeScrolling = true;
                             }
@@ -467,13 +470,16 @@ class ContentViewGestureHandler implements LongPressDelegate {
      * @param velocityY Initial velocity of the fling (Y) measured in pixels per second.
      */
     void fling(long timeMs, int x, int y, int velocityX, int velocityY) {
-        if (!mNativeScrolling) {
+        boolean nativeScrolling = mNativeScrolling;
+        endFling(timeMs);
+        if (!nativeScrolling) {
             // The native side needs a GESTURE_SCROLL_BEGIN before GESTURE_FLING_START
             // to send the fling to the correct target. Send if it has not sent.
             sendGesture(GESTURE_SCROLL_START, timeMs, x, y, null);
         }
 
-        endFling(timeMs);
+        mFlingMayBeActive = true;
+
         mExtraParamBundle.clear();
         mExtraParamBundle.putInt(VELOCITY_X, velocityX);
         mExtraParamBundle.putInt(VELOCITY_Y, velocityY);
@@ -485,8 +491,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
      * @param timeMs The time in ms for the event initiating this gesture.
      */
     void endFling(long timeMs) {
-        sendGesture(GESTURE_FLING_CANCEL, timeMs, 0, 0, null);
-        tellNativeScrollingHasEnded(timeMs, false);
+        if (mFlingMayBeActive) {
+            sendGesture(GESTURE_FLING_CANCEL, timeMs, 0, 0, null);
+            tellNativeScrollingHasEnded(timeMs, false);
+            mFlingMayBeActive = false;
+        }
     }
 
     // If native thinks scrolling (or fling-scrolling) is going on, tell native
