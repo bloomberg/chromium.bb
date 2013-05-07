@@ -1017,7 +1017,7 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap);
 void
 weston_seat_init_touch(struct weston_seat *seat);
 void
-weston_device_repick(struct weston_seat *seat);
+weston_seat_repick(struct weston_seat *seat);
 
 void
 weston_seat_release(struct weston_seat *seat);

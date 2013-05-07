@@ -44,7 +44,7 @@ static void unbind_resource(struct wl_resource *resource)
 }
 
 void
-weston_device_repick(struct weston_seat *seat)
+weston_seat_repick(struct weston_seat *seat)
 {
 	const struct wl_pointer_grab_interface *interface;
 	struct weston_surface *surface, *focus;
@@ -680,7 +680,7 @@ move_pointer(struct weston_seat *seat, wl_fixed_t x, wl_fixed_t y)
 						   ix, iy, NULL))
 			weston_output_update_zoom(output, ZOOM_FOCUS_POINTER);
 
-	weston_device_repick(seat);
+	weston_seat_repick(seat);
 
 	if (seat->sprite) {
 		weston_surface_set_position(seat->sprite,

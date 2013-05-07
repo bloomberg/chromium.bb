@@ -933,7 +933,7 @@ weston_compositor_repick(struct weston_compositor *compositor)
 		return;
 
 	wl_list_for_each(seat, &compositor->seat_list, link)
-		weston_device_repick(seat);
+		weston_seat_repick(seat);
 }
 
 WL_EXPORT void
