@@ -379,12 +379,12 @@ class ChangeInfo(object):
 
   def GetIssueDescription(self):
     """Returns the issue description from Rietveld."""
-    return self.SendToRietveld('/%d/description' % self.issue)
+    return self.SendToRietveld('/%d/description' % self.issue).replace('\r\n',
+                                                                       '\n')
 
   def UpdateDescriptionFromIssue(self):
     """Updates self.description with the issue description from Rietveld."""
-    self._desc = git_cl.ChangeDescription(
-        self.SendToRietveld('/%d/description' % self.issue))
+    self._desc = git_cl.ChangeDescription(self.GetIssueDescription())
 
   def GetApprovingReviewers(self):
     """Returns the issue reviewers list from Rietveld."""
