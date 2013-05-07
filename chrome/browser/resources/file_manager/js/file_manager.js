@@ -1051,10 +1051,38 @@ DialogType.isModal = function(type) {
   FileManager.prototype.initSidebar_ = function() {
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
     DirectoryTree.decorate(this.directoryTree_, this.directoryModel_);
+    this.directoryTree_.addEventListener('content-updated', function() {
+      this.updateMiddleBarVisibility_(true);
+    }.bind(this));
     if (util.platform.newUI()) {
       this.volumeList_ = this.dialogDom_.querySelector('#volume-list');
       VolumeList.decorate(this.volumeList_, this.directoryModel_);
     }
+  };
+
+  /**
+   * @param {boolean=} opt_delayed If true, updating is delayed by 500ms.
+   * @private
+   */
+  FileManager.prototype.updateMiddleBarVisibility_ = function(opt_delayed) {
+    if (this.updateMiddleBarVisibilityTimer_) {
+      clearTimeout(this.updateMiddleBarVisibilityTimer_);
+      this.updateMiddleBarVisibilityTimer_ = null;
+    }
+
+    if (opt_delayed) {
+      this.updateMiddleBarVisibilityTimer_ =
+          setTimeout(this.updateMiddleBarVisibility_.bind(this, false), 500);
+      return;
+    }
+    var currentPath = this.directoryModel_.getCurrentDirPath();
+    var visible =
+        (this.directoryTree_.items.length > 0) &&
+        (!DirectoryTreeUtil.shouldHideTree(currentPath));
+    this.dialogDom_.
+        querySelector('.dialog-middlebar-contents').hidden = !visible;
+    this.dialogDom_.querySelector('#middlebar-splitter').hidden = !visible;
+    this.onResize_();
   };
 
   /**
@@ -2499,6 +2527,7 @@ DialogType.isModal = function(type) {
       }
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
+      this.updateMiddleBarVisibility_();
       this.scanCompletedTimer_ = null;
     }.bind(this), 50);
   };
@@ -2531,6 +2560,7 @@ DialogType.isModal = function(type) {
       this.hideSpinnerLater_();
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
+      this.updateMiddleBarVisibility_();
       this.scanUpdatedTimer_ = null;
     }.bind(this), 200);
   };
@@ -2559,6 +2589,7 @@ DialogType.isModal = function(type) {
       this.scanInProgress_ = false;
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
+      this.updateMiddleBarVisibility_();
     }
   };
 

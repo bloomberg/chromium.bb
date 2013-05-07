@@ -230,6 +230,16 @@ DirectoryTreeUtil.sortEntries = function(fileFilter, entries) {
   return entries.filter(fileFilter.filter.bind(fileFilter));
 };
 
+/**
+ * Checks if tre tree should be hidden on the given directory.
+ * @param {string} path Path to be checked.
+ * @return {boolean} True if the tree should NOT be visible on the given
+ *     directory. Otherwise, false.
+ */
+DirectoryTreeUtil.shouldHideTree = function(path) {
+  return PathUtil.getRootType(path) == RootType.DOWNLOADS;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryItem
 
@@ -581,6 +591,11 @@ DirectoryTree.prototype.selectPath = function(path) {
   if ((this.entry && this.entry.fullPath == path) || this.currentPath_ == path)
     return;
   this.currentPath_ = path;
+  if (DirectoryTreeUtil.shouldHideTree(path)) {
+    this.clearTree_(true);
+    return;
+  }
+
   this.selectPathInternal_(path);
 };
 
@@ -598,13 +613,12 @@ DirectoryTree.prototype.selectPathInternal_ = function(path) {
     rootDirPath = RootDirectory.DRIVE;
   }
 
-  if (this.fullPath != rootDirPath) {
-    this.fullPath = rootDirPath;
+  var onError = function() {
+    this.clearTree_(true);
+  }.bind(this);
 
-    // Clears the list
-    this.dirEntry_ = [];
-    this.entries_ = [];
-    this.redraw(false);
+  if (this.fullPath != rootDirPath || !this.dirEntry_) {
+    this.fullPath = rootDirPath;
 
     this.directoryModel_.resolveDirectory(
         rootDirPath,
@@ -615,7 +629,7 @@ DirectoryTree.prototype.selectPathInternal_ = function(path) {
           this.dirEntry_ = entry;
           this.selectPathInternal_(path);
         }.bind(this),
-        function() {});
+        onError);
   } else {
     if (this.selectedItem && path == this.selectedItem.fullPath)
       return;
@@ -630,7 +644,9 @@ DirectoryTree.prototype.selectPathInternal_ = function(path) {
           if (!DirectoryTreeUtil.searchAndSelectPath(
               this.items, this.currentPath_))
             this.selectedItem = null;
-        }.bind(this));
+          cr.dispatchSimpleEvent(this, 'content-updated');
+        }.bind(this),
+        onError);
   }
 };
 
@@ -638,9 +654,10 @@ DirectoryTree.prototype.selectPathInternal_ = function(path) {
  * Retrieves the latest subdirectories and update them on the tree.
  * @param {boolean} recursive True if the update is recursively.
  * @param {function()=} opt_successCallback Callback called on success.
+ * @param {function()=} opt_errorCallback Callback called on error.
  */
 DirectoryTree.prototype.updateSubDirectories = function(
-    recursive, opt_successCallback) {
+    recursive, opt_successCallback, opt_errorCallback) {
   if (!this.currentPath_)
     return;
 
@@ -652,7 +669,8 @@ DirectoryTree.prototype.updateSubDirectories = function(
         this.redraw(recursive);
         if (opt_successCallback)
           opt_successCallback();
-      }.bind(this));
+      }.bind(this),
+      opt_errorCallback);
 };
 
 /**
@@ -661,8 +679,10 @@ DirectoryTree.prototype.updateSubDirectories = function(
  * @private
  */
 DirectoryTree.prototype.onRootsListChanged_ = function() {
-  if (!util.platform.newUI())
+  if (!util.platform.newUI()) {
     this.redraw(false /* recursive */);
+    cr.dispatchSimpleEvent(this, 'content-updated');
+  }
 };
 
 /**
@@ -694,6 +714,7 @@ DirectoryTree.prototype.redraw = function(recursive) {
  */
 DirectoryTree.prototype.onFilterChanged_ = function() {
   this.redraw(true /* recursive */);
+  cr.dispatchSimpleEvent(this, 'content-updated');
 };
 
 /**
@@ -723,4 +744,21 @@ DirectoryTree.prototype.onCurrentDirectoryChanged_ = function(event) {
  */
 DirectoryTree.prototype.getCurrentPath = function() {
   return this.selectedItem ? this.selectedItem.fullPath : null;
+};
+
+/**
+ * Clears the tree.
+ * @param {boolean} redraw Redraw the tree if true.
+ * @private
+ */
+DirectoryTree.prototype.clearTree_ = function(redraw) {
+  this.dirEntry_ = null;
+  this.fullPath = '';
+  this.selectedItem = null;
+  this.entries_ = [];
+
+  if (redraw) {
+    this.redraw(false);
+    cr.dispatchSimpleEvent(this, 'content-updated');
+  }
 };
