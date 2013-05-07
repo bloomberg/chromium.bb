@@ -293,8 +293,11 @@ VariationsService* VariationsService::Create(PrefService* local_state) {
   // Unless the URL was provided, unsupported builds should return NULL to
   // indicate that the service should not be used.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kVariationsServerURL))
+          switches::kVariationsServerURL)) {
+    DVLOG(1) << "Not creating VariationsService in unofficial build without --"
+             << switches::kVariationsServerURL << " specified.";
     return NULL;
+  }
 #endif
   return new VariationsService(local_state);
 }
