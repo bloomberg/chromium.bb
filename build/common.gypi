@@ -61,9 +61,6 @@
           # non-Official # builds).
           'buildtype%': 'Dev',
 
-          # Override branding to select the desired branding flavor.
-          'branding%': 'Chromium',
-
           'conditions': [
             # ChromeOS implies ash.
             ['chromeos==1', {
@@ -104,7 +101,6 @@
         'enable_hidpi%': '<(enable_hidpi)',
         'enable_touch_ui%': '<(enable_touch_ui)',
         'buildtype%': '<(buildtype)',
-        'branding%': '<(branding)',
         'host_arch%': '<(host_arch)',
 
         # Default architecture we're building for is the architecture we're
@@ -172,14 +168,6 @@
           }, {
             'use_default_render_theme%': 0,
           }],
-
-          # TODO(thestig) Remove the linux_lsb_release check after all the
-          # official Ubuntu Lucid builder are gone.
-          ['OS=="linux" and branding=="Chrome" and buildtype=="Official" and chromeos==0', {
-            'linux_lsb_release%': '<!(lsb_release -r -s)',
-          }, {
-            'linux_lsb_release%': '',
-          }], # OS=="linux" and branding=="Chrome" and buildtype=="Official" and chromeos==0
         ],
       },
 
@@ -203,9 +191,10 @@
       'enable_message_center%': '<(enable_message_center)',
       'use_default_render_theme%': '<(use_default_render_theme)',
       'buildtype%': '<(buildtype)',
-      'branding%': '<(branding)',
       'arm_version%': '<(arm_version)',
-      'linux_lsb_release%': '<(linux_lsb_release)',
+
+      # Override branding to select the desired branding flavor.
+      'branding%': 'Chromium',
 
       # Set to 1 to enable fast builds. Set to 2 for even faster builds
       # (it disables debug info for fastest compilation - only for use
@@ -639,17 +628,6 @@
           # incorrect results when passed to pkg-config
           'sysroot%': '<!(cd <(DEPTH) && pwd -P)/arm-sysroot',
         }], # OS=="linux" and target_arch=="arm" and chromeos==0
-
-        ['linux_lsb_release=="12.04"', {
-          'conditions': [
-            ['target_arch=="x64"', {
-              'sysroot%': '<!(cd <(DEPTH) && pwd -P)/chrome/installer/linux/internal/debian_wheezy_amd64-sysroot',
-            }],
-            ['target_arch=="ia32"', {
-              'sysroot%': '<!(cd <(DEPTH) && pwd -P)/chrome/installer/linux/internal/debian_wheezy32-sysroot',
-            }],
-        ],
-        }], # linux_lsb_release=="12.04"
 
         ['target_arch=="mipsel"', {
           'sysroot%': '<!(cd <(DEPTH) && pwd -P)/mipsel-sysroot/sysroot',
