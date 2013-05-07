@@ -682,7 +682,11 @@ class HostResolverImpl::ProcTask
                         int error,
                         const int os_error) {
     DCHECK(origin_loop_->BelongsToCurrentThread());
-    DCHECK(error || !results.empty());
+    // If results are empty, we should return an error.
+    bool empty_list_on_ok = (error == OK && results.empty());
+    UMA_HISTOGRAM_BOOLEAN("DNS.EmptyAddressListAndNoError", empty_list_on_ok);
+    if (empty_list_on_ok)
+      error = ERR_NAME_NOT_RESOLVED;
 
     bool was_retry_attempt = attempt_number > 1;
 

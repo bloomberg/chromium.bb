@@ -531,6 +531,17 @@ TEST_F(HostResolverImplTest, AsynchronousLookup) {
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
 }
 
+TEST_F(HostResolverImplTest, EmptyListMeansNameNotResolved) {
+  proc_->AddRuleForAllFamilies("just.testing", "");
+  proc_->SignalMultiple(1u);
+
+  Request* req = CreateRequest("just.testing", 80);
+  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
+  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->WaitForResult());
+  EXPECT_EQ(0u, req->NumberOfAddresses());
+  EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
+}
+
 TEST_F(HostResolverImplTest, FailedAsynchronousLookup) {
   proc_->AddRuleForAllFamilies(std::string(),
                                "0.0.0.0");  // Default to failures.
