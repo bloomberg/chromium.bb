@@ -3438,10 +3438,14 @@ DialogType.isModal = function(type) {
       var mimeType = props[0].contentMimeType || '';
       var mimeTypes = [mimeType];
       var openIt = function() {
-        var tasks = new FileTasks(self);
-        tasks.init(urls, mimeTypes);
-        tasks.executeDefault();
-      }
+        if (self.dialogType == DialogType.FULL_PAGE) {
+          var tasks = new FileTasks(self);
+          tasks.init(urls, mimeTypes);
+          tasks.executeDefault();
+        } else {
+          self.onOk_();
+        }
+      };
 
       // Change the current directory to the directory that contains the
       // selected file. Note that this is necessary for an image or a video,
