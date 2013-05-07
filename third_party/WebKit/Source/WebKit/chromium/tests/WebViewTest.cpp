@@ -809,4 +809,25 @@ TEST_F(WebViewTest, ConfirmCompositionTriggersAutofillTextChange)
     webView->close();
 }
 
+TEST_F(WebViewTest, ShadowRoot)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("shadow_dom_test.html"));
+    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(FrameTestHelpers::createWebViewAndLoad(m_baseURL + "shadow_dom_test.html", true));
+
+    WebDocument document = webViewImpl->mainFrame()->document();
+    {
+        WebElement elementWithShadowRoot = document.getElementById("shadowroot");
+        EXPECT_FALSE(elementWithShadowRoot.isNull());
+        WebNode shadowRoot = elementWithShadowRoot.shadowRoot();
+        EXPECT_FALSE(shadowRoot.isNull());
+    }
+    {
+        WebElement elementWithoutShadowRoot = document.getElementById("noshadowroot");
+        EXPECT_FALSE(elementWithoutShadowRoot.isNull());
+        WebNode shadowRoot = elementWithoutShadowRoot.shadowRoot();
+        EXPECT_TRUE(shadowRoot.isNull());
+    }
+    webViewImpl->close();
+}
+
 }

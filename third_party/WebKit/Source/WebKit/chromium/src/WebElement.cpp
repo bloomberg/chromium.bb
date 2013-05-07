@@ -107,8 +107,10 @@ unsigned WebElement::attributeCount() const
 
 WebNode WebElement::shadowRoot() const
 {
-    Node* shadowRoot = constUnwrap<Element>()->shadowRoot()->toNode();
-    return WebNode(shadowRoot);
+    ShadowRoot* shadowRoot = constUnwrap<Element>()->shadowRoot();
+    if (!shadowRoot)
+        return WebNode();
+    return WebNode(shadowRoot->toNode());
 }
 
 WebString WebElement::attributeLocalName(unsigned index) const
