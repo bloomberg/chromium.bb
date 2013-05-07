@@ -29,7 +29,6 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/fonts.conf',
-          '<(PRODUCT_DIR)/lib/libpeerconnection.so',
           '<(PRODUCT_DIR)/libclearkeycdm.so',
           '<(PRODUCT_DIR)/libclearkeycdmadapter.so',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
@@ -51,10 +50,9 @@
       'variables': {
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/clearkeycdmadapter.plugin',
-          '<(PRODUCT_DIR)/Content Shell.app/',
           '<(PRODUCT_DIR)/content_resources.pak',
+          '<(PRODUCT_DIR)/Content Shell.app/',
           '<(PRODUCT_DIR)/ffmpegsumo.so',
-          '<(PRODUCT_DIR)/libpeerconnection.so',
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin',
           '<(PRODUCT_DIR)/plugins/TestNestscapePlugin.plugin',
         ],
@@ -64,7 +62,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
-          '<(PRODUCT_DIR)/libpeerconnection.dll',
         ],
         'isolate_dependency_untracked': [
           # The two directories below are only needed for

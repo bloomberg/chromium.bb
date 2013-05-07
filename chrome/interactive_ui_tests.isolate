@@ -15,7 +15,6 @@
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/chrome.pak',
-          '<(PRODUCT_DIR)/lib/libpeerconnection.so',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/locales/fr.pak',
           '<(PRODUCT_DIR)/pyproto/google/__init__.py',
@@ -63,7 +62,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.so',
-          '<(PRODUCT_DIR)/libpeerconnection.so',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/Chromium Framework.framework/',
@@ -91,7 +89,6 @@
           '<(PRODUCT_DIR)/icudt.dll',
           '<(PRODUCT_DIR)/libEGL.dll',
           '<(PRODUCT_DIR)/libGLESv2.dll',
-          '<(PRODUCT_DIR)/libpeerconnection.dll',
           '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
         ],
         'isolate_dependency_untracked': [
