@@ -96,7 +96,7 @@ class GerritHelperNotAvailable(gerrit.GerritException):
   """Exception thrown when a specific helper is requested but unavailable."""
 
   def __init__(self, remote=constants.EXTERNAL_REMOTE):
-    gerrit.GerritException.__init__(self)
+    gerrit.GerritException.__init__()
     # Stringify the pool so that serialization doesn't try serializing
     # the actual HelperPool.
     self.remote = remote
@@ -104,7 +104,7 @@ class GerritHelperNotAvailable(gerrit.GerritException):
 
   def __str__(self):
     return (
-        "Needed a remote=%s gerrit_helper, but one isn't allowed by this "
+        "Needed a remote=%s gerrit_helper, but one isn't allowed by this"
         "HelperPool instance.") % (self.remote,)
 
 
