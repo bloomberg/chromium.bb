@@ -20,6 +20,10 @@ class Random {
   virtual double RandDouble() {
     return base::RandDouble();
   }
+
+  virtual uint64 RandUint64() {
+    return base::RandUint64();
+  }
 };
 
 }  // namespace invalidation
