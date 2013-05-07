@@ -1123,7 +1123,7 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
     }
 
     bool sameURL = shouldTreatURLAsSameAsCurrent(newURL);
-    loadWithNavigationAction(request, action, newLoadType, formState.release());
+    loadWithNavigationAction(request, action, newLoadType, formState.release(), defaultSubstituteDataForURL(request.url()));
     // Example of this case are sites that reload the same URL with a different cookie
     // driving the generated content, or a master frame with links that drive a target
     // frame, where the user has clicked on the same link repeatedly.
@@ -1159,43 +1159,17 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     if (!request.hasSubstituteData())
         request.setSubstituteData(defaultSubstituteDataForURL(request.resourceRequest().url()));
 
-    RefPtr<DocumentLoader> loader = m_client->createDocumentLoader(request.resourceRequest(), request.substituteData());
-    load(loader.get());
-}
+    ResourceRequest& r = request.resourceRequest();
+    const KURL& unreachableURL = request.substituteData().failingURL();
 
-void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, FrameLoadType type, PassRefPtr<FormState> formState, const String& overrideEncoding)
-{
-    RefPtr<DocumentLoader> loader = m_client->createDocumentLoader(request, defaultSubstituteDataForURL(request.url()));
-    loader->setTriggeringAction(action);
-
-    if (!overrideEncoding.isEmpty())
-        loader->setOverrideEncoding(overrideEncoding);
-    else if (m_documentLoader)
-        loader->setOverrideEncoding(m_documentLoader->overrideEncoding());
-
-    if (m_quickRedirectComing) {
-        loader->setIsClientRedirect(true);
-        m_quickRedirectComing = false;
-    }
-
-    loadWithDocumentLoader(loader.get(), type, formState);
-}
-
-void FrameLoader::load(DocumentLoader* newDocumentLoader)
-{
-    ResourceRequest& r = newDocumentLoader->request();
     FrameLoadType type;
-
-    if (shouldTreatURLAsSameAsCurrent(newDocumentLoader->originalRequest().url())) {
+    if (shouldTreatURLAsSameAsCurrent(r.url())) {
         r.setCachePolicy(ReloadIgnoringCacheData);
         type = FrameLoadTypeSame;
-    } else if (shouldTreatURLAsSameAsCurrent(newDocumentLoader->unreachableURL()) && m_loadType == FrameLoadTypeReload)
+    } else if (shouldTreatURLAsSameAsCurrent(unreachableURL) && m_loadType == FrameLoadTypeReload)
         type = FrameLoadTypeReload;
     else
         type = FrameLoadTypeStandard;
-
-    if (m_documentLoader)
-        newDocumentLoader->setOverrideEncoding(m_documentLoader->overrideEncoding());
     
     // When we loading alternate content for an unreachable URL that we're
     // visiting in the history list, we treat it as a reload so the history list 
@@ -1204,7 +1178,7 @@ void FrameLoader::load(DocumentLoader* newDocumentLoader)
     // FIXME: This seems like a dangerous overloading of the meaning of "FrameLoadTypeReload" ...
     // shouldn't a more explicit type of reload be defined, that means roughly 
     // "load without affecting history" ? 
-    if (shouldReloadToHandleUnreachableURL(newDocumentLoader)) {
+    if (shouldReloadToHandleUnreachableURL(unreachableURL)) {
         // shouldReloadToHandleUnreachableURL() returns true only when the original load type is back-forward.
         // In this case we should save the document state now. Otherwise the state can be lost because load type is
         // changed and updateForBackForwardNavigation() will not be called when loading is committed.
@@ -1214,11 +1188,26 @@ void FrameLoader::load(DocumentLoader* newDocumentLoader)
         type = FrameLoadTypeReload;
     }
 
-    loadWithDocumentLoader(newDocumentLoader, type, 0);
+    loadWithNavigationAction(r, NavigationAction(r, type, false), type, 0, request.substituteData());
 }
 
-void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType type, PassRefPtr<FormState> prpFormState)
+void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, FrameLoadType type, PassRefPtr<FormState> formState, const SubstituteData& substituteData, const String& overrideEncoding)
 {
+    RefPtr<DocumentLoader> loader = m_client->createDocumentLoader(request, substituteData);
+    loader->setTriggeringAction(action);
+
+    if (Frame* parent = m_frame->tree()->parent())
+        loader->setOverrideEncoding(parent->loader()->documentLoader()->overrideEncoding());
+    else if (!overrideEncoding.isEmpty())
+        loader->setOverrideEncoding(overrideEncoding);
+    else if (m_documentLoader)
+        loader->setOverrideEncoding(m_documentLoader->overrideEncoding());
+
+    if (m_quickRedirectComing) {
+        loader->setIsClientRedirect(true);
+        m_quickRedirectComing = false;
+    }
+
     // Retain because dispatchBeforeLoadEvent may release the last reference to it.
     RefPtr<Frame> protect(m_frame);
 
@@ -1236,22 +1225,12 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
         m_previousURL = m_frame->document()->url();
 
     m_loadType = type;
-    RefPtr<FormState> formState = prpFormState;
     bool isFormSubmission = formState;
 
-    const KURL& newURL = loader->request().url();
-    const String& httpMethod = loader->request().httpMethod();
-
-    if (shouldPerformFragmentNavigation(isFormSubmission, httpMethod, type, newURL))
-        checkNavigationPolicyAndContinueFragmentScroll(NavigationAction(loader->request(), type, isFormSubmission));
+    if (shouldPerformFragmentNavigation(isFormSubmission, request.httpMethod(), type, request.url()))
+        checkNavigationPolicyAndContinueFragmentScroll(NavigationAction(request, type, isFormSubmission));
     else {
-        if (Frame* parent = m_frame->tree()->parent())
-            loader->setOverrideEncoding(parent->loader()->documentLoader()->overrideEncoding());
-
-        setPolicyDocumentLoader(loader);
-        if (loader->triggeringAction().isEmpty())
-            loader->setTriggeringAction(NavigationAction(loader->request(), type, isFormSubmission));
-
+        setPolicyDocumentLoader(loader.get());
         checkNavigationPolicyAndContinueLoad(formState);
     }
 }
@@ -1284,26 +1263,21 @@ bool FrameLoader::willLoadMediaElementURL(KURL& url)
     return error.isNull();
 }
 
-bool FrameLoader::shouldReloadToHandleUnreachableURL(DocumentLoader* docLoader)
+bool FrameLoader::shouldReloadToHandleUnreachableURL(const KURL& unreachableURL)
 {
-    KURL unreachableURL = docLoader->unreachableURL();
-
     if (unreachableURL.isEmpty())
+        return false;
+
+    if (!m_delegateIsHandlingProvisionalLoadError)
         return false;
 
     if (!isBackForwardLoadType(m_loadType))
         return false;
 
     // We only treat unreachableURLs specially during the delegate callbacks
-    // for provisional load errors and navigation policy decisions. The former
-    // case handles well-formed URLs that can't be loaded, and the latter
-    // case handles malformed URLs and unknown schemes. Loading alternate content
+    // for provisional load errors. Loading alternate content
     // at other times behaves like a standard load.
-    DocumentLoader* compareDocumentLoader = 0;
-    if (m_delegateIsHandlingProvisionalLoadError)
-        compareDocumentLoader = m_provisionalDocumentLoader.get();
-
-    return compareDocumentLoader && unreachableURL == compareDocumentLoader->request().url();
+    return unreachableURL == m_provisionalDocumentLoader->request().url();
 }
 
 void FrameLoader::reload(bool endToEndReload, const KURL& overrideURL, const String& overrideEncoding)
@@ -1328,7 +1302,7 @@ void FrameLoader::reload(bool endToEndReload, const KURL& overrideURL, const Str
 
     FrameLoadType type = endToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
     NavigationAction action(request, type, isFormSubmission);
-    loadWithNavigationAction(request, action, type, 0, overrideEncoding);
+    loadWithNavigationAction(request, action, type, 0, defaultSubstituteDataForURL(request.url()), overrideEncoding);
 }
 
 void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItemPolicy)
@@ -2072,11 +2046,11 @@ void FrameLoader::loadPostRequest(const ResourceRequest& inRequest, const String
     if (!frameName.isEmpty()) {
         // The search for a target frame is done earlier in the case of form submission.
         if (Frame* targetFrame = formState ? 0 : findFrameForNavigation(frameName))
-            targetFrame->loader()->loadWithNavigationAction(workingResourceRequest, action, loadType, formState.release());
+            targetFrame->loader()->loadWithNavigationAction(workingResourceRequest, action, loadType, formState.release(), defaultSubstituteDataForURL(workingResourceRequest.url()));
         else
             checkNewWindowPolicyAndContinue(formState.release(), frameName, action);
     } else
-        loadWithNavigationAction(workingResourceRequest, action, loadType, formState.release());
+        loadWithNavigationAction(workingResourceRequest, action, loadType, formState.release(), defaultSubstituteDataForURL(workingResourceRequest.url()));
 }
 
 unsigned long FrameLoader::loadResourceSynchronously(const ResourceRequest& request, StoredCredentials storedCredentials, ResourceError& error, ResourceResponse& response, Vector<char>& data)
@@ -2372,7 +2346,7 @@ void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formStat
 
     // FIXME: We can't just send our NavigationAction to the new FrameLoader's loadWithNavigationAction(), we need to
     // create a new one with a default NavigationType and no triggering event. We should figure out why.
-    mainFrame->loader()->loadWithNavigationAction(action.resourceRequest(), NavigationAction(action.resourceRequest()), FrameLoadTypeStandard, formState);
+    mainFrame->loader()->loadWithNavigationAction(action.resourceRequest(), NavigationAction(action.resourceRequest()), FrameLoadTypeStandard, formState, defaultSubstituteDataForURL(action.resourceRequest().url()));
 }
 
 void FrameLoader::requestFromDelegate(ResourceRequest& request, unsigned long& identifier, ResourceError& error)
@@ -2616,7 +2590,7 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem* item, FrameLoadType loa
         action = NavigationAction(requestForOriginalURL, loadType, false);
     }
 
-    loadWithNavigationAction(request, action, loadType, 0);
+    loadWithNavigationAction(request, action, loadType, 0, defaultSubstituteDataForURL(request.url()));
 }
 
 // Loads content into this frame, as specified by history item

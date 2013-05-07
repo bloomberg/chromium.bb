@@ -309,17 +309,15 @@ private:
 
     void closeOldDataSources();
 
-    bool shouldReloadToHandleUnreachableURL(DocumentLoader*);
+    bool shouldReloadToHandleUnreachableURL(const KURL&);
 
     void dispatchDidCommitLoad();
 
     void urlSelected(const FrameLoadRequest&, PassRefPtr<Event>, bool lockBackForwardList, ShouldSendReferrer);
 
-    void loadWithDocumentLoader(DocumentLoader*, FrameLoadType, PassRefPtr<FormState>); // Calls continueLoadAfterNavigationPolicy
-    void load(DocumentLoader*);                                                         // Calls loadWithDocumentLoader   
-
-    void loadWithNavigationAction(const ResourceRequest&, const NavigationAction&,      // Calls loadWithDocumentLoader
-        FrameLoadType, PassRefPtr<FormState>, const String& overrideEncoding = String());
+    // Calls continueLoadAfterNavigationPolicy
+    void loadWithNavigationAction(const ResourceRequest&, const NavigationAction&,
+        FrameLoadType, PassRefPtr<FormState>, const SubstituteData&, const String& overrideEncoding = String());
 
     void loadPostRequest(const ResourceRequest&, const String& referrer,                // Called by loadFrameRequest, calls loadWithNavigationAction
         const String& frameName, FrameLoadType, PassRefPtr<Event>, PassRefPtr<FormState>);
