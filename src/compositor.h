@@ -334,6 +334,8 @@ void
 weston_seat_set_keyboard(struct weston_seat *seat, struct weston_keyboard *keyboard);
 void
 weston_seat_set_touch(struct weston_seat *seat, struct weston_touch *touch);
+void
+weston_seat_update_drag_surface(struct weston_seat *seat, int dx, int dy);
 
 void
 weston_pointer_init(struct weston_pointer *pointer);

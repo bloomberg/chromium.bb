@@ -28,6 +28,13 @@
 #include "compositor.h"
 
 static void
+empty_region(pixman_region32_t *region)
+{
+	pixman_region32_fini(region);
+	pixman_region32_init(region);
+}
+
+static void
 data_offer_accept(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t serial, const char *mime_type)
 {
@@ -153,6 +160,120 @@ find_resource(struct wl_list *list, struct wl_client *client)
 	}
 
 	return NULL;
+}
+
+static void
+drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height)
+{
+	empty_region(&es->pending.input);
+
+	weston_surface_configure(es,
+				 es->geometry.x + sx, es->geometry.y + sy,
+				 width, height);
+}
+
+static int
+device_setup_new_drag_surface(struct weston_seat *seat,
+			      struct weston_surface *surface)
+{
+	if (surface->configure) {
+		wl_resource_post_error(&surface->surface.resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface->configure already set");
+		return 0;
+	}
+
+	seat->drag_surface = surface;
+
+	weston_surface_set_position(seat->drag_surface,
+				    wl_fixed_to_double(seat->pointer->x),
+				    wl_fixed_to_double(seat->pointer->y));
+
+	surface->configure = drag_surface_configure;
+
+	wl_signal_add(&surface->surface.resource.destroy_signal,
+		       &seat->drag_surface_destroy_listener);
+
+	return 1;
+}
+
+static void
+device_release_drag_surface(struct weston_seat *seat)
+{
+	if (weston_surface_is_mapped(seat->drag_surface))
+		weston_surface_unmap(seat->drag_surface);
+
+	seat->drag_surface->configure = NULL;
+	empty_region(&seat->drag_surface->pending.input);
+	wl_list_remove(&seat->drag_surface_destroy_listener.link);
+	seat->drag_surface = NULL;
+}
+
+static void
+device_map_drag_surface(struct weston_seat *seat)
+{
+	struct wl_list *list;
+
+	if (weston_surface_is_mapped(seat->drag_surface) ||
+	    !seat->drag_surface->buffer_ref.buffer)
+		return;
+
+	if (seat->sprite && weston_surface_is_mapped(seat->sprite))
+		list = &seat->sprite->layer_link;
+	else
+		list = &seat->compositor->cursor_layer.surface_list;
+
+	wl_list_insert(list, &seat->drag_surface->layer_link);
+	weston_surface_update_transform(seat->drag_surface);
+	empty_region(&seat->drag_surface->input);
+}
+
+void
+weston_seat_update_drag_surface(struct weston_seat *seat, int dx, int dy)
+{
+	int surface_changed = 0;
+
+	if (!seat->drag_surface && !seat->drag_surface)
+		return;
+
+	if (seat->drag_surface && seat->drag_surface &&
+	    (&seat->drag_surface->surface.resource !=
+	     &seat->next_drag_surface->resource))
+		/* between calls to this funcion we got a new drag_surface */
+		surface_changed = 1;
+
+	if (!seat->drag_surface || surface_changed) {
+		device_release_drag_surface(seat);
+		if (!surface_changed)
+			return;
+	}
+
+	if (!seat->drag_surface || surface_changed) {
+		struct weston_surface *surface =
+			(struct weston_surface *) seat->drag_surface;
+		if (!device_setup_new_drag_surface(seat, surface))
+			return;
+	}
+
+	/* the client may not have attached a buffer to the drag surface
+	 * when we setup it up, so check if map is needed on every update */
+	device_map_drag_surface(seat);
+
+	if (!dx && !dy)
+		return;
+
+	weston_surface_set_position(seat->drag_surface,
+				    seat->drag_surface->geometry.x + wl_fixed_to_double(dx),
+				    seat->drag_surface->geometry.y + wl_fixed_to_double(dy));
+}
+
+void
+weston_compositor_update_drag_surfaces(struct weston_compositor *compositor)
+{
+	struct weston_seat *seat;
+
+	wl_list_for_each(seat, &compositor->seat_list, link)
+		weston_seat_update_drag_surface(seat, 0, 0);
 }
 
 static void
@@ -287,6 +408,17 @@ destroy_data_device_icon(struct wl_listener *listener, void *data)
 }
 
 static void
+handle_drag_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct weston_seat *seat;
+
+	seat = container_of(listener, struct weston_seat,
+			    drag_surface_destroy_listener);
+
+	seat->drag_surface = NULL;
+}
+
+static void
 data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		       struct wl_resource *source_resource,
 		       struct wl_resource *origin_resource,
@@ -303,6 +435,8 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 
 	seat->drag_client = client;
 	seat->drag_data_source = NULL;
+	seat->drag_surface_destroy_listener.notify =
+		handle_drag_surface_destroy;
 
 	if (source_resource) {
 		seat->drag_data_source = source_resource->data;
