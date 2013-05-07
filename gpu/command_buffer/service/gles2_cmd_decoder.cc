@@ -2482,9 +2482,6 @@ bool GLES2DecoderImpl::Initialize(
     DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
-  // Clear the backbuffer.
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
   // OpenGL ES 2.0 implicitly enables the desktop GL capability
   // VERTEX_PROGRAM_POINT_SIZE and doesn't expose this enum. This fact
   // isn't well documented; it was discovered in the Khronos OpenGL ES
@@ -2527,6 +2524,9 @@ bool GLES2DecoderImpl::Initialize(
   DoBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   DoBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+  // Clear the backbuffer.
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   if (feature_info_->workarounds().reverse_point_sprite_coord_origin) {
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);

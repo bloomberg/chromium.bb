@@ -185,11 +185,6 @@ void GLES2DecoderTestBase::InitDecoder(
        .WillOnce(SetArgumentPointee<1>(has_stencil ? 8 : 0))
        .RetiresOnSaturation();
 
-  EXPECT_CALL(*gl_, Clear(
-      GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT))
-      .Times(1)
-      .RetiresOnSaturation();
-
   EXPECT_CALL(*gl_, Enable(GL_VERTEX_PROGRAM_POINT_SIZE))
       .Times(1)
       .RetiresOnSaturation();
@@ -233,6 +228,11 @@ void GLES2DecoderTestBase::InitDecoder(
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindRenderbufferEXT(GL_RENDERBUFFER, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, Clear(
+      GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT))
       .Times(1)
       .RetiresOnSaturation();
 
