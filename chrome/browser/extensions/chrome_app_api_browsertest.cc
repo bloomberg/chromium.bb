@@ -79,7 +79,13 @@ class ChromeAppAPITest : public ExtensionBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
+// Flaky http://crbug.com/238674
+#if defined(OS_WIN)
+#define MAYBE_IsInstalled DISABLED_IsInstalled
+#else
+#define MAYBE_IsInstalled IsInstalled
+#endif
+IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, MAYBE_IsInstalled) {
   std::string app_host("app.com");
   std::string nonapp_host("nonapp.com");
 
