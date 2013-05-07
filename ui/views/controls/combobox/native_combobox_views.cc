@@ -18,6 +18,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/color_constants.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -64,7 +65,7 @@ class InvalidBackground : public Background {
     gfx::Rect bounds(view->GetLocalBounds());
     // Inset by 2 to leave 1 empty pixel between background and border.
     bounds.Inset(2, 2, 2, 2);
-    canvas->FillRect(bounds, SK_ColorRED);
+    canvas->FillRect(bounds, kWarningColor);
   }
 
  private:
@@ -261,7 +262,7 @@ void NativeComboboxViews::SetFocus() {
 
 void NativeComboboxViews::ValidityStateChanged() {
   if (combobox_->invalid()) {
-    text_border_->SetColor(SK_ColorRED);
+    text_border_->SetColor(kWarningColor);
     set_background(new InvalidBackground());
   } else {
     text_border_->UseDefaultColor();

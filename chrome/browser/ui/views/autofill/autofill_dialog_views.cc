@@ -175,11 +175,7 @@ class SectionRowView : public views::View {
 class ErrorBubbleContents : public views::View {
  public:
   explicit ErrorBubbleContents(const string16& message)
-      : color_(SK_ColorWHITE) {
-    DialogNotification notification(DialogNotification::VALIDATION_ERROR,
-                                    string16());
-    color_ = notification.GetBackgroundColor();
-
+      : color_(kWarningColor) {
     set_border(views::Border::CreateEmptyBorder(kArrowHeight, 0, 0, 0));
 
     views::Label* label = new views::Label();
@@ -304,9 +300,8 @@ AutofillDialogViews::DecoratedTextfield::~DecoratedTextfield() {}
 
 void AutofillDialogViews::DecoratedTextfield::SetInvalid(bool invalid) {
   invalid_ = invalid;
-  // TODO(estade): Red is not exactly the right color.
   if (invalid)
-    textfield_->SetBorderColor(SK_ColorRED);
+    textfield_->SetBorderColor(kWarningColor);
   else
     textfield_->UseDefaultBorderColor();
   SchedulePaint();
@@ -337,8 +332,7 @@ void AutofillDialogViews::DecoratedTextfield::OnPaint(gfx::Canvas* canvas) {
     dog_ear.lineTo(width(), kDogEarSize);
     dog_ear.close();
     canvas->ClipPath(dog_ear);
-    // TODO(estade): Red is not exactly the right color.
-    canvas->DrawColor(SK_ColorRED);
+    canvas->DrawColor(kWarningColor);
   }
 }
 

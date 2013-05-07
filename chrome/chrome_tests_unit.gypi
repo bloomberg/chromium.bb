@@ -1256,6 +1256,7 @@
         'browser/ui/autofill/autocheckout_bubble_controller_unittest.cc',
         'browser/ui/autofill/autofill_dialog_controller_unittest.cc',
         'browser/ui/autofill/autofill_dialog_models_unittest.cc',
+        'browser/ui/autofill/autofill_dialog_types_unittest.cc',
         'browser/ui/autofill/autofill_popup_controller_unittest.cc',
         'browser/ui/autofill/data_model_wrapper_unittest.cc',
         'browser/ui/autofill/mock_autofill_dialog_controller.cc',

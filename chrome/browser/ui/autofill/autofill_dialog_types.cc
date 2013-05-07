@@ -28,7 +28,7 @@ SkColor DialogNotification::GetBackgroundColor() const {
       return SkColorSetRGB(0xfc, 0xf3, 0xbf);
     case DialogNotification::SECURITY_WARNING:
     case DialogNotification::VALIDATION_ERROR:
-      return SkColorSetRGB(0xde, 0x49, 0x32);
+      return kWarningColor;
     case DialogNotification::NONE:
       return SK_ColorTRANSPARENT;
   }
@@ -67,6 +67,8 @@ bool DialogNotification::HasArrow() const {
 bool DialogNotification::HasCheckbox() const {
   return type_ == DialogNotification::WALLET_USAGE_CONFIRMATION;
 }
+
+SkColor const kWarningColor = SkColorSetRGB(0xde, 0x49, 0x32);
 
 SuggestionState::SuggestionState(const string16& text,
                                  gfx::Font::FontStyle text_style,

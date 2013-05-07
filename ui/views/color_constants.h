@@ -11,6 +11,7 @@
 namespace views {
 
 VIEWS_EXPORT extern const SkColor kClientEdgeColor;
+VIEWS_EXPORT extern const SkColor kWarningColor;
 
 }  // namespace views
 

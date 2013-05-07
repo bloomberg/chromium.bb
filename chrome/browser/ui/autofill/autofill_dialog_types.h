@@ -117,6 +117,8 @@ class DialogNotification {
   bool interactive_;
 };
 
+extern SkColor const kWarningColor;
+
 enum DialogSignedInState {
   REQUIRES_RESPONSE,
   REQUIRES_SIGN_IN,

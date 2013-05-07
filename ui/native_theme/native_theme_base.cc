@@ -67,6 +67,8 @@ const SkColor kCheckboxStrokeDisabledColor = SkColorSetARGB(0x59, 0, 0, 0);
 const SkColor kRadioDotColor = SkColorSetRGB(0x66, 0x66, 0x66);
 const SkColor kRadioDotDisabledColor = SkColorSetARGB(0x80, 0x66, 0x66, 0x66);
 
+const SkColor kInputInvalidColor = SkColorSetRGB(0xde, 0x49, 0x32);
+
 // Get lightness adjusted color.
 SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
     double lightness_amount) {
