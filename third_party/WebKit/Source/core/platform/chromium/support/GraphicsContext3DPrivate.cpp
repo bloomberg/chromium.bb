@@ -89,7 +89,7 @@ GraphicsContext3DPrivate::~GraphicsContext3DPrivate()
 
 PassRefPtr<GraphicsContext3D> GraphicsContext3DPrivate::createGraphicsContextFromWebContext(PassOwnPtr<WebKit::WebGraphicsContext3D> webContext, bool preserveDrawingBuffer)
 {
-    RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D(GraphicsContext3D::Attributes(), 0));
+    RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D());
 
     OwnPtr<GraphicsContext3DPrivate> priv = adoptPtr(new GraphicsContext3DPrivate(webContext, preserveDrawingBuffer));
     context->m_private = priv.release();
@@ -98,7 +98,7 @@ PassRefPtr<GraphicsContext3D> GraphicsContext3DPrivate::createGraphicsContextFro
 
 PassRefPtr<GraphicsContext3D> GraphicsContext3DPrivate::createGraphicsContextFromExternalWebContextAndGrContext(WebKit::WebGraphicsContext3D* webContext, GrContext* grContext, bool preserveDrawingBuffer)
 {
-    RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D(GraphicsContext3D::Attributes(), 0));
+    RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D());
 
     OwnPtr<GraphicsContext3DPrivate> priv = adoptPtr(new GraphicsContext3DPrivate(webContext, grContext, preserveDrawingBuffer));
     context->m_private = priv.release();

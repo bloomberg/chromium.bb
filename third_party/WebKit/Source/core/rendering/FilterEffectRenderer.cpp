@@ -88,7 +88,7 @@ static PassRefPtr<FECustomFilter> createCustomFilterEffect(Filter* filter, Docum
         return 0;
 
     CustomFilterGlobalContext* globalContext = document->renderView()->customFilterGlobalContext();
-    globalContext->prepareContextIfNeeded(document->view()->hostWindow());
+    globalContext->prepareContextIfNeeded();
     if (!globalContext->context())
         return 0;
 

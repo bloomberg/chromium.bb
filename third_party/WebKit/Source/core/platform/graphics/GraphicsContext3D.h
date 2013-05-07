@@ -56,7 +56,6 @@ const Platform3DObject NullPlatform3DObject = 0;
 namespace WebCore {
 class DrawingBuffer;
 class Extensions3D;
-class HostWindow;
 class Image;
 class ImageBuffer;
 class ImageSource;
@@ -415,12 +414,6 @@ public:
         KURL topDocumentURL;
     };
 
-    enum RenderStyle {
-        RenderOffscreen,
-        RenderDirectlyToHostWindow,
-        RenderToCurrentGLContext
-    };
-
     class ContextLostCallback {
     public:
         virtual void onContextLost() = 0;
@@ -436,7 +429,7 @@ public:
     void setContextLostCallback(PassOwnPtr<ContextLostCallback>);
     void setErrorMessageCallback(PassOwnPtr<ErrorMessageCallback>);
 
-    static PassRefPtr<GraphicsContext3D> create(Attributes, HostWindow*, RenderStyle = RenderOffscreen);
+    static PassRefPtr<GraphicsContext3D> create(Attributes);
     static PassRefPtr<GraphicsContext3D> createForCurrentGLContext();
     ~GraphicsContext3D();
 
@@ -809,7 +802,7 @@ public:
     };
 
 private:
-    GraphicsContext3D(Attributes, HostWindow*, RenderStyle = RenderOffscreen);
+    GraphicsContext3D();
 
     // Helper for packImageData/extractImageData/extractTextureData which implement packing of pixel
     // data into the specified OpenGL destination format and type.
@@ -824,8 +817,6 @@ private:
     int m_currentWidth, m_currentHeight;
     bool isResourceSafe();
 
-    Attributes m_attrs;
-    RenderStyle m_renderStyle;
     Vector<Vector<float> > m_vertexArray;
 
     GC3Duint m_texture;

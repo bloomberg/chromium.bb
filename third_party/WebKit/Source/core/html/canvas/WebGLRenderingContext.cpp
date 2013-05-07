@@ -491,7 +491,6 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
         return nullptr;
     }
 
-    HostWindow* hostWindow = document->view()->root()->hostWindow();
     GraphicsContext3D::Attributes attributes = attrs ? attrs->attributes() : GraphicsContext3D::Attributes();
 
     if (attributes.antialias) {
@@ -504,7 +503,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
     attributes.preferDiscreteGPU = true;
     attributes.topDocumentURL = document->topDocument()->url();
 
-    RefPtr<GraphicsContext3D> context(GraphicsContext3D::create(attributes, hostWindow));
+    RefPtr<GraphicsContext3D> context(GraphicsContext3D::create(attributes));
 
     if (!context || !context->makeContextCurrent()) {
         canvas->dispatchEvent(WebGLContextEvent::create(eventNames().webglcontextcreationerrorEvent, false, true, "Could not create a WebGL context."));
@@ -5271,17 +5270,7 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
     if (!frame->loader()->client()->allowWebGL(frame->settings() && frame->settings()->webGLEnabled()))
         return;
 
-    FrameView* view = frame->view();
-    if (!view)
-        return;
-    ScrollView* root = view->root();
-    if (!root)
-        return;
-    HostWindow* hostWindow = root->hostWindow();
-    if (!hostWindow)
-        return;
-
-    RefPtr<GraphicsContext3D> context(GraphicsContext3D::create(m_attributes, hostWindow));
+    RefPtr<GraphicsContext3D> context(GraphicsContext3D::create(m_attributes));
     if (!context) {
         if (m_contextLostMode == RealLostContext)
             m_restoreTimer.startOneShot(secondsBetweenRestoreAttempts);

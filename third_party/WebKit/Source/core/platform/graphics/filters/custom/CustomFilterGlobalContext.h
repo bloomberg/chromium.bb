@@ -38,7 +38,6 @@
 namespace WebCore {
 
 class CustomFilterValidatedProgram;
-class HostWindow;
 class GraphicsContext3D;
 
 typedef HashMap<CustomFilterProgramInfo, CustomFilterValidatedProgram*> CustomFilterValidatedProgramsMap;
@@ -64,7 +63,7 @@ public:
     // The complete details are documented in ANGLE/ShaderLang.h.
     ANGLEWebKitBridge* mixShaderValidator();
 
-    void prepareContextIfNeeded(HostWindow*);
+    void prepareContextIfNeeded();
 
     PassRefPtr<CustomFilterValidatedProgram> getValidatedProgram(const CustomFilterProgramInfo&);
     void removeValidatedProgram(const CustomFilterValidatedProgram*);
