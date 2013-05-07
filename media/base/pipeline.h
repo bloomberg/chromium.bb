@@ -63,9 +63,7 @@ class VideoRenderer;
 // If any error ever happens, this object will transition to the "Error" state
 // from any state. If Stop() is ever called, this object will transition to
 // "Stopped" state.
-class MEDIA_EXPORT Pipeline
-    : public base::RefCountedThreadSafe<Pipeline>,
-      public DemuxerHost {
+class MEDIA_EXPORT Pipeline : public DemuxerHost {
  public:
   // Buffering states the pipeline transitions between during playback.
   // kHaveMetadata:
@@ -85,6 +83,7 @@ class MEDIA_EXPORT Pipeline
   // Constructs a media pipeline that will execute on |message_loop|.
   Pipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
            MediaLog* media_log);
+  virtual ~Pipeline();
 
   // Build a pipeline to using the given filter collection to construct a filter
   // chain, executing |seek_cb| when the initial seek/preroll has completed.
@@ -197,10 +196,6 @@ class MEDIA_EXPORT Pipeline
   FRIEND_TEST_ALL_PREFIXES(PipelineTest, EndedCallback);
   FRIEND_TEST_ALL_PREFIXES(PipelineTest, AudioStreamShorterThanVideo);
   friend class MediaLog;
-
-  // Only allow ourselves to be deleted by reference counting.
-  friend class base::RefCountedThreadSafe<Pipeline>;
-  virtual ~Pipeline();
 
   // Pipeline states, as described above.
   enum State {
