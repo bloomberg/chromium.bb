@@ -133,7 +133,7 @@ if ENABLE_DRM_COMPOSITOR
 drm_backend = drm-backend.la
 drm_backend_la_LDFLAGS = -module -avoid-version
 drm_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(DRM_COMPOSITOR_LIBS) \
-	../shared/libshared.la
+	../shared/libshared.la -lrt
 drm_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(DRM_COMPOSITOR_CFLAGS)		\
