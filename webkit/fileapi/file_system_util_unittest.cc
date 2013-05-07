@@ -102,7 +102,10 @@ TEST_F(FileSystemUtilTest, GetNormalizedFilePath) {
     { FILE_PATH_LITERAL(""), FILE_PATH_LITERAL("/") },
     { FILE_PATH_LITERAL("/"), FILE_PATH_LITERAL("/") },
     { FILE_PATH_LITERAL("foo/bar"), FILE_PATH_LITERAL("/foo/bar") },
-    { FILE_PATH_LITERAL("/foo/bar"), FILE_PATH_LITERAL("/foo/bar") }
+    { FILE_PATH_LITERAL("/foo/bar"), FILE_PATH_LITERAL("/foo/bar") },
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+    { FILE_PATH_LITERAL("\\foo"), FILE_PATH_LITERAL("/foo") },
+#endif
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     base::FilePath input = base::FilePath(test_cases[i].path);

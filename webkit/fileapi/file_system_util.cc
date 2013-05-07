@@ -110,7 +110,7 @@ base::FilePath::StringType VirtualPath::GetNormalizedFilePath(
   base::FilePath::StringType normalized_path = path.value();
   const size_t num_separators = base::FilePath::StringType(
       base::FilePath::kSeparators).length();
-  for (size_t i = 1; i < num_separators; ++i) {
+  for (size_t i = 0; i < num_separators; ++i) {
     std::replace(normalized_path.begin(), normalized_path.end(),
                  base::FilePath::kSeparators[i], kSeparator);
   }
