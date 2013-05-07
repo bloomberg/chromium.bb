@@ -560,11 +560,27 @@ void AutofillDialogViewAndroid::UpdateOrFillSectionToJava(
         static_cast<int>(button_type));
   }
 
+  const SuggestionState& suggestion_state =
+      controller_->SuggestionStateForSection(section);
+  ScopedJavaLocalRef<jstring> suggestion_text =
+      base::android::ConvertUTF16ToJavaString(env, suggestion_state.text);
+  ScopedJavaLocalRef<jstring> suggestion_text_extra =
+      base::android::ConvertUTF16ToJavaString(env, suggestion_state.extra_text);
+  ScopedJavaLocalRef<jobject> suggestion_icon =
+      GetJavaBitmap(suggestion_state.icon);
+  ScopedJavaLocalRef<jobject> suggestion_icon_extra =
+      GetJavaBitmap(suggestion_state.extra_icon);
+
   Java_AutofillDialogGlue_updateSection(env,
                                         java_object_.obj(),
                                         section,
                                         controller_->SectionIsActive(section),
                                         field_array.obj(),
+                                        suggestion_text.obj(),
+                                        suggestion_icon.obj(),
+                                        suggestion_text_extra.obj(),
+                                        suggestion_icon_extra.obj(),
+                                        suggestion_state.editable,
                                         menu_array.obj(),
                                         selected_item,
                                         clobber_inputs,

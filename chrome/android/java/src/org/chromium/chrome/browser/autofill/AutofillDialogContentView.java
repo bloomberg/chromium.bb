@@ -118,15 +118,9 @@ public class AutofillDialogContentView extends LinearLayout {
      */
     public void createAdapters() {
         for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
-            AutofillDialogMenuAdapter adapter;
-            if (AutofillDialogUtils.containsCreditCardInfo(i)) {
-                adapter = new AutofillDialogCCMenuAdapter(i, getContext(),
-                        new ArrayList<AutofillDialogMenuItem>(),
-                        mCVCHint, getCVCDrawable());
-            } else {
-                adapter = new AutofillDialogMenuAdapter(i, getContext(),
-                        new ArrayList<AutofillDialogMenuItem>());
-            }
+            AutofillDialogMenuAdapter adapter =
+                    new AutofillDialogMenuAdapter(i, getContext(),
+                            new ArrayList<AutofillDialogMenuItem>());
             adapter.setOnItemEditButtonClickedListener(mOnItemEditButtonClickedListener);
             mAdapters[i] = adapter;
             mSpinners[i].setAdapter(adapter);
@@ -192,31 +186,6 @@ public class AutofillDialogContentView extends LinearLayout {
     }
 
     /**
-     * Sets the hint text and the icon that should be showed in the cvc challenge edit box.
-     * @param hint The hint string to be shown.
-     * @param icon The icon to be shown to the right of the text.
-     */
-    public void setCVCInfo(String hint, Bitmap icon) {
-        mCVCHint = hint;
-        mCVCIcon = icon;
-    }
-
-    /**
-     * @return A drawable that contains the icon for CVC challenge edit box.
-     */
-    public BitmapDrawable getCVCDrawable() {
-        if (mCVCIcon == null) return null;
-
-        Resources resources = getContext().getResources();
-        BitmapDrawable cvcDrawable = new BitmapDrawable(
-                resources, mCVCIcon);
-        int width = resources.getDimensionPixelSize(R.dimen.autofill_field_icon_width);
-        int height = resources.getDimensionPixelSize(R.dimen.autofill_field_icon_height);
-        cvcDrawable.setBounds(0, 0, width, height);
-        return cvcDrawable;
-    }
-
-    /**
      * @return Whether the current layout is one of the editing layouts.
      */
     public boolean isInEditingMode() {
@@ -250,10 +219,18 @@ public class AutofillDialogContentView extends LinearLayout {
     /**
      * Updates a dropdown with the given items and adds default items to the end.
      * @param section The dialog section.
+     * @param suggestionText The suggestion text.
+     * @param suggestionIcon The suggestion icon.
+     * @param suggestionTextExtra The suggestion text extra.
+     * @param suggestionIconExtra The suggestion icon extra.
+     * @param suggestionSectionEditable Whether the section is editable.
      * @param items The {@link AutofillDialogMenuItem} array to update the dropdown with.
      * @param selectedMenuItem The index of the selected menu item, or -1.
      */
     public void updateMenuItemsForSection(int section,
+            String suggestionText, Bitmap suggestionIcon,
+            String suggestionTextExtra, Bitmap suggestionIconExtra,
+            boolean suggestionSectionEditable,
             List<AutofillDialogMenuItem> items, final int selectedMenuItem) {
         final Spinner spinner = mSpinners[section];
         // Set the listener to null and reset it after updating the menu items to avoid getting an
@@ -261,6 +238,8 @@ public class AutofillDialogContentView extends LinearLayout {
         spinner.setOnItemSelectedListener(null);
         AutofillDialogMenuAdapter adapter = mAdapters[section];
         adapter.clear();
+        adapter.setSuggestionExtra(suggestionTextExtra,
+                createFieldIconDrawable(suggestionIconExtra));
         adapter.addAll(items);
         spinner.post(new Runnable() {
             @Override
@@ -336,6 +315,21 @@ public class AutofillDialogContentView extends LinearLayout {
         mSpinners[section].setVisibility(visibility);
         View labelView = findViewById(AutofillDialogUtils.getLabelIDForSection(section));
         if (labelView != null) labelView.setVisibility(visibility);
+    }
+
+    /**
+     * @param bitmap A bitmap.
+     * @return A drawable with the dimensions of a field icon and the contents from the bitmap.
+     */
+    public BitmapDrawable createFieldIconDrawable(Bitmap bitmap) {
+        if (bitmap == null) return null;
+
+        Resources resources = getContext().getResources();
+        BitmapDrawable drawable = new BitmapDrawable(resources, bitmap);
+        int width = resources.getDimensionPixelSize(R.dimen.autofill_field_icon_width);
+        int height = resources.getDimensionPixelSize(R.dimen.autofill_field_icon_height);
+        drawable.setBounds(0, 0, width, height);
+        return drawable;
     }
 
     private void addAppearAnimationForEditLayout(int mode, View layout) {
@@ -421,9 +415,10 @@ public class AutofillDialogContentView extends LinearLayout {
     }
 
     private static class AutofillDialogMenuAdapter extends ArrayAdapter<AutofillDialogMenuItem> {
-        protected boolean mShouldShowCVC = true;
         private int mSection;
         private OnItemEditButtonClickedListener mOnItemEditButtonClickedListener;
+        private String mSuggestionTextExtra;
+        private BitmapDrawable mSuggestionIconExtraDrawable;
 
         public AutofillDialogMenuAdapter(
                 int section,
@@ -437,11 +432,10 @@ public class AutofillDialogContentView extends LinearLayout {
             mOnItemEditButtonClickedListener = listener;
         }
 
-        /**
-         * @return Whether the CVC Edit Box should be shown.
-         */
-        protected boolean shouldShowCVC() {
-            return mShouldShowCVC;
+        public void setSuggestionExtra(String suggestionTextExtra,
+                BitmapDrawable suggestionIconExtraDrawable) {
+            mSuggestionTextExtra = suggestionTextExtra;
+            mSuggestionIconExtraDrawable = suggestionIconExtraDrawable;
         }
 
         @Override
@@ -457,9 +451,7 @@ public class AutofillDialogContentView extends LinearLayout {
         private View initView(
                 final int position, View convertView, final ViewGroup parent, boolean showButton) {
             if (convertView == null) {
-                convertView = View.inflate(getContext(),
-                        R.layout.autofill_menu_item, null);
-                mShouldShowCVC = true;
+                convertView = View.inflate(getContext(), R.layout.autofill_menu_item, null);
             }
 
             AutofillDialogMenuItem item = getItem(position);
@@ -467,13 +459,13 @@ public class AutofillDialogContentView extends LinearLayout {
             TextView line1 = (TextView) convertView.findViewById(R.id.adapter_item_line_1);
             TextView line2 = (TextView) convertView.findViewById(R.id.adapter_item_line_2);
             Button button = (Button) convertView.findViewById(R.id.adapter_item_edit_button);
+            EditText extraEdit = (EditText) convertView.findViewById(R.id.cvc_challenge);
 
             if (icon != null) {
                 if (item.mIcon != null) {
                     icon.setImageBitmap(item.mIcon);
                     icon.setVisibility(VISIBLE);
                 } else {
-                    mShouldShowCVC = false;
                     icon.setImageBitmap(null);
                     icon.setVisibility(GONE);
                 }
@@ -484,10 +476,21 @@ public class AutofillDialogContentView extends LinearLayout {
                     line2.setVisibility(VISIBLE);
                     line2.setText(item.mLine2);
                 } else {
-                    mShouldShowCVC = false;
                     line2.setVisibility(GONE);
                 }
             }
+
+            if (extraEdit != null) {
+                if (!TextUtils.isEmpty(mSuggestionTextExtra)) {
+                  extraEdit.setVisibility(VISIBLE);
+                  extraEdit.setHint(mSuggestionTextExtra);
+                  extraEdit.setCompoundDrawables(
+                          null, null, mSuggestionIconExtraDrawable, null);
+                } else {
+                  extraEdit.setVisibility(GONE);
+                }
+            }
+
             if (button != null) {
                 if (showButton && item.mShowButton) {
                     button.setText(item.mButtonLabelResourceId);
@@ -514,36 +517,6 @@ public class AutofillDialogContentView extends LinearLayout {
                 }
             }
             return convertView;
-        }
-    }
-
-    private static class AutofillDialogCCMenuAdapter extends AutofillDialogMenuAdapter {
-        private String mCVCHint;
-        private BitmapDrawable mCVCIcon;
-
-        public AutofillDialogCCMenuAdapter(
-                int section,
-                Context context, List<AutofillDialogMenuItem> objects,
-                String hint, BitmapDrawable icon) {
-            super(section, context, objects);
-            mCVCHint = hint;
-            mCVCIcon = icon;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View spinnerView = super.getView(position, convertView, parent);
-            if (!shouldShowCVC()) return spinnerView;
-
-            EditText cvcEdit = (EditText) spinnerView.findViewById(R.id.cvc_challenge);
-            if (cvcEdit != null) {
-                cvcEdit.setVisibility(VISIBLE);
-                if (!TextUtils.isEmpty(mCVCHint)) {
-                    cvcEdit.setHint(mCVCHint);
-                }
-                cvcEdit.setCompoundDrawables(null, null, mCVCIcon, null);
-            }
-            return spinnerView;
         }
     }
 }

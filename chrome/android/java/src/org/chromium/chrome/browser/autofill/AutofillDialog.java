@@ -241,13 +241,6 @@ public class AutofillDialog extends AlertDialog
 
         mContentView.setOnItemSelectedListener(this);
         mContentView.setOnItemEditButtonClickedListener(this);
-
-        String hint = mDelegate.getPlaceholderForField(
-                AutofillDialogConstants.SECTION_CC,
-                AutofillDialogConstants.CREDIT_CARD_VERIFICATION_CODE);
-        Bitmap icon = mDelegate.getIconForField(
-                AutofillDialogConstants.CREDIT_CARD_VERIFICATION_CODE, "");
-        mContentView.setCVCInfo(hint, icon);
     }
 
     private AutofillDialogField[] getFieldsForSection(int section) {
@@ -499,12 +492,20 @@ public class AutofillDialog extends AlertDialog
      * @param section The section to update with the given data.
      * @param visible Whether the section should be visible.
      * @param dialogInputs The array that contains the data for each field in the section.
+     * @param suggestionText The suggestion text.
+     * @param suggestionIcon The suggestion icon.
+     * @param suggestionTextExtra The suggestion text extra.
+     * @param suggestionIconExtra The suggestion icon extra.
+     * @param suggestionSectionEditable Whether the section is editable.
      * @param menuItems The array that contains the dropdown items to be shown for the section.
      * @param selectedMenuItem The menu item that is currently selected or -1 otherwise.
      * @param clobberInputs Whether to clobber the user input.
      * @param fieldTypeToAlwaysClobber Field type to be clobbered anyway, or UNKNOWN_TYPE.
      */
     public void updateSection(int section, boolean visible, AutofillDialogField[] dialogInputs,
+            String suggestionText, Bitmap suggestionIcon,
+            String suggestionTextExtra, Bitmap suggestionIconExtra,
+            boolean suggestionSectionEditable,
             AutofillDialogMenuItem[] menuItems, int selectedMenuItem,
             boolean clobberInputs, int fieldTypeToAlwaysClobber) {
         View currentField;
@@ -524,8 +525,8 @@ public class AutofillDialog extends AlertDialog
                 if (AutofillDialogUtils.containsCreditCardInfo(section)
                         && dialogInputs[i].mFieldType
                                 == AutofillDialogConstants.CREDIT_CARD_VERIFICATION_CODE) {
-                    currentEdit.setCompoundDrawables(
-                            null, null, mContentView.getCVCDrawable(), null);
+                    currentEdit.setCompoundDrawables(null, null,
+                            mContentView.createFieldIconDrawable(suggestionIconExtra), null);
                 }
 
                 currentEdit.setHint(dialogInputs[i].mPlaceholder);
@@ -550,19 +551,34 @@ public class AutofillDialog extends AlertDialog
         setFieldsForSection(section, dialogInputs);
         mContentView.setVisibilityForSection(section, visible);
 
-        updateSectionMenuItems(section, menuItems, selectedMenuItem);
+        updateSectionMenuItems(section,
+                suggestionText, suggestionIcon,
+                suggestionTextExtra, suggestionIconExtra, suggestionSectionEditable,
+                menuItems, selectedMenuItem);
     }
 
     /**
      * Updates menu items in a given section with the data provided.
      * @param section The section to update with the given data.
+     * @param suggestionText The suggestion text.
+     * @param suggestionIcon The suggestion icon.
+     * @param suggestionTextExtra The suggestion text extra.
+     * @param suggestionIconExtra The suggestion icon extra.
+     * @param suggestionSectionEditable Whether the section is editable.
      * @param menuItems The array that contains the dropdown items to be shown for the section.
      * @param selectedMenuItem The menu item that is currently selected or -1 otherwise.
      */
     public void updateSectionMenuItems(
-            int section, AutofillDialogMenuItem[] menuItems, int selectedMenuItem) {
+            int section,
+            String suggestionText, Bitmap suggestionIcon,
+            String suggestionTextExtra, Bitmap suggestionIconExtra,
+            boolean suggestionSectionEditable,
+            AutofillDialogMenuItem[] menuItems, int selectedMenuItem) {
         mContentView.updateMenuItemsForSection(
-                section, Arrays.asList(menuItems), selectedMenuItem);
+                section,
+                suggestionText, suggestionIcon,
+                suggestionTextExtra, suggestionIconExtra, suggestionSectionEditable,
+                Arrays.asList(menuItems), selectedMenuItem);
     }
 
     /**
