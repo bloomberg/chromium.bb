@@ -411,7 +411,6 @@ public:
 
     void beginTransparencyLayer(float opacity);
     void endTransparencyLayer();
-    bool isInTransparencyLayer() const;
     // Begins a layer that is clipped to the image |imageBuffer| at the location
     // |rect|. This layer is implicitly restored when the next restore is invoked.
     // NOTE: |imageBuffer| may be deleted before the |restore| is invoked.
@@ -479,7 +478,6 @@ public:
     bool supportsURLFragments() { return printing(); }
 
 private:
-    static bool supportsTransparencyLayers();
     static void addCornerArc(SkPath*, const SkRect&, const IntSize&, int);
     static void setPathFromConvexPoints(SkPath*, size_t, const FloatPoint*);
     static void setRadii(SkVector*, IntSize, IntSize, IntSize, IntSize);
@@ -587,8 +585,9 @@ private:
     unsigned m_deferredSaveFlags;
     Vector<DeferredSaveState> m_saveStateStack;
 
+#if !ASSERT_DISABLED
     unsigned m_transparencyCount;
-
+#endif
     // Tracks the region painted opaque via the GraphicsContext.
     OpaqueRegionSkia m_opaqueRegion;
     bool m_trackOpaqueRegion;

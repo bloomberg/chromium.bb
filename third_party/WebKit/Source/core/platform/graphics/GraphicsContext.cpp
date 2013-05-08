@@ -65,7 +65,9 @@ struct GraphicsContext::DeferredSaveState {
 GraphicsContext::GraphicsContext(SkCanvas* canvas)
     : m_canvas(canvas)
     , m_deferredSaveFlags(0)
+#if !ASSERT_DISABLED
     , m_transparencyCount(0)
+#endif
     , m_trackOpaqueRegion(false)
     , m_useHighResMarker(false)
     , m_updatingControlTints(false)
@@ -592,16 +594,6 @@ void GraphicsContext::setAlpha(float alpha)
     m_skiaState->m_alpha = alpha;
 }
 
-bool GraphicsContext::supportsTransparencyLayers()
-{
-    return true;
-}
-
-bool GraphicsContext::isInTransparencyLayer() const
-{
-    return (m_transparencyCount > 0) && supportsTransparencyLayers();
-}
-
 void GraphicsContext::beginTransparencyLayer(float opacity)
 {
     if (paintingDisabled())
@@ -619,7 +611,9 @@ void GraphicsContext::beginTransparencyLayer(float opacity)
 
     saveLayer(0, &layerPaint, saveFlags);
 
+#if !ASSERT_DISABLED
     ++m_transparencyCount;
+#endif
 }
 
 void GraphicsContext::endTransparencyLayer()
@@ -630,7 +624,9 @@ void GraphicsContext::endTransparencyLayer()
     restoreLayer();
 
     ASSERT(m_transparencyCount > 0);
+#if !ASSERT_DISABLED
     --m_transparencyCount;
+#endif
 }
 
 void GraphicsContext::beginLayerClippedToImage(const FloatRect& rect, const ImageBuffer* imageBuffer)
