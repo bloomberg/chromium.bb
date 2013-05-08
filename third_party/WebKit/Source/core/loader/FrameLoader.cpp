@@ -1086,8 +1086,6 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
         RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
         addHTTPOriginIfNeeded(request, referrerOrigin->toString());
     }
-    if (newLoadType == FrameLoadTypeReload || newLoadType == FrameLoadTypeReloadFromOrigin)
-        request.setCachePolicy(ReloadIgnoringCacheData);
 
     ASSERT(newLoadType != FrameLoadTypeSame);
 
@@ -1149,10 +1147,9 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     const KURL& unreachableURL = request.substituteData().failingURL();
 
     FrameLoadType type;
-    if (shouldTreatURLAsSameAsCurrent(r.url())) {
-        r.setCachePolicy(ReloadIgnoringCacheData);
+    if (shouldTreatURLAsSameAsCurrent(r.url()))
         type = FrameLoadTypeSame;
-    } else if (shouldTreatURLAsSameAsCurrent(unreachableURL) && m_loadType == FrameLoadTypeReload)
+    else if (shouldTreatURLAsSameAsCurrent(unreachableURL) && m_loadType == FrameLoadTypeReload)
         type = FrameLoadTypeReload;
     else
         type = FrameLoadTypeStandard;
@@ -1278,16 +1275,8 @@ void FrameLoader::reload(bool endToEndReload, const KURL& overrideURL, const Str
     else if (!m_documentLoader->unreachableURL().isEmpty())
         request.setURL(m_documentLoader->unreachableURL());
 
-    bool isFormSubmission = request.httpMethod() == "POST";
-    if (overrideEncoding.isEmpty())
-        request.setCachePolicy(ReloadIgnoringCacheData);
-    else if (isFormSubmission)
-        request.setCachePolicy(ReturnCacheDataDontLoad);
-    else
-        request.setCachePolicy(ReturnCacheDataElseLoad);
-
     FrameLoadType type = endToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
-    NavigationAction action(request, type, isFormSubmission);
+    NavigationAction action(request, type, request.httpMethod() == "POST");
     loadWithNavigationAction(request, action, type, 0, defaultSubstituteDataForURL(request.url()), overrideEncoding);
 }
 
@@ -1938,30 +1927,6 @@ void FrameLoader::addExtraFieldsToRequest(ResourceRequest& request)
 
     applyUserAgent(request);
 
-    if (!isMainResource) {
-        if (request.isConditional())
-            request.setCachePolicy(ReloadIgnoringCacheData);
-        else if (documentLoader()->isLoadingInAPISense()) {
-            // If we inherit cache policy from a main resource, we use the DocumentLoader's
-            // original request cache policy for two reasons:
-            // 1. For POST requests, we mutate the cache policy for the main resource,
-            //    but we do not want this to apply to subresources
-            // 2. Delegates that modify the cache policy using willSendRequest: should
-            //    not affect any other resources. Such changes need to be done
-            //    per request.
-            ResourceRequestCachePolicy mainDocumentOriginalCachePolicy = documentLoader()->originalRequest().cachePolicy();
-            // Back-forward navigations try to load main resource from cache only to avoid re-submitting form data, and start over (with a warning dialog) if that fails.
-            // This policy is set on initial request too, but should not be inherited.
-            ResourceRequestCachePolicy subresourceCachePolicy = (mainDocumentOriginalCachePolicy == ReturnCacheDataDontLoad) ? ReturnCacheDataElseLoad : mainDocumentOriginalCachePolicy;
-            request.setCachePolicy(subresourceCachePolicy);
-        } else
-            request.setCachePolicy(UseProtocolCachePolicy);
-
-    // FIXME: Other FrameLoader functions have duplicated code for setting cache policy of main request when reloading.
-    // It seems better to manage it explicitly than to hide the logic inside addExtraFieldsToRequest().
-    } else if (m_loadType == FrameLoadTypeReload || m_loadType == FrameLoadTypeReloadFromOrigin || request.isConditional())
-        request.setCachePolicy(ReloadIgnoringCacheData);
-
     if (request.cachePolicy() == ReloadIgnoringCacheData) {
         if (m_loadType == FrameLoadTypeReload)
             request.setHTTPHeaderField("Cache-Control", "max-age=0");
@@ -2516,17 +2481,13 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem* item)
     RefPtr<FormData> formData = item->formData();
     ResourceRequest request(item->url());
     request.setHTTPReferrer(item->referrer());
-
-    NavigationAction action;
     if (formData) {
         request.setHTTPMethod("POST");
         request.setHTTPBody(formData);
         request.setHTTPContentType(item->formContentType());
         RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(item->referrer());
         addHTTPOriginIfNeeded(request, securityOrigin->toString());
-        request.setCachePolicy(ReturnCacheDataDontLoad);
-    } else
-        request.setCachePolicy(ReturnCacheDataElseLoad);
+    }
 
     loadWithNavigationAction(request, NavigationAction(request, FrameLoadTypeBackForward, false), FrameLoadTypeBackForward, 0, defaultSubstituteDataForURL(request.url()));
 }

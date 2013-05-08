@@ -498,6 +498,34 @@ void CachedResourceLoader::determineTargetType(ResourceRequest& request, CachedR
     request.setTargetType(targetType);
 }
 
+ResourceRequestCachePolicy CachedResourceLoader::resourceRequestCachePolicy(const ResourceRequest& request, CachedResource::Type type)
+{
+    if (type == CachedResource::MainResource) {
+        FrameLoadType frameLoadType = frame()->loader()->loadType();
+        bool isReload = frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadFromOrigin;
+        if (request.httpMethod() == "POST" && (isReload || frameLoadType == FrameLoadTypeBackForward))
+            return ReturnCacheDataDontLoad;
+        if (!m_documentLoader->overrideEncoding().isEmpty() || frameLoadType == FrameLoadTypeBackForward)
+            return ReturnCacheDataElseLoad;
+        if (isReload || frameLoadType == FrameLoadTypeSame || request.isConditional())
+            return ReloadIgnoringCacheData;
+        return UseProtocolCachePolicy;
+    }
+
+    if (request.isConditional())
+        return ReloadIgnoringCacheData;
+
+    if (m_documentLoader->isLoadingInAPISense()) {
+        // For POST requests, we mutate the main resource's cache policy to avoid form resubmission.
+        // This policy should not be inherited by subresources.
+        ResourceRequestCachePolicy mainResourceCachePolicy = m_documentLoader->request().cachePolicy();
+        if (mainResourceCachePolicy == ReturnCacheDataDontLoad)
+            return ReturnCacheDataElseLoad;
+        return mainResourceCachePolicy;
+    }
+    return UseProtocolCachePolicy;
+}
+
 void CachedResourceLoader::addAdditionalRequestHeaders(ResourceRequest& request, CachedResource::Type type)
 {
     if (!frame())
@@ -527,6 +555,7 @@ void CachedResourceLoader::addAdditionalRequestHeaders(ResourceRequest& request,
         FrameLoader::addHTTPOriginIfNeeded(request, outgoingOrigin);
     }
 
+    request.setCachePolicy(resourceRequestCachePolicy(request, type));
     if (request.targetType() == ResourceRequest::TargetIsUnspecified)
         determineTargetType(request, type);
     frameLoader->addExtraFieldsToRequest(request);
