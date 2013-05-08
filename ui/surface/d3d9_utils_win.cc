@@ -43,7 +43,7 @@ bool CreateDevice(const base::ScopedNativeLibrary& d3d_module,
 
   // Any old window will do to create the device. In practice the window to
   // present to is an argument to IDirect3DDevice9::Present.
-  HWND window = GetShellWindow();
+  HWND window = GetDesktopWindow();
 
   D3DPRESENT_PARAMETERS parameters = { 0 };
   parameters.BackBufferWidth = 1;

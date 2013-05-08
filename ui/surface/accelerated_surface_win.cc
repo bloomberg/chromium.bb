@@ -620,6 +620,7 @@ void AcceleratedPresenter::ResetPresentThread(
 #if defined(USE_AURA)
 void AcceleratedPresenter::SetNewTargetWindow(gfx::PluginWindowHandle window) {
   window_ = window;
+  swap_chain_ = NULL;
 }
 #endif
 
@@ -702,7 +703,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     parameters.BackBufferHeight = quantized_size.height();
     parameters.BackBufferCount = 1;
     parameters.BackBufferFormat = D3DFMT_A8R8G8B8;
-    parameters.hDeviceWindow = GetShellWindow();
+    parameters.hDeviceWindow = window_;
     parameters.Windowed = TRUE;
     parameters.Flags = 0;
     parameters.PresentationInterval = GetPresentationInterval();
