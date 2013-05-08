@@ -1665,3 +1665,5 @@ crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-simple.html [ P
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/resize-corner-hidpi.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/video-controls-in-hidpi.html [ Pass Timeout ]
+
+crbug.com/239077 fast/canvas/webgl/index-validation-with-resized-buffer.html  [ Crash ]
