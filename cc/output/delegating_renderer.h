@@ -53,6 +53,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   ResourceProvider* resource_provider_;
   RendererCapabilities capabilities_;
   bool visible_;
+  RenderPassList render_passes_for_swap_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingRenderer);
 };

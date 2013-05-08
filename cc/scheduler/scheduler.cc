@@ -96,6 +96,10 @@ int Scheduler::MaxFramesPending() const {
   return frame_rate_controller_->MaxFramesPending();
 }
 
+int Scheduler::NumFramesPendingForTesting() const {
+  return frame_rate_controller_->NumFramesPendingForTesting();
+}
+
 void Scheduler::SetSwapBuffersCompleteSupported(bool supported) {
   frame_rate_controller_->SetSwapBuffersCompleteSupported(supported);
 }

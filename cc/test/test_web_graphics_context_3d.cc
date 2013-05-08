@@ -47,10 +47,12 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       times_end_query_succeeds_(-1),
       context_lost_(false),
       context_lost_callback_(NULL),
+      swap_buffers_callback_(NULL),
       max_texture_size_(1024),
       width_(0),
       height_(0),
-      bound_buffer_(0) {
+      bound_buffer_(0),
+      weak_ptr_factory_(this) {
 }
 
 TestWebGraphicsContext3D::TestWebGraphicsContext3D(
@@ -67,10 +69,12 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D(
       times_end_query_succeeds_(-1),
       context_lost_(false),
       context_lost_callback_(NULL),
+      swap_buffers_callback_(NULL),
       max_texture_size_(1024),
       width_(0),
       height_(0),
-      bound_buffer_(0) {
+      bound_buffer_(0),
+      weak_ptr_factory_(this) {
 }
 
 TestWebGraphicsContext3D::~TestWebGraphicsContext3D() {
@@ -125,13 +129,13 @@ WebGraphicsContext3D::Attributes
 }
 
 WebKit::WebString TestWebGraphicsContext3D::getString(WGC3Denum name) {
-  std::string string;
+  std::string string("GL_CHROMIUM_swapbuffers_complete_callback");
 
   if (name == GL_EXTENSIONS) {
     if (have_extension_io_surface_)
-      string += "GL_CHROMIUM_iosurface GL_ARB_texture_rectangle ";
+      string += " GL_CHROMIUM_iosurface GL_ARB_texture_rectangle";
     if (have_extension_egl_image_)
-      string += "GL_OES_EGL_image_external";
+      string += " GL_OES_EGL_image_external";
   }
 
   return WebKit::WebString::fromUTF8(string.c_str());
@@ -346,7 +350,17 @@ void TestWebGraphicsContext3D::signalSyncPoint(
   sync_point_callbacks_.push_back(callback);
 }
 
+void TestWebGraphicsContext3D::setSwapBuffersCompleteCallbackCHROMIUM(
+    WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback) {
+  swap_buffers_callback_ = callback;
+}
+
 void TestWebGraphicsContext3D::prepareTexture() {
+  if (swap_buffers_callback_) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&TestWebGraphicsContext3D::SwapBuffersComplete,
+                              weak_ptr_factory_.GetWeakPtr()));
+  }
   CallAllSyncPointCallbacks();
 }
 
@@ -374,6 +388,11 @@ void TestWebGraphicsContext3D::CallAllSyncPointCallbacks() {
                    sync_point_callbacks_[i]));
   }
   sync_point_callbacks_.clear();
+}
+
+void TestWebGraphicsContext3D::SwapBuffersComplete() {
+  if (swap_buffers_callback_)
+    swap_buffers_callback_->onSwapBuffersComplete();
 }
 
 void TestWebGraphicsContext3D::bindBuffer(WebKit::WGC3Denum target,

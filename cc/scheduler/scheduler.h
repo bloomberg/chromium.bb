@@ -86,6 +86,7 @@ class CC_EXPORT Scheduler : FrameRateControllerClient {
 
   void SetMaxFramesPending(int max);
   int MaxFramesPending() const;
+  int NumFramesPendingForTesting() const;
 
   void SetSwapBuffersCompleteSupported(bool supported);
   void DidSwapBuffersComplete();

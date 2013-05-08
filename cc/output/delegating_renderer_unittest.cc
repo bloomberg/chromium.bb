@@ -58,6 +58,12 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    EXPECT_EQ(0u, output_surface_->num_sent_frames());
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    EXPECT_TRUE(result);
     EXPECT_EQ(1u, output_surface_->num_sent_frames());
 
     const CompositorFrame& last_frame = output_surface_->last_sent_frame();
@@ -114,6 +120,12 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    EXPECT_EQ(0u, output_surface_->num_sent_frames());
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    EXPECT_TRUE(result);
     EXPECT_EQ(1u, output_surface_->num_sent_frames());
 
     const CompositorFrame& last_frame = output_surface_->last_sent_frame();

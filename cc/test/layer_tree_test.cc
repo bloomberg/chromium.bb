@@ -119,6 +119,11 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     return result;
   }
 
+  virtual void OnSwapBuffersComplete() OVERRIDE {
+    LayerTreeHostImpl::OnSwapBuffersComplete();
+    test_hooks_->SwapBuffersCompleteOnThread(this);
+  }
+
   virtual bool ActivatePendingTreeIfNeeded() OVERRIDE {
     if (!pending_tree())
       return false;
@@ -275,7 +280,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient {
     test_hooks_->DidCommitAndDrawFrame();
   }
 
-  virtual void DidCompleteSwapBuffers() OVERRIDE {}
+  virtual void DidCompleteSwapBuffers() OVERRIDE {
+    test_hooks_->DidCompleteSwapBuffers();
+  }
 
   virtual void ScheduleComposite() OVERRIDE {
     test_hooks_->ScheduleComposite();

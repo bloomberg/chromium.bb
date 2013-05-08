@@ -5,6 +5,7 @@
 #ifndef CC_TEST_FAKE_OUTPUT_SURFACE_H_
 #define CC_TEST_FAKE_OUTPUT_SURFACE_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
@@ -76,9 +77,12 @@ class FakeOutputSurface : public OutputSurface {
       scoped_ptr<SoftwareOutputDevice> software_device,
       bool has_parent);
 
+  void SendFrameAck();
+
   CompositorFrame last_sent_frame_;
   size_t num_sent_frames_;
   bool vsync_notification_enabled_;
+  base::WeakPtrFactory<FakeOutputSurface> weak_ptr_factory_;
 };
 
 static inline scoped_ptr<cc::OutputSurface> CreateFakeOutputSurface() {

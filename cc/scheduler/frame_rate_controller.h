@@ -53,6 +53,7 @@ class CC_EXPORT FrameRateController {
   void DidAbortAllPendingFrames();
   void SetMaxFramesPending(int max_frames_pending);  // 0 for unlimited.
   int MaxFramesPending() const { return max_frames_pending_; }
+  int NumFramesPendingForTesting() const { return num_frames_pending_; }
 
   // This returns null for unthrottled frame-rate.
   base::TimeTicks NextTickTime();

@@ -111,6 +111,10 @@ class ThreadProxy : public Proxy,
     return scheduler_on_impl_thread_->MaxFramesPending();
   }
 
+  int NumFramesPendingForTesting() const {
+    return scheduler_on_impl_thread_->NumFramesPendingForTesting();
+  }
+
  private:
   ThreadProxy(LayerTreeHost* layer_tree_host, scoped_ptr<Thread> impl_thread);
 

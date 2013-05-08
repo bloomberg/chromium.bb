@@ -127,6 +127,7 @@ void FrameRateController::DidBeginFrame() {
 void FrameRateController::DidFinishFrame() {
   DCHECK(swap_buffers_complete_supported_);
 
+  DCHECK_GT(num_frames_pending_, 0);
   num_frames_pending_--;
   if (!is_time_source_throttling_)
     PostManualTick();

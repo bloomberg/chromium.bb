@@ -2770,5 +2770,91 @@ class LayerTreeHostTestAsyncReadbackLayerDestroyed : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestAsyncReadbackLayerDestroyed);
 
+class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestNumFramesPending()
+      : delegating_renderer_(false),
+        frame_(0) {}
+
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
+    if (delegating_renderer_)
+      return FakeOutputSurface::CreateDelegating3d().PassAs<OutputSurface>();
+    return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  // Round 1: commit + draw
+  // Round 2: commit only (no draw/swap)
+  // Round 3: draw only (no commit)
+  // Round 4: composite & readback (2 commits, no draw/swap)
+  // Round 5: commit + draw
+
+  virtual void DidCommit() OVERRIDE {
+    int commit = layer_tree_host()->commit_number();
+    switch (commit) {
+      case 2:
+        // Round 2 done.
+        EXPECT_EQ(1, frame_);
+        layer_tree_host()->SetNeedsRedraw();
+        break;
+      case 3:
+        // CompositeAndReadback in Round 4, first commit.
+        EXPECT_EQ(2, frame_);
+        break;
+      case 4:
+        // Round 4 done.
+        EXPECT_EQ(2, frame_);
+        layer_tree_host()->SetNeedsCommit();
+        layer_tree_host()->SetNeedsRedraw();
+        break;
+    }
+  }
+
+  virtual void DidCompleteSwapBuffers() OVERRIDE {
+    int commit = layer_tree_host()->commit_number();
+    ++frame_;
+    char pixels[4] = {0};
+    switch (frame_) {
+      case 1:
+        // Round 1 done.
+        EXPECT_EQ(1, commit);
+        layer_tree_host()->SetNeedsCommit();
+        break;
+      case 2:
+        // Round 3 done.
+        EXPECT_EQ(2, commit);
+        layer_tree_host()->CompositeAndReadback(pixels, gfx::Rect(0, 0, 1, 1));
+        break;
+      case 3:
+        // Round 5 done.
+        EXPECT_EQ(5, commit);
+        EndTest();
+        break;
+    }
+  }
+
+  virtual void SwapBuffersCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    const ThreadProxy* proxy = static_cast<ThreadProxy*>(impl->proxy());
+    EXPECT_EQ(0, proxy->NumFramesPendingForTesting());
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ protected:
+  bool delegating_renderer_;
+  int frame_;
+};
+
+TEST_F(LayerTreeHostTestNumFramesPending, DelegatingRenderer) {
+  delegating_renderer_ = true;
+  RunTest(true);
+}
+
+TEST_F(LayerTreeHostTestNumFramesPending, GLRenderer) {
+  delegating_renderer_ = false;
+  RunTest(true);
+}
+
 }  // namespace
 }  // namespace cc
