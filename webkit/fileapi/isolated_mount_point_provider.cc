@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
-#include "base/task/sequenced_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "webkit/blob/local_file_stream_reader.h"
 #include "webkit/fileapi/async_file_util_adapter.h"
 #include "webkit/fileapi/copy_or_move_file_validator.h"

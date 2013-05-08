@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
-#include "base/task/sequenced_task_runner_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/browser_message_filter.h"
 

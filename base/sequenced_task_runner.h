@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_SEQUENCED_TASK_RUNNER_H_
-#define BASE_TASK_SEQUENCED_TASK_RUNNER_H_
+#ifndef BASE_SEQUENCED_TASKRUNNER_H_
+#define BASE_SEQUENCED_TASKRUNNER_H_
 
 #include "base/base_export.h"
-#include "base/task/sequenced_task_runner_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/task_runner.h"
 
 namespace base {
@@ -156,4 +156,4 @@ class BASE_EXPORT SequencedTaskRunner : public TaskRunner {
 
 }  // namespace base
 
-#endif  // BASE_TASK_SEQUENCED_TASK_RUNNER_H_
+#endif  // BASE_SEQUENCED_TASKRUNNER_H_

@@ -17,10 +17,10 @@
 #include "base/message_pump.h"
 #include "base/observer_list.h"
 #include "base/pending_task.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/lock.h"
-#include "base/task/sequenced_task_runner_helpers.h"
-#include "base/time.h"
 #include "base/tracking_info.h"
+#include "base/time.h"
 
 #if defined(OS_WIN)
 // We need this to declare base::MessagePumpWin::Dispatcher, which we should

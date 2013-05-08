@@ -6,7 +6,7 @@
 #define CHROMEOS_IME_IBUS_DAEMON_CONTROLLER_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/task/sequenced_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {

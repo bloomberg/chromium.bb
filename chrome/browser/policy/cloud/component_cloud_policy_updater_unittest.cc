@@ -8,8 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/sequenced_task_runner.h"
 #include "base/sha1.h"
-#include "base/task/sequenced_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"

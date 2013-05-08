@@ -4,7 +4,7 @@
 
 #include "webkit/blob/blob_storage_host.h"
 
-#include "base/task/sequenced_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/blob/blob_data_handle.h"
 #include "webkit/blob/blob_storage_context.h"

@@ -9,7 +9,7 @@
 #include "base/files/file_util_proxy.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/task/sequenced_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/net_errors.h"
 #include "webkit/fileapi/file_stream_writer.h"

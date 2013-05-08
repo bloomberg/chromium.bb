@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/platform_file.h"
-#include "base/task/sequenced_task_runner_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/task_runner_bound_observer_list.h"

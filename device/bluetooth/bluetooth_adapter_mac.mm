@@ -4,8 +4,8 @@
 
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 
-#import <IOBluetooth/objc/IOBluetoothDevice.h>
 #import <IOBluetooth/objc/IOBluetoothDeviceInquiry.h>
+#import <IOBluetooth/objc/IOBluetoothDevice.h>
 #import <IOBluetooth/objc/IOBluetoothHostController.h>
 
 #include <string>
@@ -15,11 +15,11 @@
 #include "base/hash_tables.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/task/sequenced_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time.h"
+#include "base/strings/sys_string_conversions.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
 
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.

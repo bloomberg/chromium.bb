@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/task/sequenced_task_runner.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
 

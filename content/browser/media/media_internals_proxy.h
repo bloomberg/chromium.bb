@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_PROXY_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/task/sequenced_task_runner_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "content/browser/media/media_internals.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"

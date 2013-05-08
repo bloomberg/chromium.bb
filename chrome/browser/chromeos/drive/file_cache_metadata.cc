@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/metrics/histogram.h"
-#include "base/task/sequenced_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"

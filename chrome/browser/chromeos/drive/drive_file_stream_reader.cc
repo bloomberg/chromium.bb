@@ -9,7 +9,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/task/sequenced_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_reader.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"

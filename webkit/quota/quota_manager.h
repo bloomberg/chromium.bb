@@ -19,7 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/sequenced_task_runner_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_database.h"
 #include "webkit/quota/quota_task.h"

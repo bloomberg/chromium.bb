@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/sequenced_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "chromeos/ime/component_extension_ime_manager.h"

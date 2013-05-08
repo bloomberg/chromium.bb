@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PROFILES_REFCOUNTED_PROFILE_KEYED_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/task/sequenced_task_runner_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_thread.h"
 
 class RefcountedProfileKeyedService;

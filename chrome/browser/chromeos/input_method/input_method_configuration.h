@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_CONFIGURATION_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_CONFIGURATION_H_
 
-#include "base/task/sequenced_task_runner.h"
+#include "base/sequenced_task_runner.h"
 
 namespace chromeos {
 namespace input_method {

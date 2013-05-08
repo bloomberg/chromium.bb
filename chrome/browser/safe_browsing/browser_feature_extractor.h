@@ -20,7 +20,7 @@
 #include "base/callback.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task/sequenced_task_runner_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/time.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"

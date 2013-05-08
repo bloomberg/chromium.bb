@@ -12,7 +12,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/sequenced_task_runner_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"

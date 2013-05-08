@@ -6,7 +6,7 @@
 #define WEBKIT_DOM_STORAGE_DOM_STORAGE_TASK_RUNNER_
 
 #include "base/memory/ref_counted.h"
-#include "base/task/sequenced_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "webkit/storage/webkit_storage_export.h"

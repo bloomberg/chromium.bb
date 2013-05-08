@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
-#include "base/task/sequenced_task_runner_helpers.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
