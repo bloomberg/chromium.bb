@@ -323,7 +323,8 @@ std::string VertexShaderPosTexIdentity::GetShaderString() const {
 
 VertexShaderQuad::VertexShaderQuad()
     : matrix_location_(-1),
-      quad_location_(-1) {}
+      point_location_(-1),
+      tex_scale_location_(-1) {}
 
 void VertexShaderQuad::Init(WebGraphicsContext3D* context,
                             unsigned program,
@@ -331,51 +332,7 @@ void VertexShaderQuad::Init(WebGraphicsContext3D* context,
                             int* base_uniform_index) {
   static const char* shader_uniforms[] = {
     "matrix",
-    "quad",
-  };
-  int locations[2];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
-                             locations,
-                             using_bind_uniform,
-                             base_uniform_index);
-
-  matrix_location_ = locations[0];
-  quad_location_ = locations[1];
-  DCHECK_NE(matrix_location_, -1);
-  DCHECK_NE(quad_location_, -1);
-}
-
-std::string VertexShaderQuad::GetShaderString() const {
-  return VERTEX_SHADER(
-    attribute TexCoordPrecision vec4 a_position;
-    attribute float a_index;
-    uniform mat4 matrix;
-    uniform TexCoordPrecision vec2 quad[4];
-    void main() {
-      vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(
-          pos.x, pos.y, a_position.z, a_position.w);
-    }
-  );  // NOLINT(whitespace/parens)
-}
-
-VertexShaderQuadTex::VertexShaderQuadTex()
-    : matrix_location_(-1),
-      quad_location_(-1),
-      tex_scale_location_(-1) {}
-
-void VertexShaderQuadTex::Init(WebGraphicsContext3D* context,
-                               unsigned program,
-                               bool using_bind_uniform,
-                               int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
-    "matrix",
-    "quad",
+    "point",
     "texScale",
   };
   int locations[3];
@@ -390,25 +347,29 @@ void VertexShaderQuadTex::Init(WebGraphicsContext3D* context,
                              base_uniform_index);
 
   matrix_location_ = locations[0];
-  quad_location_ = locations[1];
+  point_location_ = locations[1];
   tex_scale_location_ = locations[2];
   DCHECK_NE(matrix_location_, -1);
-  DCHECK_NE(quad_location_, -1);
+  DCHECK_NE(point_location_, -1);
   DCHECK_NE(tex_scale_location_, -1);
 }
 
-std::string VertexShaderQuadTex::GetShaderString() const {
+std::string VertexShaderQuad::GetShaderString() const {
   return VERTEX_SHADER(
     attribute TexCoordPrecision vec4 a_position;
-    attribute float a_index;
+    attribute TexCoordPrecision vec2 a_texCoord;
     uniform mat4 matrix;
-    uniform TexCoordPrecision vec2 quad[4];
+    uniform TexCoordPrecision vec2 point[4];
     uniform TexCoordPrecision vec2 texScale;
     varying TexCoordPrecision vec2 v_texCoord;
     void main() {
-      vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(
-          pos.x, pos.y, a_position.z, a_position.w);
+      TexCoordPrecision vec2 complement = abs(a_texCoord - 1.0);
+      TexCoordPrecision vec4 pos = vec4(0.0, 0.0, a_position.z, a_position.w);
+      pos.xy += (complement.x * complement.y) * point[0];
+      pos.xy += (a_texCoord.x * complement.y) * point[1];
+      pos.xy += (a_texCoord.x * a_texCoord.y) * point[2];
+      pos.xy += (complement.x * a_texCoord.y) * point[3];
+      gl_Position = matrix * pos;
       v_texCoord = (pos.xy + vec2(0.5)) * texScale;
     }
   );  // NOLINT(whitespace/parens)
@@ -416,7 +377,7 @@ std::string VertexShaderQuadTex::GetShaderString() const {
 
 VertexShaderTile::VertexShaderTile()
     : matrix_location_(-1),
-      quad_location_(-1),
+      point_location_(-1),
       vertex_tex_transform_location_(-1) {}
 
 void VertexShaderTile::Init(WebGraphicsContext3D* context,
@@ -425,7 +386,7 @@ void VertexShaderTile::Init(WebGraphicsContext3D* context,
                             int* base_uniform_index) {
   static const char* shader_uniforms[] = {
     "matrix",
-    "quad",
+    "point",
     "vertexTexTransform",
   };
   int locations[3];
@@ -440,24 +401,28 @@ void VertexShaderTile::Init(WebGraphicsContext3D* context,
                              base_uniform_index);
 
   matrix_location_ = locations[0];
-  quad_location_ = locations[1];
+  point_location_ = locations[1];
   vertex_tex_transform_location_ = locations[2];
-  DCHECK(matrix_location_ != -1 && quad_location_ != -1 &&
+  DCHECK(matrix_location_ != -1 && point_location_ != -1 &&
          vertex_tex_transform_location_ != -1);
 }
 
 std::string VertexShaderTile::GetShaderString() const {
   return VERTEX_SHADER(
     attribute TexCoordPrecision vec4 a_position;
-    attribute float a_index;
+    attribute TexCoordPrecision vec2 a_texCoord;
     uniform mat4 matrix;
-    uniform TexCoordPrecision vec2 quad[4];
+    uniform TexCoordPrecision vec2 point[4];
     uniform TexCoordPrecision vec4 vertexTexTransform;
     varying TexCoordPrecision vec2 v_texCoord;
     void main() {
-      vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(
-          pos.x, pos.y, a_position.z, a_position.w);
+      TexCoordPrecision vec2 complement = abs(a_texCoord - 1.0);
+      TexCoordPrecision vec4 pos = vec4(0.0, 0.0, a_position.z, a_position.w);
+      pos.xy += (complement.x * complement.y) * point[0];
+      pos.xy += (a_texCoord.x * complement.y) * point[1];
+      pos.xy += (a_texCoord.x * a_texCoord.y) * point[2];
+      pos.xy += (complement.x * a_texCoord.y) * point[3];
+      gl_Position = matrix * pos;
       v_texCoord = pos.xy * vertexTexTransform.zw + vertexTexTransform.xy;
     }
   );  // NOLINT(whitespace/parens)

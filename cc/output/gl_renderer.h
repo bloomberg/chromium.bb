@@ -253,17 +253,17 @@ class CC_EXPORT GLRenderer
                          FragmentShaderRGBATexAlpha> RenderPassProgram;
   typedef ProgramBinding<VertexShaderPosTexTransform,
                          FragmentShaderRGBATexAlphaMask> RenderPassMaskProgram;
-  typedef ProgramBinding<VertexShaderQuadTex, FragmentShaderRGBATexAlphaAA>
+  typedef ProgramBinding<VertexShaderQuad, FragmentShaderRGBATexAlphaAA>
       RenderPassProgramAA;
-  typedef ProgramBinding<VertexShaderQuadTex, FragmentShaderRGBATexAlphaMaskAA>
+  typedef ProgramBinding<VertexShaderQuad, FragmentShaderRGBATexAlphaMaskAA>
       RenderPassMaskProgramAA;
   typedef ProgramBinding<VertexShaderPosTexTransform,
                          FragmentShaderRGBATexColorMatrixAlpha>
       RenderPassColorMatrixProgram;
-  typedef ProgramBinding<VertexShaderQuadTex,
+  typedef ProgramBinding<VertexShaderQuad,
                          FragmentShaderRGBATexAlphaMaskColorMatrixAA>
       RenderPassMaskColorMatrixProgramAA;
-  typedef ProgramBinding<VertexShaderQuadTex,
+  typedef ProgramBinding<VertexShaderQuad,
                          FragmentShaderRGBATexAlphaColorMatrixAA>
       RenderPassColorMatrixProgramAA;
   typedef ProgramBinding<VertexShaderPosTexTransform,
