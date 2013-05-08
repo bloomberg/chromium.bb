@@ -2,54 +2,66 @@
 // a class that stores static enablers for all experimental features. Note that
 // the method names must line up with the JavaScript method they enable for code
 // generation to work properly.
+//
+// Each feature can be assigned a "status":
+// status=stable -> Enable this in all Blink configurations.  We are committed to these APIs indefinitely.
+// status=experimental -> In-progress features, Web Developers might play with, but are not on by default in stable.
+// status=test -> Enabled in ContentShell for testing, otherwise off.
+// Features without a status are not enabled anywhere by default.
+//
+// "stable" features listed here should be rare, as anything which we've shipped stable
+// can have its runtime flag removed soon after.
+//
+// condition=ENABLE_NAME is used for wrapping features in compile-time
+// #if ENABLE(FEATURE) guards.  These are deprecated and should all be removed.
 
-ApplicationCache
+ApplicationCache status=stable
 AuthorShadowDOMForAnyElement
-CSSCompositing condition=CSS_COMPOSITING
-CSSExclusions
-CSSRegions
-CanvasPath
-CustomDOMElements
-Database
+CanvasPath status=test
+CSSCompositing condition=CSS_COMPOSITING, status=experimental
+CSSExclusions status=experimental
+CSSRegions status=experimental
+CustomDOMElements status=experimental
+Database status=stable
 DeviceMotion
-DeviceOrientation
-DialogElement
-DirectoryUpload
-EncryptedMedia condition=ENCRYPTED_MEDIA
-ExperimentalCanvasFeatures
-ExperimentalContentSecurityPolicyFeatures
-ExperimentalShadowDOM
+DeviceOrientation status=stable
+DialogElement status=experimental
+DirectoryUpload status=stable
+EncryptedMedia condition=ENCRYPTED_MEDIA, status=stable
+ExperimentalCanvasFeatures status=test
+ExperimentalContentSecurityPolicyFeatures status=experimental
+ExperimentalShadowDOM status=test
 ExperimentalWebSocket
-FileSystem
-FontLoadEvents
-Fullscreen
-Gamepad
-Geolocation
+FileSystem status=stable
+FontLoadEvents status=experimental
+Fullscreen status=stable
+Gamepad status=stable
+Geolocation status=stable
 IMEAPI
-IndexedDB
-InputTypeDateTime condition=INPUT_TYPE_DATETIME_INCOMPLETE
-InputTypeWeek
-JavaScriptI18NAPI condition=JAVASCRIPT_I18N_API
+IndexedDB status=stable
+InputTypeDateTime condition=INPUT_TYPE_DATETIME_INCOMPLETE, status=test
+InputTypeWeek status=stable
+JavaScriptI18NAPI condition=JAVASCRIPT_I18N_API, status=stable
 LangAttributeAwareFormControlUI
 LazyLayout
-LocalStorage
+LocalStorage status=stable
 Media custom
-MediaSource
-MediaStream
-Notifications
-PeerConnection depends_on=MediaStream
-Quota
-RequestAutocomplete
-ScriptedSpeech
-SeamlessIFrames
-SessionStorage
+MediaSource status=stable
+MediaStream status=stable
+Notifications status=stable
+PeerConnection depends_on=MediaStream, status=stable
+Quota status=stable
+RequestAutocomplete status=test
+ScriptedSpeech status=stable
+SeamlessIFrames status=experimental
+SessionStorage status=stable
 SharedWorker custom
-SpeechInput
+SpeechInput status=stable
 SpeechSynthesis
-StyleScoped
-Touch
-VideoTrack
+StyleScoped status=experimental
+Touch status=stable
+VideoTrack status=stable
 WebAnimation
-WebAudio condition=WEB_AUDIO
-WebMIDI
+WebAudio condition=WEB_AUDIO, status=stable
+WebMIDI status=test
 WebPInAcceptHeader

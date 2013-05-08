@@ -41,57 +41,20 @@ namespace WebKit {
 
 void WebRuntimeFeatures::enableStableFeatures(bool enable)
 {
-    enableApplicationCache(enable);
-    enableDatabase(enable);
-    enableDeviceOrientation(enable);
-    enableDirectoryUpload(enable);
-    enableEncryptedMedia(enable);
-    enableFileSystem(enable);
-    enableFullscreen(enable);
-    enableGamepad(enable);
-    enableGeolocation(enable);
-    enableIndexedDB(enable);
-    enableInputTypeWeek(enable);
-    enableJavaScriptI18NAPI(enable);
-    enableLocalStorage(enable);
+    RuntimeEnabledFeatures::setStableFeaturesEnabled(enable);
+    // FIXME: enableMediaPlayer does not use RuntimeEnabledFeatures
+    // and does not belong as part of WebRuntimeFeatures.
     enableMediaPlayer(enable);
-    enableMediaSource(enable);
-    enableMediaStream(enable);
-    enableNotifications(enable);
-    enablePeerConnection(enable);
-    enableQuota(enable);
-    enableScriptedSpeech(enable);
-    enableSessionStorage(enable);
-    enableSpeechInput(enable);
-    enableTouch(enable);
-    enableVideoTrack(enable);
-    enableWebAudio(enable);
 }
 
 void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
 {
-    enableCSSCompositing(enable);
-    enableCSSExclusions(enable);
-    enableCSSRegions(enable);
-    enableCustomDOMElements(enable);
-    enableDialogElement(enable);
-    enableExperimentalContentSecurityPolicyFeatures(enable);
-    enableFontLoadEvents(enable);
-    enableSeamlessIFrames(enable);
-    enableStyleScoped(enable);
+    RuntimeEnabledFeatures::setExperimentalFeaturesEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
 {
-    // This method should be used by ContentShell
-    // to enable features which should be enabled for
-    // the layout tests but are not yet "experimental".
-    enableCanvasPath(enable);
-    enableExperimentalCanvasFeatures(enable);
-    enableExperimentalShadowDOM(enable);
-    enableInputTypeDateTime(enable);
-    enableRequestAutocomplete(enable);
-    enableWebMIDI(enable);
+    RuntimeEnabledFeatures::setTestFeaturesEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableApplicationCache(bool enable)

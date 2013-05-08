@@ -45,7 +45,9 @@ namespace WebCore {
 
 class %(class_name)s {
 public:
-%(method_declarations)s
+%(set_toggle_declarations)s
+
+%(accessor_declarations)s
 private:
     %(class_name)s() { }
 
@@ -63,17 +65,24 @@ IMPLEMENTATION_TEMPLATE = """%(license)s
 
 namespace WebCore {
 
+%(set_toggle_definitions)s
 %(storage_definitions)s
 
 } // namespace WebCore
 """
 
 class RuntimeFeatureWriter(in_generator.Writer):
-    class_name = "RuntimeEnabledFeatures"
+    class_name = 'RuntimeEnabledFeatures'
+
+    # FIXME: valid_values and defaults should probably roll into one object.
+    valid_values = {
+        'status': ['stable', 'experimental', 'test'],
+    }
     defaults = {
         'condition' : None,
         'depends_on' : [],
         'custom': False,
+        'status': None,
     }
 
     def __init__(self, in_file_path):
@@ -96,7 +105,10 @@ class RuntimeFeatureWriter(in_generator.Writer):
         lowered = lowered.replace("iME", "ime")
         return lowered
 
-    def _method_declaration(self, feature):
+    def _feature_set_declaration(self, feature_set):
+        return "    static void set%sFeaturesEnabled(bool);" % feature_set.capitalize()
+
+    def _feature_accessor_declaration(self, feature):
         if feature['custom']:
             return "    static bool %(first_lowered_name)sEnabled();\n" % feature
         unconditional = """    static void set%(name)sEnabled(bool isEnabled) { is%(name)sEnabled = isEnabled; }
@@ -118,8 +130,30 @@ class RuntimeFeatureWriter(in_generator.Writer):
         return HEADER_TEMPLATE % {
             'class_name' : self.class_name,
             'license' : license.license_for_generated_cpp(),
-            'method_declarations' : "\n".join(map(self._method_declaration, self._all_features)),
+            'set_toggle_declarations' : "\n".join(map(self._feature_set_declaration, self._feature_sets())),
+            'accessor_declarations' : "\n".join(map(self._feature_accessor_declaration, self._all_features)),
             'storage_declarations' : "\n".join(map(self._storage_declarations, self._non_custom_features)),
+        }
+
+    def _feature_sets(self):
+        # Another way to think of the status levels is as "sets of features"
+        # which is how we're referring to them in this generator.
+        return self.valid_values['status']
+
+    def _feature_toggle(self, feature):
+        return "    set%(name)sEnabled(enable);" % feature
+
+    def _feature_set_definition(self, feature_set):
+        features_in_set = filter(lambda feature: feature['status'] == feature_set, self._all_features)
+        template = """void %(class_name)s::set%(feature_set)sFeaturesEnabled(bool enable)
+{
+%(feature_toggles)s
+}
+"""
+        return template % {
+            'class_name': self.class_name,
+            'feature_set': feature_set.capitalize(),
+            'feature_toggles': "\n".join(map(self._feature_toggle, features_in_set)),
         }
 
     def _storage_definition(self, feature):
@@ -130,7 +164,8 @@ class RuntimeFeatureWriter(in_generator.Writer):
         return IMPLEMENTATION_TEMPLATE % {
             'class_name' : self.class_name,
             'license' : license.license_for_generated_cpp(),
-            'storage_definitions' : "\n".join(map(self._storage_definition, self._non_custom_features)),
+            'set_toggle_definitions' : '\n'.join(map(self._feature_set_definition, self._feature_sets())),
+            'storage_definitions' : '\n'.join(map(self._storage_definition, self._non_custom_features)),
         }
 
 
