@@ -50,13 +50,13 @@
             internals.resumeAnimations(document);
     }
     
-    function setTimers()
-    {
-        setTimeout(suspend, 100);
-        setTimeout(resume, 300);
+    const callbacks = {
+      0.1: suspend,
+      0.3: resume,
     }
 
-    runAnimationTest(expectedValues, setTimers, undefined, true);
+    // FIXME: pause API doesn't understand suspend/resume
+    runAnimationTest(expectedValues, callbacks, undefined, 'do-not-use-pause-api');
     
   </script>
 </head>

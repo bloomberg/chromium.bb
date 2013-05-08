@@ -26,12 +26,6 @@
     </style>
     <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
-    
-    const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      [null, 0.5, "box", "left", 200, 10],
-      [null, 1, "box", "top", 100, 10],
-    ];
 
     function findKeyframesRule(rule)
     {
@@ -42,38 +36,37 @@
                     return ss[i].cssRules[j];
             }
         }
-        
+
         return null;
     }
-        
-    function change()
-    {
-        // change keyframes
-        var keyframes = findKeyframesRule("anim");
-        keyframes.deleteRule("0%");
-        keyframes.deleteRule("40%");
-        keyframes.deleteRule("60%");
-        keyframes.deleteRule("100%");
-        keyframes.insertRule("0% { top: 50px; }");
-        keyframes.insertRule("10% { top: 100px; }");
-        keyframes.insertRule("90% { top: 100px; }");
-        keyframes.insertRule("100% { top: 150px; }");
-        document.getElementById('box').style.webkitAnimationName = "anim";
+
+    const expectedValues = [
+      // [animation-name, time, element-id, property, expected-value, tolerance]
+      [null, 0.5, "box", "left", 200, 10],
+      [null, 1, "box", "top", 100, 10],
+    ];
+
+    const callbacks = {
+      0.6: function() {
+          document.getElementById('box').style.webkitAnimationName = "none";
+          // a forced style-recalc aborts the previous animation
+          document.getElementById('box').offsetTop;
+          // change keyframes
+          var keyframes = findKeyframesRule("anim");
+          keyframes.deleteRule("0%");
+          keyframes.deleteRule("40%");
+          keyframes.deleteRule("60%");
+          keyframes.deleteRule("100%");
+          keyframes.insertRule("0% { top: 50px; }");
+          keyframes.insertRule("10% { top: 100px; }");
+          keyframes.insertRule("90% { top: 100px; }");
+          keyframes.insertRule("100% { top: 150px; }");
+          document.getElementById('box').style.webkitAnimationName = "anim";
+      }
     }
-    
-    function startChange()
-    {
-        document.getElementById('box').style.webkitAnimationName = "none";
-        setTimeout("change()", 0);
-    }
-    
-    function setup()
-    {
-        setTimeout("startChange()", 600);
-    }
-    
-    runAnimationTest(expectedValues, setup, undefined, 'do-not-use-pause-api');
-    
+
+    // FIXME: Consider whether we can support this kind of test (staggered start) under the pause API
+    runAnimationTest(expectedValues, callbacks, null, 'do-not-use-pause-api');
   </script>
 </head>
 <body>

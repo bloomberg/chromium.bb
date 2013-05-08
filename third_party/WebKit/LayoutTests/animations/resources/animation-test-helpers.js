@@ -6,7 +6,9 @@ Test page requirements:
 
 Function parameters:
     expected [required]: an array of arrays defining a set of CSS properties that must have given values at specific times (see below)
-    callback [optional]: a function to be executed just before the test starts (none by default)
+    callbacks [optional]: a function to be executed immediately after animation starts;
+                          or, an object in the form {time: function} containing functions to be
+                          called at the specified times (in seconds) during animation.
     event [optional]: which DOM event to wait for before starting the test ("webkitAnimationStart" by default)
 
     Each sub-array must contain these items in this order:
@@ -22,7 +24,7 @@ Function parameters:
     are the ids of 2 elements, whose values are compared for equality. In this case the expected value is ignored
     but the tolerance is used in the comparison. If the second element is prefixed with "static:", no animation on that
     element is required, allowing comparison with an unanimated "expected value" element.
-    
+
     If a string with a '.' is passed, this is an element in an iframe. The string before the dot is the iframe id
     and the string after the dot is the element name in that iframe.
 
@@ -227,7 +229,7 @@ function checkExpectedValue(expected, index)
 
         compareElements = true;
     }
-    
+
     // Check for a dot separated string
     var iframeId;
     if (!compareElements) {
@@ -238,9 +240,6 @@ function checkExpectedValue(expected, index)
         }
     }
 
-    if (animationName && hasPauseAnimationAPI)
-        internals.pauseAnimations(time);
-    
     var computedValue, computedValue2;
     if (compareElements) {
         computedValue = getPropertyValue(property, elementId, iframeId);
@@ -360,71 +359,92 @@ function endTest()
         testRunner.notifyDone();
 }
 
-function checkExpectedValueCallback(expected, index)
+function runChecksWithRAF(checks)
 {
-    return function() { checkExpectedValue(expected, index); };
-}
+    var finished = true;
+    var time = performance.now() - animStartTime;
 
-var testStarted = false;
-function startTest(expected, callback)
-{
-    if (testStarted) return;
-    testStarted = true;
-
-    if (callback)
-        callback();
-
-    var maxTime = 0;
-
-    for (var i = 0; i < expected.length; ++i) {
-        var time = expected[i][1];
-
-        if (hasPauseAnimationAPI)
-            checkExpectedValue(expected, i);
-        else {
-            if (time > maxTime)
-                maxTime = time;
-
-            window.setTimeout(checkExpectedValueCallback(expected, i), time * 1000);
+    for (var k in checks) {
+        var checkTime = Number(k);
+        if (checkTime > time) {
+            finished = false;
+            break;
         }
+        checks[k].forEach(function(check) { check(); });
+        delete checks[k];
     }
 
-    if (maxTime > 0)
-        window.setTimeout(endTest, maxTime * 1000 + 50);
-    else
+    if (finished)
         endTest();
+    else
+        requestAnimationFrame(runChecksWithRAF.bind(null, checks));
+}
+
+function runChecksWithPauseAPI(checks) {
+    for (var k in checks) {
+        var timeMs = Number(k);
+        internals.pauseAnimations(timeMs / 1000);
+        checks[k].forEach(function(check) { check(); });
+    }
+    endTest();
+}
+
+function startTest(checks)
+{
+    if (hasPauseAnimationAPI)
+        runChecksWithPauseAPI(checks);
+    else
+        runChecksWithRAF(checks);
 }
 
 var result = "";
 var hasPauseAnimationAPI;
+var animStartTime;
 
-function runAnimationTest(expected, callback, event, disablePauseAnimationAPI, doPixelTest)
+// FIXME: remove deprecatedEvent, disablePauseAnimationAPI and doPixelTest
+function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnimationAPI, doPixelTest)
 {
+    if (deprecatedEvent)
+        throw 'Event argument is deprecated!';
+    if (!expected)
+        throw "Expected results are missing!";
+
     hasPauseAnimationAPI = 'internals' in window;
     if (disablePauseAnimationAPI)
         hasPauseAnimationAPI = false;
+
+    var checks = {};
+
+    if (typeof callbacks == 'function')
+        checks[0] = [callbacks];
+    else for (var time in callbacks) {
+        timeMs = Math.round(time * 1000);
+        checks[timeMs] = [callbacks[time]];
+    }
+
+    for (var i = 0; i < expected.length; i++) {
+        var expectation = expected[i];
+        var timeMs = Math.round(expectation[1] * 1000);
+        if (!checks[timeMs])
+            checks[timeMs] = [];
+        checks[timeMs].push(checkExpectedValue.bind(null, expected, i));
+    }
 
     if (window.testRunner) {
         if (!doPixelTest)
             testRunner.dumpAsText();
         testRunner.waitUntilDone();
     }
-    
-    if (!expected)
-        throw("Expected results are missing!");
-    
-    var target = document;
-    if (event == undefined)
-        waitForAnimationToStart(target, function() { startTest(expected, callback); });
-    else if (event == "load")
-        window.addEventListener(event, function() {
-            startTest(expected, callback);
-        }, false);
-}
 
-function waitForAnimationToStart(element, callback)
-{
-    element.addEventListener('webkitAnimationStart', function() {
-        window.setTimeout(callback, 0); // delay to give hardware animations a chance to start
+    var started = false;
+    document.addEventListener('webkitAnimationStart', function() {
+        if (!started) {
+            started = true;
+            animStartTime = performance.now();
+            // delay to give hardware animations a chance to start
+            setTimeout(function() {
+                startTest(checks);
+            }, 0);
+        }
     }, false);
 }

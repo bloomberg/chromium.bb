@@ -37,17 +37,12 @@
       ["move1", 2.5, "box", "webkitTransform", [1,0,0,1, 200,0], 20],
     ];
 
-    function pauseAnimation()
-    {
-        document.getElementById("box").style.webkitAnimationPlayState = "paused";
-    }
+    const callbacks = {
+        2.5: function() { document.getElementById("box").style.webkitAnimationPlayState = "paused"; }
+    };
 
-    function setTimers()
-    {
-        setTimeout(pauseAnimation, 2500);
-    }
-
-    runAnimationTest(expectedValues, setTimers, null, true);
+    // FIXME: the pause api doesn't understand animation play state
+    runAnimationTest(expectedValues, callbacks, null, 'do-not-use-pause-api');
 
   </script>
 </head>

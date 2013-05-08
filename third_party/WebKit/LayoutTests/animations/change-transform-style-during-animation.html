@@ -67,7 +67,7 @@
        var animated = document.getElementById('animated');
        animated.style.webkitAnimationName = "anim";
        animated.addEventListener('webkitAnimationEnd', animationDone);
-       waitForAnimationToStart(animated, animationStarted);
+       animated.addEventListener('webkitAnimationStart', animationStarted);
      }
    </script>
 </head>

@@ -16,7 +16,7 @@
 
     .move1 {
       -webkit-animation-name: move1;
-      -webkit-animation-delay: 1s;
+      -webkit-animation-delay: 0.5s;
       -webkit-animation-duration: 1s;
       -webkit-animation-timing-function: linear;
     }
@@ -28,7 +28,7 @@
 
     .move2 {
       -webkit-animation-name: move2;
-      -webkit-animation-delay: 1s;
+      -webkit-animation-delay: 0.5s;
       -webkit-animation-duration: 1s;
       -webkit-animation-timing-function: linear;
     }
@@ -45,16 +45,20 @@
     }
     window.onload = function() {
       document.querySelector('#box1').classList.add('move1');
-      // Start the animation on box2 after 500ms
-      setTimeout(function() { document.querySelector('#box2').classList.add('move2'); }, 500);
 
       const expectedValues = [
         // [animation-name, time, element-id, property, expected-value, tolerance]
-        [null, 1.0, "box1", "left",  200, 10],
-        [null, 1.0, "box2", "left",  100, 10],
+        [null, 0.5, "box1", "left",  100, 10],
+        [null, 1.5, "box2", "left",  100, 10],
       ];
 
-      runAnimationTest(expectedValues, undefined, undefined, 'do-not-use-pause-api');
+      const callbacks = {
+          // Start the animation on box2 500ms after the first animation
+          0.5: function() { document.querySelector('#box2').classList.add('move2'); }
+      };
+
+      // FIXME: Consider whether we can support this kind of test (staggered start) under the pause API
+      runAnimationTest(expectedValues, callbacks, null, 'do-not-use-pause-api');
     }
   </script>
 </head>
