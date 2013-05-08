@@ -31,6 +31,7 @@ var WEB_VIEW_API_METHODS = [
 var WEB_VIEW_EVENTS = {
   'close': [],
   'consolemessage': ['level', 'message', 'line', 'sourceId'],
+  'contentload' : [],
   'exit' : ['processId', 'reason'],
   'loadabort' : ['url', 'isTopLevel', 'reason'],
   'loadcommit' : ['url', 'isTopLevel'],

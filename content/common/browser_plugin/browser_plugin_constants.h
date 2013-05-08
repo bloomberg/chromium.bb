@@ -40,6 +40,7 @@ extern const char kAttributeSrc[];
 // Events.
 extern const char kEventClose[];
 extern const char kEventConsoleMessage[];
+extern const char kEventContentLoad[];
 extern const char kEventExit[];
 extern const char kEventLoadAbort[];
 extern const char kEventLoadCommit[];

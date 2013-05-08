@@ -39,6 +39,7 @@ const char kAttributeSrc[] = "src";
 // Events.
 const char kEventClose[] = "close";
 const char kEventConsoleMessage[] = "consolemessage";
+const char kEventContentLoad[] = "contentload";
 const char kEventExit[] = "exit";
 const char kEventLoadAbort[] = "loadabort";
 const char kEventLoadCommit[] = "loadcommit";
