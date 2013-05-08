@@ -557,6 +557,14 @@
                 '-Wstring-conversion',
               ],
             }],
+            ['OS=="android" and clang==0', {
+              # Disable sincos() optimization to avoid a linker error
+              # since Android's math library doesn't have sincos().
+              # Either -fno-builtin-sin or -fno-builtin-cos works.
+              'cflags': [
+                '-fno-builtin-sin',
+              ],
+            }],
           ],
         },
         # Building this target will hide the native OpenGL shared library and
