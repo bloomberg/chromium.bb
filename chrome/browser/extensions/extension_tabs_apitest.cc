@@ -129,7 +129,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabQuery) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "query.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabHighlight) {
+// Flaky on windows: http://crbug.com/239022
+#if defined(OS_WIN)
+#define MAYBE_TabHighlight DISABLED_TabHighlight
+#else
+#define MAYBE_TabHighlight TabHighlight
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabHighlight) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "highlight.html")) << message_;
 }
 
