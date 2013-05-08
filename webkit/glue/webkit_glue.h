@@ -39,17 +39,6 @@ WEBKIT_GLUE_EXPORT void SetJavaScriptFlags(const std::string& flags);
 // Turn on logging for flags in the provided comma delimited list.
 WEBKIT_GLUE_EXPORT void EnableWebCoreLogChannels(const std::string& channels);
 
-// Returns the text of the document element.
-WEBKIT_GLUE_EXPORT base::string16 DumpDocumentText(WebKit::WebFrame* web_frame);
-
-// Returns the text of the document element and optionally its child frames.
-// If recursive is false, this is equivalent to DumpDocumentText followed by
-// a newline.  If recursive is true, it recursively dumps all frames as text.
-base::string16 DumpFramesAsText(WebKit::WebFrame* web_frame, bool recursive);
-
-// Returns the renderer's description of its tree (its externalRepresentation).
-WEBKIT_GLUE_EXPORT base::string16 DumpRenderer(WebKit::WebFrame* web_frame);
-
 // Returns the number of page where the specified element will be put.
 int PageNumberForElementById(WebKit::WebFrame* web_frame,
                              const std::string& id,
@@ -60,17 +49,6 @@ int PageNumberForElementById(WebKit::WebFrame* web_frame,
 int NumberOfPages(WebKit::WebFrame* web_frame,
                   float page_width_in_pixels,
                   float page_height_in_pixels);
-
-// Returns a dump of the scroll position of the webframe.
-base::string16 DumpFrameScrollPosition(WebKit::WebFrame* web_frame,
-                                       bool recursive);
-
-// Returns a dump of the given history state suitable for implementing the
-// dumpBackForwardList command of the testRunner.
-WEBKIT_GLUE_EXPORT base::string16 DumpHistoryState(
-    const std::string& history_state,
-    int indent,
-    bool is_current);
 
 #ifndef NDEBUG
 // Checks various important objects to see if there are any in memory, and

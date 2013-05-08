@@ -54,7 +54,6 @@
 #endif
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "v8/include/v8.h"
-#include "webkit/glue/glue_serialize.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebData;
@@ -101,43 +100,6 @@ void EnableWebCoreLogChannels(const std::string& channels) {
   }
 }
 
-base::string16 DumpDocumentText(WebFrame* web_frame) {
-  // We use the document element's text instead of the body text here because
-  // not all documents have a body, such as XML documents.
-  WebElement document_element = web_frame->document().documentElement();
-  if (document_element.isNull())
-    return base::string16();
-
-  return document_element.innerText();
-}
-
-base::string16 DumpFramesAsText(WebFrame* web_frame, bool recursive) {
-  base::string16 result;
-
-  // Add header for all but the main frame. Skip empty frames.
-  if (web_frame->parent() &&
-      !web_frame->document().documentElement().isNull()) {
-    result.append(ASCIIToUTF16("\n--------\nFrame: '"));
-    result.append(web_frame->uniqueName());
-    result.append(ASCIIToUTF16("'\n--------\n"));
-  }
-
-  result.append(DumpDocumentText(web_frame));
-  result.append(ASCIIToUTF16("\n"));
-
-  if (recursive) {
-    WebFrame* child = web_frame->firstChild();
-    for (; child; child = child->nextSibling())
-      result.append(DumpFramesAsText(child, recursive));
-  }
-
-  return result;
-}
-
-base::string16 DumpRenderer(WebFrame* web_frame) {
-  return web_frame->renderTreeAsText();
-}
-
 int NumberOfPages(WebFrame* web_frame,
                   float page_width_in_pixels,
                   float page_height_in_pixels) {
@@ -152,95 +114,6 @@ int NumberOfPages(WebFrame* web_frame,
   int number_of_pages = web_frame->printBegin(print_params);
   web_frame->printEnd();
   return number_of_pages;
-}
-
-base::string16 DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
-  gfx::Size offset = web_frame->scrollOffset();
-  std::string result_utf8;
-
-  if (offset.width() > 0 || offset.height() > 0) {
-    if (web_frame->parent()) {
-      base::StringAppendF(&result_utf8, "frame '%s' ",
-                          UTF16ToUTF8(web_frame->uniqueName()).c_str());
-    }
-    base::StringAppendF(&result_utf8, "scrolled to %d,%d\n",
-                        offset.width(), offset.height());
-  }
-
-  base::string16 result = UTF8ToUTF16(result_utf8);
-
-  if (recursive) {
-    WebFrame* child = web_frame->firstChild();
-    for (; child; child = child->nextSibling())
-      result.append(DumpFrameScrollPosition(child, recursive));
-  }
-
-  return result;
-}
-
-// Returns True if item1 < item2.
-static bool HistoryItemCompareLess(const WebHistoryItem& item1,
-                                   const WebHistoryItem& item2) {
-  base::string16 target1 = item1.target();
-  base::string16 target2 = item2.target();
-  std::transform(target1.begin(), target1.end(), target1.begin(), tolower);
-  std::transform(target2.begin(), target2.end(), target2.begin(), tolower);
-  return target1 < target2;
-}
-
-// Writes out a HistoryItem into a UTF-8 string in a readable format.
-static std::string DumpHistoryItem(const WebHistoryItem& item,
-                                   int indent, bool is_current) {
-  std::string result;
-
-  if (is_current) {
-    result.append("curr->");
-    result.append(indent - 6, ' ');  // 6 == "curr->".length()
-  } else {
-    result.append(indent, ' ');
-  }
-
-  std::string url = item.urlString().utf8();
-  size_t pos;
-  if (url.find(kFileUrlPattern) == 0 &&
-      ((pos = url.find(kLayoutTestsPattern)) != std::string::npos)) {
-    // adjust file URLs to match upstream results.
-    url.replace(0, pos + kLayoutTestsPatternSize, kFileTestPrefix);
-  } else if (url.find(kDataUrlPattern) == 0) {
-    // URL-escape data URLs to match results upstream.
-    std::string path = net::EscapePath(url.substr(kDataUrlPatternSize));
-    url.replace(kDataUrlPatternSize, url.length(), path);
-  }
-
-  result.append(url);
-  if (!item.target().isEmpty())
-    result.append(" (in frame \"" + UTF16ToUTF8(item.target()) + "\")");
-  if (item.isTargetItem())
-    result.append("  **nav target**");
-  result.append("\n");
-
-  const WebVector<WebHistoryItem>& children = item.children();
-  if (!children.isEmpty()) {
-    // Must sort to eliminate arbitrary result ordering which defeats
-    // reproducible testing.
-    // TODO(darin): WebVector should probably just be a std::vector!!
-    std::vector<WebHistoryItem> sorted_children;
-    for (size_t i = 0; i < children.size(); ++i)
-      sorted_children.push_back(children[i]);
-    std::sort(sorted_children.begin(), sorted_children.end(),
-              HistoryItemCompareLess);
-    for (size_t i = 0; i < sorted_children.size(); i++)
-      result += DumpHistoryItem(sorted_children[i], indent+4, false);
-  }
-
-  return result;
-}
-
-base::string16 DumpHistoryState(const std::string& history_state, int indent,
-                          bool is_current) {
-  return UTF8ToUTF16(
-      DumpHistoryItem(HistoryItemFromString(history_state), indent,
-                      is_current));
 }
 
 #ifndef NDEBUG

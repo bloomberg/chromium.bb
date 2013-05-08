@@ -10,8 +10,9 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/test/render_view_test.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "webkit/glue/cpp_binding_example.h"
-#include "webkit/glue/webkit_glue.h"
 
 using webkit_glue::CppArgumentList;
 using webkit_glue::CppBindingExample;
@@ -87,7 +88,9 @@ class CppBoundClassTest : public RenderViewTest {
   // text is empty.
   void CheckJavaScriptFailure(const std::string& javascript) {
     ExecuteJavaScript(javascript.c_str());
-    EXPECT_EQ("", UTF16ToASCII(webkit_glue::DumpDocumentText(GetMainFrame())));
+    EXPECT_EQ(
+        "",
+        UTF16ToASCII(GetMainFrame()->document().documentElement().innerText()));
   }
 
   void CheckTrue(const std::string& expression) {
