@@ -259,10 +259,13 @@ void Preferences::RegisterUserPrefs(
       prefs::kLanguageRemapAltKeyTo,
       input_method::kAltKey,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  // We don't sync the CapsLock remapping pref, since the UI hides this pref
+  // on certain devices, so syncing a non-default value to a device that
+  // doesn't allow changing the pref would be odd. http://crbug.com/167237
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapCapsLockKeyTo,
       input_method::kCapsLockKey,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapDiamondKeyTo,
       input_method::kControlKey,
