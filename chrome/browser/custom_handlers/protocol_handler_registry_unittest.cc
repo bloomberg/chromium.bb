@@ -73,6 +73,9 @@ class FakeURLRequestJobFactory : public net::URLRequestJobFactory {
   virtual bool IsHandledURL(const GURL& url) const OVERRIDE {
     return false;
   }
+  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+    return true;
+  }
 };
 
 void AssertWillHandleIO(

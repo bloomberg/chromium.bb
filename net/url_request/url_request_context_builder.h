@@ -25,6 +25,7 @@
 
 namespace net {
 
+class FtpTransactionFactory;
 class HostMappingRules;
 class ProxyConfigService;
 class URLRequestContext;
@@ -82,10 +83,22 @@ class NET_EXPORT URLRequestContextBuilder {
     user_agent_ = user_agent;
   }
 
-  // By default it's disabled.
+  // Control support for data:// requests. By default it's disabled.
+  void set_data_enabled(bool enable) {
+    data_enabled_ = enable;
+  }
+
+  // Control support for file:// requests. By default it's disabled.
+  void set_file_enabled(bool enable) {
+    file_enabled_ = enable;
+  }
+
+#if !defined(DISABLE_FTP_SUPPORT)
+  // Control support for ftp:// requests. By default it's disabled.
   void set_ftp_enabled(bool enable) {
     ftp_enabled_ = enable;
   }
+#endif
 
   // Uses BasicNetworkDelegate by default. Note that calling Build will unset
   // any custom delegate in builder, so this must be called each time before
@@ -114,7 +127,14 @@ class NET_EXPORT URLRequestContextBuilder {
  private:
   std::string accept_language_;
   std::string user_agent_;
+  // Include support for data:// requests.
+  bool data_enabled_;
+  // Include support for file:// requests.
+  bool file_enabled_;
+#if !defined(DISABLE_FTP_SUPPORT)
+  // Include support for ftp:// requests.
   bool ftp_enabled_;
+#endif
   bool http_cache_enabled_;
   HttpCacheParams http_cache_params_;
   HttpNetworkSessionParams http_network_session_params_;
@@ -122,6 +142,7 @@ class NET_EXPORT URLRequestContextBuilder {
   scoped_ptr<ProxyConfigService> proxy_config_service_;
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   scoped_ptr<NetworkDelegate> network_delegate_;
+  scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextBuilder);
 };

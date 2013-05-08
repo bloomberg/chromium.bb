@@ -33,6 +33,7 @@ class NET_EXPORT URLRequestJobFactoryImpl : public URLRequestJobFactory {
       NetworkDelegate* network_delegate) const OVERRIDE;
   virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE;
   virtual bool IsHandledURL(const GURL& url) const OVERRIDE;
+  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE;
 
  private:
   typedef std::map<std::string, ProtocolHandler*> ProtocolHandlerMap;

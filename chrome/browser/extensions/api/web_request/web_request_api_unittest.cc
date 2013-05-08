@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
+#include "chrome/browser/net/about_protocol_handler.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/features/feature.h"
@@ -36,6 +37,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/auth.h"
 #include "net/base/capturing_net_log.h"
@@ -44,6 +46,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest-message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -229,6 +232,12 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
       &profile_, extension2_id, extension2_id, kEventName, kEventName + "/2",
       filter, ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING, -1, -1,
       ipc_sender_factory.GetWeakPtr());
+
+  net::URLRequestJobFactoryImpl job_factory;
+  job_factory.SetProtocolHandler(
+      chrome::kAboutScheme,
+      new chrome_browser_net::AboutProtocolHandler());
+  context_->set_job_factory(&job_factory);
 
   GURL redirect_url("about:redirected");
   GURL not_chosen_redirect_url("about:not_chosen");

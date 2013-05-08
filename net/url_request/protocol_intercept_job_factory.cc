@@ -39,4 +39,9 @@ bool ProtocolInterceptJobFactory::IsHandledURL(const GURL& url) const {
   return job_factory_->IsHandledURL(url);
 }
 
+bool ProtocolInterceptJobFactory::IsSafeRedirectTarget(
+    const GURL& location) const {
+  return job_factory_->IsSafeRedirectTarget(location);
+}
+
 }  // namespace net

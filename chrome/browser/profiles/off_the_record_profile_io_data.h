@@ -19,6 +19,11 @@ class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
 class Profile;
 
+namespace net {
+class FtpTransactionFactory;
+class HttpTransactionFactory;
+}  // namespace net
+
 // OffTheRecordProfile owns a OffTheRecordProfileIOData::Handle, which holds a
 // reference to the OffTheRecordProfileIOData. OffTheRecordProfileIOData is
 // intended to own all the objects owned by OffTheRecordProfile which live on

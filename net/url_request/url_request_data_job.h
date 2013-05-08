@@ -18,8 +18,6 @@ class URLRequestDataJob : public URLRequestSimpleJob {
  public:
   URLRequestDataJob(URLRequest* request, NetworkDelegate* network_delegate);
 
-  static URLRequest::ProtocolFactory Factory;
-
   // URLRequestSimpleJob
   virtual int GetData(std::string* mime_type,
                       std::string* charset,

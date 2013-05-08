@@ -19,7 +19,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
-#include "net/ftp/ftp_auth_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
@@ -30,7 +29,6 @@ namespace net {
 class CertVerifier;
 class CookieStore;
 class FraudulentCertificateReporter;
-class FtpTransactionFactory;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpTransactionFactory;
@@ -131,14 +129,6 @@ class NET_EXPORT URLRequestContext
     http_transaction_factory_ = factory;
   }
 
-  // Gets the ftp transaction factory for this context.
-  FtpTransactionFactory* ftp_transaction_factory() const {
-    return ftp_transaction_factory_;
-  }
-  void set_ftp_transaction_factory(FtpTransactionFactory* factory) {
-    ftp_transaction_factory_ = factory;
-  }
-
   void set_network_delegate(NetworkDelegate* network_delegate) {
     network_delegate_ = network_delegate;
   }
@@ -163,15 +153,6 @@ class NET_EXPORT URLRequestContext
   void set_transport_security_state(
       TransportSecurityState* state) {
     transport_security_state_ = state;
-  }
-
-  // Gets the FTP authentication cache for this context.
-  FtpAuthCache* ftp_auth_cache() const {
-#if !defined(DISABLE_FTP_SUPPORT)
-    return ftp_auth_cache_.get();
-#else
-    return NULL;
-#endif
   }
 
   // ---------------------------------------------------------------------------
@@ -237,11 +218,7 @@ class NET_EXPORT URLRequestContext
   HttpUserAgentSettings* http_user_agent_settings_;
   scoped_refptr<CookieStore> cookie_store_;
   TransportSecurityState* transport_security_state_;
-#if !defined(DISABLE_FTP_SUPPORT)
-  scoped_ptr<FtpAuthCache> ftp_auth_cache_;
-#endif
   HttpTransactionFactory* http_transaction_factory_;
-  FtpTransactionFactory* ftp_transaction_factory_;
   const URLRequestJobFactory* job_factory_;
   URLRequestThrottlerManager* throttler_manager_;
 

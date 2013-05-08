@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {
@@ -20,14 +21,16 @@ class URLRequestJob;
 class NET_EXPORT FtpProtocolHandler :
     public URLRequestJobFactory::ProtocolHandler {
  public:
-  FtpProtocolHandler(FtpTransactionFactory* ftp_transaction_factory,
-                     FtpAuthCache* ftp_auth_cache);
+  explicit FtpProtocolHandler(FtpTransactionFactory* ftp_transaction_factory);
+  virtual ~FtpProtocolHandler();
   virtual URLRequestJob* MaybeCreateJob(
       URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
+  friend class FtpTestURLRequestContext;
+
   FtpTransactionFactory* ftp_transaction_factory_;
-  FtpAuthCache* ftp_auth_cache_;
+  scoped_ptr<FtpAuthCache> ftp_auth_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(FtpProtocolHandler);
 };

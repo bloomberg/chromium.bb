@@ -17,7 +17,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
-#include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -114,8 +113,6 @@ ServiceURLRequestContext::ServiceURLRequestContext(
   storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
       net_proxy_config_service, 0u, NULL));
   storage_.set_cert_verifier(net::CertVerifier::CreateDefault());
-  storage_.set_ftp_transaction_factory(
-      new net::FtpNetworkLayer(host_resolver()));
   storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);
   storage_.set_http_auth_handler_factory(
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));

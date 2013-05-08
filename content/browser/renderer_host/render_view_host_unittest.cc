@@ -12,7 +12,9 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/test/test_content_browser_client.h"
 #include "content/test/test_web_contents.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
@@ -20,7 +22,39 @@
 
 namespace content {
 
+class RenderViewHostTestBrowserClient : public TestContentBrowserClient {
+ public:
+  RenderViewHostTestBrowserClient() {}
+  virtual ~RenderViewHostTestBrowserClient() {}
+
+  virtual bool IsHandledURL(const GURL& url) OVERRIDE {
+    return url.scheme() == chrome::kFileScheme;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestBrowserClient);
+};
+
 class RenderViewHostTest : public RenderViewHostImplTestHarness {
+ public:
+  RenderViewHostTest() : old_browser_client_(NULL) {}
+  virtual ~RenderViewHostTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    RenderViewHostImplTestHarness::SetUp();
+    old_browser_client_ = SetBrowserClientForTesting(&test_browser_client_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    SetBrowserClientForTesting(old_browser_client_);
+    RenderViewHostImplTestHarness::TearDown();
+  }
+
+ private:
+  RenderViewHostTestBrowserClient test_browser_client_;
+  ContentBrowserClient* old_browser_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostTest);
 };
 
 // All about URLs reported by the renderer should get rewritten to about:blank.

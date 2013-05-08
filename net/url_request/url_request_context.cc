@@ -10,7 +10,6 @@
 #include "base/string_util.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
-#include "net/ftp/ftp_transaction_factory.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
@@ -29,11 +28,7 @@ URLRequestContext::URLRequestContext()
       http_server_properties_(NULL),
       http_user_agent_settings_(NULL),
       transport_security_state_(NULL),
-#if !defined(DISABLE_FTP_SUPPORT)
-      ftp_auth_cache_(new FtpAuthCache),
-#endif
       http_transaction_factory_(NULL),
-      ftp_transaction_factory_(NULL),
       job_factory_(NULL),
       throttler_manager_(NULL),
       url_requests_(new std::set<const URLRequest*>) {
@@ -57,9 +52,7 @@ void URLRequestContext::CopyFrom(const URLRequestContext* other) {
   set_http_server_properties(other->http_server_properties_);
   set_cookie_store(other->cookie_store_);
   set_transport_security_state(other->transport_security_state_);
-  // FTPAuthCache is unique per context.
   set_http_transaction_factory(other->http_transaction_factory_);
-  set_ftp_transaction_factory(other->ftp_transaction_factory_);
   set_job_factory(other->job_factory_);
   set_throttler_manager(other->throttler_manager_);
   set_http_user_agent_settings(other->http_user_agent_settings_);

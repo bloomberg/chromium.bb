@@ -106,12 +106,6 @@ void URLRequestContextStorage::set_http_transaction_factory(
   http_transaction_factory_.reset(http_transaction_factory);
 }
 
-void URLRequestContextStorage::set_ftp_transaction_factory(
-    FtpTransactionFactory* ftp_transaction_factory) {
-  context_->set_ftp_transaction_factory(ftp_transaction_factory);
-  ftp_transaction_factory_.reset(ftp_transaction_factory);
-}
-
 void URLRequestContextStorage::set_job_factory(
     URLRequestJobFactory* job_factory) {
   context_->set_job_factory(job_factory);

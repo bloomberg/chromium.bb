@@ -8,6 +8,11 @@ namespace net {
 
 URLRequestJobFactory::ProtocolHandler::~ProtocolHandler() {}
 
+bool URLRequestJobFactory::ProtocolHandler::IsSafeRedirectTarget(
+    const GURL& location) const {
+  return true;
+}
+
 URLRequestJobFactory::URLRequestJobFactory() {}
 
 URLRequestJobFactory::~URLRequestJobFactory() {}

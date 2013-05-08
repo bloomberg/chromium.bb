@@ -59,7 +59,13 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
 
     // Claim to always handle chrome:// URLs because the CPSP's notion of
     // allowing WebUI bindings is hard-wired to this particular scheme.
-    test_browser_client_.AddScheme("chrome");
+    test_browser_client_.AddScheme(chrome::kChromeUIScheme);
+
+    // Claim to always handle file:// URLs like the browser would.
+    // net::URLRequest::IsHandledURL() no longer claims support for default
+    // protocols as this is the responsibility of the browser (which is
+    // responsible for adding the appropriate ProtocolHandler).
+    test_browser_client_.AddScheme(chrome::kFileScheme);
   }
 
   virtual void TearDown() {

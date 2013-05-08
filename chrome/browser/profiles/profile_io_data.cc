@@ -433,16 +433,21 @@ ProfileIOData* ProfileIOData::FromResourceContext(
 bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
   DCHECK_EQ(scheme, StringToLowerASCII(scheme));
   static const char* const kProtocolList[] = {
-    extensions::kExtensionScheme,
-    chrome::kChromeUIScheme,
+    chrome::kFileScheme,
     chrome::kChromeDevToolsScheme,
+    extensions::kExtensionScheme,
+    chrome::kExtensionResourceScheme,
+    chrome::kChromeUIScheme,
+    chrome::kDataScheme,
 #if defined(OS_CHROMEOS)
-    chrome::kMetadataScheme,
     chrome::kDriveScheme,
 #endif  // defined(OS_CHROMEOS)
+    chrome::kAboutScheme,
+#if !defined(DISABLE_FTP_SUPPORT)
+    chrome::kFtpScheme,
+#endif  // !defined(DISABLE_FTP_SUPPORT)
     chrome::kBlobScheme,
     chrome::kFileSystemScheme,
-    chrome::kExtensionResourceScheme,
     chrome::kChromeSearchScheme,
   };
   for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
@@ -733,8 +738,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     net::NetworkDelegate* network_delegate,
-    net::FtpTransactionFactory* ftp_transaction_factory,
-    net::FtpAuthCache* ftp_auth_cache) const {
+    net::FtpTransactionFactory* ftp_transaction_factory) const {
   // NOTE(willchan): Keep these protocol handlers in sync with
   // ProfileIOData::IsHandledProtocol().
   bool set_protocol = job_factory->SetProtocolHandler(
@@ -769,8 +773,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
   DCHECK(ftp_transaction_factory);
   job_factory->SetProtocolHandler(
       chrome::kFtpScheme,
-      new net::FtpProtocolHandler(ftp_transaction_factory,
-                                  ftp_auth_cache));
+      new net::FtpProtocolHandler(ftp_transaction_factory));
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
   scoped_ptr<net::URLRequestJobFactory> top_job_factory =

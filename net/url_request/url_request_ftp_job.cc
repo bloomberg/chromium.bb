@@ -12,6 +12,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/ftp/ftp_auth_cache.h"
 #include "net/ftp/ftp_response_info.h"
 #include "net/ftp/ftp_transaction_factory.h"
 #include "net/http/http_response_headers.h"
@@ -44,26 +45,6 @@ URLRequestFtpJob::URLRequestFtpJob(
 URLRequestFtpJob::~URLRequestFtpJob() {
   if (pac_request_)
     proxy_service_->CancelPacRequest(pac_request_);
-}
-
-// static
-URLRequestJob* URLRequestFtpJob::Factory(URLRequest* request,
-                                         NetworkDelegate* network_delegate,
-                                         const std::string& scheme) {
-  DCHECK_EQ(scheme, "ftp");
-
-  int port = request->url().IntPort();
-  if (request->url().has_port() &&
-      !IsPortAllowedByFtp(port) && !IsPortAllowedByOverride(port)) {
-    return new URLRequestErrorJob(request,
-                                  network_delegate,
-                                  ERR_UNSAFE_PORT);
-  }
-
-  return new URLRequestFtpJob(request,
-                              network_delegate,
-                              request->context()->ftp_transaction_factory(),
-                              request->context()->ftp_auth_cache());
 }
 
 bool URLRequestFtpJob::IsSafeRedirect(const GURL& location) {

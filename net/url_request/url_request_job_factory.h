@@ -30,6 +30,13 @@ class NET_EXPORT URLRequestJobFactory
 
     virtual URLRequestJob* MaybeCreateJob(
         URLRequest* request, NetworkDelegate* network_delegate) const = 0;
+
+    // Indicates if it should be safe to redirect to |location|. Should handle
+    // protocols handled by MaybeCreateJob().  Only called when registered with
+    // URLRequestJobFactoryImpl::SetProtocolHandler() not called when used with
+    // ProtocolInterceptJobFactory.
+    // NOTE(pauljensen): Default implementation returns true.
+    virtual bool IsSafeRedirectTarget(const GURL& location) const;
   };
 
   URLRequestJobFactory();
@@ -43,6 +50,8 @@ class NET_EXPORT URLRequestJobFactory
   virtual bool IsHandledProtocol(const std::string& scheme) const = 0;
 
   virtual bool IsHandledURL(const GURL& url) const = 0;
+
+  virtual bool IsSafeRedirectTarget(const GURL& location) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLRequestJobFactory);

@@ -16,13 +16,6 @@ URLRequestDataJob::URLRequestDataJob(
     : URLRequestSimpleJob(request, network_delegate) {
 }
 
-// static
-URLRequestJob* URLRequestDataJob::Factory(URLRequest* request,
-                                          NetworkDelegate* network_delegate,
-                                          const std::string& scheme) {
-  return new URLRequestDataJob(request, network_delegate);
-}
-
 int URLRequestDataJob::GetData(std::string* mime_type,
                                std::string* charset,
                                std::string* data,

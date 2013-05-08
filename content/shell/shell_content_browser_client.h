@@ -42,6 +42,7 @@ class ShellContentBrowserClient : public ContentBrowserClient,
       const base::FilePath& partition_path,
       bool in_memory,
       ProtocolHandlerMap* protocol_handlers) OVERRIDE;
+  virtual bool IsHandledURL(const GURL& url) OVERRIDE;
   virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
                                               int child_process_id) OVERRIDE;
   virtual void OverrideWebkitPrefs(RenderViewHost* render_view_host,

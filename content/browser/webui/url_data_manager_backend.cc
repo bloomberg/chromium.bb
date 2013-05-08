@@ -412,6 +412,10 @@ class ChromeProtocolHandler
         GetURLDataManagerForResourceContext(resource_context_), is_incognito_);
   }
 
+  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+    return false;
+  }
+
  private:
   // These members are owned by ProfileIOData, which owns this ProtocolHandler.
   content::ResourceContext* const resource_context_;

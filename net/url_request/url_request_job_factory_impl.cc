@@ -64,4 +64,20 @@ bool URLRequestJobFactoryImpl::IsHandledURL(const GURL& url) const {
   return IsHandledProtocol(url.scheme());
 }
 
+bool URLRequestJobFactoryImpl::IsSafeRedirectTarget(
+    const GURL& location) const {
+  DCHECK(CalledOnValidThread());
+  if (!location.is_valid()) {
+    // Error cases are safely handled.
+    return true;
+  }
+  ProtocolHandlerMap::const_iterator it = protocol_handler_map_.find(
+      location.scheme());
+  if (it == protocol_handler_map_.end()) {
+    // Unhandled cases are safely handled.
+    return true;
+  }
+  return it->second->IsSafeRedirectTarget(location);
+}
+
 }  // namespace net

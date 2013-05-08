@@ -13,6 +13,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/webkit_test_helpers.h"
@@ -110,6 +111,27 @@ ShellContentBrowserClient::CreateRequestContextForStoragePartition(
       ShellBrowserContextForBrowserContext(content_browser_context);
   return shell_browser_context->CreateRequestContextForStoragePartition(
       partition_path, in_memory, protocol_handlers);
+}
+
+bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
+  if (!url.is_valid())
+    return false;
+  DCHECK_EQ(url.scheme(), StringToLowerASCII(url.scheme()));
+  // Keep in sync with ProtocolHandlers added by
+  // ShellURLRequestContextGetter::GetURLRequestContext().
+  static const char* const kProtocolList[] = {
+      chrome::kBlobScheme,
+      chrome::kFileSystemScheme,
+      chrome::kChromeUIScheme,
+      chrome::kChromeDevToolsScheme,
+      chrome::kDataScheme,
+      chrome::kFileScheme,
+  };
+  for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
+    if (url.scheme() == kProtocolList[i])
+      return true;
+  }
+  return false;
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(

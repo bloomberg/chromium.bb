@@ -21,6 +21,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -66,7 +67,9 @@ class RequestContext : public URLRequestContext {
     storage_.set_http_transaction_factory(new HttpCache(
         network_session,
         HttpCache::DefaultBackend::InMemory(0)));
-    storage_.set_job_factory(new URLRequestJobFactoryImpl());
+    URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl();
+    job_factory->SetProtocolHandler("file", new FileProtocolHandler());
+    storage_.set_job_factory(job_factory);
   }
 
   virtual ~RequestContext() {

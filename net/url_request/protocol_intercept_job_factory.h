@@ -22,6 +22,8 @@ class URLRequestJob;
 // given the option of creating a URLRequestJob for each potential URLRequest.
 // If |protocol_handler_| does not create a job (i.e. MaybeCreateJob() returns
 // NULL) the URLRequest is forwarded to the |job_factory_| to be handled there.
+// Only the MaybeCreateJob() member of |protocol_handler_| is called; the
+// IsSafeRedirectTarget() member is not used.
 class NET_EXPORT ProtocolInterceptJobFactory : public URLRequestJobFactory {
  public:
   ProtocolInterceptJobFactory(scoped_ptr<URLRequestJobFactory> job_factory,
@@ -35,6 +37,7 @@ class NET_EXPORT ProtocolInterceptJobFactory : public URLRequestJobFactory {
       NetworkDelegate* network_delegate) const OVERRIDE;
   virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE;
   virtual bool IsHandledURL(const GURL& url) const OVERRIDE;
+  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE;
 
  private:
   scoped_ptr<URLRequestJobFactory> job_factory_;

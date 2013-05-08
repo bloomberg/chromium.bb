@@ -58,6 +58,8 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/url_request/data_protocol_handler.h"
+#include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
@@ -558,6 +560,9 @@ class URLRequestTest : public PlatformTest {
   URLRequestTest() : default_context_(true) {
     default_context_.set_network_delegate(&default_network_delegate_);
     default_context_.set_net_log(&net_log_);
+    job_factory_.SetProtocolHandler("data", new DataProtocolHandler);
+    job_factory_.SetProtocolHandler("file", new FileProtocolHandler);
+    default_context_.set_job_factory(&job_factory_);
     default_context_.Init();
   }
   virtual ~URLRequestTest() {}
@@ -565,16 +570,15 @@ class URLRequestTest : public PlatformTest {
   // Adds the TestJobInterceptor to the default context.
   TestJobInterceptor* AddTestInterceptor() {
     TestJobInterceptor* protocol_handler_ = new TestJobInterceptor();
-    job_factory_.reset(new URLRequestJobFactoryImpl);
-    job_factory_->SetProtocolHandler("http", protocol_handler_);
-    default_context_.set_job_factory(job_factory_.get());
+    job_factory_.SetProtocolHandler("http", NULL);
+    job_factory_.SetProtocolHandler("http", protocol_handler_);
     return protocol_handler_;
   }
 
  protected:
   CapturingNetLog net_log_;
   TestNetworkDelegate default_network_delegate_;  // Must outlive URLRequest.
-  scoped_ptr<URLRequestJobFactoryImpl> job_factory_;
+  URLRequestJobFactoryImpl job_factory_;
   TestURLRequestContext default_context_;
 };
 
@@ -3862,6 +3866,20 @@ TEST_F(URLRequestTestHTTP, ContentTypeNormalizationTest) {
   req.Cancel();
 }
 
+TEST_F(URLRequestTestHTTP, ProtocolHandlerAndFactoryRestrictRedirects) {
+  // Test URLRequestJobFactory::ProtocolHandler::IsSafeRedirectTarget().
+  GURL file_url("file:///foo.txt");
+  GURL data_url("data:,foo");
+  FileProtocolHandler file_protocol_handler;
+  EXPECT_FALSE(file_protocol_handler.IsSafeRedirectTarget(file_url));
+  DataProtocolHandler data_protocol_handler;
+  EXPECT_TRUE(data_protocol_handler.IsSafeRedirectTarget(data_url));
+
+  // Test URLRequestJobFactoryImpl::IsSafeRedirectTarget().
+  EXPECT_FALSE(job_factory_.IsSafeRedirectTarget(file_url));
+  EXPECT_TRUE(job_factory_.IsSafeRedirectTarget(data_url));
+}
+
 TEST_F(URLRequestTestHTTP, RestrictRedirects) {
   ASSERT_TRUE(test_server_.Start());
 
@@ -5452,15 +5470,12 @@ TEST_F(URLRequestTestFTP, UnsafePort) {
   ASSERT_TRUE(test_server_.Start());
 
   URLRequestJobFactoryImpl job_factory;
+  FtpNetworkLayer ftp_transaction_factory(default_context_.host_resolver());
 
   GURL url("ftp://127.0.0.1:7");
-  FtpProtocolHandler ftp_protocol_handler(
-      default_context_.ftp_transaction_factory(),
-      default_context_.ftp_auth_cache());
   job_factory.SetProtocolHandler(
       "ftp",
-      new FtpProtocolHandler(default_context_.ftp_transaction_factory(),
-                             default_context_.ftp_auth_cache()));
+      new FtpProtocolHandler(&ftp_transaction_factory));
   default_context_.set_job_factory(&job_factory);
 
   TestDelegate d;

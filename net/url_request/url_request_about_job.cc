@@ -20,13 +20,6 @@ URLRequestAboutJob::URLRequestAboutJob(URLRequest* request,
       weak_factory_(this) {
 }
 
-// static
-URLRequestJob* URLRequestAboutJob::Factory(URLRequest* request,
-                                           NetworkDelegate* network_delegate,
-                                           const std::string& scheme) {
-  return new URLRequestAboutJob(request, network_delegate);
-}
-
 void URLRequestAboutJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.

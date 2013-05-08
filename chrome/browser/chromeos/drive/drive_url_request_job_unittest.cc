@@ -60,6 +60,10 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
     return url.is_valid() && IsHandledProtocol(url.scheme());
   }
 
+  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+    return true;
+  }
+
  private:
   const DriveURLRequestJob::FileSystemGetter file_system_getter_;
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;

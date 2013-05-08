@@ -13,7 +13,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
-#include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
@@ -23,6 +22,8 @@
 #include "net/ssl/default_server_bound_cert_store.h"
 #include "net/ssl/server_bound_cert_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
+#include "net/url_request/data_protocol_handler.h"
+#include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
@@ -114,9 +115,6 @@ void TestShellRequestContext::Init(
   cache->set_mode(cache_mode);
   storage_.set_http_transaction_factory(cache);
 
-  storage_.set_ftp_transaction_factory(
-      new net::FtpNetworkLayer(host_resolver()));
-
   blob_storage_controller_.reset(new webkit_blob::BlobStorageController());
   file_system_context_ = static_cast<SimpleFileSystem*>(
       WebKit::Platform::current()->fileSystem())->file_system_context();
@@ -132,6 +130,8 @@ void TestShellRequestContext::Init(
   job_factory->SetProtocolHandler(
       "filesystem",
       fileapi::CreateFileSystemProtocolHandler(file_system_context_.get()));
+  job_factory->SetProtocolHandler("data", new net::DataProtocolHandler);
+  job_factory->SetProtocolHandler("file", new net::FileProtocolHandler);
   storage_.set_job_factory(job_factory);
 }
 

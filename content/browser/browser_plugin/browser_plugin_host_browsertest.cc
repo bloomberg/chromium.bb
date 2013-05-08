@@ -14,6 +14,7 @@
 #include "content/browser/browser_plugin/test_browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest_manager.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
@@ -855,12 +856,18 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
 
   {
     // Navigate the guest to an illegal chrome:// URL.
+    GURL test_url("chrome://newtab");
+    ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    // Register chrome:// as a safe scheme so as to bypass
+    // ChildProcessSecurityPolicyImpl::CanRequestURL().
+    if (!policy->IsWebSafeScheme(test_url.scheme()))
+      policy->RegisterWebSafeScheme(test_url.scheme());
     const string16 expected_title = ASCIIToUTF16("ERR_INVALID_URL");
     content::TitleWatcher title_watcher(test_embedder()->web_contents(),
                                         expected_title);
     RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
         test_embedder()->web_contents()->GetRenderViewHost());
-    GURL test_url("chrome://newtab");
     ExecuteSyncJSFunction(
         rvh, base::StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
     string16 actual_title = title_watcher.WaitAndGetTitle();
