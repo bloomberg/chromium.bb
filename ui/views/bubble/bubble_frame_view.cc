@@ -102,38 +102,16 @@ void BubbleFrameView::GetWindowMask(const gfx::Size& size,
     return;
 
   // Use a window mask roughly matching the border in the image assets.
-
-  // Stroke size in pixels of borders in image assets.
   static const int kBorderStrokeSize = 1;
-
+  static const SkScalar kCornerRadius = SkIntToScalar(6);
   gfx::Insets border_insets = bubble_border_->GetInsets();
-  SkRect rect = {SkIntToScalar(border_insets.left() - kBorderStrokeSize),
-                 SkIntToScalar(border_insets.top() - kBorderStrokeSize),
-                 SkIntToScalar(size.width() - border_insets.right() +
-                               kBorderStrokeSize),
-                 SkIntToScalar(size.height() - border_insets.bottom() +
-                               kBorderStrokeSize)};
-
-  // Approximate rounded corners matching the border.
-  SkPoint polygon[] = {
-    {rect.left() + SkIntToScalar(2), rect.top()},
-    {rect.left() + SkIntToScalar(1), rect.top() + SkIntToScalar(1)},
-    {rect.left(), rect.top() + SkIntToScalar(2)},
-
-    {rect.left(), rect.bottom() - SkIntToScalar(3)},
-    {rect.left() + SkIntToScalar(1), rect.bottom() - SkIntToScalar(2)},
-    {rect.left() + SkIntToScalar(2), rect.bottom()},
-
-    {rect.right() - SkIntToScalar(3), rect.bottom()},
-    {rect.right() - SkIntToScalar(1), rect.bottom() - SkIntToScalar(2)},
-    {rect.right(), rect.bottom() - SkIntToScalar(3)},
-
-    {rect.right(), rect.top() + SkIntToScalar(2)},
-    {rect.right() - SkIntToScalar(1), rect.top() + SkIntToScalar(1)},
-    {rect.right() - SkIntToScalar(2), rect.top()}
-  };
-
-  window_mask->addPoly(polygon, sizeof(polygon)/sizeof(polygon[0]), true);
+  const SkRect rect = { SkIntToScalar(border_insets.left() - kBorderStrokeSize),
+                        SkIntToScalar(border_insets.top() - kBorderStrokeSize),
+                        SkIntToScalar(size.width() - border_insets.right() +
+                                      kBorderStrokeSize),
+                        SkIntToScalar(size.height() - border_insets.bottom() +
+                                      kBorderStrokeSize) };
+  window_mask->addRoundRect(rect, kCornerRadius, kCornerRadius);
 }
 
 void BubbleFrameView::ResetWindowControls() {}
