@@ -1409,14 +1409,8 @@ void AutofillDialogControllerImpl::Observe(
       content::Details<content::LoadCommittedDetails>(details).ptr();
   if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
     EndSignInFlow();
-
-    if (account_chooser_model_.WalletIsSelected()) {
-      GetWalletItems();
-    } else {
-      // The sign-in flow means that the user implicitly switched the account
-      // to the Wallet. This will trigger AccountChoiceChanged.
-      account_chooser_model_.SelectActiveWalletAccount();
-    }
+    account_chooser_model_.SelectActiveWalletAccount();
+    GetWalletItems();
   }
 }
 
@@ -1615,23 +1609,6 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
     GetWalletClient()->CancelRequests();
 
   SetIsSubmitting(false);
-
-  if (!signin_helper_ && account_chooser_model_.WalletIsSelected()) {
-    if (account_chooser_model_.IsActiveWalletAccountSelected()) {
-      // If the user has chosen an already active Wallet account, and we don't
-      // have the Wallet items, an attempt to fetch the Wallet data is made to
-      // see if the user is still signed in. This will trigger a passive sign-in
-      // if required.
-      if (!wallet_items_)
-        GetWalletItems();
-      else
-        SignedInStateUpdated();
-    } else {
-      // TODO(aruslan): trigger the automatic sign-in process.
-      LOG(ERROR) << "failed to initiate an automatic sign-in";
-      OnWalletSigninError();
-    }
-  }
 
   SuggestionsUpdated();
   UpdateAccountChooserView();
