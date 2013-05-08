@@ -564,7 +564,7 @@
             'src/common/memory_unittest.cc',
             'src/common/simple_string_dictionary_unittest.cc',
             'src/common/test_assembler.cc',
-            'src/common/tests/audio_testfile.h',
+            'src/common/tests/auto_testfile.h',
             'src/common/tests/file_utils.cc',
             'src/common/tests/file_utils.h',
             'src/tools/linux/md2core/minidump_memory_range.h',
