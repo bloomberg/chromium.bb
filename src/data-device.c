@@ -233,16 +233,16 @@ weston_seat_update_drag_surface(struct weston_seat *seat, int dx, int dy)
 {
 	int surface_changed = 0;
 
-	if (!seat->drag_surface && !seat->drag_surface)
+	if (!seat->drag_surface && !seat->next_drag_surface)
 		return;
 
-	if (seat->drag_surface && seat->drag_surface &&
+	if (seat->drag_surface && seat->next_drag_surface &&
 	    (&seat->drag_surface->surface.resource !=
 	     &seat->next_drag_surface->resource))
 		/* between calls to this funcion we got a new drag_surface */
 		surface_changed = 1;
 
-	if (!seat->drag_surface || surface_changed) {
+	if (!seat->next_drag_surface || surface_changed) {
 		device_release_drag_surface(seat);
 		if (!surface_changed)
 			return;
@@ -250,7 +250,7 @@ weston_seat_update_drag_surface(struct weston_seat *seat, int dx, int dy)
 
 	if (!seat->drag_surface || surface_changed) {
 		struct weston_surface *surface =
-			(struct weston_surface *) seat->drag_surface;
+			(struct weston_surface *) seat->next_drag_surface;
 		if (!device_setup_new_drag_surface(seat, surface))
 			return;
 	}
@@ -348,7 +348,7 @@ static void
 data_device_end_drag_grab(struct weston_seat *seat)
 {
 	if (seat->drag_surface) {
-		seat->drag_surface = NULL;
+		seat->next_drag_surface = NULL;
 		weston_seat_update_drag_surface(seat, 0, 0);
 		wl_list_remove(&seat->drag_icon_listener.link);
 	}
