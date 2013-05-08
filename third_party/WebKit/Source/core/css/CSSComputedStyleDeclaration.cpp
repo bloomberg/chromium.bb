@@ -86,9 +86,7 @@ namespace WebCore {
 // to respect runtime enabling of CSS properties.
 static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyBackgroundAttachment,
-#if ENABLE(CSS_COMPOSITING)
     CSSPropertyBackgroundBlendMode,
-#endif
     CSSPropertyBackgroundClip,
     CSSPropertyBackgroundColor,
     CSSPropertyBackgroundImage,
@@ -151,9 +149,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyMaxWidth,
     CSSPropertyMinHeight,
     CSSPropertyMinWidth,
-#if ENABLE(CSS_COMPOSITING)
     CSSPropertyMixBlendMode,
-#endif
     CSSPropertyOpacity,
     CSSPropertyOrphans,
     CSSPropertyOutlineColor,
@@ -2605,7 +2601,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->wrapThrough());
         case CSSPropertyWebkitFilter:
             return valueForFilter(renderer, style.get());
-#if ENABLE(CSS_COMPOSITING)
         case CSSPropertyMixBlendMode:
             return cssValuePool().createValue(style->blendMode());
             
@@ -2620,7 +2615,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
 
             return list.release();
         }
-#endif
         case CSSPropertyBackground:
             return getBackgroundShorthandValue();
         case CSSPropertyBorder: {

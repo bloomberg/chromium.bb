@@ -64,10 +64,9 @@ static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
         CSSPropertyWebkitShapeOutside,
     };
     setCSSPropertiesEnabled(exclusionProperties, WTF_ARRAY_LENGTH(exclusionProperties), RuntimeEnabledFeatures::cssExclusionsEnabled());
-#if ENABLE(CSS_COMPOSITING)
+
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyBackgroundBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
-    RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyWebkitBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
-#endif
+    RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMixBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
 }
 
 static BoolVector& propertySwitches()

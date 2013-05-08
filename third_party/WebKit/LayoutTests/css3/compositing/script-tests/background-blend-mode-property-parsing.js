@@ -11,9 +11,9 @@ function jsWrapperClass(node)
 function shouldBeType(expression, className, prototypeName, constructorName)
 {
     if (!prototypeName)
-        prototypeName = className + "Prototype";
+        prototypeName = "Object";
     if (!constructorName)
-        constructorName = className + "Constructor";
+        constructorName = "Function";
     shouldBe("jsWrapperClass(" + expression + ")", "'" + className + "'");
     shouldBe("jsWrapperClass(" + expression + ".__proto__)", "'" + prototypeName + "'");
     shouldBe("jsWrapperClass(" + expression + ".constructor)", "'" + constructorName + "'");
@@ -40,10 +40,10 @@ function testBlendModeRule(description, rule, expectedLength, expectedValue, exp
     shouldBe("declaration.getPropertyValue('background-blend-mode')", "'" + expectedValue + "'");
 
     blendModeRule = declaration.getPropertyCSSValue('background-blend-mode');
-	if(rule.indexOf(',') == -1)
-    	shouldBeType("blendModeRule", "CSSPrimitiveValue");
-	else
-	    shouldBeType("blendModeRule", "CSSValueList");
+    if(rule.indexOf(',') == -1)
+        shouldBeType("blendModeRule", "CSSPrimitiveValue");
+    else
+        shouldBeType("blendModeRule", "CSSValueList");
 }
 
 var blendmodes = ["normal", "multiply, screen", "screen, hue", "overlay, normal", "darken, lighten, normal, luminosity", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "hue", "saturation", "color", "luminosity"];

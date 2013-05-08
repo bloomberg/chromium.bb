@@ -371,9 +371,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyZoom:
     case CSSPropertyBackground:
     case CSSPropertyBackgroundAttachment:
-#if ENABLE(CSS_COMPOSITING)
     case CSSPropertyBackgroundBlendMode:
-#endif
     case CSSPropertyBackgroundClip:
     case CSSPropertyBackgroundColor:
     case CSSPropertyBackgroundImage:
@@ -437,9 +435,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyMaxWidth:
     case CSSPropertyMinHeight:
     case CSSPropertyMinWidth:
-#if ENABLE(CSS_COMPOSITING)
     case CSSPropertyMixBlendMode:
-#endif
     case CSSPropertyOpacity:
     case CSSPropertyOutline:
     case CSSPropertyOutlineColor:

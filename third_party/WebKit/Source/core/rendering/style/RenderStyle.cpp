@@ -609,10 +609,9 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
             return StyleDifferenceRepaintLayer;
     }
     
-#if ENABLE(CSS_COMPOSITING)
-    if (rareNonInheritedData->m_effectiveBlendMode != other->rareNonInheritedData->m_effectiveBlendMode)
-        return StyleDifferenceRepaintLayer;
-#endif
+    if (RuntimeEnabledFeatures::cssCompositingEnabled())
+        if (rareNonInheritedData->m_effectiveBlendMode != other->rareNonInheritedData->m_effectiveBlendMode)
+            return StyleDifferenceRepaintLayer;
 
     if (rareNonInheritedData->opacity != other->rareNonInheritedData->opacity) {
         // Don't return early here; instead take note of the type of change,
@@ -793,7 +792,27 @@ void RenderStyle::setContent(QuoteType quote, bool add)
 
     rareNonInheritedData.access()->m_content = ContentData::create(quote);
 }
-    
+
+BlendMode RenderStyle::blendMode() const
+{
+    if (RuntimeEnabledFeatures::cssCompositingEnabled())
+        return static_cast<BlendMode>(rareNonInheritedData->m_effectiveBlendMode);
+    return BlendModeNormal;
+}
+
+void RenderStyle::setBlendMode(BlendMode v)
+{
+    if (RuntimeEnabledFeatures::cssCompositingEnabled())
+        rareNonInheritedData.access()->m_effectiveBlendMode = v;
+}
+
+bool RenderStyle::hasBlendMode() const
+{
+    if (RuntimeEnabledFeatures::cssCompositingEnabled())
+        return static_cast<BlendMode>(rareNonInheritedData->m_effectiveBlendMode) != BlendModeNormal;
+    return false;
+}
+
 inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation> >& transformOperations, RenderStyle::ApplyTransformOrigin applyOrigin)
 {
     // transform-origin brackets the transform with translate operations.

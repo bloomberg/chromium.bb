@@ -168,9 +168,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
 #endif
     , m_canSkipRepaintRectsUpdateOnScroll(renderer->isTableCell())
     , m_hasFilterInfo(false)
-#if ENABLE(CSS_COMPOSITING)
     , m_blendMode(BlendModeNormal)
-#endif
     , m_renderer(renderer)
     , m_parent(0)
     , m_previous(0)
@@ -886,9 +884,16 @@ void RenderLayer::positionNewlyCreatedOverflowControls()
     positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
 }
 
-#if ENABLE(CSS_COMPOSITING)
+bool RenderLayer::hasBlendMode() const
+{
+    return RuntimeEnabledFeatures::cssCompositingEnabled() && renderer()->hasBlendMode();
+}
+
 void RenderLayer::updateBlendMode()
 {
+    if (!RuntimeEnabledFeatures::cssCompositingEnabled())
+        return;
+
     BlendMode newBlendMode = renderer()->style()->blendMode();
     if (newBlendMode != m_blendMode) {
         m_blendMode = newBlendMode;
@@ -896,7 +901,6 @@ void RenderLayer::updateBlendMode()
             backing()->setBlendMode(newBlendMode);
     }
 }
-#endif
 
 void RenderLayer::updateTransform()
 {
@@ -5492,9 +5496,9 @@ RenderLayerBacking* RenderLayer::ensureBacking()
         compositor()->layerBecameComposited(this);
 
         updateOrRemoveFilterEffectRenderer();
-#if ENABLE(CSS_COMPOSITING)
-        backing()->setBlendMode(m_blendMode);
-#endif
+
+        if (RuntimeEnabledFeatures::cssCompositingEnabled())
+            backing()->setBlendMode(m_blendMode);
     }
     return m_backing.get();
 }
@@ -5848,9 +5852,7 @@ bool RenderLayer::shouldBeNormalFlowOnly() const
             && !renderer()->hasTransform()
             && !renderer()->hasClipPath()
             && !renderer()->hasFilter()
-#if ENABLE(CSS_COMPOSITING)
             && !renderer()->hasBlendMode()
-#endif
             && !isTransparent()
             && !needsCompositedScrolling()
             && !renderer()->isFloatingWithShapeOutside()
@@ -6188,9 +6190,9 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
 
     updateDescendantDependentFlags();
     updateTransform();
-#if ENABLE(CSS_COMPOSITING)
-    updateBlendMode();
-#endif
+
+    if (RuntimeEnabledFeatures::cssCompositingEnabled())
+        updateBlendMode();
 
     bool didPaintWithFilters = false;
 

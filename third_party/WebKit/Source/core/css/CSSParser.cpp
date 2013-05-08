@@ -244,7 +244,6 @@ CSSParserContext::CSSParserContext(CSSParserMode mode, const KURL& baseURL)
     , isHTMLDocument(false)
     , isCSSCustomFilterEnabled(false)
     , isCSSStickyPositionEnabled(false)
-    , isCSSCompositingEnabled(false)
     , isCSSGridLayoutEnabled(false)
     , isCSSVariablesEnabled(false)
     , needsSiteSpecificQuirks(false)
@@ -258,7 +257,6 @@ CSSParserContext::CSSParserContext(Document* document, const KURL& baseURL, cons
     , isHTMLDocument(document->isHTMLDocument())
     , isCSSCustomFilterEnabled(document->settings() ? document->settings()->isCSSCustomFilterEnabled() : false)
     , isCSSStickyPositionEnabled(document->cssStickyPositionEnabled())
-    , isCSSCompositingEnabled(document->cssCompositingEnabled())
     , isCSSGridLayoutEnabled(document->cssGridLayoutEnabled())
     , isCSSVariablesEnabled(document->settings() ? document->settings()->cssVariablesEnabled() : false)
     , needsSiteSpecificQuirks(document->settings() ? document->settings()->needsSiteSpecificQuirks() : false)
@@ -273,7 +271,6 @@ bool operator==(const CSSParserContext& a, const CSSParserContext& b)
         && a.isHTMLDocument == b.isHTMLDocument
         && a.isCSSCustomFilterEnabled == b.isCSSCustomFilterEnabled
         && a.isCSSStickyPositionEnabled == b.isCSSStickyPositionEnabled
-        && a.isCSSCompositingEnabled == b.isCSSCompositingEnabled
         && a.isCSSGridLayoutEnabled == b.isCSSGridLayoutEnabled
         && a.isCSSVariablesEnabled == b.isCSSVariablesEnabled
         && a.needsSiteSpecificQuirks == b.needsSiteSpecificQuirks;
@@ -794,16 +791,14 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueVisible || valueID == CSSValueHidden)
             return true;
         break;
-#if ENABLE(CSS_COMPOSITING)
     case CSSPropertyMixBlendMode:
-        if (parserContext.isCSSCompositingEnabled && (valueID == CSSValueNormal || valueID == CSSValueMultiply || valueID == CSSValueScreen
+        if (RuntimeEnabledFeatures::cssCompositingEnabled() && (valueID == CSSValueNormal || valueID == CSSValueMultiply || valueID == CSSValueScreen
             || valueID == CSSValueOverlay || valueID == CSSValueDarken || valueID == CSSValueLighten ||  valueID == CSSValueColorDodge
             || valueID == CSSValueColorBurn || valueID == CSSValueHardLight || valueID == CSSValueSoftLight || valueID == CSSValueDifference
             || valueID == CSSValueExclusion || valueID == CSSValueHue || valueID == CSSValueSaturation || valueID == CSSValueColor
             || valueID == CSSValueLuminosity))
             return true;
         break;
-#endif
     case CSSPropertyWebkitBorderFit:
         if (valueID == CSSValueBorder || valueID == CSSValueLines)
             return true;
@@ -1007,6 +1002,8 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
 static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
 {
     switch (propertyId) {
+    case CSSPropertyMixBlendMode:
+        return RuntimeEnabledFeatures::cssCompositingEnabled();
     case CSSPropertyBorderBottomStyle:
     case CSSPropertyBorderCollapse:
     case CSSPropertyBorderLeftStyle:
@@ -1023,9 +1020,6 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyImageRendering:
     case CSSPropertyListStylePosition:
     case CSSPropertyListStyleType:
-#if ENABLE(CSS_COMPOSITING)
-    case CSSPropertyMixBlendMode:
-#endif
     case CSSPropertyOutlineStyle:
     case CSSPropertyOverflowWrap:
     case CSSPropertyOverflowX:
@@ -1985,10 +1979,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         break;
     }
 
-    case CSSPropertyBackgroundAttachment:
-#if ENABLE(CSS_COMPOSITING)
     case CSSPropertyBackgroundBlendMode:
-#endif
+    case CSSPropertyBackgroundAttachment:
     case CSSPropertyBackgroundClip:
     case CSSPropertyWebkitBackgroundClip:
     case CSSPropertyWebkitBackgroundComposite:
@@ -2352,12 +2344,12 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             return false;
         }
         break;
-#if ENABLE(CSS_COMPOSITING)
     case CSSPropertyMixBlendMode:
-        if (cssCompositingEnabled())
-            validPrimitive = true;
+        if (!RuntimeEnabledFeatures::cssCompositingEnabled())
+            return false;
+
+        validPrimitive = true;
         break;
-#endif
     case CSSPropertyWebkitFlex: {
         ShorthandScope scope(this, propId);
         if (id == CSSValueNone) {
@@ -4183,9 +4175,8 @@ bool CSSParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& propId1, 
                         m_valueList->next();
                     }
                     break;
-#if ENABLE(CSS_COMPOSITING)
                 case CSSPropertyBackgroundBlendMode:
-                    if (cssCompositingEnabled() && (val->id == CSSValueNormal || val->id == CSSValueMultiply
+                    if (RuntimeEnabledFeatures::cssCompositingEnabled() && (val->id == CSSValueNormal || val->id == CSSValueMultiply
                         || val->id == CSSValueScreen || val->id == CSSValueOverlay || val->id == CSSValueDarken
                         || val->id == CSSValueLighten ||  val->id == CSSValueColorDodge || val->id == CSSValueColorBurn
                         || val->id == CSSValueHardLight || val->id == CSSValueSoftLight || val->id == CSSValueDifference
@@ -4195,7 +4186,6 @@ bool CSSParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& propId1, 
                         m_valueList->next();
                     }
                     break;
-#endif
                 case CSSPropertyBackgroundRepeat:
                 case CSSPropertyWebkitMaskRepeat:
                     parseFillRepeat(currValue, currValue2);
@@ -8670,11 +8660,6 @@ static bool validFlowName(const String& flowName)
             || equalIgnoringCase(flowName, "inherit")
             || equalIgnoringCase(flowName, "initial")
             || equalIgnoringCase(flowName, "none"));
-}
-
-bool CSSParser::cssCompositingEnabled() const
-{
-    return m_context.isCSSCompositingEnabled;
 }
 
 bool CSSParser::cssGridLayoutEnabled() const

@@ -3,6 +3,7 @@ This test (crudely) documents Blink's web-exposed CSS properties.  All changes t
 alignmentBaseline
 background
 backgroundAttachment
+backgroundBlendMode
 backgroundClip
 backgroundColor
 backgroundImage
@@ -115,6 +116,7 @@ maxHeight
 maxWidth
 minHeight
 minWidth
+mixBlendMode
 opacity
 orphans
 outline

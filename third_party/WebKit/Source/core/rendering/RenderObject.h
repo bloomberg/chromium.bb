@@ -589,11 +589,7 @@ public:
 
     bool hasFilter() const { return style() && style()->hasFilter(); }
 
-#if ENABLE(CSS_COMPOSITING)
-    bool hasBlendMode() const { return style() && style()->hasBlendMode(); }
-#else
-    bool hasBlendMode() const { return false; }
-#endif
+    bool hasBlendMode() const;
 
     inline bool preservesNewline() const;
 

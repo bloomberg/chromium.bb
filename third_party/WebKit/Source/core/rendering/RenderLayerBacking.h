@@ -175,9 +175,7 @@ public:
     // Return an estimate of the backing store area (in pixels) allocated by this object's GraphicsLayers.
     double backingStoreMemoryEstimate() const;
 
-#if ENABLE(CSS_COMPOSITING)
     void setBlendMode(BlendMode);
-#endif
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
@@ -216,9 +214,7 @@ private:
 
     void updateOpacity(const RenderStyle*);
     void updateTransform(const RenderStyle*);
-#if ENABLE(CSS_COMPOSITING)
     void updateLayerBlendMode(const RenderStyle*);
-#endif
     // Return the opacity value that this layer should use for compositing.
     float compositingOpacity(float rendererOpacity) const;
     

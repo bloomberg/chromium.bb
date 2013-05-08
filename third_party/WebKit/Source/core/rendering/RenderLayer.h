@@ -480,10 +480,8 @@ public:
     RenderLayer* enclosingPaginationLayer() const { return m_enclosingPaginationLayer; }
 
     void updateTransform();
-    
-#if ENABLE(CSS_COMPOSITING)
+
     void updateBlendMode();
-#endif
 
     const LayoutSize& paintOffset() const { return m_paintOffset; }
 
@@ -733,11 +731,7 @@ public:
     virtual void filterNeedsRepaint();
     bool hasFilter() const { return renderer()->hasFilter(); }
 
-#if ENABLE(CSS_COMPOSITING)
-    bool hasBlendMode() const { return renderer()->hasBlendMode(); }
-#else
-    bool hasBlendMode() const { return false; }
-#endif
+    bool hasBlendMode() const;
 
     // Overloaded new operator. Derived classes must override operator new
     // in order to allocate out of the RenderArena.
@@ -1185,9 +1179,7 @@ protected:
 
     bool m_hasFilterInfo : 1;
 
-#if ENABLE(CSS_COMPOSITING)
     BlendMode m_blendMode;
-#endif
 
     RenderLayerModelObject* m_renderer;
 

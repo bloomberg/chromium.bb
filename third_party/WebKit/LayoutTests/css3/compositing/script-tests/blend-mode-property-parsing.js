@@ -11,9 +11,9 @@ function jsWrapperClass(node)
 function shouldBeType(expression, className, prototypeName, constructorName)
 {
     if (!prototypeName)
-        prototypeName = className + "Prototype";
+        prototypeName = "Object";
     if (!constructorName)
-        constructorName = className + "Constructor";
+        constructorName = "Function";
     shouldBe("jsWrapperClass(" + expression + ")", "'" + className + "'");
     shouldBe("jsWrapperClass(" + expression + ".__proto__)", "'" + prototypeName + "'");
     shouldBe("jsWrapperClass(" + expression + ".constructor)", "'" + constructorName + "'");

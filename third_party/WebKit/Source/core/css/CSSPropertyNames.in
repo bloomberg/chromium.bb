@@ -37,7 +37,7 @@ line-height
 // The remaining properties are listed in alphabetical order
 background
 background-attachment
-background-blend-mode condition=CSS_COMPOSITING
+background-blend-mode
 background-clip
 background-color
 background-image
@@ -120,7 +120,7 @@ max-height
 max-width
 min-height
 min-width
-mix-blend-mode condition=CSS_COMPOSITING
+mix-blend-mode
 opacity
 // Honor -webkit-opacity as a synonym for opacity. This was the only syntax that worked in Safari 1.1,
 // and may be in use on some websites and widgets.

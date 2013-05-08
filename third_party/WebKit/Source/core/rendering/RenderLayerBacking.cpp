@@ -199,9 +199,9 @@ void RenderLayerBacking::createPrimaryGraphicsLayer()
     updateOpacity(renderer()->style());
     updateTransform(renderer()->style());
     updateFilters(renderer()->style());
-#if ENABLE(CSS_COMPOSITING)
-    updateLayerBlendMode(renderer()->style());
-#endif
+
+    if (RuntimeEnabledFeatures::cssCompositingEnabled())
+        updateLayerBlendMode(renderer()->style());
 }
 
 void RenderLayerBacking::destroyGraphicsLayers()
@@ -262,11 +262,9 @@ void RenderLayerBacking::updateFilters(const RenderStyle* style)
     }
 }
 
-#if ENABLE(CSS_COMPOSITING)
 void RenderLayerBacking::updateLayerBlendMode(const RenderStyle*)
 {
 }
-#endif
 
 static bool hasNonZeroTransformOrigin(const RenderObject* renderer)
 {
@@ -474,9 +472,8 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
     if (!renderer()->animation()->isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyOpacity))
         updateOpacity(renderer()->style());
 
-#if ENABLE(CSS_COMPOSITING)
-    updateLayerBlendMode(renderer()->style());
-#endif
+    if (RuntimeEnabledFeatures::cssCompositingEnabled())
+        updateLayerBlendMode(renderer()->style());
 
     bool isSimpleContainer = isSimpleContainerCompositingLayer();
     
@@ -1527,11 +1524,9 @@ void RenderLayerBacking::setRequiresOwnBackingStore(bool requiresOwnBacking)
     compositor()->repaintInCompositedAncestor(m_owningLayer, compositedBounds());
 }
 
-#if ENABLE(CSS_COMPOSITING)
 void RenderLayerBacking::setBlendMode(BlendMode)
 {
 }
-#endif
 
 void RenderLayerBacking::setContentsNeedDisplay()
 {

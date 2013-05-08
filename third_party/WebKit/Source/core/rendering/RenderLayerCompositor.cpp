@@ -1918,12 +1918,7 @@ bool RenderLayerCompositor::requiresCompositingForFilters(RenderObject* renderer
 
 bool RenderLayerCompositor::requiresCompositingForBlending(RenderObject* renderer) const
 {
-#if ENABLE(CSS_COMPOSITING)
     return renderer->hasBlendMode();
-#else
-    UNUSED_PARAM(renderer);
-    return false;
-#endif
 }
 
 bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason) const

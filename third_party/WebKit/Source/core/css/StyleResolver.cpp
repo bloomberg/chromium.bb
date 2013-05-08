@@ -3042,6 +3042,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         return;
     // These properties are implemented in the DeprecatedStyleBuilder lookup table.
     case CSSPropertyBackgroundAttachment:
+    case CSSPropertyBackgroundBlendMode:
     case CSSPropertyBackgroundClip:
     case CSSPropertyBackgroundColor:
     case CSSPropertyBackgroundImage:
@@ -3105,6 +3106,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyMaxHeight:
     case CSSPropertyMaxWidth:
     case CSSPropertyMinHeight:
+    case CSSPropertyMixBlendMode:
     case CSSPropertyMinWidth:
     case CSSPropertyOpacity:
     case CSSPropertyOrphans:

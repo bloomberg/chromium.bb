@@ -6,131 +6,131 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 Basic reference : normal
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be normal (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'normal'
+PASS jsWrapperClass(blendModeRule) is 'CSSPrimitiveValue'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : multiply, screen
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be multiply, screen (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSValueList. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSValueListPrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSValueListConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'multiply, screen'
+PASS jsWrapperClass(blendModeRule) is 'CSSValueList'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : screen, hue
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be screen, hue (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSValueList. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSValueListPrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSValueListConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'screen, hue'
+PASS jsWrapperClass(blendModeRule) is 'CSSValueList'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : overlay, normal
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be overlay, normal (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSValueList. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSValueListPrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSValueListConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'overlay, normal'
+PASS jsWrapperClass(blendModeRule) is 'CSSValueList'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : darken, lighten, normal, luminosity
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be darken, lighten, normal, luminosity (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSValueList. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSValueListPrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSValueListConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'darken, lighten, normal, luminosity'
+PASS jsWrapperClass(blendModeRule) is 'CSSValueList'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : lighten
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be lighten (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'lighten'
+PASS jsWrapperClass(blendModeRule) is 'CSSPrimitiveValue'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : color-dodge
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be color-dodge (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'color-dodge'
+PASS jsWrapperClass(blendModeRule) is 'CSSPrimitiveValue'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : color-burn
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be color-burn (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'color-burn'
+PASS jsWrapperClass(blendModeRule) is 'CSSPrimitiveValue'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : hard-light
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be hard-light (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'hard-light'
+PASS jsWrapperClass(blendModeRule) is 'CSSPrimitiveValue'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : soft-light
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be soft-light (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'soft-light'
+PASS jsWrapperClass(blendModeRule) is 'CSSPrimitiveValue'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : difference
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be difference (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'difference'
+PASS jsWrapperClass(blendModeRule) is 'CSSPrimitiveValue'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : exclusion
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be exclusion (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'exclusion'
+PASS jsWrapperClass(blendModeRule) is 'CSSPrimitiveValue'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : hue
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be hue (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'hue'
+PASS jsWrapperClass(blendModeRule) is 'CSSPrimitiveValue'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : saturation
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be saturation (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'saturation'
+PASS jsWrapperClass(blendModeRule) is 'CSSPrimitiveValue'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : color
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be color (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'color'
+PASS jsWrapperClass(blendModeRule) is 'CSSPrimitiveValue'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 
 Basic reference : luminosity
 PASS cssRule.type is 1
-FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('background-blend-mode') should be luminosity (of type string). Was null (of type object).
-FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
-FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
-FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
+PASS declaration.length is 1
+PASS declaration.getPropertyValue('background-blend-mode') is 'luminosity'
+PASS jsWrapperClass(blendModeRule) is 'CSSPrimitiveValue'
+PASS jsWrapperClass(blendModeRule.__proto__) is 'Object'
+PASS jsWrapperClass(blendModeRule.constructor) is 'Function'
 PASS successfullyParsed is true
 
 TEST COMPLETE

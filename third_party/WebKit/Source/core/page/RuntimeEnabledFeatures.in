@@ -16,7 +16,7 @@
 ApplicationCache status=stable
 AuthorShadowDOMForAnyElement
 CanvasPath status=test
-CSSCompositing condition=CSS_COMPOSITING, status=experimental
+CSSCompositing status=experimental
 CSSExclusions status=experimental
 CSSRegions status=experimental
 CustomDOMElements status=experimental

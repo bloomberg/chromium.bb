@@ -2793,6 +2793,11 @@ PassRefPtr<RenderStyle> RenderObject::getUncachedPseudoStyle(const PseudoStyleRe
     return document()->styleResolver()->pseudoStyleForElement(element, pseudoStyleRequest, parentStyle);
 }
 
+bool RenderObject::hasBlendMode() const
+{
+    return RuntimeEnabledFeatures::cssCompositingEnabled() && style() && style()->hasBlendMode();
+}
+
 static Color decorationColor(RenderStyle* style)
 {
     Color result;
