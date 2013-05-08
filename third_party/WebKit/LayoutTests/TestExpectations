@@ -1627,6 +1627,9 @@ crbug.com/238363 [ Debug ] fast/forms/suggestion-picker/week-suggestion-picker-k
 crbug.com/238363 [ Debug ] virtual/gpu/compositedscrolling/overflow/overflow-hidden-canvas-layer.html [ Crash ]
 crbug.com/238363 [ Debug ] virtual/softwarecompositing/geometry/clipping-foreground.html [ Crash ]
 crbug.com/238363 [ Debug ] svg/W3C-SVG-1.1/animate-elem-33-t.svg [ Crash ]
+crbug.com/238363 [ Debug ] media/video-timeupdate-during-playback.html [ Crash ]
+crbug.com/238363 [ Debug ] inspector/debugger/source-frame-count.html [ Crash ]
+crbug.com/238363 [ Debug ] fast/loader/javascript-url-in-embed.html [ Crash ]
 
 # Need rebaselines after landing fix for crbug.com/238644
 crbug.com/238644 compositing/direct-image-compositing.html [ ImageOnlyFailure ]
