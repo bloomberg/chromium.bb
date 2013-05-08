@@ -100,6 +100,10 @@ def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('--top-symbols', type=int, default=0,
     help='Print a list of the top <n> symbols')
+  parser.add_argument('--symbol-filter', action='append',
+    help='Filter out all suppressions not containing the specified symbol(s). '
+         'Matches against the mangled names')
+
   parser.add_argument('reports', metavar='report file', nargs='+',
     help='List of report files')
   args = parser.parse_args(argv)
@@ -130,12 +134,18 @@ def main(argv):
     if all(["DrMemory%20full" in url for url in all_reports[r]]):
       cur_supp += supp['drmem_full_suppressions']
 
-    match = False
+    # Test if this report is already suppressed
+    skip = False
     for s in cur_supp:
       if s.Match(r.split("\n")):
-        match = True
+        skip = True
         break
-    if not match:
+
+    # Skip reports if none of the symbols are in the report.
+    if args.symbol_filter and all(not s in r for s in args.symbol_filter):
+        skip = True
+
+    if not skip:
       reports_count += 1
       print "==================================="
       print "This report observed at"
