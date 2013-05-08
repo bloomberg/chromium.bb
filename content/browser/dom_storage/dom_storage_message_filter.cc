@@ -17,9 +17,6 @@
 #include "webkit/dom_storage/dom_storage_host.h"
 #include "webkit/dom_storage/dom_storage_task_runner.h"
 
-using dom_storage::DomStorageTaskRunner;
-using WebKit::WebStorageArea;
-
 namespace content {
 
 DOMStorageMessageFilter::DOMStorageMessageFilter(
@@ -52,7 +49,7 @@ void DOMStorageMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   BrowserMessageFilter::OnFilterAdded(channel);
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
-      DomStorageTaskRunner::PRIMARY_SEQUENCE,
+      dom_storage::DomStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&DOMStorageMessageFilter::InitializeInSequence, this));
 }
 
@@ -61,7 +58,7 @@ void DOMStorageMessageFilter::OnFilterRemoved() {
   BrowserMessageFilter::OnFilterRemoved();
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
-      DomStorageTaskRunner::PRIMARY_SEQUENCE,
+      dom_storage::DomStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&DOMStorageMessageFilter::UninitializeInSequence, this));
 }
 
