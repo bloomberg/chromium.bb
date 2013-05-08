@@ -63,6 +63,12 @@ inline v8::Handle<v8::Object> wrap(TestTypedefs* impl, v8::Handle<v8::Object> cr
 {
     ASSERT(impl);
     ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
+    if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
+        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
+        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
+        // the same object de-ref functions, though, so use that as the basis of the check.
+        RELEASE_ASSERT(actualInfo->derefObjectFunction == V8TestTypedefs::info.derefObjectFunction);
+    }
     return V8TestTypedefs::createWrapper(impl, creationContext, isolate);
 }
 

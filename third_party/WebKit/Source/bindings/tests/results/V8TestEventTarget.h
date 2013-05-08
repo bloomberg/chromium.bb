@@ -66,6 +66,12 @@ inline v8::Handle<v8::Object> wrap(TestEventTarget* impl, v8::Handle<v8::Object>
 {
     ASSERT(impl);
     ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
+    if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
+        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
+        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
+        // the same object de-ref functions, though, so use that as the basis of the check.
+        RELEASE_ASSERT(actualInfo->derefObjectFunction == V8TestEventTarget::info.derefObjectFunction);
+    }
     return V8TestEventTarget::createWrapper(impl, creationContext, isolate);
 }
 
