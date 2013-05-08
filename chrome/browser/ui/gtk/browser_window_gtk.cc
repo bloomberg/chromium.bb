@@ -799,14 +799,6 @@ gfx::Rect BrowserWindowGtk::GetRestoredBounds() const {
   return restored_bounds_;
 }
 
-ui::WindowShowState BrowserWindowGtk::GetRestoredState() const {
-  if (IsMaximized())
-    return ui::SHOW_STATE_MAXIMIZED;
-  if (IsMinimized())
-    return ui::SHOW_STATE_MINIMIZED;
-  return ui::SHOW_STATE_NORMAL;
-}
-
 gfx::Rect BrowserWindowGtk::GetBounds() const {
   return bounds_;
 }

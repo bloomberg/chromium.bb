@@ -122,9 +122,9 @@ appWindow.registerCustomHook(function(bindingsAPI) {
       id: params.id || '',
       bounds: { left: params.bounds.left, top: params.bounds.top,
                 width: params.bounds.width, height: params.bounds.height },
-      fullscreen: params.fullscreen,
-      minimized: params.minimized,
-      maximized: params.maximized
+      fullscreen: false,
+      minimized: false,
+      maximized: false
     };
     chromeHidden.currentAppWindow = new AppWindow;
   });

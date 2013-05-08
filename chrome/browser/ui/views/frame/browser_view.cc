@@ -774,14 +774,6 @@ gfx::Rect BrowserView::GetRestoredBounds() const {
   return frame_->GetRestoredBounds();
 }
 
-ui::WindowShowState BrowserView::GetRestoredState() const {
-  if (IsMaximized())
-    return ui::SHOW_STATE_MAXIMIZED;
-  if (IsMinimized())
-    return ui::SHOW_STATE_MINIMIZED;
-  return ui::SHOW_STATE_NORMAL;
-}
-
 gfx::Rect BrowserView::GetBounds() const {
   return frame_->GetWindowBoundsInScreen();
 }

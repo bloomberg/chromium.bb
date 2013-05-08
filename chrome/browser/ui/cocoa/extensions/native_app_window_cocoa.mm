@@ -394,10 +394,6 @@ bool NativeAppWindowCocoa::IsFullscreenOrPending() const {
   return is_fullscreen_;
 }
 
-bool NativeAppWindowCocoa::IsDetached() const {
-  return false;
-}
-
 gfx::NativeWindow NativeAppWindowCocoa::GetNativeWindow() {
   return window();
 }
@@ -409,12 +405,6 @@ gfx::Rect NativeAppWindowCocoa::GetRestoredBounds() const {
   gfx::Rect bounds(frame.origin.x, 0, NSWidth(frame), NSHeight(frame));
   bounds.set_y(NSHeight([screen frame]) - NSMaxY(frame));
   return bounds;
-}
-
-ui::WindowShowState NativeAppWindowCocoa::GetRestoredState() const {
-  if (IsMaximized())
-    return ui::SHOW_STATE_MAXIMIZED;
-  return ui::SHOW_STATE_NORMAL;
 }
 
 gfx::Rect NativeAppWindowCocoa::GetBounds() const {

@@ -26,6 +26,8 @@ DEFINE_WINDOW_PROPERTY_KEY(bool, kFullscreenUsesMinimalChromeKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kIgnoreSoloWindowFramePainterPolicy, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kIgnoredByShelfKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kPanelAttachedKey, true);
+DEFINE_WINDOW_PROPERTY_KEY(
+    ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);
 DEFINE_WINDOW_PROPERTY_KEY(RootWindowController*,
                            kRootWindowControllerKey, NULL);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kSoloWindowHeaderKey, false);

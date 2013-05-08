@@ -38,10 +38,6 @@ gfx::Rect TestBrowserWindow::GetRestoredBounds() const {
   return gfx::Rect();
 }
 
-ui::WindowShowState TestBrowserWindow::GetRestoredState() const {
-  return ui::SHOW_STATE_DEFAULT;
-}
-
 gfx::Rect TestBrowserWindow::GetBounds() const {
   return gfx::Rect();
 }

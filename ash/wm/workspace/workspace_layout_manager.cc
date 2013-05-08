@@ -126,8 +126,8 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
   if (visible && wm::IsWindowMinimized(child)) {
     // Attempting to show a minimized window. Unminimize it.
     child->SetProperty(aura::client::kShowStateKey,
-                       child->GetProperty(aura::client::kRestoreShowStateKey));
-    child->ClearProperty(aura::client::kRestoreShowStateKey);
+                       child->GetProperty(internal::kRestoreShowStateKey));
+    child->ClearProperty(internal::kRestoreShowStateKey);
   }
   workspace_manager()->OnWorkspaceChildWindowVisibilityChanged(workspace_,
                                                                child);
@@ -257,7 +257,7 @@ void WorkspaceLayoutManager::ShowStateChanged(
   if (wm::IsWindowMinimized(window)) {
     DCHECK(!cloned_layer);
     // Save the previous show state so that we can correctly restore it.
-    window->SetProperty(aura::client::kRestoreShowStateKey, last_show_state);
+    window->SetProperty(internal::kRestoreShowStateKey, last_show_state);
     views::corewm::SetWindowVisibilityAnimationType(
         window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
     workspace_manager()->OnWorkspaceWindowShowStateChanged(

@@ -28,8 +28,6 @@ DEFINE_WINDOW_PROPERTY_KEY(ui::ModalType, kModalKey, ui::MODAL_TYPE_NONE);
 // gfx::Rect object for RestoreBoundsKey property is owned by the window
 // and will be freed automatically.
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, NULL);
-DEFINE_WINDOW_PROPERTY_KEY(
-    ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);
 DEFINE_WINDOW_PROPERTY_KEY(ui::InputMethod*, kRootWindowInputMethodKey, NULL);
 DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kShowStateKey, ui::SHOW_STATE_DEFAULT);

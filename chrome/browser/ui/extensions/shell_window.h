@@ -15,7 +15,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/console_message_level.h"
-#include "ui/base/ui_base_types.h"  // WindowShowState
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
@@ -103,8 +102,15 @@ class ShellWindow : public content::NotificationObserver,
     // The process ID of the process that requested the create.
     int32 creator_process_id;
 
+    enum State {
+      STATE_NORMAL,
+      STATE_FULLSCREEN,
+      STATE_MAXIMIZED,
+      STATE_MINIMIZED
+    };
+
     // Initial state of the window.
-    ui::WindowShowState state;
+    State state;
 
     // If true, don't show the window after creation.
     bool hidden;

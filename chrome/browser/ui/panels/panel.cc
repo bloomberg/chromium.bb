@@ -253,10 +253,6 @@ gfx::Rect Panel::GetRestoredBounds() const {
   return bounds;
 }
 
-ui::WindowShowState Panel::GetRestoredState() const {
-  return ui::SHOW_STATE_NORMAL;
-}
-
 gfx::Rect Panel::GetBounds() const {
   return native_panel_->GetPanelBounds();
 }

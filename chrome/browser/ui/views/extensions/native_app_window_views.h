@@ -69,7 +69,6 @@ class NativeAppWindowViews : public NativeAppWindow,
   virtual bool IsFullscreen() const OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
-  virtual ui::WindowShowState GetRestoredState() const OVERRIDE;
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void ShowInactive() OVERRIDE;
@@ -130,7 +129,6 @@ class NativeAppWindowViews : public NativeAppWindow,
   // NativeAppWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
-  virtual bool IsDetached() const OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
   virtual void UpdateDraggableRegions(

@@ -26,9 +26,6 @@ class NativeAppWindow : public BaseWindow, public WebContentsModalDialogHost {
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreenOrPending() const = 0;
 
-  // Returns true if the window is a panel that has been detached.
-  virtual bool IsDetached() const = 0;
-
   // Called when the icon of the window changes.
   virtual void UpdateWindowIcon() = 0;
 

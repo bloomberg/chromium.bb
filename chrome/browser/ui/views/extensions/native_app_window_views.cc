@@ -40,9 +40,7 @@
 #include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/window_properties.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
 #endif
 
 namespace {
@@ -268,21 +266,15 @@ void NativeAppWindowViews::InitializePanelWindow(
   window_->Init(params);
   window_->set_focus_on_creation(create_params.focused);
 
-#if defined(USE_ASH)
-  if (create_params.state == ui::SHOW_STATE_DETACHED) {
-    gfx::Rect window_bounds(create_params.bounds.x(),
-                            create_params.bounds.y(),
-                            preferred_size_.width(),
-                            preferred_size_.height());
-    aura::Window* native_window = GetNativeWindow();
-    native_window->SetProperty(ash::internal::kPanelAttachedKey, false);
-    native_window->SetDefaultParentByRootWindow(
-        native_window->GetRootWindow(), native_window->GetBoundsInScreen());
-    window_->SetBounds(window_bounds);
-  }
-#else
-  // TODO(stevenjb): NativeAppWindow panels need to be implemented for other
-  // platforms.
+#if !defined(USE_ASH)
+  // TODO(oshima|stevenjb): Ideally, we should be able to just pre-determine
+  // the exact location and size, but this doesn't work well
+  // on non-ash environment where we don't have full control over
+  // window management.
+  gfx::Rect window_bounds =
+      window_->non_client_view()->GetWindowBoundsForClientBounds(
+          create_params.bounds);
+  window_->SetBounds(window_bounds);
 #endif
 }
 
@@ -310,23 +302,6 @@ gfx::NativeWindow NativeAppWindowViews::GetNativeWindow() {
 
 gfx::Rect NativeAppWindowViews::GetRestoredBounds() const {
   return window_->GetRestoredBounds();
-}
-
-ui::WindowShowState NativeAppWindowViews::GetRestoredState() const {
-  if (IsMaximized())
-    return ui::SHOW_STATE_MAXIMIZED;
-#if defined(USE_ASH)
-  // On Ash, restore fullscreen.
-  if (IsFullscreen())
-    return ui::SHOW_STATE_FULLSCREEN;
-  // Use kRestoreShowStateKey in case a window is minimized/hidden.
-  ui::WindowShowState restore_state =
-      window_->GetNativeWindow()->GetProperty(
-          aura::client::kRestoreShowStateKey);
-  if (restore_state != ui::SHOW_STATE_MINIMIZED)
-    return restore_state;
-#endif
-  return ui::SHOW_STATE_NORMAL;
 }
 
 gfx::Rect NativeAppWindowViews::GetBounds() const {
@@ -698,17 +673,6 @@ void NativeAppWindowViews::SetFullscreen(bool fullscreen) {
 
 bool NativeAppWindowViews::IsFullscreenOrPending() const {
   return is_fullscreen_;
-}
-
-bool NativeAppWindowViews::IsDetached() const {
-  if (!shell_window_->window_type_is_panel())
-    return false;
-#if defined(USE_ASH)
-  return !window_->GetNativeWindow()->GetProperty(
-      ash::internal::kPanelAttachedKey);
-#else
-  return false;
-#endif
 }
 
 views::View* NativeAppWindowViews::GetContentsView() {

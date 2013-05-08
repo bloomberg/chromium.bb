@@ -59,13 +59,13 @@ class PrefRegistrySyncable;
 
 // An implementation of BrowserWindow for GTK. Cross-platform code will interact
 // with this object when it needs to manipulate the window.
-class BrowserWindowGtk
-    : public BrowserWindow,
-      public content::NotificationObserver,
-      public TabStripModelObserver,
-      public ui::ActiveWindowWatcherXObserver,
-      public InfoBarContainer::Delegate,
-      public extensions::ExtensionKeybindingRegistry::Delegate {
+class BrowserWindowGtk :
+    public BrowserWindow,
+    public content::NotificationObserver,
+    public TabStripModelObserver,
+    public ui::ActiveWindowWatcherXObserver,
+    public InfoBarContainer::Delegate,
+    public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   explicit BrowserWindowGtk(Browser* browser);
   virtual ~BrowserWindowGtk();
@@ -95,7 +95,6 @@ class BrowserWindowGtk
   virtual void SetStarredState(bool is_starred) OVERRIDE;
   virtual void ZoomChangedForActiveTab(bool can_show_bubble) OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
-  virtual ui::WindowShowState GetRestoredState() const OVERRIDE;
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;

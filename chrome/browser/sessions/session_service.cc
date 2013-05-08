@@ -140,7 +140,6 @@ ui::WindowShowState AdjustShowState(ui::WindowShowState state) {
     case ui::SHOW_STATE_MINIMIZED:
     case ui::SHOW_STATE_MAXIMIZED:
     case ui::SHOW_STATE_FULLSCREEN:
-    case ui::SHOW_STATE_DETACHED:
       return state;
 
     case ui::SHOW_STATE_DEFAULT:
@@ -1349,10 +1348,16 @@ void SessionService::BuildCommandsForBrowser(
   DCHECK(browser && commands);
   DCHECK(browser->session_id().id());
 
+  ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;
+  if (browser->window()->IsMaximized())
+    show_state = ui::SHOW_STATE_MAXIMIZED;
+  else if (browser->window()->IsMinimized())
+    show_state = ui::SHOW_STATE_MINIMIZED;
+
   commands->push_back(
       CreateSetWindowBoundsCommand(browser->session_id(),
                                    browser->window()->GetRestoredBounds(),
-                                   browser->window()->GetRestoredState()));
+                                   show_state));
 
   commands->push_back(CreateSetWindowTypeCommand(
       browser->session_id(), WindowTypeForBrowserType(browser->type())));

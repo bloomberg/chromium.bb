@@ -36,11 +36,9 @@ class ShellWindowGeometryCacheTest : public testing::Test {
     cache_->SetSyncDelayForTests(0);
   }
 
-  void AddGeometryAndLoadExtension(
-      const std::string& extension_id,
-      const std::string& window_id,
-      const gfx::Rect& bounds,
-      ui::WindowShowState state);
+  void AddGeometryAndLoadExtension(const std::string& extension_id,
+                                   const std::string& window_id,
+                                   const gfx::Rect& bounds);
 
   // Spins the UI threads' message loops to make sure any task
   // posted to sync the geometry to the value store gets a chance to run.
@@ -58,17 +56,14 @@ class ShellWindowGeometryCacheTest : public testing::Test {
 };
 
 void ShellWindowGeometryCacheTest::AddGeometryAndLoadExtension(
-    const std::string& extension_id,
-    const std::string& window_id,
-    const gfx::Rect& bounds,
-    ui::WindowShowState state) {
+    const std::string& extension_id, const std::string& window_id,
+    const gfx::Rect& bounds) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   base::DictionaryValue* value = new base::DictionaryValue;
   value->SetInteger("x", bounds.x());
   value->SetInteger("y", bounds.y());
   value->SetInteger("w", bounds.width());
   value->SetInteger("h", bounds.height());
-  value->SetInteger("state", state);
   dict->SetWithoutPathExpansion(window_id, value);
   prefs_->prefs()->SetGeometryCache(extension_id, dict.Pass());
   LoadExtension(extension_id);
@@ -93,7 +88,8 @@ void ShellWindowGeometryCacheTest::UnloadExtension(
 // Test getting geometry from an empty store.
 TEST_F(ShellWindowGeometryCacheTest, GetGeometryEmptyStore) {
   const std::string extension_id = prefs_->AddExtensionAndReturnId("ext1");
-  ASSERT_FALSE(cache_->GetGeometry(extension_id, kWindowId, NULL, NULL));
+  gfx::Rect bounds;
+  ASSERT_FALSE(cache_->GetGeometry(extension_id, kWindowId, &bounds));
 }
 
 // Test getting geometry for an unknown extension.
@@ -101,37 +97,32 @@ TEST_F(ShellWindowGeometryCacheTest, GetGeometryUnkownExtension) {
   const std::string extension_id1 = prefs_->AddExtensionAndReturnId("ext1");
   const std::string extension_id2 = prefs_->AddExtensionAndReturnId("ext2");
   AddGeometryAndLoadExtension(extension_id1, kWindowId,
-                              gfx::Rect(4, 5, 31, 43),
-                              ui::SHOW_STATE_DEFAULT);
-  ASSERT_FALSE(cache_->GetGeometry(extension_id2, kWindowId, NULL, NULL));
+                              gfx::Rect(4, 5, 31, 43));
+  gfx::Rect bounds;
+  ASSERT_FALSE(cache_->GetGeometry(extension_id2, kWindowId, &bounds));
 }
 
 // Test getting geometry for an unknown window in a known extension.
 TEST_F(ShellWindowGeometryCacheTest, GetGeometryUnkownWindow) {
   const std::string extension_id = prefs_->AddExtensionAndReturnId("ext1");
   AddGeometryAndLoadExtension(extension_id, kWindowId,
-                              gfx::Rect(4, 5, 31, 43),
-                              ui::SHOW_STATE_DEFAULT);
-  ASSERT_FALSE(cache_->GetGeometry(extension_id, kWindowId2, NULL, NULL));
+                              gfx::Rect(4, 5, 31, 43));
+  gfx::Rect bounds;
+  ASSERT_FALSE(cache_->GetGeometry(extension_id, kWindowId2, &bounds));
 }
 
-// Test that loading geometry and state from the store works correctly.
-TEST_F(ShellWindowGeometryCacheTest, GetGeometryAndStateFromStore) {
+// Test that loading geometry from the store works correctly.
+TEST_F(ShellWindowGeometryCacheTest, GetGeometryFromStore) {
   const std::string extension_id = prefs_->AddExtensionAndReturnId("ext1");
   gfx::Rect bounds(4, 5, 31, 43);
-  ui::WindowShowState state = ui::SHOW_STATE_NORMAL;
-  AddGeometryAndLoadExtension(extension_id, kWindowId, bounds, state);
-  gfx::Rect new_bounds;
-  ui::WindowShowState new_state = ui::SHOW_STATE_DEFAULT;
-  ASSERT_TRUE(cache_->GetGeometry(
-      extension_id, kWindowId, &new_bounds, &new_state));
-  ASSERT_EQ(bounds, new_bounds);
-  ASSERT_EQ(state, new_state);
+  AddGeometryAndLoadExtension(extension_id, kWindowId, bounds);
+  gfx::Rect newBounds;
+  ASSERT_TRUE(cache_->GetGeometry(extension_id, kWindowId, &newBounds));
+  ASSERT_EQ(bounds, newBounds);
 }
 
-// Test saving geometry and state to the cache and state store, and reading
-// it back.
-TEST_F(ShellWindowGeometryCacheTest, SaveGeometryAndStateToStore) {
+// Test saving geometry to the cache and state store, and reading it back.
+TEST_F(ShellWindowGeometryCacheTest, SaveGeometryToStore) {
   const std::string extension_id = prefs_->AddExtensionAndReturnId("ext1");
   const std::string window_id(kWindowId);
 
@@ -140,16 +131,12 @@ TEST_F(ShellWindowGeometryCacheTest, SaveGeometryAndStateToStore) {
 
   // update geometry stored in cache
   gfx::Rect bounds(4, 5, 31, 43);
-  ui::WindowShowState state = ui::SHOW_STATE_NORMAL;
-  cache_->SaveGeometry(extension_id, window_id, bounds, state);
+  gfx::Rect newBounds;
+  cache_->SaveGeometry(extension_id, window_id, bounds);
 
   // make sure that immediately reading back geometry works
-  gfx::Rect new_bounds;
-  ui::WindowShowState new_state = ui::SHOW_STATE_DEFAULT;
-  ASSERT_TRUE(cache_->GetGeometry(
-      extension_id, window_id, &new_bounds, &new_state));
-  ASSERT_EQ(bounds, new_bounds);
-  ASSERT_EQ(state, new_state);
+  ASSERT_TRUE(cache_->GetGeometry(extension_id, window_id, &newBounds));
+  ASSERT_EQ(bounds, newBounds);
 
   // unload extension to force cache to save data to the state store
   UnloadExtension(extension_id);
@@ -169,20 +156,15 @@ TEST_F(ShellWindowGeometryCacheTest, SaveGeometryAndStateToStore) {
   ASSERT_EQ(bounds.width(), v);
   ASSERT_TRUE(dict->GetInteger(window_id + ".h", &v));
   ASSERT_EQ(bounds.height(), v);
-  ASSERT_TRUE(dict->GetInteger(window_id + ".state", &v));
-  ASSERT_EQ(state, v);
 
   // check to make sure cache indeed doesn't know about this extension anymore
-  ASSERT_FALSE(cache_->GetGeometry(
-      extension_id, window_id, &new_bounds, &new_state));
+  ASSERT_FALSE(cache_->GetGeometry(extension_id, window_id, &newBounds));
 
   // reload extension
   LoadExtension(extension_id);
   // and make sure the geometry got reloaded properly too
-  ASSERT_TRUE(cache_->GetGeometry(
-      extension_id, window_id, &new_bounds, &new_state));
-  ASSERT_EQ(bounds, new_bounds);
-  ASSERT_EQ(state, new_state);
+  ASSERT_TRUE(cache_->GetGeometry(extension_id, window_id, &newBounds));
+  ASSERT_EQ(bounds, newBounds);
 }
 
 // Tests that we won't do writes to the state store for SaveGeometry calls
@@ -203,30 +185,20 @@ TEST_F(ShellWindowGeometryCacheTest, NoDuplicateWrites) {
 
   // Write the first bounds - it should do > 0 writes.
   EXPECT_CALL(observer, OnPreferenceChanged(_));
-  cache_->SaveGeometry(extension_id, kWindowId, bounds1,
-                       ui::SHOW_STATE_DEFAULT);
+  cache_->SaveGeometry(extension_id, kWindowId, bounds1);
   WaitForSync();
   Mock::VerifyAndClearExpectations(&observer);
 
   // Write a different bounds - it should also do > 0 writes.
   EXPECT_CALL(observer, OnPreferenceChanged(_));
-  cache_->SaveGeometry(extension_id, kWindowId, bounds2,
-                       ui::SHOW_STATE_DEFAULT);
+  cache_->SaveGeometry(extension_id, kWindowId, bounds2);
   WaitForSync();
   Mock::VerifyAndClearExpectations(&observer);
 
-  // Write a different state - it should also do > 0 writes.
-  EXPECT_CALL(observer, OnPreferenceChanged(_));
-  cache_->SaveGeometry(extension_id, kWindowId, bounds2,
-                       ui::SHOW_STATE_NORMAL);
-  WaitForSync();
-  Mock::VerifyAndClearExpectations(&observer);
-
-  // Write a bounds and state that's a duplicate of what we already have.
-  // This should not do any writes.
+  // Write a bounds that's a duplicate of what we already have. This should
+  // not do any writes.
   EXPECT_CALL(observer, OnPreferenceChanged(_)).Times(0);
-  cache_->SaveGeometry(extension_id, kWindowId, bounds2_duplicate,
-                       ui::SHOW_STATE_NORMAL);
+  cache_->SaveGeometry(extension_id, kWindowId, bounds2_duplicate);
   WaitForSync();
   Mock::VerifyAndClearExpectations(&observer);
 }
@@ -240,16 +212,15 @@ TEST_F(ShellWindowGeometryCacheTest, MaxWindows) {
   gfx::Rect bounds(4, 5, 31, 43);
   for (size_t i = 0; i < ShellWindowGeometryCache::kMaxCachedWindows + 1; ++i) {
     std::string window_id = "window_" + base::IntToString(i);
-    cache_->SaveGeometry(extension_id, window_id, bounds,
-                         ui::SHOW_STATE_DEFAULT);
+    cache_->SaveGeometry(extension_id, window_id, bounds);
   }
 
   // The first added window should no longer have cached geometry.
-  EXPECT_FALSE(cache_->GetGeometry(extension_id, "window_0", NULL, NULL));
+  EXPECT_FALSE(cache_->GetGeometry(extension_id, "window_0", &bounds));
   // All other windows should still exist.
   for (size_t i = 1; i < ShellWindowGeometryCache::kMaxCachedWindows + 1; ++i) {
     std::string window_id = "window_" + base::IntToString(i);
-    EXPECT_TRUE(cache_->GetGeometry(extension_id, window_id, NULL, NULL));
+    EXPECT_TRUE(cache_->GetGeometry(extension_id, window_id, &bounds));
   }
 }
 

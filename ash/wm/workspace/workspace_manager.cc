@@ -160,7 +160,7 @@ bool WorkspaceManager::IsMaximizedState(ui::WindowShowState state) {
 // static
 bool WorkspaceManager::WillRestoreMaximized(Window* window) {
   return wm::IsWindowMinimized(window) &&
-      IsMaximizedState(window->GetProperty(aura::client::kRestoreShowStateKey));
+      IsMaximizedState(window->GetProperty(internal::kRestoreShowStateKey));
 }
 
 WorkspaceWindowState WorkspaceManager::GetWindowState() const {
