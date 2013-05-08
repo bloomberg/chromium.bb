@@ -7277,6 +7277,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.XHR.send.ArrayBufferOrView"
+    enum="XMLHttpRequestSendArrayBufferOrView">
+  <summary>
+    Count the number of XHR.send() calls for each argument type to see when we
+    can deprecate the ArrayBuffer type support.
+  </summary>
+</histogram>
+
 <histogram name="WinTimeTicks.FailedToChangeCores" enum="WindowsVersion">
   <summary>
     Incremented each time the TimeTicks field trial runs on a machine with
@@ -10989,6 +10997,11 @@ other types of suffix sets.
   <int value="3" label="Vista"/>
   <int value="4" label="Windows 7"/>
   <int value="5" label="Windows 8"/>
+</enum>
+
+<enum name="XMLHttpRequestSendArrayBufferOrView" type="int">
+  <int value="0" label="XMLHttpRequestSendArrayBuffer"/>
+  <int value="1" label="XMLHttpRequestSendArrayBufferView"/>
 </enum>
 
 </enums>
