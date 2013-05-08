@@ -154,8 +154,8 @@ LayerTreeHost::~LayerTreeHost() {
   }
 }
 
-void LayerTreeHost::SetSurfaceReady() {
-  proxy_->SetSurfaceReady();
+void LayerTreeHost::SetLayerTreeHostClientReady() {
+  proxy_->SetLayerTreeHostClientReady();
 }
 
 LayerTreeHost::CreateResult
@@ -191,7 +191,7 @@ LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
           contents_texture_manager_->CreateTexture(gfx::Size(), GL_RGBA);
     }
 
-    client_->DidRecreateOutputSurface(true);
+    client_->DidInitializeOutputSurface(true);
     return CreateSucceeded;
   }
 
@@ -206,7 +206,7 @@ LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
     // We have tried too many times to recreate the output surface. Tell the
     // host to fall back to software rendering.
     output_surface_can_be_initialized_ = false;
-    client_->DidRecreateOutputSurface(false);
+    client_->DidInitializeOutputSurface(false);
     return CreateFailedAndGaveUp;
   }
 

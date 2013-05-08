@@ -53,7 +53,7 @@ class TestHooks : public WebKit::WebAnimationDelegate {
                                    float scale) {}
   virtual void Animate(base::TimeTicks monotonic_time) {}
   virtual void Layout() {}
-  virtual void DidRecreateOutputSurface(bool succeeded) {}
+  virtual void DidInitializeOutputSurface(bool succeeded) {}
   virtual void DidFailToInitializeOutputSurface() {}
   virtual void DidAddAnimation() {}
   virtual void DidCommit() {}

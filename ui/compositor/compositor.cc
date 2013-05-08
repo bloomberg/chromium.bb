@@ -501,7 +501,7 @@ Compositor::Compositor(CompositorDelegate* delegate,
 
   host_ = cc::LayerTreeHost::Create(this, settings, thread.Pass());
   host_->SetRootLayer(root_web_layer_);
-  host_->SetSurfaceReady();
+  host_->SetLayerTreeHostClientReady();
 }
 
 Compositor::~Compositor() {

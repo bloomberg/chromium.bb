@@ -62,7 +62,7 @@ bool WebLayerTreeViewImplForTesting::initialize(
 }
 
 void WebLayerTreeViewImplForTesting::setSurfaceReady() {
-  layer_tree_host_->SetSurfaceReady();
+  layer_tree_host_->SetLayerTreeHostClientReady();
 }
 
 void WebLayerTreeViewImplForTesting::setRootLayer(

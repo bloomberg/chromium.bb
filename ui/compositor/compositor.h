@@ -347,7 +347,7 @@ class COMPOSITOR_EXPORT Compositor
                                    float page_scale) OVERRIDE {}
   virtual scoped_ptr<cc::OutputSurface>
       CreateOutputSurface() OVERRIDE;
-  virtual void DidRecreateOutputSurface(bool success) OVERRIDE {}
+  virtual void DidInitializeOutputSurface(bool success) OVERRIDE {}
   virtual scoped_ptr<cc::InputHandlerClient> CreateInputHandlerClient()
       OVERRIDE;
   virtual void WillCommit() OVERRIDE {}

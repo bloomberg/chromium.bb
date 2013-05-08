@@ -90,7 +90,7 @@ bool SingleThreadProxy::IsStarted() const {
   return layer_tree_host_impl_;
 }
 
-void SingleThreadProxy::SetSurfaceReady() {
+void SingleThreadProxy::SetLayerTreeHostClientReady() {
   // Scheduling is controlled by the embedder in the single thread case, so
   // nothing to do.
 }

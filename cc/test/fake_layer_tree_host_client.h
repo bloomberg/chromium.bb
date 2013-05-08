@@ -32,7 +32,7 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient {
                                    float page_scale) OVERRIDE {}
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE;
-  virtual void DidRecreateOutputSurface(bool success) OVERRIDE {}
+  virtual void DidInitializeOutputSurface(bool success) OVERRIDE {}
   virtual scoped_ptr<InputHandlerClient> CreateInputHandlerClient() OVERRIDE;
   virtual void WillCommit() OVERRIDE {}
   virtual void DidCommit() OVERRIDE {}

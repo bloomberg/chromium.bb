@@ -151,14 +151,15 @@ bool ThreadProxy::IsStarted() const {
   return started_;
 }
 
-void ThreadProxy::SetSurfaceReady() {
-  TRACE_EVENT0("cc", "ThreadProxy::SetSurfaceReady");
+void ThreadProxy::SetLayerTreeHostClientReady() {
+  TRACE_EVENT0("cc", "ThreadProxy::SetLayerTreeHostClientReady");
   Proxy::ImplThread()->PostTask(base::Bind(
-      &ThreadProxy::SetSurfaceReadyOnImplThread, impl_thread_weak_ptr_));
+      &ThreadProxy::SetLayerTreeHostClientReadyOnImplThread,
+      impl_thread_weak_ptr_));
 }
 
-void ThreadProxy::SetSurfaceReadyOnImplThread() {
-  TRACE_EVENT0("cc", "ThreadProxy::SetSurfaceReadyOnImplThread");
+void ThreadProxy::SetLayerTreeHostClientReadyOnImplThread() {
+  TRACE_EVENT0("cc", "ThreadProxy::SetLayerTreeHostClientReadyOnImplThread");
   scheduler_on_impl_thread_->SetCanStart();
 }
 

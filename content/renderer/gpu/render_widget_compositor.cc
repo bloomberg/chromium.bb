@@ -357,7 +357,7 @@ bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
 }
 
 void RenderWidgetCompositor::setSurfaceReady() {
-  layer_tree_host_->SetSurfaceReady();
+  layer_tree_host_->SetLayerTreeHostClientReady();
 }
 
 void RenderWidgetCompositor::setRootLayer(const WebKit::WebLayer& layer) {
@@ -517,7 +517,7 @@ scoped_ptr<cc::OutputSurface> RenderWidgetCompositor::CreateOutputSurface() {
   return widget_->CreateOutputSurface();
 }
 
-void RenderWidgetCompositor::DidRecreateOutputSurface(bool success) {
+void RenderWidgetCompositor::DidInitializeOutputSurface(bool success) {
   if (!success)
     widget_->webwidget()->didExitCompositingMode();
 }

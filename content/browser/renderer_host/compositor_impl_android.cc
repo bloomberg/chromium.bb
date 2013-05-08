@@ -220,7 +220,7 @@ void CompositorImpl::SetVisible(bool visible) {
     host_->SetRootLayer(root_layer_);
 
     host_->SetVisible(true);
-    host_->SetSurfaceReady();
+    host_->SetLayerTreeHostClientReady();
     host_->SetViewportSize(size_);
     host_->set_has_transparent_background(has_transparent_background_);
   }

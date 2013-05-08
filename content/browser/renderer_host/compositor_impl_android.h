@@ -77,7 +77,7 @@ class CONTENT_EXPORT CompositorImpl
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
   virtual scoped_ptr<cc::InputHandlerClient> CreateInputHandlerClient()
       OVERRIDE;
-  virtual void DidRecreateOutputSurface(bool success) OVERRIDE {}
+  virtual void DidInitializeOutputSurface(bool success) OVERRIDE {}
   virtual void WillCommit() OVERRIDE {}
   virtual void DidCommit() OVERRIDE {}
   virtual void DidCommitAndDrawFrame() OVERRIDE {}

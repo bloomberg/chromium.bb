@@ -22,7 +22,7 @@ class FakeProxy : public Proxy {
   virtual bool CompositeAndReadback(void* pixels, gfx::Rect rect) OVERRIDE;
   virtual void FinishAllRendering() OVERRIDE {}
   virtual bool IsStarted() const OVERRIDE;
-  virtual void SetSurfaceReady() OVERRIDE {}
+  virtual void SetLayerTreeHostClientReady() OVERRIDE {}
   virtual void SetVisible(bool visible) OVERRIDE {}
   virtual void CreateAndInitializeOutputSurface() OVERRIDE;
   virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;

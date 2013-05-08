@@ -88,8 +88,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
                                           scoped_ptr<Thread> impl_thread);
   virtual ~LayerTreeHost();
 
-  // TODO(boliu): Rename to SetLayerTreeHostClientReady.
-  void SetSurfaceReady();
+  void SetLayerTreeHostClientReady();
 
   // Returns true if any LayerTreeHost is alive.
   static bool AnyLayerTreeHostInstanceExists();

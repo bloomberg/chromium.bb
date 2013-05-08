@@ -248,7 +248,7 @@ class LayerTreeHostContextTestLostContextSucceeds
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
     EXPECT_TRUE(succeeded);
 
     if (first_initialized_)
@@ -567,7 +567,7 @@ class LayerTreeHostContextTestLostContextFails
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
     if (first_initialized_) {
       EXPECT_FALSE(succeeded);
       EndTest();
@@ -660,7 +660,7 @@ class LayerTreeHostContextTestFinishAllRenderingAfterLoss
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
     if (first_initialized_) {
       EXPECT_FALSE(succeeded);
       layer_tree_host()->FinishAllRendering();
@@ -734,7 +734,7 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
     impl_host_ = impl;
   }
 
-  virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
     EXPECT_TRUE(succeeded);
     EndTest();
   }
@@ -815,7 +815,7 @@ class LayerTreeHostContextTestLostContextWhileUpdatingResources
     EndTest();
   }
 
-  virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
     EXPECT_TRUE(succeeded);
   }
 
@@ -1143,7 +1143,7 @@ class LayerTreeHostContextTestLosesFirstOutputSurface
 
   virtual void AfterTest() OVERRIDE {}
 
-  virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
     EXPECT_FALSE(succeeded);
 
     // If we make it this far without crashing, we pass!
@@ -1214,7 +1214,7 @@ class LayerTreeHostContextTestCompositeAndReadbackBeforeOutputSurfaceInit
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
     EXPECT_TRUE(succeeded);
     ++times_output_surface_created_;
   }
@@ -1270,7 +1270,7 @@ class LayerTreeHostContextTestImplSidePainting
 
   virtual void AfterTest() OVERRIDE {}
 
-  virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
     EXPECT_TRUE(succeeded);
     EndTest();
   }
@@ -1345,7 +1345,7 @@ class LayerTreeHostContextTestFailsToCreateSurface
 
   virtual void AfterTest() OVERRIDE {}
 
-  virtual void DidRecreateOutputSurface(bool success) OVERRIDE {
+  virtual void DidInitializeOutputSurface(bool success) OVERRIDE {
     EXPECT_FALSE(success);
     EXPECT_EQ(0, failure_count_);
     times_to_lose_on_create_ = 0;

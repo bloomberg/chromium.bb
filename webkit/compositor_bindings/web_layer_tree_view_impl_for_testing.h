@@ -71,7 +71,7 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
   virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta, float page_scale)
       OVERRIDE;
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
-  virtual void DidRecreateOutputSurface(bool success) OVERRIDE {}
+  virtual void DidInitializeOutputSurface(bool success) OVERRIDE {}
   virtual scoped_ptr<cc::InputHandlerClient> CreateInputHandlerClient()
       OVERRIDE;
   virtual void WillCommit() OVERRIDE {}

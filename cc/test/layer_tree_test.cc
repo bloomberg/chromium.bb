@@ -258,8 +258,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient {
     return test_hooks_->CreateOutputSurface();
   }
 
-  virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
-    test_hooks_->DidRecreateOutputSurface(succeeded);
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
+    test_hooks_->DidInitializeOutputSurface(succeeded);
   }
 
   virtual void DidFailToInitializeOutputSurface() OVERRIDE {
@@ -409,7 +409,7 @@ void LayerTreeTest::DoBeginTest() {
   started_ = true;
   beginning_ = true;
   SetupTree();
-  layer_tree_host_->SetSurfaceReady();
+  layer_tree_host_->SetLayerTreeHostClientReady();
   BeginTest();
   beginning_ = false;
   if (end_when_begin_returns_)

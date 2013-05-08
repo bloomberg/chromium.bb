@@ -28,8 +28,7 @@ class LayerTreeHostClient {
   virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta,
                                    float page_scale) = 0;
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() = 0;
-  // TODO(boliu): Rename to DidInitializeOutputSurface.
-  virtual void DidRecreateOutputSurface(bool success) = 0;
+  virtual void DidInitializeOutputSurface(bool success) = 0;
   virtual scoped_ptr<InputHandlerClient> CreateInputHandlerClient() = 0;
   virtual void WillCommit() = 0;
   virtual void DidCommit() = 0;
