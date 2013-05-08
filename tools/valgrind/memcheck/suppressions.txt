@@ -7216,3 +7216,29 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN3WTF9BitVectorC1Em
    fun:_ZN7WebCore10UseCounter17recordMeasurementENS0_7FeatureE
 }
+{
+   bug_239176
+   Memcheck:Unaddressable
+   fun:_ZNKSs4sizeEv
+   fun:_ZSteqIcEN9__gnu_cxx11__enable_ifIXsrSt9__is_charIT_E7__valueEbE6__typeERKSbIS3_St11char_traitsIS3_ESaIS3_EESC_
+   fun:_ZL12getDirectivePKN2pp5TokenE   
+   fun:_ZN2pp15DirectiveParser14parseDirectiveEPNS_5TokenE
+   fun:_ZN2pp15DirectiveParser3lexEPNS_5TokenE
+   fun:_ZN2pp13MacroExpander8getTokenEPNS_5TokenE
+   fun:_ZN2pp13MacroExpander3lexEPNS_5TokenE
+   fun:_ZN2pp12Preprocessor3lexEPNS_5TokenE
+   fun:_ZL12string_inputPcmPv
+   fun:_ZL18yy_get_next_bufferPv
+   fun:_Z5yylexP7YYSTYPEPv
+   fun:_Z7yyparseP13TParseContext
+   fun:_Z13glslang_parseP13TParseContext
+   fun:_Z14PaParseStringsmPKPKcPKiP13TParseContext
+   fun:_ZN9TCompiler7compileEPKPKcmi
+   fun:ShCompile
+   fun:_ZN3gpu5gles216ShaderTranslator9TranslateEPKc
+   fun:_ZN3gpu5gles214ProgramManager18ForceCompileShaderEPKSsPNS0_6ShaderEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
+   fun:_ZN3gpu5gles214ProgramManager15DoCompileShaderEPNS0_6ShaderEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl15DoCompileShaderEj
+   fun:_ZN3gpu5gles216GLES2DecoderImpl19HandleCompileShaderEjRKNS0_4cmds13CompileShaderE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+}
