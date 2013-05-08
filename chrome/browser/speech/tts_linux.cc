@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "base/memory/singleton.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -39,6 +40,9 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
   TtsPlatformImplLinux();
   virtual ~TtsPlatformImplLinux();
 
+  // Initiate the connection with the speech dispatcher.
+  void Initialize();
+
   // Resets the connection with speech dispatcher.
   void Reset();
 
@@ -53,6 +57,7 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
 
   static SPDNotificationType current_notification_;
 
+  base::Lock initialization_lock_;
   LibSpeechdLoader libspeechd_loader_;
   SPDConnection* conn_;
 
@@ -71,6 +76,15 @@ SPDNotificationType TtsPlatformImplLinux::current_notification_ =
 
 TtsPlatformImplLinux::TtsPlatformImplLinux()
     : utterance_id_(0) {
+  BrowserThread::PostTask(BrowserThread::FILE,
+                          FROM_HERE,
+                          base::Bind(&TtsPlatformImplLinux::Initialize,
+                                     base::Unretained(this)));
+}
+
+void TtsPlatformImplLinux::Initialize() {
+  base::AutoLock lock(initialization_lock_);
+
   if (!libspeechd_loader_.Load("libspeechd.so.2"))
     return;
 
@@ -97,6 +111,7 @@ TtsPlatformImplLinux::TtsPlatformImplLinux()
 }
 
 TtsPlatformImplLinux::~TtsPlatformImplLinux() {
+  base::AutoLock lock(initialization_lock_);
   if (conn_) {
     libspeechd_loader_.spd_close(conn_);
     conn_ = NULL;
@@ -104,6 +119,7 @@ TtsPlatformImplLinux::~TtsPlatformImplLinux() {
 }
 
 void TtsPlatformImplLinux::Reset() {
+  base::AutoLock lock(initialization_lock_);
   if (conn_)
     libspeechd_loader_.spd_close(conn_);
   conn_ = libspeechd_loader_.spd_open(
@@ -111,7 +127,11 @@ void TtsPlatformImplLinux::Reset() {
 }
 
 bool TtsPlatformImplLinux::PlatformImplAvailable() {
-  return libspeechd_loader_.loaded() && (conn_ != NULL);
+  if (!initialization_lock_.Try())
+    return false;
+  bool result = libspeechd_loader_.loaded() && (conn_ != NULL);
+  initialization_lock_.Release();
+  return result;
 }
 
 bool TtsPlatformImplLinux::Speak(
@@ -196,10 +216,12 @@ void TtsPlatformImplLinux::NotificationCallback(
   // be in a separate thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     current_notification_ = type;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
         base::Bind(&TtsPlatformImplLinux::OnSpeechEvent,
-        base::Unretained(TtsPlatformImplLinux::GetInstance()),
-        type));
+                   base::Unretained(TtsPlatformImplLinux::GetInstance()),
+                   type));
   }
 }
 
