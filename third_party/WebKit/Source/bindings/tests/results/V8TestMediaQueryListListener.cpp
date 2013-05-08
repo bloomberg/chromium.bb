@@ -22,7 +22,6 @@
 #include "V8TestMediaQueryListListener.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8TestMediaQueryListListener.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"

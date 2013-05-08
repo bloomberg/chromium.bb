@@ -26,7 +26,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "SerializedScriptValue.h"
 #include "V8MessagePort.h"
-#include "V8TestSerializedScriptValueInterface.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"

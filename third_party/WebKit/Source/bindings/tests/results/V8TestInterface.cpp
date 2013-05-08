@@ -24,7 +24,6 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8Node.h"
-#include "V8TestInterface.h"
 #include "V8TestObj.h"
 #include "bindings/bindings/tests/idls/TestPartialInterface.h"
 #include "bindings/v8/ScriptController.h"

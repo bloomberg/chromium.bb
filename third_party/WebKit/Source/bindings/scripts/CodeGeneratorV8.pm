@@ -440,6 +440,12 @@ sub AddIncludesForType
     }
 
     # additional includes (things needed to compile the bindings but not the header)
+    AddExtraIncludesForType($type);
+}
+
+sub AddExtraIncludesForType
+{
+    my $type = shift;
 
     if ($type eq "CanvasRenderingContext2D") {
         AddToImplIncludes("core/html/canvas/CanvasGradient.h");
@@ -3314,7 +3320,7 @@ sub GenerateImplementation
     AddToImplIncludes("core/dom/ContextFeatures.h");
     AddToImplIncludes("RuntimeEnabledFeatures.h");
 
-    AddIncludesForType($interfaceName);
+    AddExtraIncludesForType($interfaceName);
 
     my $toActiveDOMObject = InheritsExtendedAttribute($interface, "ActiveDOMObject") ? "${v8InterfaceName}::toActiveDOMObject" : "0";
     my $toEventTarget = InheritsExtendedAttribute($interface, "EventTarget") ? "${v8InterfaceName}::toEventTarget" : "0";
