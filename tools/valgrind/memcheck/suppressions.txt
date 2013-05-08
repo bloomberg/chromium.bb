@@ -7205,3 +7205,14 @@ fun:_ZN7content15WebContentsImpl32CreateRenderViewForRenderManagerEPNS_14RenderV
 fun:_ZN7content21RenderViewHostManager14InitRenderViewEPNS_14RenderViewHostEi
 fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
 }
+{
+   bug_239141
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF9BitVector13OutOfLineBits6createEm
+   fun:_ZN3WTF9BitVector15resizeOutOfLineEm
+   fun:_ZN3WTF9BitVector10ensureSizeEm
+   fun:_ZN3WTF9BitVectorC1Em
+   fun:_ZN7WebCore10UseCounter17recordMeasurementENS0_7FeatureE
+}
