@@ -437,6 +437,14 @@ hooks = [
     {
     'action':
          [
+    'src/build/linux/install-debian.wheezy.sysroot.wrapper.sh'
+],
+    'pattern':
+         '.'
+},
+    {
+    'action':
+         [
     'python',
     'src/tools/clang/scripts/update.py',
     '--mac-only'
