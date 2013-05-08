@@ -70,3 +70,11 @@ function setupLabelsTest(labelRelation, preHtml, postHtml)
         outerElement: document.getElementById('div1'),
     };
 }
+
+function mouseMoveToLabel(labelId) {
+    var label = document.getElementById(labelId);
+    var itemHeight = Math.floor(label.offsetHeight / label.size);
+    var offset = 5;
+    if (window.eventSender)
+        eventSender.mouseMoveTo(label.offsetLeft + offset, label.offsetTop + offset - window.pageYOffset);
+}

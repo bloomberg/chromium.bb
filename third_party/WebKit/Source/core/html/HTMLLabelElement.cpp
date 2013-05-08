@@ -66,7 +66,8 @@ PassRefPtr<HTMLLabelElement> HTMLLabelElement::create(const QualifiedName& tagNa
 
 bool HTMLLabelElement::isFocusable() const
 {
-    return false;
+    HTMLLabelElement* that = const_cast<HTMLLabelElement*>(this);
+    return that->isContentEditable();
 }
 
 LabelableElement* HTMLLabelElement::control()
