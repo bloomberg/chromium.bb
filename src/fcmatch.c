@@ -196,12 +196,10 @@ FcCompareFilename (FcValue *v1, FcValue *v2)
 	    return 0.0;
 	else if (FcStrCmpIgnoreCase (s1, s2) == 0)
 	    return 1.0;
-	else if (FcStrRegexCmp (s2, s1))
+	else if (FcStrGlobMatch (s1, s2))
 	    return 2.0;
-	else if (FcStrRegexCmpIgnoreCase (s2, s1))
-	    return 3.0;
 	else
-	    return 4.0;
+	    return 3.0;
 }
 
 #define PRI_NULL(n)				\

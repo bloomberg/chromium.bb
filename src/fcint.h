@@ -1090,6 +1090,10 @@ FcPrivate int
 FcStrMatchIgnoreCaseAndDelims (const FcChar8 *s1, const FcChar8 *s2, const FcChar8 *delims);
 
 FcPrivate FcBool
+FcStrGlobMatch (const FcChar8 *glob,
+		const FcChar8 *string);
+
+FcPrivate FcBool
 FcStrUsesHome (const FcChar8 *s);
 
 FcPrivate FcChar8 *
