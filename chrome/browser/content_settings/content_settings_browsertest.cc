@@ -371,7 +371,13 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, BlockException) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, LoadAllBlockedPlugins) {
+// Crashes on Mac Asan.  http://crbug.com/239169
+#if defined(OS_MACOSX)
+#define MAYBE_LoadAllBlockedPlugins DISABLED_LoadAllBlockedPlugins
+#else
+#define MAYBE_LoadAllBlockedPlugins LoadAllBlockedPlugins
+#endif
+IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, MAYBE_LoadAllBlockedPlugins) {
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
 
