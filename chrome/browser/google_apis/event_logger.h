@@ -18,7 +18,7 @@
 namespace google_apis {
 
 // The default history size used by EventLogger.
-const int kDefaultHistorySize = 100;
+const int kDefaultHistorySize = 1000;
 
 // EventLogger is used to collect and expose text messages for diagnosing
 // behaviors of Google APIs stuff. For instance, the collected messages are
