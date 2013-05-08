@@ -214,8 +214,41 @@ var TimelineGraphView = (function() {
      * time range.
      */
     drawTimeLabels: function(context, width, height, textHeight, startTime) {
-      // Draw the labels 1 minute apart.
-      var timeStep = 1000 * 60;
+      // Text for a time string to use in determining how far apart
+      // to place text labels.
+      var sampleText = (new Date(startTime)).toLocaleTimeString();
+
+      // The desired spacing for text labels.
+      var targetSpacing = context.measureText(sampleText).width +
+                              LABEL_LABEL_HORIZONTAL_SPACING;
+
+      // The allowed time step values between adjacent labels.  Anything much
+      // over a couple minutes isn't terribly realistic, given how much memory
+      // we use, and how slow a lot of the net-internals code is.
+      var timeStepValues = [
+        1000,  // 1 second
+        1000 * 5,
+        1000 * 30,
+        1000 * 60,  // 1 minute
+        1000 * 60 * 5,
+        1000 * 60 * 30,
+        1000 * 60 * 60,  // 1 hour
+        1000 * 60 * 60 * 5
+      ];
+
+      // Find smallest time step value that gives us at least |targetSpacing|,
+      // if any.
+      var timeStep = null;
+      for (var i = 0; i < timeStepValues.length; ++i) {
+        if (timeStepValues[i] / DEFAULT_SCALE >= targetSpacing) {
+          timeStep = timeStepValues[i];
+          break;
+        }
+      }
+
+      // If no such value, give up.
+      if (!timeStep)
+        return;
 
       // Find the time for the first label.  This time is a perfect multiple of
       // timeStep because of how UTC times work.

@@ -140,10 +140,7 @@ function drawSingleReport(peerConnectionElement, report) {
     // both the simple and compound graph cases.
     if (!graphViews[graphViewId].hasDataSeries(dataSeries[finalDataSeriesId]))
       graphViews[graphViewId].addDataSeries(dataSeries[finalDataSeriesId]);
-    // Draw the stats of the last 5 minutes.
-    graphViews[graphViewId].setDateRange(
-        new Date(singleReport.timestamp - 1000 * 60 * 5),
-        new Date(singleReport.timestamp));
+    graphViews[graphViewId].updateEndDate();
   }
 }
 
