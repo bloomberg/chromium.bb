@@ -87,7 +87,7 @@ static inline bool isCSSTokenAString(int yytype)
 
 %}
 
-%expect 35
+%expect 33
 
 %nonassoc LOWEST_PREC
 
@@ -400,6 +400,11 @@ maybe_charset:
 
 closing_brace:
     '}'
+  | %prec LOWEST_PREC TOKEN_EOF
+  ;
+
+closing_parenthesis:
+    ')'
   | %prec LOWEST_PREC TOKEN_EOF
   ;
 
@@ -1543,11 +1548,9 @@ decl_list:
     ;
 
 decl_list_recovery:
-    error error_location {
+    error error_location error_recovery {
         parser->syntaxError($2, CSSParser::PropertyDeclarationError);
     }
-    | decl_list_recovery invalid_block
-    | decl_list_recovery error
     ;
 
 declaration:
@@ -1598,11 +1601,9 @@ declaration:
   ;
 
 declaration_recovery:
-    error error_location {
+    error error_location error_recovery {
         parser->syntaxError($2);
     }
-    | declaration_recovery invalid_block
-    | declaration_recovery error
   ;
 
 property:
@@ -1634,15 +1635,13 @@ expr:
             $$->addValue(parser->sinkFloatingValue($3));
         }
     }
-    | expr invalid_block_list {
+    | expr expr_recovery {
         $$ = 0;
     }
-    | expr invalid_block_list error {
-        $$ = 0;
-    }
-    | expr error {
-        $$ = 0;
-    }
+  ;
+
+expr_recovery:
+    error error_location error_recovery
   ;
 
 operator:
@@ -1733,7 +1732,7 @@ unary_term:
   ;
 
 function:
-    FUNCTION maybe_space expr ')' maybe_space {
+    FUNCTION maybe_space expr closing_parenthesis maybe_space {
         CSSParserFunction* f = parser->createFloatingFunction();
         f->name = $1;
         f->args = parser->sinkFloatingValueList($3);
@@ -1741,15 +1740,7 @@ function:
         $$.unit = CSSParserValue::Function;
         $$.function = f;
     } |
-    FUNCTION maybe_space expr TOKEN_EOF {
-        CSSParserFunction* f = parser->createFloatingFunction();
-        f->name = $1;
-        f->args = parser->sinkFloatingValueList($3);
-        $$.id = 0;
-        $$.unit = CSSParserValue::Function;
-        $$.function = f;
-    } |
-    FUNCTION maybe_space ')' maybe_space {
+    FUNCTION maybe_space closing_parenthesis maybe_space {
         CSSParserFunction* f = parser->createFloatingFunction();
         f->name = $1;
         CSSParserValueList* valueList = parser->createFloatingValueList();
@@ -1767,7 +1758,7 @@ function:
         $$.function = f;
   }
   ;
- 
+
 calc_func_term:
   unary_term { $$ = $1; }
   | VARFUNCTION maybe_space IDENT ')' {
@@ -1961,6 +1952,12 @@ invalid_block_list:
 error_location: {
         $$ = parser->currentLocation();
     }
+    ;
+
+error_recovery:
+    /* empty */
+  | error_recovery invalid_block
+  | error_recovery error
     ;
 
 %%
