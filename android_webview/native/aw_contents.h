@@ -40,12 +40,6 @@ class AwContents : public FindHelper::Listener,
                    public IconHelper::Listener,
                    public BrowserViewRenderer::Client {
  public:
-  enum OnNewPictureMode {
-    kOnNewPictureDisabled = 0,
-    kOnNewPictureEnabled,
-    kOnNewPictureInvalidationOnly,
-  };
-
   // Returns the AwContents instance associated with |web_contents|, or NULL.
   static AwContents* FromWebContents(content::WebContents* web_contents);
 
@@ -113,8 +107,7 @@ class AwContents : public FindHelper::Listener,
                                                             jobject obj);
   void EnableOnNewPicture(JNIEnv* env,
                           jobject obj,
-                          jboolean enabled,
-                          jboolean invalidation_only);
+                          jboolean enabled);
 
   // Geolocation API support
   void ShowGeolocationPrompt(const GURL& origin, base::Callback<void(bool)>);
@@ -141,8 +134,7 @@ class AwContents : public FindHelper::Listener,
 
   // BrowserViewRenderer::Client implementation.
   virtual void Invalidate() OVERRIDE;
-  virtual void OnNewPicture(
-      const base::android::JavaRef<jobject>& picture) OVERRIDE;
+  virtual void OnNewPicture() OVERRIDE;
   virtual gfx::Point GetLocationOnScreen() OVERRIDE;
   virtual void OnPageScaleFactorChanged(float page_scale_factor) OVERRIDE;
 

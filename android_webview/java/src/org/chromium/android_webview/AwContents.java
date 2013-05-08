@@ -129,6 +129,8 @@ public class AwContents {
 
     private DefaultVideoPosterRequestHandler mDefaultVideoPosterRequestHandler;
 
+    private boolean mNewPictureInvalidationOnly;
+
     private static final class DestroyRunnable implements Runnable {
         private int mNativeAwContents;
         private DestroyRunnable(int nativeAwContents) {
@@ -451,7 +453,8 @@ public class AwContents {
      * @param invalidationOnly Flag to call back only on invalidation without providing a picture.
      */
     public void enableOnNewPicture(boolean enabled, boolean invalidationOnly) {
-        nativeEnableOnNewPicture(mNativeAwContents, enabled, invalidationOnly);
+        mNewPictureInvalidationOnly = invalidationOnly;
+        nativeEnableOnNewPicture(mNativeAwContents, enabled);
     }
 
     // This is no longer synchronous and just calls the Async version and return 0.
@@ -1269,8 +1272,8 @@ public class AwContents {
     }
 
     @CalledByNative
-    public void onNewPicture(Picture picture) {
-        mContentsClient.onNewPicture(picture);
+    public void onNewPicture() {
+        mContentsClient.onNewPicture(mNewPictureInvalidationOnly ? null : capturePicture());
     }
 
     // Called as a result of nativeUpdateLastHitTestData.
@@ -1415,8 +1418,7 @@ public class AwContents {
             int clipW, int clipH);
     private native int nativeGetAwDrawGLViewContext(int nativeAwContents);
     private native Picture nativeCapturePicture(int nativeAwContents);
-    private native void nativeEnableOnNewPicture(int nativeAwContents, boolean enabled,
-            boolean invalidationOnly);
+    private native void nativeEnableOnNewPicture(int nativeAwContents, boolean enabled);
 
     private native void nativeInvokeGeolocationCallback(
             int nativeAwContents, boolean value, String requestingFrame);

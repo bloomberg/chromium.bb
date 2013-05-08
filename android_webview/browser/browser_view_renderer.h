@@ -33,8 +33,7 @@ class BrowserViewRenderer {
 
      // Called when a new Picture is available. Needs to be enabled
      // via the EnableOnNewPicture method.
-     virtual void OnNewPicture(
-         const base::android::JavaRef<jobject>& picture) = 0;
+     virtual void OnNewPicture() = 0;
 
      // Called to get view's absolute location on the screen.
      virtual gfx::Point GetLocationOnScreen() = 0;
@@ -70,12 +69,6 @@ class BrowserViewRenderer {
     virtual ~JavaHelper() {}
   };
 
-  enum OnNewPictureMode {
-    kOnNewPictureDisabled = 0,
-    kOnNewPictureEnabled,
-    kOnNewPictureInvalidationOnly,
-  };
-
   // Content control methods.
   virtual void SetContents(content::ContentViewCore* content_view_core) = 0;
 
@@ -88,7 +81,7 @@ class BrowserViewRenderer {
 
   // CapturePicture API methods.
   virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture() = 0;
-  virtual void EnableOnNewPicture(OnNewPictureMode mode) = 0;
+  virtual void EnableOnNewPicture(bool enabled) = 0;
 
   // View update notifications.
   virtual void OnVisibilityChanged(bool view_visible, bool window_visible) = 0;

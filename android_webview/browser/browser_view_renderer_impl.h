@@ -57,7 +57,7 @@ class BrowserViewRendererImpl
   virtual void SetScrollForHWFrame(int x, int y) OVERRIDE;
   virtual bool DrawSW(jobject java_canvas, const gfx::Rect& clip) OVERRIDE;
   virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture() OVERRIDE;
-  virtual void EnableOnNewPicture(OnNewPictureMode mode) OVERRIDE;
+  virtual void EnableOnNewPicture(bool enabled) OVERRIDE;
   virtual void OnVisibilityChanged(
       bool view_visible, bool window_visible) OVERRIDE;
   virtual void OnSizeChanged(int width, int height) OVERRIDE;
@@ -131,7 +131,7 @@ class BrowserViewRendererImpl
   float page_scale_;
   gfx::Size view_size_;
   gfx::SizeF content_size_css_;
-  OnNewPictureMode on_new_picture_mode_;
+  bool new_picture_enabled_;
 
   // Used only for detecting Android View System context changes.
   // Not to be used between draw calls.

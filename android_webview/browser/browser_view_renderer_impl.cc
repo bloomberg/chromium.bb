@@ -160,7 +160,7 @@ BrowserViewRendererImpl::BrowserViewRendererImpl(
       is_composite_pending_(false),
       dpi_scale_(1.0f),
       page_scale_(1.0f),
-      on_new_picture_mode_(kOnNewPictureDisabled),
+      new_picture_enabled_(false),
       last_frame_context_(NULL),
       web_contents_(NULL),
       update_frame_info_callback_(
@@ -421,16 +421,14 @@ ScopedJavaLocalRef<jobject> BrowserViewRendererImpl::CapturePicture() {
   return java_helper_->RecordBitmapIntoPicture(env, jbitmap);
 }
 
-void BrowserViewRendererImpl::EnableOnNewPicture(OnNewPictureMode mode) {
-  on_new_picture_mode_ = mode;
+void BrowserViewRendererImpl::EnableOnNewPicture(bool enabled) {
+  new_picture_enabled_ = enabled;
 
   // TODO(leandrogracia): when SW rendering uses the compositor rather than
   // picture rasterization, send update the renderer side with the correct
   // listener state. (For now, we always leave render picture listener enabled).
   // render_view_host_ext_->EnableCapturePictureCallback(enabled);
-  //DCHECK(view_renderer_host_);
-  //view_renderer_host_->EnableCapturePictureCallback(
-  //    on_new_picture_mode_ == kOnNewPictureEnabled);
+  // http://crbug.com/176945
 }
 
 void BrowserViewRendererImpl::OnVisibilityChanged(bool view_visible,
@@ -481,35 +479,17 @@ void BrowserViewRendererImpl::ScheduleComposite() {
 }
 
 skia::RefPtr<SkPicture> BrowserViewRendererImpl::GetLastCapturedPicture() {
-  // Use the latest available picture if the listener callback is enabled.
-  skia::RefPtr<SkPicture> picture;
-  if (on_new_picture_mode_ == kOnNewPictureEnabled)
-    picture = RendererPictureMap::GetInstance()->GetRendererPicture(
-        web_contents_->GetRoutingID());
-
-  // If not available or not in listener mode get it synchronously.
-  if (!picture) {
-    view_renderer_host_->CapturePictureSync();
-    picture = RendererPictureMap::GetInstance()->GetRendererPicture(
-        web_contents_->GetRoutingID());
-  }
-
-  return picture;
+  // Get it synchronously.
+  view_renderer_host_->CapturePictureSync();
+  return RendererPictureMap::GetInstance()->GetRendererPicture(
+      web_contents_->GetRoutingID());
 }
 
 void BrowserViewRendererImpl::OnPictureUpdated(int process_id,
                                                int render_view_id) {
-  CHECK_EQ(web_contents_->GetRenderProcessHost()->GetID(), process_id);
-  if (render_view_id != web_contents_->GetRoutingID())
-    return;
+  client_->OnNewPicture();
 
-  // TODO(leandrogracia): this can be made unconditional once software rendering
-  // uses Ubercompositor. Until then this path is required for SW invalidations.
-  if (on_new_picture_mode_ == kOnNewPictureEnabled)
-    client_->OnNewPicture(CapturePicture());
-
-  // TODO(leandrogracia): delete when sw rendering uses Ubercompositor.
-  // Invalidation should be provided by the compositor only.
+  // TODO(mkosiba): Remove when invalidation path is re-implemented.
   Invalidate();
 }
 
@@ -539,11 +519,6 @@ void BrowserViewRendererImpl::ResetCompositor() {
 void BrowserViewRendererImpl::Invalidate() {
   if (view_visible_)
     client_->Invalidate();
-
-  // When not in invalidation-only mode onNewPicture will be triggered
-  // from the OnPictureUpdated callback.
-  if (on_new_picture_mode_ == kOnNewPictureInvalidationOnly)
-    client_->OnNewPicture(ScopedJavaLocalRef<jobject>());
 }
 
 bool BrowserViewRendererImpl::RenderSW(SkCanvas* canvas) {

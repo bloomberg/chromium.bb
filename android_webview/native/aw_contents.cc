@@ -474,11 +474,11 @@ void AwContents::Invalidate() {
     Java_AwContents_invalidate(env, obj.obj());
 }
 
-void AwContents::OnNewPicture(const JavaRef<jobject>& picture) {
+void AwContents::OnNewPicture() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
-    Java_AwContents_onNewPicture(env, obj.obj(), picture.obj());
+    Java_AwContents_onNewPicture(env, obj.obj());
 }
 
 base::android::ScopedJavaLocalRef<jbyteArray>
@@ -653,17 +653,8 @@ ScopedJavaLocalRef<jobject> AwContents::CapturePicture(JNIEnv* env,
 
 void AwContents::EnableOnNewPicture(JNIEnv* env,
                                     jobject obj,
-                                    jboolean enabled,
-                                    jboolean invalidation_only) {
-  BrowserViewRenderer::OnNewPictureMode mode =
-      BrowserViewRenderer::kOnNewPictureDisabled;
-  if (enabled) {
-    mode = invalidation_only ?
-        BrowserViewRenderer::kOnNewPictureInvalidationOnly :
-        BrowserViewRenderer::kOnNewPictureEnabled;
-  }
-
-  browser_view_renderer_->EnableOnNewPicture(mode);
+                                    jboolean enabled) {
+  browser_view_renderer_->EnableOnNewPicture(enabled);
 }
 
 }  // namespace android_webview
