@@ -9,6 +9,10 @@ var peerConnectionUpdateTable = null;
 var statsTable = null;
 var dumpCreator = null;
 
+// The maximum number of data points bufferred for each stats. Old data points
+// will be shifted out when the buffer is full.
+var MAX_STATS_DATA_POINT_BUFFER_SIZE = 1000;
+
 <include src="ssrc_info_manager.js"/>
 <include src="stats_graph_helper.js"/>
 <include src="stats_table.js"/>
