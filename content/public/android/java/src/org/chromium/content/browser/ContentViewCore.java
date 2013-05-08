@@ -71,11 +71,6 @@ import java.util.Map;
 public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private static final String TAG = ContentViewCore.class.getName();
 
-    // Used when ContentView implements a standalone View.
-    public static final int PERSONALITY_VIEW = 0;
-    // Used for Chrome.
-    public static final int PERSONALITY_CHROME = 1;
-
     // Used to avoid enabling zooming in / out if resulting zooming will
     // produce little visible difference.
     private static final float ZOOM_CONTROLS_EPSILON = 0.007f;
@@ -86,9 +81,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     // Length of the delay (in ms) before fading in handles after the last page movement.
     private static final int TEXT_HANDLE_FADE_IN_DELAY = 300;
-
-    // Personality of the ContentView.
-    private final int mPersonality;
 
     // If the embedder adds a JavaScript interface object that contains an indirect reference to
     // the ContentViewCore, then storing a strong ref to the interface object on the native
@@ -363,13 +355,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * a ContentViewCore and before using it.
      *
      * @param context The context used to create this.
-     * @param personality The type of ContentViewCore being created.
      */
-    public ContentViewCore(Context context, int personality) {
+    public ContentViewCore(Context context) {
         mContext = context;
 
         WeakContext.initializeWeakContext(context);
-        mPersonality = personality;
         HeapStatsLogger.init(mContext.getApplicationContext());
         mAdapterInputConnectionFactory = new AdapterInputConnectionFactory();
 
@@ -663,14 +653,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         mContainerView.setFocusableInTouchMode(true);
         mContainerView.setClickable(true);
 
-        if (mPersonality == PERSONALITY_CHROME) {
-            // Doing this in PERSONALITY_VIEW mode causes rendering problems in our
-            // current WebView test case (the HTMLViewer application).
-            // TODO(benm): Figure out why this is the case.
-            if (mContainerView.getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) {
-                mContainerView.setHorizontalScrollBarEnabled(false);
-                mContainerView.setVerticalScrollBarEnabled(false);
-            }
+        if (mContainerView.getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) {
+            mContainerView.setHorizontalScrollBarEnabled(false);
+            mContainerView.setVerticalScrollBarEnabled(false);
         }
 
         mZoomManager = new ZoomManager(mContext, this);
@@ -746,21 +731,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             }
         };
         mPopupZoomer.setOnTapListener(listener);
-    }
-
-    /**
-     * @return Whether the configured personality of this ContentView is {@link #PERSONALITY_VIEW}.
-     */
-    boolean isPersonalityView() {
-        switch (mPersonality) {
-            case PERSONALITY_VIEW:
-                return true;
-            case PERSONALITY_CHROME:
-                return false;
-            default:
-                Log.e(TAG, "Unknown ContentView personality: " + mPersonality);
-                return false;
-        }
     }
 
     /**
@@ -857,11 +827,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      */
     public void loadUrl(LoadUrlParams params) {
         if (mNativeContentViewCore == 0) return;
-        if (isPersonalityView()) {
-            // For WebView, always use the user agent override, which is set
-            // every time the user agent in ContentSettings is modified.
-            params.setOverrideUserAgent(LoadUrlParams.UA_OVERRIDE_TRUE);
-        }
 
         nativeLoadUrl(mNativeContentViewCore,
                 params.mUrl,
@@ -1324,13 +1289,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     /**
-     * Return the ContentSettings object used to control the settings for this
-     * ContentViewCore.
-     *
-     * Note that when ContentView is used in the PERSONALITY_CHROME role,
-     * ContentSettings can only be used for retrieving settings values. For
-     * modifications, ChromeNativePreferences is to be used.
-     * @return A ContentSettings object that can be used to control this
+     * Return the ContentSettings object used to retrieve the settings for this
+     * ContentViewCore. For modifications, ChromeNativePreferences is to be used.
+     * @return A ContentSettings object that can be used to retrieve this
      *         ContentViewCore's settings.
      */
     public ContentSettings getContentSettings() {

@@ -49,8 +49,7 @@ public class TestShellTab extends TabBase {
     private void init(Context context) {
         // Build the WebContents and the ContentView/ContentViewCore
         int nativeWebContentsPtr = ContentViewUtil.createNativeWebContents(false);
-        mContentView = ContentView.newInstance(context, nativeWebContentsPtr, getWindowAndroid(),
-                ContentView.PERSONALITY_CHROME);
+        mContentView = ContentView.newInstance(context, nativeWebContentsPtr, getWindowAndroid());
         mNativeTestShellTab = nativeInit(nativeWebContentsPtr,
                 getWindowAndroid().getNativePointer());
 

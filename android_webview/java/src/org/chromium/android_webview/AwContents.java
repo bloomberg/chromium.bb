@@ -315,8 +315,7 @@ public class AwContents {
         mDIPScale = DeviceDisplayInfo.create(containerView.getContext()).getDIPScale();
         // Note that ContentViewCore must be set up before AwContents, as ContentViewCore
         // setup performs process initialisation work needed by AwContents.
-        mContentViewCore = new ContentViewCore(containerView.getContext(),
-                ContentViewCore.PERSONALITY_VIEW);
+        mContentViewCore = new ContentViewCore(containerView.getContext());
         mContentViewCore.setPinchGestureStateListener(new AwPinchGestureStateListener());
         mContentsClientBridge = new AwContentsClientBridge(contentsClient);
         mLayoutSizer = layoutSizer;
@@ -529,6 +528,10 @@ public class AwContents {
             params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_RELOAD);
         }
 
+        // For WebView, always use the user agent override, which is set
+        // every time the user agent in AwSettings is modified.
+        params.setOverrideUserAgent(LoadUrlParams.UA_OVERRIDE_TRUE);
+
         mContentViewCore.loadUrl(params);
 
         suppressInterceptionForThisNavigation();
@@ -573,8 +576,7 @@ public class AwContents {
     private void setNewWebContents(int newWebContentsPtr) {
         // When setting a new WebContents, we new up a ContentViewCore that will
         // wrap it and then swap it.
-        ContentViewCore newCore = new ContentViewCore(mContainerView.getContext(),
-                ContentViewCore.PERSONALITY_VIEW);
+        ContentViewCore newCore = new ContentViewCore(mContainerView.getContext());
         newCore.initialize(mContainerView, mInternalAccessAdapter, newWebContentsPtr, null);
         newCore.setContentViewClient(mContentsClient.getContentViewClient());
         newCore.setZoomControlsDelegate(mZoomControls);

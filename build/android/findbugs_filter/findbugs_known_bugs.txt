@@ -44,5 +44,5 @@ M V MS: org.chromium.content.browser.LoadUrlParams.LOAD_TYPE_BROWSER_INITIATED_H
 M V MS: org.chromium.content.browser.LoadUrlParams.LOAD_TYPE_DATA isn't final and can't be protected from malicious code   In LoadUrlParams.java
 M V MS: org.chromium.content.browser.LoadUrlParams.LOAD_TYPE_DEFAULT should be package protected  In LoadUrlParams.java
 M V MS: org.chromium.content.browser.LoadUrlParams.UA_OVERRIDE_INHERIT should be package protected  In LoadUrlParams.java
-M V MS: org.chromium.content.browser.LoadUrlParams.UA_OVERRIDE_TRUE should be package protected  In LoadUrlParams.java
+M V MS: org.chromium.content.browser.LoadUrlParams.UA_OVERRIDE_TRUE isn't final and can't be protected from malicious code   In LoadUrlParams.java
 M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browser.sync.ProfileSyncService.sSyncSetupManager in org.chromium.chrome.browser.sync.ProfileSyncService.get(Context)  At ProfileSyncService.java

@@ -216,8 +216,7 @@ public class Shell extends LinearLayout {
     @SuppressWarnings("unused")
     @CalledByNative
     private void initFromNativeTabContents(int nativeTabContents) {
-        mContentView = ContentView.newInstance(
-                getContext(), nativeTabContents, mWindow, ContentView.PERSONALITY_CHROME);
+        mContentView = ContentView.newInstance(getContext(), nativeTabContents, mWindow);
         if (mContentView.getUrl() != null) mUrlTextView.setText(mContentView.getUrl());
         ((FrameLayout) findViewById(R.id.contentview_holder)).addView(mContentView,
                 new FrameLayout.LayoutParams(

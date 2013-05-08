@@ -36,9 +36,11 @@ import org.chromium.ui.WindowAndroid;
 public class ContentView extends FrameLayout
         implements ContentViewCore.InternalAccessDelegate, PageInfo {
     // Used when ContentView implements a standalone View.
-    public static final int PERSONALITY_VIEW = ContentViewCore.PERSONALITY_VIEW;
+    @Deprecated
+    public static final int PERSONALITY_VIEW = 0;
     // Used for Chrome.
-    public static final int PERSONALITY_CHROME = ContentViewCore.PERSONALITY_CHROME;
+    @Deprecated
+    public static final int PERSONALITY_CHROME = 0;
 
     private final ContentViewCore mContentViewCore;
 
@@ -51,13 +53,28 @@ public class ContentView extends FrameLayout
      *                access the current theme, resources, etc.
      * @param nativeWebContents A pointer to the native web contents.
      * @param windowAndroid An instance of the WindowAndroid.
-     * @param personality One of {@link #PERSONALITY_CHROME} or {@link #PERSONALITY_VIEW}.
      * @return A ContentView instance.
      */
     public static ContentView newInstance(Context context, int nativeWebContents,
+            WindowAndroid windowAndroid) {
+        return newInstance(context, nativeWebContents, windowAndroid, null,
+                android.R.attr.webViewStyle);
+    }
+
+    /**
+     * Creates an instance of a ContentView.
+     * @param context The Context the view is running in, through which it can
+     *                access the current theme, resources, etc.
+     * @param nativeWebContents A pointer to the native web contents.
+     * @param windowAndroid An instance of the WindowAndroid.
+     * @param personality Not used, will be removed.
+     * @return A ContentView instance.
+     */
+    @Deprecated
+    public static ContentView newInstance(Context context, int nativeWebContents,
             WindowAndroid windowAndroid, int personality) {
         return newInstance(context, nativeWebContents, windowAndroid, null,
-                android.R.attr.webViewStyle, personality);
+                android.R.attr.webViewStyle);
     }
 
     /**
@@ -89,26 +106,19 @@ public class ContentView extends FrameLayout
      */
     public static ContentView newInstance(Context context, int nativeWebContents,
             WindowAndroid windowAndroid, AttributeSet attrs, int defStyle) {
-        return newInstance(context, nativeWebContents, windowAndroid, attrs, defStyle,
-                PERSONALITY_VIEW);
-    }
-
-    private static ContentView newInstance(Context context, int nativeWebContents,
-            WindowAndroid windowAndroid, AttributeSet attrs, int defStyle, int personality) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            return new ContentView(context, nativeWebContents, windowAndroid, attrs, defStyle,
-                    personality);
+            return new ContentView(context, nativeWebContents, windowAndroid, attrs, defStyle);
         } else {
             return new JellyBeanContentView(context, nativeWebContents, windowAndroid, attrs,
-                    defStyle, personality);
+                    defStyle);
         }
     }
 
     protected ContentView(Context context, int nativeWebContents, WindowAndroid windowAndroid,
-            AttributeSet attrs, int defStyle, int personality) {
+            AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        mContentViewCore = new ContentViewCore(context, personality);
+        mContentViewCore = new ContentViewCore(context);
         mContentViewCore.initialize(this, this, nativeWebContents, windowAndroid);
     }
 
@@ -174,13 +184,6 @@ public class ContentView extends FrameLayout
      */
     public static boolean hasHardwareAcceleration(Activity activity) {
         return ContentViewCore.hasHardwareAcceleration(activity);
-    }
-
-    /**
-     * @return Whether the configured personality of this ContentView is {@link #PERSONALITY_VIEW}.
-     */
-    boolean isPersonalityView() {
-        return mContentViewCore.isPersonalityView();
     }
 
     /**
@@ -409,13 +412,9 @@ public class ContentView extends FrameLayout
     }
 
     /**
-     * Return the ContentSettings object used to control the settings for this
-     * WebView.
-     *
-     * Note that when ContentView is used in the PERSONALITY_CHROME role,
-     * ContentSettings can only be used for retrieving settings values. For
-     * modifications, ChromeNativePreferences is to be used.
-     * @return A ContentSettings object that can be used to control this WebView's
+     * Return the ContentSettings object used to retrieve the settings for this
+     * ContentView.
+     * @return A ContentSettings object that can be used to retrieve this ContentView's
      *         settings.
      */
     public ContentSettings getContentSettings() {
