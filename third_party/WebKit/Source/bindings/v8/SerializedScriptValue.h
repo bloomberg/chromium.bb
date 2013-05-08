@@ -33,8 +33,14 @@
 
 #include "bindings/v8/ScriptValue.h"
 #include <v8.h>
-#include "wtf/ArrayBuffer.h"
 #include "wtf/Threading.h"
+
+namespace WTF {
+
+class ArrayBuffer;
+class ArrayBufferContents;
+
+}
 
 namespace WebCore {
 

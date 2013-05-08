@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -20,60 +21,49 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
-#include "wtf/ArrayBuffer.h"
-
 #include "wtf/ArrayBufferContents.h"
+
 #include "wtf/ArrayBufferDeallocationObserver.h"
-#include "wtf/ArrayBufferView.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 
 namespace WTF {
 
-bool ArrayBuffer::transfer(ArrayBufferContents& result, Vector<RefPtr<ArrayBufferView> >& neuteredViews)
+void ArrayBufferContents::tryAllocate(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy policy, ArrayBufferContents& result)
 {
-    RefPtr<ArrayBuffer> keepAlive(this);
-
-    if (!m_contents.m_data) {
-        result.m_data = 0;
-        return false;
+    // Do not allow 32-bit overflow of the total size.
+    // FIXME: Why not? The tryFastCalloc function already checks its arguments,
+    // and will fail if there is any overflow, so why should we include a
+    // redudant unnecessarily restrictive check here?
+    if (numElements) {
+        unsigned totalSize = numElements * elementByteSize;
+        if (totalSize / numElements != elementByteSize) {
+            result.m_data = 0;
+            return;
+        }
+    }
+    bool allocationSucceeded = false;
+    if (policy == ZeroInitialize)
+        allocationSucceeded = WTF::tryFastCalloc(numElements, elementByteSize).getValue(result.m_data);
+    else {
+        ASSERT(policy == DontInitialize);
+        allocationSucceeded = WTF::tryFastMalloc(numElements * elementByteSize).getValue(result.m_data);
     }
 
-    m_contents.transfer(result);
-
-    while (m_firstView) {
-        ArrayBufferView* current = m_firstView;
-        removeView(current);
-        current->neuter();
-        neuteredViews.append(current);
+    if (allocationSucceeded) {
+        result.m_sizeInBytes = numElements * elementByteSize;
+        return;
     }
-    return true;
+    result.m_data = 0;
 }
 
-void ArrayBuffer::addView(ArrayBufferView* view)
+ArrayBufferContents::~ArrayBufferContents()
 {
-    view->m_buffer = this;
-    view->m_prevView = 0;
-    view->m_nextView = m_firstView;
-    if (m_firstView)
-        m_firstView->m_prevView = view;
-    m_firstView = view;
+    if (m_deallocationObserver)
+        m_deallocationObserver->ArrayBufferDeallocated(m_sizeInBytes);
+    WTF::fastFree(m_data);
 }
 
-void ArrayBuffer::removeView(ArrayBufferView* view)
-{
-    ASSERT(this == view->m_buffer);
-    if (view->m_nextView)
-        view->m_nextView->m_prevView = view->m_prevView;
-    if (view->m_prevView)
-        view->m_prevView->m_nextView = view->m_nextView;
-    if (m_firstView == view)
-        m_firstView = view->m_nextView;
-    view->m_prevView = view->m_nextView = 0;
-}
-
-}
+} // namespace WTF

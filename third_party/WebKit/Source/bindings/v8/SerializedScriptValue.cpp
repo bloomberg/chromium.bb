@@ -63,6 +63,7 @@
 #include "core/platform/SharedBuffer.h"
 
 #include "wtf/ArrayBuffer.h"
+#include "wtf/ArrayBufferContents.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/Assertions.h"
 #include "wtf/ByteOrder.h"

@@ -26,72 +26,17 @@
 #ifndef ArrayBuffer_h
 #define ArrayBuffer_h
 
-#include <wtf/HashSet.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/ArrayBufferContents.h"
+#include "wtf/ArrayBufferDeallocationObserver.h"
+#include "wtf/HashSet.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WTF {
 
 class ArrayBuffer;
 class ArrayBufferView;
-
-// The current implementation assumes that the instance of this class is a
-// singleton living for the entire process's lifetime.
-class ArrayBufferDeallocationObserver {
-public:
-    virtual void ArrayBufferDeallocated(unsigned sizeInBytes) = 0;
-};
-
-
-class ArrayBufferContents {
-    WTF_MAKE_NONCOPYABLE(ArrayBufferContents);
-public:
-    ArrayBufferContents() 
-        : m_data(0)
-        , m_sizeInBytes(0)
-        , m_deallocationObserver(0)
-    { }
-
-    inline ~ArrayBufferContents();
-
-    void* data() { return m_data; }
-    unsigned sizeInBytes() { return m_sizeInBytes; }
-
-private:
-    ArrayBufferContents(void* data, unsigned sizeInBytes) 
-        : m_data(data)
-        , m_sizeInBytes(sizeInBytes)
-        , m_deallocationObserver(0)
-    { }
-
-    friend class ArrayBuffer;
-
-    enum InitializationPolicy {
-        ZeroInitialize,
-        DontInitialize
-    };
-
-    static inline void tryAllocate(unsigned numElements, unsigned elementByteSize, InitializationPolicy, ArrayBufferContents&);
-    void transfer(ArrayBufferContents& other)
-    {
-        ASSERT(!other.m_data);
-        other.m_data = m_data;
-        other.m_sizeInBytes = m_sizeInBytes;
-        m_data = 0;
-        m_sizeInBytes = 0;
-        // Notify the current V8 isolate that the buffer is gone.
-        if (m_deallocationObserver)
-            m_deallocationObserver->ArrayBufferDeallocated(other.m_sizeInBytes);
-        ASSERT(!other.m_deallocationObserver);
-        m_deallocationObserver = 0;
-    }
-
-    void* m_data;
-    unsigned m_sizeInBytes;
-
-    ArrayBufferDeallocationObserver* m_deallocationObserver;
-};
 
 class ArrayBuffer : public RefCounted<ArrayBuffer> {
 public:
@@ -229,41 +174,6 @@ unsigned ArrayBuffer::clampIndex(int index) const
     if (index < 0)
         index = currentLength + index;
     return clampValue(index, 0, currentLength);
-}
-
-void ArrayBufferContents::tryAllocate(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy policy, ArrayBufferContents& result)
-{
-    // Do not allow 32-bit overflow of the total size.
-    // FIXME: Why not? The tryFastCalloc function already checks its arguments,
-    // and will fail if there is any overflow, so why should we include a
-    // redudant unnecessarily restrictive check here?
-    if (numElements) {
-        unsigned totalSize = numElements * elementByteSize;
-        if (totalSize / numElements != elementByteSize) {
-            result.m_data = 0;
-            return;
-        }
-    }
-    bool allocationSucceeded = false;
-    if (policy == ZeroInitialize)
-        allocationSucceeded = WTF::tryFastCalloc(numElements, elementByteSize).getValue(result.m_data);
-    else {
-        ASSERT(policy == DontInitialize);
-        allocationSucceeded = WTF::tryFastMalloc(numElements * elementByteSize).getValue(result.m_data);
-    }
-
-    if (allocationSucceeded) {
-        result.m_sizeInBytes = numElements * elementByteSize;
-        return;
-    }
-    result.m_data = 0;
-}
-
-ArrayBufferContents::~ArrayBufferContents()
-{
-    if (m_deallocationObserver)
-        m_deallocationObserver->ArrayBufferDeallocated(m_sizeInBytes);
-    WTF::fastFree(m_data);
 }
 
 } // namespace WTF
