@@ -665,12 +665,9 @@ sub GenerateHeader
     my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($interfaceName);
 
     foreach my $headerInclude (sort keys(%headerIncludeFiles)) {
-        if ($headerInclude =~ /wtf|v8\.h/) {
-            $header{includes}->add("#include \<${headerInclude}\>\n");
-        } else {
-            $header{includes}->add("#include \"${headerInclude}\"\n");
-        }
+        $header{includes}->add("#include \"${headerInclude}\"\n") unless $headerInclude =~ /v8\.h/;
     }
+    $header{includes}->add("#include \<v8.h\>\n") if $headerIncludeFiles{"v8.h"};
 
     $header{nameSpaceWebCore}->addHeader("\ntemplate<typename PropertyType> class SVGPropertyTearOff;\n") if $svgPropertyType;
     if ($svgNativeType) {
@@ -4061,7 +4058,7 @@ sub GenerateCallbackHeader
     my $interfaceHeader = HeaderFileForInterface($interfaceName);
     push(@unsortedIncludes, "#include \"$interfaceHeader\"");
     push(@unsortedIncludes, "#include <v8.h>");
-    push(@unsortedIncludes, "#include <wtf/Forward.h>");
+    push(@unsortedIncludes, "#include \"wtf/Forward.h\"");
     $header{includes}->add(join("\n", sort @unsortedIncludes));
     unshift(@{$header{nameSpaceWebCore}->{header}}, "\n");
     $header{nameSpaceWebCore}->addHeader("class ScriptExecutionContext;\n\n");
@@ -4132,8 +4129,7 @@ sub GenerateCallbackImplementation
     AddToImplIncludes("core/dom/ScriptExecutionContext.h");
     AddToImplIncludes("bindings/v8/V8Binding.h");
     AddToImplIncludes("bindings/v8/V8Callback.h");
-
-    $implementation{includes}->addFooter("\n#include <wtf/Assertions.h>\n");
+    AddToImplIncludes("wtf/Assertions.h");
 
     $implementation{nameSpaceWebCore}->add(<<END);
 ${v8InterfaceName}::${v8InterfaceName}(v8::Handle<v8::Object> callback, ScriptExecutionContext* context)
@@ -5073,11 +5069,7 @@ sub WriteData
         $checkType =~ s/\.h//;
         next if IsSVGAnimatedType($checkType);
 
-        if ($include =~ /wtf/) {
-            $include = "\<$include\>";
-        } else {
-            $include = "\"$include\"";
-        }
+        $include = "\"$include\"";
 
         if ($condition eq 1) {
             push @includes, $include;

@@ -25,8 +25,8 @@
 #include "bindings/v8/ActiveDOMCallback.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScopedPersistent.h"
+#include "wtf/Forward.h"
 #include <v8.h>
-#include <wtf/Forward.h>
 
 namespace WebCore {
 class ScriptExecutionContext;

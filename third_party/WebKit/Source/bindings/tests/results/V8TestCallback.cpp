@@ -27,12 +27,10 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Callback.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include <wtf/GetPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-
-#include <wtf/Assertions.h>
-
+#include "wtf/Assertions.h"
+#include "wtf/GetPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 namespace WebCore {
 
 V8TestCallback::V8TestCallback(v8::Handle<v8::Object> callback, ScriptExecutionContext* context)
