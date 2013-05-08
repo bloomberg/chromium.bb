@@ -665,6 +665,9 @@ void WebKitTestRunner::OnSetTestConfiguration(
   test_config_ = params;
   is_main_window_ = true;
 
+  ForceResizeRenderView(
+      render_view(),
+      WebSize(params.initial_size.width(), params.initial_size.height()));
   setFocus(proxy_, true);
 
   WebTestInterfaces* interfaces =

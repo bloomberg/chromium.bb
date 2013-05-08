@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/size.h"
 
 namespace content {
 
@@ -36,6 +37,9 @@ struct ShellTestConfiguration {
 
   // The expected MD5 hash of the pixel results.
   std::string expected_pixel_hash;
+
+  // The initial size of the test window.
+  gfx::Size initial_size;
 };
 
 }  // namespace content

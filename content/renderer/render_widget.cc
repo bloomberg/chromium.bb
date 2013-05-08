@@ -406,14 +406,14 @@ void RenderWidget::Resize(const gfx::Size& new_size,
         // Resize should have caused an invalidation of the entire view.
         DCHECK(paint_aggregator_.HasPendingUpdate());
       }
-
-      // Send the Resize_ACK flag once we paint again if requested.
-      if (resize_ack == SEND_RESIZE_ACK)
-        set_next_paint_is_resize_ack();
     }
-  } else {
+  } else if (!RenderThreadImpl::current()->short_circuit_size_updates()) {
     resize_ack = NO_RESIZE_ACK;
   }
+
+  // Send the Resize_ACK flag once we paint again if requested.
+  if (resize_ack == SEND_RESIZE_ACK)
+    set_next_paint_is_resize_ack();
 
   if (fullscreen_change)
     DidToggleFullscreen();
@@ -1390,24 +1390,26 @@ void RenderWidget::didScrollRect(int dx, int dy,
 
 void RenderWidget::didAutoResize(const WebSize& new_size) {
   if (size_.width() != new_size.width || size_.height() != new_size.height) {
-    size_ = new_size;
-    // If we don't clear PaintAggregator after changing autoResize state, then
-    // we might end up in a situation where bitmap_rect is larger than the
-    // view_size. By clearing PaintAggregator, we ensure that we don't end up
-    // with invalid damage rects.
-    paint_aggregator_.ClearPendingUpdate();
-
-    if (auto_resize_mode_)
-      AutoResizeCompositor();
-
     if (RenderThreadImpl::current()->short_circuit_size_updates()) {
       setWindowRect(WebRect(rootWindowRect().x,
                             rootWindowRect().y,
                             new_size.width,
                             new_size.height));
     } else {
-      need_update_rect_for_auto_resize_ = true;
+      size_ = new_size;
+
+      // If we don't clear PaintAggregator after changing autoResize state, then
+      // we might end up in a situation where bitmap_rect is larger than the
+      // view_size. By clearing PaintAggregator, we ensure that we don't end up
+      // with invalid damage rects.
+      paint_aggregator_.ClearPendingUpdate();
     }
+
+    if (auto_resize_mode_)
+      AutoResizeCompositor();
+
+    if (!RenderThreadImpl::current()->short_circuit_size_updates())
+      need_update_rect_for_auto_resize_ = true;
   }
 }
 

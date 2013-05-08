@@ -22,6 +22,7 @@ IPC_STRUCT_TRAITS_MEMBER(enable_pixel_dumping)
 IPC_STRUCT_TRAITS_MEMBER(layout_test_timeout)
 IPC_STRUCT_TRAITS_MEMBER(allow_external_pages)
 IPC_STRUCT_TRAITS_MEMBER(expected_pixel_hash)
+IPC_STRUCT_TRAITS_MEMBER(initial_size)
 IPC_STRUCT_TRAITS_END()
 
 // Tells the renderer to reset all test runners.

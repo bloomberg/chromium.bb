@@ -210,17 +210,17 @@ bool WebKitTestController::PrepareForLayoutTest(
       ShellContentBrowserClient::Get()->browser_context();
   if (test_url.spec().find("compositing/") != std::string::npos)
     is_compositing_test_ = true;
-  gfx::Size initial_size(kTestWindowWidthDip, kTestWindowHeightDip);
+  initial_size_ = gfx::Size(kTestWindowWidthDip, kTestWindowHeightDip);
   // The W3C SVG layout tests use a different size than the other layout tests.
   if (test_url.spec().find("W3C-SVG-1.1") != std::string::npos)
-    initial_size = gfx::Size(kTestSVGWindowWidthDip, kTestSVGWindowHeightDip);
+    initial_size_ = gfx::Size(kTestSVGWindowWidthDip, kTestSVGWindowHeightDip);
   if (!main_window_) {
     main_window_ = content::Shell::CreateNewWindow(
         browser_context,
         GURL(),
         NULL,
         MSG_ROUTING_NONE,
-        initial_size);
+        initial_size_);
     WebContentsObserver::Observe(main_window_->web_contents());
     send_configuration_to_next_host_ = true;
     current_pid_ = base::kNullProcessId;
@@ -228,10 +228,10 @@ bool WebKitTestController::PrepareForLayoutTest(
   } else {
 #if (defined(OS_WIN) && !defined(USE_AURA)) || defined(TOOLKIT_GTK)
     // Shell::SizeTo is not implemented on all platforms.
-    main_window_->SizeTo(initial_size.width(), initial_size.height());
+    main_window_->SizeTo(initial_size_.width(), initial_size_.height());
 #endif
     main_window_->web_contents()->GetRenderViewHost()->GetView()
-        ->SetSize(initial_size);
+        ->SetSize(initial_size_);
     main_window_->web_contents()->GetRenderViewHost()->WasResized();
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();
@@ -448,6 +448,7 @@ void WebKitTestController::SendTestConfiguration() {
   params.allow_external_pages = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAllowExternalPages);
   params.expected_pixel_hash = expected_pixel_hash_;
+  params.initial_size = initial_size_;
   render_view_host->Send(new ShellViewMsg_SetTestConfiguration(
       render_view_host->GetRoutingID(), params));
 }

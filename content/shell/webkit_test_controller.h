@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/gfx/size.h"
 #include "webkit/glue/webpreferences.h"
 
 class SkBitmap;
@@ -164,6 +165,7 @@ class WebKitTestController : public base::NonThreadSafe,
   // Per test config.
   bool enable_pixel_dumping_;
   std::string expected_pixel_hash_;
+  gfx::Size initial_size_;
   GURL test_url_;
 
   // True if the WebPreferences of newly created RenderViewHost should be
