@@ -202,42 +202,6 @@ drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_
 	weston_surface_configure(es, fx, fy, width, height);
 }
 
-static int
-device_setup_new_drag_surface(struct weston_drag *drag,
-			      struct weston_surface *icon)
-{
-	if (icon->configure) {
-		wl_resource_post_error(&icon->resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "surface->configure already set");
-		return 0;
-	}
-
-	drag->icon = icon;
-	drag->dx = 0;
-	drag->dy = 0;
-
-	icon->configure = drag_surface_configure;
-	icon->configure_private = drag;
-
-	wl_signal_add(&icon->resource.destroy_signal,
-		      &drag->icon_destroy_listener);
-
-	return 1;
-}
-
-static void
-device_release_drag_surface(struct weston_drag *drag)
-{
-	if (weston_surface_is_mapped(drag->icon))
-		weston_surface_unmap(drag->icon);
-
-	drag->icon->configure = NULL;
-	empty_region(&drag->icon->pending.input);
-	wl_list_remove(&drag->icon_destroy_listener.link);
-	drag->icon = NULL;
-}
-
 static void
 destroy_drag_focus(struct wl_listener *listener, void *data)
 {
@@ -314,8 +278,14 @@ drag_grab_motion(struct weston_pointer_grab *grab,
 static void
 data_device_end_drag_grab(struct weston_drag *drag)
 {
-	if (drag->icon)
-		device_release_drag_surface(drag);
+	if (drag->icon) {
+		if (weston_surface_is_mapped(drag->icon))
+			weston_surface_unmap(drag->icon);
+
+		drag->icon->configure = NULL;
+		empty_region(&drag->icon->pending.input);
+		wl_list_remove(&drag->icon_destroy_listener.link);
+	}
 
 	drag_grab_focus(&drag->grab, NULL,
 	                wl_fixed_from_int(0), wl_fixed_from_int(0));
@@ -379,11 +349,21 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_seat *seat = resource->data;
 	struct weston_drag *drag = resource->data;
+	struct weston_surface *icon = NULL;
 
 	/* FIXME: Check that client has implicit grab on the origin
 	 * surface that matches the given time. */
 
 	/* FIXME: Check that the data source type array isn't empty. */
+
+	if (icon_resource)
+		icon = icon_resource->data;
+	if (icon && icon->configure) {
+		wl_resource_post_error(icon_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface->configure already set");
+		return;
+	}
 
 	drag = malloc(sizeof *drag);
 	if (drag == NULL) {
@@ -394,7 +374,6 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 	memset(drag, 0, sizeof *drag);
 	drag->grab.interface = &drag_grab_interface;
 	drag->client = client;
-	drag->icon_destroy_listener.notify = handle_drag_icon_destroy;
 
 	if (source_resource) {
 		drag->data_source = source_resource->data;
@@ -403,9 +382,14 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 			      &drag->data_source_listener);
 	}
 
-	if (icon_resource) {
-		if (!device_setup_new_drag_surface(drag, icon_resource->data))
-			return;
+	if (icon) {
+		drag->icon = icon;
+		drag->icon_destroy_listener.notify = handle_drag_icon_destroy;
+		wl_signal_add(&icon->resource.destroy_signal,
+			      &drag->icon_destroy_listener);
+
+		icon->configure = drag_surface_configure;
+		icon->configure_private = drag;
 	}
 
 	weston_pointer_set_focus(seat->pointer, NULL,
