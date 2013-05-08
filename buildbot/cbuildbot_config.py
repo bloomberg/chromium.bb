@@ -945,7 +945,7 @@ _toolchain_major = _cros_sdk.add_config('toolchain-major',
 
 _toolchain_minor = _cros_sdk.add_config('toolchain-minor',
   latest_toolchain=True,
-  gcc_githash='gcc.gnu.org/branches/google/gcc-4_7-mobile',
+  gcc_githash='gcc.gnu.org/branches/google/gcc-4_8-mobile',
   description='Test next minor toolchain revision',
 )
 
