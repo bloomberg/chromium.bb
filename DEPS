@@ -247,6 +247,10 @@ deps = {
     (Var("googlecode_url") % "libjingle") + "/trunk@" +
     Var("libjingle_revision"),
 
+  "src/third_party/usrsctp/usrsctplib":
+    (Var("googlecode_url") % "sctp-refimpl") +
+    "/trunk/KERN/usrsctp/usrsctplib@8463",
+
   "src/third_party/libsrtp":
     "/trunk/deps/third_party/libsrtp@189528",
 
@@ -303,7 +307,7 @@ deps = {
     "/trunk/deps/third_party/undoview@119694",
 
   "src/tools/deps2git":
-    "/trunk/tools/deps2git@194189",
+    "/trunk/tools/deps2git@197957",
 
   "src/third_party/webpagereplay":
     (Var("googlecode_url") % "web-page-replay") + "/trunk@511",
@@ -444,6 +448,7 @@ deps_os = {
     "src/third_party/libphonenumber/src/test": None,
     "src/third_party/libphonenumber/src/resources": None,
     "src/third_party/libsrtp": None,
+    "src/third_party/usrsctp": None,
     "src/third_party/libvpx": None,
     "src/third_party/libyuv": None,
     "src/third_party/ots": None,
