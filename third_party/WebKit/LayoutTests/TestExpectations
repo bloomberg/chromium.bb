@@ -885,8 +885,6 @@ webkit.org/b/56702 [ Win ] http/tests/navigation/ping-cross-origin-from-https.ht
 crbug.com/86340 [ Win Debug ] fast/filesystem/file-writer-write-overlapped.html [ Failure Pass ]
 crbug.com/86340 [ Win Debug ] fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
-webkit.org/b/59673 http/tests/history/cross-origin-replace-history-object-child.html [ Timeout ]
-
 crbug.com/82281 fast/xpath/xpath-iterator-result-should-mark-its-nodeset.html [ Failure Timeout ]
 
 # New test added at r86467, doesn't pass.
