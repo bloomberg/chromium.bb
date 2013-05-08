@@ -208,10 +208,6 @@ struct wl_buffer {
 	uint32_t busy_count;
 };
 
-struct wl_surface {
-	struct wl_resource resource;
-};
-
 /*
  * Post an event to the client's object referred to by 'resource'.
  * 'opcode' is the event number generated from the protocol XML
