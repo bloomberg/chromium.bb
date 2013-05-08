@@ -34,6 +34,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/ContentType.h"
 #include "core/platform/Logging.h"
+#include "core/platform/MIMETypeFromURL.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/MediaPlayerPrivate.h"

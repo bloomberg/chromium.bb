@@ -43,6 +43,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/Logging.h"
+#include "core/platform/MIMETypeFromURL.h"
 #include "core/platform/SchemeRegistry.h"
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderEmbeddedObject.h"

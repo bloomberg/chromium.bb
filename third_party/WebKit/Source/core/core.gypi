@@ -2466,6 +2466,8 @@
             'platform/Length.cpp',
             'platform/LengthBox.cpp',
             'platform/Logging.cpp',
+            'platform/MIMETypeFromURL.cpp',
+            'platform/MIMETypeFromURL.h',
             'platform/NotImplemented.cpp',
             'platform/Pasteboard.h',
             'platform/PlatformEvent.cpp',

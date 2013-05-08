@@ -90,6 +90,7 @@
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"
 #include "core/platform/Logging.h"
+#include "core/platform/MIMETypeFromURL.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/SchemeRegistry.h"
 #include "core/platform/ScrollAnimator.h"

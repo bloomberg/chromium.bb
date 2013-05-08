@@ -23,6 +23,7 @@
 
 #include "core/html/HTMLPlugInElement.h"
 
+#include "core/platform/MIMETypeFromURL.h"
 #include "core/rendering/style/RenderStyle.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>

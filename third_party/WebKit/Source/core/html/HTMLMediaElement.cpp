@@ -75,6 +75,7 @@
 #include "core/platform/ContentType.h"
 #include "core/platform/Language.h"
 #include "core/platform/Logging.h"
+#include "core/platform/MIMETypeFromURL.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/rendering/RenderLayerCompositor.h"

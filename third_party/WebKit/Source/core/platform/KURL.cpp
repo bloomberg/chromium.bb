@@ -27,31 +27,19 @@
 #include "config.h"
 #include "core/platform/KURL.h"
 
-#include <stdio.h>
-#include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/PlatformMemoryInstrumentation.h"
-#include "core/platform/text/DecodeEscapeSequences.h"
-#include "core/platform/text/TextEncoding.h"
-#include <unicode/uidna.h>
-#include <wtf/HashMap.h>
-#include <wtf/HexNumber.h>
-#include <wtf/MemoryInstrumentationString.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/StringHash.h>
-
-// FIXME: This file makes too much use of the + operator on String.
-// We either have to optimize that operator so it doesn't involve
-// so many allocations, or change this to use StringBuffer instead.
+#include "wtf/HashMap.h"
+#include "wtf/HexNumber.h"
+#include "wtf/MemoryInstrumentation.h"
+#include "wtf/MemoryInstrumentationString.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringHash.h"
 
 using namespace std;
 using namespace WTF;
 
 namespace WebCore {
-
-typedef Vector<char, 512> CharBuffer;
-typedef Vector<UChar, 512> UCharBuffer;
 
 static const unsigned maximumValidPortNumber = 0xFFFE;
 static const unsigned invalidPortNumber = 0xFFFF;
@@ -214,29 +202,6 @@ bool portAllowed(const KURL& url)
         return true;
 
     return false;
-}
-
-String mimeTypeFromDataURL(const String& url)
-{
-    ASSERT(protocolIs(url, "data"));
-    size_t index = url.find(';');
-    if (index == notFound)
-        index = url.find(',');
-    if (index != notFound) {
-        if (index > 5)
-            return url.substring(5, index - 5).lower();
-        return "text/plain"; // Data URLs with no MIME type are considered text/plain.
-    }
-    return "";
-}
-
-String mimeTypeFromURL(const KURL& url)
-{
-    String decodedPath = decodeURLEscapeSequences(url.path());
-    String extension = decodedPath.substring(decodedPath.reverseFind('.') + 1);
-
-    // We don't use MIMETypeRegistry::getMIMETypeForPath() because it returns "application/octet-stream" upon failure
-    return MIMETypeRegistry::getMIMETypeForExtension(extension);
 }
 
 void KURL::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
