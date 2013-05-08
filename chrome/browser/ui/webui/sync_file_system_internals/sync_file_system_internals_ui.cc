@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/sync_file_system_internals_ui.h"
+#include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -16,6 +17,9 @@ content::WebUIDataSource* CreateSyncFileSystemInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(
           chrome::kChromeUISyncFileSystemInternalsHost);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath(
+      "sync_service.js", IDR_SYNC_FILE_SYSTEM_INTERNALS_SYNC_SERVICE_JS);
   source->SetDefaultResource(IDR_SYNC_FILE_SYSTEM_INTERNALS_MAIN_HTML);
   return source;
 }
@@ -25,6 +29,8 @@ content::WebUIDataSource* CreateSyncFileSystemInternalsHTMLSource() {
 SyncFileSystemInternalsUI::SyncFileSystemInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
+  web_ui->AddMessageHandler(
+      new syncfs_internals::SyncFileSystemInternalsHandler(profile));
   content::WebUIDataSource::Add(profile,
                                 CreateSyncFileSystemInternalsHTMLSource());
 }
