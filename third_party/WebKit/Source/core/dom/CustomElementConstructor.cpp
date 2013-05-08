@@ -32,6 +32,7 @@
 
 #include "core/dom/CustomElementConstructor.h"
 
+#include "core/dom/CustomElementRegistry.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 
@@ -55,7 +56,12 @@ Document* CustomElementConstructor::document() const {
 PassRefPtr<Element> CustomElementConstructor::createElement(ExceptionCode& ec) {
     if (!document())
         return 0;
-    return document()->createElementNS(m_tag.namespaceURI(), m_tag.localName(), m_typeExtension, ec);
+    RefPtr<Element> result;
+    {
+        CustomElementRegistry::CallbackDeliveryScope deliveryScope;
+        result = document()->createElementNS(m_tag.namespaceURI(), m_tag.localName(), m_typeExtension, ec);
+    }
+    return result.release();
 }
 
 }

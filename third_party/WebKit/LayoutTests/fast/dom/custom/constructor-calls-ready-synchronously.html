@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<script src="../../js/resources/js-test-pre.js"></script>
+<div id="container"></div>
+<script>
+description('Tests that custom element constructors run the readyCallback synchronously.');
+
+var proto = Object.create(HTMLElement.prototype);
+var ncallbacks = 0;
+proto.readyCallback = function () {
+  ncallbacks++;
+};
+var A = document.webkitRegister('x-a', {prototype: proto});
+var x = new A();
+shouldBe('ncallbacks', '1');
+
+successfullyParsed = true;
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
