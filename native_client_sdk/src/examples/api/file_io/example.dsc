@@ -14,6 +14,9 @@
   'DEST': 'examples/api',
   'NAME': 'file_io',
   'TITLE': 'File I/O',
-  'GROUP': 'API'
+  'GROUP': 'API',
+  'PERMISSIONS': [
+    'unlimitedStorage'
+  ]
 }
 

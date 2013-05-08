@@ -104,10 +104,22 @@ def main(args):
                                 toolchains=toolchains, configs=[config],
                                 first_toolchain=True)
 
+  template_dict = {
+    'name': 'Native Client SDK',
+    'description':
+        'Native Client SDK examples, showing API use and key concepts.',
+    # TODO(binji): generate list of permissions from examples' DSC files.
+    'permissions': [
+      'fullscreen',
+      'pointerLock',
+      'unlimitedStorage',
+    ],
+    'version': build_utils.ChromeVersionNoTrunk()
+  }
   easy_template.RunTemplateFile(
       os.path.join(sdk_resources_dir, 'manifest.json.template'),
       os.path.join(app_examples_dir, 'manifest.json'),
-      {'version': build_utils.ChromeVersionNoTrunk()})
+      template_dict)
   for filename in ['background.js', 'icon128.png']:
     buildbot_common.CopyFile(os.path.join(sdk_resources_dir, filename),
                              os.path.join(app_examples_dir, filename))

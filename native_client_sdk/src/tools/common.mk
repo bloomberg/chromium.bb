@@ -352,7 +352,8 @@ CHROME_PATH?=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --chrome 2> $(DEV_NU
 #
 # Verify we can find the Chrome executable if we need to launch it.
 #
-CHECK_FOR_CHROME:
+.PHONY: check_for_chrome
+check_for_chrome:
 ifeq (,$(wildcard $(CHROME_PATH)))
 	$(warning No valid Chrome found at CHROME_PATH=$(CHROME_PATH))
 	$(error Set CHROME_PATH via an environment variable, or command-line.)
@@ -384,8 +385,8 @@ PPAPI_RELEASE=$(abspath $(OSNAME)/Release/$(TARGET)$(HOST_EXT));application/x-pp
 PAGE?=index.html
 PAGE_TC_CONFIG="$(PAGE)?tc=$(TOOLCHAIN)&config=$(CONFIG)"
 
-RUN: LAUNCH
-LAUNCH: CHECK_FOR_CHROME all
+.PHONY: run
+run: check_for_chrome all
 ifeq (,$(wildcard $(PAGE)))
 	$(error No valid HTML page found at $(PAGE))
 endif
@@ -393,16 +394,27 @@ endif
 	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH) $(CHROME_ARGS) \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
+.PHONY: run_package
+run_package: check_for_chrome all
+	$(CHROME_PATH) --load-and-launch-app=$(CURDIR) --enable-nacl --enable-pnacl
+
 
 SYSARCH=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --nacl-arch)
 GDB_ARGS+=-D $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/$(SYSARCH)-nacl-gdb
 GDB_ARGS+=-D $(abspath $(OUTDIR))/$(TARGET)_$(SYSARCH).nexe
 
-DEBUG: CHECK_FOR_CHROME all
+.PHONY: debug
+debug: check_for_chrome all
 	$(RUN_PY) $(GDB_ARGS) \
 	    -C $(CURDIR) -P $(PAGE_TC_CONFIG) \
 	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH) $(CHROME_ARGS) \
 	    --enable-nacl-debug \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
-.PHONY: CHECK_FOR_CHROME RUN LAUNCH
+
+# uppercase aliases (for backward compatibility)
+.PHONY: CHECK_FOR_CHROME DEBUG LAUNCH RUN
+CHECK_FOR_CHROME: check_for_chrome
+DEBUG: debug
+LAUNCH: run
+RUN: run

@@ -47,6 +47,7 @@ DSC_FORMAT = {
     'TITLE': (str, '', False),
     'GROUP': (str, '', False),
     'EXPERIMENTAL': (bool, [True, False], False),
+    'PERMISSIONS': (list, '', False),
 }
 
 def IgnoreMsgFunc(test):

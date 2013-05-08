@@ -6,6 +6,7 @@ import os
 import sys
 
 import buildbot_common
+import build_utils
 from buildbot_common import ErrorExit
 from easy_template import RunTemplateFileIfChanged
 from build_paths import SCRIPT_DIR, SDK_EXAMPLE_DIR
@@ -16,7 +17,7 @@ def Trace(msg):
 Trace.verbose = False
 
 
-def ShouldProcessHTML(desc):
+def IsExample(desc):
   dest = desc['DEST']
   return dest.startswith('examples') or dest.startswith('tests')
 
@@ -30,8 +31,8 @@ def GenerateSourceCopyList(desc):
   # And HTML and data files
   sources.extend(desc.get('DATA', []))
 
-  if ShouldProcessHTML(desc):
-    sources.append('common.js')
+  if IsExample(desc):
+    sources.extend(['common.js', 'icon128.png', 'background.js'])
 
   return sources
 
@@ -119,7 +120,7 @@ def ProcessHTML(srcroot, dstroot, desc, toolchains, configs, first_toolchain):
   outdir = os.path.join(dstroot, desc['DEST'], name)
   srcpath = os.path.join(srcroot, 'index.html')
   dstpath = os.path.join(outdir, 'index.html')
-  
+
   tools = GetPlatforms(toolchains, desc['TOOLS'], first_toolchain)
 
   path = "{tc}/{config}"
@@ -128,6 +129,19 @@ def ProcessHTML(srcroot, dstroot, desc, toolchains, configs, first_toolchain):
     'attrs':
         'data-name="%s" data-tools="%s" data-configs="%s" data-path="%s"' % (
         nmf, ' '.join(tools), ' '.join(configs), path),
+  }
+  RunTemplateFileIfChanged(srcpath, dstpath, replace)
+
+
+def GenerateManifest(srcroot, dstroot, desc):
+  outdir = os.path.join(dstroot, desc['DEST'], desc['NAME'])
+  srcpath = os.path.join(SDK_EXAMPLE_DIR, 'resources', 'manifest.json.template')
+  dstpath = os.path.join(outdir, 'manifest.json')
+  replace = {
+      'name': desc['TITLE'],
+      'description': '%s Example' % desc['TITLE'],
+      'permissions': desc.get('PERMISSIONS', []),
+      'version': build_utils.ChromeVersionNoTrunk()
   }
   RunTemplateFileIfChanged(srcpath, dstpath, replace)
 
@@ -156,6 +170,7 @@ def ProcessProject(srcroot, dstroot, desc, toolchains, configs=None,
   out_dir = os.path.join(dstroot, desc['DEST'], name)
   buildbot_common.MakeDir(out_dir)
   srcdirs = desc.get('SEARCH', ['.', '..', '../..'])
+  srcdirs.append(os.path.join(SDK_EXAMPLE_DIR, 'resources'))
 
   # Copy sources to example directory
   sources = GenerateSourceCopyList(desc)
@@ -192,9 +207,10 @@ def ProcessProject(srcroot, dstroot, desc, toolchains, configs=None,
   pepperdir = os.path.dirname(os.path.dirname(outdir))
   AddMakeBat(pepperdir, outdir)
 
-  if ShouldProcessHTML(desc):
+  if IsExample(desc):
     ProcessHTML(srcroot, dstroot, desc, toolchains, configs,
                 first_toolchain)
+    GenerateManifest(srcroot, dstroot, desc)
 
   return (name, desc['DEST'])
 

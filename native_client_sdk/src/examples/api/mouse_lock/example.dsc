@@ -12,6 +12,10 @@
   'DEST': 'examples/api',
   'NAME': 'mouse_lock',
   'TITLE': 'Mouse Lock',
-  'GROUP': 'API'
+  'GROUP': 'API',
+  'PERMISSIONS': [
+    'fullscreen',
+    'pointerLock'
+  ]
 }
 

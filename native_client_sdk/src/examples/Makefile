@@ -53,7 +53,11 @@ all_versions: $(VERSIONS_LIST)
 clean: $(CLEAN_LIST)
 	@echo Done cleaning targets.
 
-.PHONY: RUN
-RUN: all
+run: all
 	@echo Starting up python webserver.
 	python $(HTTPD)
+
+# uppercase aliases (for backward compatibility)
+RUN: run
+
+.PHONY: RUN run

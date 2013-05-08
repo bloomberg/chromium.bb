@@ -1,8 +1,8 @@
 {
-  "name": "Native Client SDK",
+  "name": "{{name}}",
   "version": "{{version}}",
   "manifest_version": 2,
-  "description": "Native Client SDK examples, showing API use and key concepts.",
+  "description": "{{description}}",
   "offline_enabled": true,
   "icons": {
     "128": "icon128.png"
@@ -13,8 +13,9 @@
     }
   },
   "permissions": [
-    "fullscreen",
-    "pointerLock",
-    "unlimitedStorage"
+[[if permissions:]]
+[[  for i, perm in enumerate(permissions):]]
+    "{{perm}}"{{(i != len(permissions) - 1) and ',' or ''}}
+[[]]
   ]
 }
