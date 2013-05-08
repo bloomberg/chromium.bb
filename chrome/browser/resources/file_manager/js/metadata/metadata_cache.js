@@ -257,12 +257,29 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
     }
   };
 
-  var onProviderProperties = function(properties) {
+  // Handles metadata received from the provider.
+  var onProviderSuccess = function(properties) {
     var id = currentProvider.getId();
     var fetchedCallbacks = entry[id].callbacks;
     delete entry[id].callbacks;
     entry.time = new Date();
+
+    // Cache properties.
     self.mergeProperties_(url, properties);
+
+    for (var index = 0; index < fetchedCallbacks.length; index++) {
+      fetchedCallbacks[index]();
+    }
+  };
+
+  // Handles a failure while fetching metadata via the provider.
+  // Call the callbacks, but do not store to cache, so we can refresh
+  // the metadata in the future.
+  var onProviderFailure = function() {
+    var id = currentProvider.getId();
+    var fetchedCallbacks = entry[id].callbacks;
+    delete entry[id].callbacks;
+    console.error('Provider ' + id + ' failed for: ' + url);
 
     for (var index = 0; index < fetchedCallbacks.length; index++) {
       fetchedCallbacks[index]();
@@ -276,7 +293,8 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
       entry[id].callbacks.push(onFetched);
     } else {
       entry[id].callbacks = [onFetched];
-      currentProvider.fetch(url, type, onProviderProperties, fsEntry);
+      currentProvider.fetch(
+          url, type, onProviderSuccess, onProviderFailure, fsEntry);
     }
   };
 
@@ -647,14 +665,15 @@ MetadataProvider.prototype.isInitialized = function() { return true; };
  * can fetch at once.
  * @param {string} url File url.
  * @param {string} type Requested metadata type.
- * @param {function(Object)} callback Callback expects a map from metadata type
+ * @param {function(Object)} onSuccess Callback expects a map from metadata type
  *     to metadata value.
+ * @param {function()} onFailure Failure callback.
  * @param {Entry=} opt_entry The file entry if present.
  */
-MetadataProvider.prototype.fetch = function(url, type, callback, opt_entry) {
+MetadataProvider.prototype.fetch = function(
+    url, type, onSuccess, onFailure, opt_entry) {
   throw new Error('Default metadata provider cannot fetch.');
 };
-
 
 /**
  * Provider of filesystem metadata.
@@ -695,17 +714,15 @@ FilesystemProvider.prototype.getId = function() { return 'filesystem'; };
  * Fetches the metadata.
  * @param {string} url File url.
  * @param {string} type Requested metadata type.
- * @param {function(Object)} callback Callback expects a map from metadata type
+ * @param {function(Object)} onSuccess Callback expects a map from metadata type
  *     to metadata value.
+ * @param {function()} onFailure Failure callback.
  * @param {Entry=} opt_entry The file entry if present.
  */
-FilesystemProvider.prototype.fetch = function(url, type, callback, opt_entry) {
-  function onError(error) {
-    callback(null);
-  }
-
+FilesystemProvider.prototype.fetch = function(
+    url, type, onSuccess, onFailure, opt_entry) {
   function onMetadata(entry, metadata) {
-    callback({
+    onSuccess({
       filesystem: {
         size: entry.isFile ? (metadata.size || 0) : -1,
         modificationTime: metadata.modificationTime
@@ -714,13 +731,13 @@ FilesystemProvider.prototype.fetch = function(url, type, callback, opt_entry) {
   }
 
   function onEntry(entry) {
-    entry.getMetadata(onMetadata.bind(null, entry), onError);
+    entry.getMetadata(onMetadata.bind(null, entry), onFailure);
   }
 
   if (opt_entry)
     onEntry(opt_entry);
   else
-    window.webkitResolveLocalFileSystemURL(url, onEntry, onError);
+    window.webkitResolveLocalFileSystemURL(url, onEntry, onFailure);
 };
 
 /**
@@ -736,7 +753,8 @@ function DriveProvider() {
 
   // We batch metadata fetches into single API call.
   this.urls_ = [];
-  this.callbacks_ = [];
+  this.successCallbacks_ = [];
+  this.failureCallbacks_ = [];
   this.scheduled_ = false;
 
   this.callApiBound_ = this.callApi_.bind(this);
@@ -772,13 +790,16 @@ DriveProvider.prototype.getId = function() { return 'drive'; };
  * Fetches the metadata.
  * @param {string} url File url.
  * @param {string} type Requested metadata type.
- * @param {function(Object)} callback Callback expects a map from metadata type
+ * @param {function(Object)} onSuccess Callback expects a map from metadata type
  *     to metadata value.
+ * @param {function()} onFailure Failure callback.
  * @param {Entry=} opt_entry The file entry if present.
  */
-DriveProvider.prototype.fetch = function(url, type, callback, opt_entry) {
+DriveProvider.prototype.fetch = function(
+    url, type, onSuccess, onFailure, opt_entry) {
   this.urls_.push(url);
-  this.callbacks_.push(callback);
+  this.successCallbacks_.push(onSuccess);
+  this.failureCallbacks_.push(onFailure);
   if (!this.scheduled_) {
     this.scheduled_ = true;
     setTimeout(this.callApiBound_, 0);
@@ -793,20 +814,26 @@ DriveProvider.prototype.callApi_ = function() {
   this.scheduled_ = false;
 
   var urls = this.urls_;
-  var callbacks = this.callbacks_;
+  var successCallbacks = this.successCallbacks_;
+  var failureCallbacks = this.failureCallbacks_;
   this.urls_ = [];
-  this.callbacks_ = [];
+  this.successCallbacks_ = [];
+  this.failureCallbacks_ = [];
   var self = this;
 
-  var task = function(url, callback) {
+  var task = function(url, onSuccess, onFailure) {
     chrome.fileBrowserPrivate.getDriveEntryProperties(url,
         function(properties) {
-          callback(self.convert_(properties, url));
+          if (properties.errorCode) {
+            onFailure();
+            return;
+          }
+          onSuccess(self.convert_(properties, url));
         });
   };
 
   for (var i = 0; i < urls.length; i++)
-    task(urls[i], callbacks[i]);
+    task(urls[i], successCallbacks[i], failureCallbacks[i]);
 };
 
 /**
@@ -919,7 +946,8 @@ function ContentProvider() {
 
   // Map from url to callback.
   // Note that simultaneous requests for same url are handled in MetadataCache.
-  this.callbacks_ = {};
+  this.successCallbacks_ = {};
+  this.failureCallbacks_ = {};
 }
 
 /**
@@ -958,16 +986,19 @@ ContentProvider.prototype.getId = function() { return 'content'; };
  * Fetches the metadata.
  * @param {string} url File url.
  * @param {string} type Requested metadata type.
- * @param {function(Object)} callback Callback expects a map from metadata type
+ * @param {function(Object)} onSuccess Callback expects a map from metadata type
  *     to metadata value.
+ * @param {function()} onFailure Failure callback.
  * @param {Entry=} opt_entry The file entry if present.
  */
-ContentProvider.prototype.fetch = function(url, type, callback, opt_entry) {
+ContentProvider.prototype.fetch = function(
+    url, type, onSuccess, onFailure, opt_entry) {
   if (opt_entry && opt_entry.isDirectory) {
-    callback({});
+    onSuccess({});
     return;
   }
-  this.callbacks_[url] = callback;
+  this.successCallbacks_[url] = onSuccess;
+  this.failureCallbacks_[url] = onFailure;
   this.dispatcher_.postMessage({verb: 'request', arguments: [url]});
 };
 
@@ -1054,9 +1085,10 @@ ContentProvider.ConvertContentMetadata = function(metadata, opt_result) {
  * @private
  */
 ContentProvider.prototype.onResult_ = function(url, metadata) {
-  var callback = this.callbacks_[url];
-  delete this.callbacks_[url];
-  callback(ContentProvider.ConvertContentMetadata(metadata));
+  var successCallback = this.successCallbacks_[url];
+  delete this.successCallbacks_[url];
+  delete this.failureCallbacks_[url];
+  successCallback(ContentProvider.ConvertContentMetadata(metadata));
 };
 
 /**
@@ -1068,12 +1100,20 @@ ContentProvider.prototype.onResult_ = function(url, metadata) {
  * @private
  */
 ContentProvider.prototype.onError_ = function(url, step, error, metadata) {
-  if (MetadataCache.log)  // Avoid log spam by default.
-    console.warn('metadata: ' + url + ': ' + step + ': ' + error);
-  metadata = metadata || {};
+  console.warn('Fetching content metadata for failed for ' +
+      url + ', at ' + step + ': ' + error);
+
   // Prevent asking for thumbnail again.
+  // TODO(mtomasz): Move error handling logic to MetadataCache.
   metadata.thumbnailURL = '';
   this.onResult_(url, metadata);
+
+  // TODO(mtomasz): Call failureCallback() instead of successCallback(),
+  // when the error handling logic is implemented.
+  var successCallback = this.successCallbacks_[url];
+  delete this.successCallbacks_[url];
+  delete this.failureCallbacks_[url];
+  successCallback();
 };
 
 /**
