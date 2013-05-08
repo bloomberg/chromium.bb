@@ -385,14 +385,30 @@
         {
           'action_name': 'ExceptionCodeDescription',
           'inputs': [
+            '<@(scripts_for_in_files)',
+            '../scripts/make_dom_exceptions.py',
+            '../dom/DOMExceptions.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/ExceptionCodeDescription.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/ExceptionCodeDescription.h',
+          ],
+          'action': [
+            'python',
+            '../scripts/make_dom_exceptions.py',
+            '../dom/DOMExceptions.in',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+          ],
+        },
+        {
+          'action_name': 'ExceptionCodeDescriptionHeaders',
+          'inputs': [
             '../scripts/InFilesCompiler.pm',
             '../scripts/InFilesParser.pm',
             '../scripts/make_dom_exceptions.pl',
             '../dom/DOMExceptions.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/ExceptionCodeDescription.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/ExceptionCodeDescription.h',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/ExceptionHeaders.h',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/ExceptionInterfaces.h',
           ],
