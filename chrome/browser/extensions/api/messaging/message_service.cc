@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/extension_message_port.h"
@@ -142,9 +143,9 @@ void MessageService::AllocatePortIdPair(int* port1, int* port2) {
   *port2 = port2_id;
 }
 
-MessageService::MessageService(
-    LazyBackgroundTaskQueue* queue)
-    : lazy_background_task_queue_(queue),
+MessageService::MessageService(Profile* profile)
+    : lazy_background_task_queue_(
+          ExtensionSystem::Get(profile)->lazy_background_task_queue()),
       weak_factory_(this) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -155,6 +156,19 @@ MessageService::MessageService(
 MessageService::~MessageService() {
   STLDeleteContainerPairSecondPointers(channels_.begin(), channels_.end());
   channels_.clear();
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<MessageService> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<MessageService>* MessageService::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
+// static
+MessageService* MessageService::Get(Profile* profile) {
+  return ProfileKeyedAPIFactory<MessageService>::GetForProfile(profile);
 }
 
 void MessageService::OpenChannelToExtension(

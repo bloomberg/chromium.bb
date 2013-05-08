@@ -102,9 +102,6 @@ class ExtensionSystem : public ProfileKeyedService {
   // The LazyBackgroundTaskQueue is created at startup.
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() = 0;
 
-  // The MessageService is created at startup.
-  virtual MessageService* message_service() = 0;
-
   // The EventRouter is created at startup.
   virtual EventRouter* event_router() = 0;
 
@@ -174,7 +171,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue()
       OVERRIDE;  // shared
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
-  virtual MessageService* message_service() OVERRIDE;  // shared
   virtual EventRouter* event_router() OVERRIDE;  // shared
   virtual RulesRegistryService* rules_registry_service()
       OVERRIDE;  // shared
@@ -222,7 +218,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     Blacklist* blacklist();
     ExtensionInfoMap* info_map();
     LazyBackgroundTaskQueue* lazy_background_task_queue();
-    MessageService* message_service();
     EventRouter* event_router();
     ExtensionWarningService* warning_service();
 
@@ -240,7 +235,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     // MessageService and EventRouter.
     scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
     scoped_ptr<EventRouter> event_router_;
-    scoped_ptr<MessageService> message_service_;
     scoped_ptr<NavigationObserver> navigation_observer_;
     scoped_refptr<UserScriptMaster> user_script_master_;
     // Blacklist depends on ExtensionPrefs.

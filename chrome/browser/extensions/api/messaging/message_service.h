@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -54,7 +55,8 @@ class LazyBackgroundTaskQueue;
 // port: an IPC::Message::Process interface and an optional routing_id (in the
 // case that the port is a tab).  The Process is usually either a
 // RenderProcessHost or a RenderViewHost.
-class MessageService : public content::NotificationObserver,
+class MessageService : public ProfileKeyedAPI,
+                       public content::NotificationObserver,
                        public NativeMessageProcessHost::Client {
  public:
   // A messaging channel. Note that the opening port can be the same as the
@@ -102,8 +104,14 @@ class MessageService : public content::NotificationObserver,
   // NOTE: this can be called from any thread.
   static void AllocatePortIdPair(int* port1, int* port2);
 
-  explicit MessageService(LazyBackgroundTaskQueue* queue);
+  explicit MessageService(Profile* profile);
   virtual ~MessageService();
+
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<MessageService>* GetFactoryInstance();
+
+  // Convenience method to get the MessageService for a profile.
+  static MessageService* Get(Profile* profile);
 
   // Given an extension's ID, opens a channel between the given renderer "port"
   // and every listening context owned by that extension. |channel_name| is
@@ -145,6 +153,7 @@ class MessageService : public content::NotificationObserver,
 
  private:
   friend class MockMessageService;
+  friend class ProfileKeyedAPIFactory<MessageService>;
   struct OpenChannelParams;
 
   // A map of channel ID to its channel object.
@@ -201,6 +210,12 @@ class MessageService : public content::NotificationObserver,
     if (host)
       PostMessage(port_id, message);
   }
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "MessageService";
+  }
+  static const bool kServiceRedirectedInIncognito = true;
 
   content::NotificationRegistrar registrar_;
   MessageChannelMap channels_;

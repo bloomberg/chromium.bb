@@ -14,7 +14,6 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/location/location_manager.h"
-#include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -129,7 +128,6 @@ void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  message_service_.reset(new MessageService(lazy_background_task_queue_.get()));
   navigation_observer_.reset(new NavigationObserver(profile_));
 
   bool allow_noisy_errors = !command_line->HasSwitch(switches::kNoErrorDialogs);
@@ -288,10 +286,6 @@ LazyBackgroundTaskQueue*
   return lazy_background_task_queue_.get();
 }
 
-MessageService* ExtensionSystemImpl::Shared::message_service() {
-  return message_service_.get();
-}
-
 EventRouter* ExtensionSystemImpl::Shared::event_router() {
   return event_router_.get();
 }
@@ -410,10 +404,6 @@ ExtensionInfoMap* ExtensionSystemImpl::info_map() {
 
 LazyBackgroundTaskQueue* ExtensionSystemImpl::lazy_background_task_queue() {
   return shared_->lazy_background_task_queue();
-}
-
-MessageService* ExtensionSystemImpl::message_service() {
-  return shared_->message_service();
 }
 
 EventRouter* ExtensionSystemImpl::event_router() {

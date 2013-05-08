@@ -46,8 +46,7 @@ void MessageHandler::OnPostMessage(int port_id,
                                             const std::string& message) {
   Profile* profile = Profile::FromBrowserContext(
       render_view_host()->GetProcess()->GetBrowserContext());
-  MessageService* message_service =
-      ExtensionSystem::Get(profile)->message_service();
+  MessageService* message_service = MessageService::Get(profile);
   if (message_service) {
     message_service->PostMessage(port_id, message);
   }
