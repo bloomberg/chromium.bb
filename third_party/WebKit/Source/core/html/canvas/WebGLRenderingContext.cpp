@@ -3422,13 +3422,9 @@ void WebGLRenderingContext::texImage2D(GC3Denum target, GC3Dint level, GC3Denum 
     WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
     // If possible, copy from the canvas element directly to the texture
     // via the GPU, without a read-back to system memory.
-    //
-    // FIXME: restriction of (RGB || RGBA)/UNSIGNED_BYTE should be lifted when
-    // ImageBuffer::copyToPlatformTexture implementations are fully functional.
-    if (GraphicsContext3D::TEXTURE_2D == target && texture && type == texture->getType(target, level)
-        && (format == GraphicsContext3D::RGB || format == GraphicsContext3D::RGBA) && type == GraphicsContext3D::UNSIGNED_BYTE) {
+    if (GraphicsContext3D::TEXTURE_2D == target && texture) {
         ImageBuffer* buffer = canvas->buffer();
-        if (buffer && buffer->copyToPlatformTexture(*m_context.get(), texture->object(), internalformat, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
+        if (buffer && buffer->copyToPlatformTexture(*m_context.get(), texture->object(), internalformat, type, level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
             texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);
             return;
         }
@@ -3465,14 +3461,8 @@ void WebGLRenderingContext::texImage2D(GC3Denum target, GC3Dint level, GC3Denum 
 
     // Go through the fast path doing a GPU-GPU textures copy without a readback to system memory if possible.
     // Otherwise, it will fall back to the normal SW path.
-    // FIXME: The current restrictions require that format shoud be RGB or RGBA,
-    // type should be UNSIGNED_BYTE and level should be 0. It may be lifted in the future.
     WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
-    if (GraphicsContext3D::TEXTURE_2D == target && texture
-        && (format == GraphicsContext3D::RGB || format == GraphicsContext3D::RGBA)
-        && type == GraphicsContext3D::UNSIGNED_BYTE
-        && (texture->getType(target, level) == GraphicsContext3D::UNSIGNED_BYTE || !texture->isValid(target, level))
-        && !level) {
+    if (GraphicsContext3D::TEXTURE_2D == target && texture) {
         if (video->copyVideoTextureToPlatformTexture(m_context.get(), texture->object(), level, type, internalformat, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
             texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), type);
             return;

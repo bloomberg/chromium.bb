@@ -453,6 +453,11 @@ public:
     // GL_CHROMIUM_copy_texture
     virtual void copyTextureCHROMIUM(WGC3Denum target, WGC3Duint sourceId,
                                      WGC3Duint destId, WGC3Dint level, WGC3Denum internalFormat) { }
+    // This function adds one more parameter(destType) than the above one to define the destination texture if needed.
+    // TODO(jun.a.jiang@intel.com): once all clients switch to call this newer function with six parameters, the older
+    // one with five parameters would be removed.
+    virtual void copyTextureCHROMIUM(WGC3Denum target, WGC3Duint sourceId,
+        WGC3Duint destId, WGC3Dint level, WGC3Denum internalFormat, WGC3Denum destType) { }
 
     // GL_CHROMIUM_shallow_flush
     virtual void shallowFlushCHROMIUM() { }

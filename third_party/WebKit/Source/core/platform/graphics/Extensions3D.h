@@ -259,7 +259,10 @@ public:
     String getTranslatedShaderSourceANGLE(Platform3DObject);
 
     // GL_CHROMIUM_copy_texture
-    void copyTextureCHROMIUM(GC3Denum, Platform3DObject, Platform3DObject, GC3Dint, GC3Denum);
+    // canUseCopyTextureCHROMIUM(...) is used to check if copyTextureCHROMIUM(...) can work for the specified
+    // format, type and level for the destination texture.
+    bool canUseCopyTextureCHROMIUM(GC3Denum destFormat, GC3Denum destType, GC3Dint level);
+    void copyTextureCHROMIUM(GC3Denum, Platform3DObject, Platform3DObject, GC3Dint, GC3Denum, GC3Denum);
 
     // EXT Robustness - uses getGraphicsResetStatusARB
     void readnPixelsEXT(int x, int y, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, GC3Dsizei bufSize, void *data);

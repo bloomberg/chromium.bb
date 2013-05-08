@@ -154,6 +154,9 @@ public:
 
     // Do a GPU-GPU textures copy if possible.
     virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, unsigned texture, unsigned level, unsigned internalFormat, bool premultiplyAlpha, bool flipY) { return false; }
+    // TODO(jun.a.jiang@intel.com): once all clients switch to call this newer copyVideoTextureToPlatformTexture(...) with
+    // seven parameters, the old one would be removed.
+    virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, unsigned texture, unsigned level, unsigned internalFormat, unsigned type, bool premultiplyAlpha, bool flipY) { return false; }
 
     virtual WebAudioSourceProvider* audioSourceProvider() { return 0; }
 

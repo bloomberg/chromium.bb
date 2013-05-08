@@ -219,7 +219,7 @@ bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox
         m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, m_colorBuffer, 0);
     } else {
         Extensions3D* extensions = m_context->getExtensions();
-        extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, m_colorBuffer, nextFrontColorBuffer->textureId, 0, GraphicsContext3D::RGBA);
+        extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, m_colorBuffer, nextFrontColorBuffer->textureId, 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE);
     }
 
     if (multisample() && !m_framebufferBinding)
@@ -391,7 +391,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
     // Since the m_frontColorBuffer was produced and sent to the compositor, it cannot be bound to an fbo.
     // We have to make a copy of it here and bind that copy instead.
     unsigned sourceTexture = createColorTexture(m_size);
-    extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, m_frontColorBuffer, sourceTexture, 0, GraphicsContext3D::RGBA);
+    extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, m_frontColorBuffer, sourceTexture, 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE);
 #else
     // FIXME: Re-examine general correctness of this code beacause m_colorBuffer may contain a stale copy of the data
     // that was sent to the compositor at some point in the past.
