@@ -26,6 +26,10 @@
     'css': {
       'filepath': 'Source/core/css',
     },
+    'custom_elements': {
+      'filepath': 'Source/core/dom/CustomElement' \
+                  '|Source/bindings/v8/.*CustomElement',
+    },
     'devtools': {
       'filepath': 'inspector|DevTools|devtools',
     },
@@ -138,6 +142,7 @@
                   'japhet@chromium.org',
                   'jsbell+bindings@chromium.org',
                   'haraken@chromium.org' ],
+    'custom_elements': [ 'dominicc+watchlist@chromium.org' ],
     'layers': [ 'blink-layers@chromium.org' ],
     'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
     'owners': [ 'abarth@chromium.org'],
