@@ -437,7 +437,8 @@ hooks = [
     {
     'action':
          [
-    'src/build/linux/install-debian.wheezy.sysroot.wrapper.sh'
+    'python',
+    'src/build/linux/install-debian.wheezy.sysroot.wrapper.py'
 ],
     'pattern':
          '.'
