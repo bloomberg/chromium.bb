@@ -404,7 +404,7 @@ void PnaclComponentInstaller::RegisterPnaclComponent(
                             const CommandLine& command_line) {
   // Only register when given the right flag.  This is important since
   // we do an early component updater check above (in DoCheckForUpdate).
-  if (false /* Disable for now */) {
+  if (command_line.HasSwitch(switches::kEnablePnacl)) {
     cus_ = cus;
     // If per_user, create a profile observer to watch for logins.
     // Only do so after cus_ is set to something non-null.
