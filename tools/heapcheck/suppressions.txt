@@ -1860,3 +1860,10 @@
    fun:net::URLRequest::BeforeRequestComplete
    fun:net::URLRequest::Start
 }
+{
+   bug_238339_b
+   Heapcheck:Leak
+   fun:std::basic_string::_Rep::_S_create
+   fun:GURL::GURL
+   fun:TestBody
+}
