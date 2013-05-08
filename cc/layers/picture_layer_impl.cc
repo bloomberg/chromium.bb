@@ -10,6 +10,7 @@
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
 #include "cc/debug/debug_colors.h"
+#include "cc/debug/traced_value.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/quads/checkerboard_draw_quad.h"
@@ -917,13 +918,12 @@ void PictureLayerImpl::GetDebugBorderProperties(
   *width = DebugColors::TiledContentLayerBorderWidth(layer_tree_impl());
 }
 
-scoped_ptr<base::Value> PictureLayerImpl::AsValue() const {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  LayerImpl::AsValueInto(state.get());
-
+void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
+  LayerImpl::AsValueInto(state);
+  TracedValue::MakeDictIntoImplicitSnapshot(
+      state, "cc::PictureLayerImpl", this);
   state->SetDouble("ideal_contents_scale", ideal_contents_scale_);
   state->Set("tilings", tilings_->AsValue().release());
-  return state.PassAs<base::Value>();
 }
 
 }  // namespace cc

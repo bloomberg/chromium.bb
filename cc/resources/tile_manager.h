@@ -110,10 +110,12 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
  private:
   // Data that is passed to raster tasks.
   struct RasterTaskMetadata {
+      scoped_ptr<base::Value> AsValue() const;
       bool prediction_benchmarking;
       bool is_tile_in_pending_tree_now_bin;
       TileResolution tile_resolution;
       int layer_id;
+      const void* tile_id;
   };
 
   RasterTaskMetadata GetRasterTaskMetadata(const Tile& tile) const;

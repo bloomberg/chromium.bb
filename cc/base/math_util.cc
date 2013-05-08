@@ -527,18 +527,22 @@ scoped_ptr<base::Value> MathUtil::AsValue(gfx::Size s) {
 }
 
 scoped_ptr<base::Value> MathUtil::AsValue(gfx::PointF pt) {
-  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-  res->SetDouble("x", pt.x());
-  res->SetDouble("y", pt.y());
+  scoped_ptr<base::ListValue> res(new base::ListValue());
+  res->AppendDouble(pt.x());
+  res->AppendDouble(pt.y());
   return res.PassAs<base::Value>();
 }
 
 scoped_ptr<base::Value> MathUtil::AsValue(gfx::QuadF q) {
-  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-  res->Set("p1", AsValue(q.p1()).release());
-  res->Set("p2", AsValue(q.p2()).release());
-  res->Set("p3", AsValue(q.p3()).release());
-  res->Set("p4", AsValue(q.p4()).release());
+  scoped_ptr<base::ListValue> res(new base::ListValue());
+  res->AppendDouble(q.p1().x());
+  res->AppendDouble(q.p1().y());
+  res->AppendDouble(q.p2().x());
+  res->AppendDouble(q.p2().y());
+  res->AppendDouble(q.p3().x());
+  res->AppendDouble(q.p3().y());
+  res->AppendDouble(q.p4().x());
+  res->AppendDouble(q.p4().y());
   return res.PassAs<base::Value>();
 }
 

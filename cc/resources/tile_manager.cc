@@ -8,11 +8,11 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "cc/debug/devtools_instrumentation.h"
+#include "cc/debug/traced_value.h"
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
@@ -62,12 +62,6 @@ inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
     return SOON_BIN;
 
   return EVENTUALLY_BIN;
-}
-
-std::string ValueToString(scoped_ptr<base::Value> value) {
-  std::string str;
-  base::JSONWriter::Write(value.get(), &str);
-  return str;
 }
 
 }  // namespace
@@ -296,8 +290,9 @@ void TileManager::ManageTiles() {
   SortTiles();
   AssignGpuMemoryToTiles();
 
-  TRACE_EVENT_INSTANT1("cc", "DidManage", TRACE_EVENT_SCOPE_THREAD,
-                       "state", ValueToString(BasicStateAsValue()));
+  TRACE_EVENT_INSTANT1(
+      "cc", "DidManage", TRACE_EVENT_SCOPE_THREAD,
+      "state", TracedValue::FromValue(BasicStateAsValue().release()));
 
   // Finally, kick the rasterizer.
   DispatchMoreTasks();
@@ -753,6 +748,7 @@ TileManager::RasterTaskMetadata TileManager::GetRasterTaskMetadata(
       mts.tree_bin[PENDING_TREE] == NOW_BIN;
   metadata.tile_resolution = mts.resolution;
   metadata.layer_id = tile.layer_id();
+  metadata.tile_id = &tile;
   return metadata;
 }
 
@@ -872,6 +868,15 @@ void TileManager::RunAnalyzeTask(
   }
 }
 
+scoped_ptr<base::Value> TileManager::RasterTaskMetadata::AsValue() const {
+  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+  res->Set("tile_id", TracedValue::CreateIDRef(tile_id).release());
+  res->SetBoolean("is_tile_in_pending_tree_now_bin",
+                  is_tile_in_pending_tree_now_bin);
+  res->Set("resolution", TileResolutionAsValue(tile_resolution).release());
+  return res.PassAs<base::Value>();
+}
+
 // static
 void TileManager::RunRasterTask(
     uint8* buffer,
@@ -881,12 +886,9 @@ void TileManager::RunRasterTask(
     const RasterTaskMetadata& metadata,
     RenderingStatsInstrumentation* stats_instrumentation,
     PicturePileImpl* picture_pile) {
-  TRACE_EVENT2(
+  TRACE_EVENT1(
       "cc", "TileManager::RunRasterTask",
-      "is_on_pending_tree",
-      metadata.is_tile_in_pending_tree_now_bin,
-      "is_low_res",
-      metadata.tile_resolution == LOW_RESOLUTION);
+      "metadata", TracedValue::FromValue(metadata.AsValue().release()));
   devtools_instrumentation::ScopedRasterTask raster_task(metadata.layer_id);
 
   DCHECK(picture_pile);

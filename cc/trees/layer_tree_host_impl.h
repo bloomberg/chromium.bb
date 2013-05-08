@@ -352,7 +352,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   scoped_ptr<base::Value> AsValue() const;
   scoped_ptr<base::Value> ActivationStateAsValue() const;
-  scoped_ptr<base::Value> FrameStateAsValue() const;
 
   bool page_scale_animation_active() const { return !!page_scale_animation_; }
 

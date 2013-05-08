@@ -74,8 +74,6 @@ class CC_EXPORT PictureLayerImpl
 
   virtual bool AreVisibleResourcesReady() const OVERRIDE;
 
-  virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
-
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
   PictureLayerTiling* AddTiling(float contents_scale);
@@ -98,6 +96,7 @@ class CC_EXPORT PictureLayerImpl
 
   virtual void GetDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;
+  virtual void AsValueInto(base::DictionaryValue* dict) const OVERRIDE;
 
   scoped_ptr<PictureLayerTilingSet> tilings_;
   scoped_refptr<PicturePileImpl> pile_;

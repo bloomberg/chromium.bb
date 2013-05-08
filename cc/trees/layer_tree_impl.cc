@@ -9,6 +9,7 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scrollbar_animation_controller.h"
+#include "cc/debug/traced_value.h"
 #include "cc/input/pinch_zoom_scrollbar.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
@@ -524,7 +525,13 @@ AnimationRegistrar* LayerTreeImpl::animationRegistrar() const {
 }
 
 scoped_ptr<base::Value> LayerTreeImpl::AsValue() const {
-  scoped_ptr<base::ListValue> state(new base::ListValue());
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  TracedValue::MakeDictIntoImplicitSnapshot(
+      state.get(), "cc::LayerTreeImpl", this);
+
+  state->Set("root_layer", root_layer_->AsValue().release());
+
+  scoped_ptr<base::ListValue> render_surface_layer_list(new base::ListValue());
   typedef LayerIterator<LayerImpl,
                         LayerImplList,
                         RenderSurfaceImpl,
@@ -534,8 +541,11 @@ scoped_ptr<base::Value> LayerTreeImpl::AsValue() const {
            &render_surface_layer_list_); it != end; ++it) {
     if (!it.represents_itself())
       continue;
-    state->Append((*it)->AsValue().release());
+    render_surface_layer_list->Append(TracedValue::CreateIDRef(*it).release());
   }
+
+  state->Set("render_surface_layer_list",
+             render_surface_layer_list.release());
   return state.PassAs<base::Value>();
 }
 

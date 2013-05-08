@@ -6,13 +6,13 @@
 
 #include "base/debug/trace_event.h"
 #include "base/stringprintf.h"
-#include "base/values.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/scrollbar_animation_controller_linear_fade.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/layer_tree_debug_state.h"
+#include "cc/debug/traced_value.h"
 #include "cc/input/layer_scroll_offset_delegate.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/layers/scrollbar_layer_impl.h"
@@ -1003,17 +1003,28 @@ void LayerImpl::SetVerticalScrollbarLayer(ScrollbarLayerImpl* scrollbar_layer) {
     vertical_scrollbar_layer_->set_scroll_layer_id(id());
 }
 
-void LayerImpl::AsValueInto(base::DictionaryValue* dict) const {
-  dict->SetInteger("id", id());
-  dict->Set("bounds", MathUtil::AsValue(bounds()).release());
-  dict->SetInteger("draws_content", DrawsContent());
+void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
+  TracedValue::MakeDictIntoImplicitSnapshot(state, "cc::LayerImpl", this);
+  state->SetInteger("layer_id", id());
+  state->Set("bounds", MathUtil::AsValue(bounds()).release());
+  state->SetInteger("draws_content", DrawsContent());
 
   bool clipped;
   gfx::QuadF layer_quad = MathUtil::MapQuad(
       screen_space_transform(),
       gfx::QuadF(gfx::Rect(content_bounds())),
       &clipped);
-  dict->Set("layer_quad", MathUtil::AsValue(layer_quad).release());
+  state->Set("layer_quad", MathUtil::AsValue(layer_quad).release());
+
+
+  scoped_ptr<base::ListValue> children_list(new base::ListValue());
+  for (size_t i = 0; i < children_.size(); ++i)
+    children_list->Append(children_[i]->AsValue().release());
+  state->Set("children", children_list.release());
+  if (mask_layer_)
+    state->Set("mask_layer", mask_layer_->AsValue().release());
+  if (replica_layer_)
+    state->Set("replica_layer", replica_layer_->AsValue().release());
 }
 
 scoped_ptr<base::Value> LayerImpl::AsValue() const {

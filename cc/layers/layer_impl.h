@@ -412,7 +412,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
   virtual void PushPropertiesTo(LayerImpl* layer);
 
-  virtual scoped_ptr<base::Value> AsValue() const;
+  scoped_ptr<base::Value> AsValue() const;
 
  protected:
   LayerImpl(LayerTreeImpl* layer_impl, int id);
@@ -427,7 +427,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   virtual void DumpLayerProperties(std::string* str, int indent) const;
   static std::string IndentString(int indent);
 
-  void AsValueInto(base::DictionaryValue* dict) const;
+  virtual void AsValueInto(base::DictionaryValue* dict) const;
 
   void NoteLayerSurfacePropertyChanged();
   void NoteLayerPropertyChanged();

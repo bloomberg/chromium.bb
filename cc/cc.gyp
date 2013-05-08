@@ -73,6 +73,8 @@
       'debug/rendering_stats_instrumentation.cc',
       'debug/rendering_stats_instrumentation.h',
       'debug/ring_buffer.h',
+      'debug/traced_value.cc',
+      'debug/traced_value.h',
       'input/input_handler.h',
       'input/page_scale_animation.cc',
       'input/page_scale_animation.h',

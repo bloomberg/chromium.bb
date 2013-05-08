@@ -4,7 +4,7 @@
 
 #include "cc/resources/tile.h"
 
-#include "base/stringprintf.h"
+#include "cc/debug/traced_value.h"
 #include "cc/resources/tile_manager.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
@@ -33,12 +33,12 @@ Tile::~Tile() {
 
 scoped_ptr<base::Value> Tile::AsValue() const {
   scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-  res->SetString("id", base::StringPrintf("%p", this));
-  res->SetString("picture_pile", base::StringPrintf("%p",
-                                                    picture_pile_.get()));
+  TracedValue::MakeDictIntoImplicitSnapshot(res.get(), "cc::Tile", this);
+  res->Set("picture_pile",
+           TracedValue::CreateIDRef(picture_pile_.get()).release());
   res->SetDouble("contents_scale", contents_scale_);
-  res->Set("priority.0", priority_[ACTIVE_TREE].AsValue().release());
-  res->Set("priority.1", priority_[PENDING_TREE].AsValue().release());
+  res->Set("active_priority", priority_[ACTIVE_TREE].AsValue().release());
+  res->Set("pending_priority", priority_[PENDING_TREE].AsValue().release());
   res->Set("managed_state", managed_state_.AsValue().release());
   return res.PassAs<base::Value>();
 }
