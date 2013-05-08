@@ -36,6 +36,12 @@
 
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
+
+#ifndef EGL_EXT_swap_buffers_with_damage
+#define EGL_EXT_swap_buffers_with_damage 1
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC)(EGLDisplay dpy, EGLSurface surface, EGLint *rects, EGLint n_rects);
+#endif
 
 struct window;
 struct seat;
@@ -58,6 +64,8 @@ struct display {
 		EGLConfig conf;
 	} egl;
 	struct window *window;
+
+	PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC swap_buffers_with_damage;
 };
 
 struct geometry {
@@ -107,6 +115,7 @@ init_egl(struct display *display, int opaque)
 		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
 	};
+	const char *extensions;
 
 	EGLint config_attribs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
@@ -140,6 +149,18 @@ init_egl(struct display *display, int opaque)
 					    display->egl.conf,
 					    EGL_NO_CONTEXT, context_attribs);
 	assert(display->egl.ctx);
+
+	display->swap_buffers_with_damage = NULL;
+	extensions = eglQueryString(display->egl.dpy, EGL_EXTENSIONS);
+	if (extensions &&
+	    strstr(extensions, "EGL_EXT_swap_buffers_with_damage") &&
+	    strstr(extensions, "EGL_EXT_buffer_age"))
+		display->swap_buffers_with_damage =
+			(PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC)
+			eglGetProcAddress("eglSwapBuffersWithDamageEXT");
+
+	if (display->swap_buffers_with_damage)
+		printf("has EGL_EXT_buffer_age and EGL_EXT_swap_buffers_with_damage\n");
 
 }
 
@@ -346,6 +367,7 @@ static void
 redraw(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct window *window = data;
+	struct display *display = window->display;
 	static const GLfloat verts[3][2] = {
 		{ -0.5, -0.5 },
 		{  0.5, -0.5 },
@@ -366,6 +388,8 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	static const int32_t speed_div = 5;
 	static uint32_t start_time = 0;
 	struct wl_region *region;
+	EGLint rect[4];
+	EGLint buffer_age = 0;
 
 	assert(window->callback == callback);
 	window->callback = NULL;
@@ -384,6 +408,10 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	rotation[0][2] =  sin(angle);
 	rotation[2][0] = -sin(angle);
 	rotation[2][2] =  cos(angle);
+
+	if (display->swap_buffers_with_damage)
+		eglQuerySurface(display->egl.dpy, window->egl_surface,
+				EGL_BUFFER_AGE_EXT, &buffer_age);
 
 	glViewport(0, 0, window->geometry.width, window->geometry.height);
 
@@ -417,7 +445,17 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	window->callback = wl_surface_frame(window->surface);
 	wl_callback_add_listener(window->callback, &frame_listener, window);
 
-	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
+	if (display->swap_buffers_with_damage && buffer_age > 0) {
+		rect[0] = window->geometry.width / 4 - 1;
+		rect[1] = window->geometry.height / 4 - 1;
+		rect[2] = window->geometry.width / 2 + 2;
+		rect[3] = window->geometry.height / 2 + 2;
+		display->swap_buffers_with_damage(display->egl.dpy,
+						  window->egl_surface,
+						  rect, 1);
+	} else {
+		eglSwapBuffers(display->egl.dpy, window->egl_surface);
+	}
 }
 
 static const struct wl_callback_listener frame_listener = {
