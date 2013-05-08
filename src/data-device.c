@@ -231,29 +231,8 @@ device_map_drag_surface(struct weston_seat *seat)
 void
 weston_seat_update_drag_surface(struct weston_seat *seat, int dx, int dy)
 {
-	int surface_changed = 0;
-
-	if (!seat->drag_surface && !seat->next_drag_surface)
+	if (!seat->drag_surface)
 		return;
-
-	if (seat->drag_surface && seat->next_drag_surface &&
-	    (&seat->drag_surface->surface.resource !=
-	     &seat->next_drag_surface->resource))
-		/* between calls to this funcion we got a new drag_surface */
-		surface_changed = 1;
-
-	if (!seat->next_drag_surface || surface_changed) {
-		device_release_drag_surface(seat);
-		if (!surface_changed)
-			return;
-	}
-
-	if (!seat->drag_surface || surface_changed) {
-		struct weston_surface *surface =
-			(struct weston_surface *) seat->next_drag_surface;
-		if (!device_setup_new_drag_surface(seat, surface))
-			return;
-	}
 
 	/* the client may not have attached a buffer to the drag surface
 	 * when we setup it up, so check if map is needed on every update */
@@ -348,9 +327,8 @@ static void
 data_device_end_drag_grab(struct weston_seat *seat)
 {
 	if (seat->drag_surface) {
-		seat->next_drag_surface = NULL;
+		device_release_drag_surface(seat);
 		weston_seat_update_drag_surface(seat, 0, 0);
-		wl_list_remove(&seat->drag_icon_listener.link);
 	}
 
 	drag_grab_focus(&seat->drag_grab, NULL,
@@ -399,15 +377,6 @@ destroy_data_device_source(struct wl_listener *listener, void *data)
 }
 
 static void
-destroy_data_device_icon(struct wl_listener *listener, void *data)
-{
-	struct weston_seat *seat = container_of(listener, struct weston_seat,
-						drag_icon_listener);
-
-	seat->next_drag_surface = NULL;
-}
-
-static void
 handle_drag_surface_destroy(struct wl_listener *listener, void *data)
 {
 	struct weston_seat *seat;
@@ -447,10 +416,8 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	if (icon_resource) {
-		seat->next_drag_surface = icon_resource->data;
-		seat->drag_icon_listener.notify = destroy_data_device_icon;
-		wl_signal_add(&icon_resource->destroy_signal,
-			      &seat->drag_icon_listener);
+		if (!device_setup_new_drag_surface(seat, icon_resource->data))
+			return;
 		weston_seat_update_drag_surface(seat, 0, 0);
 	}
 

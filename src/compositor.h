@@ -472,10 +472,8 @@ struct weston_seat {
 	struct wl_resource *drag_focus_resource;
 	struct wl_listener drag_focus_listener;
 	struct weston_pointer_grab drag_grab;
-	struct wl_surface *next_drag_surface;
 	struct weston_surface *drag_surface;
 	struct wl_listener drag_surface_destroy_listener;
-	struct wl_listener drag_icon_listener;
 
 	uint32_t num_tp;
 
