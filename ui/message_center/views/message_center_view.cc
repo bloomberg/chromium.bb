@@ -496,10 +496,12 @@ void RichMessageListView::RemoveNotificationAt(int i) {
   if (GetContentsBounds().IsEmpty()) {
     delete child;
   } else {
-    if (child->layer())
+    if (child->layer()) {
       deleting_views_.insert(child);
-    else
+    } else {
+      animator_->StopAnimatingView(child);
       delete child;
+    }
     DoUpdateIfPossible();
   }
 }
@@ -513,6 +515,7 @@ void RichMessageListView::UpdateNotificationAt(views::View* view, int i) {
     deleting_views_.erase(child);
   if (deleted_when_done_.find(child) != deleted_when_done_.end())
     deleted_when_done_.erase(child);
+  animator_->StopAnimatingView(child);
   delete child;
   AddChildViewAt(view, i);
   view->SetBounds(old_bounds.x(), old_bounds.y(), old_bounds.width(),
