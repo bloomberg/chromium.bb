@@ -208,7 +208,7 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocket) {
 
   scoped_ptr<DeterministicMockTCPClientSocket> transport(
       new DeterministicMockTCPClientSocket(NULL, &data));
-  data.set_socket(transport->AsWeakPtr());
+  data.set_delegate(transport->AsWeakPtr());
 
   TestCompletionCallback callback;
   int rv = transport->Connect(callback.callback());

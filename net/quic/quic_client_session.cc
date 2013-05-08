@@ -178,8 +178,10 @@ Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
 
 void QuicClientSession::OnReadComplete(int result) {
   read_pending_ = false;
-  // TODO(rch): Inform the connection about the result.
-  if (result <= 0) {
+  if (result == 0)
+    result = ERR_CONNECTION_CLOSED;
+
+  if (result < 0) {
     DLOG(INFO) << "Closing session on read error: " << result;
     CloseSessionOnError(result);
     return;

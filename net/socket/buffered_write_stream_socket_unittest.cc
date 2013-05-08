@@ -32,7 +32,7 @@ class BufferedWriteStreamSocketTest : public testing::Test {
     }
     DeterministicMockTCPClientSocket* wrapped_socket =
         new DeterministicMockTCPClientSocket(net_log_.net_log(), data_.get());
-    data_->set_socket(wrapped_socket->AsWeakPtr());
+    data_->set_delegate(wrapped_socket->AsWeakPtr());
     socket_.reset(new BufferedWriteStreamSocket(wrapped_socket));
     socket_->Connect(callback_.callback());
   }

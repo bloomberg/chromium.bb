@@ -116,7 +116,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
   }
 
   MockHostResolver host_resolver_;
-  MockClientSocketFactory socket_factory_;
+  DeterministicMockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockRandom random_generator_;
   MockClock* clock_;  // Owned by factory_.
@@ -136,16 +136,17 @@ TEST_F(QuicStreamFactoryTest, Create) {
   scoped_ptr<QuicEncryptedPacket> rst5(ConstructRstPacket(2, 5));
   scoped_ptr<QuicEncryptedPacket> rst7(ConstructRstPacket(3, 7));
   MockWrite writes[] = {
-    MockWrite(SYNCHRONOUS, rst3->data(), rst3->length()),
-    MockWrite(SYNCHRONOUS, rst5->data(), rst5->length()),
-    MockWrite(SYNCHRONOUS, rst7->data(), rst7->length()),
+    MockWrite(SYNCHRONOUS, rst3->data(), rst3->length(), 0),
+    MockWrite(SYNCHRONOUS, rst5->data(), rst5->length(), 1),
+    MockWrite(SYNCHRONOUS, rst7->data(), rst7->length(), 2),
   };
   MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+    MockRead(ASYNC, OK, 3)  // EOF
   };
-  StaticSocketDataProvider socket_data(reads, arraysize(reads),
-                                       writes, arraysize(writes));
+  DeterministicSocketData socket_data(reads, arraysize(reads),
+                                      writes, arraysize(writes));
   socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(3);
 
   QuicStreamRequest request(&factory_);
   EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, net_log_,
@@ -153,6 +154,7 @@ TEST_F(QuicStreamFactoryTest, Create) {
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
 
   // Will reset stream 3.
   stream = factory_.CreateIfSessionExists(host_port_proxy_pair_, net_log_);
@@ -164,12 +166,14 @@ TEST_F(QuicStreamFactoryTest, Create) {
   stream = request2.ReleaseStream();  // Will reset stream 5.
   stream.reset();  // Will reset stream 7.
 
+  socket_data.RunFor(1);
+
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
 }
 
 TEST_F(QuicStreamFactoryTest, CreateError) {
-  StaticSocketDataProvider socket_data(NULL, 0, NULL, 0);
+  DeterministicSocketData socket_data(NULL, 0, NULL, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   host_resolver_.rules()->AddSimulatedFailure("www.google.com");
@@ -188,13 +192,13 @@ TEST_F(QuicStreamFactoryTest, CancelCreate) {
   scoped_ptr<QuicEncryptedPacket> rst3(ConstructRstPacket(1, 3));
 
   MockWrite writes[] = {
-    MockWrite(SYNCHRONOUS, rst3->data(), rst3->length()),
+    MockWrite(SYNCHRONOUS, rst3->data(), rst3->length(), 0),
   };
   MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+    MockRead(ASYNC, OK, 1)  // EOF
   };
-  StaticSocketDataProvider socket_data(reads, arraysize(reads),
-                                       writes, arraysize(writes));
+  DeterministicSocketData socket_data(reads, arraysize(reads),
+                                      writes, arraysize(writes));
   socket_factory_.AddSocketDataProvider(&socket_data);
   {
     QuicStreamRequest request(&factory_);
@@ -202,6 +206,7 @@ TEST_F(QuicStreamFactoryTest, CancelCreate) {
                                               callback_.callback()));
   }
 
+  socket_data.StopAfter(2);
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
 
@@ -210,6 +215,8 @@ TEST_F(QuicStreamFactoryTest, CancelCreate) {
   EXPECT_TRUE(stream.get());
   stream.reset();
 
+  socket_data.RunFor(1);
+
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
 }
@@ -217,21 +224,23 @@ TEST_F(QuicStreamFactoryTest, CancelCreate) {
 TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
   scoped_ptr<QuicEncryptedPacket> rst3(ConstructRstPacket(1, 3));
   MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+    MockRead(ASYNC, 0, 0)  // EOF
   };
-  StaticSocketDataProvider socket_data(reads, arraysize(reads),
-                                       NULL, 0);
+  DeterministicSocketData socket_data(reads, arraysize(reads),
+                                      NULL, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
 
   MockWrite writes2[] = {
-    MockWrite(SYNCHRONOUS, rst3->data(), rst3->length()),
+    MockWrite(SYNCHRONOUS, rst3->data(), rst3->length(), 0),
   };
   MockRead reads2[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+    MockRead(ASYNC, 0, 1)  // EOF
   };
-  StaticSocketDataProvider socket_data2(reads2, arraysize(reads2),
+  DeterministicSocketData socket_data2(reads2, arraysize(reads2),
                                         writes2, arraysize(writes2));
   socket_factory_.AddSocketDataProvider(&socket_data2);
+  socket_data2.StopAfter(1);
 
   QuicStreamRequest request(&factory_);
   EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, net_log_,
@@ -256,6 +265,8 @@ TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
   stream = request2.ReleaseStream();
   stream.reset();  // Will reset stream 3.
 
+  socket_data2.RunFor(1);
+
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
   EXPECT_TRUE(socket_data2.at_read_eof());
@@ -265,21 +276,23 @@ TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
 TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
   scoped_ptr<QuicEncryptedPacket> rst3(ConstructRstPacket(1, 3));
   MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+    MockRead(ASYNC, 0, 0)  // EOF
   };
-  StaticSocketDataProvider socket_data(reads, arraysize(reads),
-                                       NULL, 0);
+  DeterministicSocketData socket_data(reads, arraysize(reads),
+                                      NULL, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
 
   MockWrite writes2[] = {
-    MockWrite(SYNCHRONOUS, rst3->data(), rst3->length()),
+    MockWrite(SYNCHRONOUS, rst3->data(), rst3->length(), 0),
   };
   MockRead reads2[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+    MockRead(ASYNC, 0, 1)  // EOF
   };
-  StaticSocketDataProvider socket_data2(reads2, arraysize(reads2),
+  DeterministicSocketData socket_data2(reads2, arraysize(reads2),
                                         writes2, arraysize(writes2));
   socket_factory_.AddSocketDataProvider(&socket_data2);
+  socket_data2.StopAfter(1);
 
   QuicStreamRequest request(&factory_);
   EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, net_log_,
@@ -303,6 +316,8 @@ TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_EQ(OK, callback_.WaitForResult());
   stream = request2.ReleaseStream();
   stream.reset();  // Will reset stream 3.
+
+  socket_data2.RunFor(1);
 
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
