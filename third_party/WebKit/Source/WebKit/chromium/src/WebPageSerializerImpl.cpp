@@ -383,7 +383,7 @@ void WebPageSerializerImpl::endTagToString(Element* element,
         if (param->isHTMLDocument) {
             result.append('>');
             // FIXME: This code is horribly wrong.  WebPageSerializerImpl must die.
-            if (!toHTMLElement(element)->ieForbidsInsertHTML()) {
+            if (!element->isHTMLElement() || !toHTMLElement(element)->ieForbidsInsertHTML()) {
                 // We need to write end tag when it is required.
                 result.appendLiteral("</");
                 result.append(element->nodeName().lower());

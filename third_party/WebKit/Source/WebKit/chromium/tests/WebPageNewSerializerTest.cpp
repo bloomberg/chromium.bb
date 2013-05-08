@@ -27,7 +27,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 #include "config.h"
 
 #include "FrameTestHelpers.h"
@@ -35,6 +34,7 @@
 #include "WebFrame.h"
 #include "WebFrameClient.h"
 #include "WebPageSerializer.h"
+#include "WebPageSerializerClient.h"
 #include "WebScriptSource.h"
 #include "WebSettings.h"
 #include "WebView.h"
@@ -82,6 +82,21 @@ private:
 class TestWebFrameClient : public WebFrameClient {
 public:
     virtual ~TestWebFrameClient() { }
+};
+
+class LengthCountingWebPageSerializerClient : public WebPageSerializerClient {
+public:
+    LengthCountingWebPageSerializerClient(size_t* counter)
+        : m_counter(counter)
+    {
+    }
+
+    virtual void didSerializeDataForFrame(const WebURL& frameURL, const WebCString& data, PageSerializationStatus status) {
+        *m_counter += data.length();
+    }
+
+private:
+    size_t* m_counter;
 };
 
 class WebPageNewSerializeTest : public testing::Test {
@@ -349,6 +364,29 @@ TEST_F(WebPageNewSerializeTest, SVGImageDontCrash)
     WebCString mhtml = WebPageSerializer::serializeToMHTML(m_webView);
     // We expect some data to be generated.
     EXPECT_GT(mhtml.length(), 50U);
+}
+
+TEST_F(WebPageNewSerializeTest, NamespaceElementsDontCrash)
+{
+    WebURL pageUrl = toKURL("http://www.test.com");
+    registerMockedURLLoad(pageUrl, WebString::fromUTF8("namespace_element.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
+
+    loadURLInTopFrame(pageUrl);
+
+    WebVector<WebURL> localLinks(static_cast<size_t>(1));
+    WebVector<WebString> localPaths(static_cast<size_t>(1));
+    localLinks[0] = pageUrl;
+    localPaths[0] = WebString("/");
+
+    size_t counter = 0;
+    LengthCountingWebPageSerializerClient client(&counter);
+
+    // We just want to make sure nothing crazy happens, namely that no
+    // assertions are hit. As a sanity check, we also make sure that some data
+    // was returned.
+    WebPageSerializer::serialize(m_webView->mainFrame(), true, &client, localLinks, localPaths, WebString(""));
+
+    EXPECT_GT(counter, 0U);
 }
 
 }
