@@ -624,6 +624,8 @@
             'css/DocumentRuleSets.h',
             'css/ElementRuleCollector.cpp',
             'css/ElementRuleCollector.h',
+            'css/FilterOperationResolver.cpp',
+            'css/FilterOperationResolver.h',
             'css/FontFeatureValue.cpp',
             'css/FontFeatureValue.h',
             'css/FontLoader.h',

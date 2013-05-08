@@ -192,6 +192,10 @@ public:
 
     static PassRefPtr<RenderStyle> styleForDocument(Document*, CSSFontSelector* = 0);
 
+    Color colorFromPrimitiveValue(CSSPrimitiveValue* value, bool forVisitedLink = false) const
+    {
+        return m_state.colorFromPrimitiveValue(value, forVisitedLink);
+    }
     RenderStyle* style() const { return m_state.style(); }
     RenderStyle* parentStyle() const { return m_state.parentStyle(); }
     RenderStyle* rootElementStyle() const { return m_state.rootElementStyle(); }
@@ -265,7 +269,6 @@ public:
     bool useSVGZoomRules();
 
     static bool colorFromPrimitiveValueIsDerivedFromElement(CSSPrimitiveValue*);
-    Color colorFromPrimitiveValue(CSSPrimitiveValue*, bool forVisitedLink = false) const;
 
     bool hasSelectorForId(const AtomicString&) const;
     bool hasSelectorForClass(const AtomicString&) const;
@@ -290,20 +293,7 @@ public:
 
     void invalidateMatchedPropertiesCache();
 
-    bool createFilterOperations(CSSValue* inValue, RenderStyle* inStyle, RenderStyle* rootStyle, FilterOperations& outOperations);
-    StyleShader* styleShader(CSSValue*);
-    StyleShader* cachedOrPendingStyleShaderFromValue(WebKitCSSShaderValue*);
-    bool parseCustomFilterParameterList(CSSValue*, CustomFilterParameterList&);
-    PassRefPtr<CustomFilterParameter> parseCustomFilterParameter(const String& name, CSSValue*);
-    PassRefPtr<CustomFilterParameter> parseCustomFilterArrayParameter(const String& name, CSSValueList*);
-    PassRefPtr<CustomFilterParameter> parseCustomFilterNumberParameter(const String& name, CSSValueList*);
-    PassRefPtr<CustomFilterParameter> parseCustomFilterTransformParameter(const String& name, CSSValueList*);
-    PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithAtRuleReferenceSyntax(WebKitCSSFilterValue*);
-    PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSyntax(WebKitCSSFilterValue*);
-    PassRefPtr<CustomFilterOperation> createCustomFilterOperation(WebKitCSSFilterValue*);
     void loadPendingShaders();
-    PassRefPtr<CustomFilterProgram> lookupCustomFilterProgram(WebKitCSSShaderValue* vertexShader, WebKitCSSShaderValue* fragmentShader,
-        CustomFilterProgramType, const CustomFilterProgramMixSettings&, CustomFilterMeshType);
 #if ENABLE(SVG)
     void loadPendingSVGDocuments();
 #endif

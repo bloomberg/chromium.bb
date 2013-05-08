@@ -23,16 +23,19 @@
 #define StyleResolverState_h
 
 #include "CSSPropertyNames.h"
+
 #include "core/css/CSSValueList.h"
 #if ENABLE(SVG)
 #include "core/css/WebKitCSSSVGDocumentValue.h"
 #endif
 #include "core/dom/Element.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/rendering/style/BorderData.h"
 #include "core/rendering/style/FillLayer.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
-#include "core/platform/graphics/filters/FilterOperations.h"
+
 #include <wtf/HashMap.h>
 
 namespace WebCore {
@@ -72,6 +75,8 @@ namespace WebCore {
         void initElement(Element*);
         void initForStyleResolve(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
         void clear();
+
+        Color colorFromPrimitiveValue(CSSPrimitiveValue*, bool forVisitedLink = false) const;
 
         Document* document() const { return m_element->document(); }
         Element* element() const { return m_element; }
