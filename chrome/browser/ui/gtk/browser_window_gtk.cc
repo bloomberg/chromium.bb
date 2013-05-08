@@ -594,9 +594,10 @@ void BrowserWindowGtk::Show() {
   // size.
   gtk_widget_set_size_request(contents_container_->widget(), -1, -1);
 
+  bool update_devtools = !window_has_shown_ && devtools_window_;
   window_has_shown_ = true;
   browser()->OnWindowDidShow();
-  if (devtools_window_)
+  if (update_devtools)
     UpdateDevToolsSplitPosition();
 }
 
@@ -2254,8 +2255,6 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
   // Fast return in case of the same window having same orientation.
   if (devtools_window_ == new_devtools_window && (!new_devtools_window ||
         new_devtools_window->dock_side() == devtools_dock_side_)) {
-    if (new_devtools_window)
-      UpdateDevToolsSplitPosition();
     return;
   }
 

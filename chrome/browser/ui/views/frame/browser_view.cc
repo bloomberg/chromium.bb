@@ -2130,8 +2130,6 @@ void BrowserView::UpdateDevToolsForContents(WebContents* web_contents) {
   if (devtools_window_ == new_devtools_window) {
     if (!new_devtools_window ||
         (new_devtools_window->dock_side() == devtools_dock_side_)) {
-      if (new_devtools_window)
-        UpdateDevToolsSplitPosition();
       return;
     }
   }
