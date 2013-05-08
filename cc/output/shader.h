@@ -147,15 +147,35 @@ class VertexShaderQuad {
   std::string GetShaderString() const;
 
   int matrix_location() const { return matrix_location_; }
-  int point_location() const { return point_location_; }
+  int quad_location() const { return quad_location_; }
+
+ private:
+  int matrix_location_;
+  int quad_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(VertexShaderQuad);
+};
+
+class VertexShaderQuadTex {
+ public:
+  VertexShaderQuadTex();
+
+  void Init(WebKit::WebGraphicsContext3D* context,
+           unsigned program,
+           bool using_bind_uniform,
+           int* base_uniform_index);
+  std::string GetShaderString() const;
+
+  int matrix_location() const { return matrix_location_; }
+  int quad_location() const { return quad_location_; }
   int tex_scale_location() const { return tex_scale_location_; }
 
  private:
   int matrix_location_;
-  int point_location_;
+  int quad_location_;
   int tex_scale_location_;
 
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderQuad);
+  DISALLOW_COPY_AND_ASSIGN(VertexShaderQuadTex);
 };
 
 class VertexShaderTile {
@@ -169,14 +189,14 @@ class VertexShaderTile {
   std::string GetShaderString() const;
 
   int matrix_location() const { return matrix_location_; }
-  int point_location() const { return point_location_; }
+  int quad_location() const { return quad_location_; }
   int vertex_tex_transform_location() const {
     return vertex_tex_transform_location_;
   }
 
  private:
   int matrix_location_;
-  int point_location_;
+  int quad_location_;
   int vertex_tex_transform_location_;
 
   DISALLOW_COPY_AND_ASSIGN(VertexShaderTile);
