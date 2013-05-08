@@ -1098,7 +1098,6 @@ internal_paladin.add_config('fox-wtm2-paladin',
   boards=['fox_wtm2'],
   paladin_builder_name='fox paladin',
   vm_tests=None,
-  important=False,
 )
 
 internal_paladin.add_config('stumpy-paladin',
