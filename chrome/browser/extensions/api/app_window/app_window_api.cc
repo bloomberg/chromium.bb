@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
 #if defined(USE_ASH)
@@ -82,6 +83,20 @@ class DevToolsRestorer : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 };
 
+void SetCreateResultFromShellWindow(ShellWindow* window,
+                                    base::DictionaryValue* result) {
+  result->SetBoolean("fullscreen", window->GetBaseWindow()->IsFullscreen());
+  result->SetBoolean("minimized", window->GetBaseWindow()->IsMinimized());
+  result->SetBoolean("maximized", window->GetBaseWindow()->IsMaximized());
+  DictionaryValue* boundsValue = new DictionaryValue();
+  gfx::Rect bounds = window->GetClientBounds();
+  boundsValue->SetInteger("left", bounds.x());
+  boundsValue->SetInteger("top", bounds.y());
+  boundsValue->SetInteger("width", bounds.width());
+  boundsValue->SetInteger("height", bounds.height());
+  result->Set("bounds", boundsValue);
+}
+
 }  // namespace
 
 void AppWindowCreateFunction::SendDelayedResponse() {
@@ -140,6 +155,7 @@ bool AppWindowCreateFunction::RunImpl() {
           window->GetBaseWindow()->Show();
           base::DictionaryValue* result = new base::DictionaryValue;
           result->Set("viewId", base::Value::CreateIntegerValue(view_id));
+          SetCreateResultFromShellWindow(window, result);
           result->SetBoolean("existingWindow", true);
           result->SetBoolean("injectTitlebar", false);
           SetResult(result);
@@ -230,13 +246,13 @@ bool AppWindowCreateFunction::RunImpl() {
         case extensions::api::app_window::STATE_NORMAL:
           break;
         case extensions::api::app_window::STATE_FULLSCREEN:
-          create_params.state = ShellWindow::CreateParams::STATE_FULLSCREEN;
+          create_params.state = ui::SHOW_STATE_FULLSCREEN;
           break;
         case extensions::api::app_window::STATE_MAXIMIZED:
-          create_params.state = ShellWindow::CreateParams::STATE_MAXIMIZED;
+          create_params.state = ui::SHOW_STATE_MAXIMIZED;
           break;
         case extensions::api::app_window::STATE_MINIMIZED:
-          create_params.state = ShellWindow::CreateParams::STATE_MINIMIZED;
+          create_params.state = ui::SHOW_STATE_MINIMIZED;
           break;
       }
     } else {
@@ -266,7 +282,7 @@ bool AppWindowCreateFunction::RunImpl() {
  #endif
 
   if (force_maximize)
-    create_params.state = ShellWindow::CreateParams::STATE_MAXIMIZED;
+    create_params.state = ui::SHOW_STATE_MAXIMIZED;
 
   ShellWindow* shell_window =
       ShellWindow::Create(profile(), GetExtension(), url, create_params);
@@ -285,13 +301,7 @@ bool AppWindowCreateFunction::RunImpl() {
   result->Set("injectTitlebar",
       base::Value::CreateBooleanValue(inject_html_titlebar));
   result->Set("id", base::Value::CreateStringValue(shell_window->window_key()));
-  DictionaryValue* boundsValue = new DictionaryValue();
-  gfx::Rect bounds = shell_window->GetClientBounds();
-  boundsValue->SetInteger("left", bounds.x());
-  boundsValue->SetInteger("top", bounds.y());
-  boundsValue->SetInteger("width", bounds.width());
-  boundsValue->SetInteger("height", bounds.height());
-  result->Set("bounds", boundsValue);
+  SetCreateResultFromShellWindow(shell_window, result);
   SetResult(result);
 
   if (ShellWindowRegistry::Get(profile())->HadDevToolsAttached(created_view)) {

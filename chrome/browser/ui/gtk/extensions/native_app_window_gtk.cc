@@ -170,6 +170,12 @@ gfx::Rect NativeAppWindowGtk::GetRestoredBounds() const {
   return window_bounds;
 }
 
+ui::WindowShowState NativeAppWindowGtk::GetRestoredState() const {
+  if (IsMaximized())
+    return ui::SHOW_STATE_MAXIMIZED;
+  return ui::SHOW_STATE_NORMAL;
+}
+
 gfx::Rect NativeAppWindowGtk::GetBounds() const {
   gfx::Rect window_bounds = bounds_;
   window_bounds.Inset(-GetFrameInsets());
@@ -483,6 +489,10 @@ void NativeAppWindowGtk::SetFullscreen(bool fullscreen) {
 
 bool NativeAppWindowGtk::IsFullscreenOrPending() const {
   return content_thinks_its_fullscreen_;
+}
+
+bool NativeAppWindowGtk::IsDetached() const {
+  return false;
 }
 
 void NativeAppWindowGtk::UpdateWindowIcon() {

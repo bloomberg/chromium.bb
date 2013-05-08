@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
 class Profile;
@@ -36,13 +37,19 @@ class ShellWindowGeometryCache
 
   virtual ~ShellWindowGeometryCache();
 
+  // Save the geometry and state associated with |extension_id| and |window_id|.
   void SaveGeometry(const std::string& extension_id,
                     const std::string& window_id,
-                    const gfx::Rect& bounds);
+                    const gfx::Rect& bounds,
+                    ui::WindowShowState state);
 
+  // Get any saved geometry and state associated with |extension_id| and
+  // |window_id|. If saved data exists, sets |bounds| and |state| if not NULL
+  // and returns true.
   bool GetGeometry(const std::string& extension_id,
                    const std::string& window_id,
-                   gfx::Rect* bounds) const;
+                   gfx::Rect* bounds,
+                   ui::WindowShowState* state) const;
 
   // Maximum number of windows we'll cache the geometry for per app.
   static const size_t kMaxCachedWindows = 100;
@@ -58,7 +65,9 @@ class ShellWindowGeometryCache
  private:
   // Data stored for each window.
   struct WindowData {
+    WindowData() : window_state(ui::SHOW_STATE_DEFAULT) {}
     gfx::Rect bounds;
+    ui::WindowShowState window_state;
     base::Time last_change;
   };
 

@@ -89,8 +89,8 @@ void BaseLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
   if (visible && wm::IsWindowMinimized(child)) {
     // Attempting to show a minimized window. Unminimize it.
     child->SetProperty(aura::client::kShowStateKey,
-                       child->GetProperty(internal::kRestoreShowStateKey));
-    child->ClearProperty(internal::kRestoreShowStateKey);
+                       child->GetProperty(aura::client::kRestoreShowStateKey));
+    child->ClearProperty(aura::client::kRestoreShowStateKey);
   }
 }
 
@@ -171,7 +171,7 @@ void BaseLayoutManager::ShowStateChanged(aura::Window* window,
                                          ui::WindowShowState last_show_state) {
   if (wm::IsWindowMinimized(window)) {
     // Save the previous show state so that we can correctly restore it.
-    window->SetProperty(internal::kRestoreShowStateKey, last_show_state);
+    window->SetProperty(aura::client::kRestoreShowStateKey, last_show_state);
     views::corewm::SetWindowVisibilityAnimationType(
         window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
 

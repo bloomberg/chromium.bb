@@ -40,18 +40,21 @@ ShellWindowGeometryCache::~ShellWindowGeometryCache() {
 void ShellWindowGeometryCache::SaveGeometry(
     const std::string& extension_id,
     const std::string& window_id,
-    const gfx::Rect& bounds) {
+    const gfx::Rect& bounds,
+    ui::WindowShowState window_state) {
   ExtensionData& extension_data = cache_[extension_id];
 
   // If we don't have any unsynced changes and this is a duplicate of what's
   // already in the cache, just ignore it.
   if (extension_data[window_id].bounds == bounds &&
+      extension_data[window_id].window_state == window_state &&
       !ContainsKey(unsynced_extensions_, extension_id))
     return;
 
   base::Time now = base::Time::Now();
 
   extension_data[window_id].bounds = bounds;
+  extension_data[window_id].window_state = window_state;
   extension_data[window_id].last_change = now;
 
   if (extension_data.size() > kMaxCachedWindows) {
@@ -99,6 +102,7 @@ void ShellWindowGeometryCache::SyncToStorage() {
       value->SetInteger("y", bounds.y());
       value->SetInteger("w", bounds.width());
       value->SetInteger("h", bounds.height());
+      value->SetInteger("state", it->second.window_state);
       value->SetString(
           "ts", base::Int64ToString(it->second.last_change.ToInternalValue()));
       dict->SetWithoutPathExpansion(it->first, value);
@@ -110,7 +114,8 @@ void ShellWindowGeometryCache::SyncToStorage() {
 bool ShellWindowGeometryCache::GetGeometry(
     const std::string& extension_id,
     const std::string& window_id,
-    gfx::Rect* bounds) const {
+    gfx::Rect* bounds,
+    ui::WindowShowState* window_state) const {
 
   std::map<std::string, ExtensionData>::const_iterator
       extension_data_it = cache_.find(extension_id);
@@ -125,7 +130,10 @@ bool ShellWindowGeometryCache::GetGeometry(
   if (window_data == extension_data_it->second.end())
     return false;
 
-  *bounds = window_data->second.bounds;
+  if (bounds)
+    *bounds = window_data->second.bounds;
+  if (window_state)
+    *window_state = window_data->second.window_state;
   return true;
 }
 
@@ -171,8 +179,7 @@ void ShellWindowGeometryCache::OnExtensionLoaded(
     // overwrite that information since it is probably the result of an
     // application starting up very quickly.
     const std::string& window_id = it.key();
-    ExtensionData::iterator cached_window =
-        extension_data.find(window_id);
+    ExtensionData::iterator cached_window = extension_data.find(window_id);
     if (cached_window == extension_data.end()) {
       const base::DictionaryValue* stored_window;
       if (it.value().GetAsDictionary(&stored_window)) {
@@ -187,6 +194,10 @@ void ShellWindowGeometryCache::OnExtensionLoaded(
           window_data.bounds.set_width(i);
         if (stored_window->GetInteger("h", &i))
           window_data.bounds.set_height(i);
+        if (stored_window->GetInteger("state", &i)) {
+          window_data.window_state =
+              static_cast<ui::WindowShowState>(i);
+        }
         std::string ts_as_string;
         if (stored_window->GetString("ts", &ts_as_string)) {
           int64 ts;

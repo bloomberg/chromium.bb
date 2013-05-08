@@ -1,0 +1,9 @@
+{
+  "name": "Platform App Test: restore window state",
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
