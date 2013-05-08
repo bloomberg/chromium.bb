@@ -36,7 +36,6 @@ class PPAPI_PROXY_EXPORT URLResponseInfoResource
   // PPB_URLResponseInfo_API implementation.
   virtual PP_Var GetProperty(PP_URLResponseProperty property) OVERRIDE;
   virtual PP_Resource GetBodyAsFileRef() OVERRIDE;
-  virtual URLResponseInfoData GetData() OVERRIDE;
 
  private:
   URLResponseInfoData data_;

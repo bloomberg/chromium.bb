@@ -69,14 +69,5 @@ PP_Resource URLResponseInfoResource::GetBodyAsFileRef() {
   return body_as_file_ref_.get();
 }
 
-URLResponseInfoData URLResponseInfoResource::GetData() {
-  // One ref is passed to the caller if there's a file ref.
-  if (body_as_file_ref_.get()) {
-    PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(
-        body_as_file_ref_.get());
-  }
-  return data_;
-}
-
 }  // namespace proxy
 }  // namespace ppapi
