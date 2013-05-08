@@ -307,10 +307,6 @@ struct weston_pointer {
 	uint32_t grab_time;
 
 	wl_fixed_t x, y;
-	struct weston_surface *current;
-	struct wl_listener current_listener;
-	wl_fixed_t current_x, current_y;
-
 	uint32_t button_count;
 };
 

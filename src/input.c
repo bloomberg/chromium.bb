@@ -49,6 +49,7 @@ weston_seat_repick(struct weston_seat *seat)
 	const struct weston_pointer_grab_interface *interface;
 	struct weston_surface *surface, *focus;
 	struct weston_pointer *pointer = seat->pointer;
+	wl_fixed_t sx, sy;
 
 	if (!pointer)
 		return;
@@ -56,15 +57,10 @@ weston_seat_repick(struct weston_seat *seat)
 	surface = weston_compositor_pick_surface(seat->compositor,
 						 pointer->x,
 						 pointer->y,
-						 &pointer->current_x,
-						 &pointer->current_y);
+						 &sx, &sy);
 
-	if (surface != pointer->current) {
-		interface = pointer->grab->interface;
-		weston_pointer_set_current(pointer, surface);
-		interface->focus(pointer->grab, surface,
-				 pointer->current_x, pointer->current_y);
-	}
+	interface = pointer->grab->interface;
+	interface->focus(pointer->grab, surface, sx, sy);
 
 	focus = (struct weston_surface *) pointer->grab->focus;
 	if (focus)
@@ -125,7 +121,8 @@ default_grab_focus(struct weston_pointer_grab *grab,
 	if (pointer->button_count > 0)
 		return;
 
-	weston_pointer_set_focus(pointer, surface, x, y);
+	if (pointer->focus != surface)
+		weston_pointer_set_focus(pointer, surface, x, y);
 }
 
 static void
@@ -144,10 +141,13 @@ default_grab_button(struct weston_pointer_grab *grab,
 		    uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct weston_pointer *pointer = grab->pointer;
+	struct weston_compositor *compositor = pointer->seat->compositor;
+	struct weston_surface *surface;
 	struct wl_resource *resource;
 	uint32_t serial;
 	enum wl_pointer_button_state state = state_w;
 	struct wl_display *display;
+	wl_fixed_t sx, sy;
 
 	resource = pointer->focus_resource;
 	if (resource) {
@@ -157,10 +157,14 @@ default_grab_button(struct weston_pointer_grab *grab,
 	}
 
 	if (pointer->button_count == 0 &&
-	    state == WL_POINTER_BUTTON_STATE_RELEASED)
-		weston_pointer_set_focus(pointer, pointer->current,
-					 pointer->current_x,
-					 pointer->current_y);
+	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
+		surface = weston_compositor_pick_surface(compositor,
+							 pointer->x,
+							 pointer->y,
+							 &sx, &sy);
+
+		weston_pointer_set_focus(pointer, surface, sx, sy);
+	}
 }
 
 static const struct weston_pointer_grab_interface
@@ -539,51 +543,37 @@ weston_pointer_start_grab(struct weston_pointer *pointer,
 			  struct weston_pointer_grab *grab)
 {
 	const struct weston_pointer_grab_interface *interface;
+	struct weston_compositor *compositor = pointer->seat->compositor;
+	struct weston_surface *surface;
+	wl_fixed_t sx, sy;
 
 	pointer->grab = grab;
 	interface = pointer->grab->interface;
 	grab->pointer = pointer;
 
-	if (pointer->current)
-		interface->focus(pointer->grab, pointer->current,
-				 pointer->current_x, pointer->current_y);
+	surface = weston_compositor_pick_surface(compositor,
+						 pointer->x, pointer->y,
+						 &sx, &sy);
+
+	if (surface)
+		interface->focus(pointer->grab, surface, sx, sy);
 }
 
 WL_EXPORT void
 weston_pointer_end_grab(struct weston_pointer *pointer)
 {
 	const struct weston_pointer_grab_interface *interface;
+	struct weston_compositor *compositor = pointer->seat->compositor;
+	struct weston_surface *surface;
+	wl_fixed_t sx, sy;
+
+	surface = weston_compositor_pick_surface(compositor,
+						 pointer->x, pointer->y,
+						 &sx, &sy);
 
 	pointer->grab = &pointer->default_grab;
 	interface = pointer->grab->interface;
-	interface->focus(pointer->grab, pointer->current,
-			 pointer->current_x, pointer->current_y);
-}
-
-static void
-current_surface_destroy(struct wl_listener *listener, void *data)
-{
-	struct weston_pointer *pointer =
-		container_of(listener, struct weston_pointer, current_listener);
-
-	pointer->current = NULL;
-}
-
-WL_EXPORT void
-weston_pointer_set_current(struct weston_pointer *pointer,
-			   struct weston_surface *surface)
-{
-	if (pointer->current)
-		wl_list_remove(&pointer->current_listener.link);
-
-	pointer->current = surface;
-
-	if (!surface)
-		return;
-	
-	wl_signal_add(&surface->resource.destroy_signal,
-		      &pointer->current_listener);
-	pointer->current_listener.notify = current_surface_destroy;
+	interface->focus(pointer->grab, surface, sx, sy);
 }
 
 WL_EXPORT void

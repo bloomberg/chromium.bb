@@ -1256,12 +1256,9 @@ busy_cursor_grab_button(struct weston_pointer_grab *base,
 			uint32_t time, uint32_t button, uint32_t state)
 {
 	struct shell_grab *grab = (struct shell_grab *) base;
-	struct shell_surface *shsurf;
-	struct weston_surface *surface =
-		(struct weston_surface *) grab->grab.pointer->current;
+	struct shell_surface *shsurf = grab->shsurf;
 	struct weston_seat *seat = grab->grab.pointer->seat;
 
-	shsurf = get_shell_surface(surface);
 	if (shsurf && button == BTN_LEFT && state) {
 		activate(shsurf->shell, shsurf->surface, seat);
 		surface_move(shsurf, seat);
@@ -1295,7 +1292,8 @@ end_busy_cursor(struct shell_surface *shsurf, struct weston_pointer *pointer)
 {
 	struct shell_grab *grab = (struct shell_grab *) pointer->grab;
 
-	if (grab->grab.interface == &busy_cursor_grab_interface) {
+	if (grab->grab.interface == &busy_cursor_grab_interface &&
+	    grab->shsurf == shsurf) {
 		shell_grab_end(grab);
 		free(grab);
 	}
@@ -1402,28 +1400,17 @@ shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 							uint32_t serial)
 {
 	struct shell_surface *shsurf = resource->data;
-	struct desktop_shell *shell = shsurf->shell;
 	struct weston_seat *seat;
 	struct weston_compositor *ec = shsurf->surface->compositor;
-	struct weston_pointer *pointer;
-	int was_unresponsive;
 
 	if (shsurf->ping_timer == NULL)
 		/* Just ignore unsolicited pong. */
 		return;
 
 	if (shsurf->ping_timer->serial == serial) {
-		was_unresponsive = shsurf->unresponsive;
 		shsurf->unresponsive = 0;
-		if (was_unresponsive) {
-			/* Received pong from previously unresponsive client */
-			wl_list_for_each(seat, &ec->seat_list, link) {
-				pointer = seat->pointer;
-				if (pointer->focus == shell->grab_surface &&
-				    pointer->current == shsurf->surface)
-					end_busy_cursor(shsurf, pointer);
-			}
-		}
+		wl_list_for_each(seat, &ec->seat_list, link)
+			end_busy_cursor(shsurf, seat->pointer);
 		ping_timer_destroy(shsurf);
 	}
 }
