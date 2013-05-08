@@ -1812,6 +1812,14 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	assert(offset <= bo->size - 4);
 	assert((write_domain & (write_domain - 1)) == 0);
 
+	/* An object needing a fence is a tiled buffer, so it won't have
+	 * relocs to other buffers.
+	 */
+	if (need_fence) {
+		assert(target_bo_gem->reloc_count == 0);
+		target_bo_gem->reloc_tree_fences = 1;
+	}
+
 	/* Make sure that we're not adding a reloc to something whose size has
 	 * already been accounted for.
 	 */
@@ -1819,13 +1827,8 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	if (target_bo_gem != bo_gem) {
 		target_bo_gem->used_as_reloc_target = true;
 		bo_gem->reloc_tree_size += target_bo_gem->reloc_tree_size;
+		bo_gem->reloc_tree_fences += target_bo_gem->reloc_tree_fences;
 	}
-	/* An object needing a fence is a tiled buffer, so it won't have
-	 * relocs to other buffers.
-	 */
-	if (need_fence)
-		target_bo_gem->reloc_tree_fences = 1;
-	bo_gem->reloc_tree_fences += target_bo_gem->reloc_tree_fences;
 
 	bo_gem->relocs[bo_gem->reloc_count].offset = offset;
 	bo_gem->relocs[bo_gem->reloc_count].delta = target_offset;
