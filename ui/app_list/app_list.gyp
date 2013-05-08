@@ -69,6 +69,7 @@
         'signin_delegate_observer.h',
         'views/app_list_background.cc',
         'views/app_list_background.h',
+        'views/app_list_drag_and_drop_host.h',
         'views/app_list_item_view.cc',
         'views/app_list_item_view.h',
         'views/app_list_main_view.cc',

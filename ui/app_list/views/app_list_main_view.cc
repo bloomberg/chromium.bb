@@ -134,6 +134,11 @@ void AppListMainView::Prerender() {
   contents_view_->Prerender();
 }
 
+void AppListMainView::SetDragAndDropHostOfCurrentAppList(
+    app_list::ApplicationDragAndDropHost* drag_and_drop_host) {
+  contents_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
+}
+
 void AppListMainView::PreloadIcons(PaginationModel* pagination_model,
                                    views::View* anchor) {
   ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P;

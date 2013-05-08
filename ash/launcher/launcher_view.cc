@@ -22,6 +22,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -377,7 +378,9 @@ LauncherView::LauncherView(LauncherModel* model,
       cancelling_drag_model_changed_(false),
       last_hidden_index_(0),
       closing_event_time_(base::TimeDelta()),
-      got_deleted_(NULL) {
+      got_deleted_(NULL),
+      drag_and_drop_item_created_(false),
+      drag_and_drop_launcher_id_(0) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   bounds_animator_->AddObserver(this);
@@ -521,6 +524,83 @@ views::FocusTraversable* LauncherView::GetFocusTraversableParent() {
 
 View* LauncherView::GetFocusTraversableParentView() {
   return this;
+}
+
+bool LauncherView::StartDrag(const std::string& app_id,
+                             const gfx::Point& location_in_screen_coordinates) {
+  // Bail if an operation is already going on - or the cursor is not inside.
+  // This could happen if mouse / touch operations overlap.
+  if (drag_and_drop_launcher_id_ ||
+      !GetBoundsInScreen().Contains(location_in_screen_coordinates))
+    return false;
+
+  // If the AppsGridView (which was dispatching this event) was opened by our
+  // button, LauncherView dragging operations are locked and we have to unlock.
+  CancelDrag(-1);
+  drag_and_drop_item_created_ = false;
+  drag_and_drop_app_id_ = app_id;
+  drag_and_drop_launcher_id_ =
+      delegate_->GetLauncherIDForAppID(drag_and_drop_app_id_);
+
+  if (!drag_and_drop_launcher_id_) {
+    delegate_->PinAppWithID(app_id);
+    drag_and_drop_launcher_id_ =
+        delegate_->GetLauncherIDForAppID(drag_and_drop_app_id_);
+    if (!drag_and_drop_launcher_id_)
+      return false;
+    drag_and_drop_item_created_ = true;
+  }
+  views::View* drag_and_drop_view = view_model_->view_at(
+      model_->ItemIndexByID(drag_and_drop_launcher_id_));
+  DCHECK(drag_and_drop_view);
+
+  // Since there is already an icon presented, we hide this one for now.
+  drag_and_drop_view->SetVisible(false);
+  // First we have to center the mouse cursor over the item.
+  gfx::Point pt = drag_and_drop_view->GetBoundsInScreen().CenterPoint();
+  views::View::ConvertPointFromScreen(drag_and_drop_view, &pt);
+  ui::MouseEvent event(ui::ET_MOUSE_PRESSED,
+                       pt, location_in_screen_coordinates, 0);
+  PointerPressedOnButton(
+      drag_and_drop_view, LauncherButtonHost::DRAG_AND_DROP, event);
+
+  // Drag the item where it really belongs.
+  Drag(location_in_screen_coordinates);
+  return true;
+}
+
+bool LauncherView::Drag(const gfx::Point& location_in_screen_coordinates) {
+  if (!drag_and_drop_launcher_id_ ||
+      !GetBoundsInScreen().Contains(location_in_screen_coordinates))
+    return false;
+
+  gfx::Point pt = location_in_screen_coordinates;
+  views::View* drag_and_drop_view = view_model_->view_at(
+      model_->ItemIndexByID(drag_and_drop_launcher_id_));
+  views::View::ConvertPointFromScreen(drag_and_drop_view, &pt);
+
+  ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, gfx::Point(), 0);
+  PointerDraggedOnButton(
+      drag_and_drop_view, LauncherButtonHost::DRAG_AND_DROP, event);
+  return true;
+}
+
+void LauncherView::EndDrag(bool cancel) {
+  if (!drag_and_drop_launcher_id_)
+    return;
+
+  views::View* drag_and_drop_view = view_model_->view_at(
+      model_->ItemIndexByID(drag_and_drop_launcher_id_));
+  PointerReleasedOnButton(
+      drag_and_drop_view, LauncherButtonHost::DRAG_AND_DROP, cancel);
+
+  if (drag_and_drop_item_created_ && cancel)
+    delegate_->UnpinAppsWithID(drag_and_drop_app_id_);
+
+  if (drag_and_drop_view)
+    drag_and_drop_view->SetVisible(true);
+
+  drag_and_drop_launcher_id_ = 0;
 }
 
 void LauncherView::LayoutToIdealBounds() {
@@ -1340,31 +1420,37 @@ void LauncherView::ButtonPressed(views::Button* sender,
             ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
     }
 
-  // Collect usage statistics before we decide what to do with the click.
-  switch (model_->items()[view_index].type) {
-    case TYPE_APP_SHORTCUT:
-    case TYPE_WINDOWED_APP:
-    case TYPE_PLATFORM_APP:
-      Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-          UMA_LAUNCHER_CLICK_ON_APP);
-      // Fallthrough
-    case TYPE_TABBED:
-    case TYPE_APP_PANEL:
-      delegate_->ItemSelected(model_->items()[view_index], event);
-      break;
+    // Collect usage statistics before we decide what to do with the click.
+    switch (model_->items()[view_index].type) {
+      case TYPE_APP_SHORTCUT:
+      case TYPE_WINDOWED_APP:
+      case TYPE_PLATFORM_APP:
+        Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+            UMA_LAUNCHER_CLICK_ON_APP);
+        // Fallthrough
+      case TYPE_TABBED:
+      case TYPE_APP_PANEL:
+        delegate_->ItemSelected(model_->items()[view_index], event);
+        break;
 
-    case TYPE_APP_LIST:
-      Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-          UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
-      Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());
-      break;
+      case TYPE_APP_LIST:
+        Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+            UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
+        Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());
+        // By setting us as DnD recipient, the app list knows that we can
+        // handle items.
+        // TODO(skuhne): Invert the flag
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+                ash::switches::kAshDragAndDropAppListToLauncher))
+          Shell::GetInstance()->SetDragAndDropHostOfCurrentAppList(this);
+        break;
 
-    case TYPE_BROWSER_SHORTCUT:
-      // Click on browser icon is counted in app clicks.
-      Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-          UMA_LAUNCHER_CLICK_ON_APP);
-      delegate_->OnBrowserShortcutClicked(event.flags());
-      break;
+      case TYPE_BROWSER_SHORTCUT:
+        // Click on browser icon is counted in app clicks.
+        Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+            UMA_LAUNCHER_CLICK_ON_APP);
+        delegate_->OnBrowserShortcutClicked(event.flags());
+        break;
     }
   }
 

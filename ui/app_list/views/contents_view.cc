@@ -54,13 +54,12 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
       kPageTransitionDurationInMs,
       kOverscrollPageTransitionDurationMs);
 
-  AppsGridView* apps_grid_view = new AppsGridView(app_list_main_view,
-                                                  pagination_model);
-  apps_grid_view->SetLayout(kPreferredIconDimension,
-                            kPreferredCols,
-                            kPreferredRows);
-  AddChildView(apps_grid_view);
-  view_model_->Add(apps_grid_view, kIndexAppsGrid);
+  apps_grid_view_ = new AppsGridView(app_list_main_view, pagination_model);
+  apps_grid_view_->SetLayout(kPreferredIconDimension,
+                             kPreferredCols,
+                             kPreferredRows);
+  AddChildView(apps_grid_view_);
+  view_model_->Add(apps_grid_view_, kIndexAppsGrid);
 
   SearchResultListView* search_results_view = new SearchResultListView(
       app_list_main_view);
@@ -79,6 +78,11 @@ void ContentsView::SetModel(AppListModel* model) {
     GetAppsGridView(view_model_.get())->SetModel(NULL);
     GetSearchResultListView(view_model_.get())->SetResults(NULL);
   }
+}
+
+void ContentsView::SetDragAndDropHostOfCurrentAppList(
+    app_list::ApplicationDragAndDropHost* drag_and_drop_host) {
+  apps_grid_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 
 void ContentsView::SetShowState(ShowState show_state) {

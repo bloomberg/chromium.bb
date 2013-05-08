@@ -6774,6 +6774,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_WORKSPACE_SCRUBBING_DESCRIPTION" desc="Description for the flag to enable workspace scrubbing.">
         Enables workspace switching via 3 finger vertical scroll.
       </message>
+      <message name="IDS_FLAGS_DND_APPLIST_TO_LAUNCHER_NAME" desc="Title for the flag to enable drag and drop from the app list menu to the launcher.">
+        Drag and drop from the app list menu to the launcher
+      </message>
+      <message name="IDS_FLAGS_DND_APPLIST_TO_LAUNCHER_DESCRIPTION" desc="Description for the flag to enable drag and drop opertions from the app list menu to the launcher.">
+        Allows drag and drop from the app list menu to the launcher.
+      </message>
       <message name="IDS_FLAGS_ASH_IMMERSIVE_FULLSCREEN_NAME" desc="Title for the flag for immersive fullscreen mode.">
         Immersive fullscreen
       </message>

@@ -80,5 +80,16 @@ bool LauncherDelegateImpl::IsPerAppLauncher() {
   return false;
 }
 
+LauncherID LauncherDelegateImpl::GetLauncherIDForAppID(
+    const std::string& app_id) {
+  return 0;
+}
+
+void LauncherDelegateImpl::PinAppWithID(const std::string& app_id) {
+}
+
+void LauncherDelegateImpl::UnpinAppsWithID(const std::string& app_id) {
+}
+
 }  // namespace shell
 }  // namespace ash

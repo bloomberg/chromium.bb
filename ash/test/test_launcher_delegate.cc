@@ -131,5 +131,16 @@ bool TestLauncherDelegate::IsPerAppLauncher() {
   return true;
 }
 
+LauncherID TestLauncherDelegate::GetLauncherIDForAppID(
+    const std::string& app_id) {
+  return 0;
+}
+
+void TestLauncherDelegate::PinAppWithID(const std::string& app_id) {
+}
+
+void TestLauncherDelegate::UnpinAppsWithID(const std::string& app_id) {
+}
+
 }  // namespace test
 }  // namespace ash

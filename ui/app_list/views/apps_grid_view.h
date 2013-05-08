@@ -28,6 +28,7 @@ namespace test {
 class AppsGridViewTestApi;
 }
 
+class ApplicationDragAndDropHost;
 class AppListItemView;
 class AppsGridViewDelegate;
 class PageSwitcher;
@@ -65,14 +66,18 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // transition, this does nothing.
   void EnsureViewVisible(const views::View* view);
 
-  void InitiateDrag(views::View* view,
+  void InitiateDrag(AppListItemView* view,
                     Pointer pointer,
                     const ui::LocatedEvent& event);
-  void UpdateDrag(views::View* view,
+  void UpdateDrag(AppListItemView* view,
                   Pointer pointer,
                   const ui::LocatedEvent& event);
   void EndDrag(bool cancel);
   bool IsDraggedView(const views::View* view) const;
+
+  // Set the drag and drop host for application links.
+  void SetDragAndDropHostOfCurrentAppList(
+      ApplicationDragAndDropHost* drag_and_drop_host);
 
   // Prerenders the icons on and around |page_index|.
   void Prerender(int page_index);
@@ -157,6 +162,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void CalculateDropTarget(const gfx::Point& drag_point,
                            bool use_page_button_hovering);
 
+  // Dispatch the drag and drop update event to the dnd host (if needed).
+  void DispatchDragEventToDragAndDropHost(const ui::LocatedEvent& event);
+
   // Starts the page flip timer if |drag_point| is in left/right side page flip
   // zone or is over page switcher.
   void MaybeStartPageFlipTimer(const gfx::Point& drag_point);
@@ -202,10 +210,17 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   views::View* selected_view_;
 
-  views::View* drag_view_;
+  AppListItemView* drag_view_;
   gfx::Point drag_start_;
   Pointer drag_pointer_;
   Index drop_target_;
+
+  // An application target drag and drop host which accepts dnd operations.
+  ApplicationDragAndDropHost* drag_and_drop_host_;
+
+  // The drag operation is currently inside the dnd host and events get
+  // forwarded.
+  bool forward_events_to_drag_and_drop_host_;
 
   // Last mouse drag location in this view's coordinates.
   gfx::Point last_drag_point_;

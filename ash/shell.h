@@ -26,6 +26,9 @@
 
 class CommandLine;
 
+namespace app_list {
+class ApplicationDragAndDropHost;
+}
 namespace aura {
 class EventFilter;
 class RootWindow;
@@ -216,6 +219,11 @@ class ASH_EXPORT Shell
   // list should be shown. If this is NULL, the active root window
   // will be used.
   void ToggleAppList(aura::Window* anchor);
+
+  // If |drag_and_drop_host| is not NULL it will be called upon drag and drop
+  // operations outside the application list.
+  void SetDragAndDropHostOfCurrentAppList(
+      app_list::ApplicationDragAndDropHost* drag_and_drop_host);
 
   // Returns app list target visibility.
   bool GetAppListTargetVisibility() const;

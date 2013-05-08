@@ -15,7 +15,7 @@ class Widget;
 }
 
 namespace app_list {
-
+class ApplicationDragAndDropHost;
 class AppListMainView;
 class AppListModel;
 class AppListViewDelegate;
@@ -43,6 +43,13 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   void SetBubbleArrow(views::BubbleBorder::Arrow arrow);
 
   void SetAnchorPoint(const gfx::Point& anchor_point);
+
+  // If |drag_and_drop_host| is not NULL it will be called upon drag and drop
+  // operations outside the application list. This has to be called after
+  // InitAsBubble was called since the app list object needs to exist so that
+  // it can set the host.
+  void SetDragAndDropHostOfCurrentAppList(
+      app_list::ApplicationDragAndDropHost* drag_and_drop_host);
 
   // Shows the UI when there are no pending icon loads. Otherwise, starts a
   // timer to show the UI when a maximum allowed wait time has expired.

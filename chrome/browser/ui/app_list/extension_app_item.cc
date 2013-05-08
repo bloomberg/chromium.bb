@@ -209,6 +209,7 @@ void ExtensionAppItem::Reload() {
   const Extension* extension = GetExtension();
   bool is_installing = !extension;
   SetIsInstalling(is_installing);
+  set_app_id(extension_id_);
   if (is_installing) {
     SetTitle(extension_name_);
     UpdateIcon();

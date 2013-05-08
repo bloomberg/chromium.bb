@@ -128,13 +128,17 @@ void AppListView::SetAnchorPoint(const gfx::Point& anchor_point) {
   SizeToContents();  // Repositions view relative to the anchor.
 }
 
+void AppListView::SetDragAndDropHostOfCurrentAppList(
+    app_list::ApplicationDragAndDropHost* drag_and_drop_host) {
+  app_list_main_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
+}
+
 void AppListView::ShowWhenReady() {
   app_list_main_view_->ShowAppListWhenReady();
 }
 
 void AppListView::Close() {
   app_list_main_view_->Close();
-
   if (delegate_)
     delegate_->Dismiss();
   else

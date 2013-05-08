@@ -43,6 +43,9 @@ class APP_LIST_EXPORT AppListItemModel {
   void SetPercentDownloaded(int percent_downloaded);
   int percent_downloaded() const { return percent_downloaded_; }
 
+  void set_app_id(const std::string& app_id) { app_id_ = app_id; }
+  const std::string& app_id() { return app_id_; }
+
   void AddObserver(AppListItemModelObserver* observer);
   void RemoveObserver(AppListItemModelObserver* observer);
 
@@ -57,6 +60,7 @@ class APP_LIST_EXPORT AppListItemModel {
   bool highlighted_;
   bool is_installing_;
   int percent_downloaded_;
+  std::string app_id_;
 
   ObserverList<AppListItemModelObserver> observers_;
 

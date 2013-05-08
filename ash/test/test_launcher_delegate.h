@@ -51,6 +51,9 @@ class TestLauncherDelegate : public LauncherDelegate,
   virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE;
   virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE;
   virtual bool IsPerAppLauncher() OVERRIDE;
+  virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE;
+  virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
+  virtual void UnpinAppsWithID(const std::string& app_id) OVERRIDE;
 
  private:
   typedef std::map<aura::Window*, ash::LauncherID> WindowToID;

@@ -12,6 +12,7 @@
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "base/observer_list.h"
+#include "ui/app_list/views/app_list_drag_and_drop_host.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -50,7 +51,8 @@ class ASH_EXPORT LauncherView : public views::View,
                                 public LauncherButtonHost,
                                 public views::ContextMenuController,
                                 public views::FocusTraversable,
-                                public views::BoundsAnimatorObserver {
+                                public views::BoundsAnimatorObserver,
+                                public app_list::ApplicationDragAndDropHost {
  public:
   LauncherView(LauncherModel* model,
                LauncherDelegate* delegate,
@@ -96,6 +98,13 @@ class ASH_EXPORT LauncherView : public views::View,
   virtual views::FocusSearch* GetFocusSearch() OVERRIDE;
   virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE;
   virtual View* GetFocusTraversableParentView() OVERRIDE;
+
+  // Overridden from app_list::ApplicationDragAndDropHost:
+  virtual bool StartDrag(
+      const std::string& app_id,
+      const gfx::Point& location_in_screen_coordinates) OVERRIDE;
+  virtual bool Drag(const gfx::Point& location_in_screen_coordinates) OVERRIDE;
+  virtual void EndDrag(bool cancel) OVERRIDE;
 
  private:
   friend class ash::test::LauncherViewTestAPI;
@@ -319,6 +328,17 @@ class ASH_EXPORT LauncherView : public views::View,
   // When this object gets deleted while a menu is shown, this pointed
   // element will be set to false.
   bool* got_deleted_;
+
+  // True if a drag and drop operation created the item in the launcher and it
+  // needs to be deleted again if the operation gets cancelled.
+  bool drag_and_drop_item_created_;
+
+  // The launcher item which is currently used for a drag and a drop operation
+  // or 0 otherwise.
+  LauncherID drag_and_drop_launcher_id_;
+
+  // The application ID of the application which we drag and drop.
+  std::string drag_and_drop_app_id_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

@@ -25,6 +25,7 @@ class ASH_EXPORT LauncherButtonHost {
  public:
   enum Pointer {
     NONE,
+    DRAG_AND_DROP,
     MOUSE,
     TOUCH,
   };

@@ -17,6 +17,8 @@ class ViewModel;
 
 namespace app_list {
 
+class AppsGridView;
+class ApplicationDragAndDropHost;
 class AppListMainView;
 class AppListModel;
 class PaginationModel;
@@ -32,6 +34,11 @@ class ContentsView : public views::View {
   virtual ~ContentsView();
 
   void SetModel(AppListModel* model);
+
+  // If |drag_and_drop| is not NULL it will be called upon drag and drop
+  // operations outside the application list.
+  void SetDragAndDropHostOfCurrentAppList(
+      app_list::ApplicationDragAndDropHost* drag_and_drop_host);
 
   void ShowSearchResults(bool show);
 
@@ -64,6 +71,8 @@ class ContentsView : public views::View {
 
   ShowState show_state_;
   PaginationModel* pagination_model_;  // Owned by AppListController.
+
+  AppsGridView* apps_grid_view_;  // Owned by the view.
 
   scoped_ptr<views::ViewModel> view_model_;
   scoped_ptr<views::BoundsAnimator> bounds_animator_;

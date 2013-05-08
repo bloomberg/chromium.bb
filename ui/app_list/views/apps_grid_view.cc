@@ -6,8 +6,10 @@
 
 #include <algorithm>
 
+#include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/apps_grid_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
+#include "ui/app_list/views/app_list_drag_and_drop_host.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/page_switcher.h"
 #include "ui/app_list/views/pulsing_block_view.h"
@@ -108,6 +110,8 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
       selected_view_(NULL),
       drag_view_(NULL),
       drag_pointer_(NONE),
+      drag_and_drop_host_(NULL),
+      forward_events_to_drag_and_drop_host_(false),
       page_flip_target_(-1),
       page_flip_delay_in_ms_(kPageFlipDelayInMs),
       bounds_animator_(this) {
@@ -177,7 +181,7 @@ void AppsGridView::EnsureViewVisible(const views::View* view) {
     pagination_model_->SelectPage(index.page, false);
 }
 
-void AppsGridView::InitiateDrag(views::View* view,
+void AppsGridView::InitiateDrag(AppListItemView* view,
                                 Pointer pointer,
                                 const ui::LocatedEvent& event) {
   if (drag_view_ || pulsing_blocks_model_.view_size())
@@ -187,7 +191,7 @@ void AppsGridView::InitiateDrag(views::View* view,
   drag_start_ = event.location();
 }
 
-void AppsGridView::UpdateDrag(views::View* view,
+void AppsGridView::UpdateDrag(AppListItemView* view,
                               Pointer pointer,
                               const ui::LocatedEvent& event) {
   if (!dragging() && drag_view_ &&
@@ -200,6 +204,9 @@ void AppsGridView::UpdateDrag(views::View* view,
   if (drag_pointer_ != pointer)
     return;
 
+  // If a drag and drop host is provided, see if the drag operation needs to be
+  // forwarded.
+  DispatchDragEventToDragAndDropHost(event);
   ExtractDragLocation(event, &last_drag_point_);
 
   const Index last_drop_target = drop_target_;
@@ -218,7 +225,10 @@ void AppsGridView::UpdateDrag(views::View* view,
 }
 
 void AppsGridView::EndDrag(bool cancel) {
-  if (!cancel && dragging() && drag_view_) {
+  if (forward_events_to_drag_and_drop_host_) {
+    forward_events_to_drag_and_drop_host_ = false;
+    drag_and_drop_host_->EndDrag(cancel);
+  } else if (!cancel && dragging() && drag_view_) {
     CalculateDropTarget(last_drag_point_, true);
     if (IsValidIndex(drop_target_))
       MoveItemInModel(drag_view_, drop_target_);
@@ -237,6 +247,11 @@ void AppsGridView::EndDrag(bool cancel) {
 
 bool AppsGridView::IsDraggedView(const views::View* view) const {
   return drag_view_ == view;
+}
+
+void AppsGridView::SetDragAndDropHostOfCurrentAppList(
+    ApplicationDragAndDropHost* drag_and_drop_host) {
+  drag_and_drop_host_ = drag_and_drop_host;
 }
 
 void AppsGridView::Prerender(int page_index) {
@@ -656,6 +671,40 @@ void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
     drop_target_.slot = std::min(
         (view_model_.view_size() - 1) % tiles_per_page(),
         drop_target_.slot);
+  }
+}
+
+void AppsGridView::DispatchDragEventToDragAndDropHost(
+    const ui::LocatedEvent& event) {
+  if (!drag_view_ || !drag_and_drop_host_)
+    return;
+  if (bounds().Contains(last_drag_point_)) {
+    // The event was issued inside the app menu and we should get all events.
+    if (forward_events_to_drag_and_drop_host_) {
+      // The DnD host was previously called and needs to be informed that the
+      // session returns to the owner.
+      forward_events_to_drag_and_drop_host_ = false;
+      drag_and_drop_host_->EndDrag(true);
+    }
+  } else {
+    // The event happened outside our app menu and we might need to dispatch.
+    if (forward_events_to_drag_and_drop_host_) {
+      // Dispatch since we have already started.
+      if (!drag_and_drop_host_->Drag(event.root_location())) {
+        // The host is not active any longer and we cancel the operation.
+        forward_events_to_drag_and_drop_host_ = false;
+        drag_and_drop_host_->EndDrag(true);
+      }
+    } else {
+      if (drag_and_drop_host_->StartDrag(drag_view_->model()->app_id(),
+                                         event.root_location())) {
+        // From now on we forward the drag events.
+        forward_events_to_drag_and_drop_host_ = true;
+        // Any flip operations are stopped.
+        page_flip_timer_.Stop();
+        page_flip_target_ = -1;
+      }
+    }
   }
 }
 

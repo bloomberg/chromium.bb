@@ -139,6 +139,12 @@ aura::Window* AppListController::GetWindow() {
   return is_visible_ && view_ ? view_->GetWidget()->GetNativeWindow() : NULL;
 }
 
+void AppListController::SetDragAndDropHostOfCurrentAppList(
+    app_list::ApplicationDragAndDropHost* drag_and_drop_host) {
+  if (view_ && is_visible_)
+    view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListController, private:
 
