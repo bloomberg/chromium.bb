@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import random
+import time
 
 # Note: pyauto_functional must come before pyauto.
 import pyauto_functional
@@ -47,6 +48,9 @@ class WebrtcApprtcCallTest(webrtc_test_base.WebrtcTestBase):
     self.WaitForInfobarCount(1, tab_index=1)
 
     self.PerformActionOnInfobar('accept', infobar_index=0, tab_index=0)
+    # TODO(phoglund): workaround for
+    # https://code.google.com/p/webrtc/issues/detail?id=1742
+    time.sleep(1)
     self.PerformActionOnInfobar('accept', infobar_index=0, tab_index=1)
 
     self._WaitForCallEstablishment(tab_index=0)
