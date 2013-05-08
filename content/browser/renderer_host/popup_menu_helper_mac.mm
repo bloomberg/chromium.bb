@@ -18,6 +18,12 @@
 
 namespace content {
 
+namespace {
+
+bool g_allow_showing_popup_menus = true;
+
+}  // namespace
+
 PopupMenuHelper::PopupMenuHelper(RenderViewHost* render_view_host)
     : render_view_host_(static_cast<RenderViewHostImpl*>(render_view_host)) {
   notification_registrar_.Add(
@@ -35,6 +41,9 @@ void PopupMenuHelper::ShowPopupMenu(
     bool allow_multiple_selection) {
   // Only single selection list boxes show a popup on Mac.
   DCHECK(!allow_multiple_selection);
+
+  if (!g_allow_showing_popup_menus)
+    return;
 
   // Retain the Cocoa view for the duration of the pop-up so that it can't be
   // dealloced if my Destroy() method is called while the pop-up's up (which
@@ -81,6 +90,11 @@ void PopupMenuHelper::ShowPopupMenu(
   } else {
     render_view_host_->DidCancelPopupMenu();
   }
+}
+
+// static
+void PopupMenuHelper::DontShowPopupMenuForTesting() {
+  g_allow_showing_popup_menus = false;
 }
 
 RenderWidgetHostViewMac* PopupMenuHelper::GetRenderWidgetHostView() const {

@@ -69,6 +69,9 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor);
 // Disable system calls related to drag & drop.
 void DisableSystemDragDrop();
 
+// Don't show modal popup menus.
+void DisableModalPopupMenus();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_

@@ -110,6 +110,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
     SetAllowOSMesaImageTransportForTesting();
     DisableSystemDragDrop();
+    DisableModalPopupMenus();
     command_line.AppendSwitch(switches::kSkipGpuDataLoading);
     command_line.AppendSwitch(switches::kEnableExperimentalWebKitFeatures);
     command_line.AppendSwitch(switches::kEnableCssShaders);

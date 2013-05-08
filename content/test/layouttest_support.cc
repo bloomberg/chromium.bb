@@ -19,6 +19,10 @@
 #include "content/browser/web_contents/web_contents_drag_win.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "content/browser/renderer_host/popup_menu_helper_mac.h"
+#endif
+
 using WebKit::WebGamepads;
 using WebTestRunner::WebTestProxy;
 using WebTestRunner::WebTestProxyBase;
@@ -107,6 +111,12 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor) {
 void DisableSystemDragDrop() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   WebContentsDragWin::DisableDragDropForTesting();
+#endif
+}
+
+void DisableModalPopupMenus() {
+#if defined(OS_MACOSX)
+  PopupMenuHelper::DontShowPopupMenuForTesting();
 #endif
 }
 

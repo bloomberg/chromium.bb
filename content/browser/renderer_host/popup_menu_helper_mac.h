@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
@@ -35,6 +36,9 @@ class PopupMenuHelper : public NotificationObserver {
                      const std::vector<WebMenuItem>& items,
                      bool right_aligned,
                      bool allow_multiple_selection);
+
+  // Immediately return from ShowPopupMenu.
+  CONTENT_EXPORT static void DontShowPopupMenuForTesting();
 
  protected:
   virtual RenderWidgetHostViewMac* GetRenderWidgetHostView() const;
