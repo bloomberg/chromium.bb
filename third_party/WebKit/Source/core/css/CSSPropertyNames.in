@@ -6,7 +6,7 @@
 //
 // Microsoft extensions are documented here:
 // http://msdn.microsoft.com/workshop/author/css/reference/attributes.asp
-// 
+//
 
 // high-priority property names have to be listed first, to simplify the check
 // for applying them first.
@@ -26,9 +26,9 @@ text-rendering
 -webkit-font-variant-ligatures
 -webkit-locale
 -webkit-text-orientation
--epub-text-orientation = -webkit-text-orientation
+-epub-text-orientation alias_for=-webkit-text-orientation
 -webkit-writing-mode
--epub-writing-mode = -webkit-writing-mode
+-epub-writing-mode alias_for=-webkit-writing-mode
 zoom
 
 // line height needs to be right after the above high-priority properties
@@ -37,9 +37,7 @@ line-height
 // The remaining properties are listed in alphabetical order
 background
 background-attachment
-#if defined(ENABLE_CSS_COMPOSITING) && ENABLE_CSS_COMPOSITING
-background-blend-mode
-#endif
+background-blend-mode condition=CSS_COMPOSITING
 background-clip
 background-color
 background-image
@@ -55,9 +53,9 @@ border
 border-bottom
 border-bottom-color
 border-bottom-left-radius
--webkit-border-bottom-left-radius = border-bottom-left-radius
+-webkit-border-bottom-left-radius alias_for=border-bottom-left-radius
 border-bottom-right-radius
--webkit-border-bottom-right-radius = border-bottom-right-radius
+-webkit-border-bottom-right-radius alias_for=border-bottom-right-radius
 border-bottom-style
 border-bottom-width
 border-collapse
@@ -82,9 +80,9 @@ border-style
 border-top
 border-top-color
 border-top-left-radius
--webkit-border-top-left-radius = border-top-left-radius
+-webkit-border-top-left-radius alias_for=border-top-left-radius
 border-top-right-radius
--webkit-border-top-right-radius = border-top-right-radius
+-webkit-border-top-right-radius alias_for=border-top-right-radius
 border-top-style
 border-top-width
 border-width
@@ -92,9 +90,9 @@ bottom
 box-shadow
 box-sizing
 // -webkit-box-sizing worked in Safari 4 and earlier.
--webkit-box-sizing = box-sizing
+-webkit-box-sizing alias_for=box-sizing
 caption-side
--epub-caption-side = caption-side
+-epub-caption-side alias_for=caption-side
 clear
 clip
 -webkit-clip-path
@@ -122,13 +120,11 @@ max-height
 max-width
 min-height
 min-width
-#if defined(ENABLE_CSS_COMPOSITING) && ENABLE_CSS_COMPOSITING
-mix-blend-mode
-#endif
+mix-blend-mode condition=CSS_COMPOSITING
 opacity
 // Honor -webkit-opacity as a synonym for opacity. This was the only syntax that worked in Safari 1.1,
 // and may be in use on some websites and widgets.
--webkit-opacity = opacity
+-webkit-opacity alias_for=opacity
 orphans
 outline
 outline-color
@@ -174,7 +170,7 @@ text-overline-style
 text-overline-width
 text-shadow
 text-transform
--epub-text-transform = text-transform
+-epub-text-transform alias_for=text-transform
 text-underline
 text-underline-color
 text-underline-mode
@@ -195,7 +191,7 @@ white-space
 widows
 width
 word-break
--epub-word-break = word-break
+-epub-word-break alias_for=word-break
 word-spacing
 word-wrap
 z-index
@@ -298,7 +294,7 @@ z-index
 -webkit-hyphenate-limit-before
 -webkit-hyphenate-limit-lines
 -webkit-hyphens
--epub-hyphens = -webkit-hyphens
+-epub-hyphens alias_for=-webkit-hyphens
 -webkit-line-box-contain
 -webkit-line-align
 -webkit-line-break
@@ -357,22 +353,20 @@ z-index
 -webkit-rtl-ordering
 -webkit-ruby-position
 -webkit-text-combine
--epub-text-combine = -webkit-text-combine
-#if defined(ENABLE_CSS3_TEXT) && ENABLE_CSS3_TEXT
--webkit-text-decoration-line
--webkit-text-decoration-style
--webkit-text-decoration-color
--webkit-text-align-last
--webkit-text-underline-position
-#endif
+-epub-text-combine alias_for=-webkit-text-combine
+-webkit-text-decoration-line condition=CSS3_TEXT
+-webkit-text-decoration-style condition=CSS3_TEXT
+-webkit-text-decoration-color condition=CSS3_TEXT
+-webkit-text-align-last condition=CSS3_TEXT
+-webkit-text-underline-position condition=CSS3_TEXT
 -webkit-text-decorations-in-effect
 -webkit-text-emphasis
--epub-text-emphasis = -webkit-text-emphasis
+-epub-text-emphasis alias_for=-webkit-text-emphasis
 -webkit-text-emphasis-color
--epub-text-emphasis-color = -webkit-text-emphasis-color
+-epub-text-emphasis-color alias_for=-webkit-text-emphasis-color
 -webkit-text-emphasis-position
 -webkit-text-emphasis-style
--epub-text-emphasis-style = -webkit-text-emphasis-style
+-epub-text-emphasis-style alias_for=-webkit-text-emphasis-style
 -webkit-text-fill-color
 -webkit-text-security
 -webkit-text-stroke
@@ -405,14 +399,10 @@ z-index
 -webkit-wrap-flow
 -webkit-wrap-through
 -webkit-wrap
-#if defined(ENABLE_CSS_DEVICE_ADAPTATION) && ENABLE_CSS_DEVICE_ADAPTATION
-max-zoom
-min-zoom
-orientation
-user-zoom
-#endif
+max-zoom condition=CSS_DEVICE_ADAPTATION
+min-zoom condition=CSS_DEVICE_ADAPTATION
+orientation condition=CSS_DEVICE_ADAPTATION
+user-zoom condition=CSS_DEVICE_ADAPTATION
 -webkit-tap-highlight-color
 -webkit-app-region
-#if defined(ENABLE_ACCELERATED_OVERFLOW_SCROLLING) && ENABLE_ACCELERATED_OVERFLOW_SCROLLING
--webkit-overflow-scrolling
-#endif
+-webkit-overflow-scrolling condition=ACCELERATED_OVERFLOW_SCROLLING

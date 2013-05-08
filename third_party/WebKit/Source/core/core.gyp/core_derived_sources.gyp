@@ -186,9 +186,15 @@
         },
         {
           'action_name': 'CSSPropertyNames',
+          'variables': {
+            'in_files': [
+              '../css/CSSPropertyNames.in',
+            ],
+          },
           'inputs': [
-            '../css/makeprop.pl',
-            '../css/CSSPropertyNames.in',
+            '<@(scripts_for_in_files)',
+            '../scripts/make_css_property_names.py',
+            '<@(in_files)'
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSPropertyNames.cpp',
@@ -196,19 +202,20 @@
           ],
           'action': [
             'python',
-            'scripts/action_csspropertynames.py',
-            '<@(_outputs)',
-            '--',
+            '../scripts/make_css_property_names.py',
+            '<@(in_files)',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
             '--defines', '<(feature_defines)',
-            '--',
-            '<@(_inputs)',
           ],
           'conditions': [
             # TODO(maruel): Move it in its own project or generate it anyway?
             ['enable_svg!=0', {
-              'inputs': [
-                '../css/SVGCSSPropertyNames.in',
-              ],
+              'variables': {
+                'in_files': [
+                  '../css/SVGCSSPropertyNames.in',
+                ],
+              }
             }],
           ],
           'msvs_cygwin_shell': 1,
