@@ -9,7 +9,6 @@
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
 #include "base/string_util.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/plugin_host.h"
 #include "webkit/plugins/npapi/plugin_list.h"
