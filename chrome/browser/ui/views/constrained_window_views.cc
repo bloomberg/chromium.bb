@@ -654,6 +654,9 @@ views::Widget* CreateWebContentsModalDialogViews(
             dialog_host,
             dialog,
             kWebContentsModalDialogHostObserverViewsKey);
+#if defined(USE_AURA)
+    params.transparent = true;
+#endif
   } else {
     params.parent = parent;
   }
