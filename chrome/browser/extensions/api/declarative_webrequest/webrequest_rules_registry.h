@@ -128,7 +128,7 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
                            HostPermissionsChecker);
 
   typedef std::map<URLMatcherConditionSet::ID, WebRequestRule*> RuleTriggers;
-  typedef std::map<WebRequestRule::GlobalRuleId, linked_ptr<WebRequestRule> >
+  typedef std::map<WebRequestRule::RuleId, linked_ptr<WebRequestRule> >
       RulesMap;
   typedef std::set<URLMatcherConditionSet::ID> URLMatches;
   typedef std::set<const WebRequestRule*> RuleSet;
@@ -152,6 +152,16 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
                            const WebRequestActionSet* actions,
                            std::string* error);
 
+  // Helper for RemoveRulesImpl and RemoveAllRulesImpl. Call this before
+  // deleting |rule| from one of the maps in |webrequest_rules_|. It will erase
+  // the rule from |rule_triggers_| and |rules_with_untriggered_conditions_|,
+  // and add every of the rule's URLMatcherConditionSet to
+  // |remove_from_url_matcher|, so that the caller can remove them from the
+  // matcher later.
+  void CleanUpAfterRule(
+      const WebRequestRule* rule,
+      std::vector<URLMatcherConditionSet::ID>* remove_from_url_matcher);
+
   // This is a helper function to GetMatches. Rules triggered by |url_matches|
   // get added to |result| if one of their conditions is fulfilled.
   // |request_data| gets passed to IsFulfilled of the rules' condition sets.
@@ -168,7 +178,7 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   // separately.
   std::set<const WebRequestRule*> rules_with_untriggered_conditions_;
 
-  RulesMap webrequest_rules_;
+  std::map<WebRequestRule::ExtensionId, RulesMap> webrequest_rules_;
 
   URLMatcher url_matcher_;
 
