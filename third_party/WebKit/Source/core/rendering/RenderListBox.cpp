@@ -562,6 +562,9 @@ void RenderListBox::autoscroll(const IntPoint&)
     IntPoint pos = frame()->view()->windowToContents(frame()->eventHandler()->lastKnownMousePosition());
 
     int endIndex = scrollToward(pos);
+    if (selectElement()->isDisabledFormControl())
+        return;
+
     if (endIndex >= 0) {
         HTMLSelectElement* select = selectElement();
         m_inAutoscroll = true;
@@ -577,6 +580,9 @@ void RenderListBox::autoscroll(const IntPoint&)
 
 void RenderListBox::stopAutoscroll()
 {
+    if (selectElement()->isDisabledFormControl())
+        return;
+
     selectElement()->listBoxOnChange();
 }
 
