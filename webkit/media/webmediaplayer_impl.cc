@@ -151,8 +151,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
   CHECK(media_thread_.Start());
-  pipeline_.reset(new media::Pipeline(
-      media_thread_.message_loop_proxy(), media_log_));
+  pipeline_ = new media::Pipeline(
+      media_thread_.message_loop_proxy(), media_log_);
 
   // Let V8 know we started new thread if we did not do it yet.
   // Made separate task to avoid deletion of player currently being created.
@@ -1213,7 +1213,6 @@ void WebMediaPlayerImpl::Destroy() {
   media_thread_.Stop();
 
   // Release any final references now that everything has stopped.
-  pipeline_.reset();
   demuxer_.reset();
   data_source_.reset();
 }

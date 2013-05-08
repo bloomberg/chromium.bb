@@ -76,7 +76,7 @@ class PipelineIntegrationTestBase {
   bool hashing_enabled_;
   scoped_ptr<Demuxer> demuxer_;
   scoped_ptr<DataSource> data_source_;
-  scoped_ptr<Pipeline> pipeline_;
+  scoped_refptr<Pipeline> pipeline_;
   scoped_refptr<NullAudioSink> audio_sink_;
   bool ended_;
   PipelineStatus pipeline_status_;

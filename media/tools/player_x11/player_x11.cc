@@ -108,11 +108,11 @@ static void SaveStatusAndSignal(base::WaitableEvent* event,
 }
 
 // TODO(vrk): Re-enabled audio. (crbug.com/112159)
-void InitPipeline(media::Pipeline* pipeline,
-                  const scoped_refptr<base::MessageLoopProxy>& message_loop,
+void InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                   media::Demuxer* demuxer,
                   const PaintCB& paint_cb,
                   bool /* enable_audio */,
+                  scoped_refptr<media::Pipeline>* pipeline,
                   base::MessageLoop* paint_message_loop) {
   // Create our filter factories.
   scoped_ptr<media::FilterCollection> collection(
@@ -139,10 +139,12 @@ void InitPipeline(media::Pipeline* pipeline,
       media::SetDecryptorReadyCB()));
   collection->SetAudioRenderer(audio_renderer.Pass());
 
+  // Create the pipeline and start it.
   base::WaitableEvent event(true, false);
   media::PipelineStatus status;
 
-  pipeline->Start(
+  *pipeline = new media::Pipeline(message_loop, new media::MediaLog());
+  (*pipeline)->Start(
       collection.Pass(), base::Closure(), media::PipelineStatusCB(),
       base::Bind(&SaveStatusAndSignal, &event, &status),
       base::Bind(&OnBufferingState), base::Closure());
@@ -152,7 +154,7 @@ void InitPipeline(media::Pipeline* pipeline,
   CHECK_EQ(status, media::PIPELINE_OK) << "Pipeline initialization failed";
 
   // And start the playback.
-  pipeline->SetPlaybackRate(1.0f);
+  (*pipeline)->SetPlaybackRate(1.0f);
 }
 
 void TerminateHandler(int signal) {
@@ -217,7 +219,7 @@ void PeriodicalUpdate(
   message_loop->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PeriodicalUpdate,
-                 base::Unretained(pipeline),
+                 make_scoped_refptr(pipeline),
                  message_loop,
                  audio_only),
       base::TimeDelta::FromMilliseconds(10));
@@ -267,6 +269,7 @@ int main(int argc, char** argv) {
   base::MessageLoop message_loop;
   base::Thread media_thread("MediaThread");
   media_thread.Start();
+  scoped_refptr<media::Pipeline> pipeline;
 
   PaintCB paint_cb;
   if (command_line->HasSwitch("use-gl")) {
@@ -283,17 +286,15 @@ int main(int argc, char** argv) {
       media_thread.message_loop_proxy(), data_source.get(),
       base::Bind(&NeedKey)));
 
-  media::Pipeline pipeline(media_thread.message_loop_proxy(),
-                           new media::MediaLog());
-  InitPipeline(&pipeline, media_thread.message_loop_proxy(), demuxer.get(),
-               paint_cb, command_line->HasSwitch("audio"), &message_loop);
+  InitPipeline(media_thread.message_loop_proxy(), demuxer.get(),
+               paint_cb, command_line->HasSwitch("audio"), &pipeline,
+               &message_loop);
 
   // Main loop of the application.
   g_running = true;
 
   message_loop.PostTask(FROM_HERE, base::Bind(
-      &PeriodicalUpdate, base::Unretained(&pipeline), &message_loop,
-      !pipeline.HasVideo()));
+      &PeriodicalUpdate, pipeline, &message_loop, !pipeline->HasVideo()));
   message_loop.Run();
 
   // Cleanup tasks.

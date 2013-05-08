@@ -279,7 +279,7 @@ class WebMediaPlayerImpl
   // for DCHECKs so methods calls won't execute in the wrong thread.
   const scoped_refptr<base::MessageLoopProxy> main_loop_;
 
-  scoped_ptr<media::Pipeline> pipeline_;
+  scoped_refptr<media::Pipeline> pipeline_;
   base::Thread media_thread_;
 
   // The currently selected key system. Empty string means that no key system
