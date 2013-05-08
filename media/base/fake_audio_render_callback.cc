@@ -43,7 +43,7 @@ int FakeAudioRenderCallback::Render(AudioBus* audio_bus,
 
 double FakeAudioRenderCallback::ProvideInput(AudioBus* audio_bus,
                                              base::TimeDelta buffer_delay) {
-  Render(audio_bus, buffer_delay.InMilliseconds());
+  Render(audio_bus, buffer_delay.InMillisecondsF() + 0.5);
   return volume_;
 }
 

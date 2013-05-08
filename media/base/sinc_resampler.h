@@ -23,38 +23,35 @@ class MEDIA_EXPORT SincResampler {
     // TODO(dalecurtis): Test performance to see if we can jack this up to 64+.
     kKernelSize = 32,
 
-    // The number of destination frames generated per processing pass.  Affects
-    // how often and for how much SincResampler calls back for input.  Must be
-    // greater than kKernelSize.
-    kBlockSize = 512,
+    // Default request size.  Affects how often and for how much SincResampler
+    // calls back for input.  Must be greater than kKernelSize.
+    kDefaultRequestSize = 512,
 
     // The kernel offset count is used for interpolation and is the number of
     // sub-sample kernel shifts.  Can be adjusted for quality (higher is better)
     // at the expense of allocating more memory.
     kKernelOffsetCount = 32,
     kKernelStorageSize = kKernelSize * (kKernelOffsetCount + 1),
-
-    // The size (in samples) of the internal buffer used by the resampler.
-    kBufferSize = kBlockSize + kKernelSize,
-
-    // The maximum number of samples that may be requested from the callback
-    // ahead of the current position in the stream.
-    kMaximumLookAheadSize = kBufferSize
   };
 
   // Callback type for providing more data into the resampler.  Expects |frames|
   // of data to be rendered into |destination|; zero padded if not enough frames
   // are available to satisfy the request.
-  typedef base::Callback<void(float* destination, int frames)> ReadCB;
+  typedef base::Callback<void(int frames, float* destination)> ReadCB;
 
   // Constructs a SincResampler with the specified |read_cb|, which is used to
-  // acquire audio data for resampling.  |io_sample_rate_ratio| is the ratio of
-  // input / output sample rates.
-  SincResampler(double io_sample_rate_ratio, const ReadCB& read_cb);
+  // acquire audio data for resampling.  |io_sample_rate_ratio| is the ratio
+  // of input / output sample rates.  |request_frames| controls the size in
+  // frames of the buffer requested by each |read_cb| call.  The value must be
+  // greater than kKernelSize.  Specify kDefaultRequestSize if there are no
+  // request size constraints.
+  SincResampler(double io_sample_rate_ratio,
+                size_t request_frames,
+                const ReadCB& read_cb);
   virtual ~SincResampler();
 
   // Resample |frames| of data from |read_cb_| into |destination|.
-  void Resample(float* destination, int frames);
+  void Resample(int frames, float* destination);
 
   // The maximum size in frames that guarantees Resample() will only make a
   // single call to |read_cb_| for more data.
@@ -76,6 +73,7 @@ class MEDIA_EXPORT SincResampler {
   FRIEND_TEST_ALL_PREFIXES(SincResamplerTest, ConvolveBenchmark);
 
   void InitializeKernel();
+  void UpdateRegions(bool second_load);
 
   // Compute convolution of |k1| and |k2| over |input_ptr|, resultant sums are
   // linearly interpolated using |kernel_interpolation_factor|.  On x86, the
@@ -104,7 +102,16 @@ class MEDIA_EXPORT SincResampler {
   bool buffer_primed_;
 
   // Source of data for resampling.
-  ReadCB read_cb_;
+  const ReadCB read_cb_;
+
+  // The size (in samples) to request from each |read_cb_| execution.
+  const size_t request_frames_;
+
+  // The number of source frames processed per pass.
+  size_t block_size_;
+
+  // The size (in samples) of the internal buffer used by the resampler.
+  const size_t input_buffer_size_;
 
   // Contains kKernelOffsetCount kernels back-to-back, each of size kKernelSize.
   // The kernel offsets are sub-sample shifts of a windowed sinc shifted from
@@ -125,12 +132,11 @@ class MEDIA_EXPORT SincResampler {
 
   // Pointers to the various regions inside |input_buffer_|.  See the diagram at
   // the top of the .cc file for more information.
-  float* const r0_;
+  float* r0_;
   float* const r1_;
   float* const r2_;
-  float* const r3_;
-  float* const r4_;
-  float* const r5_;
+  float* r3_;
+  float* r4_;
 
   DISALLOW_COPY_AND_ASSIGN(SincResampler);
 };

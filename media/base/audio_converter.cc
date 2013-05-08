@@ -56,12 +56,14 @@ AudioConverter::AudioConverter(const AudioParameters& input_params,
   if (input_params.sample_rate() != output_params.sample_rate()) {
     DVLOG(1) << "Resampling from " << input_params.sample_rate() << " to "
              << output_params.sample_rate();
-    double io_sample_rate_ratio = input_params.sample_rate() /
+    const double io_sample_rate_ratio = input_params.sample_rate() /
         static_cast<double>(output_params.sample_rate());
+    const int request_size = disable_fifo ? SincResampler::kDefaultRequestSize :
+        input_params.frames_per_buffer();
     resampler_.reset(new MultiChannelResampler(
         downmix_early_ ? output_params.channels() :
             input_params.channels(),
-        io_sample_rate_ratio, base::Bind(
+        io_sample_rate_ratio, request_size, base::Bind(
             &AudioConverter::ProvideInput, base::Unretained(this))));
   }
 
@@ -72,14 +74,15 @@ AudioConverter::AudioConverter(const AudioParameters& input_params,
       base::Time::kMicrosecondsPerSecond /
       static_cast<double>(output_params.sample_rate()));
 
-  if (disable_fifo)
+  // The resampler can be configured to work with a specific request size, so a
+  // FIFO is not necessary when resampling.
+  if (disable_fifo || resampler_)
     return;
 
-  // Since the resampler / output device may want a different buffer size than
-  // the caller asked for, we need to use a FIFO to ensure that both sides
-  // read in chunk sizes they're configured for.
-  if (resampler_.get() ||
-      input_params.frames_per_buffer() != output_params.frames_per_buffer()) {
+  // Since the output device may want a different buffer size than the caller
+  // asked for, we need to use a FIFO to ensure that both sides read in chunk
+  // sizes they're configured for.
+  if (input_params.frames_per_buffer() != output_params.frames_per_buffer()) {
     DVLOG(1) << "Rebuffering from " << input_params.frames_per_buffer()
              << " to " << output_params.frames_per_buffer();
     audio_fifo_.reset(new AudioPullFifo(
@@ -141,7 +144,7 @@ void AudioConverter::ConvertWithDelay(const base::TimeDelta& initial_delay,
     SourceCallback(0, temp_dest);
   } else {
     if (resampler_)
-      resampler_->Resample(temp_dest, temp_dest->frames());
+      resampler_->Resample(temp_dest->frames(), temp_dest);
     else
       ProvideInput(0, temp_dest);
   }

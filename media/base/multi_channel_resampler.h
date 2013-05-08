@@ -27,13 +27,16 @@ class MEDIA_EXPORT MultiChannelResampler {
 
   // Constructs a MultiChannelResampler with the specified |read_cb|, which is
   // used to acquire audio data for resampling.  |io_sample_rate_ratio| is the
-  // ratio of input / output sample rates.
-  MultiChannelResampler(int channels, double io_sample_rate_ratio,
+  // ratio of input / output sample rates.  |request_frames| is the size in
+  // frames of the AudioBus to be filled by |read_cb|.
+  MultiChannelResampler(int channels,
+                        double io_sample_rate_ratio,
+                        size_t request_frames,
                         const ReadCB& read_cb);
   virtual ~MultiChannelResampler();
 
   // Resamples |frames| of data from |read_cb_| into AudioBus.
-  void Resample(AudioBus* audio_bus, int frames);
+  void Resample(int frames, AudioBus* audio_bus);
 
   // Flush all buffered data and reset internal indices.  Not thread safe, do
   // not call while Resample() is in progress.
@@ -47,7 +50,7 @@ class MEDIA_EXPORT MultiChannelResampler {
  private:
   // SincResampler::ReadCB implementation.  ProvideInput() will be called for
   // each channel (in channel order) as SincResampler needs more data.
-  void ProvideInput(int channel, float* destination, int frames);
+  void ProvideInput(int channel, int frames, float* destination);
 
   // Sanity check to ensure that ProvideInput() retrieves the same number of
   // frames for every channel.

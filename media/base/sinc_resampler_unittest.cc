@@ -33,18 +33,18 @@ static const char kConvolveIterations[] = "convolve-iterations";
 // Helper class to ensure ChunkedResample() functions properly.
 class MockSource {
  public:
-  MOCK_METHOD2(ProvideInput, void(float* destination, int frames));
+  MOCK_METHOD2(ProvideInput, void(int frames, float* destination));
 };
 
 ACTION(ClearBuffer) {
-  memset(arg0, 0, arg1 * sizeof(float));
+  memset(arg1, 0, arg0 * sizeof(float));
 }
 
 ACTION(FillBuffer) {
   // Value chosen arbitrarily such that SincResampler resamples it to something
   // easily representable on all platforms; e.g., using kSampleRateRatio this
   // becomes 1.81219.
-  memset(arg0, 64, arg1 * sizeof(float));
+  memset(arg1, 64, arg0 * sizeof(float));
 }
 
 // Test requesting multiples of ChunkSize() frames results in the proper number
@@ -55,7 +55,7 @@ TEST(SincResamplerTest, ChunkedResample) {
   // Choose a high ratio of input to output samples which will result in quick
   // exhaustion of SincResampler's internal buffers.
   SincResampler resampler(
-      kSampleRateRatio,
+      kSampleRateRatio, SincResampler::kDefaultRequestSize,
       base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
 
   static const int kChunks = 2;
@@ -65,27 +65,27 @@ TEST(SincResamplerTest, ChunkedResample) {
   // Verify requesting ChunkSize() frames causes a single callback.
   EXPECT_CALL(mock_source, ProvideInput(_, _))
       .Times(1).WillOnce(ClearBuffer());
-  resampler.Resample(resampled_destination.get(), resampler.ChunkSize());
+  resampler.Resample(resampler.ChunkSize(), resampled_destination.get());
 
   // Verify requesting kChunks * ChunkSize() frames causes kChunks callbacks.
   testing::Mock::VerifyAndClear(&mock_source);
   EXPECT_CALL(mock_source, ProvideInput(_, _))
       .Times(kChunks).WillRepeatedly(ClearBuffer());
-  resampler.Resample(resampled_destination.get(), max_chunk_size);
+  resampler.Resample(max_chunk_size, resampled_destination.get());
 }
 
 // Test flush resets the internal state properly.
 TEST(SincResamplerTest, Flush) {
   MockSource mock_source;
   SincResampler resampler(
-      kSampleRateRatio,
+      kSampleRateRatio, SincResampler::kDefaultRequestSize,
       base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
   scoped_ptr<float[]> resampled_destination(new float[resampler.ChunkSize()]);
 
   // Fill the resampler with junk data.
   EXPECT_CALL(mock_source, ProvideInput(_, _))
       .Times(1).WillOnce(FillBuffer());
-  resampler.Resample(resampled_destination.get(), resampler.ChunkSize() / 2);
+  resampler.Resample(resampler.ChunkSize() / 2, resampled_destination.get());
   ASSERT_NE(resampled_destination[0], 0);
 
   // Flush and request more data, which should all be zeros now.
@@ -93,7 +93,7 @@ TEST(SincResamplerTest, Flush) {
   testing::Mock::VerifyAndClear(&mock_source);
   EXPECT_CALL(mock_source, ProvideInput(_, _))
       .Times(1).WillOnce(ClearBuffer());
-  resampler.Resample(resampled_destination.get(), resampler.ChunkSize() / 2);
+  resampler.Resample(resampler.ChunkSize() / 2, resampled_destination.get());
   for (int i = 0; i < resampler.ChunkSize() / 2; ++i)
     ASSERT_FLOAT_EQ(resampled_destination[i], 0);
 }
@@ -102,7 +102,7 @@ TEST(SincResamplerTest, Flush) {
 TEST(SincResamplerTest, DISABLED_SetRatioBench) {
   MockSource mock_source;
   SincResampler resampler(
-      kSampleRateRatio,
+      kSampleRateRatio, SincResampler::kDefaultRequestSize,
       base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
 
   base::TimeTicks start = base::TimeTicks::HighResNow();
@@ -133,7 +133,7 @@ TEST(SincResamplerTest, Convolve) {
   // Initialize a dummy resampler.
   MockSource mock_source;
   SincResampler resampler(
-      kSampleRateRatio,
+      kSampleRateRatio, SincResampler::kDefaultRequestSize,
       base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
 
   // The optimized Convolve methods are slightly more precise than Convolve_C(),
@@ -168,7 +168,7 @@ TEST(SincResamplerTest, ConvolveBenchmark) {
   // Initialize a dummy resampler.
   MockSource mock_source;
   SincResampler resampler(
-      kSampleRateRatio,
+      kSampleRateRatio, SincResampler::kDefaultRequestSize,
       base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
 
   // Retrieve benchmark iterations from command line.
@@ -234,7 +234,8 @@ TEST(SincResamplerTest, ConvolveBenchmark) {
 // resampler for the specific sample rate conversion being used.
 class SinusoidalLinearChirpSource {
  public:
-  SinusoidalLinearChirpSource(int sample_rate, int samples,
+  SinusoidalLinearChirpSource(int sample_rate,
+                              int samples,
                               double max_frequency)
       : sample_rate_(sample_rate),
         total_samples_(samples),
@@ -247,7 +248,7 @@ class SinusoidalLinearChirpSource {
 
   virtual ~SinusoidalLinearChirpSource() {}
 
-  void ProvideInput(float* destination, int frames) {
+  void ProvideInput(int frames, float* destination) {
     for (int i = 0; i < frames; ++i, ++current_index_) {
       // Filter out frequencies higher than Nyquist.
       if (Frequency(current_index_) > 0.5 * sample_rate_) {
@@ -317,7 +318,7 @@ TEST_P(SincResamplerTest, Resample) {
 
   const double io_ratio = input_rate_ / static_cast<double>(output_rate_);
   SincResampler resampler(
-      io_ratio,
+      io_ratio, SincResampler::kDefaultRequestSize,
       base::Bind(&SinusoidalLinearChirpSource::ProvideInput,
                  base::Unretained(&resampler_source)));
 
@@ -339,12 +340,12 @@ TEST_P(SincResamplerTest, Resample) {
   scoped_ptr<float[]> pure_destination(new float[output_samples]);
 
   // Generate resampled signal.
-  resampler.Resample(resampled_destination.get(), output_samples);
+  resampler.Resample(output_samples, resampled_destination.get());
 
   // Generate pure signal.
   SinusoidalLinearChirpSource pure_source(
       output_rate_, output_samples, input_nyquist_freq);
-  pure_source.ProvideInput(pure_destination.get(), output_samples);
+  pure_source.ProvideInput(output_samples, pure_destination.get());
 
   // Range of the Nyquist frequency (0.5 * min(input rate, output_rate)) which
   // we refer to as low and high.

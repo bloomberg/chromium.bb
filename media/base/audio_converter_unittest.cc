@@ -234,6 +234,19 @@ TEST(AudioConverterTest, AudioDelay) {
             callback.last_audio_delay_milliseconds());
 }
 
+// InputCallback that zero's out the provided AudioBus.  Used for benchmarking.
+class NullInputProvider : public AudioConverter::InputCallback {
+ public:
+  NullInputProvider() {}
+  virtual ~NullInputProvider() {}
+
+  virtual double ProvideInput(AudioBus* audio_bus,
+                              base::TimeDelta buffer_delay) OVERRIDE {
+    audio_bus->Zero();
+    return 1;
+  }
+};
+
 // Benchmark for audio conversion.  Original benchmarks were run with
 // --audio-converter-iterations=50000.
 TEST(AudioConverterTest, ConvertBenchmark) {
@@ -244,47 +257,82 @@ TEST(AudioConverterTest, ConvertBenchmark) {
   if (benchmark_iterations < kDefaultIterations)
     benchmark_iterations = kDefaultIterations;
 
-  // Create input and output parameters to convert between the two most common
-  // sets of parameters (as indicated via UMA data).
-  AudioParameters input_params(
-      AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO, 48000, 16, 2048);
-  AudioParameters output_params(
-      AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO, 44100, 16, 440);
-  scoped_ptr<AudioConverter> converter(
-      new AudioConverter(input_params, output_params, false));
-
-  scoped_ptr<AudioBus> output_bus = AudioBus::Create(output_params);
-  FakeAudioRenderCallback fake_input1(0.2);
-  FakeAudioRenderCallback fake_input2(0.4);
-  FakeAudioRenderCallback fake_input3(0.6);
-  converter->AddInput(&fake_input1);
-  converter->AddInput(&fake_input2);
-  converter->AddInput(&fake_input3);
+  NullInputProvider fake_input1;
+  NullInputProvider fake_input2;
+  NullInputProvider fake_input3;
 
   printf("Benchmarking %d iterations:\n", benchmark_iterations);
 
-  // Benchmark Convert() w/ FIFO.
-  base::TimeTicks start = base::TimeTicks::HighResNow();
-  for (int i = 0; i < benchmark_iterations; ++i) {
-    converter->Convert(output_bus.get());
-  }
-  double total_time_ms =
-      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf("Convert() w/ FIFO took %.2fms.\n", total_time_ms);
+  {
+    // Create input and output parameters to convert between the two most common
+    // sets of parameters (as indicated via UMA data).
+    AudioParameters input_params(
+        AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
+        48000, 16, 2048);
+    AudioParameters output_params(
+        AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO,
+        44100, 16, 440);
+    scoped_ptr<AudioBus> output_bus = AudioBus::Create(output_params);
 
-  converter.reset(new AudioConverter(input_params, output_params, true));
-  converter->AddInput(&fake_input1);
-  converter->AddInput(&fake_input2);
-  converter->AddInput(&fake_input3);
+    scoped_ptr<AudioConverter> converter(
+        new AudioConverter(input_params, output_params, true));
+    converter->AddInput(&fake_input1);
+    converter->AddInput(&fake_input2);
+    converter->AddInput(&fake_input3);
 
-  // Benchmark Convert() w/o FIFO.
-  start = base::TimeTicks::HighResNow();
-  for (int i = 0; i < benchmark_iterations; ++i) {
-    converter->Convert(output_bus.get());
+    // Benchmark Convert() w/ FIFO.
+    base::TimeTicks start = base::TimeTicks::HighResNow();
+    for (int i = 0; i < benchmark_iterations; ++i) {
+      converter->Convert(output_bus.get());
+    }
+    double total_time_ms =
+        (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+    printf("Convert() w/ Resampling took %.2fms.\n", total_time_ms);
   }
-  total_time_ms =
-      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf("Convert() w/o FIFO took %.2fms.\n", total_time_ms);
+
+  // Create input and output parameters to convert between common buffer sizes
+  // without any resampling for the FIFO vs no FIFO benchmarks.
+  AudioParameters input_params(
+      AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO,
+      44100, 16, 2048);
+  AudioParameters output_params(
+      AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO,
+      44100, 16, 440);
+  scoped_ptr<AudioBus> output_bus = AudioBus::Create(output_params);
+
+  {
+    scoped_ptr<AudioConverter> converter(
+        new AudioConverter(input_params, output_params, false));
+    converter->AddInput(&fake_input1);
+    converter->AddInput(&fake_input2);
+    converter->AddInput(&fake_input3);
+
+    // Benchmark Convert() w/ FIFO.
+    base::TimeTicks start = base::TimeTicks::HighResNow();
+    for (int i = 0; i < benchmark_iterations; ++i) {
+      converter->Convert(output_bus.get());
+    }
+    double total_time_ms =
+        (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+    printf("Convert() w/ FIFO took %.2fms.\n", total_time_ms);
+  }
+
+  {
+    scoped_ptr<AudioConverter> converter(
+        new AudioConverter(input_params, output_params, true));
+    converter->AddInput(&fake_input1);
+    converter->AddInput(&fake_input2);
+    converter->AddInput(&fake_input3);
+
+    // Benchmark Convert() w/o FIFO.
+    base::TimeTicks start = base::TimeTicks::HighResNow();
+    for (int i = 0; i < benchmark_iterations; ++i) {
+      converter->Convert(output_bus.get());
+    }
+    double total_time_ms =
+        (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+    printf("Convert() w/o FIFO took %.2fms.\n", total_time_ms);
+  }
 }
 
 TEST_P(AudioConverterTest, NoInputs) {
