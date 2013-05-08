@@ -102,7 +102,8 @@
         'chrome',
       ],
       'dependencies': [
-        '<@(chromium_dependencies)',
+        '<@(chromium_browser_dependencies)',
+        '<@(chromium_child_dependencies)',
         'chrome_resources.gyp:packed_resources',
         'chrome_resources.gyp:packed_extra_resources',
       ],

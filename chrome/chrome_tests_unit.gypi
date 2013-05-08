@@ -413,7 +413,8 @@
         # dependencies block below, rather than here.
         # Unit tests should only depend on:
         # 1) everything that the chrome binaries depend on:
-        '<@(chromium_dependencies)',
+        '<@(chromium_browser_dependencies)',
+        '<@(chromium_child_dependencies)',
         # 2) test-specific support libraries:
         '../base/base.gyp:test_support_base',
         '../media/media.gyp:media_test_support',
@@ -2394,7 +2395,8 @@
       'dependencies': [
         # unit tests should only depend on
         # 1) everything that the chrome binaries depend on:
-        '<@(chromium_dependencies)',
+        '<@(chromium_browser_dependencies)',
+        '<@(chromium_child_dependencies)',
         # 2) test-specific support libraries:
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
