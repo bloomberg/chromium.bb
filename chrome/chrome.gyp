@@ -10,14 +10,9 @@
     # the link of the actual chrome (or chromium) executable on
     # Linux or Mac, and into chrome.dll on Windows.
     # NOTE: Most new includes should go in the OS!="ios" condition below.
-    'chromium_browser_dependencies': [
+    'chromium_dependencies': [
       'common',
       'browser',
-      '../content/content.gyp:content_app',
-      '../sync/sync.gyp:sync',
-    ],
-    'chromium_child_dependencies': [
-      'common',
       '../content/content.gyp:content_app',
       '../sync/sync.gyp:sync',
     ],
@@ -29,12 +24,7 @@
     'apply_locales_cmd': ['python', '<(DEPTH)/build/apply_locales.py'],
     'conditions': [
       ['OS!="ios"', {
-        'chromium_browser_dependencies': [
-          'debugger',
-          '../content/content.gyp:content_ppapi_plugin',
-          '../printing/printing.gyp:printing',
-        ],
-        'chromium_child_dependencies': [
+        'chromium_dependencies': [
           'debugger',
           'plugin',
           'renderer',
@@ -56,7 +46,7 @@
             'app/resources/locale_settings_win.grd',
       },],
       ['OS!="android" and OS!="ios"', {
-        'chromium_browser_dependencies': [
+        'chromium_dependencies': [
           # Android doesn't use the service process (only needed for print).
           'service',
         ],

@@ -64,7 +64,7 @@
             'content_common',
           ],
           'conditions': [
-            ['OS != "ios" and chrome_split_dll != 1', {
+            ['OS != "ios"', {
               'dependencies': [
                 'content_gpu',
                 'content_plugin',
@@ -99,15 +99,10 @@
             'content_resources.gyp:content_resources',
           ],
           'conditions': [
-            ['OS != "ios" and chrome_split_dll != 1', {
+            ['OS != "ios"', {
               'dependencies': [
                 'content_gpu',
                 'content_renderer',
-              ],
-            }],
-            ['chrome_split_dll', {
-              'dependencies': [
-                'content_gpu',
               ],
             }],
           ],

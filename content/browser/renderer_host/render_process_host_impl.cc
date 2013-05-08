@@ -496,8 +496,6 @@ bool RenderProcessHostImpl::Init() {
 
   CreateMessageFilters();
 
-  // Single-process mode not supported in split-dll mode.
-#if !defined(CHROME_SPLIT_DLL)
   if (run_renderer_in_process()) {
     // Crank up a thread and run the initialization there.  With the way that
     // messages flow between the browser and renderer, this thread is required
@@ -519,9 +517,7 @@ bool RenderProcessHostImpl::Init() {
     in_process_renderer_->StartWithOptions(options);
 
     OnProcessLaunched();  // Fake a callback that the process is ready.
-  } else
-#endif  // !CHROME_SPLIT_DLL
-  {
+  } else {
     // Build command line for renderer.  We call AppendRendererCommandLine()
     // first so the process type argument will appear first.
     CommandLine* cmd_line = new CommandLine(renderer_path);
