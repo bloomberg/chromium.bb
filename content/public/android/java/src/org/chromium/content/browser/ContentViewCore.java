@@ -119,7 +119,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * implementing container view.
      */
     @SuppressWarnings("javadoc")
-    public static interface InternalAccessDelegate {
+    public interface InternalAccessDelegate {
         /**
          * @see View#drawChild(Canvas, View, long)
          */
@@ -170,7 +170,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * An interface that allows the embedder to be notified when the pinch gesture starts and
      * stops.
      */
-    public static interface PinchGestureStateListener {
+    public interface PinchGestureStateListener {
         /**
          * Called when the pinch gesture starts.
          */
@@ -179,6 +179,24 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
          * Called when the pinch gesture ends.
          */
         void onPinchGestureEnd();
+    }
+
+    /**
+     * An interface for controlling visibility and state of embedder-provided zoom controls.
+     */
+    public interface ZoomControlsDelegate {
+        /**
+         * Called when it's reasonable to show zoom controls.
+         */
+        void invokeZoomPicker();
+        /**
+         * Called when zoom controls need to be hidden (e.g. when the view hides).
+         */
+        void dismissZoomPicker();
+        /**
+         * Called when page scale has been changed, so the controls can update their state.
+         */
+        void updateZoomControls();
     }
 
     private VSyncManager.Provider mVSyncProvider;
@@ -276,6 +294,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private ContentViewGestureHandler mContentViewGestureHandler;
     private PinchGestureStateListener mPinchGestureStateListener;
     private ZoomManager mZoomManager;
+    private ZoomControlsDelegate mZoomControlsDelegate;
 
     private PopupZoomer mPopupZoomer;
 
@@ -655,8 +674,15 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         }
 
         mZoomManager = new ZoomManager(mContext, this);
-        mZoomManager.updateMultiTouchSupport();
         mContentViewGestureHandler = new ContentViewGestureHandler(mContext, this, mZoomManager);
+        mZoomControlsDelegate = new ZoomControlsDelegate() {
+            @Override
+            public void invokeZoomPicker() {}
+            @Override
+            public void dismissZoomPicker() {}
+            @Override
+            public void updateZoomControls() {}
+        };
 
         mRenderCoordinates.reset();
 
@@ -1367,9 +1393,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         }
         setAccessibilityState(false);
         hidePopupDialog();
-        if (mContentSettings != null && mContentSettings.supportZoom()) {
-            mZoomManager.dismissZoomPicker();
-        }
+        mZoomControlsDelegate.dismissZoomPicker();
     }
 
     /**
@@ -1377,9 +1401,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      */
     public void onVisibilityChanged(View changedView, int visibility) {
       if (visibility != View.VISIBLE) {
-          if (mContentSettings.supportZoom()) {
-              mZoomManager.dismissZoomPicker();
-          }
+          mZoomControlsDelegate.dismissZoomPicker();
       }
     }
 
@@ -1781,12 +1803,12 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         }
     }
 
-    void updateMultiTouchZoomSupport() {
-        mZoomManager.updateMultiTouchSupport();
+    public void setZoomControlsDelegate(ZoomControlsDelegate zoomControlsDelegate) {
+        mZoomControlsDelegate = zoomControlsDelegate;
     }
 
-    public boolean isMultiTouchZoomSupported() {
-        return mZoomManager.isMultiTouchZoomSupported();
+    public void updateMultiTouchZoomSupport(boolean supportsMultiTouchZoom) {
+        mZoomManager.updateMultiTouchSupport(supportsMultiTouchZoom);
     }
 
     public void selectPopupMenuItems(int[] indices) {
@@ -2160,7 +2182,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 contentOffsetYPix);
 
         if (needTemporarilyHideHandles) temporarilyHideTextHandles();
-        if (needUpdateZoomControls) mZoomManager.updateZoomControls();
+        if (needUpdateZoomControls) mZoomControlsDelegate.updateZoomControls();
         if (contentOffsetChanged) updateHandleScreenPositions();
 
         // Update offsets for fullscreen.
@@ -2445,15 +2467,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      */
     @Override
     public void invokeZoomPicker() {
-        if (mContentSettings != null && mContentSettings.supportZoom()) {
-            mZoomManager.invokeZoomPicker();
-        }
-    }
-
-    // Unlike legacy WebView getZoomControls which returns external zoom controls,
-    // this method returns built-in zoom controls. This method is used in tests.
-    public View getZoomControlsForTest() {
-        return mZoomManager.getZoomControlsViewForTest();
+        mZoomControlsDelegate.invokeZoomPicker();
     }
 
     /**

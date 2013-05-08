@@ -115,6 +115,7 @@ public class AwContents {
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private InternalAccessDelegate mInternalAccessAdapter;
     private final AwLayoutSizer mLayoutSizer;
+    private AwZoomControls mZoomControls;
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
     private boolean mIsPaused;
@@ -328,12 +329,15 @@ public class AwContents {
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
 
         int nativeWebContents = nativeGetWebContents(mNativeAwContents);
-        mContentViewCore.initialize(containerView, internalAccessAdapter, nativeWebContents, null);
+        mContentViewCore.initialize(
+                containerView, internalAccessAdapter, nativeWebContents, null);
         mContentViewCore.setContentViewClient(mContentsClient.getContentViewClient());
+        mZoomControls = new AwZoomControls(this);
+        mContentViewCore.setZoomControlsDelegate(mZoomControls);
         mContentsClient.installWebContentsObserver(mContentViewCore);
 
         mSettings = new AwSettings(mContentViewCore.getContext(), nativeWebContents,
-                isAccessFromFileURLsGrantedByDefault);
+                mContentViewCore, isAccessFromFileURLsGrantedByDefault);
         setIoThreadClient(new IoThreadClientImpl());
         setInterceptNavigationDelegate(new InterceptNavigationDelegateImpl());
 
@@ -573,10 +577,8 @@ public class AwContents {
                 ContentViewCore.PERSONALITY_VIEW);
         newCore.initialize(mContainerView, mInternalAccessAdapter, newWebContentsPtr, null);
         newCore.setContentViewClient(mContentsClient.getContentViewClient());
+        newCore.setZoomControlsDelegate(mZoomControls);
         mContentsClient.installWebContentsObserver(newCore);
-
-        ContentSettings oldSettings = mContentViewCore.getContentSettings();
-        newCore.getContentSettings().initFrom(oldSettings);
 
         // Now swap the Java side reference.
         mContentViewCore.destroy();
@@ -608,6 +610,14 @@ public class AwContents {
         if (!mContainerView.isInTouchMode() && mSettings.shouldFocusFirstNode()) {
             nativeFocusFirstNode(mNativeAwContents);
         }
+    }
+
+    public boolean isMultiTouchZoomSupported() {
+        return mSettings.supportsMultiTouchZoom();
+    }
+
+    public View getZoomControlsForTest() {
+        return mZoomControls.getZoomControlsViewForTest();
     }
 
     //--------------------------------------------------------------------------------------------

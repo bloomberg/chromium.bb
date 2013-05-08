@@ -17,6 +17,7 @@ import android.webkit.WebView;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.browser.ContentViewCore;
 
 /**
  * Stores Android WebView specific settings that does not need to be synced to WebKit.
@@ -89,6 +90,9 @@ public class AwSettings {
     private int mCacheMode = WebSettings.LOAD_DEFAULT;
     private boolean mShouldFocusFirstNode = true;
     private boolean mGeolocationEnabled = true;
+    private boolean mSupportZoom = true;
+    private boolean mBuiltInZoomControls = false;
+    private boolean mDisplayZoomControls = true;
     static class LazyDefaultUserAgent{
         // Lazy Holder pattern
         private static final String sInstance = nativeGetDefaultUserAgent();
@@ -103,6 +107,8 @@ public class AwSettings {
 
     // The native side of this object.
     private int mNativeAwSettings = 0;
+
+    private ContentViewCore mContentViewCore;
 
     // A flag to avoid sending superfluous synchronization messages.
     private boolean mIsUpdateWebkitPrefsMessagePending = false;
@@ -159,7 +165,9 @@ public class AwSettings {
         }
     }
 
-    public AwSettings(Context context, int nativeWebContents,
+    public AwSettings(Context context,
+            int nativeWebContents,
+            ContentViewCore contentViewCore,
             boolean isAccessFromFileURLsGrantedByDefault) {
         ThreadUtils.assertOnUiThread();
         mContext = context;
@@ -169,6 +177,8 @@ public class AwSettings {
                 Process.myUid()) != PackageManager.PERMISSION_GRANTED;
         mNativeAwSettings = nativeInit(nativeWebContents);
         assert mNativeAwSettings != 0;
+        mContentViewCore = contentViewCore;
+        mContentViewCore.updateMultiTouchZoomSupport(supportsMultiTouchZoomLocked());
 
         if (isAccessFromFileURLsGrantedByDefault) {
             mAllowUniversalAccessFromFileURLs = true;
@@ -1056,6 +1066,91 @@ public class AwSettings {
     public String getDefaultVideoPosterURL() {
         synchronized (mAwSettingsLock) {
             return mDefaultVideoPosterURL;
+        }
+    }
+
+    private void updateMultiTouchZoomSupport(final boolean supportsMultiTouchZoom) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mContentViewCore.updateMultiTouchZoomSupport(supportsMultiTouchZoom);
+            }
+        });
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#setSupportZoom}.
+     */
+    public void setSupportZoom(boolean support) {
+        synchronized (mAwSettingsLock) {
+            if (mSupportZoom != support) {
+                mSupportZoom = support;
+                updateMultiTouchZoomSupport(supportsMultiTouchZoomLocked());
+            }
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#supportZoom}.
+     */
+    public boolean supportZoom() {
+        synchronized (mAwSettingsLock) {
+            return mSupportZoom;
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#setBuiltInZoomControls}.
+     */
+    public void setBuiltInZoomControls(boolean enabled) {
+        synchronized (mAwSettingsLock) {
+            if (mBuiltInZoomControls != enabled) {
+                mBuiltInZoomControls = enabled;
+                updateMultiTouchZoomSupport(supportsMultiTouchZoomLocked());
+            }
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#getBuiltInZoomControls}.
+     */
+    public boolean getBuiltInZoomControls() {
+        synchronized (mAwSettingsLock) {
+            return mBuiltInZoomControls;
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#setDisplayZoomControls}.
+     */
+    public void setDisplayZoomControls(boolean enabled) {
+        synchronized (mAwSettingsLock) {
+            mDisplayZoomControls = enabled;
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#getDisplayZoomControls}.
+     */
+    public boolean getDisplayZoomControls() {
+        synchronized (mAwSettingsLock) {
+            return mDisplayZoomControls;
+        }
+    }
+
+    private boolean supportsMultiTouchZoomLocked() {
+        return mSupportZoom && mBuiltInZoomControls;
+    }
+
+    boolean supportsMultiTouchZoom() {
+        synchronized (mAwSettingsLock) {
+            return supportsMultiTouchZoomLocked();
+        }
+    }
+
+    boolean shouldDisplayZoomControls() {
+        synchronized (mAwSettingsLock) {
+            return supportsMultiTouchZoomLocked() && mDisplayZoomControls;
         }
     }
 

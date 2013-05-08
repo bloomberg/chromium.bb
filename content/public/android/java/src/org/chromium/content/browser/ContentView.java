@@ -635,14 +635,6 @@ public class ContentView extends FrameLayout
         mContentViewCore.onVisibilityChanged(changedView, visibility);
     }
 
-    void updateMultiTouchZoomSupport() {
-        mContentViewCore.updateMultiTouchZoomSupport();
-    }
-
-    public boolean isMultiTouchZoomSupported() {
-        return mContentViewCore.isMultiTouchZoomSupported();
-    }
-
     /**
      * Register the delegate to be used when content can not be handled by
      * the rendering engine, and should be downloaded instead. This will replace
@@ -740,17 +732,6 @@ public class ContentView extends FrameLayout
     // to what chrome calls the 'page scale factor'.
     public boolean zoomReset() {
         return mContentViewCore.zoomReset();
-    }
-
-    // Invokes the graphical zoom picker widget for this ContentView.
-    public void invokeZoomPicker() {
-        mContentViewCore.invokeZoomPicker();
-    }
-
-    // Unlike legacy WebView getZoomControls which returns external zoom controls,
-    // this method returns built-in zoom controls. This method is used in tests.
-    public View getZoomControlsForTest() {
-        return mContentViewCore.getZoomControlsForTest();
     }
 
     /**
