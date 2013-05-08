@@ -52,12 +52,6 @@ MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
     fake_old_bluetooth_manager_client_(new FakeOldBluetoothManagerClient),
     fake_old_bluetooth_adapter_client_(new FakeOldBluetoothAdapterClient),
     fake_old_bluetooth_device_client_(new FakeOldBluetoothDeviceClient),
-    mock_ibus_client_(new MockIBusClient),
-    mock_ibus_config_client_(new MockIBusConfigClient),
-    mock_ibus_input_context_client_(new MockIBusInputContextClient),
-    mock_ibus_engine_service_(new MockIBusEngineService),
-    mock_ibus_engine_factory_service_(new MockIBusEngineFactoryService),
-    mock_ibus_panel_service_(new MockIBusPanelService),
     ibus_bus_(NULL) {
   power_policy_controller_.reset(
       new PowerPolicyController(this, fake_power_manager_client_.get()));
@@ -85,6 +79,12 @@ void MockDBusThreadManagerWithoutGMock::InitIBusBus(
     const base::Closure& closure) {
   // Non-null bus address is used to ensure the connection to ibus-daemon.
   ibus_bus_ = reinterpret_cast<dbus::Bus*>(0xdeadbeef);
+  mock_ibus_client_.reset(new MockIBusClient);
+  mock_ibus_config_client_.reset(new MockIBusConfigClient);
+  mock_ibus_input_context_client_.reset(new MockIBusInputContextClient);
+  mock_ibus_engine_service_.reset(new MockIBusEngineService);
+  mock_ibus_engine_factory_service_.reset(new MockIBusEngineFactoryService);
+  mock_ibus_panel_service_.reset(new MockIBusPanelService);
 }
 
 dbus::Bus* MockDBusThreadManagerWithoutGMock::GetSystemBus() {
@@ -181,7 +181,7 @@ ShillIPConfigClient*
 
 ShillManagerClient*
     MockDBusThreadManagerWithoutGMock::GetShillManagerClient() {
-  return fake_shill_manager_client_.get();;
+  return fake_shill_manager_client_.get();
 }
 
 ShillProfileClient*
