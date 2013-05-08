@@ -219,10 +219,11 @@ class SymbolDataSources(object):
   very big.  So, the 'dmprof' profiler is designed to use 'SymbolMappingCache'
   which caches actually used symbols.
   """
-  def __init__(self, prefix):
+  def __init__(self, prefix, fake_directories=None):
     self._prefix = prefix
     self._prepared_symbol_data_sources_path = None
     self._loaded_symbol_data_sources = None
+    self._fake_directories = fake_directories or {}
 
   def prepare(self):
     """Prepares symbol data sources by extracting mapping from a binary.
@@ -238,6 +239,7 @@ class SymbolDataSources(object):
         prepare_symbol_info.prepare_symbol_info(
             self._prefix + '.maps',
             output_dir_path=self._prefix + '.symmap',
+            fake_directories=self._fake_directories,
             use_tempdir=True,
             use_source_file_name=True))
     if self._prepared_symbol_data_sources_path:
@@ -1024,9 +1026,10 @@ class Command(object):
     self._parser = optparse.OptionParser(usage)
 
   @staticmethod
-  def load_basic_files(dump_path, multiple, no_dump=False):
+  def load_basic_files(
+      dump_path, multiple, no_dump=False, fake_directories=None):
     prefix = Command._find_prefix(dump_path)
-    symbol_data_sources = SymbolDataSources(prefix)
+    symbol_data_sources = SymbolDataSources(prefix, fake_directories or {})
     symbol_data_sources.prepare()
     bucket_set = BucketSet()
     bucket_set.load(prefix)
@@ -1173,11 +1176,21 @@ class PolicyCommands(Command):
         'Usage: %%prog %s [-p POLICY] <first-dump>' % command)
     self._parser.add_option('-p', '--policy', type='string', dest='policy',
                             help='profile with POLICY', metavar='POLICY')
+    self._parser.add_option('--fake-directories', dest='fake_directories',
+                            metavar='/path/on/target@/path/on/host[:...]',
+                            help='Read files in /path/on/host/ instead of '
+                                 'files in /path/on/target/.')
 
   def _set_up(self, sys_argv):
     options, args = self._parse_args(sys_argv, 1)
     dump_path = args[1]
-    (bucket_set, dumps) = Command.load_basic_files(dump_path, True)
+    fake_directories_dict = {}
+    if options.fake_directories:
+      for fake_directory_pair in options.fake_directories.split(':'):
+        target_path, host_path = fake_directory_pair.split('@', 1)
+        fake_directories_dict[target_path] = host_path
+    (bucket_set, dumps) = Command.load_basic_files(
+        dump_path, True, fake_directories=fake_directories_dict)
 
     policy_set = PolicySet.load(Command._parse_policy_list(options.policy))
     return policy_set, dumps, bucket_set
