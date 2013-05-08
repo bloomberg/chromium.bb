@@ -3061,7 +3061,7 @@
               '-mfpmath=sse',
             ],
           }],
-          ['clang==1 and OS!="android"', {
+          ['clang==1 and (OS!="android" and chromeos!=1)', {
             # Turn on C++11.
             'cflags': [
               # This warns on using ints as initializers for floats in
@@ -3082,7 +3082,7 @@
               '-std=gnu++11',
             ],
           }],
-          ['clang==1 and OS=="android"', {
+          ['clang==1 and (OS=="android" or chromeos==1)', {
             # Android uses gcc4.4, and clang isn't compatible with gcc4.4's
             # libstdc++ in C++11 mode. So no C++11 mode for Android yet.
             # Doesn't work with asan for some reason either: crbug.com/233464
