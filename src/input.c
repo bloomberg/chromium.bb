@@ -290,9 +290,15 @@ static const struct weston_keyboard_grab_interface
 	default_grab_modifiers,
 };
 
-WL_EXPORT void
-weston_pointer_init(struct weston_pointer *pointer)
+WL_EXPORT struct weston_pointer *
+weston_pointer_create(void)
 {
+	struct weston_pointer *pointer;
+
+	pointer = malloc(sizeof *pointer);
+	if (pointer == NULL)
+		return NULL;
+
 	memset(pointer, 0, sizeof *pointer);
 	wl_list_init(&pointer->resource_list);
 	pointer->focus_listener.notify = lose_pointer_focus;
@@ -304,19 +310,28 @@ weston_pointer_init(struct weston_pointer *pointer)
 	/* FIXME: Pick better co-ords. */
 	pointer->x = wl_fixed_from_int(100);
 	pointer->y = wl_fixed_from_int(100);
+
+	return pointer;
 }
 
 WL_EXPORT void
-weston_pointer_release(struct weston_pointer *pointer)
+weston_pointer_destroy(struct weston_pointer *pointer)
 {
 	/* XXX: What about pointer->resource_list? */
 	if (pointer->focus_resource)
 		wl_list_remove(&pointer->focus_listener.link);
+	free(pointer);
 }
 
-WL_EXPORT void
-weston_keyboard_init(struct weston_keyboard *keyboard)
+WL_EXPORT struct weston_keyboard *
+weston_keyboard_create(void)
 {
+	struct weston_keyboard *keyboard;
+
+	keyboard = malloc(sizeof *keyboard);
+	if (keyboard == NULL)
+	    return NULL;
+
 	memset(keyboard, 0, sizeof *keyboard);
 	wl_list_init(&keyboard->resource_list);
 	wl_array_init(&keyboard->keys);
@@ -325,20 +340,29 @@ weston_keyboard_init(struct weston_keyboard *keyboard)
 	keyboard->default_grab.keyboard = keyboard;
 	keyboard->grab = &keyboard->default_grab;
 	wl_signal_init(&keyboard->focus_signal);
+
+	return keyboard;
 }
 
 WL_EXPORT void
-weston_keyboard_release(struct weston_keyboard *keyboard)
+weston_keyboard_destroy(struct weston_keyboard *keyboard)
 {
 	/* XXX: What about keyboard->resource_list? */
 	if (keyboard->focus_resource)
 		wl_list_remove(&keyboard->focus_listener.link);
 	wl_array_release(&keyboard->keys);
+	free(keyboard);
 }
 
-WL_EXPORT void
-weston_touch_init(struct weston_touch *touch)
+WL_EXPORT struct weston_touch *
+weston_touch_create(void)
 {
+	struct weston_touch *touch;
+
+	touch = malloc(sizeof *touch);
+	if (touch == NULL)
+		return NULL;
+
 	memset(touch, 0, sizeof *touch);
 	wl_list_init(&touch->resource_list);
 	touch->focus_listener.notify = lose_touch_focus;
@@ -346,14 +370,17 @@ weston_touch_init(struct weston_touch *touch)
 	touch->default_grab.touch = touch;
 	touch->grab = &touch->default_grab;
 	wl_signal_init(&touch->focus_signal);
+
+	return touch;
 }
 
 WL_EXPORT void
-weston_touch_release(struct weston_touch *touch)
+weston_touch_destroy(struct weston_touch *touch)
 {
 	/* XXX: What about touch->resource_list? */
 	if (touch->focus_resource)
 		wl_list_remove(&touch->focus_listener.link);
+	free(touch);
 }
 
 static void
@@ -371,53 +398,6 @@ seat_send_updated_caps(struct weston_seat *seat)
 
 	wl_list_for_each(r, &seat->base_resource_list, link)
 		wl_seat_send_capabilities(r, caps);
-}
-
-WL_EXPORT void
-weston_seat_set_pointer(struct weston_seat *seat,
-			struct weston_pointer *pointer)
-{
-	if (pointer && (seat->pointer || pointer->seat))
-		return; /* XXX: error? */
-	if (!pointer && !seat->pointer)
-		return;
-
-	seat->pointer = pointer;
-	if (pointer)
-		pointer->seat = seat;
-
-	seat_send_updated_caps(seat);
-}
-
-WL_EXPORT void
-weston_seat_set_keyboard(struct weston_seat *seat,
-			 struct weston_keyboard *keyboard)
-{
-	if (keyboard && (seat->keyboard || keyboard->seat))
-		return; /* XXX: error? */
-	if (!keyboard && !seat->keyboard)
-		return;
-
-	seat->keyboard = keyboard;
-	if (keyboard)
-		keyboard->seat = seat;
-
-	seat_send_updated_caps(seat);
-}
-
-WL_EXPORT void
-weston_seat_set_touch(struct weston_seat *seat, struct weston_touch *touch)
-{
-	if (touch && (seat->touch || touch->seat))
-		return; /* XXX: error? */
-	if (!touch && !seat->touch)
-		return;
-
-	seat->touch = touch;
-	if (touch)
-		touch->seat = seat;
-
-	seat_send_updated_caps(seat);
 }
 
 WL_EXPORT void
@@ -1444,6 +1424,8 @@ weston_compositor_build_global_keymap(struct weston_compositor *ec)
 WL_EXPORT int
 weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 {
+	struct weston_keyboard *keyboard;
+
 	if (seat->keyboard)
 		return 0;
 
@@ -1466,8 +1448,16 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 
 	seat->xkb_state.leds = 0;
 
-	weston_keyboard_init(&seat->keyboard_instance);
-	weston_seat_set_keyboard(seat, &seat->keyboard_instance);
+	keyboard = weston_keyboard_create();
+	if (keyboard == NULL) {
+		weston_log("failed to allocate weston keyboard struct\n");
+		return -1;
+	}
+
+	seat->keyboard = keyboard;
+	keyboard->seat = seat;
+
+	seat_send_updated_caps(seat);
 
 	return 0;
 }
@@ -1475,21 +1465,37 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 WL_EXPORT void
 weston_seat_init_pointer(struct weston_seat *seat)
 {
+	struct weston_pointer *pointer;
+
 	if (seat->pointer)
 		return;
 
-	weston_pointer_init(&seat->pointer_instance);
-	weston_seat_set_pointer(seat, &seat->pointer_instance);
+	pointer = weston_pointer_create();
+	if (pointer == NULL)
+		return;
+
+	seat->pointer = pointer;
+		pointer->seat = seat;
+
+	seat_send_updated_caps(seat);
 }
 
 WL_EXPORT void
 weston_seat_init_touch(struct weston_seat *seat)
 {
+	struct weston_touch *touch;
+
 	if (seat->touch)
 		return;
 
-	weston_touch_init(&seat->touch_instance);
-	weston_seat_set_touch(seat, &seat->touch_instance);
+	touch = weston_touch_create();
+	if (touch == NULL)
+		return;
+
+	seat->touch = touch;
+	touch->seat = seat;
+
+	seat_send_updated_caps(seat);
 }
 
 WL_EXPORT void
@@ -1536,11 +1542,11 @@ weston_seat_release(struct weston_seat *seat)
 	xkb_info_destroy(&seat->xkb_info);
 
 	if (seat->pointer)
-		weston_pointer_release(seat->pointer);
+		weston_pointer_destroy(seat->pointer);
 	if (seat->keyboard)
-		weston_keyboard_release(seat->keyboard);
+		weston_keyboard_destroy(seat->keyboard);
 	if (seat->touch)
-		weston_touch_release(seat->touch);
+		weston_touch_destroy(seat->touch);
 
 	wl_signal_emit(&seat->destroy_signal, seat);
 }

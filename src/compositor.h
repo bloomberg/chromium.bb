@@ -328,17 +328,10 @@ struct weston_touch {
 	uint32_t grab_time;
 };
 
+struct weston_pointer *
+weston_pointer_create(void);
 void
-weston_seat_set_pointer(struct weston_seat *seat, struct weston_pointer *pointer);
-void
-weston_seat_set_keyboard(struct weston_seat *seat, struct weston_keyboard *keyboard);
-void
-weston_seat_set_touch(struct weston_seat *seat, struct weston_touch *touch);
-
-void
-weston_pointer_init(struct weston_pointer *pointer);
-void
-weston_pointer_release(struct weston_pointer *pointer);
+weston_pointer_destroy(struct weston_pointer *pointer);
 void
 weston_pointer_set_focus(struct weston_pointer *pointer,
 			 struct wl_surface *surface,
@@ -352,10 +345,10 @@ void
 weston_pointer_set_current(struct weston_pointer *pointer,
 			   struct wl_surface *surface);
 
+struct weston_keyboard *
+weston_keyboard_create(void);
 void
-weston_keyboard_init(struct weston_keyboard *keyboard);
-void
-weston_keyboard_release(struct weston_keyboard *keyboard);
+weston_keyboard_destroy(struct weston_keyboard *keyboard);
 void
 weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 			  struct wl_surface *surface);
@@ -365,10 +358,10 @@ weston_keyboard_start_grab(struct weston_keyboard *device,
 void
 weston_keyboard_end_grab(struct weston_keyboard *keyboard);
 
+struct weston_touch *
+weston_touch_create(void);
 void
-weston_touch_init(struct weston_touch *touch);
-void
-weston_touch_release(struct weston_touch *touch);
+weston_touch_destroy(struct weston_touch *touch);
 void
 weston_touch_start_grab(struct weston_touch *device,
 			struct weston_touch_grab *grab);
@@ -440,9 +433,6 @@ struct weston_seat {
 	struct weston_keyboard *keyboard;
 	struct weston_touch *touch;
 
-	struct weston_pointer pointer_instance;
-	struct weston_keyboard keyboard_instance;
-	struct weston_touch touch_instance;
 	struct wl_signal destroy_signal;
 
 	struct weston_compositor *compositor;
