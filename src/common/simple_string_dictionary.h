@@ -156,7 +156,8 @@ class NonAllocatingMap {
 
   // Stores |value| into |key|, replacing the existing value if |key| is
   // already present. |key| must not be NULL. If |value| is NULL, the key is
-  // removed from the map.
+  // removed from the map. If there is no more space in the map, then the
+  // operation silently fails.
   void SetKeyValue(const char* key, const char* value) {
     if (!value) {
       RemoveKey(key);
@@ -191,7 +192,8 @@ class NonAllocatingMap {
     }
 
     // If the map is out of space, entry will be NULL.
-    assert(entry);
+    if (!entry)
+      return;
 
 #ifndef NDEBUG
     // Sanity check that the key only appears once.

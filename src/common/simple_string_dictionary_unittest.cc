@@ -278,14 +278,17 @@ TEST(NonAllocatingMapTest, Serialize) {
   EXPECT_STREQ("hig", deserialized.GetValueForKey("tre"));
 }
 
-#ifndef NDEBUG
-
+// Running out of space shouldn't crash.
 TEST(NonAllocatingMapTest, OutOfSpace) {
   NonAllocatingMap<3, 2, 2> map;
   map.SetKeyValue("a", "1");
   map.SetKeyValue("b", "2");
-  ASSERT_DEATH(map.SetKeyValue("c", "3"), "");
+  map.SetKeyValue("c", "3");
+  EXPECT_EQ(2u, map.GetCount());
+  EXPECT_FALSE(map.GetValueForKey("c"));
 }
+
+#ifndef NDEBUG
 
 TEST(NonAllocatingMapTest, KeyTooLong) {
   NonAllocatingMap<3, 10, 12> map;
