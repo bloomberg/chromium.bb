@@ -930,7 +930,8 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyZeroLengthIO) {
   ZeroLengthIO();
 }
 
-// Tests that we handle the content correctly when buffering.
+// Tests that we handle the content correctly when buffering, a feature of the
+// standard cache that permits fast responses to certain reads.
 void DiskCacheEntryTest::Buffering() {
   std::string key("the first key");
   disk_cache::Entry* entry;
@@ -2240,12 +2241,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheZeroLengthIO) {
   SetSimpleCacheMode();
   InitCache();
   ZeroLengthIO();
-}
-
-TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheBuffering) {
-  SetSimpleCacheMode();
-  InitCache();
-  Buffering();
 }
 
 TEST_F(DiskCacheEntryTest, SimpleCacheSizeAtCreate) {
