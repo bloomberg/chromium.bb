@@ -53,17 +53,24 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
     , m_framesPending(0)
     , m_next(0)
     , m_prev(0)
+#if ENABLE(CANVAS_USES_MAILBOX)
+    , m_lastImageId(0)
+#endif
 {
     ASSERT(m_canvas);
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
     m_canvas->setNotificationClient(this);
+#if ENABLE(CANVAS_USES_MAILBOX)
+    m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayerForMailbox(this));
+#else
     m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
     m_layer->setRateLimitContext(threadMode == SingleThread);
     GrRenderTarget* renderTarget = reinterpret_cast<GrRenderTarget*>(m_canvas->getDevice()->accessRenderTarget());
     if (renderTarget) {
         m_layer->setTextureId(renderTarget->asTexture()->getTextureHandle());
     }
+#endif
     m_layer->setOpaque(opacityMode == Opaque);
     GraphicsLayerChromium::registerContentsLayer(m_layer->layer());
 }
@@ -73,7 +80,10 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
     GraphicsLayerChromium::unregisterContentsLayer(m_layer->layer());
     Canvas2DLayerManager::get().layerToBeDestroyed(this);
     m_canvas->setNotificationClient(0);
-    m_layer->setTextureId(0);
+#if ENABLE(CANVAS_USES_MAILBOX)
+    m_mailboxes.clear();
+#endif
+    m_layer->clearTexture();
 }
 
 void Canvas2DLayerBridge::limitPendingFrames()
@@ -88,7 +98,9 @@ void Canvas2DLayerBridge::limitPendingFrames()
 
 void Canvas2DLayerBridge::prepareForDraw()
 {
+#if !ENABLE(CANVAS_USES_MAILBOX)
     m_layer->willModifyTexture();
+#endif
     m_context->makeContextCurrent();
 }
 
@@ -132,6 +144,10 @@ void Canvas2DLayerBridge::flush()
 
 unsigned Canvas2DLayerBridge::prepareTexture(WebTextureUpdater& updater)
 {
+#if ENABLE(CANVAS_USES_MAILBOX)
+    ASSERT_NOT_REACHED();
+    return 0;
+#else
     m_context->makeContextCurrent();
 
     TRACE_EVENT0("cc", "Canvas2DLayerBridge::SkCanvas::flush");
@@ -146,11 +162,105 @@ unsigned Canvas2DLayerBridge::prepareTexture(WebTextureUpdater& updater)
         return texture->getTextureHandle();
     }
     return 0;
+#endif  // !ENABLE(CANVAS_USES_MAILBOX)
 }
 
 WebGraphicsContext3D* Canvas2DLayerBridge::context()
 {
     return GraphicsContext3DPrivate::extractWebGraphicsContext3D(m_context.get());
+}
+
+bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox)
+{
+#if ENABLE(CANVAS_USES_MAILBOX)
+    // Release to skia textures that were previouosly released by the
+    // compositor. We do this before acquiring the next snapshot in
+    // order to cap maximum gpu memory consumption.
+    m_context->makeContextCurrent();
+    Vector<MailboxInfo>::iterator mailboxInfo;
+    for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); mailboxInfo++) {
+        if (mailboxInfo->m_status == MailboxReleased) {
+            if (mailboxInfo->m_mailbox.syncPoint) {
+                context()->waitSyncPoint(mailboxInfo->m_mailbox.syncPoint);
+                mailboxInfo->m_mailbox.syncPoint = 0;
+            }
+            // Invalidate texture state in case the compositor altered it since the copy-on-write.
+            mailboxInfo->m_image->getTexture()->invalidateCachedState();
+            mailboxInfo->m_image.reset(0);
+            mailboxInfo->m_status = MailboxAvailable;
+        }
+    }
+    SkAutoTUnref<SkImage> image(m_canvas->newImageSnapshot());
+    // Early exit if canvas was not drawn to since last prepareMailbox
+    if (image->uniqueID() == m_lastImageId)
+        return false;
+    m_lastImageId = image->uniqueID();
+
+    mailboxInfo = createMailboxInfo();
+    mailboxInfo->m_status = MailboxInUse;
+    mailboxInfo->m_image.swap(&image);
+    // Because of texture sharing with the compositor, we must invalidate
+    // the state cached in skia so that the deferred copy on write
+    // in SkSurface_Gpu does not make any false assumptions.
+    mailboxInfo->m_image->getTexture()->invalidateCachedState();
+
+    ASSERT(mailboxInfo->m_mailbox.syncPoint == 0);
+    ASSERT(mailboxInfo->m_image.get());
+    ASSERT(mailboxInfo->m_image->getTexture());
+
+    // Because we are changing the texture binding without going through skia,
+    // we must restore it to its previous value to keep skia's state cache in
+    // sync.
+    GC3Dint savedTexBinding = 0;
+    m_context->getIntegerv(GraphicsContext3D::TEXTURE_BINDING_2D, &savedTexBinding);
+    m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, mailboxInfo->m_image->getTexture()->getTextureHandle());
+    context()->produceTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, mailboxInfo->m_mailbox.name);
+    mailboxInfo->m_mailbox.syncPoint = context()->insertSyncPoint();
+    m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, savedTexBinding);
+
+    *outMailbox = mailboxInfo->m_mailbox;
+    return true;
+#else
+    ASSERT_NOT_REACHED();
+    return false;
+#endif
+}
+
+#if ENABLE(CANVAS_USES_MAILBOX)
+Canvas2DLayerBridge::MailboxInfo* Canvas2DLayerBridge::createMailboxInfo() {
+    MailboxInfo* mailboxInfo;
+    for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); mailboxInfo++) {
+        if (mailboxInfo->m_status == MailboxAvailable) {
+            return mailboxInfo;
+        }
+    }
+
+    // No available mailbox: create one.
+    m_mailboxes.grow(m_mailboxes.size() + 1);
+    mailboxInfo = &m_mailboxes.last();
+    context()->genMailboxCHROMIUM(mailboxInfo->m_mailbox.name);
+    // Worst case, canvas is triple buffered.  More than 3 active mailboxes
+    // means there is a problem.
+    ASSERT(m_mailboxes.size() <= 3);
+    ASSERT(mailboxInfo < m_mailboxes.end());
+    return mailboxInfo;
+}
+#endif
+
+void Canvas2DLayerBridge::mailboxReleased(const WebKit::WebExternalTextureMailbox& mailbox)
+{
+#if ENABLE(CANVAS_USES_MAILBOX)
+    Vector<MailboxInfo>::iterator mailboxInfo;
+    for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); mailboxInfo++) {
+         if (!memcmp(mailboxInfo->m_mailbox.name, mailbox.name, sizeof(mailbox.name))) {
+             mailboxInfo->m_mailbox.syncPoint = mailbox.syncPoint;
+             ASSERT(mailboxInfo->m_status == MailboxInUse);
+             mailboxInfo->m_status = MailboxReleased;
+             return;
+         }
+     }
+#endif
+     ASSERT_NOT_REACHED();
 }
 
 WebKit::WebLayer* Canvas2DLayerBridge::layer()
@@ -175,5 +285,16 @@ unsigned Canvas2DLayerBridge::backBufferTexture()
     }
     return 0;
 }
+
+#if ENABLE(CANVAS_USES_MAILBOX)
+Canvas2DLayerBridge::MailboxInfo::MailboxInfo(const MailboxInfo& other) {
+    // This copy constructor should only be used for Vector reallocation
+    // Assuming 'other' is to be destroyed, we swap m_image ownership
+    // rather than do a refcount dance.
+    memcpy(&m_mailbox, &other.m_mailbox, sizeof(m_mailbox));
+    m_image.swap(const_cast<SkAutoTUnref<SkImage>*>(&other.m_image));
+    m_status = other.m_status;
+}
+#endif
 
 }
