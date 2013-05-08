@@ -32,17 +32,17 @@ FileSystemURL FileSystemURL::CreateForTest(const GURL& url) {
 }
 
 FileSystemURL FileSystemURL::CreateForTest(const GURL& origin,
-                                           FileSystemType type,
-                                           const base::FilePath& path) {
-  return FileSystemURL(origin, type, path);
+                                           FileSystemType mount_type,
+                                           const base::FilePath& virtual_path) {
+  return FileSystemURL(origin, mount_type, virtual_path);
 }
 
 // static
 bool FileSystemURL::ParseFileSystemSchemeURL(
     const GURL& url,
     GURL* origin_url,
-    FileSystemType* type,
-    base::FilePath* file_path) {
+    FileSystemType* mount_type,
+    base::FilePath* virtual_path) {
   GURL origin;
   FileSystemType file_system_type = kFileSystemTypeUnknown;
 
@@ -89,10 +89,10 @@ bool FileSystemURL::ParseFileSystemSchemeURL(
 
   if (origin_url)
     *origin_url = url.GetOrigin();
-  if (type)
-    *type = file_system_type;
-  if (file_path)
-    *file_path = converted_path.NormalizePathSeparators().
+  if (mount_type)
+    *mount_type = file_system_type;
+  if (virtual_path)
+    *virtual_path = converted_path.NormalizePathSeparators().
         StripTrailingSeparators();
 
   return true;
@@ -101,20 +101,21 @@ bool FileSystemURL::ParseFileSystemSchemeURL(
 FileSystemURL::FileSystemURL(const GURL& url)
     : mount_type_(kFileSystemTypeUnknown),
       type_(kFileSystemTypeUnknown) {
-  is_valid_ = ParseFileSystemSchemeURL(url, &origin_, &type_, &path_);
-  virtual_path_ = path_;
-  mount_type_ = type_;
+  is_valid_ = ParseFileSystemSchemeURL(url, &origin_, &mount_type_,
+                                       &virtual_path_);
+  path_ = virtual_path_;
+  type_ = mount_type_;
 }
 
 FileSystemURL::FileSystemURL(const GURL& origin,
-                             FileSystemType type,
-                             const base::FilePath& path)
+                             FileSystemType mount_type,
+                             const base::FilePath& virtual_path)
     : is_valid_(true),
       origin_(origin),
-      mount_type_(type),
-      virtual_path_(path.NormalizePathSeparators()),
-      type_(type),
-      path_(path.NormalizePathSeparators()) {
+      mount_type_(mount_type),
+      virtual_path_(virtual_path.NormalizePathSeparators()),
+      type_(mount_type),
+      path_(virtual_path.NormalizePathSeparators()) {
 }
 
 FileSystemURL::FileSystemURL(const GURL& origin,

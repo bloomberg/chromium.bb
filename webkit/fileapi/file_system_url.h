@@ -23,10 +23,10 @@ namespace fileapi {
 //
 // Example: For a URL 'filesystem:http://foo.com/temporary/foo/bar':
 //   origin() returns 'http://foo.com',
-//   type() returns kFileSystemTypeTemporary,
-//   path() returns 'foo/bar',
-//   virtual_path() returns the same value as path()
-//   mount_type() returns the same value as type()
+//   mount_type() returns kFileSystemTypeTemporary,
+//   virtual_path() returns 'foo/bar',
+//   type() returns the same value as mount_type(),
+//   path() returns the same value as virtual_path(),
 //
 // All other accessors return empty or invalid value.
 //
@@ -49,10 +49,10 @@ namespace fileapi {
 // would create a FileSystemURL whose accessors return:
 //
 //   origin() returns 'http://bar.com',
+//   mount_type() returns kFileSystemTypeExternal,
+//   virtual_path() returns 'mount_name/foo/bar',
 //   type() returns the kFileSystemTypeFoo,
 //   path() returns '/media/removable/foo/bar',
-//   virtual_path() returns 'mount_name/foo/bar',
-//   mount_type() returns kFileSystemTypeExternal.
 //
 // Note that in either case virtual_path() always returns the path part after
 // 'type' part in the original URL, and mount_type() always returns the 'type'
@@ -67,7 +67,7 @@ namespace fileapi {
 // <Friend>::CrackURL, <Friend>::CreateCrackedFileSystemURL, where <Friend> is
 // one of the friended classes.
 //
-// TODO(ericu): Look into making path() [and all FileSystem API virtual
+// TODO(ericu): Look into making virtual_path() [and all FileSystem API virtual
 // paths] just an std::string, to prevent platform-specific base::FilePath behavior
 // from getting invoked by accident. Currently the base::FilePath returned here needs
 // special treatment, as it may contain paths that are illegal on the current
@@ -88,8 +88,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
   // Parses filesystem scheme |url| into uncracked FileSystemURL components.
   static bool ParseFileSystemSchemeURL(const GURL& url,
                                        GURL* origin,
-                                       FileSystemType* type,
-                                       base::FilePath* file_path);
+                                       FileSystemType* mount_type,
+                                       base::FilePath* virtual_path);
 
   // Returns true if this instance represents a valid FileSystem URL.
   bool is_valid() const { return is_valid_; }
@@ -100,8 +100,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
   // Returns the type part of this URL. See the class comment for details.
   FileSystemType type() const { return type_; }
 
-  // Returns the path part of this URL. See the class comment for details.
-  // TODO(kinuko): this must return std::string.
+  // Returns the cracked path of this URL. See the class comment for details.
   const base::FilePath& path() const { return path_; }
 
   // Returns the original path part of this URL.
