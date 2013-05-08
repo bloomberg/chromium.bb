@@ -864,7 +864,7 @@ const char kBluetoothManagerServicePath[] = "/";  // crosbug.com/20135
 namespace bluetooth_adapter {
 // Bluetooth Adapter service identifiers.
 const char kBluetoothAdapterServiceName[] = "org.bluez";
-const char kBluetoothAdapterInterface[] = "org.bluez.Adapter";
+const char kBluetoothAdapterInterface[] = "org.bluez.Adapter1";
 const char kExperimentalBluetoothAdapterInterface[] = "org.bluez.Adapter1";
 
 // Bluetooth Adapter methods.
@@ -898,15 +898,19 @@ const char kErrorAuthenticationTimeout[] =
     "org.bluez.Error.AuthenticationTimeout";
 const char kErrorConnectionAttemptFailed[] =
     "org.bluez.Error.ConnectionAttemptFailed";
+const char kErrorNotReady[] = "org.bluez.Error.NotReady";
 const char kErrorFailed[] = "org.bluez.Error.Failed";
 const char kErrorInProgress[] = "org.bluez.Error.InProgress";
 const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
+const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
+const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
 }  // namespace bluetooth_adapter
 
 namespace bluetooth_agent_manager {
 // Bluetooth Agent Manager service indentifiers
 const char kBluetoothAgentManagerServiceName[] = "org.bluez";
 const char kBluetoothAgentManagerServicePath[] = "/org/bluez";
+const char kBluetoothAgentManagerInterface[] = "org.bluez.AgentManager1";
 const char kExperimentalBluetoothAgentManagerInterface[] =
     "org.bluez.AgentManager1";
 
@@ -921,19 +925,24 @@ const char kDisplayOnlyCapability[] = "DisplayOnly";
 const char kKeyboardOnlyCapability[] = "KeyboardOnly";
 const char kDisplayYesNoCapability[] = "DisplayYesNo";
 const char kKeyboardDisplayCapability[] = "KeyboardDisplay";
+
+// Bluetooth Agent Manager errors.
+const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
+const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
 }  // namespace bluetooth_agent_manager
 
 
 namespace bluetooth_agent {
 // Bluetooth Agent service indentifiers
-const char kBluetoothAgentInterface[] = "org.bluez.Agent";
+const char kBluetoothAgentInterface[] = "org.bluez.Agent1";
 const char kExperimentalBluetoothAgentInterface[] = "org.bluez.Agent1";
 
 // Bluetooth Agent methods.
 const char kRelease[] = "Release";
 const char kRequestPinCode[] = "RequestPinCode";
-const char kRequestPasskey[] = "RequestPasskey";
 const char kDisplayPinCode[] = "DisplayPinCode";
+const char kRequestPasskey[] = "RequestPasskey";
 const char kDisplayPasskey[] = "DisplayPasskey";
 const char kRequestConfirmation[] = "RequestConfirmation";
 const char kRequestAuthorization[] = "RequestAuthorization";
@@ -948,7 +957,7 @@ const char kErrorCanceled[] = "org.bluez.Error.Canceled";
 namespace bluetooth_device {
 // Bluetooth Device service identifiers.
 const char kBluetoothDeviceServiceName[] = "org.bluez";
-const char kBluetoothDeviceInterface[] = "org.bluez.Device";
+const char kBluetoothDeviceInterface[] = "org.bluez.Device1";
 const char kExperimentalBluetoothDeviceInterface[] = "org.bluez.Device1";
 
 // Bluetooth Device methods.
@@ -975,12 +984,34 @@ const char kAdapterProperty[] = "Adapter";
 const char kLegacyPairingProperty[] = "LegacyPairing";
 const char kModaliasProperty[] = "Modalias";
 const char kRSSIProperty[] = "RSSI";
+
+// Bluetooth Device errors.
+const char kErrorNotReady[] = "org.bluez.Error.NotReady";
+const char kErrorFailed[] = "org.bluez.Error.Failed";
+const char kErrorInProgress[] = "org.bluez.Error.InProgress";
+const char kErrorAlreadyConnected[] = "org.bluez.Error.AlreadyConnected";
+const char kErrorNotConnected[] = "org.bluez.Error.NotConnected";
+const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
+const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+
+// Undocumented errors that we know BlueZ returns for Bluetooth Device methods.
+const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
+const char kErrorAuthenticationCanceled[] =
+    "org.bluez.Error.AuthenticationCanceled";
+const char kErrorAuthenticationFailed[] =
+    "org.bluez.Error.AuthenticationFailed";
+const char kErrorAuthenticationRejected[] =
+    "org.bluez.Error.AuthenticationRejected";
+const char kErrorAuthenticationTimeout[] =
+    "org.bluez.Error.AuthenticationTimeout";
+const char kErrorConnectionAttemptFailed[] =
+    "org.bluez.Error.ConnectionAttemptFailed";
 }  // namespace bluetooth_device
 
 namespace bluetooth_input {
 // Bluetooth Input service identifiers.
 const char kBluetoothInputServiceName[] = "org.bluez";
-const char kBluetoothInputInterface[] = "org.bluez.Input";
+const char kBluetoothInputInterface[] = "org.bluez.Input1";
 const char kExperimentalBluetoothInputInterface[] = "org.bluez.Input1";
 
 // Bluetooth Input properties.
@@ -993,10 +1024,17 @@ const char kDeviceReconnectModeProperty[] = "device";
 const char kAnyReconnectModeProperty[] = "any";
 }  // namespace bluetooth_input
 
+namespace bluetooth_object_manager {
+// Bluetooth daemon Object Manager service identifiers.
+const char kBluetoothObjectManagerServiceName[] = "org.bluez";
+const char kBluetoothObjectManagerServicePath[] = "/";
+}  // namespace bluetooth_object_manager
+
 namespace bluetooth_profile_manager {
 // Bluetooth Profile Manager service identifiers.
 const char kBluetoothProfileManagerServiceName[] = "org.bluez";
 const char kBluetoothProfileManagerServicePath[] = "/org/bluez";
+const char kBluetoothProfileManagerInterface[] = "org.bluez.ProfileManager1";
 const char kExperimentalBluetoothProfileManagerInterface[] =
     "org.bluez.ProfileManager1";
 
@@ -1020,10 +1058,15 @@ const char kFeaturesOption[] = "Features";
 // Bluetooth Profile Manager option values.
 const char kClientRoleOption[] = "client";
 const char kServerRoleOption[] = "server";
+
+// Bluetooth Profile Manager errors.
+const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
 }  // namespace bluetooth_profile_manager
 
 namespace bluetooth_profile {
 // Bluetooth Profile service identifiers.
+const char kBluetoothProfileInterface[] = "org.bluez.Profile1";
 const char kExperimentalBluetoothProfileInterface[] = "org.bluez.Profile1";
 
 // Bluetooth Profile methods.
