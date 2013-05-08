@@ -65,6 +65,9 @@ class AutofillWebDataService : public AutofillWebData,
       const base::string16& prefix,
       int limit,
       WebDataServiceConsumer* consumer) OVERRIDE;
+
+  virtual WebDataServiceBase::Handle HasFormElements(
+      WebDataServiceConsumer* consumer) OVERRIDE;
   virtual void RemoveFormElementsAddedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void RemoveExpiredFormElements() OVERRIDE;

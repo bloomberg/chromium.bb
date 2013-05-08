@@ -140,7 +140,9 @@ TEST_F(AutofillTableTest, Autofill) {
   field.value = ASCIIToUTF16("Superman");
   base::Time now = base::Time::Now();
   base::TimeDelta two_seconds = base::TimeDelta::FromSeconds(2);
+  EXPECT_FALSE(table_->HasFormElements());
   EXPECT_TRUE(table_->AddFormFieldValue(field, &changes));
+  EXPECT_TRUE(table_->HasFormElements());
   std::vector<base::string16> v;
   for (int i = 0; i < 5; i++) {
     field.value = ASCIIToUTF16("Clark Kent");

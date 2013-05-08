@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 
+#include "android_webview/browser/aw_form_database_service.h"
 #include "android_webview/browser/aw_quota_manager_bridge.h"
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
@@ -97,6 +98,16 @@ AwQuotaManagerBridge* AwBrowserContext::GetQuotaManagerBridge() {
         native_factory_->CreateAwQuotaManagerBridge(this));
   }
   return quota_manager_bridge_.get();
+}
+
+// TODO(sgurun) we may need to do this at the constructor, depending on
+// how the rest of the implementation to enable autocomplete unwraps itself.
+AwFormDatabaseService* AwBrowserContext::GetFormDatabaseService() {
+  if (!form_database_service_) {
+    form_database_service_.reset(
+        new AwFormDatabaseService(context_storage_path_));
+  }
+  return form_database_service_.get();
 }
 
 base::FilePath AwBrowserContext::GetPath() {

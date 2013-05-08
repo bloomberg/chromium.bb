@@ -9,7 +9,7 @@
 
 namespace android_webview {
 
-bool RegisterFormDatabase(JNIEnv* env);
+bool RegisterAwFormDatabase(JNIEnv* env);
 
 }  // namespace android_webview
 

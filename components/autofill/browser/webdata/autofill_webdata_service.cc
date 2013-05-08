@@ -72,6 +72,13 @@ WebDataServiceBase::Handle AutofillWebDataService::GetFormValuesForElementName(
            autofill_backend_, name, prefix, limit), consumer);
 }
 
+WebDataServiceBase::Handle AutofillWebDataService::HasFormElements(
+    WebDataServiceConsumer* consumer) {
+  return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
+      Bind(&AutofillWebDataBackend::HasFormElements, autofill_backend_),
+      consumer);
+}
+
 void AutofillWebDataService::RemoveFormElementsAddedBetween(
     const Time& delete_begin, const Time& delete_end) {
   wdbs_->ScheduleDBTask(FROM_HERE,

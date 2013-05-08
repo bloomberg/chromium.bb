@@ -32,8 +32,9 @@ class WebContents;
 
 namespace android_webview {
 
-class AwURLRequestContextGetter;
+class AwFormDatabaseService;
 class AwQuotaManagerBridge;
+class AwURLRequestContextGetter;
 class JniDependencyFactory;
 
 class AwBrowserContext : public content::BrowserContext,
@@ -66,6 +67,8 @@ class AwBrowserContext : public content::BrowserContext,
       content::ProtocolHandlerMap* protocol_handlers);
 
   AwQuotaManagerBridge* GetQuotaManagerBridge();
+
+  AwFormDatabaseService* GetFormDatabaseService();
 
   // content::BrowserContext implementation.
   virtual base::FilePath GetPath() OVERRIDE;
@@ -101,6 +104,7 @@ class AwBrowserContext : public content::BrowserContext,
   scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;
   scoped_ptr<AwQuotaManagerBridge> quota_manager_bridge_;
+  scoped_ptr<AwFormDatabaseService> form_database_service_;
 
   AwDownloadManagerDelegate download_manager_delegate_;
 

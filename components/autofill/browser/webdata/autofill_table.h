@@ -154,6 +154,9 @@ class AutofillTable : public WebDatabaseTable {
                                    std::vector<base::string16>* values,
                                    int limit);
 
+  // Returns whether any form elements are stored in the database.
+  bool HasFormElements();
+
   // Removes rows from autofill_dates if they were created on or after
   // |delete_begin| and strictly before |delete_end|.  Decrements the
   // count of the corresponding rows in the autofill table, and

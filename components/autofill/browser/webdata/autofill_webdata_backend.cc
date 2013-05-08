@@ -72,6 +72,14 @@ AutofillWebDataBackend::GetFormValuesForElementName(
                                                  values));
 }
 
+scoped_ptr<WDTypedResult> AutofillWebDataBackend::HasFormElements(
+    WebDatabase* db) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  bool value = AutofillTable::FromWebDatabase(db)->HasFormElements();
+  return scoped_ptr<WDTypedResult>(
+      new WDResult<bool>(AUTOFILL_VALUE_RESULT, value));
+}
+
 WebDatabase::State AutofillWebDataBackend::RemoveFormElementsAddedBetween(
     const base::Time& delete_begin, const base::Time& delete_end,
     WebDatabase* db) {

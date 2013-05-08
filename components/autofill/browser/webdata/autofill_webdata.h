@@ -41,6 +41,10 @@ class AutofillWebData {
       int limit,
       WebDataServiceConsumer* consumer) = 0;
 
+  // Checks if there are any form elements in the database.
+  virtual WebDataServiceBase::Handle HasFormElements(
+      WebDataServiceConsumer* consumer) = 0;
+
   // Removes form elements recorded for Autocomplete from the database.
   virtual void RemoveFormElementsAddedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) = 0;

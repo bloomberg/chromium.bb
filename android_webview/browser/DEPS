@@ -7,10 +7,14 @@ include_rules = [
   "+cc",
 
   "+components/auto_login_parser",
+  "+components/autofill/browser",
+  "+components/autofill/common",
   "+components/navigation_interception",
   "+components/visitedlink/browser",
+  "+components/webdata/common",
 
   "+content/public/browser",
+  "+content/public/test",
 
   "+gpu/command_buffer/client",
 

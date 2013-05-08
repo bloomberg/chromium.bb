@@ -44,6 +44,9 @@ class AutofillWebDataBackend
       int limit,
       WebDatabase* db);
 
+  // Returns true if there are any elements in the form.
+  scoped_ptr<WDTypedResult> HasFormElements(WebDatabase* db);
+
   // Removes form elements recorded for Autocomplete from the database.
   WebDatabase::State RemoveFormElementsAddedBetween(
       const base::Time& delete_begin,

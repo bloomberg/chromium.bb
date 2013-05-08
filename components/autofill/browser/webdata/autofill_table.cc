@@ -463,6 +463,16 @@ bool AutofillTable::GetFormValuesForElementName(
   return s.Succeeded();
 }
 
+bool AutofillTable::HasFormElements() {
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT COUNT(*) FROM autofill"));
+  if (!s.Step()) {
+    NOTREACHED();
+    return false;
+  }
+  return s.ColumnInt(0) > 0;
+}
+
 bool AutofillTable::RemoveFormElementsAddedBetween(
     const Time& delete_begin,
     const Time& delete_end,
