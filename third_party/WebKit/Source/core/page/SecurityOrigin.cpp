@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/page/SecurityOrigin.h"
 
-#include "core/dom/Document.h"
 #include "core/fileapi/BlobURL.h"
 #include "core/fileapi/ThreadableBlobRegistry.h"
 #include "core/page/SecurityPolicy.h"
