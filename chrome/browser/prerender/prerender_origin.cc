@@ -21,6 +21,7 @@ const char* kOriginNames[] = {
   "None",
   "Link Rel Prerender (same domain)",
   "Link Rel Prerender (cross domain)",
+  "Local Predictor",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kOriginNames) == ORIGIN_MAX + 1,

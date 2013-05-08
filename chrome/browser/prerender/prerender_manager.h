@@ -140,6 +140,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
 
+  PrerenderHandle* AddPrerenderFromLocalPredictor(
+      const GURL& url,
+      content::SessionStorageNamespace* session_storage_namespace,
+      const gfx::Size& size);
+
   // If |process_id| and |view_id| refer to a running prerender, destroy
   // it with |final_status|.
   virtual void DestroyPrerenderForRenderView(int process_id,
@@ -300,6 +305,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   virtual base::Time GetCurrentTime() const;
   virtual base::TimeTicks GetCurrentTimeTicks() const;
 
+  scoped_refptr<predictors::LoggedInPredictorTable>
+  logged_in_predictor_table() {
+    return logged_in_predictor_table_;
+  }
+
  protected:
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
    public:
@@ -452,7 +462,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // automatically be cancelled.
   void PostCleanupTask();
 
-  base::TimeTicks GetExpiryTimeForNewPrerender() const;
+  base::TimeTicks GetExpiryTimeForNewPrerender(Origin origin) const;
   base::TimeTicks GetExpiryTimeForNavigatedAwayPrerender() const;
 
   void DeleteOldEntries();

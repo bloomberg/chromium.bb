@@ -108,6 +108,7 @@ extern const char kDisableNativeAutofillUi[];
 extern const char kDisableNTPOtherSessionsMenu[];
 extern const char kDisablePopupBlocking[];
 extern const char kDisablePreconnect[];
+extern const char kDisablePrerenderLocalPredictor[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableRestoreBackgroundContents[];
 extern const char kDisableRestoreSessionState[];

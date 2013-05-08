@@ -19,63 +19,124 @@
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/session_storage_namespace.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/page_transition_types.h"
 #include "crypto/secure_hash.h"
+#include "googleurl/src/url_canon.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
 using content::PageTransition;
+using content::SessionStorageNamespace;
+using content::WebContents;
 using history::URLID;
+using predictors::LoggedInPredictorTable;
+using std::string;
+using std::vector;
 
 namespace prerender {
 
 namespace {
 
 static const size_t kURLHashSize = 5;
+static const int kNumPrerenderCandidates = 5;
+
+}  // namespace
+
+// When considering a candidate URL to be prerendered, we need to collect the
+// data in this struct to make the determination whether we should issue the
+// prerender or not.
+struct PrerenderLocalPredictor::LocalPredictorURLInfo {
+  URLID id;
+  GURL url;
+  bool url_lookup_success;
+  bool logged_in;
+  bool logged_in_lookup_ok;
+  double priority;
+};
+
+// A struct consisting of everything needed for launching a potential prerender
+// on a navigation: The navigation URL (source) triggering potential prerenders,
+// and a set of candidate URLs.
+struct PrerenderLocalPredictor::LocalPredictorURLLookupInfo {
+  LocalPredictorURLInfo source_url_;
+  vector<LocalPredictorURLInfo> candidate_urls_;
+  explicit LocalPredictorURLLookupInfo(URLID source_id) {
+    source_url_.id = source_id;
+  }
+  void MaybeAddCandidateURL(URLID id, double priority) {
+    // TODO(tburkard): clean up this code, potentially using a list or a heap
+    LocalPredictorURLInfo info;
+    info.id = id;
+    info.priority = priority;
+    int insert_pos = candidate_urls_.size();
+    if (insert_pos < kNumPrerenderCandidates)
+      candidate_urls_.push_back(info);
+    while (insert_pos > 0 &&
+           candidate_urls_[insert_pos - 1].priority < info.priority) {
+      if (insert_pos < kNumPrerenderCandidates)
+        candidate_urls_[insert_pos] = candidate_urls_[insert_pos - 1];
+      insert_pos--;
+    }
+    if (insert_pos < kNumPrerenderCandidates)
+      candidate_urls_[insert_pos] = info;
+  }
+};
+
+namespace {
 
 // Task to lookup the URL for a given URLID.
 class GetURLForURLIDTask : public history::HistoryDBTask {
  public:
-  GetURLForURLIDTask(URLID url_id, base::Callback<void(const GURL&)> callback)
-      : url_id_(url_id),
-        success_(false),
+  GetURLForURLIDTask(
+      PrerenderLocalPredictor::LocalPredictorURLLookupInfo* request,
+      const base::Closure& callback)
+      : request_(request),
         callback_(callback),
         start_time_(base::Time::Now()) {
   }
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
                              history::HistoryDatabase* db) OVERRIDE {
-    history::URLRow url_row;
-    success_ = db->GetURLRow(url_id_, &url_row);
-    if (success_)
-      url_ = url_row.url();
+    DoURLLookup(db, &request_->source_url_);
+    for (int i = 0; i < static_cast<int>(request_->candidate_urls_.size()); i++)
+      DoURLLookup(db, &request_->candidate_urls_[i]);
     return true;
   }
 
   virtual void DoneRunOnMainThread() OVERRIDE {
-    if (success_) {
-      callback_.Run(url_);
-      UMA_HISTOGRAM_CUSTOM_TIMES("Prerender.LocalPredictorURLLookupTime",
-                                 base::Time::Now() - start_time_,
-                                 base::TimeDelta::FromMilliseconds(10),
-                                 base::TimeDelta::FromSeconds(10),
-                                 50);
-    }
+    callback_.Run();
+    UMA_HISTOGRAM_CUSTOM_TIMES("Prerender.LocalPredictorURLLookupTime",
+                               base::Time::Now() - start_time_,
+                               base::TimeDelta::FromMilliseconds(10),
+                               base::TimeDelta::FromSeconds(10),
+                               50);
   }
 
  private:
   virtual ~GetURLForURLIDTask() {}
 
-  URLID url_id_;
-  bool success_;
-  base::Callback<void(const GURL&)> callback_;
+  void DoURLLookup(history::HistoryDatabase* db,
+                   PrerenderLocalPredictor::LocalPredictorURLInfo* request) {
+    history::URLRow url_row;
+    request->url_lookup_success = db->GetURLRow(request->id, &url_row);
+    if (request->url_lookup_success)
+      request->url = url_row.url();
+  }
+
+  PrerenderLocalPredictor::LocalPredictorURLLookupInfo* request_;
+  base::Closure callback_;
   base::Time start_time_;
-  GURL url_;
   DISALLOW_COPY_AND_ASSIGN(GetURLForURLIDTask);
 };
 
@@ -86,7 +147,7 @@ class GetVisitHistoryTask : public history::HistoryDBTask {
                       int max_visits)
       : local_predictor_(local_predictor),
         max_visits_(max_visits),
-        visit_history_(new std::vector<history::BriefVisitInfo>) {
+        visit_history_(new vector<history::BriefVisitInfo>) {
   }
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
@@ -104,7 +165,7 @@ class GetVisitHistoryTask : public history::HistoryDBTask {
 
   PrerenderLocalPredictor* local_predictor_;
   int max_visits_;
-  scoped_ptr<std::vector<history::BriefVisitInfo> > visit_history_;
+  scoped_ptr<vector<history::BriefVisitInfo> > visit_history_;
   DISALLOW_COPY_AND_ASSIGN(GetVisitHistoryTask);
 };
 
@@ -115,7 +176,7 @@ const int kMaxVisitHistory = 100 * 1000;
 const int kVisitHistoryPruneThreshold = 120 * 1000;
 const int kVisitHistoryPruneAmount = 20 * 1000;
 
-const int kMaxLocalPredictionTimeMs = 300 * 1000;
+const int kMaxLocalPredictionTimeMs = 180 * 1000;
 const int kMinLocalPredictionTimeMs = 500;
 
 bool IsBackForward(PageTransition transition) {
@@ -139,14 +200,14 @@ base::Time GetCurrentTime() {
   return base::Time::Now();
 }
 
-bool StrCaseStr(std::string haystack, std::string needle) {
+bool StringContainsIgnoringCase(string haystack, string needle) {
   std::transform(haystack.begin(), haystack.end(), haystack.begin(), ::tolower);
   std::transform(needle.begin(), needle.end(), needle.begin(), ::tolower);
-  return haystack.find(needle) != std::string::npos;
+  return haystack.find(needle) != string::npos;
 }
 
 bool IsExtendedRootURL(const GURL& url) {
-  const std::string& path = url.path();
+  const string& path = url.path();
   return path == "/index.html" || path == "/home.html" ||
       path == "/main.html" ||
       path == "/index.htm" || path == "/home.htm" || path == "/main.htm" ||
@@ -159,6 +220,16 @@ bool IsExtendedRootURL(const GURL& url) {
 bool IsRootPageURL(const GURL& url) {
   return (url.path() == "/" || url.path() == "" || IsExtendedRootURL(url)) &&
       (!url.has_query()) && (!url.has_ref());
+}
+
+bool IsLogInURL(const GURL& url) {
+  return StringContainsIgnoringCase(url.spec().c_str(), "login") ||
+      StringContainsIgnoringCase(url.spec().c_str(), "signin");
+}
+
+bool IsLogOutURL(const GURL& url) {
+  return StringContainsIgnoringCase(url.spec().c_str(), "logout") ||
+      StringContainsIgnoringCase(url.spec().c_str(), "signout");
 }
 
 int64 URLHashToInt64(const unsigned char* data) {
@@ -179,10 +250,34 @@ int64 GetInt64URLHashForURL(const GURL& url) {
   return hash_value;
 }
 
+bool URLsIdenticalIgnoringFragments(const GURL& url1, const GURL& url2) {
+  url_canon::Replacements<char> replacement;
+  replacement.ClearRef();
+  GURL u1 = url1.ReplaceComponents(replacement);
+  GURL u2 = url2.ReplaceComponents(replacement);
+  return (u1 == u2);
+}
+
+void LookupLoggedInStatesOnDBThread(
+    scoped_refptr<LoggedInPredictorTable> logged_in_predictor_table,
+    PrerenderLocalPredictor::LocalPredictorURLLookupInfo* request_) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  for (int i = 0; i < static_cast<int>(request_->candidate_urls_.size()); i++) {
+    PrerenderLocalPredictor::LocalPredictorURLInfo* info =
+        &request_->candidate_urls_[i];
+    if (info->url_lookup_success) {
+      logged_in_predictor_table->HasUserLoggedIn(
+          info->url, &info->logged_in, &info->logged_in_lookup_ok);
+    } else {
+      info->logged_in_lookup_ok = false;
+    }
+  }
+}
+
 }  // namespace
 
-struct PrerenderLocalPredictor::PrerenderData {
-  PrerenderData(URLID url_id, const GURL& url, double priority,
+struct PrerenderLocalPredictor::PrerenderProperties {
+  PrerenderProperties(URLID url_id, const GURL& url, double priority,
                 base::Time start_time)
       : url_id(url_id),
         url(url),
@@ -204,13 +299,14 @@ struct PrerenderLocalPredictor::PrerenderData {
   base::Time actual_start_time;
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PrerenderData);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PrerenderProperties);
 };
 
 PrerenderLocalPredictor::PrerenderLocalPredictor(
     PrerenderManager* prerender_manager)
     : prerender_manager_(prerender_manager),
-      is_visit_database_observer_(false) {
+      is_visit_database_observer_(false),
+      weak_factory_(this) {
   RecordEvent(EVENT_CONSTRUCTED);
   if (MessageLoop::current()) {
     timer_.Start(FROM_HERE,
@@ -250,6 +346,8 @@ PrerenderLocalPredictor::PrerenderLocalPredictor(
 
 PrerenderLocalPredictor::~PrerenderLocalPredictor() {
   Shutdown();
+  if (prerender_handle_.get())
+    prerender_handle_->OnCancel();
 }
 
 void PrerenderLocalPredictor::Shutdown() {
@@ -296,9 +394,9 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
   std::map<URLID, int> next_urls_num_found;
   int num_occurrences_of_current_visit = 0;
   base::Time last_visited;
-  URLID best_next_url = 0;
-  int best_next_url_count = 0;
-  const std::vector<history::BriefVisitInfo>& visits = *(visit_history_.get());
+  scoped_ptr<LocalPredictorURLLookupInfo> lookup_info(
+      new LocalPredictorURLLookupInfo(info.url_id));
+  const vector<history::BriefVisitInfo>& visits = *(visit_history_.get());
   for (int i = 0; i < static_cast<int>(visits.size()); i++) {
     if (!ShouldExcludeTransitionForPrediction(visits[i].transition)) {
       if (visits[i].url_id == info.url_id) {
@@ -322,73 +420,112 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
             next_urls_num_found.insert(std::pair<URLID, int>(*it, 0));
         std::map<URLID, int>::iterator num_found_it = insert_ret.first;
         num_found_it->second++;
-        if (num_found_it->second > best_next_url_count) {
-          best_next_url_count = num_found_it->second;
-          best_next_url = *it;
-        }
       }
     }
   }
 
-  // Only consider a candidate next page for prerendering if it was viewed
-  // at least twice, and at least 10% of the time.
-  if (num_occurrences_of_current_visit > 0 &&
-      best_next_url_count > 1 &&
-      best_next_url_count * 10 >= num_occurrences_of_current_visit) {
-    RecordEvent(EVENT_ADD_VISIT_IDENTIFIED_PRERENDER_CANDIDATE);
-    double priority = static_cast<double>(best_next_url_count) /
-        static_cast<double>(num_occurrences_of_current_visit);
-    if (ShouldReplaceCurrentPrerender(priority)) {
-      RecordEvent(EVENT_START_URL_LOOKUP);
-      HistoryService* history = GetHistoryIfExists();
-      if (history) {
-        history->ScheduleDBTask(
-            new GetURLForURLIDTask(
-                best_next_url,
-                base::Bind(&PrerenderLocalPredictor::OnLookupURL,
-                           base::Unretained(this),
-                           best_next_url,
-                           priority)),
-            &history_db_consumer_);
-      }
+  for (std::map<URLID, int>::const_iterator it = next_urls_num_found.begin();
+       it != next_urls_num_found.end();
+       ++it) {
+    // Only consider a candidate next page for prerendering if it was viewed
+    // at least twice, and at least 10% of the time.
+    if (num_occurrences_of_current_visit > 0 &&
+        it->second > 1 &&
+        it->second * 10 >= num_occurrences_of_current_visit) {
+      RecordEvent(EVENT_ADD_VISIT_IDENTIFIED_PRERENDER_CANDIDATE);
+      double priority = static_cast<double>(it->second) /
+          static_cast<double>(num_occurrences_of_current_visit);
+      lookup_info->MaybeAddCandidateURL(it->first, priority);
     }
+  }
+
+  if (lookup_info->candidate_urls_.size() == 0) {
+    RecordEvent(EVENT_NO_PRERENDER_CANDIDATES);
+    return;
+  }
+
+  RecordEvent(EVENT_START_URL_LOOKUP);
+  HistoryService* history = GetHistoryIfExists();
+  if (history) {
+    RecordEvent(EVENT_GOT_HISTORY_ISSUING_LOOKUP);
+    LocalPredictorURLLookupInfo* lookup_info_ptr = lookup_info.get();
+    history->ScheduleDBTask(
+        new GetURLForURLIDTask(
+            lookup_info_ptr,
+            base::Bind(&PrerenderLocalPredictor::OnLookupURL,
+                       base::Unretained(this),
+                       base::Passed(&lookup_info))),
+        &history_db_consumer_);
   }
 }
 
-void PrerenderLocalPredictor::OnLookupURL(history::URLID url_id,
-                                          double priority,
-                                          const GURL& url) {
+void PrerenderLocalPredictor::OnLookupURL(
+    scoped_ptr<LocalPredictorURLLookupInfo> info) {
   RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT);
 
-  base::Time current_time = GetCurrentTime();
-  if (ShouldReplaceCurrentPrerender(priority)) {
-    if (IsRootPageURL(url)) {
-      RecordEvent(EVENT_ADD_VISIT_PRERENDERING);
-      if (current_prerender_.get() && current_prerender_->url_id == url_id) {
-        RecordEvent(EVENT_ADD_VISIT_PRERENDERING_EXTENDED);
-        if (priority > current_prerender_->priority)
-          current_prerender_->priority = priority;
-        // If the prerender already existed, we want to extend it.  However,
-        // we do not want to set its start_time to the current time to
-        // disadvantage PLT computations when the prerender is swapped in.
-        // So we set the new start time to current_time - 10s (since the vast
-        // majority of PLTs are < 10s), provided that is not before the actual
-        // time the prerender was started (so as to not artificially advantage
-        // the PLT computation).
-        base::Time simulated_new_start_time =
-            current_time - base::TimeDelta::FromSeconds(10);
-        if (simulated_new_start_time > current_prerender_->start_time)
-          current_prerender_->start_time = simulated_new_start_time;
-      } else {
-        current_prerender_.reset(
-            new PrerenderData(url_id, url, priority, current_time));
-      }
-      current_prerender_->actual_start_time = current_time;
-    } else {
-      RecordEvent(EVENT_ADD_VISIT_NOT_ROOTPAGE);
-    }
+  DCHECK_GE(static_cast<int>(info->candidate_urls_.size()), 1);
+
+  if (!info->source_url_.url_lookup_success) {
+    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_FAILED);
+    return;
   }
 
+  LogCandidateURLStats(info->candidate_urls_[0].url);
+
+  WebContents* source_web_contents = NULL;
+
+#if !defined(OS_ANDROID)
+  // We need to figure out what tab launched the prerender. We do this by
+  // comparing URLs. This may not always work: the URL may occur in two
+  // tabs, and we pick the wrong one, or the tab we should have picked
+  // may have navigated elsewhere. Hopefully, this doesn't happen too often,
+  // so we ignore these cases for now.
+  // TODO(tburkard): Reconsider this, potentially measure it, and fix this
+  // in the future.
+  for (TabContentsIterator it; !it.done(); it.Next()) {
+    if (it->GetURL() == info->source_url_.url) {
+      source_web_contents = *it;
+      break;
+    }
+  }
+#endif
+
+  if (!source_web_contents) {
+    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_NO_SOURCE_WEBCONTENTS_FOUND);
+    return;
+  }
+
+  scoped_refptr<SessionStorageNamespace> session_storage_namespace =
+      source_web_contents->GetController().GetDefaultSessionStorageNamespace();
+
+  gfx::Rect container_bounds;
+  source_web_contents->GetView()->GetContainerBounds(&container_bounds);
+  scoped_ptr<gfx::Size> size(new gfx::Size(container_bounds.size()));
+
+  scoped_refptr<LoggedInPredictorTable> logged_in_table =
+      prerender_manager_->logged_in_predictor_table();
+
+  if (!logged_in_table.get()) {
+    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_NO_LOGGED_IN_TABLE_FOUND);
+    return;
+  }
+
+  RecordEvent(EVENT_PRERENDER_URL_LOOKUP_ISSUING_LOGGED_IN_LOOKUP);
+
+  LocalPredictorURLLookupInfo* info_ptr = info.get();
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&LookupLoggedInStatesOnDBThread,
+                 logged_in_table,
+                 info_ptr),
+      base::Bind(&PrerenderLocalPredictor::ContinuePrerenderCheck,
+                 weak_factory_.GetWeakPtr(),
+                 session_storage_namespace,
+                 base::Passed(&size),
+                 base::Passed(&info)));
+}
+
+void PrerenderLocalPredictor::LogCandidateURLStats(const GURL& url) const {
   if (url_whitelist_.count(GetInt64URLHashForURL(url)) > 0) {
     RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_ON_WHITELIST);
     if (IsRootPageURL(url))
@@ -404,21 +541,19 @@ void PrerenderLocalPredictor::OnLookupURL(history::URLID url_id,
     RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_IS_HTTP);
   if (url.has_query())
     RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_HAS_QUERY_STRING);
-  if (StrCaseStr(url.spec().c_str(), "logout") ||
-      StrCaseStr(url.spec().c_str(), "signout"))
+  if (IsLogOutURL(url))
     RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_CONTAINS_LOGOUT);
-  if (StrCaseStr(url.spec().c_str(), "login") ||
-      StrCaseStr(url.spec().c_str(), "signin"))
+  if (IsLogInURL(url))
     RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_CONTAINS_LOGIN);
 }
 
 void PrerenderLocalPredictor::OnGetInitialVisitHistory(
-    scoped_ptr<std::vector<history::BriefVisitInfo> > visit_history) {
+    scoped_ptr<vector<history::BriefVisitInfo> > visit_history) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!visit_history_.get());
   RecordEvent(EVENT_INIT_SUCCEEDED);
   // Since the visit history has descending timestamps, we must reverse it.
-  visit_history_.reset(new std::vector<history::BriefVisitInfo>(
+  visit_history_.reset(new vector<history::BriefVisitInfo>(
       visit_history->rbegin(), visit_history->rend()));
 }
 
@@ -447,7 +582,7 @@ void PrerenderLocalPredictor::Init() {
 
 void PrerenderLocalPredictor::OnPLTEventForURL(const GURL& url,
                                                base::TimeDelta page_load_time) {
-  scoped_ptr<PrerenderData> prerender;
+  scoped_ptr<PrerenderProperties> prerender;
   if (DoesPrerenderMatchPLTRecord(last_swapped_in_prerender_.get(),
                                   url, page_load_time)) {
     prerender.reset(last_swapped_in_prerender_.release());
@@ -480,7 +615,7 @@ void PrerenderLocalPredictor::OnPLTEventForURL(const GURL& url,
 }
 
 bool PrerenderLocalPredictor::IsPrerenderStillValid(
-    PrerenderLocalPredictor::PrerenderData* prerender) const {
+    PrerenderLocalPredictor::PrerenderProperties* prerender) const {
   return (prerender &&
           (prerender->start_time +
            base::TimeDelta::FromMilliseconds(kMaxLocalPredictionTimeMs))
@@ -494,7 +629,9 @@ void PrerenderLocalPredictor::RecordEvent(
 }
 
 bool PrerenderLocalPredictor::DoesPrerenderMatchPLTRecord(
-    PrerenderData* prerender, const GURL& url, base::TimeDelta plt) const {
+    PrerenderProperties* prerender,
+    const GURL& url,
+    base::TimeDelta plt) const {
   if (prerender && prerender->start_time < GetCurrentTime() - plt) {
     if (prerender->url.is_empty())
       RecordEvent(EVENT_ERROR_NO_PRERENDER_URL_FOR_PLT);
@@ -506,11 +643,118 @@ bool PrerenderLocalPredictor::DoesPrerenderMatchPLTRecord(
 
 bool PrerenderLocalPredictor::ShouldReplaceCurrentPrerender(
     double priority) const {
-  base::TimeDelta max_age =
-      base::TimeDelta::FromMilliseconds(kMaxLocalPredictionTimeMs);
-  return (!current_prerender_.get()) ||
-    current_prerender_->priority < priority ||
-    current_prerender_->start_time < GetCurrentTime() - max_age;
+  return (!prerender_handle_.get() ||
+          !prerender_handle_->IsPrerendering() ||
+          current_prerender_priority_ < priority);
+}
+
+void PrerenderLocalPredictor::ContinuePrerenderCheck(
+    scoped_refptr<SessionStorageNamespace> session_storage_namespace,
+    scoped_ptr<gfx::Size> size,
+    scoped_ptr<LocalPredictorURLLookupInfo> info) {
+  RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_STARTED);
+  scoped_ptr<LocalPredictorURLInfo> url_info;
+  for (int i = 0; i < static_cast<int>(info->candidate_urls_.size()); i++) {
+    url_info.reset(new LocalPredictorURLInfo(info->candidate_urls_[i]));
+
+    // We need to check whether we can issue a prerender for this URL.
+    // We test a set of conditions. Each condition can either rule out
+    // a prerender (in which case we reset url_info, so that it will not
+    // be prerendered, and we continue, which means try the next candidate
+    // URL), or it can be sufficient to issue the prerender without any
+    // further checks (in which case we just break).
+    // The order of the checks is critical, because it prescribes the logic
+    // we use here to decide what to prerender.
+    if (!url_info->url_lookup_success) {
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_NO_URL);
+      url_info.reset(NULL);
+      continue;
+    }
+    if (!ShouldReplaceCurrentPrerender(url_info->priority)) {
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_PRIORITY_TOO_LOW);
+      url_info.reset(NULL);
+      continue;
+    }
+    if (URLsIdenticalIgnoringFragments(info->source_url_.url,
+                                       url_info->url)) {
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_URLS_IDENTICAL_BUT_FRAGMENT);
+      url_info.reset(NULL);
+      continue;
+    }
+    if (url_info->url.SchemeIs("https")) {
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_HTTPS);
+      url_info.reset(NULL);
+      continue;
+    }
+    if (IsRootPageURL(url_info->url)) {
+      // For root pages, we assume that they are reasonably safe, and we
+      // will just prerender them without any additional checks.
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ROOT_PAGE);
+      break;
+    }
+    if (IsLogOutURL(url_info->url)) {
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_LOGOUT_URL);
+      url_info.reset(NULL);
+      continue;
+    }
+    if (IsLogInURL(url_info->url)) {
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_LOGIN_URL);
+      url_info.reset(NULL);
+      continue;
+    }
+    if (!url_info->logged_in && url_info->logged_in_lookup_ok) {
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_NOT_LOGGED_IN);
+      break;
+    }
+    RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_FALLTHROUGH_NOT_PRERENDERING);
+    url_info.reset(NULL);
+  }
+  if (!url_info.get())
+    return;
+  RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ISSUING_PRERENDER);
+  IssuePrerender(session_storage_namespace, size.Pass(),
+                 url_info.Pass());
+}
+
+void PrerenderLocalPredictor::IssuePrerender(
+    scoped_refptr<SessionStorageNamespace> session_storage_namespace,
+    scoped_ptr<gfx::Size> size,
+    scoped_ptr<LocalPredictorURLInfo> info) {
+  URLID url_id = info->id;
+  const GURL& url = info->url;
+  double priority = info->priority;
+  base::Time current_time = GetCurrentTime();
+  RecordEvent(EVENT_ISSUING_PRERENDER);
+
+  current_prerender_priority_ = priority;
+  scoped_ptr<prerender::PrerenderHandle> old_prerender_handle(
+      prerender_handle_.release());
+  prerender_handle_.reset(prerender_manager_->AddPrerenderFromLocalPredictor(
+      url, session_storage_namespace.get(), *size));
+  if (old_prerender_handle)
+    old_prerender_handle->OnCancel();
+
+  RecordEvent(EVENT_ADD_VISIT_PRERENDERING);
+  if (current_prerender_.get() && current_prerender_->url_id == url_id) {
+    RecordEvent(EVENT_ADD_VISIT_PRERENDERING_EXTENDED);
+    if (priority > current_prerender_->priority)
+      current_prerender_->priority = priority;
+    // If the prerender already existed, we want to extend it.  However,
+    // we do not want to set its start_time to the current time to
+    // disadvantage PLT computations when the prerender is swapped in.
+    // So we set the new start time to current_time - 10s (since the vast
+    // majority of PLTs are < 10s), provided that is not before the actual
+    // time the prerender was started (so as to not artificially advantage
+    // the PLT computation).
+    base::Time simulated_new_start_time =
+        current_time - base::TimeDelta::FromSeconds(10);
+    if (simulated_new_start_time > current_prerender_->start_time)
+      current_prerender_->start_time = simulated_new_start_time;
+  } else {
+    current_prerender_.reset(
+        new PrerenderProperties(url_id, url, priority, current_time));
+  }
+  current_prerender_->actual_start_time = current_time;
 }
 
 }  // namespace prerender

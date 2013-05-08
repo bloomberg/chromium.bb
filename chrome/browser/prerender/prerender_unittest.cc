@@ -661,6 +661,7 @@ TEST_F(PrerenderTest, PendingPrerenderTest) {
   EXPECT_TRUE(pending_prerender_handle->IsPrerendering());
   ASSERT_EQ(pending_prerender_contents,
             prerender_manager()->FindAndUseEntry(pending_url));
+  EXPECT_FALSE(pending_prerender_handle->IsPrerendering());
 }
 
 TEST_F(PrerenderTest, InvalidPendingPrerenderTest) {

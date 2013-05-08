@@ -380,6 +380,14 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromOmnibox(
                       session_storage_namespace);
 }
 
+PrerenderHandle* PrerenderManager::AddPrerenderFromLocalPredictor(
+    const GURL& url,
+    SessionStorageNamespace* session_storage_namespace,
+    const gfx::Size& size) {
+  return AddPrerender(ORIGIN_LOCAL_PREDICTOR, -1, url, content::Referrer(),
+                      size, session_storage_namespace);
+}
+
 void PrerenderManager::DestroyPrerenderForRenderView(
     int process_id, int view_id, FinalStatus final_status) {
   DCHECK(CalledOnValidThread());
@@ -1125,7 +1133,7 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   DCHECK(prerender_contents);
   active_prerenders_.push_back(
       new PrerenderData(this, prerender_contents,
-                        GetExpiryTimeForNewPrerender()));
+                        GetExpiryTimeForNewPrerender(origin)));
   if (!prerender_contents->Init()) {
     DCHECK(active_prerenders_.end() ==
            FindIteratorForPrerenderContents(prerender_contents));
@@ -1202,8 +1210,12 @@ void PrerenderManager::PostCleanupTask() {
       base::Bind(&PrerenderManager::PeriodicCleanup, AsWeakPtr()));
 }
 
-base::TimeTicks PrerenderManager::GetExpiryTimeForNewPrerender() const {
-  return GetCurrentTimeTicks() + config_.time_to_live;
+base::TimeTicks PrerenderManager::GetExpiryTimeForNewPrerender(
+    Origin origin) const {
+  base::TimeDelta ttl = config_.time_to_live;
+  if (origin == ORIGIN_LOCAL_PREDICTOR)
+    ttl = base::TimeDelta::FromSeconds(180);
+  return GetCurrentTimeTicks() + ttl;
 }
 
 base::TimeTicks PrerenderManager::GetExpiryTimeForNavigatedAwayPrerender()

@@ -28,6 +28,7 @@ int g_omnibox_trial_default_group_number = kint32min;
 
 const char kLocalPredictorTrialName[] = "PrerenderLocalPredictor";
 const char kLocalPredictorEnabledGroup[] = "Enabled";
+const char kLocalPredictorDisabledGroup[] = "Disabled";
 
 const char kLoggedInPredictorTrialName[] = "PrerenderLoggedInPredictor";
 const char kLoggedInPredictorEnabledGroup[] = "Enabled";
@@ -149,6 +150,7 @@ void SetupPrerenderFieldTrial() {
 }  // end namespace
 
 void ConfigureOmniboxPrerender();
+void ConfigureLocalPredictor();
 void ConfigureLoggedInPredictor();
 void ConfigureSideEffectFreeWhitelist();
 
@@ -207,6 +209,7 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   }
 
   ConfigureOmniboxPrerender();
+  ConfigureLocalPredictor();
   ConfigureLoggedInPredictor();
   ConfigureSideEffectFreeWhitelist();
 }
@@ -227,6 +230,19 @@ void ConfigureOmniboxPrerender() {
           2013, 12, 31, &g_omnibox_trial_default_group_number));
   omnibox_prerender_trial->AppendGroup("OmniboxPrerenderDisabled",
                                        kDisabledProbability);
+}
+
+void ConfigureLocalPredictor() {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    return;
+  }
+  scoped_refptr<FieldTrial> local_predictor_trial(
+      FieldTrialList::FactoryGetFieldTrial(
+          kLocalPredictorTrialName, 100,
+          kLocalPredictorDisabledGroup, 2013, 12, 31, NULL));
+  local_predictor_trial->AppendGroup(kLocalPredictorEnabledGroup, 100);
 }
 
 void ConfigureLoggedInPredictor() {
@@ -253,7 +269,7 @@ void ConfigureSideEffectFreeWhitelist() {
     return;
   }
   side_effect_free_whitelist_trial->AppendGroup(
-      kSideEffectFreeWhitelistEnabledGroup, 100);
+      kSideEffectFreeWhitelistEnabledGroup, 0);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {
@@ -285,6 +301,13 @@ bool IsOmniboxEnabled(Profile* profile) {
 }
 
 bool IsLocalPredictorEnabled() {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  return false;
+#endif
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePrerenderLocalPredictor)) {
+    return false;
+  }
   return base::FieldTrialList::FindFullName(kLocalPredictorTrialName) ==
       kLocalPredictorEnabledGroup;
 }
