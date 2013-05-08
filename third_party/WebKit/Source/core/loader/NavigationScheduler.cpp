@@ -123,7 +123,7 @@ protected:
         m_haveToldClient = true;
 
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        frame->loader()->clientRedirected(KURL(ParsedURLString, m_url), delay(), currentTime() + timer->nextFireInterval(), lockBackForwardList());
+        frame->loader()->clientRedirected(KURL(ParsedURLString, m_url), delay(), currentTime() + timer->nextFireInterval());
     }
 
     virtual void didStopTimer(Frame* frame)
@@ -249,7 +249,7 @@ public:
         m_haveToldClient = true;
 
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        frame->loader()->clientRedirected(m_submission->requestURL(), delay(), currentTime() + timer->nextFireInterval(), lockBackForwardList());
+        frame->loader()->clientRedirected(m_submission->requestURL(), delay(), currentTime() + timer->nextFireInterval());
     }
 
     virtual void didStopTimer(Frame* frame)

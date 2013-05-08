@@ -59,7 +59,6 @@ public:
     void saveDocumentAndScrollState();
     void restoreDocumentState();
 
-    void updateForClientRedirect();
     void updateForCommit();
     void updateForSameDocumentNavigation();
     void updateForFrameLoadCompleted();
@@ -92,6 +91,7 @@ private:
     void updateForReload();
     void updateForStandardLoad();
     void updateForRedirectWithLockedBackForwardList();
+    void updateForInitialLoadInChildFrame();
 
     void recursiveSetProvisionalItem(HistoryItem*, HistoryItem*);
     void recursiveGoToItem(HistoryItem*, HistoryItem*);

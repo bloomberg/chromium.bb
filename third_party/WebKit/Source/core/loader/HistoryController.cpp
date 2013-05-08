@@ -199,6 +199,7 @@ void HistoryController::restoreDocumentState()
             break;
         case FrameLoadTypeBackForward:
         case FrameLoadTypeRedirectWithLockedBackForwardList:
+        case FrameLoadTypeInitialInChildFrame:
         case FrameLoadTypeStandard:
             itemToRestore = m_currentItem.get(); 
     }
@@ -309,55 +310,29 @@ void HistoryController::updateForStandardLoad()
 {
     LOG(History, "WebCoreHistory: Updating History for Standard Load in frame %s", m_frame->loader()->documentLoader()->url().string().ascii().data());
 
-    FrameLoader* frameLoader = m_frame->loader();
-
-    const KURL& historyURL = frameLoader->documentLoader()->urlForHistory();
-
-    if (!frameLoader->documentLoader()->isClientRedirect()) {
-        if (!historyURL.isEmpty())
-            updateBackForwardListClippedAtTarget(true);
-    } else {
-        // The client redirect replaces the current history item.
-        updateCurrentItem();
-    }
+    if (!m_frame->loader()->documentLoader()->urlForHistory().isEmpty())
+        updateBackForwardListClippedAtTarget(true);
 }
 
 void HistoryController::updateForRedirectWithLockedBackForwardList()
 {
 #if !LOG_DISABLED
-    if (m_frame->loader()->documentLoader())
-        LOG(History, "WebCoreHistory: Updating History for redirect load in frame %s", m_frame->loader()->documentLoader()->title().string().utf8().data());
+    LOG(History, "WebCoreHistory: Updating History for redirect load in frame %s", m_frame->loader()->documentLoader()->title().string().utf8().data());
 #endif
-    
-    const KURL& historyURL = m_frame->loader()->documentLoader()->urlForHistory();
 
-    if (m_frame->loader()->documentLoader()->isClientRedirect()) {
-        if (!m_currentItem && !m_frame->tree()->parent()) {
-            if (!historyURL.isEmpty())
-                updateBackForwardListClippedAtTarget(true);
-        }
-        // The client redirect replaces the current history item.
-        updateCurrentItem();
-    } else {
-        Frame* parentFrame = m_frame->tree()->parent();
-        if (parentFrame && parentFrame->loader()->history()->m_currentItem)
-            parentFrame->loader()->history()->m_currentItem->setChildItem(createItem());
+    if (!m_currentItem && !m_frame->tree()->parent()) {
+        if (!m_frame->loader()->documentLoader()->urlForHistory().isEmpty())
+            updateBackForwardListClippedAtTarget(true);
     }
+    // The client redirect replaces the current history item.
+    updateCurrentItem();
 }
 
-void HistoryController::updateForClientRedirect()
+void HistoryController::updateForInitialLoadInChildFrame()
 {
-#if !LOG_DISABLED
-    if (m_frame->loader()->documentLoader())
-        LOG(History, "WebCoreHistory: Updating History for client redirect in frame %s", m_frame->loader()->documentLoader()->title().string().utf8().data());
-#endif
-
-    // Clear out form data so we don't try to restore it into the incoming page.  Must happen after
-    // webcore has closed the URL and saved away the form state.
-    if (m_currentItem) {
-        m_currentItem->clearDocumentState();
-        m_currentItem->clearScrollPoint();
-    }
+    Frame* parentFrame = m_frame->tree()->parent();
+    if (parentFrame && parentFrame->loader()->history()->m_currentItem)
+        parentFrame->loader()->history()->m_currentItem->setChildItem(createItem());
 }
 
 void HistoryController::updateForCommit()
@@ -404,6 +379,9 @@ void HistoryController::updateForCommit()
         return;
     case FrameLoadTypeRedirectWithLockedBackForwardList:
         updateForRedirectWithLockedBackForwardList();
+        return;
+    case FrameLoadTypeInitialInChildFrame:
+        updateForInitialLoadInChildFrame();
         return;
     default:
         ASSERT_NOT_REACHED();

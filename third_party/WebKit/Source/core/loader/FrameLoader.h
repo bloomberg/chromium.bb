@@ -239,7 +239,7 @@ public:
 
     void completed();
     bool allAncestorsAreComplete() const; // including this
-    void clientRedirected(const KURL&, double delay, double fireDate, bool lockBackForwardList);
+    void clientRedirected(const KURL&, double delay, double fireDate);
     void clientRedirectCancelledOrFinished();
 
     void setOriginalURLForDownloadRequest(ResourceRequest&);
@@ -247,8 +247,6 @@ public:
     bool suppressOpenerInNewFrame() const { return m_suppressOpenerInNewFrame; }
 
     static ObjectContentType defaultObjectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages);
-
-    bool quickRedirectComing() const { return m_quickRedirectComing; }
 
     bool shouldClose();
     
@@ -329,7 +327,6 @@ private:
     void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation);
 
     void prepareForLoadStart();
-    void provisionalLoadStarted();
 
     bool didOpenURL();
 
@@ -368,12 +365,9 @@ private:
 
     bool m_delegateIsHandlingProvisionalLoadError;
 
-    bool m_quickRedirectComing;
     bool m_inStopAllLoaders;
 
     String m_outgoingReferrer;
-
-    bool m_isExecutingJavaScriptFormAction;
 
     bool m_didCallImplicitClose;
     bool m_wasUnloadEventEmitted;

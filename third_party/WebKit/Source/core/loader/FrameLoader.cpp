@@ -192,9 +192,7 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_state(FrameStateProvisional)
     , m_loadType(FrameLoadTypeStandard)
     , m_delegateIsHandlingProvisionalLoadError(false)
-    , m_quickRedirectComing(false)
     , m_inStopAllLoaders(false)
-    , m_isExecutingJavaScriptFormAction(false)
     , m_didCallImplicitClose(true)
     , m_wasUnloadEventEmitted(false)
     , m_pageDismissalEventBeingDispatched(NoDismissal)
@@ -312,9 +310,7 @@ void FrameLoader::submitForm(PassRefPtr<FormSubmission> submission)
     if (protocolIsJavaScript(submission->action())) {
         if (!m_frame->document()->contentSecurityPolicy()->allowFormAction(KURL(submission->action())))
             return;
-        m_isExecutingJavaScriptFormAction = true;
         m_frame->script()->executeIfJavaScriptURL(submission->action());
-        m_isExecutingJavaScriptFormAction = false;
         return;
     }
 
@@ -793,7 +789,7 @@ void FrameLoader::loadURLIntoChildFrame(const KURL& url, const String& referer, 
         }
     }
 
-    childFrame->loader()->loadURL(url, referer, "_self", FrameLoadTypeRedirectWithLockedBackForwardList, 0, 0);
+    childFrame->loader()->loadURL(url, referer, "_self", FrameLoadTypeInitialInChildFrame, 0, 0);
 }
 
 ObjectContentType FrameLoader::defaultObjectContentType(const KURL& url, const String& mimeTypeIn, bool shouldPreferPlugInsForImages)
@@ -870,13 +866,6 @@ void FrameLoader::handleFallbackContent()
         return;
     static_cast<HTMLObjectElement*>(owner)->renderFallbackContent();
 }
-
-void FrameLoader::provisionalLoadStarted()
-{
-    m_frame->navigationScheduler()->cancel();
-    m_quickRedirectComing = false;
-}
-
 void FrameLoader::resetMultipleFormSubmissionProtection()
 {
     m_submittedFormURL = KURL();
@@ -1049,7 +1038,7 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBac
     FrameLoadType loadType;
     if (request.resourceRequest().cachePolicy() == ReloadIgnoringCacheData)
         loadType = FrameLoadTypeReload;
-    else if (lockBackForwardList)
+    else if (lockBackForwardList || history()->currentItemShouldBeReplaced())
         loadType = FrameLoadTypeRedirectWithLockedBackForwardList;
     else
         loadType = FrameLoadTypeStandard;
@@ -1186,10 +1175,8 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
     else if (m_documentLoader)
         loader->setOverrideEncoding(m_documentLoader->overrideEncoding());
 
-    if (m_quickRedirectComing) {
+    if (type == FrameLoadTypeRedirectWithLockedBackForwardList)
         loader->setIsClientRedirect(true);
-        m_quickRedirectComing = false;
-    }
 
     // Retain because dispatchBeforeLoadEvent may release the last reference to it.
     RefPtr<Frame> protect(m_frame);
@@ -1419,7 +1406,7 @@ void FrameLoader::setState(FrameState newState)
     m_state = newState;
     
     if (newState == FrameStateProvisional)
-        provisionalLoadStarted();
+        m_frame->navigationScheduler()->cancel();
     else if (newState == FrameStateComplete)
         frameLoadCompleted();
 }
@@ -1460,9 +1447,6 @@ void FrameLoader::commitProvisionalLoad()
 
     LOG(Loading, "WebCoreLoading %s: Finished committing provisional load to URL %s", m_frame->tree()->uniqueName().string().utf8().data(),
         m_frame->document() ? m_frame->document()->url().elidedString().utf8().data() : "");
-
-    if (m_loadType == FrameLoadTypeStandard && m_documentLoader->isClientRedirect())
-        history()->updateForClientRedirect();
 }
 
 void FrameLoader::transitionToCommitted()
@@ -1513,15 +1497,9 @@ void FrameLoader::clientRedirectCancelledOrFinished()
     m_client->dispatchDidCancelClientRedirect();
 }
 
-void FrameLoader::clientRedirected(const KURL& url, double seconds, double fireDate, bool lockBackForwardList)
+void FrameLoader::clientRedirected(const KURL& url, double seconds, double fireDate)
 {
     m_client->dispatchWillPerformClientRedirect(url, seconds, fireDate);
-
-    // If a "quick" redirect comes in, we set a special mode so we treat the next
-    // load as part of the original navigation. If we don't have a document loader, we have
-    // no "original" load on which to base a redirect, so we treat the redirect as a normal load.
-    // Loads triggered by JavaScript form submissions never count as quick redirects.
-    m_quickRedirectComing = (lockBackForwardList || history()->currentItemShouldBeReplaced()) && m_documentLoader && !m_isExecutingJavaScriptFormAction;
 }
 
 bool FrameLoader::shouldReload(const KURL& currentURL, const KURL& destinationURL)
@@ -2080,9 +2058,7 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
         m_provisionalDocumentLoader->stopLoading();
         setProvisionalDocumentLoader(0);
     }
-
-    bool isRedirect = m_quickRedirectComing || m_loadType == FrameLoadTypeRedirectWithLockedBackForwardList;
-    loadInSameDocument(request.url(), 0, !isRedirect);
+    loadInSameDocument(request.url(), 0, m_loadType != FrameLoadTypeRedirectWithLockedBackForwardList);
 }
 
 bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType loadType, const KURL& url)
