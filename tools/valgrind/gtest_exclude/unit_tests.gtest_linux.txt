@@ -26,3 +26,6 @@ AutocompleteActionPredictorTest.RecommendActionURL
 
 # http://crbug.com/180467
 HttpPipeliningCompatibilityClientTest.*
+
+# http://crbug.com/238964
+CpuInfoProviderTest.*
