@@ -132,8 +132,10 @@
     "channel": "dev",
     "extension_types": ["platform_app"],
     "whitelist": [
-        "lphgohfeebnhcpiohjndkgbhhkoapkjc", // Apps Debugger
-        "gonnpeheodhmhdjiimoiheniambmdcco" // Apps Editor.
+        "lphgohfeebnhcpiohjndkgbhhkoapkjc",  // Apps Debugger
+        "gonnpeheodhmhdjiimoiheniambmdcco",  // Apps Editor old.
+        // TODO(grv) : clean up once after publish.
+        "cbelnpbjogfbjamhpbofhlnklecjpido"  // Apps Editor published.
     ]
   },
   "devtools": {
@@ -281,7 +283,8 @@
       "channel": "stable",
       "extension_types": ["platform_app"],
       "whitelist": [
-          "gonnpeheodhmhdjiimoiheniambmdcco"  // Apps Editor.
+          "gonnpeheodhmhdjiimoiheniambmdcco",  // Apps Editor old.
+          "cbelnpbjogfbjamhpbofhlnklecjpido"  // Apps Editor published.
       ]
     }
   ],
