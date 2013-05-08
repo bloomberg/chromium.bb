@@ -286,9 +286,6 @@
     'linux_seccomp_bpf': {
       'filepath': 'content/common/sandbox.*linux.cc',
     },
-    'locale_settings': {
-      'filepath': 'chrome/app/resources/locale_settings',
-    },
     'managed_users': {
       'filepath': 'chrome/browser/managed_mode'\
                   '|chrome/browser/extensions/api/managed_mode'\
@@ -624,7 +621,6 @@
     'linux_fonts': ['derat+watch@chromium.org'],
     'linux_sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
-    'locale_settings': ['finnur+watch@chromium.org'],
     'mac': ['sail+watch@chromium.org'],
     'managed_users': ['pam+watch@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
