@@ -24,6 +24,7 @@
 #include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
 #include "chrome/browser/ui/aura/active_desktop_monitor.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -112,6 +113,7 @@ void DesktopNotificationsTest::SetUp() {
     ui::TSFBridge::Initialize();
 #endif
 #if defined(USE_ASH)
+  WebKit::initialize(webkit_platform_support_.Get());
   ui::ScopedAnimationDurationScaleMode normal_duration_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 #if defined(ENABLE_MESSAGE_CENTER)
@@ -147,6 +149,7 @@ void DesktopNotificationsTest::TearDown() {
   message_center::MessageCenter::Shutdown();
 #endif
   aura::Env::DeleteInstance();
+  WebKit::shutdown();
 #endif
 }
 
