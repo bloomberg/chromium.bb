@@ -714,6 +714,10 @@ DirectoryTree.prototype.redraw = function(recursive) {
  * @private
  */
 DirectoryTree.prototype.onFilterChanged_ = function() {
+  // Returns immediately, if the tree is hidden.
+  if (!this.currentPath_ || DirectoryTreeUtil.shouldHideTree(this.currentPath_))
+    return;
+
   this.redraw(true /* recursive */);
   cr.dispatchSimpleEvent(this, 'content-updated');
 };
@@ -724,6 +728,10 @@ DirectoryTree.prototype.onFilterChanged_ = function() {
  * @private
  */
 DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
+  // Returns immediately, if the tree is hidden.
+  if (!this.currentPath_ || DirectoryTreeUtil.shouldHideTree(this.currentPath_))
+    return;
+
   if (event.eventType == 'changed') {
     var path = util.extractFilePath(event.directoryUrl);
     DirectoryTreeUtil.updateChangedDirectoryItem(path, this);
