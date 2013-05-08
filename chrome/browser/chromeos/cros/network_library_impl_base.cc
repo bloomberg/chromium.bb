@@ -1113,6 +1113,11 @@ void NetworkLibraryImplBase::LoadOncNetworks(
     if (marked_for_removal)
       continue;
 
+    // Store the network's identifier. The identifiers are later used to clean
+    // out any previously-existing networks that had been configured through
+    // policy but are no longer specified in the updated ONC blob.
+    network_ids.insert(guid);
+
     // Expand strings like LoginID
     base::DictionaryValue* expanded_network = network->DeepCopy();
     UserStringSubstitution substitution;
@@ -1122,6 +1127,9 @@ void NetworkLibraryImplBase::LoadOncNetworks(
 
     // Update the ONC map.
     const base::DictionaryValue*& entry = network_onc_map_[guid];
+    if (entry && entry->Equals(expanded_network))
+      continue;
+
     delete entry;
     entry = expanded_network;
 
@@ -1178,11 +1186,6 @@ void NetworkLibraryImplBase::LoadOncNetworks(
     } else {
       CallConfigureService(guid, shill_dict.get());
     }
-
-    // Store the network's identifier. The identifiers are later used to clean
-    // out any previously-existing networks that had been configured through
-    // policy but are no longer specified in the updated ONC blob.
-    network_ids.insert(guid);
   }
 
   if (from_policy) {
