@@ -15,16 +15,16 @@ class View;
 class Widget;
 
 // Returns the HWND for the specified View.
-VIEWS_EXPORT HWND HWNDForView(View* view);
+VIEWS_EXPORT HWND HWNDForView(const View* view);
 
 // Returns the HWND for the specified Widget.
-VIEWS_EXPORT HWND HWNDForWidget(Widget* widget);
+VIEWS_EXPORT HWND HWNDForWidget(const Widget* widget);
 
 // Returns the HWND for the specified NativeView.
-VIEWS_EXPORT HWND HWNDForNativeView(gfx::NativeView view);
+VIEWS_EXPORT HWND HWNDForNativeView(const gfx::NativeView view);
 
 // Returns the HWND for the specified NativeWindow.
-VIEWS_EXPORT HWND HWNDForNativeWindow(gfx::NativeWindow window);
+VIEWS_EXPORT HWND HWNDForNativeWindow(const gfx::NativeWindow window);
 
 VIEWS_EXPORT gfx::Rect GetWindowBoundsForClientBounds(
     View* view, const gfx::Rect& client_bounds);

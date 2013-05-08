@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "ui/base/win/shell.h"
+#include "ui/views/win/hwnd_util.h"
 #endif
 
 #if defined(USE_ASH)
@@ -221,13 +222,7 @@ void NativeAppWindowViews::OnShortcutInfoLoaded(
 }
 
 HWND NativeAppWindowViews::GetNativeAppWindowHWND() const {
-#if defined(USE_AURA)
-  gfx::NativeWindow window =
-      GetWidget()->GetTopLevelWidget()->GetNativeWindow();
-  return window->GetRootWindow()->GetAcceleratedWidget();
-#else
-  return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
-#endif
+  return views::HWNDForWidget(GetWidget()->GetTopLevelWidget());
 }
 #endif
 

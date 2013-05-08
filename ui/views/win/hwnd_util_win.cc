@@ -8,20 +8,20 @@
 
 namespace views {
 
-HWND HWNDForView(View* view) {
+HWND HWNDForView(const View* view) {
   return view->GetWidget() ? HWNDForWidget(view->GetWidget()) : NULL;
 }
 
 // Returns the HWND associated with the specified widget.
-HWND HWNDForWidget(Widget* widget) {
+HWND HWNDForWidget(const Widget* widget) {
   return widget->GetNativeView();
 }
 
-HWND HWNDForNativeView(gfx::NativeView view) {
+HWND HWNDForNativeView(const gfx::NativeView view) {
   return view;
 }
 
-HWND HWNDForNativeWindow(gfx::NativeWindow window) {
+HWND HWNDForNativeWindow(const gfx::NativeWindow window) {
   return window;
 }
 
