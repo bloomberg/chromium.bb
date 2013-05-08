@@ -27,8 +27,8 @@ FileTableColumnModel.prototype.__proto__ =
     cr.ui.table.TableColumnModel.prototype;
 
 /**
- * Normalizes widths to make their sum 100%. Uses the proportional approach
- * with some additional constraints.
+ * Normalizes widths to make their sum 100% if possible. Uses the proportional
+ * approach with some additional constraints.
  *
  * @param {number} contentWidth Target width.
  * @override
@@ -46,12 +46,13 @@ FileTableColumnModel.prototype.normalizeWidths = function(contentWidth) {
       flexibleWidth += column.width;
   }
 
-  var factor = (contentWidth - fixedWidth) / flexibleWidth;
+  var factor = Math.max(0, contentWidth - fixedWidth) / flexibleWidth;
   for (var index = 0; index < this.size; index++) {
     var column = this.columns_[index];
     if (column.id == 'selection')
       continue;
-    column.width = column.width * factor;
+    // Limits the minimum width to 1px to avoid flexibleWidth=0.
+    column.width = Math.max(1, column.width * factor);
   }
 };
 

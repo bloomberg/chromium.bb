@@ -936,6 +936,7 @@ DialogType.isModal = function(type) {
       this.dialogDom_.querySelector('#app-name').innerText =
           chrome.runtime.getManifest().name;
       this.table_.normalizeColumns();
+      this.table_.redraw();
     }
   };
 
@@ -1410,9 +1411,12 @@ DialogType.isModal = function(type) {
         g.endBatchUpdates();
       }, 0);
     } else {
+      if (util.platform.newUI()) {
+        if (this.table_.clientWidth > 0)
+          this.table_.normalizeColumns();
+      }
       this.table_.redraw();
-      if (util.platform.newUI())
-        this.table_.normalizeColumns();
+      this.volumeList_.redraw();
     }
 
     if (!util.platform.newUI())
