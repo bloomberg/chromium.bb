@@ -101,10 +101,29 @@ EXTRA_ENV = {
   'LD_GOLD_OFORMAT_X8664'  : 'elf64-x86-64-nacl',
   'LD_GOLD_OFORMAT_MIPS32' : 'elf32-tradlittlemips',
 
-  'BCLD'      : '${LD_GOLD}',
-  'BCLD_FLAGS': '--oformat ${LD_GOLD_OFORMAT} -Ttext=0x20000 ' +
-                '${!SHARED && !RELOCATABLE ? --undef-sym-check} ' +
-                '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
+  'BCLD'                   : '${LD_GOLD}',
+  'BCLD_ALLOW_UNRESOLVED'  :
+    '${ALLOW_CXX_EXCEPTIONS ? '
+      '--allow-unresolved=_Unwind_Backtrace '
+      '--allow-unresolved=_Unwind_DeleteException '
+      '--allow-unresolved=_Unwind_GetCFA '
+      '--allow-unresolved=_Unwind_GetDataRelBase '
+      '--allow-unresolved=_Unwind_GetIP '
+      '--allow-unresolved=_Unwind_GetIPInfo '
+      '--allow-unresolved=_Unwind_GetLanguageSpecificData '
+      '--allow-unresolved=_Unwind_GetRegionStart '
+      '--allow-unresolved=_Unwind_GetTextRelBase '
+      '--allow-unresolved=_Unwind_PNaClSetResult0 '
+      '--allow-unresolved=_Unwind_PNaClSetResult1 '
+      '--allow-unresolved=_Unwind_RaiseException '
+      '--allow-unresolved=_Unwind_Resume '
+      '--allow-unresolved=_Unwind_Resume_or_Rethrow '
+      '--allow-unresolved=_Unwind_SetIP}',
+
+  'BCLD_FLAGS':
+    '--oformat ${LD_GOLD_OFORMAT} -Ttext=0x20000 ' +
+    '${!SHARED && !RELOCATABLE ? --undef-sym-check ${BCLD_ALLOW_UNRESOLVED}} ' +
+    '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
   'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} -o ${output}'),
 
   'ALLOW_CXX_EXCEPTIONS': '0',
