@@ -268,7 +268,7 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
     int host_id) {
   DCHECK(!texture_layer_);
   if (!delegated_layer_) {
-    delegated_layer_ = cc::DelegatedRendererLayer::Create();
+    delegated_layer_ = cc::DelegatedRendererLayer::Create(NULL);
     delegated_layer_->SetIsDrawable(true);
     delegated_layer_->SetContentsOpaque(true);
 

@@ -523,7 +523,7 @@ void Layer::SetDelegatedFrame(scoped_ptr<cc::DelegatedFrameData> frame,
   if (!!delegated_renderer_layer_ != has_frame) {
     if (has_frame) {
       scoped_refptr<cc::DelegatedRendererLayer> new_layer =
-          cc::DelegatedRendererLayer::Create();
+          cc::DelegatedRendererLayer::Create(NULL);
       SwitchToLayer(new_layer);
       delegated_renderer_layer_ = new_layer;
     } else {

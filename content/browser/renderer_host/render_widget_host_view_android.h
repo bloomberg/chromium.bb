@@ -12,7 +12,9 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process.h"
+#include "cc/layers/delegated_renderer_layer_client.h"
 #include "cc/layers/texture_layer_client.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -28,6 +30,7 @@ struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 
 namespace cc {
+class DelegatedRendererLayer;
 class Layer;
 class TextureLayer;
 }
@@ -48,8 +51,10 @@ struct NativeWebKeyboardEvent;
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
-class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase,
-                                    public cc::TextureLayerClient {
+class RenderWidgetHostViewAndroid
+    : public RenderWidgetHostViewBase,
+      public cc::TextureLayerClient,
+      public cc::DelegatedRendererLayerClient {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCoreImpl* content_view_core);
@@ -155,6 +160,9 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase,
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox) OVERRIDE;
 
+  // cc::DelegatedRendererLayerClient implementation.
+  virtual void DidCommitFrameData() OVERRIDE;
+
   // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
   SkColor GetCachedBackgroundColor() const;
@@ -189,12 +197,14 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase,
 
  private:
   void BuffersSwapped(const gpu::Mailbox& mailbox,
-                      const gfx::Size texture_size,
-                      const gfx::SizeF content_size,
                       const base::Closure& ack_callback);
 
   void RunAckCallbacks();
 
+  void SwapDelegatedFrame(scoped_ptr<cc::DelegatedFrameData> frame_data);
+  void SendDelegatedFrameAck();
+
+  void ComputeContentsSize(const cc::CompositorFrame* frame);
   void ResetClipping();
   void ClipContents(const gfx::Rect& clipping, const gfx::Size& content_size);
 
@@ -218,6 +228,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase,
   // The texture layer for this view when using browser-side compositing.
   scoped_refptr<cc::TextureLayer> texture_layer_;
 
+  scoped_refptr<cc::DelegatedRendererLayer> delegated_renderer_layer_;
+
   // The layer used for rendering the contents of this view.
   // It is either owned by texture_layer_ or surface_texture_transport_
   // depending on the mode.
@@ -240,6 +252,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase,
 
   // The mailbox of the frame we last returned.
   gpu::Mailbox last_mailbox_;
+
+  base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 
   std::queue<base::Closure> ack_callbacks_;
 

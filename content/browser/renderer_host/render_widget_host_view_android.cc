@@ -7,9 +7,12 @@
 #include <android/bitmap.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "cc/layers/delegated_renderer_layer.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/output/compositor_frame.h"
@@ -24,6 +27,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
@@ -78,14 +82,21 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       content_view_core_(NULL),
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
-      texture_id_in_layer_(0) {
+      texture_id_in_layer_(0),
+      weak_ptr_factory_(this) {
   if (CompositorImpl::UsesDirectGL()) {
     surface_texture_transport_.reset(new SurfaceTextureTransportClient());
     layer_ = surface_texture_transport_->Initialize();
     layer_->SetIsDrawable(true);
   } else {
-    texture_layer_ = cc::TextureLayer::Create(this);
-    layer_ = texture_layer_;
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableDelegatedRenderer)) {
+      delegated_renderer_layer_ = cc::DelegatedRendererLayer::Create(this);
+      layer_ = delegated_renderer_layer_;
+    } else {
+      texture_layer_ = cc::TextureLayer::Create(this);
+      layer_ = texture_layer_;
+    }
   }
 
   layer_->SetContentsOpaque(true);
@@ -521,6 +532,49 @@ void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
 void RenderWidgetHostViewAndroid::OnAcceleratedCompositingStateChange() {
 }
 
+void RenderWidgetHostViewAndroid::SendDelegatedFrameAck() {
+  cc::CompositorFrameAck ack;
+  delegated_renderer_layer_->TakeUnusedResourcesForChildCompositor(
+      &ack.resources);
+  RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+      host_->GetRoutingID(), host_->GetProcess()->GetID(), ack);
+}
+
+void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
+    scoped_ptr<cc::DelegatedFrameData> frame_data) {
+  bool has_frame = frame_data.get() && !frame_data->render_pass_list.empty();
+
+  if (has_frame) {
+    delegated_renderer_layer_->SetFrameData(frame_data.Pass());
+    delegated_renderer_layer_->SetDisplaySize(texture_size_in_layer_);
+    layer_->SetIsDrawable(true);
+  }
+  layer_->SetBounds(content_size_in_layer_);
+  layer_->SetNeedsDisplay();
+
+  base::Closure ack_callback =
+      base::Bind(&RenderWidgetHostViewAndroid::SendDelegatedFrameAck,
+                 weak_ptr_factory_.GetWeakPtr());
+
+  if (host_->is_hidden())
+    ack_callback.Run();
+  else
+    ack_callbacks_.push(ack_callback);
+}
+
+void RenderWidgetHostViewAndroid::ComputeContentsSize(
+    const cc::CompositorFrame* frame) {
+  // Calculate the content size.  This should be 0 if the texture_size is 0.
+  gfx::Vector2dF offset;
+  if (texture_size_in_layer_.GetArea() > 0)
+    offset = frame->metadata.location_bar_content_translation;
+  offset.set_y(offset.y() + frame->metadata.overdraw_bottom_height);
+  offset.Scale(frame->metadata.device_scale_factor);
+  content_size_in_layer_ =
+      gfx::Size(texture_size_in_layer_.width() - offset.x(),
+                texture_size_in_layer_.height() - offset.y());
+}
+
 void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
     scoped_ptr<cc::CompositorFrame> frame) {
   // Always let ContentViewCore know about the new frame first, so it can decide
@@ -539,6 +593,17 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
         frame->metadata.overdraw_bottom_height);
   }
 
+  if (frame->delegated_frame_data) {
+    if (!frame->delegated_frame_data->render_pass_list.empty()) {
+      texture_size_in_layer_ = frame->delegated_frame_data->render_pass_list
+          .back()->output_rect.size();
+    }
+    ComputeContentsSize(frame.get());
+
+    SwapDelegatedFrame(frame->delegated_frame_data.Pass());
+    return;
+  }
+
   if (!frame->gl_frame_data || frame->gl_frame_data->mailbox.IsZero())
     return;
 
@@ -549,23 +614,13 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
                                       texture_size_in_layer_);
   ImageTransportFactoryAndroid::GetInstance()->WaitSyncPoint(
       frame->gl_frame_data->sync_point);
-  const gfx::Size& texture_size = frame->gl_frame_data->size;
 
   last_mailbox_ = current_mailbox_;
 
-  // Calculate the content size.  This should be 0 if the texture_size is 0.
-  float dp2px = frame->metadata.device_scale_factor;
-  gfx::Vector2dF offset;
-  if (texture_size.GetArea() > 0)
-    offset = frame->metadata.location_bar_content_translation;
-  offset.set_y(offset.y() + frame->metadata.overdraw_bottom_height);
-  gfx::SizeF content_size(texture_size.width() - offset.x() * dp2px,
-                          texture_size.height() - offset.y() * dp2px);
-  BuffersSwapped(frame->gl_frame_data->mailbox,
-                 texture_size,
-                 content_size,
-                 callback);
+  texture_size_in_layer_ = frame->gl_frame_data->size;
+  ComputeContentsSize(frame.get());
 
+  BuffersSwapped(frame->gl_frame_data->mailbox, callback);
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
@@ -592,13 +647,14 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
             params.mailbox_name.data() + params.mailbox_name.length(),
             reinterpret_cast<char*>(mailbox.name));
 
-  BuffersSwapped(mailbox, params.size, params.size, callback);
+  texture_size_in_layer_ = params.size;
+  content_size_in_layer_ = params.size;
+
+  BuffersSwapped(mailbox, callback);
 }
 
 void RenderWidgetHostViewAndroid::BuffersSwapped(
     const gpu::Mailbox& mailbox,
-    const gfx::Size texture_size,
-    const gfx::SizeF content_size,
     const base::Closure& ack_callback) {
   ImageTransportFactoryAndroid* factory =
       ImageTransportFactoryAndroid::GetInstance();
@@ -619,10 +675,6 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
 
   ImageTransportFactoryAndroid::GetInstance()->AcquireTexture(
       texture_id_in_layer_, mailbox.name);
-
-  texture_size_in_layer_ = texture_size;
-  content_size_in_layer_ = gfx::Size(content_size.width(),
-                                     content_size.height());
 
   ResetClipping();
 
@@ -845,6 +897,10 @@ unsigned RenderWidgetHostViewAndroid::PrepareTexture(
     cc::ResourceUpdateQueue* queue) {
   RunAckCallbacks();
   return texture_id_in_layer_;
+}
+
+void RenderWidgetHostViewAndroid::DidCommitFrameData() {
+  RunAckCallbacks();
 }
 
 WebKit::WebGraphicsContext3D* RenderWidgetHostViewAndroid::Context3d() {

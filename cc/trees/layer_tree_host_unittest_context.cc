@@ -926,7 +926,7 @@ class LayerTreeHostContextTestDontUseLostResources
     root_->SetIsDrawable(true);
 
     scoped_refptr<FakeDelegatedRendererLayer> delegated_ =
-        FakeDelegatedRendererLayer::Create();
+        FakeDelegatedRendererLayer::Create(NULL);
     delegated_->SetBounds(gfx::Size(10, 10));
     delegated_->SetAnchorPoint(gfx::PointF());
     delegated_->SetIsDrawable(true);

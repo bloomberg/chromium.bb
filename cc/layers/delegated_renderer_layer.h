@@ -10,11 +10,14 @@
 #include "cc/resources/transferable_resource.h"
 
 namespace cc {
+
 class DelegatedFrameData;
+class DelegatedRendererLayerClient;
 
 class CC_EXPORT DelegatedRendererLayer : public Layer {
  public:
-  static scoped_refptr<DelegatedRendererLayer> Create();
+  static scoped_refptr<DelegatedRendererLayer> Create(
+      DelegatedRendererLayerClient* client);
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
@@ -34,7 +37,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   void TakeUnusedResourcesForChildCompositor(TransferableResourceArray* array);
 
  protected:
-  DelegatedRendererLayer();
+  explicit DelegatedRendererLayer(DelegatedRendererLayerClient* client);
   virtual ~DelegatedRendererLayer();
 
  private:
@@ -43,6 +46,8 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   gfx::Size frame_size_;
   gfx::Size display_size_;
   TransferableResourceArray unused_resources_for_child_compositor_;
+
+  DelegatedRendererLayerClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedRendererLayer);
 };

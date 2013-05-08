@@ -5,6 +5,7 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "cc/layers/delegated_renderer_layer.h"
+#include "cc/layers/delegated_renderer_layer_client.h"
 #include "cc/layers/delegated_renderer_layer_impl.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/shared_quad_state.h"
@@ -66,14 +67,15 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
 };
 
 class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
-    : public LayerTreeHostDelegatedTest {
+    : public LayerTreeHostDelegatedTest,
+      public DelegatedRendererLayerClient {
  public:
   virtual void SetupTree() OVERRIDE {
     root_ = Layer::Create();
     root_->SetAnchorPoint(gfx::PointF());
     root_->SetBounds(gfx::Size(10, 10));
 
-    delegated_ = FakeDelegatedRendererLayer::Create();
+    delegated_ = FakeDelegatedRendererLayer::Create(this);
     delegated_->SetAnchorPoint(gfx::PointF());
     delegated_->SetBounds(gfx::Size(10, 10));
     delegated_->SetIsDrawable(true);
@@ -89,10 +91,44 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
 
   virtual void AfterTest() OVERRIDE {}
 
+  virtual void DidCommitFrameData() OVERRIDE {}
+
  protected:
   scoped_refptr<Layer> root_;
   scoped_refptr<DelegatedRendererLayer> delegated_;
 };
+
+class LayerTreeHostDelegatedTestClientDidCommitCallback
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ public:
+  LayerTreeHostDelegatedTestClientDidCommitCallback()
+      : LayerTreeHostDelegatedTestCaseSingleDelegatedLayer(),
+        num_did_commit_frame_data_(0) {}
+
+  virtual void DidCommit() OVERRIDE {
+    if (TestEnded())
+      return;
+
+    EXPECT_EQ(1, num_did_commit_frame_data_);
+    EndTest();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    delegated_->SetFrameData(CreateFrameData(gfx::Rect(0, 0, 1, 1),
+                                             gfx::Rect(0, 0, 1, 1)));
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DidCommitFrameData() OVERRIDE {
+    num_did_commit_frame_data_++;
+  }
+
+ protected:
+  int num_did_commit_frame_data_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostDelegatedTestClientDidCommitCallback);
 
 class LayerTreeHostDelegatedTestCreateChildId
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
