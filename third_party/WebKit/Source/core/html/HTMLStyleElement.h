@@ -53,11 +53,6 @@ public:
         return true;
     }
 
-    bool isRegisteredWithShadowRoot() const
-    {
-        return m_scopedStyleRegistrationState == RegisteredInShadowRoot;
-    }
-
     using StyleElement::sheet;
 
     bool disabled() const;
@@ -101,17 +96,6 @@ private:
     };
     ScopedStyleRegistrationState m_scopedStyleRegistrationState;
 };
-
-inline bool isHTMLStyleElement(Node* node)
-{
-    return node->hasTagName(HTMLNames::styleTag);
-}
-
-inline HTMLStyleElement* toHTMLStyleElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLStyleElement(node));
-    return static_cast<HTMLStyleElement*>(node);
-}
 
 } //namespace
 

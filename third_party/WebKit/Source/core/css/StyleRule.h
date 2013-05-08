@@ -131,12 +131,6 @@ private:
     CSSSelectorList m_selectorList;
 };
 
-inline const StyleRule* toStyleRule(const StyleRuleBase* rule)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isStyleRule());
-    return static_cast<const StyleRule*>(rule);
-}
-
 class StyleRuleFontFace : public StyleRuleBase {
 public:
     static PassRefPtr<StyleRuleFontFace> create() { return adoptRef(new StyleRuleFontFace); }
