@@ -40,6 +40,7 @@
 #include "google_breakpad/processor/memory_region.h"
 #include "google_breakpad/processor/source_line_resolver_interface.h"
 #include "google_breakpad/processor/stack_frame_cpu.h"
+#include "google_breakpad/processor/system_info.h"
 #include "processor/cfi_frame_info.h"
 #include "processor/logging.h"
 #include "processor/stackwalker_amd64.h"
@@ -221,6 +222,16 @@ StackFrame* StackwalkerAMD64::GetCallerFrame(const CallStack* stack) {
   // If nothing worked, tell the caller.
   if (!new_frame.get())
     return NULL;
+
+  if (system_info_->os_short == "nacl") {
+    // Apply constraints from Native Client's x86-64 sandbox.  These
+    // registers have the 4GB-aligned sandbox base address (from r15)
+    // added to them, and only the bottom 32 bits are relevant for
+    // stack walking.
+    new_frame->context.rip = static_cast<uint32_t>(new_frame->context.rip);
+    new_frame->context.rsp = static_cast<uint32_t>(new_frame->context.rsp);
+    new_frame->context.rbp = static_cast<uint32_t>(new_frame->context.rbp);
+  }
 
   // Treat an instruction address of 0 as end-of-stack.
   if (new_frame->context.rip == 0)
