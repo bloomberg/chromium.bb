@@ -31,6 +31,10 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
 #include "chrome/common/url_constants.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     Profile* profile,
@@ -40,7 +44,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     const std::string& password,
     StartSyncMode start_mode,
     bool force_same_tab_navigation,
-    bool confirmation_required)
+    ConfirmationRequired confirmation_required)
     : start_mode_(start_mode),
       force_same_tab_navigation_(force_same_tab_navigation),
       confirmation_required_(confirmation_required),
@@ -107,7 +111,7 @@ void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {
                    weak_pointer_factory_.GetWeakPtr()));
     return;
 #else
-    SigninAfterSAMLConfirmation();
+    ConfirmAndSignin();
 #endif
   } else {
     // The user is already signed in - just tell SigninManager to continue
@@ -124,7 +128,7 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
   // finish signing in.
   if (!client.get()) {
     DVLOG(1) << "Policy registration failed";
-    SigninAfterSAMLConfirmation();
+    ConfirmAndSignin();
     return;
   }
 
@@ -235,24 +239,24 @@ void OneClickSigninSyncStarter::CompleteSigninForNewProfile(
 }
 #endif
 
-void OneClickSigninSyncStarter::SigninAfterSAMLConfirmation() {
+void OneClickSigninSyncStarter::ConfirmAndSignin() {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   // browser_ can be null for unit tests.
-  if (!browser_ || !confirmation_required_) {
-    // No confirmation required - just sign in the user.
-    signin->CompletePendingSignin();
-  } else {
+  if (browser_ && confirmation_required_ == CONFIRM_UNTRUSTED_SIGNIN) {
     // Display a confirmation dialog to the user.
     browser_->window()->ShowOneClickSigninBubble(
         BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG,
         UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
         string16(), // No error message to display.
-        base::Bind(&OneClickSigninSyncStarter::SigninConfirmationComplete,
+        base::Bind(&OneClickSigninSyncStarter::UntrustedSigninConfirmed,
                    weak_pointer_factory_.GetWeakPtr()));
+  } else {
+    // No confirmation required - just sign in the user.
+    signin->CompletePendingSignin();
   }
 }
 
-void OneClickSigninSyncStarter::SigninConfirmationComplete(
+void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
     StartSyncMode response) {
   if (response == UNDO_SYNC) {
     CancelSigninAndDelete();
@@ -272,6 +276,21 @@ void OneClickSigninSyncStarter::SigninFailed(
   ProfileSyncService* profile_sync_service = GetProfileSyncService();
   if (profile_sync_service)
     profile_sync_service->SetSetupInProgress(false);
+  if (confirmation_required_ == CONFIRM_AFTER_SIGNIN) {
+    switch (error.state()) {
+      case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
+        DisplayFinalConfirmationBubble(l10n_util::GetStringUTF16(
+            IDS_SYNC_UNRECOVERABLE_ERROR));
+        break;
+      case GoogleServiceAuthError::REQUEST_CANCELED:
+        // No error notification needed if the user manually cancelled signin.
+        break;
+      default:
+        DisplayFinalConfirmationBubble(l10n_util::GetStringUTF16(
+            IDS_SYNC_ERROR_SIGNING_IN));
+        break;
+    }
+  }
   delete this;
 }
 
@@ -286,6 +305,15 @@ void OneClickSigninSyncStarter::SigninSuccess() {
         profile_sync_service->SetSyncSetupCompleted();
         profile_sync_service->SetSetupInProgress(false);
       }
+      if (confirmation_required_ == CONFIRM_AFTER_SIGNIN) {
+        string16 message;
+        if (!profile_sync_service) {
+          // Sync is disabled by policy.
+          message = l10n_util::GetStringUTF16(
+              IDS_ONE_CLICK_SIGNIN_BUBBLE_SYNC_DISABLED_MESSAGE);
+        }
+        DisplayFinalConfirmationBubble(message);
+      }
       break;
     case CONFIGURE_SYNC_FIRST:
       ConfigureSync();
@@ -293,8 +321,32 @@ void OneClickSigninSyncStarter::SigninSuccess() {
     default:
       NOTREACHED() << "Invalid start_mode=" << start_mode_;
   }
-
   delete this;
+}
+
+void OneClickSigninSyncStarter::DisplayFinalConfirmationBubble(
+    const string16& custom_message) {
+  EnsureBrowser();
+  browser_->window()->ShowOneClickSigninBubble(
+      BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
+      string16(),  // No email required - this is not a SAML confirmation.
+      custom_message,
+      // Callback is ignored.
+      BrowserWindow::StartSyncCallback());
+}
+
+void OneClickSigninSyncStarter::EnsureBrowser() {
+  if (!browser_) {
+    // The user just created a new profile so we need to figure out what
+    // browser to use to display settings. Grab the most recently active
+    // browser or else create a new one.
+    browser_ = chrome::FindLastActiveWithProfile(profile_, desktop_type_);
+    if (!browser_) {
+      browser_ = new Browser(Browser::CreateParams(profile_,
+                                                   desktop_type_));
+    }
+    browser_->window()->Show();
+  }
 }
 
 void OneClickSigninSyncStarter::ConfigureSync() {
@@ -307,17 +359,7 @@ void OneClickSigninSyncStarter::ConfigureSync() {
   if (login_ui->current_login_ui()) {
     login_ui->current_login_ui()->FocusUI();
   } else {
-    if (!browser_) {
-      // The user just created a new profile so we need to figure out what
-      // browser to use to display settings. Grab the most recently active
-      // browser or else create a new one.
-      browser_ = chrome::FindLastActiveWithProfile(profile_, desktop_type_);
-      if (!browser_) {
-        browser_ = new Browser(Browser::CreateParams(profile_,
-                                                     desktop_type_));
-      }
-      browser_->window()->Show();
-    }
+    EnsureBrowser();
     if (profile_sync_service) {
       // Need to navigate to the settings page and display the sync UI.
       if (force_same_tab_navigation_) {
