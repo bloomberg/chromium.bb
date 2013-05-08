@@ -25,12 +25,8 @@ namespace net {
 
 namespace test_spdy3 {
 
-// Constructs a HeaderBlock for the given URL.
-scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(base::StringPiece url);
-
-// Constructs a HeaderBlock for a POST request for the given URL.
-scoped_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(base::StringPiece url,
-                                                     int64 content_length);
+// Can't find a function you're looking for?  ttuttle is migrating functions
+// from here into methods in the SpdyTestUtil class in spdy_test_common.h.
 
 // Construct a SPDY frame. |spdy_version| must be kSpdyVersion3 or
 // kSpdyVersion4.

@@ -38,40 +38,18 @@ void ParseUrl(const char* const url, std::string* scheme, std::string* host,
   }
 }
 
-}  // namespace
-
 scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(base::StringPiece url) {
-  std::string scheme, host, path;
-  ParseUrl(url.data(), &scheme, &host, &path);
-  const char* const headers[] = {
-    "method",  "GET",
-    "url",     path.c_str(),
-    "host",    host.c_str(),
-    "scheme",  scheme.c_str(),
-    "version", "HTTP/1.1"
-  };
-  scoped_ptr<SpdyHeaderBlock> header_block(new SpdyHeaderBlock());
-  AppendToHeaderBlock(headers, arraysize(headers) / 2, header_block.get());
-  return header_block.Pass();
+  SpdyTestUtil util(kProtoSPDY2);
+  return util.ConstructGetHeaderBlock(url);
 }
 
 scoped_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(base::StringPiece url,
                                                      int64 content_length) {
-  std::string scheme, host, path;
-  ParseUrl(url.data(), &scheme, &host, &path);
-  std::string length_str = base::Int64ToString(content_length);
-  const char* const headers[] = {
-    "method",  "POST",
-    "url",     path.c_str(),
-    "host",    host.c_str(),
-    "scheme",  scheme.c_str(),
-    "version", "HTTP/1.1",
-    "content-length", length_str.c_str()
-  };
-  scoped_ptr<SpdyHeaderBlock> header_block(new SpdyHeaderBlock());
-  AppendToHeaderBlock(headers, arraysize(headers) / 2, header_block.get());
-  return header_block.Pass();
+  SpdyTestUtil util(kProtoSPDY2);
+  return util.ConstructPostHeaderBlock(url, content_length);
 }
+
+}  // namespace
 
 SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
                               scoped_ptr<SpdyHeaderBlock> headers) {

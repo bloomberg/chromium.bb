@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "base/compiler_specific.h"
+#include "base/string_number_conversions.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -26,7 +27,21 @@ bool next_proto_is_spdy(NextProto next_proto) {
          next_proto <= kProtoSPDYMaximumVersion;
 }
 
+// Parses a URL into the scheme, host, and path components required for a
+// SPDY request.
+void ParseUrl(const char* const url, std::string* scheme, std::string* host,
+              std::string* path) {
+  GURL gurl(url);
+  path->assign(gurl.PathForRequest());
+  scheme->assign(gurl.scheme());
+  host->assign(gurl.host());
+  if (gurl.has_port()) {
+    host->append(":");
+    host->append(gurl.port());
+  }
 }
+
+}  // namespace
 
 // Chop a frame into an array of MockWrites.
 // |data| is the frame to chop.
@@ -499,6 +514,47 @@ void SpdySessionPoolPeer::DisableDomainAuthenticationVerification() {
 
 void SpdySessionPoolPeer::EnableSendingInitialSettings(bool enabled) {
   pool_->enable_sending_initial_settings_ = enabled;
+}
+
+SpdyTestUtil::SpdyTestUtil(NextProto protocol) : protocol_(protocol) {
+  DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
+}
+
+scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructGetHeaderBlock(
+    base::StringPiece url) const {
+  std::string scheme, host, path;
+  ParseUrl(url.data(), &scheme, &host, &path);
+  const bool spdy2 = protocol_ < kProtoSPDY3;
+  const char* const headers[] = {
+    spdy2 ? "method"  : ":method",  "GET",
+    spdy2 ? "url"     : ":path",    path.c_str(),
+    spdy2 ? "host"    : ":host",    host.c_str(),
+    spdy2 ? "scheme"  : ":scheme",  scheme.c_str(),
+    spdy2 ? "version" : ":version", "HTTP/1.1"
+  };
+  scoped_ptr<SpdyHeaderBlock> header_block(new SpdyHeaderBlock());
+  AppendToHeaderBlock(headers, arraysize(headers) / 2, header_block.get());
+  return header_block.Pass();
+}
+
+scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructPostHeaderBlock(
+    base::StringPiece url,
+    int64 content_length) const {
+  std::string scheme, host, path;
+  ParseUrl(url.data(), &scheme, &host, &path);
+  std::string length_str = base::Int64ToString(content_length);
+  const bool spdy2 = protocol_ < kProtoSPDY3;
+  const char* const headers[] = {
+    spdy2 ? "method"  : ":method",  "POST",
+    spdy2 ? "url"     : ":path",    path.c_str(),
+    spdy2 ? "host"    : ":host",    host.c_str(),
+    spdy2 ? "scheme"  : ":scheme",  scheme.c_str(),
+    spdy2 ? "version" : ":version", "HTTP/1.1",
+    "content-length",               length_str.c_str()
+  };
+  scoped_ptr<SpdyHeaderBlock> header_block(new SpdyHeaderBlock());
+  AppendToHeaderBlock(headers, arraysize(headers) / 2, header_block.get());
+  return header_block.Pass();
 }
 
 }  // namespace net

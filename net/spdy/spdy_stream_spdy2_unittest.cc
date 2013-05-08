@@ -41,7 +41,8 @@ const base::StringPiece kPostBodyStringPiece(kPostBody, kPostBodyLength);
 class SpdyStreamSpdy2Test : public testing::Test {
  protected:
   SpdyStreamSpdy2Test()
-      : host_port_pair_("www.google.com", 80),
+      : spdy_util_(kProtoSPDY2),
+        host_port_pair_("www.google.com", 80),
         session_deps_(kProtoSPDY2) {}
 
   scoped_refptr<SpdySession> CreateSpdySession() {
@@ -70,6 +71,7 @@ class SpdyStreamSpdy2Test : public testing::Test {
     MessageLoop::current()->RunUntilIdle();
   }
 
+  SpdyTestUtil spdy_util_;
   HostPortPair host_port_pair_;
   SpdySessionDependencies session_deps_;
   scoped_refptr<HttpNetworkSession> session_;
@@ -125,7 +127,7 @@ TEST_F(SpdyStreamSpdy2Test, SendDataAfterOpen) {
   EXPECT_FALSE(stream->HasUrl());
 
   stream->set_spdy_headers(
-      ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
@@ -317,7 +319,7 @@ TEST_F(SpdyStreamSpdy2Test, StreamError) {
   EXPECT_FALSE(stream->HasUrl());
 
   stream->set_spdy_headers(
-      ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 

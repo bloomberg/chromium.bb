@@ -257,7 +257,7 @@ class SpdyURLRequestContext : public URLRequestContext {
 
 class SpdySessionPoolPeer {
  public:
-  explicit SpdySessionPoolPeer(SpdySessionPool* pool);;;;
+  explicit SpdySessionPoolPeer(SpdySessionPool* pool);
 
   void AddAlias(const IPEndPoint& address, const HostPortProxyPair& pair);
   void RemoveAliases(const HostPortProxyPair& pair);
@@ -269,6 +269,20 @@ class SpdySessionPoolPeer {
   SpdySessionPool* const pool_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdySessionPoolPeer);
+};
+
+class SpdyTestUtil {
+ public:
+  explicit SpdyTestUtil(NextProto protocol);
+
+  scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(
+      base::StringPiece url) const;
+  scoped_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(
+      base::StringPiece url,
+      int64 content_length) const;
+
+ private:
+  const NextProto protocol_;
 };
 
 }  // namespace net
