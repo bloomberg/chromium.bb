@@ -35,15 +35,26 @@ login.createScreen('EulaScreen', 'eula', function() {
     },
 
     /**
+     * Event handler that is invoked when 'chrome://terms' is loaded.
+     */
+    onFrameLoad: function() {
+      $('accept-button').disabled = false;
+      $('eula').classList.remove('eula-loading');
+      // Initially, the back button is focused and the accept button is
+      // disabled.
+      // Move the focus to the accept button now but only if the user has not
+      // moved the focus anywhere in the meantime.
+      if (!$('back-button').blurred)
+        $('accept-button').focus();
+    },
+
+    /**
      * Event handler that is invoked just before the screen is shown.
      * @param {object} data Screen init payload.
      */
     onBeforeShow: function() {
       $('eula').classList.add('eula-loading');
-      $('cros-eula-frame').onload = function() {
-        $('accept-button').disabled = false;
-        $('eula').classList.remove('eula-loading');
-      }
+      $('cros-eula-frame').onload = this.onFrameLoad;
       $('accept-button').disabled = true;
       $('cros-eula-frame').src = 'chrome://terms';
     },
@@ -91,7 +102,8 @@ login.createScreen('EulaScreen', 'eula', function() {
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {
-      return $('accept-button');
+      return $('accept-button').disabled ? $('back-button') :
+                                           $('accept-button');
     },
 
     /**
