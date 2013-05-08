@@ -7,6 +7,11 @@
     {
       'target_name': 'system_icu',
       'type': 'none',
+      'direct_dependent_settings': {
+        'defines': [
+          'U_USING_ICU_NAMESPACE=0',
+        ],
+      },
       'link_settings': {
         'ldflags': [
           '<!@(icu-config --ldflags)',

@@ -12,7 +12,7 @@
         ],
       },
       'variables': {
-        'headers_root_path': '<(libvpx_source)',
+        'headers_root_path': 'source/libvpx',
         'header_filenames': [
           'vpx/vpx_codec_impl_bottom.h',
           'vpx/vpx_image.h',
