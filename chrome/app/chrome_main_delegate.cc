@@ -88,12 +88,16 @@
 
 base::LazyInstance<chrome::ChromeContentBrowserClient>
     g_chrome_content_browser_client = LAZY_INSTANCE_INITIALIZER;
+// TODO(scottmg): http://crbug.com/237249 This will have to be split out into
+// browser and child parts.
+#if !defined(CHROME_SPLIT_DLL)
 base::LazyInstance<chrome::ChromeContentRendererClient>
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentUtilityClient>
     g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentPluginClient>
     g_chrome_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
+#endif
 
 extern int NaClMain(const content::MainFunctionParams&);
 extern int ServiceProcessMain(const content::MainFunctionParams&);
@@ -631,7 +635,8 @@ int ChromeMainDelegate::RunProcess(
     { switches::kRelauncherProcess,
       mac_relauncher::internal::RelauncherMain },
 #endif
-#if !defined(DISABLE_NACL)
+    // TODO(scottmg): http://crbug.com/237249 NaCl -> child.
+#if !defined(DISABLE_NACL) && !defined(CHROME_SPLIT_DLL)
     { switches::kNaClLoaderProcess, NaClMain },
 #endif  // DISABLE_NACL
   };
@@ -705,15 +710,33 @@ content::ContentBrowserClient*
 }
 
 content::ContentPluginClient* ChromeMainDelegate::CreateContentPluginClient() {
+  // TODO(scottmg): http://crbug.com/237249 This will have to be split out into
+  // browser and child parts.
+#if defined(CHROME_SPLIT_DLL)
+  return NULL;
+#else
   return &g_chrome_content_plugin_client.Get();
+#endif
 }
 
 content::ContentRendererClient*
     ChromeMainDelegate::CreateContentRendererClient() {
+  // TODO(scottmg): http://crbug.com/237249 This will have to be split out into
+  // browser and child parts.
+#if defined(CHROME_SPLIT_DLL)
+  return NULL;
+#else
   return &g_chrome_content_renderer_client.Get();
+#endif
 }
 
 content::ContentUtilityClient*
     ChromeMainDelegate::CreateContentUtilityClient() {
+  // TODO(scottmg): http://crbug.com/237249 This will have to be split out into
+  // browser and child parts.
+#if defined(CHROME_SPLIT_DLL)
+  return NULL;
+#else
   return &g_chrome_content_utility_client.Get();
+#endif
 }

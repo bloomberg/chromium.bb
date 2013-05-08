@@ -142,7 +142,8 @@
               'dependencies': [
                 # On Linux, link the dependencies (libraries) that make up actual
                 # Chromium functionality directly into the executable.
-                '<@(chromium_dependencies)',
+                '<@(chromium_browser_dependencies)',
+                '<@(chromium_child_dependencies)',
                 # Needed for chrome_main.cc initialization of libraries.
                 '../build/linux/system.gyp:gtk',
                 # Needed to use the master_preferences functions
@@ -152,7 +153,8 @@
               'dependencies': [
                 # On Linux, link the dependencies (libraries) that make up actual
                 # Chromium functionality directly into the executable.
-                '<@(chromium_dependencies)',
+                '<@(chromium_browser_dependencies)',
+                '<@(chromium_child_dependencies)',
                 # Needed for chrome_main.cc initialization of libraries.
                 '../build/linux/system.gyp:x11',
                 '../build/linux/system.gyp:pangocairo',
