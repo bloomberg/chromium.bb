@@ -498,7 +498,11 @@ public:
     virtual GrGLInterface* createGrGLInterface() { return onCreateGrGLInterface(); }
 
     // GL_CHROMIUM_gpu_memory_buffer
-    virtual void imageBufferDataCHROMIUM(WGC3Denum target, WGC3Dsizei width, WGC3Dsizei height) { }
+    virtual WGC3Duint createImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height) { return 0; }
+    virtual void destroyImageCHROMIUM(WGC3Duint imageId) { }
+    virtual void getImageParameterivCHROMIUM(WGC3Duint imageId, WGC3Denum pname, WGC3Dint* params) { }
+    virtual void* mapImageCHROMIUM(WGC3Duint imageId, WGC3Denum access) { return 0; }
+    virtual WGC3Dboolean unmapImageCHROMIUM(WGC3Duint imageId) { return false; }
 
 protected:
     virtual GrGLInterface* onCreateGrGLInterface() { return 0; }
