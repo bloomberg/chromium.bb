@@ -166,12 +166,13 @@ static void
 drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 	struct weston_seat *seat = es->configure_private;
+	struct weston_pointer *pointer = seat->pointer;
 	struct wl_list *list;
 	float fx, fy;
 
 	if (!weston_surface_is_mapped(es) && es->buffer_ref.buffer) {
-		if (seat->sprite && weston_surface_is_mapped(seat->sprite))
-			list = &seat->sprite->layer_link;
+		if (pointer->sprite && weston_surface_is_mapped(pointer->sprite))
+			list = &pointer->sprite->layer_link;
 		else
 			list = &seat->compositor->cursor_layer.surface_list;
 

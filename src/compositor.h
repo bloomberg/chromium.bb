@@ -295,6 +295,10 @@ struct weston_pointer {
 	uint32_t focus_serial;
 	struct wl_signal focus_signal;
 
+	struct weston_surface *sprite;
+	struct wl_listener sprite_destroy_listener;
+	int32_t hotspot_x, hotspot_y;
+
 	struct weston_pointer_grab *grab;
 	struct weston_pointer_grab default_grab;
 	wl_fixed_t grab_x, grab_y;
@@ -436,9 +440,6 @@ struct weston_seat {
 	struct wl_signal destroy_signal;
 
 	struct weston_compositor *compositor;
-	struct weston_surface *sprite;
-	struct wl_listener sprite_destroy_listener;
-	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 	enum weston_keyboard_modifier modifier_state;
 	struct weston_surface *saved_kbd_focus;
