@@ -222,7 +222,7 @@ void DownloadShelfContextMenu::OnDownloadDestroyed(DownloadItem* download) {
 }
 
 ui::SimpleMenuModel* DownloadShelfContextMenu::GetInProgressMenuModel() {
-  if (in_progress_download_menu_model_.get())
+  if (in_progress_download_menu_model_)
     return in_progress_download_menu_model_.get();
 
   in_progress_download_menu_model_.reset(new ui::SimpleMenuModel(this));
@@ -244,7 +244,7 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetInProgressMenuModel() {
 }
 
 ui::SimpleMenuModel* DownloadShelfContextMenu::GetFinishedMenuModel() {
-  if (finished_download_menu_model_.get())
+  if (finished_download_menu_model_)
     return finished_download_menu_model_.get();
 
   finished_download_menu_model_.reset(new ui::SimpleMenuModel(this));
@@ -268,7 +268,7 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetInterruptedMenuModel() {
   // The Help Center article is currently Windows specific.
   // TODO(asanka): Enable this for other platforms when the article is expanded
   // for other platforms.
-  if (interrupted_download_menu_model_.get())
+  if (interrupted_download_menu_model_)
     return interrupted_download_menu_model_.get();
 
   interrupted_download_menu_model_.reset(new ui::SimpleMenuModel(this));
@@ -283,7 +283,7 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetInterruptedMenuModel() {
 }
 
 ui::SimpleMenuModel* DownloadShelfContextMenu::GetMaliciousMenuModel() {
-  if (malicious_download_menu_model_.get())
+  if (malicious_download_menu_model_)
     return malicious_download_menu_model_.get();
 
   malicious_download_menu_model_.reset(new ui::SimpleMenuModel(this));
