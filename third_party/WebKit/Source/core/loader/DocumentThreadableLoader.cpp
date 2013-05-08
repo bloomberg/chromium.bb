@@ -386,14 +386,20 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
         }
         return;
     }
-    
+
     // FIXME: ThreadableLoaderOptions.sniffContent is not supported for synchronous requests.
     Vector<char> data;
     ResourceError error;
     ResourceResponse response;
     unsigned long identifier = std::numeric_limits<unsigned long>::max();
-    if (m_document->frame())
-        identifier = m_document->frame()->loader()->loadResourceSynchronously(request, m_options.allowCredentials, error, response, data);
+    if (Frame* frame = m_document->frame()) {
+        Frame* top = frame->tree()->top();
+        if (!top->loader()->mixedContentChecker()->canDisplayInsecureContent(top->document()->securityOrigin(), requestURL)) {
+            m_client->didFail(error);
+            return;
+        }
+        identifier = frame->loader()->loadResourceSynchronously(request, m_options.allowCredentials, error, response, data);
+    }
 
     InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(m_document, identifier, m_client);
 
