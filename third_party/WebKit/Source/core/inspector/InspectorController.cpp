@@ -101,7 +101,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     m_domAgent = domAgentPtr.get();
     m_agents.append(domAgentPtr.release());
 
-    m_agents.append(InspectorCSSAgent::create(m_instrumentingAgents.get(), m_state.get(), m_domAgent));
+    m_agents.append(InspectorCSSAgent::create(m_instrumentingAgents.get(), m_state.get(), m_domAgent, m_pageAgent));
 
     OwnPtr<InspectorDatabaseAgent> databaseAgentPtr(InspectorDatabaseAgent::create(m_instrumentingAgents.get(), m_state.get()));
     InspectorDatabaseAgent* databaseAgent = databaseAgentPtr.get();

@@ -614,7 +614,7 @@ String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script)
 {
     DEFINE_STATIC_LOCAL(String, sourceMapHttpHeader, (ASCIILiteral("X-SourceMap")));
 
-    String sourceMapURL = ContentSearchUtils::findSourceMapURL(script.source);
+    String sourceMapURL = ContentSearchUtils::findSourceMapURL(script.source, ContentSearchUtils::JavaScriptMagicComment);
     if (!sourceMapURL.isEmpty())
         return sourceMapURL;
 
