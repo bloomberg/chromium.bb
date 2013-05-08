@@ -897,8 +897,8 @@ INSTANTIATE_TEST_CASE_P(
         MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET,
                   static_cast<ClientState>(-100))));
 
-// Test that decoding various variation works: multiple concurrent decoders and
-// multiple fragments per Decode() call.
+// Test that decoding various variation works: multiple fragments per Decode()
+// call and multiple in-flight decodes.
 INSTANTIATE_TEST_CASE_P(
     DecodeVariations, VideoDecodeAcceleratorTest,
     ::testing::Values(
@@ -906,9 +906,6 @@ INSTANTIATE_TEST_CASE_P(
         MakeTuple(1, 1, 10, 1, END_OF_STREAM_RESET, CS_RESET),
         // Tests queuing.
         MakeTuple(1, 1, 15, 1, END_OF_STREAM_RESET, CS_RESET),
-        // +0 hack below to promote enum to int.
-        MakeTuple(1, kMinSupportedNumConcurrentDecoders + 0, 1, 1,
-                  END_OF_STREAM_RESET, CS_RESET),
         MakeTuple(2, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
         MakeTuple(3, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
         MakeTuple(5, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
