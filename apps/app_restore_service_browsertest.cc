@@ -82,20 +82,21 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsSavedToPrefs) {
   ASSERT_TRUE(extension);
   file_written_listener.WaitUntilSatisfied();
 
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(browser()->profile())->extension_service();
-  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
+  ExtensionPrefs* extension_prefs =
+      ExtensionSystem::Get(browser()->profile())->extension_prefs();
 
   // Record the file entries in prefs because when the app gets suspended it
   // will have them all cleared.
   std::vector<SavedFileEntry> file_entries;
-  extension_prefs->GetSavedFileEntries(extension->id(), &file_entries);
+  extensions::app_file_handler_util::GetSavedFileEntries(
+      extension_prefs, extension->id(), &file_entries);
   // One for the read-only file entry and one for the writable file entry.
   ASSERT_EQ(2u, file_entries.size());
 
   extension_suspended.Wait();
   file_entries.clear();
-  extension_prefs->GetSavedFileEntries(extension->id(), &file_entries);
+  extensions::app_file_handler_util::GetSavedFileEntries(
+      extension_prefs, extension->id(), &file_entries);
   // File entries should be cleared when the extension is suspended.
   ASSERT_TRUE(file_entries.empty());
 }
@@ -125,14 +126,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsRestored) {
   ASSERT_TRUE(extension);
   file_written_listener.WaitUntilSatisfied();
 
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(browser()->profile())->extension_service();
-  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
-
+  ExtensionPrefs* extension_prefs =
+      ExtensionSystem::Get(browser()->profile())->extension_prefs();
   // Record the file entries in prefs because when the app gets suspended it
   // will have them all cleared.
   std::vector<SavedFileEntry> file_entries;
-  extension_prefs->GetSavedFileEntries(extension->id(), &file_entries);
+  extensions::app_file_handler_util::GetSavedFileEntries(extension_prefs,
+                                                         extension->id(),
+                                                         &file_entries);
   extension_suspended.Wait();
 
   // Simulate a restart by populating the preferences as if the browser didn't
@@ -140,8 +141,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsRestored) {
   extension_prefs->SetExtensionRunning(extension->id(), true);
   for (std::vector<SavedFileEntry>::const_iterator it = file_entries.begin();
        it != file_entries.end(); ++it) {
-    extension_prefs->AddSavedFileEntry(
-        extension->id(), it->id, it->path, it->writable);
+    extensions::app_file_handler_util::AddSavedFileEntry(
+        extension_prefs, extension->id(), it->id, it->path, it->writable);
   }
 
   apps::AppRestoreServiceFactory::GetForProfile(browser()->profile())->

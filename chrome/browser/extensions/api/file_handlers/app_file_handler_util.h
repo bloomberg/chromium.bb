@@ -16,6 +16,7 @@
 class Profile;
 
 namespace extensions {
+class ExtensionPrefs;
 
 // TODO(benwells): move this to platform_apps namespace.
 namespace app_file_handler_util {
@@ -77,6 +78,19 @@ GrantedFileEntry CreateFileEntry(
     int renderer_id,
     const base::FilePath& path,
     bool writable);
+
+// Methods to adjust the file entry preferences for a given extension.
+void AddSavedFileEntry(ExtensionPrefs* prefs,
+                       const std::string& extension_id,
+                       const std::string& file_entry_id,
+                       const base::FilePath& file_path,
+                       bool writable);
+void GetSavedFileEntries(
+    const ExtensionPrefs* prefs,
+    const std::string& extension_id,
+    std::vector<app_file_handler_util::SavedFileEntry>* out);
+void ClearSavedFileEntries(ExtensionPrefs* prefs,
+                           const std::string& extension_id);
 
 }  // namespace app_file_handler_util
 

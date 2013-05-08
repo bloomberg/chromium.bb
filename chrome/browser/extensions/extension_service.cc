@@ -737,8 +737,10 @@ void ExtensionService::ReloadExtensionWithEvents(
 
   on_load_events_[extension_id] = events;
   if (events & EVENT_RESTARTED) {
-    extension_prefs_->GetSavedFileEntries(
-        extension_id, &on_restart_file_entries_[extension_id]);
+    extensions::app_file_handler_util::GetSavedFileEntries(
+        extension_prefs_,
+        extension_id,
+        &on_restart_file_entries_[extension_id]);
   }
 
 

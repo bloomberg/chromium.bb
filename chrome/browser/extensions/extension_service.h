@@ -66,6 +66,11 @@ class ExtensionSystem;
 class ExtensionUpdater;
 class PendingExtensionManager;
 class SettingsFrontend;
+
+namespace app_file_handler_util {
+struct SavedFileEntry;
+}
+
 }
 
 namespace syncer {

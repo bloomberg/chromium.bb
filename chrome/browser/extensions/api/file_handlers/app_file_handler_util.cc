@@ -17,6 +17,16 @@ namespace extensions {
 namespace app_file_handler_util {
 
 namespace {
+// Preference keys
+
+// The file entries that an extension has permission to access.
+const char kFileEntries[] = "file_entries";
+
+// The path to a file entry that an extension had permission to access.
+const char kFileEntryPath[] = "path";
+
+// Whether or not an extension had write access to a file entry.
+const char kFileEntryWritable[] = "writable";
 
 bool FileHandlerCanHandleFileWithExtension(
     const FileHandlerInfo& handler,
@@ -152,12 +162,69 @@ GrantedFileEntry CreateFileEntry(
   if (!policy->CanReadFile(renderer_id, path))
     policy->GrantReadFile(renderer_id, path);
 
-  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile)->
-      extension_service()->extension_prefs();
   // Save this file entry in the prefs.
-  prefs->AddSavedFileEntry(extension_id, result.id, path, writable);
-
+  AddSavedFileEntry(ExtensionSystem::Get(profile)->extension_prefs(),
+                    extension_id,
+                    result.id,
+                    path,
+                    writable);
   return result;
+}
+
+void AddSavedFileEntry(ExtensionPrefs* prefs,
+                       const std::string& extension_id,
+                       const std::string& file_entry_id,
+                       const base::FilePath& file_path,
+                       bool writable) {
+  ExtensionPrefs::ScopedDictionaryUpdate update(
+      prefs,
+      extension_id,
+      kFileEntries);
+  DictionaryValue* file_entries = update.Get();
+  if (!file_entries)
+    file_entries = update.Create();
+
+  // Once a file's permissions are set, they can't be changed.
+  DictionaryValue* file_entry_dict = NULL;
+  if (file_entries->GetDictionary(file_entry_id, &file_entry_dict))
+    return;
+
+  file_entry_dict = new DictionaryValue();
+  file_entry_dict->SetString(kFileEntryPath, file_path.value());
+  file_entry_dict->SetBoolean(kFileEntryWritable, writable);
+  file_entries->SetWithoutPathExpansion(file_entry_id, file_entry_dict);
+}
+
+void GetSavedFileEntries(
+    const ExtensionPrefs* prefs,
+    const std::string& extension_id,
+    std::vector<SavedFileEntry>* out) {
+  const DictionaryValue* file_entries = NULL;
+  if (!prefs || !prefs->ReadPrefAsDictionary(extension_id,
+                                             kFileEntries,
+                                             &file_entries)) {
+    return;
+  }
+
+  for (DictionaryValue::Iterator iter(*file_entries);
+       !iter.IsAtEnd(); iter.Advance()) {
+    const DictionaryValue* file_entry = NULL;
+    if (!iter.value().GetAsDictionary(&file_entry))
+      continue;
+    base::FilePath::StringType path_string;
+    if (!file_entry->GetString(kFileEntryPath, &path_string))
+      continue;
+    bool writable = false;
+    if (!file_entry->GetBoolean(kFileEntryWritable, &writable))
+      continue;
+    base::FilePath file_path(path_string);
+    out->push_back(SavedFileEntry(iter.key(), file_path, writable));
+  }
+}
+
+void ClearSavedFileEntries(ExtensionPrefs* prefs,
+                           const std::string& extension_id) {
+  prefs->UpdateExtensionPref(extension_id, kFileEntries, NULL);
 }
 
 }  // namespace app_file_handler_util

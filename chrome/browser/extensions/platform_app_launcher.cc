@@ -347,10 +347,12 @@ class SavedFileEntryLauncher
       granted_file_entries.push_back(file_entry);
 
       // Record that we have granted this file permission.
-      ExtensionPrefs* extension_prefs = ExtensionSystem::Get(profile_)->
-          extension_service()->extension_prefs();
-      extension_prefs->AddSavedFileEntry(
-          host->extension()->id(), it->id, it->path, it->writable);
+      app_file_handler_util::AddSavedFileEntry(
+          ExtensionSystem::Get(profile_)->extension_prefs(),
+          host->extension()->id(),
+          it->id,
+          it->path,
+          it->writable);
     }
     extensions::AppEventRouter::DispatchOnRestartedEvent(
         profile_, extension_, granted_file_entries);

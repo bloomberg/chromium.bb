@@ -68,7 +68,9 @@ void AppRestoreService::HandleStartup(bool should_restore_apps) {
     const Extension* extension = *it;
     if (extension_prefs->IsExtensionRunning(extension->id())) {
       std::vector<SavedFileEntry> file_entries;
-      extension_prefs->GetSavedFileEntries(extension->id(), &file_entries);
+      extensions::app_file_handler_util::GetSavedFileEntries(extension_prefs,
+                                                             extension->id(),
+                                                             &file_entries);
       RecordAppStop(extension->id());
       if (should_restore_apps)
         RestoreApp(*it, file_entries);
@@ -116,7 +118,8 @@ void AppRestoreService::RecordAppStop(const std::string& extension_id) {
   ExtensionPrefs* extension_prefs =
       ExtensionSystem::Get(profile_)->extension_service()->extension_prefs();
   extension_prefs->SetExtensionRunning(extension_id, false);
-  extension_prefs->ClearSavedFileEntries(extension_id);
+  extensions::app_file_handler_util::ClearSavedFileEntries(
+      extension_prefs, extension_id);
 }
 
 void AppRestoreService::RestoreApp(
