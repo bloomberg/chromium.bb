@@ -35,8 +35,8 @@ struct weston_drag {
 	struct wl_resource *focus_resource;
 	struct wl_listener focus_listener;
 	struct weston_pointer_grab grab;
-	struct weston_surface *surface;
-	struct wl_listener surface_destroy_listener;
+	struct weston_surface *icon;
+	struct wl_listener icon_destroy_listener;
 	int32_t dx, dy;
 };
 
@@ -204,24 +204,24 @@ drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_
 
 static int
 device_setup_new_drag_surface(struct weston_drag *drag,
-			      struct weston_surface *surface)
+			      struct weston_surface *icon)
 {
-	if (surface->configure) {
-		wl_resource_post_error(&surface->resource,
+	if (icon->configure) {
+		wl_resource_post_error(&icon->resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "surface->configure already set");
 		return 0;
 	}
 
-	drag->surface = surface;
+	drag->icon = icon;
 	drag->dx = 0;
 	drag->dy = 0;
 
-	surface->configure = drag_surface_configure;
-	surface->configure_private = drag;
+	icon->configure = drag_surface_configure;
+	icon->configure_private = drag;
 
-	wl_signal_add(&surface->resource.destroy_signal,
-		       &drag->surface_destroy_listener);
+	wl_signal_add(&icon->resource.destroy_signal,
+		      &drag->icon_destroy_listener);
 
 	return 1;
 }
@@ -229,13 +229,13 @@ device_setup_new_drag_surface(struct weston_drag *drag,
 static void
 device_release_drag_surface(struct weston_drag *drag)
 {
-	if (weston_surface_is_mapped(drag->surface))
-		weston_surface_unmap(drag->surface);
+	if (weston_surface_is_mapped(drag->icon))
+		weston_surface_unmap(drag->icon);
 
-	drag->surface->configure = NULL;
-	empty_region(&drag->surface->pending.input);
-	wl_list_remove(&drag->surface_destroy_listener.link);
-	drag->surface = NULL;
+	drag->icon->configure = NULL;
+	empty_region(&drag->icon->pending.input);
+	wl_list_remove(&drag->icon_destroy_listener.link);
+	drag->icon = NULL;
 }
 
 static void
@@ -300,11 +300,11 @@ drag_grab_motion(struct weston_pointer_grab *grab,
 	struct weston_pointer *pointer = drag->grab.pointer;
 	float fx, fy;
 
-	if (drag->surface) {
+	if (drag->icon) {
 		fx = wl_fixed_to_double(pointer->x) + drag->dx;
 		fy = wl_fixed_to_double(pointer->y) + drag->dy;
-		weston_surface_set_position(drag->surface, fx, fy);
-		weston_surface_schedule_repaint(drag->surface);
+		weston_surface_set_position(drag->icon, fx, fy);
+		weston_surface_schedule_repaint(drag->icon);
 	}
 
 	if (drag->focus_resource)
@@ -314,7 +314,7 @@ drag_grab_motion(struct weston_pointer_grab *grab,
 static void
 data_device_end_drag_grab(struct weston_drag *drag)
 {
-	if (drag->surface)
+	if (drag->icon)
 		device_release_drag_surface(drag);
 
 	drag_grab_focus(&drag->grab, NULL,
@@ -363,12 +363,12 @@ destroy_data_device_source(struct wl_listener *listener, void *data)
 }
 
 static void
-handle_drag_surface_destroy(struct wl_listener *listener, void *data)
+handle_drag_icon_destroy(struct wl_listener *listener, void *data)
 {
 	struct weston_drag *drag = container_of(listener, struct weston_drag,
-						surface_destroy_listener);
+						icon_destroy_listener);
 
-	drag->surface = NULL;
+	drag->icon = NULL;
 }
 
 static void
@@ -394,7 +394,7 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 	memset(drag, 0, sizeof *drag);
 	drag->grab.interface = &drag_grab_interface;
 	drag->client = client;
-	drag->surface_destroy_listener.notify = handle_drag_surface_destroy;
+	drag->icon_destroy_listener.notify = handle_drag_icon_destroy;
 
 	if (source_resource) {
 		drag->data_source = source_resource->data;
