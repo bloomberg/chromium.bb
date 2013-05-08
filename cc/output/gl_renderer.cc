@@ -1807,7 +1807,9 @@ void GLRenderer::EnsureScissorTestDisabled() {
 void GLRenderer::CopyCurrentRenderPassToBitmap(
     DrawingFrame* frame,
     const CopyRenderPassCallback& callback) {
-  GetFramebufferPixelsAsync(frame->current_render_pass->output_rect, callback);
+  GetFramebufferPixelsAsync(frame->current_render_pass->output_rect,
+                            frame->flipped_y,
+                            callback);
 }
 
 void GLRenderer::ToGLMatrix(float* gl_matrix, const gfx::Transform& transform) {
@@ -2011,6 +2013,10 @@ void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
   if (!pixels || rect.IsEmpty())
     return;
 
+  // This function assumes that it is reading the root frame buffer.
+  DCHECK(!current_framebuffer_lock_);
+  bool flipped_y = FlippedFramebuffer();
+
   scoped_ptr<PendingAsyncReadPixels> pending_read(new PendingAsyncReadPixels);
   pending_async_read_pixels_.insert(pending_async_read_pixels_.begin(),
                                     pending_read.Pass());
@@ -2018,10 +2024,12 @@ void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
   // This is a syncronous call since the callback is null.
   DoGetFramebufferPixels(static_cast<uint8*>(pixels),
                          rect,
+                         flipped_y,
                          AsyncGetFramebufferPixelsCleanupCallback());
 }
 
 void GLRenderer::GetFramebufferPixelsAsync(gfx::Rect rect,
+                                           bool flipped_y,
                                            CopyRenderPassCallback callback) {
   if (callback.is_null())
     return;
@@ -2052,12 +2060,13 @@ void GLRenderer::GetFramebufferPixelsAsync(gfx::Rect rect,
                                     pending_read.Pass());
 
   // This is an asyncronous call since the callback is not null.
-  DoGetFramebufferPixels(pixels, rect, cleanup_callback);
+  DoGetFramebufferPixels(pixels, rect, flipped_y, cleanup_callback);
 }
 
 void GLRenderer::DoGetFramebufferPixels(
     uint8* dest_pixels,
     gfx::Rect rect,
+    bool flipped_y,
     const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback) {
   DCHECK(rect.right() <= ViewportWidth());
   DCHECK(rect.bottom() <= ViewportHeight());
@@ -2100,8 +2109,8 @@ void GLRenderer::DoGetFramebufferPixels(
                                  GL_RGBA,
                                  0,
                                  0,
-                                 ViewportSize().width(),
-                                 ViewportSize().height(),
+                                 current_framebuffer_size_.width(),
+                                 current_framebuffer_size_.height(),
                                  0));
     temporary_fbo = context_->createFramebuffer();
     // Attach this texture to an FBO, and perform the readback from that FBO.
@@ -2127,7 +2136,7 @@ void GLRenderer::DoGetFramebufferPixels(
 
   GLC(context_,
       context_->readPixels(rect.x(),
-                           ViewportSize().height() - rect.bottom(),
+                           current_framebuffer_size_.height() - rect.bottom(),
                            rect.width(),
                            rect.height(),
                            GL_RGBA,
@@ -2151,7 +2160,8 @@ void GLRenderer::DoGetFramebufferPixels(
                  cleanup_callback,
                  buffer,
                  dest_pixels,
-                 rect.size());
+                 rect.size(),
+                 flipped_y);
   // Save the finished_callback so it can be cancelled.
   pending_async_read_pixels_.front()->finished_read_pixels_callback.Reset(
       finished_callback);
@@ -2177,7 +2187,8 @@ void GLRenderer::FinishedReadback(
     const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback,
     unsigned source_buffer,
     uint8* dest_pixels,
-    gfx::Size size) {
+    gfx::Size size,
+    bool flipped_y) {
   DCHECK(!pending_async_read_pixels_.empty());
   DCHECK_EQ(source_buffer, pending_async_read_pixels_.back()->buffer);
 
@@ -2196,7 +2207,8 @@ void GLRenderer::FinishedReadback(
       size_t total_bytes = num_rows * row_bytes;
       for (size_t dest_y = 0; dest_y < total_bytes; dest_y += row_bytes) {
         // Flip Y axis.
-        size_t src_y = total_bytes - dest_y - row_bytes;
+        size_t src_y = flipped_y ? total_bytes - dest_y - row_bytes
+                                 : dest_y;
         // Swizzle OpenGL -> Skia byte order.
         for (size_t x = 0; x < row_bytes; x += 4) {
           dest_pixels[dest_y + x + SK_R32_SHIFT/8] = src_pixels[src_y + x + 0];
@@ -2280,6 +2292,8 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
                                           gfx::Rect framebuffer_rect) {
   DCHECK(texture->id());
 
+  current_framebuffer_lock_.reset();
+
   GLC(context_,
       context_->bindFramebuffer(GL_FRAMEBUFFER, offscreen_framebuffer_id_));
   current_framebuffer_lock_ =
@@ -2317,6 +2331,7 @@ void GLRenderer::SetScissorTestRect(gfx::Rect scissor_rect) {
 }
 
 void GLRenderer::SetDrawViewportSize(gfx::Size viewport_size) {
+  current_framebuffer_size_ = viewport_size;
   GLC(context_,
       context_->viewport(0, 0, viewport_size.width(), viewport_size.height()));
 }

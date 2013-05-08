@@ -198,8 +198,14 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order) {
     DrawRenderPass(&frame, render_passes_in_draw_order->at(i));
 
     const RenderPass* pass = frame.current_render_pass;
-    for (size_t i = 0; i < pass->copy_callbacks.size(); ++i)
+    for (size_t i = 0; i < pass->copy_callbacks.size(); ++i) {
+      if (i > 0) {
+        // Doing a readback is destructive of our state on Mac, so make sure
+        // we restore the state between readbacks. http://crbug.com/99393.
+        UseRenderPass(&frame, pass);
+      }
       CopyCurrentRenderPassToBitmap(&frame, pass->copy_callbacks[i]);
+    }
   }
   FinishDrawingFrame(&frame);
 

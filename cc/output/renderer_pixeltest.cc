@@ -139,9 +139,8 @@ TYPED_TEST(RendererPixelTest, SimpleGreenRect) {
   RenderPass::Id id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
-  gfx::Transform content_to_target_transform;
   scoped_ptr<SharedQuadState> shared_state =
-      CreateTestSharedQuadState(content_to_target_transform, rect);
+      CreateTestSharedQuadState(gfx::Transform(), rect);
 
   scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
   color_quad->SetNew(shared_state.get(), rect, SK_ColorGREEN, false);
@@ -154,6 +153,47 @@ TYPED_TEST(RendererPixelTest, SimpleGreenRect) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("green.png")),
+      ExactPixelComparator(true)));
+}
+
+TYPED_TEST(RendererPixelTest, SimpleGreenRect_NonRootRenderPass) {
+  gfx::Rect rect(this->device_viewport_size_);
+  gfx::Rect small_rect(100, 100);
+
+  RenderPass::Id child_id(2, 1);
+  scoped_ptr<RenderPass> child_pass =
+      CreateTestRenderPass(child_id, small_rect, gfx::Transform());
+
+  scoped_ptr<SharedQuadState> child_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), small_rect);
+
+  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  color_quad->SetNew(child_shared_state.get(), rect, SK_ColorGREEN, false);
+  child_pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
+
+  RenderPass::Id root_id(1, 1);
+  scoped_ptr<RenderPass> root_pass =
+      CreateTestRenderPass(root_id, rect, gfx::Transform());
+
+  scoped_ptr<SharedQuadState> root_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+
+  scoped_ptr<DrawQuad> render_pass_quad =
+      CreateTestRenderPassDrawQuad(root_shared_state.get(),
+                                   small_rect,
+                                   child_id);
+  root_pass->quad_list.push_back(render_pass_quad.PassAs<DrawQuad>());
+
+  RenderPass* child_pass_ptr = child_pass.get();
+
+  RenderPassList pass_list;
+  pass_list.push_back(child_pass.Pass());
+  pass_list.push_back(root_pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTestWithReadbackTarget(
+      &pass_list,
+      child_pass_ptr,
+      base::FilePath(FILE_PATH_LITERAL("green_small.png")),
       ExactPixelComparator(true)));
 }
 
@@ -553,7 +593,7 @@ TEST_F(GLRendererPixelTestWithBackgroundFilter, InvertFilter) {
 
 // Software renderer does not support anti-aliased edges.
 TEST_F(GLRendererPixelTest, AntiAliasing) {
-  gfx::Rect rect(0, 0, 200, 200);
+  gfx::Rect rect(this->device_viewport_size_);
 
   RenderPass::Id id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
@@ -599,7 +639,7 @@ TEST_F(GLRendererPixelTest, AntiAliasing) {
 // This test tests that anti-aliasing works for axis aligned quads.
 // Anti-aliasing is only supported in the gl renderer.
 TEST_F(GLRendererPixelTest, AxisAligned) {
-  gfx::Rect rect(0, 0, 200, 200);
+  gfx::Rect rect(this->device_viewport_size_);
 
   RenderPass::Id id(1, 1);
   gfx::Transform transform_to_root;
@@ -651,7 +691,7 @@ TEST_F(GLRendererPixelTest, AxisAligned) {
 // This test tests that forcing anti-aliasing off works as expected.
 // Anti-aliasing is only supported in the gl renderer.
 TEST_F(GLRendererPixelTest, ForceAntiAliasingOff) {
-  gfx::Rect rect(0, 0, 200, 200);
+  gfx::Rect rect(this->device_viewport_size_);
 
   RenderPass::Id id(1, 1);
   gfx::Transform transform_to_root;
@@ -687,71 +727,6 @@ TEST_F(GLRendererPixelTest, ForceAntiAliasingOff) {
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("force_anti_aliasing_off.png")),
       ExactPixelComparator(false)));
-}
-
-static void SyncPointCallback(int* callback_count) {
-  ++(*callback_count);
-  base::MessageLoop::current()->QuitWhenIdle();
-}
-
-static void OtherCallback(int* callback_count) {
-  ++(*callback_count);
-  base::MessageLoop::current()->QuitWhenIdle();
-}
-
-TEST_F(GLRendererPixelTest, SignalSyncPointOnLostContext) {
-  int sync_point_callback_count = 0;
-  int other_callback_count = 0;
-  unsigned sync_point = output_surface_->context3d()->insertSyncPoint();
-
-  output_surface_->context3d()->loseContextCHROMIUM(
-      GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
-
-  SyncPointHelper::SignalSyncPoint(
-      output_surface_->context3d(),
-      sync_point,
-      base::Bind(&SyncPointCallback, &sync_point_callback_count));
-  EXPECT_EQ(0, sync_point_callback_count);
-  EXPECT_EQ(0, other_callback_count);
-
-  // Make the sync point happen.
-  output_surface_->context3d()->finish();
-  // Post a task after the sync point.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&OtherCallback, &other_callback_count));
-
-  base::MessageLoop::current()->Run();
-
-  // The sync point shouldn't have happened since the context was lost.
-  EXPECT_EQ(0, sync_point_callback_count);
-  EXPECT_EQ(1, other_callback_count);
-}
-
-TEST_F(GLRendererPixelTest, SignalSyncPoint) {
-  int sync_point_callback_count = 0;
-  int other_callback_count = 0;
-  unsigned sync_point = output_surface_->context3d()->insertSyncPoint();
-
-  SyncPointHelper::SignalSyncPoint(
-      output_surface_->context3d(),
-      sync_point,
-      base::Bind(&SyncPointCallback, &sync_point_callback_count));
-  EXPECT_EQ(0, sync_point_callback_count);
-  EXPECT_EQ(0, other_callback_count);
-
-  // Make the sync point happen.
-  output_surface_->context3d()->finish();
-  // Post a task after the sync point.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&OtherCallback, &other_callback_count));
-
-  base::MessageLoop::current()->Run();
-
-  // The sync point should have happened.
-  EXPECT_EQ(1, sync_point_callback_count);
-  EXPECT_EQ(1, other_callback_count);
 }
 
 TEST_F(GLRendererPixelTest, PictureDrawQuadIdentityScale) {
@@ -837,7 +812,7 @@ TEST_F(GLRendererPixelTest, PictureDrawQuadIdentityScale) {
 
 TEST_F(GLRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
-  gfx::Rect viewport(gfx::Size(200, 200));
+  gfx::Rect viewport(this->device_viewport_size_);
   // TODO(enne): the renderer should figure this out on its own.
   bool contents_swizzled = !PlatformColor::SameComponentOrder(GL_RGBA);
 
@@ -978,7 +953,6 @@ TEST_F(GLRendererPixelTest, PictureDrawQuadNonIdentityScale) {
       base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),
       ExactPixelComparator(true)));
 }
-
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace

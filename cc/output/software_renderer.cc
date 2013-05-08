@@ -155,6 +155,7 @@ bool SoftwareRenderer::BindFramebufferToTexture(
     DrawingFrame* frame,
     const ScopedResource* texture,
     gfx::Rect framebuffer_rect) {
+  current_framebuffer_lock_.reset();
   current_framebuffer_lock_ = make_scoped_ptr(
       new ResourceProvider::ScopedWriteLockSoftware(
           resource_provider_, texture->id()));

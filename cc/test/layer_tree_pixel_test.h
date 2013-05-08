@@ -43,6 +43,10 @@ class LayerTreePixelTest : public LayerTreeTest {
   void RunPixelTest(scoped_refptr<Layer> content_root,
                     base::FilePath file_name);
 
+  void RunPixelTestWithReadbackTarget(scoped_refptr<Layer> content_root,
+                                      Layer* target,
+                                      base::FilePath file_name);
+
   // Common CSS colors defined for tests to use.
   enum Colors {
     kCSSOrange = 0xffffa500,
@@ -54,6 +58,7 @@ class LayerTreePixelTest : public LayerTreeTest {
 
  private:
   scoped_refptr<Layer> content_root_;
+  Layer* readback_target_;
   base::FilePath ref_file_;
 };
 

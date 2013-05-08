@@ -92,6 +92,7 @@ class CC_EXPORT GLRenderer
   }
 
   void GetFramebufferPixelsAsync(gfx::Rect rect,
+                                 bool flipped_y,
                                  CopyRenderPassCallback callback);
   bool GetFramebufferTexture(ScopedResource* resource, gfx::Rect device_rect);
   void ReleaseRenderPassTextures();
@@ -191,12 +192,14 @@ class CC_EXPORT GLRenderer
   void DoGetFramebufferPixels(
       uint8* pixels,
       gfx::Rect rect,
+      bool flipped_y,
       const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback);
   void FinishedReadback(
       const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback,
       unsigned source_buffer,
       uint8_t* dest_pixels,
-      gfx::Size size);
+      gfx::Size size,
+      bool flipped_y);
   void PassOnSkBitmap(
       scoped_ptr<SkBitmap> bitmap,
       scoped_ptr<SkAutoLockPixels> lock,
@@ -407,6 +410,7 @@ class CC_EXPORT GLRenderer
   ScopedPtrVector<PendingAsyncReadPixels> pending_async_read_pixels_;
 
   scoped_ptr<ResourceProvider::ScopedWriteLockGL> current_framebuffer_lock_;
+  gfx::Size current_framebuffer_size_;
 
   scoped_refptr<ResourceProvider::Fence> last_swap_fence_;
 

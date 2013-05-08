@@ -27,6 +27,11 @@ class PixelTest : public testing::Test {
                     const base::FilePath& ref_file,
                     const PixelComparator& comparator);
 
+  bool RunPixelTestWithReadbackTarget(RenderPassList* pass_list,
+                                      RenderPass* target,
+                                      const base::FilePath& ref_file,
+                                      const PixelComparator& comparator);
+
   gfx::Size device_viewport_size_;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;

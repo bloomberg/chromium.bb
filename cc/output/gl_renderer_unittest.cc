@@ -7,6 +7,7 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/resources/sync_point_helper.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -15,6 +16,7 @@
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -1425,6 +1427,76 @@ TEST_F(MockOutputSurfaceTestWithSendCompositorFrame, DrawFrame) {
   EXPECT_CALL(output_surface_, SendFrameToParentCompositor(_)).Times(1);
   DrawFrame();
 }
+
+class GLRendererTestSyncPoint : public GLRendererPixelTest {
+ protected:
+  static void SyncPointCallback(int* callback_count) {
+    ++(*callback_count);
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+
+  static void OtherCallback(int* callback_count) {
+    ++(*callback_count);
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+};
+
+#if !defined(OS_ANDROID)
+TEST_F(GLRendererTestSyncPoint, SignalSyncPointOnLostContext) {
+  int sync_point_callback_count = 0;
+  int other_callback_count = 0;
+  unsigned sync_point = output_surface_->context3d()->insertSyncPoint();
+
+  output_surface_->context3d()->loseContextCHROMIUM(
+      GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
+
+  SyncPointHelper::SignalSyncPoint(
+      output_surface_->context3d(),
+      sync_point,
+      base::Bind(&SyncPointCallback, &sync_point_callback_count));
+  EXPECT_EQ(0, sync_point_callback_count);
+  EXPECT_EQ(0, other_callback_count);
+
+  // Make the sync point happen.
+  output_surface_->context3d()->finish();
+  // Post a task after the sync point.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&OtherCallback, &other_callback_count));
+
+  base::MessageLoop::current()->Run();
+
+  // The sync point shouldn't have happened since the context was lost.
+  EXPECT_EQ(0, sync_point_callback_count);
+  EXPECT_EQ(1, other_callback_count);
+}
+
+TEST_F(GLRendererTestSyncPoint, SignalSyncPoint) {
+  int sync_point_callback_count = 0;
+  int other_callback_count = 0;
+  unsigned sync_point = output_surface_->context3d()->insertSyncPoint();
+
+  SyncPointHelper::SignalSyncPoint(
+      output_surface_->context3d(),
+      sync_point,
+      base::Bind(&SyncPointCallback, &sync_point_callback_count));
+  EXPECT_EQ(0, sync_point_callback_count);
+  EXPECT_EQ(0, other_callback_count);
+
+  // Make the sync point happen.
+  output_surface_->context3d()->finish();
+  // Post a task after the sync point.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&OtherCallback, &other_callback_count));
+
+  base::MessageLoop::current()->Run();
+
+  // The sync point should have happened.
+  EXPECT_EQ(1, sync_point_callback_count);
+  EXPECT_EQ(1, other_callback_count);
+}
+#endif  // OS_ANDROID
 
 }  // namespace
 }  // namespace cc

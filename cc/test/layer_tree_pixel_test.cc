@@ -63,7 +63,9 @@ void LayerTreePixelTest::ReadbackResult(scoped_ptr<SkBitmap> bitmap) {
 }
 
 void LayerTreePixelTest::BeginTest() {
-  layer_tree_host()->root_layer()->RequestCopyAsBitmap(
+  Layer* target = readback_target_ ? readback_target_
+                                   : layer_tree_host()->root_layer();
+  target->RequestCopyAsBitmap(
       base::Bind(&LayerTreePixelTest::ReadbackResult,
                  base::Unretained(this)));
   PostSetNeedsCommitToMainThread();
@@ -114,6 +116,17 @@ void LayerTreePixelTest::RunPixelTest(
     scoped_refptr<Layer> content_root,
     base::FilePath file_name) {
   content_root_ = content_root;
+  readback_target_ = NULL;
+  ref_file_ = file_name;
+  RunTest(true);
+}
+
+void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
+    scoped_refptr<Layer> content_root,
+    Layer* target,
+    base::FilePath file_name) {
+  content_root_ = content_root;
+  readback_target_ = target;
   ref_file_ = file_name;
   RunTest(true);
 }

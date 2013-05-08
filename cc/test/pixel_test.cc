@@ -61,9 +61,20 @@ PixelTest::~PixelTest() {}
 bool PixelTest::RunPixelTest(RenderPassList* pass_list,
                              const base::FilePath& ref_file,
                              const PixelComparator& comparator) {
+  return RunPixelTestWithReadbackTarget(pass_list,
+                                        pass_list->back(),
+                                        ref_file,
+                                        comparator);
+}
+
+bool PixelTest::RunPixelTestWithReadbackTarget(
+    RenderPassList* pass_list,
+    RenderPass* target,
+    const base::FilePath& ref_file,
+    const PixelComparator& comparator) {
   base::RunLoop run_loop;
 
-  pass_list->back()->copy_callbacks.push_back(
+  target->copy_callbacks.push_back(
       base::Bind(&PixelTest::ReadbackResult,
                  base::Unretained(this),
                  run_loop.QuitClosure()));
