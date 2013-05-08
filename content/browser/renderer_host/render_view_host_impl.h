@@ -562,6 +562,8 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   void ClearPowerSaveBlockers();
 
+  bool CanAccessFilesOfSerializedState(const std::string& state) const;
+
   // Our delegate, which wants to know about changes in the RenderView.
   RenderViewHostDelegate* delegate_;
 

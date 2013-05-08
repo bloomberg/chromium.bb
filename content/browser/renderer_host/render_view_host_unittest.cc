@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -260,5 +261,42 @@ TEST_F(RenderViewHostTest, BadMessageHandlerInputEventAck) {
 }
 
 #endif
+
+TEST_F(RenderViewHostTest, MessageWithBadHistoryItemFiles) {
+  base::FilePath file_path;
+  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file_path));
+  file_path = file_path.AppendASCII("foo");
+  EXPECT_EQ(0, process()->bad_msg_count());
+  test_rvh()->TestOnUpdateStateWithFile(process()->GetID(), file_path);
+  EXPECT_EQ(1, process()->bad_msg_count());
+
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
+      process()->GetID(), file_path,
+      base::PLATFORM_FILE_OPEN |
+      base::PLATFORM_FILE_READ |
+      base::PLATFORM_FILE_EXCLUSIVE_READ |
+      base::PLATFORM_FILE_ASYNC);
+  test_rvh()->TestOnUpdateStateWithFile(process()->GetID(), file_path);
+  EXPECT_EQ(1, process()->bad_msg_count());
+}
+
+TEST_F(RenderViewHostTest, NavigationWithBadHistoryItemFiles) {
+  GURL url("http://www.google.com");
+  base::FilePath file_path;
+  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file_path));
+  file_path = file_path.AppendASCII("bar");
+  EXPECT_EQ(0, process()->bad_msg_count());
+  test_rvh()->SendNavigateWithFile(1, url, file_path);
+  EXPECT_EQ(1, process()->bad_msg_count());
+
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
+      process()->GetID(), file_path,
+      base::PLATFORM_FILE_OPEN |
+      base::PLATFORM_FILE_READ |
+      base::PLATFORM_FILE_EXCLUSIVE_READ |
+      base::PLATFORM_FILE_ASYNC);
+  test_rvh()->SendNavigateWithFile(process()->GetID(), url, file_path);
+  EXPECT_EQ(1, process()->bad_msg_count());
+}
 
 }  // namespace content

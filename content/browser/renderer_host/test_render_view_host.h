@@ -246,6 +246,11 @@ class TestRenderViewHost
   void SendNavigateWithOriginalRequestURL(
       int page_id, const GURL& url, const GURL& original_request_url);
 
+  void SendNavigateWithFile(
+      int page_id, const GURL& url, const base::FilePath& file_path);
+
+  void TestOnUpdateStateWithFile(
+      int process_id, const base::FilePath& file_path);
 
   void TestOnStartDragging(const WebDropData& drop_data);
 
@@ -307,12 +312,13 @@ class TestRenderViewHost
   // Calls OnNavigate on the RenderViewHost with the given information.
   // Sets the rest of the parameters in the message to the "typical" values.
   // This is a helper function for simulating the most common types of loads.
-  void SendNavigateWithParameters(int page_id,
-                                  const GURL& url,
-                                  PageTransition transition,
-                                  const GURL& original_request_url,
-                                  int response_code);
-
+  void SendNavigateWithParameters(
+      int page_id,
+      const GURL& url,
+      PageTransition transition,
+      const GURL& original_request_url,
+      int response_code,
+      const base::FilePath* file_path_for_history_item);
 
   // Tracks if the caller thinks if it created the RenderView. This is so we can
   // respond to IsRenderViewLive appropriately.
