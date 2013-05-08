@@ -798,32 +798,7 @@ static void setHasDirAutoFlagRecursively(Node* firstNode, bool flag, Node* lastN
 void HTMLElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     StyledElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-
-    if (!selfOrAncestorHasDirAutoAttribute())
-        return;
-
-    for (Element* ancestor = this; ancestor; ancestor = ancestor->parentElement()) {
-        if (!elementAffectsDirectionality(ancestor))
-            continue;
-        toHTMLElement(ancestor)->calculateAndAdjustDirectionality();
-        return;
-    }
-}
-
-void HTMLElement::removedFrom(ContainerNode* insertionPoint)
-{
-    StyledElement::removedFrom(insertionPoint);
-    if (!parentNode() && selfOrAncestorHasDirAutoAttribute())
-        setHasDirAutoFlagRecursively(this, false);
-}
-
-Node::InsertionNotificationRequest HTMLElement::insertedInto(ContainerNode* insertionPoint)
-{
-    StyledElement::insertedInto(insertionPoint);
-    if (parentNode()->selfOrAncestorHasDirAutoAttribute() && !selfOrAncestorHasDirAutoAttribute())
-        setHasDirAutoFlagRecursively(this, true);
-
-    return InsertionDone;
+    adjustDirectionalityIfNeededAfterChildrenChanged(beforeChange, childCountDelta);
 }
 
 bool HTMLElement::hasDirectionAuto() const
@@ -923,6 +898,35 @@ void HTMLElement::calculateAndAdjustDirectionality()
     setHasDirAutoFlagRecursively(this, true, strongDirectionalityTextNode);
     if (renderer() && renderer()->style() && renderer()->style()->direction() != textDirection)
         setNeedsStyleRecalc();
+}
+
+void HTMLElement::adjustDirectionalityIfNeededAfterChildrenChanged(Node* beforeChange, int childCountDelta)
+{
+    if ((!document() || document()->renderer()) && childCountDelta < 0) {
+        Node* node = beforeChange ? NodeTraversal::nextSkippingChildren(beforeChange) : 0;
+        for (int counter = 0; node && counter < childCountDelta; counter++, node = NodeTraversal::nextSkippingChildren(node)) {
+            if (elementAffectsDirectionality(node))
+                continue;
+
+            setHasDirAutoFlagRecursively(node, false);
+        }
+    }
+
+    if (!selfOrAncestorHasDirAutoAttribute())
+        return;
+
+    Node* oldMarkedNode = beforeChange ? NodeTraversal::nextSkippingChildren(beforeChange) : 0;
+    while (oldMarkedNode && elementAffectsDirectionality(oldMarkedNode))
+        oldMarkedNode = NodeTraversal::nextSkippingChildren(oldMarkedNode, this);
+    if (oldMarkedNode)
+        setHasDirAutoFlagRecursively(oldMarkedNode, false);
+
+    for (Element* elementToAdjust = this; elementToAdjust; elementToAdjust = elementToAdjust->parentElement()) {
+        if (elementAffectsDirectionality(elementToAdjust)) {
+            toHTMLElement(elementToAdjust)->calculateAndAdjustDirectionality();
+            return;
+        }
+    }
 }
 
 void HTMLElement::addHTMLLengthToStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, const String& value)
