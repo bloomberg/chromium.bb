@@ -219,8 +219,6 @@ void MessagePopupBubble::OnAutoClose(const std::string& id) {
     return;
 
   message_center()->MarkSinglePopupAsShown(id, false);
-  DeleteTimer(id);
-  UpdateBubbleView();
 }
 
 void MessagePopupBubble::DeleteTimer(const std::string& id) {
