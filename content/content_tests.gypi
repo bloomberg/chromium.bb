@@ -851,8 +851,8 @@
                 '<(SHARED_INTERMEDIATE_DIR)/webkit',
               ],
               'sources': [
-                'shell/resource.h',
-                'shell/shell.rc',
+                'shell/app/resource.h',
+                'shell/app/shell.rc',
                 # TODO:  It would be nice to have these pulled in
                 # automatically from direct_dependent_settings in
                 # their various targets (net.gyp:net_resources, etc.),

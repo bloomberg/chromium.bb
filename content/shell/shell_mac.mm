@@ -13,7 +13,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/shell/resource.h"
+#include "content/shell/app/resource.h"
 #include "googleurl/src/gurl.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 

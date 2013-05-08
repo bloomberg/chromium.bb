@@ -11,10 +11,10 @@
 #include "base/test/test_suite.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_test_suite_base.h"
+#include "content/shell/app/shell_main_delegate.h"
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/shell_content_browser_client.h"
-#include "content/shell/shell_main_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)

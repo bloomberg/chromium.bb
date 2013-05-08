@@ -24,7 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_launcher.h"
 #include "content/shell/android/shell_jni_registrar.h"
-#include "content/shell/shell_main_delegate.h"
+#include "content/shell/app/shell_main_delegate.h"
 #include "content/test/browser_test_message_pump_android.h"
 #include "jni/ContentBrowserTestsActivity_jni.h"
 #include "testing/android/native_test_util.h"

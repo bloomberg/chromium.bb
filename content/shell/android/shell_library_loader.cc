@@ -11,7 +11,7 @@
 #include "content/public/app/content_main.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/shell/android/shell_jni_registrar.h"
-#include "content/shell/shell_main_delegate.h"
+#include "content/shell/app/shell_main_delegate.h"
 
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {

@@ -5,7 +5,7 @@
 #include "content/shell/shell_content_main.h"
 
 #include "content/public/app/content_main.h"
-#include "content/shell/shell_main_delegate.h"
+#include "content/shell/app/shell_main_delegate.h"
 
 #if defined(OS_MACOSX)
 int ContentMain(int argc,
