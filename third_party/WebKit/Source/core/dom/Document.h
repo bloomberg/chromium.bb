@@ -316,7 +316,7 @@ public:
     PassRefPtr<EntityReference> createEntityReference(const String& name, ExceptionCode&);
     PassRefPtr<Node> importNode(Node* importedNode, ExceptionCode& ec) { return importNode(importedNode, true, ec); }
     PassRefPtr<Node> importNode(Node* importedNode, bool deep, ExceptionCode&);
-    virtual PassRefPtr<Element> createElementNS(const String& namespaceURI, const String& qualifiedName, ExceptionCode&);
+    PassRefPtr<Element> createElementNS(const String& namespaceURI, const String& qualifiedName, ExceptionCode&);
     PassRefPtr<Element> createElement(const QualifiedName&, bool createdByParser);
 
     bool cssStickyPositionEnabled() const;
@@ -910,10 +910,10 @@ public:
 
     virtual void postTask(PassOwnPtr<Task>); // Executes the task on context's thread asynchronously.
 
-    virtual void suspendScriptedAnimationControllerCallbacks();
-    virtual void resumeScriptedAnimationControllerCallbacks();
-    
-    virtual void finishedParsing();
+    void suspendScriptedAnimationControllerCallbacks();
+    void resumeScriptedAnimationControllerCallbacks();
+
+    void finishedParsing();
 
     void documentWillBecomeInactive();
 

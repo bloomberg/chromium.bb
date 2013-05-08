@@ -100,9 +100,6 @@ public:
     void didCreateDestructionObserver(ContextDestructionObserver*);
     void willDestroyDestructionObserver(ContextDestructionObserver*);
 
-    virtual void suspendScriptedAnimationControllerCallbacks() { }
-    virtual void resumeScriptedAnimationControllerCallbacks() { }
-
     // MessagePort is conceptually a kind of ActiveDOMObject, but it needs to be tracked separately for message dispatch.
     void processMessagePortMessagesSoon();
     void dispatchMessagePortEvents();
