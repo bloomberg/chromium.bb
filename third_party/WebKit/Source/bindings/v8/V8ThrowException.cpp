@@ -25,8 +25,8 @@
 #include "config.h"
 #include "bindings/v8/V8ThrowException.h"
 
-#include "ExceptionHeaders.h"
-#include "ExceptionInterfaces.h"
+#include "DOMExceptionHeaders.h"
+#include "DOMExceptionInterfaces.h"
 #include "bindings/v8/V8Binding.h"
 
 namespace WebCore {

@@ -161,17 +161,6 @@ sub interfaceForItem($)
     return $interfaceName;
 }
 
-sub toMacroStyle($$)
-{
-    my $object = shift;
-    my $camelCase = shift;
-
-    return "EVENT" if $camelCase eq "Event";
-    return "EVENT_TARGET" if $camelCase eq "EventTarget";
-    return "EXCEPTION" if $camelCase eq "Exception";
-
-    die "Ok, you got me. This script is really just a giant hack. (\$camelCase=${camelCase})";
-}
 
 sub preferredConditional()
 {
@@ -188,114 +177,6 @@ sub conditionalStringFromAttributeValue()
     my $conditional = shift;
     
     return "ENABLE(" . join(') || ENABLE(', split('\\|', $conditional)) . ")";
-}
-
-sub generateInterfacesHeader()
-{
-    my $object = shift;
-
-    my $F;
-    my $namespace = $parsedParameters{"namespace"};
-    my $outputFile = "$outputDir/${namespace}Interfaces.h";
-
-    open F, ">$outputFile" or die "Failed to open file: $!";
-
-    print F license();
-
-    print F "#ifndef ${namespace}Interfaces_h\n";
-    print F "#define ${namespace}Interfaces_h\n";
-    print F "\n";
-
-    my %unconditionalInterfaces = ();
-    my %interfacesByConditional = ();
-
-    for my $itemName (sort keys %parsedItems) {
-        my $conditional = $parsedItems{$itemName}{"conditional"};
-        my $interfaceName = $object->interfaceForItem($itemName);
-
-        if ($conditional) {
-            if (!defined($interfacesByConditional{$conditional})) {
-                $interfacesByConditional{$conditional} = ();
-            }
-            $interfacesByConditional{$conditional}{$interfaceName} = 1;
-        } else {
-            $unconditionalInterfaces{$interfaceName} = 1
-        }
-    }
-
-    my $macroStyledNamespace = $object->toMacroStyle($namespace);
-
-    for my $conditional (sort keys %interfacesByConditional) {
-        my $preferredConditional = $object->preferredConditional($conditional);
-        print F "#if " . $object->conditionalStringFromAttributeValue($conditional) . "\n";
-        print F "#define DOM_${macroStyledNamespace}_INTERFACES_FOR_EACH_$preferredConditional(macro) \\\n";
-
-        for my $interface (sort keys %{ $interfacesByConditional{$conditional} }) {
-            next if defined($unconditionalInterfaces{$interface});
-            print F "    macro($interface) \\\n";
-        }
-
-        print F "// End of DOM_${macroStyledNamespace}_INTERFACES_FOR_EACH_$preferredConditional\n";
-        print F "#else\n";
-        print F "#define DOM_${macroStyledNamespace}_INTERFACES_FOR_EACH_$preferredConditional(macro)\n";
-        print F "#endif\n";
-        print F "\n";
-    }
-
-    print F "#define DOM_${macroStyledNamespace}_INTERFACES_FOR_EACH(macro) \\\n";
-    print F "    \\\n";
-    for my $interface (sort keys %unconditionalInterfaces) {
-            print F "    macro($interface) \\\n";
-    }
-    print F "    \\\n";
-    for my $conditional (sort keys %interfacesByConditional) {
-        my $preferredConditional = $object->preferredConditional($conditional);
-        print F "    DOM_${macroStyledNamespace}_INTERFACES_FOR_EACH_$preferredConditional(macro) \\\n";
-    }
-
-    print F "\n";
-    print F "#endif // ${namespace}Interfaces_h\n";
-
-    close F;
-}
-
-sub generateHeadersHeader()
-{
-    my $object = shift;
-
-    my $F;
-    my $namespace = $parsedParameters{"namespace"};
-    my $outputFile = "$outputDir/${namespace}Headers.h";
-
-    open F, ">$outputFile" or die "Failed to open file: $!";
-
-    print F license();
-
-    print F "#ifndef ${namespace}Headers_h\n";
-    print F "#define ${namespace}Headers_h\n";
-    print F "\n";
-
-    my %includedInterfaces = ();
-
-    for my $itemName (sort keys %parsedItems) {
-        my $conditional = $parsedItems{$itemName}{"conditional"};
-        my $interfaceName = $object->interfaceForItem($itemName);
-
-        next if defined($includedInterfaces{$interfaceName});
-        $includedInterfaces{$interfaceName} = 1;
-
-        print F "#if " . $object->conditionalStringFromAttributeValue($conditional) . "\n" if $conditional;
-        my $path = "$interfaceName.h";
-        $path = $parsedItemPaths{$itemName} . "/" . $path if defined($parsedItemPaths{$itemName});
-        print F "#include \"$path\"\n";
-        print F "#include \"V8$interfaceName.h\"\n";
-        print F "#endif\n" if $conditional;
-    }
-
-    print F "\n";
-    print F "#endif // ${namespace}Headers_h\n";
-
-    close F;
 }
 
 1;

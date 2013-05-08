@@ -20,7 +20,7 @@
 #define ExceptionCode_h
 
 // FIXME: Move this header into the files that actually need it.
-#include "ExceptionCodeDescription.h"
+#include "DOMException.h"
 
 namespace WebCore {
 

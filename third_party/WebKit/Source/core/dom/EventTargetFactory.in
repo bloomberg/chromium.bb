@@ -33,7 +33,7 @@ modules/mediastream/MediaStreamTrack
 modules/mediastream/RTCDataChannel
 modules/mediastream/RTCDTMFSender
 modules/mediastream/RTCPeerConnection
-modules/notifications/Notification conditional=NOTIFICATIONS|LEGACY_NOTIFICATIONS
+modules/notifications/Notification conditional=NOTIFICATIONS
 modules/speech/SpeechRecognition
 modules/speech/SpeechSynthesisUtterance
 modules/webaudio/AudioContext conditional=WEB_AUDIO

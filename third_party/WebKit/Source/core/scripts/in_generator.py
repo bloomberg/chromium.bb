@@ -44,15 +44,23 @@ class Writer(object):
 
     # Subclasses should override.
     def generate_header(self):
-        raise NotImplementedError
+        return ''
+
+    # Subclasses should override.
+    def generate_interfaces_header(self):
+        return ''
+
+    # Subclasses should override.
+    def generate_headers_header(self):
+        return ''
 
     # Subclasses should override.
     def generate_implementation(self):
-        raise NotImplementedError
+        return ''
 
     # Subclasses should override.
     def generate_idl(self):
-        return ""
+        return ''
 
     def wrap_with_condition(self, string, condition):
         if not condition:
@@ -74,26 +82,27 @@ class Writer(object):
         with open(file_path, "w") as file_to_write:
             file_to_write.write(contents)
 
-    def write_header(self, output_dir):
-        contents = self.generate_header()
+    def _write_file(self, output_dir, generator, file_name):
+        contents = generator()
         if not contents:
             return
-        path = os.path.join(output_dir, self.class_name + ".h")
+        path = os.path.join(output_dir, file_name)
         self._forcibly_create_text_file_at_path_with_contents(path, contents)
+
+    def write_header(self, output_dir):
+        self._write_file(output_dir, self.generate_header, self.class_name + '.h')
+
+    def write_headers_header(self, output_dir):
+        self._write_file(output_dir, self.generate_headers_header, self.class_name + 'Headers.h')
+
+    def write_interfaces_header(self, output_dir):
+        self._write_file(output_dir, self.generate_interfaces_header, self.class_name + 'Interfaces.h')
 
     def write_implmentation(self, output_dir):
-        contents = self.generate_implementation()
-        if not contents:
-            return
-        path = os.path.join(output_dir, self.class_name + ".cpp")
-        self._forcibly_create_text_file_at_path_with_contents(path, contents)
+        self._write_file(output_dir, self.generate_implementation, self.class_name + '.cpp')
 
     def write_idl(self, output_dir):
-        contents = self.generate_idl()
-        if not contents:
-            return
-        path = os.path.join(output_dir, self.class_name + ".idl")
-        self._forcibly_create_text_file_at_path_with_contents(path, contents)
+        self._write_file(output_dir, self.generate_idl, self.class_name + '.idl')
 
 
 class Maker(object):
@@ -110,5 +119,7 @@ class Maker(object):
 
         writer = self._writer_class(args[0])
         writer.write_header(output_dir)
+        writer.write_headers_header(output_dir)
+        writer.write_interfaces_header(output_dir)
         writer.write_implmentation(output_dir)
         writer.write_idl(output_dir)

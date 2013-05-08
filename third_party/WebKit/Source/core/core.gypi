@@ -3686,6 +3686,7 @@
             'scripts/in_file.py',
             'scripts/in_generator.py',
             'scripts/license.py',
+            'scripts/name_macros.py',
         ],
         'conditions': [
             ['OS=="win"', {

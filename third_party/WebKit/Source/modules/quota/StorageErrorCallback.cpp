@@ -32,7 +32,7 @@
 
 #include "modules/quota/StorageErrorCallback.h"
 
-#include "ExceptionCodeDescription.h"
+#include "DOMException.h"
 #include "core/dom/DOMCoreException.h"
 
 namespace WebCore {

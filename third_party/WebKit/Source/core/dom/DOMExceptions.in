@@ -1,4 +1,4 @@
-namespace=Exception
+namespace=DOMException
 
 core/dom/DOMCoreException
 core/dom/EventException

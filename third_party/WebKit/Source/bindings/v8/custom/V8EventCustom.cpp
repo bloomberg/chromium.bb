@@ -66,7 +66,7 @@ v8::Handle<v8::Object> wrap(Event* event, v8::Handle<v8::Object> creationContext
     if (eventNames().interfaceForEvent == desiredInterface)
         return V8Event::createWrapper(event, creationContext, isolate);
 
-    DOM_EVENT_INTERFACES_FOR_EACH(TRY_TO_WRAP_WITH_INTERFACE)
+    EVENT_INTERFACES_FOR_EACH(TRY_TO_WRAP_WITH_INTERFACE)
 
     return V8Event::createWrapper(event, creationContext, isolate);
 }

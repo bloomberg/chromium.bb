@@ -47,7 +47,7 @@ v8::Handle<v8::Value> toV8(EventTarget* impl, v8::Handle<v8::Object> creationCon
         return v8NullWithCheck(isolate);
 
     AtomicString desiredInterface = impl->interfaceName();
-    DOM_EVENT_TARGET_INTERFACES_FOR_EACH(TRY_TO_WRAP_WITH_INTERFACE)
+    EVENT_TARGET_INTERFACES_FOR_EACH(TRY_TO_WRAP_WITH_INTERFACE)
 
     ASSERT_NOT_REACHED();
     return v8Undefined();

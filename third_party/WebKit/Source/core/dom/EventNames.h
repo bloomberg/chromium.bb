@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-#define DOM_EVENT_NAMES_FOR_EACH(macro) \
+#define EVENT_NAMES_FOR_EACH(macro) \
     \
     macro(abort) \
     macro(beforecopy) \
@@ -261,7 +261,7 @@ namespace WebCore {
     macro(securitypolicyviolation) \
     \
 
-// end of DOM_EVENT_NAMES_FOR_EACH
+// end of EVENT_NAMES_FOR_EACH
 
     class EventNames {
         WTF_MAKE_NONCOPYABLE(EventNames); WTF_MAKE_FAST_ALLOCATED;
@@ -271,14 +271,14 @@ namespace WebCore {
         friend class ThreadGlobalData;
 
     public:
-        #define DOM_EVENT_NAMES_DECLARE(name) AtomicString name##Event;
-        DOM_EVENT_NAMES_FOR_EACH(DOM_EVENT_NAMES_DECLARE)
-        #undef DOM_EVENT_NAMES_DECLARE
+        #define EVENT_NAMES_DECLARE(name) AtomicString name##Event;
+        EVENT_NAMES_FOR_EACH(EVENT_NAMES_DECLARE)
+        #undef EVENT_NAMES_DECLARE
 
-        #define DOM_EVENT_INTERFACE_DECLARE(name) AtomicString interfaceFor##name;
-        DOM_EVENT_INTERFACES_FOR_EACH(DOM_EVENT_INTERFACE_DECLARE)
-        DOM_EVENT_TARGET_INTERFACES_FOR_EACH(DOM_EVENT_INTERFACE_DECLARE)
-        #undef DOM_EVENT_INTERFACE_DECLARE
+        #define EVENT_INTERFACE_DECLARE(name) AtomicString interfaceFor##name;
+        EVENT_INTERFACES_FOR_EACH(EVENT_INTERFACE_DECLARE)
+        EVENT_TARGET_INTERFACES_FOR_EACH(EVENT_INTERFACE_DECLARE)
+        #undef EVENT_INTERFACE_DECLARE
 
         inline bool isTouchEventType(const AtomicString& eventType) const
         {

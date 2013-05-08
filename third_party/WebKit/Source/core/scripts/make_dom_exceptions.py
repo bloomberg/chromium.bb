@@ -32,7 +32,7 @@ import sys
 import shutil
 
 from in_file import InFile
-import in_generator
+import name_macros
 import license
 
 
@@ -49,8 +49,8 @@ enum ExceptionType {
 %(exception_types)s
 };
 
-struct %(class_name)s {
-    explicit %(class_name)s(ExceptionCode);
+struct ExceptionCodeDescription {
+    explicit ExceptionCodeDescription(ExceptionCode);
 
     // |typeName| has spaces and is suitable for use in exception
     // description strings; maximum length is 10 characters.
@@ -90,7 +90,7 @@ IMPLEMENTATION_TEMPLATE = """%(license)s
 
 namespace WebCore {
 
-%(class_name)s::%(class_name)s(ExceptionCode ec)
+ExceptionCodeDescription::ExceptionCodeDescription(ExceptionCode ec)
 {
     ASSERT(ec);
 
@@ -113,7 +113,7 @@ namespace WebCore {
 """
 
 
-class ExceptionCodeDescriptionWriter(in_generator.Writer):
+class ExceptionCodeDescriptionWriter(name_macros.Writer):
     defaults = {
         'interfaceName': None,
         'conditional': None,
@@ -121,7 +121,6 @@ class ExceptionCodeDescriptionWriter(in_generator.Writer):
     default_parameters = {
         'namespace': '',
     }
-    class_name = 'ExceptionCodeDescription'
 
     def _exceptions(self):
         return self.in_file.name_dictionaries
@@ -159,4 +158,4 @@ class ExceptionCodeDescriptionWriter(in_generator.Writer):
 
 
 if __name__ == "__main__":
-    in_generator.Maker(ExceptionCodeDescriptionWriter).main(sys.argv)
+    name_macros.Maker(ExceptionCodeDescriptionWriter).main(sys.argv)
