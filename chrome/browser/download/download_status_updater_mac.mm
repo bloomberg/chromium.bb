@@ -264,9 +264,6 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
   bool progress_known = GetProgress(&progress, &download_count);
   UpdateAppIcon(download_count, progress_known, progress);
 
-  if (download->GetFullPath().empty())
-    return;
-
   // Update NSProgress-based indicators.
 
   if (NSProgressSupported()) {
@@ -290,9 +287,10 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
   }
 
   // Handle downloads that ended.
-  if (download->GetState() != content::DownloadItem::IN_PROGRESS) {
+  if (download->GetState() != content::DownloadItem::IN_PROGRESS &&
+      !download->GetTargetFilePath().empty()) {
     NSString* download_path =
-        base::mac::FilePathToNSString(download->GetFullPath());
+        base::mac::FilePathToNSString(download->GetTargetFilePath());
     if (download->GetState() == content::DownloadItem::COMPLETE) {
       // Bounce the dock icon.
       [[NSDistributedNotificationCenter defaultCenter]
