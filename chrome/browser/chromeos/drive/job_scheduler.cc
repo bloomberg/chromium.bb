@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/logging.h"
@@ -45,6 +46,8 @@ JobScheduler::QueueEntry::~QueueEntry() {
 bool JobScheduler::QueueEntry::Compare(
     const JobScheduler::QueueEntry* left,
     const JobScheduler::QueueEntry* right) {
+  // Lower values of ContextType are higher priority.
+  // See also the comment at ContextType.
   return (left->context.type < right->context.type);
 }
 
@@ -417,15 +420,15 @@ void JobScheduler::QueueJob(scoped_ptr<QueueEntry> job) {
 
   JobInfo* job_info = job_map_.Lookup(job->job_id);
   DCHECK(job_info);
-  util::Log("Queue job: %s [%d]",
-            JobTypeToString(job_info->job_type).c_str(),
-            job_info->job_id);
 
   QueueType queue_type = GetJobQueueType(job_info->job_type);
   std::list<QueueEntry*>& queue = queue_[queue_type];
 
   queue.push_back(job.release());
   queue.sort(&QueueEntry::Compare);
+
+  util::Log("Job queued: %s - %s", job_info->ToString().c_str(),
+            GetQueueInfo(queue_type).c_str());
 }
 
 void JobScheduler::StartJobLoop(QueueType queue_type) {
@@ -463,9 +466,6 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
   // The some arguments are evaluated after bind, so we copy the pointer to the
   // QueueEntry
   QueueEntry* entry = queue_entry.get();
-  util::Log("Start job: %s [%d]",
-            JobTypeToString(job_info->job_type).c_str(),
-            job_info->job_id);
 
   switch (job_info->job_type) {
     case TYPE_GET_ABOUT_RESOURCE: {
@@ -671,6 +671,10 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
     // There is no default case so that there will be a compiler error if a type
     // is added but unhandled.
   }
+
+  util::Log("Job started: %s - %s",
+            job_info->ToString().c_str(),
+            GetQueueInfo(queue_type).c_str());
 }
 
 bool JobScheduler::ShouldStopJobLoop(QueueType queue_type,
@@ -753,11 +757,11 @@ bool JobScheduler::OnJobDone(scoped_ptr<JobScheduler::QueueEntry> queue_entry,
   QueueType queue_type = GetJobQueueType(job_info->job_type);
 
   const base::TimeDelta elapsed = base::Time::Now() - job_info->start_time;
-  util::Log("Job done: %s [%d] => %s (elapsed time: %sms)",
-            JobTypeToString(job_info->job_type).c_str(),
-            job_info->job_id,
+  util::Log("Job done: %s => %s (elapsed time: %sms) - %s",
+            job_info->ToString().c_str(),
             FileErrorToString(error).c_str(),
-            base::Int64ToString(elapsed.InMilliseconds()).c_str());
+            base::Int64ToString(elapsed.InMilliseconds()).c_str(),
+            GetQueueInfo(queue_type).c_str());
 
   // Decrement the number of jobs for this queue.
   --jobs_running_[queue_type];
@@ -955,5 +959,27 @@ void JobScheduler::NotifyJobUpdated(const JobInfo& job_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(JobListObserver, observer_list_, OnJobUpdated(job_info));
 }
+
+std::string JobScheduler::GetQueueInfo(QueueType type) const {
+  return base::StringPrintf("%s: pending: %d, running: %d",
+                            QueueTypeToString(type).c_str(),
+                            static_cast<int>(queue_[type].size()),
+                            jobs_running_[type]);
+}
+
+// static
+std::string JobScheduler::QueueTypeToString(QueueType type) {
+  switch (type) {
+    case METADATA_QUEUE:
+      return "METADATA_QUEUE";
+    case FILE_QUEUE:
+      return "FILE_QUEUE";
+    case NUM_QUEUES:
+      return "NUM_QUEUES";
+  }
+  NOTREACHED();
+  return "";
+}
+
 
 }  // namespace drive

@@ -84,6 +84,9 @@ struct JobInfo {
 
   // Time when the job is started (i.e. the request is sent to the server).
   base::Time start_time;
+
+  // Returns the string representation of the job info.
+  std::string ToString() const;
 };
 
 // The interface for observing JobListInterface.

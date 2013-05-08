@@ -168,6 +168,8 @@ class JobScheduler
     QueueEntry();
     ~QueueEntry();
 
+    // Compare the two entries, per job priorities. Used for sorting entries
+    // from high priority to low priority.
     static bool Compare(const QueueEntry* left, const QueueEntry* right);
 
     JobID job_id;
@@ -385,6 +387,12 @@ class JobScheduler
   void NotifyJobAdded(const JobInfo& job_info);
   void NotifyJobDone(const JobInfo& job_info, FileError error);
   void NotifyJobUpdated(const JobInfo& job_info);
+
+  // Gets information of the queue of the given type as string.
+  std::string GetQueueInfo(QueueType type) const;
+
+  // Returns a string representation of QueueType.
+  static std::string QueueTypeToString(QueueType type);
 
   // Number of jobs in flight for each queue.
   int jobs_running_[NUM_QUEUES];
