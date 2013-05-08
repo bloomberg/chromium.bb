@@ -18,14 +18,14 @@ ScopedClipboardWriterGlue::ScopedClipboardWriterGlue(
 }
 
 ScopedClipboardWriterGlue::~ScopedClipboardWriterGlue() {
-  if (!objects_.empty() && context_.get()) {
+  if (!objects_.empty() && context_) {
     context_->Flush(objects_);
   }
 }
 
 void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
                                                       const gfx::Size& size) {
-  if (context_.get()) {
+  if (context_) {
     context_->WriteBitmapFromPixels(&objects_, pixels, size);
   } else {
     ScopedClipboardWriter::WriteBitmapFromPixels(pixels, size);

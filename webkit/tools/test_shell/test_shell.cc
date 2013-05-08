@@ -157,7 +157,7 @@ TestShell::~TestShell() {
 
   // DevTools frontend page is supposed to be navigated only once and
   // loading another URL in that Page is an error.
-  if (!dev_tools_client_.get()) {
+  if (!dev_tools_client_) {
     // Navigate to an empty page to fire all the destruction logic for the
     // current page.
     LoadURL(GURL("about:blank"));
@@ -485,7 +485,7 @@ void TestShell::SizeToDefault() {
 void TestShell::ResetTestController() {
   notification_presenter_->Reset();
   delegate_->Reset();
-  if (geolocation_client_mock_.get())
+  if (geolocation_client_mock_)
     geolocation_client_mock_->resetMock();
 }
 
@@ -599,7 +599,7 @@ void TestShell::SetFocus(WebWidgetHost* host, bool enable) {
 
 WebKit::WebDeviceOrientationClientMock*
 TestShell::device_orientation_client_mock() {
-  if (!device_orientation_client_mock_.get()) {
+  if (!device_orientation_client_mock_) {
     device_orientation_client_mock_.reset(
         WebKit::WebDeviceOrientationClientMock::create());
   }
@@ -607,7 +607,7 @@ TestShell::device_orientation_client_mock() {
 }
 
 WebKit::WebGeolocationClientMock* TestShell::geolocation_client_mock() {
-  if (!geolocation_client_mock_.get()) {
+  if (!geolocation_client_mock_) {
     geolocation_client_mock_.reset(
         WebKit::WebGeolocationClientMock::create());
   }

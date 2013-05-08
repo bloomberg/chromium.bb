@@ -262,7 +262,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
 }
 
 void WebPluginDelegateImpl::PlatformDestroyInstance() {
-  if (redraw_timer_.get())
+  if (redraw_timer_)
     redraw_timer_->Stop();
   [renderer_ release];
   renderer_ = nil;

@@ -61,7 +61,7 @@ void FileWriterDelegate::Start(scoped_ptr<net::URLRequest> request) {
 }
 
 bool FileWriterDelegate::Cancel() {
-  if (request_.get()) {
+  if (request_) {
     // This halts any callbacks on this delegate.
     request_->set_delegate(NULL);
     request_->Cancel();
@@ -186,7 +186,7 @@ FileWriterDelegate::GetCompletionStatusOnError() const {
 }
 
 void FileWriterDelegate::OnError(base::PlatformFileError error) {
-  if (request_.get()) {
+  if (request_) {
     request_->set_delegate(NULL);
     request_->Cancel();
   }

@@ -705,7 +705,7 @@ bool FileSystemDirectoryDatabase::DestroyDatabase(const base::FilePath& path) {
 }
 
 bool FileSystemDirectoryDatabase::Init(RecoveryOption recovery_option) {
-  if (db_.get())
+  if (db_)
     return true;
 
   std::string path =

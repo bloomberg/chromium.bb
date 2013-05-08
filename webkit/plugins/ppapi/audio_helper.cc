@@ -21,7 +21,7 @@ AudioHelper::~AudioHelper() {
 }
 
 int32_t AudioHelper::GetSyncSocketImpl(int* sync_socket) {
-  if (socket_for_create_callback_.get()) {
+  if (socket_for_create_callback_) {
 #if defined(OS_POSIX)
     *sync_socket = socket_for_create_callback_->handle();
 #elif defined(OS_WIN)
@@ -35,7 +35,7 @@ int32_t AudioHelper::GetSyncSocketImpl(int* sync_socket) {
 }
 
 int32_t AudioHelper::GetSharedMemoryImpl(int* shm_handle, uint32_t* shm_size) {
-  if (shared_memory_for_create_callback_.get()) {
+  if (shared_memory_for_create_callback_) {
 #if defined(OS_POSIX)
     *shm_handle = shared_memory_for_create_callback_->handle().fd;
 #elif defined(OS_WIN)

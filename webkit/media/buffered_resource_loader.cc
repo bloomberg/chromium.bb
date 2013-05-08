@@ -178,7 +178,7 @@ void BufferedResourceLoader::Start(
 
   // Check for our test WebURLLoader.
   scoped_ptr<WebURLLoader> loader;
-  if (test_loader_.get()) {
+  if (test_loader_) {
     loader = test_loader_.Pass();
   } else {
     WebURLLoaderOptions options;
@@ -596,7 +596,7 @@ void BufferedResourceLoader::UpdateBufferWindow() {
 }
 
 void BufferedResourceLoader::UpdateDeferBehavior() {
-  if (!active_loader_.get())
+  if (!active_loader_)
     return;
 
   SetDeferred(ShouldDefer());
@@ -638,7 +638,7 @@ bool BufferedResourceLoader::CanFulfillRead() const {
 
   // At the point, we verified that first byte requested is within the buffer.
   // If the request has completed, then just returns with what we have now.
-  if (!active_loader_.get())
+  if (!active_loader_)
     return true;
 
   // If the resource request is still active, make sure the whole requested
@@ -660,7 +660,7 @@ bool BufferedResourceLoader::WillFulfillRead() const {
 
   // The resource request has completed, there's no way we can fulfill the
   // read request.
-  if (!active_loader_.get())
+  if (!active_loader_)
     return false;
 
   return true;

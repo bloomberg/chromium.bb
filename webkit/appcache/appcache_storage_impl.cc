@@ -1343,7 +1343,7 @@ void AppCacheStorageImpl::Disable() {
   is_disabled_ = true;
   ClearUsageMapAndNotify();
   working_set()->Disable();
-  if (disk_cache_.get())
+  if (disk_cache_)
     disk_cache_->Disable();
   scoped_refptr<DisableDatabaseTask> task(new DisableDatabaseTask(this));
   task->Schedule();
@@ -1769,7 +1769,7 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
   if (is_disabled_)
     return NULL;
 
-  if (!disk_cache_.get()) {
+  if (!disk_cache_) {
     int rv = net::OK;
     disk_cache_.reset(new AppCacheDiskCache);
     if (is_incognito_) {

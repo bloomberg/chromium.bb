@@ -349,7 +349,7 @@ class MainPageJob : public BaseInternalsJob {
 
     out->clear();
     EmitPageStart(out);
-    if (!info_collection_.get()) {
+    if (!info_collection_) {
       out->append(kErrorMessage);
     } else if (info_collection_->infos_by_origin.empty()) {
       out->append(kEmptyAppCachesMessage);

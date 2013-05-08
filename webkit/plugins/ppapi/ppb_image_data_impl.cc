@@ -167,9 +167,9 @@ ImageDataPlatformBackend::PlatformImage() const {
 }
 
 void* ImageDataPlatformBackend::Map() {
-  if (!mapped_canvas_.get()) {
+  if (!mapped_canvas_) {
     mapped_canvas_.reset(platform_image_->Map());
-    if (!mapped_canvas_.get())
+    if (!mapped_canvas_)
       return NULL;
   }
   const SkBitmap& bitmap =
@@ -204,7 +204,7 @@ SkCanvas* ImageDataPlatformBackend::GetCanvas() {
 }
 
 const SkBitmap* ImageDataPlatformBackend::GetMappedBitmap() const {
-  if (!mapped_canvas_.get())
+  if (!mapped_canvas_)
     return NULL;
   return &skia::GetTopDevice(*mapped_canvas_)->accessBitmap(false);
 }

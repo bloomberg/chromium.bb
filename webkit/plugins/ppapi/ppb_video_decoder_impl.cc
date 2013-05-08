@@ -144,7 +144,7 @@ bool PPB_VideoDecoder_Impl::Init(
 
   platform_video_decoder_.reset(plugin_delegate->CreateVideoDecoder(
       this, command_buffer_route_id));
-  if (!platform_video_decoder_.get())
+  if (!platform_video_decoder_)
     return false;
 
   FlushCommandBuffer();
@@ -154,7 +154,7 @@ bool PPB_VideoDecoder_Impl::Init(
 int32_t PPB_VideoDecoder_Impl::Decode(
     const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
     scoped_refptr<TrackedCallback> callback) {
-  if (!platform_video_decoder_.get())
+  if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
   EnterResourceNoLock<PPB_Buffer_API> enter(bitstream_buffer->data, true);
@@ -178,7 +178,7 @@ int32_t PPB_VideoDecoder_Impl::Decode(
 void PPB_VideoDecoder_Impl::AssignPictureBuffers(
     uint32_t no_of_buffers,
     const PP_PictureBuffer_Dev* buffers) {
-  if (!platform_video_decoder_.get())
+  if (!platform_video_decoder_)
     return;
   UMA_HISTOGRAM_COUNTS_100("Media.PepperVideoDecoderPictureCount",
                            no_of_buffers);
@@ -201,7 +201,7 @@ void PPB_VideoDecoder_Impl::AssignPictureBuffers(
 }
 
 void PPB_VideoDecoder_Impl::ReusePictureBuffer(int32_t picture_buffer_id) {
-  if (!platform_video_decoder_.get())
+  if (!platform_video_decoder_)
     return;
 
   FlushCommandBuffer();
@@ -209,7 +209,7 @@ void PPB_VideoDecoder_Impl::ReusePictureBuffer(int32_t picture_buffer_id) {
 }
 
 int32_t PPB_VideoDecoder_Impl::Flush(scoped_refptr<TrackedCallback> callback) {
-  if (!platform_video_decoder_.get())
+  if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
   if (!SetFlushCallback(callback))
@@ -221,7 +221,7 @@ int32_t PPB_VideoDecoder_Impl::Flush(scoped_refptr<TrackedCallback> callback) {
 }
 
 int32_t PPB_VideoDecoder_Impl::Reset(scoped_refptr<TrackedCallback> callback) {
-  if (!platform_video_decoder_.get())
+  if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
   if (!SetResetCallback(callback))

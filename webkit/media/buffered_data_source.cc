@@ -128,7 +128,7 @@ BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
 void BufferedDataSource::set_host(media::DataSourceHost* host) {
   DataSource::set_host(host);
 
-  if (loader_.get()) {
+  if (loader_) {
     base::AutoLock auto_lock(lock_);
     UpdateHostState_Locked();
   }
@@ -275,7 +275,7 @@ void BufferedDataSource::StopInternal_Locked() {
 void BufferedDataSource::StopLoader() {
   DCHECK(render_loop_->BelongsToCurrentThread());
 
-  if (loader_.get())
+  if (loader_)
     loader_->Stop();
 }
 

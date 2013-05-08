@@ -211,7 +211,7 @@ net::CancelableCompletionCallback*
 AppCacheQuotaClient::GetServiceDeleteCallback() {
   // Lazily created due to CancelableCompletionCallback's threading
   // restrictions, there is no way to detach from the thread created on.
-  if (!service_delete_callback_.get()) {
+  if (!service_delete_callback_) {
     service_delete_callback_.reset(
         new net::CancelableCompletionCallback(
             base::Bind(&AppCacheQuotaClient::DidDeleteAppCachesForOrigin,

@@ -354,12 +354,12 @@ void WebWidgetHost::Paint() {
   gfx::Rect client_rect(width, height);
 
   // Allocate a canvas if necessary
-  if (!canvas_.get()) {
+  if (!canvas_) {
     ResetScrollRect();
     paint_rect_ = client_rect;
     canvas_.reset(skia::CreatePlatformCanvas(width, height, true, 0,
                                              skia::RETURN_NULL_ON_FAILURE));
-    if (!canvas_.get()) {
+    if (!canvas_) {
       // memory allocation failed, we can't paint.
       LOG(ERROR) << "Failed to allocate memory for " << width << "x" << height;
       return;

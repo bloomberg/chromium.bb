@@ -63,7 +63,7 @@ int SandboxFileStreamWriter::Write(
     net::IOBuffer* buf, int buf_len,
     const net::CompletionCallback& callback) {
   has_pending_operation_ = true;
-  if (local_file_writer_.get())
+  if (local_file_writer_)
     return WriteInternal(buf, buf_len, callback);
 
   base::PlatformFileError error_code;

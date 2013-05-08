@@ -983,7 +983,7 @@ void AppCacheDatabase::ReadOnlineWhiteListRecord(
 }
 
 bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
-  if (db_.get())
+  if (db_)
     return true;
 
   // If we tried and failed once, don't try again in the same session

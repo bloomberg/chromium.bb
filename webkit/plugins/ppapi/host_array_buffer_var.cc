@@ -67,7 +67,7 @@ bool HostArrayBufferVar::CopyToNewShmem(
       webkit::ppapi::HostGlobals::Get()->GetInstance(instance);
   scoped_ptr<base::SharedMemory> shm(i->delegate()->CreateAnonymousSharedMemory(
       ByteLength()));
-  if (!shm.get())
+  if (!shm)
     return false;
 
   shm->Map(ByteLength());

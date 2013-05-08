@@ -373,7 +373,7 @@ void LocalFileSyncContext::RemoveOriginChangeObserver(
 base::WeakPtr<SyncableFileOperationRunner>
 LocalFileSyncContext::operation_runner() const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  if (operation_runner_.get())
+  if (operation_runner_)
     return operation_runner_->AsWeakPtr();
   return base::WeakPtr<SyncableFileOperationRunner>();
 }
@@ -466,7 +466,7 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
                    base::Owned(origins_with_changes)));
     return;
   }
-  if (!operation_runner_.get()) {
+  if (!operation_runner_) {
     DCHECK(!sync_status_);
     DCHECK(!timer_on_io_);
     sync_status_.reset(new LocalFileSyncStatus);

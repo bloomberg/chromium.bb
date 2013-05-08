@@ -112,7 +112,7 @@ class MockAppCacheStorage : public AppCacheStorage {
 
   // Lazily constructed in-memory disk cache.
   AppCacheDiskCache* disk_cache() {
-    if (!disk_cache_.get()) {
+    if (!disk_cache_) {
       const int kMaxCacheSize = 10 * 1024 * 1024;
       disk_cache_.reset(new AppCacheDiskCache);
       disk_cache_->InitWithMemBackend(kMaxCacheSize, net::CompletionCallback());

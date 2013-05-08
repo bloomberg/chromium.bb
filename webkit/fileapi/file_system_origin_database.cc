@@ -75,7 +75,7 @@ FileSystemOriginDatabase::~FileSystemOriginDatabase() {
 }
 
 bool FileSystemOriginDatabase::Init(RecoveryOption recovery_option) {
-  if (db_.get())
+  if (db_)
     return true;
 
   std::string path =

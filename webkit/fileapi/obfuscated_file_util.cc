@@ -920,7 +920,7 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
 
   // No other directories seem exist. Try deleting the entire origin directory.
   InitOriginDatabase(false);
-  if (origin_database_.get())
+  if (origin_database_)
     origin_database_->RemovePathForOrigin(GetOriginIdentifierFromURL(origin));
   if (!file_util::Delete(origin_path, true /* recursive */))
     return false;
@@ -1226,7 +1226,7 @@ void ObfuscatedFileUtil::DropDatabases() {
 }
 
 bool ObfuscatedFileUtil::InitOriginDatabase(bool create) {
-  if (!origin_database_.get()) {
+  if (!origin_database_) {
     if (!create && !file_util::DirectoryExists(file_system_directory_))
       return false;
     if (!file_util::CreateDirectory(file_system_directory_)) {

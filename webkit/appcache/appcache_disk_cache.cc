@@ -202,7 +202,7 @@ int AppCacheDiskCache::CreateEntry(int64 key, Entry** entry,
     return net::ERR_IO_PENDING;
   }
 
-  if (!disk_cache_.get())
+  if (!disk_cache_)
     return net::ERR_FAILED;
 
   return (new ActiveCall(this))->CreateEntry(key, entry, callback);
@@ -220,7 +220,7 @@ int AppCacheDiskCache::OpenEntry(int64 key, Entry** entry,
     return net::ERR_IO_PENDING;
   }
 
-  if (!disk_cache_.get())
+  if (!disk_cache_)
     return net::ERR_FAILED;
 
   return (new ActiveCall(this))->OpenEntry(key, entry, callback);
@@ -237,7 +237,7 @@ int AppCacheDiskCache::DoomEntry(int64 key,
     return net::ERR_IO_PENDING;
   }
 
-  if (!disk_cache_.get())
+  if (!disk_cache_)
     return net::ERR_FAILED;
 
   return (new ActiveCall(this))->DoomEntry(key, callback);

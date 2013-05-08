@@ -379,7 +379,7 @@ void LocalFileSystemOperation::OpenFile(const FileSystemURL& url,
 // We can only get here on a write or truncate that's not yet completed.
 // We don't support cancelling any other operation at this time.
 void LocalFileSystemOperation::Cancel(const StatusCallback& cancel_callback) {
-  if (file_writer_delegate_.get()) {
+  if (file_writer_delegate_) {
     DCHECK_EQ(kOperationWrite, pending_operation_);
 
     // Writes are done without proxying through FileUtilProxy after the initial

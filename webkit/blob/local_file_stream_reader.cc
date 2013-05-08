@@ -50,7 +50,7 @@ LocalFileStreamReader::~LocalFileStreamReader() {
 int LocalFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
                           const net::CompletionCallback& callback) {
   DCHECK(!has_pending_open_);
-  if (stream_impl_.get())
+  if (stream_impl_)
     return stream_impl_->Read(buf, buf_len, callback);
   return Open(base::Bind(&LocalFileStreamReader::DidOpenForRead,
                          weak_factory_.GetWeakPtr(),

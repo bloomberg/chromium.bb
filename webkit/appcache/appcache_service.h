@@ -64,7 +64,7 @@ class WEBKIT_STORAGE_EXPORT AppCacheService {
 
   // Purges any memory not needed.
   void PurgeMemory() {
-    if (storage_.get())
+    if (storage_)
       storage_->PurgeMemory();
   }
 

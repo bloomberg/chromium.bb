@@ -86,7 +86,7 @@ DomStorageNamespace* DomStorageNamespace::Clone(
     clone->areas_[it->first] = AreaHolder(area, 0);
   }
   // And clone the on-disk structures, too.
-  if (session_storage_database_.get()) {
+  if (session_storage_database_) {
     task_runner_->PostShutdownBlockingTask(
         FROM_HERE,
         DomStorageTaskRunner::COMMIT_SEQUENCE,

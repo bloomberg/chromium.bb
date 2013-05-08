@@ -33,7 +33,7 @@ int RemoteFileStreamWriter::Write(net::IOBuffer* buf,
   DCHECK(!has_pending_create_snapshot_);
   DCHECK(pending_cancel_callback_.is_null());
 
-  if (!local_file_writer_.get()) {
+  if (!local_file_writer_) {
     has_pending_create_snapshot_ = true;
     // In this RemoteFileStreamWriter, we only create snapshot file and don't
     // have explicit close operation. This is ok, because close is automatically
@@ -93,7 +93,7 @@ int RemoteFileStreamWriter::Cancel(const net::CompletionCallback& callback) {
   }
 
   // If LocalFileWriter is already created, just delegate the cancel to it.
-  if (local_file_writer_.get()) {
+  if (local_file_writer_) {
     pending_cancel_callback_ = callback;
     return local_file_writer_->Cancel(
         base::Bind(&RemoteFileStreamWriter::InvokePendingCancelCallback,

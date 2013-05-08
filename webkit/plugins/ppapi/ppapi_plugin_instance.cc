@@ -424,7 +424,7 @@ PluginInstance::~PluginInstance() {
   delegate_->InstanceDeleted(this);
   module_->InstanceDeleted(this);
   // If we switched from the NaCl plugin module, notify it too.
-  if (original_module_.get())
+  if (original_module_)
     original_module_->InstanceDeleted(this);
 
   // This should be last since some of the above "instance deleted" calls will
@@ -449,7 +449,7 @@ void PluginInstance::Delete() {
   // If this is a NaCl plugin instance, shut down the NaCl plugin by calling
   // its DidDestroy. Don't call DidDestroy on the untrusted plugin instance,
   // since there is little that it can do at this point.
-  if (original_instance_interface_.get())
+  if (original_instance_interface_)
     original_instance_interface_->DidDestroy(pp_instance());
   else
     instance_interface_->DidDestroy(pp_instance());
@@ -517,7 +517,7 @@ void PluginInstance::ScrollRect(int dx, int dy, const gfx::Rect& rect) {
 }
 
 unsigned PluginInstance::GetBackingTextureId() {
-  if (bound_graphics_3d_.get())
+  if (bound_graphics_3d_)
     return bound_graphics_3d_->GetBackingTextureId();
 
   return 0;
@@ -808,7 +808,7 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
     }
   }
 
-  if (cursor_.get())
+  if (cursor_)
     *cursor_info = *cursor_;
   return rv;
 }
@@ -922,14 +922,14 @@ void PluginInstance::PageVisibilityChanged(bool is_visible) {
 void PluginInstance::ViewWillInitiatePaint() {
   if (GetBoundGraphics2D())
     GetBoundGraphics2D()->ViewWillInitiatePaint();
-  else if (bound_graphics_3d_.get())
+  else if (bound_graphics_3d_)
     bound_graphics_3d_->ViewWillInitiatePaint();
 }
 
 void PluginInstance::ViewInitiatedPaint() {
   if (GetBoundGraphics2D())
     GetBoundGraphics2D()->ViewInitiatedPaint();
-  else if (bound_graphics_3d_.get())
+  else if (bound_graphics_3d_)
     bound_graphics_3d_->ViewInitiatedPaint();
 }
 
@@ -938,7 +938,7 @@ void PluginInstance::ViewFlushedPaint() {
   scoped_refptr<PluginInstance> ref(this);
   if (GetBoundGraphics2D())
     GetBoundGraphics2D()->ViewFlushedPaint();
-  else if (bound_graphics_3d_.get())
+  else if (bound_graphics_3d_)
     bound_graphics_3d_->ViewFlushedPaint();
 }
 
@@ -1884,7 +1884,7 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
   // The Graphics3D instance can't be destroyed until we call
   // UpdateLayer().
   scoped_refptr< ::ppapi::Resource> old_graphics = bound_graphics_3d_.get();
-  if (bound_graphics_3d_.get()) {
+  if (bound_graphics_3d_) {
     bound_graphics_3d_->BindToInstance(false);
     bound_graphics_3d_ = NULL;
   }

@@ -147,7 +147,7 @@ void BlobStorageContext::AppendBlobDataItem(
       break;
     case BlobData::Item::TYPE_BLOB: {
       scoped_ptr<BlobDataHandle> src = GetBlobDataFromUUID(item.blob_uuid());
-      if (src.get())
+      if (src)
         exceeded_memory = !ExpandStorageItems(target_blob_data,
                                               src->data(),
                                               item.offset(),

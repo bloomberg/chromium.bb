@@ -43,7 +43,7 @@ int LocalFileStreamWriter::Write(net::IOBuffer* buf, int buf_len,
   DCHECK(cancel_callback_.is_null());
 
   has_pending_operation_ = true;
-  if (stream_impl_.get()) {
+  if (stream_impl_) {
     int result = InitiateWrite(buf, buf_len, callback);
     if (result != net::ERR_IO_PENDING)
       has_pending_operation_ = false;
@@ -69,7 +69,7 @@ int LocalFileStreamWriter::Flush(const net::CompletionCallback& callback) {
   DCHECK(cancel_callback_.is_null());
 
   // Write() is not called yet, so there's nothing to flush.
-  if (!stream_impl_.get())
+  if (!stream_impl_)
     return net::OK;
 
   has_pending_operation_ = true;

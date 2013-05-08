@@ -250,7 +250,7 @@ double WebMediaPlayerMS::duration() const {
 
 double WebMediaPlayerMS::currentTime() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (current_frame_.get()) {
+  if (current_frame_) {
     return current_frame_->GetTimestamp().InSecondsF();
   } else if (audio_renderer_) {
     return audio_renderer_->GetCurrentRenderTime().InSecondsF();
@@ -311,7 +311,7 @@ void WebMediaPlayerMS::paint(WebCanvas* canvas,
 
   {
     base::AutoLock auto_lock(current_frame_lock_);
-    if (current_frame_.get())
+    if (current_frame_)
       current_frame_used_ = true;
   }
 }
@@ -423,7 +423,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
 
   {
     base::AutoLock auto_lock(current_frame_lock_);
-    if (!current_frame_used_ && current_frame_.get())
+    if (!current_frame_used_ && current_frame_)
       ++dropped_frame_count_;
     current_frame_ = frame;
     current_frame_->SetTimestamp(frame->GetTimestamp() - start_time_);

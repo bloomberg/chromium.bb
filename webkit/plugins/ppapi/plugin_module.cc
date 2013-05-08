@@ -544,7 +544,7 @@ bool PluginModule::IsProxied() const {
 }
 
 base::ProcessId PluginModule::GetPeerProcessId() {
-  if (out_of_process_proxy_.get())
+  if (out_of_process_proxy_)
     return out_of_process_proxy_->GetPeerProcessId();
   return base::kNullProcessId;
 }
@@ -574,7 +574,7 @@ PluginInstance* PluginModule::CreateInstance(
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;
   }
-  if (out_of_process_proxy_.get())
+  if (out_of_process_proxy_)
     out_of_process_proxy_->AddInstance(instance->pp_instance());
   return instance;
 }
@@ -587,7 +587,7 @@ PluginInstance* PluginModule::GetSomeInstance() const {
 }
 
 const void* PluginModule::GetPluginInterface(const char* name) const {
-  if (out_of_process_proxy_.get())
+  if (out_of_process_proxy_)
     return out_of_process_proxy_->GetProxiedInterface(name);
 
   // In-process plugins.
@@ -601,7 +601,7 @@ void PluginModule::InstanceCreated(PluginInstance* instance) {
 }
 
 void PluginModule::InstanceDeleted(PluginInstance* instance) {
-  if (out_of_process_proxy_.get())
+  if (out_of_process_proxy_)
     out_of_process_proxy_->RemoveInstance(instance->pp_instance());
   instances_.erase(instance);
 }

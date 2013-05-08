@@ -43,7 +43,7 @@ DomStorageContext::DomStorageContext(
 }
 
 DomStorageContext::~DomStorageContext() {
-  if (session_storage_database_.get()) {
+  if (session_storage_database_) {
     // SessionStorageDatabase shouldn't be deleted right away: deleting it will
     // potentially involve waiting in leveldb::DBImpl::~DBImpl, and waiting
     // shouldn't happen on this thread.
@@ -107,7 +107,7 @@ void DomStorageContext::GetLocalStorageUsage(
 
 void DomStorageContext::GetSessionStorageUsage(
     std::vector<SessionStorageUsageInfo>* infos) {
-  if (!session_storage_database_.get())
+  if (!session_storage_database_)
     return;
   std::map<std::string, std::vector<GURL> > namespaces_and_origins;
   session_storage_database_->ReadNamespacesAndOrigins(
@@ -176,7 +176,7 @@ void DomStorageContext::Shutdown() {
   for (; it != namespaces_.end(); ++it)
     it->second->Shutdown();
 
-  if (localstorage_directory_.empty() && !session_storage_database_.get())
+  if (localstorage_directory_.empty() && !session_storage_database_)
     return;
 
   // Respect the content policy settings about what to
@@ -264,7 +264,7 @@ void DomStorageContext::DeleteSessionNamespace(
   if (it == namespaces_.end())
     return;
   std::string persistent_namespace_id = it->second->persistent_namespace_id();
-  if (session_storage_database_.get()) {
+  if (session_storage_database_) {
     if (!should_persist_data) {
       task_runner_->PostShutdownBlockingTask(
           FROM_HERE,
@@ -321,7 +321,7 @@ void DomStorageContext::ClearSessionOnlyOrigins() {
           kNotRecursive);
     }
   }
-  if (session_storage_database_.get()) {
+  if (session_storage_database_) {
     std::vector<SessionStorageUsageInfo> infos;
     GetSessionStorageUsage(&infos);
     for (size_t i = 0; i < infos.size(); ++i) {
@@ -345,7 +345,7 @@ void DomStorageContext::SetSaveSessionStorageOnDisk() {
 }
 
 void DomStorageContext::StartScavengingUnusedSessionStorage() {
-  if (session_storage_database_.get()) {
+  if (session_storage_database_) {
     task_runner_->PostDelayedTask(
         FROM_HERE, base::Bind(&DomStorageContext::FindUnusedNamespaces, this),
         base::TimeDelta::FromSeconds(kSessionStoraceScavengingSeconds));

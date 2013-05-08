@@ -381,7 +381,7 @@ GLInProcessContext::Error GLInProcessContext::GetError() {
 }
 
 bool GLInProcessContext::IsCommandBufferContextLost() {
-  if (context_lost_ || !command_buffer_.get()) {
+  if (context_lost_ || !command_buffer_) {
     return true;
   }
   CommandBuffer::State state = command_buffer_->GetState();
@@ -518,7 +518,7 @@ bool GLInProcessContext::Initialize(
     else
       surface_ = gfx::GLSurface::CreateViewGLSurface(false, window);
 
-    if (!surface_.get()) {
+    if (!surface_) {
       LOG(ERROR) << "Could not create GLSurface.";
       Destroy();
       return false;
@@ -547,13 +547,13 @@ bool GLInProcessContext::Initialize(
                                                  gpu_preference);
     }
 
-    if (!context_.get()) {
+    if (!context_) {
       LOG(ERROR) << "Could not create GLContext.";
       Destroy();
       return false;
     }
 
-    if (!context_->MakeCurrent(surface_.get())) {
+    if (!context_->MakeCurrent(surface_)) {
       LOG(ERROR) << "Could not make context current.";
       Destroy();
       return false;
@@ -620,7 +620,7 @@ bool GLInProcessContext::Initialize(
 void GLInProcessContext::Destroy() {
   bool context_lost = IsCommandBufferContextLost();
 
-  if (gles2_implementation_.get()) {
+  if (gles2_implementation_) {
     // First flush the context to ensure that any pending frees of resources
     // are completed. Otherwise, if this context is part of a share group,
     // those resources might leak. Also, any remaining side effects of commands
@@ -637,7 +637,7 @@ void GLInProcessContext::Destroy() {
 
   AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
                                       g_all_shared_contexts.Get());
-  if (decoder_.get()) {
+  if (decoder_) {
     decoder_->Destroy(!context_lost);
   }
 
@@ -1271,7 +1271,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::getActiveAttrib(
   if (max_name_length < 0)
     return false;
   scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
-  if (!name.get()) {
+  if (!name) {
     synthesizeGLError(GL_OUT_OF_MEMORY);
     return false;
   }
@@ -1298,7 +1298,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::getActiveUniform(
   if (max_name_length < 0)
     return false;
   scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
-  if (!name.get()) {
+  if (!name) {
     synthesizeGLError(GL_OUT_OF_MEMORY);
     return false;
   }
@@ -1366,7 +1366,7 @@ WebKit::WebString WebGraphicsContext3DInProcessCommandBufferImpl::
   if (!logLength)
     return WebKit::WebString();
   scoped_ptr<GLchar[]> log(new GLchar[logLength]);
-  if (!log.get())
+  if (!log)
     return WebKit::WebString();
   GLsizei returnedLogLength = 0;
   gl_->GetProgramInfoLog(
@@ -1390,7 +1390,7 @@ WebKit::WebString WebGraphicsContext3DInProcessCommandBufferImpl::
   if (!logLength)
     return WebKit::WebString();
   scoped_ptr<GLchar[]> log(new GLchar[logLength]);
-  if (!log.get())
+  if (!log)
     return WebKit::WebString();
   GLsizei returnedLogLength = 0;
   gl_->GetShaderInfoLog(
@@ -1412,7 +1412,7 @@ WebKit::WebString WebGraphicsContext3DInProcessCommandBufferImpl::
   if (!logLength)
     return WebKit::WebString();
   scoped_ptr<GLchar[]> log(new GLchar[logLength]);
-  if (!log.get())
+  if (!log)
     return WebKit::WebString();
   GLsizei returnedLogLength = 0;
   gl_->GetShaderSource(
@@ -1434,7 +1434,7 @@ WebKit::WebString WebGraphicsContext3DInProcessCommandBufferImpl::
   if (!logLength)
     return WebKit::WebString();
   scoped_ptr<GLchar[]> log(new GLchar[logLength]);
-  if (!log.get())
+  if (!log)
     return WebKit::WebString();
   GLsizei returnedLogLength = 0;
   gl_->GetTranslatedShaderSourceANGLE(

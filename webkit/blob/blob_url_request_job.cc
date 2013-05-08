@@ -128,19 +128,19 @@ bool BlobURLRequestJob::ReadRawData(net::IOBuffer* dest,
 }
 
 bool BlobURLRequestJob::GetMimeType(std::string* mime_type) const {
-  if (!response_info_.get())
+  if (!response_info_)
     return false;
 
   return response_info_->headers->GetMimeType(mime_type);
 }
 
 void BlobURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
-  if (response_info_.get())
+  if (response_info_)
     *info = *response_info_;
 }
 
 int BlobURLRequestJob::GetResponseCode() const {
-  if (!response_info_.get())
+  if (!response_info_)
     return -1;
 
   return response_info_->headers->response_code();

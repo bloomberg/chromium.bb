@@ -72,7 +72,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   if (manager_)
     player_id_ = manager_->RegisterMediaPlayer(this);
 
-  if (stream_texture_factory_.get()) {
+  if (stream_texture_factory_) {
     stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
     stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
     ReallocateVideoFrame();

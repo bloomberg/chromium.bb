@@ -142,7 +142,7 @@ WebGraphicsContext3DInProcessImpl::CreateForWebView(
   scoped_refptr<gfx::GLSurface> gl_surface =
       gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
 
-  if (!gl_surface.get())
+  if (!gl_surface)
     return NULL;
 
   // TODO(kbr): This implementation doesn't yet support lost contexts
@@ -154,7 +154,7 @@ WebGraphicsContext3DInProcessImpl::CreateForWebView(
       gl_surface.get(),
       gpu_preference);
 
-  if (!gl_context.get())
+  if (!gl_context)
     return NULL;
 
   scoped_ptr<WebGraphicsContext3DInProcessImpl> context(
@@ -175,7 +175,7 @@ WebGraphicsContext3DInProcessImpl::CreateForWindow(
 
   scoped_refptr<gfx::GLSurface> gl_surface =
       gfx::GLSurface::CreateViewGLSurface(false, window);
-  if (!gl_surface.get())
+  if (!gl_surface)
     return NULL;
 
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
@@ -184,7 +184,7 @@ WebGraphicsContext3DInProcessImpl::CreateForWindow(
       share_group,
       gl_surface.get(),
       gpu_preference);
-  if (!gl_context.get())
+  if (!gl_context)
     return NULL;
   scoped_ptr<WebGraphicsContext3DInProcessImpl> context(
       new WebGraphicsContext3DInProcessImpl(
@@ -212,7 +212,7 @@ bool WebGraphicsContext3DInProcessImpl::Initialize(
   if (render_directly_to_web_view_)
     attributes_.antialias = false;
 
-  if (!gl_context_->MakeCurrent(gl_surface_.get())) {
+  if (!gl_context_->MakeCurrent(gl_surface_)) {
     gl_context_ = NULL;
     return false;
   }
@@ -1293,7 +1293,7 @@ WebString WebGraphicsContext3DInProcessImpl::getShaderInfoLog(WebGLId shader) {
     ShaderSourceEntry* entry = result->second;
     DCHECK(entry);
     if (!entry->is_valid) {
-      if (!entry->log.get())
+      if (!entry->log)
         return WebString();
       WebString res = WebString::fromUTF8(
           entry->log.get(), strlen(entry->log.get()));
@@ -1320,7 +1320,7 @@ WebString WebGraphicsContext3DInProcessImpl::getShaderSource(WebGLId shader) {
   if (result != shader_source_map_.end()) {
     ShaderSourceEntry* entry = result->second;
     DCHECK(entry);
-    if (!entry->source.get())
+    if (!entry->source)
       return WebString();
     WebString res = WebString::fromUTF8(
         entry->source.get(), strlen(entry->source.get()));

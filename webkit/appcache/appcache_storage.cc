@@ -57,7 +57,7 @@ AppCacheStorage::ResponseInfoLoadTask::~ResponseInfoLoadTask() {
 }
 
 void AppCacheStorage::ResponseInfoLoadTask::StartIfNeeded() {
-  if (reader_.get())
+  if (reader_)
     return;
   reader_.reset(
       storage_->CreateResponseReader(manifest_url_, group_id_, response_id_));

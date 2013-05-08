@@ -24,7 +24,7 @@ bool PluginLib::ReadWebPluginInfo(const base::FilePath &filename,
   //     video/quicktime|audio/aiff|image/jpeg
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfo(filename));
-  if (!version_info.get()) {
+  if (!version_info) {
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "Could not get version info for plugin "
         << filename.value();

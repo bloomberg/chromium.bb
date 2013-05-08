@@ -28,7 +28,7 @@ BlobDataHandle::~BlobDataHandle() {
   if (io_task_runner_->RunsTasksOnCurrentThread()) {
     // Note: Do not test context_ or alter the blob_data_ refcount
     // on the wrong thread.
-    if (context_.get())
+    if (context_)
       context_->DecrementBlobRefCount(blob_data_->uuid());
     blob_data_->Release();
     return;
@@ -48,7 +48,7 @@ BlobData* BlobDataHandle::data() const {
 void BlobDataHandle::DeleteHelper(
     base::WeakPtr<BlobStorageContext> context,
     BlobData* blob_data) {
-  if (context.get())
+  if (context)
     context->DecrementBlobRefCount(blob_data->uuid());
   blob_data->Release();
 }

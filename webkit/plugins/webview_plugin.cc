@@ -82,7 +82,7 @@ void WebViewPlugin::ReplayReceivedData(WebPlugin* plugin) {
   if (finished_loading_) {
     plugin->didFinishLoading();
   }
-  if (error_.get()) {
+  if (error_) {
     plugin->didFailLoading(*error_);
   }
 }

@@ -128,7 +128,7 @@ QuotaDatabase::QuotaDatabase(const base::FilePath& path)
 }
 
 QuotaDatabase::~QuotaDatabase() {
-  if (db_.get()) {
+  if (db_) {
     db_->CommitTransaction();
   }
 }
@@ -391,7 +391,7 @@ bool QuotaDatabase::SetOriginDatabaseBootstrapped(bool bootstrap_flag) {
 }
 
 void QuotaDatabase::Commit() {
-  if (!db_.get())
+  if (!db_)
     return;
 
   if (timer_.IsRunning())
@@ -430,7 +430,7 @@ bool QuotaDatabase::FindOriginUsedCount(
 }
 
 bool QuotaDatabase::LazyOpen(bool create_if_needed) {
-  if (db_.get())
+  if (db_)
     return true;
 
   // If we tried and failed once, don't try again in the same session

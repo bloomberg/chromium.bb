@@ -344,7 +344,7 @@ NPError NPN_RequestRead(NPStream* stream, NPByteRange* range_list) {
 
   scoped_refptr<PluginInstance> plugin(
       reinterpret_cast<PluginInstance*>(stream->ndata));
-  if (!plugin.get())
+  if (!plugin)
     return NPERR_GENERIC_ERROR;
 
   plugin->RequestRead(stream, range_list);
@@ -361,7 +361,7 @@ static NPError GetURLNotify(NPP id,
     return NPERR_INVALID_URL;
 
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (!plugin.get()) {
+  if (!plugin) {
     return NPERR_GENERIC_ERROR;
   }
 
@@ -425,7 +425,7 @@ static NPError PostURLNotify(NPP id,
     return NPERR_INVALID_URL;
 
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (!plugin.get()) {
+  if (!plugin) {
     NOTREACHED();
     return NPERR_GENERIC_ERROR;
   }
@@ -683,7 +683,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
   switch (static_cast<int>(variable)) {
     case NPNVWindowNPObject: {
       scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin.get()) {
+      if (!plugin) {
         NOTREACHED();
         return NPERR_INVALID_INSTANCE_ERROR;
       }
@@ -703,7 +703,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
     }
     case NPNVPluginElementNPObject: {
       scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin.get()) {
+      if (!plugin) {
         NOTREACHED();
         return NPERR_INVALID_INSTANCE_ERROR;
       }
@@ -724,7 +724,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
   #if !defined(OS_MACOSX)  // OS X doesn't have windowed plugins.
     case NPNVnetscapeWindow: {
       scoped_refptr<PluginInstance> plugin = FindInstance(id);
-      if (!plugin.get()) {
+      if (!plugin) {
         NOTREACHED();
         return NPERR_INVALID_INSTANCE_ERROR;
       }
@@ -761,7 +761,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
     case NPNVprivateModeBool: {
       NPBool* private_mode = reinterpret_cast<NPBool*>(value);
       scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin.get()) {
+      if (!plugin) {
         NOTREACHED();
         return NPERR_INVALID_INSTANCE_ERROR;
       }
@@ -773,7 +773,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
     case NPNVpluginDrawingModel: {
       // return the drawing model that was negotiated when we initialized.
       scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin.get()) {
+      if (!plugin) {
         NOTREACHED();
         return NPERR_INVALID_INSTANCE_ERROR;
       }
@@ -836,7 +836,7 @@ NPError NPN_SetValue(NPP id, NPPVariable variable, void* value) {
   // Allows the plugin to set various modes
 
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (!plugin.get()) {
+  if (!plugin) {
     NOTREACHED();
     return NPERR_INVALID_INSTANCE_ERROR;
   }
@@ -1072,7 +1072,7 @@ NPError NPN_PopUpContextMenu(NPP id, NPMenu* menu) {
     return NPERR_INVALID_PARAM;
 
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (plugin.get()) {
+  if (plugin) {
     return plugin->PopUpContextMenu(menu);
   }
   NOTREACHED();
@@ -1084,7 +1084,7 @@ NPBool NPN_ConvertPoint(NPP id, double sourceX, double sourceY,
                         double *destX, double *destY,
                         NPCoordinateSpace destSpace) {
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (plugin.get()) {
+  if (plugin) {
     return plugin->ConvertPoint(sourceX, sourceY, sourceSpace,
                                 destX, destY, destSpace);
   }
@@ -1106,7 +1106,7 @@ NPBool NPN_UnfocusInstance(NPP id, NPFocusDirection direction) {
 
 void NPN_URLRedirectResponse(NPP instance, void* notify_data, NPBool allow) {
   scoped_refptr<PluginInstance> plugin(FindInstance(instance));
-  if (plugin.get()) {
+  if (plugin) {
     plugin->URLRedirectResponse(!!allow, notify_data);
   }
 }

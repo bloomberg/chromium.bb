@@ -58,9 +58,9 @@ AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
 
 AppCacheHost::~AppCacheHost() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDestructionImminent(this));
-  if (associated_cache_.get())
+  if (associated_cache_)
     associated_cache_->UnassociateHost(this);
-  if (group_being_updated_.get())
+  if (group_being_updated_)
     group_being_updated_->RemoveUpdateObserver(this);
   service_->storage()->CancelDelegateCallbacks(this);
   if (service()->quota_manager_proxy() && !origin_in_use_.is_empty())
@@ -496,7 +496,7 @@ void AppCacheHost::AssociateCompleteCache(AppCache* cache) {
 
 void AppCacheHost::AssociateCacheHelper(AppCache* cache,
                                         const GURL& manifest_url) {
-  if (associated_cache_.get()) {
+  if (associated_cache_) {
     associated_cache_->UnassociateHost(this);
   }
 

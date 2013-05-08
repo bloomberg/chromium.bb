@@ -235,7 +235,7 @@ void WebWidgetHost::Paint() {
   gfx::Rect client_rect(r);
 
   // Allocate a canvas if necessary
-  if (!canvas_.get()) {
+  if (!canvas_) {
     ResetScrollRect();
     paint_rect_ = client_rect;
     canvas_.reset(skia::CreatePlatformCanvas(

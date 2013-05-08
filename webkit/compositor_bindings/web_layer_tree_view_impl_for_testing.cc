@@ -56,7 +56,7 @@ bool WebLayerTreeViewImplForTesting::initialize(
       type_ == webkit_support::FAKE_CONTEXT;
   layer_tree_host_ =
       cc::LayerTreeHost::Create(this, settings, compositor_thread.Pass());
-  if (!layer_tree_host_.get())
+  if (!layer_tree_host_)
     return false;
   return true;
 }

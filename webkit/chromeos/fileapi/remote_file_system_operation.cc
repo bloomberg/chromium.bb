@@ -144,7 +144,7 @@ void RemoteFileSystemOperation::Truncate(const FileSystemURL& url,
 }
 
 void RemoteFileSystemOperation::Cancel(const StatusCallback& cancel_callback) {
-  if (file_writer_delegate_.get()) {
+  if (file_writer_delegate_) {
     DCHECK_EQ(kOperationWrite, pending_operation_);
 
     // Writes are done without proxying through FileUtilProxy after the initial

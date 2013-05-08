@@ -141,7 +141,7 @@ int32_t PPB_URLLoader_Impl::Open(
     return PP_ERROR_NOACCESS;
   }
 
-  if (loader_.get())
+  if (loader_)
     return PP_ERROR_INPROGRESS;
 
   WebFrame* frame = GetFrameForResource(this);
@@ -179,7 +179,7 @@ int32_t PPB_URLLoader_Impl::Open(
 
   is_asynchronous_load_suspended_ = false;
   loader_.reset(frame->createAssociatedURLLoader(options));
-  if (!loader_.get())
+  if (!loader_)
     return PP_ERROR_FAILED;
 
   loader_->loadAsynchronously(web_request, this);
@@ -227,7 +227,7 @@ PP_Bool PPB_URLLoader_Impl::GetDownloadProgress(
 
 PP_Resource PPB_URLLoader_Impl::GetResponseInfo() {
   ::ppapi::thunk::EnterResourceCreationNoLock enter(pp_instance());
-  if (enter.failed() || !response_info_.get())
+  if (enter.failed() || !response_info_)
     return 0;
 
   // Since we're the "host" the process-local resource for the file ref is
@@ -295,7 +295,7 @@ int32_t PPB_URLLoader_Impl::FinishStreamingToFile(
 }
 
 void PPB_URLLoader_Impl::Close() {
-  if (loader_.get())
+  if (loader_)
     loader_->cancel();
   else if (main_document_loader_)
     GetFrameForResource(this)->stopLoading();
@@ -318,7 +318,7 @@ void PPB_URLLoader_Impl::RegisterStatusCallback(
 
 bool PPB_URLLoader_Impl::GetResponseInfoData(
     ::ppapi::URLResponseInfoData* data) {
-  if (!response_info_.get())
+  if (!response_info_)
     return false;
 
   *data = *response_info_;
@@ -429,7 +429,7 @@ void PPB_URLLoader_Impl::didFail(WebURLLoader* loader,
 }
 
 void PPB_URLLoader_Impl::SetDefersLoading(bool defers_loading) {
-  if (loader_.get()) {
+  if (loader_) {
     loader_->setDefersLoading(defers_loading);
     is_asynchronous_load_suspended_ = defers_loading;
   }
@@ -472,7 +472,7 @@ void PPB_URLLoader_Impl::RegisterCallback(
 
 void PPB_URLLoader_Impl::RunCallback(int32_t result) {
   // This may be null only when this is a main document loader.
-  if (!pending_callback_.get()) {
+  if (!pending_callback_) {
     CHECK(main_document_loader_);
     return;
   }

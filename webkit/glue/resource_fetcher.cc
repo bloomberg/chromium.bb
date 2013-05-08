@@ -37,7 +37,7 @@ ResourceFetcher::ResourceFetcher(const GURL& url, WebFrame* frame,
 }
 
 ResourceFetcher::~ResourceFetcher() {
-  if (!completed_ && loader_.get())
+  if (!completed_ && loader_)
     loader_->cancel();
 }
 

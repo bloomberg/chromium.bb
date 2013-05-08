@@ -786,7 +786,7 @@ void WebPluginImpl::AcceleratedPluginSwappedIOSurface() {
   // through. More investigation is needed. http://crbug.com/105346
   if (next_io_surface_allocated_) {
     if (next_io_surface_id_) {
-      if (!io_surface_layer_.get()) {
+      if (!io_surface_layer_) {
         io_surface_layer_ = cc::IOSurfaceLayer::Create();
         web_layer_.reset(new webkit::WebLayerImpl(io_surface_layer_));
         container_->setWebLayer(web_layer_.get());

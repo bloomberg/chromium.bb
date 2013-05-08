@@ -97,7 +97,7 @@ void DidValidateFileSystemRoot(
     base::WeakPtr<SandboxMountPointProvider> mount_point_provider,
     const FileSystemMountPointProvider::ValidateFileSystemCallback& callback,
     base::PlatformFileError* error) {
-  if (mount_point_provider.get())
+  if (mount_point_provider)
     mount_point_provider.get()->CollectOpenFileSystemMetrics(*error);
   callback.Run(*error);
 }

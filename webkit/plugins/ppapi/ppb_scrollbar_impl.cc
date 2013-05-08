@@ -83,18 +83,18 @@ uint32_t PPB_Scrollbar_Impl::GetValue() {
 }
 
 void PPB_Scrollbar_Impl::SetValue(uint32_t value) {
-  if (scrollbar_.get())
+  if (scrollbar_)
     scrollbar_->setValue(value);
 }
 
 void PPB_Scrollbar_Impl::SetDocumentSize(uint32_t size) {
-  if (scrollbar_.get())
+  if (scrollbar_)
     scrollbar_->setDocumentSize(size);
 }
 
 void PPB_Scrollbar_Impl::SetTickMarks(const PP_Rect* tick_marks,
                                       uint32_t count) {
-  if (!scrollbar_.get())
+  if (!scrollbar_)
     return;
   tickmarks_.resize(count);
   for (uint32 i = 0; i < count; ++i) {
@@ -108,7 +108,7 @@ void PPB_Scrollbar_Impl::SetTickMarks(const PP_Rect* tick_marks,
 }
 
 void PPB_Scrollbar_Impl::ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) {
-  if (!scrollbar_.get())
+  if (!scrollbar_)
     return;
 
   WebScrollbar::ScrollDirection direction = multiplier >= 0 ?
@@ -135,7 +135,7 @@ PP_Bool PPB_Scrollbar_Impl::PaintInternal(const gfx::Rect& rect,
                                           PPB_ImageData_Impl* image) {
   ImageDataAutoMapper mapper(image);
   skia::PlatformCanvas* canvas = image->GetPlatformCanvas();
-  if (!canvas || !scrollbar_.get())
+  if (!canvas || !scrollbar_)
     return PP_FALSE;
   canvas->save();
   canvas->scale(scale(), scale());
@@ -153,14 +153,14 @@ PP_Bool PPB_Scrollbar_Impl::PaintInternal(const gfx::Rect& rect,
 PP_Bool PPB_Scrollbar_Impl::HandleEventInternal(
     const ::ppapi::InputEventData& data) {
   scoped_ptr<WebInputEvent> web_input_event(CreateWebInputEvent(data));
-  if (!web_input_event.get() || !scrollbar_.get())
+  if (!web_input_event.get() || !scrollbar_)
     return PP_FALSE;
 
   return PP_FromBool(scrollbar_->handleInputEvent(*web_input_event.get()));
 }
 
 void PPB_Scrollbar_Impl::SetLocationInternal(const PP_Rect* location) {
-  if (!scrollbar_.get())
+  if (!scrollbar_)
     return;
   scrollbar_->setLocation(WebRect(location->point.x,
                                   location->point.y,

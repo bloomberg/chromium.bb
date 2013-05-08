@@ -40,7 +40,7 @@ class SimpleDomStorageSystem::NamespaceImpl : public WebStorageNamespace {
 
  private:
   DomStorageContext* Context() {
-    if (!parent_.get())
+    if (!parent_)
       return NULL;
     return parent_->context_.get();
   }
@@ -65,7 +65,7 @@ class SimpleDomStorageSystem::AreaImpl : public WebStorageArea {
 
  private:
   DomStorageHost* Host() {
-    if (!parent_.get())
+    if (!parent_)
       return NULL;
     return parent_->host_.get();
   }

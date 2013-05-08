@@ -170,7 +170,7 @@ void WebWidgetHost::Paint() {
   CGContextRef context = static_cast<CGContextRef>([view_context graphicsPort]);
 
   // Allocate a canvas if necessary
-  if (!canvas_.get()) {
+  if (!canvas_) {
     ResetScrollRect();
     paint_rect_ = client_rect;
     canvas_.reset(skia::CreatePlatformCanvas(

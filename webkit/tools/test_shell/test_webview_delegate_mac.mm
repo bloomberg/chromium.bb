@@ -94,7 +94,7 @@ WebWidget* TestWebViewDelegate::createPopupMenu(
 // WebWidgetClient ------------------------------------------------------------
 
 void TestWebViewDelegate::show(WebNavigationPolicy policy) {
-  if (!popup_menu_info_.get())
+  if (!popup_menu_info_)
     return;
   if (this != shell_->popup_delegate())
     return;

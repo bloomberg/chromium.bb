@@ -1191,7 +1191,7 @@ void QuotaManager::GetHostUsage(const std::string& host,
 void QuotaManager::GetStatistics(
     std::map<std::string, std::string>* statistics) {
   DCHECK(statistics);
-  if (temporary_storage_evictor_.get()) {
+  if (temporary_storage_evictor_) {
     std::map<std::string, int64> stats;
     temporary_storage_evictor_->GetStatistics(&stats);
     for (std::map<std::string, int64>::iterator p = stats.begin();
@@ -1259,7 +1259,7 @@ QuotaManager::~QuotaManager() {
   proxy_->manager_ = NULL;
   std::for_each(clients_.begin(), clients_.end(),
                 std::mem_fun(&QuotaClient::OnQuotaManagerDestroyed));
-  if (database_.get())
+  if (database_)
     db_thread_->DeleteSoon(FROM_HERE, database_.release());
 }
 
@@ -1272,7 +1272,7 @@ QuotaManager::EvictionContext::~EvictionContext() {
 
 void QuotaManager::LazyInitialize() {
   DCHECK(io_thread_->BelongsToCurrentThread());
-  if (database_.get()) {
+  if (database_) {
     // Initialization seems to be done already.
     return;
   }

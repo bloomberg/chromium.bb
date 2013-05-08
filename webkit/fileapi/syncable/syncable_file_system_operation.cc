@@ -371,7 +371,7 @@ LocalFileSystemOperation* SyncableFileSystemOperation::NewOperation() {
 void SyncableFileSystemOperation::DidFinish(base::PlatformFileError status) {
   DCHECK(CalledOnValidThread());
   DCHECK(!completion_callback_.is_null());
-  if (operation_runner_.get())
+  if (operation_runner_)
     operation_runner_->OnOperationCompleted(target_paths_);
   completion_callback_.Run(status);
 }
@@ -386,7 +386,7 @@ void SyncableFileSystemOperation::DidWrite(
     callback.Run(result, bytes, complete);
     return;
   }
-  if (operation_runner_.get())
+  if (operation_runner_)
     operation_runner_->OnOperationCompleted(target_paths_);
   callback.Run(result, bytes, complete);
 }

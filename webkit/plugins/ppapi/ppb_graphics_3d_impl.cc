@@ -270,7 +270,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   }
 
   platform_context_.reset(plugin_instance->CreateContext3D());
-  if (!platform_context_.get())
+  if (!platform_context_)
     return false;
 
   if (!platform_context_->Init(attrib_list, share_platform_context))

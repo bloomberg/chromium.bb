@@ -152,7 +152,7 @@ void MockAppCacheStorage::MakeGroupObsolete(
 
 AppCacheResponseReader* MockAppCacheStorage::CreateResponseReader(
     const GURL& manifest_url, int64 group_id, int64 response_id) {
-  if (simulated_reader_.get())
+  if (simulated_reader_)
     return simulated_reader_.release();
   return new AppCacheResponseReader(response_id, group_id, disk_cache());
 }

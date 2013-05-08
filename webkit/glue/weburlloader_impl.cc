@@ -236,7 +236,7 @@ void PopulateURLResponse(
     response->setLoadTiming(timing);
   }
 
-  if (info.devtools_info.get()) {
+  if (info.devtools_info) {
     WebHTTPLoadInfo load_info;
 
     load_info.setHTTPStatusCode(info.devtools_info->http_status_code);
@@ -400,12 +400,12 @@ WebURLLoaderImpl::Context::Context(WebURLLoaderImpl* loader)
 void WebURLLoaderImpl::Context::Cancel() {
   // The bridge will still send OnCompletedRequest, which will Release() us, so
   // we don't do that here.
-  if (bridge_.get())
+  if (bridge_)
     bridge_->Cancel();
 
   // Ensure that we do not notify the multipart delegate anymore as it has
   // its own pointer to the client.
-  if (multipart_delegate_.get())
+  if (multipart_delegate_)
     multipart_delegate_->Cancel();
 
   // Do not make any further calls to the client.
@@ -414,13 +414,13 @@ void WebURLLoaderImpl::Context::Cancel() {
 }
 
 void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
-  if (bridge_.get())
+  if (bridge_)
     bridge_->SetDefersLoading(value);
 }
 
 void WebURLLoaderImpl::Context::DidChangePriority(
     WebURLRequest::Priority new_priority) {
-  if (bridge_.get())
+  if (bridge_)
     bridge_->DidChangePriority(
         ConvertWebKitPriorityToNetPriority(new_priority));
 }
@@ -696,11 +696,11 @@ void WebURLLoaderImpl::Context::OnReceivedData(const char* data,
   if (!client_)
     return;
 
-  if (ftp_listing_delegate_.get()) {
+  if (ftp_listing_delegate_) {
     // The FTP listing delegate will make the appropriate calls to
     // client_->didReceiveData and client_->didReceiveResponse.
     ftp_listing_delegate_->OnReceivedData(data, data_length);
-  } else if (multipart_delegate_.get()) {
+  } else if (multipart_delegate_) {
     // The multipart delegate will make the appropriate calls to
     // client_->didReceiveData and client_->didReceiveResponse.
     multipart_delegate_->OnReceivedData(data, data_length, encoded_data_length);
@@ -720,10 +720,10 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     bool was_ignored_by_handler,
     const std::string& security_info,
     const base::TimeTicks& completion_time) {
-  if (ftp_listing_delegate_.get()) {
+  if (ftp_listing_delegate_) {
     ftp_listing_delegate_->OnCompletedRequest();
     ftp_listing_delegate_.reset(NULL);
-  } else if (multipart_delegate_.get()) {
+  } else if (multipart_delegate_) {
     multipart_delegate_->OnCompletedRequest();
     multipart_delegate_.reset(NULL);
   }

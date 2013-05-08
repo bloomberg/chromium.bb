@@ -500,7 +500,7 @@ class RequestProxy
 
   void AsyncCancel() {
     // This can be null in cases where the request is already done.
-    if (!request_.get())
+    if (!request_)
       return;
 
     request_->Cancel();
@@ -510,7 +510,7 @@ class RequestProxy
   void AsyncFollowDeferredRedirect(bool has_new_first_party_for_cookies,
                                    const GURL& new_first_party_for_cookies) {
     // This can be null in cases where the request is already done.
-    if (!request_.get())
+    if (!request_)
       return;
 
     if (has_new_first_party_for_cookies)
@@ -520,7 +520,7 @@ class RequestProxy
 
   void AsyncReadData() {
     // This can be null in cases where the request is already done.
-    if (!request_.get())
+    if (!request_)
       return;
 
     if (request_->status().is_success()) {

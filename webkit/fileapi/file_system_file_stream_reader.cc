@@ -24,7 +24,7 @@ namespace {
 void ReadAdapter(base::WeakPtr<FileSystemFileStreamReader> reader,
                  net::IOBuffer* buf, int buf_len,
                  const net::CompletionCallback& callback) {
-  if (!reader.get())
+  if (!reader)
     return;
   int rv = reader->Read(buf, buf_len, callback);
   if (rv != net::ERR_IO_PENDING)
@@ -33,7 +33,7 @@ void ReadAdapter(base::WeakPtr<FileSystemFileStreamReader> reader,
 
 void GetLengthAdapter(base::WeakPtr<FileSystemFileStreamReader> reader,
                       const net::Int64CompletionCallback& callback) {
-  if (!reader.get())
+  if (!reader)
     return;
   int rv = reader->GetLength(callback);
   if (rv != net::ERR_IO_PENDING)
@@ -66,7 +66,7 @@ FileSystemFileStreamReader::~FileSystemFileStreamReader() {
 int FileSystemFileStreamReader::Read(
     net::IOBuffer* buf, int buf_len,
     const net::CompletionCallback& callback) {
-  if (local_file_reader_.get())
+  if (local_file_reader_)
     return local_file_reader_->Read(buf, buf_len, callback);
   return CreateSnapshot(
       base::Bind(&ReadAdapter, weak_factory_.GetWeakPtr(),
@@ -76,7 +76,7 @@ int FileSystemFileStreamReader::Read(
 
 int64 FileSystemFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
-  if (local_file_reader_.get())
+  if (local_file_reader_)
     return local_file_reader_->GetLength(callback);
   return CreateSnapshot(
       base::Bind(&GetLengthAdapter, weak_factory_.GetWeakPtr(), callback),

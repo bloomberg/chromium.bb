@@ -1284,7 +1284,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   // Allow this plug-in to access this IME emulator through IMM32 API while the
   // plug-in is processing this event.
   if (GetQuirks() & PLUGIN_QUIRK_EMULATE_IME) {
-    if (!plugin_ime_.get())
+    if (!plugin_ime_)
       plugin_ime_.reset(new WebPluginIMEWin);
   }
   WebPluginIMEWin::ScopedLock lock(
@@ -1485,7 +1485,7 @@ void WebPluginDelegateImpl::ImeCompositionUpdated(
     const std::vector<int>& clauses,
     const std::vector<int>& target,
     int cursor_position) {
-  if (!plugin_ime_.get())
+  if (!plugin_ime_)
     plugin_ime_.reset(new WebPluginIMEWin);
 
   plugin_ime_->CompositionUpdated(text, clauses, target, cursor_position);
@@ -1494,7 +1494,7 @@ void WebPluginDelegateImpl::ImeCompositionUpdated(
 
 void WebPluginDelegateImpl::ImeCompositionCompleted(
     const base::string16& text) {
-  if (!plugin_ime_.get())
+  if (!plugin_ime_)
     plugin_ime_.reset(new WebPluginIMEWin);
   plugin_ime_->CompositionCompleted(text);
   plugin_ime_->SendEvents(instance());
@@ -1502,7 +1502,7 @@ void WebPluginDelegateImpl::ImeCompositionCompleted(
 
 bool WebPluginDelegateImpl::GetIMEStatus(int* input_type,
                                          gfx::Rect* caret_rect) {
-  if (!plugin_ime_.get())
+  if (!plugin_ime_)
     return false;
   return plugin_ime_->GetStatus(input_type, caret_rect);
 }
