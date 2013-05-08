@@ -51,6 +51,25 @@ function renderTemplate(flagsExperimentsData) {
   }
 
   $('experiment-reset-all').onclick = resetAllFlags;
+
+  highlightReferencedFlag();
+}
+
+/**
+ * Highlight an element associated with the page's location's hash. We need to
+ * fake fragment navigation with '.scrollIntoView()', since the fragment IDs
+ * don't actually exist until after the template code runs; normal navigation
+ * therefore doesn't work.
+ */
+function highlightReferencedFlag() {
+  if (document.querySelector('.referenced'))
+    document.querySelector('.referenced').classList.remove('referenced');
+
+  if (window.location.hash && document.querySelector(window.location.hash)) {
+    var el = document.querySelector(window.location.hash);
+    el.classList.add('referenced');
+    el.scrollIntoView();
+  }
 }
 
 /**
@@ -143,3 +162,5 @@ function handleSelectChoiceExperiment(node, index) {
 // Get data and have it displayed upon loading.
 document.addEventListener('DOMContentLoaded', requestFlagsExperimentsData);
 
+// Update the highlighted flag when the hash changes.
+window.addEventListener('hashchange', highlightReferencedFlag);

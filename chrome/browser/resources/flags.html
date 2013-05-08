@@ -56,7 +56,9 @@
       </div>
 
       <div jsdisplay="flagsExperiments.length > 0">
-      <div class="experiment" jsselect="flagsExperiments">
+      <div class="experiment"
+           jsselect="flagsExperiments"
+           jsvalues="id:internal_name">
         <table width="100%" cellpadding="2" cellspacing="0">
         <!-- TODO(mkwst): This doesn't work exactly as expected for multivalue
                           experiments.  See http://crbug.com/73730 -->
@@ -70,7 +72,10 @@
                     jscontent="name">NAME</span>
               <span jscontent="supported_platforms.join(', ')"></span>
               <div>
-                <span jsvalues=".innerHTML:description">
+                <span jsvalues=".innerHTML:description"></span>
+                <a class="permalink"
+                   jsvalues="href: '#' + internal_name"
+                   jscontent="'#' + internal_name"></a>
               </div>
               <div jsdisplay="supported && choices && choices.length > 0">
                 <select

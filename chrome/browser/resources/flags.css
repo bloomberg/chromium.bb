@@ -16,6 +16,10 @@ a {
   font-size: 103%;
 }
 
+.permalink {
+  color: #A0A0A0;
+}
+
 #header {
   -webkit-padding-start: 75px;
   background: -webkit-image-set(
@@ -136,6 +140,10 @@ html[dir=rtl] #experiment-reset-all {
 
 .experiment-name {
   font-weight: bold;
+}
+
+.referenced .experiment-name {
+  background-color: rgb(255, 255, 0);
 }
 
 .no-experiments {
