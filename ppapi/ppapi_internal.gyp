@@ -52,14 +52,14 @@
         '../gpu/gpu.gyp:gles2_implementation',
         '../media/media.gyp:shared_memory_support',
         '../skia/skia.gyp:skia',
-        '../third_party/icu/icu.gyp:icuuc',
         # TODO(ananta) : The WebKit dependency needs to move to a new target for NACL.
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/icu/icu.gyp:icuuc',
         '../ui/surface/surface.gyp:surface',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'conditions': [
         ['OS=="mac"', {
@@ -112,10 +112,10 @@
             '../media/media.gyp:shared_memory_support',
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
+            # TODO(ananta) : The WebKit dependency needs to move to a new target for NACL.
+            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
             '../third_party/icu/icu.gyp:icuuc',
             '../third_party/icu/icu.gyp:icui18n',
-            # TODO(ananta) : The WebKit dependency needs to move to a new target for NACL.
-            '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
             '../ui/surface/surface.gyp:surface',
             'ppapi.gyp:ppapi_c',
             'ppapi_shared',
@@ -151,10 +151,10 @@
             '../media/media.gyp:shared_memory_support',
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
+            # TODO(ananta) : The WebKit dependency needs to move to a new target for NACL.
+            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
             '../third_party/icu/icu.gyp:icuuc',
             '../third_party/icu/icu.gyp:icui18n',
-            # TODO(ananta) : The WebKit dependency needs to move to a new target for NACL.
-            '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
             '../ui/surface/surface.gyp:surface',
             'ppapi.gyp:ppapi_c',
             'ppapi_shared',

@@ -14,12 +14,6 @@
           }, {
             'skia_support_gpu': 1,
           }],
-
-          ['inside_chromium_build==0', {
-            'webkit_src_dir': '<(DEPTH)/../../..',
-          },{
-            'webkit_src_dir': '<(DEPTH)/third_party/WebKit',
-          }],
         ],
 
         'optimize': 'max',
@@ -334,7 +328,7 @@
             ['exclude', '_ios\\.(cc|cpp|mm?)$'],
           ],
           'dependencies': [
-            '<(webkit_src_dir)/Source/WebKit/chromium/skia_webkit.gyp:skia_webkit',
+            '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/skia_webkit.gyp:skia_webkit',
           ],
         }],
         [ 'OS != "mac"', {

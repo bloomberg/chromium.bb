@@ -3,15 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'conditions': [
-      ['inside_chromium_build==0', {
-        'webkit_src_dir': '../../../..',
-      },{
-        'webkit_src_dir': '../third_party/WebKit',
-      }],
-    ],
-  },
   'target_defaults': {
     'variables': {
       'ppapi_shared_target': 0,

@@ -6,7 +6,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../skia/skia.gyp:skia',
-    '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+    '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
   ],
   'sources': [
     'worker/shared_worker_devtools_agent.cc',

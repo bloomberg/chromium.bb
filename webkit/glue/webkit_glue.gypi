@@ -3,15 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'conditions': [
-      ['inside_chromium_build==0', {
-        'webkit_src_dir': '../../../../..',
-      },{
-        'webkit_src_dir': '../../third_party/WebKit',
-      }],
-    ],
-  },
   'target_defaults': {
      # Disable narrowing-conversion-in-initialization-list warnings in that we
      # do not want to fix it in data file "webcursor_gtk_data.h".
@@ -36,7 +27,7 @@
         {
           'action_name': 'webkit_chromium_resources',
           'variables': {
-            'grit_grd_file': '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.grd',
+            'grit_grd_file': '../../third_party/WebKit/Source/WebKit/chromium/WebKit.grd',
           },
           'includes': [ '../../build/grit_action.gypi' ],
         },
@@ -86,6 +77,7 @@
         '<(DEPTH)/ppapi/ppapi_internal.gyp:ppapi_shared',
         '<(DEPTH)/printing/printing.gyp:printing',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
@@ -95,7 +87,6 @@
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(DEPTH)/webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         'user_agent',
         'webkit_base',
         'webkit_media',
@@ -452,20 +443,15 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4800, 4267 ],
           'conditions': [
-            ['inside_chromium_build==1 and component=="shared_library"', {
+            ['component=="shared_library"', {
               'dependencies': [
-                '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+                '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
                ],
                'export_dependent_settings': [
-                 '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+                 '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
                  '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                ],
             }],
-          ],
-        }],
-        ['inside_chromium_build==0', {
-          'dependencies': [
-            '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
           ],
         }],
         ['OS=="android"', {

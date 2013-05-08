@@ -120,11 +120,6 @@
         # Sets whether chrome is built for google tv device.
         'google_tv%': 0,
 
-        # This variable tells WebCore.gyp and JavaScriptCore.gyp whether they
-        # are built under a chromium full build (1) or a webkit.org chromium
-        # build (0).
-        'inside_chromium_build%': 1,
-
         # Set ARM architecture version.
         'arm_version%': 7,
 
@@ -198,7 +193,6 @@
       'enable_touch_ui%': '<(enable_touch_ui)',
       'android_webview_build%': '<(android_webview_build)',
       'google_tv%': '<(google_tv)',
-      'inside_chromium_build%': '<(inside_chromium_build)',
       'enable_app_list%': '<(enable_app_list)',
       'enable_message_center%': '<(enable_message_center)',
       'use_default_render_theme%': '<(use_default_render_theme)',
@@ -669,7 +663,7 @@
         # NOTE: The check for disable_nacl==0 and component=="static_library"
         # can't be used here because these variables are not defined yet, but it
         # is still not supported.
-        ['inside_chromium_build==1 and OS!="mac" and OS!="ios" and OS!="android" and chromeos==0', {
+        ['OS!="mac" and OS!="ios" and OS!="android" and chromeos==0', {
           'test_isolation_mode%': 'check',
         }, {
           'test_isolation_mode%': 'noop',
@@ -750,7 +744,6 @@
     'use_xi2_mt%':'<(use_xi2_mt)',
     'file_manager_extension%': '<(file_manager_extension)',
     'image_loader_extension%': '<(image_loader_extension)',
-    'inside_chromium_build%': '<(inside_chromium_build)',
     'fastbuild%': '<(fastbuild)',
     'dcheck_always_on%': '<(dcheck_always_on)',
     'python_ver%': '<(python_ver)',
@@ -3296,22 +3289,13 @@
             ],
           }],
           ['linux_use_gold_binary==1', {
-            'variables': {
-              'conditions': [
-                ['inside_chromium_build==1', {
-                  # We pass the path to gold to the compiler.  gyp leaves
-                  # unspecified what the cwd is when running the compiler,
-                  # so the normal gyp path-munging fails us.  This hack
-                  # gets the right path.
-                  'gold_path': '<(PRODUCT_DIR)/../../third_party/gold',
-                }, {
-                  'gold_path': '<(PRODUCT_DIR)/../../Source/WebKit/chromium/third_party/gold',
-                }]
-              ]
-            },
             'ldflags': [
               # Put our gold binary in the search path for the linker.
-              '-B<(gold_path)',
+              # We pass the path to gold to the compiler.  gyp leaves
+              # unspecified what the cwd is when running the compiler,
+              # so the normal gyp path-munging fails us.  This hack
+              # gets the right path.
+              '-B<(PRODUCT_DIR)/../../third_party/gold',
             ],
           }],
         ],

@@ -2167,7 +2167,7 @@
         'url_request/url_request_test_util.h',
       ],
       'conditions': [
-        ['inside_chromium_build==1 and OS != "ios"', {
+        ['OS != "ios"', {
           'dependencies': [
             '../third_party/protobuf/protobuf.gyp:py_proto',
           ],

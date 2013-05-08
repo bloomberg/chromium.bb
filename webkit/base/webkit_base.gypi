@@ -12,7 +12,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/net/net.gyp:net',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'defines': ['WEBKIT_BASE_IMPLEMENTATION'],
       'sources': [
@@ -21,13 +21,6 @@
         'file_path_string_conversions.cc',
         'file_path_string_conversions.h',
         'webkit_base_export.h',
-      ],
-      'conditions': [
-        ['inside_chromium_build==0', {
-          'dependencies': [
-            '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
-          ],
-        }],
       ],
     },
   ],

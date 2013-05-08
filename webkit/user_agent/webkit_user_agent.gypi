@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'webkit_src_dir': '../../third_party/WebKit/Source',
-  },
   'targets': [
     {
       'target_name': 'user_agent',
@@ -54,14 +51,14 @@
               'inputs': [
                 '<(script)',
                 '../../build/util/lastchange.py',  # Used by the script.
-                # This depends on the svn revision of webkit_src_dir but does
+                # This depends on the svn revision of third_party/WebKit but does
                 # not list it as a dependency.  Incremental builds will have
                 # the wrong WEBKIT_SVN_REVISION.
               ],
               'outputs': [
                 '<(SHARED_INTERMEDIATE_DIR)/webkit_version.h',
               ],
-              'action': ['python', '<(script)', '<(webkit_src_dir)',
+              'action': ['python', '<(script)', '../../third_party/WebKit/Source',
                          '<(SHARED_INTERMEDIATE_DIR)'],
               'variables': {
                 'script': '../build/webkit_version.py',

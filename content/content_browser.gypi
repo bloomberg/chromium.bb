@@ -1085,7 +1085,7 @@
         '../cc/cc.gyp:cc',
         '../net/net.gyp:http_server',
         '../printing/printing.gyp:printing',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/surface/surface.gyp:surface',
         '../webkit/support/webkit_support.gyp:webkit_resources',
         '../webkit/support/webkit_support.gyp:webkit_storage',

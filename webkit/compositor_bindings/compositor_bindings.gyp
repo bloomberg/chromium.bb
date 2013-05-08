@@ -37,13 +37,6 @@
       'web_transform_animation_curve_impl.cc',
       'web_transform_animation_curve_impl.h',
     ],
-    'conditions': [
-      ['inside_chromium_build==0', {
-        'webkit_src_dir': '../../../../..',
-      },{
-        'webkit_src_dir': '../../third_party/WebKit',
-      }],
-    ],
   },
   'targets': [
     {
@@ -72,9 +65,9 @@
         '../../gpu/gpu.gyp:gpu',
         '../../media/media.gyp:media',
         '../../skia/skia.gyp:skia',
+        '../../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../../ui/ui.gyp:ui',
         '../../webkit/gpu/webkit_gpu.gyp:webkit_gpu',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         '<@(webkit_compositor_bindings_sources)',

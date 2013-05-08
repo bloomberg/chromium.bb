@@ -6,22 +6,10 @@
   'variables': {
     'chromium_code': 1,  # Use higher warning level.
     'directxsdk_exists': '<!(python <(DEPTH)/build/dir_exists.py ../third_party/directxsdk)',
-    'conditions': [
-      ['inside_chromium_build==0', {
-        'webkit_src_dir': '../../../..',
-      },{
-        'webkit_src_dir': '../third_party/WebKit',
-      }],
-    ],
   },
   'target_defaults': {
     'defines': ['CONTENT_IMPLEMENTATION'],
     'conditions': [
-      ['inside_chromium_build==0', {
-        'dependencies': [
-          '../webkit/support/setup_third_party.gyp:third_party_headers',
-        ],
-      }],
       # TODO(jschuh): Remove this after crbug.com/173851 gets fixed.
       ['OS=="win" and target_arch=="x64"', {
         'msvs_settings': {
@@ -32,12 +20,10 @@
       }],
     ],
   },
+  'includes': [
+    'content_tests.gypi',
+  ],
   'conditions': [
-    ['inside_chromium_build==1', {
-      'includes': [
-        'content_tests.gypi',
-      ],
-    }],
     ['OS != "ios"', {
       'includes': [
         '../build/win_precompile.gypi',

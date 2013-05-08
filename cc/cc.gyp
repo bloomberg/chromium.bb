@@ -353,21 +353,7 @@
       'trees/tree_synchronizer.cc',
       'trees/tree_synchronizer.h',
     ],
-    'conditions': [
-      ['inside_chromium_build==1', {
-        'webkit_src_dir': '<(DEPTH)/third_party/WebKit',
-      }, {
-        'webkit_src_dir': '<(DEPTH)/../../..',
-      }],
-    ],
   },
-  'conditions': [
-    ['inside_chromium_build==0', {
-      'defines': [
-        'INSIDE_WEBKIT_BUILD=1',
-      ],
-    }],
-  ],
   'targets': [
     {
       'target_name': 'cc',
@@ -381,7 +367,7 @@
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/surface/surface.gyp:surface',
         '<(DEPTH)/ui/ui.gyp:ui',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'defines': [
         'CC_IMPLEMENTATION=1',

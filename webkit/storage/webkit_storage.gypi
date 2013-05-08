@@ -3,15 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'conditions': [
-      ['inside_chromium_build==0', {
-        'webkit_src_dir': '../../../../..',
-      },{
-        'webkit_src_dir': '../../third_party/WebKit',
-      }],
-    ],
-  },
   'includes': [
     '../appcache/webkit_appcache.gypi',
     '../blob/webkit_blob.gypi',
@@ -32,10 +23,10 @@
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/sql/sql.gyp:sql',
+        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_base',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'defines': ['WEBKIT_STORAGE_IMPLEMENTATION'],
       'sources': [
@@ -48,11 +39,6 @@
         '<@(webkit_quota_sources)',
       ],
       'conditions': [
-        ['inside_chromium_build==0', {
-          'dependencies': [
-            '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
-          ],
-        }],
         ['chromeos==1', {
           'sources': [
             '<@(webkit_fileapi_chromeos_sources)',

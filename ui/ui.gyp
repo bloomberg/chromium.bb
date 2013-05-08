@@ -9,6 +9,7 @@
   'includes': [
     'shell_dialogs.gypi',
     'ui_resources.gypi',
+    'ui_unittests.gypi',
   ],
   'targets': [
     {
@@ -878,11 +879,6 @@
             '-ldl',
           ],
         }],
-        ['inside_chromium_build==0', {
-          'dependencies': [
-            '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
-          ],
-        }],
         ['use_system_icu==1', {
           # When using the system icu, the icu targets generate shim headers
           # which are included by public headers in the ui target, so we need
@@ -893,11 +889,6 @@
     },
   ],
   'conditions': [
-    ['inside_chromium_build == 1', {
-      'includes': [
-        'ui_unittests.gypi',
-      ]},
-    ],
     ['OS=="android"' , {
        'targets': [
          {
