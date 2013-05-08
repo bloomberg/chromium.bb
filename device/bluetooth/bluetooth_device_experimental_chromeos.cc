@@ -682,6 +682,8 @@ void BluetoothDeviceExperimentalChromeOS::OnPairError(
   ConnectErrorCode error_code = ERROR_UNKNOWN;
   if (error_name == bluetooth_adapter::kErrorConnectionAttemptFailed) {
     error_code = ERROR_FAILED;
+  } else if (error_name == bluetooth_adapter::kErrorFailed) {
+    error_code = ERROR_FAILED;
   } else if (error_name == bluetooth_adapter::kErrorAuthenticationFailed) {
     error_code = ERROR_AUTH_FAILED;
   } else if (error_name == bluetooth_adapter::kErrorAuthenticationCanceled) {

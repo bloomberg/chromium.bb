@@ -1559,6 +1559,49 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairWeirdDevice) {
   EXPECT_TRUE(properties->trusted.value());
 }
 
+TEST_F(BluetoothExperimentalChromeOSTest, PairUnpairableDeviceFails) {
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_DEFAULT);
+  fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
+
+  GetAdapter();
+  DiscoverDevice(FakeBluetoothDeviceClient::kUnconnectableDeviceAddress);
+
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kUnpairableDeviceAddress);
+  ASSERT_TRUE(device != NULL);
+  ASSERT_FALSE(device->IsPaired());
+
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  TestPairingDelegate pairing_delegate;
+  device->Connect(
+      &pairing_delegate,
+      base::Bind(&BluetoothExperimentalChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothExperimentalChromeOSTest::ConnectErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(0, pairing_delegate.call_count_);
+  EXPECT_TRUE(device->IsConnecting());
+
+  // Run the loop to get the error..
+  message_loop.Run();
+
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+
+  EXPECT_EQ(BluetoothDevice::ERROR_FAILED, last_connect_error_);
+
+  EXPECT_FALSE(device->IsConnected());
+  EXPECT_FALSE(device->IsConnecting());
+  EXPECT_FALSE(device->IsPaired());
+
+  // Pairing dialog should be dismissed
+  EXPECT_EQ(1, pairing_delegate.call_count_);
+  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
+}
+
 TEST_F(BluetoothExperimentalChromeOSTest, PairingFails) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_DEFAULT);
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);

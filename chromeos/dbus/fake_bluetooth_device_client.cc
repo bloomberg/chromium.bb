@@ -112,6 +112,14 @@ const char FakeBluetoothDeviceClient::kUnconnectableDeviceName[] =
     "Unconnectable Device";
 const uint32 FakeBluetoothDeviceClient::kUnconnectableDeviceClass = 0x7a020c;
 
+const char FakeBluetoothDeviceClient::kUnpairableDevicePath[] =
+    "/fake/hci0/devA";
+const char FakeBluetoothDeviceClient::kUnpairableDeviceAddress[] =
+    "20:7D:74:00:00:03";
+const char FakeBluetoothDeviceClient::kUnpairableDeviceName[] =
+    "Unpairable Device";
+const uint32 FakeBluetoothDeviceClient::kUnpairableDeviceClass = 0x002540;
+
 FakeBluetoothDeviceClient::Properties::Properties(
     const PropertyChangedCallback& callback)
     : ExperimentalBluetoothDeviceClient::Properties(
@@ -371,6 +379,15 @@ void FakeBluetoothDeviceClient::Pair(
                    object_path,
                    callback,
                    error_callback));
+
+  } else if (object_path == dbus::ObjectPath(kUnpairableDevicePath)) {
+    // Fails the pairing with an org.bluez.Error.Failed error.
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&FakeBluetoothDeviceClient::FailSimulatedPairing,
+                   base::Unretained(this),
+                   object_path, error_callback),
+        base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 
   } else {
     error_callback.Run(kNoResponseError, "No pairing fake");
@@ -652,6 +669,27 @@ void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
           DeviceAdded(dbus::ObjectPath(kUnconnectableDevicePath)));
     }
 
+    if (std::find(device_list_.begin(), device_list_.end(),
+                  dbus::ObjectPath(kUnpairableDevicePath)) ==
+        device_list_.end()) {
+      Properties* properties = new Properties(base::Bind(
+          &FakeBluetoothDeviceClient::OnPropertyChanged,
+          base::Unretained(this),
+          dbus::ObjectPath(kUnpairableDevicePath)));
+      properties->address.ReplaceValue(kUnpairableDeviceAddress);
+      properties->bluetooth_class.ReplaceValue(kUnpairableDeviceClass);
+      properties->name.ReplaceValue("Fake Unpairable Device");
+      properties->alias.ReplaceValue(kUnpairableDeviceName);
+      properties->adapter.ReplaceValue(
+          dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
+
+      properties_map_[dbus::ObjectPath(kUnpairableDevicePath)] = properties;
+      device_list_.push_back(dbus::ObjectPath(kUnpairableDevicePath));
+      FOR_EACH_OBSERVER(
+          ExperimentalBluetoothDeviceClient::Observer, observers_,
+          DeviceAdded(dbus::ObjectPath(kUnpairableDevicePath)));
+    }
+
   } else if (discovery_simulation_step_ == 13) {
     RemoveDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                  dbus::ObjectPath(kVanishingDevicePath));
@@ -715,6 +753,14 @@ void FakeBluetoothDeviceClient::RejectSimulatedPairing(
 
   error_callback.Run(bluetooth_adapter::kErrorAuthenticationRejected,
                      "Rejected");
+}
+
+void FakeBluetoothDeviceClient::FailSimulatedPairing(
+    const dbus::ObjectPath& object_path,
+    const ErrorCallback& error_callback) {
+  VLOG(1) << "FailSimulatedPairing: " << object_path.value();
+
+  error_callback.Run(bluetooth_adapter::kErrorFailed, "Failed");
 }
 
 void FakeBluetoothDeviceClient::AddInputDeviceIfNeeded(
