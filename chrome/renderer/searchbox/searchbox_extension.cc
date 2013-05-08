@@ -227,6 +227,12 @@ content::RenderView* GetRenderViewWithCheckedOrigin(const GURL& origin) {
   return render_view;
 }
 
+// Returns the current URL.
+GURL GetCurrentURL(content::RenderView* render_view) {
+  WebKit::WebView* webview = render_view->GetWebView();
+  return webview ? GURL(webview->mainFrame()->document().url()) : GURL();
+}
+
 }  // namespace
 
 namespace internal {  // for testing.
@@ -275,6 +281,14 @@ bool IsSensitiveInput(const string16& query) {
     }
   }
   return false;
+}
+
+// Resolves a possibly relative URL using the current URL.
+GURL ResolveURL(const GURL& current_url,
+                const string16& possibly_relative_url) {
+  if (current_url.is_valid() && !possibly_relative_url.empty())
+    return current_url.Resolve(possibly_relative_url);
+  return GURL(possibly_relative_url);
 }
 
 }  // namespace internal
@@ -962,11 +976,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateSearchBox(
   } else {
     // Resolve the URL.
     const string16& possibly_relative_url = V8ValueToUTF16(args[0]);
-    WebKit::WebView* webview = render_view->GetWebView();
-    if (!possibly_relative_url.empty() && webview) {
-      GURL current_url(webview->mainFrame()->document().url());
-      destination_url = current_url.Resolve(possibly_relative_url);
-    }
+    GURL current_url = GetCurrentURL(render_view);
+    destination_url = internal::ResolveURL(current_url, possibly_relative_url);
   }
 
   DVLOG(1) << render_view << " NavigateSearchBox: " << destination_url;
@@ -998,7 +1009,10 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateNewTabPage(
       destination_url = item.url;
     }
   } else {
-    destination_url = GURL(V8ValueToUTF16(args[0]));
+    // Resolve the URL
+    const string16& possibly_relative_url = V8ValueToUTF16(args[0]);
+    GURL current_url = GetCurrentURL(render_view);
+    destination_url = internal::ResolveURL(current_url, possibly_relative_url);
   }
 
   DVLOG(1) << render_view << " NavigateNewTabPage: " << destination_url;
