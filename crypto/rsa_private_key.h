@@ -12,8 +12,8 @@
 typedef struct evp_pkey_st EVP_PKEY;
 #elif defined(USE_NSS)
 // Forward declaration.
-struct SECKEYPrivateKeyStr;
-struct SECKEYPublicKeyStr;
+typedef struct SECKEYPrivateKeyStr SECKEYPrivateKey;
+typedef struct SECKEYPublicKeyStr SECKEYPublicKey;
 #elif defined(OS_IOS)
 #include <Security/Security.h>
 #elif defined(OS_MACOSX)
@@ -200,6 +200,12 @@ class CRYPTO_EXPORT RSAPrivateKey {
   static RSAPrivateKey* CreateSensitiveFromPrivateKeyInfo(
       const std::vector<uint8>& input);
 
+#if defined(USE_NSS)
+  // Create a new instance by referencing an existing private key
+  // structure.  Does not import the key.
+  static RSAPrivateKey* CreateFromKey(SECKEYPrivateKey* key);
+#endif
+
   // Import an existing public key, and then search for the private
   // half in the key database. The format of the public key blob is is
   // an X509 SubjectPublicKeyInfo block. This can return NULL if
@@ -214,8 +220,8 @@ class CRYPTO_EXPORT RSAPrivateKey {
 #if defined(USE_OPENSSL)
   EVP_PKEY* key() { return key_; }
 #elif defined(USE_NSS)
-  SECKEYPrivateKeyStr* key() { return key_; }
-  SECKEYPublicKeyStr* public_key() { return public_key_; }
+  SECKEYPrivateKey* key() { return key_; }
+  SECKEYPublicKey* public_key() { return public_key_; }
 #elif defined(OS_WIN)
   HCRYPTPROV provider() { return provider_; }
   HCRYPTKEY key() { return key_; }
@@ -261,8 +267,8 @@ class CRYPTO_EXPORT RSAPrivateKey {
 #if defined(USE_OPENSSL)
   EVP_PKEY* key_;
 #elif defined(USE_NSS)
-  SECKEYPrivateKeyStr* key_;
-  SECKEYPublicKeyStr* public_key_;
+  SECKEYPrivateKey* key_;
+  SECKEYPublicKey* public_key_;
 #elif defined(OS_WIN)
   bool InitProvider();
 

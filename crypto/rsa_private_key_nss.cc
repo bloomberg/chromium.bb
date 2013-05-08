@@ -81,6 +81,22 @@ RSAPrivateKey* RSAPrivateKey::CreateSensitiveFromPrivateKeyInfo(
 }
 
 // static
+RSAPrivateKey* RSAPrivateKey::CreateFromKey(SECKEYPrivateKey* key) {
+  DCHECK(key);
+  if (SECKEY_GetPrivateKeyType(key) != rsaKey)
+    return NULL;
+  RSAPrivateKey* copy = new RSAPrivateKey();
+  copy->key_ = SECKEY_CopyPrivateKey(key);
+  copy->public_key_ = SECKEY_ConvertToPublicKey(key);
+  if (!copy->key_ || !copy->public_key_) {
+    NOTREACHED();
+    delete copy;
+    return NULL;
+  }
+  return copy;
+}
+
+// static
 RSAPrivateKey* RSAPrivateKey::FindFromPublicKeyInfo(
     const std::vector<uint8>& input) {
   EnsureNSSInit();
