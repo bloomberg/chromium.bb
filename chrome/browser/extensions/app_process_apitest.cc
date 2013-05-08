@@ -407,7 +407,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessRedirectBack) {
 
 // Ensure that re-navigating to a URL after installing or uninstalling it as an
 // app correctly swaps the tab to the app process.  (http://crbug.com/80621)
-IN_PROC_BROWSER_TEST_F(AppApiTest, NavigateIntoAppProcess) {
+// Fails on Windows. http://crbug.com/238670
+#if defined(OS_WIN)
+#define MAYBE_NavigateIntoAppProcess DISABLED_NavigateIntoAppProcess
+#else
+#define MAYBE_NavigateIntoAppProcess NavigateIntoAppProcess
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_NavigateIntoAppProcess) {
   extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service()->process_map();
 
