@@ -76,6 +76,31 @@ def FindChromeSrcFromFilename(filename):
   return os.path.join(curdir, 'src')
 
 
+# Largely copied from ninja-build.vim (guess_configuration)
+def GetNinjaOutputDirectory(chrome_root):
+  """Returns either <chrome_root>/out/Release or <chrome_root>/out/Debug.
+
+  The configuration chosen is the one most recently generated/built."""
+  root = os.path.join(chrome_root, 'out')
+  debug_path = os.path.join(root, 'Debug')
+  release_path = os.path.join(root, 'Release')
+
+  def is_release_15s_newer(test_path):
+    try:
+      debug_mtime = os.path.getmtime(os.path.join(debug_path, test_path))
+    except os.error:
+      debug_mtime = 0
+    try:
+      rel_mtime = os.path.getmtime(os.path.join(release_path, test_path))
+    except os.error:
+      rel_mtime = 0
+    return rel_mtime - debug_mtime >= 15
+
+  if is_release_15s_newer('build.ninja') or is_release_15s_newer('protoc'):
+    return release_path
+  return debug_path
+
+
 def GetClangCommandFromNinjaForFilename(chrome_root, filename):
   """Returns the command line to build |filename|.
 
@@ -115,8 +140,10 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
   subdir_filename = filename[len(chrome_root)+1:]
   rel_filename = os.path.join('..', '..', subdir_filename)
 
+  out_dir = GetNinjaOutputDirectory(chrome_root)
+
   # Ask ninja how it would build our source file.
-  p = subprocess.Popen(['ninja', '-v', '-C', chrome_root + '/out/Release', '-t',
+  p = subprocess.Popen(['ninja', '-v', '-C', out_dir, '-t',
                         'commands', rel_filename + '^'],
                        stdout=subprocess.PIPE)
   stdout, stderr = p.communicate()
@@ -142,8 +169,7 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
       if flag[2] == '/':
         chrome_flags.append(flag)
       else:
-        abs_path = os.path.normpath(os.path.join(
-            chrome_root, 'out', 'Release', flag[2:]))
+        abs_path = os.path.normpath(os.path.join(out_dir, flag[2:]))
         chrome_flags.append('-I' + abs_path)
     elif flag.startswith('-') and flag[1] in 'DWFfmO':
       chrome_flags.append(flag)
