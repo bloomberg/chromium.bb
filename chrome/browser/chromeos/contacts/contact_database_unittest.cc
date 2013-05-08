@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
@@ -315,8 +314,8 @@ TEST_F(ContactDatabaseTest, FullAndIncrementalUpdates) {
 TEST_F(ContactDatabaseTest, DeleteWhenCorrupt) {
   DestroyDatabase();
   // Overwrite all of the files in the database with a space character.
-  base::FileEnumerator enumerator(
-      database_path(), false, base::FileEnumerator::FILES);
+  file_util::FileEnumerator enumerator(
+      database_path(), false, file_util::FileEnumerator::FILES);
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     file_util::WriteFile(path, " ", 1);

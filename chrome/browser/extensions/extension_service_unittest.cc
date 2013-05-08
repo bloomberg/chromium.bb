@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
@@ -1318,8 +1317,8 @@ TEST_F(ExtensionServiceTest, CleanupOnStartup) {
   // Wait for GarbageCollectExtensions task to complete.
   loop_.RunUntilIdle();
 
-  base::FileEnumerator dirs(extensions_install_dir_, false,
-                            base::FileEnumerator::DIRECTORIES);
+  file_util::FileEnumerator dirs(extensions_install_dir_, false,
+                                 file_util::FileEnumerator::DIRECTORIES);
   size_t count = 0;
   while (!dirs.Next().empty())
     count++;

@@ -5,7 +5,6 @@
 #include "net/disk_cache/cache_util.h"
 
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 
@@ -23,8 +22,9 @@ bool MoveCache(const base::FilePath& from_path, const base::FilePath& to_path) {
     LOG(ERROR) << "Unable to create destination cache directory.";
     return false;
   }
-  base::FileEnumerator iter(from_path, false /* not recursive */,
-      base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES);
+  file_util::FileEnumerator iter(from_path, false /* not recursive */,
+      file_util::FileEnumerator::DIRECTORIES |
+      file_util::FileEnumerator::FILES);
   for (base::FilePath name = iter.Next(); !name.value().empty();
        name = iter.Next()) {
     base::FilePath destination = to_path.Append(name.BaseName());
@@ -40,9 +40,9 @@ bool MoveCache(const base::FilePath& from_path, const base::FilePath& to_path) {
 }
 
 void DeleteCache(const base::FilePath& path, bool remove_folder) {
-  base::FileEnumerator iter(path,
-                            /* recursive */ false,
-                            base::FileEnumerator::FILES);
+  file_util::FileEnumerator iter(path,
+                                 /* recursive */ false,
+                                 file_util::FileEnumerator::FILES);
   for (base::FilePath file = iter.Next(); !file.value().empty();
        file = iter.Next()) {
     if (!file_util::Delete(file, /* recursive */ false)) {

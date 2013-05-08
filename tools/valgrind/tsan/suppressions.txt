@@ -901,8 +901,8 @@
   ThreadSanitizer:Race
   fun:__alloc_dir
   fun:opendir
-  fun:base::FileEnumerator::ReadDirectory
-  fun:base::FileEnumerator::Next
+  fun:file_util::FileEnumerator::ReadDirectory
+  fun:file_util::FileEnumerator::Next
   fun:::GetPrefsCandidateFilesFromFolder
   fun:ExternalPrefLoader::ReadStandaloneExtensionPrefFiles
   fun:ExternalPrefLoader::LoadOnFileThread

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
@@ -183,12 +182,12 @@ const int kPartitionNameHashBytes = 6;
 
 // Needed for selecting all files in ObliterateOneDirectory() below.
 #if defined(OS_POSIX)
-const int kAllFileTypes = base::FileEnumerator::FILES |
-                          base::FileEnumerator::DIRECTORIES |
-                          base::FileEnumerator::SHOW_SYM_LINKS;
+const int kAllFileTypes = file_util::FileEnumerator::FILES |
+                          file_util::FileEnumerator::DIRECTORIES |
+                          file_util::FileEnumerator::SHOW_SYM_LINKS;
 #else
-const int kAllFileTypes = base::FileEnumerator::FILES |
-                          base::FileEnumerator::DIRECTORIES;
+const int kAllFileTypes = file_util::FileEnumerator::FILES |
+                          file_util::FileEnumerator::DIRECTORIES;
 #endif
 
 base::FilePath GetStoragePartitionDomainPath(
@@ -209,7 +208,7 @@ void ObliterateOneDirectory(const base::FilePath& current_dir,
                             std::vector<base::FilePath>* paths_to_consider) {
   CHECK(current_dir.IsAbsolute());
 
-  base::FileEnumerator enumerator(current_dir, false, kAllFileTypes);
+  file_util::FileEnumerator enumerator(current_dir, false, kAllFileTypes);
   for (base::FilePath to_delete = enumerator.Next(); !to_delete.empty();
        to_delete = enumerator.Next()) {
     // Enum tracking which of the 3 possible actions to take for |to_delete|.
@@ -323,7 +322,7 @@ void BlockingGarbageCollect(
     scoped_ptr<base::hash_set<base::FilePath> > active_paths) {
   CHECK(storage_root.IsAbsolute());
 
-  base::FileEnumerator enumerator(storage_root, false, kAllFileTypes);
+  file_util::FileEnumerator enumerator(storage_root, false, kAllFileTypes);
   base::FilePath trash_directory;
   if (!file_util::CreateTemporaryDirInDir(storage_root, kTrashDirname,
                                           &trash_directory)) {

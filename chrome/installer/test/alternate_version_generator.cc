@@ -34,7 +34,6 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -433,7 +432,8 @@ bool ApplyAlternateVersion(const base::FilePath& work_dir,
 
   // Modify all .dll and .exe files with the current version.
   bool doing_great = true;
-  base::FileEnumerator all_files(work_dir, true, base::FileEnumerator::FILES);
+  file_util::FileEnumerator all_files(work_dir, true,
+                                      file_util::FileEnumerator::FILES);
   do {
     base::FilePath file = all_files.Next();
     if (file.empty()) {

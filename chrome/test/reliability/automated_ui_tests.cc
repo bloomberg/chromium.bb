@@ -10,7 +10,6 @@
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
@@ -772,9 +771,9 @@ base::FilePath AutomatedUITest::GetMostRecentCrashDump() {
 
   bool first_file = true;
 
-  base::FileEnumerator enumerator(crash_dump_path,
-                                  false,  // not recursive
-                                  base::FileEnumerator::FILES);
+  file_util::FileEnumerator enumerator(crash_dump_path,
+                                       false,  // not recursive
+                                       file_util::FileEnumerator::FILES);
   for (base::FilePath path = enumerator.Next(); !path.value().empty();
        path = enumerator.Next()) {
     base::PlatformFileInfo file_info;

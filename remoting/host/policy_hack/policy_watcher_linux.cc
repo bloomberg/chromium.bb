@@ -17,7 +17,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/json/json_file_value_serializer.h"
@@ -111,9 +110,9 @@ class PolicyWatcherLinux : public PolicyWatcher {
     }
 
     // Enumerate the files and find the most recent modification timestamp.
-    base::FileEnumerator file_enumerator(config_dir_,
-                                         false,
-                                         base::FileEnumerator::FILES);
+    file_util::FileEnumerator file_enumerator(config_dir_,
+                                              false,
+                                              file_util::FileEnumerator::FILES);
     for (base::FilePath config_file = file_enumerator.Next();
          !config_file.empty();
          config_file = file_enumerator.Next()) {
@@ -132,8 +131,8 @@ class PolicyWatcherLinux : public PolicyWatcher {
     DCHECK(OnPolicyWatcherThread());
     // Enumerate the files and sort them lexicographically.
     std::set<base::FilePath> files;
-    base::FileEnumerator file_enumerator(config_dir_, false,
-                                         base::FileEnumerator::FILES);
+    file_util::FileEnumerator file_enumerator(config_dir_, false,
+                                              file_util::FileEnumerator::FILES);
     for (base::FilePath config_file_path = file_enumerator.Next();
          !config_file_path.empty(); config_file_path = file_enumerator.Next())
       files.insert(config_file_path);

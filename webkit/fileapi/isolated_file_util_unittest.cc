@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -28,6 +27,8 @@
 #include "webkit/fileapi/mock_file_system_context.h"
 #include "webkit/fileapi/native_file_util.h"
 #include "webkit/fileapi/test_file_set.h"
+
+using file_util::FileEnumerator;
 
 namespace fileapi {
 
@@ -364,17 +365,18 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
     EntryMap expected_entry_map;
 
     base::FilePath dir_path = GetTestCasePlatformPath(test_case.path);
-    base::FileEnumerator file_enum(
+    FileEnumerator file_enum(
         dir_path, false /* not recursive */,
-        base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+        FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
     base::FilePath current;
     while (!(current = file_enum.Next()).empty()) {
-      base::FileEnumerator::FileInfo file_info = file_enum.GetInfo();
+      FileEnumerator::FindInfo file_info;
+      file_enum.GetFindInfo(&file_info);
       base::FileUtilProxy::Entry entry;
-      entry.is_directory = file_info.IsDirectory();
+      entry.is_directory = FileEnumerator::IsDirectory(file_info);
       entry.name = current.BaseName().value();
-      entry.size = file_info.GetSize();
-      entry.last_modified_time = file_info.GetLastModifiedTime();
+      entry.size = FileEnumerator::GetFilesize(file_info);
+      entry.last_modified_time = FileEnumerator::GetLastModifiedTime(file_info);
       expected_entry_map[entry.name] = entry;
 
 #if defined(OS_POSIX)

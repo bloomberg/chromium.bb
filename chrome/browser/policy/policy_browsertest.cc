@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
@@ -278,7 +277,8 @@ void DownloadAndVerifyFile(
   EXPECT_EQ(
       1u, observer.NumDownloadsSeenInState(content::DownloadItem::COMPLETE));
   EXPECT_TRUE(file_util::PathExists(downloaded));
-  base::FileEnumerator enumerator(dir, false, base::FileEnumerator::FILES);
+  file_util::FileEnumerator enumerator(
+      dir, false, file_util::FileEnumerator::FILES);
   EXPECT_EQ(file, enumerator.Next().BaseName());
   EXPECT_EQ(base::FilePath(), enumerator.Next());
 }
@@ -287,9 +287,9 @@ void DownloadAndVerifyFile(
 int CountScreenshots() {
   DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
       ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
-  base::FileEnumerator enumerator(download_prefs->DownloadPath(),
-                                  false, base::FileEnumerator::FILES,
-                                  "Screenshot*");
+  file_util::FileEnumerator enumerator(download_prefs->DownloadPath(),
+                                       false, file_util::FileEnumerator::FILES,
+                                       "Screenshot*");
   int count = 0;
   while (!enumerator.Next().empty())
     count++;

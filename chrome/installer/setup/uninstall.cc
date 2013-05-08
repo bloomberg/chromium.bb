@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string16.h"
@@ -253,10 +252,11 @@ void CheckShouldRemoveSetupAndArchive(
 // Returns false in case of an error.
 bool RemoveInstallerFiles(const base::FilePath& installer_directory,
                           bool remove_setup) {
-  base::FileEnumerator file_enumerator(
+  using file_util::FileEnumerator;
+  FileEnumerator file_enumerator(
       installer_directory,
       false,
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+      FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
   bool success = true;
 
   base::FilePath setup_exe_base_name(installer::kSetupExe);
@@ -572,8 +572,9 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
   // directory. For parents of the installer directory, we will later recurse
   // and delete all the children (that are not also parents/children of the
   // installer directory).
-  base::FileEnumerator file_enumerator(target_path, true,
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+  using file_util::FileEnumerator;
+  FileEnumerator file_enumerator(
+      target_path, true, FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
   while (true) {
     base::FilePath to_delete(file_enumerator.Next());
     if (to_delete.empty())
@@ -594,8 +595,9 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
         // We don't try killing Chrome processes for Chrome Frame builds since
         // that is unlikely to help. Instead, schedule files for deletion and
         // return a value that will trigger a reboot prompt.
-        base::FileEnumerator::FileInfo find_info = file_enumerator.GetInfo();
-        if (find_info.IsDirectory())
+        FileEnumerator::FindInfo find_info;
+        file_enumerator.GetFindInfo(&find_info);
+        if (FileEnumerator::IsDirectory(find_info))
           ScheduleDirectoryForDeletion(to_delete.value().c_str());
         else
           ScheduleFileSystemEntityForDeletion(to_delete.value().c_str());

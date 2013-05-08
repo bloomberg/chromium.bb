@@ -6,13 +6,13 @@
 #include "chrome/installer/util/duplicate_tree_detector.h"
 
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 
 namespace installer {
 
 bool IsIdenticalFileHierarchy(const base::FilePath& src_path,
                               const base::FilePath& dest_path) {
+  using file_util::FileEnumerator;
   base::PlatformFileInfo src_info;
   base::PlatformFileInfo dest_info;
 
@@ -35,8 +35,8 @@ bool IsIdenticalFileHierarchy(const base::FilePath& src_path,
       // "identical" to all the entries in src_path.
       is_identical = true;
 
-      base::FileEnumerator path_enum(src_path, false /* not recursive */,
-          base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+      FileEnumerator path_enum(src_path, false /* not recursive */,
+          FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
       for (base::FilePath path = path_enum.Next();
            is_identical && !path.empty();
            path = path_enum.Next()) {

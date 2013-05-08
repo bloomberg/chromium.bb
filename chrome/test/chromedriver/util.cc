@@ -6,7 +6,6 @@
 
 #include "base/base64.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/rand_util.h"
@@ -384,8 +383,9 @@ Status UnzipSoleFile(const base::FilePath& unzip_dir,
     }
   }
 
-  base::FileEnumerator enumerator(unzip_dir, false /* recursive */,
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+  file_util::FileEnumerator enumerator(unzip_dir, false /* recursive */,
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES);
   base::FilePath first_file = enumerator.Next();
   if (first_file.empty())
     return Status(kUnknownError, "contained 0 files");

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -30,6 +29,7 @@
 #include "content/public/browser/notification_source.h"
 
 using content::BrowserThread;
+using file_util::FileEnumerator;
 
 namespace policy {
 
@@ -250,16 +250,18 @@ void AppPackUpdater::BlockingCheckCacheInternal(
 
   // Enumerate all the files in the cache |dir|, including directories
   // and symlinks. Each unrecognized file will be erased.
-  int types = base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES |
-      base::FileEnumerator::SHOW_SYM_LINKS;
-  base::FileEnumerator enumerator(dir, false /* recursive */, types);
+  int types = FileEnumerator::FILES | FileEnumerator::DIRECTORIES |
+      FileEnumerator::SHOW_SYM_LINKS;
+  FileEnumerator enumerator(dir, false /* recursive */, types);
 
   for (base::FilePath path = enumerator.Next();
        !path.empty(); path = enumerator.Next()) {
-    base::FileEnumerator::FileInfo info = enumerator.GetInfo();
+    FileEnumerator::FindInfo info;
+    enumerator.GetFindInfo(&info);
     std::string basename = path.BaseName().value();
 
-    if (info.IsDirectory() || file_util::IsLink(info.GetName())) {
+    if (FileEnumerator::IsDirectory(info) ||
+        file_util::IsLink(FileEnumerator::GetFilename(info))) {
       LOG(ERROR) << "Erasing bad file in AppPack directory: " << basename;
       file_util::Delete(path, true /* recursive */);
       continue;

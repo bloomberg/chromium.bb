@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/files/file_enumerator.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
@@ -26,7 +26,7 @@ class NET_EXPORT DirectoryLister  {
  public:
   // Represents one file found.
   struct DirectoryListerData {
-    base::FileEnumerator::FileInfo info;
+    file_util::FileEnumerator::FindInfo info;
     base::FilePath path;
   };
 

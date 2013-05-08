@@ -5,11 +5,11 @@
 #include "net/tools/quic/quic_in_memory_cache.h"
 
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/stl_util.h"
 
 using base::FilePath;
 using base::StringPiece;
+using file_util::FileEnumerator;
 using std::string;
 
 // Specifies the directory used during QuicInMemoryCache
@@ -119,9 +119,9 @@ QuicInMemoryCache::QuicInMemoryCache() {
             << FLAGS_quic_in_memory_cache_dir;
 
   FilePath directory(FLAGS_quic_in_memory_cache_dir);
-  base::FileEnumerator file_list(directory,
-                                 true,
-                                 base::FileEnumerator::FILES);
+  FileEnumerator file_list(directory,
+                           true,
+                           FileEnumerator::FILES);
 
   FilePath file = file_list.Next();
   while (!file.empty()) {

@@ -8,7 +8,6 @@
 
 #include "base/cpu.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
 #include "base/string_util.h"
@@ -206,9 +205,9 @@ void PluginList::GetPluginsInDir(
   // Construct and stat a list of all filenames under consideration, for
   // later sorting by mtime.
   FileTimeList files;
-  base::FileEnumerator enumerator(dir_path,
-                                  false,  // not recursive
-                                  base::FileEnumerator::FILES);
+  file_util::FileEnumerator enumerator(dir_path,
+                                       false,  // not recursive
+                                       file_util::FileEnumerator::FILES);
   for (base::FilePath path = enumerator.Next(); !path.value().empty();
        path = enumerator.Next()) {
     // Skip over Mozilla .xpt files.

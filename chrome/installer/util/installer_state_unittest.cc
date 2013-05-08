@@ -9,7 +9,6 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
@@ -585,8 +584,8 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
   expected_remaining_dirs.insert(kNewChromeExeVersion);
 
   // Enumerate dirs in target_path(), ensure only desired remain.
-  base::FileEnumerator version_enum(installer_state.target_path(), false,
-                                    base::FileEnumerator::DIRECTORIES);
+  file_util::FileEnumerator version_enum(installer_state.target_path(), false,
+      file_util::FileEnumerator::DIRECTORIES);
   for (base::FilePath next_version = version_enum.Next(); !next_version.empty();
        next_version = version_enum.Next()) {
     base::FilePath dir_name(next_version.BaseName());

@@ -5,7 +5,6 @@
 #include "components/autofill/browser/data_driven_test.h"
 
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -37,10 +36,10 @@ void DataDrivenTest::RunDataDrivenTest(
     const base::FilePath& input_directory,
     const base::FilePath& output_directory,
     const base::FilePath::StringType& file_name_pattern) {
-  base::FileEnumerator input_files(input_directory,
-                                   false,
-                                   base::FileEnumerator::FILES,
-                                   file_name_pattern);
+  file_util::FileEnumerator input_files(input_directory,
+                                        false,
+                                        file_util::FileEnumerator::FILES,
+                                        file_name_pattern);
 
   for (base::FilePath input_file = input_files.Next();
        !input_file.empty();

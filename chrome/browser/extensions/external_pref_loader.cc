@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
@@ -36,10 +35,10 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
     return external_extension_paths;
   }
 
-  base::FileEnumerator json_files(
+  file_util::FileEnumerator json_files(
       external_extension_search_path,
       false,  // Recursive.
-      base::FileEnumerator::FILES);
+      file_util::FileEnumerator::FILES);
 #if defined(OS_WIN)
   base::FilePath::StringType extension = UTF8ToWide(std::string(".json"));
 #elif defined(OS_POSIX)

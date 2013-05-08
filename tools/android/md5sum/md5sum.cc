@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/md5.h"
@@ -54,8 +53,8 @@ std::set<std::string> MakeFileSet(const char** files) {
   for (const char** file = files; *file; ++file) {
     base::FilePath file_path(*file);
     if (file_util::DirectoryExists(file_path)) {
-      base::FileEnumerator file_enumerator(
-          file_path, true /* recurse */, base::FileEnumerator::FILES);
+      file_util::FileEnumerator file_enumerator(
+          file_path, true /* recurse */, file_util::FileEnumerator::FILES);
       for (base::FilePath child, empty;
            (child = file_enumerator.Next()) != empty; ) {
         // If the path contains /.svn/, ignore it.

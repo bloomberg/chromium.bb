@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_util.h"
@@ -47,8 +46,8 @@ void GetAllOriginsAndPaths(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   if (indexeddb_path.empty())
     return;
-  base::FileEnumerator file_enumerator(indexeddb_path,
-      false, base::FileEnumerator::DIRECTORIES);
+  file_util::FileEnumerator file_enumerator(indexeddb_path,
+      false, file_util::FileEnumerator::DIRECTORIES);
   for (base::FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     if (file_path.Extension() == IndexedDBContextImpl::kIndexedDBExtension) {

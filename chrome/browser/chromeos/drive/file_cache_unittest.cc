@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -286,9 +285,10 @@ class FileCacheTest : public testing::Test {
                      FileCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
     if (!cache_entry_found) {
       for (size_t i = 0; i < paths_to_verify.size(); ++i) {
-        base::FileEnumerator enumerator(
+        file_util::FileEnumerator enumerator(
             paths_to_verify[i].path_to_scan.DirName(), false /* not recursive*/,
-            base::FileEnumerator::FILES | base::FileEnumerator::SHOW_SYM_LINKS,
+            file_util::FileEnumerator::FILES |
+            file_util::FileEnumerator::SHOW_SYM_LINKS,
             paths_to_verify[i].path_to_scan.BaseName().value());
         EXPECT_TRUE(enumerator.Next().empty());
       }
@@ -315,9 +315,10 @@ class FileCacheTest : public testing::Test {
 
       for (size_t i = 0; i < paths_to_verify.size(); ++i) {
         const struct PathToVerify& verify = paths_to_verify[i];
-        base::FileEnumerator enumerator(
+        file_util::FileEnumerator enumerator(
             verify.path_to_scan.DirName(), false /* not recursive */,
-            base::FileEnumerator::FILES | base::FileEnumerator::SHOW_SYM_LINKS,
+            file_util::FileEnumerator::FILES |
+            file_util::FileEnumerator::SHOW_SYM_LINKS,
             verify.path_to_scan.BaseName().value());
         size_t num_files_found = 0;
         for (base::FilePath current = enumerator.Next(); !current.empty();
@@ -620,9 +621,9 @@ class FileCacheTest : public testing::Test {
          FileCache::CACHE_TYPE_PERSISTENT :
          FileCache::CACHE_TYPE_TMP),
         FileCache::CACHED_FILE_FROM_SERVER);
-    base::FileEnumerator enumerator(path.DirName(), false,
-                                    base::FileEnumerator::FILES,
-                                    path.BaseName().value());
+    file_util::FileEnumerator enumerator(path.DirName(), false,
+                                         file_util::FileEnumerator::FILES,
+                                         path.BaseName().value());
     size_t num_files_found = 0;
     for (base::FilePath current = enumerator.Next(); !current.empty();
          current = enumerator.Next()) {

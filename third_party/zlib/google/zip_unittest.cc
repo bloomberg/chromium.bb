@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
@@ -74,8 +73,9 @@ class ZipTest : public PlatformTest {
     ASSERT_TRUE(file_util::PathExists(path)) << "no file " << path.value();
     ASSERT_TRUE(zip::Unzip(path, test_dir_));
 
-    base::FileEnumerator files(test_dir_, true,
-        base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+    file_util::FileEnumerator files(test_dir_, true,
+        file_util::FileEnumerator::FILES |
+        file_util::FileEnumerator::DIRECTORIES);
     base::FilePath next_path = files.Next();
     size_t count = 0;
     while (!next_path.value().empty()) {

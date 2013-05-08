@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/strings/string_number_conversions.h"
@@ -413,10 +412,10 @@ bool DatabaseTracker::DeleteOrigin(const base::string16& origin_identifier,
   file_util::CreateTemporaryDirInDir(db_dir_,
                                      kTemporaryDirectoryPrefix,
                                      &new_origin_dir);
-  base::FileEnumerator databases(
+  file_util::FileEnumerator databases(
       origin_dir,
       false,
-      base::FileEnumerator::FILES);
+      file_util::FileEnumerator::FILES);
   for (base::FilePath database = databases.Next(); !database.empty();
        database = databases.Next()) {
     base::FilePath new_file = new_origin_dir.Append(database.BaseName());
@@ -458,10 +457,10 @@ bool DatabaseTracker::LazyInit() {
     // If there are left-over directories from failed deletion attempts, clean
     // them up.
     if (file_util::DirectoryExists(db_dir_)) {
-      base::FileEnumerator directories(
+      file_util::FileEnumerator directories(
           db_dir_,
           false,
-          base::FileEnumerator::DIRECTORIES,
+          file_util::FileEnumerator::DIRECTORIES,
           kTemporaryDirectoryPattern);
       for (base::FilePath directory = directories.Next(); !directory.empty();
            directory = directories.Next()) {

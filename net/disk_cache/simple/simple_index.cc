@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -448,6 +447,7 @@ void SimpleIndex::InitializeInternal(
 // static
 scoped_ptr<SimpleIndex::EntrySet> SimpleIndex::RestoreFromDisk(
     const base::FilePath& index_filename) {
+  using file_util::FileEnumerator;
   LOG(INFO) << "Simple Cache Index is being restored from disk.";
 
   file_util::Delete(index_filename, /* recursive = */ false);
@@ -459,10 +459,10 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndex::RestoreFromDisk(
 
   const int kFileSuffixLenght = std::string("_0").size();
   const base::FilePath::StringType file_pattern = FILE_PATH_LITERAL("*_[0-2]");
-  base::FileEnumerator enumerator(index_filename.DirName(),
-                                  false /* recursive */,
-                                  base::FileEnumerator::FILES,
-                                  file_pattern);
+  FileEnumerator enumerator(index_filename.DirName(),
+                            false /* recursive */,
+                            FileEnumerator::FILES,
+                            file_pattern);
   for (base::FilePath file_path = enumerator.Next(); !file_path.empty();
        file_path = enumerator.Next()) {
     const base::FilePath::StringType base_name = file_path.BaseName().value();
@@ -480,17 +480,18 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndex::RestoreFromDisk(
       continue;
     }
 
-    base::FileEnumerator::FileInfo find_info = enumerator.GetInfo();
+    FileEnumerator::FindInfo find_info = {};
+    enumerator.GetFindInfo(&find_info);
     base::Time last_used_time;
 #if defined(OS_POSIX)
     // For POSIX systems, a last access time is available. However, it's not
     // guaranteed to be more accurate than mtime. It is no worse though.
-    last_used_time = base::Time::FromTimeT(find_info.stat().st_atime);
+    last_used_time = base::Time::FromTimeT(find_info.stat.st_atime);
 #endif
     if (last_used_time.is_null())
-      last_used_time = find_info.GetLastModifiedTime();
+      last_used_time = FileEnumerator::GetLastModifiedTime(find_info);
 
-    int64 file_size = find_info.GetSize();
+    int64 file_size = FileEnumerator::GetFilesize(find_info);
     EntrySet::iterator it = index_file_entries->find(hash_key);
     if (it == index_file_entries->end()) {
       InsertInEntrySet(EntryMetadata(hash_key, last_used_time, file_size),

@@ -10,7 +10,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -705,8 +704,9 @@ void FeedbackUI::GetMostRecentScreenshots(
   std::string pattern =
       std::string(ScreenshotSource::kScreenshotPrefix) + "*" +
                   ScreenshotSource::kScreenshotSuffix;
-  base::FileEnumerator screenshots(filepath, false,
-                                   base::FileEnumerator::FILES, pattern);
+  file_util::FileEnumerator screenshots(filepath, false,
+                                        file_util::FileEnumerator::FILES,
+                                        pattern);
   base::FilePath screenshot = screenshots.Next();
 
   std::vector<std::string> screenshot_filepaths;

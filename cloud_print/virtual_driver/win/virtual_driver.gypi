@@ -35,7 +35,6 @@
         'port_monitor/port_monitor.h',
       ],
       'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
         'virtual_driver_lib<(virtual_driver_suffix)',
       ],
     },

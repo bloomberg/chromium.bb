@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
@@ -20,12 +19,24 @@
 namespace {
 
 struct FilePathInfo {
-  base::FileEnumerator::FileInfo info;
+  file_util::FileEnumerator::FindInfo info;
   base::FilePath path;
 };
 
-bool CompareDate(const FilePathInfo& a, const FilePathInfo& b) {
-  return a.info.GetLastModifiedTime() > b.info.GetLastModifiedTime();
+bool CompareDate(const FilePathInfo& a,
+                 const FilePathInfo& b) {
+#if defined(OS_POSIX)
+  return a.info.stat.st_mtime > b.info.stat.st_mtime;
+#elif defined(OS_WIN)
+  if (a.info.ftLastWriteTime.dwHighDateTime ==
+      b.info.ftLastWriteTime.dwHighDateTime) {
+    return a.info.ftLastWriteTime.dwLowDateTime >
+           b.info.ftLastWriteTime.dwLowDateTime;
+  } else {
+    return a.info.ftLastWriteTime.dwHighDateTime >
+           b.info.ftLastWriteTime.dwHighDateTime;
+  }
+#endif
 }
 
 // Get list of file |type| matching |pattern| in |root|.
@@ -33,15 +44,15 @@ bool CompareDate(const FilePathInfo& a, const FilePathInfo& b) {
 // Return true if files/directories are found.
 bool FindMatchingFiles(const base::FilePath& root,
                        const std::string& pattern,
-                       base::FileEnumerator::FileType type,
+                       file_util::FileEnumerator::FileType type,
                        std::vector<base::FilePath>* paths) {
-  base::FileEnumerator files(root, false, type,
+  file_util::FileEnumerator files(root, false, type,
       base::FilePath().AppendASCII(pattern).value());
   std::vector<FilePathInfo> matches;
   for (base::FilePath current = files.Next(); !current.empty();
       current = files.Next()) {
     FilePathInfo entry;
-    entry.info = files.GetInfo();
+    files.GetFindInfo(&entry.info);
     entry.path = current;
     matches.push_back(entry);
   }
@@ -59,7 +70,7 @@ bool FindMatchingFiles(const base::FilePath& root,
 
 bool FindNewestMatchingFile(const base::FilePath& root,
                             const std::string& pattern,
-                            base::FileEnumerator::FileType type,
+                            file_util::FileEnumerator::FileType type,
                             base::FilePath* path) {
   std::vector<base::FilePath> paths;
   if (FindMatchingFiles(root, pattern, type, &paths)) {
@@ -133,12 +144,12 @@ bool InstallerPathProvider::GetPreviousInstaller(base::FilePath* path) {
       "*%s", tokenized_name[2].c_str());
   std::vector<base::FilePath> previous_build;
   if (FindMatchingFiles(diff_installer.DirName().DirName().DirName(),
-      build_pattern, base::FileEnumerator::DIRECTORIES,
+      build_pattern, file_util::FileEnumerator::DIRECTORIES,
       &previous_build)) {
     base::FilePath windir = previous_build.at(0).Append(
         mini_installer_constants::kWinFolder);
     FindNewestMatchingFile(windir, full_installer_pattern,
-        base::FileEnumerator::FILES, &previous_installer);
+        file_util::FileEnumerator::FILES, &previous_installer);
   }
 
   if (previous_installer.empty())
@@ -204,7 +215,7 @@ bool InstallerPathProvider::GetInstaller(const std::string& pattern,
   base::FilePath root(mini_installer_constants::kChromeInstallersLocation);
   std::vector<base::FilePath> paths;
   if (!FindMatchingFiles(root, current_build_,
-                         base::FileEnumerator::DIRECTORIES, &paths)) {
+      file_util::FileEnumerator::DIRECTORIES, &paths)) {
     return false;
   }
 
@@ -212,8 +223,8 @@ bool InstallerPathProvider::GetInstaller(const std::string& pattern,
   for (dir = paths.begin(); dir != paths.end(); ++dir) {
     base::FilePath windir = dir->Append(
         mini_installer_constants::kWinFolder);
-    if (FindNewestMatchingFile(windir, pattern, base::FileEnumerator::FILES,
-                               &installer)) {
+    if (FindNewestMatchingFile(windir, pattern,
+            file_util::FileEnumerator::FILES, &installer)) {
       break;
     }
   }

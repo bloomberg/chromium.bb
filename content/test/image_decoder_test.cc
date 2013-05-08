@@ -5,7 +5,6 @@
 #include "content/test/image_decoder_test.h"
 
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
@@ -122,9 +121,9 @@ void ImageDecoderTest::SetUp() {
 std::vector<base::FilePath> ImageDecoderTest::GetImageFiles() const {
   std::string pattern = "*." + format_;
 
-  base::FileEnumerator enumerator(data_dir_,
-                                  false,
-                                  base::FileEnumerator::FILES);
+  file_util::FileEnumerator enumerator(data_dir_,
+                                       false,
+                                       file_util::FileEnumerator::FILES);
 
   std::vector<base::FilePath> image_files;
   base::FilePath next_file_name;

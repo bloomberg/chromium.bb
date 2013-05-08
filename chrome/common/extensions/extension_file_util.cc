@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
@@ -203,8 +202,8 @@ std::vector<base::FilePath> FindPrivateKeyFiles(
     const base::FilePath& extension_dir) {
   std::vector<base::FilePath> result;
   // Pattern matching only works at the root level, so filter manually.
-  base::FileEnumerator traversal(extension_dir, /*recursive=*/true,
-                                 base::FileEnumerator::FILES);
+  file_util::FileEnumerator traversal(extension_dir, /*recursive=*/true,
+                                      file_util::FileEnumerator::FILES);
   for (base::FilePath current = traversal.Next(); !current.empty();
        current = traversal.Next()) {
     if (!current.MatchesExtension(chrome::kExtensionKeyFileExtension))
@@ -332,9 +331,9 @@ void GarbageCollectExtensions(
     return;
 
   DVLOG(1) << "Garbage collecting extensions...";
-  base::FileEnumerator enumerator(install_directory,
-                                  false,  // Not recursive.
-                                  base::FileEnumerator::DIRECTORIES);
+  file_util::FileEnumerator enumerator(install_directory,
+                                       false,  // Not recursive.
+                                       file_util::FileEnumerator::DIRECTORIES);
   base::FilePath extension_path;
   for (extension_path = enumerator.Next(); !extension_path.value().empty();
        extension_path = enumerator.Next()) {
@@ -379,10 +378,10 @@ void GarbageCollectExtensions(
     }
 
     // Clean up old version directories.
-    base::FileEnumerator versions_enumerator(
+    file_util::FileEnumerator versions_enumerator(
         extension_path,
         false,  // Not recursive.
-        base::FileEnumerator::DIRECTORIES);
+        file_util::FileEnumerator::DIRECTORIES);
     for (base::FilePath version_dir = versions_enumerator.Next();
          !version_dir.value().empty();
          version_dir = versions_enumerator.Next()) {
@@ -472,8 +471,9 @@ bool CheckForIllegalFilenames(const base::FilePath& extension_path,
   // There is a problem when using pattern "_*" with FileEnumerator, so we have
   // to cheat with find_first_of and match all.
   const int kFilesAndDirectories =
-      base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES;
-  base::FileEnumerator all_files(extension_path, false, kFilesAndDirectories);
+      file_util::FileEnumerator::DIRECTORIES | file_util::FileEnumerator::FILES;
+  file_util::FileEnumerator all_files(
+      extension_path, false, kFilesAndDirectories);
 
   base::FilePath file;
   while (!(file = all_files.Next()).empty()) {

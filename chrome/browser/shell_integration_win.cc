@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -393,9 +392,9 @@ int ShellIntegration::MigrateShortcutsInPathInternal(
   DCHECK(base::win::GetVersion() >= base::win::VERSION_WIN7);
 
   // Enumerate all pinned shortcuts in the given path directly.
-  base::FileEnumerator shortcuts_enum(
+  file_util::FileEnumerator shortcuts_enum(
       path, false,  // not recursive
-      base::FileEnumerator::FILES, FILE_PATH_LITERAL("*.lnk"));
+      file_util::FileEnumerator::FILES, FILE_PATH_LITERAL("*.lnk"));
 
   bool is_per_user_install =
       InstallUtil::IsPerUserInstall(chrome_exe.value().c_str());

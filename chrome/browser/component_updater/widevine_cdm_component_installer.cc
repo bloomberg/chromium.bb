@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -94,8 +93,8 @@ bool GetWidevineCdmDirectory(base::FilePath* latest_dir,
                              std::vector<base::FilePath>* older_dirs) {
   base::FilePath base_dir = GetWidevineCdmBaseDirectory();
   bool found = false;
-  base::FileEnumerator file_enumerator(
-      base_dir, false, base::FileEnumerator::DIRECTORIES);
+  file_util::FileEnumerator file_enumerator(
+      base_dir, false, file_util::FileEnumerator::DIRECTORIES);
   for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
     base::Version version(path.BaseName().MaybeAsASCII());

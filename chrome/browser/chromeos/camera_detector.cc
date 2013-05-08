@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/location.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
@@ -67,9 +66,10 @@ void CameraDetector::OnPresenceCheckDone(const base::Closure& callback,
 bool CameraDetector::CheckPresence() {
   // We do a quick check using udev database because opening each /dev/videoX
   // device may trigger costly device initialization.
-  base::FileEnumerator file_enum(
+  using file_util::FileEnumerator;
+  FileEnumerator file_enum(
       base::FilePath(kV4LSubsystemDir), false /* not recursive */,
-      base::FileEnumerator::FILES | base::FileEnumerator::SHOW_SYM_LINKS);
+      FileEnumerator::FILES | FileEnumerator::SHOW_SYM_LINKS);
   for (base::FilePath path = file_enum.Next(); !path.empty();
        path = file_enum.Next()) {
     std::string v4l_capabilities;

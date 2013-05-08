@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -138,8 +137,9 @@ bool ZipWithFilterCallback(const base::FilePath& src_dir,
   }
 
   bool success = true;
-  base::FileEnumerator file_enumerator(src_dir, true /* recursive */,
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+  file_util::FileEnumerator file_enumerator(src_dir, true /* recursive */,
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES);
   for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
     if (!filter_cb.Run(path)) {

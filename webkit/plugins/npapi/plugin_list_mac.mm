@@ -7,7 +7,6 @@
 #import <Foundation/Foundation.h>
 
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/mac/mac_util.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -79,9 +78,9 @@ void PluginList::GetPluginDirectories(std::vector<base::FilePath>* plugin_dirs) 
 
 void PluginList::GetPluginsInDir(
     const base::FilePath& path, std::vector<base::FilePath>* plugins) {
-  base::FileEnumerator enumerator(path,
-                                  false, // not recursive
-                                  base::FileEnumerator::DIRECTORIES);
+  file_util::FileEnumerator enumerator(path,
+                                       false, // not recursive
+                                       file_util::FileEnumerator::DIRECTORIES);
   for (base::FilePath path = enumerator.Next(); !path.value().empty();
        path = enumerator.Next()) {
     plugins->push_back(path);

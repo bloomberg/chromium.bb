@@ -25,7 +25,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
@@ -333,9 +332,9 @@ class PageLoadTest : public testing::Test {
   virtual void SetUp() {
     // Initialize crash_dumps_dir_path_.
     PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dumps_dir_path_);
-    base::FileEnumerator enumerator(crash_dumps_dir_path_,
-                                    false,  // not recursive
-                                    base::FileEnumerator::FILES);
+    file_util::FileEnumerator enumerator(crash_dumps_dir_path_,
+                                         false,  // not recursive
+                                         file_util::FileEnumerator::FILES);
     for (base::FilePath path = enumerator.Next(); !path.value().empty();
          path = enumerator.Next()) {
       if (path.MatchesExtension(FILE_PATH_LITERAL(".dmp")))
@@ -412,9 +411,9 @@ class PageLoadTest : public testing::Test {
                                 NavigationMetrics* metrics) {
     int num_dumps = 0;
 
-    base::FileEnumerator enumerator(crash_dumps_dir_path_,
-                                    false,  // not recursive
-                                    base::FileEnumerator::FILES);
+    file_util::FileEnumerator enumerator(crash_dumps_dir_path_,
+                                         false,  // not recursive
+                                         file_util::FileEnumerator::FILES);
     for (base::FilePath path = enumerator.Next(); !path.value().empty();
          path = enumerator.Next()) {
       if (path.MatchesExtension(FILE_PATH_LITERAL(".dmp")) &&

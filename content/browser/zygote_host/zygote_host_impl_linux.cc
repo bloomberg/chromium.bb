@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
@@ -372,7 +371,8 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
 
   if (!selinux_valid) {
     const base::FilePath kSelinuxPath("/selinux");
-    base::FileEnumerator en(kSelinuxPath, false, base::FileEnumerator::FILES);
+    file_util::FileEnumerator en(kSelinuxPath, false,
+                                 file_util::FileEnumerator::FILES);
     bool has_selinux_files = !en.Next().empty();
 
     selinux = access(kSelinuxPath.value().c_str(), X_OK) == 0 &&

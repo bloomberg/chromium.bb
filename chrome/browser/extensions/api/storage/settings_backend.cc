@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/storage/settings_backend.h"
 
-#include "base/files/file_enumerator.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
@@ -105,10 +105,13 @@ std::set<std::string> SettingsBackend::GetKnownExtensionIDs() const {
   }
 
   // Leveldb databases are directories inside base_path_.
-  base::FileEnumerator extension_dirs(
-      base_path_, false, base::FileEnumerator::DIRECTORIES);
+  file_util::FileEnumerator::FindInfo find_info;
+  file_util::FileEnumerator extension_dirs(
+      base_path_, false, file_util::FileEnumerator::DIRECTORIES);
   while (!extension_dirs.Next().empty()) {
-    base::FilePath extension_dir = extension_dirs.GetInfo().GetName();
+    extension_dirs.GetFindInfo(&find_info);
+    base::FilePath extension_dir(
+        file_util::FileEnumerator::GetFilename(find_info));
     DCHECK(!extension_dir.IsAbsolute());
     // Extension IDs are created as std::strings so they *should* be ASCII.
     std::string maybe_as_ascii(extension_dir.MaybeAsASCII());

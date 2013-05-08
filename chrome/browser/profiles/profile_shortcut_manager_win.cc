@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -233,8 +232,8 @@ void ListDesktopShortcutsWithCommandLine(const base::FilePath& chrome_exe,
   if (!GetDesktopShortcutsDirectories(&user_shortcuts_directory, NULL))
     return;
 
-  base::FileEnumerator enumerator(user_shortcuts_directory, false,
-                                  base::FileEnumerator::FILES);
+  file_util::FileEnumerator enumerator(user_shortcuts_directory, false,
+      file_util::FileEnumerator::FILES);
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     string16 shortcut_command_line;
@@ -400,8 +399,8 @@ bool ChromeDesktopShortcutsExist(const base::FilePath& chrome_exe) {
   if (!GetDesktopShortcutsDirectories(&user_shortcuts_directory, NULL))
     return false;
 
-  base::FileEnumerator enumerator(user_shortcuts_directory, false,
-                                  base::FileEnumerator::FILES);
+  file_util::FileEnumerator enumerator(user_shortcuts_directory, false,
+      file_util::FileEnumerator::FILES);
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     if (IsChromeShortcut(path, chrome_exe, NULL))

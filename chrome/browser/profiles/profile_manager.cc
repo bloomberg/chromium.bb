@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -95,10 +94,14 @@ std::vector<base::FilePath>& ProfilesToDelete() {
 int64 ComputeFilesSize(const base::FilePath& directory,
                        const base::FilePath::StringType& pattern) {
   int64 running_size = 0;
-  base::FileEnumerator iter(directory, false, base::FileEnumerator::FILES,
-                            pattern);
-  while (!iter.Next().empty())
-    running_size += iter.GetInfo().GetSize();
+  file_util::FileEnumerator iter(directory, false,
+                                 file_util::FileEnumerator::FILES,
+                                 pattern);
+  while (!iter.Next().empty()) {
+    file_util::FileEnumerator::FindInfo info;
+    iter.GetFindInfo(&info);
+    running_size += file_util::FileEnumerator::GetFilesize(info);
+  }
   return running_size;
 }
 

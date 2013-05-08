@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
@@ -32,35 +31,47 @@ bool IsDotDot(const base::FilePath& path) {
 bool CompareAlphaDirsFirst(const DirectoryLister::DirectoryListerData& a,
                            const DirectoryLister::DirectoryListerData& b) {
   // Parent directory before all else.
-  if (IsDotDot(a.info.GetName()))
+  if (IsDotDot(file_util::FileEnumerator::GetFilename(a.info)))
     return true;
-  if (IsDotDot(b.info.GetName()))
+  if (IsDotDot(file_util::FileEnumerator::GetFilename(b.info)))
     return false;
 
   // Directories before regular files.
-  bool a_is_directory = a.info.IsDirectory();
-  bool b_is_directory = b.info.IsDirectory();
+  bool a_is_directory = file_util::FileEnumerator::IsDirectory(a.info);
+  bool b_is_directory = file_util::FileEnumerator::IsDirectory(b.info);
   if (a_is_directory != b_is_directory)
     return a_is_directory;
 
-  return file_util::LocaleAwareCompareFilenames(a.info.GetName(),
-                                                b.info.GetName());
+  return file_util::LocaleAwareCompareFilenames(
+      file_util::FileEnumerator::GetFilename(a.info),
+      file_util::FileEnumerator::GetFilename(b.info));
 }
 
 bool CompareDate(const DirectoryLister::DirectoryListerData& a,
                  const DirectoryLister::DirectoryListerData& b) {
   // Parent directory before all else.
-  if (IsDotDot(a.info.GetName()))
+  if (IsDotDot(file_util::FileEnumerator::GetFilename(a.info)))
     return true;
-  if (IsDotDot(b.info.GetName()))
+  if (IsDotDot(file_util::FileEnumerator::GetFilename(b.info)))
     return false;
 
   // Directories before regular files.
-  bool a_is_directory = a.info.IsDirectory();
-  bool b_is_directory = b.info.IsDirectory();
+  bool a_is_directory = file_util::FileEnumerator::IsDirectory(a.info);
+  bool b_is_directory = file_util::FileEnumerator::IsDirectory(b.info);
   if (a_is_directory != b_is_directory)
     return a_is_directory;
-  return a.info.GetLastModifiedTime() > b.info.GetLastModifiedTime();
+#if defined(OS_POSIX)
+  return a.info.stat.st_mtime > b.info.stat.st_mtime;
+#elif defined(OS_WIN)
+  if (a.info.ftLastWriteTime.dwHighDateTime ==
+      b.info.ftLastWriteTime.dwHighDateTime) {
+    return a.info.ftLastWriteTime.dwLowDateTime >
+           b.info.ftLastWriteTime.dwLowDateTime;
+  } else {
+    return a.info.ftLastWriteTime.dwHighDateTime >
+           b.info.ftLastWriteTime.dwHighDateTime;
+  }
+#endif
 }
 
 // Comparator for sorting find result by paths. This uses the locale-aware
@@ -150,17 +161,18 @@ void DirectoryLister::Core::StartInternal() {
     return;
   }
 
-  int types = base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES;
+  int types = file_util::FileEnumerator::FILES |
+              file_util::FileEnumerator::DIRECTORIES;
   if (!recursive_)
-    types |= base::FileEnumerator::INCLUDE_DOT_DOT;
+    types |= file_util::FileEnumerator::INCLUDE_DOT_DOT;
 
-  base::FileEnumerator file_enum(dir_, recursive_, types);
+  file_util::FileEnumerator file_enum(dir_, recursive_, types);
 
   base::FilePath path;
   std::vector<DirectoryListerData> file_data;
   while (lister_ && !(path = file_enum.Next()).empty()) {
     DirectoryListerData data;
-    data.info = file_enum.GetInfo();
+    file_enum.GetFindInfo(&data.info);
     data.path = path;
     file_data.push_back(data);
 

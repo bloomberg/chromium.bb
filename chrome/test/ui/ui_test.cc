@@ -17,7 +17,6 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
@@ -448,9 +447,11 @@ int UITestBase::GetCrashCount() const {
   PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_path);
 
   int files_found = 0;
-  base::FileEnumerator en(crash_dump_path, false, base::FileEnumerator::FILES);
+  file_util::FileEnumerator en(crash_dump_path, false,
+                               file_util::FileEnumerator::FILES);
   while (!en.Next().empty()) {
-    if (en.GetInfo().GetLastModifiedTime() > test_start_time_)
+    file_util::FileEnumerator::FindInfo info;
+    if (file_util::FileEnumerator::GetLastModifiedTime(info) > test_start_time_)
       files_found++;
   }
 
@@ -459,7 +460,7 @@ int UITestBase::GetCrashCount() const {
   return files_found / 2;
 #else
   return files_found;
-#endif
+ #endif
 }
 
 std::string UITestBase::CheckErrorsAndCrashes() const {

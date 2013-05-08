@@ -18,7 +18,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -1232,8 +1231,8 @@ bool BatchShortcutAction(const FileOperationCallback& shortcut_operation,
 
   bool success = true;
   InstallUtil::ProgramCompare target_compare(target_exe);
-  base::FileEnumerator enumerator(
-      shortcut_folder, false, base::FileEnumerator::FILES,
+  file_util::FileEnumerator enumerator(
+      shortcut_folder, false, file_util::FileEnumerator::FILES,
       string16(L"*") + installer::kLnkExt);
   base::FilePath target_path;
   for (base::FilePath shortcut_path = enumerator.Next();

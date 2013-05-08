@@ -8,7 +8,6 @@
 
 #include "base/environment.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -50,11 +49,13 @@ const char kUITestType[] = "ui";
 // startup tests other than the "cold" ones run more slowly than necessary.
 bool CopyDirectoryContentsNoCache(const base::FilePath& source,
                                   const base::FilePath& dest) {
-  base::FileEnumerator en(source, false,
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+  file_util::FileEnumerator en(source, false,
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES);
   for (base::FilePath cur = en.Next(); !cur.empty(); cur = en.Next()) {
-    base::FileEnumerator::FileInfo info = en.GetInfo();
-    if (info.IsDirectory()) {
+    file_util::FileEnumerator::FindInfo info;
+    en.GetFindInfo(&info);
+    if (file_util::FileEnumerator::IsDirectory(info)) {
       if (!file_util::CopyDirectory(cur, dest, true))
         return false;
     } else {
@@ -66,7 +67,8 @@ bool CopyDirectoryContentsNoCache(const base::FilePath& source,
   // Kick out the profile files, this must happen after SetUp which creates the
   // profile. It might be nicer to use EvictFileFromSystemCacheWrapper from
   // UITest which will retry on failure.
-  base::FileEnumerator kickout(dest, true, base::FileEnumerator::FILES);
+  file_util::FileEnumerator kickout(dest, true,
+                                    file_util::FileEnumerator::FILES);
   for (base::FilePath cur = kickout.Next(); !cur.empty(); cur = kickout.Next())
     base::EvictFileFromSystemCacheWithRetry(cur);
   return true;

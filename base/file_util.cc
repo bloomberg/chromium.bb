@@ -11,7 +11,6 @@
 
 #include <fstream>
 
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -19,7 +18,6 @@
 #include "base/strings/string_piece.h"
 #include "base/utf_string_conversions.h"
 
-using base::FileEnumerator;
 using base::FilePath;
 
 namespace {
@@ -167,7 +165,7 @@ bool ReadFileToString(const FilePath& path, std::string* contents) {
 bool IsDirectoryEmpty(const FilePath& dir_path) {
   FileEnumerator files(dir_path, false,
       FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
-  if (files.Next().empty())
+  if (files.Next().value().empty())
     return true;
   return false;
 }
@@ -264,9 +262,30 @@ int GetUniquePathNumber(
 int64 ComputeDirectorySize(const FilePath& root_path) {
   int64 running_size = 0;
   FileEnumerator file_iter(root_path, true, FileEnumerator::FILES);
-  while (!file_iter.Next().empty())
-    running_size += file_iter.GetInfo().GetSize();
+  for (FilePath current = file_iter.Next(); !current.empty();
+       current = file_iter.Next()) {
+    FileEnumerator::FindInfo info;
+    file_iter.GetFindInfo(&info);
+#if defined(OS_WIN)
+    LARGE_INTEGER li = { info.nFileSizeLow, info.nFileSizeHigh };
+    running_size += li.QuadPart;
+#else
+    running_size += info.stat.st_size;
+#endif
+  }
   return running_size;
+}
+
+///////////////////////////////////////////////
+// FileEnumerator
+//
+// Note: the main logic is in file_util_<platform>.cc
+
+bool FileEnumerator::ShouldSkip(const FilePath& path) {
+  FilePath::StringType basename = path.BaseName().value();
+  return basename == FILE_PATH_LITERAL(".") ||
+         (basename == FILE_PATH_LITERAL("..") &&
+          !(INCLUDE_DOT_DOT & file_type_));
 }
 
 }  // namespace

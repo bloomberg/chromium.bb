@@ -4,7 +4,6 @@
 
 #include "webkit/fileapi/local_file_util.h"
 
-#include "base/files/file_enumerator.h"
 #include "base/files/file_util_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -40,8 +39,8 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   virtual bool IsDirectory() OVERRIDE;
 
  private:
-  base::FileEnumerator file_enum_;
-  base::FileEnumerator::FileInfo file_util_info_;
+  file_util::FileEnumerator file_enum_;
+  file_util::FileEnumerator::FindInfo file_util_info_;
   base::FilePath platform_root_path_;
   base::FilePath virtual_root_path_;
 };
@@ -53,7 +52,7 @@ base::FilePath LocalFileEnumerator::Next() {
     next = file_enum_.Next();
   if (next.empty())
     return next;
-  file_util_info_ = file_enum_.GetInfo();
+  file_enum_.GetFindInfo(&file_util_info_);
 
   base::FilePath path;
   platform_root_path_.AppendRelativePath(next, &path);
@@ -61,15 +60,15 @@ base::FilePath LocalFileEnumerator::Next() {
 }
 
 int64 LocalFileEnumerator::Size() {
-  return file_util_info_.GetSize();
+  return file_util::FileEnumerator::GetFilesize(file_util_info_);
 }
 
 base::Time LocalFileEnumerator::LastModifiedTime() {
-  return file_util_info_.GetLastModifiedTime();
+  return file_util::FileEnumerator::GetLastModifiedTime(file_util_info_);
 }
 
 bool LocalFileEnumerator::IsDirectory() {
-  return file_util_info_.IsDirectory();
+  return file_util::FileEnumerator::IsDirectory(file_util_info_);
 }
 
 LocalFileUtil::LocalFileUtil() {
@@ -152,7 +151,8 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> LocalFileUtil::
   }
   return make_scoped_ptr(new LocalFileEnumerator(
       file_path, root_url.path(),
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES))
+      file_util::FileEnumerator::FILES |
+          file_util::FileEnumerator::DIRECTORIES))
       .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 
