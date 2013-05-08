@@ -312,6 +312,17 @@ class WebRTCInternalsBrowserTest: public ContentBrowserTest {
         &result));
     return result;
   }
+
+  int GetSsrcInfoBlockCount(Shell* shell) {
+    int count = 0;
+    EXPECT_TRUE(ExecuteScriptAndExtractInt(
+        shell->web_contents(),
+        "window.domAutomationController.send("
+            "document.getElementsByClassName("
+                "ssrcInfoManager.SSRC_INFO_BLOCK_CLASS).length);",
+        &count));
+    return count;
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, AddAndRemovePeerConnection) {
@@ -381,6 +392,11 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, UpdatePeerConnection) {
 
   EXPECT_EQ(ssrc1.GetAsJSON(), GetSsrcInfo(ssrc1.id));
   EXPECT_EQ(ssrc2.GetAsJSON(), GetSsrcInfo(ssrc2.id));
+
+  StatsUnit stats = {FAKE_TIME_STAMP};
+  stats.values["ssrc"] = ssrc1.id;
+  ExecuteAndVerifyAddStats(pc_2, "ssrc", "dummyId", stats);
+  EXPECT_GT(GetSsrcInfoBlockCount(shell()), 0);
 }
 
 // Tests that adding random named stats updates the dataSeries and graphs.
@@ -490,7 +506,7 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, ConvertedGraphs) {
 }
 
 // Sanity check of the page content under a real PeerConnection call.
-IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, withRealPeerConnectionCall) {
+IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, WithRealPeerConnectionCall) {
   // Start a peerconnection call in the first window.
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
@@ -566,6 +582,9 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, withRealPeerConnectionCall) {
       &result));
 
   EXPECT_TRUE(result);
+
+  count = GetSsrcInfoBlockCount(shell2);
+  EXPECT_GT(count, 0);
 }
 
 }  // namespace content

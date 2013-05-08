@@ -82,17 +82,19 @@ var dataConversionConfig = {
 var graphViews = {};
 var dataSeries = {};
 
-// Adds the stats report |singleReport| to the timeline graph for the given
-// |peerConnectionElement| and |reportName|.
-function drawSingleReport(
-    peerConnectionElement, reportType, reportId, singleReport) {
-  if (!singleReport || !singleReport.values)
+// Adds the stats report |report| to the timeline graph for the given
+// |peerConnectionElement|.
+function drawSingleReport(peerConnectionElement, report) {
+  var reportType = report.type;
+  var reportId = report.id;
+  var stats = report.stats;
+  if (!stats || !stats.values)
     return;
 
   var reportName = reportType + '-' + reportId;
-  for (var i = 0; i < singleReport.values.length - 1; i = i + 2) {
-    var rawLabel = singleReport.values[i];
-    var rawValue = parseInt(singleReport.values[i + 1]);
+  for (var i = 0; i < stats.values.length - 1; i = i + 2) {
+    var rawLabel = stats.values[i];
+    var rawValue = parseInt(stats.values[i + 1]);
     if (isNaN(rawValue))
       return;
 
@@ -105,7 +107,7 @@ function drawSingleReport(
     // We need to convert the value if dataConversionConfig[rawLabel] exists.
     if (dataConversionConfig[rawLabel]) {
       // Updates the original dataSeries before the conversion.
-      addDataSeriesPoint(rawDataSeriesId, singleReport.timestamp,
+      addDataSeriesPoint(rawDataSeriesId, stats.timestamp,
                          rawLabel, rawValue);
 
       // Convert to another value to draw on graph, using the original
@@ -119,7 +121,7 @@ function drawSingleReport(
 
     // Updates the final dataSeries to draw.
     addDataSeriesPoint(
-        finalDataSeriesId, singleReport.timestamp, finalLabel, finalValue);
+        finalDataSeriesId, stats.timestamp, finalLabel, finalValue);
 
     // Updates the graph.
     var graphType = bweCompoundGraphConfig[finalLabel] ?
@@ -129,9 +131,9 @@ function drawSingleReport(
 
     if (!graphViews[graphViewId]) {
       graphViews[graphViewId] = createStatsGraphView(peerConnectionElement,
-                                                     reportType, reportId,
+                                                     report,
                                                      graphType);
-      var date = new Date(singleReport.timestamp);
+      var date = new Date(stats.timestamp);
       graphViews[graphViewId].setDateRange(date, date);
     }
     // Adds the new dataSeries to the graphView. We have to do it here to cover
@@ -157,10 +159,9 @@ function addDataSeriesPoint(dataSeriesId, time, label, value) {
 
 // Ensures a div container to hold all stats graphs for one track is created as
 // a child of |peerConnectionElement|.
-function ensureStatsGraphTopContainer(
-    peerConnectionElement, reportType, reportId) {
+function ensureStatsGraphTopContainer(peerConnectionElement, report) {
   var containerId = peerConnectionElement.id + '-' +
-      reportType + '-' + reportId + '-graph-container';
+      report.type + '-' + report.id + '-graph-container';
   var container = $(containerId);
   if (!container) {
     container = document.createElement('details');
@@ -172,12 +173,13 @@ function ensureStatsGraphTopContainer(
     container.firstChild.firstChild.className =
         STATS_GRAPH_CONTAINER_HEADING_CLASS;
     container.firstChild.firstChild.textContent =
-        'Stats graphs for ' + reportType + '-' + reportId;
+        'Stats graphs for ' + report.type + '-' + report.id;
 
-    if (reportType == 'ssrc') {
+    if (report.type == 'ssrc') {
       var ssrcInfoElement = document.createElement('div');
       container.firstChild.appendChild(ssrcInfoElement);
-      ssrcInfoManager.populateSsrcInfo(ssrcInfoElement, reportId);
+      ssrcInfoManager.populateSsrcInfo(ssrcInfoElement,
+                                       GetSsrcFromReport(report));
     }
   }
   return container;
@@ -186,12 +188,12 @@ function ensureStatsGraphTopContainer(
 // Creates the container elements holding a timeline graph
 // and the TimelineGraphView object.
 function createStatsGraphView(
-    peerConnectionElement, reportType, reportId, statsName) {
+    peerConnectionElement, report, statsName) {
   var topContainer = ensureStatsGraphTopContainer(peerConnectionElement,
-                                                  reportType, reportId);
+                                                  report);
 
   var graphViewId = peerConnectionElement.id + '-' +
-      reportType + '-' + reportId + '-' + statsName;
+      report.type + '-' + report.id + '-' + statsName;
   var divId = graphViewId + '-div';
   var canvasId = graphViewId + '-canvas';
   var container = document.createElement("div");
@@ -203,7 +205,7 @@ function createStatsGraphView(
   if (statsName == 'bweCompound') {
       container.insertBefore(
           createBweCompoundLegend(
-              peerConnectionElement, reportType + '-' + reportId),
+              peerConnectionElement, report.type + '-' + report.id),
           $(divId));
   }
   return new TimelineGraphView(divId, canvasId);

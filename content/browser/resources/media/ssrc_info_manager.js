@@ -3,6 +3,39 @@
 // found in the LICENSE file.
 
 
+
+/**
+ * Get the ssrc if |report| is an ssrc report.
+ *
+ * @param {!Object} report The object contains id, type, and stats, where stats
+ *     is the object containing timestamp and values, which is an array of
+ *     strings, whose even index entry is the name of the stat, and the odd
+ *     index entry is the value.
+ * @return {?string} The ssrc.
+ */
+function GetSsrcFromReport(report) {
+  if (report.type != 'ssrc') {
+    console.warn("Trying to get ssrc from non-ssrc report.");
+    return null;
+  }
+
+  // If the 'ssrc' name-value pair exists, return the value; otherwise, return
+  // the report id.
+  // The 'ssrc' name-value pair only exists in an upcoming Libjingle change. Old
+  // versions use id to refer to the ssrc.
+  //
+  // TODO(jiayl): remove the fallback to id once the Libjingle change is rolled
+  // to Chrome.
+  if (report.stats && report.stats.values) {
+    for (var i = 0; i < report.stats.values.length - 1; i += 2) {
+      if (report.stats.values[i] == 'ssrc') {
+        return report.stats.values[i + 1];
+      }
+    }
+  }
+  return report.id;
+};
+
 /**
  * SsrcInfoManager stores the ssrc stream info extracted from SDP.
  */
@@ -48,9 +81,8 @@ var SsrcInfoManager = (function() {
      * The className of the ssrc info parent element.
      * @type {string}
      * @const
-     * @private
      */
-    this.SSRC_INFO_BLOCK_CLASS_ = 'ssrc-info-block';
+    this.SSRC_INFO_BLOCK_CLASS = 'ssrc-info-block';
   }
 
   SsrcInfoManager.prototype = {
@@ -118,7 +150,7 @@ var SsrcInfoManager = (function() {
       if (!this.streamInfoContainer_[ssrc])
         return;
 
-      parentElement.className = this.SSRC_INFO_BLOCK_CLASS_;
+      parentElement.className = this.SSRC_INFO_BLOCK_CLASS;
 
       var fieldElement;
       for (var property in this.streamInfoContainer_[ssrc]) {

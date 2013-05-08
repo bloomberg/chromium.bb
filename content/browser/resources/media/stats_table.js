@@ -91,7 +91,7 @@ var StatsTable = (function(ssrcInfoManager) {
             table.insertRow(1);
             table.rows[1].innerHTML = '<td colspan=2></td>';
             this.ssrcInfoManager_.populateSsrcInfo(
-                table.rows[1].cells[0], report.id);
+                table.rows[1].cells[0], GetSsrcFromReport(report));
         }
       }
       return table;

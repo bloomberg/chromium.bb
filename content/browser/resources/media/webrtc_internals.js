@@ -157,8 +157,7 @@ function addStats(data) {
   for (var i = 0; i < data.reports.length; ++i) {
     var report = data.reports[i];
     statsTable.addStatsReport(peerConnectionElement, report);
-    drawSingleReport(peerConnectionElement,
-                     report.type, report.id, report.stats);
+    drawSingleReport(peerConnectionElement, report);
   }
 }
 
