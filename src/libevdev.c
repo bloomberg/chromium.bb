@@ -334,37 +334,51 @@ int EvdevReadInfoFromFile(FILE* fp, EvdevInfoPtr info) {
   int ret;
 
   ret = fscanf(fp, "# device: %1024[^\n]\n", info->name);
-  if (ret <= 0)
+  if (ret <= 0) {
+    fprintf(stderr, "Parse device name failed\n");
     return ret;
+  }
 
   ret = EvdevReadBitmask(fp, "bit", info->bitmask, sizeof(info->bitmask));
-  if (ret <= 0)
+  if (ret <= 0) {
+    fprintf(stderr, "Parse device bit failed\n");
     return ret;
+  }
 
   ret = EvdevReadBitmask(fp, "key", info->key_bitmask,
                          sizeof(info->key_bitmask));
-  if (ret <= 0)
+  if (ret <= 0) {
+    fprintf(stderr, "Parse device key failed\n");
     return ret;
+  }
 
   ret = EvdevReadBitmask(fp, "rel", info->rel_bitmask,
                          sizeof(info->rel_bitmask));
-  if (ret <= 0)
+  if (ret <= 0) {
+    fprintf(stderr, "Parse device rel failed\n");
     return ret;
+  }
 
   ret = EvdevReadBitmask(fp, "abs", info->abs_bitmask,
                          sizeof(info->abs_bitmask));
-  if (ret <= 0)
+  if (ret <= 0) {
+    fprintf(stderr, "Parse device abs failed\n");
     return ret;
+  }
 
   ret = EvdevReadBitmask(fp, "led", info->led_bitmask,
                          sizeof(info->led_bitmask));
-  if (ret <= 0)
+  if (ret <= 0) {
+    fprintf(stderr, "Parse device led failed\n");
     return ret;
+  }
 
   ret = EvdevReadBitmask(fp, "prp", info->prop_bitmask,
                          sizeof(info->prop_bitmask));
-  if (ret <= 0)
+  if (ret <= 0) {
+    fprintf(stderr, "Parse device prp failed\n");
     return ret;
+  }
 
   for (int i = ABS_X; i <= ABS_MAX; i++) {
       if (TestBit(i, info->abs_bitmask)) {
@@ -373,8 +387,10 @@ int EvdevReadInfoFromFile(FILE* fp, EvdevInfoPtr info) {
           ret = fscanf(fp, "# absinfo: %d %d %d %d %d %d\n",
                        &abs_index, &abs.minimum, &abs.maximum,
                        &abs.fuzz, &abs.flat, &abs.resolution);
-          if (ret <= 0 || abs_index != i)
+          if (ret <= 0 || abs_index != i) {
+            fprintf(stderr, "Parse device absinfo failed on %d\n", i);
             return -1;
+          }
           info->absinfo[i] = abs;
       }
   }
@@ -387,8 +403,13 @@ int EvdevReadEventFromFile(FILE* fp, struct input_event* ev) {
   int value;
   int ret = fscanf(fp, "E: %lu.%06u %04x %04x %d\n",
        &sec, &usec, &type, &code, &value);
-  if (ret <= 0)
+  if (ret == EOF)
+    return -1;
+  if (ret <= 0) {
+    int err = errno;
+    fprintf(stderr, "EvdevReadEventFromFile failed: %d, errno: %d\n", ret, err);
     return ret;
+  }
 
   ev->time.tv_sec = sec;
   ev->time.tv_usec = usec;
@@ -402,12 +423,23 @@ static int EvdevReadBitmask(FILE* fp, const char* expected_name,
                               unsigned long* bitmask, size_t num_bytes) {
   unsigned char* bytes = (unsigned char*)bitmask;
   int ret;
-  char name[64];
+  char name[64] = { 0 };
 
   ret = fscanf(fp, "# %63[^:]:", name);
-  if (ret <= 0 || strcmp(name, expected_name))
-    return ret;
-  for (int i = 0; i < num_bytes; ++i) {
+  if (ret <= 0 || strcmp(name, expected_name)) {
+    fprintf(stderr, "EvdevReadBitmask: %d <= 0 or [%s]!=[%s]\n",
+            ret, name, expected_name);
+    return -1;
+  }
+  memset(bitmask, 0, num_bytes);
+  for (size_t i = 0; i < num_bytes; ++i) {
+    // Make sure we don't go off the end of the line
+    int next_char = fgetc(fp);
+    if (next_char != EOF)
+      ungetc(next_char, fp);
+    if (next_char == '\n' || next_char == EOF)
+      break;
+
     unsigned int tmp;
     ret = fscanf(fp, " %02X", &tmp);
     if (ret <= 0)
