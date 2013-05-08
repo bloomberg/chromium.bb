@@ -644,6 +644,14 @@ hooks = [
                "--linux-only"],
   },
   {
+    # Downloads the Debian Wheezy sysroot to chrome/installer/linux/internal
+    # if needed. This sysroot updates at about the same rate that the chrome
+    # build deps change. This script is a no-op except for linux users who have
+    # src-internal access and are doing official chrome builds.
+    "pattern": ".",
+    "action": ["src/build/linux/install-debian.wheezy.sysroot.wrapper.sh"],
+  },
+  {
     # Pull clang on mac. If nothing changed, or on non-mac platforms, this takes
     # zero seconds to run. If something changed, it downloads a prebuilt clang,
     # which takes ~20s, but clang speeds up builds by more than 20s.
