@@ -64,6 +64,9 @@ class InputMethodManagerImplTest :  public testing::Test {
         new chromeos::MockDBusThreadManagerWithoutGMock();
     chromeos::DBusThreadManager::InitializeForTesting(
         mock_dbus_thread_manager_);
+    mock_ibus_client_ = mock_dbus_thread_manager_->mock_ibus_client();
+    mock_ibus_input_context_client_ =
+        mock_dbus_thread_manager_->mock_ibus_input_context_client();
     delegate_ = new FakeInputMethodDelegate();
     manager_.reset(new InputMethodManagerImpl(
         scoped_ptr<InputMethodDelegate>(delegate_)));
@@ -124,23 +127,11 @@ class InputMethodManagerImplTest :  public testing::Test {
   }
 
  protected:
-  // Helper function to initialize component extension stuff for testing.
-  void InitComponentExtension() {
+  void ComponentExtensionInitialize() {
     mock_delegate_ = new MockComponentExtIMEManagerDelegate();
     mock_delegate_->set_ime_list(ime_list_);
     scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate(mock_delegate_);
     manager_->InitializeComponentExtensionForTesting(delegate.Pass());
-  }
-
-  // Helper function to initialize IBus bus connection for testing. Do not use
-  // ibus related mocks before calling this function.
-  void InitIBusBus() {
-    mock_dbus_thread_manager_->InitIBusBus("dummy address",
-                                           base::Bind(&base::DoNothing));
-    mock_ibus_client_ = mock_dbus_thread_manager_->mock_ibus_client();
-    mock_ibus_input_context_client_ =
-        mock_dbus_thread_manager_->mock_ibus_input_context_client();
-    mock_ibus_daemon_controller_->EmulateConnect();
   }
 
   scoped_ptr<InputMethodManagerImpl> manager_;
@@ -243,8 +234,7 @@ TEST_F(InputMethodManagerImplTest, TestObserver) {
   // For http://crbug.com/19655#c11 - (3). browser_state_monitor_unittest.cc is
   // also for the scenario.
   TestObserver observer;
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->AddObserver(&observer);
   EXPECT_EQ(0, observer.input_method_changed_count_);
   manager_->EnableLayouts("en-US", "xkb:us::eng");
@@ -294,8 +284,7 @@ TEST_F(InputMethodManagerImplTest, TestGetSupportedInputMethods) {
 TEST_F(InputMethodManagerImplTest, TestEnableLayouts) {
   // Currently 5 keyboard layouts are supported for en-US, and 1 for ja. See
   // ibus_input_method.txt.
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->EnableLayouts("en-US", "");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   {
@@ -371,8 +360,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableTwoLayouts) {
   // For http://crbug.com/19655#c11 - (8), step 6.
   TestObserver observer;
   manager_->AddObserver(&observer);
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
@@ -400,8 +388,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableThreeLayouts) {
   // For http://crbug.com/19655#c11 - (9).
   TestObserver observer;
   manager_->AddObserver(&observer);
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us::eng");
@@ -432,8 +419,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndIme) {
   // For http://crbug.com/19655#c11 - (10).
   TestObserver observer;
   manager_->AddObserver(&observer);
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
@@ -468,8 +454,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndIme2) {
   // For http://crbug.com/19655#c11 - (11).
   TestObserver observer;
   manager_->AddObserver(&observer);
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
@@ -493,8 +478,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndIme2) {
 TEST_F(InputMethodManagerImplTest, TestEnableImes) {
   TestObserver observer;
   manager_->AddObserver(&observer);
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("mozc-chewing");
@@ -527,8 +511,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutsThenLock) {
   // For http://crbug.com/19655#c11 - (14).
   TestObserver observer;
   manager_->AddObserver(&observer);
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us::eng");
@@ -569,8 +552,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndImeThenLock) {
   // For http://crbug.com/19655#c11 - (15).
   TestObserver observer;
   manager_->AddObserver(&observer);
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
@@ -613,8 +595,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndImeThenLock) {
 
 TEST_F(InputMethodManagerImplTest, TestXkbSetting) {
   // For http://crbug.com/19655#c11 - (8), step 7-11.
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
@@ -656,8 +637,7 @@ TEST_F(InputMethodManagerImplTest, TestActivateInputMethodProperty) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodProperties) {
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
 
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
@@ -691,8 +671,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodProperties) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
 
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
@@ -734,8 +713,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
 TEST_F(InputMethodManagerImplTest, TestNextInputMethod) {
   TestObserver observer;
   manager_->AddObserver(&observer);
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   // For http://crbug.com/19655#c11 - (1)
   manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
@@ -768,8 +746,7 @@ TEST_F(InputMethodManagerImplTest, TestNextInputMethod) {
 TEST_F(InputMethodManagerImplTest, TestPreviousInputMethod) {
   TestObserver observer;
   manager_->AddObserver(&observer);
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
@@ -813,8 +790,7 @@ TEST_F(InputMethodManagerImplTest, TestPreviousInputMethod) {
 TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithUsLayouts) {
   TestObserver observer;
   manager_->AddObserver(&observer);
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
@@ -851,8 +827,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithUsLayouts) {
 
 TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpLayout) {
   // Enable "xkb:jp::jpn" and press Muhenkan/ZenkakuHankaku.
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->EnableLayouts("ja", "xkb:us::eng");
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
@@ -879,8 +854,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpLayout) {
 
 TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoLayout) {
   // Do the same tests for Korean.
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->EnableLayouts("ko", "xkb:us::eng");
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
@@ -899,8 +873,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoLayout) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpIme) {
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:jp::jpn");
@@ -949,8 +922,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpIme) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoIme) {
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:kr:kr104:kor");
@@ -985,8 +957,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoIme) {
 TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
   TestObserver observer;
   manager_->AddObserver(&observer);
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
@@ -1051,8 +1022,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
 
 TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
   TestObserver observer;
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->AddObserver(&observer);
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
@@ -1109,8 +1079,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestReset) {
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us::eng");
@@ -1138,7 +1107,7 @@ TEST_F(InputMethodManagerImplTest,
   manager_->ChangeInputMethod(nacl_mozc_us_id);
   EXPECT_EQ(0, controller_->change_input_method_count_);
 
-  InitComponentExtension();
+  ComponentExtensionInitialize();
   EXPECT_EQ(1, controller_->change_input_method_count_);
   EXPECT_EQ(nacl_mozc_us_id, controller_->change_input_method_id_);
 }
@@ -1156,8 +1125,7 @@ TEST_F(InputMethodManagerImplTest,
   manager_->ChangeInputMethod("m17n:kn:itrans");
   EXPECT_EQ(0, controller_->change_input_method_count_);
 
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   EXPECT_EQ(1, controller_->change_input_method_count_);
   EXPECT_EQ("m17n:kn:itrans", controller_->change_input_method_id_);
 }
@@ -1176,8 +1144,7 @@ TEST_F(InputMethodManagerImplTest,
   manager_->ChangeInputMethod(ext_id);
   EXPECT_EQ(0, controller_->change_input_method_count_);
 
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   EXPECT_EQ(1, controller_->change_input_method_count_);
   EXPECT_EQ(ext_id, controller_->change_input_method_id_);
 }
@@ -1203,16 +1170,14 @@ TEST_F(InputMethodManagerImplTest,
   manager_->ChangeInputMethod(ext_id2);
   EXPECT_EQ(0, controller_->change_input_method_count_);
 
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   EXPECT_EQ(1, controller_->change_input_method_count_);
   EXPECT_EQ(ext_id2, controller_->change_input_method_id_);
 }
 
 TEST_F(InputMethodManagerImplTest,
        ChangeInputMethod_ComponenteExtensionOneIME) {
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   const std::string ext_id =
       TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
@@ -1228,8 +1193,7 @@ TEST_F(InputMethodManagerImplTest,
 
 TEST_F(InputMethodManagerImplTest,
        ChangeInputMethod_ComponenteExtensionTwoIME) {
-  InitComponentExtension();
-  InitIBusBus();
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   const std::string ext_id1 =
       TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
@@ -1275,64 +1239,6 @@ TEST_F(InputMethodManagerImplTest,
             std::find(input_method_ids.begin(), input_method_ids.end(),
                       "mozc-hangul"));
 
-}
-
-TEST_F(InputMethodManagerImplTest,
-       AsyncComponentExtentionInitializeBeforeIBusDaemonConnection) {
-  const std::string xkb_id = "xkb:cz::cze";
-  const std::string ime_id = "mozc-hangul";
-  const std::string fallback_id = "xkb:us::eng";
-  std::vector<std::string> ids;
-  ids.push_back(xkb_id);
-  ids.push_back(ime_id);
-  EXPECT_TRUE(manager_->EnableInputMethods(ids));
-
-  // If component extension IME is not initialized, even XKB layout cannot be
-  // enabled.
-  manager_->ChangeInputMethod(xkb_id);
-  EXPECT_EQ(fallback_id, manager_->GetCurrentInputMethod().id());
-
-  // After component extension IME is initialized, previous input method should
-  // be automatically enabled.
-  InitComponentExtension();
-  EXPECT_EQ(xkb_id, manager_->GetCurrentInputMethod().id());
-
-  // However input method should not be enabled before establishment of
-  // connection with ibus-daemon.
-  manager_->ChangeInputMethod(ime_id);
-  // TODO(nona): Write expectation, GetCurrentInputMethod returns |ime_id| even
-  //             the actual input method is not changed.
-
-  // After connection with ibus-daemon is established, previous specified input
-  // method should be enabled automatically.
-  InitIBusBus();
-  EXPECT_EQ(ime_id, manager_->GetCurrentInputMethod().id());
-}
-
-TEST_F(InputMethodManagerImplTest,
-       AsyncComponentExtentionInitializeAfterIBusDaemonConnection) {
-  const std::string xkb_id = "xkb:cz::cze";
-  const std::string ime_id = "mozc-hangul";
-  const std::string fallback_id = "xkb:us::eng";
-  std::vector<std::string> ids;
-  ids.push_back(xkb_id);
-  ids.push_back(ime_id);
-  EXPECT_TRUE(manager_->EnableInputMethods(ids));
-
-  // If component extension IME is not initialized, even XKB layout cannot be
-  // enabled.
-  manager_->ChangeInputMethod(xkb_id);
-  EXPECT_EQ(fallback_id, manager_->GetCurrentInputMethod().id());
-
-  // Even after connection with ibus-daemon is established, ChangeInputMethod do
-  // nothing without component extension IME initialization.
-  InitIBusBus();
-  EXPECT_EQ(fallback_id, manager_->GetCurrentInputMethod().id());
-
-  // After component extension IME is initialized, previous specified input
-  // method should be automatically enabled.
-  InitComponentExtension();
-  EXPECT_EQ(xkb_id, manager_->GetCurrentInputMethod().id());
 }
 
 }  // namespace input_method
