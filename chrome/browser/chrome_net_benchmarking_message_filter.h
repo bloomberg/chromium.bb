@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROME_NET_BENCHMARKING_MESSAGE_FILTER_H_
 
 #include "content/public/browser/browser_message_filter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 namespace net {
 class URLRequestContextGetter;
