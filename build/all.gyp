@@ -326,6 +326,7 @@
           'type': 'none',
           'dependencies': [
             'chromium_builder_qa', # needed for pyauto
+            '../cc/cc_tests.gyp:cc_perftests',
             '../chrome/chrome.gyp:performance_browser_tests',
             '../chrome/chrome.gyp:performance_ui_tests',
             '../chrome/chrome.gyp:sync_performance_tests',
