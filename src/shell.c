@@ -900,7 +900,7 @@ move_surface_to_workspace(struct desktop_shell *shell,
 
 	drop_focus_state(shell, from, surface);
 	wl_list_for_each(seat, &shell->compositor->seat_list, link)
-		if (seat->has_keyboard &&
+		if (seat->keyboard &&
 		    seat->keyboard->focus == &surface->surface)
 			weston_keyboard_set_focus(seat->keyboard, NULL);
 
@@ -3127,7 +3127,7 @@ weston_surface_set_initial_position (struct weston_surface *surface,
 	 * TODO: Do something clever for touch too?
 	 */
 	wl_list_for_each(seat, &compositor->seat_list, link) {
-		if (seat->has_pointer) {
+		if (seat->pointer) {
 			ix = wl_fixed_to_int(seat->pointer->x);
 			iy = wl_fixed_to_int(seat->pointer->y);
 			break;

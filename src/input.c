@@ -1444,7 +1444,7 @@ weston_compositor_build_global_keymap(struct weston_compositor *ec)
 WL_EXPORT int
 weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 {
-	if (seat->has_keyboard)
+	if (seat->keyboard)
 		return 0;
 
 	if (keymap != NULL) {
@@ -1469,33 +1469,27 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 	weston_keyboard_init(&seat->keyboard_instance);
 	weston_seat_set_keyboard(seat, &seat->keyboard_instance);
 
-	seat->has_keyboard = 1;
-
 	return 0;
 }
 
 WL_EXPORT void
 weston_seat_init_pointer(struct weston_seat *seat)
 {
-	if (seat->has_pointer)
+	if (seat->pointer)
 		return;
 
 	weston_pointer_init(&seat->pointer_instance);
 	weston_seat_set_pointer(seat, &seat->pointer_instance);
-
-	seat->has_pointer = 1;
 }
 
 WL_EXPORT void
 weston_seat_init_touch(struct weston_seat *seat)
 {
-	if (seat->has_touch)
+	if (seat->touch)
 		return;
 
 	weston_touch_init(&seat->touch_instance);
 	weston_seat_set_touch(seat, &seat->touch_instance);
-
-	seat->has_touch = 1;
 }
 
 WL_EXPORT void
@@ -1508,10 +1502,6 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 	wl_signal_init(&seat->selection_signal);
 	wl_list_init(&seat->drag_resource_list);
 	wl_signal_init(&seat->destroy_signal);
-
-	seat->has_pointer = 0;
-	seat->has_keyboard = 0;
-	seat->has_touch = 0;
 
 	wl_display_add_global(ec->wl_display, &wl_seat_interface, seat,
 			      bind_seat);

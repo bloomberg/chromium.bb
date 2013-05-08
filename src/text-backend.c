@@ -810,7 +810,7 @@ input_method_init_seat(struct weston_seat *seat)
 	if (seat->input_method->focus_listener_initialized)
 		return;
 
-	if (seat->has_keyboard) {
+	if (seat->keyboard) {
 		seat->input_method->keyboard_focus_listener.notify = handle_keyboard_focus;
 		wl_signal_add(&seat->keyboard->focus_signal, &seat->input_method->keyboard_focus_listener);
 		seat->keyboard->input_method_grab.interface = &input_method_context_grab;

@@ -441,11 +441,8 @@ struct weston_seat {
 	struct weston_touch *touch;
 
 	struct weston_pointer pointer_instance;
-	int has_pointer;
 	struct weston_keyboard keyboard_instance;
-	int has_keyboard;
 	struct weston_touch touch_instance;
-	int has_touch;
 	struct wl_signal destroy_signal;
 
 	struct weston_compositor *compositor;
