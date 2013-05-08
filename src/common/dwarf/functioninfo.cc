@@ -42,6 +42,8 @@
 #include "common/scoped_ptr.h"
 #include "common/using_std_string.h"
 
+using google_breakpad::scoped_ptr;
+
 namespace dwarf2reader {
 
 CULineInfoHandler::CULineInfoHandler(std::vector<SourceFileInfo>* files,

@@ -80,7 +80,7 @@ OnDemandSymbolSupplier::OnDemandSymbolSupplier(const string &search_dir,
         [dirEnum skipDescendents];
       } else {
         NSString *filePath = [symbolSearchPath stringByAppendingPathComponent:fileName];
-        NSString *dataStr = [[[NSString alloc] initWithContentsOfFile:filePath] autorelease];
+        NSString *dataStr = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:NULL];
         if (dataStr) {
           // Check file to see if it is of appropriate type, and grab module
           // name.
@@ -280,7 +280,7 @@ bool OnDemandSymbolSupplier::GenerateSymbolFile(const CodeModule *module,
     NSString *module_str = [[NSFileManager defaultManager]
       stringWithFileSystemRepresentation:module_path.c_str()
                                   length:module_path.length()];
-    DumpSymbols dump;
+    DumpSymbols dump(ALL_SYMBOL_DATA, false);
     if (dump.Read(module_str)) {
       // What Breakpad calls "x86" should be given to the system as "i386".
       std::string architecture;
@@ -293,7 +293,7 @@ bool OnDemandSymbolSupplier::GenerateSymbolFile(const CodeModule *module,
       if (dump.SetArchitecture(architecture)) {
         std::fstream file([symbol_path fileSystemRepresentation],
                           std::ios_base::out | std::ios_base::trunc);
-        dump.WriteSymbolFile(file, true);
+        dump.WriteSymbolFile(file);
       } else {
         printf("Architecture %s not available for %s\n",
                system_info->cpu.c_str(), name.c_str());

@@ -164,7 +164,7 @@ static void PrintRegisters(const CallStack *stack, const string &cpu) {
     const StackFramePPC *frame_ppc =
       reinterpret_cast<const StackFramePPC*>(frame);
 
-    if (frame_ppc->context_validity & StackFramePPC::CONTEXT_VALID_ALL ==
+    if ((frame_ppc->context_validity & StackFramePPC::CONTEXT_VALID_ALL) ==
         StackFramePPC::CONTEXT_VALID_ALL) {
       sequence = PrintRegister("srr0", frame_ppc->context.srr0, sequence);
       sequence = PrintRegister("srr1", frame_ppc->context.srr1, sequence);
