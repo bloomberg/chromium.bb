@@ -965,7 +965,7 @@ void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item)
     frame()->loader()->prepareForHistoryNavigation();
     RefPtr<HistoryItem> currentItem = frame()->loader()->history()->currentItem();
     m_inSameDocumentHistoryLoad = currentItem && currentItem->shouldDoSameDocumentNavigationTo(historyItem.get());
-    frame()->page()->goToItem(historyItem.get(), FrameLoadTypeIndexedBackForward);
+    frame()->page()->goToItem(historyItem.get());
     m_inSameDocumentHistoryLoad = false;
 }
 

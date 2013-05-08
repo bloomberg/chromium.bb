@@ -109,7 +109,7 @@ public:
 
     void reload(bool endToEndReload = false, const KURL& overrideURL = KURL(), const String& overrideEncoding = String());
 
-    void loadItem(HistoryItem*, FrameLoadType);
+    void loadItem(HistoryItem*);
     HistoryItem* requestedHistoryItem() const { return m_requestedHistoryItem.get(); }
 
     static void reportLocalLoadFailed(Frame*, const String& url);
@@ -269,17 +269,12 @@ public:
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    enum FormSubmissionCacheLoadPolicy {
-        MayAttemptCacheOnlyLoadForFormSubmissionItem,
-        MayNotAttemptCacheOnlyLoadForFormSubmissionItem
-    };
-
     bool allChildrenAreComplete() const; // immediate children, not all descendants
 
     void checkTimerFired(Timer<FrameLoader>*);
     
     void loadSameDocumentItem(HistoryItem*);
-    void loadDifferentDocumentItem(HistoryItem*, FrameLoadType, FormSubmissionCacheLoadPolicy);
+    void loadDifferentDocumentItem(HistoryItem*);
     
     void updateFirstPartyForCookies();
     void setFirstPartyForCookies(const KURL&);

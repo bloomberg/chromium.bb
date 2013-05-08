@@ -197,9 +197,7 @@ void HistoryController::restoreDocumentState()
         case FrameLoadTypeSame:
         case FrameLoadTypeReplace:
             break;
-        case FrameLoadTypeBack:
-        case FrameLoadTypeForward:
-        case FrameLoadTypeIndexedBackForward:
+        case FrameLoadTypeBackForward:
         case FrameLoadTypeRedirectWithLockedBackForwardList:
         case FrameLoadTypeStandard:
             itemToRestore = m_currentItem.get(); 
@@ -227,7 +225,7 @@ bool HistoryController::shouldStopLoadingForHistoryItem(HistoryItem* targetItem)
 
 // Main funnel for navigating to a previous location (back/forward, non-search snap-back)
 // This includes recursion to handle loading into framesets properly
-void HistoryController::goToItem(HistoryItem* targetItem, FrameLoadType type)
+void HistoryController::goToItem(HistoryItem* targetItem)
 {
     ASSERT(!m_frame->tree()->parent());
     
@@ -242,7 +240,6 @@ void HistoryController::goToItem(HistoryItem* targetItem, FrameLoadType type)
         return;
     if (m_defersLoading) {
         m_deferredItem = targetItem;
-        m_deferredFrameLoadType = type;
         return;
     }
 
@@ -256,16 +253,16 @@ void HistoryController::goToItem(HistoryItem* targetItem, FrameLoadType type)
     // This must be done before trying to navigate the desired frame, because some
     // navigations can commit immediately (such as about:blank).  We must be sure that
     // all frames have provisional items set before the commit.
-    recursiveSetProvisionalItem(targetItem, currentItem.get(), type);
+    recursiveSetProvisionalItem(targetItem, currentItem.get());
     // Now that all other frames have provisional items, do the actual navigation.
-    recursiveGoToItem(targetItem, currentItem.get(), type);
+    recursiveGoToItem(targetItem, currentItem.get());
 }
 
 void HistoryController::setDefersLoading(bool defer)
 {
     m_defersLoading = defer;
     if (!defer && m_deferredItem) {
-        goToItem(m_deferredItem.get(), m_deferredFrameLoadType);
+        goToItem(m_deferredItem.get());
         m_deferredItem = 0;
     }
 }
@@ -393,25 +390,23 @@ void HistoryController::updateForCommit()
     }
 
     switch (type) {
-        case FrameLoadTypeForward:
-        case FrameLoadTypeBack:
-        case FrameLoadTypeIndexedBackForward:
-            updateForBackForwardNavigation();
-            return;
-        case FrameLoadTypeReload:
-        case FrameLoadTypeReloadFromOrigin:
-        case FrameLoadTypeSame:
-        case FrameLoadTypeReplace:
-            updateForReload();
-            return;
-        case FrameLoadTypeStandard:
-            updateForStandardLoad();
-            return;
-        case FrameLoadTypeRedirectWithLockedBackForwardList:
-            updateForRedirectWithLockedBackForwardList();
-            return;
-        default:
-            ASSERT_NOT_REACHED();
+    case FrameLoadTypeBackForward:
+        updateForBackForwardNavigation();
+        return;
+    case FrameLoadTypeReload:
+    case FrameLoadTypeReloadFromOrigin:
+    case FrameLoadTypeSame:
+    case FrameLoadTypeReplace:
+        updateForReload();
+        return;
+    case FrameLoadTypeStandard:
+        updateForStandardLoad();
+        return;
+    case FrameLoadTypeRedirectWithLockedBackForwardList:
+        updateForRedirectWithLockedBackForwardList();
+        return;
+    default:
+        ASSERT_NOT_REACHED();
     }
 }
 
@@ -635,7 +630,7 @@ PassRefPtr<HistoryItem> HistoryController::createItemTree(Frame* targetFrame, bo
 // tracking whether each frame already has the content the item requests.  If there is
 // a match, we set the provisional item and recurse.  Otherwise we will reload that
 // frame and all its kids in recursiveGoToItem.
-void HistoryController::recursiveSetProvisionalItem(HistoryItem* item, HistoryItem* fromItem, FrameLoadType type)
+void HistoryController::recursiveSetProvisionalItem(HistoryItem* item, HistoryItem* fromItem)
 {
     ASSERT(item);
 
@@ -653,14 +648,14 @@ void HistoryController::recursiveSetProvisionalItem(HistoryItem* item, HistoryIt
             ASSERT(fromChildItem);
             Frame* childFrame = m_frame->tree()->child(childFrameName);
             ASSERT(childFrame);
-            childFrame->loader()->history()->recursiveSetProvisionalItem(childItems[i].get(), fromChildItem, type);
+            childFrame->loader()->history()->recursiveSetProvisionalItem(childItems[i].get(), fromChildItem);
         }
     }
 }
 
 // We now traverse the frame tree and item tree a second time, loading frames that
 // do have the content the item requests.
-void HistoryController::recursiveGoToItem(HistoryItem* item, HistoryItem* fromItem, FrameLoadType type)
+void HistoryController::recursiveGoToItem(HistoryItem* item, HistoryItem* fromItem)
 {
     ASSERT(item);
 
@@ -675,10 +670,10 @@ void HistoryController::recursiveGoToItem(HistoryItem* item, HistoryItem* fromIt
             ASSERT(fromChildItem);
             Frame* childFrame = m_frame->tree()->child(childFrameName);
             ASSERT(childFrame);
-            childFrame->loader()->history()->recursiveGoToItem(childItems[i].get(), fromChildItem, type);
+            childFrame->loader()->history()->recursiveGoToItem(childItems[i].get(), fromChildItem);
         }
     } else {
-        m_frame->loader()->loadItem(item, type);
+        m_frame->loader()->loadItem(item);
     }
 }
 

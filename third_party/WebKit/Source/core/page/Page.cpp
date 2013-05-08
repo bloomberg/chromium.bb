@@ -271,7 +271,7 @@ bool Page::goBack()
     HistoryItem* item = backForward()->backItem();
 
     if (item) {
-        goToItem(item, FrameLoadTypeBack);
+        goToItem(item);
         return true;
     }
     return false;
@@ -282,7 +282,7 @@ bool Page::goForward()
     HistoryItem* item = backForward()->forwardItem();
 
     if (item) {
-        goToItem(item, FrameLoadTypeForward);
+        goToItem(item);
         return true;
     }
     return false;
@@ -318,10 +318,10 @@ void Page::goBackOrForward(int distance)
     if (!item)
         return;
 
-    goToItem(item, FrameLoadTypeIndexedBackForward);
+    goToItem(item);
 }
 
-void Page::goToItem(HistoryItem* item, FrameLoadType type)
+void Page::goToItem(HistoryItem* item)
 {
     // stopAllLoaders may end up running onload handlers, which could cause further history traversals that may lead to the passed in HistoryItem
     // being deref()-ed. Make sure we can still use it with HistoryController::goToItem later.
@@ -330,7 +330,7 @@ void Page::goToItem(HistoryItem* item, FrameLoadType type)
     if (m_mainFrame->loader()->history()->shouldStopLoadingForHistoryItem(item))
         m_mainFrame->loader()->stopAllLoaders();
 
-    m_mainFrame->loader()->history()->goToItem(item, type);
+    m_mainFrame->loader()->history()->goToItem(item);
 }
 
 int Page::getHistoryLength()

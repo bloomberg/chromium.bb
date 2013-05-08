@@ -82,7 +82,7 @@ public:
 private:
     friend class Page;
     bool shouldStopLoadingForHistoryItem(HistoryItem*) const;
-    void goToItem(HistoryItem*, FrameLoadType);
+    void goToItem(HistoryItem*);
 
     void initializeItem(HistoryItem*);
     PassRefPtr<HistoryItem> createItem();
@@ -93,8 +93,8 @@ private:
     void updateForStandardLoad();
     void updateForRedirectWithLockedBackForwardList();
 
-    void recursiveSetProvisionalItem(HistoryItem*, HistoryItem*, FrameLoadType);
-    void recursiveGoToItem(HistoryItem*, HistoryItem*, FrameLoadType);
+    void recursiveSetProvisionalItem(HistoryItem*, HistoryItem*);
+    void recursiveGoToItem(HistoryItem*, HistoryItem*);
     bool isReplaceLoadTypeWithProvisionalItem(FrameLoadType);
     bool isReloadTypeWithProvisionalItem(FrameLoadType);
     void recursiveUpdateForCommit();
@@ -114,7 +114,6 @@ private:
 
     bool m_defersLoading;
     RefPtr<HistoryItem> m_deferredItem;
-    FrameLoadType m_deferredFrameLoadType;
 };
 
 } // namespace WebCore

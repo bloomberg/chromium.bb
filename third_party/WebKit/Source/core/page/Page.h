@@ -22,7 +22,6 @@
 #define Page_h
 
 #include "core/dom/ViewportArguments.h"
-#include "core/loader/FrameLoaderTypes.h"
 #include "core/page/LayoutMilestones.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/page/UseCounter.h"
@@ -147,7 +146,7 @@ public:
     void goBackOrForward(int distance);
     int getHistoryLength();
 
-    void goToItem(HistoryItem*, FrameLoadType);
+    void goToItem(HistoryItem*);
 
     enum PageGroupType { PrivatePageGroup, SharedPageGroup };
     void setGroupType(PageGroupType);

@@ -130,21 +130,7 @@ static const char defaultAcceptHeader[] = "text/html,application/xhtml+xml,appli
 
 bool isBackForwardLoadType(FrameLoadType type)
 {
-    switch (type) {
-        case FrameLoadTypeStandard:
-        case FrameLoadTypeReload:
-        case FrameLoadTypeReloadFromOrigin:
-        case FrameLoadTypeSame:
-        case FrameLoadTypeRedirectWithLockedBackForwardList:
-        case FrameLoadTypeReplace:
-            return false;
-        case FrameLoadTypeBack:
-        case FrameLoadTypeForward:
-        case FrameLoadTypeIndexedBackForward:
-            return true;
-    }
-    ASSERT_NOT_REACHED();
-    return false;
+    return type == FrameLoadTypeBackForward;
 }
 
 // This is not in the FrameLoader class to emphasize that it does not depend on
@@ -802,7 +788,7 @@ void FrameLoader::loadURLIntoChildFrame(const KURL& url, const String& referer, 
         && !m_frame->document()->loadEventFinished()) {
         HistoryItem* childItem = parentItem->childItemWithTarget(childFrame->tree()->uniqueName());
         if (childItem) {
-            childFrame->loader()->loadDifferentDocumentItem(childItem, loadType(), MayAttemptCacheOnlyLoadForFormSubmissionItem);
+            childFrame->loader()->loadDifferentDocumentItem(childItem);
             return;
         }
     }
@@ -2522,24 +2508,15 @@ void FrameLoader::loadSameDocumentItem(HistoryItem* item)
 // FIXME: This function should really be split into a couple pieces, some of
 // which should be methods of HistoryController and some of which should be
 // methods of FrameLoader.
-void FrameLoader::loadDifferentDocumentItem(HistoryItem* item, FrameLoadType loadType, FormSubmissionCacheLoadPolicy cacheLoadPolicy)
+void FrameLoader::loadDifferentDocumentItem(HistoryItem* item)
 {
     // Remember this item so we can traverse any child items as child frames load
     history()->setProvisionalItem(item);
 
-    KURL itemURL = item->url();
-    KURL itemOriginalURL = item->originalURL();
-    KURL currentURL;
-    if (documentLoader())
-        currentURL = documentLoader()->url();
     RefPtr<FormData> formData = item->formData();
+    ResourceRequest request(item->url());
+    request.setHTTPReferrer(item->referrer());
 
-    ResourceRequest request(itemURL);
-
-    if (!item->referrer().isNull())
-        request.setHTTPReferrer(item->referrer());
-    
-    // If this was a repost that failed the page cache, we might try to repost the form.
     NavigationAction action;
     if (formData) {
         request.setHTTPMethod("POST");
@@ -2547,54 +2524,15 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem* item, FrameLoadType loa
         request.setHTTPContentType(item->formContentType());
         RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(item->referrer());
         addHTTPOriginIfNeeded(request, securityOrigin->toString());
-        
-        // FIXME: Slight hack to test if the NSURL cache contains the page we're going to.
-        // We want to know this before talking to the policy delegate, since it affects whether 
-        // we show the DoYouReallyWantToRepost nag.
-        //
-        // This trick has a small bug (3123893) where we might find a cache hit, but then
-        // have the item vanish when we try to use it in the ensuing nav.  This should be
-        // extremely rare, but in that case the user will get an error on the navigation.
-        
-        if (cacheLoadPolicy == MayAttemptCacheOnlyLoadForFormSubmissionItem) {
-            request.setCachePolicy(ReturnCacheDataDontLoad);
-            action = NavigationAction(request, loadType, false);
-        } else {
-            request.setCachePolicy(ReturnCacheDataElseLoad);
-            action = NavigationAction(request, NavigationTypeFormResubmitted);
-        }
-    } else {
-        switch (loadType) {
-            case FrameLoadTypeReload:
-            case FrameLoadTypeReloadFromOrigin:
-                request.setCachePolicy(ReloadIgnoringCacheData);
-                break;
-            case FrameLoadTypeBack:
-            case FrameLoadTypeForward:
-            case FrameLoadTypeIndexedBackForward:
-                // If the first load within a frame is a navigation within a back/forward list that was attached 
-                // without any of the items being loaded then we should use the default caching policy (<rdar://problem/8131355>).
-                if (m_stateMachine.committedFirstRealDocumentLoad())
-                    request.setCachePolicy(ReturnCacheDataElseLoad);
-                break;
-            case FrameLoadTypeStandard:
-            case FrameLoadTypeRedirectWithLockedBackForwardList:
-                break;
-            case FrameLoadTypeSame:
-            default:
-                ASSERT_NOT_REACHED();
-        }
+        request.setCachePolicy(ReturnCacheDataDontLoad);
+    } else
+        request.setCachePolicy(ReturnCacheDataElseLoad);
 
-        ResourceRequest requestForOriginalURL(request);
-        requestForOriginalURL.setURL(itemOriginalURL);
-        action = NavigationAction(requestForOriginalURL, loadType, false);
-    }
-
-    loadWithNavigationAction(request, action, loadType, 0, defaultSubstituteDataForURL(request.url()));
+    loadWithNavigationAction(request, NavigationAction(request, FrameLoadTypeBackForward, false), FrameLoadTypeBackForward, 0, defaultSubstituteDataForURL(request.url()));
 }
 
 // Loads content into this frame, as specified by history item
-void FrameLoader::loadItem(HistoryItem* item, FrameLoadType loadType)
+void FrameLoader::loadItem(HistoryItem* item)
 {
     m_requestedHistoryItem = item;
     HistoryItem* currentItem = history()->currentItem();
@@ -2603,7 +2541,7 @@ void FrameLoader::loadItem(HistoryItem* item, FrameLoadType loadType)
     if (sameDocumentNavigation)
         loadSameDocumentItem(item);
     else
-        loadDifferentDocumentItem(item, loadType, MayAttemptCacheOnlyLoadForFormSubmissionItem);
+        loadDifferentDocumentItem(item);
 }
 
 ResourceError FrameLoader::cancelledError(const ResourceRequest& request) const

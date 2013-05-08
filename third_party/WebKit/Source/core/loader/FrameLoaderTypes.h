@@ -48,12 +48,9 @@ namespace WebCore {
     // NOTE: Keep in sync with WebKit/mac/WebView/WebFramePrivate.h and WebKit/win/Interfaces/IWebFramePrivate.idl
     enum FrameLoadType {
         FrameLoadTypeStandard,
-        FrameLoadTypeBack,
-        FrameLoadTypeForward,
-        FrameLoadTypeIndexedBackForward, // a multi-item hop in the backforward list
+        FrameLoadTypeBackForward,
         FrameLoadTypeReload,
-        // Skipped value: 'FrameLoadTypeReloadAllowingStaleData', still present in mac/win public API. Ready to be reused
-        FrameLoadTypeSame = FrameLoadTypeReload + 2, // user loads same URL again (but not reload button)
+        FrameLoadTypeSame, // user loads same URL again (but not reload button)
         FrameLoadTypeRedirectWithLockedBackForwardList, // FIXME: Merge "lockBackForwardList", "lockHistory", "quickRedirect" and "clientRedirect" into a single concept of redirect.
         FrameLoadTypeReplace,
         FrameLoadTypeReloadFromOrigin,
