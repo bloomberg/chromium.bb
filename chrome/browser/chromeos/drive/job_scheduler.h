@@ -317,11 +317,9 @@ class JobScheduler
   // Resets the throttle delay to the initial value, and continues the job loop.
   void ResetThrottleAndContinueJobLoop(QueueType queue_type);
 
-  // Retries the |queue_entry| job if needed and returns null. Otherwise cleans
-  // up the job information and returns |queue_entry| as is so that callers can
-  // extract and invoke the callback function object stored there.
-  scoped_ptr<QueueEntry> OnJobDone(scoped_ptr<QueueEntry> queue_entry,
-                                   FileError error);
+  // Retries the |queue_entry| job if needed and returns false.
+  // Otherwise returns true.
+  bool OnJobDone(scoped_ptr<QueueEntry> queue_entry, FileError error);
 
   // Callback for job finishing with a GetResourceListCallback.
   void OnGetResourceListJobDone(

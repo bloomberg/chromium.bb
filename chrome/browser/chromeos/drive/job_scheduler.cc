@@ -555,7 +555,6 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
     }
     break;
 
-
     case TYPE_COPY_HOSTED_DOCUMENT: {
       drive_service_->CopyHostedDocument(
           entry->resource_id,
@@ -745,9 +744,8 @@ void JobScheduler::ResetThrottleAndContinueJobLoop(QueueType queue_type) {
                  queue_type));
 }
 
-scoped_ptr<JobScheduler::QueueEntry> JobScheduler::OnJobDone(
-    scoped_ptr<JobScheduler::QueueEntry> queue_entry,
-    FileError error) {
+bool JobScheduler::OnJobDone(scoped_ptr<JobScheduler::QueueEntry> queue_entry,
+                             FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   JobInfo* job_info = job_map_.Lookup(queue_entry->job_id);
@@ -773,8 +771,7 @@ scoped_ptr<JobScheduler::QueueEntry> JobScheduler::OnJobDone(
     QueueJob(queue_entry.Pass());
 
     ThrottleAndContinueJobLoop(queue_type);
-
-    return scoped_ptr<JobScheduler::QueueEntry>();
+    return false;
   } else {
     NotifyJobDone(*job_info, error);
     // The job has finished, no retry will happen in the scheduler. Now we can
@@ -782,9 +779,7 @@ scoped_ptr<JobScheduler::QueueEntry> JobScheduler::OnJobDone(
     job_map_.Remove(queue_entry->job_id);
 
     ResetThrottleAndContinueJobLoop(queue_type);
-
-    // Send the entry back.
-    return queue_entry.Pass();
+    return true;
   }
 }
 
@@ -793,20 +788,12 @@ void JobScheduler::OnGetResourceListJobDone(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> resource_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!queue_entry->get_resource_list_callback.is_null());
 
-  FileError drive_error(util::GDataToFileError(error));
-
-  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
-
-  if (!queue_entry)
-    return;
-
-  // Handle the callback.
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(queue_entry->get_resource_list_callback,
-                 error,
-                 base::Passed(&resource_list)));
+  google_apis::GetResourceListCallback callback =
+      queue_entry->get_resource_list_callback;
+  if (OnJobDone(queue_entry.Pass(), util::GDataToFileError(error)))
+    callback.Run(error, resource_list.Pass());
 }
 
 void JobScheduler::OnGetResourceEntryJobDone(
@@ -814,20 +801,12 @@ void JobScheduler::OnGetResourceEntryJobDone(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!queue_entry->get_resource_entry_callback.is_null());
 
-  FileError drive_error(util::GDataToFileError(error));
-
-  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
-
-  if (!queue_entry)
-    return;
-
-  // Handle the callback.
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(queue_entry->get_resource_entry_callback,
-                 error,
-                 base::Passed(&entry)));
+  google_apis::GetResourceEntryCallback callback =
+      queue_entry->get_resource_entry_callback;
+  if (OnJobDone(queue_entry.Pass(), util::GDataToFileError(error)))
+    callback.Run(error, entry.Pass());
 }
 
 void JobScheduler::OnGetAboutResourceJobDone(
@@ -835,16 +814,12 @@ void JobScheduler::OnGetAboutResourceJobDone(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!queue_entry->get_about_resource_callback.is_null());
 
-  FileError drive_error(util::GDataToFileError(error));
-
-  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
-
-  if (!queue_entry)
-    return;
-
-  // Handle the callback.
-  queue_entry->get_about_resource_callback.Run(error, about_resource.Pass());
+  google_apis::GetAboutResourceCallback callback =
+      queue_entry->get_about_resource_callback;
+  if (OnJobDone(queue_entry.Pass(), util::GDataToFileError(error)))
+    callback.Run(error, about_resource.Pass());
 }
 
 void JobScheduler::OnGetAccountMetadataJobDone(
@@ -852,17 +827,12 @@ void JobScheduler::OnGetAccountMetadataJobDone(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::AccountMetadata> account_metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!queue_entry->get_account_metadata_callback.is_null());
 
-  FileError drive_error(util::GDataToFileError(error));
-
-  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
-
-  if (!queue_entry)
-    return;
-
-  // Handle the callback.
-  queue_entry->get_account_metadata_callback.Run(error,
-                                                 account_metadata.Pass());
+  google_apis::GetAccountMetadataCallback callback =
+      queue_entry->get_account_metadata_callback;
+  if (OnJobDone(queue_entry.Pass(), util::GDataToFileError(error)))
+    callback.Run(error, account_metadata.Pass());
 }
 
 void JobScheduler::OnGetAppListJobDone(
@@ -870,47 +840,36 @@ void JobScheduler::OnGetAppListJobDone(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::AppList> app_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!queue_entry->get_app_list_callback.is_null());
 
-  FileError drive_error(util::GDataToFileError(error));
-
-  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
-
-  if (!queue_entry)
-    return;
-
-  // Handle the callback.
-  queue_entry->get_app_list_callback.Run(error, app_list.Pass());
+  google_apis::GetAppListCallback callback = queue_entry->get_app_list_callback;
+  if (OnJobDone(queue_entry.Pass(), util::GDataToFileError(error)))
+    callback.Run(error, app_list.Pass());
 }
 
 void JobScheduler::OnEntryActionJobDone(
     scoped_ptr<JobScheduler::QueueEntry> queue_entry,
     google_apis::GDataErrorCode error) {
-  FileError drive_error(util::GDataToFileError(error));
-
-  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
-
-  if (!queue_entry)
-    return;
-
-  // Handle the callback.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!queue_entry->entry_action_callback.is_null());
-  queue_entry->entry_action_callback.Run(error);
+
+  google_apis::EntryActionCallback callback =
+      queue_entry->entry_action_callback;
+  if (OnJobDone(queue_entry.Pass(), util::GDataToFileError(error)))
+    callback.Run(error);
 }
 
 void JobScheduler::OnDownloadActionJobDone(
     scoped_ptr<JobScheduler::QueueEntry> queue_entry,
     google_apis::GDataErrorCode error,
     const base::FilePath& temp_file) {
-  FileError drive_error(util::GDataToFileError(error));
-
-  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
-
-  if (!queue_entry)
-    return;
-
-  // Handle the callback.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!queue_entry->download_action_callback.is_null());
-  queue_entry->download_action_callback.Run(error, temp_file);
+
+  google_apis::DownloadActionCallback callback =
+      queue_entry->download_action_callback;
+  if (OnJobDone(queue_entry.Pass(), util::GDataToFileError(error)))
+    callback.Run(error, temp_file);
 }
 
 void JobScheduler::OnUploadCompletionJobDone(
@@ -919,17 +878,13 @@ void JobScheduler::OnUploadCompletionJobDone(
     const base::FilePath& drive_path,
     const base::FilePath& file_path,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
-  FileError drive_error(util::GDataToFileError(error));
-
-  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
-
-  if (!queue_entry)
-    return;
-
-  // Handle the callback.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!queue_entry->upload_completion_callback.is_null());
-  queue_entry->upload_completion_callback.Run(
-      error, drive_path, file_path, resource_entry.Pass());
+
+  google_apis::UploadCompletionCallback callback =
+      queue_entry->upload_completion_callback;
+  if (OnJobDone(queue_entry.Pass(), util::GDataToFileError(error)))
+    callback.Run(error, drive_path, file_path, resource_entry.Pass());
 }
 
 void JobScheduler::UpdateProgress(JobID job_id, int64 progress, int64 total) {
