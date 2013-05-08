@@ -17,9 +17,6 @@ class URLRequestContextGetter;
 // A helper class to get and refresh OAuth tokens given an authorization code.
 namespace gaia {
 
-static const char kGaiaOAuth2Url[] =
-    "https://accounts.google.com/o/oauth2/token";
-
 struct OAuthClientInfo {
   std::string client_id;
   std::string client_secret;

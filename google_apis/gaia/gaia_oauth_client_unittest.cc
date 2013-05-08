@@ -23,6 +23,9 @@
 using ::testing::_;
 
 namespace {
+
+const char kGaiaOAuth2Url[] = "https://accounts.google.com/o/oauth2/token";
+
 // Responds as though OAuth returned from the server.
 class MockOAuthFetcher : public net::TestURLFetcher {
  public:
