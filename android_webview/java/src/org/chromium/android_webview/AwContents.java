@@ -21,6 +21,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.inputmethod.EditorInfo;
@@ -130,6 +131,10 @@ public class AwContents {
     private DefaultVideoPosterRequestHandler mDefaultVideoPosterRequestHandler;
 
     private boolean mNewPictureInvalidationOnly;
+
+    private Rect mGlobalVisibleBounds;
+    private int mLastGlobalVisibleWidth;
+    private int mLastGlobalVisibleHeight;
 
     private static final class DestroyRunnable implements Runnable {
         private int mNativeAwContents;
@@ -286,6 +291,20 @@ public class AwContents {
         }
     }
 
+    //--------------------------------------------------------------------------------------------
+    private class ScrollChangeListener implements ViewTreeObserver.OnScrollChangedListener {
+        @Override
+        public void onScrollChanged() {
+            // We do this to cover the case that when the view hierarchy is scrolled,
+            // more of the containing view  becomes visible (i.e. a containing view
+            // with a width/height of "wrap_content" and dimensions greater than
+            // that of the screen).
+            AwContents.this.updatePhysicalBackingSizeIfNeeded();
+         }
+    };
+
+    private ScrollChangeListener mScrollChangeListener;
+
     /**
      * @param browserContext the browsing context to associate this view contents with.
      * @param containerView the view-hierarchy item this object will be bound to.
@@ -354,6 +373,23 @@ public class AwContents {
 
         ContentVideoView.registerContentVideoViewContextDelegate(
                 new AwContentVideoViewDelegate(contentsClient, containerView.getContext()));
+        mGlobalVisibleBounds = new Rect();
+    }
+
+    private void updatePhysicalBackingSizeIfNeeded() {
+        // We musn't let the physical backing size get too big, otherwise we
+        // will try to allocate a SurfaceTexture beyond what the GL driver can
+        // cope with. In most cases, limiting the SurfaceTexture size to that
+        // of the visible bounds of the WebView will be good enough i.e. the maximum
+        // SurfaceTexture dimensions will match the screen dimensions).
+        mContainerView.getGlobalVisibleRect(mGlobalVisibleBounds);
+        int width = mGlobalVisibleBounds.width();
+        int height = mGlobalVisibleBounds.height();
+        if (width != mLastGlobalVisibleWidth || height != mLastGlobalVisibleHeight) {
+            mLastGlobalVisibleWidth = width;
+            mLastGlobalVisibleHeight = height;
+            mContentViewCore.onPhysicalBackingSizeChanged(width, height);
+        }
     }
 
     @VisibleForTesting
@@ -1040,6 +1076,11 @@ public class AwContents {
      * @see android.view.View#onAttachedToWindow()
      */
     public void onAttachedToWindow() {
+        if (mScrollChangeListener == null) {
+            mScrollChangeListener = new ScrollChangeListener();
+        }
+        mContainerView.getViewTreeObserver().addOnScrollChangedListener(mScrollChangeListener);
+
         mContentViewCore.onAttachedToWindow();
         nativeOnAttachedToWindow(mNativeAwContents, mContainerView.getWidth(),
                 mContainerView.getHeight());
@@ -1054,8 +1095,16 @@ public class AwContents {
      * @see android.view.View#onDetachedFromWindow()
      */
     public void onDetachedFromWindow() {
-        if (mNativeAwContents == 0) return;
-        nativeOnDetachedFromWindow(mNativeAwContents);
+        if (mNativeAwContents != 0) {
+            nativeOnDetachedFromWindow(mNativeAwContents);
+        }
+
+        if (mScrollChangeListener != null) {
+            mContainerView.getViewTreeObserver().removeOnScrollChangedListener(
+                    mScrollChangeListener);
+            mScrollChangeListener = null;
+        }
+
         mContentViewCore.onDetachedFromWindow();
     }
 
@@ -1077,8 +1126,7 @@ public class AwContents {
      */
     public void onSizeChanged(int w, int h, int ow, int oh) {
         if (mNativeAwContents == 0) return;
-
-        mContentViewCore.onPhysicalBackingSizeChanged(w, h);
+        updatePhysicalBackingSizeIfNeeded();
         mContentViewCore.onSizeChanged(w, h, ow, oh);
         nativeOnSizeChanged(mNativeAwContents, w, h, ow, oh);
     }
