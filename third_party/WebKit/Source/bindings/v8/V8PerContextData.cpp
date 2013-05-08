@@ -88,7 +88,6 @@ bool V8PerContextData::init()
         return false;
 
     V8_STORE_PRIMORDIAL(error, Error);
-    V8_STORE_PRIMORDIAL(object, Object);
 
     return true;
 }
@@ -98,7 +97,6 @@ bool V8PerContextData::init()
 v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(WrapperTypeInfo* type)
 {
     ASSERT(!m_errorPrototype.isEmpty());
-    ASSERT(!m_objectPrototype.isEmpty());
 
     v8::Context::Scope scope(m_context);
     v8::Local<v8::Function> function = constructorForType(type);
@@ -113,7 +111,6 @@ v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(WrapperTy
 v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperTypeInfo* type)
 {
     ASSERT(!m_errorPrototype.isEmpty());
-    ASSERT(!m_objectPrototype.isEmpty());
 
     v8::Context::Scope scope(m_context);
     v8::Handle<v8::FunctionTemplate> functionTemplate = type->getTemplate(m_context->GetIsolate(), worldType(m_context->GetIsolate()));
@@ -123,7 +120,6 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperType
     if (function.IsEmpty())
         return v8::Local<v8::Function>();
 
-    function->SetPrototype(m_objectPrototype.get());
     v8::Local<v8::Value> prototypeValue = function->Get(v8::String::NewSymbol("prototype"));
     if (!prototypeValue.IsEmpty() && prototypeValue->IsObject()) {
         v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(prototypeValue);

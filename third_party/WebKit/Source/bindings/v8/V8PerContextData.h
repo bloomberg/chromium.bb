@@ -130,7 +130,6 @@ private:
     V8DOMActivityLogger* m_activityLogger;
     v8::Persistent<v8::Context> m_context;
     ScopedPersistent<v8::Value> m_errorPrototype;
-    ScopedPersistent<v8::Value> m_objectPrototype;
 };
 
 class V8PerContextDebugData {
