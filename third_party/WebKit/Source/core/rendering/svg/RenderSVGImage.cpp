@@ -67,16 +67,32 @@ bool RenderSVGImage::updateImageViewport()
 {
     SVGImageElement* image = static_cast<SVGImageElement*>(node());
     FloatRect oldBoundaries = m_objectBoundingBox;
+    bool updatedViewport = false;
 
     SVGLengthContext lengthContext(image);
     m_objectBoundingBox = FloatRect(image->x().value(lengthContext), image->y().value(lengthContext), image->width().value(lengthContext), image->height().value(lengthContext));
 
-    if (oldBoundaries == m_objectBoundingBox)
-        return false;
+    // Images with preserveAspectRatio=none should force non-uniform scaling. This can be achieved
+    // by setting the image's container size to its intrinsic size.
+    // See: http://www.w3.org/TR/SVG/single-page.html, 7.8 The ‘preserveAspectRatio’ attribute.
+    if (image->preserveAspectRatio().align() == SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE) {
+        if (CachedImage* cachedImage = m_imageResource->cachedImage()) {
+            LayoutSize intrinsicSize = cachedImage->imageSizeForRenderer(0, style()->effectiveZoom());
+            if (intrinsicSize != m_imageResource->imageSize(style()->effectiveZoom())) {
+                m_imageResource->setContainerSizeForRenderer(roundedIntSize(intrinsicSize));
+                updatedViewport = true;
+            }
+        }
+    }
 
-    m_imageResource->setContainerSizeForRenderer(enclosingIntRect(m_objectBoundingBox).size());
-    m_needsBoundariesUpdate = true;
-    return true;
+    if (oldBoundaries != m_objectBoundingBox) {
+        if (!updatedViewport)
+            m_imageResource->setContainerSizeForRenderer(enclosingIntRect(m_objectBoundingBox).size());
+        updatedViewport = true;
+        m_needsBoundariesUpdate = true;
+    }
+
+    return updatedViewport;
 }
 
 void RenderSVGImage::layout()
