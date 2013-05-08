@@ -4,7 +4,7 @@
 
 #include "chrome/browser/net/network_time_tracker.h"
 
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 

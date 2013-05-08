@@ -6,7 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"

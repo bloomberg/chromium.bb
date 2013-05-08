@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequenced_task_runner_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "content/browser/plugin_process_host.h"

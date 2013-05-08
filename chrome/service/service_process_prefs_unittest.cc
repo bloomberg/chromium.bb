@@ -6,7 +6,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/service/service_process_prefs.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

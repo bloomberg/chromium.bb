@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner_helpers.h"
+#include "base/task/sequenced_task_runner_helpers.h"
 #include "chrome/browser/shell_integration.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"

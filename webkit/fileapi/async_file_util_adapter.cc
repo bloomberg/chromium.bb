@@ -5,7 +5,7 @@
 #include "webkit/fileapi/async_file_util_adapter.h"
 
 #include "base/bind.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"

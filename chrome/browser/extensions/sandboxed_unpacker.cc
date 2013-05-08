@@ -16,7 +16,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): delete me.
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_paths.h"

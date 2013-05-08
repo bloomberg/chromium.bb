@@ -5,8 +5,8 @@
 #include "media/video/capture/screen/screen_capture_device.h"
 
 #include "base/basictypes.h"
-#include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"

@@ -6,7 +6,7 @@
 
 #include "base/files/file_util_proxy.h"
 #include "base/platform_file.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "webkit/blob/local_file_stream_reader.h"

@@ -8,7 +8,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
