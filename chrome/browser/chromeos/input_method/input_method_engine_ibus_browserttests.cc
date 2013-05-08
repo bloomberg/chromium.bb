@@ -10,18 +10,12 @@
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_service.h"
-#include "chromeos/dbus/mock_dbus_thread_manager.h"
+#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/dbus/mock_update_engine_client.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/mock_bus.h"
-
-// TODO(nona): Remove gmock dependency once crbug.com/223061 is fixed.
-#include "testing/gmock/include/gmock/gmock.h"
-
-using testing::Return;
-using testing::_;
 
 namespace chromeos {
 namespace input_method {
@@ -58,21 +52,9 @@ class InputMethodEngineIBusBrowserTest
   virtual ~InputMethodEngineIBusBrowserTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    mock_dbus_thread_manager_ = new MockDBusThreadManager();
+    mock_dbus_thread_manager_ = new MockDBusThreadManagerWithoutGMock();
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    // Necessary for launching browser tests with MockDBusThreadManager.
-    // TODO(nona): Remove this once crbug.com/223061 is fixed.
-    EXPECT_CALL(*mock_dbus_thread_manager_->mock_update_engine_client(),
-                GetLastStatus())
-        .Times(1)
-        .WillOnce(Return(chromeos::MockUpdateEngineClient::Status()));
-
-    // TODO(nona): Remove this once crbug.com/223061 is fixed.
-    EXPECT_CALL(*mock_dbus_thread_manager_, InitIBusBus(_, _))
-        .WillOnce(Invoke(this,
-                         &InputMethodEngineIBusBrowserTest::OnInitIBusBus));
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
@@ -96,15 +78,7 @@ class InputMethodEngineIBusBrowserTest
     return false;
   }
 
-  void OnInitIBusBus(const std::string& ibus_address,
-                     const base::Closure& closure) {
-    dbus::Bus::Options options;
-    mock_bus_ = new dbus::MockBus(options);
-    EXPECT_CALL(*mock_dbus_thread_manager_, GetIBusBus())
-        .WillRepeatedly(Return(mock_bus_));
-  }
-
-  MockDBusThreadManager* mock_dbus_thread_manager_;
+  MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
   scoped_refptr<dbus::MockBus> mock_bus_;
 };
 
