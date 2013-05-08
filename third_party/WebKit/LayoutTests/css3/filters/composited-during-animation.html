@@ -133,8 +133,6 @@
     ];
 
     function runPreTest() {
-        var preResult = "";
-
         for (var i=0; i < preExpectedValues.length; i++) {
             var id = preExpectedValues[i][0];
             var prop = preExpectedValues[i][1];
@@ -142,11 +140,10 @@
             var element = document.getElementById(id);
             var computedStyle = window.getComputedStyle(element)[prop];
             if (computedStyle == expected)
-              preResult += "PASS: Element " + id + " had filter value " + expected + " before animation.<br>";
+              result += "PASS: Element " + id + " had filter value " + expected + " before animation.<br>";
             else
-              preResult += "FAIL: Element " + id + " had filter value " + computedStyle + " rather than " + expected + " before animation.<br>";
+              result += "FAIL: Element " + id + " had filter value " + computedStyle + " rather than " + expected + " before animation.<br>";
         }
-        document.getElementById("preresult").innerHTML = preResult;
 
         // Completed the pre-animation tests. Now start the animation.
         setTimeout(function () {

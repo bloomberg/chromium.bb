@@ -1,5 +1,4 @@
-starts after 1s
-starts after 1.5s
+Warning this test is running in real-time and may be flaky.
 PASS - "left" property for "box1" element at 0.5s saw something close to: 100
 PASS - "left" property for "box2" element at 1.5s saw something close to: 100
 

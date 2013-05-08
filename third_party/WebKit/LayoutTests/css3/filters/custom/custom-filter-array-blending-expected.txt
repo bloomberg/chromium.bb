@@ -1,4 +1,3 @@
-     
 PASS - "webkitFilter" property for "custom-blend-from-none-box" element at 1s saw something close to: custom(url(no-shader-needed.vs) none, 1 1, arrayFromNoneAnim array(10, 20))
 PASS - "webkitFilter" property for "custom-blend-to-none-box" element at 1s saw something close to: custom(url(no-shader-needed.vs) none, 1 1, arrayToNoneAnim array(10, 20))
 PASS - "webkitFilter" property for "custom-blend-single-element-box" element at 1s saw something close to: custom(url(no-shader-needed.vs) none, 1 1, singleElementArray array(5))

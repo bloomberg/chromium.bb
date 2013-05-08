@@ -353,7 +353,8 @@ function comparePropertyValue(property, computedValue, expectedValue, tolerance)
 
 function endTest()
 {
-    document.getElementById('result').innerHTML = result;
+    var resultElement = useResultElement ? document.getElementById('result') : document.documentElement;
+    resultElement.innerHTML = result;
 
     if (window.testRunner)
         testRunner.notifyDone();
@@ -397,6 +398,7 @@ function startTest(checks)
         runChecksWithRAF(checks);
 }
 
+var useResultElement = false;
 var result = "";
 var hasPauseAnimationAPI;
 var animStartTime;
@@ -404,6 +406,8 @@ var animStartTime;
 // FIXME: remove deprecatedEvent, disablePauseAnimationAPI and doPixelTest
 function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnimationAPI, doPixelTest)
 {
+    if (disablePauseAnimationAPI)
+        result += 'Warning this test is running in real-time and may be flaky.<br>';
     if (deprecatedEvent)
         throw 'Event argument is deprecated!';
     if (!expected)
@@ -430,9 +434,11 @@ function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnim
         checks[timeMs].push(checkExpectedValue.bind(null, expected, i));
     }
 
+    var doPixelTest = Boolean(doPixelTest);
+    useResultElement = doPixelTest;
+
     if (window.testRunner) {
-        if (!doPixelTest)
-            testRunner.dumpAsText();
+        testRunner.dumpAsText(doPixelTest);
         testRunner.waitUntilDone();
     }
 
