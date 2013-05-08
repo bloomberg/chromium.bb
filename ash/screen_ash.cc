@@ -107,11 +107,6 @@ bool ScreenAsh::IsDIPEnabled() {
 }
 
 gfx::Point ScreenAsh::GetCursorScreenPoint() {
-#if defined(OS_WIN)
-  POINT pt = {0};
-  GetCursorPos(&pt);
-  return gfx::Point(pt);
-#endif
   return aura::Env::GetInstance()->last_mouse_location();
 }
 
