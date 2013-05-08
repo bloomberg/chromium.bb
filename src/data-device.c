@@ -165,7 +165,19 @@ find_resource(struct wl_list *list, struct wl_client *client)
 static void
 drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
-	empty_region(&es->pending.input);
+	struct weston_seat *seat = es->configure_private;
+	struct wl_list *list;
+
+	if (!weston_surface_is_mapped(es) && es->buffer_ref.buffer) {
+		if (seat->sprite && weston_surface_is_mapped(seat->sprite))
+			list = &seat->sprite->layer_link;
+		else
+			list = &seat->compositor->cursor_layer.surface_list;
+
+		wl_list_insert(list, &es->layer_link);
+		weston_surface_update_transform(es);
+		empty_region(&es->pending.input);
+	}
 
 	weston_surface_configure(es,
 				 es->geometry.x + sx, es->geometry.y + sy,
@@ -190,6 +202,7 @@ device_setup_new_drag_surface(struct weston_seat *seat,
 				    wl_fixed_to_double(seat->pointer->y));
 
 	surface->configure = drag_surface_configure;
+	surface->configure_private = seat;
 
 	wl_signal_add(&surface->surface.resource.destroy_signal,
 		       &seat->drag_surface_destroy_listener);
@@ -209,34 +222,11 @@ device_release_drag_surface(struct weston_seat *seat)
 	seat->drag_surface = NULL;
 }
 
-static void
-device_map_drag_surface(struct weston_seat *seat)
-{
-	struct wl_list *list;
-
-	if (weston_surface_is_mapped(seat->drag_surface) ||
-	    !seat->drag_surface->buffer_ref.buffer)
-		return;
-
-	if (seat->sprite && weston_surface_is_mapped(seat->sprite))
-		list = &seat->sprite->layer_link;
-	else
-		list = &seat->compositor->cursor_layer.surface_list;
-
-	wl_list_insert(list, &seat->drag_surface->layer_link);
-	weston_surface_update_transform(seat->drag_surface);
-	empty_region(&seat->drag_surface->input);
-}
-
 void
 weston_seat_update_drag_surface(struct weston_seat *seat, int dx, int dy)
 {
 	if (!seat->drag_surface)
 		return;
-
-	/* the client may not have attached a buffer to the drag surface
-	 * when we setup it up, so check if map is needed on every update */
-	device_map_drag_surface(seat);
 
 	if (!dx && !dy)
 		return;
