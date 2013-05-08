@@ -575,7 +575,6 @@ webkit.org/b/107893 [ MountainLion ] fast/exclusions/shape-inside/shape-inside-f
 webkit.org/b/109283 [ MountainLion ] fast/regions/selecting-text-through-different-region-flows.html [ ImageOnlyFailure ]
 webkit.org/b/110568 [ MountainLion ] fast/multicol/newmulticol/positioned-split.html [ ImageOnlyFailure ]
 webkit.org/b/110739 [ MountainLion ] fast/regions/shape-inside/shape-inside-on-regions.html [ ImageOnlyFailure ]
-crbug.com/225778 [ MountainLion ] ietestcenter/css3/grid/grid-column-002.htm [ ImageOnlyFailure ]
 crbug.com/225880 [ MountainLion ] fast/exclusions/shape-outside-floats/shape-outside-floats-overflow-hidden.html [ ImageOnlyFailure ]
 crbug.com/234061 [ MountainLion ] fast/regions/shape-inside/shape-inside-recursive-layout.html [ ImageOnlyFailure ]
 crbug.com/237083 [ MountainLion ] ietestcenter/css3/grid/grid-column-003.htm [ ImageOnlyFailure ]
