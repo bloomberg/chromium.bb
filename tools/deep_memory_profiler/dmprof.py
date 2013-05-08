@@ -14,6 +14,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 import zipfile
 
 from range_dict import ExclusiveRangeDict
@@ -776,12 +777,15 @@ class Dump(object):
       r'^ ([ \(])([a-f0-9]+)([ \)])-([ \(])([a-f0-9]+)([ \)])\s+'
       r'(hooked|unhooked)\s+(.+)$', re.IGNORECASE)
 
-  def __init__(self, path, time):
+  _TIME_PATTERN = re.compile(
+      r'^Time: ([0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+:[0-9]+)(\.[0-9]+)?')
+
+  def __init__(self, path, modified_time):
     self._path = path
     matched = self._PATH_PATTERN.match(path)
     self._pid = int(matched.group(2))
     self._count = int(matched.group(3))
-    self._time = time
+    self._time = modified_time
     self._map = {}
     self._procmaps = ExclusiveRangeDict(ProcMapsEntryAttribute)
     self._stacktrace_lines = []
@@ -844,6 +848,7 @@ class Dump(object):
 
     try:
       self._version, ln = self._parse_version()
+      self._parse_meta_information()
       if self._version == DUMP_DEEP_6:
         self._parse_mmap_list()
       self._parse_global_stats()
@@ -916,6 +921,27 @@ class Dump(object):
       words = self._lines[ln].split()
       self._global_stats[prefix + '_virtual'] = int(words[-2])
       self._global_stats[prefix + '_committed'] = int(words[-1])
+
+  def _parse_meta_information(self):
+    """Parses lines in self._lines for meta information."""
+    (ln, found) = skip_while(
+        0, len(self._lines),
+        lambda n: self._lines[n] != 'META:\n')
+    if not found:
+      return
+    ln += 1
+
+    while True:
+      if self._lines[ln].startswith('Time:'):
+        matched = self._TIME_PATTERN.match(self._lines[ln])
+        if matched:
+          self._time = time.mktime(datetime.datetime.strptime(
+              matched.group(1), '%Y/%m/%d %H:%M:%S').timetuple())
+          if matched.group(2):
+            self._time += float(matched.group(2)[1:]) / 1000.0
+      else:
+        break
+      ln += 1
 
   def _parse_mmap_list(self):
     """Parses lines in self._lines as a mmap list."""
