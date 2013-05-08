@@ -383,6 +383,9 @@ class CONTENT_EXPORT GpuControlList {
     bool SetGLRendererInfo(const std::string& renderer_op,
                            const std::string& renderer_value);
 
+    bool SetGLExtensionsInfo(const std::string& extensions_op,
+                             const std::string& extensions_value);
+
     bool SetCpuBrand(const std::string& cpu_op,
                      const std::string& cpu_value);
 
@@ -440,6 +443,7 @@ class CONTENT_EXPORT GpuControlList {
     scoped_ptr<VersionInfo> driver_date_info_;
     scoped_ptr<StringInfo> gl_vendor_info_;
     scoped_ptr<StringInfo> gl_renderer_info_;
+    scoped_ptr<StringInfo> gl_extensions_info_;
     scoped_ptr<StringInfo> cpu_brand_;
     scoped_ptr<FloatInfo> perf_graphics_info_;
     scoped_ptr<FloatInfo> perf_gaming_info_;

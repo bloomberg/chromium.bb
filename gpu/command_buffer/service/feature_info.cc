@@ -209,11 +209,8 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
         is_qualcomm |= string_set.Contains("qualcomm");
         is_imagination |= string_set.Contains("imagination");
         is_arm |= string_set.Contains("arm");
-        is_vivante |= string_set.Contains("vivante");
-        is_vivante |= string_set.Contains("hisilicon");
       }
     }
-
     if (extensions.Contains("GL_VIV_shader_binary"))
       is_vivante = true;
 

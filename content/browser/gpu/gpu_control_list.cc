@@ -612,6 +612,19 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     dictionary_entry_count++;
   }
 
+  const base::DictionaryValue* gl_extensions_value = NULL;
+  if (value->GetDictionary("gl_extensions", &gl_extensions_value)) {
+    std::string extensions_op;
+    std::string extensions_value;
+    gl_extensions_value->GetString(kOp, &extensions_op);
+    gl_extensions_value->GetString("value", &extensions_value);
+    if (!entry->SetGLExtensionsInfo(extensions_op, extensions_value)) {
+      LOG(WARNING) << "Malformed gl_extensions entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
   const base::DictionaryValue* cpu_brand_value = NULL;
   if (value->GetDictionary("cpu_info", &cpu_brand_value)) {
     std::string cpu_op;
@@ -882,6 +895,13 @@ bool GpuControlList::GpuControlListEntry::SetGLRendererInfo(
   return gl_renderer_info_->IsValid();
 }
 
+bool GpuControlList::GpuControlListEntry::SetGLExtensionsInfo(
+    const std::string& extensions_op,
+    const std::string& extensions_value) {
+  gl_extensions_info_.reset(new StringInfo(extensions_op, extensions_value));
+  return gl_extensions_info_->IsValid();
+}
+
 bool GpuControlList::GpuControlListEntry::SetCpuBrand(
     const std::string& cpu_op,
     const std::string& cpu_value) {
@@ -1042,6 +1062,9 @@ bool GpuControlList::GpuControlListEntry::Contains(
     return false;
   if (gl_renderer_info_.get() != NULL && !gpu_info.gl_renderer.empty() &&
       !gl_renderer_info_->Contains(gpu_info.gl_renderer))
+    return false;
+  if (gl_extensions_info_.get() != NULL && !gpu_info.gl_extensions.empty() &&
+      !gl_extensions_info_->Contains(gpu_info.gl_extensions))
     return false;
   if (perf_graphics_info_.get() != NULL &&
       (gpu_info.performance_stats.graphics == 0.0 ||

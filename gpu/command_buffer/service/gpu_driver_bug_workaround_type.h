@@ -28,8 +28,6 @@
          exit_on_context_lost)                        \
   GPU_OP(FLUSH_ON_CONTEXT_SWITCH,                     \
          flush_on_context_switch)                     \
-  GPU_OP(UNBIND_FBO_ON_CONTEXT_SWITCH,                \
-         unbind_fbo_on_context_switch)                \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024,        \
          max_cube_map_texture_size_limit_1024)        \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096,        \
@@ -48,6 +46,8 @@
          reverse_point_sprite_coord_origin)           \
   GPU_OP(SET_TEXTURE_FILTER_BEFORE_GENERATING_MIPMAP, \
          set_texture_filter_before_generating_mipmap) \
+  GPU_OP(UNBIND_FBO_ON_CONTEXT_SWITCH,                \
+         unbind_fbo_on_context_switch)                \
   GPU_OP(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS,   \
          use_client_side_arrays_for_stream_buffers)   \
   GPU_OP(USE_CURRENT_PROGRAM_AFTER_SUCCESSFUL_LINK,   \
