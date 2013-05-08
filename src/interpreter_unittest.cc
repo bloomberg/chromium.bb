@@ -79,6 +79,7 @@ TEST(InterpreterTest, SimpleTest) {
   PropRegistry prop_reg;
   InterpreterTestInterpreter* base_interpreter =
       new InterpreterTestInterpreter(&prop_reg);
+  MetricsProperties mprops(&prop_reg);
 
   HardwareProperties hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -140,13 +141,14 @@ TEST(InterpreterTest, SimpleTest) {
       new InterpreterTestInterpreter(&prop_reg2);
   base_interpreter2->return_value_ = base_interpreter->return_value_;
   base_interpreter2->expected_interpreter_name_ = interpreter_name;
+  MetricsProperties mprops2(&prop_reg2);
 
   ActivityReplay replay(&prop_reg2);
   replay.Parse(initial_log);
 
   base_interpreter2->expected_hwstate_ = &hardware_state;
 
-  replay.Replay(base_interpreter2);
+  replay.Replay(base_interpreter2, &mprops2);
   string final_log = base_interpreter2->Encode();
   EXPECT_EQ(initial_log, final_log);
   EXPECT_EQ(1, base_interpreter2->interpret_call_count_);

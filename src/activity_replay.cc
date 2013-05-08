@@ -403,6 +403,16 @@ bool ActivityReplay::ParseGestureMove(DictionaryValue* entry, Gesture* out_gs) {
     return false;
   }
   out_gs->details.move.dy = dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureMoveOrdinalDX, &dbl)) {
+    Err("can't parse move ordinal_dx");
+    return false;
+  }
+  out_gs->details.move.ordinal_dx = dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureMoveOrdinalDY, &dbl)) {
+    Err("can't parse move ordinal_dy");
+    return false;
+  }
+  out_gs->details.move.ordinal_dy = dbl;
   return true;
 }
 
@@ -420,6 +430,16 @@ bool ActivityReplay::ParseGestureScroll(DictionaryValue* entry,
     return false;
   }
   out_gs->details.scroll.dy = dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureScrollOrdinalDX, &dbl)) {
+    Err("can't parse scroll ordinal_dx");
+    return false;
+  }
+  out_gs->details.scroll.ordinal_dx = dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureScrollOrdinalDY, &dbl)) {
+    Err("can't parse scroll ordinal_dy");
+    return false;
+  }
+  out_gs->details.scroll.ordinal_dy = dbl;
   return true;
 }
 
@@ -437,6 +457,16 @@ bool ActivityReplay::ParseGestureSwipe(DictionaryValue* entry,
     return false;
   }
   out_gs->details.swipe.dy = dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureSwipeOrdinalDX, &dbl)) {
+    Err("can't parse swipe ordinal_dx");
+    return false;
+  }
+  out_gs->details.swipe.ordinal_dx = dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureSwipeOrdinalDY, &dbl)) {
+    Err("can't parse swipe ordinal_dy");
+    return false;
+  }
+  out_gs->details.swipe.ordinal_dy = dbl;
   return true;
 }
 
@@ -455,6 +485,11 @@ bool ActivityReplay::ParseGesturePinch(DictionaryValue* entry,
     return false;
   }
   out_gs->details.pinch.dz = dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGesturePinchOrdinalDZ, &dbl)) {
+    Err("can't parse pinch ordinal_dz");
+    return false;
+  }
+  out_gs->details.pinch.ordinal_dz = dbl;
   return true;
 }
 
@@ -491,6 +526,16 @@ bool ActivityReplay::ParseGestureFling(DictionaryValue* entry,
     return false;
   }
   out_gs->details.fling.vy = dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureFlingOrdinalVX, &dbl)) {
+    Err("can't parse fling ordinal_vx");
+    return false;
+  }
+  out_gs->details.fling.ordinal_vx = dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureFlingOrdinalVY, &dbl)) {
+    Err("can't parse fling ordinal_vy");
+    return false;
+  }
+  out_gs->details.fling.ordinal_vy = dbl;
   int state;
   if (!entry->GetInteger(ActivityLog::kKeyGestureFlingState, &state)) {
     Err("can't parse scroll is_scroll_begin");
@@ -557,10 +602,10 @@ bool ActivityReplay::ParsePropChange(DictionaryValue* entry) {
 }
 
 // Replay the log and verify the output in a strict way.
-void ActivityReplay::Replay(Interpreter* interpreter) {
-  TestInterpreterWrapper wrapper(interpreter, &hwprops_);
+void ActivityReplay::Replay(Interpreter* interpreter,
+                            MetricsProperties* mprops) {
+  interpreter->Initialize(&hwprops_, NULL, mprops, this);
 
-  bool pending_gs_flag = false;
   stime_t last_timeout_req = -1.0;
   // Use last_gs to save a copy of last gesture.
   Gesture last_gs;
@@ -572,31 +617,12 @@ void ActivityReplay::Replay(Interpreter* interpreter) {
         HardwareState hs = entry->details.hwstate;
         for (size_t i = 0; i < hs.finger_cnt; i++)
           Log("Input Finger ID: %d", hs.fingers[i].tracking_id);
-        Gesture* next_gs = wrapper.SyncInterpret(&hs, &last_timeout_req);
-        if (next_gs) {
-          EXPECT_FALSE(pending_gs_flag) <<
-              "Unexpected gestures:" << endl <<
-              "  Actual gesture: " << last_gs.String() << endl <<
-              "Expected gesture: NULL";
-          Log("Output Gesture: %s", next_gs->String().c_str());
-          last_gs = *next_gs;
-          pending_gs_flag = true;
-        }
+        interpreter->SyncInterpret(&hs, &last_timeout_req);
         break;
       }
       case ActivityLog::kTimerCallback: {
         last_timeout_req = -1.0;
-        Gesture* next_gs = wrapper.HandleTimer(entry->details.timestamp,
-                                                    &last_timeout_req);
-        if (next_gs) {
-          EXPECT_FALSE(pending_gs_flag) <<
-              "Unexpected gestures:" << endl <<
-              "  Actual gesture: " << last_gs.String() << endl <<
-              "Expected gesture: NULL";
-          Log("Output Gesture: %s", next_gs->String().c_str());
-          last_gs = *next_gs;
-          pending_gs_flag = true;
-        }
+        interpreter->HandleTimer(entry->details.timestamp, &last_timeout_req);
         break;
       }
       case ActivityLog::kCallbackRequest:
@@ -606,21 +632,25 @@ void ActivityReplay::Replay(Interpreter* interpreter) {
         }
         break;
       case ActivityLog::kGesture: {
-        if (pending_gs_flag && last_gs == entry->details.gesture) {
-          Log("Gesture matched:\n  Actual gesture: %s.\nExpected gesture: %s",
-              last_gs.String().c_str(),
-              entry->details.gesture.String().c_str());
+        bool matched = false;
+        while (!consumed_gestures_.empty() && !matched) {
+          if (consumed_gestures_.front() == entry->details.gesture) {
+            Log("Gesture matched:\n  Actual gesture: %s.\nExpected gesture: %s",
+                consumed_gestures_.front().String().c_str(),
+                entry->details.gesture.String().c_str());
+            matched = true;
+          } else {
+            Log("Unmatched actual gesture: %s\n",
+                consumed_gestures_.front().String().c_str());
+            ADD_FAILURE();
+          }
+          consumed_gestures_.pop_front();
         }
-        EXPECT_TRUE(pending_gs_flag) <<
-            "Incorrect gesture:" << endl <<
-            "  Actual gesture: NULL" << endl <<
-            "Expected gesture: " << entry->details.gesture.String();
-        if (pending_gs_flag)
-          EXPECT_TRUE(entry->details.gesture == last_gs) <<
-              "Incorrect gesture:" << endl <<
-              "  Actual gesture: " << last_gs.String() << endl <<
-              "Expected gesture:  " << entry->details.gesture.String();
-        pending_gs_flag = false;
+        if (!matched) {
+          Log("Missing logged gesture: %s",
+              entry->details.gesture.String().c_str());
+          ADD_FAILURE();
+        }
         break;
       }
       case ActivityLog::kPropChange:
@@ -628,6 +658,16 @@ void ActivityReplay::Replay(Interpreter* interpreter) {
         break;
     }
   }
+  while (!consumed_gestures_.empty()) {
+    Log("Unmatched actual gesture: %s\n",
+        consumed_gestures_.front().String().c_str());
+    ADD_FAILURE();
+    consumed_gestures_.pop_front();
+  }
+}
+
+void ActivityReplay::ConsumeGesture(const Gesture& gesture) {
+  consumed_gestures_.push_back(gesture);
 }
 
 bool ActivityReplay::ReplayPropChange(

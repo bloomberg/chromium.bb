@@ -220,6 +220,10 @@ const char kSubSubEntryPadding[] = "      ";
                new FundamentalValue(gesture.details.move.dx));
       ret->Set(kKeyGestureMoveDY,
                new FundamentalValue(gesture.details.move.dy));
+      ret->Set(kKeyGestureMoveOrdinalDX,
+               new FundamentalValue(gesture.details.move.ordinal_dx));
+      ret->Set(kKeyGestureMoveOrdinalDY,
+               new FundamentalValue(gesture.details.move.ordinal_dy));
       break;
     case kGestureTypeScroll:
       handled = true;
@@ -229,6 +233,10 @@ const char kSubSubEntryPadding[] = "      ";
                new FundamentalValue(gesture.details.scroll.dx));
       ret->Set(kKeyGestureScrollDY,
                new FundamentalValue(gesture.details.scroll.dy));
+      ret->Set(kKeyGestureScrollOrdinalDX,
+               new FundamentalValue(gesture.details.scroll.ordinal_dx));
+      ret->Set(kKeyGestureScrollOrdinalDY,
+               new FundamentalValue(gesture.details.scroll.ordinal_dy));
       break;
     case kGestureTypePinch:
       handled = true;
@@ -236,6 +244,8 @@ const char kSubSubEntryPadding[] = "      ";
                new StringValue(kValueGestureTypePinch));
       ret->Set(kKeyGesturePinchDZ,
                new FundamentalValue(gesture.details.pinch.dz));
+      ret->Set(kKeyGesturePinchOrdinalDZ,
+               new FundamentalValue(gesture.details.pinch.ordinal_dz));
       break;
     case kGestureTypeButtonsChange:
       handled = true;
@@ -256,6 +266,10 @@ const char kSubSubEntryPadding[] = "      ";
                new FundamentalValue(gesture.details.fling.vx));
       ret->Set(kKeyGestureFlingVY,
                new FundamentalValue(gesture.details.fling.vy));
+      ret->Set(kKeyGestureFlingOrdinalVX,
+               new FundamentalValue(gesture.details.fling.ordinal_vx));
+      ret->Set(kKeyGestureFlingOrdinalVY,
+               new FundamentalValue(gesture.details.fling.ordinal_vy));
       ret->Set(kKeyGestureFlingState,
                new FundamentalValue(
                    static_cast<int>(gesture.details.fling.fling_state)));
@@ -268,6 +282,10 @@ const char kSubSubEntryPadding[] = "      ";
                new FundamentalValue(gesture.details.swipe.dx));
       ret->Set(kKeyGestureSwipeDY,
                new FundamentalValue(gesture.details.swipe.dy));
+      ret->Set(kKeyGestureSwipeOrdinalDX,
+               new FundamentalValue(gesture.details.swipe.ordinal_dx));
+      ret->Set(kKeyGestureSwipeOrdinalDY,
+               new FundamentalValue(gesture.details.swipe.ordinal_dy));
       break;
     case kGestureTypeSwipeLift:
       handled = true;
@@ -424,16 +442,25 @@ const char ActivityLog::kKeyGestureStartTime[] = "startTime";
 const char ActivityLog::kKeyGestureEndTime[] = "endTime";
 const char ActivityLog::kKeyGestureMoveDX[] = "dx";
 const char ActivityLog::kKeyGestureMoveDY[] = "dy";
+const char ActivityLog::kKeyGestureMoveOrdinalDX[] = "ordinalDx";
+const char ActivityLog::kKeyGestureMoveOrdinalDY[] = "ordinalDy";
 const char ActivityLog::kKeyGestureScrollDX[] = "dx";
 const char ActivityLog::kKeyGestureScrollDY[] = "dy";
+const char ActivityLog::kKeyGestureScrollOrdinalDX[] = "ordinalDx";
+const char ActivityLog::kKeyGestureScrollOrdinalDY[] = "ordinalDy";
 const char ActivityLog::kKeyGesturePinchDZ[] = "dz";
+const char ActivityLog::kKeyGesturePinchOrdinalDZ[] = "ordinalDz";
 const char ActivityLog::kKeyGestureButtonsChangeDown[] = "down";
 const char ActivityLog::kKeyGestureButtonsChangeUp[] = "up";
 const char ActivityLog::kKeyGestureFlingVX[] = "vx";
 const char ActivityLog::kKeyGestureFlingVY[] = "vy";
+const char ActivityLog::kKeyGestureFlingOrdinalVX[] = "ordinalVx";
+const char ActivityLog::kKeyGestureFlingOrdinalVY[] = "ordinalVy";
 const char ActivityLog::kKeyGestureFlingState[] = "flingState";
 const char ActivityLog::kKeyGestureSwipeDX[] = "dx";
 const char ActivityLog::kKeyGestureSwipeDY[] = "dy";
+const char ActivityLog::kKeyGestureSwipeOrdinalDX[] = "ordinalDx";
+const char ActivityLog::kKeyGestureSwipeOrdinalDY[] = "ordinalDy";
 const char ActivityLog::kKeyPropChangeType[] = "propChangeType";
 const char ActivityLog::kKeyPropChangeName[] = "name";
 const char ActivityLog::kKeyPropChangeValue[] = "value";

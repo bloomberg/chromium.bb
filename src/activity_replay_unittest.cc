@@ -13,11 +13,11 @@
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_replay.h"
+#include "gestures/include/finger_metrics.h"
 #include "gestures/include/logging_filter_interpreter.h"
 #include "gestures/include/gestures.h"
 
 using std::string;
-using std::vector;
 
 namespace gestures {
 
@@ -33,24 +33,28 @@ TEST(ActivityReplayTest, DISABLED_SimpleTest) {
 
   Interpreter* interpreter = c_interpreter->interpreter();
   PropRegistry* prop_reg = c_interpreter->prop_reg();
+  {
+    MetricsProperties mprops(prop_reg);
 
-  string log_contents;
-  ASSERT_TRUE(file_util::ReadFileToString(cl->GetSwitchValuePath("in"),
-                                          &log_contents));
+    string log_contents;
+    ASSERT_TRUE(file_util::ReadFileToString(cl->GetSwitchValuePath("in"),
+                                            &log_contents));
 
-  ActivityReplay replay(prop_reg);
-  vector<string> honor_props;
-  if (cl->GetSwitchValueASCII("only_honor")[0])
-    base::SplitString(cl->GetSwitchValueASCII("only_honor"), ',', &honor_props);
-  std::set<string> honor_props_set(honor_props.begin(), honor_props.end());
-  replay.Parse(log_contents, honor_props_set);
-  replay.Replay(interpreter);
+    ActivityReplay replay(prop_reg);
+    std::vector<string> honor_props;
+    if (cl->GetSwitchValueASCII("only_honor")[0])
+      base::SplitString(cl->GetSwitchValueASCII("only_honor"),
+                        ',', &honor_props);
+    std::set<string> honor_props_set(honor_props.begin(), honor_props.end());
+    replay.Parse(log_contents, honor_props_set);
+    replay.Replay(interpreter, &mprops);
 
-  // Dump the new log
-  const string kOutSwitchName = "outfile";
-  if (cl->HasSwitch(kOutSwitchName))
-    static_cast<LoggingFilterInterpreter*>(interpreter)->Dump(
-        cl->GetSwitchValueASCII(kOutSwitchName).c_str());
+    // Dump the new log
+    const string kOutSwitchName = "outfile";
+    if (cl->HasSwitch(kOutSwitchName))
+      static_cast<LoggingFilterInterpreter*>(interpreter)->Dump(
+          cl->GetSwitchValueASCII(kOutSwitchName).c_str());
+  }
 
   DeleteGestureInterpreter(c_interpreter);
 }

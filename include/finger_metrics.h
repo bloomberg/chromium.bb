@@ -54,7 +54,7 @@ extern float Dot(const Vector2& left, const Vector2& right);
 
 class MetricsProperties {
  public:
-  MetricsProperties(PropRegistry* prop_reg);
+  explicit MetricsProperties(PropRegistry* prop_reg);
 
   // Maximum distance [mm] two fingers may be separated and still be eligible
   // for a two-finger gesture (e.g., scroll / tap / click). These define an

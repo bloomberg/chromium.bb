@@ -130,16 +130,25 @@ class ActivityLog {
   static const char kKeyGestureEndTime[];
   static const char kKeyGestureMoveDX[];
   static const char kKeyGestureMoveDY[];
+  static const char kKeyGestureMoveOrdinalDX[];
+  static const char kKeyGestureMoveOrdinalDY[];
   static const char kKeyGestureScrollDX[];
   static const char kKeyGestureScrollDY[];
+  static const char kKeyGestureScrollOrdinalDX[];
+  static const char kKeyGestureScrollOrdinalDY[];
   static const char kKeyGesturePinchDZ[];
+  static const char kKeyGesturePinchOrdinalDZ[];
   static const char kKeyGestureButtonsChangeDown[];
   static const char kKeyGestureButtonsChangeUp[];
   static const char kKeyGestureFlingVX[];
   static const char kKeyGestureFlingVY[];
+  static const char kKeyGestureFlingOrdinalVX[];
+  static const char kKeyGestureFlingOrdinalVY[];
   static const char kKeyGestureFlingState[];
   static const char kKeyGestureSwipeDX[];
   static const char kKeyGestureSwipeDY[];
+  static const char kKeyGestureSwipeOrdinalDX[];
+  static const char kKeyGestureSwipeOrdinalDY[];
   // PropChange keys:
   static const char kKeyPropChangeType[];
   static const char kKeyPropChangeName[];

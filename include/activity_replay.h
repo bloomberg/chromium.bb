@@ -5,6 +5,7 @@
 #ifndef GESTURES_ACTIVITY_REPLAY_H_
 #define GESTURES_ACTIVITY_REPLAY_H_
 
+#include <deque>
 #include <string>
 #include <tr1/memory>
 #include <set>
@@ -22,7 +23,7 @@ namespace gestures {
 
 class PropRegistry;
 
-class ActivityReplay {
+class ActivityReplay : public GestureConsumer {
  public:
   explicit ActivityReplay(PropRegistry* prop_reg);
   // Returns true on success.
@@ -32,7 +33,9 @@ class ActivityReplay {
 
   // If there is any unexpected behavior, replay continues, but EXPECT_*
   // reports failure, otherwise no failure is reported.
-  void Replay(Interpreter* interpreter);
+  void Replay(Interpreter* interpreter, MetricsProperties* mprops);
+
+  virtual void ConsumeGesture(const Gesture& gesture);
 
  private:
   // These return true on success
@@ -60,6 +63,7 @@ class ActivityReplay {
   ActivityLog log_;
   HardwareProperties hwprops_;
   PropRegistry* prop_reg_;
+  std::deque<Gesture> consumed_gestures_;
   std::vector<std::tr1::shared_ptr<const std::string> > names_;
 };
 
