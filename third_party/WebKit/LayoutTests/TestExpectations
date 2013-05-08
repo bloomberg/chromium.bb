@@ -1576,6 +1576,11 @@ crbug.com/14885 [ Debug ] fast/js/JSON-stringify.html [ Failure ]
 # Caused by http://trac.webkit.org/changeset/56394.
 crbug.com/143475 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass Timeout ]
 
+crbug.com/130259 [ Linux ] fast/forms/checkbox/checkbox-appearance-basic.html [ Pass ImageOnlyFailure ]
+crbug.com/130259 [ Linux ] fast/forms/datalist/input-appearance-range-with-datalist-zoomed.html [ Pass ImageOnlyFailure ]
+crbug.com/130259 [ Linux ] fast/forms/radio/radio-appearance-basic.html [ Pass ImageOnlyFailure ]
+crbug.com/130259 [ Linux ] fast/forms/range/range-appearance-basic.html [ Pass ImageOnlyFailure ]
+
 crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
 webkit.org/b/81697 [ Debug ] fast/notifications/notifications-request-permission.html [ Failure Pass ]
 crbug.com/225883 [ Win ] inspector/profiler/memory-instrumentation-external-array.html [ Failure Pass ]

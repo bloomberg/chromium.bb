@@ -30,6 +30,7 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"
@@ -170,13 +171,13 @@ int RenderThemeChromiumDefault::sliderTickOffsetFromTrackCenter() const
 void RenderThemeChromiumDefault::adjustSliderThumbSize(RenderStyle* style, Element* element) const
 {
     IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartSliderThumb);
-
+    float zoomLevel = style->effectiveZoom();
     if (style->appearance() == SliderThumbHorizontalPart) {
-        style->setWidth(Length(size.width(), Fixed));
-        style->setHeight(Length(size.height(), Fixed));
+        style->setWidth(Length(size.width() * zoomLevel, Fixed));
+        style->setHeight(Length(size.height() * zoomLevel, Fixed));
     } else if (style->appearance() == SliderThumbVerticalPart) {
-        style->setWidth(Length(size.height(), Fixed));
-        style->setHeight(Length(size.width(), Fixed));
+        style->setWidth(Length(size.height() * zoomLevel, Fixed));
+        style->setHeight(Length(size.width() * zoomLevel, Fixed));
     } else
         RenderThemeChromiumSkia::adjustSliderThumbSize(style, element);
 }
@@ -215,7 +216,18 @@ bool RenderThemeChromiumDefault::paintCheckbox(RenderObject* o, const PaintInfo&
     extraParams.button.checked = isChecked(o);
     extraParams.button.indeterminate = isIndeterminate(o);
 
-    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartCheckbox, getWebThemeState(this, o), WebKit::WebRect(rect), &extraParams);
+    float zoomLevel = o->style()->effectiveZoom();
+    GraphicsContextStateSaver stateSaver(*i.context);
+    IntRect unzoomedRect = rect;
+    if (zoomLevel != 1) {
+        unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
+        unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
+        i.context->translate(unzoomedRect.x(), unzoomedRect.y());
+        i.context->scale(FloatSize(zoomLevel, zoomLevel));
+        i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
+    }
+
+    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartCheckbox, getWebThemeState(this, o), WebKit::WebRect(unzoomedRect), &extraParams);
     return false;
 }
 
@@ -226,6 +238,9 @@ void RenderThemeChromiumDefault::setCheckboxSize(RenderStyle* style) const
         return;
 
     IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartCheckbox);
+    float zoomLevel = style->effectiveZoom();
+    size.setWidth(size.width() * zoomLevel);
+    size.setHeight(size.height() * zoomLevel);
     setSizeIfAuto(style, size);
 }
 
@@ -246,6 +261,9 @@ void RenderThemeChromiumDefault::setRadioSize(RenderStyle* style) const
         return;
 
     IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartRadio);
+    float zoomLevel = style->effectiveZoom();
+    size.setWidth(size.width() * zoomLevel);
+    size.setHeight(size.height() * zoomLevel);
     setSizeIfAuto(style, size);
 }
 
@@ -319,11 +337,22 @@ bool RenderThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintIn
     WebKit::WebCanvas* canvas = i.context->canvas();
     extraParams.slider.vertical = o->style()->appearance() == SliderVerticalPart;
 
-    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartSliderTrack, getWebThemeState(this, o), WebKit::WebRect(rect), &extraParams);
-
 #if ENABLE(DATALIST_ELEMENT)
     paintSliderTicks(o, i, rect);
 #endif
+
+    float zoomLevel = o->style()->effectiveZoom();
+    GraphicsContextStateSaver stateSaver(*i.context);
+    IntRect unzoomedRect = rect;
+    if (zoomLevel != 1) {
+        unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
+        unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
+        i.context->translate(unzoomedRect.x(), unzoomedRect.y());
+        i.context->scale(FloatSize(zoomLevel, zoomLevel));
+        i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
+    }
+
+    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartSliderTrack, getWebThemeState(this, o), WebKit::WebRect(unzoomedRect), &extraParams);
 
     return false;
 }
@@ -335,7 +364,18 @@ bool RenderThemeChromiumDefault::paintSliderThumb(RenderObject* o, const PaintIn
     extraParams.slider.vertical = o->style()->appearance() == SliderThumbVerticalPart;
     extraParams.slider.inDrag = isPressed(o);
 
-    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartSliderThumb, getWebThemeState(this, o), WebKit::WebRect(rect), &extraParams);
+    float zoomLevel = o->style()->effectiveZoom();
+    GraphicsContextStateSaver stateSaver(*i.context);
+    IntRect unzoomedRect = rect;
+    if (zoomLevel != 1) {
+        unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
+        unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
+        i.context->translate(unzoomedRect.x(), unzoomedRect.y());
+        i.context->scale(FloatSize(zoomLevel, zoomLevel));
+        i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
+    }
+
+    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartSliderThumb, getWebThemeState(this, o), WebKit::WebRect(unzoomedRect), &extraParams);
     return false;
 }
 
