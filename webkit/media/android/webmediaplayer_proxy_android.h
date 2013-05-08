@@ -23,7 +23,7 @@ class WebMediaPlayerProxyAndroid {
  public:
   virtual ~WebMediaPlayerProxyAndroid();
 
-  // Initialize a MediaPlayerBridge object in browser process
+  // Initialize a MediaPlayerAndroid object in browser process
   virtual void Initialize(int player_id, const GURL& url,
                           bool is_media_source,
                           const GURL& first_party_for_cookies) = 0;

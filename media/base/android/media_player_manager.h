@@ -9,24 +9,24 @@
 
 namespace media {
 
-class MediaPlayerBridge;
+class MediaPlayerAndroid;
 class MediaResourceGetter;
 
-// This class is responsible for managing active MediaPlayerBridge objects.
+// This class is responsible for managing active MediaPlayerAndroid objects.
 // It is implemented by content::MediaPlayerManagerImpl.
 class MEDIA_EXPORT MediaPlayerManager {
  public:
   virtual ~MediaPlayerManager();
 
-  // Called by a MediaPlayerBridge object when it is going to decode
+  // Called by a MediaPlayerAndroid object when it is going to decode
   // media streams. This helps the manager object maintain an array
-  // of active MediaPlayerBridge objects and release the resources
+  // of active MediaPlayerAndroid objects and release the resources
   // when needed.
-  virtual void RequestMediaResources(MediaPlayerBridge* player) = 0;
+  virtual void RequestMediaResources(MediaPlayerAndroid* player) = 0;
 
-  // Called when a MediaPlayerBridge object releases all its decoding
+  // Called when a MediaPlayerAndroid object releases all its decoding
   // resources.
-  virtual void ReleaseMediaResources(MediaPlayerBridge* player) = 0;
+  virtual void ReleaseMediaResources(MediaPlayerAndroid* player) = 0;
 
   // Return a pointer to the MediaResourceGetter object.
   virtual MediaResourceGetter* GetMediaResourceGetter() = 0;

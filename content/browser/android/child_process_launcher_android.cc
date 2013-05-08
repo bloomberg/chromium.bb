@@ -14,7 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "jni/ChildProcessLauncher_jni.h"
-#include "media/base/android/media_player_bridge.h"
+#include "media/base/android/media_player_android.h"
 #include "ui/gl/android/scoped_java_surface.h"
 
 using base::android::AttachCurrentThread;
@@ -27,7 +27,7 @@ namespace content {
 
 namespace {
 
-// Pass a java surface object to the MediaPlayerBridge object
+// Pass a java surface object to the MediaPlayerAndroid object
 // identified by render process handle, render view ID and player ID.
 static void SetSurfacePeer(
     const base::android::JavaRef<jobject>& surface,
@@ -48,7 +48,7 @@ static void SetSurfacePeer(
     RenderViewHostImpl* host = RenderViewHostImpl::FromID(
         renderer_id, render_view_id);
     if (host) {
-      media::MediaPlayerBridge* player =
+      media::MediaPlayerAndroid* player =
           host->media_player_manager()->GetPlayer(player_id);
       if (player &&
           player != host->media_player_manager()->GetFullscreenPlayer()) {

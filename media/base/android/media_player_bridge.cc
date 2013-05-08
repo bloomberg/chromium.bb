@@ -31,7 +31,7 @@ namespace media {
 
 #if !defined(GOOGLE_TV)
 // static
-MediaPlayerBridge* MediaPlayerBridge::Create(
+MediaPlayerAndroid* MediaPlayerAndroid::Create(
     int player_id,
     const GURL& url,
     bool is_media_source,
@@ -78,15 +78,16 @@ MediaPlayerBridge::MediaPlayerBridge(
     const SeekCompleteCB& seek_complete_cb,
     const TimeUpdateCB& time_update_cb,
     const MediaInterruptedCB& media_interrupted_cb)
-    : media_error_cb_(media_error_cb),
-      video_size_changed_cb_(video_size_changed_cb),
-      buffering_update_cb_(buffering_update_cb),
-      media_metadata_changed_cb_(media_metadata_changed_cb),
-      playback_complete_cb_(playback_complete_cb),
-      seek_complete_cb_(seek_complete_cb),
-      media_interrupted_cb_(media_interrupted_cb),
-      time_update_cb_(time_update_cb),
-      player_id_(player_id),
+    : MediaPlayerAndroid(player_id,
+                         manager,
+                         media_error_cb,
+                         video_size_changed_cb,
+                         buffering_update_cb,
+                         media_metadata_changed_cb,
+                         playback_complete_cb,
+                         seek_complete_cb,
+                         time_update_cb,
+                         media_interrupted_cb),
       prepared_(false),
       pending_play_(false),
       url_(url),
@@ -98,7 +99,6 @@ MediaPlayerBridge::MediaPlayerBridge(
       can_pause_(true),
       can_seek_forward_(true),
       can_seek_backward_(true),
-      manager_(manager),
       weak_this_(this),
       listener_(base::MessageLoopProxy::current(),
                 weak_this_.GetWeakPtr()) {
@@ -117,7 +117,7 @@ void MediaPlayerBridge::Initialize() {
   }
 
   media::MediaResourceGetter* resource_getter =
-      manager_->GetMediaResourceGetter();
+      manager()->GetMediaResourceGetter();
 
   if (url_.SchemeIsFileSystem()) {
     cookies_.clear();
@@ -171,9 +171,9 @@ void MediaPlayerBridge::Prepare() {
   if (j_media_player_.is_null())
     CreateMediaPlayer();
   if (url_.SchemeIsFileSystem()) {
-    manager_->GetMediaResourceGetter()->GetPlatformPathFromFileSystemURL(
-        url_, base::Bind(&MediaPlayerBridge::SetDataSource,
-                         weak_this_.GetWeakPtr()));
+    manager()->GetMediaResourceGetter()->GetPlatformPathFromFileSystemURL(
+            url_, base::Bind(&MediaPlayerBridge::SetDataSource,
+                             weak_this_.GetWeakPtr()));
   } else {
     SetDataSource(url_.spec());
   }
@@ -201,7 +201,7 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
     JNI_MediaPlayer::Java_MediaPlayer_prepareAsync(
         env, j_media_player_.obj());
   } else {
-    media_error_cb_.Run(player_id_, MEDIA_ERROR_FORMAT);
+    OnMediaError(MEDIA_ERROR_FORMAT);
   }
 }
 
@@ -211,7 +211,7 @@ void MediaPlayerBridge::OnCookiesRetrieved(const std::string& cookies) {
 }
 
 void MediaPlayerBridge::ExtractMediaMetadata(const std::string& url) {
-  manager_->GetMediaResourceGetter()->ExtractMediaMetadata(
+  manager()->GetMediaResourceGetter()->ExtractMediaMetadata(
       url, cookies_, base::Bind(&MediaPlayerBridge::OnMediaMetadataExtracted,
                                 weak_this_.GetWeakPtr()));
 }
@@ -223,13 +223,7 @@ void MediaPlayerBridge::OnMediaMetadataExtracted(
     width_ = width;
     height_ = height;
   }
-  media_metadata_changed_cb_.Run(player_id_, duration_, width_, height_,
-                                 success);
-}
-
-void MediaPlayerBridge::RequestMediaResourcesFromManager() {
-  if (manager_)
-    manager_->RequestMediaResources(this);
+  OnMediaMetadataChanged(duration_, width_, height_, success);
 }
 
 void MediaPlayerBridge::Start() {
@@ -317,8 +311,6 @@ void MediaPlayerBridge::Release() {
   time_update_timer_.Stop();
   if (prepared_)
     pending_seek_ = GetCurrentTime();
-  if (manager_)
-    manager_->ReleaseMediaResources(this);
   prepared_ = false;
   pending_play_ = false;
   SetVideoSurface(NULL);
@@ -326,7 +318,7 @@ void MediaPlayerBridge::Release() {
   JNIEnv* env = base::android::AttachCurrentThread();
   JNI_MediaPlayer::Java_MediaPlayer_release(env, j_media_player_.obj());
   j_media_player_.Reset();
-
+  ReleaseMediaResourcesFromManager();
   listener_.ReleaseMediaPlayerListenerResources();
 }
 
@@ -340,38 +332,20 @@ void MediaPlayerBridge::SetVolume(float left_volume, float right_volume) {
       env, j_media_player_.obj(), left_volume, right_volume);
 }
 
-void MediaPlayerBridge::DoTimeUpdate() {
-  base::TimeDelta current = GetCurrentTime();
-  time_update_cb_.Run(player_id_, current);
-}
-
-void MediaPlayerBridge::OnMediaError(int error_type) {
-  media_error_cb_.Run(player_id_, error_type);
-}
-
 void MediaPlayerBridge::OnVideoSizeChanged(int width, int height) {
   width_ = width;
   height_ = height;
-  video_size_changed_cb_.Run(player_id_, width, height);
-}
-
-void MediaPlayerBridge::OnBufferingUpdate(int percent) {
-  buffering_update_cb_.Run(player_id_, percent);
+  MediaPlayerAndroid::OnVideoSizeChanged(width, height);
 }
 
 void MediaPlayerBridge::OnPlaybackComplete() {
   time_update_timer_.Stop();
-  playback_complete_cb_.Run(player_id_);
+  MediaPlayerAndroid::OnPlaybackComplete();
 }
-
 
 void MediaPlayerBridge::OnMediaInterrupted() {
   time_update_timer_.Stop();
-  media_interrupted_cb_.Run(player_id_);
-}
-
-void MediaPlayerBridge::OnSeekComplete() {
-  seek_complete_cb_.Run(player_id_, GetCurrentTime());
+  MediaPlayerAndroid::OnMediaInterrupted();
 }
 
 void MediaPlayerBridge::OnMediaPrepared() {
@@ -399,7 +373,7 @@ void MediaPlayerBridge::OnMediaPrepared() {
   }
 
   GetAllowedOperations();
-  media_metadata_changed_cb_.Run(player_id_, duration_, width_, height_, true);
+  OnMediaMetadataChanged(duration_, width_, height_, true);
 }
 
 void MediaPlayerBridge::GetAllowedOperations() {
@@ -422,7 +396,7 @@ void MediaPlayerBridge::StartInternal() {
     time_update_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kTimeUpdateInterval),
-        this, &MediaPlayerBridge::DoTimeUpdate);
+        this, &MediaPlayerBridge::OnTimeUpdated);
   }
 }
 
@@ -453,16 +427,20 @@ bool MediaPlayerBridge::RegisterMediaPlayerBridge(JNIEnv* env) {
   return ret;
 }
 
-#if defined(GOOGLE_TV)
-void MediaPlayerBridge::DemuxerReady(
-    const MediaPlayerHostMsg_DemuxerReady_Params& params) {
-  NOTREACHED() << "Unexpected ipc received";
+bool MediaPlayerBridge::CanPause() {
+  return can_pause_;
 }
 
-void MediaPlayerBridge::ReadFromDemuxerAck(
-    const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
-  NOTREACHED() << "Unexpected ipc received";
+bool MediaPlayerBridge::CanSeekForward() {
+  return can_seek_forward_;
 }
-#endif
+
+bool MediaPlayerBridge::CanSeekBackward() {
+  return can_seek_backward_;
+}
+
+bool MediaPlayerBridge::IsPlayerReady() {
+  return prepared_;
+}
 
 }  // namespace media

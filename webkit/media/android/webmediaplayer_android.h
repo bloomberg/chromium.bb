@@ -53,7 +53,7 @@ class WebMediaPlayerAndroid
       public base::MessageLoop::DestructionObserver {
  public:
   // Construct a WebMediaPlayerAndroid object. This class communicates
-  // with the MediaPlayerBridge object in the browser process through
+  // with the MediaPlayerAndroid object in the browser process through
   // |proxy|.
   // TODO(qinmin): |frame| argument is used to determine whether the current
   // player can enter fullscreen. This logic should probably be moved into

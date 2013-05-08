@@ -87,27 +87,27 @@ void ContentVideoView::UpdateMediaMetadata() {
 }
 
 int ContentVideoView::GetVideoWidth(JNIEnv*, jobject obj) const {
-  media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
+  media::MediaPlayerAndroid* player = manager_->GetFullscreenPlayer();
   return player ? player->GetVideoWidth() : 0;
 }
 
 int ContentVideoView::GetVideoHeight(JNIEnv*, jobject obj) const {
-  media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
+  media::MediaPlayerAndroid* player = manager_->GetFullscreenPlayer();
   return player ? player->GetVideoHeight() : 0;
 }
 
 int ContentVideoView::GetDurationInMilliSeconds(JNIEnv*, jobject obj) const {
-  media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
+  media::MediaPlayerAndroid* player = manager_->GetFullscreenPlayer();
   return player ? player->GetDuration().InMilliseconds() : -1;
 }
 
 int ContentVideoView::GetCurrentPosition(JNIEnv*, jobject obj) const {
-  media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
+  media::MediaPlayerAndroid* player = manager_->GetFullscreenPlayer();
   return player ? player->GetCurrentTime().InMilliseconds() : 0;
 }
 
 bool ContentVideoView::IsPlaying(JNIEnv*, jobject obj) {
-  media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
+  media::MediaPlayerAndroid* player = manager_->GetFullscreenPlayer();
   return player ? player->IsPlaying() : false;
 }
 
@@ -135,12 +135,12 @@ void ContentVideoView::SetSurface(JNIEnv* env, jobject obj,
 }
 
 void ContentVideoView::UpdateMediaMetadata(JNIEnv* env, jobject obj) {
-  media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
-  if (player && player->prepared())
+  media::MediaPlayerAndroid* player = manager_->GetFullscreenPlayer();
+  if (player && player->IsPlayerReady())
     Java_ContentVideoView_updateMediaMetadata(
         env, obj, player->GetVideoWidth(), player->GetVideoHeight(),
-        player->GetDuration().InMilliseconds(), player->can_pause(),
-        player->can_seek_forward(), player->can_seek_backward());
+        player->GetDuration().InMilliseconds(), player->CanPause(),
+        player->CanSeekForward(), player->CanSeekBackward());
 }
 
 }  // namespace content

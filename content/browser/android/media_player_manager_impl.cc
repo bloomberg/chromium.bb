@@ -13,7 +13,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 
-using media::MediaPlayerBridge;
+using media::MediaPlayerAndroid;
 
 // Threshold on the number of media players per renderer before we start
 // attempting to release inactive media players.
@@ -59,7 +59,7 @@ bool MediaPlayerManagerImpl::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void MediaPlayerManagerImpl::FullscreenPlayerPlay() {
-  MediaPlayerBridge* player = GetFullscreenPlayer();
+  MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
     player->Start();
     Send(new MediaPlayerMsg_DidMediaPlayerPlay(
@@ -68,7 +68,7 @@ void MediaPlayerManagerImpl::FullscreenPlayerPlay() {
 }
 
 void MediaPlayerManagerImpl::FullscreenPlayerPause() {
-  MediaPlayerBridge* player = GetFullscreenPlayer();
+  MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
     player->Pause();
     Send(new MediaPlayerMsg_DidMediaPlayerPause(
@@ -77,7 +77,7 @@ void MediaPlayerManagerImpl::FullscreenPlayerPause() {
 }
 
 void MediaPlayerManagerImpl::FullscreenPlayerSeek(int msec) {
-  MediaPlayerBridge* player = GetFullscreenPlayer();
+  MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player)
     player->SeekTo(base::TimeDelta::FromMilliseconds(msec));
 }
@@ -85,7 +85,7 @@ void MediaPlayerManagerImpl::FullscreenPlayerSeek(int msec) {
 void MediaPlayerManagerImpl::ExitFullscreen(bool release_media_player) {
   Send(new MediaPlayerMsg_DidExitFullscreen(
       routing_id(), fullscreen_player_id_));
-  MediaPlayerBridge* player = GetFullscreenPlayer();
+  MediaPlayerAndroid* player = GetFullscreenPlayer();
   fullscreen_player_id_ = -1;
   if (!player)
     return;
@@ -96,7 +96,7 @@ void MediaPlayerManagerImpl::ExitFullscreen(bool release_media_player) {
 }
 
 void MediaPlayerManagerImpl::SetVideoSurface(jobject surface) {
-  MediaPlayerBridge* player = GetFullscreenPlayer();
+  MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
     player->SetVideoSurface(surface);
     Send(new MediaPlayerMsg_DidEnterFullscreen(
@@ -108,7 +108,7 @@ void MediaPlayerManagerImpl::OnInitialize(
     int player_id, const GURL& url,
     bool is_media_source,
     const GURL& first_party_for_cookies) {
-  for (ScopedVector<MediaPlayerBridge>::iterator it = players_.begin();
+  for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id) {
       players_.erase(it);
@@ -117,7 +117,7 @@ void MediaPlayerManagerImpl::OnInitialize(
   }
 
   RenderProcessHost* host = render_view_host()->GetProcess();
-  players_.push_back(media::MediaPlayerBridge::Create(
+  players_.push_back(media::MediaPlayerAndroid::Create(
       player_id, url, is_media_source, first_party_for_cookies,
       host->GetBrowserContext()->IsOffTheRecord(), this,
 #if defined(GOOGLE_TV)
@@ -155,19 +155,19 @@ media::MediaResourceGetter* MediaPlayerManagerImpl::GetMediaResourceGetter() {
 }
 
 void MediaPlayerManagerImpl::OnStart(int player_id) {
-  MediaPlayerBridge* player = GetPlayer(player_id);
+  MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->Start();
 }
 
 void MediaPlayerManagerImpl::OnSeek(int player_id, base::TimeDelta time) {
-  MediaPlayerBridge* player = GetPlayer(player_id);
+  MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->SeekTo(time);
 }
 
 void MediaPlayerManagerImpl::OnPause(int player_id) {
-  MediaPlayerBridge* player = GetPlayer(player_id);
+  MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->Pause();
 }
@@ -181,7 +181,7 @@ void MediaPlayerManagerImpl::OnEnterFullscreen(int player_id) {
 
 void MediaPlayerManagerImpl::OnExitFullscreen(int player_id) {
   if (fullscreen_player_id_ == player_id) {
-    MediaPlayerBridge* player = GetPlayer(player_id);
+    MediaPlayerAndroid* player = GetPlayer(player_id);
     if (player)
       player->SetVideoSurface(NULL);
     video_view_.DestroyContentVideoView();
@@ -190,7 +190,7 @@ void MediaPlayerManagerImpl::OnExitFullscreen(int player_id) {
 }
 
 void MediaPlayerManagerImpl::OnReleaseResources(int player_id) {
-  MediaPlayerBridge* player = GetPlayer(player_id);
+  MediaPlayerAndroid* player = GetPlayer(player_id);
   // Don't release the fullscreen player when tab visibility changes,
   // it will be released when user hit the back/home button or when
   // OnDestroyPlayer is called.
@@ -199,7 +199,7 @@ void MediaPlayerManagerImpl::OnReleaseResources(int player_id) {
 }
 
 void MediaPlayerManagerImpl::OnDestroyPlayer(int player_id) {
-  for (ScopedVector<MediaPlayerBridge>::iterator it = players_.begin();
+  for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id) {
       players_.erase(it);
@@ -221,13 +221,13 @@ void MediaPlayerManagerImpl::DestroyAllMediaPlayers() {
 #if defined(GOOGLE_TV)
 void MediaPlayerManagerImpl::AttachExternalVideoSurface(int player_id,
                                                            jobject surface) {
-  MediaPlayerBridge* player = GetPlayer(player_id);
+  MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->SetVideoSurface(surface);
 }
 
 void MediaPlayerManagerImpl::DetachExternalVideoSurface(int player_id) {
-  MediaPlayerBridge* player = GetPlayer(player_id);
+  MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->SetVideoSurface(NULL);
 }
@@ -246,7 +246,7 @@ void MediaPlayerManagerImpl::OnNotifyExternalSurface(
 void MediaPlayerManagerImpl::OnDemuxerReady(
     int player_id,
     const media::MediaPlayerHostMsg_DemuxerReady_Params& params) {
-  MediaPlayerBridge* player = GetPlayer(player_id);
+  MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->DemuxerReady(params);
 }
@@ -254,14 +254,14 @@ void MediaPlayerManagerImpl::OnDemuxerReady(
 void MediaPlayerManagerImpl::OnReadFromDemuxerAck(
     int player_id,
     const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
-  MediaPlayerBridge* player = GetPlayer(player_id);
+  MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->ReadFromDemuxerAck(params);
 }
 #endif
 
-MediaPlayerBridge* MediaPlayerManagerImpl::GetPlayer(int player_id) {
-  for (ScopedVector<MediaPlayerBridge>::iterator it = players_.begin();
+MediaPlayerAndroid* MediaPlayerManagerImpl::GetPlayer(int player_id) {
+  for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id)
       return *it;
@@ -269,7 +269,7 @@ MediaPlayerBridge* MediaPlayerManagerImpl::GetPlayer(int player_id) {
   return NULL;
 }
 
-MediaPlayerBridge* MediaPlayerManagerImpl::GetFullscreenPlayer() {
+MediaPlayerAndroid* MediaPlayerManagerImpl::GetFullscreenPlayer() {
   return GetPlayer(fullscreen_player_id_);
 }
 
@@ -337,14 +337,14 @@ void MediaPlayerManagerImpl::OnReadFromDemuxer(
 #endif
 
 void MediaPlayerManagerImpl::RequestMediaResources(
-    MediaPlayerBridge* player) {
+    MediaPlayerAndroid* player) {
   if (player == NULL)
     return;
 
   int num_active_player = 0;
-  ScopedVector<MediaPlayerBridge>::iterator it;
+  ScopedVector<MediaPlayerAndroid>::iterator it;
   for (it = players_.begin(); it != players_.end(); ++it) {
-    if (!(*it)->prepared())
+    if (!(*it)->IsPlayerReady())
       continue;
 
     // The player is already active, ignore it.
@@ -359,7 +359,7 @@ void MediaPlayerManagerImpl::RequestMediaResources(
     return;
 
   for (it = players_.begin(); it != players_.end(); ++it) {
-    if ((*it)->prepared() && !(*it)->IsPlaying() &&
+    if ((*it)->IsPlayerReady() && !(*it)->IsPlaying() &&
         fullscreen_player_id_ != (*it)->player_id()) {
       (*it)->Release();
       Send(new MediaPlayerMsg_MediaPlayerReleased(
@@ -369,7 +369,7 @@ void MediaPlayerManagerImpl::RequestMediaResources(
 }
 
 void MediaPlayerManagerImpl::ReleaseMediaResources(
-    MediaPlayerBridge* player) {
+    MediaPlayerAndroid* player) {
   // Nothing needs to be done.
 }
 

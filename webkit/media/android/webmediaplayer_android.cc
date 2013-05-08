@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/video_layer.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "media/base/android/media_player_bridge.h"
+#include "media/base/android/media_player_android.h"
 #include "media/base/video_frame.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
@@ -37,7 +37,7 @@ using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebTimeRanges;
 using WebKit::WebURL;
-using media::MediaPlayerBridge;
+using media::MediaPlayerAndroid;
 using media::VideoFrame;
 
 namespace webkit_media {
@@ -434,16 +434,16 @@ void WebMediaPlayerAndroid::OnSeekComplete(base::TimeDelta current_time) {
 
 void WebMediaPlayerAndroid::OnMediaError(int error_type) {
   switch (error_type) {
-    case MediaPlayerBridge::MEDIA_ERROR_FORMAT:
+    case MediaPlayerAndroid::MEDIA_ERROR_FORMAT:
       UpdateNetworkState(WebMediaPlayer::NetworkStateFormatError);
       break;
-    case MediaPlayerBridge::MEDIA_ERROR_DECODE:
+    case MediaPlayerAndroid::MEDIA_ERROR_DECODE:
       UpdateNetworkState(WebMediaPlayer::NetworkStateDecodeError);
       break;
-    case MediaPlayerBridge::MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:
+    case MediaPlayerAndroid::MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:
       UpdateNetworkState(WebMediaPlayer::NetworkStateFormatError);
       break;
-    case MediaPlayerBridge::MEDIA_ERROR_INVALID_CODE:
+    case MediaPlayerAndroid::MEDIA_ERROR_INVALID_CODE:
       break;
   }
   client_->repaint();

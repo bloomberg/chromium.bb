@@ -17,7 +17,7 @@
 #if defined(GOOGLE_TV)
 #include "media/base/android/demuxer_stream_player_params.h"
 #endif
-#include "media/base/android/media_player_bridge.h"
+#include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_manager.h"
 #include "ui/gfx/rect_f.h"
 
@@ -25,10 +25,10 @@ namespace content {
 
 class WebContents;
 
-// This class manages all the MediaPlayerBridge objects. It receives
+// This class manages all the MediaPlayerAndroid objects. It receives
 // control operations from the the render process, and forwards
-// them to corresponding MediaPlayerBridge object. Callbacks from
-// MediaPlayerBridge objects are converted to IPCs and then sent to the
+// them to corresponding MediaPlayerAndroid object. Callbacks from
+// MediaPlayerAndroid objects are converted to IPCs and then sent to the
 // render process.
 class MediaPlayerManagerImpl
     : public RenderViewHostObserver,
@@ -52,7 +52,7 @@ class MediaPlayerManagerImpl
   // time update events.
   void OnTimeUpdate(int player_id, base::TimeDelta current_time);
 
-  // Callbacks needed by media::MediaPlayerBridge.
+  // Callbacks needed by media::MediaPlayerAndroid.
   void OnMediaMetadataChanged(int player_id, base::TimeDelta duration,
                               int width, int height, bool success);
   void OnPlaybackComplete(int player_id);
@@ -68,9 +68,11 @@ class MediaPlayerManagerImpl
       int player_id, media::DemuxerStream::Type type, bool seek_done);
 #endif
 
-  // media::MediaPlayerBridgeManager overrides.
-  virtual void RequestMediaResources(media::MediaPlayerBridge* player) OVERRIDE;
-  virtual void ReleaseMediaResources(media::MediaPlayerBridge* player) OVERRIDE;
+  // media::MediaPlayerManager overrides.
+  virtual void RequestMediaResources(
+      media::MediaPlayerAndroid* player) OVERRIDE;
+  virtual void ReleaseMediaResources(
+      media::MediaPlayerAndroid* player) OVERRIDE;
   virtual media::MediaResourceGetter* GetMediaResourceGetter() OVERRIDE;
 
   // Release all the players managed by this object.
@@ -81,8 +83,8 @@ class MediaPlayerManagerImpl
   void DetachExternalVideoSurface(int player_id);
 #endif
 
-  media::MediaPlayerBridge* GetFullscreenPlayer();
-  media::MediaPlayerBridge* GetPlayer(int player_id);
+  media::MediaPlayerAndroid* GetFullscreenPlayer();
+  media::MediaPlayerAndroid* GetPlayer(int player_id);
 
  private:
   // Message handlers.
@@ -108,7 +110,7 @@ class MediaPlayerManagerImpl
 #endif
 
   // An array of managed players.
-  ScopedVector<media::MediaPlayerBridge> players_;
+  ScopedVector<media::MediaPlayerAndroid> players_;
 
   // The fullscreen video view object.
   ContentVideoView video_view_;
