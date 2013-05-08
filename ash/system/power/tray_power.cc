@@ -391,7 +391,7 @@ void TrayPower::OnPowerStatusChanged(const PowerSupplyStatus& status) {
 bool TrayPower::UpdateNotificationState(const PowerSupplyStatus& status) {
   if (!status.battery_is_present ||
       status.is_calculating_battery_time ||
-      status.line_power_on) {
+      status.battery_state != PowerSupplyStatus::DISCHARGING) {
     notification_state_ = NOTIFICATION_NONE;
     return false;
   }
