@@ -108,6 +108,11 @@
                   '|Source/modules/(encryptedmedia|mediasource)' \
                   '|Source/WebKit/chromium/.*Media.*' \
     },
+    'media_queries': {
+        'filepath': 'Source/core/css/CSSMediaRule.*' \
+                    '|Source/core/css/MediaList.*' \
+                    '|Source/core/css/MediaQuery.*'
+    },
     'fileapi': {
       'filepath': 'Source/modules/filesystem/' \
                   '|Source/core/fileapi/' \
@@ -118,6 +123,13 @@
     'quota': {
       'filepath': 'Source/modules/quota/' \
                   '|Source/WebKit/chromium/.*Quota.*'
+    },
+    'viewport_interaction': {
+      'filepath': 'Source/core/css/.*Viewport.*' \
+                  '|Source/core/dom/ViewportArguments.*' \
+                  '|Source/core/html/HTMLMetaElement.*' \
+                  '|Source/core/page/FrameView.*' \
+                  '|Source/core/page/scrolling'
     },
   },
 
@@ -165,7 +177,9 @@
     'prerender': [ 'gavinp+prerender@chromium.org' ],
     'track': ['vcarbune@chromium.org'],
     'media': [ 'feature-media-reviews@chromium.org' ],
+    'media_queries': [ 'kenneth.christiansen@gmail.com' ],
     'fileapi': [ 'kinuko@chromium.org' ],
     'quota': [ 'kinuko@chromium.org' ],
+    'viewport_interaction': [ 'kenneth.christiansen@gmail.com' ],
   },
 }
