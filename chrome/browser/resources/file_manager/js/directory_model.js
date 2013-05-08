@@ -110,15 +110,14 @@ DirectoryModel.fakeDriveRecentEntry_ = {
 /**
  * List of fake entries for special searches.
  * TODO(haruki): Add the entry for "Recent".
+ * TODO(hirono): Bring back the entry for "Offline". http://crbug.com/238545
  *
  * @type {Array.<Object>}
  * @const
- * @private
  */
-DirectoryModel.fakeDriveSpecialSearchEntries_ =
+DirectoryModel.FAKE_DRIVE_SPECIAL_SEARCH_ENTRIES =
     [DirectoryModel.fakeDriveSharedWithMeEntry_,
-     DirectoryModel.fakeDriveRecentEntry_,
-     DirectoryModel.fakeDriveOfflineEntry_];
+     DirectoryModel.fakeDriveRecentEntry_];
 
 /**
  * DirectoryModel extends cr.EventTarget.
@@ -1122,7 +1121,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
   if (this.driveEnabled_) {
     if (!util.platform.newUI()) {
       groups.driveSpecialSearchRoots = this.showSpecialSearchRoots_ ?
-          DirectoryModel.fakeDriveSpecialSearchEntries_ : [];
+          DirectoryModel.FAKE_DRIVE_SPECIAL_SEARCH_ENTRIES : [];
     }
     // Use a fake instead to return a list as fast as possible.
     groups.drive = [DirectoryModel.fakeDriveEntry_];

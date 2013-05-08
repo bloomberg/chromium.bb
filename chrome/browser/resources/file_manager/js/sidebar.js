@@ -148,9 +148,7 @@ DirectoryTreeUtil.addAndRemoveDriveSpecialDirs = function(entries) {
   }
 
   // Adds the special directories.
-  var specialDirs = [DirectoryModel.fakeDriveSharedWithMeEntry_,
-                     DirectoryModel.fakeDriveRecentEntry_,
-                     DirectoryModel.fakeDriveOfflineEntry_];
+  var specialDirs = DirectoryModel.FAKE_DRIVE_SPECIAL_SEARCH_ENTRIES;
   for (var i in specialDirs) {
     var dir = specialDirs[i];
     dir['label'] = PathUtil.getRootLabel(dir.fullPath);

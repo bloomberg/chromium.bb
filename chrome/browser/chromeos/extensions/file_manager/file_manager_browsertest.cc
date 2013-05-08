@@ -820,7 +820,8 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenOffline) {
+// TODO(hirono): Bring back the offline feature. http://crbug.com/238545
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestOpenOffline) {
   ASSERT_TRUE(PrepareVolume());
   ResultCatcher catcher;
   StartTest("openSidebarOffline");
