@@ -115,6 +115,8 @@ deps = {
         Var('git_url') + '/external/trace-viewer.git@3143967d7aaedf2c541842647cb8fee4905599c3',
     'src/third_party/undoview':
         Var('git_url') + '/chromium/deps/undoview.git@3ba503e248f3cdbd81b78325a24ece0984637559',
+    'src/third_party/usrsctp/usrsctplib':
+        Var('git_url') + '/external/usrsctplib.git@062bff767b4ad4c70476e94c7d0e2a62f57306bb',
     'src/third_party/v8-i18n':
         Var('git_url') + '/external/v8-i18n.git@e954a3cb163aeb1fcca2906ffdc8ab2bc109874a',
     'src/third_party/webdriver/pylib':
@@ -128,7 +130,7 @@ deps = {
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@c960eb11ccda80b10ed50be39df4f0663b371d1d',
     'src/tools/deps2git':
-        Var('git_url') + '/chromium/tools/deps2git.git@d3f29478651c5a9e7afdb66f16611bf385867cd1',
+        Var('git_url') + '/chromium/tools/deps2git.git@0346ba3ac10ab2e3664749a01547de08c0d39a03',
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@e53a316043ed07385683bb6743e517910e07f647',
     'src/tools/gyp':
@@ -280,6 +282,8 @@ deps_os = {
         'src/third_party/swig/Lib':
             None,
         'src/third_party/undoview':
+            None,
+        'src/third_party/usrsctp':
             None,
         'src/third_party/v8-i18n':
             None,
