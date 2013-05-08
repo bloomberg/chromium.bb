@@ -23,6 +23,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -43,6 +44,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
@@ -311,6 +313,8 @@ void LoginDisplayHostImpl::OnSessionStart() {
       desktop_background_controller()->MoveDesktopToUnlockedContainer();
   if (wizard_controller_.get())
     wizard_controller_->OnSessionStart();
+  g_browser_process->platform_part()->profile_helper()->ClearSigninProfile(
+      base::Closure());
   // Display host is deleted once animation is completed
   // since sign in screen widget has to stay alive.
   StartAnimation();

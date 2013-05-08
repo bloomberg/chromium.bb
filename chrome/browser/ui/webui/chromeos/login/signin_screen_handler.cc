@@ -15,9 +15,8 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -305,7 +305,6 @@ SigninScreenHandler::SigninScreenHandler(
       dns_clear_task_running_(false),
       cookies_cleared_(false),
       network_state_informer_(network_state_informer),
-      cookie_remover_(NULL),
       weak_factory_(this),
       webui_visible_(false),
       login_ui_active_(false),
@@ -333,8 +332,6 @@ SigninScreenHandler::SigninScreenHandler(
 
 SigninScreenHandler::~SigninScreenHandler() {
   weak_factory_.InvalidateWeakPtrs();
-  if (cookie_remover_)
-    cookie_remover_->RemoveObserver(this);
   SystemKeyEventListener* key_event_listener =
       SystemKeyEventListener::GetInstance();
   if (key_event_listener)
@@ -878,12 +875,10 @@ void SigninScreenHandler::SetGaiaOriginForTesting(const std::string& arg) {
   gaia_origin_for_test_ = arg;
 }
 
-void SigninScreenHandler::OnBrowsingDataRemoverDone() {
+void SigninScreenHandler::OnCookiesCleared(base::Closure on_clear_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  cookie_remover_ = NULL;
   cookies_cleared_ = true;
-  cookie_remover_callback_.Run();
-  cookie_remover_callback_.Reset();
+  on_clear_callback.Run();
 }
 
 void SigninScreenHandler::OnCapsLockChange(bool enabled) {
@@ -1148,11 +1143,9 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
     ShowSigninScreenIfReady();
   } else {
     StartClearingDnsCache();
-
-    cookie_remover_callback_ = base::Bind(
+    StartClearingCookies(base::Bind(
         &SigninScreenHandler::ShowSigninScreenIfReady,
-        weak_factory_.GetWeakPtr());
-    StartClearingCookies();
+        weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -1387,10 +1380,9 @@ void SigninScreenHandler::HandleLoginVisible(const std::string& source) {
 }
 
 void SigninScreenHandler::HandleCancelPasswordChangedFlow() {
-  cookie_remover_callback_ = base::Bind(
+  StartClearingCookies(base::Bind(
       &SigninScreenHandler::CancelPasswordChangedFlowInternal,
-      weak_factory_.GetWeakPtr());
-  StartClearingCookies();
+      weak_factory_.GetWeakPtr()));
 }
 
 void SigninScreenHandler::HandleMigrateUserData(
@@ -1472,28 +1464,28 @@ void SigninScreenHandler::StartClearingDnsCache() {
   dns_clear_task_running_ = true;
 }
 
-void SigninScreenHandler::StartClearingCookies() {
+void SigninScreenHandler::StartClearingCookies(
+    const base::Closure& on_clear_callback) {
   cookies_cleared_ = false;
-  if (cookie_remover_)
-    cookie_remover_->RemoveObserver(this);
-
-  cookie_remover_ = BrowsingDataRemover::CreateForUnboundedRange(
-      Profile::FromWebUI(web_ui()));
-  cookie_remover_->AddObserver(this);
-  cookie_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
-                          BrowsingDataHelper::UNPROTECTED_WEB);
+  ProfileHelper* profile_helper =
+      g_browser_process->platform_part()->profile_helper();
+  LOG_ASSERT(
+      Profile::FromWebUI(web_ui()) == profile_helper->GetSigninProfile());
+  profile_helper->ClearSigninProfile(base::Bind(
+      &SigninScreenHandler::OnCookiesCleared,
+      weak_factory_.GetWeakPtr(), on_clear_callback));
 }
 
 void SigninScreenHandler::MaybePreloadAuthExtension() {
   // Fetching of the extension is not started before account picker page is
-  // loaded because it can affect the loading speed. Also if |cookie_remover_|
-  // or |dns_clear_task_running_| then auth extension showing has already been
-  // initiated and preloading is senseless.
+  // loaded because it can affect the loading speed. Also if cookies clearing
+  // was initiated or |dns_clear_task_running_| then auth extension showing has
+  // already been initiated and preloading is senseless.
   // Do not load the extension for the screen locker, see crosbug.com/25018.
   if (is_account_picker_showing_first_time_ &&
       !gaia_silent_load_ &&
       !ScreenLocker::default_screen_locker() &&
-      !cookie_remover_ &&
+      !cookies_cleared_ &&
       !dns_clear_task_running_ &&
       network_state_informer_->is_online()) {
     gaia_silent_load_ = true;

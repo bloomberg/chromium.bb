@@ -6,15 +6,19 @@
 #define CHROME_BROWSER_CHROMEOS_PROFILES_PROFILE_HELPER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 
 class Profile;
 
 namespace chromeos {
 
-class ProfileHelper : public UserManager::UserSessionStateObserver {
+class ProfileHelper : public BrowsingDataRemover::Observer,
+                      public UserManager::UserSessionStateObserver {
  public:
   ProfileHelper();
   virtual ~ProfileHelper();
@@ -41,12 +45,25 @@ class ProfileHelper : public UserManager::UserSessionStateObserver {
   // on Chrome OS.
   std::string active_user_id_hash() { return active_user_id_hash_; }
 
+  // Clears site data (cookies, history, etc) for signin profile.
+  // Callback can be empty. Not thread-safe.
+  void ClearSigninProfile(const base::Closure& on_clear_callback);
+
  private:
   // UserManager::UserSessionStateObserver implementation:
   virtual void ActiveUserHashChanged(const std::string& hash) OVERRIDE;
 
+  // BrowsingDataRemover::Observer implementation:
+  virtual void OnBrowsingDataRemoverDone() OVERRIDE;
+
   // Identifies path to active user profile on Chrome OS.
   std::string active_user_id_hash_;
+
+  // True if signin profile clearing now.
+  bool signin_profile_clear_requested_;
+
+  // List of callbacks called after signin profile clearance.
+  std::vector<base::Closure> on_clear_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileHelper);
 };

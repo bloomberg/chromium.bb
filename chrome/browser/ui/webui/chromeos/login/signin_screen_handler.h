@@ -12,7 +12,6 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -24,8 +23,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
-
-class BrowsingDataRemover;
 
 namespace base {
 class DictionaryValue;
@@ -153,7 +150,6 @@ class SigninScreenHandlerDelegate {
 class SigninScreenHandler
     : public BaseScreenHandler,
       public LoginDisplayWebUIHandler,
-      public BrowsingDataRemover::Observer,
       public SystemKeyEventListener::CapsLockObserver,
       public content::NotificationObserver,
       public NetworkStateInformerDelegate,
@@ -251,9 +247,6 @@ class SigninScreenHandler
                                         const std::string& password) OVERRIDE;
   virtual void SetGaiaOriginForTesting(const std::string& arg) OVERRIDE;
 
-  // BrowsingDataRemover::Observer overrides.
-  virtual void OnBrowsingDataRemoverDone() OVERRIDE;
-
   // SystemKeyEventListener::CapsLockObserver overrides.
   virtual void OnCapsLockChange(bool enabled) OVERRIDE;
 
@@ -328,7 +321,8 @@ class SigninScreenHandler
   void SendUserList(bool animated);
 
   // Kick off cookie / local storage cleanup.
-  void StartClearingCookies();
+  void StartClearingCookies(const base::Closure& on_clear_callback);
+  void OnCookiesCleared(base::Closure on_clear_callback);
 
   // Kick off DNS cache flushing.
   void StartClearingDnsCache();
@@ -412,9 +406,6 @@ class SigninScreenHandler
   // Test credentials.
   std::string test_user_;
   std::string test_pass_;
-
-  BrowsingDataRemover* cookie_remover_;
-  base::Closure cookie_remover_callback_;
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 

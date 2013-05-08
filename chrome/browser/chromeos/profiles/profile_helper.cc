@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -33,7 +34,8 @@ base::FilePath GetChromeOSProfileDir(const base::FilePath& path) {
 ////////////////////////////////////////////////////////////////////////////////
 // ProfileHelper, public
 
-ProfileHelper::ProfileHelper() {
+ProfileHelper::ProfileHelper()
+  : signin_profile_clear_requested_(false) {
 }
 
 ProfileHelper::~ProfileHelper() {
@@ -83,6 +85,30 @@ void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
 
 void ProfileHelper::Initialize() {
   UserManager::Get()->AddSessionStateObserver(this);
+}
+
+void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
+  on_clear_callbacks_.push_back(on_clear_callback);
+  if (signin_profile_clear_requested_)
+    return;
+  signin_profile_clear_requested_ = true;
+  BrowsingDataRemover* remover =
+      BrowsingDataRemover::CreateForUnboundedRange(GetSigninProfile());
+  remover->AddObserver(this);
+  remover->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
+                  BrowsingDataHelper::ALL);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ProfileHelper, BrowsingDataRemover::Observer implementation:
+
+void ProfileHelper::OnBrowsingDataRemoverDone() {
+  signin_profile_clear_requested_ = false;
+  for (size_t i = 0; i < on_clear_callbacks_.size(); ++i) {
+    if (!on_clear_callbacks_[i].is_null())
+      on_clear_callbacks_[i].Run();
+  }
+  on_clear_callbacks_.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
