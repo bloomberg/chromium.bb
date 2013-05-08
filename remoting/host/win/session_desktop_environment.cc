@@ -33,14 +33,10 @@ SessionDesktopEnvironment::SessionDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control,
-    const UiStrings& ui_strings,
     const base::Closure& inject_sas)
     : Me2MeDesktopEnvironment(caller_task_runner,
                               input_task_runner,
-                              ui_task_runner,
-                              client_session_control,
-                              ui_strings),
+                              ui_task_runner),
       inject_sas_(inject_sas) {
 }
 
@@ -65,13 +61,18 @@ scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return scoped_ptr<DesktopEnvironment>(
+  scoped_ptr<SessionDesktopEnvironment> desktop_environment(
       new SessionDesktopEnvironment(caller_task_runner(),
                                     input_task_runner(),
                                     ui_task_runner(),
-                                    client_session_control,
-                                    ui_strings(),
                                     inject_sas_));
+  if (!desktop_environment->InitializeSecurity(client_session_control,
+                                               ui_strings(),
+                                               curtain_enabled())) {
+    return scoped_ptr<DesktopEnvironment>();
+  }
+
+  return desktop_environment.PassAs<DesktopEnvironment>();
 }
 
 }  // namespace remoting

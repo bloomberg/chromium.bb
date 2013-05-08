@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/client_session_control.h"
+#include "remoting/host/curtain_mode.h"
 #include "remoting/host/desktop_resizer.h"
 #include "remoting/host/host_window.h"
 #include "remoting/host/host_window.h"
@@ -48,27 +49,39 @@ Me2MeDesktopEnvironment::CreateVideoCapturer() {
 Me2MeDesktopEnvironment::Me2MeDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control,
-    const UiStrings& ui_strings)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : BasicDesktopEnvironment(caller_task_runner,
                               input_task_runner,
-                              ui_task_runner,
-                              client_session_control,
-                              ui_strings) {
+                              ui_task_runner) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
+}
+
+bool Me2MeDesktopEnvironment::InitializeSecurity(
+    base::WeakPtr<ClientSessionControl> client_session_control,
+    const UiStrings& ui_strings,
+    bool curtain_enabled) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  // Detach the session from the local console if the caller requested.
+  if (curtain_enabled) {
+    curtain_ = CurtainMode::Create(caller_task_runner(),
+                                   ui_task_runner(),
+                                   client_session_control);
+    return curtain_->Activate();
+  }
+
+  // Otherwise, if the session is shared with the local user start monitoring
+  // the local input and create the in-session UI.
 
   // Create the local input monitor.
-  local_input_monitor_ = LocalInputMonitor::Create(caller_task_runner,
-                                                   input_task_runner,
-                                                   ui_task_runner,
+  local_input_monitor_ = LocalInputMonitor::Create(caller_task_runner(),
+                                                   input_task_runner(),
+                                                   ui_task_runner(),
                                                    client_session_control);
 
   // The host UI should be created on the UI thread.
   bool want_user_interface = true;
-#if defined(OS_LINUX)
-  want_user_interface = false;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   // Don't try to display any UI on top of the system's login screen as this
   // is rejected by the Window Server on OS X 10.7.4, and prevents the
   // capturer from working (http://crbug.com/140984).
@@ -83,11 +96,13 @@ Me2MeDesktopEnvironment::Me2MeDesktopEnvironment(
   if (want_user_interface) {
     disconnect_window_ = HostWindow::CreateDisconnectWindow(ui_strings);
     disconnect_window_.reset(new HostWindowProxy(
-        caller_task_runner,
-        ui_task_runner,
+        caller_task_runner(),
+        ui_task_runner(),
         disconnect_window_.Pass()));
     disconnect_window_->Start(client_session_control);
   }
+
+  return true;
 }
 
 Me2MeDesktopEnvironmentFactory::Me2MeDesktopEnvironmentFactory(
@@ -98,7 +113,8 @@ Me2MeDesktopEnvironmentFactory::Me2MeDesktopEnvironmentFactory(
     : BasicDesktopEnvironmentFactory(caller_task_runner,
                                      input_task_runner,
                                      ui_task_runner,
-                                     ui_strings) {
+                                     ui_strings),
+      curtain_enabled_(false) {
 }
 
 Me2MeDesktopEnvironmentFactory::~Me2MeDesktopEnvironmentFactory() {
@@ -108,12 +124,23 @@ scoped_ptr<DesktopEnvironment> Me2MeDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return scoped_ptr<DesktopEnvironment>(
+  scoped_ptr<Me2MeDesktopEnvironment> desktop_environment(
       new Me2MeDesktopEnvironment(caller_task_runner(),
                                   input_task_runner(),
-                                  ui_task_runner(),
-                                  client_session_control,
-                                  ui_strings()));
+                                  ui_task_runner()));
+  if (!desktop_environment->InitializeSecurity(client_session_control,
+                                               ui_strings(),
+                                               curtain_enabled_)) {
+    return scoped_ptr<DesktopEnvironment>();
+  }
+
+  return desktop_environment.PassAs<DesktopEnvironment>();
+}
+
+void Me2MeDesktopEnvironmentFactory::SetEnableCurtaining(bool enable) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  curtain_enabled_ = enable;
 }
 
 }  // namespace remoting

@@ -38,9 +38,7 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   BasicDesktopEnvironment(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control,
-      const UiStrings& ui_strings);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner() const {
     return caller_task_runner_;
@@ -79,8 +77,6 @@ class BasicDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   virtual ~BasicDesktopEnvironmentFactory();
 
   // DesktopEnvironmentFactory implementation.
-  virtual scoped_ptr<DesktopEnvironment> Create(
-      base::WeakPtr<ClientSessionControl> client_session_control) OVERRIDE;
   virtual bool SupportsAudioCapture() const OVERRIDE;
 
  protected:

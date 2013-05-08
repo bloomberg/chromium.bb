@@ -126,7 +126,8 @@ class DesktopSessionAgent
 
   // Handles StartSessionAgent request from the client.
   void OnStartSessionAgent(const std::string& authenticated_jid,
-                           const ScreenResolution& resolution);
+                           const ScreenResolution& resolution,
+                           bool virtual_terminal);
 
   // Handles CaptureFrame requests from the client.
   void OnCaptureFrame();

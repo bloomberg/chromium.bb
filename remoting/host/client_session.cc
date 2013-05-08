@@ -197,9 +197,15 @@ void ClientSession::OnConnectionAuthenticated(
     return;
   }
 
-  // Create the desktop environment.
+  // Create the desktop environment. Drop the connection if it could not be
+  // created for any reason (for instance the curtain could not initialize).
   desktop_environment_ =
       desktop_environment_factory_->Create(control_factory_.GetWeakPtr());
+  if (!desktop_environment_) {
+    DisconnectSession();
+    return;
+  }
+
   host_capabilities_ = desktop_environment_->GetCapabilities();
 
   // Ignore protocol::Capabilities messages from the client if it does not

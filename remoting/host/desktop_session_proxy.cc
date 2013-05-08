@@ -193,7 +193,9 @@ bool DesktopSessionProxy::AttachToDesktop(
   // Pass ID of the client (which is authenticated at this point) to the desktop
   // session agent and start the agent.
   SendToDesktop(new ChromotingNetworkDesktopMsg_StartSessionAgent(
-      client_session_control_->client_jid(), screen_resolution_));
+      client_session_control_->client_jid(),
+      screen_resolution_,
+      virtual_terminal_));
 
   return true;
 }

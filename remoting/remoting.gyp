@@ -562,8 +562,6 @@
           ],
           'sources': [
             'host/curtain_mode.h',
-            'host/curtaining_host_observer.h',
-            'host/curtaining_host_observer.cc',
             'host/curtain_mode_linux.cc',
             'host/curtain_mode_mac.cc',
             'host/curtain_mode_win.cc',

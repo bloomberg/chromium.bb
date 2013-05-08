@@ -81,6 +81,7 @@ ChromotingHost::ChromotingHost(
       login_backoff_(&kDefaultBackoffPolicy),
       authenticating_client_(false),
       reject_authenticating_client_(false),
+      enable_curtaining_(false),
       weak_factory_(this) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK(signal_strategy);
@@ -139,6 +140,24 @@ void ChromotingHost::SetAuthenticatorFactory(
     scoped_ptr<protocol::AuthenticatorFactory> authenticator_factory) {
   DCHECK(CalledOnValidThread());
   session_manager_->set_authenticator_factory(authenticator_factory.Pass());
+}
+
+void ChromotingHost::SetEnableCurtaining(bool enable) {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+
+  if (enable_curtaining_ == enable)
+    return;
+
+  enable_curtaining_ = enable;
+  desktop_environment_factory_->SetEnableCurtaining(enable_curtaining_);
+
+  // Disconnect all existing clients because they might be running not
+  // curtained.
+  // TODO(alexeypa): fix this such that the curtain is applied to the not
+  // curtained sessions or disconnect only the client connected to not
+  // curtained sessions.
+  if (enable_curtaining_)
+    DisconnectAllClients();
 }
 
 void ChromotingHost::SetMaximumSessionDuration(

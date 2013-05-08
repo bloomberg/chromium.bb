@@ -185,7 +185,8 @@ void DesktopSessionAgent::SetDisableInputs(bool disable_inputs) {
 
 void DesktopSessionAgent::OnStartSessionAgent(
     const std::string& authenticated_jid,
-    const ScreenResolution& resolution) {
+    const ScreenResolution& resolution,
+    bool virtual_terminal) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
   DCHECK(!started_);
   DCHECK(!audio_capturer_);
@@ -196,6 +197,10 @@ void DesktopSessionAgent::OnStartSessionAgent(
 
   started_ = true;
   client_jid_ = authenticated_jid;
+
+  // Enable the curtain mode.
+  delegate_->desktop_environment_factory().SetEnableCurtaining(
+      virtual_terminal);
 
   // Create a desktop environment for the new session.
   desktop_environment_ = delegate_->desktop_environment_factory().Create(

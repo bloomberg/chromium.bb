@@ -41,8 +41,6 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/config_file_watcher.h"
-#include "remoting/host/curtain_mode.h"
-#include "remoting/host/curtaining_host_observer.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/dns_blackhole_checker.h"
@@ -205,7 +203,7 @@ class HostProcess
   bool OnUsernamePolicyUpdate(bool curtain_required,
                               bool username_match_required);
   bool OnNatPolicyUpdate(bool nat_traversal_enabled);
-  bool OnCurtainPolicyUpdate(bool curtain_required);
+  void OnCurtainPolicyUpdate(bool curtain_required);
   bool OnHostTalkGadgetPrefixPolicyUpdate(const std::string& talkgadget_prefix);
   bool OnHostTokenUrlPolicyUpdate(const GURL& token_url,
                                   const GURL& token_validation_url);
@@ -213,14 +211,6 @@ class HostProcess
   void StartHost();
 
   void OnAuthFailed();
-
-  void OnCurtainModeFailed();
-
-  void OnRemoteSessionSwitchedToConsole();
-
-  // Invoked when the user uses the Disconnect windows to terminate
-  // the sessions, or when the local session is activated in curtain mode.
-  void OnDisconnectRequested();
 
   void RestartHost();
 
@@ -269,8 +259,6 @@ class HostProcess
   bool allow_nat_traversal_;
   std::string talkgadget_prefix_;
 
-  scoped_ptr<CurtainMode> curtain_;
-  scoped_ptr<CurtainingHostObserver> curtaining_host_observer_;
   bool curtain_required_;
   GURL token_url_;
   GURL token_validation_url_;
@@ -305,14 +293,6 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
 #endif  // defined(REMOTING_MULTI_PROCESS)
       self_(this),
       exit_code_out_(exit_code_out) {
-  // Create the platform-specific curtain-mode implementation.
-  // TODO(wez): Create this on the network thread?
-  curtain_ = CurtainMode::Create(
-      base::Bind(&HostProcess::OnRemoteSessionSwitchedToConsole,
-                 base::Unretained(this)),
-      base::Bind(&HostProcess::OnCurtainModeFailed,
-                 base::Unretained(this)));
-
   StartOnUiThread();
 }
 
@@ -729,7 +709,7 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   if (policies->GetBoolean(
           policy_hack::PolicyWatcher::kHostRequireCurtainPolicyName,
           &curtain_required)) {
-    restart_required |= OnCurtainPolicyUpdate(curtain_required);
+    OnCurtainPolicyUpdate(curtain_required);
   }
   if (policies->GetBoolean(
       policy_hack::PolicyWatcher::kHostMatchUsernamePolicyName,
@@ -832,7 +812,7 @@ bool HostProcess::OnNatPolicyUpdate(bool nat_traversal_enabled) {
   return false;
 }
 
-bool HostProcess::OnCurtainPolicyUpdate(bool curtain_required) {
+void HostProcess::OnCurtainPolicyUpdate(bool curtain_required) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
@@ -851,7 +831,7 @@ bool HostProcess::OnCurtainPolicyUpdate(bool curtain_required) {
       LOG(ERROR) << "Running the host in the console login session is yet not "
                     "supported.";
       ShutdownHost(kLoginScreenNotSupportedExitCode);
-      return false;
+      return;
     }
   }
 #endif
@@ -862,17 +842,9 @@ bool HostProcess::OnCurtainPolicyUpdate(bool curtain_required) {
     else
       LOG(INFO) << "Policy does not require curtain-mode.";
     curtain_required_ = curtain_required;
-    if (curtaining_host_observer_)
-      curtaining_host_observer_->SetEnableCurtaining(curtain_required_);
-
-    // The current Windows curtain mode implementation relies on this code
-    // restarting the host when the curtain mode policy changes. For example if
-    // the policy is enabled while someone is already connected to the console
-    // that session should be either curtained or disconnected. This code makes
-    // sure that the session will be disconnected by restarting the host.
-    return true;
+    if (host_)
+      host_->SetEnableCurtaining(curtain_required_);
   }
-  return false;
 }
 
 bool HostProcess::OnHostTalkGadgetPrefixPolicyUpdate(
@@ -987,20 +959,7 @@ void HostProcess::StartHost() {
       HostEventLogger::Create(host_->AsWeakPtr(), kApplicationName);
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
-#if defined(REMOTING_RDP_SESSION)
-  // TODO(alexeypa): do not create |curtain_| in this case.
-  CurtainMode* curtain = static_cast<IpcDesktopEnvironmentFactory*>(
-      desktop_environment_factory_.get());
-#else  // !defined(REMOTING_RDP_SESSION)
-  CurtainMode* curtain = curtain_.get();
-#endif  // !defined(REMOTING_RDP_SESSION)
-
-  // Create a host observer to enable/disable curtain mode as clients connect
-  // and disconnect.
-  curtaining_host_observer_.reset(new CurtainingHostObserver(
-      curtain, host_->AsWeakPtr()));
-  curtaining_host_observer_->SetEnableCurtaining(curtain_required_);
-
+  host_->SetEnableCurtaining(curtain_required_);
   host_->Start(xmpp_login_);
 
   CreateAuthenticatorFactory();
@@ -1008,32 +967,6 @@ void HostProcess::StartHost() {
 
 void HostProcess::OnAuthFailed() {
   ShutdownHost(kInvalidOauthCredentialsExitCode);
-}
-
-void HostProcess::OnCurtainModeFailed() {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-  DCHECK(host_);
-  LOG(ERROR) << "Curtain mode failed to activate. Closing connection.";
-  host_->RejectAuthenticatingClient();
-}
-
-void HostProcess::OnRemoteSessionSwitchedToConsole() {
-  LOG(INFO) << "The remote session switched was to the console."
-               " Closing connection.";
-  OnDisconnectRequested();
-}
-
-// Invoked when the user uses the Disconnect windows to terminate
-// the sessions, or when the local session is activated in curtain mode.
-void HostProcess::OnDisconnectRequested() {
-  if (!context_->network_task_runner()->BelongsToCurrentThread()) {
-    context_->network_task_runner()->PostTask(FROM_HERE,
-        base::Bind(&HostProcess::OnDisconnectRequested, this));
-    return;
-  }
-  if (host_) {
-    host_->DisconnectAllClients();
-  }
 }
 
 void HostProcess::RestartHost() {
@@ -1071,7 +1004,6 @@ void HostProcess::ShutdownOnNetworkThread() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   host_.reset();
-  curtaining_host_observer_.reset();
   host_event_logger_.reset();
   log_to_server_.reset();
   heartbeat_sender_.reset();

@@ -105,6 +105,10 @@ class ChromotingHost : public base::NonThreadSafe,
   void SetAuthenticatorFactory(
       scoped_ptr<protocol::AuthenticatorFactory> authenticator_factory);
 
+  // Enables/disables curtaining when one or more clients are connected.
+  // Takes immediate effect if clients are already connected.
+  void SetEnableCurtaining(bool enable);
+
   // Sets the maximum duration of any session. By default, a session has no
   // maximum duration.
   void SetMaximumSessionDuration(const base::TimeDelta& max_session_duration);
@@ -131,11 +135,6 @@ class ChromotingHost : public base::NonThreadSafe,
   // Sets desired configuration for the protocol. Must be called before Start().
   void set_protocol_config(scoped_ptr<protocol::CandidateSessionConfig> config);
 
-  // Immediately disconnects all active clients. Host-internal components may
-  // shutdown asynchronously, but the caller is guaranteed not to receive
-  // callbacks for disconnected clients after this call returns.
-  void DisconnectAllClients();
-
   base::WeakPtr<ChromotingHost> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -144,6 +143,11 @@ class ChromotingHost : public base::NonThreadSafe,
   friend class ChromotingHostTest;
 
   typedef std::list<ClientSession*> ClientList;
+
+  // Immediately disconnects all active clients. Host-internal components may
+  // shutdown asynchronously, but the caller is guaranteed not to receive
+  // callbacks for disconnected clients after this call returns.
+  void DisconnectAllClients();
 
   // Unless specified otherwise all members of this class must be
   // used on the network thread only.
@@ -179,6 +183,9 @@ class ChromotingHost : public base::NonThreadSafe,
   // Flags used for RejectAuthenticatingClient().
   bool authenticating_client_;
   bool reject_authenticating_client_;
+
+  // True if the curtain mode is enabled.
+  bool enable_curtaining_;
 
   // The maximum duration of any session.
   base::TimeDelta max_session_duration_;

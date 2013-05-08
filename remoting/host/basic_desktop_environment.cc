@@ -56,9 +56,7 @@ BasicDesktopEnvironment::CreateVideoCapturer() {
 BasicDesktopEnvironment::BasicDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control,
-    const UiStrings& ui_strings)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
       ui_task_runner_(ui_task_runner) {
@@ -77,18 +75,6 @@ BasicDesktopEnvironmentFactory::BasicDesktopEnvironmentFactory(
 }
 
 BasicDesktopEnvironmentFactory::~BasicDesktopEnvironmentFactory() {
-}
-
-scoped_ptr<DesktopEnvironment> BasicDesktopEnvironmentFactory::Create(
-    base::WeakPtr<ClientSessionControl> client_session_control) {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  return scoped_ptr<DesktopEnvironment>(
-      new BasicDesktopEnvironment(caller_task_runner(),
-                                  input_task_runner(),
-                                  ui_task_runner(),
-                                  client_session_control,
-                                  ui_strings_));
 }
 
 bool BasicDesktopEnvironmentFactory::SupportsAudioCapture() const {

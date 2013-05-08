@@ -223,9 +223,10 @@ IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_AudioPacket,
 
 // Passes the client session data to the desktop session agent and starts it.
 // This must be the first message received from the host.
-IPC_MESSAGE_CONTROL2(ChromotingNetworkDesktopMsg_StartSessionAgent,
+IPC_MESSAGE_CONTROL3(ChromotingNetworkDesktopMsg_StartSessionAgent,
                      std::string /* authenticated_jid */,
-                     remoting::ScreenResolution /* resolution */)
+                     remoting::ScreenResolution /* resolution */,
+                     bool /* virtual_terminal */)
 
 // Notifies the desktop process that the shared memory buffer has been mapped to
 // the memory of the network process and so it can be safely dropped by

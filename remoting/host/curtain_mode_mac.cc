@@ -9,72 +9,109 @@
 #include <Security/Security.h>
 #include <unistd.h>
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/single_thread_task_runner.h"
+#include "remoting/host/client_session_control.h"
 
 namespace {
+
+using remoting::ClientSessionControl;
+
 const char* kCGSessionPath =
     "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/"
     "CGSession";
-}
 
-namespace remoting {
-
-class CurtainModeMac : public CurtainMode {
+// Used to detach the current session from the local console and disconnect
+// the connnection if it gets re-attached.
+//
+// Because the switch-in handler can only called on the main (UI) thread, this
+// class installs the handler and detaches the current session from the console
+// on the UI thread as well.
+class SessionWatcher : public base::RefCountedThreadSafe<SessionWatcher> {
  public:
-  CurtainModeMac(const base::Closure& on_session_activate,
-                 const base::Closure& on_error);
+  SessionWatcher(
+      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      base::WeakPtr<ClientSessionControl> client_session_control);
 
-  virtual ~CurtainModeMac();
-
-  // Overriden from CurtainMode.
-  virtual void SetActivated(bool activated) OVERRIDE;
+  void Start();
+  void Stop();
 
  private:
-  // If the current session is attached to the console and is not showing
-  // the logon screen then switch it out to ensure privacy.
-  bool ActivateCurtain();
+  friend class base::RefCountedThreadSafe<SessionWatcher>;
+  virtual ~SessionWatcher();
 
-  // Add or remove the switch-in event handler.
+  // Detaches the session from the console and install the switch-in handler to
+  // detect when the session re-attaches back.
+  void ActivateCurtain();
+
+  // Installs the switch-in handler.
   bool InstallEventHandler();
-  bool RemoveEventHandler();
+
+  // Removes the switch-in handler.
+  void RemoveEventHandler();
+
+  // Disconnects the client session.
+  void DisconnectSession();
 
   // Handlers for the switch-in event.
   static OSStatus SessionActivateHandler(EventHandlerCallRef handler,
                                          EventRef event,
                                          void* user_data);
-  void OnSessionActivate();
 
-  base::Closure on_session_activate_;
-  base::Closure on_error_;
+  // Task runner on which public methods of this class must be called.
+  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
+
+  // Task runner representing the thread receiving Carbon events.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
+  // Used to disconnect the client session.
+  base::WeakPtr<ClientSessionControl> client_session_control_;
+
   EventHandlerRef event_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(CurtainModeMac);
+  DISALLOW_COPY_AND_ASSIGN(SessionWatcher);
 };
 
-CurtainModeMac::CurtainModeMac(const base::Closure& on_session_activate,
-                               const base::Closure& on_error)
-    : on_session_activate_(on_session_activate),
-      on_error_(on_error),
+SessionWatcher::SessionWatcher(
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control)
+    : caller_task_runner_(caller_task_runner),
+      ui_task_runner_(ui_task_runner),
+      client_session_control_(client_session_control),
       event_handler_(NULL) {
 }
 
-CurtainModeMac::~CurtainModeMac() {
-  SetActivated(false);
+void SessionWatcher::Start() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  // Activate curtain asynchronously since it has to be done on the UI thread.
+  // Because the curtain activation is asynchronous, it is possible that
+  // the connection will not be curtained for a brief moment. This seems to be
+  // unaviodable as long as the curtain enforcement depends on processing of
+  // the switch-in notifications.
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SessionWatcher::ActivateCurtain, this));
 }
 
-void CurtainModeMac::SetActivated(bool activated) {
-  if (activated) {
-    if (!ActivateCurtain()) {
-      on_error_.Run();
-    }
-  } else {
-    RemoveEventHandler();
-  }
+void SessionWatcher::Stop() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  client_session_control_.reset();
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SessionWatcher::RemoveEventHandler, this));
 }
 
-bool CurtainModeMac::ActivateCurtain() {
+SessionWatcher::~SessionWatcher() {
+  DCHECK(!event_handler_);
+}
+
+void SessionWatcher::ActivateCurtain() {
   // Curtain mode causes problems with the login screen on Lion only (starting
   // with 10.7.3), so disable it on that platform. There is a work-around, but
   // it involves modifying a system Plist pertaining to power-management, so
@@ -85,14 +122,16 @@ bool CurtainModeMac::ActivateCurtain() {
   // curtain mode on suitable versions of Lion.
   if (base::mac::IsOSLion()) {
     LOG(ERROR) << "Host curtaining is not supported on Mac OS X 10.7.";
-    return false;
+    DisconnectSession();
+    return;
   }
 
   // Try to install the switch-in handler. Do this before switching out the
   // current session so that the console session is not affected if it fails.
   if (!InstallEventHandler()) {
     LOG(ERROR) << "Failed to install the switch-in handler.";
-    return false;
+    DisconnectSession();
+    return;
   }
 
   base::mac::ScopedCFTypeRef<CFDictionaryRef> session(
@@ -120,56 +159,110 @@ bool CurtainModeMac::ActivateCurtain() {
       waitpid(child, &status, 0);
       if (status != 0) {
         LOG(ERROR) << kCGSessionPath << " failed.";
-        return false;
+        DisconnectSession();
+        return;
       }
     } else {
       LOG(ERROR) << "fork() failed.";
-      return false;
+      DisconnectSession();
+      return;
     }
   }
+}
+
+bool SessionWatcher::InstallEventHandler() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK(!event_handler_);
+
+  EventTypeSpec event;
+  event.eventClass = kEventClassSystem;
+  event.eventKind = kEventSystemUserSessionActivated;
+  OSStatus result = ::InstallApplicationEventHandler(
+      NewEventHandlerUPP(SessionActivateHandler), 1, &event, this,
+      &event_handler_);
+  if (result != noErr) {
+    event_handler_ = NULL;
+    DisconnectSession();
+    return false;
+  }
+
   return true;
 }
 
-OSStatus CurtainModeMac::SessionActivateHandler(EventHandlerCallRef handler,
-                                             EventRef event,
-                                             void* user_data) {
-  CurtainModeMac* self = static_cast<CurtainModeMac*>(user_data);
-  self->OnSessionActivate();
+void SessionWatcher::RemoveEventHandler() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+
+  if (event_handler_) {
+    ::RemoveEventHandler(event_handler_);
+    event_handler_ = NULL;
+  }
+}
+
+void SessionWatcher::DisconnectSession() {
+  if (!caller_task_runner_->BelongsToCurrentThread()) {
+    caller_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&SessionWatcher::DisconnectSession, this));
+    return;
+  }
+
+  if (client_session_control_)
+    client_session_control_->DisconnectSession();
+}
+
+OSStatus SessionWatcher::SessionActivateHandler(EventHandlerCallRef handler,
+                                                EventRef event,
+                                                void* user_data) {
+  static_cast<SessionWatcher*>(user_data)->DisconnectSession();
   return noErr;
 }
 
-void CurtainModeMac::OnSessionActivate() {
-  on_session_activate_.Run();
+}  // namespace
+
+namespace remoting {
+
+class CurtainModeMac : public CurtainMode {
+ public:
+  CurtainModeMac(
+      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      base::WeakPtr<ClientSessionControl> client_session_control);
+  virtual ~CurtainModeMac();
+
+  // Overriden from CurtainMode.
+  virtual bool Activate() OVERRIDE;
+
+ private:
+  scoped_refptr<SessionWatcher> session_watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(CurtainModeMac);
+};
+
+CurtainModeMac::CurtainModeMac(
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control)
+    : session_watcher_(new SessionWatcher(caller_task_runner,
+                                          ui_task_runner,
+                                          client_session_control)) {
 }
 
-bool CurtainModeMac::InstallEventHandler() {
-  OSStatus result = noErr;
-  if (!event_handler_) {
-    EventTypeSpec event;
-    event.eventClass = kEventClassSystem;
-    event.eventKind = kEventSystemUserSessionActivated;
-    result = ::InstallApplicationEventHandler(
-        NewEventHandlerUPP(SessionActivateHandler), 1, &event, this,
-        &event_handler_);
-  }
-  return result == noErr;
+CurtainModeMac::~CurtainModeMac() {
+  session_watcher_->Stop();
 }
 
-bool CurtainModeMac::RemoveEventHandler() {
-  OSStatus result = noErr;
-  if (event_handler_) {
-    result = ::RemoveEventHandler(event_handler_);
-    event_handler_ = NULL;
-  }
-  return result == noErr;
+bool CurtainModeMac::Activate() {
+  session_watcher_->Start();
+  return true;
 }
 
 // static
 scoped_ptr<CurtainMode> CurtainMode::Create(
-    const base::Closure& on_session_activate,
-    const base::Closure& on_error) {
-  return scoped_ptr<CurtainMode>(
-      new CurtainModeMac(on_session_activate, on_error));
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control) {
+  return scoped_ptr<CurtainMode>(new CurtainModeMac(caller_task_runner,
+                                                    ui_task_runner,
+                                                    client_session_control));
 }
 
 }  // namespace remoting

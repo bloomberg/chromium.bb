@@ -5,33 +5,46 @@
 #include "remoting/host/curtain_mode.h"
 
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
+#include "remoting/host/client_session_control.h"
 
 namespace remoting {
 
 class CurtainModeWin : public CurtainMode {
  public:
-  CurtainModeWin(const base::Closure& on_error) : on_error_(on_error) {}
+  CurtainModeWin();
+
   // Overriden from CurtainMode.
-  virtual void SetActivated(bool activated) OVERRIDE {
-    // Curtain-mode is not currently implemented for Windows.
-    if (activated) {
-      LOG(ERROR) << "Curtain-mode is not yet supported on Windows.";
-      on_error_.Run();
-    }
-  }
+  virtual bool Activate() OVERRIDE;
 
  private:
-  base::Closure on_error_;
-
   DISALLOW_COPY_AND_ASSIGN(CurtainModeWin);
 };
 
+CurtainModeWin::CurtainModeWin() {
+}
+
+bool CurtainModeWin::Activate() {
+  DWORD session_id;
+  if (!ProcessIdToSessionId(GetCurrentProcessId(), &session_id)) {
+    LOG_GETLASTERROR(ERROR) << "Failed to map the current PID to session ID";
+    return false;
+  }
+
+  // The current session is curtained if it is not attached to the local
+  // console.
+  return WTSGetActiveConsoleSessionId() != session_id;
+}
+
 // static
 scoped_ptr<CurtainMode> CurtainMode::Create(
-    const base::Closure& on_session_activate,
-    const base::Closure& on_error) {
-  return scoped_ptr<CurtainMode>(
-      new CurtainModeWin(on_error));
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control) {
+  // |client_session_control| is not used because the client session is
+  // disconnected as soon as the session is re-attached to the local console.
+  // See RdpDesktopSession for more details.
+  return scoped_ptr<CurtainMode>(new CurtainModeWin());
 }
 
 }  // namespace remoting

@@ -54,10 +54,15 @@ class DesktopEnvironmentFactory {
  public:
   virtual ~DesktopEnvironmentFactory() {}
 
-  // Creates an instance of |DesktopEnvironment|. |client_session_control| must
-  // outlive |this|.
+  // Creates an instance of |DesktopEnvironment|. Returns a NULL pointer if
+  // the desktop environment could not be created for any reason (if the curtain
+  // failed to active for instance). |client_session_control| must outlive
+  // the created desktop environment.
   virtual scoped_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control) = 0;
+
+  // Enables or disables the curtain mode.
+  virtual void SetEnableCurtaining(bool enable) {}
 
   // Returns |true| if created |DesktopEnvironment| instances support audio
   // capture.

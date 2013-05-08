@@ -30,9 +30,7 @@ It2MeDesktopEnvironment::It2MeDesktopEnvironment(
     const UiStrings& ui_strings)
     : BasicDesktopEnvironment(caller_task_runner,
                               input_task_runner,
-                              ui_task_runner,
-                              client_session_control,
-                              ui_strings) {
+                              ui_task_runner) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
   // Create the local input monitor.
