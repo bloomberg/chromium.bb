@@ -15,13 +15,21 @@ import optparse
 import os
 import shutil
 import sys
+import xml.dom.minidom as minidom
 
 from util import build_utils
 
 
-def CopyXmlResourcesInDir(input_dir, output_dir):
+def CopyXmlResourcesInDir(input_dir, output_dir, only_styles=False):
   """Copy all XML resources from input_dir to output_dir."""
   for input_file in build_utils.FindInDirectory(input_dir, '*.xml'):
+    if only_styles:
+      # If the xml file does not have a style element,
+      # it's not style resource, so skip.
+      dom = minidom.parse(input_file)
+      if not dom.getElementsByTagName('style'):
+        continue
+
     output_path = os.path.join(output_dir,
                                os.path.relpath(input_file, input_dir))
     build_utils.MakeDirectory(os.path.dirname(output_path))
@@ -66,18 +74,21 @@ def main(argv):
     resource_type = dir_pieces[0]
     qualifiers = dir_pieces[1:]
 
-    # We only copy resources under layout*/ and xml*/.
-    if resource_type not in ('layout', 'xml'):
-      continue
-
     # Skip RTL resources because they are not supported by API 14.
     if 'ldrtl' in qualifiers:
       continue
 
-    # Copy all the resource files.
-    input_path = os.path.join(options.res_dir, name)
-    output_path = os.path.join(options.res_v17_dir, name + '-v17')
-    CopyXmlResourcesInDir(input_path, output_path)
+    input_dir = os.path.join(options.res_dir, name)
+    output_dir = os.path.join(options.res_v17_dir, name + '-v17')
+
+    # We only copy resources under layout*/, xml*/,
+    # and style resources under values*/.
+    # TODO(kkimlabs): don't process xml directly once all layouts have
+    # been moved out of XML directory. see http://crbug.com/238458
+    if resource_type in ('layout', 'xml'):
+      CopyXmlResourcesInDir(input_dir, output_dir)
+    elif resource_type in ('values'):
+      CopyXmlResourcesInDir(input_dir, output_dir, only_styles=True)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

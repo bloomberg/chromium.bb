@@ -63,13 +63,35 @@ def IterateXmlElements(node):
       yield child_node_element
 
 
-def GenerateV14Resource(input_filename, output_filename):
-  """Convert resource to API 14 compatible resource.
+def GenerateV14StyleResource(dom, output_file):
+  """Convert style resource to API 14 compatible style resource.
+
+  It's mostly a simple replacement, s/Start/Left s/End/Right,
+  on the attribute names specified by <item> element.
+  """
+  for style_element in dom.getElementsByTagName('style'):
+    for item_element in style_element.getElementsByTagName('item'):
+      namespace, name = item_element.attributes['name'].value.split(':')
+      # Note: namespace == 'android' is not precise because
+      # we are looking for 'http://schemas.android.com/apk/res/android' and
+      # 'android' can be aliased to another name in layout xml files where
+      # this style is used. e.g. xmlns:android="http://crbug.com/".
+      if namespace == 'android' and name in ATTRIBUTES_TO_MAP:
+        mapped_name = ATTRIBUTES_TO_MAP[name]
+        item_element.attributes['name'] = namespace + ':' + mapped_name
+
+  build_utils.MakeDirectory(os.path.dirname(output_file))
+  with open(output_file, 'w') as f:
+    dom.writexml(f, '', '  ', '\n', encoding='utf-8')
+
+
+def GenerateV14LayoutResource(input_file, output_file):
+  """Convert layout resource to API 14 compatible layout resource.
 
   It's mostly a simple replacement, s/Start/Left s/End/Right,
   on the attribute names.
   """
-  dom = minidom.parse(input_filename)
+  dom = minidom.parse(input_file)
 
   for element in IterateXmlElements(dom):
     all_names = element.attributes.keysNS()
@@ -103,17 +125,23 @@ def GenerateV14Resource(input_filename, output_filename):
         # print >> sys.stderror, 'Warning: layout should use xxx instead of yyy'
         pass
 
-  build_utils.MakeDirectory(os.path.dirname(output_filename))
-  with open(output_filename, 'w') as f:
-    dom.writexml(f, '  ', '\n', encoding='utf-8')
+  build_utils.MakeDirectory(os.path.dirname(output_file))
+  with open(output_file, 'w') as f:
+    dom.writexml(f, '', '  ', '\n', encoding='utf-8')
 
 
-def GenerateV14ResourcesInDir(input_dir, output_dir):
+def GenerateV14XmlResourcesInDir(input_dir, output_dir, only_styles=False):
   """Convert resources to API 14 compatible XML resources in the directory."""
   for input_file in build_utils.FindInDirectory(input_dir, '*.xml'):
-    output_path = os.path.join(output_dir,
+    output_file = os.path.join(output_dir,
                                os.path.relpath(input_file, input_dir))
-    GenerateV14Resource(input_file, output_path)
+    if only_styles:
+      dom = minidom.parse(input_file)
+      if not dom.getElementsByTagName('style'):
+        continue
+      GenerateV14StyleResource(dom, output_file)
+    else:
+      GenerateV14LayoutResource(input_file, output_file)
 
 
 def ParseArgs():
@@ -156,18 +184,21 @@ def main(argv):
     resource_type = dir_pieces[0]
     qualifiers = dir_pieces[1:]
 
-    # We only convert resources under layout*/ and xml*/.
-    if resource_type not in ('layout', 'xml'):
-      continue
-
     # Android pre-v17 API doesn't support RTL. Skip.
     if 'ldrtl' in qualifiers:
       continue
 
-    # Convert all the resource files.
-    input_path = os.path.join(options.res_dir, name)
-    output_path = os.path.join(options.res_v14_dir, name)
-    GenerateV14ResourcesInDir(input_path, output_path)
+    input_dir = os.path.join(options.res_dir, name)
+    output_dir = os.path.join(options.res_v14_dir, name)
+
+    # We only convert resources under layout*/, xml*/,
+    # and style resources under values*/.
+    # TODO(kkimlabs): don't process xml directly once all layouts have
+    # been moved out of XML directory. see http://crbug.com/238458
+    if resource_type in ('layout', 'xml'):
+      GenerateV14XmlResourcesInDir(input_dir, output_dir)
+    elif resource_type in ('values'):
+      GenerateV14XmlResourcesInDir(input_dir, output_dir, only_styles=True)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
