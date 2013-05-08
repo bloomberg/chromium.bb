@@ -1127,8 +1127,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
                                      &all_downloads));
 
-  base::FilePath real_path = all_downloads[0]->GetFullPath();
-  base::FilePath fake_path = all_downloads[1]->GetFullPath();
+  base::FilePath real_path = all_downloads[0]->GetTargetFilePath();
+  base::FilePath fake_path = all_downloads[1]->GetTargetFilePath();
 
   EXPECT_EQ(0, file_util::WriteFile(real_path, "", 0));
   ASSERT_TRUE(file_util::PathExists(real_path));
@@ -1141,7 +1141,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     // Use a MockIconExtractorImpl to test if the correct path is being passed
     // into the DownloadFileIconExtractor.
     EXPECT_TRUE(RunFunctionAndReturnString(MockedGetFileIconFunction(
-            (*iter)->GetFullPath(), IconLoader::NORMAL, "hello"),
+            (*iter)->GetTargetFilePath(), IconLoader::NORMAL, "hello"),
         base::StringPrintf("[%d, {\"size\": 32}]", (*iter)->GetId()),
         &result_string));
     EXPECT_STREQ("hello", result_string.c_str());
@@ -1255,7 +1255,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   std::string item0_name, item1_name;
   ASSERT_TRUE(item0_value->GetString("filename", &item0_name));
   ASSERT_TRUE(item1_value->GetString("filename", &item1_name));
-  ASSERT_GT(items[0]->GetFullPath().value(), items[1]->GetFullPath().value());
+  ASSERT_GT(items[0]->GetTargetFilePath().value(),
+            items[1]->GetTargetFilePath().value());
   ASSERT_LT(item0_name, item1_name);
 }
 
@@ -1287,7 +1288,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   std::string item0_name, item1_name;
   ASSERT_TRUE(item0_value->GetString("filename", &item0_name));
   ASSERT_TRUE(item1_value->GetString("filename", &item1_name));
-  ASSERT_GT(items[0]->GetFullPath().value(), items[1]->GetFullPath().value());
+  ASSERT_GT(items[0]->GetTargetFilePath().value(),
+            items[1]->GetTargetFilePath().value());
   ASSERT_GT(item0_name, item1_name);
 }
 
@@ -1395,7 +1397,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(result_list->GetDictionary(0, &item_value));
   base::FilePath::StringType item_name;
   ASSERT_TRUE(item_value->GetString("filename", &item_name));
-  ASSERT_EQ(items[2]->GetFullPath().value(), item_name);
+  ASSERT_EQ(items[2]->GetTargetFilePath().value(), item_name);
 }
 
 // Test that incognito downloads are only visible in incognito contexts, and
@@ -1427,7 +1429,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   DownloadItem* on_item = CreateSlowTestDownload();
   ASSERT_TRUE(on_item);
   on_item_arg = DownloadItemIdAsArgList(on_item);
-  ASSERT_TRUE(on_item->GetFullPath() != off_item->GetFullPath());
+  ASSERT_TRUE(on_item->GetTargetFilePath() != off_item->GetTargetFilePath());
 
   // Extensions running in the incognito window should have access to both
   // items because the Test extension is in spanning mode.
@@ -1440,12 +1442,12 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(result_list->GetDictionary(0, &result_dict));
   ASSERT_TRUE(result_dict->GetString("filename", &filename));
   ASSERT_TRUE(result_dict->GetBoolean("incognito", &is_incognito));
-  EXPECT_TRUE(on_item->GetFullPath() == base::FilePath(filename));
+  EXPECT_TRUE(on_item->GetTargetFilePath() == base::FilePath(filename));
   EXPECT_FALSE(is_incognito);
   ASSERT_TRUE(result_list->GetDictionary(1, &result_dict));
   ASSERT_TRUE(result_dict->GetString("filename", &filename));
   ASSERT_TRUE(result_dict->GetBoolean("incognito", &is_incognito));
-  EXPECT_TRUE(off_item->GetFullPath() == base::FilePath(filename));
+  EXPECT_TRUE(off_item->GetTargetFilePath() == base::FilePath(filename));
   EXPECT_TRUE(is_incognito);
 
   // Extensions running in the on-record window should have access only to the
@@ -1458,7 +1460,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(1UL, result_list->GetSize());
   ASSERT_TRUE(result_list->GetDictionary(0, &result_dict));
   ASSERT_TRUE(result_dict->GetString("filename", &filename));
-  EXPECT_TRUE(on_item->GetFullPath() == base::FilePath(filename));
+  EXPECT_TRUE(on_item->GetTargetFilePath() == base::FilePath(filename));
   ASSERT_TRUE(result_dict->GetBoolean("incognito", &is_incognito));
   EXPECT_FALSE(is_incognito);
 
@@ -1566,10 +1568,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("slow.txt.crdownload").c_str(),
                          GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -1610,10 +1611,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\":%d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("slow.txt.crdownload").c_str(),
                          GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\":%d,"
@@ -1766,10 +1766,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("slow.txt.crdownload").c_str(),
                          GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -1808,10 +1807,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("data.txt.crdownload").c_str(),
                          GetFilename("data.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -1861,10 +1859,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                           "  \"filename\": {"
-                          "    \"previous\": \"%s\","
+                          "    \"previous\": \"\","
                           "    \"current\": \"%s\"}}]",
                           result_id,
-                          GetFilename("file.txt.crdownload").c_str(),
                           GetFilename("file.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -1939,15 +1936,12 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"paused\": false,"
                          "  \"url\": \"%s\"}]",
                          download_url.c_str())));
-  std::string incomplete_filename = GetFilename(
-      "headers-succeed.txt.crdownload");
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         incomplete_filename.c_str(),
                          GetFilename("headers-succeed.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -2066,10 +2060,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("post-succeed.txt.crdownload").c_str(),
                          GetFilename("post-succeed.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -2236,10 +2229,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                           "  \"filename\": {"
-                          "    \"previous\": \"%s\","
+                          "    \"previous\": \"\","
                           "    \"current\": \"%s\"}}]",
                           result_id,
-                          GetFilename("on_record.txt.crdownload").c_str(),
                           GetFilename("on_record.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -2248,7 +2240,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           "    \"current\": \"complete\"}}]",
                           result_id)));
   std::string disk_data;
-  EXPECT_TRUE(file_util::ReadFileToString(item->GetFullPath(), &disk_data));
+  EXPECT_TRUE(file_util::ReadFileToString(item->GetTargetFilePath(),
+                                          &disk_data));
   EXPECT_STREQ(kPayloadData, disk_data.c_str());
 }
 
@@ -2306,10 +2299,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("slow.txt.crdownload").c_str(),
                          GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -2392,7 +2384,7 @@ IN_PROC_BROWSER_TEST_F(
                           "    \"current\": \"complete\"}}]",
                           result_id)));
   EXPECT_EQ(downloads_directory().AppendASCII("overridden.swf"),
-            item->GetFullPath());
+            item->GetTargetFilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -2447,10 +2439,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                           "  \"filename\": {"
-                          "    \"previous\": \"%s\","
+                          "    \"previous\": \"\","
                           "    \"current\": \"%s\"}}]",
                           result_id,
-                          GetFilename("slow.txt.crdownload").c_str(),
                           GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -2512,10 +2503,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
       "[{\"id\": %d,"
       "  \"filename\": {"
-      "    \"previous\": \"%s\","
+      "    \"previous\": \"\","
       "    \"current\": \"%s\"}}]",
       result_id,
-      GetFilename("slow.txt.crdownload").c_str(),
       GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
       "[{\"id\": %d,"
@@ -2578,10 +2568,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
       "[{\"id\": %d,"
       "  \"filename\": {"
-      "    \"previous\": \"%s\","
+      "    \"previous\": \"\","
       "    \"current\": \"%s\"}}]",
       result_id,
-      GetFilename("slow.txt.crdownload").c_str(),
       GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
       "[{\"id\": %d,"
@@ -2643,10 +2632,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
       "[{\"id\": %d,"
       "  \"filename\": {"
-      "    \"previous\": \"%s\","
+      "    \"previous\": \"\","
       "    \"current\": \"%s\"}}]",
       result_id,
-      GetFilename("slow.txt.crdownload").c_str(),
       GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
       "[{\"id\": %d,"
@@ -2708,10 +2696,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("slow.txt.crdownload").c_str(),
                          GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -2773,10 +2760,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("slow.txt.crdownload").c_str(),
                          GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -2839,10 +2825,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                           "  \"filename\": {"
-                          "    \"previous\": \"%s\","
+                          "    \"previous\": \"\","
                           "    \"current\": \"%s\"}}]",
                           result_id,
-                          GetFilename("slow.txt.crdownload").c_str(),
                           GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -2905,10 +2890,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("slow.txt.crdownload").c_str(),
                          GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -2970,10 +2954,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("slow.txt.crdownload").c_str(),
                          GetFilename("slow.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -3029,10 +3012,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("foo.crdownload").c_str(),
                          GetFilename("foo").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -3154,10 +3136,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("42.txt.crdownload").c_str(),
                          GetFilename("42.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -3214,10 +3195,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("5.txt.crdownload").c_str(),
                          GetFilename("5.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -3289,10 +3269,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("42.txt.crdownload").c_str(),
                          GetFilename("42.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -3348,10 +3327,9 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
-                         "    \"previous\": \"%s\","
+                         "    \"previous\": \"\","
                          "    \"current\": \"%s\"}}]",
                          result_id,
-                         GetFilename("42 (1).txt.crdownload").c_str(),
                          GetFilename("42 (1).txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -3440,6 +3418,13 @@ IN_PROC_BROWSER_TEST_F(
       extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error)) << error;
   EXPECT_EQ("", error);
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\": {"
+                         "    \"previous\": \"\","
+                         "    \"current\": \"%s\"}}]",
+                         item->GetId(),
+                         GetFilename("42.txt").c_str())));
 
   content::DownloadUpdatedObserver interrupted(item, base::Bind(
       ItemIsInterrupted));
@@ -3472,14 +3457,6 @@ IN_PROC_BROWSER_TEST_F(
   FinishPendingSlowDownloads();
 
   // The download should complete successfully.
-  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
-      base::StringPrintf("[{\"id\": %d,"
-                         "  \"filename\": {"
-                         "    \"previous\": \"%s\","
-                         "    \"current\": \"%s\"}}]",
-                         item->GetId(),
-                         GetFilename("42.txt.crdownload").c_str(),
-                         GetFilename("42.txt").c_str())));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"state\": {"
