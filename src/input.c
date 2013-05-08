@@ -59,12 +59,11 @@ weston_seat_repick(struct weston_seat *seat)
 						 &pointer->current_x,
 						 &pointer->current_y);
 
-	if (&surface->surface != pointer->current) {
+	if (surface != pointer->current) {
 		interface = pointer->grab->interface;
-		weston_pointer_set_current(pointer, &surface->surface);
-		interface->focus(pointer->grab, &surface->surface,
-				 pointer->current_x,
-				 pointer->current_y);
+		weston_pointer_set_current(pointer, surface);
+		interface->focus(pointer->grab, surface,
+				 pointer->current_x, pointer->current_y);
 	}
 
 	focus = (struct weston_surface *) pointer->grab->focus;
@@ -119,7 +118,7 @@ lose_touch_focus(struct wl_listener *listener, void *data)
 
 static void
 default_grab_focus(struct weston_pointer_grab *grab,
-		   struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y)
+		   struct weston_surface *surface, wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_pointer *pointer = grab->pointer;
 
@@ -239,7 +238,7 @@ default_grab_key(struct weston_keyboard_grab *grab,
 }
 
 static struct wl_resource *
-find_resource_for_surface(struct wl_list *list, struct wl_surface *surface)
+find_resource_for_surface(struct wl_list *list, struct weston_surface *surface)
 {
 	struct wl_resource *r;
 
@@ -402,7 +401,7 @@ seat_send_updated_caps(struct weston_seat *seat)
 
 WL_EXPORT void
 weston_pointer_set_focus(struct weston_pointer *pointer,
-			 struct wl_surface *surface,
+			 struct weston_surface *surface,
 			 wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct weston_keyboard *kbd = pointer->seat->keyboard;
@@ -453,7 +452,7 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 
 WL_EXPORT void
 weston_keyboard_set_focus(struct weston_keyboard *keyboard,
-			  struct wl_surface *surface)
+			  struct weston_surface *surface)
 {
 	struct wl_resource *resource;
 	struct wl_display *display;
@@ -545,7 +544,7 @@ current_surface_destroy(struct wl_listener *listener, void *data)
 
 WL_EXPORT void
 weston_pointer_set_current(struct weston_pointer *pointer,
-			   struct wl_surface *surface)
+			   struct weston_surface *surface)
 {
 	if (pointer->current)
 		wl_list_remove(&pointer->current_listener.link);
@@ -682,7 +681,7 @@ weston_surface_activate(struct weston_surface *surface,
 	struct weston_compositor *compositor = seat->compositor;
 
 	if (seat->keyboard) {
-		weston_keyboard_set_focus(seat->keyboard, &surface->surface);
+		weston_keyboard_set_focus(seat->keyboard, surface);
 		wl_data_device_set_keyboard_focus(seat);
 	}
 
@@ -927,7 +926,7 @@ notify_keyboard_focus_in(struct weston_seat *seat, struct wl_array *keys,
 {
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_keyboard *keyboard = seat->keyboard;
-	struct wl_surface *surface;
+	struct weston_surface *surface;
 	uint32_t *k, serial;
 
 	serial = wl_display_next_serial(compositor->wl_display);
@@ -986,7 +985,7 @@ notify_keyboard_focus_out(struct weston_seat *seat)
 }
 
 static void
-touch_set_focus(struct weston_seat *seat, struct wl_surface *surface)
+touch_set_focus(struct weston_seat *seat, struct weston_surface *surface)
 {
 	struct wl_resource *resource;
 
@@ -1047,7 +1046,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		 * until all touch points are up again. */
 		if (seat->num_tp == 1) {
 			es = weston_compositor_pick_surface(ec, x, y, &sx, &sy);
-			touch_set_focus(seat, &es->surface);
+			touch_set_focus(seat, es);
 		} else if (touch->focus) {
 			es = (struct weston_surface *) touch->focus;
 			weston_surface_from_global_fixed(es, x, y, &sx, &sy);
@@ -1152,7 +1151,7 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 
 	if (surface && surface != seat->sprite) {
 		if (surface->configure) {
-			wl_resource_post_error(&surface->surface.resource,
+			wl_resource_post_error(&surface->resource,
 					       WL_DISPLAY_ERROR_INVALID_OBJECT,
 					       "surface->configure already "
 					       "set");
@@ -1166,7 +1165,7 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 	if (!surface)
 		return;
 
-	wl_signal_add(&surface->surface.resource.destroy_signal,
+	wl_signal_add(&surface->resource.destroy_signal,
 		      &seat->sprite_destroy_listener);
 
 	surface->configure = pointer_cursor_surface_configure;

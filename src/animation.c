@@ -186,8 +186,7 @@ weston_surface_animation_run(struct weston_surface *surface,
 	weston_surface_animation_frame(&animation->animation, NULL, 0);
 
 	animation->listener.notify = handle_animation_surface_destroy;
-	wl_signal_add(&surface->surface.resource.destroy_signal,
-		      &animation->listener);
+	wl_signal_add(&surface->resource.destroy_signal, &animation->listener);
 
 	wl_list_insert(&surface->output->animation_list,
 		       &animation->animation.link);

@@ -39,7 +39,7 @@ struct text_input {
 
 	struct wl_list input_methods;
 
-	struct wl_surface *surface;
+	struct weston_surface *surface;
 
 	pixman_box32_t cursor_rectangle;
 
@@ -794,7 +794,7 @@ handle_keyboard_focus(struct wl_listener *listener, void *data)
 	struct weston_keyboard *keyboard = data;
 	struct input_method *input_method =
 		container_of(listener, struct input_method, keyboard_focus_listener);
-	struct wl_surface *surface = keyboard->focus;
+	struct weston_surface *surface = keyboard->focus;
 
 	if (!input_method->model)
 		return;

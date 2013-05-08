@@ -271,12 +271,12 @@ weston_surface_create(struct weston_compositor *compositor)
 	if (surface == NULL)
 		return NULL;
 
-	wl_signal_init(&surface->surface.resource.destroy_signal);
+	wl_signal_init(&surface->resource.destroy_signal);
 
 	wl_list_init(&surface->link);
 	wl_list_init(&surface->layer_link);
 
-	surface->surface.resource.client = NULL;
+	surface->resource.client = NULL;
 
 	surface->compositor = compositor;
 	surface->alpha = 1.0;
@@ -490,10 +490,10 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	uint32_t left = es->output_mask & different;
 	struct weston_output *output;
 	struct wl_resource *resource = NULL;
-	struct wl_client *client = es->surface.resource.client;
+	struct wl_client *client = es->resource.client;
 
 	es->output_mask = mask;
-	if (es->surface.resource.client == NULL)
+	if (es->resource.client == NULL)
 		return;
 	if (different == 0)
 		return;
@@ -506,9 +506,9 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 		if (resource == NULL)
 			continue;
 		if (1 << output->id & entered)
-			wl_surface_send_enter(&es->surface.resource, resource);
+			wl_surface_send_enter(&es->resource, resource);
 		if (1 << output->id & left)
-			wl_surface_send_leave(&es->surface.resource, resource);
+			wl_surface_send_leave(&es->resource, resource);
 	}
 }
 
@@ -849,7 +849,7 @@ weston_surface_set_transform_parent(struct weston_surface *surface,
 	surface->geometry.parent_destroy_listener.notify =
 		transform_parent_handle_parent_destroy;
 	if (parent) {
-		wl_signal_add(&parent->surface.resource.destroy_signal,
+		wl_signal_add(&parent->resource.destroy_signal,
 			      &surface->geometry.parent_destroy_listener);
 		wl_list_insert(&parent->geometry.child_list,
 			       &surface->geometry.parent_link);
@@ -946,11 +946,9 @@ weston_surface_unmap(struct weston_surface *surface)
 	wl_list_remove(&surface->layer_link);
 
 	wl_list_for_each(seat, &surface->compositor->seat_list, link) {
-		if (seat->keyboard &&
-		    seat->keyboard->focus == &surface->surface)
+		if (seat->keyboard && seat->keyboard->focus == surface)
 			weston_keyboard_set_focus(seat->keyboard, NULL);
-		if (seat->pointer &&
-		    seat->pointer->focus == &surface->surface)
+		if (seat->pointer && seat->pointer->focus == surface)
 			weston_pointer_set_focus(seat->pointer,
 						 NULL,
 						 wl_fixed_from_int(0),
@@ -969,8 +967,7 @@ static void
 destroy_surface(struct wl_resource *resource)
 {
 	struct weston_surface *surface =
-		container_of(resource,
-			     struct weston_surface, surface.resource);
+		container_of(resource, struct weston_surface, resource);
 	struct weston_compositor *compositor = surface->compositor;
 	struct weston_frame_callback *cb, *next;
 
@@ -1012,11 +1009,10 @@ WL_EXPORT void
 weston_surface_destroy(struct weston_surface *surface)
 {
 	/* Not a valid way to destroy a client surface */
-	assert(surface->surface.resource.client == NULL);
+	assert(surface->resource.client == NULL);
 
-	wl_signal_emit(&surface->surface.resource.destroy_signal,
-		       &surface->surface.resource);
-	destroy_surface(&surface->surface.resource);
+	wl_signal_emit(&surface->resource.destroy_signal, &surface->resource);
+	destroy_surface(&surface->resource);
 }
 
 static void
@@ -1532,15 +1528,15 @@ compositor_create_surface(struct wl_client *client,
 		return;
 	}
 
-	surface->surface.resource.destroy = destroy_surface;
+	surface->resource.destroy = destroy_surface;
 
-	surface->surface.resource.object.id = id;
-	surface->surface.resource.object.interface = &wl_surface_interface;
-	surface->surface.resource.object.implementation =
+	surface->resource.object.id = id;
+	surface->resource.object.interface = &wl_surface_interface;
+	surface->resource.object.implementation =
 		(void (**)(void)) &surface_interface;
-	surface->surface.resource.data = surface;
+	surface->resource.data = surface;
 
-	wl_client_add_resource(client, &surface->surface.resource);
+	wl_client_add_resource(client, &surface->resource);
 }
 
 static void

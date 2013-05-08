@@ -193,7 +193,7 @@ device_setup_new_drag_surface(struct weston_seat *seat,
 			      struct weston_surface *surface)
 {
 	if (surface->configure) {
-		wl_resource_post_error(&surface->surface.resource,
+		wl_resource_post_error(&surface->resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "surface->configure already set");
 		return 0;
@@ -206,7 +206,7 @@ device_setup_new_drag_surface(struct weston_seat *seat,
 	surface->configure = drag_surface_configure;
 	surface->configure_private = seat;
 
-	wl_signal_add(&surface->surface.resource.destroy_signal,
+	wl_signal_add(&surface->resource.destroy_signal,
 		       &seat->drag_surface_destroy_listener);
 
 	return 1;
@@ -235,7 +235,7 @@ destroy_drag_focus(struct wl_listener *listener, void *data)
 
 static void
 drag_grab_focus(struct weston_pointer_grab *grab,
-		struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y)
+		struct weston_surface *surface, wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_seat *seat =
 		container_of(grab, struct weston_seat, drag_grab);

@@ -211,7 +211,7 @@ struct weston_output {
 struct weston_pointer_grab;
 struct weston_pointer_grab_interface {
 	void (*focus)(struct weston_pointer_grab *grab,
-		      struct wl_surface *surface,
+		      struct weston_surface *surface,
 		      wl_fixed_t x,
 		      wl_fixed_t y);
 	void (*motion)(struct weston_pointer_grab *grab,
@@ -225,7 +225,7 @@ struct weston_pointer_grab_interface {
 struct weston_pointer_grab {
 	const struct weston_pointer_grab_interface *interface;
 	struct weston_pointer *pointer;
-	struct wl_surface *focus;
+	struct weston_surface *focus;
 	wl_fixed_t x, y;
 };
 
@@ -241,7 +241,7 @@ struct weston_keyboard_grab_interface {
 struct weston_keyboard_grab {
 	const struct weston_keyboard_grab_interface *interface;
 	struct weston_keyboard *keyboard;
-	struct wl_surface *focus;
+	struct weston_surface *focus;
 	uint32_t key;
 };
 
@@ -265,7 +265,7 @@ struct weston_touch_grab_interface {
 struct weston_touch_grab {
 	const struct weston_touch_grab_interface *interface;
 	struct weston_touch *touch;
-	struct wl_surface *focus;
+	struct weston_surface *focus;
 };
 
 struct wl_data_offer {
@@ -289,7 +289,7 @@ struct weston_pointer {
 	struct weston_seat *seat;
 
 	struct wl_list resource_list;
-	struct wl_surface *focus;
+	struct weston_surface *focus;
 	struct wl_resource *focus_resource;
 	struct wl_listener focus_listener;
 	uint32_t focus_serial;
@@ -303,7 +303,7 @@ struct weston_pointer {
 	uint32_t grab_time;
 
 	wl_fixed_t x, y;
-	struct wl_surface *current;
+	struct weston_surface *current;
 	struct wl_listener current_listener;
 	wl_fixed_t current_x, current_y;
 
@@ -315,7 +315,7 @@ struct weston_touch {
 	struct weston_seat *seat;
 
 	struct wl_list resource_list;
-	struct wl_surface *focus;
+	struct weston_surface *focus;
 	struct wl_resource *focus_resource;
 	struct wl_listener focus_listener;
 	uint32_t focus_serial;
@@ -334,7 +334,7 @@ void
 weston_pointer_destroy(struct weston_pointer *pointer);
 void
 weston_pointer_set_focus(struct weston_pointer *pointer,
-			 struct wl_surface *surface,
+			 struct weston_surface *surface,
 			 wl_fixed_t sx, wl_fixed_t sy);
 void
 weston_pointer_start_grab(struct weston_pointer *pointer,
@@ -343,7 +343,7 @@ void
 weston_pointer_end_grab(struct weston_pointer *pointer);
 void
 weston_pointer_set_current(struct weston_pointer *pointer,
-			   struct wl_surface *surface);
+			   struct weston_surface *surface);
 
 struct weston_keyboard *
 weston_keyboard_create(void);
@@ -351,7 +351,7 @@ void
 weston_keyboard_destroy(struct weston_keyboard *keyboard);
 void
 weston_keyboard_set_focus(struct weston_keyboard *keyboard,
-			  struct wl_surface *surface);
+			  struct weston_surface *surface);
 void
 weston_keyboard_start_grab(struct weston_keyboard *device,
 			   struct weston_keyboard_grab *grab);
@@ -401,7 +401,7 @@ struct weston_keyboard {
 	struct weston_seat *seat;
 
 	struct wl_list resource_list;
-	struct wl_surface *focus;
+	struct weston_surface *focus;
 	struct wl_resource *focus_resource;
 	struct wl_listener focus_listener;
 	uint32_t focus_serial;
@@ -441,7 +441,7 @@ struct weston_seat {
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 	enum weston_keyboard_modifier modifier_state;
-	struct wl_surface *saved_kbd_focus;
+	struct weston_surface *saved_kbd_focus;
 	struct wl_listener saved_kbd_focus_listener;
 
 	uint32_t selection_serial;
@@ -453,7 +453,7 @@ struct weston_seat {
 	struct wl_client *drag_client;
 	struct wl_data_source *drag_data_source;
 	struct wl_listener drag_data_source_listener;
-	struct wl_surface *drag_focus;
+	struct weston_surface *drag_focus;
 	struct wl_resource *drag_focus_resource;
 	struct wl_listener drag_focus_listener;
 	struct weston_pointer_grab drag_grab;
@@ -618,7 +618,7 @@ struct weston_region {
  */
 
 struct weston_surface {
-	struct wl_surface surface;
+	struct wl_resource resource;
 	struct weston_compositor *compositor;
 	pixman_region32_t clip;
 	pixman_region32_t damage;

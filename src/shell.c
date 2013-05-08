@@ -324,11 +324,11 @@ shell_grab_start(struct shell_grab *grab,
 		      &grab->shsurf_destroy_listener);
 
 	grab->pointer = pointer;
-	grab->grab.focus = &shsurf->surface->surface;
+	grab->grab.focus = shsurf->surface;
 
 	weston_pointer_start_grab(pointer, &grab->grab);
 	desktop_shell_send_grab_cursor(shell->child.desktop_shell, cursor);
-	weston_pointer_set_focus(pointer, &shell->grab_surface->surface,
+	weston_pointer_set_focus(pointer, shell->grab_surface,
 				 wl_fixed_from_int(0), wl_fixed_from_int(0));
 }
 
@@ -498,11 +498,10 @@ static void
 restore_focus_state(struct desktop_shell *shell, struct workspace *ws)
 {
 	struct focus_state *state, *next;
-	struct wl_surface *surface;
+	struct weston_surface *surface;
 
 	wl_list_for_each_safe(state, next, &ws->focus_list, link) {
-		surface = state->keyboard_focus ?
-			&state->keyboard_focus->surface : NULL;
+		surface = state->keyboard_focus;
 
 		weston_keyboard_set_focus(state->seat->keyboard, surface);
 	}
@@ -513,7 +512,7 @@ replace_focus_state(struct desktop_shell *shell, struct workspace *ws,
 		    struct weston_seat *seat)
 {
 	struct focus_state *state;
-	struct wl_surface *surface;
+	struct weston_surface *surface;
 
 	wl_list_for_each(state, &ws->focus_list, link) {
 		if (state->seat == seat) {
@@ -900,8 +899,7 @@ move_surface_to_workspace(struct desktop_shell *shell,
 
 	drop_focus_state(shell, from, surface);
 	wl_list_for_each(seat, &shell->compositor->seat_list, link)
-		if (seat->keyboard &&
-		    seat->keyboard->focus == &surface->surface)
+		if (seat->keyboard && seat->keyboard->focus == surface)
 			weston_keyboard_set_focus(seat->keyboard, NULL);
 
 	weston_surface_damage_below(surface);
@@ -1017,7 +1015,7 @@ bind_workspace_manager(struct wl_client *client,
 
 static void
 noop_grab_focus(struct weston_pointer_grab *grab,
-		struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y)
+		struct weston_surface *surface, wl_fixed_t x, wl_fixed_t y)
 {
 	grab->focus = NULL;
 }
@@ -1101,7 +1099,7 @@ shell_surface_move(struct wl_client *client, struct wl_resource *resource,
 
 	if (seat->pointer->button_count == 0 ||
 	    seat->pointer->grab_serial != serial ||
-	    seat->pointer->focus != &shsurf->surface->surface)
+	    seat->pointer->focus != shsurf->surface)
 		return;
 
 	if (surface_move(shsurf, seat) < 0)
@@ -1228,7 +1226,7 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 
 	if (seat->pointer->button_count == 0 ||
 	    seat->pointer->grab_serial != serial ||
-	    seat->pointer->focus != &shsurf->surface->surface)
+	    seat->pointer->focus != shsurf->surface)
 		return;
 
 	if (surface_resize(shsurf, seat, edges) < 0)
@@ -1237,7 +1235,7 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 
 static void
 busy_cursor_grab_focus(struct weston_pointer_grab *base,
-		       struct wl_surface *surface, int32_t x, int32_t y)
+		       struct weston_surface *surface, int32_t x, int32_t y)
 {
 	struct shell_grab *grab = (struct shell_grab *) base;
 
@@ -1326,7 +1324,7 @@ ping_timeout_handler(void *data)
 	shsurf->unresponsive = 1;
 
 	wl_list_for_each(seat, &shsurf->surface->compositor->seat_list, link)
-		if (seat->pointer->focus == &shsurf->surface->surface)
+		if (seat->pointer->focus == shsurf->surface)
 			set_busy_cursor(shsurf, seat->pointer);
 
 	return 1;
@@ -1421,10 +1419,8 @@ shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 			/* Received pong from previously unresponsive client */
 			wl_list_for_each(seat, &ec->seat_list, link) {
 				pointer = seat->pointer;
-				if (pointer->focus ==
-				    &shell->grab_surface->surface &&
-				    pointer->current ==
-				    &shsurf->surface->surface)
+				if (pointer->focus == shell->grab_surface &&
+				    pointer->current == shsurf->surface)
 					end_busy_cursor(shsurf, pointer);
 			}
 		}
@@ -1918,7 +1914,7 @@ get_shell_seat(struct weston_seat *seat)
 
 static void
 popup_grab_focus(struct weston_pointer_grab *grab,
-		 struct wl_surface *surface,
+		 struct weston_surface *surface,
 		 wl_fixed_t x,
 		 wl_fixed_t y)
 {
@@ -2015,7 +2011,7 @@ add_popup_grab(struct shell_surface *shsurf, struct shell_seat *shseat)
 	struct weston_seat *seat = shseat->seat;
 
 	if (wl_list_empty(&shseat->popup_grab.surfaces_list)) {
-		shseat->popup_grab.client = shsurf->surface->surface.resource.client;
+		shseat->popup_grab.client = shsurf->resource.client;
 		shseat->popup_grab.grab.interface = &popup_grab_interface;
 		/* We must make sure here that this popup was opened after
 		 * a mouse press, and not just by moving around with other
@@ -2190,7 +2186,7 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 
 	wl_signal_init(&shsurf->resource.destroy_signal);
 	shsurf->surface_destroy_listener.notify = shell_handle_surface_destroy;
-	wl_signal_add(&surface->surface.resource.destroy_signal,
+	wl_signal_add(&surface->resource.destroy_signal,
 		      &shsurf->surface_destroy_listener);
 
 	/* init link so its safe to always remove it in destroy_shell_surface */
@@ -2841,7 +2837,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 
 	state->keyboard_focus = es;
 	wl_list_remove(&state->surface_destroy_listener.link);
-	wl_signal_add(&es->surface.resource.destroy_signal,
+	wl_signal_add(&es->resource.destroy_signal,
 		      &state->surface_destroy_listener);
 
 	switch (get_shell_surface_type(es)) {
@@ -3607,7 +3603,7 @@ create_input_panel_surface(struct desktop_shell *shell,
 
 	wl_signal_init(&input_panel_surface->resource.destroy_signal);
 	input_panel_surface->surface_destroy_listener.notify = input_panel_handle_surface_destroy;
-	wl_signal_add(&surface->surface.resource.destroy_signal,
+	wl_signal_add(&surface->resource.destroy_signal,
 		      &input_panel_surface->surface_destroy_listener);
 
 	wl_list_init(&input_panel_surface->link);
@@ -3778,8 +3774,7 @@ switcher_next(struct switcher *switcher)
 		return;
 
 	wl_list_remove(&switcher->listener.link);
-	wl_signal_add(&next->surface.resource.destroy_signal,
-		      &switcher->listener);
+	wl_signal_add(&next->resource.destroy_signal, &switcher->listener);
 
 	switcher->current = next;
 	next->alpha = 1.0;
@@ -4023,7 +4018,7 @@ static void
 force_kill_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 		   void *data)
 {
-	struct wl_surface *focus_surface;
+	struct weston_surface *focus_surface;
 	struct wl_client *client;
 	struct desktop_shell *shell = data;
 	struct weston_compositor *compositor = shell->compositor;

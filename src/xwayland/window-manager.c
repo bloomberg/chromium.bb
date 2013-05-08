@@ -1016,7 +1016,7 @@ weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 		&wm->server->compositor->shell_interface;
 
 	if (seat->pointer->button_count != 1 ||
-	    seat->pointer->focus != &window->surface->surface)
+	    seat->pointer->focus != window->surface)
 		return;
 
 	detail = client_message->data.data32[2];
@@ -1715,7 +1715,7 @@ surface_destroy(struct wl_listener *listener, void *data)
 static struct weston_wm_window *
 get_wm_window(struct weston_surface *surface)
 {
-	struct wl_resource *resource = &surface->surface.resource;
+	struct wl_resource *resource = &surface->resource;
 	struct wl_listener *listener;
 
 	listener = wl_signal_get(&resource->destroy_signal, surface_destroy);
@@ -1852,7 +1852,7 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_xserver *wxs = resource->data;
 	struct weston_wm *wm = wxs->wm;
-	struct wl_surface *surface = surface_resource->data;
+	struct weston_surface *surface = surface_resource->data;
 	struct weston_wm_window *window;
 
 	if (client != wxs->client)

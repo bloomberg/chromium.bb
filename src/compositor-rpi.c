@@ -381,7 +381,7 @@ rpi_element_create(struct rpi_output *output, struct weston_surface *surface)
 	element->surface = surface;
 	element->surface_destroy_listener.notify =
 		rpi_element_handle_surface_destroy;
-	wl_signal_add(&surface->surface.resource.destroy_signal,
+	wl_signal_add(&surface->resource.destroy_signal,
 		      &element->surface_destroy_listener);
 
 	wl_list_insert(output->element_list.prev, &element->link);
@@ -722,7 +722,7 @@ find_rpi_element_from_surface(struct weston_surface *surface)
 	struct wl_listener *listener;
 	struct rpi_element *element;
 
-	listener = wl_signal_get(&surface->surface.resource.destroy_signal,
+	listener = wl_signal_get(&surface->resource.destroy_signal,
 				 rpi_element_handle_surface_destroy);
 	if (!listener)
 		return NULL;
