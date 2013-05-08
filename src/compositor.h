@@ -444,23 +444,12 @@ struct weston_seat {
 	enum weston_keyboard_modifier modifier_state;
 	struct weston_surface *saved_kbd_focus;
 	struct wl_listener saved_kbd_focus_listener;
+	struct wl_list drag_resource_list;
 
 	uint32_t selection_serial;
 	struct wl_data_source *selection_data_source;
 	struct wl_listener selection_data_source_listener;
 	struct wl_signal selection_signal;
-
-	struct wl_list drag_resource_list;
-	struct wl_client *drag_client;
-	struct wl_data_source *drag_data_source;
-	struct wl_listener drag_data_source_listener;
-	struct weston_surface *drag_focus;
-	struct wl_resource *drag_focus_resource;
-	struct wl_listener drag_focus_listener;
-	struct weston_pointer_grab drag_grab;
-	struct weston_surface *drag_surface;
-	struct wl_listener drag_surface_destroy_listener;
-	int32_t drag_dx, drag_dy;
 
 	uint32_t num_tp;
 
