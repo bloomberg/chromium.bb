@@ -2197,12 +2197,12 @@ void GLRenderer::FinishedReadback(
       for (size_t dest_y = 0; dest_y < total_bytes; dest_y += row_bytes) {
         // Flip Y axis.
         size_t src_y = total_bytes - dest_y - row_bytes;
-        // Swizzle BGRA -> RGBA.
+        // Swizzle OpenGL -> Skia byte order.
         for (size_t x = 0; x < row_bytes; x += 4) {
-          dest_pixels[dest_y + (x + 0)] = src_pixels[src_y + (x + 2)];
-          dest_pixels[dest_y + (x + 1)] = src_pixels[src_y + (x + 1)];
-          dest_pixels[dest_y + (x + 2)] = src_pixels[src_y + (x + 0)];
-          dest_pixels[dest_y + (x + 3)] = src_pixels[src_y + (x + 3)];
+          dest_pixels[dest_y + x + SK_R32_SHIFT/8] = src_pixels[src_y + x + 0];
+          dest_pixels[dest_y + x + SK_G32_SHIFT/8] = src_pixels[src_y + x + 1];
+          dest_pixels[dest_y + x + SK_B32_SHIFT/8] = src_pixels[src_y + x + 2];
+          dest_pixels[dest_y + x + SK_A32_SHIFT/8] = src_pixels[src_y + x + 3];
         }
       }
 
