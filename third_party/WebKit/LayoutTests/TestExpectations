@@ -1614,6 +1614,9 @@ crbug.com/238363 fast/history/saves-state-after-fragment-nav.html [ Crash ]
 crbug.com/238363 fast/speech/change-focus.html [ Crash ]
 crbug.com/238363 inspector/timeline/timeline-load.html [ Crash ]
 crbug.com/238363 virtual/softwarecompositing/overflow/overflow-hidden-canvas-layer.html [ Crash ]
+crbug.com/238363 [ Debug ] fast/forms/suggestion-picker/date-suggestion-picker-key-operations.html [ Crash ]
+crbug.com/238363 [ Debug ] fast/forms/suggestion-picker/month-suggestion-picker-key-operations.html [ Crash ]
+crbug.com/238363 [ Debug ] fast/forms/suggestion-picker/week-suggestion-picker-key-operations.html [ Crash ]
 
 # Need rebaselines after landing fix for crbug.com/238644
 crbug.com/238644 compositing/direct-image-compositing.html [ ImageOnlyFailure ]
@@ -1635,18 +1638,6 @@ crbug.com/238644 transforms/3d/point-mapping/3d-point-mapping-origins.html [ Ima
 crbug.com/238644 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ ImageOnlyFailure ]
 crbug.com/238644 transforms/3d/point-mapping/3d-point-mapping.html [ ImageOnlyFailure ]
 crbug.com/238644 virtual/threaded/compositing/visibility/visibility-image-layers.html [ ImageOnlyFailure ]
-
-crbug.com/238813 fast/animation/request-animation-frame-too-rapid.html [ Failure Pass Timeout ]
-crbug.com/238813 fast/animation/request-animation-frame-cancel.html [ Failure Pass Timeout ]
-crbug.com/238813 fast/animation/request-animation-frame-cancel2.html [ Failure Pass Timeout ]
-crbug.com/238813 fast/animation/request-animation-frame-during-modal.html [ Failure Pass Timeout ]
-crbug.com/238813 fast/animation/request-animation-frame-iframe.html [ Failure Pass Timeout ]
-crbug.com/238813 fast/animation/request-animation-frame-iframe2.html [ Failure Pass Timeout ]
-crbug.com/238813 fast/animation/request-animation-frame-prefix.html [ Failure Pass Timeout ]
-crbug.com/238813 fast/animation/request-animation-frame-timestamps-advance.html [ Failure Pass Timeout ]
-crbug.com/238813 fast/animation/request-animation-frame-timestamps.html [ Failure Pass Timeout ]
-crbug.com/238813 fast/animation/request-animation-frame-within-callback.html [ Failure Pass Timeout ]
-crbug.com/238813 fast/animation/request-animation-frame.html [ Failure Pass Timeout ]
 
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/clip-text-in-hidpi.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/device-scale-factor-paint.html [ Pass Timeout ]
