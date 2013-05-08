@@ -28,11 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/ime-api/
-[
-  NoInterfaceObject,
-  ImplementationLacksVTable
-] interface Composition {
-    readonly attribute Node text;
-    readonly attribute Range caret;
-};
+#include "config.h"
+#include "core/html/ime/Composition.h"
+
+#include "core/dom/Node.h"
+#include "core/dom/Range.h"
+
+namespace WebCore {
+
+Composition::~Composition()
+{
+}
+
+PassRefPtr<Composition> Composition::create(Node* text, Range* caret)
+{
+    return adoptRef(new Composition(text, caret));
+}
+
+Composition::Composition(Node* text, Range* caret)
+    : m_text(text)
+    , m_caret(caret)
+{
+}
+
+} // namespace WebCore

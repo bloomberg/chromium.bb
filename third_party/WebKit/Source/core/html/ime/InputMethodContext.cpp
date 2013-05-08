@@ -29,21 +29,22 @@
  */
 
 #include "config.h"
-#include "modules/inputmethod/InputMethodContext.h"
+#include "core/html/ime/InputMethodContext.h"
 
 #include "core/html/HTMLElement.h"
-#include "modules/inputmethod/Composition.h"
+#include "core/html/ime/Composition.h"
 
 namespace WebCore {
 
-PassRefPtr<InputMethodContext> InputMethodContext::create()
+PassOwnPtr<InputMethodContext> InputMethodContext::create(HTMLElement* element)
 {
-    return adoptRef(new InputMethodContext());
+    return adoptPtr(new InputMethodContext(element));
 }
 
-InputMethodContext::InputMethodContext()
+InputMethodContext::InputMethodContext(HTMLElement* element)
     : m_enabled(false)
     , m_composition(0)
+    , m_element(element)
 {
 }
 

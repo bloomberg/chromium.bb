@@ -28,39 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InputMethodContext_h
-#define InputMethodContext_h
-
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
-
-namespace WebCore {
-
-class Composition;
-class Node;
-
-class InputMethodContext : public RefCounted<InputMethodContext> {
-public:
-    static PassRefPtr<InputMethodContext> create();
-    ~InputMethodContext();
-
-    Composition* composition() const;
-    bool enabled() const;
-    void setEnabled(bool);
-    String locale() const;
-    void confirmComposition();
-    void setCaretRectangle(Node* anchor, int x, int y, int w, int h);
-    void setExclusionRectangle(Node* anchor, int x, int y, int w, int h);
-    bool open();
-
-private:
-    InputMethodContext();
-    bool m_enabled;
-    RefPtr<Composition> m_composition;
+// http://www.w3.org/TR/ime-api/
+[
+    NoInterfaceObject,
+    ImplementationLacksVTable
+] interface Composition {
+    readonly attribute Node text;
+    readonly attribute Range caret;
 };
-
-} // namespace WebCore
-
-#endif // InputMethodContext_h

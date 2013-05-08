@@ -41,7 +41,7 @@ struct SameSizeAsElementRareData : NodeRareData {
     unsigned bitfields;
     LayoutSize sizeForResizing;
     IntSize scrollOffset;
-    void* pointers[8];
+    void* pointers[9];
 };
 
 COMPILE_ASSERT(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData), ElementRareDataShouldStaySmall);

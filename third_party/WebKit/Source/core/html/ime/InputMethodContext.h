@@ -28,27 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/inputmethod/Composition.h"
+#ifndef InputMethodContext_h
+#define InputMethodContext_h
 
-#include "core/dom/Node.h"
-#include "core/dom/Range.h"
+#include "core/html/HTMLElement.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-Composition::~Composition()
-{
-}
+class Composition;
+class Node;
 
-PassRefPtr<Composition> Composition::create(Node* text, Range* caret)
-{
-  return adoptRef(new Composition(text, caret));
-}
+class InputMethodContext {
+public:
+    static PassOwnPtr<InputMethodContext> create(HTMLElement*);
+    ~InputMethodContext();
 
-Composition::Composition(Node* text, Range* caret)
-    : m_text(text)
-    , m_caret(caret)
-{
-}
+    void ref() { m_element->ref(); }
+    void deref() { m_element->deref(); }
+
+    Composition* composition() const;
+    bool enabled() const;
+    void setEnabled(bool);
+    String locale() const;
+    void confirmComposition();
+    void setCaretRectangle(Node* anchor, int x, int y, int w, int h);
+    void setExclusionRectangle(Node* anchor, int x, int y, int w, int h);
+    bool open();
+
+private:
+    InputMethodContext(HTMLElement*);
+    bool m_enabled;
+    RefPtr<Composition> m_composition;
+    HTMLElement* m_element;
+};
 
 } // namespace WebCore
+
+#endif // InputMethodContext_h

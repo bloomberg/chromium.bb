@@ -2912,6 +2912,11 @@ void Element::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_elementData, "elementData");
 }
 
+InputMethodContext* Element::getInputContext()
+{
+    return ensureElementRareData()->ensureInputMethodContext(toHTMLElement(this));
+}
+
 #if ENABLE(SVG)
 bool Element::hasPendingResources() const
 {

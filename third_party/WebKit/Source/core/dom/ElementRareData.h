@@ -29,12 +29,14 @@
 #include "core/dom/NodeRareData.h"
 #include "core/dom/PseudoElement.h"
 #include "core/html/ClassList.h"
+#include "core/html/ime/InputMethodContext.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {
 
 class Animation;
+class HTMLElement;
 
 class ElementRareData : public NodeRareData {
 public:
@@ -136,6 +138,13 @@ public:
     void setHasPendingResources(bool has) { m_hasPendingResources = has; }
 #endif
 
+    InputMethodContext* ensureInputMethodContext(HTMLElement* element)
+    {
+        if (!m_inputMethodContext)
+            m_inputMethodContext = InputMethodContext::create(element);
+        return m_inputMethodContext.get();
+    }
+
 private:
     short m_tabIndex;
     unsigned short m_childIndex;
@@ -168,6 +177,7 @@ private:
     OwnPtr<ClassList> m_classList;
     OwnPtr<ElementShadow> m_shadow;
     OwnPtr<NamedNodeMap> m_attributeMap;
+    OwnPtr<InputMethodContext> m_inputMethodContext;
 
     OwnPtr<Vector<Animation*> > m_activeAnimations;
 
