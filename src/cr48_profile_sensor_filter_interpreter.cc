@@ -37,7 +37,7 @@ Cr48ProfileSensorFilterInterpreter::Cr48ProfileSensorFilterInterpreter(
 void Cr48ProfileSensorFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
 
-  if (hwprops_->support_semi_mt) {
+  if (hwprops_.support_semi_mt) {
     if (interpreter_enabled_.val_) {
       if (bounding_box_.val_)
         EnforceBoundingBoxFormat(hwstate);

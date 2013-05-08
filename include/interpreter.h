@@ -76,7 +76,7 @@ class Interpreter {
  protected:
   scoped_ptr<ActivityLog> log_;
   GestureConsumer* consumer_;
-  const HardwareProperties* hwprops_;
+  HardwareProperties hwprops_;
   Metrics* metrics_;
   scoped_ptr<Metrics> own_metrics_;
   bool requires_metrics_;

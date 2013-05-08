@@ -1022,7 +1022,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
       }
 
       // Scrolling detection for T5R2 devices
-      if ((hwprops_->supports_t5r2 || hwprops_->support_semi_mt) &&
+      if ((hwprops_.supports_t5r2 || hwprops_.support_semi_mt) &&
           (hwstate.touch_cnt > 2)) {
         current_gesture_type_ = kGestureTypeScroll;
         return;
@@ -1091,7 +1091,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
 
       if ((current_gesture_type_ == kGestureTypeMove ||
            current_gesture_type_ == kGestureTypeNull) &&
-          (pinch_enable_.val_ && !hwprops_->support_semi_mt)) {
+          (pinch_enable_.val_ && !hwprops_.support_semi_mt)) {
         bool do_pinch = UpdatePinchState(hwstate, false);
         if(do_pinch) {
           current_gesture_type_ = kGestureTypePinch;
@@ -1819,7 +1819,7 @@ bool ImmediateInterpreter::FingerTooCloseToTap(const HardwareState& hwstate,
 bool ImmediateInterpreter::FingerInDampenedZone(
     const FingerState& finger) const {
   // TODO(adlr): cache thresh
-  float thresh = hwprops_->bottom - bottom_zone_size_.val_;
+  float thresh = hwprops_.bottom - bottom_zone_size_.val_;
   return finger.position_y > thresh;
 }
 
@@ -1850,7 +1850,7 @@ int ImmediateInterpreter::EvaluateButtonType(
                            button_max_dist_from_expected_.val_;
 
   // Handle T5R2/SemiMT touchpads
-  if ((hwprops_->supports_t5r2 || hwprops_->support_semi_mt) &&
+  if ((hwprops_.supports_t5r2 || hwprops_.support_semi_mt) &&
       hwstate.touch_cnt >= 2) {
     if (hwstate.touch_cnt - thumb_.size() == 3 &&
         three_finger_click_enable_.val_ && t5r2_three_finger_click_enable_.val_)
@@ -2320,7 +2320,7 @@ void ImmediateInterpreter::Initialize(const HardwareProperties* hwprops,
                                       MetricsProperties* mprops,
                                       GestureConsumer* consumer) {
   Interpreter::Initialize(hwprops, metrics, mprops, consumer);
-  state_buffer_.Reset(hwprops_->max_finger_cnt);
+  state_buffer_.Reset(hwprops_.max_finger_cnt);
 }
 
 bool AnyGesturingFingerLeft(const HardwareState& state,

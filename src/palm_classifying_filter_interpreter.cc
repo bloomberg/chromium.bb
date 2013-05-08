@@ -147,12 +147,12 @@ bool PalmClassifyingFilterInterpreter::FingerInPalmEnvelope(
       (fs.pressure / palm_pressure_.val_) *
       (palm_edge_width_.val_ - palm_edge_min_width_.val_);
   return fs.position_x < limit ||
-      fs.position_x > (hwprops_->right - limit);
+      fs.position_x > (hwprops_.right - limit);
 }
 
 bool PalmClassifyingFilterInterpreter::FingerInBottomArea(
     const FingerState& fs) {
-  return fs.position_y > (hwprops_->bottom - palm_edge_min_width_.val_);
+  return fs.position_y > (hwprops_.bottom - palm_edge_min_width_.val_);
 }
 
 void PalmClassifyingFilterInterpreter::UpdatePalmState(
