@@ -167,20 +167,44 @@ void WebstoreInlineInstaller::WebContentsDestroyed(
 bool WebstoreInlineInstaller::IsRequestorURLInVerifiedSite(
     const GURL& requestor_url,
     const std::string& verified_site) {
-  // Turn the verified site (which may be a bare domain, or have a port and/or a
-  // path) into a URL that can be parsed by URLPattern.
-  std::string verified_site_url =
-      base::StringPrintf(
-          "http://*.%s%s",
-          verified_site.c_str(),
-          verified_site.find('/') == std::string::npos ? "/*" : "*");
+  // Turn the verified site into a URL that can be parsed by URLPattern.
+  // |verified_site| must follow the format:
+  //
+  // [scheme://]host[:port][/path/specifier]
+  //
+  // If scheme is omitted, URLPattern will match against either an
+  // HTTP or HTTPS requestor. If scheme is specified, it must be either HTTP
+  // or HTTPS, and URLPattern will only match the scheme specified.
+  GURL verified_site_url(verified_site);
+  int valid_schemes = URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS;
+  if (!verified_site_url.is_valid() || !verified_site_url.IsStandard())
+    // If no scheme is specified, GURL will fail to parse the string correctly.
+    // It will either determine that the URL is invalid, or parse a
+    // host:port/path as scheme:host/path.
+    verified_site_url = GURL("http://" + verified_site);
+  else if (verified_site_url.SchemeIs("http"))
+    valid_schemes = URLPattern::SCHEME_HTTP;
+  else if (verified_site_url.SchemeIs("https"))
+    valid_schemes = URLPattern::SCHEME_HTTPS;
+  else
+    return false;
 
-  URLPattern verified_site_pattern(
-      URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS);
+  std::string port_spec =
+      verified_site_url.has_port() ? ":" + verified_site_url.port() : "";
+  std::string path_spec = verified_site_url.path() + "*";
+  std::string verified_site_pattern_spec =
+      base::StringPrintf(
+          "%s://*.%s%s%s",
+          verified_site_url.scheme().c_str(),
+          verified_site_url.host().c_str(),
+          port_spec.c_str(),
+          path_spec.c_str());
+
+  URLPattern verified_site_pattern(valid_schemes);
   URLPattern::ParseResult parse_result =
-      verified_site_pattern.Parse(verified_site_url);
+      verified_site_pattern.Parse(verified_site_pattern_spec);
   if (parse_result != URLPattern::PARSE_SUCCESS) {
-    DLOG(WARNING) << "Could not parse " << verified_site_url <<
+    DLOG(WARNING) << "Could not parse " << verified_site_pattern_spec <<
         " as URL pattern " << parse_result;
     return false;
   }

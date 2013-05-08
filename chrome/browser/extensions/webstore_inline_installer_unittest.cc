@@ -180,6 +180,22 @@ TEST_F(WebstoreInlineInstallerTest, DomainVerification) {
   EXPECT_TRUE(TestSingleVerifiedSite(
       "http://example.com:123/path/page.html", "example.com:123/path"));
 
+  // Match specific valid schemes
+  EXPECT_TRUE(TestSingleVerifiedSite("http://example.com",
+                                     "http://example.com"));
+  EXPECT_TRUE(TestSingleVerifiedSite("https://example.com",
+                                     "https://example.com"));
+
+  // Mismatch specific vaild schemes
+  EXPECT_FALSE(TestSingleVerifiedSite("https://example.com",
+                                      "http://example.com"));
+  EXPECT_FALSE(TestSingleVerifiedSite("http://example.com",
+                                      "https://example.com"));
+
+  // Invalid scheme spec
+  EXPECT_FALSE(TestSingleVerifiedSite("file://example.com",
+                                      "file://example.com"));
+
   std::vector<std::string> verified_sites;
   verified_sites.push_back("foo.example.com");
   verified_sites.push_back("bar.example.com:123");
