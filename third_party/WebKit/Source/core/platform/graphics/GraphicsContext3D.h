@@ -44,21 +44,13 @@
 #undef NO_ERROR
 #endif
 
-typedef void* PlatformGraphicsContext3D;
-typedef void* PlatformGraphicsSurface3D;
-
 class GrContext;
-
-// These are currently the same among all implementations.
-const PlatformGraphicsContext3D NullPlatformGraphicsContext3D = 0;
-const Platform3DObject NullPlatform3DObject = 0;
 
 namespace WebCore {
 class DrawingBuffer;
 class Extensions3D;
 class Image;
 class ImageBuffer;
-class ImageSource;
 class ImageData;
 class IntRect;
 class IntSize;
@@ -433,24 +425,13 @@ public:
     static PassRefPtr<GraphicsContext3D> createForCurrentGLContext();
     ~GraphicsContext3D();
 
-    PlatformGraphicsContext3D platformGraphicsContext3D() const;
-    Platform3DObject platformTexture() const;
     GrContext* grContext();
-    PlatformLayer* platformLayer() const;
     bool makeContextCurrent();
-
-    // With multisampling on, blit from multisampleFBO to regular FBO.
-    void prepareTexture();
-
-    // Equivalent to ::glTexImage2D(). Allows pixels==0 with no allocation.
-    void texImage2DDirect(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height, GC3Dint border, GC3Denum format, GC3Denum type, const void* pixels);
 
     // Helper to texImage2D with pixel==0 case: pixels are initialized to 0.
     // Return true if no GL error is synthesized.
     // By default, alignment is 4, the OpenGL default setting.
     bool texImage2DResourceSafe(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height, GC3Dint border, GC3Denum format, GC3Denum type, GC3Dint alignment = 4);
-
-    bool isGLES2Compliant() const;
 
     //----------------------------------------------------------------------
     // Helpers for texture uploading and pixel readback.
@@ -730,8 +711,6 @@ public:
     // determine this.
     Extensions3D* getExtensions();
 
-    IntSize getInternalFramebufferSize() const;
-
     static unsigned getClearBitsByAttachmentType(GC3Denum);
     static unsigned getClearBitsByFormat(GC3Denum);
 
@@ -811,46 +790,7 @@ private:
     // Destination data will have no gaps between rows.
     static bool packPixels(const uint8_t* sourceData, DataFormat sourceDataFormat, unsigned width, unsigned height, unsigned sourceUnpackAlignment, unsigned destinationFormat, unsigned destinationType, AlphaOp, void* destinationData, bool flipY);
 
-    bool reshapeFBOs(const IntSize&);
-    void resolveMultisamplingIfNecessary(const IntRect& = IntRect());
-
-    int m_currentWidth, m_currentHeight;
     bool isResourceSafe();
-
-    Vector<Vector<float> > m_vertexArray;
-
-    GC3Duint m_texture;
-    GC3Duint m_compositorTexture;
-    GC3Duint m_fbo;
-
-    GC3Duint m_depthBuffer;
-    GC3Duint m_stencilBuffer;
-    GC3Duint m_depthStencilBuffer;
-
-    bool m_layerComposited;
-    GC3Duint m_internalColorFormat;
-
-    struct GraphicsContext3DState {
-        GraphicsContext3DState()
-            : boundFBO(0)
-            , activeTexture(GraphicsContext3D::TEXTURE0)
-            , boundTexture0(0)
-        { }
-
-        GC3Duint boundFBO;
-        GC3Denum activeTexture;
-        GC3Duint boundTexture0;
-    };
-
-    GraphicsContext3DState m_state;
-
-    // For multisampling
-    GC3Duint m_multisampleFBO;
-    GC3Duint m_multisampleDepthStencilBuffer;
-    GC3Duint m_multisampleColorBuffer;
-
-    // Errors raised by synthesizeGLError().
-    ListHashSet<GC3Denum> m_syntheticErrors;
 
     friend class GraphicsContext3DPrivate;
     OwnPtr<GraphicsContext3DPrivate> m_private;

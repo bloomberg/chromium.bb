@@ -425,33 +425,12 @@ PassRefPtr<GraphicsContext3D> GraphicsContext3D::create(GraphicsContext3D::Attri
     return GraphicsContext3DPrivate::createGraphicsContextFromWebContext(webContext.release(), attrs.preserveDrawingBuffer);
 }
 
-PlatformGraphicsContext3D GraphicsContext3D::platformGraphicsContext3D() const
-{
-    return m_private->webContext();
-}
-
-Platform3DObject GraphicsContext3D::platformTexture() const
-{
-    return m_private->webContext()->getPlatformTextureId();
-}
-
 GrContext* GraphicsContext3D::grContext()
 {
     return m_private->grContext();
 }
 
-PlatformLayer* GraphicsContext3D::platformLayer() const
-{
-    return 0;
-}
-
 DELEGATE_TO_WEBCONTEXT_R(makeContextCurrent, bool)
-DELEGATE_TO_WEBCONTEXT(prepareTexture)
-
-bool GraphicsContext3D::isGLES2Compliant() const
-{
-    return m_private->webContext()->isGLES2Compliant();
-}
 
 bool GraphicsContext3D::isResourceSafe()
 {
@@ -738,11 +717,6 @@ DELEGATE_TO_WEBCONTEXT_1(synthesizeGLError, GC3Denum)
 Extensions3D* GraphicsContext3D::getExtensions()
 {
     return m_private->getExtensions();
-}
-
-IntSize GraphicsContext3D::getInternalFramebufferSize() const
-{
-    return IntSize(m_private->webContext()->width(), m_private->webContext()->height());
 }
 
 bool GraphicsContext3D::texImage2DResourceSafe(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height, GC3Dint border, GC3Denum format, GC3Denum type, GC3Dint unpackAlignment)

@@ -181,8 +181,9 @@ public:
     virtual void discardBackbufferCHROMIUM() { }
     virtual void ensureBackbufferCHROMIUM() { }
 
+    // FIXME: this api is not used anymore.
     // Query whether it is built on top of compliant GLES2 implementation.
-    virtual bool isGLES2Compliant() = 0;
+    virtual bool isGLES2Compliant() { return true; }
 
     virtual bool setParentContext(WebGraphicsContext3D* parentContext) { return false; }
 
@@ -199,10 +200,11 @@ public:
     // ordering. Returns true on success.
     virtual bool readBackFramebuffer(unsigned char* pixels, size_t bufferSize, WebGLId framebuffer, int width, int height) = 0;
 
+    // FIXME: this api is not used anymore.
     // Returns the id of the texture which is used for storing the contents of
     // the framebuffer associated with this context. This texture is accessible
     // by the gpu-based page compositor.
-    virtual WebGLId getPlatformTextureId() = 0;
+    virtual WebGLId getPlatformTextureId() { return 0; }
 
     // Copies the contents of the off-screen render target used by the WebGL
     // context to the corresponding texture used by the compositor.
