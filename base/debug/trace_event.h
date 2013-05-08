@@ -520,6 +520,7 @@
     INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP, \
         category_group, name, id, TRACE_EVENT_FLAG_NONE, "step", step, \
         arg1_name, arg1_val)
+
 #define TRACE_EVENT_COPY_ASYNC_STEP0(category_group, name, id, step) \
     INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP, \
         category_group, name, id, TRACE_EVENT_FLAG_COPY, "step", step)
@@ -1085,6 +1086,103 @@ static inline void AddTraceEvent(
   AddTraceEventWithThreadIdAndTimestamp(phase, category_group_enabled, name, id,
                                         thread_id, now, flags, arg1_name,
                                         arg1_val.Pass());
+}
+
+template<class ARG1_TYPE>
+static inline void AddTraceEventWithThreadIdAndTimestamp(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    int thread_id,
+    const base::TimeTicks& timestamp,
+    unsigned char flags,
+    const char* arg1_name,
+    ARG1_TYPE arg1_val,
+    const char* arg2_name,
+    scoped_ptr<base::debug::ConvertableToTraceFormat> arg2_val) {
+  const int num_args = 2;
+  const char* arg_names[2] = { arg1_name, arg2_name };
+
+  unsigned char arg_types[2];
+  unsigned long long arg_values[2];
+  SetTraceValue(arg1_val, &arg_types[0], &arg_values[0]);
+  arg_types[1] = TRACE_VALUE_TYPE_CONVERTABLE;
+
+  scoped_ptr<base::debug::ConvertableToTraceFormat> convertable_values[2];
+  convertable_values[1].reset(arg2_val.release());
+
+  TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
+      phase, category_group_enabled, name, id, thread_id, timestamp,
+      num_args, arg_names, arg_types, arg_values, convertable_values, flags);
+}
+
+template<class ARG1_TYPE>
+static inline void AddTraceEvent(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    unsigned char flags,
+    const char* arg1_name,
+    ARG1_TYPE arg1_val,
+    const char* arg2_name,
+    scoped_ptr<base::debug::ConvertableToTraceFormat> arg2_val) {
+  int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
+  base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  AddTraceEventWithThreadIdAndTimestamp(phase, category_group_enabled, name, id,
+                                        thread_id, now, flags,
+                                        arg1_name, arg1_val,
+                                        arg2_name, arg2_val.Pass());
+}
+
+template<class ARG2_TYPE>
+static inline void AddTraceEventWithThreadIdAndTimestamp(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    int thread_id,
+    const base::TimeTicks& timestamp,
+    unsigned char flags,
+    const char* arg1_name,
+    scoped_ptr<base::debug::ConvertableToTraceFormat> arg1_val,
+    const char* arg2_name,
+    ARG2_TYPE arg2_val) {
+  const int num_args = 2;
+  const char* arg_names[2] = { arg1_name, arg2_name };
+
+  unsigned char arg_types[2];
+  unsigned long long arg_values[2];
+  arg_types[0] = TRACE_VALUE_TYPE_CONVERTABLE;
+  arg_values[0] = 0;
+  SetTraceValue(arg2_val, &arg_types[1], &arg_values[1]);
+
+  scoped_ptr<base::debug::ConvertableToTraceFormat> convertable_values[2];
+  convertable_values[0].reset(arg1_val.release());
+
+  TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
+      phase, category_group_enabled, name, id, thread_id, timestamp,
+      num_args, arg_names, arg_types, arg_values, convertable_values, flags);
+}
+
+template<class ARG2_TYPE>
+static inline void AddTraceEvent(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    unsigned char flags,
+    const char* arg1_name,
+    scoped_ptr<base::debug::ConvertableToTraceFormat> arg1_val,
+    const char* arg2_name,
+    ARG2_TYPE arg2_val) {
+  int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
+  base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  AddTraceEventWithThreadIdAndTimestamp(phase, category_group_enabled, name, id,
+                                        thread_id, now, flags,
+                                        arg1_name, arg1_val.Pass(),
+                                        arg2_name, arg2_val);
 }
 
 static inline void AddTraceEventWithThreadIdAndTimestamp(

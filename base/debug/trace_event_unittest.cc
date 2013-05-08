@@ -1738,8 +1738,26 @@ TEST_F(TraceEventTestFixture, ConvertableTypes) {
                "data1", data1.PassAs<base::debug::ConvertableToTraceFormat>(),
                "data2", data2.PassAs<base::debug::ConvertableToTraceFormat>());
 
+
+  scoped_ptr<MyData> convertData1(new MyData());
+  scoped_ptr<MyData> convertData2(new MyData());
+  TRACE_EVENT2(
+      "foo",
+      "string_first",
+      "str",
+      "string value 1",
+      "convert",
+      convertData1.PassAs<base::debug::ConvertableToTraceFormat>());
+  TRACE_EVENT2(
+      "foo",
+      "string_second",
+      "convert",
+      convertData2.PassAs<base::debug::ConvertableToTraceFormat>(),
+      "str",
+      "string value 2");
   EndTraceAndFlush();
 
+  // One arg version.
   DictionaryValue* dict = FindNamePhase("bar", "B");
   ASSERT_TRUE(dict);
 
@@ -1756,8 +1774,10 @@ TEST_F(TraceEventTestFixture, ConvertableTypes) {
   EXPECT_TRUE(convertable_dict->GetInteger("foo", &foo_val));
   EXPECT_EQ(1, foo_val);
 
+  // Two arg version.
   dict = FindNamePhase("baz", "B");
   ASSERT_TRUE(dict);
+
   args_dict = NULL;
   dict->GetDictionary("args", &args_dict);
   ASSERT_TRUE(args_dict);
@@ -1771,8 +1791,45 @@ TEST_F(TraceEventTestFixture, ConvertableTypes) {
   convertable_dict = NULL;
   EXPECT_TRUE(args_dict->Get("data2", &value));
   ASSERT_TRUE(value->GetAsDictionary(&convertable_dict));
-}
 
+  // Convertable with other types.
+  dict = FindNamePhase("string_first", "B");
+  ASSERT_TRUE(dict);
+
+  args_dict = NULL;
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+
+  std::string str_value;
+  EXPECT_TRUE(args_dict->GetString("str", &str_value));
+  EXPECT_STREQ("string value 1", str_value.c_str());
+
+  value = NULL;
+  convertable_dict = NULL;
+  foo_val = 0;
+  EXPECT_TRUE(args_dict->Get("convert", &value));
+  ASSERT_TRUE(value->GetAsDictionary(&convertable_dict));
+  EXPECT_TRUE(convertable_dict->GetInteger("foo", &foo_val));
+  EXPECT_EQ(1, foo_val);
+
+  dict = FindNamePhase("string_second", "B");
+  ASSERT_TRUE(dict);
+
+  args_dict = NULL;
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+
+  EXPECT_TRUE(args_dict->GetString("str", &str_value));
+  EXPECT_STREQ("string value 2", str_value.c_str());
+
+  value = NULL;
+  convertable_dict = NULL;
+  foo_val = 0;
+  EXPECT_TRUE(args_dict->Get("convert", &value));
+  ASSERT_TRUE(value->GetAsDictionary(&convertable_dict));
+  EXPECT_TRUE(convertable_dict->GetInteger("foo", &foo_val));
+  EXPECT_EQ(1, foo_val);
+}
 
 class TraceEventCallbackTest : public TraceEventTestFixture {
  public:
