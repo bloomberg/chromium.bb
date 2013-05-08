@@ -129,6 +129,7 @@ void DocumentRuleSets::appendAuthorStyleSheets(unsigned firstNew, const Vector<R
             // If we can avoid calling resolver->ensureScopeResolver() here, we don't have to include "core/css/StyleResolver.h".
             // https://bugs.webkit.org/show_bug.cgi?id=108890
             resolver->ensureScopeResolver()->ensureRuleSetFor(scope)->addRulesFromSheet(sheet, *medium, resolver, scope);
+            inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
             continue;
         }
         m_authorStyle->addRulesFromSheet(sheet, *medium, resolver);

@@ -91,26 +91,41 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
     if (!inDocument())
         return;
 
+    bool scopedValueChanged = false;
     if (scoped) {
         // As any <style> in a shadow tree is treated as "scoped",
         // need to remove the <style> from its shadow root.
-        if (m_scopedStyleRegistrationState == RegisteredInShadowRoot)
+        if (m_scopedStyleRegistrationState == RegisteredInShadowRoot) {
             unregisterWithScopingNode(containingShadowRoot());
+            scopedValueChanged = true;
+        }
 
-        if (m_scopedStyleRegistrationState != RegisteredAsScoped)
+        if (m_scopedStyleRegistrationState != RegisteredAsScoped) {
             registerWithScopingNode(true);
+            scopedValueChanged = true;
+        }
+
+        if (scopedValueChanged && !document()->parsing() && document()->renderer())
+            document()->styleResolverChanged(DeferRecalcStyle);
         return;
     }
 
     // If the <style> was scoped, need to remove the <style> from the scoping
     // element, i.e. the parent node.
-    if (m_scopedStyleRegistrationState == RegisteredAsScoped)
+    if (m_scopedStyleRegistrationState == RegisteredAsScoped) {
         unregisterWithScopingNode(parentNode());
+        scopedValueChanged = true;
+    }
 
     // As any <style> in a shadow tree is treated as "scoped",
     // need to add the <style> to its shadow root.
-    if (isInShadowTree() && m_scopedStyleRegistrationState != RegisteredInShadowRoot)
+    if (isInShadowTree() && m_scopedStyleRegistrationState != RegisteredInShadowRoot) {
         registerWithScopingNode(false);
+        scopedValueChanged = true;
+    }
+
+    if (scopedValueChanged && !document()->parsing() && document()->renderer())
+        document()->styleResolverChanged(DeferRecalcStyle);
 }
 
 void HTMLStyleElement::finishParsingChildren()
@@ -138,13 +153,6 @@ void HTMLStyleElement::registerWithScopingNode(bool scoped)
         return;
     }
     scope->registerScopedHTMLStyleChild();
-    if (scope->isShadowRoot())
-        scope->shadowHost()->setNeedsStyleRecalc();
-    else
-        scope->setNeedsStyleRecalc();
-    if (inDocument() && !document()->parsing() && document()->renderer())
-        document()->styleResolverChanged(DeferRecalcStyle);
-
     m_scopedStyleRegistrationState = scoped ? RegisteredAsScoped : RegisteredInShadowRoot;
 }
 
@@ -158,10 +166,7 @@ void HTMLStyleElement::unregisterWithScopingNode(ContainerNode* scope)
     if (scope) {
         ASSERT(scope->hasScopedHTMLStyleChild());
         scope->unregisterScopedHTMLStyleChild();
-        scope->setNeedsStyleRecalc();
     }
-    if (inDocument() && !document()->parsing() && document()->renderer())
-        document()->styleResolverChanged(DeferRecalcStyle);
 
     m_scopedStyleRegistrationState = NotRegistered;
 }
@@ -170,9 +175,9 @@ Node::InsertionNotificationRequest HTMLStyleElement::insertedInto(ContainerNode*
 {
     HTMLElement::insertedInto(insertionPoint);
     if (insertionPoint->inDocument()) {
-        StyleElement::insertedIntoDocument(document(), this);
         if (m_scopedStyleRegistrationState == NotRegistered && (scoped() || isInShadowTree()))
             registerWithScopingNode(scoped());
+        StyleElement::insertedIntoDocument(document(), this);
     }
 
     return InsertionDone;
