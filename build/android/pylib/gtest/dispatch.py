@@ -131,8 +131,7 @@ def _RunATestSuite(options, suite_name):
     attached_devices = android_commands.GetAttachedDevices()
 
   if not attached_devices:
-    logging.critical('A device must be attached and online.')
-    return 1
+    raise Exception('A device must be attached and online.')
 
   # Reset the test port allocation. It's important to do it before starting
   # to dispatch any tests.
