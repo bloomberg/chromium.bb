@@ -1478,19 +1478,7 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   const gfx::Size& frame_size = frame_data->size;
   const gfx::Rect& damage_rect = frame_data->damage_rect;
   const TransportDIB::Id& dib_id = frame_data->dib_id;
-
-  scoped_ptr<TransportDIB> dib;
-#if defined(OS_WIN)
-  TransportDIB::Handle my_handle = TransportDIB::DefaultHandleValue();
-  ::DuplicateHandle(host_->GetProcess()->GetHandle(), dib_id.handle,
-                    ::GetCurrentProcess(), &my_handle,
-                    0, FALSE, DUPLICATE_SAME_ACCESS);
-  dib.reset(TransportDIB::Map(my_handle));
-#elif defined(USE_X11)
-  dib.reset(TransportDIB::Map(dib_id.shmkey));
-#else
-  NOTIMPLEMENTED();
-#endif
+  scoped_ptr<TransportDIB> dib(host_->GetProcess()->MapTransportDIB(dib_id));
 
   // Validate the received DIB.
   size_t expected_size = 4 * frame_size.GetArea();

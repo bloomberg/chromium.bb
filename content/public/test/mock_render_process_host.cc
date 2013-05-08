@@ -115,25 +115,29 @@ bool MockRenderProcessHost::Send(IPC::Message* msg) {
   return true;
 }
 
-TransportDIB* MockRenderProcessHost::GetTransportDIB(TransportDIB::Id dib_id) {
-  if (transport_dib_)
-    return transport_dib_;
+TransportDIB* MockRenderProcessHost::MapTransportDIB(TransportDIB::Id dib_id) {
 #if defined(OS_WIN)
   HANDLE duped;
   DuplicateHandle(GetCurrentProcess(), dib_id.handle, GetCurrentProcess(),
                   &duped, 0, TRUE, DUPLICATE_SAME_ACCESS);
-  transport_dib_ = TransportDIB::Map(duped);
+  return TransportDIB::Map(duped);
 #elif defined(OS_MACOSX)
   // On Mac, TransportDIBs are always created in the browser, so we cannot map
   // one from a dib_id.
-  transport_dib_ = TransportDIB::Create(100 * 100 * 4, 0);
+  return TransportDIB::Create(100 * 100 * 4, 0);
 #elif defined(OS_ANDROID)
   // On Android, Handles and Ids are the same underlying type.
-  transport_dib_ = TransportDIB::Map(dib_id);
+  return TransportDIB::Map(dib_id);
 #elif defined(OS_POSIX)
-  transport_dib_ = TransportDIB::Map(dib_id.shmkey);
+  return TransportDIB::Map(dib_id.shmkey);
 #endif
+}
 
+TransportDIB* MockRenderProcessHost::GetTransportDIB(TransportDIB::Id dib_id) {
+  if (transport_dib_)
+    return transport_dib_;
+
+  transport_dib_ = MapTransportDIB(dib_id);
   return transport_dib_;
 }
 

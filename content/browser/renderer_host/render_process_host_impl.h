@@ -88,6 +88,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void DumpHandles() OVERRIDE;
   virtual base::ProcessHandle GetHandle() const OVERRIDE;
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
+  virtual TransportDIB* MapTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual bool InSameStoragePartition(
       StoragePartition* partition) const OVERRIDE;
@@ -263,9 +264,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
     // This is the maximum size of |cached_dibs_|
     MAX_MAPPED_TRANSPORT_DIBS = 3,
   };
-
-  // Map a transport DIB from its Id and return it. Returns NULL on error.
-  TransportDIB* MapTransportDIB(TransportDIB::Id dib_id);
 
   void ClearTransportDIBCache();
   // This is used to clear our cache five seconds after the last use.

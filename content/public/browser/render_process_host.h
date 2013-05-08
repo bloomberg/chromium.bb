@@ -127,6 +127,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // still owns the returned DIB.
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) = 0;
 
+  // Return the TransportDIB for the given id. In contrast to GetTransportDIB,
+  // the caller owns the resulting TransportDIB.
+  virtual TransportDIB* MapTransportDIB(TransportDIB::Id dib_id) = 0;
+
   // Returns the user browser context associated with this renderer process.
   virtual content::BrowserContext* GetBrowserContext() const = 0;
 
