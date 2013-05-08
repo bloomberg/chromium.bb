@@ -377,7 +377,11 @@ void CachedImage::updateImage(bool allDataReceived)
 
 void CachedImage::finishOnePart()
 {
+    if (m_loadingMultipartContent)
+        clear();
     updateImage(true);
+    if (m_loadingMultipartContent)
+        m_data.clear();
     CachedResource::finishOnePart();
 }
 
@@ -390,11 +394,9 @@ void CachedImage::error(CachedResource::Status status)
 
 void CachedImage::responseReceived(const ResourceResponse& response)
 {
-    if (m_loadingMultipartContent) {
-        if (m_data)
-            finishOnePart();
-        clear();
-    } else if (response.isMultipart())
+    if (m_loadingMultipartContent && m_data)
+        finishOnePart();
+    else if (response.isMultipart())
         m_loadingMultipartContent = true;
     CachedResource::responseReceived(response);
 }

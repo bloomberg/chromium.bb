@@ -3675,6 +3675,7 @@
             'platform/chromium/ClipboardChromiumTest.cpp',
             'platform/graphics/chromium/AnimationTranslationUtilTest.cpp',
             'platform/text/DateTimeFormatTest.cpp',
+            'tests/CachedImageTest.cpp',
             'tests/DocumentTimeline.cpp',
             'tests/HeapGraphSerializerTest.cpp',
             'tests/LayoutUnit.cpp',
