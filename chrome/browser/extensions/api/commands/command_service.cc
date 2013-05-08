@@ -23,16 +23,38 @@
 #include "content/public/browser/notification_service.h"
 
 using extensions::Extension;
+using extensions::ExtensionPrefs;
 
 namespace {
 
 const char kExtension[] = "extension";
 const char kCommandName[] = "command_name";
 
+// A preference that indicates that the initial keybindings for the given
+// extension have been set.
+const char kInitialBindingsHaveBeenAssigned[] = "initial_keybindings_set";
+
 std::string GetPlatformKeybindingKeyForAccelerator(
     const ui::Accelerator& accelerator) {
   return extensions::Command::CommandPlatform() + ":" +
          UTF16ToUTF8(accelerator.GetShortcutText());
+}
+
+void SetInitialBindingsHaveBeenAssigned(
+    ExtensionPrefs* prefs, const std::string& extension_id) {
+  prefs->UpdateExtensionPref(extension_id, kInitialBindingsHaveBeenAssigned,
+                             Value::CreateBooleanValue(true));
+}
+
+bool InitialBindingsHaveBeenAssigned(
+    const ExtensionPrefs* prefs, const std::string& extension_id) {
+  bool assigned = false;
+  if (!prefs || !prefs->ReadPrefAsBoolean(extension_id,
+                                          kInitialBindingsHaveBeenAssigned,
+                                          &assigned))
+    return false;
+
+  return assigned;
 }
 
 }  // namespace
@@ -230,6 +252,13 @@ void CommandService::AssignInitialKeybindings(const Extension* extension) {
       CommandsInfo::GetNamedCommands(extension);
   if (!commands)
     return;
+
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
+  if (InitialBindingsHaveBeenAssigned(extension_prefs, extension->id()))
+    return;
+  SetInitialBindingsHaveBeenAssigned(extension_prefs, extension->id());
 
   extensions::CommandMap::const_iterator iter = commands->begin();
   for (; iter != commands->end(); ++iter) {

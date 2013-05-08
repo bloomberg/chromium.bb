@@ -407,5 +407,6 @@ void BrowserActionButton::MaybeUnregisterExtensionCommand(bool only_if_active) {
           &browser_action_command,
           NULL)) {
     GetFocusManager()->UnregisterAccelerator(*keybinding_.get(), this);
+    keybinding_.reset(NULL);
   }
 }

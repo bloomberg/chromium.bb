@@ -184,7 +184,7 @@ const char kPrefFromWebStore[] = "from_webstore";
 // mock App created from a bookmark.
 const char kPrefFromBookmark[] = "from_bookmark";
 
-// A prefrence that indicates whethere the extension was installed as
+// A preference that indicates whether the extension was installed as
 // default apps.
 const char kPrefWasInstalledByDefault[] = "was_installed_by_default";
 

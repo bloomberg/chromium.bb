@@ -1267,6 +1267,7 @@
         'browser/extensions/api/browsing_data/browsing_data_test.cc',
         'browser/extensions/api/cloud_print_private/cloud_print_private_apitest.cc',
         'browser/extensions/api/command_line_private/command_line_private_apitest.cc',
+        'browser/extensions/api/commands/command_service_browsertest.cc',
         'browser/extensions/api/content_settings/content_settings_apitest.cc',
         'browser/extensions/api/context_menus/context_menu_apitest.cc',
         'browser/extensions/api/cookies/cookies_apitest.cc',
