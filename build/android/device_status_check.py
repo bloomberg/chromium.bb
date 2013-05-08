@@ -107,9 +107,14 @@ def CheckForMissingDevices(options, adb_online_devs):
   last_devices = ReadDeviceList('.last_devices')
   missing_devs = list(set(last_devices) - set(adb_online_devs))
 
-  WriteDeviceList('.last_devices', (adb_online_devs + last_devices))
+  all_known_devices = list(set(adb_online_devs) | set(last_devices))
+  WriteDeviceList('.last_devices', all_known_devices)
   WriteDeviceList('.last_missing', missing_devs)
 
+  if not all_known_devices:
+    # This can happen if for some reason the .last_devices file is not
+    # present or if it was empty.
+    return ['No online devices. Have any devices been plugged in?']
   if missing_devs:
     devices_missing_msg = '%d devices not detected.' % len(missing_devs)
     buildbot_report.PrintSummaryText(devices_missing_msg)
