@@ -1,7 +1,5 @@
 // This list is used to generate RuntimeEnabledFeatures.h/cpp which contains
-// a class that stores static enablers for all experimental features. Note that
-// the method names must line up with the JavaScript method they enable for code
-// generation to work properly.
+// a class that stores static enablers for all experimental features.
 //
 // Each feature can be assigned a "status":
 // status=stable -> Enable this in all Blink configurations.  We are committed to these APIs indefinitely.
