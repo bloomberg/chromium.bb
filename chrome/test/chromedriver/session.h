@@ -23,8 +23,8 @@ class DictionaryValue;
 }
 
 class Chrome;
-class DevToolsEventLogger;
 class Status;
+class WebDriverLog;
 class WebView;
 
 struct FrameInfo {
@@ -64,7 +64,8 @@ struct Session {
   int script_timeout;
   std::string prompt_text;
   scoped_ptr<Geoposition> overridden_geoposition;
-  ScopedVector<DevToolsEventLogger> devtools_event_loggers;
+  // Logs that populate from DevTools events.
+  ScopedVector<WebDriverLog> devtools_logs;
   base::ScopedTempDir temp_dir;
   const scoped_ptr<base::DictionaryValue> capabilities;
 

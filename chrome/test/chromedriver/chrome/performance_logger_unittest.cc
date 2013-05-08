@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/chrome/performance_logger.h"
+
+#include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
-#include "base/json/string_escape.h"
-#include "base/stringprintf.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/chrome/devtools_event_logger.h"
+#include "chrome/test/chromedriver/chrome/log.h"
+#include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/stub_devtools_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,6 +63,31 @@ class FakeDevToolsClient : public StubDevToolsClient {
   DevToolsEventListener* listener_;
 };
 
+struct LogEntry {
+  const base::Time timestamp;
+  const Log::Level level;
+  const std::string message;
+
+  LogEntry(const base::Time& timestamp,
+           Log::Level level,
+           const std::string& message)
+      : timestamp(timestamp), level(level), message(message) {}
+};
+
+class FakeLog : public Log {
+ public:
+  virtual void AddEntry(const base::Time& time,
+                        Level level,
+                        const std::string& message) OVERRIDE;
+
+  ScopedVector<LogEntry> entries;
+};
+
+void FakeLog::AddEntry(
+    const base::Time& time, Level level, const std::string& message) {
+  entries.push_back(new LogEntry(time, level, message));
+}
+
 scoped_ptr<DictionaryValue> ParseDictionary(const std::string& json) {
   std::string error;
   scoped_ptr<Value> value(base::JSONReader::ReadAndReturnError(
@@ -80,23 +107,13 @@ scoped_ptr<DictionaryValue> ParseDictionary(const std::string& json) {
   return scoped_ptr<DictionaryValue>(dict->DeepCopy());
 }
 
-void ValidateLogEntry(base::ListValue *entries,
-                      int index,
+void ValidateLogEntry(LogEntry *entry,
                       const char* expect_webview,
-                      const char* expect_method,
-                      const char* expect_level) {
-  const base::DictionaryValue *entry;
-  ASSERT_TRUE(entries->GetDictionary(index, &entry));
-  std::string message_json;
-  ASSERT_TRUE(entry->GetString("message", &message_json));
-  scoped_ptr<base::DictionaryValue> message(ParseDictionary(message_json));
+                      const char* expect_method) {
+  EXPECT_EQ(Log::kLog, entry->level);
+  EXPECT_LT(0, entry->timestamp.ToTimeT());
 
-  std::string level;
-  EXPECT_TRUE(entry->GetString("level", &level));
-  EXPECT_STREQ(expect_level, level.c_str());
-  double timestamp = 0;
-  EXPECT_TRUE(entry->GetDouble("timestamp", &timestamp));
-  EXPECT_LT(0, timestamp);
+  scoped_ptr<base::DictionaryValue> message(ParseDictionary(entry->message));
   std::string webview;
   EXPECT_TRUE(message->GetString("webview", &webview));
   EXPECT_STREQ(expect_webview, webview.c_str());
@@ -108,66 +125,53 @@ void ValidateLogEntry(base::ListValue *entries,
   EXPECT_EQ(0u, params->size());
 }
 
+void ExpectEnableDomains(FakeDevToolsClient& client) {
+  EXPECT_STREQ("Network.enable", client.PopSentCommand().c_str());
+  EXPECT_STREQ("Page.enable", client.PopSentCommand().c_str());
+  EXPECT_STREQ("Timeline.start", client.PopSentCommand().c_str());
+  EXPECT_STREQ("", client.PopSentCommand().c_str());
+}
+
 }  // namespace
 
-TEST(DevToolsEventLogger, OneClientMultiDomains) {
+TEST(PerformanceLogger, OneWebView) {
   FakeDevToolsClient client("webview-1");
-  std::vector<std::string> domains;
-  domains.push_back("Page");
-  domains.push_back("Network");
-  domains.push_back("Timeline");
-  DevToolsEventLogger logger("mylog", domains, "INFO");
+  FakeLog log;
+  PerformanceLogger logger(&log);
 
   client.AddListener(&logger);
   logger.OnConnected(&client);
-  EXPECT_STREQ("Page.enable", client.PopSentCommand().c_str());
-  EXPECT_STREQ("Network.enable", client.PopSentCommand().c_str());
-  EXPECT_STREQ("Timeline.start", client.PopSentCommand().c_str());
-  EXPECT_STREQ("", client.PopSentCommand().c_str());
+  ExpectEnableDomains(client);
   client.TriggerEvent("Network.gaga");
   client.TriggerEvent("Page.ulala");
   client.TriggerEvent("Console.bad");  // Ignore -- different domain.
 
-  scoped_ptr<base::ListValue> entries(logger.GetAndClearLogEntries());
-
-  ASSERT_EQ(2u, entries->GetSize());
-  ValidateLogEntry(entries.get(), 0, "webview-1", "Network.gaga", "INFO");
-  ValidateLogEntry(entries.get(), 1, "webview-1", "Page.ulala", "INFO");
-
-  // Repeat get returns nothing.
-  scoped_ptr<base::ListValue> no_entries(logger.GetAndClearLogEntries());
-  EXPECT_EQ(0u, no_entries->GetSize());
-
-  EXPECT_STREQ("", client.PopSentCommand().c_str());  // No more commands sent.
+  ASSERT_EQ(2u, log.entries.size());
+  ValidateLogEntry(log.entries[0], "webview-1", "Network.gaga");
+  ValidateLogEntry(log.entries[1], "webview-1", "Page.ulala");
 }
 
-TEST(DevToolsEventLogger, MultiClientsOneDomain) {
+TEST(PerformanceLogger, TwoWebViews) {
   FakeDevToolsClient client1("webview-1");
   FakeDevToolsClient client2("webview-2");
-  std::vector<std::string> domains;
-  domains.push_back("Console");
-  DevToolsEventLogger logger("mylog", domains, "INFO");
+  FakeLog log;
+  PerformanceLogger logger(&log);
 
   client1.AddListener(&logger);
   client2.AddListener(&logger);
   logger.OnConnected(&client1);
   logger.OnConnected(&client2);
-  EXPECT_STREQ("Console.enable", client1.PopSentCommand().c_str());
-  EXPECT_STREQ("", client1.PopSentCommand().c_str());
-  EXPECT_STREQ("Console.enable", client2.PopSentCommand().c_str());
-  EXPECT_STREQ("", client2.PopSentCommand().c_str());
+  ExpectEnableDomains(client1);
+  ExpectEnableDomains(client2);
   // OnConnected sends the enable command only to that client, not others.
   client1.ConnectIfNecessary();
-  EXPECT_STREQ("Console.enable", client1.PopSentCommand().c_str());
-  EXPECT_STREQ("", client1.PopSentCommand().c_str());
+  ExpectEnableDomains(client1);
   EXPECT_STREQ("", client2.PopSentCommand().c_str());
 
-  client1.TriggerEvent("Console.gaga1");
-  client2.TriggerEvent("Console.gaga2");
+  client1.TriggerEvent("Page.gaga1");
+  client2.TriggerEvent("Timeline.gaga2");
 
-  scoped_ptr<base::ListValue> entries(logger.GetAndClearLogEntries());
-
-  ASSERT_EQ(2u, entries->GetSize());
-  ValidateLogEntry(entries.get(), 0, "webview-1", "Console.gaga1", "INFO");
-  ValidateLogEntry(entries.get(), 1, "webview-2", "Console.gaga2", "INFO");
+  ASSERT_EQ(2u, log.entries.size());
+  ValidateLogEntry(log.entries[0], "webview-1", "Page.gaga1");
+  ValidateLogEntry(log.entries[1], "webview-2", "Timeline.gaga2");
 }

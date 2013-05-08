@@ -4,9 +4,7 @@
 
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 
-#include "base/logging.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
-#include "chrome/test/chromedriver/chrome/devtools_event_logger.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -57,11 +55,11 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
     if (!found) {
       scoped_ptr<DevToolsClient> client(
           devtools_http_client_->CreateClient(view.id));
-      for (std::list<DevToolsEventLogger*>::const_iterator logger =
-               devtools_event_loggers_.begin();
-           logger != devtools_event_loggers_.end(); ++logger) {
-        client->AddListener(*logger);
-        // Logger's OnConnected will fire when DevToolsClient connects later.
+      for (ScopedVector<DevToolsEventListener>::const_iterator listener =
+               devtools_event_listeners_.begin();
+           listener != devtools_event_listeners_.end(); ++listener) {
+        client->AddListener(*listener);
+        // OnConnected will fire when DevToolsClient connects later.
       }
       web_views_.push_back(make_linked_ptr(new WebViewImpl(
           view.id, client.Pass())));
@@ -142,11 +140,12 @@ ChromeImpl::ChromeImpl(
     scoped_ptr<DevToolsHttpClient> client,
     const std::string& version,
     int build_no,
-    const std::list<DevToolsEventLogger*>& devtools_event_loggers)
+    ScopedVector<DevToolsEventListener>& devtools_event_listeners)
     : devtools_http_client_(client.Pass()),
       version_(version),
-      build_no_(build_no),
-      devtools_event_loggers_(devtools_event_loggers) {}
+      build_no_(build_no) {
+  devtools_event_listeners_.swap(devtools_event_listeners);
+}
 
 Status ChromeImpl::GetDialogManagerForOpenDialog(
     JavaScriptDialogManager** manager) {

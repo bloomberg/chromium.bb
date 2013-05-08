@@ -11,8 +11,8 @@ ChromeAndroidImpl::ChromeAndroidImpl(
     scoped_ptr<DevToolsHttpClient> client,
     const std::string& version,
     int build_no,
-    const std::list<DevToolsEventLogger*>& devtools_event_loggers)
-    : ChromeImpl(client.Pass(), version, build_no, devtools_event_loggers) {}
+    ScopedVector<DevToolsEventListener>& devtools_event_listeners)
+    : ChromeImpl(client.Pass(), version, build_no, devtools_event_listeners) {}
 
 ChromeAndroidImpl::~ChromeAndroidImpl() {}
 

@@ -11,10 +11,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 
 class AutomationExtension;
-class DevToolsEventLogger;
+class DevToolsEventListener;
 class DevToolsHttpClient;
 class JavaScriptDialogManager;
 class Status;
@@ -41,10 +42,11 @@ class ChromeImpl : public Chrome {
       AutomationExtension** extension) OVERRIDE;
 
  protected:
-  ChromeImpl(scoped_ptr<DevToolsHttpClient> client,
-             const std::string& version,
-             int build_no,
-             const std::list<DevToolsEventLogger*>& devtools_event_loggers);
+  ChromeImpl(
+      scoped_ptr<DevToolsHttpClient> client,
+      const std::string& version,
+      int build_no,
+      ScopedVector<DevToolsEventListener>& devtools_event_listeners);
 
   scoped_ptr<DevToolsHttpClient> devtools_http_client_;
 
@@ -58,7 +60,7 @@ class ChromeImpl : public Chrome {
 
   // Web views in this list are in the same order as they are opened.
   WebViewList web_views_;
-  std::list<DevToolsEventLogger*> devtools_event_loggers_;
+  ScopedVector<DevToolsEventListener> devtools_event_listeners_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_IMPL_H_

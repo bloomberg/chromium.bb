@@ -181,7 +181,7 @@ Status LaunchDesktopChrome(
     int port,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
-    const std::list<DevToolsEventLogger*>& devtools_event_loggers,
+    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
   CommandLine command(CommandLine::NO_PROGRAM);
   base::ScopedTempDir user_data_dir;
@@ -248,7 +248,7 @@ Status LaunchDesktopChrome(
     return status;
   }
   chrome->reset(new ChromeDesktopImpl(
-      devtools_client.Pass(), version, build_no, devtools_event_loggers,
+      devtools_client.Pass(), version, build_no, devtools_event_listeners,
       process, &user_data_dir, &extension_dir));
   return Status(kOk);
 }
@@ -258,7 +258,7 @@ Status LaunchAndroidChrome(
     int port,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
-    const std::list<DevToolsEventLogger*>& devtools_event_loggers,
+    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
   // TODO(frankf): Figure out how this should be installed to
   // make this work for all platforms.
@@ -288,7 +288,7 @@ Status LaunchAndroidChrome(
     return status;
 
   chrome->reset(new ChromeAndroidImpl(
-      devtools_client.Pass(), version, build_no, devtools_event_loggers));
+      devtools_client.Pass(), version, build_no, devtools_event_listeners));
   return Status(kOk);
 }
 
@@ -299,16 +299,16 @@ Status LaunchChrome(
     int port,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
-    const std::list<DevToolsEventLogger*>& devtools_event_loggers,
+    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
   if (capabilities.IsAndroid()) {
     return LaunchAndroidChrome(
         context_getter, port, socket_factory, capabilities,
-        devtools_event_loggers, chrome);
+        devtools_event_listeners, chrome);
   } else {
     return LaunchDesktopChrome(
         context_getter, port, socket_factory, capabilities,
-        devtools_event_loggers, chrome);
+        devtools_event_listeners, chrome);
   }
 }
 
