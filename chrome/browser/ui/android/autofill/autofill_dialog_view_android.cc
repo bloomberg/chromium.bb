@@ -678,9 +678,9 @@ AutofillDialogViewAndroid::MBT AutofillDialogViewAndroid::GetMenuItemButtonType(
   if (IsTheAddMenuItem(section, index)) {
     const bool currently_selected =
         index == GetSelectedItemIndexForSection(section);
-    // - shouldn't show any button if not selected;
+    // - should show "Add..."  button if not selected;
     if (!currently_selected)
-      return MENU_ITEM_BUTTON_TYPE_NONE;
+      return MENU_ITEM_BUTTON_TYPE_ADD;
 
     // - should show "Add..." button if selected and doesn't have user data;
     string16 label, sublabel;
