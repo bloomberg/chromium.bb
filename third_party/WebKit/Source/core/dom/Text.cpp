@@ -99,8 +99,6 @@ static const Text* earliestLogicallyAdjacentTextNode(const Text* t)
             continue;
         }
 
-        // We would need to visit EntityReference child text nodes if they existed
-        ASSERT(type != Node::ENTITY_REFERENCE_NODE || !n->hasChildNodes());
         break;
     }
     return t;
@@ -116,8 +114,6 @@ static const Text* latestLogicallyAdjacentTextNode(const Text* t)
             continue;
         }
 
-        // We would need to visit EntityReference child text nodes if they existed
-        ASSERT(type != Node::ENTITY_REFERENCE_NODE || !n->hasChildNodes());
         break;
     }
     return t;

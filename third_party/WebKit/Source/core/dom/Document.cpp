@@ -65,7 +65,6 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementShadow.h"
-#include "core/dom/EntityReference.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventFactory.h"
 #include "core/dom/EventListener.h"
@@ -876,19 +875,6 @@ PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const St
     return ProcessingInstruction::create(this, target, data);
 }
 
-PassRefPtr<EntityReference> Document::createEntityReference(const String& name, ExceptionCode& ec)
-{
-    if (!isValidName(name)) {
-        ec = INVALID_CHARACTER_ERR;
-        return 0;
-    }
-    if (isHTMLDocument()) {
-        ec = NOT_SUPPORTED_ERR;
-        return 0;
-    }
-    return EntityReference::create(this, name);
-}
-
 PassRefPtr<Text> Document::createEditingTextNode(const String& text)
 {
     return Text::createEditingText(this, text);
@@ -913,8 +899,6 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
         return createTextNode(importedNode->nodeValue());
     case CDATA_SECTION_NODE:
         return createCDATASection(importedNode->nodeValue(), ec);
-    case ENTITY_REFERENCE_NODE:
-        return createEntityReference(importedNode->nodeName(), ec);
     case PROCESSING_INSTRUCTION_NODE:
         return createProcessingInstruction(importedNode->nodeName(), importedNode->nodeValue(), ec);
     case COMMENT_NODE:
@@ -985,11 +969,6 @@ PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionCode& ec)
 {
     if (!source) {
         ec = NOT_SUPPORTED_ERR;
-        return 0;
-    }
-
-    if (source->isReadOnlyNode()) {
-        ec = NO_MODIFICATION_ALLOWED_ERR;
         return 0;
     }
 
@@ -2841,7 +2820,6 @@ bool Document::childTypeAllowed(NodeType type) const
     case DOCUMENT_FRAGMENT_NODE:
     case DOCUMENT_NODE:
     case ENTITY_NODE:
-    case ENTITY_REFERENCE_NODE:
     case NOTATION_NODE:
     case TEXT_NODE:
     case XPATH_NAMESPACE_NODE:
@@ -2900,7 +2878,6 @@ bool Document::canReplaceChild(Node* newChild, Node* oldChild)
             case DOCUMENT_FRAGMENT_NODE:
             case DOCUMENT_NODE:
             case ENTITY_NODE:
-            case ENTITY_REFERENCE_NODE:
             case NOTATION_NODE:
             case TEXT_NODE:
             case XPATH_NAMESPACE_NODE:
@@ -2923,7 +2900,6 @@ bool Document::canReplaceChild(Node* newChild, Node* oldChild)
         case DOCUMENT_FRAGMENT_NODE:
         case DOCUMENT_NODE:
         case ENTITY_NODE:
-        case ENTITY_REFERENCE_NODE:
         case NOTATION_NODE:
         case TEXT_NODE:
         case XPATH_NAMESPACE_NODE:

@@ -112,8 +112,6 @@ PASS 'function Element() { [native code] }' is 'function Element() { [native cod
 PASS 'function Element() { [native code] }' is 'function Element() { [native code] }'
 PASS 'function Entity() { [native code] }' is 'function Entity() { [native code] }'
 PASS 'function Entity() { [native code] }' is 'function Entity() { [native code] }'
-PASS 'function EntityReference() { [native code] }' is 'function EntityReference() { [native code] }'
-PASS 'function EntityReference() { [native code] }' is 'function EntityReference() { [native code] }'
 PASS 'function Event() { [native code] }' is 'function Event() { [native code] }'
 PASS 'function Event() { [native code] }' is 'function Event() { [native code] }'
 PASS 'function EventException() { [native code] }' is 'function EventException() { [native code] }'

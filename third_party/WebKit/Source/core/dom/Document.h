@@ -90,7 +90,6 @@ class DocumentSharedObjectPool;
 class DocumentStyleSheetCollection;
 class DocumentType;
 class Element;
-class EntityReference;
 class Event;
 class EventListener;
 class FloatRect;
@@ -313,7 +312,6 @@ public:
     PassRefPtr<ProcessingInstruction> createProcessingInstruction(const String& target, const String& data, ExceptionCode&);
     PassRefPtr<Attr> createAttribute(const String& name, ExceptionCode&);
     PassRefPtr<Attr> createAttributeNS(const String& namespaceURI, const String& qualifiedName, ExceptionCode&, bool shouldIgnoreNamespaceChecks = false);
-    PassRefPtr<EntityReference> createEntityReference(const String& name, ExceptionCode&);
     PassRefPtr<Node> importNode(Node* importedNode, ExceptionCode& ec) { return importNode(importedNode, true, ec); }
     PassRefPtr<Node> importNode(Node* importedNode, bool deep, ExceptionCode&);
     PassRefPtr<Element> createElementNS(const String& namespaceURI, const String& qualifiedName, ExceptionCode&);

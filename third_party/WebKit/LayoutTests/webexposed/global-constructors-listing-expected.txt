@@ -56,7 +56,6 @@ DocumentFragment
 DocumentType
 Element
 Entity
-EntityReference
 Error
 ErrorEvent
 EvalError

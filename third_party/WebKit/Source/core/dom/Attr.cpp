@@ -151,13 +151,7 @@ PassRefPtr<Node> Attr::cloneNode(bool /*deep*/)
 // DOM Section 1.1.1
 bool Attr::childTypeAllowed(NodeType type) const
 {
-    switch (type) {
-        case TEXT_NODE:
-        case ENTITY_REFERENCE_NODE:
-            return true;
-        default:
-            return false;
-    }
+    return TEXT_NODE == type;
 }
 
 void Attr::childrenChanged(bool, Node*, Node*, int)
@@ -166,8 +160,6 @@ void Attr::childrenChanged(bool, Node*, Node*, int)
         return;
 
     invalidateNodeListCachesInAncestors(&qualifiedName(), m_element);
-
-    // FIXME: We should include entity references in the value
 
     StringBuilder valueBuilder;
     for (Node *n = firstChild(); n; n = n->nextSibling()) {

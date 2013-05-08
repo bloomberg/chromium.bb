@@ -4942,7 +4942,6 @@ sub IsDOMNodeType
     return 1 if $type eq 'DocumentType';
     return 1 if $type eq 'Element';
     return 1 if $type eq 'Entity';
-    return 1 if $type eq 'EntityReference';
     return 1 if $type eq 'HTMLDocument';
     return 1 if $type eq 'Node';
     return 1 if $type eq 'Notation';

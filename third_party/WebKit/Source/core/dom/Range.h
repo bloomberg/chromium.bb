@@ -158,7 +158,6 @@ private:
     Node* checkNodeWOffset(Node*, int offset, ExceptionCode&) const;
     void checkNodeBA(Node*, ExceptionCode&) const;
     void checkDeleteExtract(ExceptionCode&);
-    bool containedByReadOnly() const;
     int maxStartOffset() const;
     int maxEndOffset() const;
 

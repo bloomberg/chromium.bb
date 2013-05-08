@@ -35,7 +35,6 @@
     [RaisesException] ProcessingInstruction createProcessingInstruction([Default=Undefined] optional DOMString target,
                                                                                  [Default=Undefined] optional DOMString data);
     [RaisesException] Attr createAttribute([Default=Undefined] optional DOMString name);
-    [RaisesException] EntityReference createEntityReference([Default=Undefined] optional DOMString name);
     [PerWorldBindings] NodeList           getElementsByTagName([Default=Undefined] optional DOMString tagname);
 
     // Introduced in DOM Level 2:

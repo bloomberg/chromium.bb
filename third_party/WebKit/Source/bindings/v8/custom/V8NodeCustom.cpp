@@ -39,7 +39,6 @@
 #include "V8DocumentType.h"
 #include "V8Element.h"
 #include "V8Entity.h"
-#include "V8EntityReference.h"
 #include "V8HTMLElement.h"
 #include "V8Node.h"
 #include "V8Notation.h"
@@ -139,8 +138,6 @@ v8::Handle<v8::Object> wrap(Node* impl, v8::Handle<v8::Object> creationContext, 
         return wrap(toText(impl), creationContext, isolate);
     case Node::CDATA_SECTION_NODE:
         return wrap(static_cast<CDATASection*>(impl), creationContext, isolate);
-    case Node::ENTITY_REFERENCE_NODE:
-        return wrap(static_cast<EntityReference*>(impl), creationContext, isolate);
     case Node::ENTITY_NODE:
         return wrap(static_cast<Entity*>(impl), creationContext, isolate);
     case Node::PROCESSING_INSTRUCTION_NODE:
@@ -156,7 +153,7 @@ v8::Handle<v8::Object> wrap(Node* impl, v8::Handle<v8::Object> creationContext, 
     case Node::NOTATION_NODE:
         return wrap(static_cast<Notation*>(impl), creationContext, isolate);
     default:
-        break; // XPATH_NAMESPACE_NODE
+        break; // ENTITY_REFERENCE_NODE or XPATH_NAMESPACE_NODE
     }
     return V8Node::createWrapper(impl, creationContext, isolate);
 }

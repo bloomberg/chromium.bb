@@ -1,1 +1,2 @@
-XPathEvaluator_evaluate_NOT_SUPPORTED_ERR: Success
+XPathEvaluator_evaluate_NOT_SUPPORTED_ERR
+TypeError: Object #<Document> has no method 'createEntityReference'

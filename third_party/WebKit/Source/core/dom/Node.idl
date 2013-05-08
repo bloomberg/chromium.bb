@@ -29,7 +29,7 @@
     const unsigned short      ATTRIBUTE_NODE                 = 2;
     const unsigned short      TEXT_NODE                      = 3;
     const unsigned short      CDATA_SECTION_NODE             = 4;
-    const unsigned short      ENTITY_REFERENCE_NODE          = 5;
+    const unsigned short      ENTITY_REFERENCE_NODE          = 5; // EntityReference nodes are impossible to create in WebKit.
     const unsigned short      ENTITY_NODE                    = 6;
     const unsigned short      PROCESSING_INSTRUCTION_NODE    = 7;
     const unsigned short      COMMENT_NODE                   = 8;

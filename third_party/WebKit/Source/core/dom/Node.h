@@ -127,7 +127,6 @@ public:
         ATTRIBUTE_NODE = 2,
         TEXT_NODE = 3,
         CDATA_SECTION_NODE = 4,
-        ENTITY_REFERENCE_NODE = 5,
         ENTITY_NODE = 6,
         PROCESSING_INSTRUCTION_NODE = 7,
         COMMENT_NODE = 8,
@@ -137,6 +136,15 @@ public:
         NOTATION_NODE = 12,
         XPATH_NAMESPACE_NODE = 13,
     };
+
+    // EntityReference nodes are deprecated and impossible to create in WebKit.
+    // We want Node.ENTITY_REFERNCE_NODE to exist in JS and this enum, makes the bindings
+    // generation not complain about ENTITY_REFERENCE_NODE being missing from the implementation
+    // while not requiring all switch(NodeType) blocks to include this deprecated constant.
+    enum DeprecatedNodeType {
+        ENTITY_REFERENCE_NODE = 5
+    };
+
     enum DocumentPosition {
         DOCUMENT_POSITION_EQUIVALENT = 0x00,
         DOCUMENT_POSITION_DISCONNECTED = 0x01,
@@ -474,7 +482,6 @@ public:
     bool isInShadowTree() const { return getFlag(IsInShadowTreeFlag); }
     bool isInTreeScope() const { return getFlag(static_cast<NodeFlags>(InDocumentFlag | IsInShadowTreeFlag)); }
 
-    bool isReadOnlyNode() const { return nodeType() == ENTITY_REFERENCE_NODE; }
     bool isDocumentTypeNode() const { return nodeType() == DOCUMENT_TYPE_NODE; }
     virtual bool childTypeAllowed(NodeType) const { return false; }
     unsigned childNodeCount() const;
