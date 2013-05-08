@@ -53,8 +53,9 @@ namespace google_breakpad {
 
 class DumpSymbols {
  public:
-  explicit DumpSymbols(SymbolData symbol_data)
+  DumpSymbols(SymbolData symbol_data, bool handle_inter_cu_refs)
       : symbol_data_(symbol_data),
+        handle_inter_cu_refs_(handle_inter_cu_refs),
         input_pathname_(),
         object_filename_(),
         contents_(),
@@ -134,7 +135,8 @@ class DumpSymbols {
   // on failure, report the problem and return false.
   bool ReadDwarf(google_breakpad::Module *module,
                  const mach_o::Reader &macho_reader,
-                 const mach_o::SectionMap &dwarf_sections) const;
+                 const mach_o::SectionMap &dwarf_sections,
+                 bool handle_inter_cu_refs) const;
 
   // Read DWARF CFI or .eh_frame data from |section|, belonging to
   // |macho_reader|, and record it in |module|.  If |eh_frame| is true,
@@ -148,6 +150,9 @@ class DumpSymbols {
 
   // The selection of what type of symbol data to read/write.
   const SymbolData symbol_data_;
+
+  // Whether to handle references between compilation units.
+  const bool handle_inter_cu_refs_;
 
   // The name of the file or bundle whose symbols this will dump.
   // This is the path given to Read, for use in error messages.

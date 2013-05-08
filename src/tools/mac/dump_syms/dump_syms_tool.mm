@@ -46,15 +46,17 @@ using google_breakpad::DumpSymbols;
 using std::vector;
 
 struct Options {
-  Options() : srcPath(), arch(), cfi(true) { }
+  Options() : srcPath(), arch(), cfi(true), handle_inter_cu_refs(true) { }
   NSString *srcPath;
   const NXArchInfo *arch;
   bool cfi;
+  bool handle_inter_cu_refs;
 };
 
 //=============================================================================
 static bool Start(const Options &options) {
-  DumpSymbols dump_symbols(options.cfi ? ALL_SYMBOL_DATA : NO_CFI);
+  DumpSymbols dump_symbols(options.cfi ? ALL_SYMBOL_DATA : NO_CFI,
+                           options.handle_inter_cu_refs);
 
   if (!dump_symbols.Read(options.srcPath))
     return false;
@@ -97,6 +99,7 @@ static void Usage(int argc, const char *argv[]) {
   fprintf(stderr, "\t-a: Architecture type [default: native, or whatever is\n");
   fprintf(stderr, "\t    in the file, if it contains only one architecture]\n");
   fprintf(stderr, "\t-c: Do not generate CFI section\n");
+  fprintf(stderr, "\t-r: Do not handle inter-compilation unit references\n");
   fprintf(stderr, "\t-h: Usage\n");
   fprintf(stderr, "\t-?: Usage\n");
 }
@@ -106,7 +109,7 @@ static void SetupOptions(int argc, const char *argv[], Options *options) {
   extern int optind;
   signed char ch;
 
-  while ((ch = getopt(argc, (char * const *)argv, "a:ch?")) != -1) {
+  while ((ch = getopt(argc, (char * const *)argv, "a:chr?")) != -1) {
     switch (ch) {
       case 'a': {
         const NXArchInfo *arch_info =
@@ -121,6 +124,9 @@ static void SetupOptions(int argc, const char *argv[], Options *options) {
       }
       case 'c':
         options->cfi = false;
+        break;
+      case 'r':
+        options->handle_inter_cu_refs = false;
         break;
       case '?':
       case 'h':

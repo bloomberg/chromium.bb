@@ -253,7 +253,8 @@ class DumpSymbols::DumperLineToModule:
 
 bool DumpSymbols::ReadDwarf(google_breakpad::Module *module,
                             const mach_o::Reader &macho_reader,
-                            const mach_o::SectionMap &dwarf_sections) const {
+                            const mach_o::SectionMap &dwarf_sections,
+                            bool handle_inter_cu_refs) const {
   // Build a byte reader of the appropriate endianness.
   ByteReader byte_reader(macho_reader.big_endian()
                          ? dwarf2reader::ENDIANNESS_BIG
@@ -261,19 +262,24 @@ bool DumpSymbols::ReadDwarf(google_breakpad::Module *module,
 
   // Construct a context for this file.
   DwarfCUToModule::FileContext file_context(selected_object_name_,
-                                            module);
+                                            module,
+                                            handle_inter_cu_refs);
 
   // Build a dwarf2reader::SectionMap from our mach_o::SectionMap.
   for (mach_o::SectionMap::const_iterator it = dwarf_sections.begin();
-       it != dwarf_sections.end(); it++) {
-    file_context.section_map[it->first] =
-      make_pair(reinterpret_cast<const char *>(it->second.contents.start),
-                it->second.contents.Size());
+       it != dwarf_sections.end(); ++it) {
+    file_context.AddSectionToSectionMap(
+        it->first,
+        reinterpret_cast<const char *>(it->second.contents.start),
+        it->second.contents.Size());
   }
 
   // Find the __debug_info section.
-  std::pair<const char *, uint64> debug_info_section
-      = file_context.section_map["__debug_info"];
+  dwarf2reader::SectionMap::const_iterator debug_info_entry =
+      file_context.section_map().find(".debug_info");
+  assert(debug_info_entry != file_context.section_map().end());
+  const std::pair<const char*, uint64>& debug_info_section =
+      debug_info_entry->second;
   // There had better be a __debug_info section!
   if (!debug_info_section.first) {
     fprintf(stderr, "%s: __DWARF segment of file has no __debug_info section\n",
@@ -295,7 +301,7 @@ bool DumpSymbols::ReadDwarf(google_breakpad::Module *module,
     // Make a Dwarf2Handler that drives our DIEHandler.
     dwarf2reader::DIEDispatcher die_dispatcher(&root_handler);
     // Make a DWARF parser for the compilation unit at OFFSET.
-    dwarf2reader::CompilationUnit dwarf_reader(file_context.section_map,
+    dwarf2reader::CompilationUnit dwarf_reader(file_context.section_map(),
                                                offset,
                                                &byte_reader,
                                                &die_dispatcher);
@@ -374,11 +380,13 @@ class DumpSymbols::LoadCommandDumper:
   LoadCommandDumper(const DumpSymbols &dumper,
                     google_breakpad::Module *module,
                     const mach_o::Reader &reader,
-                    SymbolData symbol_data)
+                    SymbolData symbol_data,
+                    bool handle_inter_cu_refs)
       : dumper_(dumper),
         module_(module),
         reader_(reader),
-        symbol_data_(symbol_data) { }
+        symbol_data_(symbol_data),
+        handle_inter_cu_refs_(handle_inter_cu_refs) { }
 
   bool SegmentCommand(const mach_o::Segment &segment);
   bool SymtabCommand(const ByteBuffer &entries, const ByteBuffer &strings);
@@ -388,6 +396,7 @@ class DumpSymbols::LoadCommandDumper:
   google_breakpad::Module *module_;  // WEAK
   const mach_o::Reader &reader_;
   const SymbolData symbol_data_;
+  const bool handle_inter_cu_refs_;
 };
 
 bool DumpSymbols::LoadCommandDumper::SegmentCommand(const Segment &segment) {
@@ -408,8 +417,10 @@ bool DumpSymbols::LoadCommandDumper::SegmentCommand(const Segment &segment) {
 
   if (segment.name == "__DWARF") {
     if (symbol_data_ != ONLY_CFI) {
-      if (!dumper_.ReadDwarf(module_, reader_, section_map))
+      if (!dumper_.ReadDwarf(module_, reader_, section_map,
+                             handle_inter_cu_refs_)) {
         return false;
+      }
     }
     if (symbol_data_ != NO_CFI) {
       mach_o::SectionMap::const_iterator debug_frame
@@ -509,7 +520,7 @@ bool DumpSymbols::ReadSymbolData(Module** out_module) {
 
   // Walk its load commands, and deal with whatever is there.
   LoadCommandDumper load_command_dumper(*this, module.get(), reader,
-                                        symbol_data_);
+                                        symbol_data_, handle_inter_cu_refs_);
   if (!reader.WalkLoadCommands(&load_command_dumper))
     return false;
 
