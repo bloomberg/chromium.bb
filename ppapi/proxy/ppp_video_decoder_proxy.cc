@@ -59,9 +59,15 @@ void NotifyError(PP_Instance instance, PP_Resource decoder,
   HostResource decoder_resource;
   decoder_resource.SetHostResource(instance, decoder);
 
-  HostDispatcher::GetForInstance(instance)->Send(
+  // It's possible that the error we're being notified about is happening
+  // because the instance is shutting down. In this case, our instance may
+  // already have been removed from the HostDispatcher map.
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (dispatcher) {
+    dispatcher->Send(
       new PpapiMsg_PPPVideoDecoder_NotifyError(
           API_ID_PPP_VIDEO_DECODER_DEV, decoder_resource, error));
+  }
 }
 
 static const PPP_VideoDecoder_Dev video_decoder_interface = {
