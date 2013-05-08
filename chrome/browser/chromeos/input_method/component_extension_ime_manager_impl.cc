@@ -112,13 +112,6 @@ void ComponentExtensionIMEManagerImpl::InitializeAsync(
   DCHECK(!is_initialized_);
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // We have to call extension_l10n_util::LocalizeExtension to localize each
-  // extension on FILE thread. However it calls non-thread safe function
-  // l10n_util::GetAvailableLocales internally. Thus, to avoid race condition,
-  // call GetAvailableLocales here to initialize internal state of its function.
-  // TODO(nona): Remove this once crbug.com/233241 is fixed.
-  l10n_util::GetAvailableLocales();
-
   std::vector<ComponentExtensionIME>* component_extension_ime_list
       = new std::vector<ComponentExtensionIME>;
   BrowserThread::PostTaskAndReply(
