@@ -2627,7 +2627,7 @@ def SetupAndroidEnv(env):
     ndk_tctarget = ndk_target
     arch = 'arm'
     libarch = 'armeabi-v7a'
-    arch_cflags += ['-mfloat-abi=softfp']
+    arch_cflags += ['-march=armv7-a', '-mfloat-abi=softfp']
   elif env.Bit('build_mips32'):
     ndk_target = 'mipsel-linux-android'
     ndk_tctarget = ndk_target
