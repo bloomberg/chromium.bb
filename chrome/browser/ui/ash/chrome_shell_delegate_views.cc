@@ -7,6 +7,10 @@
 #include "ash/magnifier/magnifier_constants.h"
 #include "chrome/browser/ui/ash/caps_lock_delegate_views.h"
 #include "chrome/browser/ui/ash/window_positioner.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_service.h"
 
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
   return false;
@@ -97,9 +101,24 @@ void ChromeShellDelegate::HandleMediaPrevTrack() {
 void ChromeShellDelegate::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
-  // MSVC++ warns about switch statements without any cases.
-  NOTREACHED() << "Unexpected notification " << type;
+  switch (type) {
+    case chrome::NOTIFICATION_ASH_SESSION_STARTED:
+      GetTargetBrowser()->window()->Show();
+      break;
+    case chrome::NOTIFICATION_ASH_SESSION_ENDED:
+      break;
+    default:
+      NOTREACHED() << "Unexpected notification " << type;
+  }
 }
 
 void ChromeShellDelegate::PlatformInit() {
+#if defined(OS_WIN)
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_ASH_SESSION_STARTED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_ASH_SESSION_ENDED,
+                 content::NotificationService::AllSources());
+#endif
 }

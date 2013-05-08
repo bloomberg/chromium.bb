@@ -12,7 +12,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/aura/remote_root_window_host_win.h"
@@ -77,6 +79,12 @@ void  MetroViewerProcessHost::OnChannelError() {
   g_browser_process->ReleaseModule();
   CloseOpenAshBrowsers();
   chrome::CloseAsh();
+  // Tell the rest of Chrome about it.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_ASH_SESSION_ENDED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
+
   // This will delete the MetroViewerProcessHost object. Don't access member
   // variables/functions after this call.
   g_browser_process->OnMetroViewerProcessTerminated();
@@ -91,4 +99,9 @@ void MetroViewerProcessHost::OnSetTargetSurface(
       AcceleratedPresenter::GetForWindow(NULL);
   any_window->SetNewTargetWindow(hwnd);
   aura::RemoteRootWindowHostWin::Instance()->Connected(this);
+  // Tell the rest of Chrome that Ash is running.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_ASH_SESSION_STARTED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
