@@ -855,17 +855,10 @@ enum DeviceStatus {
 };
 }  // namespace wimax_manager
 
-namespace bluetooth_manager {
-// Bluetooth Manager service identifiers.
-const char kBluetoothManagerServiceName[] = "org.bluez";
-const char kBluetoothManagerServicePath[] = "/";  // crosbug.com/20135
-}  // namespace bluetooth_manager
-
 namespace bluetooth_adapter {
 // Bluetooth Adapter service identifiers.
 const char kBluetoothAdapterServiceName[] = "org.bluez";
 const char kBluetoothAdapterInterface[] = "org.bluez.Adapter1";
-const char kExperimentalBluetoothAdapterInterface[] = "org.bluez.Adapter1";
 
 // Bluetooth Adapter methods.
 const char kStartDiscovery[] = "StartDiscovery";
@@ -887,21 +880,8 @@ const char kUUIDsProperty[] = "UUIDs";
 const char kModaliasProperty[] = "Modalias";
 
 // Bluetooth Adapter errors.
-const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
-const char kErrorAuthenticationCanceled[] =
-    "org.bluez.Error.AuthenticationCanceled";
-const char kErrorAuthenticationFailed[] =
-    "org.bluez.Error.AuthenticationFailed";
-const char kErrorAuthenticationRejected[] =
-    "org.bluez.Error.AuthenticationRejected";
-const char kErrorAuthenticationTimeout[] =
-    "org.bluez.Error.AuthenticationTimeout";
-const char kErrorConnectionAttemptFailed[] =
-    "org.bluez.Error.ConnectionAttemptFailed";
 const char kErrorNotReady[] = "org.bluez.Error.NotReady";
 const char kErrorFailed[] = "org.bluez.Error.Failed";
-const char kErrorInProgress[] = "org.bluez.Error.InProgress";
-const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
 const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
 const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
 }  // namespace bluetooth_adapter
@@ -911,8 +891,6 @@ namespace bluetooth_agent_manager {
 const char kBluetoothAgentManagerServiceName[] = "org.bluez";
 const char kBluetoothAgentManagerServicePath[] = "/org/bluez";
 const char kBluetoothAgentManagerInterface[] = "org.bluez.AgentManager1";
-const char kExperimentalBluetoothAgentManagerInterface[] =
-    "org.bluez.AgentManager1";
 
 // Bluetooth Agent Manager methods.
 const char kRegisterAgent[] = "RegisterAgent";
@@ -936,7 +914,6 @@ const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
 namespace bluetooth_agent {
 // Bluetooth Agent service indentifiers
 const char kBluetoothAgentInterface[] = "org.bluez.Agent1";
-const char kExperimentalBluetoothAgentInterface[] = "org.bluez.Agent1";
 
 // Bluetooth Agent methods.
 const char kRelease[] = "Release";
@@ -958,7 +935,6 @@ namespace bluetooth_device {
 // Bluetooth Device service identifiers.
 const char kBluetoothDeviceServiceName[] = "org.bluez";
 const char kBluetoothDeviceInterface[] = "org.bluez.Device1";
-const char kExperimentalBluetoothDeviceInterface[] = "org.bluez.Device1";
 
 // Bluetooth Device methods.
 const char kConnect[] = "Connect";
@@ -1012,7 +988,6 @@ namespace bluetooth_input {
 // Bluetooth Input service identifiers.
 const char kBluetoothInputServiceName[] = "org.bluez";
 const char kBluetoothInputInterface[] = "org.bluez.Input1";
-const char kExperimentalBluetoothInputInterface[] = "org.bluez.Input1";
 
 // Bluetooth Input properties.
 const char kReconnectModeProperty[] = "ReconnectMode";
@@ -1035,8 +1010,6 @@ namespace bluetooth_profile_manager {
 const char kBluetoothProfileManagerServiceName[] = "org.bluez";
 const char kBluetoothProfileManagerServicePath[] = "/org/bluez";
 const char kBluetoothProfileManagerInterface[] = "org.bluez.ProfileManager1";
-const char kExperimentalBluetoothProfileManagerInterface[] =
-    "org.bluez.ProfileManager1";
 
 // Bluetooth Profile Manager methods.
 const char kRegisterProfile[] = "RegisterProfile";
@@ -1067,7 +1040,6 @@ const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
 namespace bluetooth_profile {
 // Bluetooth Profile service identifiers.
 const char kBluetoothProfileInterface[] = "org.bluez.Profile1";
-const char kExperimentalBluetoothProfileInterface[] = "org.bluez.Profile1";
 
 // Bluetooth Profile methods.
 const char kRelease[] = "Release";
