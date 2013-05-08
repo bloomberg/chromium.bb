@@ -8,6 +8,7 @@
 
 import os
 import re
+import sys
 
 import appengine_wrappers
 from file_system import FileNotFoundError
@@ -61,7 +62,7 @@ class FakeSubversionServer(_FakeFetcher):
     try:
       return self._ReadFile(path)
     except IOError as e:
-      raise FileNotFoundError('Reading %s failed: %s' (path, e))
+      raise FileNotFoundError('Reading %s failed: %s' % (path, e))
 
 class FakeViewvcServer(_FakeFetcher):
   def __init__(self, base_path):
@@ -108,9 +109,10 @@ class FakeIssuesFetcher(_FakeFetcher):
   def fetch(self, url):
     return 'Status,Summary,ID'
 
-def ConfigureFakeFetchers(docs):
+def ConfigureFakeFetchers():
   '''Configure the fake fetcher paths relative to the docs directory.
   '''
+  docs = '/'.join((sys.path[0], os.pardir))
   appengine_wrappers.ConfigureFakeUrlFetch({
     url_constants.OMAHA_PROXY_URL: FakeOmahaProxy(docs),
     '%s/.*' % url_constants.SVN_URL: FakeSubversionServer(docs),

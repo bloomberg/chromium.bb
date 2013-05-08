@@ -52,16 +52,16 @@ class ReferenceResolver(object):
     def __init__(self,
                  api_data_source_factory,
                  api_list_data_source_factory,
-                 object_store_creator_factory):
+                 object_store_creator):
       self._api_data_source_factory = api_data_source_factory
       self._api_list_data_source_factory = api_list_data_source_factory
-      self._object_store_creator_factory = object_store_creator_factory
+      self._object_store_creator = object_store_creator
 
     def Create(self):
       return ReferenceResolver(
           self._api_data_source_factory.Create(None, disable_refs=True),
           self._api_list_data_source_factory.Create(),
-          self._object_store_creator_factory.Create(ReferenceResolver).Create())
+          self._object_store_creator.Create(ReferenceResolver))
 
   def __init__(self, api_data_source, api_list_data_source, object_store):
     self._api_data_source = api_data_source

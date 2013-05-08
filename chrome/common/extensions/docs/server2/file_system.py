@@ -66,9 +66,11 @@ class FileSystem(object):
     '''
     raise NotImplementedError()
 
-  @classmethod
-  def GetName(cls):
-    '''The type of the file system, exposed for caching classes to namespace
-    their caches. It is unlikely that this needs to be overridden.
+  def GetIdentity(self):
+    '''The identity of the file system, exposed for caching classes to
+    namespace their caches. this will usually depend on the configuration of
+    that file system - e.g. a LocalFileSystem with a base path of /var is
+    different to that of a SubversionFileSystem with a base path of /bar, is
+    different to a LocalFileSystem with a base path of /usr.
     '''
-    return cls.__name__
+    raise NotImplementedError()

@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from appengine_wrappers import GetAppVersion
 from compiled_file_system import CompiledFileSystem
 from copy import deepcopy
 from file_system import FileNotFoundError
@@ -29,14 +30,19 @@ _TEST_DATA = {
 def _CreateFactory():
   return CompiledFileSystem.Factory(
       TestFileSystem(deepcopy(_TEST_DATA)),
-      ObjectStoreCreator.TestFactory(version='3-0', branch='test'))
+      ObjectStoreCreator('test',
+                         start_empty=False,
+                         store_type=TestObjectStore,
+                         disable_wrappers=True))
 
 class CompiledFileSystemTest(unittest.TestCase):
   def testIdentityNamespace(self):
     factory = _CreateFactory()
     compiled_fs = factory.CreateIdentity(CompiledFileSystemTest)
-    self.assertEqual('3-0/CompiledFileSystem@test/CompiledFileSystemTest/file',
-                     compiled_fs._file_object_store.namespace)
+    self.assertEqual(
+        'class=CompiledFileSystem&category=CompiledFileSystemTest/file&'
+            'channel=test&app_version=%s' % GetAppVersion(),
+        compiled_fs._file_object_store.namespace)
 
   def testIdentityFromFile(self):
     compiled_fs = _CreateFactory().CreateIdentity(CompiledFileSystemTest)
@@ -67,12 +73,16 @@ class CompiledFileSystemTest(unittest.TestCase):
     factory = _CreateFactory()
     f = lambda x: x
     CheckNamespace(
-        '3-0/CompiledFileSystem@test/CompiledFileSystemTest/file',
-        '3-0/CompiledFileSystem@test/CompiledFileSystemTest/list',
+        'class=CompiledFileSystem&category=CompiledFileSystemTest/file&'
+            'channel=test&app_version=%s' % GetAppVersion(),
+        'class=CompiledFileSystem&category=CompiledFileSystemTest/list&'
+            'channel=test&app_version=%s' % GetAppVersion(),
         factory.Create(f, CompiledFileSystemTest))
     CheckNamespace(
-        '3-0/CompiledFileSystem@test/CompiledFileSystemTest/foo/file',
-        '3-0/CompiledFileSystem@test/CompiledFileSystemTest/foo/list',
+        'class=CompiledFileSystem&category=CompiledFileSystemTest/foo/file&'
+            'channel=test&app_version=%s' % GetAppVersion(),
+        'class=CompiledFileSystem&category=CompiledFileSystemTest/foo/list&'
+            'channel=test&app_version=%s' % GetAppVersion(),
         factory.Create(f, CompiledFileSystemTest, category='foo'))
 
   def testPopulateFromFile(self):

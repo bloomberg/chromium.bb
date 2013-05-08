@@ -13,17 +13,19 @@ from appengine_url_fetcher import AppEngineUrlFetcher
 from appengine_wrappers import files
 from fake_fetchers import ConfigureFakeFetchers
 from github_file_system import GithubFileSystem
+from object_store_creator import ObjectStoreCreator
 import url_constants
 
 class GithubFileSystemTest(unittest.TestCase):
   def setUp(self):
-    ConfigureFakeFetchers(os.path.join(sys.path[0], os.pardir))
+    ConfigureFakeFetchers()
     self._base_path = os.path.join(sys.path[0],
                                    'test_data',
                                    'github_file_system')
     self._file_system = GithubFileSystem(
         AppEngineUrlFetcher(url_constants.GITHUB_URL),
-        AppEngineBlobstore())
+        AppEngineBlobstore(),
+        ObjectStoreCreator.ForTest())
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:

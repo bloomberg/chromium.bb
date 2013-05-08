@@ -53,7 +53,7 @@ class APIListDataSourceTest(unittest.TestCase):
   def setUp(self):
     self._factory = APIListDataSource.Factory(
         CompiledFileSystem.Factory(TestFileSystem(deepcopy(_TEST_DATA)),
-                                   ObjectStoreCreator.TestFactory()),
+                                   ObjectStoreCreator.ForTest()),
         'api',
         'public')
 

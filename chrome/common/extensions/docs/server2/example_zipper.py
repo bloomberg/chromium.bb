@@ -10,12 +10,10 @@ from zipfile import ZipFile
 import compiled_file_system as compiled_fs
 
 class ExampleZipper(object):
-  """This class creates a zip file given a samples directory.
-  """
+  '''This class creates a zip file given a samples directory.
+  '''
   def __init__(self, compiled_fs_factory, base_path):
     self._base_path = base_path.rstrip('/')
-    # Use an IdentityFileSystem here so that it shares a cache with the samples
-    # data source. Otherwise we'd need to fetch the zip files from the cron job.
     self._file_cache = compiled_fs_factory.CreateIdentity(ExampleZipper)
     self._zip_cache = compiled_fs_factory.Create(self._MakeZipFile,
                                                  ExampleZipper)
@@ -42,9 +40,9 @@ class ExampleZipper(object):
     return zip_bytes.getvalue()
 
   def Create(self, path):
-    """ Creates a new zip file from the recursive contents of |path|
+    ''' Creates a new zip file from the recursive contents of |path|
     as returned by |_zip_cache|.
     Paths within the zip file are given relative to and including |path|.
-    """
+    '''
     return self._zip_cache.GetFromFileListing(
         '%s/%s' % (self._base_path, path.strip('/')))

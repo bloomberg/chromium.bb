@@ -2,66 +2,28 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from appengine_wrappers import webapp
+from branch_utility import BranchUtility
 from cron_servlet import CronServlet
-from render_servlet import RenderServlet
-from servlet import Request
+from instance_servlet import InstanceServlet
+from servlet import Servlet, Request, Response
 
 _SERVLETS = {
   'cron': CronServlet,
 }
+_DEFAULT_SERVLET = InstanceServlet.GetConstructor()
 
-class Handler(webapp.RequestHandler):
-  def __init__(self, request, response):
-    super(Handler, self).__init__(request, response)
-
-  def _RedirectSpecialCases(self, path):
-    if not path or path == 'index.html':
-      self.redirect('http://developer.google.com/chrome')
-      return True
-
-    if path == 'apps.html':
-      self.redirect('/apps/about_apps.html')
-      return True
-
-    return False
-
-  def _RedirectFromCodeDotGoogleDotCom(self, path):
-    if (not self.request.url.startswith(('http://code.google.com',
-                                         'https://code.google.com'))):
-      return False
-
-    new_url = 'http://developer.chrome.com/'
-
-    # switch to https if necessary
-    if (self.request.url.startswith('https')):
-      new_url = new_url.replace('http', 'https', 1)
-
-    path = path.split('/')
-    if len(path) > 0 and path[0] == 'chrome':
-      path.pop(0)
-    for channel in BranchUtility.GetAllBranchNames():
-      if channel in path:
-        position = path.index(channel)
-        path.pop(position)
-        path.insert(0, channel)
-    new_url += '/'.join(path)
-    self.redirect(new_url)
-    return True
-
-  def get(self):
-    path, request, response = (self.request.path.lstrip('/'),
-                               self.request,
-                               self.response)
+class Handler(Servlet):
+  def Get(self):
+    path = self._request.path
 
     if path in ['favicon.ico', 'robots.txt']:
-      response.set_status(404)
-      return
+      return Response.NotFound('')
 
-    if self._RedirectSpecialCases(path):
-      return
-    if self._RedirectFromCodeDotGoogleDotCom(path):
-      return
+    redirect = self._RedirectSpecialCases()
+    if redirect is None:
+      redirect = self._RedirectFromCodeDotGoogleDotCom()
+    if redirect is not None:
+      return redirect
 
     if path.startswith('_'):
       servlet_path = path[1:]
@@ -70,15 +32,41 @@ class Handler(webapp.RequestHandler):
       servlet_name, servlet_path = servlet_path.split('/', 1)
       servlet = _SERVLETS.get(servlet_name)
       if servlet is None:
-        response.out.write('"%s" servlet not found' %  servlet_path)
-        response.set_status(404)
-        return
+        return Response.NotFound('"%s" servlet not found' %  servlet_path)
     else:
       servlet_path = path
-      servlet = RenderServlet
+      servlet = _DEFAULT_SERVLET
 
-    servlet_response = servlet(Request(servlet_path, request.headers)).Get()
+    return servlet(Request(servlet_path,
+                           self._request.host,
+                           self._request.headers)).Get()
 
-    response.out.write(servlet_response.content.ToString())
-    response.headers.update(servlet_response.headers)
-    response.status = servlet_response.status
+  def _RedirectSpecialCases(self):
+    path = self._request.path
+    if not path or path == 'index.html':
+      return Response.Redirect('http://developer.google.com/chrome')
+    if path == 'apps.html':
+      return Response.Redirect('/apps/about_apps.html')
+    return None
+
+  def _RedirectFromCodeDotGoogleDotCom(self):
+    host, path = (self._request.host, self._request.path)
+
+    if not host in ('http://code.google.com', 'https://code.google.com'):
+      return None
+
+    new_host = 'http://developer.chrome.com'
+
+    # switch to https if necessary
+    if host.startswith('https'):
+      new_host = new_host.replace('http', 'https', 1)
+
+    new_path = path.split('/')
+    if len(new_path) > 0 and new_path[0] == 'chrome':
+      new_path.pop(0)
+    for channel in BranchUtility.GetAllChannelNames():
+      if channel in new_path:
+        position = new_path.index(channel)
+        new_path.pop(position)
+        new_path.insert(0, channel)
+    return Response.Redirect('/'.join([new_host] + new_path))

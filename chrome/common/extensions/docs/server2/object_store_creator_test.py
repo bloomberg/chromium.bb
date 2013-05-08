@@ -5,6 +5,7 @@
 
 import unittest
 
+from appengine_wrappers import GetAppVersion
 from test_object_store import TestObjectStore
 from object_store_creator import ObjectStoreCreator
 
@@ -13,27 +14,51 @@ class _FooClass(object):
 
 class ObjectStoreCreatorTest(unittest.TestCase):
   def setUp(self):
-    self.creator = ObjectStoreCreator(_FooClass,
-                                      '3-0',
-                                      'test',
-                                      store_type=TestObjectStore)
+    self._creator = ObjectStoreCreator('trunk',
+                                       start_empty=False,
+                                       store_type=TestObjectStore,
+                                       disable_wrappers=True)
 
   def testVanilla(self):
-    store = self.creator.Create()
-    self.assertEqual('3-0/_FooClass@test', store.namespace)
+    store = self._creator.Create(_FooClass)
+    self.assertEqual(
+        'class=_FooClass&channel=trunk&app_version=%s' % GetAppVersion(),
+        store.namespace)
+    self.assertFalse(store.start_empty)
 
   def testWithCategory(self):
-    store = self.creator.Create(category='cat')
-    self.assertEqual('3-0/_FooClass@test/cat', store.namespace)
+    store = self._creator.Create(_FooClass, category='hi')
+    self.assertEqual(
+        'class=_FooClass&category=hi&channel=trunk&app_version=%s' %
+            GetAppVersion(),
+        store.namespace)
+    self.assertFalse(store.start_empty)
 
-  def testIllegalInput(self):
-    self.assertRaises(AssertionError, self.creator.Create, category='5')
-    self.assertRaises(AssertionError, self.creator.Create, category='forty2')
+  def testWithoutChannel(self):
+    store = self._creator.Create(_FooClass, channel=None)
+    self.assertEqual('class=_FooClass&app_version=%s' % GetAppVersion(),
+                     store.namespace)
+    self.assertFalse(store.start_empty)
 
-  def testFactoryWithBranch(self):
-    store = ObjectStoreCreator.Factory('3-0', 'dev').Create(
-        _FooClass, store_type=TestObjectStore).Create()
-    self.assertEqual('3-0/_FooClass@dev', store.namespace)
+  def testWithoutAppVersion(self):
+    store = self._creator.Create(_FooClass, app_version=None)
+    self.assertEqual('class=_FooClass&channel=trunk', store.namespace)
+    self.assertFalse(store.start_empty)
+
+  def testStartConfiguration(self):
+    store = self._creator.Create(_FooClass, start_empty=True)
+    self.assertTrue(store.start_empty)
+    store = self._creator.Create(_FooClass, start_empty=False)
+    self.assertFalse(store.start_empty)
+    self.assertRaises(ValueError, ObjectStoreCreator, 'foo')
+
+  def testIllegalCharacters(self):
+    self.assertRaises(ValueError,
+                      self._creator.Create, _FooClass, channel='foo=')
+    self.assertRaises(ValueError,
+                      self._creator.Create, _FooClass, app_version='1&2')
+    self.assertRaises(ValueError,
+                      self._creator.Create, _FooClass, category='a=&b')
 
 if __name__ == '__main__':
   unittest.main()

@@ -16,41 +16,37 @@ import url_constants
 DEFAULT_ICON_PATH = '/images/sample-default-icon.png'
 
 class SamplesDataSource(object):
-  """Constructs a list of samples and their respective files and api calls.
-  """
+  '''Constructs a list of samples and their respective files and api calls.
+  '''
   class Factory(object):
-    """A factory to create SamplesDataSource instances bound to individual
+    '''A factory to create SamplesDataSource instances bound to individual
     Requests.
-    """
+    '''
     def __init__(self,
                  channel,
-                 extensions_file_system,
-                 apps_file_system,
+                 host_file_system,
+                 compiled_host_fs_factory,
+                 app_samples_file_system,
+                 compiled_app_samples_fs_factory,
                  ref_resolver_factory,
-                 object_store_creator_factory,
                  extension_samples_path):
-      self._svn_file_system = extensions_file_system
-      self._github_file_system = apps_file_system
+      self._host_file_system = host_file_system
+      self._app_samples_file_system = app_samples_file_system
       self._static_path = '/%s/static' % channel
       self._ref_resolver = ref_resolver_factory.Create()
       self._extension_samples_path = extension_samples_path
-      def create_compiled_fs(fs, fn, category):
-        return CompiledFileSystem.Factory(
-            fs,
-            object_store_creator_factory).Create(fn,
-                                                 SamplesDataSource,
-                                                 category=category)
-      self._extensions_cache = create_compiled_fs(extensions_file_system,
-                                                  self._MakeSamplesList,
-                                                  'extensions')
-      self._apps_cache = create_compiled_fs(apps_file_system,
-                                            lambda *args: self._MakeSamplesList(
-                                                *args, is_apps=True),
-                                            'apps')
+      self._extensions_cache = compiled_host_fs_factory.Create(
+          self._MakeSamplesList,
+          SamplesDataSource,
+          category='extensions')
+      self._apps_cache = compiled_app_samples_fs_factory.Create(
+          lambda *args: self._MakeSamplesList(*args, is_apps=True),
+          SamplesDataSource,
+          category='apps')
 
     def Create(self, request):
-      """Returns a new SamplesDataSource bound to |request|.
-      """
+      '''Returns a new SamplesDataSource bound to |request|.
+      '''
       return SamplesDataSource(self._extensions_cache,
                                self._apps_cache,
                                self._extension_samples_path,
@@ -103,8 +99,8 @@ class SamplesDataSource(object):
       # HACK(kalman): The code here (for legacy reasons) assumes that |files| is
       # prefixed by |base_dir|, so make it true.
       files = ['%s%s' % (base_dir, f) for f in files]
-      file_system = (self._github_file_system if is_apps else
-                     self._svn_file_system)
+      file_system = (self._app_samples_file_system if is_apps else
+                     self._host_file_system)
       samples_list = []
       for filename in sorted(files):
         if filename.rsplit('/')[-1] != 'manifest.json':
@@ -196,10 +192,10 @@ class SamplesDataSource(object):
             for lang_with_q in accept_language.split(',')]
 
   def FilterSamples(self, key, api_name):
-    """Fetches and filters the list of samples specified by |key|, returning
+    '''Fetches and filters the list of samples specified by |key|, returning
     only the samples that use the API |api_name|. |key| is either 'apps' or
     'extensions'.
-    """
+    '''
     api_search = api_name + '_'
     samples_list = []
     try:

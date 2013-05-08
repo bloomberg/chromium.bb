@@ -2,18 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from file_system import FileSystem, FileNotFoundError, StatInfo, ToUnicode
-from future import Future
 import logging
 import re
 import posixpath
 import xml.dom.minidom as xml
 from xml.parsers.expat import ExpatError
 
+from appengine_url_fetcher import AppEngineUrlFetcher
+from docs_server_utils import StringIdentity
+from file_system import FileSystem, FileNotFoundError, StatInfo, ToUnicode
+from future import Future
+import svn_constants
+import url_constants
+
 class _AsyncFetchFuture(object):
   def __init__(self, paths, fetcher, binary):
     # A list of tuples of the form (path, Future).
-    self._fetches = [(path, fetcher.FetchAsync(path)) for path in paths]
+    self._fetches = [(path, fetcher.FetchAsync(path))
+                     for path in paths]
     self._value = {}
     self._error = None
     self._binary = binary
@@ -45,19 +51,34 @@ class _AsyncFetchFuture(object):
     return self._value
 
 class SubversionFileSystem(FileSystem):
-  """Class to fetch resources from src.chromium.org.
-  """
-  def __init__(self, fetcher, stat_fetcher):
-    self._fetcher = fetcher
+  '''Class to fetch resources from src.chromium.org.
+  '''
+  @staticmethod
+  def Create(branch):
+    if branch == 'trunk':
+      svn_path = 'trunk/src/%s' % svn_constants.EXTENSIONS_PATH
+    else:
+      svn_path = 'branches/%s/src/%s' % (branch,
+                                         svn_constants.EXTENSIONS_PATH)
+    return SubversionFileSystem(
+        AppEngineUrlFetcher('%s/%s' % (url_constants.SVN_URL, svn_path)),
+        AppEngineUrlFetcher('%s/%s' % (url_constants.VIEWVC_URL, svn_path)),
+        svn_path)
+
+  def __init__(self, file_fetcher, stat_fetcher, svn_path):
+    self._file_fetcher = file_fetcher
     self._stat_fetcher = stat_fetcher
+    self._svn_path = svn_path
 
   def Read(self, paths, binary=False):
-    return Future(delegate=_AsyncFetchFuture(paths, self._fetcher, binary))
+    return Future(delegate=_AsyncFetchFuture(paths,
+                                             self._file_fetcher,
+                                             binary))
 
   def _ParseHTML(self, html):
-    """Unfortunately, the viewvc page has a stray </div> tag, so this takes care
+    '''Unfortunately, the viewvc page has a stray </div> tag, so this takes care
     of all mismatched tags.
-    """
+    '''
     try:
       return xml.parseString(html)
     except ExpatError as e:
@@ -120,7 +141,8 @@ class SubversionFileSystem(FileSystem):
 
   def Stat(self, path):
     directory, filename = posixpath.split(path)
-    result = self._stat_fetcher.Fetch(directory + '/')
+    directory += '/'
+    result = self._stat_fetcher.Fetch(directory)
     if result.status_code == 404:
       raise FileNotFoundError(
           'Got 404 when fetching %s from %s for Stat' % (path, directory))
@@ -130,3 +152,6 @@ class SubversionFileSystem(FileSystem):
     if filename not in stat_info.child_versions:
       raise FileNotFoundError('%s was not in child versions' % filename)
     return StatInfo(stat_info.child_versions[filename])
+
+  def GetIdentity(self):
+    return '@'.join((self.__class__.__name__, StringIdentity(self._svn_path)))

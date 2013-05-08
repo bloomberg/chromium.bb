@@ -112,44 +112,6 @@ class TestFileSystemTest(unittest.TestCase):
                         'alarms.html': '3',
                       }), fs.Stat('extensions/'))
 
-  def testCheckAndReset(self):
-    fs = TestFileSystem(deepcopy(_TEST_DATA))
-
-    self.assertTrue(*fs.CheckAndReset())
-    self.assertFalse(*fs.CheckAndReset(read_count=1))
-    self.assertFalse(*fs.CheckAndReset(stat_count=1))
-
-    fs.ReadSingle('apps/')
-    self.assertTrue(*fs.CheckAndReset(read_count=1))
-    self.assertFalse(*fs.CheckAndReset(read_count=1))
-    self.assertTrue(*fs.CheckAndReset())
-
-    fs.ReadSingle('apps/')
-    self.assertFalse(*fs.CheckAndReset(read_count=2))
-
-    fs.ReadSingle('extensions/')
-    fs.ReadSingle('extensions/')
-    self.assertTrue(*fs.CheckAndReset(read_count=2))
-    self.assertFalse(*fs.CheckAndReset(read_count=2))
-    self.assertTrue(*fs.CheckAndReset())
-
-    fs.ReadSingle('404.html')
-    fs.Read(['notfound.html', 'apps/'])
-    self.assertTrue(*fs.CheckAndReset(read_count=2))
-
-    fs.Stat('404.html')
-    fs.Stat('404.html')
-    fs.Stat('apps/')
-    self.assertFalse(*fs.CheckAndReset(stat_count=42))
-    self.assertFalse(*fs.CheckAndReset(stat_count=42))
-    self.assertTrue(*fs.CheckAndReset())
-
-    fs.ReadSingle('404.html')
-    fs.Stat('404.html')
-    fs.Stat('apps/')
-    self.assertTrue(*fs.CheckAndReset(read_count=1, stat_count=2))
-    self.assertTrue(*fs.CheckAndReset())
-
   def testMoveTo(self):
     self.assertEqual({'foo': {'a': 'b', 'c': 'd'}},
                     TestFileSystem.MoveTo('foo', {'a': 'b', 'c': 'd'}))

@@ -15,74 +15,48 @@ from server_instance import ServerInstance
 from servlet import Servlet, Response
 import svn_constants
 
-_DEFAULT_CHANNEL = 'stable'
-
-_ALWAYS_ONLINE = IsDevServer()
-
 def _IsBinaryMimetype(mimetype):
   return any(mimetype.startswith(prefix)
              for prefix in ['audio', 'image', 'video'])
 
-def AlwaysOnline(fn):
-  '''A function decorator which forces the rendering to be always online rather
-  than the default offline behaviour. Useful for testing.
-  '''
-  def impl(*args, **optargs):
-    global _ALWAYS_ONLINE
-    was_always_online = _ALWAYS_ONLINE
-    try:
-      _ALWAYS_ONLINE = True
-      return fn(*args, **optargs)
-    finally:
-      _ALWAYS_ONLINE = was_always_online
-  return impl
-
 class RenderServlet(Servlet):
   '''Servlet which renders templates.
   '''
-  def Get(self, server_instance=None):
-    path_with_channel, headers = (self._request.path.lstrip('/'),
-                                  self._request.headers)
+  class Delegate(object):
+    def CreateServerInstanceForChannel(self, channel):
+      raise NotImplementedError()
+
+  def __init__(self, request, delegate, default_channel='stable'):
+    Servlet.__init__(self, request)
+    self._delegate = delegate
+    self._default_channel = default_channel
+
+  def Get(self):
+    path_with_channel, headers = (self._request.path, self._request.headers)
 
     # Redirect "extensions" and "extensions/" to "extensions/index.html", etc.
     if (os.path.splitext(path_with_channel)[1] == '' and
         path_with_channel.find('/') == -1):
       path_with_channel += '/'
     if path_with_channel.endswith('/'):
-      return Response.Redirect(path_with_channel + 'index.html')
+      return Response.Redirect('/%sindex.html' % path_with_channel)
 
     channel, path = BranchUtility.SplitChannelNameFromPath(path_with_channel)
 
-    if channel == _DEFAULT_CHANNEL:
+    if channel == self._default_channel:
       return Response.Redirect('/%s' % path)
 
     if channel is None:
-      channel = _DEFAULT_CHANNEL
+      channel = self._default_channel
 
-    # AppEngine instances should never need to call out to SVN. That should
-    # only ever be done by the cronjobs, which then write the result into
-    # DataStore, which is as far as instances look. To enable this, crons can
-    # pass a custom (presumably online) ServerInstance into Get().
-    #
-    # Why? SVN is slow and a bit flaky. Cronjobs failing is annoying but
-    # temporary. Instances failing affects users, and is really bad.
-    #
-    # Anyway - to enforce this, we actually don't give instances access to SVN.
-    # If anything is missing from datastore, it'll be a 404. If the cronjobs
-    # don't manage to catch everything - uhoh. On the other hand, we'll figure
-    # it out pretty soon, and it also means that legitimate 404s are caught
-    # before a round trip to SVN.
-    if server_instance is None:
-      # The ALWAYS_ONLINE thing is for tests and preview.py that shouldn't need
-      # to run the cron before rendering things.
-      constructor = (ServerInstance.CreateOnline if _ALWAYS_ONLINE else
-                     ServerInstance.GetOrCreateOffline)
-      server_instance = constructor(channel)
+    server_instance = self._delegate.CreateServerInstanceForChannel(channel)
 
-    canonical_path = server_instance.path_canonicalizer.Canonicalize(path)
+    canonical_path = (
+        server_instance.path_canonicalizer.Canonicalize(path).lstrip('/'))
     if path != canonical_path:
-      return Response.Redirect(canonical_path if channel is None else
-                               '%s/%s' % (channel, canonical_path))
+      redirect_path = (canonical_path if channel is None else
+                       '%s/%s' % (channel, canonical_path))
+      return Response.Redirect('/%s' % redirect_path)
 
     templates = server_instance.template_data_source_factory.Create(
         self._request, path)

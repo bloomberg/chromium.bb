@@ -29,20 +29,14 @@ class TestFileSystem(FileSystem):
 
   def __init__(self, obj):
     self._obj = obj
-    self._global_stat = 0
     self._path_stats = {}
-    self._read_count = 0
-    self._stat_count = 0
+    self._global_stat = 0
 
   #
   # FileSystem implementation.
   #
 
   def Read(self, paths, binary=False):
-    self._read_count += 1
-    return self._ReadImpl(paths, binary=binary)
-
-  def _ReadImpl(self, paths, binary=False):
     test_fs = self
     class Delegate(object):
       def Get(self):
@@ -97,11 +91,7 @@ class TestFileSystem(FileSystem):
     return GetPaths(dir_contents)
 
   def Stat(self, path):
-    self._stat_count += 1
-    return self._StatImpl(path)
-
-  def _StatImpl(self, path):
-    read_result = self._ReadImpl([path]).Get().get(path)
+    read_result = self.Read([path]).Get().get(path)
     stat_result = StatInfo(self._SinglePathStat(path))
     if isinstance(read_result, list):
       stat_result.child_versions = dict(
@@ -122,21 +112,5 @@ class TestFileSystem(FileSystem):
     else:
       self._global_stat += 1
 
-  def CheckAndReset(self, stat_count=0, read_count=0):
-    '''Returns a tuple (success, error). Use in tests like:
-    self.assertTrue(*object_store.CheckAndReset(...))
-    '''
-    errors = []
-    for desc, expected, actual in (
-        ('read_count', read_count, self._read_count),
-        ('stat_count', stat_count, self._stat_count)):
-      if actual != expected:
-        errors.append('%s: expected %s got %s' % (desc, expected, actual))
-    try:
-      return (len(errors) == 0, ', '.join(errors))
-    finally:
-      self.Reset()
-
-  def Reset(self):
-    self._read_count = 0
-    self._stat_count = 0
+  def GetIdentity(self):
+    return self.__class__.__name__

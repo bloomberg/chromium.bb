@@ -5,13 +5,15 @@
 import json
 import logging
 import os
+from StringIO import StringIO
 
 import appengine_blobstore as blobstore
+from appengine_url_fetcher import AppEngineUrlFetcher
 from appengine_wrappers import GetAppVersion, urlfetch
 from file_system import FileSystem, StatInfo
 from future import Future
 from object_store_creator import ObjectStoreCreator
-from StringIO import StringIO
+import url_constants
 from zipfile import ZipFile, BadZipfile
 
 ZIP_KEY = 'zipball'
@@ -65,12 +67,23 @@ class _AsyncFetchFutureZip(object):
     return return_zip
 
 class GithubFileSystem(FileSystem):
-  """FileSystem implementation which fetches resources from github.
-  """
-  def __init__(self, fetcher, blobstore):
-    # The password store is the same for all branches and versions.
-    password_store = (ObjectStoreCreator.GlobalFactory()
-        .Create(GithubFileSystem).Create(category='password'))
+  @staticmethod
+  def Create(object_store_creator):
+    return GithubFileSystem(
+        AppEngineUrlFetcher(url_constants.GITHUB_URL),
+        blobstore.AppEngineBlobstore(),
+        object_store_creator)
+
+  def __init__(self, fetcher, blobstore, object_store_creator):
+    # Password store doesn't depend on channel, and if we don't cancel the app
+    # version then the whole advantage of having it in the first place is
+    # greatly lessened (likewise it should always start populated).
+    password_store = object_store_creator.Create(
+        GithubFileSystem,
+        channel=None,
+        app_version=None,
+        category='password',
+        start_empty=False)
     if USERNAME is None:
       password_data = password_store.GetMulti(('username', 'password')).Get()
       self._username, self._password = (password_data.get('username'),
@@ -81,8 +94,10 @@ class GithubFileSystem(FileSystem):
 
     self._fetcher = fetcher
     self._blobstore = blobstore
-    self._stat_object_store = (ObjectStoreCreator.SharedFactory(GetAppVersion())
-        .Create(GithubFileSystem).Create())
+    # Github has no knowledge of Chrome channels, set channel to None.
+    self._stat_object_store = object_store_creator.Create(
+        GithubFileSystem,
+        channel=None)
     self._version = None
     self._GetZip(self.Stat(ZIP_KEY).version)
 

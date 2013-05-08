@@ -19,7 +19,7 @@ class SamplesDataSourceTest(unittest.TestCase):
                                    'sidenav_data_source')
     self._compiled_fs_factory = CompiledFileSystem.Factory(
         LocalFileSystem(self._base_path),
-        ObjectStoreCreator.TestFactory())
+        ObjectStoreCreator.ForTest())
 
   def _CheckLevels(self, items, level=2):
     for item in items:
@@ -48,8 +48,6 @@ class SamplesDataSourceTest(unittest.TestCase):
             return
     # If we didn't return already, we should fail.
     self.fail()
-
-
 
 if __name__ == '__main__':
   unittest.main()

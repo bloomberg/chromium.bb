@@ -3,19 +3,25 @@
 # found in the LICENSE file.
 
 import os
+import sys
 
+from docs_server_utils import StringIdentity
 from file_system import FileSystem, FileNotFoundError, StatInfo, ToUnicode
 from future import Future
 
-class LocalFileSystem(FileSystem):
-  """FileSystem implementation which fetches resources from the local
-  filesystem.
-  """
-  def __init__(self, base_path):
-    self._base_path = self._ConvertToFilepath(base_path)
+def _ConvertToFilepath(path):
+  return path.replace('/', os.sep)
 
-  def _ConvertToFilepath(self, path):
-    return path.replace('/', os.sep)
+class LocalFileSystem(FileSystem):
+  '''FileSystem implementation which fetches resources from the local
+  filesystem.
+  '''
+  def __init__(self, base_path):
+    self._base_path = _ConvertToFilepath(base_path)
+
+  @staticmethod
+  def Create():
+    return LocalFileSystem(os.path.join(sys.path[0], os.pardir, os.pardir))
 
   def _ReadFile(self, filename, binary):
     try:
@@ -48,21 +54,31 @@ class LocalFileSystem(FileSystem):
     result = {}
     for path in paths:
       if path.endswith('/'):
-        result[path] = self._ListDir(self._ConvertToFilepath(path))
+        result[path] = self._ListDir(_ConvertToFilepath(path))
       else:
-        result[path] = self._ReadFile(self._ConvertToFilepath(path), binary)
+        result[path] = self._ReadFile(_ConvertToFilepath(path), binary)
     return Future(value=result)
 
   def _CreateStatInfo(self, path):
-    if path.endswith('/'):
-      versions = dict((filename, os.stat(os.path.join(path, filename)).st_mtime)
-                      for filename in os.listdir(path))
-    else:
-      versions = None
     try:
-      return StatInfo(os.stat(path).st_mtime, versions)
+      path_mtime = os.stat(path).st_mtime
+      if path.endswith('/'):
+        child_versions = dict(
+            (filename, os.stat(os.path.join(path, filename)).st_mtime)
+            for filename in os.listdir(path))
+        # This file system stat mimics subversion, where the stat of directories
+        # is max(file stats). That means we need to recursively check the whole
+        # file system tree :\ so approximate that by just checking this dir.
+        version = max([path_mtime] + child_versions.values())
+      else:
+        child_versions = None
+        version = path_mtime
+      return StatInfo(version, child_versions)
     except OSError as e:
       raise FileNotFoundError('os.stat failed for %s: %s' % (path, e))
 
   def Stat(self, path):
     return self._CreateStatInfo(os.path.join(self._base_path, path))
+
+  def GetIdentity(self):
+    return '@'.join((self.__class__.__name__, StringIdentity(self._base_path)))

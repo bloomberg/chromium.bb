@@ -2,88 +2,85 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from appengine_wrappers import GetAppVersion
 from cache_chain_object_store import CacheChainObjectStore
 from memcache_object_store import MemcacheObjectStore
 from test_object_store import TestObjectStore
 from persistent_object_store import PersistentObjectStore
 
+_unspecified = object()
+
 class ObjectStoreCreator(object):
-  class Factory(object):
-    '''Parameters:
-    - |branch| The branch to create object stores for. This becomes part of the
-      namespace for the object stores that are created.
-    - |start_empty| Whether the caching object store that gets created should
-      start empty, or start with the content of its delegate object stores.
-    '''
-    def __init__(self, app_version, branch):
-      self._app_version = app_version
-      self._branch = branch
+  '''Creates ObjectStores with a namespacing and behaviour configuration.
 
-    def Create(self, cls, store_type=None):
-      return ObjectStoreCreator(cls,
-                                self._app_version,
-                                self._branch,
-                                store_type=store_type)
-
-  class SharedFactory(object):
-    '''A |Factory| for creating object stores shared across branches.
-    '''
-    def __init__(self, app_version):
-      # TODO(kalman): Pass in (app_version, None) here.
-      self._factory = ObjectStoreCreator.Factory(app_version, 'shared')
-
-    def Create(self, cls, store_type=None):
-      return self._factory.Create(cls, store_type=store_type)
-
-  class GlobalFactory(object):
-    '''A |Factory| for creating object stores shared across all branches and
-    app versions.
-    '''
-    def __init__(self):
-      # TODO(kalman): Pass in (None, None) here.
-      self._factory = ObjectStoreCreator.Factory('all', 'shared')
-
-    def Create(self, cls, store_type=None):
-      return self._factory.Create(cls, store_type=store_type)
-
-  class TestFactory(object):
-    '''A |Factory| for creating object stores for tests, with fake defaults.
-    '''
-    def __init__(self,
-                 # TODO(kalman): make these version=None and branch=None.
-                 version='test-version',
-                 branch='test-branch',
-                 store_type=TestObjectStore):
-      self._factory = ObjectStoreCreator.Factory(version, branch)
-      self._store_type = store_type
-
-    def Create(self, cls):
-      return self._factory.Create(cls, store_type=self._store_type)
-
-  def __init__(self, cls, app_version, branch, store_type=None):
-    '''Creates stores with a top-level namespace given by the name of |cls|
-    combined with |branch|. Set an explicit |store_type| if necessary for tests.
-
-    By convention this should be the name of the class which owns the object
-    store. If a class needs multiple object stores it should use Create with the
-    |category| argument.
-    '''
-    assert isinstance(cls, type)
-    assert not cls.__name__[0].islower()  # guard against non-class types
-    self._name = '%s/%s@%s' % (app_version, cls.__name__, branch)
+  The initial configuration is specified on object store construction. When
+  creating ObjectStores via Create this configuration can be overridden (or
+  via the variants of Create which do this automatically).
+  '''
+  def __init__(self,
+               channel,
+               start_empty=_unspecified,
+               # Override for testing. A custom ObjectStore type to construct
+               # on Create(). Useful with TestObjectStore, for example.
+               store_type=None,
+               # Override for testing. Whether the ObjectStore type specified
+               # with |store_type| should be wrapped e.g. with Caching. This is
+               # useful to override when specific state tests/manipulations are
+               # being done on the underlying object store.
+               disable_wrappers=False):
+    self._channel = channel
+    if start_empty is _unspecified:
+      raise ValueError('start_empty must be specified (typically False)')
+    self._start_empty = start_empty
     self._store_type = store_type
+    if disable_wrappers and store_type is None:
+      raise ValueError('disable_wrappers much specify a store_type')
+    self._disable_wrappers = disable_wrappers
 
-  def Create(self, category=None, start_empty=False):
-    '''Creates a new object store with the top namespace given in the
-    constructor with an optional |category| for classes that need multiple
-    object stores (e.g. one for stat and one for read).
-    '''
-    namespace = self._name
-    if category is not None:
-      assert not any(c.isdigit() for c in category)
-      namespace = '%s/%s' % (namespace, category)
-    if self._store_type is not None:
+  @staticmethod
+  def ForTest(start_empty=False,
+              store_type=TestObjectStore,
+              disable_wrappers=True):
+    return ObjectStoreCreator('test',
+                              start_empty=start_empty,
+                              store_type=store_type,
+                              disable_wrappers=disable_wrappers)
+
+  def Create(self,
+             cls,
+             category=None,
+             # Override any of these for a custom configuration.
+             start_empty=_unspecified,
+             channel=_unspecified,
+             app_version=_unspecified):
+    # Resolve namespace components.
+    if start_empty is not _unspecified:
+      start_empty = bool(start_empty)
+    else:
+      start_empty = self._start_empty
+    if channel is _unspecified:
+      channel = self._channel
+    if app_version is _unspecified:
+      app_version = GetAppVersion()
+
+    # Reserve & and = for namespace separators.
+    for component in (category, channel, app_version):
+      if component and ('&' in component or '=' in component):
+        raise ValueError('%s cannot be used in a namespace')
+
+    namespace = '&'.join(
+        '%s=%s' % (key, value)
+        for key, value in (('class', cls.__name__),
+                           ('category', category),
+                           ('channel', channel),
+                           ('app_version', app_version))
+        if value is not None)
+
+    if self._disable_wrappers:
       return self._store_type(namespace, start_empty=start_empty)
-    return CacheChainObjectStore(
-        (MemcacheObjectStore(namespace), PersistentObjectStore(namespace)),
-        start_empty=start_empty)
+
+    if self._store_type is not None:
+      chain = (self._store_type(namespace),)
+    else:
+      chain = (MemcacheObjectStore(namespace), PersistentObjectStore(namespace))
+    return CacheChainObjectStore(chain, start_empty=start_empty)

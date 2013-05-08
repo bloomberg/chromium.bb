@@ -15,10 +15,10 @@ if os.path.abspath(SERVER_PATH) not in sys.path:
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from handler import Handler
+from app_engine_handler import AppEngineHandler
 
 def main():
-  run_wsgi_app(webapp.WSGIApplication([('/.*', Handler)], debug=False))
+  run_wsgi_app(webapp.WSGIApplication([('/.*', AppEngineHandler)], debug=False))
 
 if __name__ == '__main__':
   main()

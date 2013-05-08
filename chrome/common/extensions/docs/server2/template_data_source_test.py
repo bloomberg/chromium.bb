@@ -57,11 +57,11 @@ class TemplateDataSourceTest(unittest.TestCase):
     reference_resolver_factory = ReferenceResolver.Factory(
         api_data_factory,
         self._fake_api_list_data_source_factory,
-        ObjectStoreCreator.TestFactory())
+        ObjectStoreCreator.ForTest())
     @DisableLogging('error')  # "was never set" error
     def create_from_factory(factory):
       path = 'extensions/foo'
-      return factory.Create(Request(path, {}), path)
+      return factory.Create(Request.ForTest(path), path)
     return create_from_factory(TemplateDataSource.Factory(
         'fake_channel',
         api_data_factory,
@@ -79,10 +79,10 @@ class TemplateDataSourceTest(unittest.TestCase):
     fetcher = LocalFileSystem(self._base_path)
     compiled_fs_factory = CompiledFileSystem.Factory(
         fetcher,
-        ObjectStoreCreator.TestFactory())
+        ObjectStoreCreator.ForTest())
     t_data_source = self._CreateTemplateDataSource(
         compiled_fs_factory,
-        ObjectStoreCreator.TestFactory())
+        ObjectStoreCreator.ForTest())
     template_a1 = Handlebar(self._ReadLocalFile('test1.html'))
     self.assertEqual(template_a1.render({}, {'templates': {}}).text,
         t_data_source.get('test1').render({}, {'templates': {}}).text)
@@ -97,10 +97,10 @@ class TemplateDataSourceTest(unittest.TestCase):
     fetcher = LocalFileSystem(self._base_path)
     compiled_fs_factory = CompiledFileSystem.Factory(
         fetcher,
-        ObjectStoreCreator.TestFactory())
+        ObjectStoreCreator.ForTest())
     t_data_source = self._CreateTemplateDataSource(
         compiled_fs_factory,
-        ObjectStoreCreator.TestFactory())
+        ObjectStoreCreator.ForTest())
     self.assertEqual(None, t_data_source.get('junk.html'))
 
   def testPartials(self):
@@ -108,7 +108,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     fetcher = LocalFileSystem(self._base_path)
     compiled_fs_factory = CompiledFileSystem.Factory(
         fetcher,
-        ObjectStoreCreator.TestFactory())
+        ObjectStoreCreator.ForTest())
     t_data_source = self._CreateTemplateDataSource(compiled_fs_factory)
     self.assertEqual(
         self._ReadLocalFile('test_expected.html'),
@@ -121,7 +121,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     context = json.loads(self._ReadLocalFile('test1.json'))
     compiled_fs_factory = CompiledFileSystem.Factory(
         fetcher,
-        ObjectStoreCreator.TestFactory())
+        ObjectStoreCreator.ForTest())
     self._RenderTest(
         'test1',
         self._CreateTemplateDataSource(

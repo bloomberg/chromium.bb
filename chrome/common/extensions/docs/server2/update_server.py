@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
   build_server.main()
   username = raw_input(
-      'Update github username/password? New username (empty to use existing): ')
+      'Update github username/password (empty to skip)? ')
   if username:
     password = getpass.getpass()
     with open('github_file_system.py') as f:

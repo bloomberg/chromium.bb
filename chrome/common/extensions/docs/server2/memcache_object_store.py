@@ -19,6 +19,10 @@ class MemcacheObjectStore(ObjectStore):
     self._namespace = namespace
 
   def SetMulti(self, mapping):
+    # talking_alarm_clock always fails because the zip is too big.
+    # TODO(kalman): store example zips in blobstore.
+    if any(key.find('talking_alarm_clock') != -1 for key in mapping.iterkeys()):
+      return
     try:
       memcache.Client().set_multi_async(mapping, namespace=self._namespace)
     except ValueError as e:

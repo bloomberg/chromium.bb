@@ -17,7 +17,7 @@ EXTENSIONS_URL = '/chrome/extensions'
 
 def _MakeChannelDict(channel_name):
   channel_dict = {
-    'channels': [{'name': name} for name in BranchUtility.GetAllBranchNames()],
+    'channels': [{'name': name} for name in BranchUtility.GetAllChannelNames()],
     'current': channel_name
   }
   for channel in channel_dict['channels']:
@@ -128,6 +128,11 @@ class TemplateDataSource(object):
       'apps_title': 'Apps',
       'extensions_title': 'Extensions',
       'apps_samples_url': url_constants.GITHUB_BASE,
+      # TODO(kalman): this is wrong, it's always getting from trunk, but meh
+      # it hardly ever shows up (only in the "cannot fetch samples" message).
+      # In fact I don't even know if it can show up anymore due the samples data
+      # being persisent. In any case, when the channel distinctions are gone
+      # this can go away, so, double meh.
       'extensions_samples_url': url_constants.EXTENSIONS_SAMPLES,
       'true': True,
       'false': False

@@ -18,9 +18,9 @@ from third_party.handlebar import Handlebar
 _H1_REGEX = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
 
 class _IntroParser(HTMLParser):
-  """ An HTML parser which will parse table of contents and page title info out
+  ''' An HTML parser which will parse table of contents and page title info out
   of an intro.
-  """
+  '''
   def __init__(self):
     HTMLParser.__init__(self)
     self.toc = []
@@ -60,9 +60,9 @@ class _IntroParser(HTMLParser):
       self._current_heading['title'] += data
 
 class IntroDataSource(object):
-  """This class fetches the intros for a given API. From this intro, a table
+  '''This class fetches the intros for a given API. From this intro, a table
   of contents dictionary is created, which contains the headings in the intro.
-  """
+  '''
   class Factory(object):
     def __init__(self, compiled_fs_factory, ref_resolver_factory, base_paths):
       self._cache = compiled_fs_factory.Create(self._MakeIntroDict,

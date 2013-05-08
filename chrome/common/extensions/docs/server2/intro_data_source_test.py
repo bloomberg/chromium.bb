@@ -14,7 +14,7 @@ _TEST_DATA = TestFileSystem.MoveTo(svn_constants.INTRO_PATH, {
 
 class IntroDataSourceTest(unittest.TestCase):
   def setUp(self):
-    self._server = ServerInstance.CreateForTest(TestFileSystem(_TEST_DATA))
+    self._server = ServerInstance.ForTest(TestFileSystem(_TEST_DATA))
 
   def testIntro(self):
     intro_data_source = self._server.intro_data_source_factory.Create()

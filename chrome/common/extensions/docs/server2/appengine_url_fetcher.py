@@ -31,21 +31,15 @@ class AppEngineUrlFetcher(object):
   def Fetch(self, url, username=None, password=None):
     """Fetches a file synchronously.
     """
-    headers = _MakeHeaders(username, password)
     if self._base_path is not None:
-      return urlfetch.fetch('%s/%s' % (self._base_path, url), headers=headers)
-    else:
-      return urlfetch.fetch(url, headers={ 'Cache-Control': 'max-age=0' })
+      url = '%s/%s' % (self._base_path, url)
+    return urlfetch.fetch(url, headers=_MakeHeaders(username, password))
 
   def FetchAsync(self, url, username=None, password=None):
     """Fetches a file asynchronously, and returns a Future with the result.
     """
-    rpc = urlfetch.create_rpc()
-    headers = _MakeHeaders(username, password)
     if self._base_path is not None:
-      urlfetch.make_fetch_call(rpc,
-                               '%s/%s' % (self._base_path, url),
-                               headers=headers)
-    else:
-      urlfetch.make_fetch_call(rpc, url, headers=headers)
+      url = '%s/%s' % (self._base_path, url)
+    rpc = urlfetch.create_rpc()
+    urlfetch.make_fetch_call(rpc, url, headers=_MakeHeaders(username, password))
     return Future(delegate=_AsyncFetchDelegate(rpc))

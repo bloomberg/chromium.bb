@@ -4,6 +4,7 @@
 
 from file_system import FileSystem, StatInfo, FileNotFoundError
 from future import Future
+from object_store_creator import ObjectStoreCreator
 
 class _AsyncUncachedFuture(object):
   def __init__(self,
@@ -32,28 +33,22 @@ class CachingFileSystem(FileSystem):
   '''FileSystem which implements a caching layer on top of |file_system|. It's
   smart, using Stat() to decided whether to skip Read()ing from |file_system|,
   and only Stat()ing directories never files.
-
-  Specify |use_existing_values| to continue using whatever has been cached in
-  the object stores. By default, the data in the stores is assumed to be stale
-  (althought consistent). Using existing values is useful for live instances
-  that don't want to touch the file system; not using them is good for the
-  cron jobs, where we want to refresh the data.
   '''
-  def __init__(self,
-               file_system,
-               object_store_creator_factory,
-               use_existing_values=False):
+  def __init__(self, file_system, object_store_creator):
     self._file_system = file_system
-    def create_object_store(category):
-      return (object_store_creator_factory.Create(CachingFileSystem)
-          .Create(category='%s/%s' % (file_system.GetName(), category),
-                  # By Stat()ing from scratch we'll end up not using the
-                  # existing values, but also not doing unnecessary Read()s if
-                  # the files haven't changed from last time.
-                  start_empty=(not use_existing_values and category == 'stat')))
+    def create_object_store(category, **optargs):
+      return object_store_creator.Create(
+          CachingFileSystem,
+          category='%s/%s' % (file_system.GetIdentity(), category),
+          **optargs)
     self._stat_object_store = create_object_store('stat')
-    self._read_object_store = create_object_store('read')
-    self._read_binary_object_store = create_object_store('read-binary')
+    # Force the read stores to start populated, even if |object_store_creator|
+    # is configured to start empty, because the result from Stat entirely
+    # determines how we end up (re)Read-ing data. This is a core optimisation.
+    self._read_object_store = create_object_store(
+        'read', start_empty=False)
+    self._read_binary_object_store = create_object_store(
+        'read-binary', start_empty=False)
 
   def Stat(self, path):
     '''Stats the directory given, or if a file is given, stats the file's parent

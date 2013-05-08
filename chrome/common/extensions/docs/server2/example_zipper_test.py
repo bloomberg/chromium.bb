@@ -15,13 +15,12 @@ from object_store_creator import ObjectStoreCreator
 
 class ExampleZipperTest(unittest.TestCase):
   def setUp(self):
-    object_store_creator_factory = ObjectStoreCreator.TestFactory()
+    object_store_creator = ObjectStoreCreator.ForTest()
     self._file_system = CachingFileSystem(
         LocalFileSystem(os.path.join(sys.path[0], 'test_data')),
-        object_store_creator_factory)
+        object_store_creator)
     self._example_zipper = ExampleZipper(
-        CompiledFileSystem.Factory(self._file_system,
-                                   object_store_creator_factory),
+        CompiledFileSystem.Factory(self._file_system, object_store_creator),
         'example_zipper')
 
   def testCreateZip(self):

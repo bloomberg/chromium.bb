@@ -60,7 +60,7 @@ class APIDataSourceTest(unittest.TestCase):
         self._LoadJSON(filename))
     return ReferenceResolver.Factory(data_source,
                                      data_source,
-                                     ObjectStoreCreator.TestFactory()).Create()
+                                     ObjectStoreCreator.ForTest()).Create()
 
   def _LoadJSON(self, filename):
     return json.loads(self._ReadLocalFile(filename))

@@ -9,6 +9,7 @@ import unittest
 
 from branch_utility import BranchUtility
 from fake_url_fetcher import FakeUrlFetcher
+from object_store_creator import ObjectStoreCreator
 from test_object_store import TestObjectStore
 
 class BranchUtilityTest(unittest.TestCase):
@@ -16,7 +17,7 @@ class BranchUtilityTest(unittest.TestCase):
     self._branch_util = BranchUtility(
         os.path.join('branch_utility', 'first.json'),
         FakeUrlFetcher(os.path.join(sys.path[0], 'test_data')),
-        object_store=TestObjectStore('test'))
+        ObjectStoreCreator.ForTest())
 
   def testSplitChannelNameFromPath(self):
     self.assertEquals(('stable', 'extensions/stuff.html'),
@@ -44,15 +45,11 @@ class BranchUtilityTest(unittest.TestCase):
                       self._branch_util.SplitChannelNameFromPath(
                       'stuff.html'))
 
-  def testGetBranchNumberForChannelName(self):
-    self.assertEquals('1145',
-                      self._branch_util.GetBranchNumberForChannelName('dev'))
-    self.assertEquals('1084',
-                      self._branch_util.GetBranchNumberForChannelName('beta'))
-    self.assertEquals('1084',
-                      self._branch_util.GetBranchNumberForChannelName('stable'))
-    self.assertEquals('trunk',
-                      self._branch_util.GetBranchNumberForChannelName('trunk'))
+  def testGetBranchForChannel(self):
+    self.assertEquals('1145', self._branch_util.GetBranchForChannel('dev'))
+    self.assertEquals('1084', self._branch_util.GetBranchForChannel('beta'))
+    self.assertEquals('1084', self._branch_util.GetBranchForChannel('stable'))
+    self.assertEquals('trunk', self._branch_util.GetBranchForChannel('trunk'))
 
 if __name__ == '__main__':
   unittest.main()
