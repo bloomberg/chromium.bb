@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
 
 #include "base/string_util.h"
+#include "net/base/net_errors.h"
 
 using testing::Action;
 
@@ -66,7 +67,7 @@ class SyncRequestJob : public MockRequestJobBase {
  protected:
   virtual void Run() OVERRIDE {
     MockRequestJobBase::Run();
-    callback_.Run(status_, response_);
+    callback_.Run(status_, net::OK, response_);
   }
 
  private:
@@ -94,7 +95,7 @@ class AsyncRequestJob : public MockRequestJobBase,
   virtual void SendResponse(
       DeviceManagementStatus status,
       const em::DeviceManagementResponse& response) OVERRIDE {
-    callback_.Run(status, response);
+    callback_.Run(status, net::OK, response);
   }
 
  private:

@@ -44,7 +44,7 @@ class DeviceManagementRequestJob {
   };
 
   typedef base::Callback<
-      void(DeviceManagementStatus,
+      void(DeviceManagementStatus, int,
            const enterprise_management::DeviceManagementResponse&)> Callback;
 
   typedef base::Callback<void(DeviceManagementRequestJob*)> RetryCallback;

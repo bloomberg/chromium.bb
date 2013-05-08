@@ -15,8 +15,8 @@
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
-class PrefService;
 class PrefRegistrySimple;
+class PrefService;
 
 namespace enterprise_management {
 class DeviceManagementResponse;
@@ -92,6 +92,7 @@ class AutoEnrollmentClient {
   // Handles auto-enrollment request completion.
   void OnRequestCompletion(
       DeviceManagementStatus status,
+      int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Returns true if |serial_number_hash_| is contained in |hashes|.

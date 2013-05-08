@@ -89,7 +89,7 @@ class DeviceManagementServiceIntegrationTest
       public testing::WithParamInterface<
           std::string (DeviceManagementServiceIntegrationTest::*)(void)> {
  public:
-  MOCK_METHOD2(OnJobDone, void(DeviceManagementStatus,
+  MOCK_METHOD3(OnJobDone, void(DeviceManagementStatus, int,
                                const em::DeviceManagementResponse&));
 
   std::string InitCannedResponse() {
@@ -103,6 +103,7 @@ class DeviceManagementServiceIntegrationTest
   }
 
   void RecordAuthCode(DeviceManagementStatus status,
+                      int net_error,
                       const em::DeviceManagementResponse& response) {
     robot_auth_code_ = response.service_api_access_response().auth_code();
   }
@@ -115,7 +116,7 @@ class DeviceManagementServiceIntegrationTest
 
   void PerformRegistration() {
     ExpectRequest();
-    EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _))
+    EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
         .WillOnce(
             DoAll(Invoke(this,
                          &DeviceManagementServiceIntegrationTest::RecordToken),
@@ -151,6 +152,7 @@ class DeviceManagementServiceIntegrationTest
   }
 
   void RecordToken(DeviceManagementStatus status,
+                   int net_error,
                    const em::DeviceManagementResponse& response) {
     token_ = response.register_response().device_management_token();
   }
@@ -172,7 +174,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
   PerformRegistration();
 
   ExpectRequest();
-  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _))
+  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
       .WillOnce(
           DoAll(Invoke(this,
                        &DeviceManagementServiceIntegrationTest::RecordAuthCode),
@@ -196,7 +198,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, PolicyFetch) {
   PerformRegistration();
 
   ExpectRequest();
-  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _))
+  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
       .WillOnce(InvokeWithoutArgs(MessageLoop::current(), &MessageLoop::Quit));
   scoped_ptr<DeviceManagementRequestJob> job(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH));
@@ -215,7 +217,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
   PerformRegistration();
 
   ExpectRequest();
-  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _))
+  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
       .WillOnce(InvokeWithoutArgs(MessageLoop::current(), &MessageLoop::Quit));
   scoped_ptr<DeviceManagementRequestJob> job(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION));
@@ -229,7 +231,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
 
 IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
   ExpectRequest();
-  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _))
+  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
       .WillOnce(InvokeWithoutArgs(MessageLoop::current(), &MessageLoop::Quit));
   scoped_ptr<DeviceManagementRequestJob> job(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT));

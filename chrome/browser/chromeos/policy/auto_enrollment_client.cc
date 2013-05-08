@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,6 +26,13 @@
 namespace em = enterprise_management;
 
 namespace {
+
+// UMA histogram names.
+const char kUMAProtocolTime[] = "Enterprise.AutoEnrollmentProtocolTime";
+const char kUMAExtraTime[] = "Enterprise.AutoEnrollmentExtraTime";
+const char kUMARequestStatus[] = "Enterprise.AutoEnrollmentRequestStatus";
+const char kUMANetworkErrorCode[] =
+    "Enterprise.AutoEnrollmentRequestNetworkErrorCode";
 
 // The modulus value is sent in an int64 field in the protobuf, whose maximum
 // value is 2^63-1. So 2^64 and 2^63 can't be represented as moduli and the
@@ -239,9 +247,13 @@ void AutoEnrollmentClient::SendRequest(int power) {
 
 void AutoEnrollmentClient::OnRequestCompletion(
     DeviceManagementStatus status,
+    int net_error,
     const em::DeviceManagementResponse& response) {
   if (status != DM_STATUS_SUCCESS || !response.has_auto_enrollment_response()) {
     LOG(ERROR) << "Auto enrollment error: " << status;
+    UMA_HISTOGRAM_SPARSE_SLOWLY(kUMARequestStatus, status);
+    if (status == DM_STATUS_REQUEST_FAILED)
+      UMA_HISTOGRAM_SPARSE_SLOWLY(kUMANetworkErrorCode, -net_error);
     OnProtocolDone();
     return;
   }
@@ -284,6 +296,7 @@ void AutoEnrollmentClient::OnRequestCompletion(
   }
 
   // Auto-enrollment done.
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kUMARequestStatus, DM_STATUS_SUCCESS);
   OnProtocolDone();
 }
 
@@ -297,8 +310,6 @@ bool AutoEnrollmentClient::IsSerialInProtobuf(
 }
 
 void AutoEnrollmentClient::OnProtocolDone() {
-  static const char* kProtocolTime = "Enterprise.AutoEnrollmentProtocolTime";
-  static const char* kExtraTime = "Enterprise.AutoEnrollmentExtraTime";
   // The mininum time can't be 0, must be at least 1.
   static const base::TimeDelta kMin = base::TimeDelta::FromMilliseconds(1);
   static const base::TimeDelta kMax = base::TimeDelta::FromMinutes(5);
@@ -309,7 +320,7 @@ void AutoEnrollmentClient::OnProtocolDone() {
   base::Time now = base::Time::Now();
   if (!time_start_.is_null()) {
     base::TimeDelta delta = now - time_start_;
-    UMA_HISTOGRAM_CUSTOM_TIMES(kProtocolTime, delta, kMin, kMax, kBuckets);
+    UMA_HISTOGRAM_CUSTOM_TIMES(kUMAProtocolTime, delta, kMin, kMax, kBuckets);
     time_start_ = base::Time();
 
     // The decision is cached only if the protocol was actually started, which
@@ -328,7 +339,7 @@ void AutoEnrollmentClient::OnProtocolDone() {
   // This samples |kZero| when there was no need for extra time, so that we can
   // measure the ratio of users that succeeded without needing a delay to the
   // total users going through OOBE.
-  UMA_HISTOGRAM_CUSTOM_TIMES(kExtraTime, delta, kMin, kMax, kBuckets);
+  UMA_HISTOGRAM_CUSTOM_TIMES(kUMAExtraTime, delta, kMin, kMax, kBuckets);
 
   if (!completion_callback_.is_null())
     completion_callback_.Run();

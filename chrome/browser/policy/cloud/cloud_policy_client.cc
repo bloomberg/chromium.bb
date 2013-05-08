@@ -270,6 +270,7 @@ void CloudPolicyClient::OnRetryRegister(DeviceManagementRequestJob* job) {
 
 void CloudPolicyClient::OnRegisterCompleted(
     DeviceManagementStatus status,
+    int net_error,
     const em::DeviceManagementResponse& response) {
   if (status == DM_STATUS_SUCCESS &&
       (!response.has_register_response() ||
@@ -299,6 +300,7 @@ void CloudPolicyClient::OnRegisterCompleted(
 
 void CloudPolicyClient::OnFetchRobotAuthCodesCompleted(
     DeviceManagementStatus status,
+    int net_error,
     const em::DeviceManagementResponse& response) {
   if (status == DM_STATUS_SUCCESS &&
       (!response.has_service_api_access_response() ||
@@ -321,6 +323,7 @@ void CloudPolicyClient::OnFetchRobotAuthCodesCompleted(
 
 void CloudPolicyClient::OnPolicyFetchCompleted(
     DeviceManagementStatus status,
+    int net_error,
     const em::DeviceManagementResponse& response) {
   if (status == DM_STATUS_SUCCESS) {
     if (!response.has_policy_response() ||
@@ -366,6 +369,7 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
 
 void CloudPolicyClient::OnUnregisterCompleted(
     DeviceManagementStatus status,
+    int net_error,
     const em::DeviceManagementResponse& response) {
   if (status == DM_STATUS_SUCCESS && !response.has_unregister_response()) {
     // Assume unregistration has succeeded either way.
@@ -384,6 +388,7 @@ void CloudPolicyClient::OnUnregisterCompleted(
 void CloudPolicyClient::OnCertificateUploadCompleted(
     const CloudPolicyClient::StatusCallback& callback,
     DeviceManagementStatus status,
+    int net_error,
     const enterprise_management::DeviceManagementResponse& response) {
   if (status == DM_STATUS_SUCCESS && !response.has_cert_upload_response()) {
     LOG(WARNING) << "Empty upload certificate response.";

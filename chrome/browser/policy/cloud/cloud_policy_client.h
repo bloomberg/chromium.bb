@@ -195,27 +195,32 @@ class CloudPolicyClient {
   // Callback for registration requests.
   void OnRegisterCompleted(
       DeviceManagementStatus status,
+      int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Callback for policy fetch requests.
   void OnPolicyFetchCompleted(
       DeviceManagementStatus status,
+      int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Callback for robot account api authorization requests.
   void OnFetchRobotAuthCodesCompleted(
       DeviceManagementStatus status,
+      int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Callback for unregistration requests.
   void OnUnregisterCompleted(
       DeviceManagementStatus status,
+      int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Callback for certificate upload requests.
   void OnCertificateUploadCompleted(
       const StatusCallback& callback,
       DeviceManagementStatus status,
+      int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Observer notification helpers.
