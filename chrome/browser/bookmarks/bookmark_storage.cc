@@ -167,7 +167,7 @@ void BookmarkStorage::OnLoadFinished() {
 }
 
 bool BookmarkStorage::SaveNow() {
-  if (!model_ || !model_->IsLoaded()) {
+  if (!model_ || !model_->loaded()) {
     // We should only get here if we have a valid model and it's finished
     // loading.
     NOTREACHED();

@@ -104,7 +104,7 @@ void BookmarkCurrentPageInternal(Browser* browser, bool from_star) {
 
   BookmarkModel* model =
       BookmarkModelFactory::GetForProfile(browser->profile());
-  if (!model || !model->IsLoaded())
+  if (!model || !model->loaded())
     return;  // Ignore requests until bookmarks are loaded.
 
   GURL url;
@@ -653,7 +653,7 @@ bool CanBookmarkCurrentPage(const Browser* browser) {
   return browser_defaults::bookmarks_enabled &&
       browser->profile()->GetPrefs()->GetBoolean(
           prefs::kEditBookmarksEnabled) &&
-      model && model->IsLoaded() && browser->is_type_tabbed();
+      model && model->loaded() && browser->is_type_tabbed();
 }
 
 void BookmarkAllTabs(Browser* browser) {

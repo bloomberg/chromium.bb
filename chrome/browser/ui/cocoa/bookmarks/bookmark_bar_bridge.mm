@@ -23,7 +23,7 @@ BookmarkBarBridge::BookmarkBarBridge(Profile* profile,
 
   // Bookmark loading is async; it may may not have happened yet.
   // We will be notified when that happens with the AddObserver() call.
-  if (model->IsLoaded())
+  if (model->loaded())
     Loaded(model, false);
 
   profile_pref_registrar_.Init(profile->GetPrefs());

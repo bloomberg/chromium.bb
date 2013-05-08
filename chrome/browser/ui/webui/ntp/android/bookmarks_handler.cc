@@ -144,7 +144,7 @@ void BookmarksHandler::HandleGetBookmarks(const ListValue* args) {
   bookmark_data_requested_ = true;
   Profile* profile = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext());
-  if (!BookmarkModelFactory::GetForProfile(profile)->IsLoaded())
+  if (!BookmarkModelFactory::GetForProfile(profile)->loaded())
     return;  // is handled in Loaded().
 
   // Attach the Partner Bookmarks shim under the Mobile Bookmarks.

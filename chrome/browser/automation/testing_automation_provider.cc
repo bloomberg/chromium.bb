@@ -1280,7 +1280,7 @@ void TestingAutomationProvider::GetBookmarksAsJSON(
   }
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForProfile(browser->profile());
-  if (!bookmark_model->IsLoaded()) {
+  if (!bookmark_model->loaded()) {
     reply.SendError("Bookmark model is not loaded");
     return;
   }
@@ -1307,7 +1307,7 @@ void TestingAutomationProvider::WaitForBookmarkModelToLoad(
     AutomationProviderBookmarkModelObserver* observer =
         new AutomationProviderBookmarkModelObserver(this, reply_message,
                                                     model, false);
-    if (model->IsLoaded()) {
+    if (model->loaded()) {
       observer->ReleaseReply();
       delete observer;
       AutomationMsg_WaitForBookmarkModelToLoad::WriteReplyParams(
@@ -1331,7 +1331,7 @@ void TestingAutomationProvider::WaitForBookmarkModelToLoadJSON(
   AutomationProviderBookmarkModelObserver* observer =
       new AutomationProviderBookmarkModelObserver(this, reply_message, model,
                                                   true);
-  if (model->IsLoaded()) {
+  if (model->loaded()) {
     observer->ReleaseReply();
     delete observer;
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
@@ -1374,7 +1374,7 @@ void TestingAutomationProvider::AddBookmark(
   }
   BookmarkModel* model =
       BookmarkModelFactory::GetForProfile(browser->profile());
-  if (!model->IsLoaded()) {
+  if (!model->loaded()) {
     reply.SendError("Bookmark model is not loaded");
     return;
   }
@@ -1420,7 +1420,7 @@ void TestingAutomationProvider::ReparentBookmark(DictionaryValue* args,
   }
   BookmarkModel* model =
       BookmarkModelFactory::GetForProfile(browser->profile());
-  if (!model->IsLoaded()) {
+  if (!model->loaded()) {
     reply.SendError("Bookmark model is not loaded");
     return;
   }
@@ -1459,7 +1459,7 @@ void TestingAutomationProvider::SetBookmarkTitle(DictionaryValue* args,
   }
   BookmarkModel* model =
       BookmarkModelFactory::GetForProfile(browser->profile());
-  if (!model->IsLoaded()) {
+  if (!model->loaded()) {
     reply.SendError("Bookmark model is not loaded");
     return;
   }
@@ -1492,7 +1492,7 @@ void TestingAutomationProvider::SetBookmarkURL(DictionaryValue* args,
   }
   BookmarkModel* model =
       BookmarkModelFactory::GetForProfile(browser->profile());
-  if (!model->IsLoaded()) {
+  if (!model->loaded()) {
     reply.SendError("Bookmark model is not loaded");
     return;
   }
@@ -1521,7 +1521,7 @@ void TestingAutomationProvider::RemoveBookmark(DictionaryValue* args,
   }
   BookmarkModel* model =
       BookmarkModelFactory::GetForProfile(browser->profile());
-  if (!model->IsLoaded()) {
+  if (!model->loaded()) {
     reply.SendError("Bookmark model is not loaded");
     return;
   }

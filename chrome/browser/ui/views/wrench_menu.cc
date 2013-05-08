@@ -1156,9 +1156,9 @@ void WrenchMenu::CreateBookmarkMenu() {
   if (bookmark_menu_delegate_.get())
     return;  // Already created the menu.
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(
-      browser_->profile());
-  if (!model->IsLoaded())
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser_->profile());
+  if (!model->loaded())
     return;
 
   model->AddObserver(this);

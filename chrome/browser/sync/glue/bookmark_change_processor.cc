@@ -62,7 +62,7 @@ void BookmarkChangeProcessor::StartImpl(Profile* profile) {
   profile_ = profile;
   DCHECK(!bookmark_model_);
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
-  DCHECK(bookmark_model_->IsLoaded());
+  DCHECK(bookmark_model_->loaded());
   bookmark_model_->AddObserver(this);
 }
 

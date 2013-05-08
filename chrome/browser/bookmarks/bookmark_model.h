@@ -244,8 +244,7 @@ class BookmarkModel : public content::NotificationObserver,
   void Load(const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // Returns true if the model finished loading.
-  // This is virtual so it can be mocked.
-  virtual bool IsLoaded() const;
+  bool loaded() const { return loaded_; }
 
   // Returns the root node. The 'bookmark bar' node and 'other' node are
   // children of the root node.

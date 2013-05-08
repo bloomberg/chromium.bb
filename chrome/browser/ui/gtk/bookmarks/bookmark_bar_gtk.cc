@@ -288,7 +288,7 @@ void BookmarkBarGtk::Init() {
   // TODO(erg): Handle extensions
   model_ = BookmarkModelFactory::GetForProfile(profile);
   model_->AddObserver(this);
-  if (model_->IsLoaded())
+  if (model_->loaded())
     Loaded(model_, false);
   // else case: we'll receive notification back from the BookmarkModel when done
   // loading, then we'll populate the bar.
@@ -437,7 +437,7 @@ void BookmarkBarGtk::Show(BookmarkBar::State old_state,
     AnimationProgressed(&slide_animation_);
   }
 
-  if (model_ && model_->IsLoaded())
+  if (model_ && model_->loaded())
     UpdateOtherBookmarksVisibility();
 
   // Hide out behind the findbar. This is rather fragile code, it could
@@ -978,7 +978,7 @@ void BookmarkBarGtk::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
-    if (model_ && model_->IsLoaded()) {
+    if (model_ && model_->loaded()) {
       // Regenerate the bookmark bar with all new objects with their theme
       // properties set correctly for the new theme.
       ResetButtons();
@@ -1114,7 +1114,7 @@ const BookmarkNode* BookmarkBarGtk::GetNodeForToolButton(GtkWidget* widget) {
 void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
                                       const BookmarkNode* node,
                                       GdkEventButton* event) {
-  if (!model_->IsLoaded()) {
+  if (!model_->loaded()) {
     // Don't do anything if the model isn't loaded.
     return;
   }

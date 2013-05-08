@@ -85,7 +85,7 @@ class BookmarkContextMenuDelegateBridge :
 - (NSMenu*)menuForBookmarkNode:(const BookmarkNode*)node {
   // Depending on timing, the model may not yet have been loaded.
   BookmarkModel* bookmarkModel = [bookmarkBarController_ bookmarkModel];
-  if (!bookmarkModel || !bookmarkModel->IsLoaded())
+  if (!bookmarkModel || !bookmarkModel->loaded())
     return nil;
 
   // This may be called before the BMB view has been added to the window. In

@@ -86,7 +86,7 @@ bool ProfileWriter::BookmarkEntry::operator==(
 ProfileWriter::ProfileWriter(Profile* profile) : profile_(profile) {}
 
 bool ProfileWriter::BookmarkModelIsLoaded() const {
-  return BookmarkModelFactory::GetForProfile(profile_)->IsLoaded();
+  return BookmarkModelFactory::GetForProfile(profile_)->loaded();
 }
 
 bool ProfileWriter::TemplateURLServiceIsLoaded() const {
@@ -127,7 +127,7 @@ void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
     return;
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
-  DCHECK(model->IsLoaded());
+  DCHECK(model->loaded());
 
   // If the bookmark bar is currently empty, we should import directly to it.
   // Otherwise, we should import everything to a subfolder.

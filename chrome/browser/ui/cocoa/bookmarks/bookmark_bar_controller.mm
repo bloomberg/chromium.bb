@@ -1158,7 +1158,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!appsPageShortcutButton_.get())
     return NO;
 
-  BOOL visible = bookmarkModel_->IsLoaded() &&
+  BOOL visible = bookmarkModel_->loaded() &&
       chrome::ShouldShowAppsShortcutInBookmarkBar(browser_->profile());
   [appsPageShortcutButton_ setHidden:!visible];
   return visible;
@@ -1678,7 +1678,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 // Called when our controlled frame has changed size.
 - (void)frameDidChange {
-  if (!bookmarkModel_->IsLoaded())
+  if (!bookmarkModel_->loaded())
     return;
   [self updateTheme:[[[self view] window] themeProvider]];
   [self reconfigureBookmarkBar];
@@ -2013,7 +2013,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // TODO(jrg): for now this is brute force.
 - (void)loaded:(BookmarkModel*)model {
   DCHECK(model == bookmarkModel_);
-  if (!model->IsLoaded())
+  if (!model->loaded())
     return;
 
   // If this is a rebuild request while we have a folder open, close it.

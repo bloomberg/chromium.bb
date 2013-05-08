@@ -174,7 +174,7 @@ void BookmarkSubMenuModel::MenuWillShow() {
     model()->AddObserver(this);
   }
   // We can't do anything further if the model isn't loaded yet.
-  if (!model()->IsLoaded())
+  if (!model()->loaded())
     return;
   // The node count includes the node itself, so 1 means empty.
   if (model()->bookmark_bar_node()->GetTotalNodeCount() > 1) {

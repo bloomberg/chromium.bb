@@ -94,7 +94,7 @@ string16 BookmarkEditorView::GetDialogButtonLabel(
 
 bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK) {
-    if (!bb_model_->IsLoaded())
+    if (!bb_model_->loaded())
       return false;
 
     if (details_.GetNodeType() != BookmarkNode::FOLDER)
@@ -220,7 +220,7 @@ void BookmarkEditorView::ExecuteCommand(int command_id, int event_flags) {
 void BookmarkEditorView::Show(gfx::NativeWindow parent) {
   views::DialogDelegateView::CreateDialogWidget(this, NULL, parent);
   UserInputChanged();
-  if (show_tree_ && bb_model_->IsLoaded())
+  if (show_tree_ && bb_model_->loaded())
     ExpandAndSelect();
   GetWidget()->Show();
   // Select all the text in the name Textfield.
@@ -353,7 +353,7 @@ void BookmarkEditorView::Init() {
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-  if (!show_tree_ || bb_model_->IsLoaded())
+  if (!show_tree_ || bb_model_->loaded())
     Reset();
 }
 
@@ -519,7 +519,7 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::FindNodeWithID(
 }
 
 void BookmarkEditorView::ApplyEdits() {
-  DCHECK(bb_model_->IsLoaded());
+  DCHECK(bb_model_->loaded());
 
   if (tree_view_)
     tree_view_->CommitEdit();

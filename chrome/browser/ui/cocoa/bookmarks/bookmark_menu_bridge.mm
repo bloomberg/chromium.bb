@@ -60,7 +60,7 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
     return;
 
   BookmarkModel* model = GetBookmarkModel();
-  if (!model || !model->IsLoaded())
+  if (!model || !model->loaded())
     return;
 
   if (!folder_image_) {
@@ -168,7 +168,7 @@ void BookmarkMenuBridge::BuildMenu() {
 void BookmarkMenuBridge::ObserveBookmarkModel() {
   BookmarkModel* model = GetBookmarkModel();
   model->AddObserver(this);
-  if (model->IsLoaded())
+  if (model->loaded())
     Loaded(model, false);
 }
 

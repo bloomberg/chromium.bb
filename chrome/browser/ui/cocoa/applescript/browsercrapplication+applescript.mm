@@ -79,7 +79,7 @@
   }
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(lastProfile);
-  if (!model->IsLoaded()) {
+  if (!model->loaded()) {
     AppleScript::SetError(AppleScript::errBookmarkModelLoad);
     return nil;
   }
@@ -102,7 +102,7 @@
   }
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(lastProfile);
-  if (!model->IsLoaded()) {
+  if (!model->loaded()) {
     AppleScript::SetError(AppleScript::errBookmarkModelLoad);
     return NULL;
   }

@@ -144,7 +144,7 @@ void AutocompleteProvider::UpdateStarredStateOfMatches() {
     return;
 
   BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
-  if (!bookmark_model || !bookmark_model->IsLoaded())
+  if (!bookmark_model || !bookmark_model->loaded())
     return;
 
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i)

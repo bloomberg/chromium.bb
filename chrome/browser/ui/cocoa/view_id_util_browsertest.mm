@@ -58,7 +58,7 @@ class ViewIDTest : public InProcessBrowserTest {
     BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForProfile(browser()->profile());
     if (bookmark_model) {
-      if (!bookmark_model->IsLoaded())
+      if (!bookmark_model->loaded())
         ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
 
       bookmark_utils::AddIfNotBookmarked(

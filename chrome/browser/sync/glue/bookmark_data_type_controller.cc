@@ -92,7 +92,7 @@ void BookmarkDataTypeController::BookmarkModelChanged() {
 
 void BookmarkDataTypeController::Loaded(BookmarkModel* model,
                                         bool ids_reassigned) {
-  DCHECK(model->IsLoaded());
+  DCHECK(model->loaded());
   model->RemoveObserver(this);
   installed_bookmark_observer_ = false;
 
@@ -111,7 +111,7 @@ void BookmarkDataTypeController::BookmarkModelBeingDeleted(
 // Check that both the bookmark model and the history service (for favicons)
 // are loaded.
 bool BookmarkDataTypeController::DependentsLoaded() {
-  if (!bookmark_model_ || !bookmark_model_->IsLoaded())
+  if (!bookmark_model_ || !bookmark_model_->loaded())
     return false;
 
   HistoryService* history = HistoryServiceFactory::GetForProfile(

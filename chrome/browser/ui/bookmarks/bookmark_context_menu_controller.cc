@@ -44,7 +44,7 @@ BookmarkContextMenuController::BookmarkContextMenuController(
       selection_(selection),
       model_(BookmarkModelFactory::GetForProfile(profile)) {
   DCHECK(profile_);
-  DCHECK(model_->IsLoaded());
+  DCHECK(model_->loaded());
   menu_model_.reset(new ui::SimpleMenuModel(this));
   model_->AddObserver(this);
 

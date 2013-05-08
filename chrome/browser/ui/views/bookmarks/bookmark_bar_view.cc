@@ -785,7 +785,7 @@ void BookmarkBarView::PaintChildren(gfx::Canvas* canvas) {
 bool BookmarkBarView::GetDropFormats(
       int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
-  if (!model_ || !model_->IsLoaded())
+  if (!model_ || !model_->loaded())
     return false;
   *formats = ui::OSExchangeData::URL;
   custom_formats->insert(BookmarkNodeData::GetBookmarkCustomFormat());
@@ -797,7 +797,7 @@ bool BookmarkBarView::AreDropTypesRequired() {
 }
 
 bool BookmarkBarView::CanDrop(const ui::OSExchangeData& data) {
-  if (!model_ || !model_->IsLoaded() ||
+  if (!model_ || !model_->loaded() ||
       !browser_->profile()->GetPrefs()->GetBoolean(
           prefs::kEditBookmarksEnabled))
     return false;
@@ -1221,7 +1221,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
 
 void BookmarkBarView::ShowContextMenuForView(views::View* source,
                                              const gfx::Point& point) {
-  if (!model_->IsLoaded()) {
+  if (!model_->loaded()) {
     // Don't do anything if the model isn't loaded.
     return;
   }
@@ -1299,7 +1299,7 @@ void BookmarkBarView::Init() {
   model_ = BookmarkModelFactory::GetForProfile(browser_->profile());
   if (model_) {
     model_->AddObserver(this);
-    if (model_->IsLoaded())
+    if (model_->loaded())
       Loaded(model_, false);
     // else case: we'll receive notification back from the BookmarkModel when
     // done loading, then we'll populate the bar.
@@ -1530,7 +1530,7 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
                                             const BookmarkNodeData& data,
                                             DropLocation* location) {
   DCHECK(model_);
-  DCHECK(model_->IsLoaded());
+  DCHECK(model_->loaded());
   DCHECK(data.is_valid());
 
   *location = DropLocation();
@@ -1778,7 +1778,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   }
 
   // Then go through the bookmark buttons.
-  if (GetBookmarkButtonCount() == 0 && model_ && model_->IsLoaded()) {
+  if (GetBookmarkButtonCount() == 0 && model_ && model_->loaded()) {
     gfx::Size pref = instructions_->GetPreferredSize();
     if (!compute_bounds_only) {
       instructions_->SetBounds(

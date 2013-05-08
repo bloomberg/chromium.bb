@@ -213,7 +213,7 @@ BookmarkModelAssociator::~BookmarkModelAssociator() {
 
 void BookmarkModelAssociator::UpdatePermanentNodeVisibility() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(bookmark_model_->IsLoaded());
+  DCHECK(bookmark_model_->loaded());
 
   bookmark_model_->SetPermanentNodeVisible(
       BookmarkNode::MOBILE,
@@ -393,7 +393,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
   // This algorithm will not do well if the folder name has changes but the
   // children under them are all the same.
 
-  DCHECK(bookmark_model_->IsLoaded());
+  DCHECK(bookmark_model_->loaded());
 
   // To prime our association, we associate the top-level nodes, Bookmark Bar
   // and Other Bookmarks.

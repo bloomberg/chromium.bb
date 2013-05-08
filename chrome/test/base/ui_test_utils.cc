@@ -417,14 +417,14 @@ void RegisterAndWait(content::NotificationObserver* observer,
 }
 
 void WaitForBookmarkModelToLoad(BookmarkModel* model) {
-  if (model->IsLoaded())
+  if (model->loaded())
     return;
   base::RunLoop run_loop;
   BookmarkLoadObserver observer(content::GetQuitTaskForRunLoop(&run_loop));
   model->AddObserver(&observer);
   content::RunThisRunLoop(&run_loop);
   model->RemoveObserver(&observer);
-  ASSERT_TRUE(model->IsLoaded());
+  ASSERT_TRUE(model->loaded());
 }
 
 void WaitForBookmarkModelToLoad(Profile* profile) {

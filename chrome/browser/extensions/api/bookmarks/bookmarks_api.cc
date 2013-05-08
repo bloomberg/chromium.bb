@@ -90,7 +90,7 @@ base::FilePath GetDefaultFilepathForBookmarkExport() {
 
 void BookmarksFunction::Run() {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  if (!model->IsLoaded()) {
+  if (!model->loaded()) {
     // Bookmarks are not ready yet.  We'll wait.
     model->AddObserver(this);
     AddRef();  // Balanced in Loaded().
