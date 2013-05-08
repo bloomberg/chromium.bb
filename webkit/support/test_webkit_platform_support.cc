@@ -60,7 +60,6 @@
 
 #if defined(OS_WIN)
 #include "third_party/WebKit/Source/Platform/chromium/public/win/WebThemeEngine.h"
-#include "webkit/tools/test_shell/test_shell_webthemeengine.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif

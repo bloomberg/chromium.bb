@@ -253,7 +253,6 @@
             '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
             '../ui/app_list/app_list.gyp:app_list_unittests',
             '../ui/views/views.gyp:views_unittests',
-            '../webkit/webkit.gyp:test_shell_common',
           ],
           'conditions': [
             ['target_arch!="x64"', {
@@ -683,7 +682,6 @@
           'target_name': 'webkit_builder_win',
           'type': 'none',
           'dependencies': [
-            '../webkit/webkit.gyp:test_shell',
             '../webkit/webkit.gyp:pull_in_webkit_unit_tests',
             '../content/content.gyp:content_shell',
             '../webkit/webkit.gyp:pull_in_DumpRenderTree',
