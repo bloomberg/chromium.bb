@@ -649,7 +649,8 @@ hooks = [
     # build deps change. This script is a no-op except for linux users who have
     # src-internal access and are doing official chrome builds.
     "pattern": ".",
-    "action": ["src/build/linux/install-debian.wheezy.sysroot.wrapper.sh"],
+    "action": ["python",
+               "src/build/linux/install-debian.wheezy.sysroot.wrapper.py"],
   },
   {
     # Pull clang on mac. If nothing changed, or on non-mac platforms, this takes
