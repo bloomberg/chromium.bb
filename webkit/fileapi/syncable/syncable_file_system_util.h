@@ -19,6 +19,8 @@ class LocalFileSystemOperation;
 
 namespace sync_file_system {
 
+WEBKIT_STORAGE_EXPORT const char* GetFlagForSyncFileSystemDirectoryOperation();
+
 // Registers a syncable filesystem with the given |service_name|.
 WEBKIT_STORAGE_EXPORT bool RegisterSyncableFileSystem(
     const std::string& service_name);
