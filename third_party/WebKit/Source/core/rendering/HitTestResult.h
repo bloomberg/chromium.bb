@@ -131,8 +131,6 @@ public:
     // the same thing as mutableRectBasedTestResult(), but here the return value is const.
     const NodeSet& rectBasedTestResult() const;
 
-    Vector<String> dictationAlternatives() const;
-
     Node* targetNode() const;
 
 private:

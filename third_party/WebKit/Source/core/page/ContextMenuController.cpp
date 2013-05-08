@@ -348,7 +348,6 @@ void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)
             page->inspectorController()->inspect(m_hitTestResult.innerNonSharedNode());
         break;
     case ContextMenuItemTagDictationAlternative:
-        frame->editor()->applyDictationAlternativelternative(item->title());
         break;
     default:
         break;
@@ -602,18 +601,6 @@ void ContextMenuController::populate()
                         appendItem(IgnoreGrammarItem, m_contextMenu.get());
                     appendItem(*separatorItem(), m_contextMenu.get());
                     haveContextMenuItemsForMisspellingOrGrammer = true;
-                }
-            }
-
-            if (!haveContextMenuItemsForMisspellingOrGrammer) {
-                // Spelling and grammar checking is mutually exclusive with dictation alternatives.
-                Vector<String> dictationAlternatives = m_hitTestResult.dictationAlternatives();
-                if (!dictationAlternatives.isEmpty()) {
-                    for (size_t i = 0; i < dictationAlternatives.size(); ++i) {
-                        ContextMenuItem item(ActionType, ContextMenuItemTagDictationAlternative, dictationAlternatives[i]);
-                        appendItem(item, m_contextMenu.get());
-                    }
-                    appendItem(*separatorItem(), m_contextMenu.get());
                 }
             }
         }

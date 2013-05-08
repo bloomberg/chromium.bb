@@ -841,11 +841,6 @@ void DeleteSelectionCommand::doApply()
 
     calculateTypingStyleAfterDelete();
 
-    if (!originalString.isEmpty()) {
-        if (Frame* frame = document()->frame())
-            frame->editor()->deletedAutocorrectionAtPosition(m_endingPosition, originalString);
-    }
-
     setEndingSelection(VisibleSelection(m_endingPosition, affinity, endingSelection().isDirectional()));
     clearTransientState();
 }

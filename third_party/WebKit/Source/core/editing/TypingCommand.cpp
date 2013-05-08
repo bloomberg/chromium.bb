@@ -310,8 +310,6 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
         VisiblePosition p2 = startOfWord(start, LeftWordIfOnBoundary);
         if (p1 != p2)
             frame->editor()->markMisspellingsAfterTypingToWord(p1, endingSelection());
-        else if (commandType == TypingCommand::InsertText)
-            frame->editor()->startAlternativeTextUITimer();
     }
 }
 

@@ -41,7 +41,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/page/AlternativeTextClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuClient.h"
@@ -150,7 +149,6 @@ Page::Page(PageClients& pageClients)
 #ifndef NDEBUG
     , m_isPainting(false)
 #endif
-    , m_alternativeTextClient(pageClients.alternativeTextClient)
     , m_console(PageConsole::create(this))
 {
     ASSERT(m_editorClient);
@@ -182,8 +180,6 @@ Page::~Page()
 
     if (m_plugInClient)
         m_plugInClient->pageDestroyed();
-    if (m_alternativeTextClient)
-        m_alternativeTextClient->pageDestroyed();
 
     m_inspectorController->inspectedPageDestroyed();
 
@@ -813,7 +809,6 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_bottomRelevantPaintedRegion, "relevantPaintedRegion");
     info.addMember(m_relevantUnpaintedRegion, "relevantUnpaintedRegion");
 
-    info.ignoreMember(m_alternativeTextClient);
     info.ignoreMember(m_editorClient);
     info.ignoreMember(m_plugInClient);
     info.ignoreMember(m_validationMessageClient);
@@ -826,8 +821,7 @@ void Page::captionPreferencesChanged()
 }
 
 Page::PageClients::PageClients()
-    : alternativeTextClient(0)
-    , chromeClient(0)
+    : chromeClient(0)
     , contextMenuClient(0)
     , editorClient(0)
     , dragClient(0)
