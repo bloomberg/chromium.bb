@@ -904,7 +904,7 @@ void Bus::GetServiceOwnerInternal(const std::string& service_name,
 
   std::string service_owner;
   if (Connect())
-    service_owner = GetServiceOwnerAndBlock(service_name, REPORT_ERRORS);
+    service_owner = GetServiceOwnerAndBlock(service_name, SUPPRESS_ERRORS);
   PostTaskToOriginThread(FROM_HERE, base::Bind(callback, service_owner));
 }
 

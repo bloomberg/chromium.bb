@@ -613,7 +613,7 @@ bool ObjectProxy::AddMatchRuleWithoutCallback(
 void ObjectProxy::UpdateNameOwnerAndBlock() {
   bus_->AssertOnDBusThread();
   service_name_owner_ =
-      bus_->GetServiceOwnerAndBlock(service_name_, Bus::SUPPRESS_ERRORS);
+      bus_->GetServiceOwnerAndBlock(service_name_, Bus::REPORT_ERRORS);
 }
 
 DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(
