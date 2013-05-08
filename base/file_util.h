@@ -101,7 +101,13 @@ BASE_EXPORT bool MoveUnsafe(const base::FilePath& from_path,
 // volume, or the function will fail. Destination file will be created
 // if it doesn't exist. Prefer this function over Move when dealing with
 // temporary files. On Windows it preserves attributes of the target file.
-// Returns true on success.
+// Returns true on success, leaving *error unchanged.
+// Returns false on failure and sets *error appropriately, if it is non-NULL.
+BASE_EXPORT bool ReplaceFileAndGetError(const base::FilePath& from_path,
+                                        const base::FilePath& to_path,
+                                        base::PlatformFileError* error);
+
+// Backward-compatible convenience method for the above.
 BASE_EXPORT bool ReplaceFile(const base::FilePath& from_path,
                              const base::FilePath& to_path);
 

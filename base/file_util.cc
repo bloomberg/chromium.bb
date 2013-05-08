@@ -63,6 +63,11 @@ bool Move(const FilePath& from_path, const FilePath& to_path) {
   return MoveUnsafe(from_path, to_path);
 }
 
+bool ReplaceFile(const base::FilePath& from_path,
+                 const base::FilePath& to_path) {
+  return ReplaceFileAndGetError(from_path, to_path, NULL);
+}
+
 bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
   if (from_path.ReferencesParent() || to_path.ReferencesParent())
     return false;

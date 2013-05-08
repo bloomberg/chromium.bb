@@ -202,7 +202,7 @@ static const base::FilePath::CharType kLevelDBTestDirectoryPrefix[]
 const char* PlatformFileErrorString(const ::base::PlatformFileError& error) {
   switch (error) {
     case ::base::PLATFORM_FILE_ERROR_FAILED:
-      return "Opening file failed.";
+      return "No further details.";
     case ::base::PLATFORM_FILE_ERROR_IN_USE:
       return "File currently in use.";
     case ::base::PLATFORM_FILE_ERROR_EXISTS:
@@ -549,8 +549,10 @@ class ChromiumEnv : public Env, public UMALogger {
     base::FilePath destination = CreateFilePath(dst);
 
     Retrier retrier(GetRetryTimeHistogram(kRenameFile), kMaxRenameTimeMillis);
+    base::PlatformFileError error = base::PLATFORM_FILE_OK;
     do {
-      if (::file_util::ReplaceFile(src_file_path, destination)) {
+      if (::file_util::ReplaceFileAndGetError(
+              src_file_path, destination, &error)) {
         sync_parent(dst);
         if (src != dst)
           sync_parent(src);
@@ -558,8 +560,12 @@ class ChromiumEnv : public Env, public UMALogger {
       }
     } while (retrier.ShouldKeepTrying());
 
-    RecordErrorAt(kRenameFile);
-    return Status::IOError(src, "Could not rename file.");
+    DCHECK(error != base::PLATFORM_FILE_OK);
+    RecordOSError(kRenameFile, error);
+    char buf[100];
+    snprintf(buf, sizeof(buf), "Could not rename file: %s",
+             PlatformFileErrorString(error));
+    return Status::IOError(src, buf);
   }
 
   virtual Status LockFile(const std::string& fname, FileLock** lock) {

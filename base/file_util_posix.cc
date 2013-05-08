@@ -232,9 +232,15 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   return true;
 }
 
-bool ReplaceFile(const FilePath& from_path, const FilePath& to_path) {
+bool ReplaceFileAndGetError(const FilePath& from_path,
+                            const FilePath& to_path,
+                            base::PlatformFileError* error) {
   base::ThreadRestrictions::AssertIOAllowed();
-  return (rename(from_path.value().c_str(), to_path.value().c_str()) == 0);
+  if (rename(from_path.value().c_str(), to_path.value().c_str()) == 0)
+    return true;
+  if (error)
+    *error = base::ErrnoToPlatformFileError(errno);
+  return false;
 }
 
 bool CopyDirectory(const FilePath& from_path,

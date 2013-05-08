@@ -148,7 +148,9 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   return ret;
 }
 
-bool ReplaceFile(const FilePath& from_path, const FilePath& to_path) {
+bool ReplaceFileAndGetError(const FilePath& from_path,
+                            const FilePath& to_path,
+                            base::PlatformFileError* error) {
   base::ThreadRestrictions::AssertIOAllowed();
   // Try a simple move first.  It will only succeed when |to_path| doesn't
   // already exist.
@@ -162,6 +164,8 @@ bool ReplaceFile(const FilePath& from_path, const FilePath& to_path) {
                     REPLACEFILE_IGNORE_MERGE_ERRORS, NULL, NULL)) {
     return true;
   }
+  if (error)
+    *error = base::LastErrorToPlatformFileError(GetLastError());
   return false;
 }
 

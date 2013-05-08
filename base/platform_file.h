@@ -19,14 +19,6 @@
 
 namespace base {
 
-#if defined(OS_WIN)
-typedef HANDLE PlatformFile;
-const PlatformFile kInvalidPlatformFileValue = INVALID_HANDLE_VALUE;
-#elif defined(OS_POSIX)
-typedef int PlatformFile;
-const PlatformFile kInvalidPlatformFileValue = -1;
-#endif
-
 // PLATFORM_FILE_(OPEN|CREATE).* are mutually exclusive. You should specify
 // exactly one of the five (possibly combining with other flags) when opening
 // or creating a file.
@@ -118,6 +110,16 @@ struct BASE_EXPORT PlatformFileInfo {
   // The creation time of a file.
   base::Time creation_time;
 };
+
+#if defined(OS_WIN)
+typedef HANDLE PlatformFile;
+const PlatformFile kInvalidPlatformFileValue = INVALID_HANDLE_VALUE;
+PlatformFileError LastErrorToPlatformFileError(DWORD saved_errno);
+#elif defined(OS_POSIX)
+typedef int PlatformFile;
+const PlatformFile kInvalidPlatformFileValue = -1;
+PlatformFileError ErrnoToPlatformFileError(int saved_errno);
+#endif
 
 // Creates or opens the given file. If |created| is provided, it will be set to
 // true if a new file was created [or an old one truncated to zero length to
