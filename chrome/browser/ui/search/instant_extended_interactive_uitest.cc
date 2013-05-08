@@ -335,10 +335,11 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_UsesOverlayIfTabNotReady) {
 
   // Open a new tab and start typing before InstantTab is properly hooked up.
   // Should use the overlay.
-  ui_test_utils::NavigateToURLWithDisposition(browser(),
-                                              GURL(chrome::kChromeUINewTabURL),
-                                              NEW_FOREGROUND_TAB,
-                                              ui_test_utils::BROWSER_TEST_NONE);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
 
   // But Instant tab should still exist.
@@ -921,15 +922,14 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxEmptyOnNewTabPage) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       GURL(chrome::kChromeUINewTabURL),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // Omnibox should be empty.
   EXPECT_TRUE(omnibox()->GetText().empty());
 }
 
-// TODO(dhollowa): Fix flakes.  http://crbug.com/179930.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_NoFaviconOnNewTabPage) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoFaviconOnNewTabPage) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
@@ -938,8 +938,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_NoFaviconOnNewTabPage) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       GURL(chrome::kChromeUINewTabURL),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // No favicon should be shown.
   content::WebContents* active_tab =
@@ -965,7 +965,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputOnNTPDoesntShowOverlay) {
   EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
-  // Navigate to the NTP.
+  // Navigate to the NTP. Should use preloaded contents.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       GURL(chrome::kChromeUINewTabURL),
@@ -1343,7 +1343,7 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest, ThemeBackgroundAccess) {
       browser(),
       GURL(chrome::kChromeUINewTabURL),
       NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+      ui_test_utils::BROWSER_TEST_NONE);
 
   content::RenderViewHost* rvh =
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
@@ -1794,12 +1794,12 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
       browser(),
       GURL("http://www.example.com"),
       CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       GURL("http://www.example.com"),
       NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // Verify there are two tabs, and their top bars are visible.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
@@ -1984,8 +1984,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, EmptyAutocompleteResults) {
 }
 
 // Test that hitting Esc to clear the omnibox works. http://crbug.com/231744.
-// TODO(kmadhusu): Investigate and re-enable this test.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_EscapeClearsOmnibox) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, EscapeClearsOmnibox) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
 
@@ -1996,7 +1995,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_EscapeClearsOmnibox) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       GURL(chrome::kChromeUINewTabURL),
-      CURRENT_TAB,
+      NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   instant_tab_observer.Wait();
 
