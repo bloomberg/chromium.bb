@@ -29,14 +29,14 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 -->
 
-<title>SunSpider 0.9.1 JavaScript Benchmark (sunspider-0.9.1 test suite - In Progress...)</title>
-<link rel="stylesheet" href="sunspider.css">
+<title>SunSpider 1.0 JavaScript Benchmark (sunspider-1.0 test suite - In Progress...)</title>
+<link rel="stylesheet" href="../sunspider.css">
 </head>
 
 <body onload="start()">
 
 <h2><span id="logo">&#x2600;</span>SunSpider JavaScript Benchmark <small>(In Progress...)</small></h2>
-<h3>Content Version: sunspider-0.9.1</h3>
+<h3>Content Version: sunspider-1.0</h3>
 
 <script src="sunspider-test-prefix.js"></script>
 <script src="sunspider-test-contents.js"></script>
@@ -58,7 +58,7 @@ function start()
 
 function next() 
 {
-    window.setTimeout(reallyNext, 10);
+    window.setTimeout(reallyNext, 0);
 }
 
 function reallyNext() 
@@ -70,12 +70,12 @@ function reallyNext()
     if (testIndex < tests.length) {
         testFrame.contentDocument.open();
         testFrame.contentDocument.write(testContents[testIndex]);
-        testFrame.contentDocument.close;
+        testFrame.contentDocument.close();
     } else if (++currentRepeat < repeatCount) { 
         testIndex = 0;
         testFrame.contentDocument.open();
         testFrame.contentDocument.write(testContents[testIndex]);
-        testFrame.contentDocument.close;
+        testFrame.contentDocument.close();
     } else {
         finish();
     }
@@ -91,11 +91,14 @@ function recordResult(time)
 function finish()
 {
     var outputString = "{";
-//    outputString += '"v": "sunspider-0.9.1", ';
+    outputString += '"v": "sunspider-1.0", ';
     for (var test in output[0]) {
         outputString += '"' + test + '":[';
         for (var i = 0; i < output.length; i++) {
-             outputString += output[i][test] + ",";
+            var time = output[i][test];
+            if (time != time)
+                time = "\"NaN\"";
+            outputString += time + ",";
         }
         outputString = outputString.substring(0, outputString.length - 1);
         outputString += "],";
@@ -103,7 +106,7 @@ function finish()
     outputString = outputString.substring(0, outputString.length - 1);
     outputString += "}";
 
-    location = "sunspider-results.html?" + encodeURI(outputString);
+    location = "results.html?" + encodeURI(outputString);
 }
 
 </script>

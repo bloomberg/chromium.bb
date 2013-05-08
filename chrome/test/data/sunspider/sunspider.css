@@ -19,13 +19,13 @@ dd { margin-bottom: 1em; margin-top: 0.5em }
 :visited { color: #5113A1 }
 
 #testframe { margin-top: 20px;
-	     width: 80%;
-	     height: 500px;
- 	     border: 2px solid #360D6B }
+             width: 80%;
+             height: 500px;
+             border: 2px solid #360D6B }
 
 #logo { float: left;
         position: relative; 
         bottom: 0.33em;
         padding-right: 20px;
-	margin-bottom: -40px; 
+        margin-bottom: -40px; 
         font-size: 3em }

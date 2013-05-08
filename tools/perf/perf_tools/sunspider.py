@@ -12,7 +12,7 @@ from telemetry.page import page_measurement
 class SunSpiderMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     js_is_done = """
-window.location.pathname.indexOf('sunspider-results') >= 0"""
+window.location.pathname.indexOf('results.html') >= 0"""
     def _IsDone():
       return tab.EvaluateJavaScript(js_is_done)
     util.WaitFor(_IsDone, 300, poll_interval=5)
