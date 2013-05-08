@@ -32,7 +32,9 @@ enum PP_FileSystemType {
   /** For local persistent file system types */
   PP_FILESYSTEMTYPE_LOCALPERSISTENT = 2,
   /** For local temporary file system types */
-  PP_FILESYSTEMTYPE_LOCALTEMPORARY = 3
+  PP_FILESYSTEMTYPE_LOCALTEMPORARY = 3,
+  /** For isolated file system types */
+  PP_FILESYSTEMTYPE_ISOLATED = 4
 };
 
 /**

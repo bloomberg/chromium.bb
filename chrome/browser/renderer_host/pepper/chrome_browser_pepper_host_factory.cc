@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 
 #include "chrome/browser/renderer_host/pepper/pepper_broker_message_filter.h"
+#include "chrome/browser/renderer_host/pepper/pepper_crx_file_system_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_device_id_host.h"
@@ -51,6 +52,14 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
         return scoped_ptr<ResourceHost>(new MessageFilterHost(
             host_->GetPpapiHost(), instance, params.pp_resource(),
             broker_filter));
+      }
+      case PpapiHostMsg_Ext_CrxFileSystem_Create::ID: {
+        PepperCrxFileSystemMessageFilter* crxfs_filter =
+            PepperCrxFileSystemMessageFilter::Create(instance, host_);
+        if (!crxfs_filter)
+          return scoped_ptr<ResourceHost>();
+        return scoped_ptr<ResourceHost>(new MessageFilterHost(
+            host, instance, params.pp_resource(), crxfs_filter));
       }
       case PpapiHostMsg_Talk_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperTalkHost(

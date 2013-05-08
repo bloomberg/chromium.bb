@@ -73,6 +73,8 @@ class WEBKIT_PLUGINS_EXPORT ResourceCreationImpl
                                           int32_t target_segment,
                                           uint32_t selection_start,
                                           uint32_t selection_end) OVERRIDE;
+  virtual PP_Resource CreateIsolatedFileSystem(PP_Instance instance,
+                                               const char* fsid) OVERRIDE;
   virtual PP_Resource CreateKeyboardInputEvent(
       PP_Instance instance,
       PP_InputEvent_Type type,

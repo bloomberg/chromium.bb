@@ -23,8 +23,8 @@ interface PPB_FileSystem {
    * @param[in] instance A <code>PP_Instance</code> identifying the instance
    * with the file.
    * @param[in] type A file system type as defined by
-   * <code>PP_FileSystemType</code> enum.
-   *
+   * <code>PP_FileSystemType</code> enum (except PP_FILESYSTEMTYPE_ISOLATED,
+   * which is currently not supported).
    * @return A <code>PP_Resource</code> corresponding to a file system if
    * successful.
    */

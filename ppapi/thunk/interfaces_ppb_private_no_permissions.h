@@ -44,6 +44,8 @@ PROXIED_IFACE(PPB_NetworkMonitor_Private,
               PPB_NETWORKMONITOR_PRIVATE_INTERFACE_0_2,
               PPB_NetworkMonitor_Private_0_2)
 
+PROXIED_IFACE(NoAPIName, PPB_EXT_CRXFILESYSTEM_PRIVATE_INTERFACE_0_1,
+              PPB_Ext_CrxFileSystem_Private_0_1)
 PROXIED_IFACE(NoAPIName, PPB_FILEIO_PRIVATE_INTERFACE_0_1,
               PPB_FileIO_Private_0_1)
 

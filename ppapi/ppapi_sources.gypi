@@ -95,6 +95,7 @@
       'c/private/pp_private_font_charset.h',
       'c/private/pp_video_frame_private.h',
       'c/private/ppb_content_decryptor_private.h',
+      'c/private/ppb_ext_crx_file_system_private.h',
       'c/private/ppb_flash.h',
       'c/private/ppb_flash_clipboard.h',
       'c/private/ppb_flash_file.h',
@@ -274,6 +275,8 @@
       # Private interfaces.
       'cpp/private/content_decryptor_private.cc',
       'cpp/private/content_decryptor_private.h',
+      'cpp/private/ext_crx_file_system_private.cc',
+      'cpp/private/ext_crx_file_system_private.h',
       'cpp/private/file_io_private.cc',
       'cpp/private/file_io_private.h',
       'cpp/private/flash.cc',

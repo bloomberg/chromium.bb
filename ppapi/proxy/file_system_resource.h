@@ -38,7 +38,9 @@ class PPAPI_PROXY_EXPORT FileSystemResource
                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_FileSystemType GetType() OVERRIDE;
 
+  void InitIsolatedFileSystem(const char* fsid);
  private:
+
   // Called when the host has responded to our open request.
   void OpenComplete(scoped_refptr<TrackedCallback> callback,
                     const ResourceMessageReplyParams& params);

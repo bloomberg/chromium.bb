@@ -50,6 +50,11 @@ PP_FileSystemType FileSystemResource::GetType() {
   return type_;
 }
 
+void FileSystemResource::InitIsolatedFileSystem(const char* fsid) {
+  Post(RENDERER,
+       PpapiHostMsg_FileSystem_InitIsolatedFileSystem(std::string(fsid)));
+}
+
 void FileSystemResource::OpenComplete(
     scoped_refptr<TrackedCallback> callback,
     const ResourceMessageReplyParams& params) {

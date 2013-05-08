@@ -43,6 +43,9 @@ class PepperFileSystemHost :
  private:
   int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,
                         int64_t expected_size);
+  int32_t OnHostMsgInitIsolatedFileSystem(
+      ppapi::host::HostMessageContext* context,
+      const std::string& fsid);
 
   RendererPpapiHost* renderer_ppapi_host_;
   ppapi::host::ReplyMessageContext reply_context_;

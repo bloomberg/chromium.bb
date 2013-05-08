@@ -30,6 +30,7 @@
   F(PPB_BrowserFont_Trusted_API) \
   F(PPB_Buffer_API) \
   F(PPB_DeviceRef_API) \
+  F(PPB_Ext_CrxFileSystem_Private_API) \
   F(PPB_FileChooser_API) \
   F(PPB_FileIO_API) \
   F(PPB_FileRef_API) \

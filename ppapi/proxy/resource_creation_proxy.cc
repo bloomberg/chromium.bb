@@ -10,6 +10,7 @@
 #include "ppapi/proxy/audio_input_resource.h"
 #include "ppapi/proxy/browser_font_resource_trusted.h"
 #include "ppapi/proxy/connection.h"
+#include "ppapi/proxy/ext_crx_file_system_private_resource.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/file_io_resource.h"
 #include "ppapi/proxy/file_system_resource.h"
@@ -86,6 +87,15 @@ PP_Resource ResourceCreationProxy::CreateFileSystem(
     PP_FileSystemType type) {
   return (new FileSystemResource(GetConnection(), instance,
                                  type))->GetReference();
+}
+
+PP_Resource ResourceCreationProxy::CreateIsolatedFileSystem(
+    PP_Instance instance,
+    const char* fsid) {
+  FileSystemResource* fs = new FileSystemResource(
+      GetConnection(), instance, PP_FILESYSTEMTYPE_ISOLATED);
+  fs->InitIsolatedFileSystem(fsid);
+  return fs->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateIMEInputEvent(

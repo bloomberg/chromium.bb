@@ -47,7 +47,7 @@ class FileRef : public Resource {
   /// system. File paths are POSIX style.
   ///
   /// @param[in] file_system A <code>FileSystem</code> corresponding to a file
-  /// system typ.
+  /// system type.
   /// @param[in] path A path to the file.
   FileRef(const FileSystem& file_system, const char* path);
 

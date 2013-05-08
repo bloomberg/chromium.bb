@@ -28,6 +28,12 @@ class FileSystem : public Resource {
   /// use it.
   FileSystem();
 
+  /// A constructor used when you have received a PP_Resource as a return
+  /// value that has already been reference counted.
+  ///
+  /// @param[in] resource A PP_Resource corresponding to a PPB_FileSystem.
+  FileSystem(PassRef, PP_Resource resource);
+
   /// This constructor creates a file system object of the given type.
   ///
   /// @param[in] instance The instance with which this resource will be

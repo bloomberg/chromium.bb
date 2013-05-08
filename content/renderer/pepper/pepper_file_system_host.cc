@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "content/common/child_thread.h"
 #include "content/common/fileapi/file_system_dispatcher.h"
+#include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/null_file_system_callback_dispatcher.h"
 #include "ppapi/c/pp_errors.h"
@@ -19,6 +20,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace content {
@@ -50,6 +53,19 @@ class PlatformCallbackAdaptor : public NullFileSystemCallbackDispatcher {
   base::WeakPtr<PepperFileSystemHost> weak_host_;
 };
 
+bool LooksLikeAGuid(const std::string& fsid) {
+  const size_t kExpectedFsIdSize = 32;
+  if (fsid.size() != kExpectedFsIdSize)
+    return false;
+  for (std::string::const_iterator it = fsid.begin(); it != fsid.end(); ++it) {
+    if (('A' <= *it && *it <= 'F') ||
+        ('0' <= *it && *it <= '9'))
+      continue;
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 PepperFileSystemHost::PepperFileSystemHost(RendererPpapiHost* host,
@@ -71,8 +87,12 @@ int32_t PepperFileSystemHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFileSystemHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileSystem_Open,
-                                      OnHostMsgOpen)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_FileSystem_Open,
+        OnHostMsgOpen)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_FileSystem_InitIsolatedFileSystem,
+        OnHostMsgInitIsolatedFileSystem)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -127,6 +147,23 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
   }
 
   return PP_OK_COMPLETIONPENDING;
+}
+
+int32_t PepperFileSystemHost::OnHostMsgInitIsolatedFileSystem(
+    ppapi::host::HostMessageContext* context,
+    const std::string& fsid) {
+  // Do a sanity check.
+  if (!LooksLikeAGuid(fsid))
+    return PP_ERROR_BADARGUMENT;
+  RenderView* view =
+      renderer_ppapi_host_->GetRenderViewForInstance(pp_instance());
+  if (!view)
+    return PP_ERROR_FAILED;
+  const GURL& url = view->GetWebView()->mainFrame()->document().url();
+  root_url_ = GURL(fileapi::GetIsolatedFileSystemRootURIString(
+      url.GetOrigin(), fsid, "crxfs"));
+  opened_ = true;
+  return PP_OK;
 }
 
 }  // namespace content

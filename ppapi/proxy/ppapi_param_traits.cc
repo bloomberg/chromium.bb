@@ -129,7 +129,8 @@ bool ParamTraits<PP_FileInfo>::Read(const Message* m, PickleIterator* iter,
   if (system_type != PP_FILESYSTEMTYPE_INVALID &&
       system_type != PP_FILESYSTEMTYPE_EXTERNAL &&
       system_type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
-      system_type != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
+      system_type != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
+      system_type != PP_FILESYSTEMTYPE_ISOLATED)
     return false;
   r->system_type = static_cast<PP_FileSystemType>(system_type);
   return true;

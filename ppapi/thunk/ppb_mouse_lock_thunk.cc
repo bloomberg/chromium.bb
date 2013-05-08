@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_mouse_lock.idl modified Thu Apr 18 10:43:11 2013.
+// From ppb_mouse_lock.idl modified Mon May  6 13:58:10 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -30,8 +30,9 @@ int32_t LockMouse(PP_Instance instance, struct PP_CompletionCallback callback) {
 void UnlockMouse(PP_Instance instance) {
   VLOG(4) << "PPB_MouseLock::UnlockMouse()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->UnlockMouse(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->UnlockMouse(instance);
 }
 
 const PPB_MouseLock_1_0 g_ppb_mouselock_thunk_1_0 = {

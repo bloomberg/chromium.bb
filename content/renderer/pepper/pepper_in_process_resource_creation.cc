@@ -15,6 +15,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/browser_font_resource_trusted.h"
+#include "ppapi/proxy/ext_crx_file_system_private_resource.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/file_io_resource.h"
 #include "ppapi/proxy/file_system_resource.h"

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_system.idl modified Mon May 21 15:19:32 2012. */
+/* From ppb_file_system.idl modified Thu May  2 16:44:38 2013. */
 
 #ifndef PPAPI_C_PPB_FILE_SYSTEM_H_
 #define PPAPI_C_PPB_FILE_SYSTEM_H_
@@ -39,8 +39,8 @@ struct PPB_FileSystem_1_0 {
    * @param[in] instance A <code>PP_Instance</code> identifying the instance
    * with the file.
    * @param[in] type A file system type as defined by
-   * <code>PP_FileSystemType</code> enum.
-   *
+   * <code>PP_FileSystemType</code> enum (except PP_FILESYSTEMTYPE_ISOLATED,
+   * which is currently not supported).
    * @return A <code>PP_Resource</code> corresponding to a file system if
    * successful.
    */

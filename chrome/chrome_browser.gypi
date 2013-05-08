@@ -1611,6 +1611,8 @@
         'browser/renderer_host/pepper/device_id_fetcher.cc',
         'browser/renderer_host/pepper/pepper_broker_message_filter.cc',
         'browser/renderer_host/pepper/pepper_broker_message_filter.h',
+        'browser/renderer_host/pepper/pepper_crx_file_system_message_filter.cc',
+        'browser/renderer_host/pepper/pepper_crx_file_system_message_filter.h',
         'browser/renderer_host/pepper/pepper_flash_browser_host.cc',
         'browser/renderer_host/pepper/pepper_flash_browser_host.h',
         'browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.cc',

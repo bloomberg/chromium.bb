@@ -177,7 +177,8 @@ PPB_FileRef_Impl* PPB_FileRef_Impl::CreateInternal(PP_Instance instance,
       plugin_instance->delegate()->GetFileSystemType(instance, pp_file_system);
   if (type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
       type != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
-      type != PP_FILESYSTEMTYPE_EXTERNAL)
+      type != PP_FILESYSTEMTYPE_EXTERNAL &&
+      type != PP_FILESYSTEMTYPE_ISOLATED)
     return 0;
 
   PPB_FileRef_CreateInfo info;
@@ -331,7 +332,8 @@ base::FilePath PPB_FileRef_Impl::GetSystemPath() const {
 GURL PPB_FileRef_Impl::GetFileSystemURL() const {
   if (GetFileSystemType() != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
       GetFileSystemType() != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
-      GetFileSystemType() != PP_FILESYSTEMTYPE_EXTERNAL) {
+      GetFileSystemType() != PP_FILESYSTEMTYPE_EXTERNAL &&
+      GetFileSystemType() != PP_FILESYSTEMTYPE_ISOLATED) {
     NOTREACHED();
     return GURL();
   }

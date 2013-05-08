@@ -149,7 +149,8 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
   PP_FileSystemType type = file_ref_api->GetFileSystemType();
   if (type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
       type != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
-      type != PP_FILESYSTEMTYPE_EXTERNAL)
+      type != PP_FILESYSTEMTYPE_EXTERNAL &&
+      type != PP_FILESYSTEMTYPE_ISOLATED)
     return PP_ERROR_FAILED;
   file_system_type_ = type;
 

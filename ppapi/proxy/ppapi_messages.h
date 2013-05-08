@@ -1359,6 +1359,12 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_ExtensionsCommon_Call,
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_ExtensionsCommon_CallReply,
                      base::ListValue /* output */)
 
+// Ext_CrxFileSystem
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Ext_CrxFileSystem_Create)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Ext_CrxFileSystem_BrowserOpen)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Ext_CrxFileSystem_BrowserOpenReply,
+                     std::string /* fsid */)
+
 // File chooser.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileChooser_Create)
 IPC_MESSAGE_CONTROL4(PpapiHostMsg_FileChooser_Show,
@@ -1409,6 +1415,8 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileSystem_Create,
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileSystem_Open,
                      int64_t /* expected_size */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileSystem_OpenReply)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileSystem_InitIsolatedFileSystem,
+                     std::string /* fsid */)
 
 // Flash device ID.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashDeviceID_Create)

@@ -271,6 +271,16 @@
       ],
     },
     {
+      'target_name': 'ppapi_example_crxfs',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/crxfs/crxfs.cc',
+      ],
+    },
+    {
       'target_name': 'ppapi_example_audio',
       'dependencies': [
         'ppapi_example_skeleton',

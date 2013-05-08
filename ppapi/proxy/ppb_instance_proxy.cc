@@ -18,6 +18,7 @@
 #include "ppapi/proxy/browser_font_singleton_resource.h"
 #include "ppapi/proxy/content_decryptor_private_serializer.h"
 #include "ppapi/proxy/enter_proxy.h"
+#include "ppapi/proxy/ext_crx_file_system_private_resource.h"
 #include "ppapi/proxy/extensions_common_resource.h"
 #include "ppapi/proxy/flash_clipboard_resource.h"
 #include "ppapi/proxy/flash_file_resource.h"
@@ -373,6 +374,9 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
       break;
     case TRUETYPE_FONT_SINGLETON_ID:
       new_singleton = new TrueTypeFontSingletonResource(connection, instance);
+      break;
+    case CRX_FILESYSTEM_SINGLETON_ID:
+      new_singleton = new ExtCrxFileSystemPrivateResource(connection, instance);
       break;
 // Flash/trusted resources aren't needed for NaCl.
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
