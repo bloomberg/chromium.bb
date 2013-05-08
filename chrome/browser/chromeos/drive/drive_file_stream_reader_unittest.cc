@@ -15,8 +15,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/drive/fake_file_system.h"
-#include "chrome/browser/chromeos/drive/file_reader.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/local_file_reader.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/task_util.h"
@@ -71,8 +71,8 @@ class LocalReaderProxyTest : public ::testing::Test {
 
 TEST_F(LocalReaderProxyTest, Read) {
   // Open the file first.
-  scoped_ptr<util::FileReader> file_reader(
-      new util::FileReader(worker_thread_->message_loop_proxy()));
+  scoped_ptr<util::LocalFileReader> file_reader(
+      new util::LocalFileReader(worker_thread_->message_loop_proxy()));
   net::TestCompletionCallback callback;
   file_reader->Open(file_path_, 0, callback.callback());
   ASSERT_EQ(net::OK, callback.WaitForResult());
@@ -92,8 +92,8 @@ TEST_F(LocalReaderProxyTest, ReadWithLimit) {
       file_content_.substr(0, file_content_.size() / 2);
 
   // Open the file first.
-  scoped_ptr<util::FileReader> file_reader(
-      new util::FileReader(worker_thread_->message_loop_proxy()));
+  scoped_ptr<util::LocalFileReader> file_reader(
+      new util::LocalFileReader(worker_thread_->message_loop_proxy()));
   net::TestCompletionCallback callback;
   file_reader->Open(file_path_, 0, callback.callback());
   ASSERT_EQ(net::OK, callback.WaitForResult());

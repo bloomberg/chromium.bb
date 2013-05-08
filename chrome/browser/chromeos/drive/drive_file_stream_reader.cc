@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/file_reader.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
+#include "chrome/browser/chromeos/drive/local_file_reader.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
@@ -65,8 +65,8 @@ int ReadInternal(ScopedVector<std::string>* pending_data,
 
 }  // namespace
 
-LocalReaderProxy::LocalReaderProxy(scoped_ptr<util::FileReader> file_reader,
-                                   int64 length)
+LocalReaderProxy::LocalReaderProxy(
+    scoped_ptr<util::LocalFileReader> file_reader, int64 length)
     : file_reader_(file_reader.Pass()),
       remaining_length_(length),
       weak_ptr_factory_(this) {
@@ -114,7 +114,7 @@ void LocalReaderProxy::OnReadCompleted(const net::CompletionCallback& callback,
     DCHECK_LE(read_result, remaining_length_);
     remaining_length_ -= read_result;
   } else {
-    // An error occurs. Close the FileReader.
+    // An error occurs. Close the |file_reader_|.
     file_reader_.reset();
   }
   callback.Run(read_result);
@@ -372,9 +372,9 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
   }
 
   // Otherwise, open the stream for file.
-  scoped_ptr<util::FileReader> file_reader(
-      new util::FileReader(file_task_runner_));
-  util::FileReader* file_reader_ptr = file_reader.get();
+  scoped_ptr<util::LocalFileReader> file_reader(
+      new util::LocalFileReader(file_task_runner_));
+  util::LocalFileReader* file_reader_ptr = file_reader.get();
   file_reader_ptr->Open(
       local_cache_file_path,
       range_offset,
@@ -391,7 +391,7 @@ void DriveFileStreamReader::InitializeAfterLocalFileOpen(
     uint64 length,
     const InitializeCompletionCallback& callback,
     scoped_ptr<ResourceEntry> entry,
-    scoped_ptr<util::FileReader> file_reader,
+    scoped_ptr<util::LocalFileReader> file_reader,
     int open_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 

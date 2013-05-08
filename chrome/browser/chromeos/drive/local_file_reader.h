@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_READER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_READER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_LOCAL_FILE_READER_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_LOCAL_FILE_READER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -27,10 +27,10 @@ namespace util {
 // case. All the operations run on |sequenced_task_runner| asynchronously and
 // the result will be notified to the caller via |callback|s on the caller's
 // thread.
-class FileReader {
+class LocalFileReader {
  public:
-  explicit FileReader(base::SequencedTaskRunner* sequenced_task_runner);
-  ~FileReader();
+  explicit LocalFileReader(base::SequencedTaskRunner* sequenced_task_runner);
+  ~LocalFileReader();
 
   // Opens the file at |file_path|. The initial position of the read will be
   // at |offset| from the beginning of the file.
@@ -64,11 +64,11 @@ class FileReader {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<FileReader> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(FileReader);
+  base::WeakPtrFactory<LocalFileReader> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(LocalFileReader);
 };
 
 }  // namespace util
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_READER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_LOCAL_FILE_READER_H_

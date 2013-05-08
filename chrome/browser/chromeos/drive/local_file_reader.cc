@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/file_reader.h"
+#include "chrome/browser/chromeos/drive/local_file_reader.h"
 
 #include <errno.h>
 
@@ -85,7 +85,7 @@ void PostCloseIfNeeded(base::TaskRunner* task_runner,
 
 }  // namespace
 
-class FileReader::ScopedPlatformFile {
+class LocalFileReader::ScopedPlatformFile {
  public:
   explicit ScopedPlatformFile(base::TaskRunner* task_runner)
       : task_runner_(task_runner),
@@ -112,20 +112,21 @@ class FileReader::ScopedPlatformFile {
   DISALLOW_COPY_AND_ASSIGN(ScopedPlatformFile);
 };
 
-FileReader::FileReader(base::SequencedTaskRunner* sequenced_task_runner)
+LocalFileReader::LocalFileReader(
+    base::SequencedTaskRunner* sequenced_task_runner)
     : sequenced_task_runner_(sequenced_task_runner),
       platform_file_(base::kInvalidPlatformFileValue),
       weak_ptr_factory_(this) {
   DCHECK(sequenced_task_runner_);
 }
 
-FileReader::~FileReader() {
+LocalFileReader::~LocalFileReader() {
   PostCloseIfNeeded(sequenced_task_runner_.get(), platform_file_);
 }
 
-void FileReader::Open(const base::FilePath& file_path,
-                      int64 offset,
-                      const net::CompletionCallback& callback) {
+void LocalFileReader::Open(const base::FilePath& file_path,
+                           int64 offset,
+                           const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK_EQ(base::kInvalidPlatformFileValue, platform_file_);
 
@@ -136,14 +137,14 @@ void FileReader::Open(const base::FilePath& file_path,
       FROM_HERE,
       base::Bind(&OpenAndSeekOnBlockingPool,
                  file_path, offset, platform_file->ptr()),
-      base::Bind(&FileReader::OpenAfterBlockingPoolTask,
+      base::Bind(&LocalFileReader::OpenAfterBlockingPoolTask,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback, base::Owned(platform_file)));
 }
 
-void FileReader::Read(net::IOBuffer* in_buffer,
-                      int buffer_length,
-                      const net::CompletionCallback& callback) {
+void LocalFileReader::Read(net::IOBuffer* in_buffer,
+                           int buffer_length,
+                           const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK_NE(base::kInvalidPlatformFileValue, platform_file_);
 
@@ -155,7 +156,7 @@ void FileReader::Read(net::IOBuffer* in_buffer,
       callback);
 }
 
-void FileReader::OpenAfterBlockingPoolTask(
+void LocalFileReader::OpenAfterBlockingPoolTask(
     const net::CompletionCallback& callback,
     ScopedPlatformFile* platform_file,
     int open_result) {

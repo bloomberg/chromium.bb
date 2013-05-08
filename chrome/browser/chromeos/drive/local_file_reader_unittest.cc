@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/file_reader.h"
+#include "chrome/browser/chromeos/drive/local_file_reader.h"
 
 #include <string>
 
@@ -25,33 +25,35 @@ namespace util {
 namespace {
 
 // An adapter to use test_util::ReadAllData.
-class FileReaderAdapter {
+class LocalFileReaderAdapter {
  public:
-  explicit FileReaderAdapter(FileReader* reader) : reader_(reader) {}
+  explicit LocalFileReaderAdapter(LocalFileReader* reader) : reader_(reader) {}
   int Read(net::IOBuffer* buffer,
            int buffer_length,
            const net::CompletionCallback& callback) {
     reader_->Read(buffer, buffer_length, callback);
-    // As FileReader::Read always works asynchronously, return ERR_IO_PENDING.
+    // As LocalFileReader::Read always works asynchronously,
+    // return ERR_IO_PENDING.
     return net::ERR_IO_PENDING;
   }
 
  private:
-  FileReader* reader_;
+  LocalFileReader* reader_;
 };
 
 }  // namespace
 
-class DriveFileReaderTest : public ::testing::Test {
+class LocalFileReaderTest : public ::testing::Test {
  protected:
-  DriveFileReaderTest() {
+  LocalFileReaderTest() {
   }
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    worker_thread_.reset(new base::Thread("DriveFileReaderTest"));
+    worker_thread_.reset(new base::Thread("LocalFileReaderTest"));
     ASSERT_TRUE(worker_thread_->Start());
-    file_reader_.reset(new FileReader(worker_thread_->message_loop_proxy()));
+    file_reader_.reset(
+        new LocalFileReader(worker_thread_->message_loop_proxy()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -62,10 +64,10 @@ class DriveFileReaderTest : public ::testing::Test {
   MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<base::Thread> worker_thread_;
-  scoped_ptr<FileReader> file_reader_;
+  scoped_ptr<LocalFileReader> file_reader_;
 };
 
-TEST_F(DriveFileReaderTest, NonExistingFile) {
+TEST_F(LocalFileReaderTest, NonExistingFile) {
   const base::FilePath kTestFile =
       temp_dir_.path().AppendASCII("non-existing");
 
@@ -74,7 +76,7 @@ TEST_F(DriveFileReaderTest, NonExistingFile) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, callback.WaitForResult());
 }
 
-TEST_F(DriveFileReaderTest, FullRead) {
+TEST_F(LocalFileReaderTest, FullRead) {
   base::FilePath test_file;
   std::string expected_content;
   ASSERT_TRUE(google_apis::test_util::CreateFileOfSpecifiedSize(
@@ -84,13 +86,13 @@ TEST_F(DriveFileReaderTest, FullRead) {
   file_reader_->Open(test_file, 0, callback.callback());
   ASSERT_EQ(net::OK, callback.WaitForResult());
 
-  FileReaderAdapter adapter(file_reader_.get());
+  LocalFileReaderAdapter adapter(file_reader_.get());
   std::string content;
   ASSERT_EQ(net::OK, test_util::ReadAllData(&adapter, &content));
   EXPECT_EQ(expected_content, content);
 }
 
-TEST_F(DriveFileReaderTest, OpenWithOffset) {
+TEST_F(LocalFileReaderTest, OpenWithOffset) {
   base::FilePath test_file;
   std::string expected_content;
   ASSERT_TRUE(google_apis::test_util::CreateFileOfSpecifiedSize(
@@ -104,7 +106,7 @@ TEST_F(DriveFileReaderTest, OpenWithOffset) {
       test_file, static_cast<int64>(offset), callback.callback());
   ASSERT_EQ(net::OK, callback.WaitForResult());
 
-  FileReaderAdapter adapter(file_reader_.get());
+  LocalFileReaderAdapter adapter(file_reader_.get());
   std::string content;
   ASSERT_EQ(net::OK, test_util::ReadAllData(&adapter, &content));
   EXPECT_EQ(expected_content, content);

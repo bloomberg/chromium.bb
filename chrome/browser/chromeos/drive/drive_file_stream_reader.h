@@ -26,7 +26,7 @@ class IOBuffer;
 
 namespace drive {
 namespace util {
-class FileReader;
+class LocalFileReader;
 }  // namespace util
 
 namespace internal {
@@ -56,7 +56,8 @@ class LocalReaderProxy : public ReaderProxy {
   // This class takes its ownership.
   // |length| is the number of bytes to be read. It must be equal or
   // smaller than the remaining data size in the |file_reader|.
-  LocalReaderProxy(scoped_ptr<util::FileReader> file_reader, int64 length);
+  LocalReaderProxy(
+      scoped_ptr<util::LocalFileReader> file_reader, int64 length);
   virtual ~LocalReaderProxy();
 
   // ReaderProxy overrides.
@@ -66,9 +67,9 @@ class LocalReaderProxy : public ReaderProxy {
   virtual void OnCompleted(FileError error) OVERRIDE;
 
  private:
-  scoped_ptr<util::FileReader> file_reader_;
+  scoped_ptr<util::LocalFileReader> file_reader_;
 
-  // Callback for the FileReader::Read.
+  // Callback for the LocalFileReader::Read.
   void OnReadCompleted(
       const net::CompletionCallback& callback, int read_result);
 
@@ -189,7 +190,7 @@ class DriveFileStreamReader {
       uint64 length,
       const InitializeCompletionCallback& callback,
       scoped_ptr<ResourceEntry> entry,
-      scoped_ptr<util::FileReader> file_reader,
+      scoped_ptr<util::LocalFileReader> file_reader,
       int open_result);
 
   // Called when the data is received from the server.
