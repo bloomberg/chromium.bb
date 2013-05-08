@@ -1609,15 +1609,15 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
-  std::string mime_type;
-  DriveFileType file_type;
+  entry.reset();
   file_system_->GetFileByPath(file_in_root,
                               google_apis::test_util::CreateCopyResultCallback(
-                                  &error, &file_path, &mime_type, &file_type));
+                                  &error, &file_path, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(REGULAR_FILE, file_type);
+  ASSERT_TRUE(entry);
+  EXPECT_FALSE(entry->file_specific_info().is_hosted_document());
 
   // Verify that readable permission is set.
   int permission = 0;
@@ -1632,18 +1632,16 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<ResourceEntry> entry(GetEntryInfoByPathSync(file_in_root));
 
   // Pretend we have no space at all.
   fake_free_disk_space_getter_->set_fake_free_disk_space(0);
 
   FileError error = FILE_ERROR_OK;
   base::FilePath file_path;
-  std::string mime_type;
-  DriveFileType file_type;
+  scoped_ptr<ResourceEntry> entry;
   file_system_->GetFileByPath(file_in_root,
                               google_apis::test_util::CreateCopyResultCallback(
-                                  &error, &file_path, &mime_type, &file_type));
+                                  &error, &file_path, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_NO_SPACE, error);
@@ -1689,15 +1687,15 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   ASSERT_TRUE(CacheEntryExists("<resource_id>", "<md5>"));
 
   base::FilePath file_path;
-  std::string mime_type;
-  DriveFileType file_type;
+  entry.reset();
   file_system_->GetFileByPath(file_in_root,
                               google_apis::test_util::CreateCopyResultCallback(
-                                  &error, &file_path, &mime_type, &file_type));
+                                  &error, &file_path, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(REGULAR_FILE, file_type);
+  ASSERT_TRUE(entry);
+  EXPECT_FALSE(entry->file_specific_info().is_hosted_document());
 
   // The cache entry should be removed in order to free up space.
   ASSERT_FALSE(CacheEntryExists("<resource_id>", "<md5>"));
@@ -1723,11 +1721,10 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
 
   FileError error = FILE_ERROR_OK;
   base::FilePath file_path;
-  std::string mime_type;
-  DriveFileType file_type;
+  entry.reset();
   file_system_->GetFileByPath(file_in_root,
                               google_apis::test_util::CreateCopyResultCallback(
-                                  &error, &file_path, &mime_type, &file_type));
+                                  &error, &file_path, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_NO_SPACE, error);
@@ -1753,15 +1750,15 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   base::FilePath file_path;
-  std::string mime_type;
-  DriveFileType file_type;
+  entry.reset();
   file_system_->GetFileByPath(file_in_root,
                               google_apis::test_util::CreateCopyResultCallback(
-                                  &error, &file_path, &mime_type, &file_type));
+                                  &error, &file_path, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(REGULAR_FILE, file_type);
+  ASSERT_TRUE(entry);
+  EXPECT_FALSE(entry->file_specific_info().is_hosted_document());
 }
 
 TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
@@ -1775,14 +1772,15 @@ TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
-  std::string mime_type;
-  DriveFileType file_type;
+  scoped_ptr<ResourceEntry> entry;
   file_system_->GetFileByPath(file_in_root,
                               google_apis::test_util::CreateCopyResultCallback(
-                                  &error, &file_path, &mime_type, &file_type));
+                                  &error, &file_path, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(HOSTED_DOCUMENT, file_type);
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->file_specific_info().is_hosted_document());
   EXPECT_FALSE(file_path.empty());
 
   ASSERT_TRUE(src_entry);
@@ -1801,21 +1799,22 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId) {
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<ResourceEntry> entry(GetEntryInfoByPathSync(file_in_root));
+  std::string resource_id = entry->resource_id();
 
   FileError error = FILE_ERROR_OK;
   base::FilePath file_path;
-  std::string mime_type;
-  DriveFileType file_type;
+  entry.reset();
   file_system_->GetFileByResourceId(
-      entry->resource_id(),
+      resource_id,
       DriveClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(
-          &error, &file_path, &mime_type, &file_type),
+          &error, &file_path, &entry),
       google_apis::GetContentCallback());
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(REGULAR_FILE, file_type);
+  ASSERT_TRUE(entry);
+  EXPECT_FALSE(entry->file_specific_info().is_hosted_document());
 }
 
 TEST_F(DriveFileSystemTest, GetFileContentByPath) {
@@ -1920,19 +1919,20 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
   // Hence the downloading should work even if the drive service is offline.
   fake_drive_service_->set_offline(true);
 
+  std::string resource_id = entry->resource_id();
   base::FilePath file_path;
-  std::string mime_type;
-  DriveFileType file_type;
+  entry.reset();
   file_system_->GetFileByResourceId(
-      entry->resource_id(),
+      resource_id,
       DriveClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(
-          &error, &file_path, &mime_type, &file_type),
+          &error, &file_path, &entry),
       google_apis::GetContentCallback());
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(REGULAR_FILE, file_type);
+  ASSERT_TRUE(entry);
+  EXPECT_FALSE(entry->file_specific_info().is_hosted_document());
 }
 
 TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {

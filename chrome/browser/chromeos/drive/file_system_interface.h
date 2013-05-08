@@ -25,13 +25,6 @@ class FileSystemObserver;
 
 typedef std::vector<ResourceEntry> ResourceEntryVector;
 
-// File type on the drive file system can be either a regular file or
-// a hosted document.
-enum DriveFileType {
-  REGULAR_FILE,
-  HOSTED_DOCUMENT,
-};
-
 // Information about search result returned by Search Async callback.
 // This is data needed to create a file system entry that will be used by file
 // browser.
@@ -77,8 +70,7 @@ typedef std::vector<MetadataSearchResult> MetadataSearchResultVector;
 // Used to get files from the file system.
 typedef base::Callback<void(FileError error,
                             const base::FilePath& file_path,
-                            const std::string& mime_type,
-                            DriveFileType file_type)> GetFileCallback;
+                            scoped_ptr<ResourceEntry> entry)> GetFileCallback;
 
 // Used to get file content from the file system.
 // If the file content is available in local cache, |local_file| is filled with

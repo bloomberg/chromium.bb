@@ -31,8 +31,8 @@ namespace drive {
 namespace {
 
 // Action used to set mock expectations for GetFileByResourceId().
-ACTION_P4(MockGetFileByResourceId, error, local_path, mime_type, file_type) {
-  arg2.Run(error, local_path, mime_type, file_type);
+ACTION_P2(MockGetFileByResourceId, error, local_path) {
+  arg2.Run(error, local_path, scoped_ptr<ResourceEntry>(new ResourceEntry));
 }
 
 // Action used to set mock expectations for UpdateFileByResourceId().
@@ -158,9 +158,7 @@ class SyncClientTest : public testing::Test {
         .WillOnce(
             MockGetFileByResourceId(
                 FILE_ERROR_OK,
-                base::FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
-                std::string("mime_type_does_not_matter"),
-                REGULAR_FILE));
+                base::FilePath::FromUTF8Unsafe("local_path_does_not_matter")));
   }
 
   // Sets the expectation for MockFileSystem::UpdateFileByResourceId(),

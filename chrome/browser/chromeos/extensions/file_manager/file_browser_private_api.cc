@@ -1299,8 +1299,7 @@ void FileBrowserFunction::GetSelectedFileInfoInternal(
         ContinueGetSelectedFileInfo(params.Pass(),
                                     drive::FILE_ERROR_FAILED,
                                     base::FilePath(),
-                                    std::string(),
-                                    drive::REGULAR_FILE);
+                                    scoped_ptr<drive::ResourceEntry>());
         return;
       }
       system_service->file_system()->GetFileByPath(
@@ -1321,8 +1320,7 @@ void FileBrowserFunction::ContinueGetSelectedFileInfo(
     scoped_ptr<GetSelectedFileInfoParams> params,
     drive::FileError error,
     const base::FilePath& local_file_path,
-    const std::string& mime_type,
-    drive::DriveFileType file_type) {
+    scoped_ptr<drive::ResourceEntry> entry) {
   const int index = params->selected_files.size();
   const base::FilePath& file_path = params->file_paths[index];
   base::FilePath local_path;
@@ -2560,10 +2558,8 @@ void GetDriveFilesFunction::GetFileOrSendResponse() {
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
   // |system_service| is NULL if Drive is disabled.
   if (!system_service) {
-    OnFileReady(drive::FILE_ERROR_FAILED,
-                drive_path,
-                "",  // mime_type
-                drive::REGULAR_FILE);
+    OnFileReady(drive::FILE_ERROR_FAILED, drive_path,
+                scoped_ptr<drive::ResourceEntry>());
     return;
   }
 
@@ -2576,8 +2572,7 @@ void GetDriveFilesFunction::GetFileOrSendResponse() {
 void GetDriveFilesFunction::OnFileReady(
     drive::FileError error,
     const base::FilePath& local_path,
-    const std::string& unused_mime_type,
-    drive::DriveFileType file_type) {
+    scoped_ptr<drive::ResourceEntry> entry) {
   base::FilePath drive_path = remaining_drive_paths_.front();
 
   if (error == drive::FILE_ERROR_OK) {

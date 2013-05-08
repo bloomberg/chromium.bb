@@ -101,8 +101,7 @@ class ScreenshotSource : public content::URLDataSource {
       const content::URLDataSource::GotDataCallback& callback,
       drive::FileError error,
       const base::FilePath& file,
-      const std::string& unused_mime_type,
-      drive::DriveFileType file_type);
+      scoped_ptr<drive::ResourceEntry> entry);
 
 #endif
   // Sends the screenshot data to the requestor while caching it locally to the

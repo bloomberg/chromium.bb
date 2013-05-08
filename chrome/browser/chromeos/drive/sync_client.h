@@ -131,8 +131,7 @@ class SyncClient : public FileSystemObserver,
   void OnFetchFileComplete(const std::string& resource_id,
                            FileError error,
                            const base::FilePath& local_path,
-                           const std::string& ununsed_mime_type,
-                           DriveFileType file_type);
+                           scoped_ptr<ResourceEntry> entry);
 
   // Called when the file for |resource_id| is uploaded.
   // Calls DoSyncLoop() to go back to the sync loop.

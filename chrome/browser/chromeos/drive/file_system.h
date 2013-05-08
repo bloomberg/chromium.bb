@@ -273,8 +273,7 @@ class FileSystem : public FileSystemInterface,
   void OnGetFileCompleteForOpenFile(const GetFileCompleteForOpenParams& params,
                                     FileError error,
                                     const base::FilePath& file_path,
-                                    const std::string& mime_type,
-                                    DriveFileType file_type);
+                                    scoped_ptr<ResourceEntry> entry);
 
   // Invoked upon completion of MarkDirtyInCache initiated by OpenFile.
   void OnMarkDirtyInCacheCompleteForOpenFile(

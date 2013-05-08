@@ -119,8 +119,7 @@ void CopyOperation::OnGetFileCompleteForTransferFile(
     const FileOperationCallback& callback,
     FileError error,
     const base::FilePath& local_file_path,
-    const std::string& unused_mime_type,
-    DriveFileType file_type) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -331,8 +330,7 @@ void CopyOperation::OnGetFileCompleteForCopy(
     const FileOperationCallback& callback,
     FileError error,
     const base::FilePath& local_file_path,
-    const std::string& unused_mime_type,
-    DriveFileType file_type) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -342,7 +340,7 @@ void CopyOperation::OnGetFileCompleteForCopy(
   }
 
   // This callback is only triggered for a regular file via Copy().
-  DCHECK_EQ(REGULAR_FILE, file_type);
+  DCHECK(entry && !entry->file_specific_info().is_hosted_document());
   ScheduleTransferRegularFile(local_file_path, remote_dest_file_path, callback);
 }
 

@@ -265,9 +265,8 @@ void InstallCRX(Browser* browser, const base::FilePath& path) {
 void OnCRXDownloadCallback(Browser* browser,
                            drive::FileError error,
                            const base::FilePath& file,
-                           const std::string& unused_mime_type,
-                           drive::DriveFileType file_type) {
-  if (error != drive::FILE_ERROR_OK || file_type != drive::REGULAR_FILE)
+                           scoped_ptr<drive::ResourceEntry> entry) {
+  if (error != drive::FILE_ERROR_OK)
     return;
   InstallCRX(browser, file);
 }

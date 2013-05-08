@@ -303,8 +303,7 @@ void SyncClient::OnPinned(const std::string& resource_id,
 void SyncClient::OnFetchFileComplete(const std::string& resource_id,
                                      FileError error,
                                      const base::FilePath& local_path,
-                                     const std::string& ununsed_mime_type,
-                                     DriveFileType file_type) {
+                                     scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   fetch_list_.erase(resource_id);

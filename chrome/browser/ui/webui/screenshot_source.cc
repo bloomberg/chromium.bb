@@ -246,9 +246,8 @@ void ScreenshotSource::GetSavedScreenshotCallback(
     const content::URLDataSource::GotDataCallback& callback,
     drive::FileError error,
     const base::FilePath& file,
-    const std::string& unused_mime_type,
-    drive::DriveFileType file_type) {
-  if (error != drive::FILE_ERROR_OK || file_type != drive::REGULAR_FILE) {
+    scoped_ptr<drive::ResourceEntry> entry) {
+  if (error != drive::FILE_ERROR_OK) {
     ScreenshotDataPtr read_bytes(new ScreenshotData);
     CacheAndSendScreenshot(screenshot_path, callback, read_bytes);
     return;

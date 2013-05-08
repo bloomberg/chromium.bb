@@ -96,8 +96,7 @@ void GetFileCallbackToFileOperationCallbackAdapter(
     const FileOperationCallback& callback,
     FileError error,
     const base::FilePath& unused_file_path,
-    const std::string& unused_mime_type,
-    DriveFileType unused_file_type) {
+    scoped_ptr<ResourceEntry> unused_entry) {
   callback.Run(error);
 }
 
@@ -167,8 +166,7 @@ struct FileSystem::GetResolvedFileParams {
   }
 
   void OnError(FileError error) {
-    get_file_callback.Run(
-        error, base::FilePath(), std::string(), REGULAR_FILE);
+    get_file_callback.Run(error, base::FilePath(), scoped_ptr<ResourceEntry>());
   }
 
   void OnCacheFileFound(const base::FilePath& local_file_path) {
@@ -196,14 +194,8 @@ struct FileSystem::GetResolvedFileParams {
   }
 
   void OnComplete(const base::FilePath& local_file_path) {
-    if (entry->file_specific_info().is_hosted_document()) {
-      get_file_callback.Run(
-          FILE_ERROR_OK, local_file_path, kMimeTypeJson, HOSTED_DOCUMENT);
-    } else {
-      get_file_callback.Run(
-          FILE_ERROR_OK, local_file_path,
-          entry->file_specific_info().content_mime_type(), REGULAR_FILE);
-    }
+    get_file_callback.Run(FILE_ERROR_OK, local_file_path,
+                          scoped_ptr<ResourceEntry>(new ResourceEntry(*entry)));
   }
 
   const base::FilePath drive_file_path;
@@ -545,7 +537,7 @@ void FileSystem::OnGetEntryInfoCompleteForGetFileByPath(
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath(), std::string(), REGULAR_FILE);
+    callback.Run(error, base::FilePath(), scoped_ptr<ResourceEntry>());
     return;
   }
   DCHECK(entry);
@@ -589,10 +581,8 @@ void FileSystem::GetFileByResourceIdAfterGetEntry(
   DCHECK(!get_file_callback.is_null());
 
   if (error != FILE_ERROR_OK) {
-    get_file_callback.Run(FILE_ERROR_NOT_FOUND,
-                          base::FilePath(),
-                          std::string(),
-                          REGULAR_FILE);
+    get_file_callback.Run(FILE_ERROR_NOT_FOUND, base::FilePath(),
+                          scoped_ptr<ResourceEntry>());
     return;
   }
 
@@ -1587,8 +1577,7 @@ void FileSystem::OnGetFileCompleteForOpenFile(
     const GetFileCompleteForOpenParams& params,
     FileError error,
     const base::FilePath& file_path,
-    const std::string& mime_type,
-    DriveFileType file_type) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.callback.is_null());
 
@@ -1598,7 +1587,7 @@ void FileSystem::OnGetFileCompleteForOpenFile(
   }
 
   // OpenFile ensures that the file is a regular file.
-  DCHECK_EQ(REGULAR_FILE, file_type);
+  DCHECK(entry && !entry->file_specific_info().is_hosted_document());
 
   cache_->MarkDirty(
       params.resource_id,

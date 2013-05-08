@@ -181,15 +181,17 @@ class PlatformAppPathLauncher
 
   void OnGotDriveFile(drive::FileError error,
                       const base::FilePath& file_path,
-                      const std::string& mime_type,
-                      drive::DriveFileType file_type) {
+                      scoped_ptr<drive::ResourceEntry> entry) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    if (error != drive::FILE_ERROR_OK || file_type != drive::REGULAR_FILE) {
+    if (error != drive::FILE_ERROR_OK ||
+        !entry || entry->file_specific_info().is_hosted_document()) {
       LaunchWithNoLaunchData();
       return;
     }
 
+    const std::string& mime_type =
+        entry->file_specific_info().content_mime_type();
     LaunchWithMimeType(mime_type.empty() ? kFallbackMimeType : mime_type);
   }
 #endif  // defined(OS_CHROMEOS)

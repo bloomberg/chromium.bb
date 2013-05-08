@@ -106,8 +106,7 @@ class CopyOperation {
       const FileOperationCallback& callback,
       FileError error,
       const base::FilePath& local_file_path,
-      const std::string& unused_mime_type,
-      DriveFileType file_type);
+      scoped_ptr<ResourceEntry> entry);
 
   // Copies a hosted document with |resource_id| to the directory at |dir_path|
   // and names the copied document as |new_name|.
@@ -153,8 +152,7 @@ class CopyOperation {
                                 const FileOperationCallback& callback,
                                 FileError error,
                                 const base::FilePath& local_file_path,
-                                const std::string& unused_mime_type,
-                                DriveFileType file_type);
+                                scoped_ptr<ResourceEntry> entry);
 
   // Part of TransferFileFromLocalToRemote(). Called after
   // GetEntryInfoByPath() is complete.

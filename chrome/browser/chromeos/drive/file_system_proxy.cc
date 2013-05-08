@@ -57,8 +57,7 @@ void OnGetFileByPathForOpen(
     base::ProcessHandle peer_handle,
     FileError file_error,
     const base::FilePath& local_path,
-    const std::string& unused_mime_type,
-    DriveFileType file_type) {
+    scoped_ptr<ResourceEntry> entry) {
   base::PlatformFileError error =
       FileErrorToPlatformError(file_error);
   if (error != base::PLATFORM_FILE_OK) {
@@ -89,8 +88,7 @@ void CallSnapshotFileCallback(
     const base::PlatformFileInfo& file_info,
     FileError file_error,
     const base::FilePath& local_path,
-    const std::string& unused_mime_type,
-    DriveFileType file_type) {
+    scoped_ptr<ResourceEntry> entry) {
   scoped_refptr<ShareableFileReference> file_ref;
   base::PlatformFileError error =
       FileErrorToPlatformError(file_error);
@@ -98,7 +96,8 @@ void CallSnapshotFileCallback(
   // If the file is a hosted document, a temporary JSON file is created to
   // represent the document. The JSON file is not cached and its lifetime
   // is managed by ShareableFileReference.
-  if (error == base::PLATFORM_FILE_OK && file_type == HOSTED_DOCUMENT) {
+  if (error == base::PLATFORM_FILE_OK &&
+      entry && entry->file_specific_info().is_hosted_document()) {
     file_ref = ShareableFileReference::GetOrCreate(
         local_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
