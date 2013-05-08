@@ -9,41 +9,28 @@ var remoting = remoting || {};
 
 /** @constructor */
 remoting.HostController = function() {
-  /** @type {remoting.HostController} */
-  var that = this;
-
-  /** @type {remoting.HostNativeMessaging} @private */
-  this.plugin_ = new remoting.HostNativeMessaging();
-
-  /** @param {boolean} success */
-  var onNativeMessagingInit = function(success) {
-    if (success) {
-      console.log('Native Messaging supported.');
-    } else {
-      console.log('Native Messaging unsupported, falling back to NPAPI.');
-      var plugin = remoting.HostSession.createPlugin();
-      that.plugin_ = new remoting.HostPluginWrapper(plugin);
-      /** @type {HTMLElement} @private */
-      var container = document.getElementById('daemon-plugin-container');
-      container.appendChild(plugin);
-    }
-
-    /** @param {string} version */
-    var printVersion = function(version) {
-      if (version == '') {
-        console.log('Host not installed.');
-      } else {
-        console.log('Host version: ' + version);
-      }
-    };
-    try {
-      that.plugin_.getDaemonVersion(printVersion);
-    } catch (err) {
-      console.log('Host version not available.');
-    }
+  /** @return {remoting.HostPlugin} */
+  var createNpapiPlugin = function() {
+    var plugin = remoting.HostSession.createPlugin();
+    /** @type {HTMLElement} @private */
+    var container = document.getElementById('daemon-plugin-container');
+    container.appendChild(plugin);
+    return plugin;
   }
 
-  this.plugin_.initialize(onNativeMessagingInit);
+  /** @type {remoting.HostDispatcher} @private */
+  this.hostDispatcher_ = new remoting.HostDispatcher(createNpapiPlugin);
+
+  /** @param {string} version */
+  var printVersion = function(version) {
+    if (version == '') {
+      console.log('Host not installed.');
+    } else {
+      console.log('Host version: ' + version);
+    }
+  };
+
+  this.hostDispatcher_.getDaemonVersion(printVersion);
 }
 
 // Note that the values in the enums below are copied from
@@ -73,7 +60,7 @@ remoting.HostController.AsyncResult = {
  *     called when done.
  */
 remoting.HostController.prototype.getConsent = function(callback) {
-  this.plugin_.getUsageStatsConsent(callback);
+  this.hostDispatcher_.getUsageStatsConsent(callback);
 };
 
 /**
@@ -129,8 +116,8 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
     var success = (xhr.status == 200);
 
     if (success) {
-      that.plugin_.getPinHash(newHostId, hostPin, startHostWithHash.bind(
-          null, hostName, publicKey, privateKey, xhr));
+      that.hostDispatcher_.getPinHash(newHostId, hostPin,
+          startHostWithHash.bind(null, hostName, publicKey, privateKey, xhr));
     } else {
       console.log('Failed to register the host. Status: ' + xhr.status +
                   ' response: ' + xhr.responseText);
@@ -159,7 +146,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
     var onStartDaemon = function(result) {
       onStarted(callback, result, hostName, publicKey);
     };
-    that.plugin_.startDaemon(hostConfig, consent, onStartDaemon);
+    that.hostDispatcher_.startDaemon(hostConfig, consent, onStartDaemon);
   }
 
   /**
@@ -210,10 +197,10 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
    * @return {void} Nothing.
    */
   function startWithHostname(hostName) {
-    that.plugin_.generateKeyPair(onKeyGenerated.bind(null, hostName));
+    that.hostDispatcher_.generateKeyPair(onKeyGenerated.bind(null, hostName));
   }
 
-  this.plugin_.getHostName(startWithHostname);
+  this.hostDispatcher_.getHostName(startWithHostname);
 };
 
 /**
@@ -250,7 +237,7 @@ remoting.HostController.prototype.stop = function(callback) {
     that.getLocalHostId(unregisterHost.bind(null, result));
   };
 
-  this.plugin_.stopDaemon(onStopped);
+  this.hostDispatcher_.stopDaemon(onStopped);
 };
 
 /**
@@ -297,20 +284,20 @@ remoting.HostController.prototype.updatePin = function(newPin, callback) {
       return;
     }
     var hostId = config['host_id'];
-    that.plugin_.getPinHash(hostId, newPin, updateDaemonConfigWithHash);
-  };
+    that.hostDispatcher_.getPinHash(hostId, newPin, updateDaemonConfigWithHash);
+  }
 
   /** @param {string} pinHash */
   function updateDaemonConfigWithHash(pinHash) {
     var newConfig = JSON.stringify({
         host_secret_hash: pinHash
       });
-    that.plugin_.updateDaemonConfig(newConfig, callback);
-  };
+    that.hostDispatcher_.updateDaemonConfig(newConfig, callback);
+  }
 
   // TODO(sergeyu): When crbug.com/121518 is fixed: replace this call
   // with an upriveleged version if that is necessary.
-  this.plugin_.getDaemonConfig(onConfig);
+  this.hostDispatcher_.getDaemonConfig(onConfig);
 };
 
 /**
@@ -320,7 +307,7 @@ remoting.HostController.prototype.updatePin = function(newPin, callback) {
  *     Completion callback.
  */
 remoting.HostController.prototype.getLocalHostState = function(onDone) {
-  this.plugin_.getDaemonState(onDone);
+  this.hostDispatcher_.getDaemonState(onDone);
 };
 
 /**
@@ -341,7 +328,7 @@ remoting.HostController.prototype.getLocalHostId = function(onDone) {
     onDone(hostId);
   };
   try {
-    this.plugin_.getDaemonConfig(onConfig);
+    this.hostDispatcher_.getDaemonConfig(onConfig);
   } catch (err) {
     onDone(null);
   }
