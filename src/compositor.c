@@ -1182,8 +1182,6 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	struct wl_list frame_callback_list;
 	pixman_region32_t output_damage;
 
-	weston_compositor_update_drag_surfaces(ec);
-
 	/* Rebuild the surface list and update surface transforms up front. */
 	wl_list_init(&ec->surface_list);
 	wl_list_init(&frame_callback_list);

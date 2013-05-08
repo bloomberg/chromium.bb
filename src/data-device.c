@@ -167,6 +167,7 @@ drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_
 {
 	struct weston_seat *seat = es->configure_private;
 	struct wl_list *list;
+	float fx, fy;
 
 	if (!weston_surface_is_mapped(es) && es->buffer_ref.buffer) {
 		if (seat->sprite && weston_surface_is_mapped(seat->sprite))
@@ -179,9 +180,12 @@ drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_
 		empty_region(&es->pending.input);
 	}
 
-	weston_surface_configure(es,
-				 es->geometry.x + sx, es->geometry.y + sy,
-				 width, height);
+	seat->drag_dx += sx;
+	seat->drag_dy += sy;
+
+	fx = wl_fixed_to_double(seat->pointer->x) + seat->drag_dx;
+	fy = wl_fixed_to_double(seat->pointer->y) + seat->drag_dy;
+	weston_surface_configure(es, fx, fy, width, height);
 }
 
 static int
@@ -196,10 +200,8 @@ device_setup_new_drag_surface(struct weston_seat *seat,
 	}
 
 	seat->drag_surface = surface;
-
-	weston_surface_set_position(seat->drag_surface,
-				    wl_fixed_to_double(seat->pointer->x),
-				    wl_fixed_to_double(seat->pointer->y));
+	seat->drag_dx = 0;
+	seat->drag_dy = 0;
 
 	surface->configure = drag_surface_configure;
 	surface->configure_private = seat;
@@ -220,29 +222,6 @@ device_release_drag_surface(struct weston_seat *seat)
 	empty_region(&seat->drag_surface->pending.input);
 	wl_list_remove(&seat->drag_surface_destroy_listener.link);
 	seat->drag_surface = NULL;
-}
-
-void
-weston_seat_update_drag_surface(struct weston_seat *seat, int dx, int dy)
-{
-	if (!seat->drag_surface)
-		return;
-
-	if (!dx && !dy)
-		return;
-
-	weston_surface_set_position(seat->drag_surface,
-				    seat->drag_surface->geometry.x + wl_fixed_to_double(dx),
-				    seat->drag_surface->geometry.y + wl_fixed_to_double(dy));
-}
-
-void
-weston_compositor_update_drag_surfaces(struct weston_compositor *compositor)
-{
-	struct weston_seat *seat;
-
-	wl_list_for_each(seat, &compositor->seat_list, link)
-		weston_seat_update_drag_surface(seat, 0, 0);
 }
 
 static void
@@ -307,6 +286,14 @@ drag_grab_motion(struct weston_pointer_grab *grab,
 {
 	struct weston_seat *seat =
 		container_of(grab, struct weston_seat, drag_grab);
+	float fx, fy;
+
+	if (seat->drag_surface) {
+		fx = wl_fixed_to_double(seat->pointer->x) + seat->drag_dx;
+		fy = wl_fixed_to_double(seat->pointer->y) + seat->drag_dy;
+		weston_surface_set_position(seat->drag_surface, fx, fy);
+		weston_surface_schedule_repaint(seat->drag_surface);
+	}
 
 	if (seat->drag_focus_resource)
 		wl_data_device_send_motion(seat->drag_focus_resource,
@@ -316,10 +303,8 @@ drag_grab_motion(struct weston_pointer_grab *grab,
 static void
 data_device_end_drag_grab(struct weston_seat *seat)
 {
-	if (seat->drag_surface) {
+	if (seat->drag_surface)
 		device_release_drag_surface(seat);
-		weston_seat_update_drag_surface(seat, 0, 0);
-	}
 
 	drag_grab_focus(&seat->drag_grab, NULL,
 	                wl_fixed_from_int(0), wl_fixed_from_int(0));
@@ -408,7 +393,6 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 	if (icon_resource) {
 		if (!device_setup_new_drag_surface(seat, icon_resource->data))
 			return;
-		weston_seat_update_drag_surface(seat, 0, 0);
 	}
 
 	weston_pointer_set_focus(seat->pointer, NULL,

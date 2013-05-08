@@ -639,8 +639,6 @@ move_pointer(struct weston_seat *seat, wl_fixed_t x, wl_fixed_t y)
 
 	clip_pointer_motion(seat, &x, &y);
 
-	weston_seat_update_drag_surface(seat, x - pointer->x, y - pointer->y);
-
 	pointer->x = x;
 	pointer->y = y;
 

@@ -334,8 +334,6 @@ void
 weston_seat_set_keyboard(struct weston_seat *seat, struct weston_keyboard *keyboard);
 void
 weston_seat_set_touch(struct weston_seat *seat, struct weston_touch *touch);
-void
-weston_seat_update_drag_surface(struct weston_seat *seat, int dx, int dy);
 
 void
 weston_pointer_init(struct weston_pointer *pointer);
@@ -474,6 +472,7 @@ struct weston_seat {
 	struct weston_pointer_grab drag_grab;
 	struct weston_surface *drag_surface;
 	struct wl_listener drag_surface_destroy_listener;
+	int32_t drag_dx, drag_dy;
 
 	uint32_t num_tp;
 
@@ -856,8 +855,6 @@ void
 weston_compositor_offscreen(struct weston_compositor *compositor);
 void
 weston_compositor_sleep(struct weston_compositor *compositor);
-void
-weston_compositor_update_drag_surfaces(struct weston_compositor *compositor);
 struct weston_surface *
 weston_compositor_pick_surface(struct weston_compositor *compositor,
 			       wl_fixed_t x, wl_fixed_t y,
