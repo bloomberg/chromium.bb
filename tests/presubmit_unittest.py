@@ -952,9 +952,9 @@ class InputApiUnittest(PresubmitTestsBase):
       ['M', join('foo', 'blat', 'weird.xyz')],
       ['M', join('foo', 'blat', 'another.h')],
       ['M', join('foo', 'third_party', 'third.cc')],
-      ['D', 'foo/mat/beingdeleted.txt'],
-      ['M', 'flop/notfound.txt'],
-      ['A', 'boo/flap.h'],
+      ['D', join('foo', 'mat', 'beingdeleted.txt')],
+      ['M', join('flop', 'notfound.txt')],
+      ['A', join('boo', 'flap.h')],
     ]
     blat = presubmit.normpath(join(self.fake_root_dir, files[0][1]))
     readme = presubmit.normpath(join(self.fake_root_dir, files[1][1]))

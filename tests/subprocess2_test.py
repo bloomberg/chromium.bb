@@ -13,7 +13,7 @@ import time
 import unittest
 
 try:
-  import fcntl
+  import fcntl  # pylint: disable=F0401
 except ImportError:
   fcntl = None
 
@@ -329,8 +329,10 @@ class RegressionTest(BaseTestCase):
 
   def test_stderr(self):
     cmd = ['expr', '1', '/', '0']
-    p1 = subprocess.Popen(cmd, stderr=subprocess.PIPE)
-    p2 = subprocess2.Popen(cmd, stderr=subprocess.PIPE)
+    if sys.platform == 'win32':
+      cmd = ['cmd.exe', '/c', 'exit', '1']
+    p1 = subprocess.Popen(cmd, stderr=subprocess.PIPE, shell=False)
+    p2 = subprocess2.Popen(cmd, stderr=subprocess.PIPE, shell=False)
     r1 = p1.communicate()
     r2 = p2.communicate(timeout=100)
     self.assertEquals(r1, r2)
@@ -431,7 +433,8 @@ class S2Test(BaseTestCase):
           stdin=VOID,
           stdout=PIPE,
           timeout=10,
-          universal_newlines=un)
+          universal_newlines=un,
+          shell=False)
       self._check_res(res, c('A\nBB\nCCC\n'), None, 0)
     self._run_test(fn)
 
@@ -576,7 +579,9 @@ class S2Test(BaseTestCase):
     res = subprocess2.communicate(
         self.exe + ['--large', '--read'], stdin=stdin, stdout=stdout.append)
     self.assertEquals(128*1024, len(''.join(stdout)))
-    self._check_res(res, None, None, 0)
+    # Windows return code is > 8 bits.
+    returncode = len(stdin) if sys.platform == 'win32' else 0
+    self._check_res(res, None, None, returncode)
 
   def test_tee_cb_throw(self):
     # Having a callback throwing up should not cause side-effects. It's a bit

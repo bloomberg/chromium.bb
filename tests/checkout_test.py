@@ -401,9 +401,12 @@ class SvnCheckout(SvnBaseTest):
     self._check_move(co)
     out = subprocess2.check_output(
         ['svn', 'status'], cwd=co.project_path)
-    expected = (
-      'A  +    chromeos/views/webui_menu_widget.h\n'
-      'D       chromeos/views/DOMui_menu_widget.h\n')
+    out = sorted(out.splitlines())
+    expected = sorted(
+      [
+        'A  +    chromeos/views/webui_menu_widget.h',
+        'D       chromeos/views/DOMui_menu_widget.h',
+      ])
     self.assertEquals(expected, out)
     # Make sure ancestry is what is expected;
     env = os.environ.copy()

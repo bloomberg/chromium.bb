@@ -1064,7 +1064,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     self.fake_hash_1 = 't0ta11yf4k3'
     self.fake_hash_2 = '3v3nf4k3r'
     self.url = 'git://foo'
-    self.root_dir = '/tmp'
+    self.root_dir = '/tmp' if sys.platform != 'win32' else 't:\\tmp'
     self.relpath = 'fake'
     self.base_path = os.path.join(self.root_dir, self.relpath)
 
