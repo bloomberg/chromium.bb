@@ -646,8 +646,11 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
 
   MemoryRegionMap::RegionIterator mmap_iter =
       MemoryRegionMap::BeginRegionLocked();
-  DeepBucket* deep_bucket = GetInformationOfMemoryRegion(
-      mmap_iter, memory_residence_info_getter, deep_profile);
+  DeepBucket* deep_bucket = NULL;
+  if (mmap_iter != MemoryRegionMap::EndRegionLocked()) {
+    deep_bucket = GetInformationOfMemoryRegion(
+        mmap_iter, memory_residence_info_getter, deep_profile);
+  }
 
   while (procmaps_iter.Next(&vma_start_addr, &vma_last_addr,
                             &flags, &offset, &inode, &filename)) {
