@@ -19,7 +19,8 @@ TEST(ChromeV8ContextSet, Lifecycle) {
   ChromeV8ContextSet context_set;
 
   v8::HandleScope handle_scope;
-  v8::Handle<v8::Context> v8_context(v8::Context::New());
+  v8::Handle<v8::Context> v8_context(
+      v8::Context::New(v8::Isolate::GetCurrent()));
 
   // Dirty hack, but we don't actually need the frame, and this is easier than
   // creating a whole webview.

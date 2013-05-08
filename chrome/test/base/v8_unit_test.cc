@@ -174,7 +174,10 @@ void V8UnitTest::SetUp() {
   console->Set(v8::String::New("error"),
                v8::FunctionTemplate::New(&V8UnitTest::Error));
 
-  context_ = v8::Context::New(NULL, global);
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  // TODO(marja): Use v8::Persistent::Reset here.
+  context_ = v8::Persistent<v8::Context>(
+      isolate, v8::Context::New(isolate, NULL, global));
 }
 
 void V8UnitTest::SetGlobalStringVar(const std::string& var_name,

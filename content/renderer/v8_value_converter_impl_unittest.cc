@@ -59,7 +59,10 @@ class V8ValueConverterImplTest : public testing::Test {
   virtual void SetUp() {
     v8::HandleScope handle_scope;
     v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
-    context_ = v8::Context::New(NULL, global);
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    // TODO(marja): Use v8::Persistent::Reset here.
+    context_ = v8::Persistent<v8::Context>(
+        isolate, v8::Context::New(isolate, NULL, global));
   }
 
   virtual void TearDown() {

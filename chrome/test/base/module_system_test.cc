@@ -85,7 +85,9 @@ class FailsOnException : public ModuleSystem::ExceptionHandler {
 };
 
 ModuleSystemTest::ModuleSystemTest()
-    : context_(v8::Context::New()),
+    : isolate_(v8::Isolate::GetCurrent()),
+      handle_scope_(isolate_),
+      context_(v8::Context::New(isolate_)),
       source_map_(new StringSourceMap()),
       should_assertions_be_made_(true) {
   context_->Enter();

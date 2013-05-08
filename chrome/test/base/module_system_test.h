@@ -51,12 +51,16 @@ class ModuleSystemTest : public testing::Test {
   // Create an empty object in the global scope with name |name|.
   v8::Handle<v8::Object> CreateGlobal(const std::string& name);
 
-  extensions::ScopedPersistent<v8::Context> context_;
+  v8::Isolate* isolate_;
   v8::HandleScope handle_scope_;
+  extensions::ScopedPersistent<v8::Context> context_;
   AssertNatives* assert_natives_;
   scoped_ptr<StringSourceMap> source_map_;
   scoped_ptr<extensions::ModuleSystem> module_system_;
   bool should_assertions_be_made_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ModuleSystemTest);
 };
 
 #endif  // CHROME_TEST_BASE_MODULE_SYSTEM_TEST_H_
