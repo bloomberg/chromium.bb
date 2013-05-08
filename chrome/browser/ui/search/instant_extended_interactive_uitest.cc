@@ -93,7 +93,7 @@ class QuittingHistoryDBTask : public history::HistoryDBTask {
   }
 
   virtual void DoneRunOnMainThread() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
  private:
@@ -199,11 +199,11 @@ class InstantExtendedTest : public InProcessBrowserTest,
     HistoryService* history = HistoryServiceFactory::GetForProfile(
         browser()->profile(), Profile::EXPLICIT_ACCESS);
     DCHECK(history);
-    DCHECK(MessageLoop::current());
+    DCHECK(base::MessageLoop::current());
 
     CancelableRequestConsumer consumer;
     history->ScheduleDBTask(new QuittingHistoryDBTask(), &consumer);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   int CountSearchProviderSuggestions() {

@@ -27,8 +27,7 @@ using content::WebContentsTester;
 class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
  protected:
   ContentSettingBubbleModelTest()
-      : ui_thread_(BrowserThread::UI, MessageLoop::current()) {
-  }
+      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();

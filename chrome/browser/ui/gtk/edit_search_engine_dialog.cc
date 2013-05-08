@@ -272,5 +272,5 @@ void EditSearchEngineDialog::OnResponse(GtkWidget* dialog, int response_id) {
 }
 
 void EditSearchEngineDialog::OnWindowDestroy(GtkWidget* widget) {
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }

@@ -204,7 +204,7 @@ void WebNotificationTrayWin::OnMessageCenterTrayChanged() {
   // See the comments in ash/system/web_notification/web_notification_tray.cc
   // for why PostTask.
   should_update_tray_content_ = true;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&WebNotificationTrayWin::UpdateStatusIcon, AsWeakPtr()));
 }

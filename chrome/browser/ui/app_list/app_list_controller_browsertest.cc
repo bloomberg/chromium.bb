@@ -25,7 +25,7 @@ class AppListControllerBrowserTest : public InProcessBrowserTest {
   void OnProfileCreated(Profile* profile, Profile::CreateStatus status) {
     if (status == Profile::CREATE_STATUS_INITIALIZED) {
       profile2_ = profile;
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   }
 

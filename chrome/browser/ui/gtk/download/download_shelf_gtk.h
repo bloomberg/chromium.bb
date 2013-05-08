@@ -37,7 +37,7 @@ class Point;
 class DownloadShelfGtk : public DownloadShelf,
                          public content::NotificationObserver,
                          public SlideAnimatorGtk::Delegate,
-                         public MessageLoopForUI::Observer {
+                         public base::MessageLoopForUI::Observer {
  public:
   DownloadShelfGtk(Browser* browser, gfx::NativeView view);
 

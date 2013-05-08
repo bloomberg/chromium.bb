@@ -171,7 +171,8 @@ void ChromeToMobileBubbleView::OnSendComplete(bool success) {
 
   if (success) {
     send_->SetText(l10n_util::GetStringUTF16(IDS_CHROME_TO_MOBILE_BUBBLE_SENT));
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
         base::Bind(&ChromeToMobileBubbleView::Hide),
         base::TimeDelta::FromSeconds(kAutoCloseDelay));
   } else {

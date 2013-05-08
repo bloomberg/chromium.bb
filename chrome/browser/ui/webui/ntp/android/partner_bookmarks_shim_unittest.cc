@@ -58,7 +58,7 @@ class PartnerBookmarksShimTest : public testing::Test {
 
   scoped_ptr<TestingProfile> profile_;
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

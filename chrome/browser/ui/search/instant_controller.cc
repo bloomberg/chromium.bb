@@ -232,7 +232,7 @@ void DeletePageSoon(scoped_ptr<T> page) {
   if (page->contents())
     page->ReleaseContents();
 
-  MessageLoop::current()->DeleteSoon(FROM_HERE, page.release());
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, page.release());
 }
 
 }  // namespace
@@ -1180,7 +1180,8 @@ void InstantController::InstantSupportDetermined(
     bool supports_instant) {
   if (IsContentsFrom(instant_tab(), contents)) {
     if (!supports_instant)
-      MessageLoop::current()->DeleteSoon(FROM_HERE, instant_tab_.release());
+      base::MessageLoop::current()->DeleteSoon(FROM_HERE,
+                                               instant_tab_.release());
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,

@@ -150,11 +150,12 @@ void SelectFileDialogExtension::ExtensionTerminated(
   // this time though this is broken because of some faulty wiring in
   // ExtensionProcessManager::CreateViewHost. Once that is fixed, remove this.
   if (profile_) {
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
         base::Bind(&ExtensionService::ReloadExtension,
-            base::Unretained(extensions::ExtensionSystem::Get(profile_)->
-                extension_service()),
-        extension_id));
+                   base::Unretained(extensions::ExtensionSystem::Get(profile_)
+                                        ->extension_service()),
+                   extension_id));
   }
 
   dialog->Close();

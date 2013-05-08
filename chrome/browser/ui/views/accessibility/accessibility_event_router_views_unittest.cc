@@ -131,7 +131,7 @@ class AccessibilityEventRouterViewsTest
     // The Widget's FocusManager is deleted using DeleteSoon - this
     // forces it to be deleted now, so we don't have any memory leaks
     // when this method exits.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
 #if defined(OS_WIN)
     ole_initializer_.reset();
@@ -179,7 +179,7 @@ class AccessibilityEventRouterViewsTest
     last_control_context_ = info->context();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   int focus_event_count_;
   std::string last_control_name_;
   std::string last_control_context_;
@@ -232,19 +232,19 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   views::FocusManager* focus_manager = contents->GetWidget()->GetFocusManager();
   focus_event_count_ = 0;
   focus_manager->AdvanceFocus(false);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, focus_event_count_);
   EXPECT_EQ(kButton2ASCII, last_control_name_);
 
   // Advance to button 3. Expect the new accessible name we assigned.
   focus_manager->AdvanceFocus(false);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, focus_event_count_);
   EXPECT_EQ(kButton3NewASCII, last_control_name_);
 
   // Advance to button 1 and check the notification.
   focus_manager->AdvanceFocus(false);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(3, focus_event_count_);
   EXPECT_EQ(kButton1ASCII, last_control_name_);
 
@@ -273,7 +273,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestToolbarContext) {
   focus_event_count_ = 0;
   button->RequestFocus();
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Test that we got the event with the expected name and context.
   EXPECT_EQ(kInitialFocusCount, focus_event_count_);
@@ -307,7 +307,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestAlertContext) {
   focus_event_count_ = 0;
   button->RequestFocus();
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Test that we got the event with the expected name and context.
   EXPECT_EQ(kInitialFocusCount, focus_event_count_);
@@ -349,7 +349,7 @@ TEST_F(AccessibilityEventRouterViewsTest, StateChangeAfterNotification) {
 
   // Process anything in the event loop. Now we should get the notification,
   // and it should give us the new control name, not the old one.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kInitialFocusCount, focus_event_count_);
   EXPECT_EQ(kNewNameASCII, last_control_name_);
 
@@ -387,7 +387,7 @@ TEST_F(AccessibilityEventRouterViewsTest, NotificationOnDeletedObject) {
 
   // Process anything in the event loop. We shouldn't get a notification
   // because the view is no longer valid, and this shouldn't crash.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, focus_event_count_);
 
   window->CloseNow();

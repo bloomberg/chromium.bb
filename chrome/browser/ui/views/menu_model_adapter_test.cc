@@ -270,9 +270,8 @@ class MenuModelAdapterTest : public ViewEventTestBase,
 
     menu_model_adapter_.BuildMenu(menu_);
 
-    MessageLoopForUI::current()->PostTask(
-        FROM_HERE,
-        CreateEventTask(this, &MenuModelAdapterTest::Step3));
+    base::MessageLoopForUI::current()->PostTask(
+        FROM_HERE, CreateEventTask(this, &MenuModelAdapterTest::Step3));
   }
 
   // Verify that the submenu MenuModel received the close callback

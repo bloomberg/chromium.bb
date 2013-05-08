@@ -27,7 +27,7 @@ class TabAudioIndicatorViewMacTest : public CocoaTest {
   }
 
   TabAudioIndicatorViewMac* view_;
-  MessageLoopForUI message_loop_;  // Needed for ui::LinearAnimation.
+  base::MessageLoopForUI message_loop_;  // Needed for ui::LinearAnimation.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabAudioIndicatorViewMacTest);

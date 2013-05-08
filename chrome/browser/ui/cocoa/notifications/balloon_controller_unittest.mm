@@ -60,10 +60,10 @@ class MockBalloonCollection : public BalloonCollection {
 class BalloonControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   BalloonControllerTest() :
-      ui_thread_(BrowserThread::UI, MessageLoop::current()),
+      ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
       file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, MessageLoop::current()),
-      io_thread_(BrowserThread::IO, MessageLoop::current()) {
+            BrowserThread::FILE_USER_BLOCKING, base::MessageLoop::current()),
+      io_thread_(BrowserThread::IO, base::MessageLoop::current()) {
   }
 
   virtual void SetUp() {
@@ -80,7 +80,7 @@ class BalloonControllerTest : public ChromeRenderViewHostTestHarness {
   virtual void TearDown() {
     collection_.reset();
     browser_.reset();
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 

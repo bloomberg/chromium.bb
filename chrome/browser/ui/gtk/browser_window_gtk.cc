@@ -1415,7 +1415,7 @@ void BrowserWindowGtk::OnMainWindowDestroy(GtkWidget* widget) {
   //
   // We don't want to use DeleteSoon() here since it won't work on a nested pump
   // (like in UI tests).
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&base::DeletePointer<BrowserWindowGtk>, this));
 }
 

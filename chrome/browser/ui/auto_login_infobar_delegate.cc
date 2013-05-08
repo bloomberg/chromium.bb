@@ -109,18 +109,18 @@ void AutoLoginRedirector::Observe(int type,
   // The WebContents that started this has been destroyed. The request must be
   // cancelled and this object must be deleted.
   ubertoken_fetcher_.reset();
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void AutoLoginRedirector::OnUbertokenSuccess(const std::string& token) {
   RedirectToMergeSession(token);
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void AutoLoginRedirector::OnUbertokenFailure(
     const GoogleServiceAuthError& error) {
   LOG(WARNING) << "AutoLoginRedirector: token request failed";
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {

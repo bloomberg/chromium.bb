@@ -1457,7 +1457,7 @@ void BookmarkBarGtk::OnParentSizeAllocate(GtkWidget* widget,
   // gtk_widget_queue_draw by itself does not work, despite that it claims to
   // be asynchronous.
   if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&BookmarkBarGtk::PaintEventBox, weak_factory_.GetWeakPtr()));
   }

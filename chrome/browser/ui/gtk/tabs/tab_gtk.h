@@ -16,8 +16,7 @@
 class TabStripMenuController;
 class ThemeService;
 
-class TabGtk : public TabRendererGtk,
-               public MessageLoopForUI::Observer {
+class TabGtk : public TabRendererGtk, public base::MessageLoopForUI::Observer {
  public:
   // An interface implemented by an object that can help this Tab complete
   // various actions. The index parameter is the index of this Tab in the

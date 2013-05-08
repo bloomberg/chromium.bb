@@ -33,7 +33,7 @@ namespace {
 // destroyed before a box in an outer-loop. So to avoid this, ref-counting is
 // used so that the SimpleMessageBoxViews gets deleted at the right time.
 class SimpleMessageBoxViews : public views::DialogDelegate,
-                              public MessageLoop::Dispatcher,
+                              public base::MessageLoop::Dispatcher,
                               public base::RefCounted<SimpleMessageBoxViews> {
  public:
   SimpleMessageBoxViews(const string16& title,
@@ -191,7 +191,8 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
       RunWithDispatcher(dialog, anchor, true);
 #else
   {
-    MessageLoop::ScopedNestableTaskAllower allow(MessageLoopForUI::current());
+    base::MessageLoop::ScopedNestableTaskAllower allow(
+        base::MessageLoopForUI::current());
     base::RunLoop run_loop(dialog);
     run_loop.Run();
   }

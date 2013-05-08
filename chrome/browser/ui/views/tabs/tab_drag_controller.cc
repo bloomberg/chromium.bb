@@ -403,7 +403,7 @@ TabDragController::~TabDragController() {
   if (source_tabstrip_ && detach_into_browser_)
     GetModel(source_tabstrip_)->RemoveObserver(this);
 
-  MessageLoopForUI::current()->RemoveObserver(this);
+  base::MessageLoopForUI::current()->RemoveObserver(this);
 
   // Need to delete the view here manually _before_ we reset the dragged
   // contents to NULL, otherwise if the view is animating to its destination
@@ -456,7 +456,7 @@ void TabDragController::Init(
       std::find(tabs.begin(), tabs.end(), source_tab) - tabs.begin();
 
   // Listen for Esc key presses.
-  MessageLoopForUI::current()->AddObserver(this);
+  base::MessageLoopForUI::current()->AddObserver(this);
 
   if (source_tab->width() > 0) {
     offset_to_width_ratio_ = static_cast<float>(

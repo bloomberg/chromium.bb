@@ -74,8 +74,9 @@ class ZoomDecorationTest : public InProcessBrowserTest {
 
   void OnZoomChanged(const content::HostZoomMap::ZoomLevelChange& host) {
     if (should_quit_on_zoom_) {
-      MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-          &MessageLoop::Quit, base::Unretained(MessageLoop::current())));
+      base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+          &base::MessageLoop::Quit,
+          base::Unretained(base::MessageLoop::current())));
     }
   }
 

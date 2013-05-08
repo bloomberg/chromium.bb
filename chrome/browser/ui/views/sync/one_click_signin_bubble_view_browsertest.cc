@@ -31,7 +31,7 @@ class OneClickSigninBubbleViewBrowserTest : public InProcessBrowserTest {
     OneClickSigninBubbleView* view =
         OneClickSigninBubbleView::view_for_testing();
     EXPECT_TRUE(view != NULL);
-    view->message_loop_for_testing_ = MessageLoop::current();
+    view->message_loop_for_testing_ = base::MessageLoop::current();
     return view;
   }
 

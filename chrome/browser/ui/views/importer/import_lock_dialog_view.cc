@@ -86,13 +86,13 @@ string16 ImportLockDialogView::GetWindowTitle() const {
 }
 
 bool ImportLockDialogView::Accept() {
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   base::Bind(callback_, true));
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(callback_, true));
   return true;
 }
 
 bool ImportLockDialogView::Cancel() {
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   base::Bind(callback_, false));
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(callback_, false));
   return true;
 }

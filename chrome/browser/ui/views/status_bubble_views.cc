@@ -221,10 +221,10 @@ void StatusBubbleViews::StatusView::StartTimer(base::TimeDelta time) {
   if (timer_factory_.HasWeakPtrs())
     timer_factory_.InvalidateWeakPtrs();
 
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&StatusBubbleViews::StatusView::OnTimer,
-                timer_factory_.GetWeakPtr()),
+                 timer_factory_.GetWeakPtr()),
       time);
 }
 
@@ -681,7 +681,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
     if (is_expanded_ && !url.is_empty()) {
       ExpandBubble();
     } else if (net::FormatUrl(url, languages).length() > url_text_.length()) {
-      MessageLoop::current()->PostDelayedTask(
+      base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&StatusBubbleViews::ExpandBubble,
                      expand_timer_factory_.GetWeakPtr()),

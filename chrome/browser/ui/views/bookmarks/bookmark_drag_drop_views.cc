@@ -30,8 +30,8 @@ void DragBookmarks(Profile* profile,
   drag_data.Write(profile, &data);
 
   // Allow nested message loop so we get DnD events as we drag this around.
-  bool was_nested = MessageLoop::current()->IsNested();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
+  bool was_nested = base::MessageLoop::current()->IsNested();
+  base::MessageLoop::current()->SetNestableTasksAllowed(true);
 
   int operation = ui::DragDropTypes::DRAG_COPY |
                   ui::DragDropTypes::DRAG_MOVE |
@@ -48,7 +48,7 @@ void DragBookmarks(Profile* profile,
         ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   }
 
-  MessageLoop::current()->SetNestableTasksAllowed(was_nested);
+  base::MessageLoop::current()->SetNestableTasksAllowed(was_nested);
 }
 
 int GetBookmarkDragOperation(content::BrowserContext* browser_context,

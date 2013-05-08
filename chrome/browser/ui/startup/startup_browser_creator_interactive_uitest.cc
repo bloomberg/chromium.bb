@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
                         last_opened_profiles, &return_code);
 
   while (!browser_creator.ActivatedProfile())
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
   Browser* new_browser = NULL;
 

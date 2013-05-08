@@ -554,7 +554,7 @@ void DockedPanelCollection::BringUpOrDownTitlebars(bool bring_up) {
   // should always 'reset' the delays so cancel any tasks that haven't run yet
   // and post a new one.
   titlebar_action_factory_.InvalidateWeakPtrs();
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DockedPanelCollection::DelayedBringUpOrDownTitlebarsCheck,
                  titlebar_action_factory_.GetWeakPtr()),
@@ -769,7 +769,8 @@ void DockedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
 
 void DockedPanelCollection::ScheduleLayoutRefresh() {
   refresh_action_factory_.InvalidateWeakPtrs();
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&DockedPanelCollection::RefreshLayout,
                  refresh_action_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(PanelManager::AdjustTimeInterval(

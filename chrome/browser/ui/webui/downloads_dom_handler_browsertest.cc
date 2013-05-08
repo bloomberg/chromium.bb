@@ -88,16 +88,18 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
   virtual void CallDownloadsList(const base::ListValue& downloads) OVERRIDE {
     downloads_list_.reset(downloads.DeepCopy());
     if (waiting_list_) {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+      content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                       FROM_HERE,
+                                       base::MessageLoop::QuitClosure());
     }
   }
 
   virtual void CallDownloadUpdated(const base::ListValue& download) OVERRIDE {
     download_updated_.reset(download.DeepCopy());
     if (waiting_updated_) {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+      content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                       FROM_HERE,
+                                       base::MessageLoop::QuitClosure());
     }
   }
 

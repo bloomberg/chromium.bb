@@ -1302,7 +1302,7 @@ void SyncSetupHandler::CloseGaiaSigninPage() {
     // if the user clicks 'cancel' in the enterprise signin dialog), so
     // closing this tab in mid-handler can cause crashes. Instead, close it
     // via a task so we know we aren't in the middle of any webui code.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&CloseTab, base::Unretained(active_gaia_signin_tab_)));
 

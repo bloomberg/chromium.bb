@@ -43,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(StarViewTest, MAYBE_HideOnSecondClick) {
   // Hide the bubble manually. In the browser this would normally happen during
   // the event processing.
   chrome::HideBookmarkBubbleView();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(chrome::IsBookmarkBubbleViewShowing());
   star_view->OnMouseReleased(released_event);
   EXPECT_FALSE(chrome::IsBookmarkBubbleViewShowing());

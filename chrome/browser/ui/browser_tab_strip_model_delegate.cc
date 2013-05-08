@@ -107,7 +107,7 @@ void BrowserTabStripModelDelegate::CloseFrameAfterDragSession() {
   // This is scheduled to run after we return to the message loop because
   // otherwise the frame will think the drag session is still active and ignore
   // the request.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&BrowserTabStripModelDelegate::CloseFrame,
                  weak_factory_.GetWeakPtr()));

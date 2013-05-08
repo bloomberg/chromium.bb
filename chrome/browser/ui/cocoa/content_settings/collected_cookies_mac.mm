@@ -105,7 +105,7 @@ void CollectedCookiesMac::PerformClose() {
 
 void CollectedCookiesMac::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 #pragma mark Window Controller

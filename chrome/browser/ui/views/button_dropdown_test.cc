@@ -113,9 +113,8 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
     // One more hop is required because ui::SimpleMenuModel calls
     // ui::SimpleMenuModel::Delegate::MenuClosed() via a posted
     // task.
-    MessageLoopForUI::current()->PostTask(
-        FROM_HERE,
-        CreateEventTask(this, &ButtonDropDownDragTest::Step5));
+    base::MessageLoopForUI::current()->PostTask(
+        FROM_HERE, CreateEventTask(this, &ButtonDropDownDragTest::Step5));
   }
 
   void Step5() {

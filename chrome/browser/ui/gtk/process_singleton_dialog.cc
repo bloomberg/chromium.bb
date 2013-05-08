@@ -33,10 +33,10 @@ ProcessSingletonDialog::ProcessSingletonDialog(const std::string& message) {
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
   gtk_widget_show_all(dialog_);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 void ProcessSingletonDialog::OnResponse(GtkWidget* dialog, int response_id) {
   gtk_widget_destroy(dialog_);
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }

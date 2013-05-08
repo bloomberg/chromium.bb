@@ -366,7 +366,7 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   }
 
   if (params.wait_for_fully_created) {
-    MessageLoopForUI::current()->RunUntilIdle();
+    base::MessageLoopForUI::current()->RunUntilIdle();
 
 #if defined(OS_LINUX)
     // On bots, we might have a simple window manager which always activates new

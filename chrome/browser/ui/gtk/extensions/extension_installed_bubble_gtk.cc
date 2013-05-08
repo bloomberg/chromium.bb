@@ -118,7 +118,7 @@ void ExtensionInstalledBubbleGtk::Observe(
         content::Details<const Extension>(details).ptr();
     if (extension == extension_) {
       // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
-      MessageLoopForUI::current()->PostTask(
+      base::MessageLoopForUI::current()->PostTask(
           FROM_HERE,
           base::Bind(&ExtensionInstalledBubbleGtk::ShowInternal,
                      weak_factory_.GetWeakPtr()));
@@ -154,7 +154,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
         browser_window->GetToolbar()->GetBrowserActionsToolbar();
 
     if (toolbar->animating() && animation_wait_retries_-- > 0) {
-      MessageLoopForUI::current()->PostDelayedTask(
+      base::MessageLoopForUI::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&ExtensionInstalledBubbleGtk::ShowInternal,
                      weak_factory_.GetWeakPtr()),

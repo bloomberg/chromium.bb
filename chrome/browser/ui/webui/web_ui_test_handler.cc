@@ -61,7 +61,7 @@ void WebUITestHandler::HandleTestResult(const ListValue* test_result) {
   // Quit the message loop if |is_waiting_| so waiting process can get result or
   // error. To ensure this gets done, do this before ASSERT* calls.
   if (is_waiting_)
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
 
   SCOPED_TRACE("WebUITestHandler::HandleTestResult");
 
@@ -81,7 +81,7 @@ void WebUITestHandler::JavaScriptComplete(const base::Value* result) {
   // Quit the message loop if |is_waiting_| so waiting process can get result or
   // error. To ensure this gets done, do this before ASSERT* calls.
   if (is_waiting_)
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
 
   SCOPED_TRACE("WebUITestHandler::JavaScriptComplete");
 

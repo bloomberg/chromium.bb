@@ -49,7 +49,7 @@ class FaviconDelegate : public ui::MenuModelDelegate {
 
   virtual void OnIconChanged(int model_index) OVERRIDE {
     was_called_ = true;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   bool was_called() const { return was_called_; }
@@ -544,7 +544,7 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
 
   // Make the favicon service run GetFavIconForURL,
   // FaviconDelegate.OnIconChanged will be called.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Verify that the callback executed.
   EXPECT_TRUE(favicon_delegate.was_called());

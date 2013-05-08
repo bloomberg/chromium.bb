@@ -19,7 +19,7 @@ class MessageBoxView;
 // A dialog box that tells the user that we can't write to the specified user
 // data directory. Provides the user a chance to pick a different directory.
 class UserDataDirDialogView : public views::DialogDelegate,
-                              public MessageLoopForUI::Dispatcher,
+                              public base::MessageLoopForUI::Dispatcher,
                               public ui::SelectFileDialog::Listener {
  public:
   explicit UserDataDirDialogView(const base::FilePath& user_data_dir);

@@ -141,7 +141,7 @@ void BrowserActionButton::Destroy() {
 
   if (context_menu_) {
     context_menu_->Cancel();
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   } else {
     delete this;
   }

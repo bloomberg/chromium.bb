@@ -468,9 +468,11 @@ void FullscreenController::UpdateNotificationRegistrations() {
 
 void FullscreenController::PostFullscreenChangeNotification(
     bool is_fullscreen) {
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
       base::Bind(&FullscreenController::NotifyFullscreenChange,
-          ptr_factory_.GetWeakPtr(), is_fullscreen));
+                 ptr_factory_.GetWeakPtr(),
+                 is_fullscreen));
 }
 
 void FullscreenController::NotifyFullscreenChange(bool is_fullscreen) {

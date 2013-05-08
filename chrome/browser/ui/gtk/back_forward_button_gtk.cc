@@ -105,7 +105,7 @@ gboolean BackForwardButtonGtk::OnButtonPress(GtkWidget* widget,
     return FALSE;
 
   y_position_of_last_press_ = static_cast<int>(event->y);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&BackForwardButtonGtk::ShowBackForwardMenu,
                  weak_factory_.GetWeakPtr(),

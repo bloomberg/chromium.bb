@@ -417,7 +417,7 @@ class SyncSetupHandlerTest : public testing::TestWithParam<bool> {
   ProfileSyncServiceMock* mock_pss_;
   GoogleServiceAuthError error_;
   // MessageLoop instance is required to work with OneShotTimer.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   SigninManagerBase* mock_signin_;
   TestWebUI web_ui_;
   scoped_ptr<TestingSyncSetupHandler> handler_;

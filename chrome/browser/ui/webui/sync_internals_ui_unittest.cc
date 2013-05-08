@@ -76,7 +76,7 @@ class SyncInternalsUITestWithService : public ChromeRenderViewHostTestHarness {
       // Needed by |sync_internals_ui_|'s constructor.  The
       // message loop is provided by ChromeRenderViewHostTestHarness.
       content::TestBrowserThread ui_thread_(BrowserThread::UI,
-                                            MessageLoopForUI::current());
+                                            base::MessageLoopForUI::current());
       // |sync_internals_ui_|'s constructor triggers all the
       // expectations above.
       web_ui_.reset(new TestSyncWebUI(web_contents()));
@@ -156,7 +156,7 @@ class SyncInternalsUITestWithoutService
       // Needed by |sync_internals_ui_|'s constructor.  The
       // message loop is provided by ChromeRenderViewHostTestHarness.
       content::TestBrowserThread ui_thread_(BrowserThread::UI,
-                                            MessageLoopForUI::current());
+                                            base::MessageLoopForUI::current());
       // |sync_internals_ui_|'s constructor triggers all the
       // expectations above.
       web_ui_.reset(new TestSyncWebUI(web_contents()));

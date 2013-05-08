@@ -23,7 +23,7 @@ class EncodingMenuControllerTest : public testing::Test {
   EncodingMenuControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
 };
 

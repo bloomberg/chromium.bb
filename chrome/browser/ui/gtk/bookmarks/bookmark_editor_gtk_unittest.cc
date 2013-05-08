@@ -99,7 +99,7 @@ class BookmarkEditorGtkTest : public testing::Test {
                    GURL(test_base + "sa"));
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 };

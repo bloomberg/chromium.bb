@@ -19,7 +19,7 @@ class WebUISourcesTest : public testing::Test {
  public:
   WebUISourcesTest()
       : result_data_size_(0),
-        ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
+        ui_thread_(BrowserThread::UI, base::MessageLoop::current()) {}
 
   TestingProfile* profile() const { return profile_.get(); }
   ThemeSource* theme_source() const { return theme_source_.get(); }
@@ -50,7 +50,7 @@ class WebUISourcesTest : public testing::Test {
 
   content::URLDataSource::GotDataCallback callback_;
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
 
   scoped_ptr<TestingProfile> profile_;
@@ -77,7 +77,7 @@ TEST_F(WebUISourcesTest, ThemeSourceImages) {
 
 TEST_F(WebUISourcesTest, ThemeSourceCSS) {
   content::TestBrowserThread io_thread(BrowserThread::IO,
-                                       MessageLoop::current());
+                                       base::MessageLoop::current());
   // Generating the test data for the NTP CSS would just involve copying the
   // method, or being super brittle and hard-coding the result (requiring
   // an update to the unittest every time the CSS template changes), so we

@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(AvatarMenuButtonTest, HideOnSecondClick) {
   // Verify that clicking once shows the avatar bubble.
   static_cast<views::MenuButtonListener*>(button)->OnMenuButtonClicked(
       NULL, gfx::Point());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(AvatarMenuBubbleView::IsShowing());
 
   // Verify that clicking again doesn't reshow it.
@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(AvatarMenuButtonTest, HideOnSecondClick) {
   // Hide the bubble manually. In the browser this would normally happen during
   // the event processing.
   AvatarMenuBubbleView::Hide();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(AvatarMenuBubbleView::IsShowing());
 }
 

@@ -90,7 +90,7 @@ class KeywordEditorControllerTest : public testing::Test,
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<KeywordEditorController> controller_;
   TemplateURLService* model_;

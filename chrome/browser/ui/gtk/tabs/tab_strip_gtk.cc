@@ -915,7 +915,7 @@ void TabStripGtk::DestroyDraggedTab(TabGtk* tab) {
   gtk_container_remove(GTK_CONTAINER(tabstrip_.get()), tab->widget());
   // If we delete the dragged source tab here, the DestroyDragWidget posted
   // task will be run after the tab is deleted, leading to a crash.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, tab);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, tab);
 
   // Force a layout here, because if we've just quickly drag detached a Tab,
   // the stopping of the active animation above may have left the TabStrip in a
@@ -1417,7 +1417,7 @@ void TabStripGtk::HandleGlobalMouseMoveEvent() {
     // Mouse moved outside the tab slop zone, start a timer to do a resize
     // layout after a short while...
     if (!weak_factory_.HasWeakPtrs()) {
-      MessageLoop::current()->PostDelayedTask(
+      base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&TabStripGtk::ResizeLayoutTabs,
                      weak_factory_.GetWeakPtr()),
@@ -1655,14 +1655,14 @@ void TabStripGtk::ReStack() {
 
 void TabStripGtk::AddMessageLoopObserver() {
   if (!added_as_message_loop_observer_) {
-    MessageLoopForUI::current()->AddObserver(this);
+    base::MessageLoopForUI::current()->AddObserver(this);
     added_as_message_loop_observer_ = true;
   }
 }
 
 void TabStripGtk::RemoveMessageLoopObserver() {
   if (added_as_message_loop_observer_) {
-    MessageLoopForUI::current()->RemoveObserver(this);
+    base::MessageLoopForUI::current()->RemoveObserver(this);
     added_as_message_loop_observer_ = false;
   }
 }
@@ -2125,7 +2125,7 @@ void TabStripGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
   if (GetTabCount() == 1) {
     Layout();
   } else if (!layout_factory_.HasWeakPtrs()) {
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&TabStripGtk::Layout, layout_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kLayoutAfterSizeAllocateMs));

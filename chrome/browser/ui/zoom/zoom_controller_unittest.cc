@@ -28,7 +28,7 @@ class TestZoomObserver : public ZoomObserver {
 class ZoomControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   ZoomControllerTest()
-      : ui_thread_(content::BrowserThread::UI, MessageLoop::current()) {}
+      : ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();

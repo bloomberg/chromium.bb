@@ -22,7 +22,7 @@ class TabAudioIndicatorTest : public TabAudioIndicator::Delegate,
   }
 
   int schedule_paint_count_;
-  MessageLoopForUI message_loop_;  // Needed for ui::LinearAnimation.
+  base::MessageLoopForUI message_loop_;  // Needed for ui::LinearAnimation.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabAudioIndicatorTest);

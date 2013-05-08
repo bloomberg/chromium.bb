@@ -741,9 +741,8 @@ void MenuGtk::ExecuteCommand(ui::MenuModel* model, int id) {
 
 void MenuGtk::OnMenuShow(GtkWidget* widget) {
   model_->MenuWillShow();
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MenuGtk::UpdateMenu, weak_factory_.GetWeakPtr()));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&MenuGtk::UpdateMenu, weak_factory_.GetWeakPtr()));
 }
 
 void MenuGtk::OnMenuHidden(GtkWidget* widget) {
@@ -798,7 +797,7 @@ void MenuGtk::OnSubMenuHidden(GtkWidget* submenu) {
   // the reference count again. Note that the delay is just an optimization; we
   // could use PostTask() and this would still work correctly.
   g_object_ref(G_OBJECT(submenu));
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&MenuGtk::OnSubMenuHiddenCallback, submenu),
       base::TimeDelta::FromSeconds(2));

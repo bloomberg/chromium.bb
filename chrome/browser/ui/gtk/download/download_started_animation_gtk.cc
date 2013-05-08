@@ -173,7 +173,7 @@ void DownloadStartedAnimationGtk::Close() {
 
   web_contents_ = NULL;
   gtk_widget_destroy(popup_);
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void DownloadStartedAnimationGtk::AnimateToState(double state) {

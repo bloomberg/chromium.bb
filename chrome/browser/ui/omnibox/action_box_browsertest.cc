@@ -60,7 +60,7 @@ class ActionBoxTest : public InProcessBrowserTest,
       default:
         FAIL() << "Unexpected notification type";
     }
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   DISALLOW_COPY_AND_ASSIGN(ActionBoxTest);

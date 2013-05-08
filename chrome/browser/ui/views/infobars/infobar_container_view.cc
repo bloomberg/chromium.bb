@@ -61,5 +61,5 @@ void InfoBarContainerView::PlatformSpecificAddInfoBar(InfoBar* infobar,
 
 void InfoBarContainerView::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
   RemoveChildView(static_cast<InfoBarView*>(infobar));
-  MessageLoop::current()->DeleteSoon(FROM_HERE, infobar);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, infobar);
 }

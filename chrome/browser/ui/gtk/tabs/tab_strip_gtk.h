@@ -34,7 +34,7 @@ class Image;
 
 class TabStripGtk : public TabStripModelObserver,
                     public TabGtk::TabDelegate,
-                    public MessageLoopForUI::Observer,
+                    public base::MessageLoopForUI::Observer,
                     public content::NotificationObserver,
                     public TabstripOriginProvider,
                     public ViewIDUtil::Delegate {

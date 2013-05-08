@@ -322,7 +322,7 @@ class AutofillDialogControllerTest : public testing::Test {
 
   // A bunch of threads are necessary for classes like TestWebContents and
   // URLRequestContextGetter not to fall over.
-  MessageLoopForUI loop_;
+  base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread file_blocking_thread_;

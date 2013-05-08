@@ -270,11 +270,12 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   // Start loading initial URL
   if (!initial_url.is_empty()) {
     // Navigate out of context since we don't have a 'tab_handle_' yet.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ExternalTabContainerWin::Navigate,
                    weak_factory_.GetWeakPtr(),
-                   initial_url, referrer));
+                   initial_url,
+                   referrer));
   }
 
   // We need WS_POPUP to be on the window during initialization, but
@@ -360,9 +361,10 @@ bool ExternalTabContainerWin::Reinitialize(
   automation_resource_message_filter_ = filter;
   // Wait for the automation channel to be initialized before resuming pending
   // render views and sending in the navigation state.
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&ExternalTabContainerWin::OnReinitialize,
-                            weak_factory_.GetWeakPtr()));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ExternalTabContainerWin::OnReinitialize,
+                 weak_factory_.GetWeakPtr()));
 
   if (parent_window)
     SetParent(views::HWNDForWidget(widget_), parent_window);

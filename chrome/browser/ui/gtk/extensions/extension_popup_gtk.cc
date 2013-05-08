@@ -122,7 +122,7 @@ void ExtensionPopupGtk::OnDevToolsStateChanged(
     // If the devtools window is closing, we post a task to ourselves to
     // close the popup. This gives the devtools window a chance to finish
     // detaching from the inspected RenderViewHost.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ExtensionPopupGtk::DestroyPopupWithoutResult,
                    weak_factory_.GetWeakPtr()));

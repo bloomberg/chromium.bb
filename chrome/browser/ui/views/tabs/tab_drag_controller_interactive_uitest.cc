@@ -77,7 +77,7 @@ class QuitDraggingObserver : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     DCHECK_EQ(chrome::NOTIFICATION_TAB_DRAG_LOOP_DONE, type);
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
     delete this;
   }
 
@@ -266,7 +266,7 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_controls::SendMouseMoveNotifyWhenDone(x, y, task);
 #if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
-    MessageLoop::current()->PostTask(FROM_HERE, task);
+    base::MessageLoop::current()->PostTask(FROM_HERE, task);
     event_generator_->MoveTouch(gfx::Point(x, y));
 #else
     NOTREACHED();
@@ -297,7 +297,7 @@ class DetachToBrowserTabDragControllerTest
       // Schedule observer to quit message loop when done dragging. This has to
       // be async so the message loop can run.
       test::QuitWhenNotDraggingImpl();
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
     } else {
       // Touch events are sync, so we know we're not in a drag session. But some
       // tests rely on the browser fully closing, which is async. So, run all
@@ -1266,7 +1266,7 @@ class DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest
 
   void QuitWhenNotDragging() {
     test::QuitWhenNotDraggingImpl();
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
  private:

@@ -578,7 +578,7 @@ void ExtensionInstalledBubble::Observe(
     if (extension == extension_) {
       animation_wait_retries_ = 0;
       // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
-      MessageLoopForUI::current()->PostTask(
+      base::MessageLoopForUI::current()->PostTask(
           FROM_HERE,
           base::Bind(&ExtensionInstalledBubble::ShowInternal,
                      weak_factory_.GetWeakPtr()));
@@ -608,7 +608,7 @@ void ExtensionInstalledBubble::ShowInternal() {
         animation_wait_retries_++ < kAnimationWaitMaxRetry) {
       // We don't know where the view will be until the container has stopped
       // animating, so check back in a little while.
-      MessageLoopForUI::current()->PostDelayedTask(
+      base::MessageLoopForUI::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&ExtensionInstalledBubble::ShowInternal,
                      weak_factory_.GetWeakPtr()),

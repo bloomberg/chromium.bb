@@ -100,7 +100,7 @@ class TabStripTest : public testing::Test {
     return tab->HitTestPoint(point_in_tab_coords);
   }
 
-  MessageLoopForUI ui_loop_;
+  base::MessageLoopForUI ui_loop_;
   // Owned by TabStrip.
   FakeBaseTabStripController* controller_;
   // Owns |tab_strip_|.

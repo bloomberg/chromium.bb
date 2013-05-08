@@ -87,8 +87,8 @@ IN_PROC_BROWSER_TEST_F(TabModalConfirmDialogTest, CancelSelf) {
 }
 
 IN_PROC_BROWSER_TEST_F(TabModalConfirmDialogTest, Quit) {
-  MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                        base::Bind(&chrome::AttemptExit));
+  base::MessageLoopForUI::current()->PostTask(FROM_HERE,
+                                              base::Bind(&chrome::AttemptExit));
   content::RunMessageLoop();
   EXPECT_EQ(0, accepted_count_);
   EXPECT_EQ(1, canceled_count_);

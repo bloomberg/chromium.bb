@@ -136,8 +136,8 @@ void DragBookmarks(Profile* profile,
   DCHECK(!nodes.empty());
 
   // Allow nested message loop so we get DnD events as we drag this around.
-  bool was_nested = MessageLoop::current()->IsNested();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
+  bool was_nested = base::MessageLoop::current()->IsNested();
+  base::MessageLoop::current()->SetNestableTasksAllowed(true);
 
   std::vector<BookmarkNodeData::Element> elements;
   for (std::vector<const BookmarkNode*>::const_iterator it = nodes.begin();
@@ -180,7 +180,7 @@ void DragBookmarks(Profile* profile,
              source:nil
           slideBack:YES];
 
-  MessageLoop::current()->SetNestableTasksAllowed(was_nested);
+  base::MessageLoop::current()->SetNestableTasksAllowed(was_nested);
 }
 
 }  // namespace chrome

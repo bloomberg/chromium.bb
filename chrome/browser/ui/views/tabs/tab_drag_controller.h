@@ -54,7 +54,7 @@ class TabStripModel;
 //   message loop.
 class TabDragController : public content::WebContentsDelegate,
                           public content::NotificationObserver,
-                          public MessageLoopForUI::Observer,
+                          public base::MessageLoopForUI::Observer,
                           public views::WidgetObserver,
                           public TabStripModelObserver {
  public:

@@ -31,7 +31,7 @@ class ThrobbingImageViewTest : public CocoaTest {
     [[test_window() contentView] addSubview:view_];
   }
 
-  MessageLoopForUI message_loop_;  // Needed for ui::ThrobAnimation.
+  base::MessageLoopForUI message_loop_;  // Needed for ui::ThrobAnimation.
   ThrobbingImageView* view_;
 };
 

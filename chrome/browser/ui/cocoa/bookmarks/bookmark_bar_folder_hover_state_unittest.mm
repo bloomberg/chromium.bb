@@ -18,7 +18,7 @@ class BookmarkBarFolderHoverStateTest : public CocoaTest {
 // A strict call order is implied with these calls.  It is ONLY valid to make
 // these specific state transitions.
 TEST_F(BookmarkBarFolderHoverStateTest, HoverState) {
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   scoped_nsobject<BookmarkBarFolderHoverState> bbfhs;
   bbfhs.reset([[BookmarkBarFolderHoverState alloc] init]);
 
@@ -47,7 +47,7 @@ TEST_F(BookmarkBarFolderHoverStateTest, HoverState) {
   // Test transition from opening to opened.
   message_loop.PostDelayedTask(
       FROM_HERE,
-      MessageLoop::QuitClosure(),
+      base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(
           bookmarks::kDragHoverOpenDelay * 1000.0 * 1.5));
   message_loop.Run();
@@ -68,7 +68,7 @@ TEST_F(BookmarkBarFolderHoverStateTest, HoverState) {
   ASSERT_EQ(kHoverStateClosing, [bbfhs hoverState]);
   message_loop.PostDelayedTask(
       FROM_HERE,
-      MessageLoop::QuitClosure(),
+      base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(
           bookmarks::kDragHoverCloseDelay * 1000.0 * 1.5));
   message_loop.Run();

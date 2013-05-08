@@ -247,7 +247,7 @@ void UnloadController::ClearUnloadState(content::WebContents* web_contents,
     if (process_now) {
       ProcessPendingTabs();
     } else {
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&UnloadController::ProcessPendingTabs,
                      weak_factory_.GetWeakPtr()));

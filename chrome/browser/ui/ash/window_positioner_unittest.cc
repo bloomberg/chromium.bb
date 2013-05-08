@@ -101,7 +101,7 @@ WindowPositionerTest::WindowPositionerTest()
     : grid_size_(WindowPositioner::kMinimumWindowOffset),
       window_positioner_(NULL) {
   // Create a message loop.
-  MessageLoopForUI* ui_loop = message_loop();
+  base::MessageLoopForUI* ui_loop = message_loop();
   ui_thread_.reset(
       new content::TestBrowserThread(content::BrowserThread::UI, ui_loop));
 

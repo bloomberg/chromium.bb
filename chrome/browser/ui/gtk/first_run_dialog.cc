@@ -95,7 +95,7 @@ bool FirstRunDialog::Show() {
     // but that spins a nested message loop and hoses us.  :(
     // http://code.google.com/p/chromium/issues/detail?id=12552
     // Instead, run a loop directly here.
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
   return dialog_shown;
@@ -195,6 +195,6 @@ void FirstRunDialog::FirstRunDone() {
 
   if (dialog_)
     gtk_widget_destroy(dialog_);
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
   delete this;
 }

@@ -136,7 +136,7 @@ void DisplaySettingsProviderCocoa::Observe(
 void DisplaySettingsProviderCocoa::ActiveWorkSpaceChanged() {
   // The active workspace notification might be received earlier than the
   // browser window knows that it is not in active space.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DisplaySettingsProviderCocoa::CheckFullScreenMode,
                  weak_factory_.GetWeakPtr(),

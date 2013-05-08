@@ -108,8 +108,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
       : ViewEventTestBase(),
         model_(NULL),
         bb_view_(NULL),
-        file_thread_(BrowserThread::FILE, MessageLoop::current()) {
-  }
+        file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
     views::MenuController::TurnOffContextMenuSelectionHoldForTest();
@@ -174,8 +173,9 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     profile_.reset();
 
     // Run the message loop to ensure we delete allTasks and fully shut down.
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->Run();
 
     ViewEventTestBase::TearDown();
     BookmarkBarView::DisableAnimationsForTesting(false);
@@ -433,7 +433,7 @@ class ContextMenuNotificationObserver : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE, task_);
+    base::MessageLoop::current()->PostTask(FROM_HERE, task_);
   }
 
   // Sets the task that is posted when the context menu is shown.
@@ -866,7 +866,8 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
   }
 
   void Step3() {
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
         base::Bind(&BookmarkBarViewTest9::Step4, this),
         base::TimeDelta::FromMilliseconds(200));
   }
@@ -882,9 +883,8 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
     // On linux, Cancelling menu will call Quit on the message loop,
     // which can interfere with Done. We need to run Done in the
     // next execution loop.
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewEventTestBase::Done, this));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&ViewEventTestBase::Done, this));
   }
 
   int start_y_;
@@ -903,7 +903,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest10::Step2));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
  private:
@@ -1122,7 +1122,8 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
 
     // Delay until we send tab, otherwise the message box doesn't appear
     // correctly.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
         CreateEventTask(this, &BookmarkBarViewTest12::Step4),
         base::TimeDelta::FromSeconds(1));
   }
@@ -1133,7 +1134,8 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
         window_->GetNativeWindow(), ui::VKEY_TAB, false, false, false, false);
 
     // For some reason return isn't processed correctly unless we delay.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
         CreateEventTask(this, &BookmarkBarViewTest12::Step5),
         base::TimeDelta::FromSeconds(1));
   }
@@ -1147,7 +1149,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
 
   void Step6() {
     // Do a delayed task to give the dialog time to exit.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, CreateEventTask(this, &BookmarkBarViewTest12::Step7));
   }
 
@@ -1386,7 +1388,7 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
     window_->Close();
     window_ = NULL;
 
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, CreateEventTask(this, &BookmarkBarViewTest16::Done));
   }
 };

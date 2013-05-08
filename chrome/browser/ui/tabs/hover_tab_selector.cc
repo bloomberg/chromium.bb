@@ -35,9 +35,10 @@ void HoverTabSelector::StartTabTransition(int index) {
     const base::TimeDelta kHoverTransitionDelay =
         base::TimeDelta::FromMilliseconds(500);
     tab_transition_tab_index_ = index;
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&HoverTabSelector::PerformTabTransition,
-                              weak_factory_.GetWeakPtr()),
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&HoverTabSelector::PerformTabTransition,
+                   weak_factory_.GetWeakPtr()),
         kHoverTransitionDelay);
   }
 }

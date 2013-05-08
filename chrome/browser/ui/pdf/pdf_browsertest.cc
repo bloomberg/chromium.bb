@@ -122,7 +122,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
  private:
   void GetSnapshotFromRendererCallback(bool success,
                                        const SkBitmap& bitmap) {
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
     ASSERT_EQ(success, true);
     base::FilePath reference = ui_test_utils::GetTestFilePath(
         GetPDFTestDir(),

@@ -20,9 +20,9 @@ class AboutIPCControllerTest : public CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();
-    ui_message_loop_.reset(new MessageLoopForUI());
-    ui_thread_.reset(new content::TestBrowserThread(content::BrowserThread::UI,
-                                                    MessageLoop::current()));
+    ui_message_loop_.reset(new base::MessageLoopForUI());
+    ui_thread_.reset(new content::TestBrowserThread(
+        content::BrowserThread::UI, base::MessageLoop::current()));
   }
 
   virtual void TearDown() {
@@ -31,7 +31,7 @@ class AboutIPCControllerTest : public CocoaTest {
   }
 
  private:
-  scoped_ptr<MessageLoopForUI> ui_message_loop_;
+  scoped_ptr<base::MessageLoopForUI> ui_message_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
 };
 

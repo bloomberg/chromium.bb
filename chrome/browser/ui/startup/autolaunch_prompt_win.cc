@@ -98,7 +98,7 @@ AutolaunchInfoBarDelegate::AutolaunchInfoBarDelegate(
 
   // We want the info-bar to stick-around for a few seconds and then be hidden
   // on the next navigation after that.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&AutolaunchInfoBarDelegate::AllowExpiry,
                  weak_factory_.GetWeakPtr()),

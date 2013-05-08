@@ -112,7 +112,7 @@ class ChromeLauncherControllerPerBrowserTest : public testing::Test {
   }
 
   // Needed for extension service & friends to work.
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

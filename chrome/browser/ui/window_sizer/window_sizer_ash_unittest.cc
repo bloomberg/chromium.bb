@@ -95,7 +95,7 @@ class WindowSizerTestWithBrowser : public WindowSizerTest {
 // The class function definitions from window_sizer_common_unittest.h
 WindowSizerTestWithBrowser::WindowSizerTestWithBrowser() {
   // Set up a UI message thread.
-  MessageLoopForUI* ui_loop = message_loop();
+  base::MessageLoopForUI* ui_loop = message_loop();
   ui_thread_.reset(
       new content::TestBrowserThread(content::BrowserThread::UI, ui_loop));
 }

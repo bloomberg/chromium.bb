@@ -339,9 +339,9 @@ void DownloadShelfGtk::SetCloseOnMouseOut(bool close) {
   close_on_mouse_out_ = close;
   mouse_in_shelf_ = close;
   if (close)
-    MessageLoopForUI::current()->AddObserver(this);
+    base::MessageLoopForUI::current()->AddObserver(this);
   else
-    MessageLoopForUI::current()->RemoveObserver(this);
+    base::MessageLoopForUI::current()->RemoveObserver(this);
 }
 
 void DownloadShelfGtk::WillProcessEvent(GdkEvent* event) {
@@ -394,10 +394,10 @@ bool DownloadShelfGtk::IsCursorInShelfZone(
 void DownloadShelfGtk::MouseLeftShelf() {
   DCHECK(close_on_mouse_out_);
 
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&DownloadShelfGtk::Close, weak_factory_.GetWeakPtr(),
-                 AUTOMATIC),
+      base::Bind(
+          &DownloadShelfGtk::Close, weak_factory_.GetWeakPtr(), AUTOMATIC),
       base::TimeDelta::FromMilliseconds(kAutoCloseDelayMs));
 }
 

@@ -946,7 +946,7 @@ void BrowserActionsToolbarGtk::OnSetFocus(GtkWidget* widget,
   // call stack.
   if (!popup || popup->being_inspected())
     return;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&BrowserActionsToolbarGtk::HidePopup,
                  weak_factory_.GetWeakPtr()));

@@ -125,9 +125,11 @@ void ChromeToMobileBubbleGtk::OnSendComplete(bool success) {
   if (success) {
     gtk_button_set_label(GTK_BUTTON(send_),
         l10n_util::GetStringUTF8(IDS_CHROME_TO_MOBILE_BUBBLE_SENT).c_str());
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
         base::Bind(&ChromeToMobileBubbleGtk::OnCancelClicked,
-                   weak_ptr_factory_.GetWeakPtr(), GTK_WIDGET(NULL)),
+                   weak_ptr_factory_.GetWeakPtr(),
+                   GTK_WIDGET(NULL)),
         base::TimeDelta::FromSeconds(kAutoCloseDelay));
   } else {
     gtk_button_set_label(GTK_BUTTON(send_),

@@ -36,7 +36,7 @@ int g_dialog_response;
 void OnDialogResponse(GtkWidget* widget, int response, void* user_data) {
   g_dialog_response = response;
   gtk_widget_destroy(widget);
-  MessageLoop::current()->QuitNow();
+  base::MessageLoop::current()->QuitNow();
 }
 
 }  // namespace
@@ -74,9 +74,9 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
     g_signal_connect(dialog, "response", G_CALLBACK(OnDialogResponse), NULL);
     gtk_util::ShowDialog(dialog);
     // Not gtk_dialog_run as it prevents timers from running in the unit tests.
-    MessageLoop::current()->Run();
-    return g_dialog_response == GTK_RESPONSE_YES ?
-        MESSAGE_BOX_RESULT_YES : MESSAGE_BOX_RESULT_NO;
+    base::MessageLoop::current()->Run();
+    return g_dialog_response == GTK_RESPONSE_YES ? MESSAGE_BOX_RESULT_YES
+                                                 : MESSAGE_BOX_RESULT_NO;
   }
 
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);

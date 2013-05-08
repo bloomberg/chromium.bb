@@ -66,7 +66,7 @@ ImportLockDialogGtk::ImportLockDialogGtk(
 ImportLockDialogGtk::~ImportLockDialogGtk() {}
 
 void ImportLockDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback_, response_id == GTK_RESPONSE_ACCEPT));
   gtk_widget_destroy(dialog_);

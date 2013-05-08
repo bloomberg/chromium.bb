@@ -30,7 +30,7 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
   [lock_alert setMessageText:l10n_util::GetNSStringWithFixup(
       IDS_IMPORTER_LOCK_TITLE)];
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, [lock_alert runModal] == NSAlertFirstButtonReturn));
   content::RecordAction(UserMetricsAction("ImportLockDialogCocoa_Shown"));

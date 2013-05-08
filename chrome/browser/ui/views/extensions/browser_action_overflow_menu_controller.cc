@@ -80,7 +80,7 @@ bool BrowserActionOverflowMenuController::RunMenu(views::Widget* window,
   if (!for_drop_) {
     // Give the context menu (if any) a chance to execute the user-selected
     // command.
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
   return true;
 }

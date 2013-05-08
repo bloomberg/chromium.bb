@@ -264,7 +264,7 @@ void ContentSettingImageViewGtk::Update(WebContents* web_contents) {
 void ContentSettingImageViewGtk::AnimationEnded(
     const ui::Animation* animation) {
   if (animation_.IsShowing()) {
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ContentSettingImageViewGtk::CloseAnimation,
                    weak_factory_.GetWeakPtr()),
@@ -841,7 +841,7 @@ InstantController* LocationBarViewGtk::GetInstant() {
 void LocationBarViewGtk::ShowFirstRunBubble() {
   // We need the browser window to be shown before we can show the bubble, but
   // we get called before that's happened.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&LocationBarViewGtk::ShowFirstRunBubbleInternal,
                  weak_ptr_factory_.GetWeakPtr()));

@@ -123,7 +123,7 @@ void BalloonViewImpl::Close(bool by_user) {
   if (!by_user && menu_showing_) {
     pending_close_ = true;
   } else {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&BalloonViewImpl::DelayedClose,
                    weak_factory_.GetWeakPtr(),
@@ -467,11 +467,10 @@ void BalloonViewImpl::OnOptionsMenuButton(GtkWidget* widget,
 void BalloonViewImpl::StoppedShowing() {
   menu_showing_ = false;
   if (pending_close_) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&BalloonViewImpl::DelayedClose,
-                   weak_factory_.GetWeakPtr(),
-                   false));
+        base::Bind(
+            &BalloonViewImpl::DelayedClose, weak_factory_.GetWeakPtr(), false));
   }
 }
 

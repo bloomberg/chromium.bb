@@ -165,7 +165,7 @@ void ChromeShellDelegate::RestoreTab() {
     // LoadTabsFromLastSession is asynchronous, so TabRestoreService has not
     // finished loading the entries at this point. Wait for next event cycle
     // which loads the restored tab entries.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ChromeShellDelegate::RestoreTab,
                    weak_factory_.GetWeakPtr()));

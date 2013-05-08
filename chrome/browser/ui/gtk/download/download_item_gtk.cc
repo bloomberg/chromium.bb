@@ -820,7 +820,7 @@ void DownloadItemGtk::ReenableHbox() {
 void DownloadItemGtk::OnDownloadOpened(DownloadItem* download) {
   disabled_while_opening_ = true;
   gtk_widget_set_sensitive(hbox_.get(), false);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DownloadItemGtk::ReenableHbox,
                  weak_ptr_factory_.GetWeakPtr()),

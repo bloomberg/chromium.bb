@@ -24,7 +24,7 @@ class ReloadButtonTest : public testing::Test {
 
  protected:
   // We need a message loop for the timers to post events.
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 
   ReloadButton reload_;
 };

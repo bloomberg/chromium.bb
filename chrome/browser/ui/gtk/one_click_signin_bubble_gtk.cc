@@ -61,7 +61,8 @@ void OneClickSigninBubbleGtk::BubbleClosing(
   // |close_button_| (which is a CustomDrawButton) can be destroyed, because it
   // depends on all references being cleared for the GtkWidget before it is
   // destroyed.
-  MessageLoopForUI::current()->DeleteSoon(FROM_HERE, close_button_.release());
+  base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE,
+                                                close_button_.release());
 
   delete this;
 }

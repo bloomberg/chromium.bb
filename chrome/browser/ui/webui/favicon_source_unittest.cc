@@ -16,9 +16,9 @@
 class FaviconSourceTest : public testing::Test {
  public:
   FaviconSourceTest()
-      : loop_(MessageLoop::TYPE_UI),
-        ui_thread_(content::BrowserThread::UI, MessageLoop::current()),
-        io_thread_(content::BrowserThread::IO, MessageLoop::current()),
+      : loop_(base::MessageLoop::TYPE_UI),
+        ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()),
+        io_thread_(content::BrowserThread::IO, base::MessageLoop::current()),
         profile_(new TestingProfile()),
         favicon_source_(
             new FaviconSource(profile_.get(), FaviconSource::ANY)) {
@@ -55,7 +55,7 @@ class FaviconSourceTest : public testing::Test {
   FaviconSource* favicon_source() const { return favicon_source_.get(); }
 
  private:
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;

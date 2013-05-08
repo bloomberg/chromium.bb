@@ -72,7 +72,7 @@ FirstRunShowBridge::FirstRunShowBridge(
 
 void FirstRunShowBridge::ShowDialog() {
   [controller_ show];
-  MessageLoop::current()->QuitNow();
+  base::MessageLoop::current()->QuitNow();
 }
 
 FirstRunShowBridge::~FirstRunShowBridge() {}
@@ -181,9 +181,9 @@ bool ShowFirstRunDialog(Profile* profile) {
   // Therefore the main MessageLoop is run so things work.
 
   scoped_refptr<FirstRunShowBridge> bridge(new FirstRunShowBridge(self));
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&FirstRunShowBridge::ShowDialog, bridge.get()));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 - (void)show {

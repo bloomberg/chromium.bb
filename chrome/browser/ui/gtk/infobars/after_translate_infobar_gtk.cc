@@ -97,7 +97,7 @@ void AfterTranslateInfoBar::OnOriginalLanguageModified(GtkWidget* sender) {
   // Setting the language will lead to a new translation that is going to close
   // the infobar.  This is not OK to do this from the signal handler, so we'll
   // defer it.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&AfterTranslateInfoBar::SetOriginalLanguage,
                  weak_factory_.GetWeakPtr(),
@@ -110,7 +110,7 @@ void AfterTranslateInfoBar::OnTargetLanguageModified(GtkWidget* sender) {
     return;
 
   // See comment in OnOriginalLanguageModified on why we use a task.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&AfterTranslateInfoBar::SetTargetLanguage,
                  weak_factory_.GetWeakPtr(),

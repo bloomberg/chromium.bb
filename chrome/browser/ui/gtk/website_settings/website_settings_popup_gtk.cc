@@ -270,7 +270,7 @@ void WebsiteSettingsPopupGtk::BubbleClosing(BubbleGtk* bubble,
 
   // Slightly delay destruction to allow the event stack to unwind and release
   // references to owned widgets.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void WebsiteSettingsPopupGtk::InitContents() {

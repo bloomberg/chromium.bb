@@ -83,7 +83,7 @@ void InfoBarContainerGtk::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
   if (it != infobars_gtk_.end())
     infobars_gtk_.erase(it);
 
-  MessageLoop::current()->DeleteSoon(FROM_HERE, infobar);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, infobar);
 }
 
 void InfoBarContainerGtk::PlatformSpecificInfoBarStateChanged(

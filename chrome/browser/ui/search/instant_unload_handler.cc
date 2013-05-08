@@ -72,7 +72,7 @@ void InstantUnloadHandler::RunUnloadListenersOrDestroy(
     // get here from BrowserInstantController::TabDeactivated, other tab
     // observers may still expect to interact with the tab before the event has
     // finished propagating.
-    MessageLoop::current()->DeleteSoon(FROM_HERE, contents.release());
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, contents.release());
     return;
   }
 
@@ -102,5 +102,5 @@ void InstantUnloadHandler::Destroy(WebContentsDelegateImpl* delegate) {
   // The delegate's method is a caller on the stack, so schedule the deletion
   // for later.
   delegates_.weak_erase(i);
-  MessageLoop::current()->DeleteSoon(FROM_HERE, delegate);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, delegate);
 }

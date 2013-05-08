@@ -174,7 +174,7 @@ class StatusBubbleMacTest : public CocoaTest {
     return !IsPointInBubble(relative_x, relative_y);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_nsobject<StatusBubbleMacTestDelegate> delegate_;
   StatusBubbleMac* bubble_;  // Strong.
 };

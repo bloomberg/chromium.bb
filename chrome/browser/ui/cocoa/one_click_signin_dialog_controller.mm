@@ -39,7 +39,7 @@ OneClickSigninDialogController::~OneClickSigninDialogController() {
 void OneClickSigninDialogController::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
   [view_controller_ viewWillClose];
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void OneClickSigninDialogController::PerformClose() {

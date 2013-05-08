@@ -61,7 +61,7 @@ class BookmarkBarGtkUnittest : public testing::Test {
 
   BookmarkModel* model_;
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

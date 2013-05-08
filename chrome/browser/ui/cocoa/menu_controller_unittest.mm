@@ -308,7 +308,7 @@ TEST_F(MenuControllerTest, Dynamic) {
 TEST_F(MenuControllerTest, OpenClose) {
   // ui::SimpleMenuModel posts a task that calls Delegate::MenuClosed. Create
   // a MessageLoop for that purpose.
-  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
 
   // Create the model.
   Delegate delegate;

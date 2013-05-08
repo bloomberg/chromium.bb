@@ -72,7 +72,7 @@ void ExtensionInstallDialogController::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
   if (delegate_)
     delegate_->InstallUIAbort(false);
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 // static

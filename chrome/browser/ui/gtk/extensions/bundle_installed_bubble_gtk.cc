@@ -131,9 +131,8 @@ void BundleInstalledBubbleGtk::BubbleClosing(BubbleGtk* bubble,
   // We need to allow the bubble to close and remove the widgets from
   // the window before we call Release() because close_button_ depends
   // on all references being cleared before it is destroyed.
-  MessageLoopForUI::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&BundleInstalledBubbleGtk::Close, this));
+  base::MessageLoopForUI::current()->PostTask(
+      FROM_HERE, base::Bind(&BundleInstalledBubbleGtk::Close, this));
 }
 
 void BundleInstalledBubbleGtk::Close() {

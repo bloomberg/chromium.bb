@@ -85,7 +85,7 @@ void AccessibilityEventRouterViews::HandleAccessibilityEvent(
   views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   int view_storage_id = view_storage->CreateStorageID();
   view_storage->StoreView(view_storage_id, view);
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(
           &AccessibilityEventRouterViews::DispatchNotificationOnViewStorageId,

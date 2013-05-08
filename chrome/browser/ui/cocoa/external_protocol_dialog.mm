@@ -36,7 +36,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 
 @implementation ExternalProtocolDialogController
 - (id)initWithGURL:(const GURL*)url {
-  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
+  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
 
   if (!(self = [super init]))
     return nil;

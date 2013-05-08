@@ -162,7 +162,8 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
 
   // Enable recursive tasks on the message loop so we can get updates while
   // the context menu is being displayed.
-  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
   context_menu_->RunMenuAt(top_level_widget, screen_point, type);
 }
 

@@ -57,7 +57,7 @@ class CocoaProfileTest : public CocoaTest {
   virtual Browser* CreateBrowser();
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
   TestingProfileManager profile_manager_;

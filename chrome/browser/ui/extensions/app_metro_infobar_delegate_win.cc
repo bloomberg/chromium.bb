@@ -53,9 +53,8 @@ void AppMetroInfoBarDelegateWin::Create(
   // Use PostTask because we can get here in a COM SendMessage, and
   // ActivateApplication can not be sent nested (returns error
   // RPC_E_CANTCALLOUT_ININPUTSYNCCALL).
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(chrome::ActivateMetroChrome)));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(base::IgnoreResult(chrome::ActivateMetroChrome)));
 }
 
 AppMetroInfoBarDelegateWin::AppMetroInfoBarDelegateWin(

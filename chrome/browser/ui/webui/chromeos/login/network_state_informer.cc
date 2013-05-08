@@ -95,7 +95,7 @@ void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
     check_state_.Reset(
         base::Bind(&NetworkStateInformer::UpdateStateAndNotify,
                    base::Unretained(this)));
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         check_state_.callback(),
         base::TimeDelta::FromSeconds(kNetworkStateCheckDelaySec));

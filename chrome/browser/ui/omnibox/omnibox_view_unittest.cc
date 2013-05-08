@@ -22,7 +22,7 @@ class OmniboxViewTest : public PlatformTest {
 
  private:
   // Windows requires a message loop for clipboard access.
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 };
 
 TEST_F(OmniboxViewTest, TestStripSchemasUnsafeForPaste) {

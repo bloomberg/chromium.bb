@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkInteractiveUITest, FindBarTest) {
   browser()->tab_strip_model()->ActivateTabAt(1, false);
 
   // Wait for the findbar to show.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Set focus somewhere else, so that we can test clicking on the findbar
   // works.
@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(
   chrome::NewTab(browser());
 
   // Wait for the floating bar to appear.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // This is kind of a hack. Calling this just once doesn't seem to send a click
   // event, but doing it twice works.

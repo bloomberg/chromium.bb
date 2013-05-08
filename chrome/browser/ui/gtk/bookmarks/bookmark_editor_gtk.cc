@@ -619,7 +619,7 @@ gboolean BookmarkEditorGtk::OnWindowDeleteEvent(GtkWidget* widget,
 }
 
 void BookmarkEditorGtk::OnWindowDestroy(GtkWidget* widget) {
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void BookmarkEditorGtk::OnEntryChanged(GtkWidget* entry) {

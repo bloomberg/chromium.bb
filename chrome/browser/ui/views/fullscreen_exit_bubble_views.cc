@@ -322,7 +322,7 @@ FullscreenExitBubbleViews::~FullscreenExitBubbleViews() {
   // the popup to synchronously hide, and then asynchronously close and delete
   // itself.
   popup_->Close();
-  MessageLoop::current()->DeleteSoon(FROM_HERE, popup_);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, popup_);
 }
 
 void FullscreenExitBubbleViews::UpdateContent(
