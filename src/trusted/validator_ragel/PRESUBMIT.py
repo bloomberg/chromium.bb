@@ -88,7 +88,7 @@ def CheckChange(input_api, message_constructor):
 
   if need_dfacheckvalidator:
     errors.append(message_constructor(
-      'Please run "./scons dfacheckdecoder" before commit!'))
+      'Please run "./scons dfacheckvalidator" before commit!'))
 
   return errors
 
