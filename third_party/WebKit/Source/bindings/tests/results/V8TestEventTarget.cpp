@@ -209,10 +209,9 @@ v8::Handle<v8::Value> V8TestEventTarget::namedPropertyGetter(v8::Local<v8::Strin
 
     v8::Local<v8::Object> object = info.Holder();
     ASSERT(V8DOMWrapper::maybeDOMWrapper(object));
-    ASSERT(toWrapperTypeInfo(object) != &V8Node::info);
     TestEventTarget* collection = toNative(object);
 
-    AtomicString propertyName = toWebCoreAtomicStringWithNullCheck(name);
+    AtomicString propertyName = toWebCoreAtomicString(name);
     RefPtr<Node> element = collection->namedItem(propertyName);
 
     if (!element)

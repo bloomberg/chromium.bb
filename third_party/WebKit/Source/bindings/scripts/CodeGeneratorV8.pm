@@ -3214,10 +3214,9 @@ v8::Handle<v8::Value> ${v8InterfaceName}::namedPropertyGetter(v8::Local<v8::Stri
 
     v8::Local<v8::Object> object = info.Holder();
     ASSERT(V8DOMWrapper::maybeDOMWrapper(object));
-    ASSERT(toWrapperTypeInfo(object) != &V8Node::info);
     $interfaceName* collection = toNative(object);
 
-    AtomicString propertyName = toWebCoreAtomicStringWithNullCheck(name);
+    AtomicString propertyName = toWebCoreAtomicString(name);
     RefPtr<$returnType> element = collection->$methodName(propertyName);
 
     if (!element)

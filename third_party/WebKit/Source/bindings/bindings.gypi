@@ -204,7 +204,6 @@
             'v8/custom/V8MessageEventCustom.cpp',
             'v8/custom/V8MessagePortCustom.cpp',
             'v8/custom/V8MutationObserverCustom.cpp',
-            'v8/custom/V8NamedNodeMapCustom.cpp',
             'v8/custom/V8NamedNodesCollection.cpp',
             'v8/custom/V8NamedNodesCollection.h',
             'v8/custom/V8NodeCustom.cpp',
