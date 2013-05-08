@@ -44,18 +44,12 @@
 #include <objbase.h>
 #include <windows.h>
 
-#if defined(USE_SYSTEM_LIBBZ2)
-#include <bzlib.h>
-#else
-#include "third_party/bzip2/bzlib.h"
-#endif
-
 #include "base/metrics/statistics_recorder.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/common/chrome_version_info.h"
