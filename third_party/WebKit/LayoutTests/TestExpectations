@@ -766,7 +766,7 @@ crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-horizontal-bt.html
 # Added in WK r71424
 # We should probably just skip this test, everyone else has since
 # https://bugs.webkit.org/show_bug.cgi?id=49182
-crbug.com/62138 animations/stop-animation-on-suspend.html [ Failure Pass ]
+crbug.com/62138 animations/stop-animation-on-suspend.html [ Failure Pass Timeout ]
 
 crbug.com/61739 [ Debug ] animations/suspend-resume-animation-events.html [ Failure Pass ]
 
@@ -1596,7 +1596,7 @@ webkit.org/b/92811 [ Win Linux Debug ] compositing/video-page-visibility.html [ 
 webkit.org/b/92811 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
 webkit.org/b/83875 [ Linux ] svg/text/font-size-below-point-five.svg [ Failure ImageOnlyFailure Pass ]
 
-crbug.com/236344 fast/forms/calendar-picker/week-picker-key-operations.html [ Failure Pass ]
+crbug.com/236344 fast/forms/calendar-picker/week-picker-key-operations.html [ Failure Pass Crash ]
 
 crbug.com/237270 fast/css/custom-font-xheight.html [ Pass Timeout ]
 crbug.com/237270 fast/css/sticky/sticky-top-zoomed.html [ Pass Timeout ]
@@ -1619,9 +1619,15 @@ crbug.com/238363 fast/history/saves-state-after-fragment-nav.html [ Crash ]
 crbug.com/238363 fast/speech/change-focus.html [ Crash ]
 crbug.com/238363 inspector/timeline/timeline-load.html [ Crash ]
 crbug.com/238363 virtual/softwarecompositing/overflow/overflow-hidden-canvas-layer.html [ Crash ]
+crbug.com/238363 [ Debug ] compositing/geometry/clipping-foreground.html [ Crash ]
+crbug.com/238363 [ Debug ] fast/forms/calendar-picker/calendar-picker-key-operations.html [ Crash ]
+crbug.com/238363 [ Debug ] fast/forms/calendar-picker/datetimelocal-picker-events.html [ Crash ]
+crbug.com/238363 [ Debug ] fast/forms/calendar-picker/month-picker-key-operations.html [ Crash ]
 crbug.com/238363 [ Debug ] fast/forms/suggestion-picker/date-suggestion-picker-key-operations.html [ Crash ]
 crbug.com/238363 [ Debug ] fast/forms/suggestion-picker/month-suggestion-picker-key-operations.html [ Crash ]
 crbug.com/238363 [ Debug ] fast/forms/suggestion-picker/week-suggestion-picker-key-operations.html [ Crash ]
+crbug.com/238363 [ Debug ] virtual/gpu/compositedscrolling/overflow/overflow-hidden-canvas-layer.html [ Crash ]
+crbug.com/238363 [ Debug ] virtual/softwarecompositing/geometry/clipping-foreground.html [ Crash ]
 
 # Need rebaselines after landing fix for crbug.com/238644
 crbug.com/238644 compositing/direct-image-compositing.html [ ImageOnlyFailure ]
