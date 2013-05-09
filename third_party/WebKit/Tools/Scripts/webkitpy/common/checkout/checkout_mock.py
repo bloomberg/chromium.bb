@@ -26,7 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .deps_mock import MockDEPS
 from .commitinfo import CommitInfo
 
 # FIXME: These imports are wrong, we should use a shared MockCommittersList.
@@ -89,9 +88,6 @@ class MockCheckout(object):
     def is_path_to_changelog(self, path):
         return self._filesystem.basename(path) == "ChangeLog"
 
-    def bug_id_for_revision(self, svn_revision):
-        return 12345
-
     def recent_commit_infos_for_files(self, paths):
         return [self.commit_info_for_revision(32)]
 
@@ -103,15 +99,8 @@ class MockCheckout(object):
     def commit_message_for_this_commit(self, git_commit, changed_files=None):
         return MockCommitMessage()
 
-    def chromium_deps(self):
-        return MockDEPS()
-
     def apply_patch(self, patch):
         pass
 
     def apply_reverse_diffs(self, revision):
         pass
-
-    def suggested_reviewers(self, git_commit, changed_files=None):
-        # FIXME: We should use a shared mock commiter list.
-        return [_mock_reviewers[0]]

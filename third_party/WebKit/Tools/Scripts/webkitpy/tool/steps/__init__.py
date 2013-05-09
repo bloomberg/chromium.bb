@@ -29,17 +29,11 @@
 # FIXME: Is this the right way to do this?
 from webkitpy.tool.steps.addsvnmimetypeforpng import AddSvnMimetypeForPng
 from webkitpy.tool.steps.applywatchlist import ApplyWatchList
-from webkitpy.tool.steps.attachtobug import AttachToBug
 from webkitpy.tool.steps.checkstyle import CheckStyle
 from webkitpy.tool.steps.cleanworkingdirectory import CleanWorkingDirectory
-from webkitpy.tool.steps.closebug import CloseBug
-from webkitpy.tool.steps.closebugforlanddiff import CloseBugForLandDiff
-from webkitpy.tool.steps.closepatch import ClosePatch
 from webkitpy.tool.steps.commit import Commit
 from webkitpy.tool.steps.confirmdiff import ConfirmDiff
-from webkitpy.tool.steps.createbug import CreateBug
 from webkitpy.tool.steps.discardlocalchanges import DiscardLocalChanges
-from webkitpy.tool.steps.editchangelog import EditChangeLog
 from webkitpy.tool.steps.ensurebugisopenandassigned import EnsureBugIsOpenAndAssigned
 from webkitpy.tool.steps.ensurelocalcommitifneeded import EnsureLocalCommitIfNeeded
 from webkitpy.tool.steps.haslanded import HasLanded
@@ -51,8 +45,3 @@ from webkitpy.tool.steps.promptforbugortitle import PromptForBugOrTitle
 from webkitpy.tool.steps.reopenbugafterrollout import ReopenBugAfterRollout
 from webkitpy.tool.steps.revertrevision import RevertRevision
 from webkitpy.tool.steps.runtests import RunTests
-from webkitpy.tool.steps.suggestreviewers import SuggestReviewers
-from webkitpy.tool.steps.updatechangelogswithreviewer import UpdateChangeLogsWithReviewer
-from webkitpy.tool.steps.updatechromiumdeps import UpdateChromiumDEPS
-from webkitpy.tool.steps.validatechangelogs import ValidateChangeLogs
-from webkitpy.tool.steps.validatereviewer import ValidateReviewer

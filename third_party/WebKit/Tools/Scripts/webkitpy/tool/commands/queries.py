@@ -53,17 +53,6 @@ from webkitpy.layout_tests.port import platform_options, configuration_options
 _log = logging.getLogger(__name__)
 
 
-class SuggestReviewers(AbstractSequencedCommand):
-    name = "suggest-reviewers"
-    help_text = "Suggest reviewers for a patch based on recent changes to the modified files."
-    steps = [
-        steps.SuggestReviewers,
-    ]
-
-    def _prepare_state(self, options, args, tool):
-        options.suggest_reviewers = True
-
-
 class BugsToCommit(AbstractDeclarativeCommand):
     name = "bugs-to-commit"
     help_text = "List bugs in the commit-queue"

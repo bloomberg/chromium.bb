@@ -103,9 +103,6 @@ class Checkout(object):
             return None
         return CommitInfo(revision, committer_email, changelog_data)
 
-    def bug_id_for_revision(self, revision):
-        return self.commit_info_for_revision(revision).bug_id()
-
     def _modified_files_matching_predicate(self, git_commit, predicate, changed_files=None):
         # SCM returns paths relative to scm.checkout_root
         # Callers (especially those using the ChangeLog class) may
@@ -132,22 +129,6 @@ class Checkout(object):
     def recent_commit_infos_for_files(self, paths):
         revisions = set(sum(map(self._scm.revisions_changing_file, paths), []))
         return set(map(self.commit_info_for_revision, revisions))
-
-    def suggested_reviewers(self, git_commit, changed_files=None):
-        changed_files = self.modified_non_changelogs(git_commit, changed_files)
-        commit_infos = sorted(self.recent_commit_infos_for_files(changed_files), key=lambda info: info.revision(), reverse=True)
-        reviewers = filter(lambda person: person and person.can_review, sum(map(lambda info: [info.reviewer(), info.author()], commit_infos), []))
-        unique_reviewers = reduce(lambda suggestions, reviewer: suggestions + [reviewer if reviewer not in suggestions else None], reviewers, [])
-        return filter(lambda reviewer: reviewer, unique_reviewers)
-
-    def bug_id_for_this_commit(self, git_commit, changed_files=None):
-        try:
-            return parse_bug_id_from_changelog(self.commit_message_for_this_commit(git_commit, changed_files).message())
-        except ScriptError, e:
-            pass # We might not have ChangeLogs.
-
-    def chromium_deps(self):
-        return DEPS(self._scm.absolute_path(self._filesystem.join("Source", "WebKit", "chromium", "DEPS")))
 
     def apply_patch(self, patch):
         # It's possible that the patch was not made from the root directory.

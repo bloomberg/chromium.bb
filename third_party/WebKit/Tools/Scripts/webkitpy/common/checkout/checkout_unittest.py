@@ -209,17 +209,6 @@ class CheckoutTest(unittest.TestCase):
         checkout.changelog_entries_for_revision = lambda revision, changed_files=None: []
         self.assertIsNone(checkout.commit_info_for_revision(1))
 
-    def test_bug_id_for_revision(self):
-        checkout = self._make_checkout()
-        checkout._scm.committer_email_for_revision = lambda revision: "committer@example.com"
-        checkout.changelog_entries_for_revision = lambda revision, changed_files=None: [ChangeLogEntry(_changelog1entry1)]
-        self.assertEqual(checkout.bug_id_for_revision(4), 36629)
-
-    def test_bug_id_for_this_commit(self):
-        checkout = self._make_checkout()
-        checkout.commit_message_for_this_commit = lambda git_commit, changed_files=None: CommitMessage(ChangeLogEntry(_changelog1entry1).contents().splitlines())
-        self.assertEqual(checkout.bug_id_for_this_commit(git_commit=None), 36629)
-
     def test_modified_changelogs(self):
         checkout = self._make_checkout()
         checkout._scm.checkout_root = "/foo/bar"
@@ -243,14 +232,6 @@ class CheckoutTest(unittest.TestCase):
         checkout._scm.changed_files = lambda git_commit: ["file1", "file2", "relative/path/ChangeLog"]
         checkout._scm.revisions_changing_file = mock_revisions_changing_file
         checkout.changelog_entries_for_revision = mock_changelog_entries_for_revision
-        reviewers = checkout.suggested_reviewers(git_commit=None)
-        reviewer_names = [reviewer.full_name for reviewer in reviewers]
-        self.assertEqual(reviewer_names, [u'Tor Arne Vestb\xf8'])
-
-    def test_chromium_deps(self):
-        checkout = self._make_checkout()
-        checkout._scm.checkout_root = "/foo/bar"
-        self.assertEqual(checkout.chromium_deps()._path, '/foo/bar/Source/WebKit/chromium/DEPS')
 
     def test_apply_patch(self):
         checkout = self._make_checkout()
