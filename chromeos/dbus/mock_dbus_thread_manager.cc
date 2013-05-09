@@ -74,13 +74,7 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_power_manager_client_(new MockPowerManagerClient),
       mock_session_manager_client_(new MockSessionManagerClient),
       mock_system_clock_client_(new MockSystemClockClient),
-      mock_update_engine_client_(new MockUpdateEngineClient),
-      mock_ibus_client_(new MockIBusClient),
-      mock_ibus_config_client_(new MockIBusConfigClient),
-      mock_ibus_input_context_client_(new MockIBusInputContextClient),
-      mock_ibus_engine_service_(new MockIBusEngineService),
-      mock_ibus_engine_factory_service_(new MockIBusEngineFactoryService),
-      mock_ibus_panel_service_(new MockIBusPanelService) {
+      mock_update_engine_client_(new MockUpdateEngineClient) {
   EXPECT_CALL(*this, GetBluetoothAdapterClient())
       .WillRepeatedly(Return(mock_bluetooth_adapter_client_.get()));
   EXPECT_CALL(*this, GetBluetoothDeviceClient())
@@ -119,19 +113,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_system_clock_client()));
   EXPECT_CALL(*this, GetUpdateEngineClient())
       .WillRepeatedly(Return(mock_update_engine_client_.get()));
-  EXPECT_CALL(*this, GetIBusClient())
-      .WillRepeatedly(Return(mock_ibus_client_.get()));
-  EXPECT_CALL(*this, GetIBusConfigClient())
-      .WillRepeatedly(Return(mock_ibus_config_client_.get()));
-  EXPECT_CALL(*this, GetIBusInputContextClient())
-      .WillRepeatedly(Return(mock_ibus_input_context_client_.get()));
-  EXPECT_CALL(*this, GetIBusEngineFactoryService())
-      .WillRepeatedly(Return(mock_ibus_engine_factory_service_.get()));
-  EXPECT_CALL(*this, GetIBusEngineService(_))
-      .WillRepeatedly(Return(mock_ibus_engine_service_.get()));
-  EXPECT_CALL(*this, GetIBusPanelService())
-      .WillRepeatedly(Return(mock_ibus_panel_service_.get()));
-
 
   EXPECT_CALL(*this, GetSystemBus())
       .WillRepeatedly(ReturnNull());
