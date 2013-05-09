@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>WebKit Performance Test Results</title>
+<title>Blink Performance Test Results</title>
 <style type="text/css">
 
 section {
@@ -213,7 +213,7 @@ function TestResult(metric, values, associatedRun) {
 
 function TestRun(entry) {
     this.description = function () { return entry['description']; }
-    this.webkitRevision = function () { return entry['revisions']['WebKit']['revision']; }
+    this.webkitRevision = function () { return entry['revisions']['blink']['revision']; }
     this.label = function () {
         var label = 'r' + this.webkitRevision();
         if (this.description())

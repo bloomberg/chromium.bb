@@ -353,7 +353,7 @@ class MainTest(unittest.TestCase):
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         self.assertEqual(self._load_output_json(runner), [{
             "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"WebKit": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+            "revisions": {"blink": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
 
         filesystem = port.host.filesystem
         self.assertTrue(filesystem.isfile(runner._output_json_path()))
@@ -366,7 +366,7 @@ class MainTest(unittest.TestCase):
         self.assertEqual(self._load_output_json(runner), [{
             "buildTime": "2013-02-08T15:19:37.460000", "description": "some description",
             "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"WebKit": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+            "revisions": {"blink": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
 
     def create_runner_and_setup_results_template(self, args=[]):
         runner, port = self.create_runner(args)
@@ -396,7 +396,7 @@ class MainTest(unittest.TestCase):
 
         self.assertEqual(self._load_output_json(runner), [{
             "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"WebKit": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+            "revisions": {"blink": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
 
         self.assertTrue(filesystem.isfile(output_json_path))
         self.assertTrue(filesystem.isfile(results_page_path))
@@ -412,7 +412,7 @@ class MainTest(unittest.TestCase):
 
         self.assertEqual(self._load_output_json(runner), [{"previous": "results"}, {
             "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"WebKit": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+            "revisions": {"blink": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
         self.assertTrue(filesystem.isfile(filesystem.splitext(output_json_path)[0] + '.html'))
 
     def test_run_respects_reset_results(self):
@@ -426,7 +426,7 @@ class MainTest(unittest.TestCase):
 
         self.assertEqual(self._load_output_json(runner), [{
             "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"WebKit": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+            "revisions": {"blink": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
         self.assertTrue(filesystem.isfile(filesystem.splitext(output_json_path)[0] + '.html'))
         pass
 
@@ -438,7 +438,7 @@ class MainTest(unittest.TestCase):
         self._test_run_with_json_output(runner, filesystem, results_shown=False)
 
         expected_entry = {"buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"WebKit": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}
+            "revisions": {"blink": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}
 
         self.maxDiff = None
         self.assertEqual(runner._output_json_path(), '/mock-checkout/output.json')
@@ -485,7 +485,7 @@ class MainTest(unittest.TestCase):
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         self.assertEqual(self._load_output_json(runner), [{
             "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"WebKit": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}, "builderKey": "value"}])
+            "revisions": {"blink": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}, "builderKey": "value"}])
 
     def test_run_with_bad_slave_config_json(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
@@ -537,7 +537,7 @@ class MainTest(unittest.TestCase):
         self.assertEqual(output['buildTime'], '2013-02-08T15:19:37.460000')
         self.assertEqual(output['builderName'], 'builder1')
         self.assertEqual(output['builderKey'], 'value1')
-        self.assertEqual(output['revisions'], {'WebKit': {'revision': '5678', 'timestamp': '2013-02-01 08:48:05 +0000'}})
+        self.assertEqual(output['revisions'], {'blink': {'revision': '5678', 'timestamp': '2013-02-01 08:48:05 +0000'}})
         self.assertEqual(output['tests'].keys(), ['Bindings'])
         self.assertEqual(sorted(output['tests']['Bindings'].keys()), ['tests', 'url'])
         self.assertEqual(output['tests']['Bindings']['url'], 'http://trac.webkit.org/browser/trunk/PerformanceTests/Bindings')
@@ -547,25 +547,26 @@ class MainTest(unittest.TestCase):
             'metrics': {'Time': {'current': [[1486.0, 1471.0, 1510.0, 1505.0, 1478.0, 1490.0]] * 4}}})
 
     def test_run_with_repeat(self):
+        self.maxDiff = None
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
             '--test-results-server=some.host', '--repeat', '5'])
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True, repeat=5)
         self.assertEqual(self._load_output_json(runner), [
             {"buildTime": "2013-02-08T15:19:37.460000",
             "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"WebKit": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}},
+            "revisions": {"blink": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}},
             {"buildTime": "2013-02-08T15:19:37.460000",
             "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"WebKit": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}},
+            "revisions": {"blink": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}},
             {"buildTime": "2013-02-08T15:19:37.460000",
             "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"WebKit": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}},
+            "revisions": {"blink": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}},
             {"buildTime": "2013-02-08T15:19:37.460000",
             "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"WebKit": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}},
+            "revisions": {"blink": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}},
             {"buildTime": "2013-02-08T15:19:37.460000",
             "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"WebKit": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+            "revisions": {"blink": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
 
     def test_run_with_test_runner_count(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',

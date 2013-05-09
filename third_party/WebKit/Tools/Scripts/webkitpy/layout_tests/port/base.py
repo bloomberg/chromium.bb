@@ -1079,7 +1079,7 @@ class Port(object):
 
         # We use LayoutTest directory here because webkit_base isn't a part of WebKit repository in Chromium port
         # where turnk isn't checked out as a whole.
-        return [('WebKit', self.layout_tests_dir())]
+        return [('blink', self.layout_tests_dir())]
 
     _WDIFF_DEL = '##WDIFF_DEL##'
     _WDIFF_ADD = '##WDIFF_ADD##'

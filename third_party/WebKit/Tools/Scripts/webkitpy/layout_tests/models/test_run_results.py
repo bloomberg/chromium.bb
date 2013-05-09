@@ -28,6 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
+import time
 
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models import test_failures
@@ -135,6 +136,7 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
     tbe = initial_results.tests_by_expectation
     tbt = initial_results.tests_by_timeline
     results['fixable'] = len(tbt[test_expectations.NOW] - tbe[test_expectations.PASS])
+    # FIXME: Remove this. It is redundant with results['num_failures_by_type'].
     results['skipped'] = len(tbt[test_expectations.NOW] & tbe[test_expectations.SKIP])
 
     num_passes = 0
@@ -147,6 +149,12 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
 
     for modifier_string, modifier_enum in test_expectations.TestExpectations.MODIFIERS.iteritems():
         keywords[modifier_enum] = modifier_string.upper()
+
+    num_failures_by_type = {}
+    for expectation in initial_results.tests_by_expectation:
+        num_failures_by_type[keywords[expectation]] = len(initial_results.tests_by_expectation[expectation] & tbt[test_expectations.NOW])
+    # The number of failures by type.
+    results['num_failures_by_type'] = num_failures_by_type
 
     tests = {}
 
@@ -162,6 +170,8 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
             continue
 
         test_dict = {}
+        test_dict['time'] = result.total_run_time
+
         if result.has_stderr:
             test_dict['has_stderr'] = True
 
@@ -231,30 +241,37 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
             current_map = current_map[part]
 
     results['tests'] = tests
+    # FIXME: Remove this. It is redundant with results['num_failures_by_type'].
     results['num_passes'] = num_passes
     results['num_flaky'] = num_flaky
+    # FIXME: Remove this. It is redundant with results['num_failures_by_type'].
     results['num_missing'] = num_missing
     results['num_regressions'] = num_regressions
+    # FIXME: This is always true for Blink. We should remove this and update the code in Layouts/fast/harness/results.html that uses this.
     results['uses_expectations_file'] = port_obj.uses_test_expectations_file()
     results['interrupted'] = initial_results.interrupted  # Does results.html have enough information to compute this itself? (by checking total number of results vs. total number of tests?)
     results['layout_tests_dir'] = port_obj.layout_tests_dir()
     results['has_wdiff'] = port_obj.wdiff_available()
     results['has_pretty_patch'] = port_obj.pretty_patch_available()
     results['pixel_tests_enabled'] = port_obj.get_option('pixel_tests')
+    results['seconds_since_epoch'] = int(time.time())
+    results['build_number'] = port_obj.get_option('build_number')
+    results['builder_name'] = port_obj.get_option('builder_name')
 
     try:
-        # We only use the svn revision for using trac links in the results.html file,
         # Don't do this by default since it takes >100ms.
-        # FIXME: Do we really need to populate this both here and in the json_results_generator?
+        # It's only used for uploading data to the flakiness dashboard.
         if port_obj.get_option("builder_name"):
             port_obj.host.initialize_scm()
-            results['revision'] = port_obj.host.scm().head_svn_revision()
+            for (name, path) in port_obj.repository_paths():
+                results[name.lower() + '_revision'] = port_obj.host.scm().svn_revision(path)
     except Exception, e:
         _log.warn("Failed to determine svn revision for checkout (cwd: %s, webkit_base: %s), leaving 'revision' key blank in full_results.json.\n%s" % (port_obj._filesystem.getcwd(), port_obj.path_from_webkit_base(), e))
         # Handle cases where we're running outside of version control.
         import traceback
         _log.debug('Failed to learn head svn revision:')
         _log.debug(traceback.format_exc())
-        results['revision'] = ""
+        results['chromium_revision'] = ""
+        results['blink_revision'] = ""
 
     return results

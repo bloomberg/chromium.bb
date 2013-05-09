@@ -124,10 +124,20 @@ class SummarizedResultsTest(unittest.TestCase):
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
         self.assertNotIn('revision', summary)
 
+    def test_num_failures_by_type(self):
+        summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
+        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'PASS': 0, 'SKIP': 0, 'TIMEOUT': 2, 'IMAGE+TEXT': 0, 'FAIL': 0, 'AUDIO': 1})
+
+        summary = summarized_results(self.port, expected=True, passing=False, flaky=False)
+        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'PASS': 1, 'SKIP': 0, 'TIMEOUT': 1, 'IMAGE+TEXT': 0, 'FAIL': 0, 'AUDIO': 1})
+
+        summary = summarized_results(self.port, expected=False, passing=True, flaky=False)
+        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 0, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'PASS': 4, 'SKIP': 0, 'TIMEOUT': 0, 'IMAGE+TEXT': 0, 'FAIL': 0, 'AUDIO': 0})
+
     def test_svn_revision(self):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
-        self.assertNotEquals(summary['revision'], '')
+        self.assertNotEquals(summary['blink_revision'], '')
 
     def test_summarized_results_wontfix(self):
         self.port._options.builder_name = 'dummy builder'
