@@ -203,7 +203,7 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_RotateAndMagnify) {
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
   generator2.MoveMouseToInHost(172, 219);
   EXPECT_EQ("95,80", event_handler.GetLocationAndReset());
-  EXPECT_EQ("169,175",
+  EXPECT_EQ("145,200",
             aura::Env::GetInstance()->last_mouse_location().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_90, GetStoredRotation(display1.id()));
   EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));

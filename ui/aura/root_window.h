@@ -288,6 +288,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void ClearMouseHandlers();
 
   void SetRootWindowTransformer(scoped_ptr<RootWindowTransformer> transformer);
+  gfx::Transform GetRootTransform() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RootWindowTest, KeepTranslatedEventInRoot);
@@ -404,7 +405,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // current mouse location.
   void SynthesizeMouseMoveEvent();
 
-  gfx::Transform GetRootTransform() const;
   gfx::Transform GetInverseRootTransform() const;
 
   scoped_ptr<ui::Compositor> compositor_;

@@ -44,9 +44,9 @@ const float kScrollScaleChangeFactor = 0.05f;
 const int kPanningMergin = 100;
 
 void MoveCursorTo(aura::RootWindow* root_window,
-                  const gfx::Point root_location) {
+                  const gfx::Point& root_location) {
   gfx::Point3F host_location_3f(root_location);
-  root_window->layer()->transform().TransformPoint(host_location_3f);
+  root_window->GetRootTransform().TransformPoint(host_location_3f);
   root_window->MoveCursorToHostLocation(
       gfx::ToCeiledPoint(host_location_3f.AsPointF()));
 }

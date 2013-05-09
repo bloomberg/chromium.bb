@@ -528,6 +528,14 @@ void RootWindow::SetRootWindowTransformer(
     OnHostResized(host_->GetBounds().size());
 }
 
+gfx::Transform RootWindow::GetRootTransform() const {
+  float scale = ui::GetDeviceScaleFactor(layer());
+  gfx::Transform transform;
+  transform.Scale(scale, scale);
+  transform *= transformer_->GetTransform();
+  return transform;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, ui::EventTarget implementation:
 
@@ -1157,14 +1165,6 @@ void RootWindow::SynthesizeMouseMoveEvent() {
                        host_mouse_location,
                        ui::EF_IS_SYNTHESIZED);
   OnHostMouseEvent(&event);
-}
-
-gfx::Transform RootWindow::GetRootTransform() const {
-  float scale = ui::GetDeviceScaleFactor(layer());
-  gfx::Transform transform;
-  transform.Scale(scale, scale);
-  transform *= transformer_->GetTransform();
-  return transform;
 }
 
 gfx::Transform RootWindow::GetInverseRootTransform() const {
