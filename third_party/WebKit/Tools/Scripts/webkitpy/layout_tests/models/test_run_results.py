@@ -166,9 +166,6 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
         result_type = result.type
         actual = [keywords[result_type]]
 
-        if result_type == test_expectations.SKIP:
-            continue
-
         test_dict = {}
         test_dict['time'] = result.total_run_time
 
@@ -183,16 +180,13 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
 
         if result_type == test_expectations.PASS:
             num_passes += 1
-            # FIXME: include passing tests that have stderr output.
-            if expected == 'PASS':
-                continue
         elif result_type == test_expectations.CRASH:
             if test_name in initial_results.unexpected_results_by_name:
                 num_regressions += 1
         elif result_type == test_expectations.MISSING:
             if test_name in initial_results.unexpected_results_by_name:
                 num_missing += 1
-        elif test_name in initial_results.unexpected_results_by_name:
+        elif result_type != test_expectations.SKIP and test_name in initial_results.unexpected_results_by_name:
             if retry_results and test_name not in retry_results.unexpected_results_by_name:
                 actual.extend(expectations.get_expectations_string(test_name).split(" "))
                 num_flaky += 1
@@ -211,6 +205,13 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
 
         test_dict['expected'] = expected
         test_dict['actual'] = " ".join(actual)
+
+        def is_expected(actual_result):
+            return expectations.matches_an_expected_result(test_name, result_type, port_obj.get_option('pixel_tests') or result.reftest_type)
+
+        # To avoid bloating the output results json too much, only add an entry for whether the failure is unexpected.
+        if not all(is_expected(actual_result) for actual_result in actual):
+            test_dict['is_unexpected'] = True
 
         test_dict.update(_interpret_test_failures(result.failures))
 

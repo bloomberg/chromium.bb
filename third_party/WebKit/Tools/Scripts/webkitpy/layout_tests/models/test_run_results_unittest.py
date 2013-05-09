@@ -48,7 +48,7 @@ def get_result(test_name, result_type=test_expectations.PASS, run_time=0):
 
 def run_results(port):
     tests = ['passes/text.html', 'failures/expected/timeout.html', 'failures/expected/crash.html', 'failures/expected/hang.html',
-             'failures/expected/audio.html']
+             'failures/expected/audio.html', 'passes/skipped/skip.html']
     expectations = test_expectations.TestExpectations(port, tests)
     return test_run_results.TestRunResults(expectations, len(tests))
 
@@ -63,6 +63,9 @@ def summarized_results(port, expected, passing, flaky):
         initial_results.add(get_result('failures/expected/timeout.html', test_expectations.TIMEOUT), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/crash.html', test_expectations.CRASH), expected, test_is_slow)
     elif passing:
+        skipped_result = get_result('passes/skipped/skip.html')
+        skipped_result.type = test_expectations.SKIP
+        initial_results.add(skipped_result, expected, test_is_slow)
         initial_results.add(get_result('passes/text.html'), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/audio.html'), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/timeout.html'), expected, test_is_slow)
@@ -132,7 +135,7 @@ class SummarizedResultsTest(unittest.TestCase):
         self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'PASS': 1, 'SKIP': 0, 'TIMEOUT': 1, 'IMAGE+TEXT': 0, 'FAIL': 0, 'AUDIO': 1})
 
         summary = summarized_results(self.port, expected=False, passing=True, flaky=False)
-        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 0, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'PASS': 4, 'SKIP': 0, 'TIMEOUT': 0, 'IMAGE+TEXT': 0, 'FAIL': 0, 'AUDIO': 0})
+        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 0, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'PASS': 4, 'SKIP': 1, 'TIMEOUT': 0, 'IMAGE+TEXT': 0, 'FAIL': 0, 'AUDIO': 0})
 
     def test_svn_revision(self):
         self.port._options.builder_name = 'dummy builder'
@@ -143,3 +146,15 @@ class SummarizedResultsTest(unittest.TestCase):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
         self.assertTrue(summary['tests']['failures']['expected']['hang.html']['wontfix'])
+        self.assertTrue(summary['tests']['passes']['text.html']['is_unexpected'])
+
+    def test_summarized_results_expected_pass(self):
+        self.port._options.builder_name = 'dummy builder'
+        summary = summarized_results(self.port, expected=False, passing=True, flaky=False)
+        self.assertTrue(summary['tests']['passes']['text.html'])
+        self.assertTrue('is_unexpected' not in summary['tests']['passes']['text.html'])
+
+    def test_summarized_results_skipped(self):
+        self.port._options.builder_name = 'dummy builder'
+        summary = summarized_results(self.port, expected=False, passing=True, flaky=False)
+        self.assertTrue(summary['tests']['passes']['skipped']['skip.html'])

@@ -800,20 +800,19 @@ class TestExpectations(object):
         return cls.EXPECTATIONS.get(string.lower())
 
     @staticmethod
-    def result_was_expected(result, expected_results, test_needs_rebaselining, test_is_skipped):
+    def result_was_expected(result, expected_results, test_needs_rebaselining):
         """Returns whether we got a result we were expecting.
         Args:
             result: actual result of a test execution
             expected_results: set of results listed in test_expectations
-            test_needs_rebaselining: whether test was marked as REBASELINE
-            test_is_skipped: whether test was marked as SKIP"""
+            test_needs_rebaselining: whether test was marked as REBASELINE"""
         if result in expected_results:
             return True
         if result in (TEXT, IMAGE_PLUS_TEXT, AUDIO) and (FAIL in expected_results):
             return True
         if result == MISSING and test_needs_rebaselining:
             return True
-        if result == SKIP and test_is_skipped:
+        if result == SKIP:
             return True
         return False
 
@@ -924,10 +923,7 @@ class TestExpectations(object):
         expected_results = self._model.get_expectations(test)
         if not pixel_tests_are_enabled:
             expected_results = self.remove_pixel_failures(expected_results)
-        return self.result_was_expected(result,
-                                   expected_results,
-                                   self.is_rebaselining(test),
-                                   self._model.has_modifier(test, SKIP))
+        return self.result_was_expected(result, expected_results, self.is_rebaselining(test))
 
     def is_rebaselining(self, test):
         return self._model.has_modifier(test, REBASELINE)

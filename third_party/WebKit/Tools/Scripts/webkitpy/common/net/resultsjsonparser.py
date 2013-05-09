@@ -77,7 +77,7 @@ class JSONTestResult(object):
         if not TestExpectations.has_pixel_failures(actual_results):
             expected_results = TestExpectations.remove_pixel_failures(expected_results)
         for actual_result in actual_results:
-            if not TestExpectations.result_was_expected(actual_result, expected_results, False, False):
+            if not TestExpectations.result_was_expected(actual_result, expected_results, False):
                 return False
         return True
 
