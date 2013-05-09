@@ -383,7 +383,6 @@ void DownloadItemImpl::Delete(DeleteReason reason) {
   if (!current_path_.empty() && download_file_.get() == NULL) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                             base::Bind(&DeleteDownloadedFile, current_path_));
-    current_path_.clear();
   }
   Remove();
   // We have now been deleted.
@@ -392,15 +391,6 @@ void DownloadItemImpl::Delete(DeleteReason reason) {
 void DownloadItemImpl::Remove() {
   VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Remove the intermediate file if we are removing an interrupted download.
-  // Continuable interruptions leave the intermediate file around. However, the
-  // intermediate file will be unusable if the download item is removed.
-  if (!current_path_.empty() && IsInterrupted() && !download_file_.get()) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&DeleteDownloadedFile, current_path_));
-    current_path_.clear();
-  }
 
   delegate_->AssertStateConsistent(this);
   Cancel(true);
@@ -790,6 +780,9 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
 
 DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!IsInterrupted())
+    return RESUME_MODE_INVALID;
+
   // We can't continue without a handle on the intermediate file.
   // We also can't continue if we don't have some verifier to make sure
   // we're getting the same file.
@@ -1052,6 +1045,8 @@ void DownloadItemImpl::Init(bool active,
   if (active)
     RecordDownloadCount(START_COUNT);
 
+  if (target_path_.empty())
+    target_path_ = current_path_;
   std::string file_name;
   if (download_type == SRC_HISTORY_IMPORT) {
     // target_path_ works for History and Save As versions.
@@ -1121,10 +1116,8 @@ void DownloadItemImpl::OnDownloadFileInitialized(
     return;
   }
 
-  // If we're resuming an interrupted download, we may already know the download
-  // target so we can skip target name determination. GetFullPath() is non-empty
-  // for interrupted downloads where the intermediate file is still present, and
-  // also for downloads with forced paths.
+  // If we're resuming an interrupted download, we may already know
+  // the download target so we can skip target name determination.
   if (!GetTargetFilePath().empty() && !GetFullPath().empty()) {
     // TODO(rdsmith/asanka): Check to confirm that the target path isn't
     // present on disk; if it is, we should re-do filename determination to
@@ -1132,6 +1125,11 @@ void DownloadItemImpl::OnDownloadFileInitialized(
     MaybeCompleteDownload();
     return;
   }
+
+  // The target path might be set and the full path empty if we failed
+  // the intermediate rename--re-do file name determination in this case.
+  // TODO(rdsmith,asanka): Clean up this logic.
+  target_path_ = base::FilePath();
 
   delegate_->DetermineDownloadTarget(
       this, base::Bind(&DownloadItemImpl::OnDownloadTargetDetermined,
@@ -1212,10 +1210,11 @@ void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
     // Will be ignored if we called Interrupt() above.
     Interrupt(reason);
 
-    // All file errors result in file deletion above; no need to cleanup.  The
-    // current_path_ should be empty. Resuming this download will force a
-    // restart and a re-doing of filename determination.
-    DCHECK(current_path_.empty());
+    // All file errors result in file deletion above; no need to cleanup.
+    // Reset the target path so on resumption we re-do file name determination.
+    // A restart will be forced because we don't set the full path on this
+    // branch.
+    target_path_ = base::FilePath();
   } else {
     SetFullPath(full_path);
     MaybeCompleteDownload();
@@ -1309,9 +1308,11 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
   if (DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
     Interrupt(reason);
 
-    // All file errors should have resulted in in file deletion above. On
-    // resumption we will need to re-do filename determination.
-    DCHECK(current_path_.empty());
+    // All file errors result in file deletion above; no need to cleanup.
+    // Reset the paths so on resumption we re-do file name determination.
+    target_path_ = base::FilePath();
+    current_path_ = base::FilePath();
+    UpdateObservers();
     return;
   }
 
@@ -1396,12 +1397,15 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
 
   last_reason_ = reason;
 
+  TransitionTo(INTERRUPTED_INTERNAL);
+
   ResumeMode resume_mode = GetResumeMode();
   // Cancel (delete file) if we're going to restart; no point in leaving
   // data around we aren't going to use.  Also cancel if resumption isn't
   // enabled for the same reason.
-  bool resumption_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDownloadResumption);
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  bool resumption_enabled =
+      command_line.HasSwitch(switches::kEnableDownloadResumption);
   ReleaseDownloadFile(resume_mode == RESUME_MODE_IMMEDIATE_RESTART ||
                       resume_mode == RESUME_MODE_USER_RESTART ||
                       !resumption_enabled);
@@ -1421,9 +1425,7 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
   // Cancel the originating URL request.
   request_handle_->CancelRequest();
 
-  TransitionTo(INTERRUPTED_INTERNAL);
   RecordDownloadInterrupted(reason, received_bytes_, total_bytes_);
-
   AutoResumeIfValid();
 }
 
@@ -1435,9 +1437,6 @@ void DownloadItemImpl::ReleaseDownloadFile(bool destroy_file) {
         BrowserThread::FILE, FROM_HERE,
         // Will be deleted at end of task execution.
         base::Bind(&DownloadFileCancel, base::Passed(&download_file_)));
-    // Avoid attempting to reuse the intermediate file by clearing out
-    // current_path_.
-    current_path_.clear();
   } else {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
@@ -1448,6 +1447,17 @@ void DownloadItemImpl::ReleaseDownloadFile(bool destroy_file) {
   // out any previous "all data received".  This also breaks links to
   // other entities we've given out weak pointers to.
   weak_ptr_factory_.InvalidateWeakPtrs();
+
+  // TODO(rdsmith/benjhayden): Remove condition as part of
+  // |SavePackage| integration.
+  // |download_file_| can be NULL if Interrupt() is called after the
+  // download file has been released.
+  if (!is_save_package_download_ && download_file_) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        // Will be deleted at end of task execution.
+        base::Bind(&DownloadFileCancel, base::Passed(&download_file_)));
+  }
 }
 
 bool DownloadItemImpl::IsDownloadReadyForCompletion(

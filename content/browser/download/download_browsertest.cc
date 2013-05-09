@@ -476,6 +476,11 @@ class DownloadCreateObserver : DownloadManager::Observer {
 };
 
 
+// Filter for waiting for intermediate file rename.
+bool IntermediateFileRenameFilter(DownloadItem* download) {
+  return !download->GetFullPath().empty();
+}
+
 // Filter for waiting for a certain number of bytes.
 bool DataReceivedFilter(int number_of_bytes, DownloadItem* download) {
   return download->GetReceivedBytes() >= number_of_bytes;
@@ -646,8 +651,6 @@ class DownloadContentTest : public ContentBrowserTest {
       DownloadItem* download, bool file_exists,
       int received_bytes, int total_bytes,
       const base::FilePath& expected_filename) {
-    // expected_filename is only known if the file exists.
-    ASSERT_EQ(file_exists, !expected_filename.empty());
     EXPECT_EQ(received_bytes, download->GetReceivedBytes());
     EXPECT_EQ(total_bytes, download->GetTotalBytes());
     EXPECT_EQ(expected_filename.value(),
@@ -1153,7 +1156,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   ReleaseRSTAndConfirmInterruptForResume(download);
   ConfirmFileStatusForResume(
       download, false, GetSafeBufferChunk(), GetSafeBufferChunk() * 3,
-      base::FilePath());
+      base::FilePath(FILE_PATH_LITERAL("rangereset.crdownload")));
 
   DownloadUpdatedObserver completion_observer(
       download, base::Bind(DownloadCompleteFilter));
@@ -1304,10 +1307,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
             download->GetLastReason());
   EXPECT_TRUE(download->GetFullPath().empty());
-  // Target path will have been set after file name determination. GetFullPath()
-  // being empty is sufficient to signal that filename determination needs to be
-  // redone.
-  EXPECT_FALSE(download->GetTargetFilePath().empty());
+  // Target path will have been set after file name determination,
+  // and reset when the intermediate rename fails, as that suggests
+  // we should re-do file name determination.
+  EXPECT_TRUE(download->GetTargetFilePath().empty());
 
   // We need to make sure that any cross-thread downloads communication has
   // quiesced before clearing and injecting the new errors, as the
@@ -1356,8 +1359,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileFinalRenameError) {
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
             download->GetLastReason());
   EXPECT_TRUE(download->GetFullPath().empty());
-  // Target path should still be intact.
-  EXPECT_FALSE(download->GetTargetFilePath().empty());
+  // Target path will have been set after file name determination,
+  // and reset when the rename fails, as that suggests
+  // we should re-do file name determination.
+  EXPECT_TRUE(download->GetTargetFilePath().empty());
 
   // We need to make sure that any cross-thread downloads communication has
   // quiesced before clearing and injecting the new errors, as the

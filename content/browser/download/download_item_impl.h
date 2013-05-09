@@ -161,9 +161,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // All remaining public interfaces virtual to allow for DownloadItemImpl
   // mocks.
 
-  // Determines the resume mode for an interrupted download. Requires
-  // last_reason_ to be set, but doesn't require the download to be in
-  // INTERRUPTED state.
   virtual ResumeMode GetResumeMode() const;
 
   // State transition operations on regular downloads --------------------------
@@ -304,9 +301,8 @@ class CONTENT_EXPORT DownloadItemImpl
   void Interrupt(DownloadInterruptReason reason);
 
   // Destroy the DownloadFile object.  If |destroy_file| is true, the file is
-  // destroyed with it.  Otherwise, DownloadFile::Detach() is called before
-  // object destruction to prevent file destruction. Destroying the file also
-  // resets |current_path_|.
+  // destroyed with it.  Otherwise, DownloadFile::Detach() is called
+  // before object destruction to prevent file destruction.
   void ReleaseDownloadFile(bool destroy_file);
 
   // Check if a download is ready for completion.  The callback provided
