@@ -785,7 +785,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   overlays=constants.BOTH_OVERLAYS,
   description='Preflight Chrome build (internal)',
   upload_hw_test_artifacts=True,
-  prebuilts=False,
+  prebuilts=constants.PRIVATE,
 )
 
 chrome_pfq.add_config('alex-chrome-pfq',

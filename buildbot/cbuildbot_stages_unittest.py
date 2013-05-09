@@ -1015,6 +1015,8 @@ class ArchiveStageTest(AbstractStageTest):
 class UploadPrebuiltsStageTest(AbstractStageTest,
                                cros_build_lib_unittest.RunCommandTestCase):
 
+  CMD = './upload_prebuilts'
+
   def setUp(self):
     self.options.prebuilts = True
     self.StartPatcher(ArchiveStageMock())
@@ -1027,44 +1029,58 @@ class UploadPrebuiltsStageTest(AbstractStageTest,
                                        self.build_config['boards'][-1],
                                        self.archive_stage)
 
+  def VerifyBoardMap(self, bot_id, count, board_map, public_args=None,
+                     private_args=None):
+    """Verify that the prebuilts are uploaded for the specified bot.
+
+    Arguments:
+      bot_id: Bot to upload prebuilts for.
+      count: Number of assert checks that should be performed.
+      board_map: Map from slave boards to whether the bot is public.
+      public_args: List of extra arguments for public boards.
+      private_args: List of extra arguments for private boards.
+    """
+    self.build_config = copy.deepcopy(config.config[bot_id])
+    self.RunStage()
+    public_prefix = [self.CMD] + (public_args or [])
+    private_prefix = [self.CMD] + (private_args or [])
+    for board, public in board_map.iteritems():
+      if public or public_args:
+        public_cmd = public_prefix + ['--slave-board', board]
+        self.assertCommandContains(public_cmd, expected=public)
+        count -= 1
+      private_cmd = private_prefix + ['--slave-board', board, '--private']
+      self.assertCommandContains(private_cmd, expected=not public)
+      count -= 1
+    if board_map:
+      self.assertCommandContains([self.CMD, '--set-version',
+                                  self.archive_stage.version])
+      count -= 1
+    self.assertEqual(count, 0, 'Number of asserts performed does not match')
+
   def testFullPrebuiltsUpload(self):
     """Test uploading of full builder prebuilts."""
-    self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE
-    self.build_config['manifest_version'] = False
-    self.build_config['git_sync'] = True
-    self.RunStage()
-    self.assertCommandContains(['./upload_prebuilts', '--git-sync'])
+    self.VerifyBoardMap('x86-generic-full', 0, {})
+    self.assertCommandContains([self.CMD, '--git-sync'])
+
+  def testIncorrectCount(self):
+    """Test that VerifyBoardMap asserts when the count is wrong."""
+    self.assertRaises(AssertionError, self.VerifyBoardMap, 'x86-generic-full',
+                      1, {})
 
   def testChromeUpload(self):
     """Test uploading of prebuilts for chrome build."""
-    self.build_config = copy.deepcopy(config.config['x86-generic-chromium-pfq'])
-    self.RunStage()
-    prefix = ['./upload_prebuilts', '--board', 'x86-generic']
-    self.assertCommandContains(prefix)
-    self.assertCommandContains(prefix + ['--slave-board', 'amd64-generic'])
-    self.assertCommandContains(prefix + ['--slave-board', 'daisy'])
-    self.assertCommandContains(prefix +
-                               ['--set-version', self.archive_stage.version])
-
-  def testPreflightUpload(self):
-    """Test uploading of prebuilts for preflight build."""
-    self.build_config['build_type'] = constants.PFQ_TYPE
-    self.RunStage()
-    prefix = ['./upload_prebuilts']
-    self.assertCommandContains(prefix +
-                               ['--set-version', self.archive_stage.version])
-    self.assertCommandContains(prefix + ['--sync-host'])
+    board_map = {'amd64-generic': True, 'daisy': True,
+                 'x86-alex': False, 'lumpy': False}
+    self.VerifyBoardMap('x86-generic-chromium-pfq', 9, board_map,
+                        public_args=['--board', 'x86-generic'])
 
   def testPaladinMasterUpload(self):
-    self.build_config = copy.deepcopy(config.config['mario-paladin'])
-    self.RunStage()
-    prefix = ['./upload_prebuilts']
-    for board in ('x86-generic', 'amd64-generic'):
-      self.assertCommandContains(prefix + ['--sync-host', board])
-    self.assertCommandContains(prefix +
-                               ['--set-version', self.archive_stage.version])
-    for board in ('x86-mario', 'x86-alex', 'daisy_spring'):
-      self.assertCommandContains(prefix + [board])
+    board_map = {'amd64-generic': True, 'x86-generic': True,
+                 'x86-alex': False, 'lumpy': False, 'daisy_spring': False}
+    self.VerifyBoardMap('mario-paladin', 8, board_map,
+                        private_args=['--board', 'x86-mario'])
+    self.assertCommandContains([self.CMD, '--sync-host'])
 
 
 class UploadDevInstallerPrebuiltsStageTest(AbstractStageTest):
