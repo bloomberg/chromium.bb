@@ -1456,8 +1456,6 @@ void Editor::advanceToNextMisspelling(bool startBeforeSelection)
         }
     } else {
         misspelledWord = TextCheckingHelper(client(), spellingSearchRange).findFirstMisspelling(misspellingOffset, false, firstMisspellingRange);
-
-#if USE(GRAMMAR_CHECKING)
         grammarSearchRange = spellingSearchRange->cloneRange(IGNORE_EXCEPTION);
         if (!misspelledWord.isEmpty()) {
             // Stop looking at start of next misspelled word
@@ -1468,7 +1466,6 @@ void Editor::advanceToNextMisspelling(bool startBeforeSelection)
     
         if (isGrammarCheckingEnabled())
             badGrammarPhrase = TextCheckingHelper(client(), grammarSearchRange).findFirstBadGrammar(grammarDetail, grammarPhraseOffset, false);
-#endif
     }
     
     // If we found neither bad grammar nor a misspelled word, wrap and try again (but don't bother if we started at the beginning of the
@@ -1490,8 +1487,6 @@ void Editor::advanceToNextMisspelling(bool startBeforeSelection)
             }
         } else {
             misspelledWord = TextCheckingHelper(client(), spellingSearchRange).findFirstMisspelling(misspellingOffset, false, firstMisspellingRange);
-
-#if USE(GRAMMAR_CHECKING)
             grammarSearchRange = spellingSearchRange->cloneRange(IGNORE_EXCEPTION);
             if (!misspelledWord.isEmpty()) {
                 // Stop looking at start of next misspelled word
@@ -1502,12 +1497,10 @@ void Editor::advanceToNextMisspelling(bool startBeforeSelection)
 
             if (isGrammarCheckingEnabled())
                 badGrammarPhrase = TextCheckingHelper(client(), grammarSearchRange).findFirstBadGrammar(grammarDetail, grammarPhraseOffset, false);
-#endif
         }
     }
     
     if (!badGrammarPhrase.isEmpty()) {
-        ASSERT(WTF_USE_GRAMMAR_CHECKING);
         // We found bad grammar. Since we only searched for bad grammar up to the first misspelled word, the bad grammar
         // takes precedence and we ignore any potential misspelled word. Select the grammar detail, update the spelling
         // panel, and store a marker so we draw the green squiggle later.
@@ -1590,20 +1583,15 @@ String Editor::misspelledSelectionString() const
 
 bool Editor::isSelectionUngrammatical()
 {
-#if USE(GRAMMAR_CHECKING)
     Vector<String> ignoredGuesses;
     RefPtr<Range> range = frame()->selection()->toNormalizedRange();
     if (!range)
         return false;
     return TextCheckingHelper(client(), range).isUngrammatical(ignoredGuesses);
-#else
-    return false;
-#endif
 }
 
 Vector<String> Editor::guessesForUngrammaticalSelection()
 {
-#if USE(GRAMMAR_CHECKING)
     Vector<String> guesses;
     RefPtr<Range> range = frame()->selection()->toNormalizedRange();
     if (!range)
@@ -1611,9 +1599,6 @@ Vector<String> Editor::guessesForUngrammaticalSelection()
     // Ignore the result of isUngrammatical; we just want the guesses, whether or not there are any
     TextCheckingHelper(client(), range).isUngrammatical(guesses);
     return guesses;
-#else
-    return Vector<String>();
-#endif
 }
 
 Vector<String> Editor::guessesForMisspelledOrUngrammatical(bool& misspelled, bool& ungrammatical)
@@ -1769,11 +1754,8 @@ void Editor::markMisspellingsOrBadGrammar(const VisibleSelection& selection, boo
     TextCheckingHelper checker(client(), searchRange);
     if (checkSpelling)
         checker.markAllMisspellings(firstMisspellingRange);
-    else {
-        ASSERT(WTF_USE_GRAMMAR_CHECKING);
-        if (isGrammarCheckingEnabled())
-            checker.markAllBadGrammar();
-    }    
+    else if (isGrammarCheckingEnabled())
+        checker.markAllBadGrammar();
 }
 
 bool Editor::isSpellCheckingEnabledFor(Node* node) const
@@ -1798,7 +1780,6 @@ void Editor::markMisspellings(const VisibleSelection& selection, RefPtr<Range>& 
     
 void Editor::markBadGrammar(const VisibleSelection& selection)
 {
-    ASSERT(WTF_USE_GRAMMAR_CHECKING);
     RefPtr<Range> firstMisspellingRange;
     markMisspellingsOrBadGrammar(selection, false, firstMisspellingRange);
 }

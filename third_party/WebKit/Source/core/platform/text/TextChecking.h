@@ -37,8 +37,6 @@
 
 namespace WebCore {
 
-#define WTF_USE_GRAMMAR_CHECKING 1
-
 enum TextCheckingType {
     TextCheckingTypeNone        = 0,
     TextCheckingTypeSpelling    = 1 << 1,
