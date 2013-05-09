@@ -33,7 +33,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/surface/surface_switches.h"
-#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 #if defined(ENABLE_MESSAGE_CENTER)
 #include "ui/message_center/message_center_switches.h"
@@ -1466,14 +1465,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_DESCRIPTION,
     kOsWin,
     SINGLE_VALUE_TYPE(switches::kAppsUseNativeFrame)
-  },
-  {
-    "enable-sync-directory-operation",
-    IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_NAME,
-    IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(
-        sync_file_system::GetFlagForSyncFileSystemDirectoryOperation())
   },
 };
 

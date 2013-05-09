@@ -7227,12 +7227,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DEFAULT_TILE_HEIGHT_VENTI" desc="">
         1024
       </message>
-      <message name="IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_NAME" desc="Name of the flag to enable syncfs directory support.">
-        Enable Syncfs directory operation.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_DESCRIPTION" desc="Description of the flag to enable syncfs directory support.">
-        Enables directory support for sync filesystem.
-      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

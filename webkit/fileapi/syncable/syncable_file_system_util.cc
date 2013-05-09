@@ -29,10 +29,6 @@ bool is_directory_operation_enabled = false;
 
 }
 
-const char* GetFlagForSyncFileSystemDirectoryOperation() {
-  return kEnableSyncDirectoryOperation;
-}
-
 bool RegisterSyncableFileSystem(const std::string& service_name) {
   return ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       service_name, fileapi::kFileSystemTypeSyncable, base::FilePath());
