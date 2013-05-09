@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "ui/gl/android/surface_texture_bridge.h"
-#include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
 namespace content {
 
