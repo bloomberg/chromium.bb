@@ -28,7 +28,7 @@
 #include "core/dom/EventNames.h"
 #include "core/dom/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/page/SecurityOrigin.h"
+#include "origin/SecurityOrigin.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "core/xml/XMLHttpRequestProgressEventThrottle.h"

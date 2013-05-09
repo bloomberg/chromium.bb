@@ -29,6 +29,12 @@
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #include <libxslt/xslt.h>
+#include <wtf/StringExtras.h>
+#include <wtf/text/CString.h>
+#include <wtf/Threading.h>
+#include <wtf/unicode/UTF8.h>
+#include <wtf/UnusedParam.h>
+#include <wtf/Vector.h>
 #include "HTMLNames.h"
 #include "XMLNSNames.h"
 #include "bindings/v8/ScriptSourceCode.h"
@@ -54,7 +60,6 @@
 #include "core/loader/cache/CachedScript.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
@@ -62,12 +67,7 @@
 #include "core/xml/XMLErrors.h"
 #include "core/xml/XMLTreeViewer.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
-#include <wtf/StringExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/Threading.h>
-#include <wtf/unicode/UTF8.h>
-#include <wtf/UnusedParam.h>
-#include <wtf/Vector.h>
+#include "origin/SecurityOrigin.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"

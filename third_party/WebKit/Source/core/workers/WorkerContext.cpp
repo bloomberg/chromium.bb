@@ -29,6 +29,8 @@
 
 #include "core/workers/WorkerContext.h"
 
+#include <wtf/RefPtr.h>
+#include <wtf/UnusedParam.h>
 #include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
@@ -45,7 +47,6 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMTimer.h"
 #include "core/page/DOMWindow.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/WorkerNavigator.h"
 #include "core/platform/KURL.h"
 #include "core/platform/NotImplemented.h"
@@ -53,8 +54,7 @@
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThread.h"
-#include <wtf/RefPtr.h>
-#include <wtf/UnusedParam.h>
+#include "origin/SecurityOrigin.h"
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 #include "modules/notifications/NotificationCenter.h"

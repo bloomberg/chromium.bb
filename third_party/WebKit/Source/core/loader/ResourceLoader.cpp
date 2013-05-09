@@ -40,10 +40,10 @@
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/Logging.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceHandle.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

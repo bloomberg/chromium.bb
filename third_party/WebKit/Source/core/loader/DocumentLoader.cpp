@@ -30,6 +30,13 @@
 #include "config.h"
 #include "core/loader/DocumentLoader.h"
 
+#include <wtf/Assertions.h>
+#include <wtf/MemoryInstrumentationHashMap.h>
+#include <wtf/MemoryInstrumentationHashSet.h>
+#include <wtf/MemoryInstrumentationVector.h>
+#include <wtf/text/CString.h>
+#include <wtf/text/WTFString.h>
+#include <wtf/unicode/Unicode.h>
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/dom/Event.h"
@@ -54,17 +61,10 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/platform/Logging.h"
 #include "origin/SchemeRegistry.h"
-#include <wtf/Assertions.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/unicode/Unicode.h>
+#include "origin/SecurityPolicy.h"
 
 namespace WebCore {
 

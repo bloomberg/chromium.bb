@@ -26,13 +26,13 @@
 #include "config.h"
 #include "core/loader/DocumentLoadTiming.h"
 
+#include <wtf/CurrentTime.h>
+#include <wtf/RefPtr.h>
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/RefPtr.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

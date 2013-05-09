@@ -31,6 +31,10 @@
 #include "config.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 
+#include <public/WebURL.h>
+#include <public/WebURLError.h>
+#include <public/WebURLResponse.h>
+#include <public/WebVector.h>
 #include "ApplicationCacheHostInternal.h"
 #include "WebFrameImpl.h"
 #include "core/dom/ProgressEvent.h"
@@ -41,14 +45,10 @@
 #include "core/loader/appcache/DOMApplicationCache.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
-#include <public/WebURL.h>
-#include <public/WebURLError.h>
-#include <public/WebURLResponse.h>
-#include <public/WebVector.h>
+#include "origin/SecurityOrigin.h"
 
 using namespace WebKit;
 

@@ -106,7 +106,7 @@ public:
     // Returns true if this SecurityOrigin can receive drag content from the
     // initiator. For example, call this function before allowing content to be
     // dropped onto a target.
-    bool canReceiveDragData(const SecurityOrigin* dragInitiator) const;    
+    bool canReceiveDragData(const SecurityOrigin* dragInitiator) const;
 
     // Returns true if |document| can display content from the given URL (e.g.,
     // in an iframe or as an image). For example, web sites generally cannot

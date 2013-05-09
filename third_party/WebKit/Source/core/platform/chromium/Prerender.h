@@ -33,7 +33,7 @@
 #define Prerender_h
 
 #include "core/platform/KURL.h"
-#include "core/platform/ReferrerPolicy.h"
+#include "origin/ReferrerPolicy.h"
 #include <public/WebSize.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

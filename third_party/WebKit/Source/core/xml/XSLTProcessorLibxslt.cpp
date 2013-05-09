@@ -28,6 +28,11 @@
 #include <libxslt/security.h>
 #include <libxslt/variables.h>
 #include <libxslt/xsltutils.h>
+#include <wtf/Assertions.h>
+#include <wtf/text/CString.h>
+#include <wtf/text/StringBuffer.h>
+#include <wtf/unicode/UTF8.h>
+#include <wtf/Vector.h>
 #include "core/dom/Document.h"
 #include "core/dom/TransformSource.h"
 #include "core/editing/markup.h"
@@ -35,7 +40,6 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
@@ -44,11 +48,7 @@
 #include "core/xml/XSLTExtensions.h"
 #include "core/xml/XSLTUnicodeSort.h"
 #include "core/xml/parser/XMLDocumentParser.h"
-#include <wtf/Assertions.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuffer.h>
-#include <wtf/unicode/UTF8.h>
-#include <wtf/Vector.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

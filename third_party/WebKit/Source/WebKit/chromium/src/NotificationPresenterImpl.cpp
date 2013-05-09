@@ -34,14 +34,14 @@
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 #include "modules/notifications/Notification.h"
+#include "origin/SecurityOrigin.h"
 
+#include <public/WebURL.h>
 #include "WebNotification.h"
 #include "WebNotificationPermissionCallback.h"
 #include "WebNotificationPresenter.h"
-#include <public/WebURL.h>
 
 #include <wtf/PassRefPtr.h>
 

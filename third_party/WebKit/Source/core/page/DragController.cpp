@@ -27,6 +27,8 @@
 #include "config.h"
 #include "core/page/DragController.h"
 
+#include <wtf/CurrentTime.h>
+#include <wtf/RefPtr.h>
 #include "HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Clipboard.h"
@@ -61,7 +63,6 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/platform/DragData.h"
 #include "core/platform/PlatformKeyboardEvent.h"
@@ -74,8 +75,7 @@
 #include "core/rendering/RenderFileUploadControl.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderView.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/RefPtr.h>
+#include "origin/SecurityOrigin.h"
 
 #if OS(WINDOWS)
 #include <windows.h>

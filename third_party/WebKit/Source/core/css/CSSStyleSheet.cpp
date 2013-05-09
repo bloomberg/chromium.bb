@@ -21,6 +21,8 @@
 #include "config.h"
 #include "core/css/CSSStyleSheet.h"
 
+#include <wtf/MemoryInstrumentationVector.h>
+#include <wtf/text/StringBuilder.h>
 #include "HTMLNames.h"
 #include "SVGNames.h"
 #include "core/css/CSSCharsetRule.h"
@@ -37,9 +39,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
-#include "core/page/SecurityOrigin.h"
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/text/StringBuilder.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

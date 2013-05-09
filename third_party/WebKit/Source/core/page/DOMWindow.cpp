@@ -27,7 +27,13 @@
 #include "config.h"
 #include "core/page/DOMWindow.h"
 
+#include <wtf/CurrentTime.h>
+#include <wtf/MainThread.h>
+#include <wtf/MathExtras.h>
+#include <wtf/text/Base64.h>
+#include <wtf/text/WTFString.h>
 #include <algorithm>
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptController.h"
@@ -85,10 +91,7 @@
 #include "core/page/PageConsole.h"
 #include "core/page/PageGroup.h"
 #include "core/page/Performance.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/page/Screen.h"
-#include "core/page/SecurityOrigin.h"
-#include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
@@ -101,11 +104,8 @@
 #include "core/storage/StorageNamespace.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/notifications/DOMWindowNotifications.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/MainThread.h>
-#include <wtf/MathExtras.h>
-#include <wtf/text/Base64.h>
-#include <wtf/text/WTFString.h>
+#include "origin/SecurityOrigin.h"
+#include "origin/SecurityPolicy.h"
 
 using std::min;
 using std::max;

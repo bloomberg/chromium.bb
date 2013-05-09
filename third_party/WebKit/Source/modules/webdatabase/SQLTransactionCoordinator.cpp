@@ -32,9 +32,9 @@
 #include "config.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
 
-#include "core/page/SecurityOrigin.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
+#include "origin/SecurityOrigin.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

@@ -30,7 +30,6 @@
 
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileException.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/AsyncFileSystem.h"
 #include "core/workers/WorkerContext.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
@@ -43,6 +42,7 @@
 #include "modules/filesystem/FileSystemType.h"
 #include "modules/filesystem/LocalFileSystem.h"
 #include "modules/filesystem/SyncCallbackHelper.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

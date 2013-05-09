@@ -30,12 +30,12 @@
 #include "modules/webdatabase/WorkerContextWebDatabase.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/workers/WorkerContext.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseSync.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

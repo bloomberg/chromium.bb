@@ -56,7 +56,6 @@
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Console.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/KURL.h"
@@ -68,6 +67,7 @@
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 #include "core/rendering/RenderLayer.h"
+#include "origin/SecurityOrigin.h"
 
 #include <wtf/CheckedArithmetic.h>
 #include <wtf/MathExtras.h>

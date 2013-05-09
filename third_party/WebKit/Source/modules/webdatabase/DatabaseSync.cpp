@@ -32,7 +32,6 @@
 #include "modules/webdatabase/DatabaseSync.h"
 
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/Logging.h"
 #include "modules/webdatabase/DatabaseBackendContext.h"
 #include "modules/webdatabase/DatabaseBackendSync.h"
@@ -43,6 +42,7 @@
 #include "modules/webdatabase/SQLException.h"
 #include "modules/webdatabase/SQLTransactionSync.h"
 #include "modules/webdatabase/SQLTransactionSyncCallback.h"
+#include "origin/SecurityOrigin.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/CString.h"

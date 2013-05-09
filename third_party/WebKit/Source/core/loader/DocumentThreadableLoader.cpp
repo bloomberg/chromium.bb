@@ -31,6 +31,8 @@
 #include "config.h"
 #include "core/loader/DocumentThreadableLoader.h"
 
+#include <wtf/Assertions.h>
+#include <wtf/UnusedParam.h>
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/CrossOriginAccessControl.h"
@@ -44,12 +46,10 @@
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/page/Frame.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "origin/SchemeRegistry.h"
-#include <wtf/Assertions.h>
-#include <wtf/UnusedParam.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

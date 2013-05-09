@@ -35,6 +35,11 @@
 #include "config.h"
 #include "core/loader/FrameLoader.h"
 
+#include <wtf/CurrentTime.h>
+#include <wtf/MemoryInstrumentationHashSet.h>
+#include <wtf/StdLibExtras.h>
+#include <wtf/text/CString.h>
+#include <wtf/text/WTFString.h>
 #include "HTMLNames.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
@@ -85,8 +90,6 @@
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
-#include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"
 #include "core/platform/Logging.h"
@@ -102,11 +105,8 @@
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "origin/SchemeRegistry.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
+#include "origin/SecurityOrigin.h"
+#include "origin/SecurityPolicy.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"

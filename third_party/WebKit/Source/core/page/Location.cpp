@@ -34,8 +34,8 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

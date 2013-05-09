@@ -25,9 +25,9 @@
 
 #include "config.h"
 #include <gtest/gtest.h>
+#include <wtf/Vector.h>
 #include "IDBFakeBackingStore.h"
 #include "core/dom/DOMStringList.h"
-#include "core/page/SecurityOrigin.h"
 #include "modules/indexeddb/IDBCallbacks.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
@@ -35,7 +35,7 @@
 #include "modules/indexeddb/IDBFactoryBackendImpl.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IndexedDB.h"
-#include <wtf/Vector.h>
+#include "origin/SecurityOrigin.h"
 
 using namespace WebCore;
 

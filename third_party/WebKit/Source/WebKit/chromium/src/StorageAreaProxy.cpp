@@ -36,16 +36,16 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageEvent.h"
+#include "origin/SecurityOrigin.h"
 
-#include "WebFrameImpl.h"
-#include "WebPermissionClient.h"
-#include "WebViewImpl.h"
 #include <public/WebStorageArea.h>
 #include <public/WebString.h>
 #include <public/WebURL.h>
+#include "WebFrameImpl.h"
+#include "WebPermissionClient.h"
+#include "WebViewImpl.h"
 
 namespace WebCore {
 

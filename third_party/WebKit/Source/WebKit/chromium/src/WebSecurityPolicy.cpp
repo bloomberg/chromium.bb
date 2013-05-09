@@ -31,12 +31,12 @@
 #include "config.h"
 #include "WebSecurityPolicy.h"
 
-#include "core/loader/FrameLoader.h"
-#include "core/page/SecurityOrigin.h"
-#include "core/page/SecurityPolicy.h"
-#include "origin/SchemeRegistry.h"
 #include <public/WebString.h>
 #include <public/WebURL.h>
+#include "core/loader/FrameLoader.h"
+#include "origin/SchemeRegistry.h"
+#include "origin/SecurityOrigin.h"
+#include "origin/SecurityPolicy.h"
 
 using namespace WebCore;
 

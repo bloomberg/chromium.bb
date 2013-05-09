@@ -23,6 +23,12 @@
 #include "config.h"
 #include "core/xml/XMLHttpRequest.h"
 
+#include <wtf/ArrayBuffer.h>
+#include <wtf/ArrayBufferView.h>
+#include <wtf/RefCountedLeakCounter.h>
+#include <wtf/StdLibExtras.h>
+#include <wtf/text/CString.h>
+#include <wtf/UnusedParam.h>
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
@@ -46,7 +52,6 @@
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/SharedBuffer.h"
@@ -57,12 +62,7 @@
 #include "core/platform/network/ResourceRequest.h"
 #include "core/xml/XMLHttpRequestProgressEvent.h"
 #include "core/xml/XMLHttpRequestUpload.h"
-#include <wtf/ArrayBuffer.h>
-#include <wtf/ArrayBufferView.h>
-#include <wtf/RefCountedLeakCounter.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/UnusedParam.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

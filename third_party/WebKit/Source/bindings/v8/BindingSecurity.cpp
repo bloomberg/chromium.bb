@@ -37,8 +37,8 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

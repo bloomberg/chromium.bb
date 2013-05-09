@@ -30,7 +30,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/InspectorDatabaseInstrumentation.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/Logging.h"
 #include "modules/webdatabase/AbstractDatabaseServer.h"
 #include "modules/webdatabase/Database.h"
@@ -43,6 +42,7 @@
 #include "modules/webdatabase/DatabaseServer.h"
 #include "modules/webdatabase/DatabaseSync.h"
 #include "modules/webdatabase/DatabaseTask.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

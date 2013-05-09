@@ -34,10 +34,10 @@
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedTextTrack.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/Logging.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceHandle.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
     

@@ -31,6 +31,8 @@
 #include "config.h"
 #include "core/inspector/InspectorAgent.h"
 
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefPtr.h>
 #include "InspectorFrontend.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptFunctionCall.h"
@@ -46,12 +48,10 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/network/ResourceRequest.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "origin/SecurityOrigin.h"
 
 using namespace std;
 

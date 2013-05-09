@@ -44,11 +44,11 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
 #include "modules/webdatabase/Database.h"
+#include "origin/SecurityOrigin.h"
 
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/Vector.h>

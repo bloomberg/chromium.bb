@@ -27,10 +27,10 @@
 
 #include "modules/indexeddb/IDBBackingStore.h"
 
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/SharedBuffer.h"
 #include "modules/indexeddb/IDBFactoryBackendImpl.h"
 #include "modules/indexeddb/IDBLevelDBCoding.h"
+#include "origin/SecurityOrigin.h"
 
 #include <gtest/gtest.h>
 #include <webkit/support/webkit_support.h>

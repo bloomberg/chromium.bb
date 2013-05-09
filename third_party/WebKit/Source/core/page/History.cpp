@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/page/History.h"
 
+#include <wtf/MainThread.h>
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -35,8 +36,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
-#include <wtf/MainThread.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

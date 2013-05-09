@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
 
+#include <wtf/text/StringBuilder.h>
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorValues.h"
@@ -36,9 +37,8 @@
 #include "core/page/Console.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/network/FormData.h"
-#include <wtf/text/StringBuilder.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

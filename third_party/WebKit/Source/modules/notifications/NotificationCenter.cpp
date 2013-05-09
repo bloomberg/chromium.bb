@@ -36,9 +36,9 @@
 #include "modules/notifications/NotificationCenter.h"
 
 #include "core/dom/Document.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/workers/WorkerContext.h"
 #include "modules/notifications/NotificationClient.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

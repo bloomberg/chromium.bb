@@ -47,13 +47,13 @@
 #include "core/page/DiagnosticLoggingKeys.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
-#include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/plugins/PluginData.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderView.h"
+#include "origin/SecurityOrigin.h"
+#include "origin/SecurityPolicy.h"
 
 namespace WebCore {
     

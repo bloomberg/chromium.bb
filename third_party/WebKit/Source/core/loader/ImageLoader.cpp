@@ -36,9 +36,9 @@
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/page/Frame.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderVideo.h"
+#include "origin/SecurityOrigin.h"
 
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGImage.h"

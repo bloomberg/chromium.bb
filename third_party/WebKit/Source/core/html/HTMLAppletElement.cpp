@@ -30,10 +30,10 @@
 #include "core/html/HTMLParamElement.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/platform/Widget.h"
 #include "core/rendering/RenderApplet.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

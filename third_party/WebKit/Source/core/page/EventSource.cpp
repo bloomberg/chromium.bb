@@ -33,6 +33,7 @@
 #include "config.h"
 #include "core/page/EventSource.h"
 
+#include <wtf/text/StringBuilder.h>
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
@@ -49,11 +50,10 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
-#include <wtf/text/StringBuilder.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

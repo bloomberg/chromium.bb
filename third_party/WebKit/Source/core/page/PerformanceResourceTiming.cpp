@@ -32,14 +32,14 @@
 #include "config.h"
 #include "core/page/PerformanceResourceTiming.h"
 
+#include <wtf/Vector.h>
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
-#include <wtf/Vector.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

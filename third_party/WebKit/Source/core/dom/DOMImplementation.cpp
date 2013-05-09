@@ -25,6 +25,7 @@
 #include "config.h"
 #include "core/dom/DOMImplementation.h"
 
+#include <wtf/StdLibExtras.h>
 #include "HTMLNames.h"
 #include "XMLNames.h"
 #include "core/css/CSSStyleSheet.h"
@@ -44,14 +45,13 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/platform/ContentType.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/plugins/PluginData.h"
-#include <wtf/StdLibExtras.h>
+#include "origin/SecurityOrigin.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"

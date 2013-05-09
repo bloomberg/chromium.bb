@@ -32,11 +32,11 @@
 #include "config.h"
 #include "core/platform/PrerenderHandle.h"
 
-#include "core/platform/KURL.h"
-#include "core/platform/ReferrerPolicy.h"
-#include "core/platform/chromium/Prerender.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
+#include "core/platform/KURL.h"
+#include "core/platform/chromium/Prerender.h"
+#include "origin/ReferrerPolicy.h"
 
 namespace WebCore {
 

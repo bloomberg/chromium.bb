@@ -100,7 +100,6 @@
 #include "core/page/UserStyleSheetTypes.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/FileMetadata.h"
-#include "core/platform/ReferrerPolicy.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/FontSmoothingMode.h"
 #include "core/platform/graphics/MediaPlayer.h"
@@ -125,6 +124,7 @@
 #include "modules/notifications/NotificationClient.h"
 #include "modules/quota/StorageQuota.h"
 #include "modules/speech/SpeechRecognitionError.h"
+#include "origin/ReferrerPolicy.h"
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, webcore_name) \
     COMPILE_ASSERT(int(WebKit::webkit_name) == int(WebCore::webcore_name), mismatching_enums)

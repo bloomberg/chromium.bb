@@ -27,6 +27,12 @@
 #include "config.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 
+#include <wtf/MemoryInstrumentationHashMap.h>
+#include <wtf/MemoryInstrumentationHashSet.h>
+#include <wtf/MemoryInstrumentationListHashSet.h>
+#include <wtf/text/CString.h>
+#include <wtf/text/WTFString.h>
+#include <wtf/UnusedParam.h>
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
@@ -50,16 +56,10 @@
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/Performance.h"
-#include "core/page/SecurityOrigin.h"
-#include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/platform/Logging.h"
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationListHashSet.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/UnusedParam.h>
+#include "origin/SecurityOrigin.h"
+#include "origin/SecurityPolicy.h"
 
 #include "core/loader/cache/CachedTextTrack.h"
 

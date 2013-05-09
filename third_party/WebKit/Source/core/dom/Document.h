@@ -45,7 +45,7 @@
 #include "core/page/FocusDirection.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/platform/PlatformScreen.h"
-#include "core/platform/ReferrerPolicy.h"
+#include "origin/ReferrerPolicy.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/IntRect.h"

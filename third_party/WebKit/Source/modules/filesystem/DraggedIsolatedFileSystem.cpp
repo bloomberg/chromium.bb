@@ -32,9 +32,9 @@
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
 
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/Supplementable.h"
 #include "modules/filesystem/DOMFileSystem.h"
+#include "origin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {

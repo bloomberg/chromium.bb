@@ -40,7 +40,7 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/SecurityOrigin.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

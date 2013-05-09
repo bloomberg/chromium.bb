@@ -33,7 +33,6 @@
 
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/File.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/AsyncFileSystem.h"
 #include "core/platform/FileMetadata.h"
 #include "modules/filesystem/DOMFilePath.h"
@@ -46,6 +45,7 @@
 #include "modules/filesystem/FileWriterBaseCallback.h"
 #include "modules/filesystem/FileWriterCallback.h"
 #include "modules/filesystem/MetadataCallback.h"
+#include "origin/SecurityOrigin.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"

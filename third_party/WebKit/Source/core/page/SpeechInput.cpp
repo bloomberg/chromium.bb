@@ -33,10 +33,10 @@
 
 #if ENABLE(INPUT_SPEECH)
 
-#include "core/page/SecurityOrigin.h"
+#include <wtf/PassOwnPtr.h>
 #include "core/page/SpeechInputClient.h"
 #include "core/page/SpeechInputListener.h"
-#include <wtf/PassOwnPtr.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

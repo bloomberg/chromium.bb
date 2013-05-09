@@ -32,20 +32,20 @@
 
 #include "WebUserMediaRequest.h"
 
-#include "WebDocument.h"
-#include "WebSecurityOrigin.h"
-#include "core/dom/Document.h"
-#include "core/page/SecurityOrigin.h"
-#include "core/platform/mediastream/MediaConstraints.h"
-#include "core/platform/mediastream/MediaStreamDescriptor.h"
-#include "core/platform/mediastream/MediaStreamSource.h"
-#include "modules/mediastream/UserMediaRequest.h"
 #include <public/WebMediaConstraints.h>
 #include <public/WebMediaStream.h>
 #include <public/WebMediaStreamSource.h>
 #include <public/WebString.h>
 #include <public/WebVector.h>
 #include <wtf/Vector.h>
+#include "WebDocument.h"
+#include "WebSecurityOrigin.h"
+#include "core/dom/Document.h"
+#include "core/platform/mediastream/MediaConstraints.h"
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
+#include "core/platform/mediastream/MediaStreamSource.h"
+#include "modules/mediastream/UserMediaRequest.h"
+#include "origin/SecurityOrigin.h"
 
 using namespace WebCore;
 

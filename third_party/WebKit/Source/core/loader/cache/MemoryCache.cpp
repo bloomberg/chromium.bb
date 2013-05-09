@@ -24,6 +24,13 @@
 #include "core/loader/cache/MemoryCache.h"
 
 #include <stdio.h>
+#include <wtf/CurrentTime.h>
+#include <wtf/MathExtras.h>
+#include <wtf/MemoryInstrumentationHashMap.h>
+#include <wtf/MemoryInstrumentationVector.h>
+#include <wtf/MemoryObjectInfo.h>
+#include <wtf/TemporaryChange.h>
+#include <wtf/text/CString.h>
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
@@ -32,21 +39,14 @@
 #include "core/loader/cache/CachedResource.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/page/FrameView.h"
-#include "core/page/SecurityOrigin.h"
-#include "core/page/SecurityOriginHash.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/MathExtras.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/MemoryObjectInfo.h>
-#include <wtf/TemporaryChange.h>
-#include <wtf/text/CString.h>
+#include "origin/SecurityOrigin.h"
+#include "origin/SecurityOriginHash.h"
 
 using namespace std;
 

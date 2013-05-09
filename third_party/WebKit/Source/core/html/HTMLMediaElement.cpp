@@ -26,6 +26,12 @@
 #include "config.h"
 #include "core/html/HTMLMediaElement.h"
 
+#include <wtf/CurrentTime.h>
+#include <wtf/MathExtras.h>
+#include <wtf/MemoryInstrumentationVector.h>
+#include <wtf/NonCopyingSort.h>
+#include <wtf/text/CString.h>
+#include <wtf/Uint8Array.h>
 #include <limits>
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
@@ -69,8 +75,6 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "core/page/SecurityOrigin.h"
-#include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/platform/ContentType.h"
 #include "core/platform/Language.h"
@@ -81,22 +85,18 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
-#include "modules/mediastream/MediaStreamRegistry.h"
 #include "modules/mediasource/MediaSource.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/MathExtras.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/NonCopyingSort.h>
-#include <wtf/text/CString.h>
-#include <wtf/Uint8Array.h>
+#include "modules/mediastream/MediaStreamRegistry.h"
+#include "origin/SecurityOrigin.h"
+#include "origin/SecurityPolicy.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/html/HTMLTrackElement.h"
 #include "core/html/track/InbandTextTrack.h"
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/TextTrackList.h"
 #include "core/page/CaptionUserPreferences.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 
 #if ENABLE(WEB_AUDIO)

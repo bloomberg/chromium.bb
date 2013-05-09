@@ -28,6 +28,16 @@
 #include "config.h"
 #include "core/dom/Document.h"
 
+#include <wtf/CurrentTime.h>
+#include <wtf/HashFunctions.h>
+#include <wtf/MainThread.h>
+#include <wtf/MemoryInstrumentationHashCountedSet.h>
+#include <wtf/MemoryInstrumentationHashMap.h>
+#include <wtf/MemoryInstrumentationHashSet.h>
+#include <wtf/MemoryInstrumentationVector.h>
+#include <wtf/PassRefPtr.h>
+#include <wtf/StdLibExtras.h>
+#include <wtf/text/StringBuffer.h>
 #include "CSSValueKeywords.h"
 #include "HTMLElementFactory.h"
 #include "HTMLNames.h"
@@ -149,8 +159,6 @@
 #include "core/page/PageConsole.h"
 #include "core/page/PageGroup.h"
 #include "core/page/PointerLockController.h"
-#include "core/page/SecurityOrigin.h"
-#include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/page/UserContentURLPattern.h"
 #include "core/page/animation/AnimationController.h"
@@ -186,16 +194,8 @@
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "origin/SchemeRegistry.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/HashFunctions.h>
-#include <wtf/MainThread.h>
-#include <wtf/MemoryInstrumentationHashCountedSet.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/StringBuffer.h>
+#include "origin/SecurityOrigin.h"
+#include "origin/SecurityPolicy.h"
 
 #if ENABLE(SVG)
 #include "SVGElementFactory.h"

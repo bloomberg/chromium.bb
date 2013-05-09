@@ -29,7 +29,7 @@
 
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/GroupSettings.h"
-#include "core/page/SecurityOrigin.h"
+#include "origin/SecurityOrigin.h"
 #include "core/workers/WorkerRunLoop.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>

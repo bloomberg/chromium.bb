@@ -36,7 +36,6 @@
 #include "core/page/GroupSettings.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
@@ -50,6 +49,7 @@
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "modules/indexeddb/IDBTracing.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

@@ -31,6 +31,12 @@
 #include "config.h"
 #include "bindings/v8/V8DOMWindowShell.h"
 
+#include <v8-debug.h>
+#include <v8-i18n/include/extension.h>
+#include <v8.h>
+#include <algorithm>
+#include <utility>
+#include "RuntimeEnabledFeatures.h"
 #include "V8DOMWindow.h"
 #include "V8Document.h"
 #include "V8HTMLCollection.h"
@@ -53,14 +59,8 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "RuntimeEnabledFeatures.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/HistogramSupport.h"
-#include <algorithm>
-#include <utility>
-#include <v8-debug.h>
-#include <v8-i18n/include/extension.h>
-#include <v8.h>
+#include "origin/SecurityOrigin.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnArrayPtr.h"
 #include "wtf/StringExtras.h"

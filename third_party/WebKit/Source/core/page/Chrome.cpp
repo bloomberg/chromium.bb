@@ -22,6 +22,11 @@
 #include "config.h"
 #include "core/page/Chrome.h"
 
+#include <public/WebScreenInfo.h>
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefPtr.h>
+#include <wtf/text/StringBuilder.h>
+#include <wtf/Vector.h>
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/fileapi/FileList.h"
@@ -34,7 +39,6 @@
 #include "core/page/Page.h"
 #include "core/page/PageGroupLoadDeferrer.h"
 #include "core/page/PopupOpeningObserver.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"
 #include "core/platform/DateTimeChooser.h"
@@ -48,11 +52,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/storage/StorageNamespace.h"
 #include "modules/geolocation/Geolocation.h"
-#include <public/WebScreenInfo.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/Vector.h>
+#include "origin/SecurityOrigin.h"
 
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "core/platform/ColorChooser.h"

@@ -32,10 +32,10 @@
 #include "core/fileapi/ThreadableBlobRegistry.h"
 
 #include "core/fileapi/BlobURL.h"
-#include "core/page/SecurityOrigin.h"
-#include "core/page/SecurityOriginCache.h"
 #include "core/platform/network/BlobData.h"
 #include "core/platform/network/BlobRegistry.h"
+#include "origin/SecurityOrigin.h"
+#include "origin/SecurityOriginCache.h"
 #include "wtf/HashMap.h"
 #include "wtf/MainThread.h"
 #include "wtf/RefPtr.h"

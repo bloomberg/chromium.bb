@@ -31,7 +31,6 @@
 #include "modules/webdatabase/DatabaseBackendBase.h"
 
 #include "core/dom/ExceptionCode.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/Logging.h"
 #include "core/platform/sql/SQLiteStatement.h"
 #include "core/platform/sql/SQLiteTransaction.h"
@@ -41,6 +40,7 @@
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTracker.h"
+#include "origin/SecurityOrigin.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"

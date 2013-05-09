@@ -34,7 +34,7 @@
 #include "WebDocument.h"
 #include "WebPermissionClient.h"
 #include "core/dom/Document.h"
-#include "core/page/SecurityOrigin.h"
+#include "origin/SecurityOrigin.h"
 
 using namespace WebCore;
 

@@ -42,9 +42,9 @@
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/platform/text/SegmentedString.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

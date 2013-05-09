@@ -21,6 +21,9 @@
 #include "config.h"
 #include "core/css/StyleSheetContents.h"
 
+#include <wtf/Deque.h>
+#include <wtf/MemoryInstrumentationHashMap.h>
+#include <wtf/MemoryInstrumentationVector.h>
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSStyleSheet.h"
@@ -32,10 +35,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
-#include "core/page/SecurityOrigin.h"
-#include <wtf/Deque.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationVector.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

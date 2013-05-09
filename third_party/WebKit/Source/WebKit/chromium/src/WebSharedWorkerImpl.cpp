@@ -31,6 +31,11 @@
 #include "config.h"
 #include "WebSharedWorkerImpl.h"
 
+#include <public/WebFileError.h>
+#include <public/WebMessagePortChannel.h>
+#include <public/WebString.h>
+#include <public/WebURL.h>
+#include <wtf/MainThread.h>
 #include "WebDataSourceImpl.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
@@ -51,7 +56,6 @@
 #include "core/page/GroupSettings.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 #include "core/workers/SharedWorkerContext.h"
 #include "core/workers/SharedWorkerThread.h"
@@ -59,11 +63,7 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/webdatabase/DatabaseTask.h"
-#include <public/WebFileError.h>
-#include <public/WebMessagePortChannel.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
-#include <wtf/MainThread.h>
+#include "origin/SecurityOrigin.h"
 
 using namespace WebCore;
 

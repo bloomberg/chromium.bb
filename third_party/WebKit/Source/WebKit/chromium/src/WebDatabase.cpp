@@ -31,14 +31,14 @@
 #include "config.h"
 #include "WebDatabase.h"
 
-#include "WebDatabaseObserver.h"
-#include "core/page/SecurityOrigin.h"
-#include "modules/webdatabase/DatabaseBackendBase.h"
-#include "modules/webdatabase/DatabaseManager.h"
-#include "modules/webdatabase/chromium/QuotaTracker.h"
 #include <public/WebString.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
+#include "WebDatabaseObserver.h"
+#include "modules/webdatabase/DatabaseBackendBase.h"
+#include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webdatabase/chromium/QuotaTracker.h"
+#include "origin/SecurityOrigin.h"
 
 using namespace WebCore;
 

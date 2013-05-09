@@ -33,13 +33,13 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/AsyncFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/MetadataCallback.h"
+#include "origin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

@@ -31,6 +31,8 @@
 #include "config.h"
 #include "WebDocument.h"
 
+#include <public/WebURL.h>
+#include <wtf/PassRefPtr.h>
 #include "WebAccessibilityObject.h"
 #include "WebDOMEvent.h"
 #include "WebDocumentType.h"
@@ -54,10 +56,8 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/rendering/RenderObject.h"
-#include <public/WebURL.h>
-#include <wtf/PassRefPtr.h>
+#include "origin/SecurityOrigin.h"
 
 using namespace WebCore;
 

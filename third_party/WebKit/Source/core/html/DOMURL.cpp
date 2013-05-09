@@ -28,6 +28,8 @@
 
 #include "core/html/DOMURL.h"
 
+#include <wtf/MainThread.h>
+#include <wtf/PassOwnPtr.h>
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/Blob.h"
@@ -35,15 +37,13 @@
 #include "core/fileapi/ThreadableBlobRegistry.h"
 #include "core/html/PublicURLManager.h"
 #include "core/loader/cache/MemoryCache.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "modules/mediasource/MediaSource.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
-#include <wtf/MainThread.h>
-#include <wtf/PassOwnPtr.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

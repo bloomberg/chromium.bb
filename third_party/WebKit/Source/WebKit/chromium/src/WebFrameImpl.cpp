@@ -71,6 +71,18 @@
 #include "config.h"
 #include "WebFrameImpl.h"
 
+#include <public/Platform.h>
+#include <public/WebFileSystem.h>
+#include <public/WebFileSystemType.h>
+#include <public/WebFloatPoint.h>
+#include <public/WebFloatRect.h>
+#include <public/WebPoint.h>
+#include <public/WebRect.h>
+#include <public/WebSize.h>
+#include <public/WebURLError.h>
+#include <public/WebVector.h>
+#include <wtf/CurrentTime.h>
+#include <wtf/HashMap.h>
 #include <algorithm>
 #include "AssociatedURLLoader.h"
 #include "AsyncFileSystemChromium.h"
@@ -152,7 +164,6 @@
 #include "core/page/Page.h"
 #include "core/page/Performance.h"
 #include "core/page/PrintContext.h"
-#include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/platform/AsyncFileSystem.h"
 #include "core/platform/KURL.h"
@@ -179,18 +190,7 @@
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemType.h"
 #include "origin/SchemeRegistry.h"
-#include <public/Platform.h>
-#include <public/WebFileSystem.h>
-#include <public/WebFileSystemType.h>
-#include <public/WebFloatPoint.h>
-#include <public/WebFloatRect.h>
-#include <public/WebPoint.h>
-#include <public/WebRect.h>
-#include <public/WebSize.h>
-#include <public/WebURLError.h>
-#include <public/WebVector.h>
-#include <wtf/CurrentTime.h>
-#include <wtf/HashMap.h>
+#include "origin/SecurityPolicy.h"
 
 using namespace WebCore;
 

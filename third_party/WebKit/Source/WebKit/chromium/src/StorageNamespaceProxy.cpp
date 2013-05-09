@@ -26,6 +26,9 @@
 #include "config.h"
 #include "StorageNamespaceProxy.h"
 
+#include <public/Platform.h>
+#include <public/WebStorageNamespace.h>
+#include <public/WebString.h>
 #include "ChromeClientImpl.h"
 #include "StorageAreaProxy.h"
 #include "WebKit.h"
@@ -33,10 +36,7 @@
 #include "WebViewImpl.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
-#include <public/Platform.h>
-#include <public/WebStorageNamespace.h>
-#include <public/WebString.h>
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

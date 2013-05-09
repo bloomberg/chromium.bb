@@ -27,12 +27,12 @@
  */
 
 #include "config.h"
-#include "core/page/SecurityOrigin.h"
+#include "origin/SecurityOrigin.h"
 
-#include "core/page/SecurityOriginCache.h"
-#include "core/page/SecurityPolicy.h"
 #include "origin/KURL.h"
 #include "origin/SchemeRegistry.h"
+#include "origin/SecurityOriginCache.h"
+#include "origin/SecurityPolicy.h"
 #include "wtf/HexNumber.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
@@ -401,7 +401,7 @@ bool SecurityOrigin::canReceiveDragData(const SecurityOrigin* dragInitiator) con
     if (this == dragInitiator)
         return true;
 
-    return canAccess(dragInitiator);  
+    return canAccess(dragInitiator);
 }
 
 // This is a hack to allow keep navigation to http/https feeds working. To remove this
@@ -418,7 +418,7 @@ static bool isFeedWithNestedProtocolInHTTPFamily(const KURL& url)
     if (!urlString.startsWith("feed", false))
         return false;
 
-    return urlString.startsWith("feed://", false) 
+    return urlString.startsWith("feed://", false)
         || urlString.startsWith("feed:http:", false) || urlString.startsWith("feed:https:", false)
         || urlString.startsWith("feeds:http:", false) || urlString.startsWith("feeds:https:", false)
         || urlString.startsWith("feedsearch:http:", false) || urlString.startsWith("feedsearch:https:", false);
@@ -535,36 +535,36 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::createFromString(const String& origin
 static const char SeparatorCharacter = '_';
 
 PassRefPtr<SecurityOrigin> SecurityOrigin::createFromDatabaseIdentifier(const String& databaseIdentifier)
-{ 
+{
     // Make sure there's a first separator
     size_t separator1 = databaseIdentifier.find(SeparatorCharacter);
     if (separator1 == notFound)
         return create(KURL());
-        
+
     // Make sure there's a second separator
     size_t separator2 = databaseIdentifier.reverseFind(SeparatorCharacter);
     if (separator2 == notFound)
         return create(KURL());
-        
+
     // Ensure there were at least 2 separator characters. Some hostnames on intranets have
     // underscores in them, so we'll assume that any additional underscores are part of the host.
     if (separator1 == separator2)
         return create(KURL());
-        
+
     // Make sure the port section is a valid port number or doesn't exist
     bool portOkay;
     int port = databaseIdentifier.right(databaseIdentifier.length() - separator2 - 1).toInt(&portOkay);
     bool portAbsent = (separator2 == databaseIdentifier.length() - 1);
     if (!(portOkay || portAbsent))
         return create(KURL());
-    
+
     if (port < 0 || port > MaxAllowedPort)
         return create(KURL());
-        
+
     // Split out the 3 sections of data
     String protocol = databaseIdentifier.substring(0, separator1);
     String host = databaseIdentifier.substring(separator1 + 1, separator2 - separator1 - 1);
-    
+
     host = decodeURLEscapeSequences(host);
     return create(KURL(KURL(), protocol + "://" + host + ":" + String::number(port) + "/"));
 }
@@ -577,7 +577,7 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::create(const String& protocol, const 
     return create(KURL(KURL(), protocol + "://" + host + ":" + String::number(port) + "/"));
 }
 
-String SecurityOrigin::databaseIdentifier() const 
+String SecurityOrigin::databaseIdentifier() const
 {
     // Historically, we've used the following (somewhat non-sensical) string
     // for the databaseIdentifier of local files. We used to compute this
@@ -592,14 +592,14 @@ String SecurityOrigin::databaseIdentifier() const
     if (m_encodedHost.isEmpty())
         m_encodedHost = encodeForFileName(m_host);
 
-    return m_protocol + separatorString + m_encodedHost + separatorString + String::number(m_port); 
+    return m_protocol + separatorString + m_encodedHost + separatorString + String::number(m_port);
 }
 
-bool SecurityOrigin::equal(const SecurityOrigin* other) const 
+bool SecurityOrigin::equal(const SecurityOrigin* other) const
 {
     if (other == this)
         return true;
-    
+
     if (!isSameSchemeHostPort(other))
         return false;
 
@@ -612,7 +612,7 @@ bool SecurityOrigin::equal(const SecurityOrigin* other) const
     return true;
 }
 
-bool SecurityOrigin::isSameSchemeHostPort(const SecurityOrigin* other) const 
+bool SecurityOrigin::isSameSchemeHostPort(const SecurityOrigin* other) const
 {
     if (m_host != other->m_host)
         return false;

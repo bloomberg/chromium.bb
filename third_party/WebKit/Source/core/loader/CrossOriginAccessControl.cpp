@@ -27,13 +27,13 @@
 #include "config.h"
 #include "core/loader/CrossOriginAccessControl.h"
 
-#include "core/page/SecurityOrigin.h"
-#include "core/platform/network/HTTPParsers.h"
-#include "core/platform/network/ResourceRequest.h"
-#include "core/platform/network/ResourceResponse.h"
 #include <wtf/text/AtomicString.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/Threading.h>
+#include "core/platform/network/HTTPParsers.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 

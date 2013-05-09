@@ -24,6 +24,10 @@
 #include "config.h"
 #include "core/dom/ScriptElement.h"
 
+#include <wtf/StdLibExtras.h>
+#include <wtf/text/StringBuilder.h>
+#include <wtf/text/StringHash.h>
+#include <wtf/text/TextPosition.h>
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
@@ -46,13 +50,9 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/TextPosition.h>
+#include "origin/SecurityOrigin.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"

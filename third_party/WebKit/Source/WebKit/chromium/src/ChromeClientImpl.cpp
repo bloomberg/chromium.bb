@@ -61,7 +61,6 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupDriver.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/DateTimeChooser.h"
@@ -78,9 +77,17 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderWidget.h"
 #include "modules/geolocation/Geolocation.h"
+#include "origin/SecurityOrigin.h"
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "WebColorChooser.h"
 #endif
+#include <public/Platform.h>
+#include <public/WebRect.h>
+#include <public/WebURLRequest.h>
+#include <wtf/text/CString.h>
+#include <wtf/text/StringBuilder.h>
+#include <wtf/text/StringConcatenate.h>
+#include <wtf/unicode/CharacterNames.h>
 #include "WebConsoleMessage.h"
 #include "WebCursorInfo.h"
 #include "WebFileChooserCompletionImpl.h"
@@ -103,13 +110,6 @@
 #include "WebWindowFeatures.h"
 #include "core/page/WindowFeatures.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
-#include <public/Platform.h>
-#include <public/WebRect.h>
-#include <public/WebURLRequest.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/StringConcatenate.h>
-#include <wtf/unicode/CharacterNames.h>
 
 using namespace WebCore;
 

@@ -46,12 +46,12 @@
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBDatabaseError.h"
+#include "origin/SecurityOrigin.h"
 
 
 using namespace WebCore;

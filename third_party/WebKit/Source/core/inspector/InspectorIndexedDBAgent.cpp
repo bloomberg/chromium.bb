@@ -47,7 +47,6 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
-#include "core/page/SecurityOrigin.h"
 #include "modules/indexeddb/DOMWindowIndexedDatabase.h"
 #include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
@@ -64,6 +63,7 @@
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTransaction.h"
+#include "origin/SecurityOrigin.h"
 
 #include <wtf/Vector.h>
 

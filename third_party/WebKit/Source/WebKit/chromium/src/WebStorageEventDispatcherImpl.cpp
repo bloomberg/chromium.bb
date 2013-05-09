@@ -31,12 +31,12 @@
 #include "config.h"
 #include "WebStorageEventDispatcher.h"
 
-#include "StorageAreaProxy.h"
-#include "WebViewImpl.h"
-#include "core/page/SecurityOrigin.h"
-#include "core/platform/KURL.h"
 #include <public/WebURL.h>
 #include <wtf/PassOwnPtr.h>
+#include "StorageAreaProxy.h"
+#include "WebViewImpl.h"
+#include "core/platform/KURL.h"
+#include "origin/SecurityOrigin.h"
 
 namespace WebKit {
 

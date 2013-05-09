@@ -31,6 +31,9 @@
 #include "config.h"
 #include "WebDevToolsFrontendImpl.h"
 
+#include <wtf/OwnPtr.h>
+#include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 #include "InspectorFrontendClientImpl.h"
 #include "V8InspectorFrontendHost.h"
 #include "V8MouseEvent.h"
@@ -52,13 +55,10 @@
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/platform/ContextMenuItem.h"
 #include "core/platform/Pasteboard.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "origin/SecurityOrigin.h"
 
 using namespace WebCore;
 
