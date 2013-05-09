@@ -215,8 +215,8 @@ static bool compareResolution(float min, float max, float value, MediaFeaturePre
 static bool numberValue(CSSValue* value, float& result)
 {
     if (value->isPrimitiveValue()
-        && static_cast<CSSPrimitiveValue*>(value)->isNumber()) {
-        result = static_cast<CSSPrimitiveValue*>(value)->getFloatValue(CSSPrimitiveValue::CSS_NUMBER);
+        && toCSSPrimitiveValue(value)->isNumber()) {
+        result = toCSSPrimitiveValue(value)->getFloatValue(CSSPrimitiveValue::CSS_NUMBER);
         return true;
     }
     return false;
@@ -256,7 +256,7 @@ static bool orientationMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* fr
     int width = viewportSize(view).width();
     int height = viewportSize(view).height();
     if (value && value->isPrimitiveValue()) {
-        const int id = static_cast<CSSPrimitiveValue*>(value)->getIdent();
+        const int id = toCSSPrimitiveValue(value)->getIdent();
         if (width > height) // Square viewport is portrait.
             return CSSValueLandscape == id;
         return CSSValuePortrait == id;
@@ -312,7 +312,7 @@ static bool device_pixel_ratioMediaFeatureEval(CSSValue *value, RenderStyle*, Fr
     if (!value)
         return !!deviceScaleFactor;
 
-    return value->isPrimitiveValue() && compareValue(deviceScaleFactor, static_cast<CSSPrimitiveValue*>(value)->getFloatValue(), op);
+    return value->isPrimitiveValue() && compareValue(deviceScaleFactor, toCSSPrimitiveValue(value)->getFloatValue(), op);
 }
 
 static bool resolutionMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)
@@ -379,7 +379,7 @@ static bool resolutionMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* fra
     // integer. Also, http://dev.w3.org/csswg/css3-values/#numeric-types says
     // "CSS theoretically supports infinite precision and infinite ranges for
     // all value types;
-    CSSPrimitiveValue* rawValue = static_cast<CSSPrimitiveValue*>(value);
+    CSSPrimitiveValue* rawValue = toCSSPrimitiveValue(value);
 
     if (rawValue->isDotsPerPixel()) {
         // http://dev.w3.org/csswg/css3-values/#absolute-lengths recommends
@@ -431,7 +431,7 @@ static bool computeLength(CSSValue* value, bool strict, RenderStyle* style, Rend
     if (!value->isPrimitiveValue())
         return false;
 
-    CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
     if (primitiveValue->isNumber()) {
         result = primitiveValue->getIntValue();
@@ -662,7 +662,7 @@ static bool view_modeMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* fram
     if (!value)
         return true;
 
-    return static_cast<CSSPrimitiveValue*>(value)->getIdent() == CSSValueWindowed;
+    return toCSSPrimitiveValue(value)->getIdent() == CSSValueWindowed;
 }
 
 enum PointerDeviceType { TouchPointer, MousePointer, NoPointer, UnknownPointer };
@@ -719,7 +719,7 @@ static bool pointerMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame,
     if (!value->isPrimitiveValue())
         return false;
 
-    const int id = static_cast<CSSPrimitiveValue*>(value)->getIdent();
+    const int id = toCSSPrimitiveValue(value)->getIdent();
     return (pointer == NoPointer && id == CSSValueNone)
         || (pointer == TouchPointer && id == CSSValueCoarse)
         || (pointer == MousePointer && id == CSSValueFine);

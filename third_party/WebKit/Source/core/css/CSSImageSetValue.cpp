@@ -60,14 +60,12 @@ void CSSImageSetValue::fillImageSet()
     size_t i = 0;
     while (i < length) {
         CSSValue* imageValue = item(i);
-        ASSERT_WITH_SECURITY_IMPLICATION(imageValue->isImageValue());
-        String imageURL = static_cast<CSSImageValue*>(imageValue)->url();
+        String imageURL = toCSSImageValue(imageValue)->url();
 
         ++i;
         ASSERT_WITH_SECURITY_IMPLICATION(i < length);
         CSSValue* scaleFactorValue = item(i);
-        ASSERT_WITH_SECURITY_IMPLICATION(scaleFactorValue->isPrimitiveValue());
-        float scaleFactor = static_cast<CSSPrimitiveValue*>(scaleFactorValue)->getFloatValue();
+        float scaleFactor = toCSSPrimitiveValue(scaleFactorValue)->getFloatValue();
 
         ImageWithScale image;
         image.imageURL = imageURL;

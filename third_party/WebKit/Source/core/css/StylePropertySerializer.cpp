@@ -547,7 +547,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
         values[i] = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
         if (values[i]) {
             if (values[i]->isBaseValueList()) {
-                CSSValueList* valueList = static_cast<CSSValueList*>(values[i].get());
+                CSSValueList* valueList = toCSSValueList(values[i].get());
                 numLayers = max(valueList->length(), numLayers);
             } else
                 numLayers = max<size_t>(1U, numLayers);
@@ -569,7 +569,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
             RefPtr<CSSValue> value;
             if (values[j]) {
                 if (values[j]->isBaseValueList())
-                    value = static_cast<CSSValueList*>(values[j].get())->item(i);
+                    value = toCSSValueList(values[j].get())->item(i);
                 else {
                     value = values[j];
 
@@ -594,12 +594,12 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
                     RefPtr<CSSValue> yValue;
                     RefPtr<CSSValue> nextValue = values[j + 1];
                     if (nextValue->isValueList())
-                        yValue = static_cast<CSSValueList*>(nextValue.get())->itemWithoutBoundsCheck(i);
+                        yValue = toCSSValueList(nextValue.get())->itemWithoutBoundsCheck(i);
                     else
                         yValue = nextValue;
 
-                    int xId = static_cast<CSSPrimitiveValue*>(value.get())->getIdent();
-                    int yId = static_cast<CSSPrimitiveValue*>(yValue.get())->getIdent();
+                    int xId = toCSSPrimitiveValue(value.get())->getIdent();
+                    int yId = toCSSPrimitiveValue(yValue.get())->getIdent();
                     if (xId != yId) {
                         if (xId == CSSValueRepeat && yId == CSSValueNoRepeat) {
                             useRepeatXShorthand = true;

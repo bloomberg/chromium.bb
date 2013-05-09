@@ -2264,7 +2264,7 @@ static bool createGridTrackSize(CSSValue* value, GridTrackSize& trackSize, const
     if (!value->isPrimitiveValue())
         return false;
 
-    CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     Pair* minMaxTrackBreadth = primitiveValue->getPairValue();
     if (!minMaxTrackBreadth) {
         GridLength workingLength;
@@ -2288,7 +2288,7 @@ static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSiz
 {
     // Handle 'none'.
     if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         return primitiveValue->getIdent() == CSSValueNone;
     }
 
@@ -2299,7 +2299,7 @@ static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSiz
     for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
         CSSValue* currValue = i.value();
         if (currValue->isPrimitiveValue()) {
-            CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(currValue);
+            CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(currValue);
             if (primitiveValue->isString()) {
                 NamedGridLinesMap::AddResult result = namedGridLines.add(primitiveValue->getStringValue(), Vector<size_t>());
                 result.iterator->value.append(currentNamedGridLine);
@@ -2326,7 +2326,7 @@ static bool createGridPosition(CSSValue* value, GridPosition& position)
 {
     // For now, we only accept: 'auto' | <integer> | span && <integer>?
     if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         if (primitiveValue->getIdent() == CSSValueAuto)
             return true;
 
@@ -2341,11 +2341,9 @@ static bool createGridPosition(CSSValue* value, GridPosition& position)
         return true;
     }
 
-    ASSERT_WITH_SECURITY_IMPLICATION(value->isValueList());
-    CSSValueList* values = static_cast<CSSValueList*>(value);
+    CSSValueList* values = toCSSValueList(value);
     ASSERT(values->length() == 2);
-    ASSERT_WITH_SECURITY_IMPLICATION(values->itemWithoutBoundsCheck(1)->isPrimitiveValue());
-    CSSPrimitiveValue* numericValue = static_cast<CSSPrimitiveValue*>(values->itemWithoutBoundsCheck(1));
+    CSSPrimitiveValue* numericValue = toCSSPrimitiveValue(values->itemWithoutBoundsCheck(1));
     ASSERT(numericValue->isNumber());
     position.setSpanPosition(numericValue->getIntValue());
     return true;
@@ -2354,7 +2352,7 @@ static bool createGridPosition(CSSValue* value, GridPosition& position)
 static bool hasVariableReference(CSSValue* value)
 {
     if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         return primitiveValue->hasVariableReference();
     }
 
@@ -2447,7 +2445,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         return;
     }
 
-    CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? static_cast<CSSPrimitiveValue*>(value) : 0;
+    CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value) : 0;
 
     float zoomFactor = state.style()->effectiveZoom();
 
@@ -2484,7 +2482,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
                 }
 
                 if (item->isImageValue()) {
-                    state.style()->setContent(cachedOrPendingFromValue(CSSPropertyContent, static_cast<CSSImageValue*>(item)), didSet);
+                    state.style()->setContent(cachedOrPendingFromValue(CSSPropertyContent, toCSSImageValue(item)), didSet);
                     didSet = true;
                     continue;
                 }
@@ -2492,7 +2490,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
                 if (!item->isPrimitiveValue())
                     continue;
 
-                CSSPrimitiveValue* contentValue = static_cast<CSSPrimitiveValue*>(item);
+                CSSPrimitiveValue* contentValue = toCSSPrimitiveValue(item);
 
                 if (contentValue->isString()) {
                     state.style()->setContent(contentValue->getStringValue().impl(), didSet);
@@ -2556,7 +2554,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             return;
         }
         if (value->isValueList()) {
-            CSSValueList* list = static_cast<CSSValueList*>(value);
+            CSSValueList* list = toCSSValueList(value);
             RefPtr<QuotesData> quotes = QuotesData::create();
             for (size_t i = 0; i < list->length(); i += 2) {
                 CSSValue* first = list->itemWithoutBoundsCheck(i);
@@ -2564,10 +2562,8 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
                 CSSValue* second = list->item(i + 1);
                 if (!second)
                     continue;
-                ASSERT_WITH_SECURITY_IMPLICATION(first->isPrimitiveValue());
-                ASSERT_WITH_SECURITY_IMPLICATION(second->isPrimitiveValue());
-                String startQuote = static_cast<CSSPrimitiveValue*>(first)->getStringValue();
-                String endQuote = static_cast<CSSPrimitiveValue*>(second)->getStringValue();
+                String startQuote = toCSSPrimitiveValue(first)->getStringValue();
+                String endQuote = toCSSPrimitiveValue(second)->getStringValue();
                 quotes->addPair(std::make_pair(startQuote, endQuote));
             }
             state.style()->setQuotes(quotes);
@@ -2943,7 +2939,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             return;
 
         FontDescription fontDescription = state.style()->fontDescription();
-        CSSValueList* list = static_cast<CSSValueList*>(value);
+        CSSValueList* list = toCSSValueList(value);
         RefPtr<FontFeatureSettings> settings = FontFeatureSettings::create();
         int len = list->length();
         for (int i = 0; i < len; ++i) {
@@ -3298,7 +3294,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
 PassRefPtr<StyleImage> StyleResolver::styleImage(CSSPropertyID property, CSSValue* value)
 {
     if (value->isImageValue())
-        return cachedOrPendingFromValue(property, static_cast<CSSImageValue*>(value));
+        return cachedOrPendingFromValue(property, toCSSImageValue(value));
 
     if (value->isImageGeneratorValue()) {
         if (value->isGradientValue())

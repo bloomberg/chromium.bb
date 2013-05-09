@@ -119,7 +119,7 @@ static PassRefPtr<CustomFilterParameter> parseCustomFilterArrayParameter(const S
         CSSValue* value = values->itemWithoutBoundsCheck(i);
         if (!value->isPrimitiveValue())
             return 0;
-        CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         if (primitiveValue->primitiveType() != CSSPrimitiveValue::CSS_NUMBER)
             return 0;
         arrayParameter->addValue(primitiveValue->getDoubleValue());
@@ -134,7 +134,7 @@ static PassRefPtr<CustomFilterParameter> parseCustomFilterNumberParameter(const 
         CSSValue* value = values->itemWithoutBoundsCheck(i);
         if (!value->isPrimitiveValue())
             return 0;
-        CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         if (primitiveValue->primitiveType() != CSSPrimitiveValue::CSS_NUMBER)
             return 0;
         numberParameter->addValue(primitiveValue->getDoubleValue());
@@ -162,7 +162,7 @@ static PassRefPtr<CustomFilterParameter> parseCustomFilterParameter(const String
     if (!parameterValue->isValueList())
         return 0;
 
-    CSSValueList* values = static_cast<CSSValueList*>(parameterValue);
+    CSSValueList* values = toCSSValueList(parameterValue);
     if (!values->length())
         return 0;
 
@@ -181,7 +181,7 @@ static PassRefPtr<CustomFilterParameter> parseCustomFilterParameter(const String
     if (!values->itemWithoutBoundsCheck(0)->isPrimitiveValue() || values->length() > 4)
         return 0;
 
-    CSSPrimitiveValue* firstPrimitiveValue = static_cast<CSSPrimitiveValue*>(values->itemWithoutBoundsCheck(0));
+    CSSPrimitiveValue* firstPrimitiveValue = toCSSPrimitiveValue(values->itemWithoutBoundsCheck(0));
     if (firstPrimitiveValue->primitiveType() == CSSPrimitiveValue::CSS_NUMBER)
         return parseCustomFilterNumberParameter(name, values);
 
@@ -201,7 +201,7 @@ static bool parseCustomFilterParameterList(CSSValue* parametersValue, CustomFilt
         CSSValueListIterator iterator(parameterIterator.value());
         if (!iterator.isPrimitiveValue())
             return false;
-        CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(iterator.value());
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(iterator.value());
         if (primitiveValue->primitiveType() != CSSPrimitiveValue::CSS_STRING)
             return false;
 
@@ -258,7 +258,7 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
 {
     CSSValue* shadersValue = filterValue->itemWithoutBoundsCheck(0);
     ASSERT_WITH_SECURITY_IMPLICATION(shadersValue->isValueList());
-    CSSValueList* shadersList = static_cast<CSSValueList*>(shadersValue);
+    CSSValueList* shadersList = toCSSValueList(shadersValue);
 
     unsigned shadersListLength = shadersList->length();
     ASSERT(shadersListLength);
@@ -280,7 +280,7 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
 
             ASSERT(mixFunction->length() <= 3);
             while (iterator.hasMore()) {
-                CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(iterator.value());
+                CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(iterator.value());
                 if (CSSParser::isBlendMode(primitiveValue->getIdent()))
                     mixSettings.blendMode = *primitiveValue;
                 else if (CSSParser::isCompositeOperator(primitiveValue->getIdent()))
@@ -312,7 +312,7 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
         // the mesh-box list, if not it means it is the parameters list.
 
         if (iterator.hasMore() && iterator.isPrimitiveValue()) {
-            CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(iterator.value());
+            CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(iterator.value());
             if (primitiveValue->isNumber()) {
                 // If only one integer value is specified, it will set both
                 // the rows and the columns.
@@ -321,7 +321,7 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
 
                 // Try to match another number for the rows.
                 if (iterator.hasMore() && iterator.isPrimitiveValue()) {
-                    CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(iterator.value());
+                    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(iterator.value());
                     if (primitiveValue->isNumber()) {
                         meshRows = primitiveValue->getIntValue();
                         iterator.advance();
@@ -331,7 +331,7 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
         }
 
         if (iterator.hasMore() && iterator.isPrimitiveValue()) {
-            CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(iterator.value());
+            CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(iterator.value());
             if (primitiveValue->getIdent() == CSSValueDetached) {
                 meshType = MeshTypeDetached;
                 iterator.advance();
@@ -373,7 +373,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
         return false;
 
     if (inValue->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(inValue);
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(inValue);
         if (primitiveValue->getIdent() == CSSValueNone)
             return true;
     }
@@ -442,7 +442,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
                 continue;
         }
 
-        CSSPrimitiveValue* firstValue = filterValue->length() ? static_cast<CSSPrimitiveValue*>(filterValue->itemWithoutBoundsCheck(0)) : 0;
+        CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->itemWithoutBoundsCheck(0)->isPrimitiveValue() ? toCSSPrimitiveValue(filterValue->itemWithoutBoundsCheck(0)) : 0;
         switch (filterValue->operationType()) {
         case WebKitCSSFilterValue::GrayscaleFilterOperation:
         case WebKitCSSFilterValue::SepiaFilterOperation:

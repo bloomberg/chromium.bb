@@ -95,15 +95,15 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
     if (!fontFamily || !src || !fontFamily->isValueList() || !src->isValueList() || (unicodeRange && !unicodeRange->isValueList()))
         return;
 
-    CSSValueList* familyList = static_cast<CSSValueList*>(fontFamily.get());
+    CSSValueList* familyList = toCSSValueList(fontFamily.get());
     if (!familyList->length())
         return;
 
-    CSSValueList* srcList = static_cast<CSSValueList*>(src.get());
+    CSSValueList* srcList = toCSSValueList(src.get());
     if (!srcList->length())
         return;
 
-    CSSValueList* rangeList = static_cast<CSSValueList*>(unicodeRange.get());
+    CSSValueList* rangeList = toCSSValueList(unicodeRange.get());
 
     unsigned traitsMask = 0;
 
@@ -111,7 +111,7 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
         if (!fontStyle->isPrimitiveValue())
             return;
 
-        switch (static_cast<CSSPrimitiveValue*>(fontStyle.get())->getIdent()) {
+        switch (toCSSPrimitiveValue(fontStyle.get())->getIdent()) {
         case CSSValueNormal:
             traitsMask |= FontStyleNormalMask;
             break;
@@ -129,7 +129,7 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
         if (!fontWeight->isPrimitiveValue())
             return;
 
-        switch (static_cast<CSSPrimitiveValue*>(fontWeight.get())->getIdent()) {
+        switch (toCSSPrimitiveValue(fontWeight.get())->getIdent()) {
         case CSSValueBold:
         case CSSValue700:
             traitsMask |= FontWeight700Mask;
@@ -174,13 +174,13 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
         } else if (!fontVariant->isValueList())
             return;
 
-        CSSValueList* variantList = static_cast<CSSValueList*>(fontVariant.get());
+        CSSValueList* variantList = toCSSValueList(fontVariant.get());
         unsigned numVariants = variantList->length();
         if (!numVariants)
             return;
 
         for (unsigned i = 0; i < numVariants; ++i) {
-            switch (static_cast<CSSPrimitiveValue*>(variantList->itemWithoutBoundsCheck(i))->getIdent()) {
+            switch (toCSSPrimitiveValue(variantList->itemWithoutBoundsCheck(i))->getIdent()) {
                 case CSSValueNormal:
                     traitsMask |= FontVariantNormalMask;
                     break;
@@ -258,7 +258,7 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
     // Hash under every single family name.
     int familyLength = familyList->length();
     for (int i = 0; i < familyLength; i++) {
-        CSSPrimitiveValue* item = static_cast<CSSPrimitiveValue*>(familyList->itemWithoutBoundsCheck(i));
+        CSSPrimitiveValue* item = toCSSPrimitiveValue(familyList->itemWithoutBoundsCheck(i));
         String familyName;
         if (item->isString())
             familyName = item->getStringValue();

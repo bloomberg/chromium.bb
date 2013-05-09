@@ -83,11 +83,26 @@ private:
     Vector<RefPtr<CSSValue>, 4> m_values;
 };
 
+inline CSSValueList* toCSSValueList(CSSValue* value)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isValueList());
+    return static_cast<CSSValueList*>(value);
+}
+
+inline const CSSValueList* toCSSValueList(const CSSValue* value)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isValueList());
+    return static_cast<const CSSValueList*>(value);
+}
+
+// Catch unneeded cast.
+void toCSSValueList(const CSSValueList*);
+
 // Objects of this class are intended to be stack-allocated and scoped to a single function.
 // Please take care not to pass these around as they do hold onto a raw pointer.
 class CSSValueListInspector {
 public:
-    CSSValueListInspector(CSSValue* value) : m_list((value && value->isValueList()) ? static_cast<CSSValueList*>(value) : 0) { }
+    CSSValueListInspector(CSSValue* value) : m_list((value && value->isValueList()) ? toCSSValueList(value) : 0) { }
     CSSValue* item(size_t index) const { ASSERT_WITH_SECURITY_IMPLICATION(index < length()); return m_list->itemWithoutBoundsCheck(index); }
     CSSValue* first() const { return item(0); }
     CSSValue* second() const { return item(1); }
@@ -111,6 +126,7 @@ private:
     CSSValueListInspector m_inspector;
     size_t m_position;
 };
+
 } // namespace WebCore
 
 #endif // CSSValueList_h

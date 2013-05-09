@@ -119,9 +119,9 @@ void CSSValue::addSubresourceStyleURLs(ListHashSet<KURL>& urls, const StyleSheet
     ASSERT(!isCSSOMSafe());
 
     if (isPrimitiveValue())
-        static_cast<const CSSPrimitiveValue*>(this)->addSubresourceStyleURLs(urls, styleSheet);
+        toCSSPrimitiveValue(this)->addSubresourceStyleURLs(urls, styleSheet);
     else if (isValueList())
-        static_cast<const CSSValueList*>(this)->addSubresourceStyleURLs(urls, styleSheet);
+        toCSSValueList(this)->addSubresourceStyleURLs(urls, styleSheet);
     else if (classType() == FontFaceSrcClass)
         static_cast<const CSSFontFaceSrcValue*>(this)->addSubresourceStyleURLs(urls, styleSheet);
     else if (classType() == ReflectClass)
@@ -134,11 +134,11 @@ bool CSSValue::hasFailedOrCanceledSubresources() const
     ASSERT(!isCSSOMSafe());
 
     if (isValueList())
-        return static_cast<const CSSValueList*>(this)->hasFailedOrCanceledSubresources();
+        return toCSSValueList(this)->hasFailedOrCanceledSubresources();
     if (classType() == FontFaceSrcClass)
         return static_cast<const CSSFontFaceSrcValue*>(this)->hasFailedOrCanceledSubresources();
     if (classType() == ImageClass)
-        return static_cast<const CSSImageValue*>(this)->hasFailedOrCanceledSubresources();
+        return toCSSImageValue(this)->hasFailedOrCanceledSubresources();
     if (classType() == CrossfadeClass)
         return static_cast<const CSSCrossfadeValue*>(this)->hasFailedOrCanceledSubresources();
     if (classType() == ImageSetClass)
@@ -158,10 +158,10 @@ void CSSValue::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());
     switch (classType()) {
     case PrimitiveClass:
-        static_cast<const CSSPrimitiveValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
+        toCSSPrimitiveValue(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
     case ImageClass:
-        static_cast<const CSSImageValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
+        toCSSImageValue(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
     case CursorImageClass:
         static_cast<const CSSCursorImageValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
@@ -250,7 +250,7 @@ void CSSValue::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
         return;
 #endif
     case ValueListClass:
-        static_cast<const CSSValueList*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
+        toCSSValueList(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
     case ImageSetClass:
         static_cast<const CSSImageSetValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
@@ -355,7 +355,7 @@ bool CSSValue::equals(const CSSValue& other) const
             return false;
         }
     } else if (m_classType == ValueListClass && other.m_classType != ValueListClass)
-        return static_cast<const CSSValueList*>(this)->equals(other);
+        return toCSSValueList(this)->equals(other);
     else if (m_classType != ValueListClass && other.m_classType == ValueListClass)
         return static_cast<const CSSValueList&>(other).equals(*this);
     return false;
@@ -393,13 +393,13 @@ String CSSValue::cssText() const
     case CrossfadeClass:
         return static_cast<const CSSCrossfadeValue*>(this)->customCssText();
     case ImageClass:
-        return static_cast<const CSSImageValue*>(this)->customCssText();
+        return toCSSImageValue(this)->customCssText();
     case InheritedClass:
         return static_cast<const CSSInheritedValue*>(this)->customCssText();
     case InitialClass:
         return static_cast<const CSSInitialValue*>(this)->customCssText();
     case PrimitiveClass:
-        return static_cast<const CSSPrimitiveValue*>(this)->customCssText();
+        return toCSSPrimitiveValue(this)->customCssText();
     case ReflectClass:
         return static_cast<const CSSReflectValue*>(this)->customCssText();
     case ShadowClass:
@@ -413,7 +413,7 @@ String CSSValue::cssText() const
     case UnicodeRangeClass:
         return static_cast<const CSSUnicodeRangeValue*>(this)->customCssText();
     case ValueListClass:
-        return static_cast<const CSSValueList*>(this)->customCssText();
+        return toCSSValueList(this)->customCssText();
     case WebKitCSSTransformClass:
         return static_cast<const WebKitCSSTransformValue*>(this)->customCssText();
     case LineBoxContainClass:
@@ -449,11 +449,11 @@ String CSSValue::serializeResolvingVariables(const HashMap<AtomicString, String>
 {
     switch (classType()) {
     case PrimitiveClass:
-        return static_cast<const CSSPrimitiveValue*>(this)->customSerializeResolvingVariables(variables);
+        return toCSSPrimitiveValue(this)->customSerializeResolvingVariables(variables);
     case ReflectClass:
         return static_cast<const CSSReflectValue*>(this)->customSerializeResolvingVariables(variables);
     case ValueListClass:
-        return static_cast<const CSSValueList*>(this)->customSerializeResolvingVariables(variables);
+        return toCSSValueList(this)->customSerializeResolvingVariables(variables);
     case WebKitCSSTransformClass:
         return static_cast<const WebKitCSSTransformValue*>(this)->customSerializeResolvingVariables(variables);
     default:
@@ -505,7 +505,7 @@ void CSSValue::destroy()
         delete static_cast<CSSCrossfadeValue*>(this);
         return;
     case ImageClass:
-        delete static_cast<CSSImageValue*>(this);
+        delete toCSSImageValue(this);
         return;
     case InheritedClass:
         delete static_cast<CSSInheritedValue*>(this);
@@ -514,7 +514,7 @@ void CSSValue::destroy()
         delete static_cast<CSSInitialValue*>(this);
         return;
     case PrimitiveClass:
-        delete static_cast<CSSPrimitiveValue*>(this);
+        delete toCSSPrimitiveValue(this);
         return;
     case ReflectClass:
         delete static_cast<CSSReflectValue*>(this);
@@ -535,7 +535,7 @@ void CSSValue::destroy()
         delete static_cast<CSSUnicodeRangeValue*>(this);
         return;
     case ValueListClass:
-        delete static_cast<CSSValueList*>(this);
+        delete toCSSValueList(this);
         return;
     case WebKitCSSTransformClass:
         delete static_cast<WebKitCSSTransformValue*>(this);
@@ -583,12 +583,12 @@ PassRefPtr<CSSValue> CSSValue::cloneForCSSOM() const
 {
     switch (classType()) {
     case PrimitiveClass:
-        return static_cast<const CSSPrimitiveValue*>(this)->cloneForCSSOM();
+        return toCSSPrimitiveValue(this)->cloneForCSSOM();
     case ValueListClass:
-        return static_cast<const CSSValueList*>(this)->cloneForCSSOM();
+        return toCSSValueList(this)->cloneForCSSOM();
     case ImageClass:
     case CursorImageClass:
-        return static_cast<const CSSImageValue*>(this)->cloneForCSSOM();
+        return toCSSImageValue(this)->cloneForCSSOM();
     case WebKitCSSFilterClass:
         return static_cast<const WebKitCSSFilterValue*>(this)->cloneForCSSOM();
     case WebKitCSSArrayFunctionValueClass:
