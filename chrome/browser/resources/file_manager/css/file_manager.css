@@ -775,6 +775,7 @@ body[new-ui] #search-box {
   background-position: center left;
   background-repeat: no-repeat;
   border-color: white;
+  line-height: 1em;
   padding: 0 0 0 30px;
 }
 
