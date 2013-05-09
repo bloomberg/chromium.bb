@@ -175,8 +175,10 @@ const CGFloat kDragThreshold = 5;
   if (itemDragIndex_ == itemIndexOver)
     return;
 
-  [gridController_ moveItemForDrag:itemDragIndex_
-                       toItemIndex:itemIndexOver];
+  [gridController_ moveItemInView:itemDragIndex_
+                      toItemIndex:itemIndexOver];
+  // A new item may be created when moving between pages. Ensure it is hidden.
+  [[[gridController_ itemAtIndex:itemIndexOver] button] setHidden:YES];
   itemDragIndex_ = itemIndexOver;
 }
 
@@ -184,8 +186,8 @@ const CGFloat kDragThreshold = 5;
   if (!dragging_)
     return;
 
-  [gridController_ moveItemForDrag:itemDragIndex_
-                       toItemIndex:itemHitIndex_];
+  [gridController_ moveItemInView:itemDragIndex_
+                      toItemIndex:itemHitIndex_];
   itemDragIndex_ = itemHitIndex_;
   [self completeDrag];
   itemHitIndex_ = NSNotFound;  // Ignore future mouse events for this drag.

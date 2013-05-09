@@ -75,9 +75,10 @@ APP_LIST_EXPORT
 // Scroll to a page in the grid view with an animation.
 - (void)scrollToPage:(size_t)pageIndex;
 
-// Moves an item within the view only, whilst dragging is in progress.
-- (void)moveItemForDrag:(size_t)fromIndex
-            toItemIndex:(size_t)toIndex;
+// Moves an item within the view only, for dragging or in response to model
+// changes.
+- (void)moveItemInView:(size_t)fromIndex
+           toItemIndex:(size_t)toIndex;
 
 // Moves an item in the item model. Does not adjust the view.
 - (void)moveItemWithIndex:(size_t)itemIndex

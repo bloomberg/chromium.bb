@@ -224,21 +224,26 @@ TEST_F(AppsGridControllerTest, DISABLED_FirstPageKeyboardNavigation) {
   EXPECT_EQ(std::string("Item 2"), delegate()->last_activated()->title());
 }
 
-// Test runtime updates: adding items, changing titles and icons.
+// Test runtime updates: adding items, removing items, and moving items (e.g. in
+// response to app install, uninstall, and chrome sync changes. Also test
+// changing titles and icons.
 TEST_F(AppsGridControllerTest, ModelUpdates) {
   model()->PopulateApps(2);
   EXPECT_EQ(2u, [[GetPageAt(0) content] count]);
+  EXPECT_EQ(std::string("|Item 0,Item 1|"), GetViewContent());
 
   // Add an item (PopulateApps will create a duplicate "Item 0").
   model()->PopulateApps(1);
   EXPECT_EQ(3u, [[GetPageAt(0) content] count]);
   NSButton* button = GetItemViewAt(2);
   EXPECT_NSEQ(@"Item 0", [button title]);
+  EXPECT_EQ(std::string("|Item 0,Item 1,Item 0|"), GetViewContent());
 
   // Update the title via the ItemModelObserver.
   app_list::AppListItemModel* item_model = model()->apps()->GetItemAt(2);
   item_model->SetTitle("UpdatedItem");
   EXPECT_NSEQ(@"UpdatedItem", [button title]);
+  EXPECT_EQ(std::string("|Item 0,Item 1,UpdatedItem|"), GetViewContent());
 
   // Update the icon, test by changing size.
   NSSize icon_size = [[button image] size];
@@ -252,6 +257,41 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
   icon_size = [[button image] size];
   EXPECT_EQ(kTestImageSize, icon_size.width);
   EXPECT_EQ(kTestImageSize, icon_size.height);
+
+  // Test removing an item at the end.
+  model()->apps()->DeleteAt(2);
+  EXPECT_EQ(2u, [apps_grid_controller_ itemCount]);
+  EXPECT_EQ(std::string("|Item 0,Item 1|"), GetViewContent());
+
+  // Test removing in the middle.
+  model()->AddItem("Item 2");
+  EXPECT_EQ(3u, [apps_grid_controller_ itemCount]);
+  EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
+  model()->apps()->DeleteAt(1);
+  EXPECT_EQ(2u, [apps_grid_controller_ itemCount]);
+  EXPECT_EQ(std::string("|Item 0,Item 2|"), GetViewContent());
+
+  // Test inserting in the middle.
+  model()->apps()->AddAt(1, model()->CreateItem("Item One"));
+  EXPECT_EQ(3u, [apps_grid_controller_ itemCount]);
+  EXPECT_EQ(std::string("|Item 0,Item One,Item 2|"), GetViewContent());
+
+  // Test swapping items (e.g. rearranging via sync).
+  model()->apps()->Move(1, 2);
+  EXPECT_EQ(std::string("|Item 0,Item 2,Item One|"), GetViewContent());
+
+  // Test removing multiple items via the model.
+  model()->apps()->DeleteAll();
+  EXPECT_EQ(0u, [apps_grid_controller_ itemCount]);
+  EXPECT_EQ(std::string("||"), GetViewContent());
+
+  // Test removing the last item when there is one item on the second page.
+  ReplaceTestModel(kItemsPerPage + 1);
+  EXPECT_EQ(kItemsPerPage + 1, [apps_grid_controller_ itemCount]);
+  EXPECT_EQ(2u, [apps_grid_controller_ pageCount]);
+  model()->apps()->DeleteAt(kItemsPerPage);
+  EXPECT_EQ(kItemsPerPage, [apps_grid_controller_ itemCount]);
+  EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
 }
 
 // Test mouseover selection.
