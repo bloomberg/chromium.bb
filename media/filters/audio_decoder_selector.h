@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_export.h"
+#include "media/base/pipeline_status.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -21,6 +22,7 @@ namespace media {
 class AudioDecoder;
 class DecoderBuffer;
 class DecryptingDemuxerStream;
+class DemuxerStream;
 
 // AudioDecoderSelector (creates if necessary and) initializes the proper
 // AudioDecoder for a given DemuxerStream. If the given DemuxerStream is

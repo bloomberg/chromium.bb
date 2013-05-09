@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/pipeline_status.h"
 
 namespace base {
 class MessageLoopProxy;
