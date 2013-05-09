@@ -1348,12 +1348,21 @@ void SmoothEventSampler::RecordSample() {
   token_bucket_ -= capture_period_;
   TRACE_COUNTER1("mirroring",
                  "MirroringTokenBucketUsec", token_bucket_.InMicroseconds());
+
+  bool was_paused = overdue_sample_count_ == redundant_capture_goal_;
   if (HasUnrecordedEvent()) {
     last_sample_ = current_event_;
     overdue_sample_count_ = 0;
   } else {
     ++overdue_sample_count_;
   }
+  bool is_paused = overdue_sample_count_ == redundant_capture_goal_;
+
+  LOG_IF(INFO, !was_paused && is_paused)
+        << "Tab content unchanged for " << redundant_capture_goal_
+        << " frames; capture will halt until content changes.";
+  LOG_IF(INFO, was_paused && !is_paused)
+        << "Content changed; capture will resume.";
 }
 
 bool SmoothEventSampler::IsOverdueForSamplingAt(base::Time event_time) const {
