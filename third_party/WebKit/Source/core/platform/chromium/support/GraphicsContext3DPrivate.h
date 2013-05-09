@@ -37,6 +37,7 @@ class GrContext;
 
 namespace WebKit {
 class WebGraphicsContext3D;
+class WebGraphicsContext3DProvider;
 }
 
 namespace WebCore {
@@ -54,7 +55,7 @@ public:
     // be used on any other thread.
     static PassRefPtr<GraphicsContext3D> createGraphicsContextFromWebContext(PassOwnPtr<WebKit::WebGraphicsContext3D>, bool preserveDrawingBuffer = false);
 
-    static PassRefPtr<GraphicsContext3D> createGraphicsContextFromExternalWebContextAndGrContext(WebKit::WebGraphicsContext3D*, GrContext*, bool preserveDrawingBuffer = false);
+    static PassRefPtr<GraphicsContext3D> createGraphicsContextFromProvider(PassOwnPtr<WebKit::WebGraphicsContext3DProvider>, bool preserveDrawingBuffer = false);
 
     // Helper function to provide access to the lower-level WebGraphicsContext3D,
     // which is needed for subordinate contexts like WebGL's to share resources
@@ -88,10 +89,11 @@ public:
 
 private:
     GraphicsContext3DPrivate(PassOwnPtr<WebKit::WebGraphicsContext3D>, bool preserveDrawingBuffer);
-    GraphicsContext3DPrivate(WebKit::WebGraphicsContext3D*, GrContext*, bool preserveDrawingBuffer);
+    GraphicsContext3DPrivate(PassOwnPtr<WebKit::WebGraphicsContext3DProvider>, bool preserveDrawingBuffer);
 
     void initializeExtensions();
 
+    OwnPtr<WebKit::WebGraphicsContext3DProvider> m_provider;
     WebKit::WebGraphicsContext3D* m_impl;
     OwnPtr<WebKit::WebGraphicsContext3D> m_ownedWebContext;
     OwnPtr<Extensions3D> m_extensions;

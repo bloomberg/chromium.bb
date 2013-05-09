@@ -32,6 +32,7 @@
 #include "core/platform/graphics/Extensions3D.h"
 #include <public/Platform.h>
 #include <public/WebGraphicsContext3D.h>
+#include <public/WebGraphicsContext3DProvider.h>
 #include <wtf/MainThread.h>
 
 namespace WebCore {
@@ -44,8 +45,15 @@ public:
     {
         bool wasCreated = false;
 
-        WebKit::WebGraphicsContext3D* webContext = WebKit::Platform::current()->sharedOffscreenGraphicsContext3D();
-        GrContext* grContext = WebKit::Platform::current()->sharedOffscreenGrContext();
+        OwnPtr<WebKit::WebGraphicsContext3DProvider> provider = adoptPtr(WebKit::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+
+        WebKit::WebGraphicsContext3D* webContext = 0;
+        GrContext* grContext = 0;
+
+        if (provider) {
+            webContext = provider->context3d();
+            grContext = provider->grContext();
+        }
 
         if (webContext && grContext) {
             WebKit::WebGraphicsContext3D* oldWebContext = m_context ? GraphicsContext3DPrivate::extractWebGraphicsContext3D(m_context.get()) : 0;
@@ -54,7 +62,7 @@ public:
                 m_context.clear();
 
             if (!m_context) {
-                m_context = GraphicsContext3DPrivate::createGraphicsContextFromExternalWebContextAndGrContext(webContext, grContext);
+                m_context = GraphicsContext3DPrivate::createGraphicsContextFromProvider(provider.release());
                 wasCreated = true;
             }
         }
