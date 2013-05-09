@@ -9699,7 +9699,15 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
 
   // Set source texture's width and height to be the same as
   // destination texture when source is GL_TEXTURE_EXTERNAL_OES.
+  // TODO(hkuang): Add support to get width/height of StreamTexture
+  // crbug.com/225781.
   if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
+    if (!dest_level_defined) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_VALUE,
+          "glCopyTextureCHROMIUM", "destination level not defined");
+      return;
+    }
     source_width = dest_width;
     source_height = dest_height;
   }
