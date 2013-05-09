@@ -1142,7 +1142,8 @@ _toolchain_major.add_config('internal-toolchain-major', internal, official,
 )
 
 _toolchain_minor.add_config('internal-toolchain-minor', internal, official,
-  boards=('x86-alex', 'stumpy', 'daisy'),
+  # TODO(shenhan): add 'daisy' whence gcc 4.8 pass daisy build.
+  boards=('x86-alex', 'stumpy'),
   use_lkgm=True,
   useflags=[constants.USE_CHROME_INTERNAL],
   build_tests=True,
