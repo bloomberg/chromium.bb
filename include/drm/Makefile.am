@@ -36,8 +36,8 @@ klibdrminclude_HEADERS = \
 	savage_drm.h \
 	sis_drm.h \
 	via_drm.h \
-	mach64_drm.h
-
+	mach64_drm.h \
+	qxl_drm.h
 
 if HAVE_VMWGFX
 klibdrminclude_HEADERS += vmwgfx_drm.h
