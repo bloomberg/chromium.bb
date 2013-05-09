@@ -249,8 +249,6 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
       workarounds_.max_texture_size = 4096;
       workarounds_.max_cube_map_texture_size = 4096;
     }
-#elif defined(OS_WIN)
-    workarounds_.exit_on_context_lost = true;
 #endif
   }
 
