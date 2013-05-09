@@ -235,6 +235,8 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return "NativeMedia";
     case kFileSystemTypeDeviceMedia:
       return "DeviceMedia";
+    case kFileSystemTypeItunes:
+      return "Itunes";
     case kFileSystemTypeDrive:
       return "Drive";
     case kFileSystemTypeSyncable:

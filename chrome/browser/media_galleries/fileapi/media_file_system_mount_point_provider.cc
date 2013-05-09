@@ -12,6 +12,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/browser/media_galleries/fileapi/itunes/itunes_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 #include "webkit/blob/local_file_stream_reader.h"
@@ -50,7 +51,9 @@ MediaFileSystemMountPointProvider::MediaFileSystemMountPointProvider(
     : profile_path_(profile_path),
       media_path_filter_(new MediaPathFilter()),
       native_media_file_util_(
-          new fileapi::AsyncFileUtilAdapter(new NativeMediaFileUtil())) {
+          new fileapi::AsyncFileUtilAdapter(new NativeMediaFileUtil())),
+      itunes_file_util_(new fileapi::AsyncFileUtilAdapter(
+          new itunes::ItunesFileUtil())) {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // TODO(kmadhusu): Initialize |device_media_file_util_| in
   // initialization list.
@@ -67,6 +70,7 @@ bool MediaFileSystemMountPointProvider::CanHandleType(
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
     case fileapi::kFileSystemTypeDeviceMedia:
+    case fileapi::kFileSystemTypeItunes:
       return true;
     default:
       return false;
@@ -113,6 +117,8 @@ fileapi::AsyncFileUtil* MediaFileSystemMountPointProvider::GetAsyncFileUtil(
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
       return device_media_async_file_util_.get();
 #endif
+    case fileapi::kFileSystemTypeItunes:
+      return itunes_file_util_.get();
     default:
       NOTREACHED();
   }

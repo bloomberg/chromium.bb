@@ -944,6 +944,8 @@
         'browser/media_galleries/fileapi/itunes_finder.h',
         'browser/media_galleries/fileapi/itunes_finder_win.cc',
         'browser/media_galleries/fileapi/itunes_finder_win.h',
+        'browser/media_galleries/fileapi/itunes/itunes_file_util.cc',
+        'browser/media_galleries/fileapi/itunes/itunes_file_util.h',
         'browser/media_galleries/fileapi/media_file_system_mount_point_provider.cc',
         'browser/media_galleries/fileapi/media_file_system_mount_point_provider.h',
         'browser/media_galleries/fileapi/media_path_filter.cc',

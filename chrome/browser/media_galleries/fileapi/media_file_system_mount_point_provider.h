@@ -86,6 +86,7 @@ class MediaFileSystemMountPointProvider
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   scoped_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
 #endif
+  scoped_ptr<fileapi::AsyncFileUtil> itunes_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemMountPointProvider);
 };
