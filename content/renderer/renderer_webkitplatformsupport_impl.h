@@ -22,6 +22,10 @@ namespace webkit_glue {
 class WebClipboardImpl;
 }
 
+namespace WebKit {
+class WebGraphicsContext3DProvider;
+}
+
 namespace content {
 class GamepadSharedMemoryReader;
 class RendererClipboardClient;
@@ -113,6 +117,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
   virtual WebKit::WebGraphicsContext3D* sharedOffscreenGraphicsContext3D();
   virtual GrContext* sharedOffscreenGrContext();
+  virtual WebKit::WebGraphicsContext3DProvider*
+      createSharedOffscreenGraphicsContext3DProvider();
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call

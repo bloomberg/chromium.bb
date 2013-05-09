@@ -41,6 +41,7 @@
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/gpu/test_context_provider_factory.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "webkit/gpu/webgraphicscontext3d_provider_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/support/gc_extension.h"
 #include "webkit/support/simple_database_system.h"
@@ -388,6 +389,15 @@ GrContext* TestWebKitPlatformSupport::sharedOffscreenGrContext() {
   if (!main_thread_contexts_)
     return NULL;
   return main_thread_contexts_->GrContext();
+}
+
+WebKit::WebGraphicsContext3DProvider* TestWebKitPlatformSupport::
+    createSharedOffscreenGraphicsContext3DProvider() {
+  main_thread_contexts_ =
+      webkit::gpu::TestContextProviderFactory::GetInstance()->
+          OffscreenContextProviderForMainThread();
+  return new webkit::gpu::WebGraphicsContext3DProviderImpl(
+      main_thread_contexts_);
 }
 
 bool TestWebKitPlatformSupport::canAccelerate2dCanvas() {

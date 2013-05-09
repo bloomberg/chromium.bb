@@ -29,6 +29,7 @@ class ContextProvider;
 
 namespace WebKit {
 class WebAudioDevice;
+class WebGraphicsContext3DProvider;
 class WebLayerTreeView;
 }
 
@@ -90,6 +91,8 @@ class TestWebKitPlatformSupport :
       const WebKit::WebGraphicsContext3D::Attributes&);
   virtual WebKit::WebGraphicsContext3D* sharedOffscreenGraphicsContext3D();
   virtual GrContext* sharedOffscreenGrContext();
+  virtual WebKit::WebGraphicsContext3DProvider*
+      createSharedOffscreenGraphicsContext3DProvider();
   virtual bool canAccelerate2dCanvas();
   virtual bool isThreadedCompositingEnabled();
 

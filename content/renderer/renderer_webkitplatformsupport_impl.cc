@@ -54,6 +54,7 @@
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/gpu/webgraphicscontext3d_provider_impl.h"
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
@@ -903,5 +904,17 @@ GrContext* RendererWebKitPlatformSupportImpl::sharedOffscreenGrContext() {
   return shared_offscreen_context_->GrContext();
 }
 
+//------------------------------------------------------------------------------
+
+WebKit::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
+    createSharedOffscreenGraphicsContext3DProvider() {
+  if (!shared_offscreen_context_ ||
+      shared_offscreen_context_->DestroyedOnMainThread()) {
+    shared_offscreen_context_ =
+        RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
+  }
+  return new webkit::gpu::WebGraphicsContext3DProviderImpl(
+      shared_offscreen_context_);
+}
 
 }  // namespace content

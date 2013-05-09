@@ -41,6 +41,8 @@
             'webgraphicscontext3d_in_process_command_buffer_impl.h',
             'webgraphicscontext3d_in_process_impl.cc',
             'webgraphicscontext3d_in_process_impl.h',
+            'webgraphicscontext3d_provider_impl.cc',
+            'webgraphicscontext3d_provider_impl.h',
           ],
           'defines': [
             'WEBKIT_GPU_IMPLEMENTATION',
