@@ -34,9 +34,19 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
   void set_update_engine_client_status(
       const UpdateEngineClient::Status& status);
 
+  // Sets a value returned by RequestUpdateCheck().
+  void set_update_check_result(
+      const UpdateEngineClient::UpdateCheckResult& result);
+
+  // Returns how many times RebootAfterUpdate() is called.
+  int reboot_after_update_call_count() {
+    return reboot_after_update_call_count_;
+  }
+
  private:
   UpdateEngineClient::Status update_engine_client_status_;
-
+  UpdateEngineClient::UpdateCheckResult update_check_result_;
+  int reboot_after_update_call_count_;
 };
 
 }  // namespace chromeos

@@ -6,7 +6,9 @@
 
 namespace chromeos {
 
-FakeUpdateEngineClient::FakeUpdateEngineClient() {
+FakeUpdateEngineClient::FakeUpdateEngineClient()
+  : update_check_result_(UpdateEngineClient::UPDATE_RESULT_SUCCESS),
+    reboot_after_update_call_count_(0) {
 }
 
 FakeUpdateEngineClient::~FakeUpdateEngineClient() {
@@ -24,9 +26,11 @@ bool FakeUpdateEngineClient::HasObserver(Observer* observer) {
 
 void FakeUpdateEngineClient::RequestUpdateCheck(
     const UpdateCheckCallback& callback) {
+  callback.Run(update_check_result_);
 }
 
 void FakeUpdateEngineClient::RebootAfterUpdate() {
+  reboot_after_update_call_count_++;
 }
 
 void FakeUpdateEngineClient::SetReleaseTrack(const std::string& track) {
@@ -43,6 +47,11 @@ FakeUpdateEngineClient::Status FakeUpdateEngineClient::GetLastStatus() {
 void FakeUpdateEngineClient::set_update_engine_client_status(
     const UpdateEngineClient::Status& status) {
   update_engine_client_status_ = status;
+}
+
+void FakeUpdateEngineClient::set_update_check_result(
+    const UpdateEngineClient::UpdateCheckResult& result) {
+  update_check_result_ = result;
 }
 
 }  // namespace chromeos
