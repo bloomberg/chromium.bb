@@ -63,7 +63,7 @@ function deleteSuccessCallback(evt)
 {
     preamble(evt);
     shouldBeTrue("sawVersionChange");
-    debug("FIXME: Blocked events shouldn't fire if connections close in versionchange handler. http://wkbug.com/71130");
+    debug("FIXME: Blocked events shouldn't fire if connections close in versionchange handler. http://crbug.com/100123");
     shouldBeFalse("sawDeleteBlocked");
     shouldBeTrue("sawUpgradeNeeded");
     finishJSTest();

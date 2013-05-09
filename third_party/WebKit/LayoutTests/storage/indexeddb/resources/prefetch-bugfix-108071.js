@@ -3,7 +3,7 @@ if (this.importScripts) {
     importScripts('shared.js');
 }
 
-description("Test for crbug.com/108071");
+description("Regression test for http://crbug.com/108071");
 
 // Have to be at least 5 here: 1 initial, 3 continues to trigger prefetch and 1
 // post-abort outstanding continue.

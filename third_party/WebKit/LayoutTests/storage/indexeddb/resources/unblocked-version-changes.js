@@ -37,8 +37,6 @@ function onUpgradeNeeded(evt)
     request.onsuccess = onSuccess;
 
     evalAndLog("transaction.abort()");
-    // FIXME: Explicit db.close() call should not be necessary. http://wkbug.com/102298
-    evalAndLog("db.close()");
 }
 
 function onError(evt)

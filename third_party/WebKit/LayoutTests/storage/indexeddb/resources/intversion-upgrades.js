@@ -55,7 +55,7 @@ function connection1VersionChangeCallback(evt)
 function connection2BlockedCallback(evt)
 {
     preamble(evt);
-    debug("This should not be called: http://wkbug.com/71130");
+    debug("This should not be called: http://crbug.com/100123");
 }
 
 function connection2UpgradeNeeded(evt)

@@ -24,7 +24,7 @@ connection1VersionChangeCallback():
 connection1.close()
 
 connection2BlockedCallback():
-This should not be called: http://wkbug.com/71130
+This should not be called: http://crbug.com/100123
 
 connection2UpgradeNeeded():
 connection2 = event.target.result
