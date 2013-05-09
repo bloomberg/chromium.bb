@@ -38,7 +38,7 @@ class MockCallbacks : public WebIDBCallbacks {
 
 }  // namespace
 
-TEST(IndexedDBDispatcherTest, DISABLED_ValueSizeTest) {
+TEST(IndexedDBDispatcherTest, ValueSizeTest) {
   const std::vector<char> data(kMaxIDBValueSizeInBytes + 1);
   const WebData value(&data.front(), data.size());
   const int32 ipc_dummy_id = -1;
