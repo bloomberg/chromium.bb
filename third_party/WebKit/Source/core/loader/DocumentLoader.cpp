@@ -57,7 +57,7 @@
 #include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/platform/Logging.h"
-#include "core/platform/SchemeRegistry.h"
+#include "origin/SchemeRegistry.h"
 #include <wtf/Assertions.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>

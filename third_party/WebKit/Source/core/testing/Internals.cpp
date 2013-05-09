@@ -92,15 +92,15 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/Language.h"
-#include "core/platform/SchemeRegistry.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/RenderView.h"
 #include "core/workers/WorkerThread.h"
-#include <wtf/dtoa.h>
-#include <wtf/text/StringBuffer.h>
+#include "origin/SchemeRegistry.h"
+#include "wtf/dtoa.h"
+#include "wtf/text/StringBuffer.h"
 
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "core/platform/ColorChooser.h"

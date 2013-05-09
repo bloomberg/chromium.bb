@@ -45,9 +45,9 @@
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/page/Frame.h"
 #include "core/page/SecurityOrigin.h"
-#include "core/platform/SchemeRegistry.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
+#include "origin/SchemeRegistry.h"
 #include <wtf/Assertions.h>
 #include <wtf/UnusedParam.h>
 

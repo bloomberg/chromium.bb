@@ -92,7 +92,6 @@
 #include "core/platform/Logging.h"
 #include "core/platform/MIMETypeFromURL.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/SchemeRegistry.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/network/HTTPParsers.h"
@@ -102,6 +101,7 @@
 #include "core/plugins/PluginData.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "modules/webdatabase/DatabaseManager.h"
+#include "origin/SchemeRegistry.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/StdLibExtras.h>

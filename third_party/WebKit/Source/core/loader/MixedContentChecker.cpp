@@ -37,9 +37,9 @@
 #include "core/page/Frame.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
-#include "core/platform/SchemeRegistry.h"
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
+#include "origin/SchemeRegistry.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

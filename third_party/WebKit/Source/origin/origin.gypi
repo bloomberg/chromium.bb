@@ -6,6 +6,8 @@
       'KURLGoogle.cpp',
       'KURLGooglePrivate.h',
       'KURLHash.h',
+      'SchemeRegistry.cpp',
+      'SchemeRegistry.h',
     ],
   },
 }

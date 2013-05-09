@@ -23,9 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
 #include "config.h"
-#include "core/platform/SchemeRegistry.h"
-#include <wtf/MainThread.h>
+#include "origin/SchemeRegistry.h"
+
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 
@@ -33,9 +35,8 @@ static URLSchemesMap& localURLSchemes()
 {
     DEFINE_STATIC_LOCAL(URLSchemesMap, localSchemes, ());
 
-    if (localSchemes.isEmpty()) {
+    if (localSchemes.isEmpty())
         localSchemes.add("file");
-    }
 
     return localSchemes;
 }

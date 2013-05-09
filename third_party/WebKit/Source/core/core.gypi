@@ -2483,7 +2483,6 @@
             'platform/PurgeableBuffer.h',
             'platform/ReferrerPolicy.h',
             'platform/SSLKeyGenerator.h',
-            'platform/SchemeRegistry.cpp',
             'platform/ScrollAnimator.cpp',
             'platform/ScrollAnimator.h',
             'platform/ScrollAnimatorNone.cpp',

@@ -34,7 +34,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/page/SecurityPolicy.h"
-#include "core/platform/SchemeRegistry.h"
+#include "origin/SchemeRegistry.h"
 #include <public/WebString.h>
 #include <public/WebURL.h>
 

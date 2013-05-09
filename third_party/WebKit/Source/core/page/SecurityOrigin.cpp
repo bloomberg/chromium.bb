@@ -34,7 +34,7 @@
 #include "core/page/SecurityPolicy.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/KURL.h"
-#include "core/platform/SchemeRegistry.h"
+#include "origin/SchemeRegistry.h"
 #include <wtf/MainThread.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

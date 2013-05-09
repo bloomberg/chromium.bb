@@ -156,7 +156,6 @@
 #include "core/page/Settings.h"
 #include "core/platform/AsyncFileSystem.h"
 #include "core/platform/KURL.h"
-#include "core/platform/SchemeRegistry.h"
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
@@ -179,6 +178,7 @@
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemType.h"
+#include "origin/SchemeRegistry.h"
 #include <public/Platform.h>
 #include <public/WebFileSystem.h>
 #include <public/WebFileSystemType.h>

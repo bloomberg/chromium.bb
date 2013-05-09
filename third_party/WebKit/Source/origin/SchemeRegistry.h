@@ -20,15 +20,16 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
 #ifndef SchemeRegistry_h
 #define SchemeRegistry_h
 
-#include <wtf/HashSet.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashSet.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -68,7 +69,7 @@ public:
     static void registerAsCanDisplayOnlyIfCanRequest(const String& scheme);
 
     // Schemes against which javascript: URLs should not be allowed to run (stop
-    // bookmarklets from running on sensitive pages). 
+    // bookmarklets from running on sensitive pages).
     static void registerURLSchemeAsNotAllowingJavascriptURLs(const String& scheme);
     static bool shouldTreatURLSchemeAsNotAllowingJavascriptURLs(const String& scheme);
 

@@ -38,16 +38,15 @@
 #include "core/page/Page.h"
 #include "core/page/PageSerializer.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/SchemeRegistry.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/text/QuotedPrintable.h"
-
-#include <wtf/CryptographicallyRandomNumber.h>
-#include <wtf/DateMath.h>
-#include <wtf/GregorianDateTime.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/Base64.h>
-#include <wtf/text/StringBuilder.h>
+#include "origin/SchemeRegistry.h"
+#include "wtf/CryptographicallyRandomNumber.h"
+#include "wtf/DateMath.h"
+#include "wtf/GregorianDateTime.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/Base64.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

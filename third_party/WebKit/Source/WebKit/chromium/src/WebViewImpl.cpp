@@ -120,7 +120,6 @@
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/PopupMenuClient.h"
-#include "core/platform/SchemeRegistry.h"
 #include "core/platform/Timer.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/chromium/PopupContainer.h"
@@ -143,6 +142,7 @@
 #include "core/rendering/RenderWidget.h"
 #include "modules/battery/BatteryController.h"
 #include "modules/geolocation/GeolocationController.h"
+#include "origin/SchemeRegistry.h"
 #include "painting/ContinuousPainter.h"
 #include <public/Platform.h>
 #include <public/WebCompositorOutputSurface.h>

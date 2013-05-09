@@ -64,7 +64,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/Logging.h"
-#include "core/platform/SchemeRegistry.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/Widget.h"
 #include "core/platform/network/NetworkStateNotifier.h"
@@ -75,11 +74,12 @@
 #include "core/rendering/RenderWidget.h"
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
-#include <wtf/HashMap.h>
-#include <wtf/RefCountedLeakCounter.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/Base64.h>
-#include <wtf/text/StringHash.h>
+#include "origin/SchemeRegistry.h"
+#include "wtf/HashMap.h"
+#include "wtf/RefCountedLeakCounter.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/Base64.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

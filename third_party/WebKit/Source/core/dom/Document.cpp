@@ -160,7 +160,6 @@
 #include "core/platform/Language.h"
 #include "core/platform/Logging.h"
 #include "core/platform/PlatformKeyboardEvent.h"
-#include "core/platform/SchemeRegistry.h"
 #include "core/platform/Timer.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/network/HTTPParsers.h"
@@ -186,6 +185,7 @@
 #include "core/xml/XSLTProcessor.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "modules/geolocation/GeolocationController.h"
+#include "origin/SchemeRegistry.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashFunctions.h>
 #include <wtf/MainThread.h>
