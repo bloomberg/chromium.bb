@@ -1036,7 +1036,7 @@ internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
   boards=['x86-alex'],
 )
 
-internal_arm_paladin = internal_paladin.derive(arm)
+### Master paladin (CQ builder).
 
 internal_paladin.add_config('mario-paladin',
   master=True,
@@ -1046,6 +1046,97 @@ internal_paladin.add_config('mario-paladin',
   paladin_builder_name='mario paladin',
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 )
+
+### Other paladins (CQ builders).
+
+internal_paladin.add_config('alex-paladin',
+  boards=['x86-alex'],
+  paladin_builder_name='alex paladin',
+  hw_tests=HWTestConfig.DefaultListCQ(),
+  upload_hw_test_artifacts=True,
+)
+
+internal_paladin.add_config('butterfly-paladin',
+  boards=['butterfly'],
+  paladin_builder_name='butterfly paladin',
+)
+
+internal_paladin.add_config('falco-paladin',
+  boards=['falco'],
+  paladin_builder_name='falco paladin',
+  important=False,
+)
+
+internal_paladin.add_config('fox-wtm2-paladin',
+  boards=['fox_wtm2'],
+  paladin_builder_name='fox paladin',
+  vm_tests=None,
+)
+
+internal_paladin.add_config('link-paladin',
+  boards=['link'],
+  paladin_builder_name='link paladin',
+  quick_unit=False,
+  upload_hw_test_artifacts=True,
+)
+
+internal_paladin.add_config('lumpy-paladin',
+  boards=['lumpy'],
+  paladin_builder_name='lumpy paladin',
+  hw_tests=HWTestConfig.DefaultListCQ(),
+  upload_hw_test_artifacts=True,
+)
+
+internal_paladin.add_config('parrot-paladin',
+  boards=['parrot'],
+  paladin_builder_name='parrot paladin',
+  quick_unit=False,
+)
+
+internal_paladin.add_config('peppy-paladin',
+  boards=['peppy'],
+  paladin_builder_name='peppy paladin',
+  important=False,
+)
+
+internal_paladin.add_config('slippy-paladin',
+  boards=['slippy'],
+  paladin_builder_name='slippy paladin',
+  important=False,
+)
+
+internal_paladin.add_config('sonic-paladin',
+  sonic,
+  paladin_builder_name='sonic paladin',
+  important=False,
+)
+
+internal_paladin.add_config('stout-paladin',
+  boards=['stout'],
+  paladin_builder_name='stout paladin',
+)
+
+internal_paladin.add_config('stout32-paladin',
+  boards=['stout32'],
+  paladin_builder_name='stout32 paladin',
+  important=False,
+)
+
+internal_paladin.add_config('stumpy-paladin',
+  boards=['stumpy'],
+  paladin_builder_name='stumpy paladin',
+  upload_hw_test_artifacts=True,
+)
+
+internal_paladin.add_config('zgb-paladin',
+  boards=['x86-zgb'],
+  important=False,
+  paladin_builder_name='zgb paladin',
+)
+
+### Arm paladins (CQ builders).
+
+internal_arm_paladin = internal_paladin.derive(arm)
 
 internal_arm_paladin.add_config('daisy-paladin',
   boards=['daisy'],
@@ -1063,72 +1154,6 @@ internal_arm_paladin.add_config('peach_pit-paladin',
   paladin_builder_name='peach_pit paladin',
 )
 
-internal_paladin.add_config('zgb-paladin',
-  boards=['x86-zgb'],
-  important=False,
-  paladin_builder_name='zgb paladin',
-)
-
-internal_paladin.add_config('alex-paladin',
-  boards=['x86-alex'],
-  paladin_builder_name='alex paladin',
-  hw_tests=HWTestConfig.DefaultListCQ(),
-  upload_hw_test_artifacts=True,
-)
-
-internal_paladin.add_config('fox-wtm2-paladin',
-  boards=['fox_wtm2'],
-  paladin_builder_name='fox paladin',
-  vm_tests=None,
-)
-
-internal_paladin.add_config('stumpy-paladin',
-  boards=['stumpy'],
-  paladin_builder_name='stumpy paladin',
-  upload_hw_test_artifacts=True,
-)
-
-internal_paladin.add_config('lumpy-paladin',
-  boards=['lumpy'],
-  paladin_builder_name='lumpy paladin',
-  hw_tests=HWTestConfig.DefaultListCQ(),
-  upload_hw_test_artifacts=True,
-)
-
-internal_paladin.add_config('link-paladin',
-  boards=['link'],
-  paladin_builder_name='link paladin',
-  quick_unit=False,
-  upload_hw_test_artifacts=True,
-)
-
-internal_paladin.add_config('parrot-paladin',
-  boards=['parrot'],
-  paladin_builder_name='parrot paladin',
-  quick_unit=False,
-)
-
-internal_paladin.add_config('stout-paladin',
-  boards=['stout'],
-  paladin_builder_name='stout paladin',
-)
-
-internal_paladin.add_config('stout32-paladin',
-  boards=['stout32'],
-  paladin_builder_name='stout32 paladin',
-  important=False,
-)
-
-internal_paladin.add_config('sonic-paladin',
-  sonic,
-  paladin_builder_name='sonic paladin',
-  important=False,
-)
-
-internal_paladin.add_config('butterfly-paladin',
-  boards=['butterfly'],
-  paladin_builder_name='butterfly paladin',
-)
 
 internal_incremental.add_config('mario-incremental',
   boards=['x86-mario'],
@@ -1175,10 +1200,14 @@ _release = full.derive(official, internal,
   description="Release Builds (canary) (internal)",
 )
 
+### Master release config.
+
 _release.add_config('x86-mario-release',
   boards=['x86-mario'],
   master=True,
 )
+
+### Release config groups.
 
 _config.add_group('x86-alex-release-group',
   _release.add_config('x86-alex-release',
@@ -1207,14 +1236,7 @@ _config.add_group('x86-zgb-release-group',
   ),
 )
 
-_release.add_config('stumpy-release',
-  boards=['stumpy'],
-)
-
-_release.add_config('lumpy-release',
-  boards=['lumpy'],
-  critical_for_chrome=True,
-)
+### Release PGO configs.
 
 release_pgo = _release.derive(
   hw_tests=HWTestConfig.DefaultList(pool=constants.HWTEST_CHROME_PERF_POOL,
@@ -1245,13 +1267,52 @@ release_pgo.add_group('lumpy-release-pgo',
   ),
 )
 
+### Release configs.
+
+_release.add_config('butterfly-release',
+  boards=['butterfly'],
+  useflags=official['useflags'] + ['oem_wallpaper'],
+)
+
+_release.add_config('falco-release',
+  boards=['falco'],
+  hw_tests = [],
+)
+
+_release.add_config('fox-wtm2-release',
+  boards=['fox_wtm2'],
+  # Until these are configured and ready, disable them.
+  signer_tests=False,
+  vm_tests=None,
+  hw_tests=[],
+)
+
 _release.add_config('link-release',
   boards=['link'],
   useflags=official['useflags'] + ['highdpi'],
 )
 
+_release.add_config('lumpy-release',
+  boards=['lumpy'],
+  critical_for_chrome=True,
+)
+
 _release.add_config('parrot-release',
   boards=['parrot'],
+)
+
+_release.add_config('peppy-release',
+  boards=['peppy'],
+  hw_tests = [],
+)
+
+_release.add_config('slippy-release',
+  boards=['slippy'],
+  hw_tests = [],
+)
+
+_release.add_config('sonic-release',
+  sonic,
 )
 
 _release.add_config('stout-release',
@@ -1263,22 +1324,11 @@ _release.add_config('stout32-release',
   boards=['stout32'],
 )
 
-_release.add_config('sonic-release',
-  sonic,
+_release.add_config('stumpy-release',
+  boards=['stumpy'],
 )
 
-_release.add_config('butterfly-release',
-  boards=['butterfly'],
-  useflags=official['useflags'] + ['oem_wallpaper'],
-)
-
-_release.add_config('fox-wtm2-release',
-  boards=['fox_wtm2'],
-  # Until these are configured and ready, disable them.
-  signer_tests=False,
-  vm_tests=None,
-  hw_tests=[],
-)
+### Arm release configs.
 
 _arm_release = _release.derive(arm)
 
@@ -1342,11 +1392,14 @@ _depthcharge_full_internal = full.derive(
 
 _x86_firmware_boards = (
   'butterfly',
+  'falco',
   'link',
   'lumpy',
   'parrot',
+  'peppy',
   'stout',
   'stout32',
+  'slippy',
   'stumpy',
   'x86-mario',
 )
