@@ -75,7 +75,7 @@ class PathContext(object):
     #   _listing_platform_dir = Directory that holds revisions. Ends with a '/'.
     #   _archive_extract_dir = Uncompressed directory in the archive_name file.
     #   _binary_name = The name of the executable to run.
-    if self.platform == 'linux' or self.platform == 'linux64':
+    if self.platform in ('linux', 'linux64', 'linux-arm'):
       self._binary_name = 'chrome'
     elif self.platform == 'mac':
       self.archive_name = 'chrome-mac.zip'
@@ -102,13 +102,15 @@ class PathContext(object):
       elif self.platform == 'win':
         self._listing_platform_dir = 'win/'
     else:
-      if self.platform == 'linux' or self.platform == 'linux64':
+      if self.platform in ('linux', 'linux64', 'linux-arm'):
         self.archive_name = 'chrome-linux.zip'
         self._archive_extract_dir = 'chrome-linux'
         if self.platform == 'linux':
           self._listing_platform_dir = 'Linux/'
         elif self.platform == 'linux64':
           self._listing_platform_dir = 'Linux_x64/'
+        elif self.platform == 'linux-arm':
+          self._listing_platform_dir = 'Linux_ARM_Cross-Compile/'
       elif self.platform == 'mac':
         self._listing_platform_dir = 'Mac/'
         self._binary_name = 'Chromium.app/Contents/MacOS/Chromium'
@@ -312,8 +314,7 @@ def RunRevision(context, revision, zipfile, profile, num_runs, args):
   # Run the build as many times as specified.
   testargs = [context.GetLaunchPath(), '--user-data-dir=%s' % profile] + args
   # The sandbox must be run as root on Official Chrome, so bypass it.
-  if context.is_official and (context.platform == 'linux' or
-      context.platform == 'linux64'):
+  if context.is_official and context.platform.startswith('linux'):
     testargs.append('--no-sandbox')
 
   for i in range(0, num_runs):
@@ -606,7 +607,7 @@ def main():
            'Tip: add "-- --no-first-run" to bypass the first run prompts.')
   parser = optparse.OptionParser(usage=usage)
   # Strangely, the default help output doesn't include the choice list.
-  choices = ['mac', 'win', 'linux', 'linux64']
+  choices = ['mac', 'win', 'linux', 'linux64', 'linux-arm']
             # linux-chromiumos lacks a continuous archive http://crbug.com/78158
   parser.add_option('-a', '--archive',
                     choices = choices,
