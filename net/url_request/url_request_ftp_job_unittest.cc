@@ -45,6 +45,10 @@ class FtpTestURLRequestContext : public TestURLRequestContext {
     return ftp_protocol_handler_->ftp_auth_cache_.get();
   }
 
+  void set_proxy_service(ProxyService* proxy_service) {
+    context_storage_.set_proxy_service(proxy_service);
+  }
+
  private:
   FtpProtocolHandler* ftp_protocol_handler_;
 };
@@ -203,10 +207,9 @@ TEST_F(URLRequestFtpJobPriorityTest, SetSubsequentTransactionPriority) {
 class URLRequestFtpJobTest : public testing::Test {
  public:
   URLRequestFtpJobTest()
-      : proxy_service_(new ProxyService(
-                           new SimpleProxyConfigService, NULL, NULL)),
-        request_context_(&socket_factory_,
-                         proxy_service_,
+      : request_context_(&socket_factory_,
+                         new ProxyService(
+                             new SimpleProxyConfigService, NULL, NULL),
                          &network_delegate_,
                          &ftp_transaction_factory_) {
   }
@@ -239,9 +242,6 @@ class URLRequestFtpJobTest : public testing::Test {
   DeterministicMockClientSocketFactory socket_factory_;
   TestNetworkDelegate network_delegate_;
   MockFtpTransactionFactory ftp_transaction_factory_;
-
-  // Owned by |request_context_|:
-  ProxyService* proxy_service_;
 
   FtpTestURLRequestContext request_context_;
 };
