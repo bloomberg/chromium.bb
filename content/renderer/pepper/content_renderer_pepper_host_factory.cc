@@ -115,6 +115,7 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
     }
   }
 
+#if defined(ENABLE_WEBRTC)
   // Private interfaces.
   if (GetPermissions().HasPermission(ppapi::PERMISSION_PRIVATE)) {
     switch (message.type()) {
@@ -126,6 +127,7 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
             host_, instance, params.pp_resource()));
     }
   }
+#endif
 
   return scoped_ptr<ResourceHost>();
 }
