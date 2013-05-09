@@ -55,7 +55,6 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
   virtual void setNeedsRedraw();
   virtual bool commitRequested() const;
   virtual void composite();
-  virtual void updateAnimations(double frame_begin_time);
   virtual void didStopFlinging();
   virtual bool compositeAndReadback(void* pixels, const WebKit::WebRect& rect);
   virtual void finishAllRendering();

@@ -214,6 +214,45 @@ class LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws
 // Starvation can only be an issue with the MT compositor.
 MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws);
 
+// Ensures that animations eventually get deleted.
+class LayerTreeHostAnimationTestAnimationsGetDeleted
+    : public LayerTreeHostAnimationTest {
+ public:
+  LayerTreeHostAnimationTestAnimationsGetDeleted()
+      : started_animating_(false) {}
+
+  virtual void BeginTest() OVERRIDE {
+    PostAddAnimationToMainThread(layer_tree_host()->root_layer());
+  }
+
+  virtual void AnimateLayers(
+      LayerTreeHostImpl* host_impl,
+      base::TimeTicks monotonic_time) OVERRIDE {
+    bool have_animations = !host_impl->animation_registrar()->
+        active_animation_controllers().empty();
+    if (!started_animating_ && have_animations) {
+      started_animating_ = true;
+      return;
+    }
+
+    if (started_animating_ && !have_animations)
+      EndTest();
+  }
+
+  virtual void notifyAnimationFinished(double time) OVERRIDE {
+    // Animations on the impl-side controller only get deleted during a commit,
+    // so we need to schedule a commit.
+    layer_tree_host()->SetNeedsCommit();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  bool started_animating_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestAnimationsGetDeleted);
+
 // Ensures that animations continue to be ticked when we are backgrounded.
 class LayerTreeHostAnimationTestTickAnimationWhileBackgrounded
     : public LayerTreeHostAnimationTest {

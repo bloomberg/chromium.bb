@@ -229,13 +229,10 @@ void LayerTreeHost::DidBeginFrame() {
   client_->DidBeginFrame();
 }
 
-void LayerTreeHost::UpdateAnimations(base::TimeTicks frame_begin_time) {
+void LayerTreeHost::UpdateClientAnimations(base::TimeTicks frame_begin_time) {
   animating_ = true;
   client_->Animate((frame_begin_time - base::TimeTicks()).InSecondsF());
-  AnimateLayers(frame_begin_time);
   animating_ = false;
-
-  rendering_stats_instrumentation_->IncrementAnimationFrameCount();
 }
 
 void LayerTreeHost::DidStopFlinging() {
@@ -1079,11 +1076,12 @@ scoped_ptr<base::Value> LayerTreeHost::AsValue() const {
 }
 
 void LayerTreeHost::AnimateLayers(base::TimeTicks time) {
+  rendering_stats_instrumentation_->IncrementAnimationFrameCount();
   if (!settings_.accelerated_animation_enabled ||
       animation_registrar_->active_animation_controllers().empty())
     return;
 
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::AnimateLayers");
+  TRACE_EVENT0("cc", "LayerTreeHost::AnimateLayers");
 
   double monotonic_time = (time - base::TimeTicks()).InSecondsF();
 

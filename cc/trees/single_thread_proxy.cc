@@ -376,6 +376,8 @@ bool SingleThreadProxy::CommitAndComposite(
   if (!layer_tree_host_->InitializeOutputSurfaceIfNeeded())
     return false;
 
+  layer_tree_host_->AnimateLayers(frame_begin_time);
+
   scoped_refptr<cc::ContextProvider> offscreen_context_provider;
   if (renderer_capabilities_for_main_thread_.using_offscreen_context3d &&
       layer_tree_host_->needs_offscreen_context()) {

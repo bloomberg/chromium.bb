@@ -141,13 +141,6 @@ void WebLayerTreeViewImplForTesting::composite() {
   layer_tree_host_->Composite(base::TimeTicks::Now());
 }
 
-void WebLayerTreeViewImplForTesting::updateAnimations(
-    double frame_begin_timeSeconds) {
-  base::TimeTicks frame_begin_time = base::TimeTicks::FromInternalValue(
-      frame_begin_timeSeconds * base::Time::kMicrosecondsPerMillisecond);
-  layer_tree_host_->UpdateAnimations(frame_begin_time);
-}
-
 void WebLayerTreeViewImplForTesting::didStopFlinging() {}
 
 bool WebLayerTreeViewImplForTesting::compositeAndReadback(

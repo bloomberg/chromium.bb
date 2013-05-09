@@ -678,7 +678,9 @@ void ThreadProxy::BeginFrame(
   layer_tree_host_->WillBeginFrame();
 
   if (begin_frame_state) {
-    layer_tree_host_->UpdateAnimations(
+    layer_tree_host_->UpdateClientAnimations(
+        begin_frame_state->monotonic_frame_begin_time);
+    layer_tree_host_->AnimateLayers(
         begin_frame_state->monotonic_frame_begin_time);
   }
 

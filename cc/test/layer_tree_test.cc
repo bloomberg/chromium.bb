@@ -547,7 +547,6 @@ void LayerTreeTest::DispatchComposite() {
 
   schedule_when_set_visible_true_ = false;
   base::TimeTicks now = base::TimeTicks::Now();
-  layer_tree_host_->UpdateAnimations(now);
   layer_tree_host_->Composite(now);
 }
 

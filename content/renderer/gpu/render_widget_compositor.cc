@@ -306,7 +306,7 @@ void RenderWidgetCompositor::SetSuppressScheduleComposite(bool suppress) {
 }
 
 void RenderWidgetCompositor::Animate(base::TimeTicks time) {
-  layer_tree_host_->UpdateAnimations(time);
+  layer_tree_host_->UpdateClientAnimations(time);
 }
 
 void RenderWidgetCompositor::Composite(base::TimeTicks frame_begin_time) {
