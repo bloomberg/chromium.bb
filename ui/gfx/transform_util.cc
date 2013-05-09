@@ -58,6 +58,19 @@ bool Slerp(double out[4],
   // Clamp product to -1.0 <= product <= 1.0.
   product = std::min(std::max(product, -1.0), 1.0);
 
+  // Interpolate angles along the shortest path. For example, to interpolate
+  // between a 175 degree angle and a 185 degree angle, interpolate along the
+  // 10 degree path from 175 to 185, rather than along the 350 degree path in
+  // the opposite direction. This matches WebKit's implementation but not
+  // the current W3C spec. Fixing the spec to match this approach is discussed
+  // at:
+  // http://lists.w3.org/Archives/Public/www-style/2013May/0131.html
+  double scale1 = 1.0;
+  if (product < 0) {
+    product = -product;
+    scale1 = -1.0;
+  }
+
   const double epsilon = 1e-5;
   if (std::abs(product - 1.0) < epsilon) {
     for (int i = 0; i < 4; ++i)
@@ -69,7 +82,7 @@ bool Slerp(double out[4],
   double theta = std::acos(product);
   double w = std::sin(progress * theta) * (1 / denom);
 
-  double scale1 = std::cos(progress * theta) - product * w;
+  scale1 *= std::cos(progress * theta) - product * w;
   double scale2 = w;
   Combine<4>(out, q1, q2, scale1, scale2);
 

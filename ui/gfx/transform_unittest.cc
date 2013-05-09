@@ -688,6 +688,43 @@ TEST(XFormTest, BlendRotate) {
   }
 }
 
+TEST(XFormTest, BlendRotateFollowsShortestPath) {
+  // Verify that we interpolate along the shortest path regardless of whether
+  // this path crosses the 180-degree point.
+  Vector3dF axes[] = {
+    Vector3dF(1, 0, 0),
+    Vector3dF(0, 1, 0),
+    Vector3dF(0, 0, 1),
+    Vector3dF(1, 1, 1)
+  };
+  for (size_t index = 0; index < ARRAYSIZE_UNSAFE(axes); ++index) {
+    for (int i = 0; i < 10; ++i) {
+      Transform from1;
+      from1.RotateAbout(axes[index], 130.0);
+      Transform to1;
+      to1.RotateAbout(axes[index], 175.0);
+
+      Transform from2;
+      from2.RotateAbout(axes[index], 140.0);
+      Transform to2;
+      to2.RotateAbout(axes[index], 185.0);
+
+      double t = i / 9.0;
+      EXPECT_TRUE(to1.Blend(from1, t));
+      EXPECT_TRUE(to2.Blend(from2, t));
+
+      Transform expected1;
+      expected1.RotateAbout(axes[index], 130.0 + 45.0 * t);
+
+      Transform expected2;
+      expected2.RotateAbout(axes[index], 140.0 + 45.0 * t);
+
+      EXPECT_TRUE(MatricesAreNearlyEqual(expected1, to1));
+      EXPECT_TRUE(MatricesAreNearlyEqual(expected2, to2));
+    }
+  }
+}
+
 TEST(XFormTest, CanBlend180DegreeRotation) {
   Vector3dF axes[] = {
     Vector3dF(1, 0, 0),
