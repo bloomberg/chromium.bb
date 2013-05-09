@@ -23,7 +23,8 @@ namespace {
 // A command switch to enable syncing directory operations in Sync FileSystem
 // API. (http://crbug.com/161442)
 // TODO(kinuko): this command-line switch should be temporary.
-const char kEnableSyncDirectoryOperation[]  = "enable-sync-directory-operation";
+const char kEnableSyncDirectoryOperation[]  =
+    "enable-syncfs-directory-operation";
 
 bool is_directory_operation_enabled = false;
 

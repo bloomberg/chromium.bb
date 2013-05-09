@@ -1466,6 +1466,13 @@ const Experiment kExperiments[] = {
     kOsWin,
     SINGLE_VALUE_TYPE(switches::kAppsUseNativeFrame)
   },
+  {
+    "enable-syncfs-directory-operation",
+    IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_NAME,
+    IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kSyncfsEnableDirectoryOperation),
+  },
 };
 
 const Experiment* experiments = kExperiments;

@@ -1367,6 +1367,10 @@ const char kSyncTrySsltcpFirstForXmpp[]     = "sync-try-ssltcp-first-for-xmpp";
 // occur.
 const char kSyncEnableDeferredStartup[]     = "sync-enable-deferred-startup";
 
+// Enables directory support for sync filesystem
+const char kSyncfsEnableDirectoryOperation[] =
+    "enable-syncfs-directory-operation";
+
 // Enables tab dragging to create a real browser.
 const char kTabBrowserDragging[]            = "enable-tab-browser-dragging";
 
