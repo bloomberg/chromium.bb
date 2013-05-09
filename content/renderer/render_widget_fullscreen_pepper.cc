@@ -391,6 +391,12 @@ void RenderWidgetFullscreenPepper::Destroy() {
   // This function is called by the plugin instance as it's going away, so reset
   // plugin_ to NULL to avoid calling into a dangling pointer e.g. on Close().
   plugin_ = NULL;
+
+  // After calling Destroy(), the plugin instance assumes that the layer is not
+  // used by us anymore, so it may destroy the layer before this object goes
+  // away.
+  SetLayer(NULL);
+
   Send(new ViewHostMsg_Close(routing_id_));
   Release();
 }
