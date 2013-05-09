@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/experimental_bluetooth_profile_service_provider.h"
@@ -31,7 +32,7 @@ class CHROMEOS_EXPORT FakeBluetoothProfileServiceProvider
   virtual void Release();
   virtual void NewConnection(
       const dbus::ObjectPath& device_path,
-      dbus::FileDescriptor* fd,
+      scoped_ptr<dbus::FileDescriptor> fd,
       const Delegate::Options& options,
       const Delegate::ConfirmationCallback& callback);
   virtual void RequestDisconnection(
@@ -40,6 +41,8 @@ class CHROMEOS_EXPORT FakeBluetoothProfileServiceProvider
   virtual void Cancel();
 
  private:
+  friend class FakeBluetoothProfileManagerClient;
+
   // D-Bus object path we are faking.
   dbus::ObjectPath object_path_;
 

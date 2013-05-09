@@ -16,6 +16,7 @@
 #include "chromeos/dbus/experimental_bluetooth_input_client.h"
 #include "dbus/bus.h"
 #include "device/bluetooth/bluetooth_adapter_experimental_chromeos.h"
+#include "device/bluetooth/bluetooth_profile_experimental_chromeos.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -392,8 +393,24 @@ void BluetoothDeviceExperimentalChromeOS::ConnectToProfile(
     device::BluetoothProfile* profile,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  // TODO(keybuk): implement
-  error_callback.Run();
+  BluetoothProfileExperimentalChromeOS* profile_chromeos =
+      static_cast<BluetoothProfileExperimentalChromeOS*>(profile);
+  VLOG(1) << object_path_.value() << ": Connecting profile: "
+          << profile_chromeos->uuid();
+  DBusThreadManager::Get()->GetExperimentalBluetoothDeviceClient()->
+      ConnectProfile(
+          object_path_,
+          profile_chromeos->uuid(),
+          base::Bind(
+              &BluetoothDeviceExperimentalChromeOS::OnConnectProfile,
+              weak_ptr_factory_.GetWeakPtr(),
+              profile,
+              callback),
+          base::Bind(
+              &BluetoothDeviceExperimentalChromeOS::OnConnectProfileError,
+              weak_ptr_factory_.GetWeakPtr(),
+              profile,
+              error_callback));
 }
 
 void BluetoothDeviceExperimentalChromeOS::SetOutOfBandPairingData(
@@ -804,6 +821,29 @@ bool BluetoothDeviceExperimentalChromeOS::RunPairingCallbacks(Status status) {
   }
 
   return callback_run;
+}
+
+void BluetoothDeviceExperimentalChromeOS::OnConnectProfile(
+    device::BluetoothProfile* profile,
+    const base::Closure& callback) {
+  BluetoothProfileExperimentalChromeOS* profile_chromeos =
+      static_cast<BluetoothProfileExperimentalChromeOS*>(profile);
+  VLOG(1) << object_path_.value() << ": Profile connected: "
+          << profile_chromeos->uuid();
+  callback.Run();
+}
+
+void BluetoothDeviceExperimentalChromeOS::OnConnectProfileError(
+    device::BluetoothProfile* profile,
+    const ErrorCallback& error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  BluetoothProfileExperimentalChromeOS* profile_chromeos =
+      static_cast<BluetoothProfileExperimentalChromeOS*>(profile);
+  VLOG(1) << object_path_.value() << ": Profile connection failed: "
+          << profile_chromeos->uuid() << ": "
+          << error_name << ": " << error_message;
+  error_callback.Run();
 }
 
 }  // namespace chromeos

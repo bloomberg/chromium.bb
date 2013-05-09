@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "dbus/bus.h"
 #include "dbus/file_descriptor.h"
@@ -74,13 +75,16 @@ class CHROMEOS_EXPORT ExperimentalBluetoothProfileServiceProvider {
     //
     // A file descriptor for the connection socket is provided in |fd|, and
     // details about the specific implementation of the profile in |options|.
-    // The delegate should take the value and ownership
-
-    // The file descriptor is owned by the delegate after this call so must be
-    // cleaned up if the connection is cancelled or rejected, the |options|
-    // structure is not so information out of it must be copied if required.
+    //
+    // IMPORTANT: Ownership of the file descriptor object |fd| is passed to
+    // the delegate by this call. The delegate is responsible for checking the
+    // validity of |fd| on a thread where I/O is permitted before taking the
+    // value. If the value is not taken, the file descriptor is closed.
+    //
+    // Ownership of |options| is NOT passed so information out of it must be
+    // copied if required.
     virtual void NewConnection(const dbus::ObjectPath& device_path,
-                               dbus::FileDescriptor* fd,
+                               scoped_ptr<dbus::FileDescriptor> fd,
                                const Options& options,
                                const ConfirmationCallback& callback) = 0;
 

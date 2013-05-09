@@ -65,6 +65,8 @@ class BluetoothAdapterExperimentalChromeOS
   friend class device::BluetoothAdapterFactory;
   friend class BluetoothDeviceExperimentalChromeOS;
   friend class BluetoothExperimentalChromeOSTest;
+  friend class BluetoothProfileExperimentalChromeOS;
+  friend class BluetoothProfileChromeOSTest;
 
   BluetoothAdapterExperimentalChromeOS();
   virtual ~BluetoothAdapterExperimentalChromeOS();

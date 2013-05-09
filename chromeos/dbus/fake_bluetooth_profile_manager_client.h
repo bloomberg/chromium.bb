@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_DBUS_FAKE_BLUETOOTH_PROFILE_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_BLUETOOTH_PROFILE_MANAGER_CLIENT_H_
 
+#include <map>
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/observer_list.h"
@@ -15,6 +18,8 @@
 #include "dbus/property.h"
 
 namespace chromeos {
+
+class FakeBluetoothProfileServiceProvider;
 
 // FakeBluetoothProfileManagerClient simulates the behavior of the Bluetooth
 // Daemon's profile manager object and is used both in test cases in place of a
@@ -34,6 +39,33 @@ class CHROMEOS_EXPORT FakeBluetoothProfileManagerClient
   virtual void UnregisterProfile(const dbus::ObjectPath& profile_path,
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback) OVERRIDE;
+
+  // Register, unregister and retrieve pointers to profile server providers.
+  void RegisterProfileServiceProvider(
+      FakeBluetoothProfileServiceProvider* service_provider);
+  void UnregisterProfileServiceProvider(
+      FakeBluetoothProfileServiceProvider* service_provider);
+  FakeBluetoothProfileServiceProvider* GetProfileServiceProvider(
+      const std::string& uuid);
+
+  // UUIDs recognised for testing.
+  static const char kL2capUuid[];
+  static const char kRfcommUuid[];
+
+ private:
+  // Map of a D-Bus object path to the FakeBluetoothProfileServiceProvider
+  // registered for it; maintained by RegisterProfileServiceProvider() and
+  // UnregisterProfileServiceProvicer() called by the constructor and
+  // destructor of FakeBluetoothProfileServiceProvider.
+  typedef std::map<dbus::ObjectPath, FakeBluetoothProfileServiceProvider*>
+      ServiceProviderMap;
+  ServiceProviderMap service_provider_map_;
+
+  // Map of Profile UUID to the D-Bus object path of the service provider
+  // in |service_provider_map_|. Maintained by RegisterProfile() and
+  // UnregisterProfile() in response to BluetoothProfile methods.
+  typedef std::map<std::string, dbus::ObjectPath> ProfileMap;
+  ProfileMap profile_map_;
 };
 
 }  // namespace chromeos

@@ -113,10 +113,10 @@ class ExperimentalBluetoothProfileServiceProviderImpl
 
     dbus::MessageReader reader(method_call);
     dbus::ObjectPath device_path;
-    dbus::FileDescriptor fd;
+    scoped_ptr<dbus::FileDescriptor> fd(new dbus::FileDescriptor());
     dbus::MessageReader array_reader(NULL);
     if (!reader.PopObjectPath(&device_path) ||
-        !reader.PopFileDescriptor(&fd) ||
+        !reader.PopFileDescriptor(fd.get()) ||
         !reader.PopArray(&array_reader)) {
       LOG(WARNING) << "NewConnection called with incorrect paramters: "
                    << method_call->ToString();
@@ -145,9 +145,7 @@ class ExperimentalBluetoothProfileServiceProviderImpl
         method_call,
         response_sender);
 
-    delegate_->NewConnection(device_path, &fd, options, callback);
-
-    response_sender.Run(dbus::Response::FromMethodCall(method_call));
+    delegate_->NewConnection(device_path, fd.Pass(), options, callback);
   }
 
   // Called by dbus:: when the Bluetooth daemon is about to disconnect the

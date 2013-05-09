@@ -173,6 +173,15 @@ class BluetoothDeviceExperimentalChromeOS
   // pairing. Returns true if any callbacks were run, false if not.
   bool RunPairingCallbacks(Status status);
 
+  // Called by dbus:: on completion of the D-Bus method call to
+  // connect a peofile.
+  void OnConnectProfile(device::BluetoothProfile* profile,
+                        const base::Closure& callback);
+  void OnConnectProfileError(device::BluetoothProfile* profile,
+                             const ErrorCallback& error_callback,
+                             const std::string& error_name,
+                             const std::string& error_message);
+
   // Return the object path of the device; used by
   // BluetoothAdapterExperimentalChromeOS
   const dbus::ObjectPath& object_path() const { return object_path_; }

@@ -4,6 +4,11 @@
 
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
 #include <algorithm>
 #include <map>
 #include <string>
@@ -12,14 +17,19 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "base/threading/worker_pool.h"
 #include "base/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_service_provider.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
+#include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
+#include "chromeos/dbus/fake_bluetooth_profile_service_provider.h"
+#include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -27,6 +37,30 @@ namespace {
 
 // Default interval between simulated events.
 const int kSimulationIntervalMs = 750;
+
+
+void SimulatedProfileSocket(int fd) {
+  // Simulate a server-side socket of a profile; read data from the socket,
+  // write it back, and then close.
+  char buf[1024];
+  ssize_t len;
+  ssize_t count;
+
+  len = read(fd, buf, sizeof buf);
+  if (len < 0) {
+    close(fd);
+    return;
+  }
+
+  count = len;
+  len = write(fd, buf, count);
+  if (len < 0) {
+    close(fd);
+    return;
+  }
+
+  close(fd);
+}
 
 }
 
@@ -267,7 +301,63 @@ void FakeBluetoothDeviceClient::ConnectProfile(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "ConnectProfile: " << object_path.value() << " " << uuid;
-  error_callback.Run(kNoResponseError, "");
+
+  FakeBluetoothProfileManagerClient* fake_bluetooth_profile_manager_client =
+      static_cast<FakeBluetoothProfileManagerClient*>(
+          DBusThreadManager::Get()->
+              GetExperimentalBluetoothProfileManagerClient());
+  FakeBluetoothProfileServiceProvider* profile_service_provider =
+      fake_bluetooth_profile_manager_client->GetProfileServiceProvider(uuid);
+  if (profile_service_provider == NULL) {
+    error_callback.Run(kNoResponseError, "Missing profile");
+    return;
+  }
+
+  // Make a socket pair of a compatible type with the type used by Bluetooth;
+  // spin up a thread to simulate the server side and wrap the client side in
+  // a D-Bus file descriptor object.
+  int socket_type = SOCK_STREAM;
+  if (uuid == FakeBluetoothProfileManagerClient::kL2capUuid)
+    socket_type = SOCK_SEQPACKET;
+
+  int fds[2];
+  if (socketpair(AF_UNIX, socket_type, 0, fds) < 0) {
+    error_callback.Run(kNoResponseError, "socketpair call failed");
+    return;
+  }
+
+  int args;
+  args = fcntl(fds[1], F_GETFL, NULL);
+  if (args < 0) {
+    error_callback.Run(kNoResponseError, "failed to get socket flags");
+    return;
+  }
+
+  args |= O_NONBLOCK;
+  if (fcntl(fds[1], F_SETFL, args) < 0) {
+    error_callback.Run(kNoResponseError, "failed to set socket non-blocking");
+    return;
+  }
+
+  base::WorkerPool::GetTaskRunner(false)->PostTask(
+      FROM_HERE,
+      base::Bind(&SimulatedProfileSocket,
+                 fds[0]));
+
+  scoped_ptr<dbus::FileDescriptor> fd(new dbus::FileDescriptor(fds[1]));
+
+  // Post the new connection to the service provider.
+  ExperimentalBluetoothProfileServiceProvider::Delegate::Options options;
+
+  profile_service_provider->NewConnection(
+      object_path,
+      fd.Pass(),
+      options,
+      base::Bind(&FakeBluetoothDeviceClient::ConnectionCallback,
+                 base::Unretained(this),
+                 object_path,
+                 callback,
+                 error_callback));
 }
 
 void FakeBluetoothDeviceClient::DisconnectProfile(
@@ -276,7 +366,25 @@ void FakeBluetoothDeviceClient::DisconnectProfile(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "DisconnectProfile: " << object_path.value() << " " << uuid;
-  error_callback.Run(kNoResponseError, "");
+
+  FakeBluetoothProfileManagerClient* fake_bluetooth_profile_manager_client =
+      static_cast<FakeBluetoothProfileManagerClient*>(
+          DBusThreadManager::Get()->
+              GetExperimentalBluetoothProfileManagerClient());
+  FakeBluetoothProfileServiceProvider* profile_service_provider =
+      fake_bluetooth_profile_manager_client->GetProfileServiceProvider(uuid);
+  if (profile_service_provider == NULL) {
+    error_callback.Run(kNoResponseError, "Missing profile");
+    return;
+  }
+
+  profile_service_provider->RequestDisconnection(
+      object_path,
+      base::Bind(&FakeBluetoothDeviceClient::DisconnectionCallback,
+                 base::Unretained(this),
+                 object_path,
+                 callback,
+                 error_callback));
 }
 
 void FakeBluetoothDeviceClient::Pair(
@@ -917,6 +1025,47 @@ void FakeBluetoothDeviceClient::SimulateKeypress(
                    object_path, callback, error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 
+  }
+}
+
+void FakeBluetoothDeviceClient::ConnectionCallback(
+    const dbus::ObjectPath& object_path,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback,
+    ExperimentalBluetoothProfileServiceProvider::Delegate::Status status) {
+  VLOG(1) << "ConnectionCallback: " << object_path.value();
+
+  if (status ==
+      ExperimentalBluetoothProfileServiceProvider::Delegate::SUCCESS) {
+    callback.Run();
+  } else if (status ==
+             ExperimentalBluetoothProfileServiceProvider::Delegate::CANCELLED) {
+    // TODO(keybuk): tear down this side of the connection
+    error_callback.Run(bluetooth_adapter::kErrorFailed, "Canceled");
+  } else if (status ==
+             ExperimentalBluetoothProfileServiceProvider::Delegate::REJECTED) {
+    // TODO(keybuk): tear down this side of the connection
+    error_callback.Run(bluetooth_adapter::kErrorFailed, "Rejected");
+  }
+}
+
+void FakeBluetoothDeviceClient::DisconnectionCallback(
+    const dbus::ObjectPath& object_path,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback,
+    ExperimentalBluetoothProfileServiceProvider::Delegate::Status status) {
+  VLOG(1) << "DisconnectionCallback: " << object_path.value();
+
+  if (status ==
+      ExperimentalBluetoothProfileServiceProvider::Delegate::SUCCESS) {
+    // TODO(keybuk): tear down this side of the connection
+    callback.Run();
+  } else if (status ==
+             ExperimentalBluetoothProfileServiceProvider::Delegate::CANCELLED) {
+    error_callback.Run(bluetooth_adapter::kErrorFailed, "Canceled");
+  } else if (status ==
+             ExperimentalBluetoothProfileServiceProvider::Delegate::REJECTED) {
+    error_callback.Run(bluetooth_adapter::kErrorFailed, "Rejected");
   }
 }
 

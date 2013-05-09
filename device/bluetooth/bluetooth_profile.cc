@@ -4,7 +4,9 @@
 
 #include "device/bluetooth/bluetooth_profile.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_CHROMEOS)
+#include "device/bluetooth/bluetooth_profile_experimental_chromeos.h"
+#elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "device/bluetooth/bluetooth_profile_mac.h"
 #elif defined(OS_WIN)
@@ -43,16 +45,23 @@ BluetoothProfile::~BluetoothProfile() {
 void BluetoothProfile::Register(const std::string& uuid,
                                 const Options& options,
                                 const ProfileCallback& callback) {
+#if defined(OS_CHROMEOS)
+  chromeos::BluetoothProfileExperimentalChromeOS* profile = NULL;
+  profile = new chromeos::BluetoothProfileExperimentalChromeOS();
+  profile->Init(uuid, options, callback);
+#elif defined(OS_MACOSX)
   BluetoothProfile* profile = NULL;
 
-#if defined(OS_MACOSX)
   if (base::mac::IsOSLionOrLater())
     profile = new BluetoothProfileMac(uuid, options.name);
-#elif defined(OS_WIN)
-  profile = new BluetoothProfileWin(uuid, options.name);
-#endif
-
   callback.Run(profile);
+#elif defined(OS_WIN)
+  BluetoothProfile* profile = NULL;
+  profile = new BluetoothProfileWin(uuid, options.name);
+  callback.Run(profile);
+#else
+  callback.Run(NULL);
+#endif
 }
 
 }  // namespace device

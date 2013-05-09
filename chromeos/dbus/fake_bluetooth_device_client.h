@@ -15,6 +15,7 @@
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/experimental_bluetooth_agent_service_provider.h"
 #include "chromeos/dbus/experimental_bluetooth_device_client.h"
+#include "chromeos/dbus/experimental_bluetooth_profile_service_provider.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 
@@ -185,6 +186,17 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
       const dbus::ObjectPath& object_path,
       const base::Closure& callback,
       const ErrorCallback& error_callback);
+
+  void ConnectionCallback(
+      const dbus::ObjectPath& object_path,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback,
+      ExperimentalBluetoothProfileServiceProvider::Delegate::Status status);
+  void DisconnectionCallback(
+      const dbus::ObjectPath& object_path,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback,
+      ExperimentalBluetoothProfileServiceProvider::Delegate::Status status);
 
   // List of observers interested in event notifications from us.
   ObserverList<Observer> observers_;
