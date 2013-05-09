@@ -165,7 +165,7 @@ void NonClientView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = accessible_name_;
 }
 
-std::string NonClientView::GetClassName() const {
+const char* NonClientView::GetClassName() const {
   return kViewClassName;
 }
 
@@ -291,7 +291,7 @@ void NonClientFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_CLIENT;
 }
 
-std::string NonClientFrameView::GetClassName() const {
+const char* NonClientFrameView::GetClassName() const {
   return kViewClassName;
 }
 

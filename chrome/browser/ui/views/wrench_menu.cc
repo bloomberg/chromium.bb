@@ -167,7 +167,7 @@ class MenuButtonBackground : public views::Background {
   // Overridden from views::Background.
   virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
     CustomButton::ButtonState state =
-        (view->GetClassName() == views::Label::kViewClassName) ?
+        (!strcmp(view->GetClassName(), views::Label::kViewClassName)) ?
         CustomButton::STATE_NORMAL : static_cast<CustomButton*>(view)->state();
     int w = view->width();
     int h = view->height();

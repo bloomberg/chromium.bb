@@ -55,7 +55,7 @@ class ReloadButton : public views::ButtonDropDown,
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
   // Overridden from views::ButtonDropDown:
   virtual bool ShouldShowMenu() OVERRIDE;

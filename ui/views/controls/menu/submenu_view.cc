@@ -389,7 +389,7 @@ void SubmenuView::MenuHostDestroyed() {
   GetMenuItem()->GetMenuController()->Cancel(MenuController::EXIT_DESTROYED);
 }
 
-std::string SubmenuView::GetClassName() const {
+const char* SubmenuView::GetClassName() const {
   return kViewClassName;
 }
 

@@ -155,7 +155,7 @@ void Combobox::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   }
 }
 
-std::string Combobox::GetClassName() const {
+const char* Combobox::GetClassName() const {
   return kViewClassName;
 }
 

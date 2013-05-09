@@ -105,7 +105,7 @@ void CustomButton::OnEnabledChanged() {
     SetState(STATE_DISABLED);
 }
 
-std::string CustomButton::GetClassName() const {
+const char* CustomButton::GetClassName() const {
   return kViewClassName;
 }
 

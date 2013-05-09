@@ -83,7 +83,7 @@ class ContentsContainer : public views::View,
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
   // Testing interface:
   views::WebView* GetActiveWebViewForTest() { return active_; }

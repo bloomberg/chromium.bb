@@ -32,7 +32,7 @@ gfx::Size InfoBarContainerView::GetPreferredSize() {
   return gfx::Size(0, total_height);
 }
 
-std::string InfoBarContainerView::GetClassName() const {
+const char* InfoBarContainerView::GetClassName() const {
   return kViewClassName;
 }
 

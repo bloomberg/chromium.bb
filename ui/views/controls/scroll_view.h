@@ -28,7 +28,7 @@ namespace views {
 
 class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
  public:
-  static const char* const kViewClassName;
+  static const char kViewClassName[];
 
   ScrollView();
   virtual ~ScrollView();
@@ -71,7 +71,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
   // ScrollBarController overrides:
   virtual void ScrollToPosition(ScrollBar* source, int position) OVERRIDE;

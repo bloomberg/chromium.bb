@@ -210,7 +210,7 @@ class AutofillDialogViews : public AutofillDialogView,
     bool invalid() const { return invalid_; }
 
     // views::View implementation.
-    virtual std::string GetClassName() const OVERRIDE;
+    virtual const char* GetClassName() const OVERRIDE;
     virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
@@ -276,7 +276,7 @@ class AutofillDialogViews : public AutofillDialogView,
     void SetNotifications(const std::vector<DialogNotification>& notifications);
 
     // views::View implementation.
-    virtual std::string GetClassName() const OVERRIDE;
+    virtual const char* GetClassName() const OVERRIDE;
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
     // views::ButtonListener implementation:

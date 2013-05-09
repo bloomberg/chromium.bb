@@ -31,7 +31,7 @@ const SkScalar kTabBorderRadius = 2.0f;
 namespace views {
 
 // static
-const char TabbedPane::kViewClassName[] = "views/TabbedPane";
+const char TabbedPane::kViewClassName[] = "TabbedPane";
 
 // The tab view shown in the tab strip.
 class Tab : public View {
@@ -350,7 +350,7 @@ bool TabbedPane::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
-std::string TabbedPane::GetClassName() const {
+const char* TabbedPane::GetClassName() const {
   return kViewClassName;
 }
 

@@ -141,7 +141,8 @@ int button_spacing() {
 }  // namespace
 
 // static
-const char ToolbarView::kViewClassName[] = "browser/ui/views/ToolbarView";
+const char ToolbarView::kViewClassName[] = "ToolbarView";
+
 // The space between items is 3 px in general.
 const int ToolbarView::kStandardSpacing = 3;
 // The top of the toolbar has an edge we have to skip over in addition to the
@@ -672,7 +673,7 @@ void ToolbarView::OnThemeChanged() {
   LoadImages();
 }
 
-std::string ToolbarView::GetClassName() const {
+const char* ToolbarView::GetClassName() const {
   return kViewClassName;
 }
 

@@ -517,7 +517,7 @@ void TextButtonBase::OnEnabledChanged() {
   CustomButton::OnEnabledChanged();
 }
 
-std::string TextButtonBase::GetClassName() const {
+const char* TextButtonBase::GetClassName() const {
   return kViewClassName;
 }
 
@@ -693,7 +693,7 @@ void TextButton::set_ignore_minimum_size(bool ignore_minimum_size) {
   ignore_minimum_size_ = ignore_minimum_size;
 }
 
-std::string TextButton::GetClassName() const {
+const char* TextButton::GetClassName() const {
   return kViewClassName;
 }
 
@@ -771,7 +771,7 @@ gfx::Size NativeTextButton::GetMinimumSize() {
   return GetPreferredSize();
 }
 
-std::string NativeTextButton::GetClassName() const {
+const char* NativeTextButton::GetClassName() const {
   return kViewClassName;
 }
 

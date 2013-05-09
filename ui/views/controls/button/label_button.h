@@ -64,7 +64,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Init);

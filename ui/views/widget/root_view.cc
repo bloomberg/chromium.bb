@@ -363,7 +363,7 @@ bool RootView::IsDrawn() const {
   return visible();
 }
 
-std::string RootView::GetClassName() const {
+const char* RootView::GetClassName() const {
   return kViewClassName;
 }
 

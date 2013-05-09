@@ -102,7 +102,7 @@ void ButtonDropDown::OnMouseReleased(const ui::MouseEvent& event) {
     show_menu_factory_.InvalidateWeakPtrs();
 }
 
-std::string ButtonDropDown::GetClassName() const {
+const char* ButtonDropDown::GetClassName() const {
   return kViewClassName;
 }
 

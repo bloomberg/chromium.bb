@@ -70,7 +70,7 @@ void ClientView::Layout() {
     contents_view_->SetBounds(0, 0, width(), height());
 }
 
-std::string ClientView::GetClassName() const {
+const char* ClientView::GetClassName() const {
   return kViewClassName;
 }
 

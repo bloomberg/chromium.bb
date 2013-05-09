@@ -71,7 +71,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   virtual void ItemPercentDownloadedChanged() OVERRIDE;
 
   // views::View overrides:
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

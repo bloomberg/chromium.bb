@@ -227,8 +227,8 @@ void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
 
 }  // namespace
 
-// Returned from BrowserView::GetClassName.
-const char BrowserView::kViewClassName[] = "browser/ui/views/BrowserView";
+// static
+const char BrowserView::kViewClassName[] = "BrowserView";
 
 namespace {
 
@@ -1807,7 +1807,7 @@ gfx::Size BrowserView::GetMinimumSize() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, views::View overrides:
 
-std::string BrowserView::GetClassName() const {
+const char* BrowserView::GetClassName() const {
   return kViewClassName;
 }
 
@@ -2584,8 +2584,8 @@ void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
   views::FocusManager* focus_manager = GetFocusManager();
   views::View* focused = focus_manager->GetFocusedView();
   if (focused &&
-      (focused->GetClassName() == views::Textfield::kViewClassName ||
-       focused->GetClassName() == OmniboxViewViews::kViewClassName)) {
+      (!strcmp(focused->GetClassName(), views::Textfield::kViewClassName) ||
+       !strcmp(focused->GetClassName(), OmniboxViewViews::kViewClassName))) {
     views::Textfield* textfield = static_cast<views::Textfield*>(focused);
     textfield->ExecuteCommand(command_id);
     return;

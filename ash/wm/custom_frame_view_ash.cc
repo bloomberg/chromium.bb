@@ -37,7 +37,7 @@ const gfx::Font& GetTitleFont() {
 namespace ash {
 
 // static
-const char CustomFrameViewAsh::kViewClassName[] = "ash/wm/CustomFrameViewAsh";
+const char CustomFrameViewAsh::kViewClassName[] = "CustomFrameViewAsh";
 
 ////////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh, public:
@@ -150,7 +150,7 @@ void CustomFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   canvas->Restore();
 }
 
-std::string CustomFrameViewAsh::GetClassName() const {
+const char* CustomFrameViewAsh::GetClassName() const {
   return kViewClassName;
 }
 

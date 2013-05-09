@@ -15,7 +15,7 @@
 
 namespace views {
 
-const char ResizeArea::kViewClassName[] = "views/ResizeArea";
+const char ResizeArea::kViewClassName[] = "ResizeArea";
 
 ////////////////////////////////////////////////////////////////////////////////
 // ResizeArea
@@ -28,7 +28,7 @@ ResizeArea::ResizeArea(ResizeAreaDelegate* delegate)
 ResizeArea::~ResizeArea() {
 }
 
-std::string ResizeArea::GetClassName() const {
+const char* ResizeArea::GetClassName() const {
   return kViewClassName;
 }
 

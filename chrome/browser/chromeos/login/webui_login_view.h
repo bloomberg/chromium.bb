@@ -49,7 +49,7 @@ class WebUILoginView : public views::View,
   // Overridden from views::Views:
   virtual bool AcceleratorPressed(
       const ui::Accelerator& accelerator) OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
   // Called when WebUI window is created.
   virtual void OnWindowCreated();

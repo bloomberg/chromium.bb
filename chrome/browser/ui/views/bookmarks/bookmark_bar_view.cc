@@ -101,8 +101,7 @@ static const int kLeftMargin = 1;
 static const int kRightMargin = 1;
 
 // static
-const char BookmarkBarView::kViewClassName[] =
-    "browser/ui/views/bookmarks/BookmarkBarView";
+const char BookmarkBarView::kViewClassName[] = "BookmarkBarView";
 
 // Padding between buttons.
 static const int kButtonPadding = 0;
@@ -218,7 +217,7 @@ class BookmarkButton : public BookmarkButtonBase {
     return !tooltip->empty();
   }
 
-  virtual std::string GetClassName() const OVERRIDE {
+  virtual const char* GetClassName() const OVERRIDE {
     return kViewClassName;
   }
 
@@ -229,9 +228,8 @@ class BookmarkButton : public BookmarkButtonBase {
   DISALLOW_COPY_AND_ASSIGN(BookmarkButton);
 };
 
-// static for BookmarkButton
-const char BookmarkButton::kViewClassName[] =
-    "browser/ui/views/bookmarks/BookmarkButton";
+// static
+const char BookmarkButton::kViewClassName[] = "BookmarkButton";
 
 // ShortcutButton -------------------------------------------------------------
 
@@ -247,7 +245,7 @@ class ShortcutButton : public BookmarkButtonBase {
       : BookmarkButtonBase(listener, title) {
   }
 
-  virtual std::string GetClassName() const OVERRIDE {
+  virtual const char* GetClassName() const OVERRIDE {
     return kViewClassName;
   }
 
@@ -256,9 +254,8 @@ class ShortcutButton : public BookmarkButtonBase {
   DISALLOW_COPY_AND_ASSIGN(ShortcutButton);
 };
 
-// static for ShortcutButton
-const char ShortcutButton::kViewClassName[] =
-    "browser/ui/views/bookmarks/ShortcutButton";
+// static
+const char ShortcutButton::kViewClassName[] = "ShortcutButton";
 
 // BookmarkFolderButton -------------------------------------------------------
 
@@ -923,7 +920,7 @@ void BookmarkBarView::OnThemeChanged() {
   UpdateColors();
 }
 
-std::string BookmarkBarView::GetClassName() const {
+const char* BookmarkBarView::GetClassName() const {
   return kViewClassName;
 }
 

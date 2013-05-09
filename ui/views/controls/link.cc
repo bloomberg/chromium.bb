@@ -21,7 +21,7 @@
 
 namespace views {
 
-const char Link::kViewClassName[] = "views/Link";
+const char Link::kViewClassName[] = "Link";
 
 Link::Link() : Label(string16()) {
   Init();
@@ -39,7 +39,7 @@ void Link::OnEnabledChanged() {
   View::OnEnabledChanged();
 }
 
-std::string Link::GetClassName() const {
+const char* Link::GetClassName() const {
   return kViewClassName;
 }
 

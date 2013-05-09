@@ -17,8 +17,7 @@
 namespace views {
 
 // static
-const char SingleSplitView::kViewClassName[] =
-    "ui/views/controls/SingleSplitView";
+const char SingleSplitView::kViewClassName[] = "SingleSplitView";
 
 // Size of the divider in pixels.
 static const int kDividerSize = 4;
@@ -61,7 +60,7 @@ void SingleSplitView::Layout() {
   View::Layout();
 }
 
-std::string SingleSplitView::GetClassName() const {
+const char* SingleSplitView::GetClassName() const {
   return kViewClassName;
 }
 

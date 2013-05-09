@@ -21,7 +21,7 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
   virtual ~RadioButton();
 
   // Overridden from View:
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual View* GetSelectedViewForGroup(int group) OVERRIDE;
   virtual bool IsGroupFocusTraversable() const OVERRIDE;

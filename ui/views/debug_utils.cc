@@ -42,7 +42,7 @@ void PrintFocusHierarchyImp(const View* view,
   *out << L' ';
   *out << view->id();
   *out << L' ';
-  *out << view->GetClassName().c_str();
+  *out << view->GetClassName();
   *out << L' ';
   *out << view;
   *out << L'\n';

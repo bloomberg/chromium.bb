@@ -89,7 +89,7 @@ class VIEWS_EXPORT NativeViewHost : public View {
   virtual void ViewHierarchyChanged(bool is_add,
                                     View* parent,
                                     View* child) OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
  private:
   friend class NativeViewHostAuraTest;

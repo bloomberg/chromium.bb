@@ -20,7 +20,7 @@
 #include "ui/views/widget/widget.h"
 
 // static
-const char ReloadButton::kViewClassName[] = "browser/ui/views/ReloadButton";
+const char ReloadButton::kViewClassName[] = "ReloadButton";
 
 const int kReloadImages[] =
     { IDR_RELOAD, IDR_RELOAD_H, IDR_RELOAD_P, IDR_RELOAD_D };
@@ -162,7 +162,7 @@ bool ReloadButton::GetTooltipText(const gfx::Point& p,
   return true;
 }
 
-std::string ReloadButton::GetClassName() const {
+const char* ReloadButton::GetClassName() const {
   return kViewClassName;
 }
 

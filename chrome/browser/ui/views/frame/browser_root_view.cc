@@ -118,7 +118,7 @@ int BrowserRootView::OnPerformDrop(const ui::DropTargetEvent& event) {
   return tabstrip()->OnPerformDrop(*mapped_event);
 }
 
-std::string BrowserRootView::GetClassName() const {
+const char* BrowserRootView::GetClassName() const {
   return kViewClassName;
 }
 

@@ -46,7 +46,7 @@ gfx::Size TopContainerView::GetPreferredSize() {
   return gfx::Size(browser_view_->width(), height);
 }
 
-std::string TopContainerView::GetClassName() const {
+const char* TopContainerView::GetClassName() const {
   return "TopContainerView";
 }
 

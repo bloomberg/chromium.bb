@@ -278,7 +278,7 @@ int AppNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
 void AppNonClientFrameViewAsh::UpdateThrobber(bool running) {
 }
 
-std::string AppNonClientFrameViewAsh::GetClassName() const {
+const char* AppNonClientFrameViewAsh::GetClassName() const {
   return kViewClassName;
 }
 

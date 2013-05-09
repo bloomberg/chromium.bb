@@ -199,7 +199,7 @@ void AppListItemView::ItemPercentDownloadedChanged() {
   SchedulePaint();
 }
 
-std::string AppListItemView::GetClassName() const {
+const char* AppListItemView::GetClassName() const {
   return kViewClassName;
 }
 

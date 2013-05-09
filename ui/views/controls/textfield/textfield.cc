@@ -589,7 +589,7 @@ void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   }
 }
 
-std::string Textfield::GetClassName() const {
+const char* Textfield::GetClassName() const {
   return kViewClassName;
 }
 

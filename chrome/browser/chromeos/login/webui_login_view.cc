@@ -205,7 +205,7 @@ void WebUILoginView::Init(views::Widget* login_window) {
                  content::Source<WebContents>(web_contents));
 }
 
-std::string WebUILoginView::GetClassName() const {
+const char* WebUILoginView::GetClassName() const {
   return kViewClassName;
 }
 

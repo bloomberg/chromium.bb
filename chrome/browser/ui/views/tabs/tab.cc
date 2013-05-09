@@ -432,7 +432,8 @@ Tab::ImageCacheEntry::~ImageCacheEntry() {}
 // Tab, statics:
 
 // static
-const char Tab::kViewClassName[] = "BrowserTab";
+const char Tab::kViewClassName[] = "Tab";
+
 // static
 Tab::TabImage Tab::tab_alpha_ = {0};
 Tab::TabImage Tab::tab_active_ = {0};
@@ -866,7 +867,7 @@ void Tab::OnThemeChanged() {
   LoadTabImages();
 }
 
-std::string Tab::GetClassName() const {
+const char* Tab::GetClassName() const {
   return kViewClassName;
 }
 

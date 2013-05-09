@@ -130,8 +130,7 @@ const int LocationBarView::kNormalHorizontalEdgeThickness = 2;
 const int LocationBarView::kVerticalEdgeThickness = 3;
 const int LocationBarView::kIconInternalPadding = 2;
 const int LocationBarView::kBubbleHorizontalPadding = 1;
-const char LocationBarView::kViewClassName[] =
-    "browser/ui/views/location_bar/LocationBarView";
+const char LocationBarView::kViewClassName[] = "LocationBarView";
 
 static const int kCSBubbleBackgroundImages[] = {
   IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_L,
@@ -1245,7 +1244,7 @@ void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
   }
 }
 
-std::string LocationBarView::GetClassName() const {
+const char* LocationBarView::GetClassName() const {
   return kViewClassName;
 }
 

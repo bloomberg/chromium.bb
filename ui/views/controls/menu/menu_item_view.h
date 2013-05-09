@@ -343,7 +343,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
 
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
   // Returns the preferred size (and padding) of any children.
   virtual gfx::Size GetChildPreferredSize();

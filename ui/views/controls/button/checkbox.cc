@@ -75,7 +75,7 @@ gfx::Size Checkbox::GetPreferredSize() {
   return prefsize;
 }
 
-std::string Checkbox::GetClassName() const {
+const char* Checkbox::GetClassName() const {
   return kViewClassName;
 }
 

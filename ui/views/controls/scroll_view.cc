@@ -13,7 +13,7 @@
 
 namespace views {
 
-const char* const ScrollView::kViewClassName = "views/ScrollView";
+const char ScrollView::kViewClassName[] = "ScrollView";
 
 namespace {
 
@@ -84,8 +84,8 @@ class ScrollView::Viewport : public View {
   Viewport() {}
   virtual ~Viewport() {}
 
-  virtual std::string GetClassName() const OVERRIDE {
-    return "views/Viewport";
+  virtual const char* GetClassName() const OVERRIDE {
+    return "ScrollView::Viewport";
   }
 
   virtual void ScrollRectToVisible(const gfx::Rect& rect) OVERRIDE {
@@ -331,7 +331,7 @@ void ScrollView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-std::string ScrollView::GetClassName() const {
+const char* ScrollView::GetClassName() const {
   return kViewClassName;
 }
 

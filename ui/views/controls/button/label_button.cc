@@ -194,7 +194,7 @@ gfx::Size LabelButton::GetPreferredSize() {
   return size;
 }
 
-std::string LabelButton::GetClassName() const {
+const char* LabelButton::GetClassName() const {
   return kViewClassName;
 }
 

@@ -269,7 +269,7 @@ class LocationBarView : public LocationBar,
   virtual content::WebContents* GetWebContents() const OVERRIDE;
 
   // Overridden from views::View:
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(
       const ui::KeyEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

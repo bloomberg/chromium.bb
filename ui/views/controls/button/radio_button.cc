@@ -37,7 +37,7 @@ void RadioButton::SetChecked(bool checked) {
       container->GetViewsInGroup(GetGroup(), &other);
       for (Views::iterator i(other.begin()); i != other.end(); ++i) {
         if (*i != this) {
-          if ((*i)->GetClassName() != kViewClassName) {
+          if (strcmp((*i)->GetClassName(), kViewClassName)) {
             NOTREACHED() << "radio-button-nt has same group as other non "
                             "radio-button-nt views.";
             continue;
@@ -51,7 +51,7 @@ void RadioButton::SetChecked(bool checked) {
   Checkbox::SetChecked(checked);
 }
 
-std::string RadioButton::GetClassName() const {
+const char* RadioButton::GetClassName() const {
   return kViewClassName;
 }
 

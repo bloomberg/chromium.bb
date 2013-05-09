@@ -41,8 +41,8 @@ class AppNonClientFrameViewAsh : public BrowserNonClientFrameView {
   virtual int GetThemeBackgroundXInset() const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
 
-  // View:
-  virtual std::string GetClassName() const OVERRIDE;
+  // views::View:
+  virtual const char* GetClassName() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
  private:

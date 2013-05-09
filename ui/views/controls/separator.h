@@ -26,7 +26,7 @@ class VIEWS_EXPORT Separator : public View {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Separator);

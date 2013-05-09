@@ -157,7 +157,7 @@ void NativeViewHost::ViewHierarchyChanged(bool is_add, View* parent,
   }
 }
 
-std::string NativeViewHost::GetClassName() const {
+const char* NativeViewHost::GetClassName() const {
   return kViewClassName;
 }
 

@@ -55,7 +55,7 @@ class VIEWS_EXPORT TabbedPane : public View {
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
  private:
    // Get the Tab (the tabstrip view, not its content) at the valid |index|.

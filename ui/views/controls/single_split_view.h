@@ -32,7 +32,7 @@ class VIEWS_EXPORT SingleSplitView : public View {
                   SingleSplitViewListener* listener);
 
   virtual void Layout() OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 

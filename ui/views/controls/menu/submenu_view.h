@@ -149,8 +149,8 @@ class VIEWS_EXPORT SubmenuView : public View,
   }
 
  protected:
-  // View override.
-  virtual std::string GetClassName() const OVERRIDE;
+  // Overridden from View:
+  virtual const char* GetClassName() const OVERRIDE;
 
   // View method. Overridden to schedule a paint. We do this so that when
   // scrolling occurs, everything is repainted correctly.

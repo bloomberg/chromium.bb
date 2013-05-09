@@ -135,7 +135,7 @@ class ToolbarView : public views::AccessiblePaneView,
   virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& acc) OVERRIDE;
 
   // Whether the wrench/hotdogs menu is currently showing.

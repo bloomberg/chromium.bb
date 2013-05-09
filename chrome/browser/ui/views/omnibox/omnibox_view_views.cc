@@ -112,7 +112,7 @@ void DoCopyURL(const GURL& url, const string16& text, Profile* profile) {
 }  // namespace
 
 // static
-const char OmniboxViewViews::kViewClassName[] = "BrowserOmniboxViewViews";
+const char OmniboxViewViews::kViewClassName[] = "OmniboxViewViews";
 
 OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    ToolbarModel* toolbar_model,
@@ -185,7 +185,7 @@ gfx::Font OmniboxViewViews::GetFont() {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, views::Textfield implementation:
 
-std::string OmniboxViewViews::GetClassName() const {
+const char* OmniboxViewViews::GetClassName() const {
   return kViewClassName;
 }
 

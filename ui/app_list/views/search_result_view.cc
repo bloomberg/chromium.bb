@@ -139,7 +139,7 @@ void SearchResultView::UpdateDetailsText() {
   }
 }
 
-std::string SearchResultView::GetClassName() const {
+const char* SearchResultView::GetClassName() const {
   return kViewClassName;
 }
 

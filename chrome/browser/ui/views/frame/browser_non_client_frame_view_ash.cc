@@ -242,7 +242,7 @@ void BrowserNonClientFrameViewAsh::Layout() {
   BrowserNonClientFrameView::Layout();
 }
 
-std::string BrowserNonClientFrameViewAsh::GetClassName() const {
+const char* BrowserNonClientFrameViewAsh::GetClassName() const {
   return kViewClassName;
 }
 

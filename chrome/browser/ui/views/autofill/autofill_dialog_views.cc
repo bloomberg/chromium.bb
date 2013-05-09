@@ -307,7 +307,7 @@ void AutofillDialogViews::DecoratedTextfield::SetInvalid(bool invalid) {
   SchedulePaint();
 }
 
-std::string AutofillDialogViews::DecoratedTextfield::GetClassName() const {
+const char* AutofillDialogViews::DecoratedTextfield::GetClassName() const {
   return kDecoratedTextfieldClassName;
 }
 
@@ -481,7 +481,7 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
   PreferredSizeChanged();
 }
 
-std::string AutofillDialogViews::NotificationArea::GetClassName() const {
+const char* AutofillDialogViews::NotificationArea::GetClassName() const {
   return kNotificationAreaClassName;
 }
 

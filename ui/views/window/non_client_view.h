@@ -71,7 +71,7 @@ class VIEWS_EXPORT NonClientFrameView : public View {
   // Overridden from View:
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
  protected:
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
@@ -210,17 +210,18 @@ class VIEWS_EXPORT NonClientView : public View {
   virtual gfx::Size GetMaximumSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
-  virtual views::View* GetEventHandlerForPoint(const gfx::Point& point)
-      OVERRIDE;
-  virtual views::View* GetTooltipHandlerForPoint(const gfx::Point& point)
-      OVERRIDE;
+  virtual views::View* GetEventHandlerForPoint(
+      const gfx::Point& point) OVERRIDE;
+  virtual views::View* GetTooltipHandlerForPoint(
+      const gfx::Point& point) OVERRIDE;
 
  protected:
   // NonClientView, View overrides:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child)
-      OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
 
  private:
   // A ClientView object or subclass, responsible for sizing the contents view

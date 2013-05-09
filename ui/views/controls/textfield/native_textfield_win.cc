@@ -556,7 +556,7 @@ void NativeTextfieldWin::InitializeAccessibilityInfo() {
     // We expect it to be a Label preceeding this view (if it exists).
     string16 name;
     View* label_view = parent->child_at(label_index);
-    if (label_view->GetClassName() == Label::kViewClassName) {
+    if (!strcmp(label_view->GetClassName(), Label::kViewClassName)) {
       ui::AccessibleViewState state;
       label_view->GetAccessibleState(&state);
       hr = pAccPropServices->SetHwndPropStr(m_hWnd, OBJID_CLIENT,

@@ -242,7 +242,7 @@ int Label::GetHeightForWidth(int w) {
   return h + GetInsets().height();
 }
 
-std::string Label::GetClassName() const {
+const char* Label::GetClassName() const {
   return kViewClassName;
 }
 

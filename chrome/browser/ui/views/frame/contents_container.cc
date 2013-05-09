@@ -14,8 +14,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 // static
-const char ContentsContainer::kViewClassName[] =
-    "browser/ui/views/frame/ContentsContainer";
+const char ContentsContainer::kViewClassName[] = "ContentsContainer";
 
 namespace {
 
@@ -303,7 +302,7 @@ void ContentsContainer::Layout() {
   views::View::Layout();
 }
 
-std::string ContentsContainer::GetClassName() const {
+const char* ContentsContainer::GetClassName() const {
   return kViewClassName;
 }
 

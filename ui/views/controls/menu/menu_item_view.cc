@@ -612,7 +612,7 @@ MenuItemView::~MenuItemView() {
   STLDeleteElements(&removed_items_);
 }
 
-std::string MenuItemView::GetClassName() const {
+const char* MenuItemView::GetClassName() const {
   return kViewClassName;
 }
 

@@ -172,7 +172,7 @@ gfx::Size MenuButton::GetPreferredSize() {
   return prefsize;
 }
 
-std::string MenuButton::GetClassName() const {
+const char* MenuButton::GetClassName() const {
   return kViewClassName;
 }
 

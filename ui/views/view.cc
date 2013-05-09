@@ -613,13 +613,13 @@ void View::SetLayoutManager(LayoutManager* layout_manager) {
 
 // Attributes ------------------------------------------------------------------
 
-std::string View::GetClassName() const {
+const char* View::GetClassName() const {
   return kViewClassName;
 }
 
 View* View::GetAncestorWithClassName(const std::string& name) {
   for (View* view = this; view; view = view->parent_) {
-    if (view->GetClassName() == name)
+    if (!strcmp(view->GetClassName(), name.c_str()))
       return view;
   }
   return NULL;
@@ -1562,7 +1562,8 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
   // Node characteristics.
   char p[kMaxPointerStringLength];
 
-  size_t base_name_index = GetClassName().find_last_of('/');
+  const std::string class_name(GetClassName());
+  size_t base_name_index = class_name.find_last_of('/');
   if (base_name_index == std::string::npos)
     base_name_index = 0;
   else
@@ -1576,7 +1577,7 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
   result.append(p + 2);
   result.append(" [label=\"");
 
-  result.append(GetClassName().substr(base_name_index).c_str());
+  result.append(class_name.substr(base_name_index).c_str());
 
   base::snprintf(bounds_buffer,
                  arraysize(bounds_buffer),

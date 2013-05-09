@@ -774,7 +774,7 @@ void AppsGridView::ButtonPressed(views::Button* sender,
   if (dragging())
     return;
 
-  if (sender->GetClassName() != AppListItemView::kViewClassName)
+  if (strcmp(sender->GetClassName(), AppListItemView::kViewClassName))
     return;
 
   if (delegate_) {

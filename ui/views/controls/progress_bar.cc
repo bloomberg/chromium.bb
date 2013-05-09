@@ -131,7 +131,7 @@ void StrokeRoundRect(gfx::Canvas* canvas,
 namespace views {
 
 // static
-const char ProgressBar::kViewClassName[] = "views/ProgressBar";
+const char ProgressBar::kViewClassName[] = "ProgressBar";
 
 ProgressBar::ProgressBar()
     : min_display_value_(0.0),
@@ -179,7 +179,7 @@ gfx::Size ProgressBar::GetPreferredSize() {
   return gfx::Size(100, 11);
 }
 
-std::string ProgressBar::GetClassName() const {
+const char* ProgressBar::GetClassName() const {
   return kViewClassName;
 }
 

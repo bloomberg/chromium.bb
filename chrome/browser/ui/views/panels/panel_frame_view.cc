@@ -247,8 +247,8 @@ bool ShouldRenderAsFrameless() {
 
 }  // namespace
 
-const char PanelFrameView::kViewClassName[] =
-    "browser/ui/panels/PanelFrameView";
+// static
+const char PanelFrameView::kViewClassName[] = "PanelFrameView";
 
 PanelFrameView::PanelFrameView(PanelView* panel_view)
     : is_frameless_(ShouldRenderAsFrameless()),
@@ -507,7 +507,7 @@ gfx::Size PanelFrameView::GetPreferredSize() {
       GetWindowBoundsForClientBounds(bounds).size();
 }
 
-std::string PanelFrameView::GetClassName() const {
+const char* PanelFrameView::GetClassName() const {
   return kViewClassName;
 }
 

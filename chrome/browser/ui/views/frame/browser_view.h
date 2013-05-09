@@ -433,7 +433,7 @@ class BrowserView : public BrowserWindow,
   virtual void OnSysColorChange() OVERRIDE;
 
   // Overridden from views::View:
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,

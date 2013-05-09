@@ -159,8 +159,8 @@ void BubbleFrameView::Layout() {
   }
 }
 
-std::string BubbleFrameView::GetClassName() const {
-  return "ui/views/bubble/BubbleFrameView";
+const char* BubbleFrameView::GetClassName() const {
+  return "BubbleFrameView";
 }
 
 void BubbleFrameView::ChildPreferredSizeChanged(View* child) {

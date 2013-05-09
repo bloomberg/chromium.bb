@@ -18,7 +18,7 @@ namespace {
 // found tab view, on NULL if none is found.
 views::View* FindTabView(views::View* view) {
   views::View* current = view;
-  while (current && current->GetClassName() != Tab::kViewClassName) {
+  while (current && strcmp(current->GetClassName(), Tab::kViewClassName)) {
     current = current->parent();
   }
   return current;

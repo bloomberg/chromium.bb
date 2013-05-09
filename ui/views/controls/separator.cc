@@ -10,7 +10,7 @@
 namespace views {
 
 // static
-const char Separator::kViewClassName[] = "views/Separator";
+const char Separator::kViewClassName[] = "Separator";
 
 // The separator height in pixels.
 const int kSeparatorHeight = 1;
@@ -40,7 +40,7 @@ void Separator::Paint(gfx::Canvas* canvas) {
   canvas->FillRect(bounds(), kDefaultColor);
 }
 
-std::string Separator::GetClassName() const {
+const char* Separator::GetClassName() const {
   return kViewClassName;
 }
 

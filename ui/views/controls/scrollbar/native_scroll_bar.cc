@@ -19,7 +19,7 @@
 namespace views {
 
 // static
-const char NativeScrollBar::kViewClassName[] = "views/NativeScrollBar";
+const char NativeScrollBar::kViewClassName[] = "NativeScrollBar";
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeScrollBar, public:
@@ -67,7 +67,7 @@ void NativeScrollBar::ViewHierarchyChanged(bool is_add, View *parent,
   }
 }
 
-std::string NativeScrollBar::GetClassName() const {
+const char* NativeScrollBar::GetClassName() const {
   return kViewClassName;
 }
 

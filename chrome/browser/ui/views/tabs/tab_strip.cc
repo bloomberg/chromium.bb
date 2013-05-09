@@ -1338,7 +1338,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     active_tab->Paint(canvas);
 }
 
-std::string TabStrip::GetClassName() const {
+const char* TabStrip::GetClassName() const {
   return kViewClassName;
 }
 
@@ -1406,7 +1406,7 @@ views::View* TabStrip::GetEventHandlerForPoint(const gfx::Point& point) {
     // Return any view that isn't a Tab or this TabStrip immediately. We don't
     // want to interfere.
     views::View* v = View::GetEventHandlerForPoint(point);
-    if (v && v != this && v->GetClassName() != Tab::kViewClassName)
+    if (v && v != this && strcmp(v->GetClassName(), Tab::kViewClassName))
       return v;
 
     views::View* tab = FindTabHitByPoint(point);
@@ -1434,7 +1434,7 @@ views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
     // Return any view that isn't a Tab or this TabStrip immediately. We don't
     // want to interfere.
     views::View* v = View::GetTooltipHandlerForPoint(point);
-    if (v && v != this && v->GetClassName() != Tab::kViewClassName)
+    if (v && v != this && strcmp(v->GetClassName(), Tab::kViewClassName))
       return v;
 
     views::View* tab = FindTabHitByPoint(point);

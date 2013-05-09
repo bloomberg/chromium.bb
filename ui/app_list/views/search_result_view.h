@@ -52,7 +52,7 @@ class SearchResultView : public views::CustomButton,
   void UpdateDetailsText();
 
   // views::View overrides:
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

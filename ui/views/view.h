@@ -360,7 +360,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // uniquely identifies the view class. It is intended to be used as a way to
   // find out during run time if a view can be safely casted to a specific view
   // subclass. The default implementation returns kViewClassName.
-  virtual std::string GetClassName() const;
+  virtual const char* GetClassName() const;
 
   // Returns the first ancestor, starting at this, whose class name is |name|.
   // Returns null if no ancestor has the class name |name|.

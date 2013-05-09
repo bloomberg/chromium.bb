@@ -1174,7 +1174,7 @@ void NativeViewAccessibilityWin::SetState(
     msaa_state->lVal |= STATE_SYSTEM_UNAVAILABLE;
   if (!view->visible())
     msaa_state->lVal |= STATE_SYSTEM_INVISIBLE;
-  if (view->GetClassName() == CustomButton::kViewClassName) {
+  if (!strcmp(view->GetClassName(), CustomButton::kViewClassName)) {
     CustomButton* button = static_cast<CustomButton*>(view);
     if (button->IsHotTracked())
       msaa_state->lVal |= STATE_SYSTEM_HOTTRACKED;

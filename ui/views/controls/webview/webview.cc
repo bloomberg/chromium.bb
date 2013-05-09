@@ -26,8 +26,7 @@
 namespace views {
 
 // static
-const char WebView::kViewClassName[] =
-    "ui/views/WebView";
+const char WebView::kViewClassName[] = "WebView";
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, public:
@@ -93,7 +92,7 @@ void WebView::SetPreferredSize(const gfx::Size& preferred_size) {
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, View overrides:
 
-std::string WebView::GetClassName() const {
+const char* WebView::GetClassName() const {
   return kViewClassName;
 }
 

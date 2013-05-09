@@ -93,7 +93,7 @@ LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style)
 LabelButtonBorder::~LabelButtonBorder() {}
 
 void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
-  DCHECK(view.GetClassName() == LabelButton::kViewClassName);
+  DCHECK(!strcmp(view.GetClassName(), LabelButton::kViewClassName));
   const NativeThemeDelegate* native_theme_delegate =
       static_cast<const LabelButton*>(&view);
   ui::NativeTheme::Part part = native_theme_delegate->GetThemePart();

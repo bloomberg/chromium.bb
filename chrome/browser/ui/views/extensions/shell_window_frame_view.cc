@@ -321,7 +321,7 @@ void ShellWindowFrameView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawPath(path, paint);
 }
 
-std::string ShellWindowFrameView::GetClassName() const {
+const char* ShellWindowFrameView::GetClassName() const {
   return kViewClassName;
 }
 
