@@ -359,11 +359,11 @@ else
 fi
 
 # Detect the NDK system tag, i.e. the name used to identify the host.
-# out: NDK system tag (e.g. 'linux-x86').
+# out: NDK system tag (e.g. 'linux-x86_64').
 get_ndk_host_tag () {
   if [ -z "$NDK_HOST_TAG" ]; then
     case $(uname -s) in
-      Linux) NDK_HOST_TAG=linux-x86;;
+      Linux) NDK_HOST_TAG=linux-x86_64;;
       Darwin) NDK_HOST_TAG=darwin-x86;;
       *) panic "You can't run this script on this system: $uname -a";;
     esac
