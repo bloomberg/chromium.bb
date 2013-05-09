@@ -54,6 +54,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/loader/cache/CachedResource.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/rendering/RenderRegion.h"

@@ -34,6 +34,7 @@
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/SharedBuffer.h"
+#include "core/platform/graphics/Image.h"
 #include <gtest/gtest.h>
 
 using namespace WebCore;
