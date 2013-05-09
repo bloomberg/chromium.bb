@@ -86,7 +86,7 @@ WebrtcBrowserTest.CallWithNewVideoMediaStream
 WebrtcBrowserTest.GetAudioAndVideoStreamAndClone
 WebrtcBrowserTest.GetAudioAndVideoStreamAndStop
 WebrtcBrowserTest.GetVideoStreamAndStop
-WebRTCInternalsBrowserTest.withRealPeerConnectionCall
+WebRTCInternalsBrowserTest.WithRealPeerConnectionCall
 
 # http://crbug.com/224134
 RenderWidgetHostBrowserTest.GetSnapshotFromRendererTest
