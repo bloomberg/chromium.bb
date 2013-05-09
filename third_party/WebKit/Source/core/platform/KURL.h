@@ -35,9 +35,12 @@
 typedef const struct __CFURL* CFURLRef;
 #endif
 
+namespace WTF{
+class TextEncoding;
+}
+
 namespace WebCore {
 
-class TextEncoding;
 struct KURLHash;
 
 enum ParsedURLStringTag { ParsedURLString };
@@ -63,7 +66,7 @@ public:
     // URL. Instead I think it would be better to treat all invalid base URLs
     // the same way we treate null and empty base URLs.
     KURL(const KURL& base, const String& relative);
-    KURL(const KURL& base, const String& relative, const TextEncoding&);
+    KURL(const KURL& base, const String& relative, const WTF::TextEncoding&);
 
     // For conversions from other structures that have already parsed and
     // canonicalized the URL. The input must be exactly what KURL would have
@@ -219,7 +222,7 @@ bool isValidProtocol(const String&);
 // encoding (defaulting to UTF-8 otherwise). DANGER: If the URL has "%00"
 // in it, the resulting string will have embedded null characters!
 String decodeURLEscapeSequences(const String&);
-String decodeURLEscapeSequences(const String&, const TextEncoding&);
+String decodeURLEscapeSequences(const String&, const WTF::TextEncoding&);
 
 String encodeWithURLEscapeSequences(const String&);
 

@@ -70,14 +70,14 @@
 #include "core/page/Settings.h"
 #include "core/platform/Cookie.h"
 #include "core/platform/text/RegularExpression.h"
-#include "core/platform/text/TextEncoding.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/geolocation/GeolocationError.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/text/Base64.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/Vector.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/Vector.h"
+#include "wtf/text/Base64.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/TextEncoding.h"
 
 using namespace std;
 
@@ -102,7 +102,7 @@ static const char pageAgentEmulatedMedia[] = "pageAgentEmulatedMedia";
 static bool decodeBuffer(const char* buffer, unsigned size, const String& textEncodingName, String* result)
 {
     if (buffer) {
-        TextEncoding encoding(textEncodingName);
+        WTF::TextEncoding encoding(textEncodingName);
         if (!encoding.isValid())
             encoding = WindowsLatin1Encoding();
         *result = encoding.decode(buffer, size);

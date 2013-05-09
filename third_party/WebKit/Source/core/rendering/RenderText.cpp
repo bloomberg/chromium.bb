@@ -189,7 +189,7 @@ bool RenderText::isWordBreak() const
 
 void RenderText::updateNeedsTranscoding()
 {
-    const TextEncoding* encoding = document()->decoder() ? &document()->decoder()->encoding() : 0;
+    const WTF::TextEncoding* encoding = document()->decoder() ? &document()->decoder()->encoding() : 0;
     m_needsTranscoding = fontTranscoder().needsTranscoding(style()->font().fontDescription(), encoding);
 }
 
@@ -1394,7 +1394,7 @@ void RenderText::setTextInternal(PassRefPtr<StringImpl> text)
     ASSERT(text);
     m_text = text;
     if (m_needsTranscoding) {
-        const TextEncoding* encoding = document()->decoder() ? &document()->decoder()->encoding() : 0;
+        const WTF::TextEncoding* encoding = document()->decoder() ? &document()->decoder()->encoding() : 0;
         fontTranscoder().convert(m_text, style()->font().fontDescription(), encoding);
     }
     ASSERT(m_text);

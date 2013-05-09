@@ -31,14 +31,13 @@
 #include "core/inspector/InspectorCounters.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/platform/ThreadTimers.h"
-#include "core/platform/text/TextCodecICU.h"
-#include <wtf/MainThread.h>
-#include <wtf/text/StringImpl.h>
-#include <wtf/UnusedParam.h>
-#include <wtf/WTFThreadData.h>
+#include "wtf/MainThread.h"
+#include "wtf/ThreadSpecific.h"
+#include "wtf/Threading.h"
+#include "wtf/UnusedParam.h"
+#include "wtf/WTFThreadData.h"
+#include "wtf/text/StringImpl.h"
 
-#include <wtf/Threading.h>
-#include <wtf/ThreadSpecific.h>
 using namespace WTF;
 
 namespace WebCore {
@@ -52,7 +51,6 @@ ThreadGlobalData::ThreadGlobalData()
 #ifndef NDEBUG
     , m_isMainThread(isMainThread())
 #endif
-    , m_cachedConverterICU(adoptPtr(new ICUConverterWrapper))
     , m_inspectorCounters(adoptPtr(new ThreadLocalInspectorCounters()))
 {
     // This constructor will have been called on the main thread before being called on
@@ -69,11 +67,7 @@ ThreadGlobalData::~ThreadGlobalData()
 
 void ThreadGlobalData::destroy()
 {
-
-    m_cachedConverterICU.clear();
-
     m_inspectorCounters.clear();
-
     m_eventNames.clear();
     m_threadTimers.clear();
 }

@@ -25,14 +25,14 @@
 
 namespace WebCore {
 
-FormDataList::FormDataList(const TextEncoding& c)
+FormDataList::FormDataList(const WTF::TextEncoding& c)
     : m_encoding(c)
 {
 }
 
 void FormDataList::appendString(const String& s)
 {
-    CString cstr = m_encoding.encode(s.characters(), s.length(), EntitiesForUnencodables);
+    CString cstr = m_encoding.encode(s.characters(), s.length(), WTF::EntitiesForUnencodables);
     m_items.append(normalizeLineEndingsToCRLF(cstr));
 }
 

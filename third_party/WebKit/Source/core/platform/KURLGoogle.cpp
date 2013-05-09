@@ -32,23 +32,18 @@
 #include "config.h"
 #include "core/platform/KURL.h"
 
-#ifndef NDEBUG
-#include <stdio.h>
-#endif
-
-#include <algorithm>
-
 #include "core/platform/NotImplemented.h"
 #include "core/platform/PlatformMemoryInstrumentation.h"
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/HashMap.h>
-#include <wtf/MemoryInstrumentationString.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/Vector.h>
-
+#include "wtf/HashMap.h"
+#include "wtf/MemoryInstrumentationString.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/TextEncoding.h"
+#include <algorithm>
 #include <googleurl/src/url_util.h>
+#include <stdio.h>
 
 using WTF::isASCIILower;
 using WTF::toASCIILower;
@@ -64,7 +59,7 @@ static const int invalidPortNumber = 0xFFFF;
 class KURLCharsetConverter : public url_canon::CharsetConverter {
 public:
     // The encoding parameter may be 0, but in this case the object must not be called.
-    KURLCharsetConverter(const TextEncoding* encoding)
+    KURLCharsetConverter(const WTF::TextEncoding* encoding)
         : m_encoding(encoding)
     {
     }
@@ -72,12 +67,12 @@ public:
     virtual void ConvertFromUTF16(const url_parse::UTF16Char* input, int inputLength,
                                   url_canon::CanonOutput* output)
     {
-        CString encoded = m_encoding->encode(input, inputLength, URLEncodedEntitiesForUnencodables);
+        CString encoded = m_encoding->encode(input, inputLength, WTF::URLEncodedEntitiesForUnencodables);
         output->Append(encoded.data(), static_cast<int>(encoded.length()));
     }
 
 private:
-    const TextEncoding* m_encoding;
+    const WTF::TextEncoding* m_encoding;
 };
 
 // Note that this function must be named differently than the one in KURL.cpp
@@ -105,7 +100,7 @@ static inline const url_parse::UTF16Char* CharactersOrEmpty(const String& str)
            &zero;
 }
 
-static inline bool isUnicodeEncoding(const TextEncoding* encoding)
+static inline bool isUnicodeEncoding(const WTF::TextEncoding* encoding)
 {
     return encoding->encodingForFormSubmission() == UTF8Encoding();
 }
@@ -240,14 +235,14 @@ void KURLGooglePrivate::setAscii(const CString& str)
 
 void KURLGooglePrivate::init(const KURL& base,
                              const String& relative,
-                             const TextEncoding* queryEncoding)
+                             const WTF::TextEncoding* queryEncoding)
 {
     init(base, relative.characters(), relative.length(), queryEncoding);
 }
 
 template <typename CHAR>
 void KURLGooglePrivate::init(const KURL& base, const CHAR* rel, int relLength,
-                             const TextEncoding* queryEncoding)
+                             const WTF::TextEncoding* queryEncoding)
 {
     // As a performance optimization, we do not use the charset converter
     // if encoding is UTF-8 or other Unicode encodings. Note that this is
@@ -436,7 +431,7 @@ KURL::KURL(const KURL& base, const String& relative)
 // Any query portion of the relative URL will be encoded in the given encoding.
 KURL::KURL(const KURL& base,
            const String& relative,
-           const TextEncoding& encoding)
+           const WTF::TextEncoding& encoding)
 {
     m_url.init(base, relative, &encoding.encodingForFormSubmission());
 }
@@ -801,7 +796,7 @@ String decodeURLEscapeSequences(const String& str)
 // purpose unescaping function.
 //
 // FIXME These should be merged to the KURL.cpp implementation.
-String decodeURLEscapeSequences(const String& str, const TextEncoding& encoding)
+String decodeURLEscapeSequences(const String& str, const WTF::TextEncoding& encoding)
 {
     // FIXME We can probably use KURL.cpp's version of this function
     // without modification. However, I'm concerned about
@@ -847,7 +842,7 @@ String encodeWithURLEscapeSequences(const String& notEncodedString)
     CString utf8 = UTF8Encoding().encode(
         reinterpret_cast<const UChar*>(notEncodedString.characters()),
         notEncodedString.length(),
-        URLEncodedEntitiesForUnencodables);
+        WTF::URLEncodedEntitiesForUnencodables);
     const char* input = utf8.data();
     int inputLength = utf8.length();
     url_canon::RawCanonOutputT<char> buffer;

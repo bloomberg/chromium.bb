@@ -54,12 +54,12 @@
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/network/HTTPParsers.h"
-#include "core/platform/text/TextEncoding.h"
 #include "core/rendering/style/StyleCachedImage.h"
 #include "core/rendering/style/StyleImage.h"
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/TextEncoding.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -79,7 +79,7 @@ static bool isCharsetSpecifyingNode(Node* node)
             attributes.append(std::make_pair(attribute->name().toString(), attribute->value().string()));
         }
     }
-    TextEncoding textEncoding = HTMLMetaCharsetParser::encodingFromMetaAttributes(attributes);
+    WTF::TextEncoding textEncoding = HTMLMetaCharsetParser::encodingFromMetaAttributes(attributes);
     return textEncoding.isValid();
 }
 
@@ -210,14 +210,14 @@ void PageSerializer::serializeFrame(Frame* frame)
 
     Vector<Node*> nodes;
     SerializerMarkupAccumulator accumulator(this, document, &nodes);
-    TextEncoding textEncoding(document->charset());
+    WTF::TextEncoding textEncoding(document->charset());
     CString data;
     if (!textEncoding.isValid()) {
         // FIXME: iframes used as images trigger this. We should deal with them correctly.
         return;
     }
     String text = accumulator.serializeNodes(document->documentElement(), IncludeNode);
-    CString frameHTML = textEncoding.encode(text.characters(), text.length(), EntitiesForUnencodables);
+    CString frameHTML = textEncoding.encode(text.characters(), text.length(), WTF::EntitiesForUnencodables);
     m_resources->append(Resource(url, document->suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
     m_resourceURLs.add(url);
 
@@ -282,10 +282,10 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet* styleSheet, const KUR
 
     if (url.isValid() && !m_resourceURLs.contains(url)) {
         // FIXME: We should check whether a charset has been specified and if none was found add one.
-        TextEncoding textEncoding(styleSheet->contents()->charset());
+        WTF::TextEncoding textEncoding(styleSheet->contents()->charset());
         ASSERT(textEncoding.isValid());
         String textString = cssText.toString();
-        CString text = textEncoding.encode(textString.characters(), textString.length(), EntitiesForUnencodables);
+        CString text = textEncoding.encode(textString.characters(), textString.length(), WTF::EntitiesForUnencodables);
         m_resources->append(Resource(url, String("text/css"), SharedBuffer::create(text.data(), text.length())));
         m_resourceURLs.add(url);
     }

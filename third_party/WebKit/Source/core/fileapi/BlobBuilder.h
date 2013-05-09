@@ -35,10 +35,13 @@
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 
+namespace WTF{
+class TextEncoding;
+}
+
 namespace WebCore {
 
 class Blob;
-class TextEncoding;
 
 typedef int ExceptionCode;
 

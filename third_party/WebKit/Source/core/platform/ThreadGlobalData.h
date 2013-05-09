@@ -27,14 +27,15 @@
 #ifndef ThreadGlobalData_h
 #define ThreadGlobalData_h
 
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/ThreadSpecific.h"
+#include "wtf/Threading.h"
+#include "wtf/text/StringHash.h"
 
-#include <wtf/ThreadSpecific.h>
-#include <wtf/Threading.h>
 using WTF::ThreadSpecific;
 
 namespace WebCore {
@@ -44,7 +45,6 @@ namespace WebCore {
     class ThreadTimers;
 
     struct CachedResourceRequestInitiators;
-    struct ICUConverterWrapper;
     struct TECConverterWrapper;
 
     class ThreadGlobalData {
@@ -58,8 +58,6 @@ namespace WebCore {
         EventNames& eventNames() { return *m_eventNames; }
         ThreadTimers& threadTimers() { return *m_threadTimers; }
 
-        ICUConverterWrapper& cachedConverterICU() { return *m_cachedConverterICU; }
-
         ThreadLocalInspectorCounters& inspectorCounters() { return *m_inspectorCounters; }
 
     private:
@@ -70,8 +68,6 @@ namespace WebCore {
 #ifndef NDEBUG
         bool m_isMainThread;
 #endif
-
-        OwnPtr<ICUConverterWrapper> m_cachedConverterICU;
 
         OwnPtr<ThreadLocalInspectorCounters> m_inspectorCounters;
 
@@ -89,7 +85,7 @@ inline ThreadGlobalData& threadGlobalData()
         ThreadGlobalData::staticData = new ThreadSpecific<ThreadGlobalData>;
     return **ThreadGlobalData::staticData;
 }
-    
+
 } // namespace WebCore
 
 #endif // ThreadGlobalData_h

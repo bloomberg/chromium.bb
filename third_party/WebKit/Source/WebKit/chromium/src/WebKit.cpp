@@ -32,6 +32,7 @@
 #include "WebKit.h"
 
 #include "IDBFactoryBackendProxy.h"
+#include "RuntimeEnabledFeatures.h"
 #include "WebMediaPlayerClientImpl.h"
 #include "WebWorkerClientImpl.h"
 #include "bindings/v8/V8Binding.h"
@@ -40,24 +41,23 @@
 #include "core/dom/MutationObserver.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/EventTracer.h"
 #include "core/platform/LayoutTestSupport.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/graphics/chromium/MediaPlayerPrivateChromium.h"
-#include "core/platform/text/TextEncoding.h"
 #include "core/workers/WorkerContextProxy.h"
-#include "v8.h"
+#include "wtf/Assertions.h"
+#include "wtf/MainThread.h"
+#include "wtf/Threading.h"
+#include "wtf/UnusedParam.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/TextEncoding.h"
 #include <public/Platform.h>
 #include <public/WebPrerenderingSupport.h>
 #include <public/WebThread.h>
-#include <wtf/Assertions.h>
-#include <wtf/MainThread.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/Threading.h>
-#include <wtf/UnusedParam.h>
+#include <v8.h>
 
 namespace WebKit {
 
@@ -140,7 +140,7 @@ void initializeWithoutV8(Platform* webKitPlatformSupport)
     // they're running on the main WebKitThread.  It might be possible to make
     // the initialization thread-safe, but given that so many code paths use
     // this, initializing this lazily probably doesn't buy us much.
-    WebCore::UTF8Encoding();
+    WTF::UTF8Encoding();
 
     WebCore::EventTracer::initialize();
 

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/TextCodecUTF16.h"
+#include "wtf/text/TextCodecUTF16.h"
 
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/CString.h>
@@ -33,7 +33,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace WTF {
 
 void TextCodecUTF16::registerEncodingNames(EncodingNameRegistrar registrar)
 {
@@ -149,4 +149,4 @@ CString TextCodecUTF16::encode(const UChar* characters, size_t length, Unencodab
     return string;
 }
 
-} // namespace WebCore
+} // namespace WTF

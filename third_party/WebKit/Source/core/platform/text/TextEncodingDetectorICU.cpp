@@ -31,19 +31,18 @@
 #include "config.h"
 #include "core/platform/text/TextEncodingDetector.h"
 
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/UnusedParam.h>
-
-#include "unicode/ucnv.h"
-#include "unicode/ucsdet.h"
+#include "wtf/UnusedParam.h"
+#include "wtf/text/TextEncoding.h"
+#include <unicode/ucnv.h>
+#include <unicode/ucsdet.h>
 
 namespace WebCore {
 
 bool detectTextEncoding(const char* data, size_t len,
                         const char* hintEncodingName,
-                        TextEncoding* detectedEncoding)
+                        WTF::TextEncoding* detectedEncoding)
 {
-    *detectedEncoding = TextEncoding();
+    *detectedEncoding = WTF::TextEncoding();
     int matchesCount = 0; 
     UErrorCode status = U_ZERO_ERROR;
     UCharsetDetector* detector = ucsdet_open(&status);
@@ -72,7 +71,7 @@ bool detectTextEncoding(const char* data, size_t len,
 
     const char* encoding = 0;
     if (hintEncodingName) {
-        TextEncoding hintEncoding(hintEncodingName);
+        WTF::TextEncoding hintEncoding(hintEncodingName);
         // 10 is the minimum confidence value consistent with the codepoint
         // allocation in a given encoding. The size of a chunk passed to
         // us varies even for the same html file (apparently depending on 
@@ -95,7 +94,7 @@ bool detectTextEncoding(const char* data, size_t len,
                 status = U_ZERO_ERROR;
                 continue;
             }
-            if (TextEncoding(matchEncoding) == hintEncoding) {
+            if (WTF::TextEncoding(matchEncoding) == hintEncoding) {
                 encoding = hintEncodingName;
                 break;
             }
@@ -108,7 +107,7 @@ bool detectTextEncoding(const char* data, size_t len,
     if (!encoding && matchesCount > 0)
         encoding = ucsdet_getName(matches[0], &status);
     if (U_SUCCESS(status)) {
-        *detectedEncoding = TextEncoding(encoding);
+        *detectedEncoding = WTF::TextEncoding(encoding);
         ucsdet_close(detector);
         return true;
     }    

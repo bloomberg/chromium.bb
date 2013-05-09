@@ -45,9 +45,9 @@
 #include "core/page/Frame.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/FormDataBuilder.h"
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/RandomNumber.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/RandomNumber.h"
+#include "wtf/text/TextEncoding.h"
 
 namespace WebCore {
 
@@ -178,7 +178,7 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
         }
     }
 
-    TextEncoding dataEncoding = isMailtoForm ? UTF8Encoding() : FormDataBuilder::encodingFromAcceptCharset(copiedAttributes.acceptCharset(), document);
+    WTF::TextEncoding dataEncoding = isMailtoForm ? UTF8Encoding() : FormDataBuilder::encodingFromAcceptCharset(copiedAttributes.acceptCharset(), document);
     RefPtr<DOMFormData> domFormData = DOMFormData::create(dataEncoding.encodingForFormSubmission());
     Vector<pair<String, String> > formValues;
 

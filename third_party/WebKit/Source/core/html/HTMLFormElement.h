@@ -30,6 +30,10 @@
 #include "core/loader/FormSubmission.h"
 #include <wtf/OwnPtr.h>
 
+namespace WTF{
+class TextEncoding;
+}
+
 namespace WebCore {
 
 class Event;
@@ -38,7 +42,6 @@ class FormData;
 class HTMLFormControlElement;
 class HTMLImageElement;
 class HTMLInputElement;
-class TextEncoding;
 
 class HTMLFormElement FINAL : public HTMLElement {
 public:

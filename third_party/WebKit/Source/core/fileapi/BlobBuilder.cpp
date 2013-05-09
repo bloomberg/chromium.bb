@@ -39,13 +39,13 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/text/LineEnding.h"
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/ArrayBuffer.h>
-#include <wtf/ArrayBufferView.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/CString.h>
-#include <wtf/Vector.h>
+#include "wtf/ArrayBuffer.h"
+#include "wtf/ArrayBufferView.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/TextEncoding.h"
 
 namespace WebCore {
 
@@ -71,7 +71,7 @@ Vector<char>& BlobBuilder::getBuffer()
 
 void BlobBuilder::append(const String& text, const String& endingType)
 {
-    CString utf8Text = UTF8Encoding().encode(text.characters(), text.length(), EntitiesForUnencodables);
+    CString utf8Text = UTF8Encoding().encode(text.characters(), text.length(), WTF::EntitiesForUnencodables);
 
     Vector<char>& buffer = getBuffer();
     size_t oldSize = buffer.size();

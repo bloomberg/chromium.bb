@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2006 Alexey Proskuryakov <ap@nypop.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,35 +24,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#ifndef TextCodecUTF8_h
-#define TextCodecUTF8_h
+#include "config.h"
+#include "wtf/text/TextCodec.h"
 
-#include "core/platform/text/TextCodec.h"
+#include "wtf/StringExtras.h"
+#include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace WTF {
 
-class TextCodecUTF8 : public TextCodec {
-public:
-    static void registerEncodingNames(EncodingNameRegistrar);
-    static void registerCodecs(TextCodecRegistrar);
+TextCodec::~TextCodec()
+{
+}
 
-private:
-    static PassOwnPtr<TextCodec> create(const TextEncoding&, const void*);
-    TextCodecUTF8() : m_partialSequenceSize(0) { }
+int TextCodec::getUnencodableReplacement(unsigned codePoint, UnencodableHandling handling, UnencodableReplacementArray replacement)
+{
+    switch (handling) {
+        case QuestionMarksForUnencodables:
+            replacement[0] = '?';
+            replacement[1] = 0;
+            return 1;
+        case EntitiesForUnencodables:
+            snprintf(replacement, sizeof(UnencodableReplacementArray), "&#%u;", codePoint);
+            return static_cast<int>(strlen(replacement));
+        case URLEncodedEntitiesForUnencodables:
+            snprintf(replacement, sizeof(UnencodableReplacementArray), "%%26%%23%u%%3B", codePoint);
+            return static_cast<int>(strlen(replacement));
+    }
+    ASSERT_NOT_REACHED();
+    replacement[0] = 0;
+    return 0;
+}
 
-    virtual String decode(const char*, size_t length, bool flush, bool stopOnError, bool& sawError);
-    virtual CString encode(const UChar*, size_t length, UnencodableHandling);
-
-    template <typename CharType>
-    bool handlePartialSequence(CharType*& destination, const uint8_t*& source, const uint8_t* end, bool flush, bool stopOnError, bool& sawError);
-    void handleError(UChar*& destination, bool stopOnError, bool& sawError);
-    void consumePartialSequenceByte();
-
-    int m_partialSequenceSize;
-    uint8_t m_partialSequence[U8_MAX_LENGTH];
-    
-};
-
-} // namespace WebCore
-
-#endif // TextCodecUTF8_h
+} // namespace WTF

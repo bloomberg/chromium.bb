@@ -34,12 +34,12 @@
 #include "core/fileapi/Blob.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/TextEncoding.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-DOMFormData::DOMFormData(const TextEncoding& encoding)
+DOMFormData::DOMFormData(const WTF::TextEncoding& encoding)
     : FormDataList(encoding)
 {
 }

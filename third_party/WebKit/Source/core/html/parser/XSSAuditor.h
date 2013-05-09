@@ -30,8 +30,8 @@
 #include "core/platform/KURL.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "core/platform/text/SuffixTree.h"
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/TextEncoding.h"
 
 namespace WebCore {
 
@@ -118,7 +118,7 @@ private:
     State m_state;
     String m_cachedDecodedSnippet;
     unsigned m_scriptTagNestingLevel;
-    TextEncoding m_encoding;
+    WTF::TextEncoding m_encoding;
 };
 
 }

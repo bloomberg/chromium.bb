@@ -25,26 +25,24 @@
  */
 
 #include "config.h"
-#include "core/platform/text/TextEncodingRegistry.h"
+#include "wtf/text/TextEncodingRegistry.h"
 
-#include "core/platform/text/TextCodecLatin1.h"
-#include "core/platform/text/TextCodecUTF16.h"
-#include "core/platform/text/TextCodecUTF8.h"
-#include "core/platform/text/TextCodecICU.h"
-#include "core/platform/text/TextCodecUserDefined.h"
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/ASCIICType.h>
-#include <wtf/CurrentTime.h>
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/MainThread.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/StringExtras.h>
-#include <wtf/text/CString.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/MainThread.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/StringExtras.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/TextCodecICU.h"
+#include "wtf/text/TextCodecLatin1.h"
+#include "wtf/text/TextCodecUTF16.h"
+#include "wtf/text/TextCodecUTF8.h"
+#include "wtf/text/TextCodecUserDefined.h"
+#include "wtf/text/TextEncoding.h"
 
-using namespace WTF;
-
-namespace WebCore {
+namespace WTF {
 
 const size_t maxEncodingNameLength = 63;
 
@@ -349,7 +347,7 @@ bool noExtendedTextEncodingNameUsed()
 void dumpTextEncodingNameMap()
 {
     unsigned size = textEncodingNameMap->size();
-    fprintf(stderr, "Dumping %u entries in WebCore::textEncodingNameMap...\n", size);
+    fprintf(stderr, "Dumping %u entries in WTF::TextEncodingNameMap...\n", size);
 
     MutexLocker lock(encodingRegistryMutex());
 
@@ -360,4 +358,4 @@ void dumpTextEncodingNameMap()
 }
 #endif
 
-} // namespace WebCore
+} // namespace WTF

@@ -36,22 +36,25 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
+namespace WTF{
+class TextEncoding;
+}
+
 namespace WebCore {
 
 class Blob;
 class HTMLFormElement;
-class TextEncoding;
 
 class DOMFormData : public FormDataList, public RefCounted<DOMFormData> {
 public:
     static PassRefPtr<DOMFormData> create(HTMLFormElement* form) { return adoptRef(new DOMFormData(form)); }
-    static PassRefPtr<DOMFormData> create(const TextEncoding& encoding) { return adoptRef(new DOMFormData(encoding)); }
+    static PassRefPtr<DOMFormData> create(const WTF::TextEncoding& encoding) { return adoptRef(new DOMFormData(encoding)); }
 
     void append(const String& name, const String& value);
     void append(const String& name, Blob*, const String& filename = String());
 
 private:
-    explicit DOMFormData(const TextEncoding&);
+    explicit DOMFormData(const WTF::TextEncoding&);
     explicit DOMFormData(HTMLFormElement*);
 };
 

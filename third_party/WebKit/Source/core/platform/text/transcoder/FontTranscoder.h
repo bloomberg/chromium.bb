@@ -35,16 +35,19 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/text/AtomicStringHash.h>
 
+namespace WTF{
+class TextEncoding;
+}
+
 namespace WebCore {
 
 class FontDescription;
-class TextEncoding;
 
 class FontTranscoder {
     WTF_MAKE_NONCOPYABLE(FontTranscoder); WTF_MAKE_FAST_ALLOCATED;
 public:
-    void convert(String& text, const FontDescription&, const TextEncoding* = 0) const;
-    bool needsTranscoding(const FontDescription&, const TextEncoding* = 0) const;
+    void convert(String& text, const FontDescription&, const WTF::TextEncoding* = 0) const;
+    bool needsTranscoding(const FontDescription&, const WTF::TextEncoding* = 0) const;
 
 private:
     FontTranscoder();
@@ -54,7 +57,7 @@ private:
         NoConversion, BackslashToYenSign,
     };
 
-    ConverterType converterType(const FontDescription&, const TextEncoding*) const;
+    ConverterType converterType(const FontDescription&, const WTF::TextEncoding*) const;
 
     HashMap<AtomicString, ConverterType> m_converterTypes;
 

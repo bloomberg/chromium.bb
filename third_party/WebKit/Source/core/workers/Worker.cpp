@@ -41,11 +41,10 @@
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"
-#include "core/platform/text/TextEncoding.h"
 #include "core/workers/WorkerContextProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThread.h"
-#include <wtf/MainThread.h>
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 

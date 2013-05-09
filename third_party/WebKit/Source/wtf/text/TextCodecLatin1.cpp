@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "core/platform/text/TextCodecLatin1.h"
+#include "wtf/text/TextCodecLatin1.h"
 
-#include "core/platform/text/TextCodecASCIIFastPath.h"
+#include "wtf/text/TextCodecASCIIFastPath.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuffer.h>
@@ -34,7 +34,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace WTF {
 
 static const UChar table[256] = {
     0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007, // 00-07
@@ -266,4 +266,4 @@ CString TextCodecLatin1::encode(const UChar* characters, size_t length, Unencoda
     return encodeComplexWindowsLatin1(characters, length, handling);
 }
 
-} // namespace WebCore
+} // namespace WTF

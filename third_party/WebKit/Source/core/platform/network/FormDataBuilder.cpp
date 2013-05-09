@@ -28,13 +28,12 @@
 #include "core/dom/Document.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
-#include "core/platform/text/TextEncoding.h"
-
+#include "wtf/Assertions.h"
+#include "wtf/HexNumber.h"
+#include "wtf/RandomNumber.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/TextEncoding.h"
 #include <limits>
-#include <wtf/Assertions.h>
-#include <wtf/HexNumber.h>
-#include <wtf/RandomNumber.h>
-#include <wtf/text/CString.h>
 
 namespace WebCore {
 
@@ -79,7 +78,7 @@ static void appendQuotedString(Vector<char>& buffer, const CString& string)
     }
 }
 
-TextEncoding FormDataBuilder::encodingFromAcceptCharset(const String& acceptCharset, Document* document)
+WTF::TextEncoding FormDataBuilder::encodingFromAcceptCharset(const String& acceptCharset, Document* document)
 {
     String normalizedAcceptCharset = acceptCharset;
     normalizedAcceptCharset.replace(',', ' ');
@@ -87,11 +86,11 @@ TextEncoding FormDataBuilder::encodingFromAcceptCharset(const String& acceptChar
     Vector<String> charsets;
     normalizedAcceptCharset.split(' ', charsets);
 
-    TextEncoding encoding;
+    WTF::TextEncoding encoding;
 
     Vector<String>::const_iterator end = charsets.end();
     for (Vector<String>::const_iterator it = charsets.begin(); it != end; ++it) {
-        if ((encoding = TextEncoding(*it)).isValid())
+        if ((encoding = WTF::TextEncoding(*it)).isValid())
             return encoding;
     }
 
@@ -161,12 +160,12 @@ void FormDataBuilder::addBoundaryToMultiPartHeader(Vector<char>& buffer, const C
     append(buffer, "\r\n");
 }
 
-void FormDataBuilder::addFilenameToMultiPartHeader(Vector<char>& buffer, const TextEncoding& encoding, const String& filename)
+void FormDataBuilder::addFilenameToMultiPartHeader(Vector<char>& buffer, const WTF::TextEncoding& encoding, const String& filename)
 {
     // FIXME: This loses data irreversibly if the filename includes characters you can't encode
     // in the website's character set.
     append(buffer, "; filename=\"");
-    appendQuotedString(buffer, encoding.encode(filename.characters(), filename.length(), QuestionMarksForUnencodables));
+    appendQuotedString(buffer, encoding.encode(filename.characters(), filename.length(), WTF::QuestionMarksForUnencodables));
     append(buffer, '"');
 }
 

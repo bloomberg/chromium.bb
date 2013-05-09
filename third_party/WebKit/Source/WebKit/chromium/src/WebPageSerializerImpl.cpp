@@ -92,7 +92,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/platform/KURL.h"
-#include "core/platform/text/TextEncoding.h"
+#include "wtf/text/TextEncoding.h"
 #include <public/WebURL.h>
 #include <public/WebVector.h>
 
@@ -106,7 +106,7 @@ namespace WebKit {
 static const unsigned dataBufferCapacity = 65536;
 
 WebPageSerializerImpl::SerializeDomParam::SerializeDomParam(const KURL& url,
-                                                            const TextEncoding& textEncoding,
+                                                            const WTF::TextEncoding& textEncoding,
                                                             Document* document,
                                                             const String& directoryName)
     : url(url)
@@ -286,7 +286,7 @@ void WebPageSerializerImpl::encodeAndFlushBuffer(
 
     // Convert the unicode content to target encoding
     CString encodedContent = param->textEncoding.encode(
-        content.characters(), content.length(), EntitiesForUnencodables);
+        content.characters(), content.length(), WTF::EntitiesForUnencodables);
 
     // Send result to the client.
     m_client->didSerializeDataForFrame(param->url,
@@ -511,7 +511,7 @@ bool WebPageSerializerImpl::serialize()
         didSerialization = true;
 
         String encoding = document->encoding();
-        const TextEncoding& textEncoding = encoding.isEmpty() ? UTF8Encoding() : TextEncoding(encoding);
+        const WTF::TextEncoding& textEncoding = encoding.isEmpty() ? UTF8Encoding() : WTF::TextEncoding(encoding);
         String directoryName = url == mainURL ? m_localDirectoryName : "";
 
         SerializeDomParam param(url, textEncoding, document, directoryName);

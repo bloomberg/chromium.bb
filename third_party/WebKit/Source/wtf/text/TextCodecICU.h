@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2004, 2006, 2007, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2006 Alexey Proskuryakov <ap@nypop.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,29 +24,53 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#ifndef TextCodecUTF16_h
-#define TextCodecUTF16_h
+#ifndef TextCodecICU_h
+#define TextCodecICU_h
 
-#include "core/platform/text/TextCodec.h"
+#include <unicode/utypes.h>
+#include "wtf/text/TextCodec.h"
+#include "wtf/text/TextEncoding.h"
 
-namespace WebCore {
+typedef struct UConverter UConverter;
 
-    class TextCodecUTF16 : public TextCodec {
+namespace WTF {
+
+    class TextCodecICU : public TextCodec {
     public:
         static void registerEncodingNames(EncodingNameRegistrar);
         static void registerCodecs(TextCodecRegistrar);
 
-        TextCodecUTF16(bool littleEndian) : m_littleEndian(littleEndian), m_haveBufferedByte(false) { }
+        virtual ~TextCodecICU();
+
+    private:
+        TextCodecICU(const TextEncoding&);
+        static PassOwnPtr<TextCodec> create(const TextEncoding&, const void*);
 
         virtual String decode(const char*, size_t length, bool flush, bool stopOnError, bool& sawError);
         virtual CString encode(const UChar*, size_t length, UnencodableHandling);
 
-    private:
-        bool m_littleEndian;
-        bool m_haveBufferedByte;
-        unsigned char m_bufferedByte;
+        void createICUConverter() const;
+        void releaseICUConverter() const;
+        bool needsGBKFallbacks() const { return m_needsGBKFallbacks; }
+        void setNeedsGBKFallbacks(bool needsFallbacks) { m_needsGBKFallbacks = needsFallbacks; }
+        
+        int decodeToBuffer(UChar* buffer, UChar* bufferLimit, const char*& source,
+            const char* sourceLimit, int32_t* offsets, bool flush, UErrorCode& err);
+
+        TextEncoding m_encoding;
+        mutable UConverter* m_converterICU;
+        mutable bool m_needsGBKFallbacks;
     };
 
-} // namespace WebCore
+    struct ICUConverterWrapper {
+        WTF_MAKE_NONCOPYABLE(ICUConverterWrapper); WTF_MAKE_FAST_ALLOCATED;
+    public:
+        ICUConverterWrapper() : converter(0) { }
+        ~ICUConverterWrapper();
 
-#endif // TextCodecUTF16_h
+        UConverter* converter;
+    };
+
+} // namespace WTF
+
+#endif // TextCodecICU_h

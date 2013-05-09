@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2004, 2006 Apple Computer, Inc.  All rights reserved.
- * Copyright (C) 2006 Alexey Proskuryakov <ap@nypop.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,35 +23,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#include "config.h"
-#include "core/platform/text/TextCodec.h"
+#ifndef TextCodecUTF16_h
+#define TextCodecUTF16_h
 
-#include <wtf/StringExtras.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/TextCodec.h"
 
-namespace WebCore {
+namespace WTF {
 
-TextCodec::~TextCodec()
-{
-}
+    class TextCodecUTF16 : public TextCodec {
+    public:
+        static void registerEncodingNames(EncodingNameRegistrar);
+        static void registerCodecs(TextCodecRegistrar);
 
-int TextCodec::getUnencodableReplacement(unsigned codePoint, UnencodableHandling handling, UnencodableReplacementArray replacement)
-{
-    switch (handling) {
-        case QuestionMarksForUnencodables:
-            replacement[0] = '?';
-            replacement[1] = 0;
-            return 1;
-        case EntitiesForUnencodables:
-            snprintf(replacement, sizeof(UnencodableReplacementArray), "&#%u;", codePoint);
-            return static_cast<int>(strlen(replacement));
-        case URLEncodedEntitiesForUnencodables:
-            snprintf(replacement, sizeof(UnencodableReplacementArray), "%%26%%23%u%%3B", codePoint);
-            return static_cast<int>(strlen(replacement));
-    }
-    ASSERT_NOT_REACHED();
-    replacement[0] = 0;
-    return 0;
-}
+        TextCodecUTF16(bool littleEndian) : m_littleEndian(littleEndian), m_haveBufferedByte(false) { }
 
-} // namespace WebCore
+        virtual String decode(const char*, size_t length, bool flush, bool stopOnError, bool& sawError);
+        virtual CString encode(const UChar*, size_t length, UnencodableHandling);
+
+    private:
+        bool m_littleEndian;
+        bool m_haveBufferedByte;
+        unsigned char m_bufferedByte;
+    };
+
+} // namespace WTF
+
+#endif // TextCodecUTF16_h

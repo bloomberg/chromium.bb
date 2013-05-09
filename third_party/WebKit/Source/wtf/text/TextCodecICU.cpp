@@ -25,21 +25,21 @@
  */
 
 #include "config.h"
-#include "core/platform/text/TextCodecICU.h"
+#include "wtf/text/TextCodecICU.h"
 
 #include <unicode/ucnv.h>
 #include <unicode/ucnv_cb.h>
-#include "core/platform/ThreadGlobalData.h"
-#include <wtf/Assertions.h>
-#include <wtf/StringExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/Threading.h>
-#include <wtf/unicode/CharacterNames.h>
+#include "wtf/Assertions.h"
+#include "wtf/StringExtras.h"
+#include "wtf/Threading.h"
+#include "wtf/WTFThreadData.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/unicode/CharacterNames.h"
 
 using std::min;
 
-namespace WebCore {
+namespace WTF {
 
 const size_t ConversionBufferSize = 16384;
 
@@ -51,7 +51,7 @@ ICUConverterWrapper::~ICUConverterWrapper()
 
 static UConverter*& cachedConverterICU()
 {
-    return threadGlobalData().cachedConverterICU().converter;
+    return wtfThreadData().cachedConverterICU().converter;
 }
 
 PassOwnPtr<TextCodec> TextCodecICU::create(const TextEncoding& encoding, const void*)
@@ -470,4 +470,4 @@ CString TextCodecICU::encode(const UChar* characters, size_t length, Unencodable
     return CString(result.data(), size);
 }
 
-} // namespace WebCore
+} // namespace WTF

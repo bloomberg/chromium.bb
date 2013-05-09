@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2004, 2006, 2007, 2011 Apple Inc. All rights reserved.
- * Copyright (C) 2006 Alexey Proskuryakov <ap@nypop.com>
+ * Copyright (C) 2007 Apple, Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,53 +23,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#ifndef TextCodecICU_h
-#define TextCodecICU_h
+#ifndef TextCodecUserDefined_h
+#define TextCodecUserDefined_h
 
-#include <unicode/utypes.h>
-#include "core/platform/text/TextCodec.h"
-#include "core/platform/text/TextEncoding.h"
+#include "wtf/text/TextCodec.h"
 
-typedef struct UConverter UConverter;
+namespace WTF {
 
-namespace WebCore {
-
-    class TextCodecICU : public TextCodec {
+    class TextCodecUserDefined : public TextCodec {
     public:
         static void registerEncodingNames(EncodingNameRegistrar);
         static void registerCodecs(TextCodecRegistrar);
 
-        virtual ~TextCodecICU();
-
-    private:
-        TextCodecICU(const TextEncoding&);
-        static PassOwnPtr<TextCodec> create(const TextEncoding&, const void*);
-
         virtual String decode(const char*, size_t length, bool flush, bool stopOnError, bool& sawError);
         virtual CString encode(const UChar*, size_t length, UnencodableHandling);
-
-        void createICUConverter() const;
-        void releaseICUConverter() const;
-        bool needsGBKFallbacks() const { return m_needsGBKFallbacks; }
-        void setNeedsGBKFallbacks(bool needsFallbacks) { m_needsGBKFallbacks = needsFallbacks; }
-        
-        int decodeToBuffer(UChar* buffer, UChar* bufferLimit, const char*& source,
-            const char* sourceLimit, int32_t* offsets, bool flush, UErrorCode& err);
-
-        TextEncoding m_encoding;
-        mutable UConverter* m_converterICU;
-        mutable bool m_needsGBKFallbacks;
     };
 
-    struct ICUConverterWrapper {
-        WTF_MAKE_NONCOPYABLE(ICUConverterWrapper); WTF_MAKE_FAST_ALLOCATED;
-    public:
-        ICUConverterWrapper() : converter(0) { }
-        ~ICUConverterWrapper();
+} // namespace WTF
 
-        UConverter* converter;
-    };
-
-} // namespace WebCore
-
-#endif // TextCodecICU_h
+#endif // TextCodecUserDefined_h

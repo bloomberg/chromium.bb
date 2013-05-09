@@ -31,18 +31,17 @@
 #ifndef KURLGooglePrivate_h
 #define KURLGooglePrivate_h
 
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
-
 #include <googleurl/src/url_parse.h>
 #include <googleurl/src/url_canon.h>
+#include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/TextEncoding.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
     class KURL;
-    class TextEncoding;
 
     // Wraps the internals related to using Google-URL as the backend for KURL.
     // This maintains the state and has auxiliary functions so that we don't need
@@ -58,7 +57,7 @@ namespace WebCore {
         // Initializes the object. This will call through the backend initializer
         // below.
         void init(const KURL& base, const String& relative,
-                  const TextEncoding* queryEncoding);
+                  const WTF::TextEncoding* queryEncoding);
 
         // Backend initializer. The query encoding parameters are optional and can
         // be 0 (this implies UTF-8). This initializer requires that the object
@@ -66,7 +65,7 @@ namespace WebCore {
         // already-constructed object.
         template <typename CHAR>
         void init(const KURL& base, const CHAR* rel, int relLength,
-                  const TextEncoding* queryEncoding);
+                  const WTF::TextEncoding* queryEncoding);
 
         // Does a deep copy to the given output object.
         void copyTo(KURLGooglePrivate* dest) const;

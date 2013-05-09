@@ -28,6 +28,7 @@
 #include "core/css/CSSParser.h"
 
 #include "CSSValueKeywords.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSBorderImage.h"
@@ -68,8 +69,11 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/WebKitCSSArrayFunctionValue.h"
+#include "core/css/WebKitCSSFilterValue.h"
 #include "core/css/WebKitCSSKeyframeRule.h"
 #include "core/css/WebKitCSSKeyframesRule.h"
+#include "core/css/WebKitCSSMixFunctionValue.h"
 #include "core/css/WebKitCSSRegionRule.h"
 #include "core/css/WebKitCSSShaderValue.h"
 #include "core/css/WebKitCSSTransformValue.h"
@@ -77,29 +81,24 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/HashTools.h"
 #include "core/platform/HistogramSupport.h"
-#include "core/platform/text/TextEncoding.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/svg/SVGParserUtilities.h"
+#include "wtf/BitArray.h"
+#include "wtf/HexNumber.h"
+#include "wtf/dtoa.h"
+#include "wtf/text/StringBuffer.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringImpl.h"
+#include "wtf/text/TextEncoding.h"
 #include <limits.h>
-#include <wtf/BitArray.h>
-#include <wtf/HexNumber.h>
-#include <wtf/dtoa.h>
-#include <wtf/text/StringBuffer.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/StringImpl.h>
 
 #if ENABLE(SVG)
 #include "core/css/WebKitCSSSVGDocumentValue.h"
 #endif
-
-#include "core/css/WebKitCSSArrayFunctionValue.h"
-#include "core/css/WebKitCSSFilterValue.h"
-#include "core/css/WebKitCSSMixFunctionValue.h"
 
 #define YYDEBUG 0
 

@@ -34,6 +34,10 @@
 #include "core/loader/FormState.h"
 #include "core/platform/KURL.h"
 
+namespace WTF{
+class TextEncoding;
+}
+
 namespace WebCore {
 
 class Document;
@@ -41,7 +45,6 @@ class Event;
 class FormData;
 struct FrameLoadRequest;
 class HTMLFormElement;
-class TextEncoding;
 
 class FormSubmission : public RefCounted<FormSubmission> {
 public:

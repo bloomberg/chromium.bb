@@ -28,13 +28,13 @@
 
 #include "core/html/parser/HTMLToken.h"
 #include "core/platform/text/SegmentedString.h"
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/Noncopyable.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/text/TextCodec.h"
+#include "wtf/text/TextEncoding.h"
 
 namespace WebCore {
 
 class HTMLTokenizer;
-class TextCodec;
 
 class HTMLMetaCharsetParser {
     WTF_MAKE_NONCOPYABLE(HTMLMetaCharsetParser); WTF_MAKE_FAST_ALLOCATED;
@@ -46,11 +46,11 @@ public:
     // Returns true if done checking, regardless whether an encoding is found.
     bool checkForMetaCharset(const char*, size_t);
 
-    const TextEncoding& encoding() { return m_encoding; }
+    const WTF::TextEncoding& encoding() { return m_encoding; }
 
     typedef Vector<pair<String, String> > AttributeList;
     // The returned encoding might not be valid.
-    static TextEncoding encodingFromMetaAttributes(const AttributeList&
+    static WTF::TextEncoding encodingFromMetaAttributes(const AttributeList&
 );
 
 private:
@@ -72,7 +72,7 @@ private:
     bool m_inHeadSection;
 
     bool m_doneChecking;
-    TextEncoding m_encoding;
+    WTF::TextEncoding m_encoding;
 };
 
 }

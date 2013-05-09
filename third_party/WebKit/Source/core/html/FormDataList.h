@@ -22,9 +22,9 @@
 #define FormDataList_h
 
 #include "core/fileapi/Blob.h"
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/Forward.h>
-#include <wtf/text/CString.h>
+#include "wtf/Forward.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/TextEncoding.h"
 
 namespace WebCore {
 
@@ -46,7 +46,7 @@ public:
         String m_filename;
     };
 
-    FormDataList(const TextEncoding&);
+    FormDataList(const WTF::TextEncoding&);
 
     void appendData(const String& key, const String& value)
     {
@@ -70,14 +70,14 @@ public:
     }
 
     const Vector<Item>& items() const { return m_items; }
-    const TextEncoding& encoding() const { return m_encoding; }
+    const WTF::TextEncoding& encoding() const { return m_encoding; }
 
 private:
     void appendString(const CString&);
     void appendString(const String&);
     void appendBlob(PassRefPtr<Blob>, const String& filename);
 
-    TextEncoding m_encoding;
+    WTF::TextEncoding m_encoding;
     Vector<Item> m_items;
 };
 

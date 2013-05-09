@@ -26,17 +26,17 @@
  */
 
 #include "config.h"
-#include "core/platform/text/TextEncoding.h"
+#include "wtf/text/TextEncoding.h"
 
-#include "core/platform/text/TextCodec.h"
-#include "core/platform/text/TextEncodingRegistry.h"
+#include "wtf/text/TextCodec.h"
+#include "wtf/text/TextEncodingRegistry.h"
 #include <unicode/unorm.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 
-namespace WebCore {
+namespace WTF {
 
 static const TextEncoding& UTF7Encoding()
 {
@@ -225,4 +225,4 @@ const TextEncoding& WindowsLatin1Encoding()
     return globalWindowsLatin1Encoding;
 }
 
-} // namespace WebCore
+} // namespace WTF

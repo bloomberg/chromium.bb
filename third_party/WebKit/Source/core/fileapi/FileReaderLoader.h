@@ -34,9 +34,9 @@
 #include "core/fileapi/FileError.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/platform/KURL.h"
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/Forward.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Forward.h"
+#include "wtf/text/TextEncoding.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -97,7 +97,7 @@ private:
 
     ReadType m_readType;
     FileReaderLoaderClient* m_client;
-    TextEncoding m_encoding;
+    WTF::TextEncoding m_encoding;
     String m_dataType;
 
     KURL m_urlForReading;

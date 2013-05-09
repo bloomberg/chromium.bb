@@ -30,10 +30,10 @@
 #ifndef DecodeEscapeSequences_h
 #define DecodeEscapeSequences_h
 
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/ASCIICType.h>
-#include <wtf/Assertions.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/Assertions.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/TextEncoding.h"
 
 namespace WebCore {
 
@@ -51,7 +51,7 @@ struct Unicode16BitEscapeSequence {
         }
         return runEnd;
     }
-    static String decodeRun(const UChar* run, size_t runLength, const TextEncoding&)
+    static String decodeRun(const UChar* run, size_t runLength, const WTF::TextEncoding&)
     {
         // Each %u-escape sequence represents a UTF-16 code unit.
         // See <http://www.w3.org/International/iri-edit/draft-duerst-iri.html#anchor29>.
@@ -96,7 +96,7 @@ struct URLEscapeSequence {
         }
         return runEnd;
     }
-    static String decodeRun(const UChar* run, size_t runLength, const TextEncoding& encoding)
+    static String decodeRun(const UChar* run, size_t runLength, const WTF::TextEncoding& encoding)
     {
         // For URL escape sequences, we know that findEndOfRun() has given us a run where every %-sign introduces
         // a valid escape sequence, but there may be characters between the sequences.
@@ -119,7 +119,7 @@ struct URLEscapeSequence {
 };
 
 template<typename EscapeSequence>
-String decodeEscapeSequences(const String& string, const TextEncoding& encoding)
+String decodeEscapeSequences(const String& string, const WTF::TextEncoding& encoding)
 {
     StringBuilder result;
     size_t length = string.length();

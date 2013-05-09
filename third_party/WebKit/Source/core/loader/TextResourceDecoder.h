@@ -23,8 +23,8 @@
 #ifndef TextResourceDecoder_h
 #define TextResourceDecoder_h
 
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/RefCounted.h>
+#include "wtf/RefCounted.h"
+#include "wtf/text/TextEncoding.h"
 
 namespace WebCore {
 
@@ -43,14 +43,14 @@ public:
         EncodingFromParentFrame
     };
 
-    static PassRefPtr<TextResourceDecoder> create(const String& mimeType, const TextEncoding& defaultEncoding = TextEncoding(), bool usesEncodingDetector = false)
+    static PassRefPtr<TextResourceDecoder> create(const String& mimeType, const WTF::TextEncoding& defaultEncoding = WTF::TextEncoding(), bool usesEncodingDetector = false)
     {
         return adoptRef(new TextResourceDecoder(mimeType, defaultEncoding, usesEncodingDetector));
     }
     ~TextResourceDecoder();
 
-    void setEncoding(const TextEncoding&, EncodingSource);
-    const TextEncoding& encoding() const { return m_encoding; }
+    void setEncoding(const WTF::TextEncoding&, EncodingSource);
+    const WTF::TextEncoding& encoding() const { return m_encoding; }
 
     String decode(const char* data, size_t length);
     String flush();
@@ -67,12 +67,12 @@ public:
     bool sawError() const { return m_sawError; }
 
 private:
-    TextResourceDecoder(const String& mimeType, const TextEncoding& defaultEncoding,
+    TextResourceDecoder(const String& mimeType, const WTF::TextEncoding& defaultEncoding,
                         bool usesEncodingDetector);
 
     enum ContentType { PlainText, HTML, XML, CSS }; // PlainText only checks for BOM.
     static ContentType determineContentType(const String& mimeType);
-    static const TextEncoding& defaultEncoding(ContentType, const TextEncoding& defaultEncoding);
+    static const WTF::TextEncoding& defaultEncoding(ContentType, const WTF::TextEncoding& defaultEncoding);
 
     size_t checkForBOM(const char*, size_t);
     bool checkForCSSCharset(const char*, size_t, bool& movedDataToBuffer);
@@ -82,7 +82,7 @@ private:
     bool shouldAutoDetect() const;
 
     ContentType m_contentType;
-    TextEncoding m_encoding;
+    WTF::TextEncoding m_encoding;
     OwnPtr<TextCodec> m_codec;
     EncodingSource m_source;
     const char* m_hintEncoding;

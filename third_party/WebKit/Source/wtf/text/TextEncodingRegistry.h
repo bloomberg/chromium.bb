@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008, 2010 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -21,30 +21,47 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
- *
  */
 
-#include "config.h"
-#include "wtf/WTFThreadData.h"
+#ifndef TextEncodingRegistry_h
+#define TextEncodingRegistry_h
 
-#include "wtf/text/TextCodecICU.h"
+#include <memory>
+#include <wtf/PassOwnPtr.h>
+#include <wtf/text/WTFString.h>
+#include <wtf/unicode/Unicode.h>
 
 namespace WTF {
 
-ThreadSpecific<WTFThreadData>* WTFThreadData::staticData;
+class TextCodec;
+class TextEncoding;
 
-WTFThreadData::WTFThreadData()
-    : m_apiData(0)
-    , m_atomicStringTable(0)
-    , m_atomicStringTableDestructor(0)
-    , m_cachedConverterICU(adoptPtr(new ICUConverterWrapper))
-{
-}
+// Use TextResourceDecoder::decode to decode resources, since it handles BOMs.
+// Use TextEncoding::encode to encode, since it takes care of normalization.
+PassOwnPtr<TextCodec> newTextCodec(const TextEncoding&);
 
-WTFThreadData::~WTFThreadData()
-{
-    if (m_atomicStringTableDestructor)
-        m_atomicStringTableDestructor(m_atomicStringTable);
-}
+// Only TextEncoding should use the following functions directly.
+const char* atomicCanonicalTextEncodingName(const char* alias);
+template <typename CharacterType>
+const char* atomicCanonicalTextEncodingName(const CharacterType*, size_t);
+const char* atomicCanonicalTextEncodingName(const String&);
+bool noExtendedTextEncodingNameUsed();
+bool isJapaneseEncoding(const char* canonicalEncodingName);
+bool shouldShowBackslashAsCurrencySymbolIn(const char* canonicalEncodingName);
+
+#ifndef NDEBUG
+void dumpTextEncodingNameMap();
+#endif
 
 } // namespace WTF
+
+using WTF::newTextCodec;
+using WTF::atomicCanonicalTextEncodingName;
+using WTF::noExtendedTextEncodingNameUsed;
+using WTF::isJapaneseEncoding;
+using WTF::shouldShowBackslashAsCurrencySymbolIn;
+#ifndef NDEBUG
+using WTF::dumpTextEncodingNameMap;
+#endif
+
+#endif // TextEncodingRegistry_h

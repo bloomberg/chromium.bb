@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/page/ContentSecurityPolicy.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/DOMStringList.h"
@@ -39,16 +40,15 @@
 #include "core/page/Console.h"
 #include "core/page/Frame.h"
 #include "core/page/PageConsole.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/KURL.h"
 #include "core/platform/SchemeRegistry.h"
 #include "core/platform/network/FormData.h"
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/HashSet.h>
-#include <wtf/text/TextPosition.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashSet.h"
+#include "wtf/text/TextEncoding.h"
+#include "wtf/text/TextPosition.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

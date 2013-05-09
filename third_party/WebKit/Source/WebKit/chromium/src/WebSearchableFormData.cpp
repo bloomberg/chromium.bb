@@ -45,7 +45,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Frame.h"
 #include "core/platform/network/FormDataBuilder.h"
-#include "core/platform/text/TextEncoding.h"
+#include "wtf/text/TextEncoding.h"
 
 using namespace WebCore;
 using namespace HTMLNames;
@@ -53,20 +53,20 @@ using namespace HTMLNames;
 namespace {
 
 // Gets the encoding for the form.
-void GetFormEncoding(const HTMLFormElement* form, TextEncoding* encoding)
+void GetFormEncoding(const HTMLFormElement* form, WTF::TextEncoding* encoding)
 {
     String str(form->getAttribute(HTMLNames::accept_charsetAttr));
     str.replace(',', ' ');
     Vector<String> charsets;
     str.split(' ', charsets);
     for (Vector<String>::const_iterator i(charsets.begin()); i != charsets.end(); ++i) {
-        *encoding = TextEncoding(*i);
+        *encoding = WTF::TextEncoding(*i);
         if (encoding->isValid())
             return;
     }
     if (!form->document()->loader())
          return;
-    *encoding = TextEncoding(form->document()->encoding());
+    *encoding = WTF::TextEncoding(form->document()->encoding());
 }
 
 // Returns true if the submit request results in an HTTP URL.
@@ -194,7 +194,7 @@ HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement* form)
 // "hl=en&source=hp&biw=1085&bih=854&q={searchTerms}&btnG=Google+Search&aq=f&aqi=&aql=&oq="
 // 
 // Return false if the provided HTMLInputElement is not found in the form
-bool buildSearchString(const HTMLFormElement* form, Vector<char>* encodedString, TextEncoding* encoding, const HTMLInputElement* textElement)
+bool buildSearchString(const HTMLFormElement* form, Vector<char>* encodedString, WTF::TextEncoding* encoding, const HTMLInputElement* textElement)
 {
     bool isElementFound = false;   
 
@@ -249,7 +249,7 @@ WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const W
         return;
 
     Vector<char> encodedString;
-    TextEncoding encoding;
+    WTF::TextEncoding encoding;
 
     GetFormEncoding(formElement.get(), &encoding);
     if (!encoding.isValid()) {

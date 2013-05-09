@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "core/platform/text/TextCodecUTF8.h"
+#include "wtf/text/TextCodecUTF8.h"
 
-#include "core/platform/text/TextCodecASCIIFastPath.h"
+#include "wtf/text/TextCodecASCIIFastPath.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuffer.h>
 #include <wtf/unicode/CharacterNames.h>
@@ -35,7 +35,7 @@ using namespace WTF;
 using namespace WTF::Unicode;
 using namespace std;
 
-namespace WebCore {
+namespace WTF {
 
 const int nonCharacter = -1;
 
@@ -441,4 +441,4 @@ CString TextCodecUTF8::encode(const UChar* characters, size_t length, Unencodabl
     return CString(reinterpret_cast<char*>(bytes.data()), bytesWritten);
 }
 
-} // namespace WebCore
+} // namespace WTF

@@ -26,12 +26,12 @@
 #include "HTMLNames.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/html/parser/HTMLMetaCharsetParser.h"
-#include "core/platform/text/TextCodec.h"
-#include "core/platform/text/TextEncoding.h"
 #include "core/platform/text/TextEncodingDetector.h"
-#include "core/platform/text/TextEncodingRegistry.h"
-#include <wtf/ASCIICType.h>
-#include <wtf/StringExtras.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/StringExtras.h"
+#include "wtf/text/TextCodec.h"
+#include "wtf/text/TextEncoding.h"
+#include "wtf/text/TextEncodingRegistry.h"
 
 using namespace WTF;
 
@@ -92,7 +92,7 @@ static int find(const char* subject, size_t subjectLength, const char* target)
     return -1;
 }
 
-static TextEncoding findTextEncoding(const char* encodingName, int length)
+static WTF::TextEncoding findTextEncoding(const char* encodingName, int length)
 {
     Vector<char, 64> buffer(length + 1);
     memcpy(buffer.data(), encodingName, length);
@@ -316,7 +316,7 @@ TextResourceDecoder::ContentType TextResourceDecoder::determineContentType(const
     return PlainText;
 }
 
-const TextEncoding& TextResourceDecoder::defaultEncoding(ContentType contentType, const TextEncoding& specifiedDefaultEncoding)
+const WTF::TextEncoding& TextResourceDecoder::defaultEncoding(ContentType contentType, const WTF::TextEncoding& specifiedDefaultEncoding)
 {
     // Despite 8.5 "Text/xml with Omitted Charset" of RFC 3023, we assume UTF-8 instead of US-ASCII 
     // for text/xml. This matches Firefox.
@@ -327,7 +327,7 @@ const TextEncoding& TextResourceDecoder::defaultEncoding(ContentType contentType
     return specifiedDefaultEncoding;
 }
 
-TextResourceDecoder::TextResourceDecoder(const String& mimeType, const TextEncoding& specifiedDefaultEncoding, bool usesEncodingDetector)
+TextResourceDecoder::TextResourceDecoder(const String& mimeType, const WTF::TextEncoding& specifiedDefaultEncoding, bool usesEncodingDetector)
     : m_contentType(determineContentType(mimeType))
     , m_encoding(defaultEncoding(m_contentType, specifiedDefaultEncoding))
     , m_source(DefaultEncoding)
@@ -345,7 +345,7 @@ TextResourceDecoder::~TextResourceDecoder()
 {
 }
 
-void TextResourceDecoder::setEncoding(const TextEncoding& encoding, EncodingSource source)
+void TextResourceDecoder::setEncoding(const WTF::TextEncoding& encoding, EncodingSource source)
 {
     // In case the encoding didn't exist, we keep the old one (helps some sites specifying invalid encodings).
     if (!encoding.isValid())
@@ -628,7 +628,7 @@ String TextResourceDecoder::decode(const char* data, size_t len)
         if (m_encoding.isJapanese())
             detectJapaneseEncoding(data, len); // FIXME: We should use detectTextEncoding() for all languages.
         else {
-            TextEncoding detectedEncoding;
+            WTF::TextEncoding detectedEncoding;
             if (detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding))
                 setEncoding(detectedEncoding, AutoDetectedEncoding);
         }
@@ -660,7 +660,7 @@ String TextResourceDecoder::flush()
    // autodetection is satisfied.
     if (m_buffer.size() && shouldAutoDetect()
         && ((!m_checkedForHeadCharset && (m_contentType == HTML || m_contentType == XML)) || (!m_checkedForCSSCharset && (m_contentType == CSS)))) {
-         TextEncoding detectedEncoding;
+         WTF::TextEncoding detectedEncoding;
          if (detectTextEncoding(m_buffer.data(), m_buffer.size(),
                                 m_hintEncoding, &detectedEncoding))
              setEncoding(detectedEncoding, AutoDetectedEncoding);

@@ -379,7 +379,7 @@ bool FileReaderLoader::isCompleted() const
 void FileReaderLoader::setEncoding(const String& encoding)
 {
     if (!encoding.isEmpty())
-        m_encoding = TextEncoding(encoding);
+        m_encoding = WTF::TextEncoding(encoding);
 }
 
 #if ENABLE(STREAM)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
+ * Copyright (C) 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,35 +23,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#ifndef TextEncodingRegistry_h
-#define TextEncodingRegistry_h
+#ifndef TextCodecUTF8_h
+#define TextCodecUTF8_h
 
-#include <memory>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/text/TextCodec.h"
 
-namespace WebCore {
+namespace WTF {
 
-    class TextCodec;
-    class TextEncoding;
+class TextCodecUTF8 : public TextCodec {
+public:
+    static void registerEncodingNames(EncodingNameRegistrar);
+    static void registerCodecs(TextCodecRegistrar);
 
-    // Use TextResourceDecoder::decode to decode resources, since it handles BOMs.
-    // Use TextEncoding::encode to encode, since it takes care of normalization.
-    PassOwnPtr<TextCodec> newTextCodec(const TextEncoding&);
+private:
+    static PassOwnPtr<TextCodec> create(const TextEncoding&, const void*);
+    TextCodecUTF8() : m_partialSequenceSize(0) { }
 
-    // Only TextEncoding should use the following functions directly.
-    const char* atomicCanonicalTextEncodingName(const char* alias);
-    template <typename CharacterType>
-    const char* atomicCanonicalTextEncodingName(const CharacterType*, size_t);
-    const char* atomicCanonicalTextEncodingName(const String&);
-    bool noExtendedTextEncodingNameUsed();
-    bool isJapaneseEncoding(const char* canonicalEncodingName);
-    bool shouldShowBackslashAsCurrencySymbolIn(const char* canonicalEncodingName);
+    virtual String decode(const char*, size_t length, bool flush, bool stopOnError, bool& sawError);
+    virtual CString encode(const UChar*, size_t length, UnencodableHandling);
 
-#ifndef NDEBUG
-    void dumpTextEncodingNameMap();
-#endif
-}
+    template <typename CharType>
+    bool handlePartialSequence(CharType*& destination, const uint8_t*& source, const uint8_t* end, bool flush, bool stopOnError, bool& sawError);
+    void handleError(UChar*& destination, bool stopOnError, bool& sawError);
+    void consumePartialSequenceByte();
 
-#endif // TextEncodingRegistry_h
+    int m_partialSequenceSize;
+    uint8_t m_partialSequence[U8_MAX_LENGTH];
+    
+};
+
+} // namespace WTF
+
+#endif // TextCodecUTF8_h

@@ -30,9 +30,9 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLTokenizer.h"
-#include "core/platform/text/TextCodec.h"
-#include "core/platform/text/TextEncodingRegistry.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/TextCodec.h"
+#include "wtf/text/TextEncodingRegistry.h"
+#include "wtf/text/WTFString.h"
 
 using namespace WTF;
 
@@ -115,7 +115,7 @@ bool HTMLMetaCharsetParser::processMeta()
     return m_encoding.isValid();
 }
 
-TextEncoding HTMLMetaCharsetParser::encodingFromMetaAttributes(const AttributeList& attributes)
+WTF::TextEncoding HTMLMetaCharsetParser::encodingFromMetaAttributes(const AttributeList& attributes)
 {
     bool gotPragma = false;
     Mode mode = None;
@@ -141,9 +141,9 @@ TextEncoding HTMLMetaCharsetParser::encodingFromMetaAttributes(const AttributeLi
     }
 
     if (mode == Charset || (mode == Pragma && gotPragma))
-        return TextEncoding(stripLeadingAndTrailingHTMLSpaces(charset));
+        return WTF::TextEncoding(stripLeadingAndTrailingHTMLSpaces(charset));
 
-    return TextEncoding();
+    return WTF::TextEncoding();
 }
 
 static const int bytesToCheckUnconditionally = 1024; // That many input bytes will be checked for meta charset even if <head> section is over.

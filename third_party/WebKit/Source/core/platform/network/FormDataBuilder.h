@@ -24,21 +24,24 @@
 #include "core/platform/network/FormData.h"
 #include <wtf/Forward.h>
 
+namespace WTF{
+class TextEncoding;
+}
+
 namespace WebCore {
 
 class Document;
-class TextEncoding;
 
 class FormDataBuilder {
     WTF_MAKE_NONCOPYABLE(FormDataBuilder);
 public:
-    static TextEncoding encodingFromAcceptCharset(const String& acceptCharset, Document* document);
+    static WTF::TextEncoding encodingFromAcceptCharset(const String& acceptCharset, Document* document);
 
     // Helper functions used by HTMLFormElement for multi-part form data
     static Vector<char> generateUniqueBoundaryString();
     static void beginMultiPartHeader(Vector<char>&, const CString& boundary, const CString& name);
     static void addBoundaryToMultiPartHeader(Vector<char>&, const CString& boundary, bool isLastBoundary = false);
-    static void addFilenameToMultiPartHeader(Vector<char>&, const TextEncoding&, const String& filename);
+    static void addFilenameToMultiPartHeader(Vector<char>&, const WTF::TextEncoding&, const String& filename);
     static void addContentTypeToMultiPartHeader(Vector<char>&, const CString& mimeType);
     static void finishMultiPartHeader(Vector<char>&);
 

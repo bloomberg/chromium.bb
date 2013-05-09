@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Apple, Inc.  All rights reserved.
+ * Copyright (C) 2004, 2006 Apple Computer, Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,22 +23,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#ifndef TextCodecUserDefined_h
-#define TextCodecUserDefined_h
+#ifndef TextCodecLatin1_h
+#define TextCodecLatin1_h
 
-#include "core/platform/text/TextCodec.h"
+#include "wtf/text/TextCodec.h"
 
-namespace WebCore {
+namespace WTF {
 
-    class TextCodecUserDefined : public TextCodec {
-    public:
-        static void registerEncodingNames(EncodingNameRegistrar);
-        static void registerCodecs(TextCodecRegistrar);
+class TextCodecLatin1 : public TextCodec {
+public:
+    static void registerEncodingNames(EncodingNameRegistrar);
+    static void registerCodecs(TextCodecRegistrar);
 
-        virtual String decode(const char*, size_t length, bool flush, bool stopOnError, bool& sawError);
-        virtual CString encode(const UChar*, size_t length, UnencodableHandling);
-    };
+    virtual String decode(const char*, size_t length, bool flush, bool stopOnError, bool& sawError);
+    virtual CString encode(const UChar*, size_t length, UnencodableHandling);
+};
 
-} // namespace WebCore
+} // namespace WTF
 
-#endif // TextCodecUserDefined_h
+#endif // TextCodecLatin1_h

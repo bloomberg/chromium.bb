@@ -32,8 +32,8 @@
 #include "core/platform/text/transcoder/FontTranscoder.h"
 
 #include "core/platform/graphics/FontDescription.h"
-#include "core/platform/text/TextEncoding.h"
-#include <wtf/unicode/CharacterNames.h>
+#include "wtf/text/TextEncoding.h"
+#include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {
 
@@ -60,7 +60,7 @@ FontTranscoder::FontTranscoder()
     m_converterTypes.add(AtomicString(unicodeNameMeiryo, WTF_ARRAY_LENGTH(unicodeNameMeiryo)), BackslashToYenSign);
 }
 
-FontTranscoder::ConverterType FontTranscoder::converterType(const FontDescription& fontDescription, const TextEncoding* encoding) const
+FontTranscoder::ConverterType FontTranscoder::converterType(const FontDescription& fontDescription, const WTF::TextEncoding* encoding) const
 {
     const AtomicString& fontFamily = fontDescription.family().family().string();
     if (!fontFamily.isNull()) {
@@ -77,11 +77,11 @@ FontTranscoder::ConverterType FontTranscoder::converterType(const FontDescriptio
     return NoConversion;
 }
 
-void FontTranscoder::convert(String& text, const FontDescription& fontDescription, const TextEncoding* encoding) const
+void FontTranscoder::convert(String& text, const FontDescription& fontDescription, const WTF::TextEncoding* encoding) const
 {
     switch (converterType(fontDescription, encoding)) {
     case BackslashToYenSign: {
-        // FIXME: core/platform/text/TextEncoding.h has similar code. We need to factor them out.
+        // FIXME: wtf/text/TextEncoding.h has similar code. We need to factor them out.
         text.replace('\\', yenSign);
         break;
     }
@@ -91,7 +91,7 @@ void FontTranscoder::convert(String& text, const FontDescription& fontDescriptio
     }
 }
 
-bool FontTranscoder::needsTranscoding(const FontDescription& fontDescription, const TextEncoding* encoding) const
+bool FontTranscoder::needsTranscoding(const FontDescription& fontDescription, const WTF::TextEncoding* encoding) const
 {
     ConverterType type = converterType(fontDescription, encoding);
     return type != NoConversion;

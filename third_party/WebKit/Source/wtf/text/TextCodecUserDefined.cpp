@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/TextCodecUserDefined.h"
+#include "wtf/text/TextCodecUserDefined.h"
 
 #include <stdio.h>
 #include <wtf/PassOwnPtr.h>
@@ -33,7 +33,7 @@
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
 
-namespace WebCore {
+namespace WTF {
 
 void TextCodecUserDefined::registerEncodingNames(EncodingNameRegistrar registrar)
 {
@@ -109,4 +109,4 @@ CString TextCodecUserDefined::encode(const UChar* characters, size_t length, Une
     return encodeComplexUserDefined(characters, length, handling);
 }
 
-} // namespace WebCore
+} // namespace WTF

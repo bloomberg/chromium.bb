@@ -26,11 +26,14 @@
 #include <wtf/text/WTFString.h>
 #include <wtf/Vector.h>
 
+namespace WTF{
+class TextEncoding;
+}
+
 namespace WebCore {
 
 class Document;
 class FormDataList;
-class TextEncoding;
 
 class FormDataElement {
 public:
@@ -93,8 +96,8 @@ public:
     static PassRefPtr<FormData> create(const void*, size_t);
     static PassRefPtr<FormData> create(const CString&);
     static PassRefPtr<FormData> create(const Vector<char>&);
-    static PassRefPtr<FormData> create(const FormDataList&, const TextEncoding&, EncodingType = FormURLEncoded);
-    static PassRefPtr<FormData> createMultiPart(const FormDataList&, const TextEncoding&, Document*);
+    static PassRefPtr<FormData> create(const FormDataList&, const WTF::TextEncoding&, EncodingType = FormURLEncoded);
+    static PassRefPtr<FormData> createMultiPart(const FormDataList&, const WTF::TextEncoding&, Document*);
     PassRefPtr<FormData> copy() const;
     PassRefPtr<FormData> deepCopy() const;
     ~FormData();
@@ -139,7 +142,7 @@ private:
     FormData();
     FormData(const FormData&);
 
-    void appendKeyValuePairItems(const FormDataList&, const TextEncoding&, bool isMultiPartForm, Document*, EncodingType = FormURLEncoded);
+    void appendKeyValuePairItems(const FormDataList&, const WTF::TextEncoding&, bool isMultiPartForm, Document*, EncodingType = FormURLEncoded);
 
     Vector<FormDataElement> m_elements;
 
