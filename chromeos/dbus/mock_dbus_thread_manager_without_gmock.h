@@ -26,6 +26,7 @@ class FakeBluetoothInputClient;
 class FakeBluetoothProfileManagerClient;
 class FakeCrosDisksClient;
 class FakeCryptohomeClient;
+class FakeGsmSMSClient;
 class FakeOldBluetoothAdapterClient;
 class FakeOldBluetoothDeviceClient;
 class FakeOldBluetoothManagerClient;
@@ -133,6 +134,10 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
     return fake_cryptohome_client_.get();
   }
 
+  FakeGsmSMSClient* fake_gsm_sms_client() {
+    return fake_gsm_sms_client_.get();
+  }
+
   FakeImageBurnerClient* fake_image_burner_client() {
     return fake_image_burner_client_.get();
   }
@@ -200,6 +205,7 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
       fake_bluetooth_profile_manager_client_;
   scoped_ptr<FakeCrosDisksClient> fake_cros_disks_client_;
   scoped_ptr<FakeCryptohomeClient> fake_cryptohome_client_;
+  scoped_ptr<FakeGsmSMSClient> fake_gsm_sms_client_;
   scoped_ptr<FakeImageBurnerClient> fake_image_burner_client_;
   scoped_ptr<FakeSessionManagerClient> fake_session_manager_client_;
   scoped_ptr<FakeShillManagerClient> fake_shill_manager_client_;

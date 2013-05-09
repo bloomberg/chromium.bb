@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/fake_gsm_sms_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -236,123 +237,6 @@ class GsmSMSClientImpl : public GsmSMSClient {
   DISALLOW_COPY_AND_ASSIGN(GsmSMSClientImpl);
 };
 
-// A stub implementaion of GsmSMSClient.
-class GsmSMSClientStubImpl : public GsmSMSClient {
- public:
-  GsmSMSClientStubImpl() : test_index_(-1), weak_ptr_factory_(this) {
-    test_messages_.push_back("Test Message 0");
-    test_messages_.push_back("Test Message 1");
-    test_messages_.push_back("Test a relatively long message 2");
-    test_messages_.push_back("Test a very, the quick brown fox jumped"
-                             " over the lazy dog, long message 3");
-    test_messages_.push_back("Test Message 4");
-    test_messages_.push_back("Test Message 5");
-    test_messages_.push_back("Test Message 6");
-  }
-
-  virtual ~GsmSMSClientStubImpl() {}
-
-  // GsmSMSClient override.
-  virtual void SetSmsReceivedHandler(
-      const std::string& service_name,
-      const dbus::ObjectPath& object_path,
-      const SmsReceivedHandler& handler) OVERRIDE {
-    handler_ = handler;
-  }
-
-  // GsmSMSClient override.
-  virtual void ResetSmsReceivedHandler(
-      const std::string& service_name,
-      const dbus::ObjectPath& object_path) OVERRIDE {
-    handler_.Reset();
-  }
-
-  // GsmSMSClient override.
-  virtual void Delete(const std::string& service_name,
-                      const dbus::ObjectPath& object_path,
-                      uint32 index,
-                      const DeleteCallback& callback) OVERRIDE {
-    message_list_.Remove(index, NULL);
-    callback.Run();
-  }
-
-  // GsmSMSClient override.
-  virtual void Get(const std::string& service_name,
-                   const dbus::ObjectPath& object_path,
-                   uint32 index,
-                   const GetCallback& callback) OVERRIDE {
-    base::DictionaryValue* dictionary = NULL;
-    if (message_list_.GetDictionary(index, &dictionary)) {
-      callback.Run(*dictionary);
-      return;
-    }
-    base::DictionaryValue empty_dictionary;
-    callback.Run(empty_dictionary);
-  }
-
-  // GsmSMSClient override.
-  virtual void List(const std::string& service_name,
-                    const dbus::ObjectPath& object_path,
-                    const ListCallback& callback) OVERRIDE {
-    callback.Run(message_list_);
-  }
-
-  // GsmSMSClient override.
-  virtual void RequestUpdate(const std::string& service_name,
-                             const dbus::ObjectPath& object_path) OVERRIDE {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kSmsTestMessages))
-      return;
-    if (test_index_ >= 0)
-      return;
-    test_index_ = 0;
-    // Call PushTestMessageChain asynchronously so that the handler_ callback
-    // does not get called from the update request.
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&GsmSMSClientStubImpl::PushTestMessageChain,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
- private:
-  void PushTestMessageChain() {
-    if (PushTestMessage())
-      PushTestMessageDelayed();
-  }
-
-  void PushTestMessageDelayed() {
-    const int kSmsMessageDelaySeconds = 5;
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&GsmSMSClientStubImpl::PushTestMessageChain,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(kSmsMessageDelaySeconds));
-  }
-
-  bool PushTestMessage() {
-    if (test_index_ >= static_cast<int>(test_messages_.size()))
-      return false;
-    base::DictionaryValue* message = new base::DictionaryValue;
-    message->SetString("number", "000-000-0000");
-    message->SetString("text", test_messages_[test_index_]);
-    message->SetInteger("index", test_index_);
-    int msg_index = message_list_.GetSize();
-    message_list_.Append(message);
-    if (!handler_.is_null())
-      handler_.Run(msg_index, true);
-    ++test_index_;
-    return true;
-  }
-
-  int test_index_;
-  std::vector<std::string> test_messages_;
-  base::ListValue message_list_;
-  SmsReceivedHandler handler_;
-  base::WeakPtrFactory<GsmSMSClientStubImpl> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(GsmSMSClientStubImpl);
-};
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,7 +252,12 @@ GsmSMSClient* GsmSMSClient::Create(DBusClientImplementationType type,
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new GsmSMSClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new GsmSMSClientStubImpl();
+
+  FakeGsmSMSClient* fake = new FakeGsmSMSClient();
+  fake->set_sms_test_message_switch_present(
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kSmsTestMessages));
+  return fake;
 }
 
 }  // namespace chromeos

@@ -15,6 +15,7 @@
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/fake_gsm_sms_client.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/dbus/fake_old_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_old_bluetooth_device_client.h"
@@ -43,6 +44,7 @@ MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
         new FakeBluetoothProfileManagerClient()),
     fake_cros_disks_client_(new FakeCrosDisksClient),
     fake_cryptohome_client_(new FakeCryptohomeClient),
+    fake_gsm_sms_client_(new FakeGsmSMSClient),
     fake_image_burner_client_(new FakeImageBurnerClient),
     fake_session_manager_client_(new FakeSessionManagerClient),
     fake_shill_manager_client_(new FakeShillManagerClient),
@@ -197,8 +199,7 @@ ShillServiceClient*
 }
 
 GsmSMSClient* MockDBusThreadManagerWithoutGMock::GetGsmSMSClient() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return fake_gsm_sms_client_.get();
 }
 
 ImageBurnerClient* MockDBusThreadManagerWithoutGMock::GetImageBurnerClient() {
