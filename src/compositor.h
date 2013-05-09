@@ -523,9 +523,6 @@ struct weston_compositor {
 	int idle_time;			/* timeout, s */
 
 	/* Repaint state. */
-	struct wl_array vertices;
-	struct wl_array indices; /* only used in compositor-wayland */
-	struct wl_array vtxcnt;
 	struct weston_plane primary_plane;
 
 	uint32_t focus;

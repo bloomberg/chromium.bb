@@ -2072,10 +2072,6 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 
 	weston_plane_release(&ec->primary_plane);
 
-	wl_array_release(&ec->vertices);
-	wl_array_release(&ec->indices);
-	wl_array_release(&ec->vtxcnt);
-
 	wl_event_loop_destroy(ec->input_loop);
 }
 

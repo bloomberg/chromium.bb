@@ -84,6 +84,10 @@ struct gl_renderer {
 		int32_t width, height;
 	} border;
 
+	struct wl_array vertices;
+	struct wl_array indices; /* only used in compositor-wayland */
+	struct wl_array vtxcnt;
+
 	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
 	PFNEGLCREATEIMAGEKHRPROC create_image;
 	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
@@ -531,6 +535,7 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 {
 	struct gl_surface_state *gs = get_surface_state(es);
 	struct weston_compositor *ec = es->compositor;
+	struct gl_renderer *gr = get_renderer(ec);
 	GLfloat *v, inv_width, inv_height;
 	unsigned int *vtxcnt, nvtx = 0;
 	pixman_box32_t *rects, *surf_rects;
@@ -542,8 +547,8 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 	/* worst case we can have 8 vertices per rect (ie. clipped into
 	 * an octagon):
 	 */
-	v = wl_array_add(&ec->vertices, nrects * nsurf * 8 * 4 * sizeof *v);
-	vtxcnt = wl_array_add(&ec->vtxcnt, nrects * nsurf * sizeof *vtxcnt);
+	v = wl_array_add(&gr->vertices, nrects * nsurf * 8 * 4 * sizeof *v);
+	vtxcnt = wl_array_add(&gr->vtxcnt, nrects * nsurf * sizeof *vtxcnt);
 
 	inv_width = 1.0 / gs->pitch;
 
@@ -660,12 +665,12 @@ repaint_region(struct weston_surface *es, pixman_region32_t *region,
 	 * coordinates. texture_region() will iterate over all pairs of
 	 * rectangles from both regions, compute the intersection
 	 * polygon for each pair, and store it as a triangle fan if
-	 * it has a non-zero area (at least 3 vertices, actually).
+	 * it has a non-zero area (at least 3 vertices1, actually).
 	 */
 	nfans = texture_region(es, region, surf_region);
 
-	v = ec->vertices.data;
-	vtxcnt = ec->vtxcnt.data;
+	v = gr->vertices.data;
+	vtxcnt = gr->vtxcnt.data;
 
 	/* position: */
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[0]);
@@ -685,8 +690,8 @@ repaint_region(struct weston_surface *es, pixman_region32_t *region,
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(0);
 
-	ec->vertices.size = 0;
-	ec->vtxcnt.size = 0;
+	gr->vertices.size = 0;
+	gr->vtxcnt.size = 0;
 }
 
 static int
@@ -863,8 +868,8 @@ texture_border(struct weston_output *output)
 	v[3] = 1.0;
 
 	n = 8;
-	d = wl_array_add(&ec->vertices, n * 16 * sizeof *d);
-	p = wl_array_add(&ec->indices, n * 6 * sizeof *p);
+	d = wl_array_add(&gr->vertices, n * 16 * sizeof *d);
+	p = wl_array_add(&gr->indices, n * 6 * sizeof *p);
 
 	k = 0;
 	for (i = 0; i < 3; i++)
@@ -931,20 +936,20 @@ draw_border(struct weston_output *output)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, gr->border.texture);
 
-	v = ec->vertices.data;
+	v = gr->vertices.data;
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[0]);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[2]);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
 	glDrawElements(GL_TRIANGLES, n * 6,
-		       GL_UNSIGNED_INT, ec->indices.data);
+		       GL_UNSIGNED_INT, gr->indices.data);
 
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(0);
 
-	ec->vertices.size = 0;
-	ec->indices.size = 0;
+	gr->vertices.size = 0;
+	gr->indices.size = 0;
 }
 
 static void
@@ -1709,6 +1714,10 @@ gl_renderer_destroy(struct weston_compositor *ec)
 
 	eglTerminate(gr->egl_display);
 	eglReleaseThread();
+
+	wl_array_release(&gr->vertices);
+	wl_array_release(&gr->indices);
+	wl_array_release(&gr->vtxcnt);
 
 	free(gr);
 }
