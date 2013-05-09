@@ -91,6 +91,10 @@ struct nc_combined_tdb {
 #define MEMORY_BLOCK_ALLOCATION_SIZE(real_size) \
   (sizeof(nc_thread_memory_block_t) + (real_size))
 
+static inline void *nc_memory_block_to_payload(nc_thread_memory_block_t *node) {
+  return &node[1];
+}
+
 #ifdef __cplusplus
 }
 #endif

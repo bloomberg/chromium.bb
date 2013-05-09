@@ -26,6 +26,7 @@ nc_objs = [env.ComponentObject(module, module + '.c')
                'nc_mutex',
                'nc_condvar',
                'nc_semaphore',
+               'stack_end',
                ]
            ] + [valgrind]
 

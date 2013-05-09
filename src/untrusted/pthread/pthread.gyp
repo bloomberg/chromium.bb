@@ -14,6 +14,7 @@
       'nc_condvar.c',
       'nc_semaphore.c',
       'nc_init_irt.c',
+      'stack_end.c',
       '../valgrind/dynamic_annotations.c',
     ],
   },

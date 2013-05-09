@@ -84,7 +84,7 @@ pthread_mutex_t  __nc_thread_management_lock;
  * except the main thread have terminated.
  */
 static pthread_cond_t __nc_last_thread_cond;
-static pthread_t __nc_initial_thread_id;
+pthread_t __nc_initial_thread_id;
 
 /* Number of threads currently running in this NaCl module. */
 int __nc_running_threads_counter = 1;
@@ -93,9 +93,6 @@ int __nc_running_threads_counter = 1;
 STAILQ_HEAD(tailhead, entry) __nc_thread_memory_blocks[2];
 /* We need a counter for each queue to keep track of number of blocks. */
 int __nc_memory_block_counter[2];
-
-#define NODE_TO_PAYLOAD(TlsNode) \
-  ((char *) (TlsNode) + sizeof(nc_thread_memory_block_t))
 
 /* Internal functions */
 
@@ -352,7 +349,8 @@ int pthread_create(pthread_t *thread_id,
     if (NULL == tls_node)
       break;
 
-    new_tp = __nacl_tls_initialize_memory(NODE_TO_PAYLOAD(tls_node), TDB_SIZE);
+    new_tp = __nacl_tls_initialize_memory(nc_memory_block_to_payload(tls_node),
+                                          TDB_SIZE);
 
     new_tdb = (nc_thread_descriptor_t *)
               ((char *) new_tp + __nacl_tp_tdb_offset(TDB_SIZE));
@@ -393,7 +391,7 @@ int pthread_create(pthread_t *thread_id,
       retval = EAGAIN;
       break;
     }
-    thread_stack = align((uint32_t) NODE_TO_PAYLOAD(stack_node),
+    thread_stack = align((uint32_t) nc_memory_block_to_payload(stack_node),
                          kStackAlignment);
     new_tdb->stack_node = stack_node;
 

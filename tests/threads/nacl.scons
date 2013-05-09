@@ -232,3 +232,13 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_cond_timedwait_test',
                        is_broken=(env.Bit('running_on_valgrind') or
                                   (trusted_env is not None and
                                    trusted_env.Bit('windows'))))
+
+# This tests an interface that is provided by nacl-newlib but not nacl-glibc.
+if not env.Bit('nacl_glibc'):
+  stack_end_test_nexe = env.ComponentProgram(
+      'stack_end_test', ['stack_end_test.c'],
+      EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
+
+  node = env.CommandSelLdrTestNacl('stack_end_test.out',
+                                   stack_end_test_nexe)
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_stack_end_test')
