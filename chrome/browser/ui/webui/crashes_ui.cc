@@ -184,9 +184,8 @@ bool CrashesUI::CrashReportingUIEnabled() {
   return reporting_enabled;
 #elif defined(OS_ANDROID)
   // Android has it's own setings for metrics / crash uploading.
-  // Crashes are uploaded depending on connection availablity
-  // varies from time to time. Lets just show this page all the time.
-  return true;
+  PrefService* prefs = g_browser_process->local_state();
+  return prefs->GetBoolean(prefs::kCrashReportingEnabled);
 #else
   PrefService* prefs = g_browser_process->local_state();
   return prefs->GetBoolean(prefs::kMetricsReportingEnabled);

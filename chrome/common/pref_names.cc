@@ -1306,6 +1306,13 @@ const char kMetricsClientIDTimestamp[] =
 const char kMetricsReportingEnabled[] =
     "user_experience_metrics.reporting_enabled";
 
+// Boolean that specifies whether or not crash reports are sent
+// over the network for analysis.
+#if defined(OS_ANDROID)
+const char kCrashReportingEnabled[] =
+    "user_experience_metrics_crash.reporting_enabled";
+#endif
+
 // Array of strings that are each UMA logs that were supposed to be sent in the
 // first minute of a browser session. These logs include things like crash count
 // info, etc.

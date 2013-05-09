@@ -694,6 +694,11 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kMetricsReportingEnabled,
       GoogleUpdateSettings::GetCollectStatsConsent());
 #endif  // !defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+  registry->RegisterBooleanPref(
+      prefs::kCrashReportingEnabled, false);
+#endif // defined(OS_ANDROID)
 }
 
 DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {
