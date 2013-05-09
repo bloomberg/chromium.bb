@@ -52,10 +52,12 @@ class DriveFileSyncService
   static const char kServiceName[];
   static ConflictResolutionPolicy kDefaultPolicy;
 
-  explicit DriveFileSyncService(Profile* profile);
   virtual ~DriveFileSyncService();
 
-  // Creates DriveFileSyncClient instance for testing.
+  // Creates DriveFileSyncService.
+  static scoped_ptr<DriveFileSyncService> Create(Profile* profile);
+
+  // Creates DriveFileSyncService instance for testing.
   // |metadata_store| must be initialized beforehand.
   static scoped_ptr<DriveFileSyncService> CreateForTesting(
       Profile* profile,
@@ -195,10 +197,17 @@ class DriveFileSyncService
       void(SyncStatusCode status,
            const std::string& resource_id)> ResourceIdCallback;
 
-  DriveFileSyncService(Profile* profile,
-                       const base::FilePath& base_dir,
-                       scoped_ptr<DriveFileSyncClientInterface> sync_client,
-                       scoped_ptr<DriveMetadataStore> metadata_store);
+  explicit DriveFileSyncService(Profile* profile);
+
+  void Initialize();
+  void InitializeForTesting(
+      const base::FilePath& base_dir,
+      scoped_ptr<DriveFileSyncClientInterface> sync_client,
+      scoped_ptr<DriveMetadataStore> metadata_store);
+
+  void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
+                                  SyncStatusCode status,
+                                  bool created);
 
   // This should be called when an async task needs to get a task token.
   // |task_description| is optional but should give human-readable
@@ -276,9 +285,6 @@ class DriveFileSyncService
       SyncStatusCode status,
       const std::string& parent_resource_id);
 
-  void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
-                                  SyncStatusCode status,
-                                  bool created);
   void UpdateRegisteredOrigins();
 
   void DidGetSyncRootForRegisterOrigin(

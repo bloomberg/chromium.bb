@@ -59,10 +59,9 @@ ProfileKeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
   } else {
     // FileSystem needs to be registered before DriveFileSyncService runs
     // its initialization code.
-    // TODO(kinuko): Clean up RegisterSyncableFileSystem in
-    // local_file_sync_context.cc, which is still there for testing.
     RegisterSyncableFileSystem(DriveFileSyncService::kServiceName);
-    remote_file_service.reset(new DriveFileSyncService(profile));
+    remote_file_service =
+        DriveFileSyncService::Create(profile).PassAs<RemoteFileSyncService>();
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(kDisableLastWriteWin)) {

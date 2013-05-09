@@ -290,35 +290,6 @@ bool DriveFileSyncService::RemoteChangeComparator::operator()(
   return false;
 }
 
-DriveFileSyncService::DriveFileSyncService(Profile* profile)
-    : profile_(profile),
-      last_operation_status_(SYNC_STATUS_OK),
-      state_(REMOTE_SERVICE_OK),
-      sync_enabled_(true),
-      largest_fetched_changestamp_(0),
-      may_have_unfetched_changes_(false),
-      remote_change_processor_(NULL),
-      conflict_resolution_(kDefaultPolicy),
-      weak_factory_(this) {
-  temporary_file_dir_ =
-      profile->GetPath().Append(GetSyncFileSystemDir()).Append(kTempDirName);
-  token_.reset(new TaskToken(AsWeakPtr()));
-
-  sync_client_.reset(new DriveFileSyncClient(profile));
-  sync_client_->AddObserver(this);
-
-  metadata_store_.reset(new DriveMetadataStore(
-      profile->GetPath().Append(GetSyncFileSystemDir()),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE)));
-
-  metadata_store_->Initialize(
-      base::Bind(&DriveFileSyncService::DidInitializeMetadataStore,
-                 AsWeakPtr(),
-                 base::Passed(GetToken(FROM_HERE, TASK_TYPE_DATABASE,
-                                       "Metadata database initialization"))));
-}
-
 DriveFileSyncService::~DriveFileSyncService() {
   // Invalidate WeakPtr instances here explicitly to notify TaskToken that we
   // can safely discard the token.
@@ -333,14 +304,22 @@ DriveFileSyncService::~DriveFileSyncService() {
     drive_notification_manager->RemoveObserver(this);
 }
 
-// static
+scoped_ptr<DriveFileSyncService> DriveFileSyncService::Create(
+    Profile* profile) {
+  scoped_ptr<DriveFileSyncService> service(new DriveFileSyncService(profile));
+  service->Initialize();
+  return service.Pass();
+}
+
 scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
     Profile* profile,
     const base::FilePath& base_dir,
     scoped_ptr<DriveFileSyncClientInterface> sync_client,
     scoped_ptr<DriveMetadataStore> metadata_store) {
-  return make_scoped_ptr(new DriveFileSyncService(
-      profile, base_dir, sync_client.Pass(), metadata_store.Pass()));
+  scoped_ptr<DriveFileSyncService> service(new DriveFileSyncService(profile));
+  service->InitializeForTesting(
+      base_dir, sync_client.Pass(), metadata_store.Pass());
+  return service.Pass();
 }
 
 scoped_ptr<DriveFileSyncClientInterface>
@@ -681,12 +660,7 @@ void DriveFileSyncService::OnNetworkConnected() {
   MaybeStartFetchChanges();
 }
 
-// Called by CreateForTesting.
-DriveFileSyncService::DriveFileSyncService(
-    Profile* profile,
-    const base::FilePath& base_dir,
-    scoped_ptr<DriveFileSyncClientInterface> sync_client,
-    scoped_ptr<DriveMetadataStore> metadata_store)
+DriveFileSyncService::DriveFileSyncService(Profile* profile)
     : profile_(profile),
       last_operation_status_(SYNC_STATUS_OK),
       state_(REMOTE_SERVICE_OK),
@@ -696,10 +670,42 @@ DriveFileSyncService::DriveFileSyncService(
       remote_change_processor_(NULL),
       conflict_resolution_(kDefaultPolicy),
       weak_factory_(this) {
-  DCHECK(profile);
+}
+
+void DriveFileSyncService::Initialize() {
+  DCHECK(profile_);
+  DCHECK(!metadata_store_);
+
+  temporary_file_dir_ =
+      profile_->GetPath().Append(GetSyncFileSystemDir()).Append(kTempDirName);
+
+  token_.reset(new TaskToken(AsWeakPtr()));
+
+  sync_client_.reset(new DriveFileSyncClient(profile_));
+  sync_client_->AddObserver(this);
+
+  metadata_store_.reset(new DriveMetadataStore(
+      profile_->GetPath().Append(GetSyncFileSystemDir()),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::FILE)));
+
+  metadata_store_->Initialize(
+      base::Bind(&DriveFileSyncService::DidInitializeMetadataStore,
+                 AsWeakPtr(),
+                 base::Passed(GetToken(FROM_HERE, TASK_TYPE_DATABASE,
+                                       "Metadata database initialization"))));
+}
+
+void DriveFileSyncService::InitializeForTesting(
+    const base::FilePath& base_dir,
+    scoped_ptr<DriveFileSyncClientInterface> sync_client,
+    scoped_ptr<DriveMetadataStore> metadata_store) {
+  DCHECK(!metadata_store_);
+
   temporary_file_dir_ = base_dir.Append(kTempDirName);
 
   token_.reset(new TaskToken(AsWeakPtr()));
+
   sync_client_ = sync_client.Pass();
   metadata_store_ = metadata_store.Pass();
 
@@ -710,6 +716,58 @@ DriveFileSyncService::DriveFileSyncService(
                  base::Passed(GetToken(FROM_HERE, TASK_TYPE_NONE,
                                        "Drive initialization for testing")),
                  SYNC_STATUS_OK, false));
+}
+
+void DriveFileSyncService::DidInitializeMetadataStore(
+    scoped_ptr<TaskToken> token,
+    SyncStatusCode status,
+    bool created) {
+  if (status != SYNC_STATUS_OK) {
+    NotifyTaskDone(status, token.Pass());
+    return;
+  }
+
+  DCHECK(pending_batch_sync_origins_.empty());
+
+  UpdateRegisteredOrigins();
+
+  largest_fetched_changestamp_ = metadata_store_->GetLargestChangeStamp();
+
+  // Mark all the batch sync origins as 'pending' so that we can start
+  // batch sync when we're ready.
+  for (std::map<GURL, std::string>::const_iterator itr =
+           metadata_store_->batch_sync_origins().begin();
+       itr != metadata_store_->batch_sync_origins().end();
+       ++itr) {
+    pending_batch_sync_origins_.insert(itr->first);
+  }
+
+  DriveMetadataStore::URLAndDriveMetadataList to_be_fetched_files;
+  status = metadata_store_->GetToBeFetchedFiles(&to_be_fetched_files);
+  DCHECK_EQ(SYNC_STATUS_OK, status);
+  typedef DriveMetadataStore::URLAndDriveMetadataList::const_iterator iterator;
+  for (iterator itr = to_be_fetched_files.begin();
+       itr != to_be_fetched_files.end(); ++itr) {
+    const FileSystemURL& url = itr->first;
+    const DriveMetadata& metadata = itr->second;
+    const std::string& resource_id = metadata.resource_id();
+
+    SyncFileType file_type = SYNC_FILE_TYPE_FILE;
+    if (metadata.type() == DriveMetadata::RESOURCE_TYPE_FOLDER)
+      file_type = SYNC_FILE_TYPE_DIRECTORY;
+    AppendFetchChange(url.origin(), url.path(), resource_id, file_type);
+  }
+
+  if (!sync_root_resource_id().empty())
+    sync_client_->EnsureSyncRootIsNotInMyDrive(sync_root_resource_id());
+
+  NotifyTaskDone(status, token.Pass());
+  may_have_unfetched_changes_ = true;
+
+  google_apis::DriveNotificationManager* drive_notification_manager =
+      google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
+  if (drive_notification_manager)
+    drive_notification_manager->AddObserver(this);
 }
 
 scoped_ptr<DriveFileSyncService::TaskToken> DriveFileSyncService::GetToken(
@@ -822,58 +880,6 @@ void DriveFileSyncService::UpdateServiceState() {
 
 base::WeakPtr<DriveFileSyncService> DriveFileSyncService::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
-}
-
-void DriveFileSyncService::DidInitializeMetadataStore(
-    scoped_ptr<TaskToken> token,
-    SyncStatusCode status,
-    bool created) {
-  if (status != SYNC_STATUS_OK) {
-    NotifyTaskDone(status, token.Pass());
-    return;
-  }
-
-  DCHECK(pending_batch_sync_origins_.empty());
-
-  UpdateRegisteredOrigins();
-
-  largest_fetched_changestamp_ = metadata_store_->GetLargestChangeStamp();
-
-  // Mark all the batch sync origins as 'pending' so that we can start
-  // batch sync when we're ready.
-  for (std::map<GURL, std::string>::const_iterator itr =
-           metadata_store_->batch_sync_origins().begin();
-       itr != metadata_store_->batch_sync_origins().end();
-       ++itr) {
-    pending_batch_sync_origins_.insert(itr->first);
-  }
-
-  DriveMetadataStore::URLAndDriveMetadataList to_be_fetched_files;
-  status = metadata_store_->GetToBeFetchedFiles(&to_be_fetched_files);
-  DCHECK_EQ(SYNC_STATUS_OK, status);
-  typedef DriveMetadataStore::URLAndDriveMetadataList::const_iterator iterator;
-  for (iterator itr = to_be_fetched_files.begin();
-       itr != to_be_fetched_files.end(); ++itr) {
-    const FileSystemURL& url = itr->first;
-    const DriveMetadata& metadata = itr->second;
-    const std::string& resource_id = metadata.resource_id();
-
-    SyncFileType file_type = SYNC_FILE_TYPE_FILE;
-    if (metadata.type() == DriveMetadata::RESOURCE_TYPE_FOLDER)
-      file_type = SYNC_FILE_TYPE_DIRECTORY;
-    AppendFetchChange(url.origin(), url.path(), resource_id, file_type);
-  }
-
-  if (!sync_root_resource_id().empty())
-    sync_client_->EnsureSyncRootIsNotInMyDrive(sync_root_resource_id());
-
-  NotifyTaskDone(status, token.Pass());
-  may_have_unfetched_changes_ = true;
-
-  google_apis::DriveNotificationManager* drive_notification_manager =
-      google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
-  if (drive_notification_manager)
-    drive_notification_manager->AddObserver(this);
 }
 
 void DriveFileSyncService::UpdateRegisteredOrigins() {
