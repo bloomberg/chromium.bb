@@ -39,9 +39,5 @@
     readonly attribute unsigned long    length;
     getter DOMString          item([Default=Undefined] optional unsigned long index);
     readonly attribute CSSRule          parentRule;
-
-    // Extensions
-    [TreatReturnedNullStringAs=Null] DOMString          getPropertyShorthand([Default=Undefined] optional DOMString propertyName);
-    boolean            isPropertyImplicit([Default=Undefined] optional DOMString propertyName);
 };
 

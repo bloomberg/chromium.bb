@@ -15,13 +15,8 @@ Note that background is buggy right now!
 var ruleList = document.defaultView.getMatchedCSSRules(document.getElementById('foo'), '');
 var decl = ruleList[0].style;
 for (var i = 0; i < decl.length; i++) {
-  var shorthand = decl.getPropertyShorthand(decl[i]);
-  document.write(decl[i] + ": " + decl.getPropertyValue(decl[i]));
-  if (shorthand) {
-     document.write(" (original property was " + shorthand
-           + (decl.isPropertyImplicit(decl[i]) ? " and property was implicitly set.)" : ")"));
-  }
-  document.write( "<br>");
+    document.write(decl[i] + ": " + decl.getPropertyValue(decl[i]));
+    document.write( "<br>");
 }
 </script>
 </body>

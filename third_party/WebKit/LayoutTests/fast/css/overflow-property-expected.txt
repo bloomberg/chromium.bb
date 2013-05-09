@@ -3,8 +3,6 @@ This tests the parsing and retrieval of the overflow, overflow-x and overflow-y 
 PASS test0.style.overflow is "auto"
 PASS test0.style.overflowX is "auto"
 PASS test0.style.overflowY is "auto"
-PASS test0.style.getPropertyShorthand('overflow-x') is "overflow"
-PASS test0.style.getPropertyShorthand('overflow-y') is "overflow"
 PASS test1.style.overflow is ""
 PASS test1.style.overflowX is ""
 PASS test1.style.overflowY is ""
