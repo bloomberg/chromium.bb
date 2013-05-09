@@ -624,17 +624,21 @@ DialogType.isModal = function(type) {
 
       CommandUtil.registerCommand(this.directoryTree_, 'import-photos',
           Commands.importCommand, this.directoryTree_);
+
+      CommandUtil.registerCommand(doc, 'format',
+          Commands.formatCommand, this.directoryTree_, this,
+          this.directoryModel_);
     } else {
       CommandUtil.registerCommand(this.volumeList_, 'unmount',
           Commands.unmountCommand, this.volumeList_, this);
 
       CommandUtil.registerCommand(this.volumeList_, 'import-photos',
           Commands.importCommand, this.volumeList_);
-    }
 
-    CommandUtil.registerCommand(doc, 'format',
-        Commands.formatCommand, this.directoryTree_, this,
-        this.directoryModel_);
+      CommandUtil.registerCommand(doc, 'format',
+          Commands.formatCommand, this.volumeList_, this,
+          this.directoryModel_);
+    }
 
     CommandUtil.registerCommand(doc, 'delete',
         Commands.deleteFileCommand, this);
