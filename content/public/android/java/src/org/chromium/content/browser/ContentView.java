@@ -35,12 +35,6 @@ import org.chromium.ui.WindowAndroid;
  */
 public class ContentView extends FrameLayout
         implements ContentViewCore.InternalAccessDelegate, PageInfo {
-    // Used when ContentView implements a standalone View.
-    @Deprecated
-    public static final int PERSONALITY_VIEW = 0;
-    // Used for Chrome.
-    @Deprecated
-    public static final int PERSONALITY_CHROME = 0;
 
     private final ContentViewCore mContentViewCore;
 
@@ -57,22 +51,6 @@ public class ContentView extends FrameLayout
      */
     public static ContentView newInstance(Context context, int nativeWebContents,
             WindowAndroid windowAndroid) {
-        return newInstance(context, nativeWebContents, windowAndroid, null,
-                android.R.attr.webViewStyle);
-    }
-
-    /**
-     * Creates an instance of a ContentView.
-     * @param context The Context the view is running in, through which it can
-     *                access the current theme, resources, etc.
-     * @param nativeWebContents A pointer to the native web contents.
-     * @param windowAndroid An instance of the WindowAndroid.
-     * @param personality Not used, will be removed.
-     * @return A ContentView instance.
-     */
-    @Deprecated
-    public static ContentView newInstance(Context context, int nativeWebContents,
-            WindowAndroid windowAndroid, int personality) {
         return newInstance(context, nativeWebContents, windowAndroid, null,
                 android.R.attr.webViewStyle);
     }
