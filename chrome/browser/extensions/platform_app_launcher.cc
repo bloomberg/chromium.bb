@@ -224,6 +224,9 @@ class PlatformAppPathLauncher
       return;
     }
 
+    if (handler_id_.empty())
+      handler_id_ = handler->id;
+
     // Access needs to be granted to the file for the process associated with
     // the extension. To do this the ExtensionHost is needed. This might not be
     // available, or it might be in the process of being unloaded, in which case

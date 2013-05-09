@@ -7,8 +7,8 @@ chrome.app.runtime.onLaunched.addListener(function (launchData) {
   chrome.test.runTests([
     function testFileHandler() {
       chrome.test.assertFalse(!launchData, "No launchData");
-      chrome.test.assertEq(typeof launchData.id, 'string',
-          "launchData.id not received");
+      chrome.test.assertEq(launchData.id, "text",
+          "launchData.id incorrect");
       chrome.test.assertEq(launchData.items.length, 1);
 
       launchData.items[0].entry.file(function(file) {
