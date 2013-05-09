@@ -63,6 +63,7 @@ const int kUserDetailsVerticalPadding = 5;
 const int kUserCardVerticalPadding = 10;
 const int kProfileRoundedCornerRadius = 2;
 const int kUserIconSize = 27;
+const int kUserLabelToIconPadding = 5;
 
 // The invisible word joiner character, used as a marker to indicate the start
 // and end of the user's display name in the public account user card's text.
@@ -574,6 +575,7 @@ void UserView::AddUserCard(SystemTrayItem* owner,
 TrayUser::TrayUser(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       user_(NULL),
+      layout_view_(NULL),
       avatar_(NULL),
       label_(NULL) {
   Shell::GetInstance()->system_tray_notifier()->AddUserObserver(this);
@@ -584,19 +586,13 @@ TrayUser::~TrayUser() {
 }
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
-  CHECK(avatar_ == NULL);
-  CHECK(label_ == NULL);
-  if (status == user::LOGGED_IN_GUEST) {
-    label_ = new views::Label;
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    label_->SetText(bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_GUEST_LABEL));
-    SetupLabelForTray(label_);
-  } else {
-    avatar_ = new tray::RoundedImageView(kProfileRoundedCornerRadius);
-  }
+  CHECK(layout_view_ == NULL);
+  layout_view_ = new views::View();
+  layout_view_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal,
+                           0, 0, kUserLabelToIconPadding));
   UpdateAfterLoginStatusChange(status);
-  return avatar_ ? static_cast<views::View*>(avatar_)
-                 : static_cast<views::View*>(label_);
+  return layout_view_;
 }
 
 views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
@@ -613,6 +609,7 @@ views::View* TrayUser::CreateDetailedView(user::LoginStatus status) {
 }
 
 void TrayUser::DestroyTrayView() {
+  layout_view_ = NULL;
   avatar_ = NULL;
   label_ = NULL;
 }
@@ -625,53 +622,93 @@ void TrayUser::DestroyDetailedView() {
 }
 
 void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+  CHECK(layout_view_);
+  bool need_label = false;
+  bool need_avatar = false;
   switch (status) {
     case user::LOGGED_IN_LOCKED:
     case user::LOGGED_IN_USER:
     case user::LOGGED_IN_OWNER:
     case user::LOGGED_IN_PUBLIC:
+      need_avatar = true;
+      break;
     case user::LOGGED_IN_LOCALLY_MANAGED:
-      avatar_->SetImage(
-          ash::Shell::GetInstance()->system_tray_delegate()->GetUserImage(),
-          gfx::Size(kUserIconSize, kUserIconSize));
-      avatar_->SetVisible(true);
+      need_avatar = true;
+      need_label = true;
       break;
-
     case user::LOGGED_IN_GUEST:
-      label_->SetVisible(true);
+      need_label = true;
       break;
-
     case user::LOGGED_IN_RETAIL_MODE:
     case user::LOGGED_IN_KIOSK_APP:
     case user::LOGGED_IN_NONE:
-      avatar_->SetVisible(false);
       break;
+  }
+
+  if ((need_avatar != (avatar_ != NULL)) ||
+      (need_label != (label_ != NULL))) {
+    layout_view_->RemoveAllChildViews(true);
+    if (need_label) {
+      label_ = new views::Label;
+      SetupLabelForTray(label_);
+      layout_view_->AddChildView(label_);
+    } else {
+      label_ = NULL;
+    }
+    if (need_avatar) {
+      avatar_ = new tray::RoundedImageView(kProfileRoundedCornerRadius);
+      layout_view_->AddChildView(avatar_);
+    } else {
+      avatar_ = NULL;
+    }
+  }
+
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  if (status == user::LOGGED_IN_LOCALLY_MANAGED) {
+    label_->SetText(
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL));
+  } else if (status == user::LOGGED_IN_GUEST) {
+    label_->SetText(bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_GUEST_LABEL));
+  }
+
+  if (avatar_) {
+    avatar_->SetImage(
+        ash::Shell::GetInstance()->system_tray_delegate()->GetUserImage(),
+        gfx::Size(kUserIconSize, kUserIconSize));
   }
 }
 
 void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-  if (avatar_) {
-    if (alignment == SHELF_ALIGNMENT_BOTTOM ||
-        alignment == SHELF_ALIGNMENT_TOP) {
+  CHECK(layout_view_);
+  if (alignment == SHELF_ALIGNMENT_BOTTOM ||
+      alignment == SHELF_ALIGNMENT_TOP) {
+    if (avatar_) {
       avatar_->set_border(views::Border::CreateEmptyBorder(
           0, kTrayImageItemHorizontalPaddingBottomAlignment + 2,
           0, kTrayImageItemHorizontalPaddingBottomAlignment));
-    } else {
-        SetTrayImageItemBorder(avatar_, alignment);
+
     }
-  } else {
-    if (alignment == SHELF_ALIGNMENT_BOTTOM ||
-        alignment == SHELF_ALIGNMENT_TOP) {
+    if (label_) {
       label_->set_border(views::Border::CreateEmptyBorder(
           0, kTrayLabelItemHorizontalPaddingBottomAlignment,
           0, kTrayLabelItemHorizontalPaddingBottomAlignment));
-    } else {
+    }
+    layout_view_->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kHorizontal,
+                             0, 0, kUserLabelToIconPadding));
+  } else {
+    if (avatar_)
+      SetTrayImageItemBorder(avatar_, alignment);
+    if (label_) {
       label_->set_border(views::Border::CreateEmptyBorder(
           kTrayLabelItemVerticalPaddingVeriticalAlignment,
           kTrayLabelItemHorizontalPaddingBottomAlignment,
           kTrayLabelItemVerticalPaddingVeriticalAlignment,
           kTrayLabelItemHorizontalPaddingBottomAlignment));
     }
+    layout_view_->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical,
+                             0, 0, kUserLabelToIconPadding));
   }
 }
 

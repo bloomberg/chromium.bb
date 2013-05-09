@@ -44,6 +44,9 @@ class TrayUser : public SystemTrayItem,
   virtual void OnUserUpdate() OVERRIDE;
 
   tray::UserView* user_;
+
+  // View that contains label and/or avatar.
+  views::View* layout_view_;
   tray::RoundedImageView* avatar_;
   views::Label* label_;
 
