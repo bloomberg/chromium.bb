@@ -23,6 +23,9 @@
     'test_runner': {
       'filepath': 'Tools/DumpRenderTree/chromium/TestRunner',
     },
+    'canvas': {
+      'filepath': 'Source/core/html/canvas/'
+    },
     'css': {
       'filepath': 'Source/core/css',
     },
@@ -154,6 +157,7 @@
                   'japhet@chromium.org',
                   'jsbell+bindings@chromium.org',
                   'haraken@chromium.org' ],
+    'canvas': [ 'cabanier@adobe.com' ],
     'custom_elements': [ 'dominicc+watchlist@chromium.org' ],
     'layers': [ 'blink-layers@chromium.org' ],
     'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
@@ -162,7 +166,8 @@
     'platform_graphics': [ 'jamesr@chromium.org',
                            'schenney@chromium.org',
                            'danakj@chromium.org',
-                           'pdr@chromium.org' ],
+                           'pdr@chromium.org',
+                           'cabanier@adobe.com' ],
     'platform': [ 'forgerbr@gmail.com' ],
     'svg': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org' ],
     'css': [ 'alexis.menard@intel.com', 'apavlov+blink@chromium.org' ],
