@@ -180,6 +180,8 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
 
         if result_type == test_expectations.PASS:
             num_passes += 1
+            if expected == 'PASS' and result.total_run_time < 1 and not result.has_stderr:
+                continue
         elif result_type == test_expectations.CRASH:
             if test_name in initial_results.unexpected_results_by_name:
                 num_regressions += 1

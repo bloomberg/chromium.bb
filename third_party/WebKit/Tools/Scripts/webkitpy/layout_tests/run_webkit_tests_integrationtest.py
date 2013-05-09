@@ -866,9 +866,9 @@ class EndToEndTest(unittest.TestCase):
 
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         json = parse_full_results(json_string)
-        self.assertTrue("is_unexpected" not in json["tests"]["reftests"]["foo"]["multiple-match-success.html"])
-        self.assertTrue("is_unexpected" not in json["tests"]["reftests"]["foo"]["multiple-mismatch-success.html"])
-        self.assertTrue("is_unexpected" not in json["tests"]["reftests"]["foo"]["multiple-both-success.html"])
+        self.assertTrue("multiple-match-success.html" not in json["tests"]["reftests"]["foo"])
+        self.assertTrue("multiple-mismatch-success.html" not in json["tests"]["reftests"]["foo"])
+        self.assertTrue("multiple-both-success.html" not in json["tests"]["reftests"]["foo"])
 
         self.assertHasTimeAndOtherValuesEqual(json["tests"]["reftests"]["foo"]["multiple-match-failure.html"],
             {"expected": "PASS", "actual": "IMAGE", "reftest_type": ["=="], "image_diff_percent": 1, "is_unexpected": True})

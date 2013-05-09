@@ -66,7 +66,11 @@ def summarized_results(port, expected, passing, flaky):
         skipped_result = get_result('passes/skipped/skip.html')
         skipped_result.type = test_expectations.SKIP
         initial_results.add(skipped_result, expected, test_is_slow)
-        initial_results.add(get_result('passes/text.html'), expected, test_is_slow)
+
+        slow_pass_result = get_result('passes/text.html')
+        slow_pass_result.total_run_time = 1
+        initial_results.add(slow_pass_result, expected, test_is_slow)
+
         initial_results.add(get_result('failures/expected/audio.html'), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/timeout.html'), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/crash.html'), expected, test_is_slow)
