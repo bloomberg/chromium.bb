@@ -43,7 +43,6 @@
 #include "core/html/CheckboxInputType.h"
 #include "core/html/ColorInputType.h"
 #include "core/html/DateInputType.h"
-#include "core/html/DateTimeInputType.h"
 #include "core/html/DateTimeLocalInputType.h"
 #include "core/html/EmailInputType.h"
 #include "core/html/FileInputType.h"
@@ -97,10 +96,6 @@ static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
     map->add(InputTypeNames::color(), ColorInputType::create);
 #endif
     map->add(InputTypeNames::date(), DateInputType::create);
-#if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
-    if (RuntimeEnabledFeatures::inputTypeDateTimeEnabled())
-        map->add(InputTypeNames::datetime(), DateTimeInputType::create);
-#endif
     map->add(InputTypeNames::datetimelocal(), DateTimeLocalInputType::create);
     map->add(InputTypeNames::email(), EmailInputType::create);
     map->add(InputTypeNames::file(), FileInputType::create);
@@ -795,11 +790,6 @@ bool InputType::isURLField() const
 }
 
 bool InputType::isDateField() const
-{
-    return false;
-}
-
-bool InputType::isDateTimeField() const
 {
     return false;
 }

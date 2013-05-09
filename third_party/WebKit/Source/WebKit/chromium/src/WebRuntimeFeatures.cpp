@@ -287,16 +287,6 @@ bool WebRuntimeFeatures::isIndexedDBEnabled()
     return RuntimeEnabledFeatures::indexedDBEnabled();
 }
 
-void WebRuntimeFeatures::enableInputTypeDateTime(bool enable)
-{
-    RuntimeEnabledFeatures::setInputTypeDateTimeEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isInputTypeDateTimeEnabled()
-{
-    return RuntimeEnabledFeatures::inputTypeDateTimeEnabled();
-}
-
 void WebRuntimeFeatures::enableInputTypeWeek(bool enable)
 {
     RuntimeEnabledFeatures::setInputTypeWeekEnabled(enable);

@@ -2272,8 +2272,6 @@ WebTextInputType WebViewImpl::textInputType()
             return WebTextInputTypeURL;
         if (input->isDateField())
             return WebTextInputTypeDate;
-        if (input->isDateTimeField())
-            return WebTextInputTypeDateTime;
         if (input->isDateTimeLocalField())
             return WebTextInputTypeDateTimeLocal;
         if (input->isMonthField())

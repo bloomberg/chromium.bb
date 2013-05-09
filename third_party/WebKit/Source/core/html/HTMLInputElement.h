@@ -115,7 +115,6 @@ public:
     bool isTelephoneField() const;
     bool isURLField() const;
     bool isDateField() const;
-    bool isDateTimeField() const;
     bool isDateTimeLocalField() const;
     bool isMonthField() const;
     bool isTimeField() const;

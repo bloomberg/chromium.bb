@@ -1950,8 +1950,6 @@
             'html/DateInputType.h',
             'html/DateTimeFieldsState.cpp',
             'html/DateTimeFieldsState.h',
-            'html/DateTimeInputType.cpp',
-            'html/DateTimeInputType.h',
             'html/DateTimeLocalInputType.cpp',
             'html/DateTimeLocalInputType.h',
             'html/EmailInputType.cpp',

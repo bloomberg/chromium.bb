@@ -497,17 +497,6 @@ input[type="date"] {
     -webkit-padding-start: 1px;
 }
 
-#if defined(ENABLE_INPUT_TYPE_DATETIME_INCOMPLETE) && ENABLE_INPUT_TYPE_DATETIME_INCOMPLETE
-input[type="datetime"] {
-    -webkit-align-items: center;
-    display: -webkit-inline-flex;
-    font-family: monospace;
-    overflow: hidden;
-    padding: 0;
-    -webkit-padding-start: 1px;
-}
-#endif
-
 input[type="datetime-local"] {
     -webkit-align-items: center;
     display: -webkit-inline-flex;

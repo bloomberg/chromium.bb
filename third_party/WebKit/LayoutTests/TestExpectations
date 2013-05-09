@@ -215,21 +215,6 @@ crbug.com/233066 http/tests/security/MessagePort/event-listener-context.html [ S
 crbug.com/233066 canvas/philip/tests/2d.drawImage.outsidesource.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 crbug.com/233066 virtual/gpu/canvas/philip/tests/2d.drawImage.outsidesource.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
-# INPUT_TYPE_DATETIME_INCOMPLETE is disabled across Chromium until a better Android UI is worked out.  See crbug.com/164561.
-webkit.org/b/109272 fast/forms/datetime [ Skip ]
-webkit.org/b/109272 fast/forms/datetime-multiple-fields [ Skip ]
-webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-appearance-rtl.html [ Skip ]
-webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-step-attribute.html [ Skip ]
-webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-reset-value-after-reload.html [ Skip ]
-webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-appearance-locale-hebrew.html [ Skip ]
-webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-key-operations.html [ Skip ]
-webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-appearance-with-scroll-bar.html [ Skip ]
-webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-min-max-attribute.html [ Skip ]
-webkit.org/b/109272 fast/forms/calendar-picker/calendar-picker-datetime-with-step.html [ Skip ]
-webkit.org/b/109272 fast/forms/calendar-picker/calendar-picker-datetime.html [ Skip ]
-webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-appearance.html [ Skip ]
-webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-mouse-operations.html [ Skip ]
-
 webkit.org/b/112923 fast/forms/calendar-picker/calendar-picker-appearance-month-popup.html [ Pass ImageOnlyFailure ]
 
 # -----------------------------------------------------------------

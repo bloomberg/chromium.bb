@@ -106,7 +106,6 @@ public:
 #endif
     virtual bool isCheckbox() const;
     virtual bool isDateField() const;
-    virtual bool isDateTimeField() const;
     virtual bool isDateTimeLocalField() const;
     virtual bool isEmailField() const;
     virtual bool isFileUpload() const;

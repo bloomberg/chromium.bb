@@ -355,9 +355,6 @@ TEST_F(WebViewTest, DISABLED_TextInputType)
     testTextInputType(WebTextInputTypeTelephone, "input_field_tel.html");
     testTextInputType(WebTextInputTypeURL, "input_field_url.html");
     testTextInputType(WebTextInputTypeDate, "input_field_date.html");
-#if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
-    testTextInputType(WebTextInputTypeDateTime, "input_field_datetime.html");
-#endif
     testTextInputType(WebTextInputTypeDateTimeLocal, "input_field_datetimelocal.html");
     testTextInputType(WebTextInputTypeMonth, "input_field_month.html");
     testTextInputType(WebTextInputTypeTime, "input_field_time.html");

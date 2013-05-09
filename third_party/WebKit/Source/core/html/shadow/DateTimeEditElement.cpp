@@ -94,9 +94,7 @@ DateTimeEditBuilder::DateTimeEditBuilder(DateTimeEditElement& elemnt, const Date
     , m_secondRange(0, 59)
     , m_millisecondRange(0, 999)
 {
-    if (m_dateValue.type() == DateComponents::Date
-        || m_dateValue.type() == DateComponents::DateTimeLocal
-        || m_dateValue.type() == DateComponents::DateTime) {
+    if (m_dateValue.type() == DateComponents::Date || m_dateValue.type() == DateComponents::DateTimeLocal) {
         if (m_parameters.minimum.type() != DateComponents::Invalid
             && m_parameters.maximum.type() != DateComponents::Invalid
             && m_parameters.minimum.fullYear() == m_parameters.maximum.fullYear()
@@ -352,7 +350,7 @@ bool DateTimeEditBuilder::shouldHourFieldDisabled() const
 
     if (m_dateValue.type() == DateComponents::Time)
         return false;
-    ASSERT(m_dateValue.type() == DateComponents::DateTimeLocal || m_dateValue.type() == DateComponents::DateTime);
+    ASSERT(m_dateValue.type() == DateComponents::DateTimeLocal);
 
     if (shouldDayOfMonthFieldDisabled()) {
         ASSERT(m_parameters.minimum.fullYear() == m_parameters.maximum.fullYear());

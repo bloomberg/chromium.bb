@@ -37,7 +37,6 @@ Gamepad status=stable
 Geolocation status=stable
 IMEAPI status=test
 IndexedDB status=stable
-InputTypeDateTime condition=INPUT_TYPE_DATETIME_INCOMPLETE, status=test
 InputTypeWeek status=stable
 JavaScriptI18NAPI status=stable
 LangAttributeAwareFormControlUI
