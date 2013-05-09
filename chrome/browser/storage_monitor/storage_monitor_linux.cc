@@ -52,6 +52,11 @@ const char kVendorID[] = "ID_VENDOR_ID";
 // Construct a device id using label or manufacturer (vendor and model) details.
 std::string MakeDeviceUniqueId(struct udev_device* device) {
   std::string uuid = GetUdevDevicePropertyValue(device, kFsUUID);
+  // Keep track of device uuid, to see how often we receive empty uuid values.
+  UMA_HISTOGRAM_BOOLEAN(
+      "RemovableDeviceNotificationsLinux.device_file_system_uuid_available",
+      !uuid.empty());
+
   if (!uuid.empty())
     return kFSUniqueIdPrefix + uuid;
 
@@ -112,10 +117,10 @@ uint64 GetDeviceStorageSize(const base::FilePath& device_path,
 
 // Constructs the device name from the device properties. If the device details
 // are unavailable, returns an empty string.
-string16 GetDeviceName(struct udev_device* device,
-                       string16* out_volume_label,
-                       string16* out_vendor_name,
-                       string16* out_model_name) {
+void GetDeviceName(struct udev_device* device,
+                   string16* out_volume_label,
+                   string16* out_vendor_name,
+                   string16* out_model_name) {
   std::string device_label = GetUdevDevicePropertyValue(device, kLabel);
   std::string vendor_name = GetUdevDevicePropertyValue(device, kVendor);
   std::string model_name = GetUdevDevicePropertyValue(device, kModel);
@@ -125,25 +130,6 @@ string16 GetDeviceName(struct udev_device* device,
     *out_vendor_name = UTF8ToUTF16(vendor_name);
   if (out_model_name)
     *out_model_name = UTF8ToUTF16(model_name);
-
-  if (!device_label.empty() && IsStringUTF8(device_label))
-    return UTF8ToUTF16(device_label);
-
-  device_label = GetUdevDevicePropertyValue(device, kFsUUID);
-  // Keep track of device uuid, to see how often we receive empty uuid values.
-  UMA_HISTOGRAM_BOOLEAN(
-      "RemovableDeviceNotificationsLinux.device_file_system_uuid_available",
-      !device_label.empty());
-
-  const string16 name = MediaStorageUtil::GetFullProductName(vendor_name,
-                                                             model_name);
-
-  const string16 device_label_utf16 =
-      (!device_label.empty() && IsStringUTF8(device_label)) ?
-          UTF8ToUTF16(device_label) : string16();
-  if (!name.empty() && !device_label_utf16.empty())
-    return device_label_utf16 + ASCIIToUTF16(" ") + name;
-  return name.empty() ? device_label_utf16 : name;
 }
 
 // Gets the device information using udev library.
@@ -177,15 +163,16 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
   if (!device.get())
     return storage_info.Pass();
 
-  string16 volume_label;
-  string16 vendor_name;
-  string16 model_name;
-  string16 device_name = GetDeviceName(device, &volume_label,
-                                       &vendor_name, &model_name);
+  string16 volume_label = UTF8ToUTF16(GetUdevDevicePropertyValue(device,
+                                                                 kLabel));
+  string16 vendor_name = UTF8ToUTF16(GetUdevDevicePropertyValue(device,
+                                                                kVendor));
+  string16 model_name = UTF8ToUTF16(GetUdevDevicePropertyValue(device, kModel));
+
   std::string unique_id = MakeDeviceUniqueId(device);
 
   // Keep track of device info details to see how often we get invalid values.
-  MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, device_name);
+  MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, volume_label);
 
   const char* value = udev_device_get_sysattr_value(device, kRemovableSysAttr);
   if (!value) {
@@ -211,7 +198,7 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
 
   storage_info.reset(new StorageInfo(
       MediaStorageUtil::MakeDeviceId(type, unique_id),
-      device_name,
+      string16(),
       mount_point.value(),
       volume_label,
       vendor_name,
@@ -510,7 +497,6 @@ void StorageMonitorLinux::AddNewMount(const base::FilePath& mount_device,
     return;
 
   DCHECK(!storage_info->device_id.empty());
-  DCHECK(!storage_info->name.empty());
 
   bool removable = MediaStorageUtil::IsRemovableDevice(storage_info->device_id);
   const base::FilePath mount_point(storage_info->location);
@@ -520,13 +506,8 @@ void StorageMonitorLinux::AddNewMount(const base::FilePath& mount_device,
   mount_point_info.storage_info = *storage_info;
   mount_info_map_[mount_point] = mount_point_info;
   mount_priority_map_[mount_device][mount_point] = removable;
-
-  if (removable) {
-    // TODO(gbillock) Do this in a higher level instead of here.
-    storage_info->name = MediaStorageUtil::GetDisplayNameForDevice(
-        storage_info->total_size_in_bytes, storage_info->name);
+  if (removable)
     receiver()->ProcessAttach(*storage_info);
-  }
 }
 
 }  // namespace chrome

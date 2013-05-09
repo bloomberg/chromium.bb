@@ -25,39 +25,6 @@ namespace chromeos {
 
 namespace {
 
-// Constructs a device name using label or manufacturer (vendor and product)
-// name details.
-string16 GetDeviceName(const disks::DiskMountManager::Disk& disk,
-                       string16* storage_label,
-                       string16* vendor_name,
-                       string16* model_name) {
-  if (disk.device_type() == DEVICE_TYPE_SD) {
-    // Mount path of an SD card will be one of the following:
-    // (1) /media/removable/<volume_label>
-    // (2) /media/removable/SD Card
-    // If the volume label is available, mount path will be (1) else (2).
-    base::FilePath mount_point(disk.mount_path());
-    const string16 display_name(mount_point.BaseName().LossyDisplayName());
-    if (!display_name.empty())
-      return display_name;
-  }
-
-  const std::string& device_label = disk.device_label();
-
-  if (storage_label)
-    *storage_label = UTF8ToUTF16(device_label);
-  if (vendor_name)
-    *vendor_name = UTF8ToUTF16(disk.vendor_name());
-  if (model_name)
-    *model_name = UTF8ToUTF16(disk.product_name());
-
-  if (!device_label.empty() && IsStringUTF8(device_label))
-    return UTF8ToUTF16(device_label);
-
-  return chrome::MediaStorageUtil::GetFullProductName(disk.vendor_name(),
-                                                      disk.product_name());
-}
-
 // Constructs a device id using uuid or manufacturer (vendor and product) id
 // details.
 std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
@@ -78,10 +45,9 @@ std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
 }
 
 // Returns true if the requested device is valid, else false. On success, fills
-// in |unique_id|, |device_label| and |storage_size_in_bytes|.
+// in |unique_id|, and |storage_size_in_bytes|.
 bool GetDeviceInfo(const std::string& source_path,
                    std::string* unique_id,
-                   string16* device_label,
                    uint64* storage_size_in_bytes,
                    string16* storage_label,
                    string16* vendor_name,
@@ -94,12 +60,16 @@ bool GetDeviceInfo(const std::string& source_path,
   if (unique_id)
     *unique_id = MakeDeviceUniqueId(*disk);
 
-  if (device_label)
-    *device_label = GetDeviceName(*disk, storage_label,
-                                  vendor_name, model_name);
-
   if (storage_size_in_bytes)
     *storage_size_in_bytes = disk->total_size_in_bytes();
+
+  if (vendor_name)
+    *vendor_name = UTF8ToUTF16(disk->vendor_name());
+  if (model_name)
+    *model_name = UTF8ToUTF16(disk->product_name());
+  if (storage_label)
+    *storage_label = UTF8ToUTF16(disk->device_label());
+
   return true;
 }
 
@@ -315,21 +285,21 @@ void StorageMonitorCros::AddMountedPath(
 
   // Get the media device uuid and label if exists.
   std::string unique_id;
-  string16 device_label;
   string16 storage_label;
   string16 vendor_name;
   string16 model_name;
   uint64 storage_size_in_bytes;
-  if (!GetDeviceInfo(mount_info.source_path, &unique_id, &device_label,
+  if (!GetDeviceInfo(mount_info.source_path, &unique_id,
                      &storage_size_in_bytes, &storage_label,
-                     &vendor_name, &model_name))
+                     &vendor_name, &model_name)) {
     return;
+  }
 
   // Keep track of device uuid and label, to see how often we receive empty
   // values.
   chrome::MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id,
-                                                      device_label);
-  if (unique_id.empty() || device_label.empty())
+                                                      storage_label);
+  if (unique_id.empty())
     return;
 
   chrome::MediaStorageUtil::Type type = has_dcim ?
@@ -341,8 +311,7 @@ void StorageMonitorCros::AddMountedPath(
 
   chrome::StorageInfo object_info(
       device_id,
-      chrome::MediaStorageUtil::GetDisplayNameForDevice(storage_size_in_bytes,
-                                                        device_label),
+      string16(),
       mount_info.mount_path,
       storage_label,
       vendor_name,

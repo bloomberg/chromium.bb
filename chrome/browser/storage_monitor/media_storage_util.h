@@ -102,11 +102,11 @@ class MediaStorageUtil {
   static base::FilePath FindDevicePathById(const std::string& device_id);
 
   // Record device information histogram for the given |device_uuid| and
-  // |device_name|. |mass_storage| indicates whether the current device is a
+  // |device_label|. |mass_storage| indicates whether the current device is a
   // mass storage device, as defined by IsMassStorageDevice().
   static void RecordDeviceInfoHistogram(bool mass_storage,
                                         const std::string& device_uuid,
-                                        const string16& device_name);
+                                        const string16& device_label);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(MediaStorageUtil);

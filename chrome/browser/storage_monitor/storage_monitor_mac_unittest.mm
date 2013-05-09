@@ -26,11 +26,10 @@ namespace {
 StorageInfo CreateStorageInfo(
     const std::string& device_id,
     const std::string& model_name,
-    const string16& display_name,
     const base::FilePath& mount_point,
     uint64 size_bytes) {
   return StorageInfo(
-      device_id, display_name, mount_point.value(),
+      device_id, string16(), mount_point.value(),
       string16(), string16(), UTF8ToUTF16(model_name),
       size_bytes);
 }
@@ -51,12 +50,10 @@ class StorageMonitorMacTest : public testing::Test {
     monitor_->AddObserver(mock_storage_observer_.get());
 
     unique_id_ = "test_id";
-    display_name_ = ASCIIToUTF16("977 KB Test Display Name");
     mount_point_ = base::FilePath("/unused_test_directory");
     device_id_ = MediaStorageUtil::MakeDeviceId(
         MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM, unique_id_);
     disk_info_ = CreateStorageInfo(device_id_, "",
-                                   ASCIIToUTF16("Test Display Name"),
                                    mount_point_, kTestSize);
   }
 
@@ -78,7 +75,6 @@ class StorageMonitorMacTest : public testing::Test {
 
   // Information about the disk.
   std::string unique_id_;
-  string16 display_name_;
   base::FilePath mount_point_;
   std::string device_id_;
   StorageInfo disk_info_;
@@ -92,7 +88,7 @@ TEST_F(StorageMonitorMacTest, AddRemove) {
   EXPECT_EQ(1, mock_storage_observer_->attach_calls());
   EXPECT_EQ(0, mock_storage_observer_->detach_calls());
   EXPECT_EQ(device_id_, mock_storage_observer_->last_attached().device_id);
-  EXPECT_EQ(display_name_, mock_storage_observer_->last_attached().name);
+  EXPECT_EQ(string16(), mock_storage_observer_->last_attached().name);
   EXPECT_EQ(mount_point_.value(),
             mock_storage_observer_->last_attached().location);
 
@@ -109,14 +105,14 @@ TEST_F(StorageMonitorMacTest, UpdateVolumeName) {
   EXPECT_EQ(1, mock_storage_observer_->attach_calls());
   EXPECT_EQ(0, mock_storage_observer_->detach_calls());
   EXPECT_EQ(device_id_, mock_storage_observer_->last_attached().device_id);
-  EXPECT_EQ(display_name_, mock_storage_observer_->last_attached().name);
+  EXPECT_EQ(string16(), mock_storage_observer_->last_attached().name);
+  EXPECT_EQ(kTestSize,
+            mock_storage_observer_->last_attached().total_size_in_bytes);
   EXPECT_EQ(mount_point_.value(),
             mock_storage_observer_->last_attached().location);
 
-  string16 new_display_name(ASCIIToUTF16("977 KB Test Display Name"));
   StorageInfo info2 = CreateStorageInfo(
-      device_id_, "", ASCIIToUTF16("Test Display Name"), mount_point_,
-      kTestSize);
+      device_id_, "", mount_point_, kTestSize * 2);
   UpdateDisk(info2, StorageMonitorMac::UPDATE_DEVICE_CHANGED);
   message_loop_.RunUntilIdle();
 
@@ -124,7 +120,9 @@ TEST_F(StorageMonitorMacTest, UpdateVolumeName) {
   EXPECT_EQ(device_id_, mock_storage_observer_->last_detached().device_id);
   EXPECT_EQ(2, mock_storage_observer_->attach_calls());
   EXPECT_EQ(device_id_, mock_storage_observer_->last_attached().device_id);
-  EXPECT_EQ(new_display_name, mock_storage_observer_->last_attached().name);
+  EXPECT_EQ(string16(), mock_storage_observer_->last_attached().name);
+  EXPECT_EQ(kTestSize * 2,
+            mock_storage_observer_->last_attached().total_size_in_bytes);
   EXPECT_EQ(mount_point_.value(),
             mock_storage_observer_->last_attached().location);
 }
@@ -138,16 +136,14 @@ TEST_F(StorageMonitorMacTest, DCIM) {
   base::FilePath mount_point = temp_dir.path();
   std::string device_id = MediaStorageUtil::MakeDeviceId(
       MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, unique_id_);
-  StorageInfo info = CreateStorageInfo(
-      device_id, "", ASCIIToUTF16("Test Display Name"), mount_point,
-      kTestSize);
+  StorageInfo info = CreateStorageInfo(device_id, "", mount_point, kTestSize);
 
   UpdateDisk(info, StorageMonitorMac::UPDATE_DEVICE_ADDED);
 
   EXPECT_EQ(1, mock_storage_observer_->attach_calls());
   EXPECT_EQ(0, mock_storage_observer_->detach_calls());
   EXPECT_EQ(device_id, mock_storage_observer_->last_attached().device_id);
-  EXPECT_EQ(display_name_, mock_storage_observer_->last_attached().name);
+  EXPECT_EQ(string16(), mock_storage_observer_->last_attached().name);
   EXPECT_EQ(mount_point.value(),
             mock_storage_observer_->last_attached().location);
 }
@@ -158,7 +154,7 @@ TEST_F(StorageMonitorMacTest, GetStorageInfo) {
   EXPECT_EQ(1, mock_storage_observer_->attach_calls());
   EXPECT_EQ(0, mock_storage_observer_->detach_calls());
   EXPECT_EQ(device_id_, mock_storage_observer_->last_attached().device_id);
-  EXPECT_EQ(display_name_, mock_storage_observer_->last_attached().name);
+  EXPECT_EQ(string16(), mock_storage_observer_->last_attached().name);
   EXPECT_EQ(mount_point_.value(),
             mock_storage_observer_->last_attached().location);
 
@@ -166,7 +162,7 @@ TEST_F(StorageMonitorMacTest, GetStorageInfo) {
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(mount_point_.AppendASCII("foo"),
                                               &info));
   EXPECT_EQ(device_id_, info.device_id);
-  EXPECT_EQ(ASCIIToUTF16("977 KB Test Display Name"), info.name);
+  EXPECT_EQ(string16(), info.name);
   EXPECT_EQ(mount_point_.value(), info.location);
   EXPECT_EQ(kTestSize, info.total_size_in_bytes);
 
@@ -177,7 +173,7 @@ TEST_F(StorageMonitorMacTest, GetStorageInfo) {
 // Test that mounting a DMG doesn't send a notification.
 TEST_F(StorageMonitorMacTest, DMG) {
   StorageInfo info = CreateStorageInfo(
-      device_id_, "Disk Image", display_name_, mount_point_, kTestSize);
+      device_id_, "Disk Image", mount_point_, kTestSize);
   UpdateDisk(info, StorageMonitorMac::UPDATE_DEVICE_ADDED);
   EXPECT_EQ(0, mock_storage_observer_->attach_calls());
 }

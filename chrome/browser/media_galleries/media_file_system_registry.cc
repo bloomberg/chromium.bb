@@ -481,6 +481,7 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   // once per profile.
   extension_hosts_map_[profile] = ExtensionHostMap();
 
+  // TODO(gbillock): Move this stanza to MediaGalleriesPreferences init code.
   // StorageMonitor may be NULL in unit tests.
   StorageMonitor* monitor = StorageMonitor::GetInstance();
   if (!monitor)
@@ -489,10 +490,21 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   for (size_t i = 0; i < existing_devices.size(); i++) {
     if (!MediaStorageUtil::IsMediaDevice(existing_devices[i].device_id))
       continue;
-    preferences->AddGalleryWithName(existing_devices[i].device_id,
-                                    existing_devices[i].name,
-                                    base::FilePath(),
-                                    false /*not user added*/);
+    if (!existing_devices[i].name.empty()) {
+      preferences->AddGalleryWithName(existing_devices[i].device_id,
+                                      existing_devices[i].name,
+                                      base::FilePath(),
+                                      false /*not user added*/);
+    } else {
+      preferences->AddGallery(existing_devices[i].device_id,
+                              base::FilePath(),
+                              false,
+                              existing_devices[i].storage_label,
+                              existing_devices[i].vendor_name,
+                              existing_devices[i].model_name,
+                              existing_devices[i].total_size_in_bytes,
+                              base::Time::Now());
+    }
   }
   return preferences;
 }

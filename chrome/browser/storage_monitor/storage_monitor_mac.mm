@@ -72,13 +72,6 @@ StorageInfo BuildStorageInfo(
   info.storage_label = GetUTF16FromDictionary(
       dict, kDADiskDescriptionVolumeNameKey);
 
-  if (!info.storage_label.empty()) {
-    info.name = info.storage_label;
-  } else {
-    info.name = MediaStorageUtil::GetFullProductName(
-        UTF16ToUTF8(info.vendor_name), UTF16ToUTF8(info.model_name));
-  }
-
   CFUUIDRef uuid = base::mac::GetValueFromDictionary<CFUUIDRef>(
       dict, kDADiskDescriptionVolumeUUIDKey);
   std::string unique_id;
@@ -240,21 +233,15 @@ void StorageMonitorMac::UpdateDisk(
     }
   }
 
-  StorageInfo storage_info(info);
-  if (ShouldPostNotificationForDisk(storage_info)) {
-    storage_info.name = MediaStorageUtil::GetDisplayNameForDevice(
-        storage_info.total_size_in_bytes, storage_info.name);
-  }
-
   if (update_type == UPDATE_DEVICE_REMOVED) {
     if (it != disk_info_map_.end())
       disk_info_map_.erase(it);
   } else {
-    disk_info_map_[bsd_name] = storage_info;
-    MediaStorageUtil::RecordDeviceInfoHistogram(true, storage_info.device_id,
-                                                storage_info.name);
-    if (ShouldPostNotificationForDisk(storage_info))
-      receiver()->ProcessAttach(storage_info);
+    disk_info_map_[bsd_name] = info;
+    MediaStorageUtil::RecordDeviceInfoHistogram(true, info.device_id,
+                                                info.storage_label);
+    if (ShouldPostNotificationForDisk(info))
+      receiver()->ProcessAttach(info);
   }
 
   // We're not really honestly sure we're done, but this looks the best we
@@ -364,7 +351,6 @@ bool StorageMonitorMac::ShouldPostNotificationForDisk(
   // Only post notifications about disks that have no empty fields and
   // are removable. Also exclude disk images (DMGs).
   return !info.device_id.empty() &&
-         !info.name.empty() &&
          !info.location.empty() &&
          info.model_name != ASCIIToUTF16(kDiskImageModelName) &&
          MediaStorageUtil::IsRemovableDevice(info.device_id) &&

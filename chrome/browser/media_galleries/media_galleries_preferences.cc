@@ -321,6 +321,7 @@ void MediaGalleriesPreferences::OnRemovableStorageAttached(
                info.total_size_in_bytes,
                base::Time::Now());
   } else {
+    // TODO(gbillock): get rid of this code path.
     AddGalleryWithName(info.device_id, info.name, base::FilePath(), false);
   }
 }

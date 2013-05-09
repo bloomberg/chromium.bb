@@ -154,11 +154,6 @@ bool GetDeviceDetails(const base::FilePath& device_path,
   // for the volume.
   info->vendor_name = string16();
   info->model_name = string16();
-
-  string16 name = !volume_label.empty() ? volume_label
-                                        : device_path.LossyDisplayName();
-  info->name = chrome::MediaStorageUtil::GetDisplayNameForDevice(
-      info->total_size_in_bytes, name);
   info->storage_label = volume_label;
 
   return true;

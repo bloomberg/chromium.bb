@@ -383,12 +383,12 @@ base::FilePath MediaStorageUtil::FindDevicePathById(
 // static
 void MediaStorageUtil::RecordDeviceInfoHistogram(bool mass_storage,
                                                  const std::string& device_uuid,
-                                                 const string16& device_name) {
+                                                 const string16& device_label) {
   unsigned int event_number = 0;
   if (!mass_storage)
     event_number = 4;
 
-  if (device_name.empty())
+  if (device_label.empty())
     event_number += 2;
 
   if (device_uuid.empty())
