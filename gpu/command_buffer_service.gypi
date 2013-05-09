@@ -25,6 +25,18 @@
     '../third_party/re2/re2.gyp:re2',
   ],
   'sources': [
+    'command_buffer/service/async_pixel_transfer_delegate.cc',
+    'command_buffer/service/async_pixel_transfer_delegate.h',
+    'command_buffer/service/async_pixel_transfer_delegate_android.cc',
+    'command_buffer/service/async_pixel_transfer_delegate_idle.cc',
+    'command_buffer/service/async_pixel_transfer_delegate_idle.h',
+    'command_buffer/service/async_pixel_transfer_delegate_linux.cc',
+    'command_buffer/service/async_pixel_transfer_delegate_mac.cc',
+    'command_buffer/service/async_pixel_transfer_delegate_stub.cc',
+    'command_buffer/service/async_pixel_transfer_delegate_stub.h',
+    'command_buffer/service/async_pixel_transfer_delegate_sync.cc',
+    'command_buffer/service/async_pixel_transfer_delegate_sync.h',
+    'command_buffer/service/async_pixel_transfer_delegate_win.cc',
     'command_buffer/service/buffer_manager.h',
     'command_buffer/service/buffer_manager.cc',
     'command_buffer/service/cmd_buffer_engine.h',
@@ -89,6 +101,8 @@
     'command_buffer/service/program_cache.cc',
     'command_buffer/service/program_cache_lru_helper.h',
     'command_buffer/service/program_cache_lru_helper.cc',
+    'command_buffer/service/safe_shared_memory_pool.h',
+    'command_buffer/service/safe_shared_memory_pool.cc',
     'command_buffer/service/shader_manager.h',
     'command_buffer/service/shader_manager.cc',
     'command_buffer/service/shader_translator.h',
@@ -119,5 +133,11 @@
         '../third_party/angle/include',
       ],
     }],
+    ['OS in ("win", "android") or (OS == "linux" and use_x11 == 1)', {
+      'sources': [
+        'command_buffer/service/async_pixel_transfer_delegate_egl.cc',
+        'command_buffer/service/async_pixel_transfer_delegate_egl.h',
+      ],
+    }]
   ],
 }

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/async_pixel_transfer_delegate_stub.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate_stub.h"
 
-namespace gfx {
+namespace gpu {
 
 namespace {
 
@@ -73,5 +73,5 @@ bool AsyncPixelTransferDelegateStub::NeedsProcessMorePendingTransfers() {
   return false;
 }
 
-}  // namespace gfx
+}  // namespace gpu
 

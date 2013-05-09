@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_SAFE_SHARED_MEMORY_POOL_H_
-#define UI_GL_SAFE_SHARED_MEMORY_POOL_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_SAFE_SHARED_MEMORY_POOL_H_
+#define GPU_COMMAND_BUFFER_SERVICE_SAFE_SHARED_MEMORY_POOL_H_
 
 #include <map>
 
@@ -16,12 +16,8 @@ namespace base {
 class SharedMemory;
 }
 
-namespace gfx {
+namespace gpu {
 class SafeSharedMemoryPool;
-class ScopedSafeSharedMemory;
-}
-
-namespace gfx {
 
 // These classes exist to help protect against deletion of shared
 // memory that is being used on a worker thread. It's mainly a
@@ -86,5 +82,5 @@ class SafeSharedMemoryPool {
 
 }  // namespace gfx
 
-#endif  // UI_GL_ASYNC_TASK_DELEGATE_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_SAFE_SHARED_MEMORY_POOL_H_
 

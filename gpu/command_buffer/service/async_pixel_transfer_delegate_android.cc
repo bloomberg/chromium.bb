@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/async_pixel_transfer_delegate.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 
 #include "base/debug/trace_event.h"
-#include "ui/gl/async_pixel_transfer_delegate_egl.h"
-#include "ui/gl/async_pixel_transfer_delegate_stub.h"
-#include "ui/gl/async_pixel_transfer_delegate_sync.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate_egl.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate_stub.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate_sync.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 
-namespace gfx {
+namespace gpu {
 
 // We only used threaded uploads when we can:
 // - Create EGLImages out of OpenGL textures (EGL_KHR_gl_texture_2D_image)
@@ -20,8 +20,8 @@ namespace gfx {
 AsyncPixelTransferDelegate* AsyncPixelTransferDelegate::Create(
     gfx::GLContext* context) {
   TRACE_EVENT0("gpu", "AsyncPixelTransferDelegate::Create");
-  switch (GetGLImplementation()) {
-    case kGLImplementationEGLGLES2:
+  switch (gfx::GetGLImplementation()) {
+    case gfx::kGLImplementationEGLGLES2:
       DCHECK(context);
       if (context->HasExtension("EGL_KHR_fence_sync") &&
           context->HasExtension("EGL_KHR_image") &&
@@ -32,7 +32,7 @@ AsyncPixelTransferDelegate* AsyncPixelTransferDelegate::Create(
       }
       LOG(INFO) << "Async pixel transfers not supported";
       return new AsyncPixelTransferDelegateSync;
-    case kGLImplementationMockGL:
+    case gfx::kGLImplementationMockGL:
       return new AsyncPixelTransferDelegateStub;
     default:
       NOTREACHED();
@@ -40,4 +40,4 @@ AsyncPixelTransferDelegate* AsyncPixelTransferDelegate::Create(
   }
 }
 
-}  // namespace gfx
+}  // namespace gpu

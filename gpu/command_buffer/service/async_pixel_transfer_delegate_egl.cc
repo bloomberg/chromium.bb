@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/async_pixel_transfer_delegate_egl.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate_egl.h"
 
 #include <string>
 
@@ -14,9 +14,9 @@
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "gpu/command_buffer/service/safe_shared_memory_pool.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
-#include "ui/gl/safe_shared_memory_pool.h"
 #include "ui/gl/scoped_binders.h"
 
 #if defined(OS_ANDROID)
@@ -27,7 +27,7 @@
 using base::SharedMemory;
 using base::SharedMemoryHandle;
 
-namespace gfx {
+namespace gpu {
 
 namespace {
 
@@ -95,7 +95,7 @@ class TransferThread : public base::Thread {
   }
 
   virtual void Init() OVERRIDE {
-    GLShareGroup* share_group = NULL;
+    gfx::GLShareGroup* share_group = NULL;
     bool software = false;
     surface_ = new gfx::PbufferGLSurfaceEGL(software, gfx::Size(1,1));
     surface_->Initialize();
@@ -585,7 +585,7 @@ void AsyncPixelTransferDelegateEGL::PerformNotifyCompletion(
     ScopedSafeSharedMemory* safe_shared_memory,
     const CompletionCallback& callback) {
   TRACE_EVENT0("gpu", "PerformNotifyCompletion");
-  gfx::AsyncMemoryParams safe_mem_params = mem_params;
+  AsyncMemoryParams safe_mem_params = mem_params;
   safe_mem_params.shared_memory = safe_shared_memory->shared_memory();
   callback.Run(safe_mem_params);
 }
@@ -805,4 +805,4 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexSubImage2D(
   return true;
 }
 
-}  // namespace gfx
+}  // namespace gpu

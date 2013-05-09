@@ -56,7 +56,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
-#include "ui/gl/async_pixel_transfer_delegate.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
@@ -648,10 +648,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   virtual void SetStreamTextureManager(StreamTextureManager* manager) OVERRIDE;
 
-  virtual gfx::AsyncPixelTransferDelegate*
+  virtual AsyncPixelTransferDelegate*
       GetAsyncPixelTransferDelegate() OVERRIDE;
   virtual void SetAsyncPixelTransferDelegate(
-      gfx::AsyncPixelTransferDelegate* delegate) OVERRIDE;
+      AsyncPixelTransferDelegate* delegate) OVERRIDE;
   void ProcessFinishedAsyncTransfers();
 
   virtual bool GetServiceTextureId(uint32 client_texture_id,
@@ -1705,7 +1705,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   ShaderCacheCallback shader_cache_callback_;
 
   StreamTextureManager* stream_texture_manager_;
-  scoped_ptr<gfx::AsyncPixelTransferDelegate> async_pixel_transfer_delegate_;
+  scoped_ptr<AsyncPixelTransferDelegate> async_pixel_transfer_delegate_;
 
   // The format of the back buffer_
   GLenum back_buffer_color_format_;
@@ -2545,7 +2545,7 @@ bool GLES2DecoderImpl::Initialize(
 
   // Create a delegate to perform async pixel transfers.
   async_pixel_transfer_delegate_.reset(
-      gfx::AsyncPixelTransferDelegate::Create(context.get()));
+      AsyncPixelTransferDelegate::Create(context.get()));
 
   return true;
 }
@@ -3113,13 +3113,13 @@ void GLES2DecoderImpl::SetStreamTextureManager(StreamTextureManager* manager) {
   stream_texture_manager_ = manager;
 }
 
-gfx::AsyncPixelTransferDelegate*
+AsyncPixelTransferDelegate*
     GLES2DecoderImpl::GetAsyncPixelTransferDelegate() {
   return async_pixel_transfer_delegate_.get();
 }
 
 void GLES2DecoderImpl::SetAsyncPixelTransferDelegate(
-    gfx::AsyncPixelTransferDelegate* delegate) {
+    AsyncPixelTransferDelegate* delegate) {
   async_pixel_transfer_delegate_ = make_scoped_ptr(delegate);
 }
 
@@ -10272,9 +10272,9 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
   // Setup the parameters.
   GLenum gl_internal_format =
       GetTexInternalFormat(internal_format, format, type);
-  gfx::AsyncTexImage2DParams tex_params = {target, level, gl_internal_format,
+  AsyncTexImage2DParams tex_params = {target, level, gl_internal_format,
                                            width, height, border, format, type};
-  gfx::AsyncMemoryParams mem_params = {shared_memory, shm_size,
+  AsyncMemoryParams mem_params = {shared_memory, shm_size,
                                        shm_data_offset, shm_data_size};
 
   // Set up the async state if needed, and make the texture
@@ -10362,15 +10362,15 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
   uint32 shm_data_size = data_size;
 
   // Setup the parameters.
-  gfx::AsyncTexSubImage2DParams tex_params = {target, level, xoffset, yoffset,
+  AsyncTexSubImage2DParams tex_params = {target, level, xoffset, yoffset,
                                               width, height, format, type};
-  gfx::AsyncMemoryParams mem_params = {shared_memory, shm_size,
+  AsyncMemoryParams mem_params = {shared_memory, shm_size,
                                        shm_data_offset, shm_data_size};
   if (!texture->GetAsyncTransferState()) {
     // TODO(epenner): We may want to enforce exclusive use
     // of async APIs in which case this should become an error,
     // (the texture should have been async defined).
-    gfx::AsyncTexImage2DParams define_params = {target, level,
+    AsyncTexImage2DParams define_params = {target, level,
                                                 0, 0, 0, 0, 0, 0};
     texture->GetLevelSize(target, level, &define_params.width,
                                          &define_params.height);

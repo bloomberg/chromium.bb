@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_H_
-#define UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_H_
+#define GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
+#include "gpu/gpu_export.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_export.h"
 
 namespace base {
 class SharedMemory;
 }
 
-namespace gfx {
+namespace gpu {
 
 struct AsyncTexImage2DParams {
   GLenum target;
@@ -51,7 +51,7 @@ struct AsyncMemoryParams {
 // AsyncPixelTransferState holds the resources required to do async
 // transfers on one texture. It should stay alive for the lifetime
 // of the texture to allow multiple transfers.
-class GL_EXPORT AsyncPixelTransferState :
+class GPU_EXPORT AsyncPixelTransferState :
     public base::SupportsWeakPtr<AsyncPixelTransferState> {
  public:
   virtual ~AsyncPixelTransferState();
@@ -67,7 +67,7 @@ class GL_EXPORT AsyncPixelTransferState :
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferState);
 };
 
-class GL_EXPORT AsyncPixelTransferDelegate {
+class GPU_EXPORT AsyncPixelTransferDelegate {
  public:
   typedef base::Callback<void(const AsyncMemoryParams&)> CompletionCallback;
 
@@ -121,7 +121,7 @@ class GL_EXPORT AsyncPixelTransferDelegate {
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegate);
 };
 
-}  // namespace gfx
+}  // namespace gpu
 
-#endif  // UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_H_
 

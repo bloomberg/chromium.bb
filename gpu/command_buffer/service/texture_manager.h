@@ -12,10 +12,10 @@
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/gpu_export.h"
-#include "ui/gl/async_pixel_transfer_delegate.h"
 #include "ui/gl/gl_image.h"
 
 namespace gpu {
@@ -147,10 +147,10 @@ class GPU_EXPORT Texture : public base::RefCounted<Texture> {
     return stream_texture_;
   }
 
-  gfx::AsyncPixelTransferState* GetAsyncTransferState() const {
+  gpu::AsyncPixelTransferState* GetAsyncTransferState() const {
     return async_transfer_state_.get();
   }
-  void SetAsyncTransferState(scoped_ptr<gfx::AsyncPixelTransferState> state) {
+  void SetAsyncTransferState(scoped_ptr<gpu::AsyncPixelTransferState> state) {
     async_transfer_state_ = state.Pass();
   }
   bool AsyncTransferIsInProgress() {
@@ -346,7 +346,7 @@ class GPU_EXPORT Texture : public base::RefCounted<Texture> {
   bool stream_texture_;
 
   // State to facilitate async transfers on this texture.
-  scoped_ptr<gfx::AsyncPixelTransferState> async_transfer_state_;
+  scoped_ptr<gpu::AsyncPixelTransferState> async_transfer_state_;
 
   // Whether the texture is immutable and no further changes to the format
   // or dimensions of the texture object can be made.
@@ -452,7 +452,7 @@ class GPU_EXPORT TextureManager {
 
   // Adapter to call above function.
   void SetLevelInfoFromParams(Texture* texture,
-                              const gfx::AsyncTexImage2DParams& params) {
+                              const gpu::AsyncTexImage2DParams& params) {
     SetLevelInfo(
         texture, params.target, params.level, params.internal_format,
         params.width, params.height, 1 /* depth */,

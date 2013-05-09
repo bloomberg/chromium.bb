@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/async_pixel_transfer_delegate_idle.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate_idle.h"
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
-#include "ui/gl/safe_shared_memory_pool.h"
+#include "gpu/command_buffer/service/safe_shared_memory_pool.h"
 #include "ui/gl/scoped_binders.h"
 
 using base::SharedMemory;
 using base::SharedMemoryHandle;
 
-namespace gfx {
+namespace gpu {
 
 namespace {
 
@@ -239,7 +239,7 @@ void AsyncPixelTransferDelegateIdle::PerformNotifyCompletion(
     ScopedSafeSharedMemory* safe_shared_memory,
     const CompletionCallback& callback) {
   TRACE_EVENT0("gpu", "PerformNotifyCompletion");
-  gfx::AsyncMemoryParams safe_mem_params = mem_params;
+  AsyncMemoryParams safe_mem_params = mem_params;
   safe_mem_params.shared_memory = safe_shared_memory->shared_memory();
   callback.Run(safe_mem_params);
 }
@@ -310,4 +310,4 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D(
   total_texture_upload_time_ += base::TimeTicks::HighResNow() - begin_time;
 }
 
-}  // namespace gfx
+}  // namespace gpu

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_EGL_H_
-#define UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_EGL_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_EGL_H_
+#define GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_EGL_H_
 
 #include <list>
 
-#include "ui/gl/async_pixel_transfer_delegate.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 
-namespace gfx {
+namespace gpu {
 class ScopedSafeSharedMemory;
 class TextureUploadStats;
 class TransferStateInternal;
@@ -85,6 +85,6 @@ class AsyncPixelTransferDelegateEGL
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateEGL);
 };
 
-}  // namespace gfx
+}  // namespace gpu
 
-#endif  // UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_EGL_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_EGL_H_

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/async_pixel_transfer_delegate_sync.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate_sync.h"
 
 #include "base/memory/shared_memory.h"
 
 using base::SharedMemory;
 using base::SharedMemoryHandle;
 
-namespace gfx {
+namespace gpu {
 
 namespace {
 
@@ -131,5 +131,5 @@ bool AsyncPixelTransferDelegateSync::NeedsProcessMorePendingTransfers() {
   return false;
 }
 
-}  // namespace gfx
+}  // namespace gpu
 

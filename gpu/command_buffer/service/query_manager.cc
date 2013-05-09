@@ -10,10 +10,10 @@
 #include "base/shared_memory.h"
 #include "base/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "ui/gl/async_pixel_transfer_delegate.h"
 
 namespace gpu {
 namespace gles2 {
@@ -183,7 +183,7 @@ class AsyncPixelTransfersCompletedQuery
   virtual ~AsyncPixelTransfersCompletedQuery();
 
   static void MarkAsCompletedThreadSafe(
-      uint32 submit_count, const gfx::AsyncMemoryParams& mem_params) {
+      uint32 submit_count, const AsyncMemoryParams& mem_params) {
     DCHECK(mem_params.shared_memory);
     DCHECK(mem_params.shared_memory->memory());
     void *data = static_cast<int8*>(mem_params.shared_memory->memory()) +
@@ -207,7 +207,7 @@ bool AsyncPixelTransfersCompletedQuery::Begin() {
 }
 
 bool AsyncPixelTransfersCompletedQuery::End(uint32 submit_count) {
-  gfx::AsyncMemoryParams mem_params;
+  AsyncMemoryParams mem_params;
   // Get the real shared memory since it might need to be duped to prevent
   // use-after-free of the memory.
   Buffer buffer = manager()->decoder()->GetSharedMemoryBuffer(shm_id());

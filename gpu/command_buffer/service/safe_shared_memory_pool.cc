@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/safe_shared_memory_pool.h"
+#include "gpu/command_buffer/service/safe_shared_memory_pool.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -12,7 +12,7 @@
 using base::SharedMemory;
 using base::SharedMemoryHandle;
 
-namespace gfx {
+namespace gpu {
 
 ScopedSafeSharedMemory::ScopedSafeSharedMemory(SafeSharedMemoryPool* pool,
                                                base::SharedMemory* memory,

@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/async_pixel_transfer_delegate.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 
 #include "base/debug/trace_event.h"
-#include "ui/gl/async_pixel_transfer_delegate_idle.h"
-#include "ui/gl/async_pixel_transfer_delegate_stub.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate_idle.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate_stub.h"
 #include "ui/gl/gl_implementation.h"
 
-namespace gfx {
+namespace gpu {
 
 AsyncPixelTransferDelegate* AsyncPixelTransferDelegate::Create(
     gfx::GLContext* context) {
   TRACE_EVENT0("gpu", "AsyncPixelTransferDelegate::Create");
-  switch (GetGLImplementation()) {
-    case kGLImplementationOSMesaGL:
-    case kGLImplementationDesktopGL:
-    case kGLImplementationEGLGLES2:
+  switch (gfx::GetGLImplementation()) {
+    case gfx::kGLImplementationOSMesaGL:
+    case gfx::kGLImplementationDesktopGL:
+    case gfx::kGLImplementationEGLGLES2:
       return new AsyncPixelTransferDelegateIdle;
-    case kGLImplementationMockGL:
+    case gfx::kGLImplementationMockGL:
       return new AsyncPixelTransferDelegateStub;
     default:
       NOTREACHED();
@@ -27,4 +27,4 @@ AsyncPixelTransferDelegate* AsyncPixelTransferDelegate::Create(
   }
 }
 
-}  // namespace gfx
+}  // namespace gpu

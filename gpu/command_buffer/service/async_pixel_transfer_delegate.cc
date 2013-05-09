@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/async_pixel_transfer_delegate.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 
-namespace gfx {
+namespace gpu {
 
 AsyncPixelTransferState::AsyncPixelTransferState() {}
 
@@ -14,4 +14,4 @@ AsyncPixelTransferDelegate::AsyncPixelTransferDelegate() {}
 
 AsyncPixelTransferDelegate::~AsyncPixelTransferDelegate() {}
 
-}  // namespace gfx
+}  // namespace gpu

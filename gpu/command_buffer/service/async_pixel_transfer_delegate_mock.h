@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_ASYNC_TASK_DELEGATE_MOCK_H_
-#define UI_GL_ASYNC_TASK_DELEGATE_MOCK_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_MOCK
+#define GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_MOCK
 
 #include "base/basictypes.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/gl/async_pixel_transfer_delegate.h"
 
-namespace gfx {
+namespace gpu {
 
-class MockAsyncPixelTransferState : public gfx::AsyncPixelTransferState {
+class MockAsyncPixelTransferState : public AsyncPixelTransferState {
  public:
   MockAsyncPixelTransferState();
 
@@ -24,29 +24,29 @@ class MockAsyncPixelTransferState : public gfx::AsyncPixelTransferState {
   DISALLOW_COPY_AND_ASSIGN(MockAsyncPixelTransferState);
 };
 
-class MockAsyncPixelTransferDelegate : public gfx::AsyncPixelTransferDelegate {
+class MockAsyncPixelTransferDelegate : public AsyncPixelTransferDelegate {
  public:
   MockAsyncPixelTransferDelegate();
   virtual ~MockAsyncPixelTransferDelegate();
 
   // Implement AsyncPixelTransferDelegate.
   MOCK_METHOD2(CreatePixelTransferState,
-      gfx::AsyncPixelTransferState*(
+      AsyncPixelTransferState*(
           GLuint service_id, const AsyncTexImage2DParams& define_params));
   MOCK_METHOD0(BindCompletedAsyncTransfers, void());
   MOCK_METHOD2(AsyncNotifyCompletion,
       void(const AsyncMemoryParams& mem_params,
            const CompletionCallback& callback));
   MOCK_METHOD4(AsyncTexImage2D,
-      void(gfx::AsyncPixelTransferState*,
+      void(AsyncPixelTransferState*,
           const AsyncTexImage2DParams& tex_params,
           const AsyncMemoryParams& mem_params,
           const base::Closure& bind_callback));
   MOCK_METHOD3(AsyncTexSubImage2D,
-      void(gfx::AsyncPixelTransferState*,
+      void(AsyncPixelTransferState*,
           const AsyncTexSubImage2DParams& tex_params,
           const AsyncMemoryParams& mem_params));
-  MOCK_METHOD1(WaitForTransferCompletion, void(gfx::AsyncPixelTransferState*));
+  MOCK_METHOD1(WaitForTransferCompletion, void(AsyncPixelTransferState*));
   MOCK_METHOD0(GetTextureUploadCount, uint32());
   MOCK_METHOD0(GetTotalTextureUploadTime, base::TimeDelta());
   MOCK_METHOD0(ProcessMorePendingTransfers, void());
@@ -56,7 +56,6 @@ class MockAsyncPixelTransferDelegate : public gfx::AsyncPixelTransferDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockAsyncPixelTransferDelegate);
 };
 
-}  // namespace gfx
+}  // namespace gpu
 
-#endif  // UI_GL_ASYNC_TASK_DELEGATE_MOCK_H_
-
+#endif  // GPU_COMMAND_BUFFER_SERVICE_ASYNC_PIXEL_TRANSFER_DELEGATE_MOCK
