@@ -173,13 +173,16 @@ class TestJar(object):
         tests_missing_annotations.append(test_method)
     return sorted(tests_missing_annotations)
 
-  def _GetAllMatchingTests(self, annotation_filter_list, test_filter):
+  def _GetAllMatchingTests(self, annotation_filter_list,
+                           exclude_annotation_list, test_filter):
     """Get a list of tests matching any of the annotations and the filter.
 
     Args:
       annotation_filter_list: List of test annotations. A test must have at
-        least one of the these annotations. A test without any annotations
-        is considered to be SmallTest.
+        least one of these annotations. A test without any annotations is
+        considered to be SmallTest.
+      exclude_annotation_list: List of test annotations. A test must not have
+        any of these annotations.
       test_filter: Filter used for partial matching on the test method names.
 
     Returns:
@@ -194,6 +197,8 @@ class TestJar(object):
               '%s has no annotations. Assuming "%s".', test,
               self._DEFAULT_ANNOTATION)
           available_tests.append(test)
+      excluded_tests = self.GetAnnotatedTests(exclude_annotation_list)
+      available_tests = list(set(available_tests) - set(excluded_tests))
     else:
       available_tests = [m for m in self.GetTestMethods()
                          if not self.IsPythonDrivenTest(m)]

@@ -71,7 +71,7 @@ def DispatchPythonTests(options):
   logging.debug('All available tests: ' + str(test_names))
 
   available_tests = test_collection.GetAvailableTests(
-      options.annotations, options.test_filter)
+      options.annotations, options.exclude_annotations, options.test_filter)
 
   if not available_tests:
     logging.warning('No Python tests to run with current args.')

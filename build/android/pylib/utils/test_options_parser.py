@@ -144,6 +144,10 @@ def AddCommonInstrumentationOptions(option_parser):
             'the given annotations. An annotation can be either a key or a '
             'key-values pair. A test that has no annotation is considered '
             '"SmallTest".'))
+  option_parser.add_option(
+      '-E', '--exclude-annotation', dest='exclude_annotation_str',
+      help=('Comma-separated list of annotations. Exclude tests with these '
+            'annotations.'))
   option_parser.add_option('-j', '--java_only', action='store_true',
                            help='Run only the Java tests.')
   option_parser.add_option('-p', '--python_only', action='store_true',
@@ -235,6 +239,11 @@ def ValidateCommonInstrumentationOptions(option_parser, options, args):
     options.annotations = []
   else:
     options.annotations = ['Smoke', 'SmallTest', 'MediumTest', 'LargeTest']
+
+  if options.exclude_annotation_str:
+    options.exclude_annotations = options.exclude_annotation_str.split(',')
+  else:
+    options.exclude_annotations = []
 
 
 def ValidateInstrumentationOptions(option_parser, options, args):

@@ -64,11 +64,14 @@ class TestInfoCollection(object):
     """
     self.all_tests = test_infos
 
-  def GetAvailableTests(self, annotation, name_filter):
+  def GetAvailableTests(self, annotations, exclude_annotations, name_filter):
     """Get a collection of TestInfos which match the supplied criteria.
 
     Args:
-      annotation: annotation which tests must match, if any
+      annotations: List of annotations. Each test in the returned list is
+        annotated with atleast one of these annotations.
+      exlcude_annotations: List of annotations. The tests in the returned
+        list are not annotated with any of these annotations.
       name_filter: name filter which tests must match, if any
 
     Returns:
@@ -79,8 +82,8 @@ class TestInfoCollection(object):
     # Filter out tests which match neither the requested annotation, nor the
     # requested name filter, if any.
     available_tests = [t for t in available_tests if
-                       self._AnnotationIncludesTest(t, annotation)]
-    if annotation and len(annotation) == 1 and annotation[0] == 'SmallTest':
+                       self._AnnotationIncludesTest(t, annotations)]
+    if annotations and len(annotations) == 1 and annotations[0] == 'SmallTest':
       tests_without_annotation = [
           t for t in self.all_tests if
           not tests_annotations.AnnotatedFunctions.GetTestAnnotations(
@@ -90,6 +93,9 @@ class TestInfoCollection(object):
                       'Assuming "SmallTest":\n%s',
                       '\n'.join(test_names))
       available_tests += tests_without_annotation
+    excluded_tests = [t for t in available_tests if
+                      self._AnnotationIncludesTest(t, exclude_annotations)]
+    available_tests = list(set(available_tests) - set(excluded_tests))
     available_tests = [t for t in available_tests if
                        self._NameFilterIncludesTest(t, name_filter)]
 
