@@ -801,6 +801,9 @@ const char kEnableVsyncNotification[] = "enable-vsync-notification";
 const char kOverscrollHistoryNavigation[] =
     "overscroll-history-navigation";
 
+// Forward overscroll event data from the renderer to the browser.
+const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";
+
 // Enables 'image/webp' accept header for image requests.
 const char kEnableWebPInAcceptHeader[] = "enable-webp-in-accept-header";
 

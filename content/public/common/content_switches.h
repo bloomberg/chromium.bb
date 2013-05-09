@@ -251,6 +251,7 @@ CONTENT_EXPORT extern const char kTestCompositor[];
 extern const char kEnableWebPInAcceptHeader[];
 
 CONTENT_EXPORT extern const char kOverscrollHistoryNavigation[];
+CONTENT_EXPORT extern const char kEnableOverscrollNotifications[];
 
 }  // namespace switches
 

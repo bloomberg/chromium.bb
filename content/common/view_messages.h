@@ -50,6 +50,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/vector2d.h"
+#include "ui/gfx/vector2d_f.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webmenuitem.h"
@@ -2028,6 +2029,12 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_CompositorSurfaceBuffersSwapped,
 
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SwapCompositorFrame,
                     cc::CompositorFrame /* frame */)
+
+// Sent by the compositor when input scroll events are dropped due to bounds
+// restricions on the root scroll offset.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_DidOverscroll,
+                    gfx::Vector2dF /* accumulated_overscroll */,
+                    gfx::Vector2dF /* current_fling_velocity */)
 
 // Opens a file asynchronously. The response returns a file descriptor
 // and an error code from base/platform_file.h.
