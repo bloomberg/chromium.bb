@@ -55,7 +55,6 @@ class WebContentsTester {
       BrowserContext* browser_context,
       SiteInstance* instance);
 
-  // Deprecated.  Creates a WebContents enabled for testing, that
   // Simulates the appropriate RenderView (pending if any, current otherwise)
   // sending a navigate notification for the NavigationController pending entry.
   virtual void CommitPendingNavigation() = 0;
