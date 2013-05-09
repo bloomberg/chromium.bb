@@ -82,12 +82,9 @@ void AutoLoginPrompter::ShowInfoBarIfPossible(net::URLRequest* request,
   // suggest auto-login, if available.
   Params params;
   // Currently we only accept GAIA credentials in Chrome.
-  if (!components::auto_login::ParserHeaderInResponse(
-          request,
-          components::auto_login::ONLY_GOOGLE_COM,
-          &params.header)) {
+  if (!auto_login_parser::ParserHeaderInResponse(
+          request, auto_login_parser::ONLY_GOOGLE_COM, &params.header))
     return;
-  }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

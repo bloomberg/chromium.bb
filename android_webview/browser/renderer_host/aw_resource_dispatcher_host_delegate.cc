@@ -305,18 +305,14 @@ void AwResourceDispatcherHostDelegate::OnResponseStarted(
 
   if (request_info->GetResourceType() == ResourceType::MAIN_FRAME) {
     // Check for x-auto-login header.
-    components::auto_login::HeaderData header_data;
-    if (components::auto_login::ParserHeaderInResponse(
-            request,
-            components::auto_login::ALLOW_ANY_REALM,
-            &header_data)) {
+    auto_login_parser::HeaderData header_data;
+    if (auto_login_parser::ParserHeaderInResponse(
+            request, auto_login_parser::ALLOW_ANY_REALM, &header_data)) {
       scoped_ptr<AwContentsIoThreadClient> io_client =
-          AwContentsIoThreadClient::FromID(
-              request_info->GetChildID(),
-              request_info->GetRouteID());
-      io_client->NewLoginRequest(header_data.realm,
-                                 header_data.account,
-                                 header_data.args);
+          AwContentsIoThreadClient::FromID(request_info->GetChildID(),
+                                           request_info->GetRouteID());
+      io_client->NewLoginRequest(
+          header_data.realm, header_data.account, header_data.args);
     }
   }
 }

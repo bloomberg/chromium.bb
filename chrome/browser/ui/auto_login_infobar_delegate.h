@@ -15,7 +15,7 @@ class TokenService;
 
 namespace content {
 class NavigationController;
-}  // namespace content
+}
 
 // This is the actual infobar displayed to prompt the user to auto-login.
 class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
@@ -26,7 +26,7 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
     ~Params();
 
     // Information from a parsed header.
-    components::auto_login::HeaderData header;
+    auto_login_parser::HeaderData header;
 
     // Username to display in the infobar indicating user to be logged in as.
     // This is initially fetched from sign-in on non-Android platforms. Note

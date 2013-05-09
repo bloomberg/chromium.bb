@@ -9,10 +9,9 @@
 
 namespace net {
 class URLRequest;
-}  // namespace net
+}
 
-namespace components {
-namespace auto_login {
+namespace auto_login_parser {
 
 enum RealmRestriction {
   ONLY_GOOGLE_COM,
@@ -46,7 +45,6 @@ bool ParserHeaderInResponse(net::URLRequest* request,
                             RealmRestriction realm_restriction,
                             HeaderData* header_data);
 
-}  // namespace auto_login
-}  // namespace components
+}  // namespace auto_login_parser
 
 #endif  // COMPONENTS_AUTO_LOGIN_PARSER_AUTO_LOGIN_PARSER_H_

@@ -12,8 +12,7 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 
-namespace components {
-namespace auto_login {
+namespace auto_login_parser {
 
 namespace {
 
@@ -80,5 +79,4 @@ bool ParserHeaderInResponse(net::URLRequest* request,
   return ParseHeader(header_string, realm_restriction, header_data);
 }
 
-}  // namespace auto_login
-}  // namespace components
+}  // namespace auto_login_parser

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/auto_login_parser/auto_login_parser.h"
+
 #include <string>
 
-#include "components/auto_login_parser/auto_login_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace components {
-namespace auto_login {
+namespace auto_login_parser {
 
 class AutoLoginParserTest : public testing::Test {
  protected:
@@ -89,5 +89,4 @@ TEST_F(AutoLoginParserTest, ParseHeaderAllowsAnyRealmWithOption) {
   ASSERT_EQ("kfdshfwoeriudslkfsdjfhdskjfhsdkr", header_data.args);
 }
 
-}  // namespace auto_login
-}  // namespace components
+}  // namespace auto_login_parser
