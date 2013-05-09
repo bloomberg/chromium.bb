@@ -86,17 +86,19 @@ scoped_ptr<omnibox::SuggestResult> GetOmniboxDefaultSuggestion(
 
 // Tries to set the omnibox default suggestion; returns true on success or
 // false on failure.
-bool SetOmniboxDefaultSuggestion(Profile* profile,
-                                 const std::string& extension_id,
-                                 const omnibox::SuggestResult& suggestion) {
+bool SetOmniboxDefaultSuggestion(
+    Profile* profile,
+    const std::string& extension_id,
+    const omnibox::DefaultSuggestResult& suggestion) {
   ExtensionPrefs* prefs =
       ExtensionSystem::Get(profile)->extension_service()->extension_prefs();
   if (!prefs)
     return false;
 
   scoped_ptr<base::DictionaryValue> dict = suggestion.ToValue();
-  // A default suggestion should not have the content field set.
-  dict->Remove(kSuggestionContent, NULL);
+  // Add the content field so that the dictionary can be used to populate an
+  // omnibox::SuggestResult.
+  dict->SetWithoutPathExpansion(kSuggestionContent, new base::StringValue(""));
   prefs->UpdateExtensionPref(extension_id,
                              kOmniboxDefaultSuggestion,
                              dict.release());

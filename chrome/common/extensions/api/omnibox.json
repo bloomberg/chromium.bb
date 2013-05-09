@@ -14,7 +14,7 @@
           "content": {
             "type": "string",
             "minLength": 1,
-            "description": "The text that is put into the URL bar, and that is sent to the extension when the user chooses this entry. This field must be blank for $ref:setDefaultSuggestion."
+            "description": "The text that is put into the URL bar, and that is sent to the extension when the user chooses this entry."
           },
           "description": {
             "type": "string",
@@ -25,11 +25,11 @@
             "nodoc": true,
             "optional": true,
             "type": "array",
-            "description": "The style ranges for the description, as provided by the extension.",
+            "description": "An array of style ranges for the description, as provided by the extension.",
             "items": {
               "type": "object",
               "name": "matchClassification",
-              "description": "Placeholder description.",
+              "description": "The style ranges for the description, as provided by the extension.",
               "properties": {
                 "offset": { "type": "integer" },
                 "type": { "description": "The style type", "type": "string", "enum": ["url", "match", "dim"]},
@@ -41,11 +41,55 @@
             "nodoc": true,
             "optional": true,
             "type": "array",
-            "description": "The style ranges for the description, as provided by ToValue().",
+            "description": "An array of style ranges for the description, as provided by ToValue().",
             "items": {
               "type": "object",
               "name": "matchClassification",
-              "description": "Placeholder description.",
+              "description": "The style ranges for the description, as provided by ToValue().",
+              "properties": {
+                "offset": { "type": "integer" },
+                "type": { "type": "integer" }
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "DefaultSuggestResult",
+        "inline_doc": true,
+        "type": "object",
+        "description": "A suggest result.",
+        "properties": {
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The text that is displayed in the URL dropdown. Can contain XML-style markup for styling. The supported tags are 'url' (for a literal URL), 'match' (for highlighting text that matched what the user's query), and 'dim' (for dim helper text). The styles can be nested, eg. <dim><match>dimmed match</match></dim>."
+          },
+          "descriptionStyles": {
+            "nodoc": true,
+            "optional": true,
+            "type": "array",
+            "description": "An array of style ranges for the description, as provided by the extension.",
+            "items": {
+              "type": "object",
+              "name": "matchClassification",
+              "description": "The style ranges for the description, as provided by the extension.",
+              "properties": {
+                "offset": { "type": "integer" },
+                "type": { "description": "The style type", "type": "string", "enum": ["url", "match", "dim"]},
+                "length": { "type": "integer", "optional": true }
+              }
+            }
+          },
+          "descriptionStylesRaw": {
+            "nodoc": true,
+            "optional": true,
+            "type": "array",
+            "description": "An array of style ranges for the description, as provided by ToValue().",
+            "items": {
+              "type": "object",
+              "name": "matchClassification",
+              "description": "The style ranges for the description, as provided by ToValue().",
               "properties": {
                 "offset": { "type": "integer" },
                 "type": { "type": "integer" }
@@ -80,8 +124,8 @@
         "parameters": [
           {
             "name": "suggestion",
-            "$ref": "SuggestResult",
-            "description": "A partial SuggestResult object, without the 'content' parameter. See SuggestResult for a description of the parameters."
+            "$ref": "DefaultSuggestResult",
+            "description": "A partial SuggestResult object, without the 'content' parameter."
           }
         ]
       }

@@ -13,6 +13,7 @@ namespace extensions {
 
 namespace omnibox = api::omnibox;
 namespace SendSuggestions = omnibox::SendSuggestions;
+namespace SetDefaultSuggestion = omnibox::SetDefaultSuggestion;
 
 namespace {
 
@@ -230,6 +231,45 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine2) {
   EXPECT_TRUE(params->suggest_results[0].get());
   CompareClassification(styles_expected, StyleTypesToACMatchClassifications(
       *params->suggest_results[0]));
+}
+
+//   0123456789
+//   uuuuu
+// + mmmmm
+// + mmm
+// +   ddd
+// + ddd
+// = 77777nnnnn
+TEST(ExtensionOmniboxTest, DefaultSuggestResult) {
+  // Default suggestions should not have a content parameter.
+  scoped_ptr<ListValue> list = ListBuilder()
+      .Append(DictionaryBuilder()
+        .Set("description", "description")
+        .Set("descriptionStyles", ListBuilder()
+          .Append(DictionaryBuilder()
+            .Set("type", "url")
+            .Set("offset", 0)
+            .Set("length", 5))
+          .Append(DictionaryBuilder()
+            .Set("type", "match")
+            .Set("offset", 0)
+            .Set("length", 5))
+          .Append(DictionaryBuilder()
+            .Set("type", "match")
+            .Set("offset", 0)
+            .Set("length", 3))
+          .Append(DictionaryBuilder()
+            .Set("type", "dim")
+            .Set("offset", 2)
+            .Set("length", 3))
+          .Append(DictionaryBuilder()
+            .Set("type", "dim")
+            .Set("offset", 0)
+            .Set("length", 3)))).Build();
+
+  scoped_ptr<SetDefaultSuggestion::Params> params(
+      SetDefaultSuggestion::Params::Create(*list));
+  EXPECT_TRUE(params);
 }
 
 }  // namespace extensions

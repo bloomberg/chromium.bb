@@ -90,7 +90,6 @@ binding.registerCustomHook(function(bindingsAPI) {
       throw new Error(
           'setDefaultSuggestion cannot contain the "content" field');
     }
-    suggestResult.content = '';
     return [suggestResult];
   });
 
