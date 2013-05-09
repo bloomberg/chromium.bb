@@ -39,7 +39,7 @@ IMEAPI
 IndexedDB status=stable
 InputTypeDateTime condition=INPUT_TYPE_DATETIME_INCOMPLETE, status=test
 InputTypeWeek status=stable
-JavaScriptI18NAPI condition=JAVASCRIPT_I18N_API, status=stable
+JavaScriptI18NAPI status=stable
 LangAttributeAwareFormControlUI
 LazyLayout
 LocalStorage status=stable
