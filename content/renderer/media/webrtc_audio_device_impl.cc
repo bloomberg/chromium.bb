@@ -115,6 +115,8 @@ void WebRtcAudioDeviceImpl::CaptureData(const int16* audio_data,
   // Write audio samples in blocks of 10 milliseconds to the registered
   // webrtc::AudioTransport sink. Keep writing until our internal byte
   // buffer is empty.
+  // TODO(niklase): Wire up the key press detection.
+  bool key_pressed = false;
   while (accumulated_audio_samples < number_of_frames) {
     // Deliver 10ms of recorded 16-bit linear PCM audio.
     audio_transport_callback_->RecordedDataIsAvailable(
@@ -126,6 +128,7 @@ void WebRtcAudioDeviceImpl::CaptureData(const int16* audio_data,
         input_delay_ms_ + output_delay_ms,
         0,  // TODO(henrika): |clock_drift| parameter is not utilized today.
         microphone_volume_,
+        key_pressed,
         new_mic_level);
 
     accumulated_audio_samples += samples_per_10_msec;
