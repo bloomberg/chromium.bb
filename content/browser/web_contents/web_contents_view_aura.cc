@@ -738,9 +738,9 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
 }
 
 void WebContentsViewAura::PrepareContentWindowForOverscroll() {
+  StopObservingImplicitAnimations();
   aura::Window* content = GetContentNativeView();
-  ui::ScopedLayerAnimationSettings settings(content->layer()->GetAnimator());
-  settings.SetPreemptionStrategy(ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+  content->layer()->GetAnimator()->AbortAllAnimations();
   content->SetTransform(gfx::Transform());
   content->layer()->SetLayerBrightness(0.f);
 }
@@ -779,6 +779,9 @@ void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
 
   UMA_HISTOGRAM_ENUMERATION("Overscroll.Navigated",
                             current_overscroll_gesture_, OVERSCROLL_COUNT);
+  OverscrollWindowDelegate* delegate = static_cast<OverscrollWindowDelegate*>(
+      overscroll_window_->delegate());
+  delegate->stop_forwarding_events();
 
   completed_overscroll_gesture_ = mode;
   aura::Window* target = GetWindowToAnimateForOverscroll();
@@ -828,7 +831,6 @@ gfx::Vector2d WebContentsViewAura::GetTranslationForOverscroll(int delta_x,
 void WebContentsViewAura::PrepareOverscrollNavigationOverlay() {
   OverscrollWindowDelegate* delegate = static_cast<OverscrollWindowDelegate*>(
       overscroll_window_->delegate());
-  delegate->stop_forwarding_events();
   overscroll_window_->SchedulePaintInRect(
       gfx::Rect(overscroll_window_->bounds().size()));
   navigation_overlay_->SetOverlayWindow(overscroll_window_.Pass(),
@@ -1192,6 +1194,11 @@ void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
                                                  OverscrollMode new_mode) {
   // Reset any in-progress overscroll animation first.
   ResetOverscrollTransform();
+  aura::Window* target = GetWindowToAnimateForOverscroll();
+  if (target) {
+    StopObservingImplicitAnimations();
+    target->layer()->GetAnimator()->AbortAllAnimations();
+  }
 
   if (new_mode == OVERSCROLL_NONE ||
       !GetContentNativeView() ||

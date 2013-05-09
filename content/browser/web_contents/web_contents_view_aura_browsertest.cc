@@ -531,4 +531,65 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   delete web_contents->GetView()->GetContentNativeView();
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
+                       RepeatedQuickOverscrollGestures) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartTestWithPage("files/overscroll_navigation.html"));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  NavigationController& controller = web_contents->GetController();
+  RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
+      web_contents->GetRenderViewHost());
+  WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
+      web_contents->GetView());
+  view_aura->SetupOverlayWindowForTesting();
+  ExecuteSyncJSFunction(view_host, "install_touch_handler()");
+
+  // Navigate twice, then navigate back in history once.
+  ExecuteSyncJSFunction(view_host, "navigate_next()");
+  ExecuteSyncJSFunction(view_host, "navigate_next()");
+  EXPECT_EQ(2, GetCurrentIndex());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
+
+  web_contents->GetController().GoBack();
+  WaitForLoadStop(web_contents);
+  EXPECT_EQ(1, GetCurrentIndex());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_TRUE(controller.CanGoForward());
+
+  aura::Window* content = web_contents->GetView()->GetContentNativeView();
+  gfx::Rect bounds = content->GetBoundsInRootWindow();
+  aura::test::EventGenerator generator(content->GetRootWindow(), content);
+
+  // Do a swipe left to start a forward navigation. Then quickly do a swipe
+  // right.
+  string16 expected_title = ASCIIToUTF16("Title: #2");
+  content::TitleWatcher title_watcher(web_contents, expected_title);
+
+  generator.GestureScrollSequence(
+      gfx::Point(bounds.right() - 10, bounds.y() + 10),
+      gfx::Point(bounds.x() + 2, bounds.y() + 10),
+      base::TimeDelta::FromMilliseconds(2000),
+      10);
+  // Make sure the GestureEventFilter's debouncing doesn't interfere.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(100));
+  base::MessageLoop::current()->Run();
+  generator.GestureScrollSequence(
+      gfx::Point(bounds.x() + 2, bounds.y() + 10),
+      gfx::Point(bounds.right() - 10, bounds.y() + 10),
+      base::TimeDelta::FromMilliseconds(2000),
+      10);
+  string16 actual_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(expected_title, actual_title);
+
+  EXPECT_EQ(2, GetCurrentIndex());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
+}
+
 }  // namespace content
