@@ -166,7 +166,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
   SimpleTest(GetTestUrl("indexeddb", "transaction_test.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ValueSizeTest) {
+// http://crbug.com/239366
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, FLAKY_ValueSizeTest) {
   SimpleTest(GetTestUrl("indexeddb", "value_size_test.html"));
 }
 
