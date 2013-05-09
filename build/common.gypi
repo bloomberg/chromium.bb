@@ -1517,6 +1517,14 @@
           # iOS uses a whitelist to filter resources.
           '-w', '<(DEPTH)/build/ios/grit_whitelist.txt'
         ],
+
+        # Enable clang and host builds when generating with ninja-ios.
+        'conditions': [
+          ['"<(GENERATOR)"=="ninja"', {
+            'clang%': 1,
+            'host_os%': "mac",
+          }]
+        ],
       }],
       ['enable_extensions==1', {
         'grit_defines': ['-D', 'enable_extensions'],
