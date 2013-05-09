@@ -10,6 +10,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
@@ -22,9 +23,48 @@ const char* kLocationHeader = "Location";
 
 const char* kUploadContentType = "application/octet-stream";
 
-}  // namespace
+class TwoPhaseUploaderImpl : public net::URLFetcherDelegate,
+                             public TwoPhaseUploader {
+ public:
+  TwoPhaseUploaderImpl(net::URLRequestContextGetter* url_request_context_getter,
+                       base::TaskRunner* file_task_runner,
+                       const GURL& base_url,
+                       const std::string& metadata,
+                       const base::FilePath& file_path,
+                       const ProgressCallback& progress_callback,
+                       const FinishCallback& finish_callback);
+  virtual ~TwoPhaseUploaderImpl();
 
-TwoPhaseUploader::TwoPhaseUploader(
+  // Begins the upload process.
+  virtual void Start() OVERRIDE;
+
+  // net::URLFetcherDelegate implementation:
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                        int64 current,
+                                        int64 total) OVERRIDE;
+
+ private:
+  void UploadMetadata();
+  void UploadFile();
+  void Finish(int net_error, int response_code, const std::string& response);
+
+  State state_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  scoped_refptr<base::TaskRunner> file_task_runner_;
+  GURL base_url_;
+  GURL upload_url_;
+  std::string metadata_;
+  const base::FilePath file_path_;
+  ProgressCallback progress_callback_;
+  FinishCallback finish_callback_;
+
+  scoped_ptr<net::URLFetcher> url_fetcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(TwoPhaseUploaderImpl);
+};
+
+TwoPhaseUploaderImpl::TwoPhaseUploaderImpl(
     net::URLRequestContextGetter* url_request_context_getter,
     base::TaskRunner* file_task_runner,
     const GURL& base_url,
@@ -42,18 +82,18 @@ TwoPhaseUploader::TwoPhaseUploader(
       finish_callback_(finish_callback) {
 }
 
-TwoPhaseUploader::~TwoPhaseUploader() {
+TwoPhaseUploaderImpl::~TwoPhaseUploaderImpl() {
   DCHECK(CalledOnValidThread());
 }
 
-void TwoPhaseUploader::Start() {
+void TwoPhaseUploaderImpl::Start() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(STATE_NONE, state_);
 
   UploadMetadata();
 }
 
-void TwoPhaseUploader::OnURLFetchComplete(const net::URLFetcher* source) {
+void TwoPhaseUploaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(CalledOnValidThread());
   net::URLRequestStatus status = source->GetStatus();
   int response_code = source->GetResponseCode();
@@ -106,8 +146,10 @@ void TwoPhaseUploader::OnURLFetchComplete(const net::URLFetcher* source) {
   };
 }
 
-void TwoPhaseUploader::OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                                int64 current, int64 total) {
+void TwoPhaseUploaderImpl::OnURLFetchUploadProgress(
+    const net::URLFetcher* source,
+    int64 current,
+    int64 total) {
   DCHECK(CalledOnValidThread());
   DVLOG(3) << __FUNCTION__ << " " << source->GetURL().spec()
            << " " << current << "/" << total;
@@ -115,7 +157,7 @@ void TwoPhaseUploader::OnURLFetchUploadProgress(const net::URLFetcher* source,
     progress_callback_.Run(current, total);
 }
 
-void TwoPhaseUploader::UploadMetadata() {
+void TwoPhaseUploaderImpl::UploadMetadata() {
   DCHECK(CalledOnValidThread());
   state_ = UPLOAD_METADATA;
   url_fetcher_.reset(net::URLFetcher::Create(base_url_, net::URLFetcher::POST,
@@ -126,7 +168,7 @@ void TwoPhaseUploader::UploadMetadata() {
   url_fetcher_->Start();
 }
 
-void TwoPhaseUploader::UploadFile() {
+void TwoPhaseUploaderImpl::UploadFile() {
   DCHECK(CalledOnValidThread());
   state_ = UPLOAD_FILE;
 
@@ -141,9 +183,32 @@ void TwoPhaseUploader::UploadFile() {
   url_fetcher_->Start();
 }
 
-void TwoPhaseUploader::Finish(int net_error,
-                              int response_code,
-                              const std::string& response) {
+void TwoPhaseUploaderImpl::Finish(int net_error,
+                                  int response_code,
+                                  const std::string& response) {
   DCHECK(CalledOnValidThread());
   finish_callback_.Run(state_, net_error, response_code, response);
+}
+
+}  // namespace
+
+// static
+TwoPhaseUploaderFactory* TwoPhaseUploader::factory_ = NULL;
+
+// static
+TwoPhaseUploader* TwoPhaseUploader::Create(
+    net::URLRequestContextGetter* url_request_context_getter,
+    base::TaskRunner* file_task_runner,
+    const GURL& base_url,
+    const std::string& metadata,
+    const base::FilePath& file_path,
+    const ProgressCallback& progress_callback,
+    const FinishCallback& finish_callback) {
+  if (!TwoPhaseUploader::factory_)
+    return new TwoPhaseUploaderImpl(
+        url_request_context_getter, file_task_runner, base_url, metadata,
+        file_path, progress_callback, finish_callback);
+  return TwoPhaseUploader::factory_->CreateTwoPhaseUploader(
+      url_request_context_getter, file_task_runner, base_url, metadata,
+      file_path, progress_callback, finish_callback);
 }

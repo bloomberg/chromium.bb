@@ -82,7 +82,7 @@ TEST_F(TwoPhaseUploaderTest, UploadFile) {
   LocalTwoPhaseTestServer test_server;
   ASSERT_TRUE(test_server.Start());
   Delegate delegate;
-  TwoPhaseUploader uploader(
+  scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
       test_server.GetURL("start"),
@@ -90,8 +90,8 @@ TEST_F(TwoPhaseUploaderTest, UploadFile) {
       GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
-                 runner));
-  uploader.Start();
+                 runner)));
+  uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::STATE_SUCCESS, delegate.state_);
   EXPECT_EQ(net::OK, delegate.net_error_);
@@ -108,7 +108,7 @@ TEST_F(TwoPhaseUploaderTest, BadPhaseOneResponse) {
   LocalTwoPhaseTestServer test_server;
   ASSERT_TRUE(test_server.Start());
   Delegate delegate;
-  TwoPhaseUploader uploader(
+  scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
       test_server.GetURL("start?p1code=500"),
@@ -116,8 +116,8 @@ TEST_F(TwoPhaseUploaderTest, BadPhaseOneResponse) {
       GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
-                 runner));
-  uploader.Start();
+                 runner)));
+  uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::UPLOAD_METADATA, delegate.state_);
   EXPECT_EQ(net::OK, delegate.net_error_);
@@ -130,7 +130,7 @@ TEST_F(TwoPhaseUploaderTest, BadPhaseTwoResponse) {
   LocalTwoPhaseTestServer test_server;
   ASSERT_TRUE(test_server.Start());
   Delegate delegate;
-  TwoPhaseUploader uploader(
+  scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
       test_server.GetURL("start?p2code=500"),
@@ -138,8 +138,8 @@ TEST_F(TwoPhaseUploaderTest, BadPhaseTwoResponse) {
       GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
-                 runner));
-  uploader.Start();
+                 runner)));
+  uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::UPLOAD_FILE, delegate.state_);
   EXPECT_EQ(net::OK, delegate.net_error_);
@@ -156,7 +156,7 @@ TEST_F(TwoPhaseUploaderTest, PhaseOneConnectionClosed) {
   LocalTwoPhaseTestServer test_server;
   ASSERT_TRUE(test_server.Start());
   Delegate delegate;
-  TwoPhaseUploader uploader(
+  scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
       test_server.GetURL("start?p1close=1"),
@@ -164,8 +164,8 @@ TEST_F(TwoPhaseUploaderTest, PhaseOneConnectionClosed) {
       GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
-                 runner));
-  uploader.Start();
+                 runner)));
+  uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::UPLOAD_METADATA, delegate.state_);
   EXPECT_EQ(net::ERR_EMPTY_RESPONSE, delegate.net_error_);
@@ -178,7 +178,7 @@ TEST_F(TwoPhaseUploaderTest, PhaseTwoConnectionClosed) {
   LocalTwoPhaseTestServer test_server;
   ASSERT_TRUE(test_server.Start());
   Delegate delegate;
-  TwoPhaseUploader uploader(
+  scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
       test_server.GetURL("start?p2close=1"),
@@ -186,8 +186,8 @@ TEST_F(TwoPhaseUploaderTest, PhaseTwoConnectionClosed) {
       GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
-                 runner));
-  uploader.Start();
+                 runner)));
+  uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::UPLOAD_FILE, delegate.state_);
   EXPECT_EQ(net::ERR_EMPTY_RESPONSE, delegate.net_error_);

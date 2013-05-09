@@ -11,19 +11,18 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "base/threading/non_thread_safe.h"
 #include "googleurl/src/gurl.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace base {
 class TaskRunner;
 }
 namespace net {
-class URLFetcher;
 class URLRequestContextGetter;
 }
+
+class TwoPhaseUploaderFactory;
 
 // Implements the Google two-phase resumable upload protocol.
 // Protocol documentation:
@@ -33,8 +32,7 @@ class URLRequestContextGetter;
 // supports sending metadata in the POST request body. We also do not need the
 // api-version and authorization headers.
 // TODO(mattm): support retry / resume.
-class TwoPhaseUploader : public net::URLFetcherDelegate,
-                         public base::NonThreadSafe {
+class TwoPhaseUploader : public base::NonThreadSafe {
  public:
   enum State {
     STATE_NONE,
@@ -47,6 +45,8 @@ class TwoPhaseUploader : public net::URLFetcherDelegate,
                               int net_error,
                               int response_code,
                               const std::string& response_data)> FinishCallback;
+
+  virtual ~TwoPhaseUploader() {}
 
   // Create the uploader.  The Start method must be called to begin the upload.
   // Network processing will use |url_request_context_getter|.
@@ -61,7 +61,7 @@ class TwoPhaseUploader : public net::URLFetcherDelegate,
   // response_data will specify information about the error. |finish_callback|
   // will not be called if the upload is cancelled by destructing the
   // TwoPhaseUploader object before completion.
-  TwoPhaseUploader(
+  static TwoPhaseUploader* Create(
       net::URLRequestContextGetter* url_request_context_getter,
       base::TaskRunner* file_task_runner,
       const GURL& base_url,
@@ -69,34 +69,34 @@ class TwoPhaseUploader : public net::URLFetcherDelegate,
       const base::FilePath& file_path,
       const ProgressCallback& progress_callback,
       const FinishCallback& finish_callback);
-  virtual ~TwoPhaseUploader();
+
+  // Makes the passed |factory| the factory used to instantiate
+  // a TwoPhaseUploader. Useful for tests.
+  static void RegisterFactory(TwoPhaseUploaderFactory* factory) {
+    factory_ = factory;
+  }
 
   // Begins the upload process.
-  void Start();
-
-  // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-  virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                        int64 current, int64 total) OVERRIDE;
+  virtual void Start() = 0;
 
  private:
-  void UploadMetadata();
-  void UploadFile();
-  void Finish(int net_error, int response_code, const std::string& response);
+  // The factory that controls the creation of SafeBrowsingProtocolManager.
+  // This is used by tests.
+  static TwoPhaseUploaderFactory* factory_;
+};
 
-  State state_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  scoped_refptr<base::TaskRunner> file_task_runner_;
-  GURL base_url_;
-  GURL upload_url_;
-  std::string metadata_;
-  const base::FilePath file_path_;
-  ProgressCallback progress_callback_;
-  FinishCallback finish_callback_;
+class TwoPhaseUploaderFactory {
+ public:
+  virtual ~TwoPhaseUploaderFactory() {}
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(TwoPhaseUploader);
+  virtual TwoPhaseUploader* CreateTwoPhaseUploader(
+      net::URLRequestContextGetter* url_request_context_getter,
+      base::TaskRunner* file_task_runner,
+      const GURL& base_url,
+      const std::string& metadata,
+      const base::FilePath& file_path,
+      const TwoPhaseUploader::ProgressCallback& progress_callback,
+      const TwoPhaseUploader::FinishCallback& finish_callback) = 0;
 };
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_TWO_PHASE_UPLOADER_H_
