@@ -68,6 +68,9 @@ class SyncerCommandTestBase : public testing::Test,
       const base::TimeDelta& new_delay) OVERRIDE {
     FAIL() << "Should not get sessions commit delay.";
   }
+  virtual void OnReceivedClientInvalidationHintBufferSize(int size) OVERRIDE {
+    FAIL() << "Should not get hint buffer size.";
+  }
   virtual void OnShouldStopSyncingPermanently() OVERRIDE {
     FAIL() << "Shouldn't be called.";
   }
@@ -107,9 +110,16 @@ class SyncerCommandTestBase : public testing::Test,
 
   // Create a session with the provided source.
   sessions::SyncSession* session(const sessions::SyncSourceInfo& source) {
-    if (!session_) {
+    // These sources require a valid nudge tracker.
+    DCHECK_NE(sync_pb::GetUpdatesCallerInfo::LOCAL, source.updates_source);
+    DCHECK_NE(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
+              source.updates_source);
+    DCHECK_NE(sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH,
+              source.updates_source);
+    if (!session_.get()) {
       std::vector<ModelSafeWorker*> workers = GetWorkers();
-      session_.reset(new sessions::SyncSession(context(), delegate(), source));
+      session_.reset(
+          sessions::SyncSession::Build(context(), delegate(), source));
     }
     return session_.get();
   }

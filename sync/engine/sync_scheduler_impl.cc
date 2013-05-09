@@ -227,7 +227,8 @@ void SyncSchedulerImpl::Start(Mode mode) {
   mode_ = mode;
   AdjustPolling(UPDATE_INTERVAL);  // Will kick start poll timer if needed.
 
-  if (old_mode != mode_ && mode_ == NORMAL_MODE && !nudge_tracker_.IsEmpty()) {
+  if (old_mode != mode_ && mode_ == NORMAL_MODE &&
+      nudge_tracker_.IsSyncRequired()) {
     // We just got back to normal mode.  Let's try to run the work that was
     // queued up while we were configuring.
     DoNudgeSyncSessionJob(NORMAL_PRIORITY);
@@ -236,8 +237,8 @@ void SyncSchedulerImpl::Start(Mode mode) {
 
 void SyncSchedulerImpl::SendInitialSnapshot() {
   DCHECK(CalledOnValidThread());
-  scoped_ptr<SyncSession> dummy(new SyncSession(
-          session_context_, this, SyncSourceInfo()));
+  scoped_ptr<SyncSession> dummy(
+      SyncSession::Build(session_context_, this, SyncSourceInfo()));
   SyncEngineEvent event(SyncEngineEvent::STATUS_CHANGED);
   event.snapshot = dummy->TakeSnapshot();
   session_context_->NotifyListeners(event);
@@ -354,53 +355,55 @@ bool SyncSchedulerImpl::CanRunNudgeJobNow(JobPriority priority) {
   return true;
 }
 
-void SyncSchedulerImpl::ScheduleNudgeAsync(
+void SyncSchedulerImpl::ScheduleLocalNudge(
     const TimeDelta& desired_delay,
-    NudgeSource source, ModelTypeSet types,
+    ModelTypeSet types,
     const tracked_objects::Location& nudge_location) {
   DCHECK(CalledOnValidThread());
-  SDVLOG_LOC(nudge_location, 2)
-      << "Nudge scheduled with delay "
-      << desired_delay.InMilliseconds() << " ms, "
-      << "source " << GetNudgeSourceString(source) << ", "
-      << "types " << ModelTypeSetToString(types);
+  DCHECK(!types.Empty());
 
-  ModelTypeInvalidationMap invalidation_map =
-      ModelTypeSetToInvalidationMap(types, std::string());
-  SyncSchedulerImpl::ScheduleNudgeImpl(desired_delay,
-                                       GetUpdatesFromNudgeSource(source),
-                                       invalidation_map,
-                                       nudge_location);
+  SDVLOG_LOC(nudge_location, 2)
+      << "Scheduling sync because of local change to "
+      << ModelTypeSetToString(types);
+  UpdateNudgeTimeRecords(types);
+  nudge_tracker_.RecordLocalChange(types);
+  ScheduleNudgeImpl(desired_delay, nudge_location);
 }
 
-void SyncSchedulerImpl::ScheduleNudgeWithStatesAsync(
+void SyncSchedulerImpl::ScheduleLocalRefreshRequest(
     const TimeDelta& desired_delay,
-    NudgeSource source, const ModelTypeInvalidationMap& invalidation_map,
+    ModelTypeSet types,
     const tracked_objects::Location& nudge_location) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!types.Empty());
+
   SDVLOG_LOC(nudge_location, 2)
-      << "Nudge scheduled with delay "
-      << desired_delay.InMilliseconds() << " ms, "
-      << "source " << GetNudgeSourceString(source) << ", "
-      << "payloads "
+      << "Scheduling sync because of local refresch request for "
+      << ModelTypeSetToString(types);
+  nudge_tracker_.RecordLocalRefreshRequest(types);
+  ScheduleNudgeImpl(desired_delay, nudge_location);
+}
+
+void SyncSchedulerImpl::ScheduleInvalidationNudge(
+    const TimeDelta& desired_delay,
+    const ModelTypeInvalidationMap& invalidation_map,
+    const tracked_objects::Location& nudge_location) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!invalidation_map.empty());
+
+  SDVLOG_LOC(nudge_location, 2)
+      << "Scheduling sync because we received invalidation for "
       << ModelTypeInvalidationMapToString(invalidation_map);
-
-  SyncSchedulerImpl::ScheduleNudgeImpl(desired_delay,
-                                       GetUpdatesFromNudgeSource(source),
-                                       invalidation_map,
-                                       nudge_location);
+  nudge_tracker_.RecordRemoteInvalidation(invalidation_map);
+  ScheduleNudgeImpl(desired_delay, nudge_location);
 }
-
 
 // TODO(zea): Consider adding separate throttling/backoff for datatype
 // refresh requests.
 void SyncSchedulerImpl::ScheduleNudgeImpl(
     const TimeDelta& delay,
-    GetUpdatesCallerInfo::GetUpdatesSource source,
-    const ModelTypeInvalidationMap& invalidation_map,
     const tracked_objects::Location& nudge_location) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!invalidation_map.empty()) << "Nudge scheduled for no types!";
 
   if (no_scheduling_allowed_) {
     NOTREACHED() << "Illegal to schedule job while session in progress.";
@@ -415,16 +418,7 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
 
   SDVLOG_LOC(nudge_location, 2)
       << "In ScheduleNudgeImpl with delay "
-      << delay.InMilliseconds() << " ms, "
-      << "source " << GetUpdatesSourceString(source) << ", "
-      << "payloads "
-      << ModelTypeInvalidationMapToString(invalidation_map);
-
-  SyncSourceInfo info(source, invalidation_map);
-  UpdateNudgeTimeRecords(info);
-
-  // Coalesce the new nudge information with any existing information.
-  nudge_tracker_.CoalesceSources(info);
+      << delay.InMilliseconds() << " ms";
 
   if (!CanRunNudgeJobNow(NORMAL_PRIORITY))
     return;
@@ -473,18 +467,25 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
 
   DVLOG(2) << "Will run normal mode sync cycle with routing info "
            << ModelSafeRoutingInfoToString(session_context_->routing_info());
-  SyncSession session(session_context_, this, nudge_tracker_.source_info());
-  bool premature_exit = !syncer_->SyncShare(&session, SYNCER_BEGIN, SYNCER_END);
+  scoped_ptr<SyncSession> session(
+      SyncSession::BuildForNudge(
+          session_context_,
+          this,
+          nudge_tracker_.GetSourceInfo(),
+          &nudge_tracker_));
+  bool premature_exit = !syncer_->SyncShare(session.get(),
+                                            SYNCER_BEGIN,
+                                            SYNCER_END);
   AdjustPolling(FORCE_RESET);
 
   bool success = !premature_exit
       && !sessions::HasSyncerError(
-          session.status_controller().model_neutral_state());
+          session->status_controller().model_neutral_state());
 
   if (success) {
     // That cycle took care of any outstanding work we had.
     SDVLOG(2) << "Nudge succeeded.";
-    nudge_tracker_.Reset();
+    nudge_tracker_.RecordSuccessfulSyncCycle();
     scheduled_nudge_time_ = base::TimeTicks();
 
     // If we're here, then we successfully reached the server.  End all backoff.
@@ -492,7 +493,7 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
     NotifyRetryTime(base::Time());
     return;
   } else {
-    HandleFailure(session.status_controller().model_neutral_state());
+    HandleFailure(session->status_controller().model_neutral_state());
   }
 }
 
@@ -511,15 +512,16 @@ bool SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
                              ModelSafeRoutingInfoToInvalidationMap(
                                  session_context_->routing_info(),
                                  std::string()));
-  SyncSession session(session_context_, this, source_info);
-  bool premature_exit = !syncer_->SyncShare(&session,
+  scoped_ptr<SyncSession> session(
+      SyncSession::Build(session_context_, this, source_info));
+  bool premature_exit = !syncer_->SyncShare(session.get(),
                                             DOWNLOAD_UPDATES,
                                             APPLY_UPDATES);
   AdjustPolling(FORCE_RESET);
 
   bool success = !premature_exit
       && !sessions::HasSyncerError(
-          session.status_controller().model_neutral_state());
+          session->status_controller().model_neutral_state());
 
   if (success) {
     SDVLOG(2) << "Configure succeeded.";
@@ -531,7 +533,7 @@ bool SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
     NotifyRetryTime(base::Time());
     return true;
   } else {
-    HandleFailure(session.status_controller().model_neutral_state());
+    HandleFailure(session->status_controller().model_neutral_state());
     return false;
   }
 }
@@ -568,8 +570,9 @@ void SyncSchedulerImpl::DoPollSyncSessionJob() {
 
   SDVLOG(2) << "Polling with routes "
            << ModelSafeRoutingInfoToString(session_context_->routing_info());
-  SyncSession session(session_context_, this, info);
-  syncer_->SyncShare(&session, SYNCER_BEGIN, SYNCER_END);
+  scoped_ptr<SyncSession> session(
+      SyncSession::Build(session_context_, this, info));
+  syncer_->SyncShare(session.get(), SYNCER_BEGIN, SYNCER_END);
 
   AdjustPolling(UPDATE_INTERVAL);
 
@@ -581,27 +584,19 @@ void SyncSchedulerImpl::DoPollSyncSessionJob() {
   }
 }
 
-void SyncSchedulerImpl::UpdateNudgeTimeRecords(const SyncSourceInfo& info) {
+void SyncSchedulerImpl::UpdateNudgeTimeRecords(ModelTypeSet types) {
   DCHECK(CalledOnValidThread());
-
-  // We are interested in recording time between local nudges for datatypes.
-  // TODO(tim): Consider tracking LOCAL_NOTIFICATION as well.
-  if (info.updates_source != GetUpdatesCallerInfo::LOCAL)
-    return;
-
   base::TimeTicks now = TimeTicks::Now();
   // Update timing information for how often datatypes are triggering nudges.
-  for (ModelTypeInvalidationMap::const_iterator iter = info.types.begin();
-       iter != info.types.end();
-       ++iter) {
-    base::TimeTicks previous = last_local_nudges_by_model_type_[iter->first];
-    last_local_nudges_by_model_type_[iter->first] = now;
+  for (ModelTypeSet::Iterator iter = types.First(); iter.Good(); iter.Inc()) {
+    base::TimeTicks previous = last_local_nudges_by_model_type_[iter.Get()];
+    last_local_nudges_by_model_type_[iter.Get()] = now;
     if (previous.is_null())
       continue;
 
 #define PER_DATA_TYPE_MACRO(type_str) \
     SYNC_FREQ_HISTOGRAM("Sync.Freq" type_str, now - previous);
-    SYNC_DATA_TYPE_HISTOGRAM(iter->first);
+    SYNC_DATA_TYPE_HISTOGRAM(iter.Get());
 #undef PER_DATA_TYPE_MACRO
   }
 }
@@ -693,7 +688,7 @@ void SyncSchedulerImpl::TryCanaryJob() {
   if (mode_ == CONFIGURATION_MODE && pending_configure_params_) {
     SDVLOG(2) << "Found pending configure job; will run as canary";
     DoConfigurationSyncSessionJob(CANARY_PRIORITY);
-  } else if (mode_ == NORMAL_MODE && !nudge_tracker_.IsEmpty()) {
+  } else if (mode_ == NORMAL_MODE && nudge_tracker_.IsSyncRequired()) {
     SDVLOG(2) << "Found pending nudge job; will run as canary";
     DoNudgeSyncSessionJob(CANARY_PRIORITY);
   } else {
@@ -782,6 +777,13 @@ void SyncSchedulerImpl::OnReceivedSessionsCommitDelay(
   sessions_commit_delay_ = new_delay;
 }
 
+void SyncSchedulerImpl::OnReceivedClientInvalidationHintBufferSize(int size) {
+  if (size > 0)
+    nudge_tracker_.SetHintBufferSize(size);
+  else
+    NOTREACHED() << "Hint buffer size should be > 0.";
+}
+
 void SyncSchedulerImpl::OnShouldStopSyncingPermanently() {
   DCHECK(CalledOnValidThread());
   SDVLOG(2) << "OnShouldStopSyncingPermanently";
@@ -813,6 +815,10 @@ void SyncSchedulerImpl::OnSyncProtocolError(
 void SyncSchedulerImpl::SetNotificationsEnabled(bool notifications_enabled) {
   DCHECK(CalledOnValidThread());
   session_context_->set_notifications_enabled(notifications_enabled);
+  if (notifications_enabled)
+    nudge_tracker_.OnInvalidationsEnabled();
+  else
+    nudge_tracker_.OnInvalidationsDisabled();
 }
 
 base::TimeDelta SyncSchedulerImpl::GetSessionsCommitDelay() const {

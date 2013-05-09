@@ -720,6 +720,7 @@ base::DictionaryValue* ClientCommandToValue(
   SET_INT32(max_commit_batch_size);
   SET_INT32(sessions_commit_delay_seconds);
   SET_INT32(throttle_delay_seconds);
+  SET_INT32(client_invalidation_hint_buffer_size);
   return value;
 }
 

@@ -36,6 +36,8 @@ class ModelSafeWorker;
 
 namespace sessions {
 
+class NudgeTracker;
+
 class SYNC_EXPORT_PRIVATE SyncSession {
  public:
   // The Delegate services events that occur during the session requiring an
@@ -86,13 +88,27 @@ class SYNC_EXPORT_PRIVATE SyncSession {
     virtual void OnSyncProtocolError(
         const sessions::SyncSessionSnapshot& snapshot) = 0;
 
+    // Called when the server wants to change the number of hints the client
+    // will buffer locally.
+    virtual void OnReceivedClientInvalidationHintBufferSize(int size) = 0;
+
    protected:
     virtual ~Delegate() {}
   };
 
-  SyncSession(SyncSessionContext* context,
-              Delegate* delegate,
-              const SyncSourceInfo& source);
+  // Build a session with a nudge tracker.  Used for sync cycles with origin of
+  // GU_TRIGGER (ie. notification, local change, and/or refresh request)
+  static SyncSession* BuildForNudge(SyncSessionContext* context,
+                                    Delegate* delegate,
+                                    const SyncSourceInfo& source,
+                                    const NudgeTracker* nudge_tracker);
+
+  // Build a session without a nudge tracker.  Used for poll or configure type
+  // sync cycles.
+  static SyncSession* Build(SyncSessionContext* context,
+                            Delegate* delegate,
+                            const SyncSourceInfo& source);
+
   ~SyncSession();
 
   // Builds a thread-safe and read-only copy of the current session state.
@@ -113,7 +129,14 @@ class SYNC_EXPORT_PRIVATE SyncSession {
 
   const SyncSourceInfo& source() const { return source_; }
 
+  const NudgeTracker* nudge_tracker() const { return nudge_tracker_; }
+
  private:
+  SyncSession(SyncSessionContext* context,
+              Delegate* delegate,
+              const SyncSourceInfo& source,
+              const NudgeTracker* nudge_tracker);
+
   // The context for this session, guaranteed to outlive |this|.
   SyncSessionContext* const context_;
 
@@ -125,6 +148,8 @@ class SYNC_EXPORT_PRIVATE SyncSession {
 
   // Our controller for various status and error counters.
   scoped_ptr<StatusController> status_controller_;
+
+  const NudgeTracker* nudge_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSession);
 };

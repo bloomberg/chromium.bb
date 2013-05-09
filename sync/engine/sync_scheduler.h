@@ -83,20 +83,37 @@ class SYNC_EXPORT_PRIVATE SyncScheduler
   // are cancelled.
   virtual void RequestStop(const base::Closure& callback) = 0;
 
-  // The meat and potatoes. Both of these methods will post a delayed task
-  // to attempt the actual nudge (see ScheduleNudgeImpl).
+  // The meat and potatoes. All three of the following methods will post a
+  // delayed task to attempt the actual nudge (see ScheduleNudgeImpl).
+  //
   // NOTE: |desired_delay| is best-effort. If a nudge is already scheduled to
   // depart earlier than Now() + delay, the scheduler can and will prefer to
   // batch the two so that only one nudge is sent (at the earlier time). Also,
   // as always with delayed tasks and timers, it's possible the task gets run
   // any time after |desired_delay|.
-  virtual void ScheduleNudgeAsync(
+
+  // The LocalNudge indicates that we've made a local change, and that the
+  // syncer should plan to commit this to the server some time soon.
+  virtual void ScheduleLocalNudge(
       const base::TimeDelta& desired_delay,
-      NudgeSource source,
       ModelTypeSet types,
       const tracked_objects::Location& nudge_location) = 0;
-  virtual void ScheduleNudgeWithStatesAsync(
-      const base::TimeDelta& desired_delay, NudgeSource source,
+
+  // The LocalRefreshRequest occurs when we decide for some reason to manually
+  // request updates.  This should be used sparingly.  For example, one of its
+  // uses is to fetch the latest tab sync data when it's relevant to the UI on
+  // platforms where tab sync is not registered for invalidations.
+  virtual void ScheduleLocalRefreshRequest(
+      const base::TimeDelta& desired_delay,
+      ModelTypeSet types,
+      const tracked_objects::Location& nudge_location) = 0;
+
+  // Invalidations are notifications the server sends to let us know when other
+  // clients have committed data.  We need to contact the sync server (being
+  // careful to pass along the "hints" delivered with those invalidations) in
+  // order to fetch the update.
+  virtual void ScheduleInvalidationNudge(
+      const base::TimeDelta& desired_delay,
       const ModelTypeInvalidationMap& invalidation_map,
       const tracked_objects::Location& nudge_location) = 0;
 

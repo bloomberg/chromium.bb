@@ -958,8 +958,7 @@ void SyncManagerImpl::RequestNudgeForDataTypes(
       types.First().Get(),
       this);
   allstatus_.IncrementNudgeCounter(NUDGE_SOURCE_LOCAL);
-  scheduler_->ScheduleNudgeAsync(nudge_delay,
-                                 NUDGE_SOURCE_LOCAL,
+  scheduler_->ScheduleLocalNudge(nudge_delay,
                                  types,
                                  nudge_location);
 }
@@ -1262,9 +1261,8 @@ void SyncManagerImpl::OnIncomingInvalidation(
     LOG(WARNING) << "Sync received invalidation without any type information.";
   } else {
     allstatus_.IncrementNudgeCounter(NUDGE_SOURCE_NOTIFICATION);
-    scheduler_->ScheduleNudgeWithStatesAsync(
+    scheduler_->ScheduleInvalidationNudge(
         TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
-        NUDGE_SOURCE_NOTIFICATION,
         type_invalidation_map, FROM_HERE);
     allstatus_.IncrementNotificationsReceived();
     UpdateNotificationInfo(type_invalidation_map);
@@ -1292,27 +1290,22 @@ void SyncManagerImpl::OnIncomingInvalidation(
 
 void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const ModelTypeInvalidationMap& type_invalidation_map =
-      ModelTypeSetToInvalidationMap(types, std::string());
-  if (type_invalidation_map.empty()) {
+  if (types.Empty()) {
     LOG(WARNING) << "Sync received refresh request with no types specified.";
   } else {
     allstatus_.IncrementNudgeCounter(NUDGE_SOURCE_LOCAL_REFRESH);
-    scheduler_->ScheduleNudgeWithStatesAsync(
+    scheduler_->ScheduleLocalRefreshRequest(
         TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
-        NUDGE_SOURCE_LOCAL_REFRESH,
-        type_invalidation_map, FROM_HERE);
+        types, FROM_HERE);
   }
 
   if (js_event_handler_.IsInitialized()) {
     base::DictionaryValue details;
     base::ListValue* changed_types = new base::ListValue();
     details.Set("changedTypes", changed_types);
-    for (ModelTypeInvalidationMap::const_iterator it =
-             type_invalidation_map.begin(); it != type_invalidation_map.end();
-         ++it) {
+    for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
       const std::string& model_type_str =
-          ModelTypeToString(it->first);
+          ModelTypeToString(it.Get());
       changed_types->Append(new base::StringValue(model_type_str));
     }
     details.SetString("source", "LOCAL_INVALIDATION");

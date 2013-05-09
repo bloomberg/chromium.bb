@@ -116,6 +116,7 @@ class SyncerTest : public testing::Test,
   SyncerTest()
       : syncer_(NULL),
         saw_syncer_event_(false),
+        last_client_invalidation_hint_buffer_size_(10),
         traffic_recorder_(0, 0) {
 }
 
@@ -137,6 +138,10 @@ class SyncerTest : public testing::Test,
   virtual void OnReceivedSessionsCommitDelay(
       const base::TimeDelta& new_delay) OVERRIDE {
     last_sessions_commit_delay_seconds_ = new_delay;
+  }
+  virtual void OnReceivedClientInvalidationHintBufferSize(
+      int size) OVERRIDE {
+    last_client_invalidation_hint_buffer_size_ = size;
   }
   virtual void OnShouldStopSyncingPermanently() OVERRIDE {
   }
@@ -171,23 +176,37 @@ class SyncerTest : public testing::Test,
     saw_syncer_event_ = true;
   }
 
-  SyncSession* MakeSession() {
+  void SyncShareNudge() {
     ModelSafeRoutingInfo info;
     GetModelSafeRoutingInfo(&info);
     ModelTypeInvalidationMap invalidation_map =
         ModelSafeRoutingInfoToInvalidationMap(info, std::string());
-    sessions::SyncSourceInfo source_info(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
-                                         invalidation_map);
-    return new SyncSession(context_.get(), this, source_info);
-  }
+    sessions::SyncSourceInfo source_info(
+        sync_pb::GetUpdatesCallerInfo::LOCAL,
+        invalidation_map);
+    // Use our dummy nudge tracker.  These tests won't notice that it hasn't
+    // been tracking anything because the server is mocked out and ignores most
+    // of the content of requests sent by the client.
+    session_.reset(
+        SyncSession::BuildForNudge(context_.get(),
+                                   this,
+                                   source_info,
+                                   &nudge_tracker_));
 
-  void SyncShareNudge() {
-    session_.reset(MakeSession());
     EXPECT_TRUE(syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END));
   }
 
   void SyncShareConfigure() {
-    session_.reset(MakeSession());
+    ModelSafeRoutingInfo info;
+    GetModelSafeRoutingInfo(&info);
+    ModelTypeInvalidationMap invalidation_map =
+        ModelSafeRoutingInfoToInvalidationMap(info, std::string());
+    sessions::SyncSourceInfo source_info(
+        sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
+        invalidation_map);
+    session_.reset(SyncSession::Build(context_.get(),
+                                      this,
+                                      source_info));
     EXPECT_TRUE(
         syncer_->SyncShare(session_.get(), DOWNLOAD_UPDATES, APPLY_UPDATES));
   }
@@ -220,7 +239,6 @@ class SyncerTest : public testing::Test,
             "fake_invalidator_client_id"));
     context_->set_routing_info(routing_info);
     syncer_ = new Syncer();
-    session_.reset(MakeSession());
 
     syncable::ReadTransaction trans(FROM_HERE, directory());
     syncable::Directory::ChildHandles children;
@@ -563,10 +581,12 @@ class SyncerTest : public testing::Test,
   base::TimeDelta last_short_poll_interval_received_;
   base::TimeDelta last_long_poll_interval_received_;
   base::TimeDelta last_sessions_commit_delay_seconds_;
+  int last_client_invalidation_hint_buffer_size_;
   scoped_refptr<ModelSafeWorker> worker_;
 
   ModelTypeSet enabled_datatypes_;
   TrafficRecorder traffic_recorder_;
+  sessions::NudgeTracker nudge_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);
 };
@@ -2242,7 +2262,7 @@ TEST_F(EntryCreatedInNewFolderTest, EntryCreatedInNewFolderMidSync) {
   mock_server_->SetMidCommitCallback(
       base::Bind(&EntryCreatedInNewFolderTest::CreateFolderInBob,
                  base::Unretained(this)));
-  syncer_->SyncShare(session_.get(), COMMIT, SYNCER_END);
+  SyncShareNudge();
   // We loop until no unsynced handles remain, so we will commit both ids.
   EXPECT_EQ(2u, mock_server_->committed_ids().size());
   {
@@ -2480,8 +2500,7 @@ TEST_F(SyncerTest, UnappliedUpdateDuringCommit) {
     entry.Put(SERVER_SPECIFICS, DefaultBookmarkSpecifics());
     entry.Put(IS_DEL, false);
   }
-  syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
-  syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
+  SyncShareNudge();
   EXPECT_EQ(1, session_->status_controller().TotalNumConflictingItems());
   saw_syncer_event_ = false;
 }
@@ -2508,7 +2527,7 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
     entry.Put(IS_UNSYNCED, true);
     existing_metahandle = entry.Get(META_HANDLE);
   }
-  syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
+  SyncShareNudge();
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry newfolder(&trans, CREATE, BOOKMARKS, trans.root_id(), "new");
@@ -2526,7 +2545,7 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
     newfolder.Put(IS_DEL, true);
     existing.Put(IS_DEL, true);
   }
-  syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
+  SyncShareNudge();
   EXPECT_EQ(0, status().num_server_conflicts());
 }
 
@@ -2549,7 +2568,7 @@ TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {
   mock_server_->AddUpdateDirectory(1, 0, "bob", 2, 20,
                                    foreign_cache_guid(), "-1");
   mock_server_->SetLastUpdateDeleted();
-  syncer_->SyncShare(session_.get(), SYNCER_BEGIN, APPLY_UPDATES);
+  SyncShareConfigure();
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry(&trans, syncable::GET_BY_HANDLE, newfolder_metahandle);
@@ -3204,7 +3223,7 @@ TEST_F(SyncerTest, LongChangelistWithApplicationConflict) {
       folder_id, "stuck", 1, 1,
       foreign_cache_guid(), "-99999");
   mock_server_->SetChangesRemaining(depth - 1);
-  syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
+  SyncShareNudge();
 
   // Buffer up a very long series of downloads.
   // We should never be stuck (conflict resolution shouldn't
@@ -3432,6 +3451,7 @@ TEST_F(SyncerTest, TestClientCommandDuringUpdate) {
   command->set_set_sync_poll_interval(8);
   command->set_set_sync_long_poll_interval(800);
   command->set_sessions_commit_delay_seconds(3141);
+  command->set_client_invalidation_hint_buffer_size(11);
   mock_server_->AddUpdateDirectory(1, 0, "in_root", 1, 1,
                                    foreign_cache_guid(), "-1");
   mock_server_->SetGUClientCommand(command);
@@ -3443,11 +3463,13 @@ TEST_F(SyncerTest, TestClientCommandDuringUpdate) {
               last_long_poll_interval_received_);
   EXPECT_TRUE(TimeDelta::FromSeconds(3141) ==
               last_sessions_commit_delay_seconds_);
+  EXPECT_EQ(11, last_client_invalidation_hint_buffer_size_);
 
   command = new ClientCommand();
   command->set_set_sync_poll_interval(180);
   command->set_set_sync_long_poll_interval(190);
   command->set_sessions_commit_delay_seconds(2718);
+  command->set_client_invalidation_hint_buffer_size(9);
   mock_server_->AddUpdateDirectory(1, 0, "in_root", 1, 1,
                                    foreign_cache_guid(), "-1");
   mock_server_->SetGUClientCommand(command);
@@ -3459,6 +3481,7 @@ TEST_F(SyncerTest, TestClientCommandDuringUpdate) {
               last_long_poll_interval_received_);
   EXPECT_TRUE(TimeDelta::FromSeconds(2718) ==
               last_sessions_commit_delay_seconds_);
+  EXPECT_EQ(9, last_client_invalidation_hint_buffer_size_);
 }
 
 TEST_F(SyncerTest, TestClientCommandDuringCommit) {
@@ -3468,6 +3491,7 @@ TEST_F(SyncerTest, TestClientCommandDuringCommit) {
   command->set_set_sync_poll_interval(8);
   command->set_set_sync_long_poll_interval(800);
   command->set_sessions_commit_delay_seconds(3141);
+  command->set_client_invalidation_hint_buffer_size(11);
   CreateUnsyncedDirectory("X", "id_X");
   mock_server_->SetCommitClientCommand(command);
   SyncShareNudge();
@@ -3478,11 +3502,13 @@ TEST_F(SyncerTest, TestClientCommandDuringCommit) {
               last_long_poll_interval_received_);
   EXPECT_TRUE(TimeDelta::FromSeconds(3141) ==
               last_sessions_commit_delay_seconds_);
+  EXPECT_EQ(11, last_client_invalidation_hint_buffer_size_);
 
   command = new ClientCommand();
   command->set_set_sync_poll_interval(180);
   command->set_set_sync_long_poll_interval(190);
   command->set_sessions_commit_delay_seconds(2718);
+  command->set_client_invalidation_hint_buffer_size(9);
   CreateUnsyncedDirectory("Y", "id_Y");
   mock_server_->SetCommitClientCommand(command);
   SyncShareNudge();
@@ -3493,6 +3519,7 @@ TEST_F(SyncerTest, TestClientCommandDuringCommit) {
               last_long_poll_interval_received_);
   EXPECT_TRUE(TimeDelta::FromSeconds(2718) ==
               last_sessions_commit_delay_seconds_);
+  EXPECT_EQ(9, last_client_invalidation_hint_buffer_size_);
 }
 
 TEST_F(SyncerTest, EnsureWeSendUpOldParent) {

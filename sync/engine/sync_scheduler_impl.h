@@ -56,13 +56,16 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   virtual bool ScheduleConfiguration(
       const ConfigurationParams& params) OVERRIDE;
   virtual void RequestStop(const base::Closure& callback) OVERRIDE;
-  virtual void ScheduleNudgeAsync(
+  virtual void ScheduleLocalNudge(
       const base::TimeDelta& desired_delay,
-      NudgeSource source,
       ModelTypeSet types,
       const tracked_objects::Location& nudge_location) OVERRIDE;
-  virtual void ScheduleNudgeWithStatesAsync(
-      const base::TimeDelta& desired_delay, NudgeSource source,
+  virtual void ScheduleLocalRefreshRequest(
+      const base::TimeDelta& desired_delay,
+      ModelTypeSet types,
+      const tracked_objects::Location& nudge_location) OVERRIDE;
+  virtual void ScheduleInvalidationNudge(
+      const base::TimeDelta& desired_delay,
       const ModelTypeInvalidationMap& invalidation_map,
       const tracked_objects::Location& nudge_location) OVERRIDE;
   virtual void SetNotificationsEnabled(bool notifications_enabled) OVERRIDE;
@@ -82,6 +85,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
       const base::TimeDelta& new_interval) OVERRIDE;
   virtual void OnReceivedSessionsCommitDelay(
       const base::TimeDelta& new_delay) OVERRIDE;
+  virtual void OnReceivedClientInvalidationHintBufferSize(int size) OVERRIDE;
   virtual void OnShouldStopSyncingPermanently() OVERRIDE;
   virtual void OnSyncProtocolError(
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
@@ -187,8 +191,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // save it for later, depending on the scheduler's current state.
   void ScheduleNudgeImpl(
       const base::TimeDelta& delay,
-      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-      const ModelTypeInvalidationMap& invalidation_map,
       const tracked_objects::Location& nudge_location);
 
   // Returns true if the client is currently in exponential backoff.
@@ -222,7 +224,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // SyncScheduler is the ultimate choke-point for all such invocations (with
   // and without InvalidationState variants, all NudgeSources, etc) and as such
   // is the most flexible place to do this bookkeeping.
-  void UpdateNudgeTimeRecords(const sessions::SyncSourceInfo& info);
+  void UpdateNudgeTimeRecords(ModelTypeSet types);
 
   virtual void OnActionableError(const sessions::SyncSessionSnapshot& snapshot);
 

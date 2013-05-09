@@ -10,6 +10,7 @@
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/internal_api/public/base/model_type_invalidation_map.h"
+#include "sync/sessions/nudge_tracker.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/syncable_read_transaction.h"
@@ -50,6 +51,40 @@ SyncerError HandleGetEncryptionKeyResponse(
   return (success ? SYNCER_OK : SERVER_RESPONSE_VALIDATION_FAILED);
 }
 
+sync_pb::SyncEnums::GetUpdatesOrigin ConvertGetUpdateSourceToOrigin(
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
+  switch (source) {
+    // Configurations:
+    case sync_pb::GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE:
+      return sync_pb::SyncEnums::NEWLY_SUPPORTED_DATATYPE;
+    case sync_pb::GetUpdatesCallerInfo::MIGRATION:
+      return sync_pb::SyncEnums::MIGRATION;
+    case sync_pb::GetUpdatesCallerInfo::RECONFIGURATION:
+      return sync_pb::SyncEnums::RECONFIGURATION;
+    case sync_pb::GetUpdatesCallerInfo::NEW_CLIENT:
+      return sync_pb::SyncEnums::NEW_CLIENT;
+
+    // Poll, which never overlaps with anything else:
+    case sync_pb::GetUpdatesCallerInfo::PERIODIC:
+      return sync_pb::SyncEnums::PERIODIC;
+
+    // Overlapping normal-mode sources (fall-through is intentional):
+    case sync_pb::GetUpdatesCallerInfo::LOCAL:
+    case sync_pb::GetUpdatesCallerInfo::NOTIFICATION:
+    case sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH:
+      return sync_pb::SyncEnums::GU_TRIGGER;
+
+    // Deprecated or invalid (fall-through is intentional):
+    case sync_pb::GetUpdatesCallerInfo::UNKNOWN:
+    case sync_pb::GetUpdatesCallerInfo::FIRST_UPDATE:
+    case sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION:
+      NOTREACHED() << "Invalid source: " << source;
+      return sync_pb::SyncEnums::UNKNOWN_ORIGIN;
+  }
+  NOTREACHED();
+  return sync_pb::SyncEnums::UNKNOWN_ORIGIN;
+}
+
 }  // namespace
 
 SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
@@ -63,6 +98,9 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
       client_to_server_message.mutable_get_updates();
   get_updates->set_create_mobile_bookmarks_folder(
       create_mobile_bookmarks_folder_);
+
+  sync_pb::SyncEnums::GetUpdatesOrigin origin =
+      ConvertGetUpdateSourceToOrigin(session->source().updates_source);
 
   syncable::Directory* dir = session->context()->directory();
 
@@ -89,6 +127,14 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
     if (find_it != invalidation_map.end()) {
       progress_marker->set_notification_hint(find_it->second.payload);
     }
+
+    if (origin == sync_pb::SyncEnums::GU_TRIGGER) {
+      session->nudge_tracker()->FillProtoMessage(
+          it.Get(),
+          progress_marker->mutable_get_update_triggers());
+    } else {
+      DCHECK(!session->nudge_tracker());
+    }
   }
 
   bool need_encryption_key = false;
@@ -111,6 +157,9 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
       session->source().updates_source);
   get_updates->mutable_caller_info()->set_notifications_enabled(
       session->context()->notifications_enabled());
+
+  // Set the new and improved version of source, too.
+  get_updates->set_get_updates_origin(origin);
 
   DebugInfo* debug_info = client_to_server_message.mutable_debug_info();
 

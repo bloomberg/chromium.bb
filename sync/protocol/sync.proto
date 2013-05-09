@@ -401,7 +401,7 @@ message CommitMessage {
 // This message communicates additional per-type information related to
 // requests with origin GU_TRIGGER.  This message is not relevant when any
 // other origin value is used.
-// Introduced in M28.
+// Introduced in M29.
 message GetUpdateTriggers {
   // An opaque-to-the-client string of bytes, received through a notification,
   // that the server may interpret as a hint about the location of the latest
@@ -411,12 +411,12 @@ message GetUpdateTriggers {
   // name defined in the progress marker, but the client and server should
   // support both until it's safe to deprecate the old one.
   //
-  // This field was introduced in M28.
+  // This field was introduced in M29.
   repeated string notification_hint = 1;
 
   // This flag is set if the client was forced to drop hints because the number
   // of queued hints exceeded its limit.  The oldest hints will be discarded
-  // first.  Introduced in M28.
+  // first.  Introduced in M29.
   optional bool client_dropped_hints = 2;
 
   // This flag is set if the invalidation server reports that it may have
@@ -442,7 +442,7 @@ message GetUpdateTriggers {
   // unset only after we've experienced one successful sync cycle while
   // notifications were enabled.
   //
-  // This flag was introduced in M28.
+  // This flag was introduced in M29.
   optional bool invalidations_out_of_sync = 3;
 
   // This counts the number of times the syncer has been asked to commit
@@ -450,7 +450,7 @@ message GetUpdateTriggers {
   // nudges may not be related to the actual number of items modified.  It
   // often correlates with the number of user actions, but that's not always
   // the case.
-  // Introduced in M28.
+  // Introduced in M29.
   optional int64 local_modification_nudges = 4;
 
   // This counts the number of times the syncer has been explicitly asked to
@@ -460,7 +460,7 @@ message GetUpdateTriggers {
   // the most common (only?) source of refresh requests is when a user opens
   // the new tab page on a platform that does not support sessions
   // invalidations.
-  // Introduced in M28.
+  // Introduced in M29.
   optional int64 datatype_refresh_nudges = 5;
 }
 
@@ -505,7 +505,7 @@ message DataTypeProgressMarker {
   // that the server may interpret as a hint about the location of the latest
   // version of the data for this type.
   //
-  // Deprecated in M28.  We should use the repeated field version in the
+  // Deprecated in M29.  We should use the repeated field version in the
   // PerClientTypeState instead.
   optional string notification_hint = 4;
 
@@ -524,7 +524,7 @@ message GetUpdatesMessage {
   optional int64 from_timestamp = 1;
 
   // Indicates the reason for the GetUpdatesMessage.
-  // Deprecated in M28.  We should eventually rely on GetUpdatesOrigin instead.
+  // Deprecated in M29.  We should eventually rely on GetUpdatesOrigin instead.
   // Newer clients will support both systems during the transition period.
   optional GetUpdatesCallerInfo caller_info = 2;
 
@@ -580,7 +580,7 @@ message GetUpdatesMessage {
 
   // This value is an udpated version of the GetUpdatesCallerInfo's
   // GetUpdatesSource.  It describes the reason for the GetUpdate request.
-  // Introduced in M28.
+  // Introduced in M29.
   optional SyncEnums.GetUpdatesOrigin get_updates_origin = 9;
 };
 

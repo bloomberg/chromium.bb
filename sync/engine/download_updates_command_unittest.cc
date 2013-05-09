@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 #include "sync/engine/download_updates_command.h"
-#include "sync/protocol/autofill_specifics.pb.h"
-#include "sync/protocol/bookmark_specifics.pb.h"
-#include "sync/protocol/preference_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/sessions/nudge_tracker.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/syncer_command_test.h"
 
@@ -41,21 +39,42 @@ class DownloadUpdatesCommandTest : public SyncerCommandTest {
 
 TEST_F(DownloadUpdatesCommandTest, ExecuteNoStates) {
   ConfigureMockServerConnection();
+
+  sessions::NudgeTracker nudge_tracker;
+  nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
+
   mock_server()->ExpectGetUpdatesRequestTypes(
       GetRoutingInfoTypes(routing_info()));
-  command_.ExecuteImpl(session());
+  command_.ExecuteImpl(
+      sessions::SyncSession::BuildForNudge(context(),
+                                           delegate(),
+                                           nudge_tracker.GetSourceInfo(),
+                                           &nudge_tracker));
 }
 
 TEST_F(DownloadUpdatesCommandTest, ExecuteWithStates) {
   ConfigureMockServerConnection();
-  sessions::SyncSourceInfo source;
-  source.types[AUTOFILL].payload = "autofill_payload";
-  source.types[BOOKMARKS].payload = "bookmark_payload";
-  source.types[PREFERENCES].payload = "preferences_payload";
+
+  sessions::NudgeTracker nudge_tracker;
+  nudge_tracker.RecordRemoteInvalidation(
+      ModelTypeSetToInvalidationMap(ModelTypeSet(AUTOFILL),
+                                    "autofill_payload"));
+  nudge_tracker.RecordRemoteInvalidation(
+      ModelTypeSetToInvalidationMap(ModelTypeSet(BOOKMARKS),
+                                    "bookmark_payload"));
+  nudge_tracker.RecordRemoteInvalidation(
+      ModelTypeSetToInvalidationMap(ModelTypeSet(PREFERENCES),
+                                    "preferences_payload"));
+
   mock_server()->ExpectGetUpdatesRequestTypes(
       GetRoutingInfoTypes(routing_info()));
-  mock_server()->ExpectGetUpdatesRequestStates(source.types);
-  command_.ExecuteImpl(session(source));
+  mock_server()->ExpectGetUpdatesRequestStates(
+      nudge_tracker.GetSourceInfo().types);
+  command_.ExecuteImpl(
+      sessions::SyncSession::BuildForNudge(context(),
+                                           delegate(),
+                                           nudge_tracker.GetSourceInfo(),
+                                           &nudge_tracker));
 }
 
 TEST_F(DownloadUpdatesCommandTest, VerifyAppendDebugInfo) {

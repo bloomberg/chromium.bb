@@ -435,6 +435,11 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
           base::TimeDelta::FromSeconds(
               command.sessions_commit_delay_seconds()));
     }
+
+    if (command.has_client_invalidation_hint_buffer_size()) {
+      session->delegate()->OnReceivedClientInvalidationHintBufferSize(
+          command.client_invalidation_hint_buffer_size());
+    }
   }
 
   // Now do any special handling for the error type and decide on the return

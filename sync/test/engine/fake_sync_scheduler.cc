@@ -18,17 +18,22 @@ void FakeSyncScheduler::RequestStop(const base::Closure& callback) {
   created_on_loop_->PostTask(FROM_HERE, callback);
 }
 
-void FakeSyncScheduler::ScheduleNudgeAsync(
-     const base::TimeDelta& delay,
-     NudgeSource source,
-     ModelTypeSet types,
-     const tracked_objects::Location& nudge_location) {
+void FakeSyncScheduler::ScheduleLocalNudge(
+    const base::TimeDelta& desired_delay,
+    ModelTypeSet types,
+    const tracked_objects::Location& nudge_location) {
 }
 
-void FakeSyncScheduler::ScheduleNudgeWithStatesAsync(
-     const base::TimeDelta& delay, NudgeSource source,
-     const ModelTypeInvalidationMap& invalidation_map,
-     const tracked_objects::Location& nudge_location) {
+void FakeSyncScheduler::ScheduleLocalRefreshRequest(
+    const base::TimeDelta& desired_delay,
+    ModelTypeSet types,
+    const tracked_objects::Location& nudge_location) {
+}
+
+void FakeSyncScheduler::ScheduleInvalidationNudge(
+    const base::TimeDelta& desired_delay,
+    const ModelTypeInvalidationMap& invalidation_map,
+    const tracked_objects::Location& nudge_location) {
 }
 
 bool FakeSyncScheduler::ScheduleConfiguration(
@@ -69,6 +74,9 @@ void FakeSyncScheduler::OnReceivedLongPollIntervalUpdate(
 
 void FakeSyncScheduler::OnReceivedSessionsCommitDelay(
      const base::TimeDelta& new_delay) {
+}
+
+void FakeSyncScheduler::OnReceivedClientInvalidationHintBufferSize(int size) {
 }
 
 void FakeSyncScheduler::OnShouldStopSyncingPermanently() {
