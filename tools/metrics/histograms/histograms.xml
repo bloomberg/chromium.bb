@@ -4694,6 +4694,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Platform.KernelWarningHashes">
+  <summary>
+    The 32-bit hash of a kernel warning.  This is the hash of the
+    &quot;file:line&quot; string corresponding to the location of the warning,
+    for instance: &quot;/mnt/host/source/src/third_party/kernel/files/drivers
+    /gpu/drm/i915/intel_dp.c:351&quot; (ignore spurious spaces).  The hash is
+    produced by this code: while (*string) hash = (hash &lt;&lt; 5) + hash +
+    *string++;  Separately each warning is also collected (with its hash) via
+    the crash reporter, but only its first occurrence in each boot session.
+    Contact semenzato@ for further info.
+  </summary>
+</histogram>
+
 <histogram name="Platform.LotIdEnum" enum="Exynos5250LotIdEnum">
   <summary>
     Chrome OS (ARM Chromebooks using Exynos 5250 only) indication about whether
