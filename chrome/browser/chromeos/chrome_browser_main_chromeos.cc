@@ -618,6 +618,14 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   storage_monitor_.reset(new StorageMonitorCros());
 
+  // Make sure that wallpaper boot transition and other delays in OOBE
+  // are disabled for tests and kiosk app launch by default.
+  // Individual tests may enable them if they want.
+  if (parsed_command_line().HasSwitch(::switches::kTestType) ||
+      ShouldAutoLaunchKioskApp(parsed_command_line())) {
+    WizardController::SetZeroDelays();
+  }
+
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
 }
@@ -643,12 +651,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // configuration before login.
   g_browser_process->browser_policy_connector()->
       GetNetworkConfigurationUpdater();
-
-  // Make sure that wallpaper boot transition and other delays in OOBE
-  // are disabled for tests by default.
-  // Individual tests may enable them if they want.
-  if (parsed_command_line().HasSwitch(::switches::kTestType))
-    WizardController::SetZeroDelays();
 
   // Start loading the machine statistics. Note: if we start loading machine
   // statistics early in PreEarlyInitialization() then the crossystem tool
