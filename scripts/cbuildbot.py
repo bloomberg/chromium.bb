@@ -1329,7 +1329,7 @@ def main(argv):
   # Sanity check of buildroot- specifically that it's not pointing into the
   # midst of an existing repo since git-repo doesn't support nesting.
   if (not repository.IsARepoRoot(options.buildroot) and
-      repository.InARepoRepository(options.buildroot)):
+      git.FindRepoDir(options.buildroot)):
     parser.error('Configured buildroot %s points into a repository checkout, '
                  'rather than the root of it.  This is not supported.'
                  % options.buildroot)

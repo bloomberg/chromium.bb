@@ -27,37 +27,9 @@ class SrcCheckOutException(Exception):
   pass
 
 
-def InARepoRepository(directory, require_project=False):
-  """Returns True if directory is part of a repo checkout.
-
-  Args:
-    directory: Path to check.
-    require_project: Whether to require that directory is inside a valid
-     project in the repo root.
-  """
-  directory = os.path.abspath(directory)
-  while not os.path.isdir(directory):
-    directory = os.path.dirname(directory)
-
-  if require_project:
-    cmd = ['repo', 'forall', '.', '-c', 'true']
-  else:
-    cmd = ['repo']
-
-  output = cros_build_lib.RunCommand(
-      cmd, error_code_ok=True, redirect_stdout=True, redirect_stderr=True,
-      cwd=directory, print_cmd=False)
-  return output.returncode == 0
-
-
 def IsARepoRoot(directory):
   """Returns True if directory is the root of a repo checkout."""
-  # Check for the underlying git-repo checkout.  If it exists, it's
-  # definitely the repo root.  If it doesn't, it may be an aborted
-  # checkout- either way it isn't usable.
-  repo_dir = os.path.join(directory, '.repo')
-  return (os.path.isdir(os.path.join(repo_dir, 'repo')) and
-          os.path.isdir(os.path.join(repo_dir, 'manifests')))
+  return os.path.exists(os.path.join(directory, '.repo'))
 
 
 def IsInternalRepoCheckout(root):
@@ -173,7 +145,7 @@ class RepoRepository(object):
 
     # If the repo exists already, force a selfupdate as the first step.
     self._repo_update_needed = IsARepoRoot(self.directory)
-    if not self._repo_update_needed and InARepoRepository(self.directory):
+    if not self._repo_update_needed and git.FindRepoDir(self.directory):
       raise ValueError('Given directory %s is not the root of a repository.'
                        % self.directory)
 

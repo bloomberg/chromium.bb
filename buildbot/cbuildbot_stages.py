@@ -872,7 +872,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     if self._build_config['master']:
       try:
         # In order to acquire a pool, we need an initialized buildroot.
-        if not repository.InARepoRepository(self.repo.directory):
+        if not git.FindRepoDir(self.repo.directory):
           self.repo.Initialize()
 
         pool = validation_pool.ValidationPool.AcquirePool(
