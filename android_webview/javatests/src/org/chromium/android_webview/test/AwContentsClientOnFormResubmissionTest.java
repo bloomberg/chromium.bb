@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.apache.http.util.EncodingUtils;
 import org.chromium.android_webview.AwContents;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -80,8 +81,11 @@ public class AwContentsClientOnFormResubmissionTest extends AwTestBase {
         super.tearDown();
     }
 
+/*
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
+*/
+    @DisabledTest
     public void testResend() throws Throwable {
         mContentsClient.setResubmit(true);
         doReload();
