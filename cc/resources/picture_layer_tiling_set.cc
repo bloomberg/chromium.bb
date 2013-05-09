@@ -45,9 +45,15 @@ void PictureLayerTilingSet::AddTilingsToMatchScales(
     float contents_scale = other.tilings_[i]->contents_scale();
     if (contents_scale < minimum_contents_scale)
       continue;
-    tilings_.push_back(PictureLayerTiling::Create(contents_scale,
-                                                  layer_bounds_,
-                                                  client_));
+    scoped_ptr<PictureLayerTiling> new_tiling = PictureLayerTiling::Create(
+        contents_scale,
+        layer_bounds_,
+        client_);
+    // We need to copy the resolution to ensure that the information is not
+    // lost on this tiling. This is safe, since we know the current set begins
+    // empty (ie we will not end up with multiple HIGH RES tilings).
+    new_tiling->set_resolution(other.tilings_[i]->resolution());
+    tilings_.push_back(new_tiling.Pass());
   }
   tilings_.sort(LargestToSmallestScaleFunctor());
 }
