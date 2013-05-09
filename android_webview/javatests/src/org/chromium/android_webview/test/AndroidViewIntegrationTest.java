@@ -15,6 +15,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwLayoutSizer;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -124,9 +125,12 @@ public class AndroidViewIntegrationTest extends AwTestBase {
      * view (since the user can't see it anyway) and only do so after the view's size is non-zero.
      * Such behavior is unacceptable for the WebView and this test is to ensure that such behavior
      * is not re-introduced.
+     *
+     * @SmallTest
+     * @Feature({"AndroidWebView"})
+     * crbug.com/239439
      */
-    @SmallTest
-    @Feature({"AndroidWebView"})
+    @DisabledTest
     public void testZeroByZeroViewLoadsContent() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView = createCustomTestContainerViewOnMainSync(
@@ -146,9 +150,12 @@ public class AndroidViewIntegrationTest extends AwTestBase {
      *
      * This makes sure that any optimizations related to the view's visibility don't inhibit
      * the ability to load pages. Many applications keep the WebView hidden when it's loading.
+     *
+     * @SmallTest
+     * @Feature({"AndroidWebView"})
+     * crbug.com/239439
      */
-    @SmallTest
-    @Feature({"AndroidWebView"})
+    @DisabledTest
     public void testInvisibleViewLoadsContent() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView = createCustomTestContainerViewOnMainSync(
