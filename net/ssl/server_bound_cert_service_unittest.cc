@@ -28,18 +28,21 @@ void FailTest(int /* result */) {
 }
 
 class ServerBoundCertServiceTest : public testing::Test {
+ public:
+  ServerBoundCertServiceTest()
+      : sequenced_worker_pool_(new base::SequencedWorkerPool(
+            3, "ServerBoundCertServiceTest")),
+        service_(new ServerBoundCertService(
+            new DefaultServerBoundCertStore(NULL),
+            sequenced_worker_pool_)) {
+  }
+
+  virtual ~ServerBoundCertServiceTest() {
+    if (sequenced_worker_pool_)
+      sequenced_worker_pool_->Shutdown();
+  }
+
  protected:
-  virtual void SetUp() OVERRIDE {
-    sequenced_worker_pool_ = new base::SequencedWorkerPool(
-        3, "ServerBoundCertServiceTest");
-    service_.reset(new ServerBoundCertService(
-        new DefaultServerBoundCertStore(NULL), sequenced_worker_pool_));
-  }
-
-  virtual void TearDown() OVERRIDE {
-    sequenced_worker_pool_->Shutdown();
-  }
-
   scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool_;
   scoped_ptr<ServerBoundCertService> service_;
 };
@@ -419,6 +422,38 @@ TEST_F(ServerBoundCertServiceTest, DestructionWithPendingRequest) {
   MessageLoop::current()->RunUntilIdle();
 
   // If we got here without crashing or a valgrind error, it worked.
+}
+
+// Tests that shutting down the sequenced worker pool and then making new
+// requests gracefully fails.
+// This is a regression test for http://crbug.com/236387
+TEST_F(ServerBoundCertServiceTest, RequestAfterPoolShutdown) {
+  // Shutdown the pool immediately.
+  sequenced_worker_pool_->Shutdown();
+  sequenced_worker_pool_ = NULL;
+
+  // Ensure any shutdown code is processed.
+  MessageLoop::current()->RunUntilIdle();
+
+  // Make a request that will force synchronous completion.
+  std::string host("encrypted.google.com");
+  SSLClientCertType type;
+  std::string private_key_info, der_cert;
+  int error;
+  std::vector<uint8> types;
+  types.push_back(CLIENT_CERT_ECDSA_SIGN);
+  ServerBoundCertService::RequestHandle request_handle;
+
+  error = service_->GetDomainBoundCert(host,
+                                       types,
+                                       &type,
+                                       &private_key_info,
+                                       &der_cert,
+                                       base::Bind(&FailTest),
+                                       &request_handle);
+  // If we got here without crashing or a valgrind error, it worked.
+  ASSERT_EQ(ERR_INSUFFICIENT_RESOURCES, error);
+  EXPECT_FALSE(request_handle.is_active());
 }
 
 // Tests that simultaneous creation of different certs works.

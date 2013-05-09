@@ -253,6 +253,9 @@ class ServerBoundCertServiceWorker {
         callback_(callback) {
   }
 
+  // Starts the worker on |task_runner|. If the worker fails to start, such as
+  // if the task runner is shutting down, then it will take care of deleting
+  // itself.
   bool Start(const scoped_refptr<base::TaskRunner>& task_runner) {
     DCHECK(origin_loop_->RunsTasksOnCurrentThread());
 
@@ -495,13 +498,13 @@ int ServerBoundCertService::GetDomainBoundCert(
   // considered valid.
   base::Time expiration_time;
   if (server_bound_cert_store_->GetServerBoundCert(
-      domain,
-      type,
-      &expiration_time /* ignored */,
-      private_key,
-      cert,
-      base::Bind(&ServerBoundCertService::GotServerBoundCert,
-                 weak_ptr_factory_.GetWeakPtr()))) {
+          domain,
+          type,
+          &expiration_time /* ignored */,
+          private_key,
+          cert,
+          base::Bind(&ServerBoundCertService::GotServerBoundCert,
+                     weak_ptr_factory_.GetWeakPtr()))) {
     if (IsSupportedCertType(*type)) {
       // Sync lookup found a valid cert.
       DVLOG(1) << "Cert store had valid cert for " << domain
@@ -521,7 +524,6 @@ int ServerBoundCertService::GetDomainBoundCert(
         base::Bind(&ServerBoundCertService::GeneratedServerBoundCert,
                    weak_ptr_factory_.GetWeakPtr()));
     if (!worker->Start(task_runner_)) {
-      delete worker;
       // TODO(rkn): Log to the NetLog.
       LOG(ERROR) << "ServerBoundCertServiceWorker couldn't be started.";
       RecordGetDomainBoundCertResult(WORKER_FAILURE);
@@ -576,7 +578,6 @@ void ServerBoundCertService::GotServerBoundCert(
       base::Bind(&ServerBoundCertService::GeneratedServerBoundCert,
                  weak_ptr_factory_.GetWeakPtr()));
   if (!worker->Start(task_runner_)) {
-    delete worker;
     // TODO(rkn): Log to the NetLog.
     LOG(ERROR) << "ServerBoundCertServiceWorker couldn't be started.";
     HandleResult(ERR_INSUFFICIENT_RESOURCES,
