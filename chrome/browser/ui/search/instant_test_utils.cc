@@ -77,8 +77,6 @@ void InstantTestBase::SetupInstant(Browser* browser) {
   service->Add(template_url);  // Takes ownership of |template_url|.
   service->SetDefaultSearchProvider(template_url);
 
-  browser_->profile()->GetPrefs()->SetBoolean(prefs::kInstantEnabled, true);
-
   // TODO(shishir): Fix this ugly hack.
   instant()->SetInstantEnabled(false, true);
   instant()->SetInstantEnabled(true, false);

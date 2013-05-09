@@ -49,19 +49,13 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
       instant_unload_handler_(browser),
       initialized_theme_info_(false) {
 
-  // In one mode of the InstantExtended experiments, the kInstantExtendedEnabled
-  // preference's default value is set to the existing value of kInstantEnabled.
-  // Because this requires reading the value of the kInstantEnabled value, we
-  // reset the default for kInstantExtendedEnabled here.
+  // TODO(sreeram): Perhaps this can be removed, if field trial info is
+  // available before we need to register the pref.
   chrome::SetInstantExtendedPrefDefault(profile());
 
   profile_pref_registrar_.Init(profile()->GetPrefs());
   profile_pref_registrar_.Add(
-      prefs::kInstantEnabled,
-      base::Bind(&BrowserInstantController::ResetInstant,
-                 base::Unretained(this)));
-  profile_pref_registrar_.Add(
-      prefs::kInstantExtendedEnabled,
+      prefs::kSearchInstantEnabled,
       base::Bind(&BrowserInstantController::ResetInstant,
                  base::Unretained(this)));
   profile_pref_registrar_.Add(
@@ -236,11 +230,6 @@ void BrowserInstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
 }
 
 void BrowserInstantController::ResetInstant(const std::string& pref_name) {
-  // Update the default value of the kInstantExtendedEnabled pref to match the
-  // value of the kInstantEnabled pref, if necessary.
-  if (pref_name == prefs::kInstantEnabled)
-    chrome::SetInstantExtendedPrefDefault(profile());
-
   bool instant_checkbox_checked = chrome::IsInstantCheckboxChecked(profile());
   bool use_local_overlay_only =
       chrome::IsLocalOnlyInstantExtendedAPIEnabled() ||

@@ -205,7 +205,8 @@ void SearchProviderTest::SetUp() {
   data.short_name = ASCIIToUTF16("t");
   data.SetURL("http://defaultturl/{searchTerms}");
   data.suggestions_url = "http://defaultturl2/{searchTerms}";
-  data.instant_url = "http://does/not/exist";
+  data.instant_url = "http://does/not/exist?strk=1";
+  data.search_terms_replacement_key = "strk";
   default_t_url_ = new TemplateURL(&profile_, data);
   turl_model->Add(default_t_url_);
   turl_model->SetDefaultSearchProvider(default_t_url_);
@@ -285,7 +286,7 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
   QueryForInput(text, false, false);
   profile_.BlockUntilHistoryProcessesPendingRequests();
   ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
-  EXPECT_NE(chrome::IsInstantEnabled(&profile_), provider_->done());
+  EXPECT_NE(chrome::IsInstantExtendedAPIEnabled(), provider_->done());
   if (!wyt_match)
     return;
   ASSERT_GE(provider_->matches().size(), 1u);
@@ -511,8 +512,7 @@ TEST_F(SearchProviderTest, DontSendPrivateDataToSuggest) {
 
 // Make sure FinalizeInstantQuery works.
 TEST_F(SearchProviderTest, FinalizeInstantQuery) {
-  PrefService* service = profile_.GetPrefs();
-  service->SetBoolean(prefs::kInstantEnabled, true);
+  chrome::EnableInstantExtendedAPIForTesting();
 
   ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("foo"),
                                                       NULL));
@@ -547,14 +547,14 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
           &wyt_match));
   EXPECT_TRUE(wyt_match.description.empty());
 
-  // The Instant search should be more relevant.
-  EXPECT_GT(instant_match.relevance, wyt_match.relevance);
+  // Instant search suggestions are never inline autocompleted, so they should
+  // score less than the WYT match.
+  EXPECT_LT(instant_match.relevance, wyt_match.relevance);
 }
 
 // Make sure FinalizeInstantQuery works with URL suggestions.
 TEST_F(SearchProviderTest, FinalizeInstantURL) {
-  PrefService* service = profile_.GetPrefs();
-  service->SetBoolean(prefs::kInstantEnabled, true);
+  chrome::EnableInstantExtendedAPIForTesting();
 
   ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("ex"),
                                                       NULL));
@@ -598,8 +598,7 @@ TEST_F(SearchProviderTest, FinalizeInstantURL) {
 // "example.co" url-what-you-typed will displace the Instant suggestion for
 // "example.com".
 TEST_F(SearchProviderTest, FinalizeInstantURLWithURLText) {
-  PrefService* service = profile_.GetPrefs();
-  service->SetBoolean(prefs::kInstantEnabled, true);
+  chrome::EnableInstantExtendedAPIForTesting();
 
   ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(
       ASCIIToUTF16("example.co"), NULL));
@@ -634,8 +633,7 @@ TEST_F(SearchProviderTest, FinalizeInstantURLWithURLText) {
 // Make sure that if FinalizeInstantQuery is invoked before suggest results
 // return, the suggest text from FinalizeInstantQuery is remembered.
 TEST_F(SearchProviderTest, RememberInstantQuery) {
-  PrefService* service = profile_.GetPrefs();
-  service->SetBoolean(prefs::kInstantEnabled, true);
+  chrome::EnableInstantExtendedAPIForTesting();
 
   QueryForInput(ASCIIToUTF16("foo"), false, false);
 
@@ -674,8 +672,7 @@ TEST_F(SearchProviderTest, RememberInstantQuery) {
 // Make sure that if trailing whitespace is added to the text supplied to
 // AutocompleteInput the default suggest text is cleared.
 TEST_F(SearchProviderTest, DifferingText) {
-  PrefService* service = profile_.GetPrefs();
-  service->SetBoolean(prefs::kInstantEnabled, true);
+  chrome::EnableInstantExtendedAPIForTesting();
 
   ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("foo"),
                                                       NULL));

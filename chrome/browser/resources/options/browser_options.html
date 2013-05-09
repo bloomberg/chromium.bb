@@ -145,17 +145,14 @@
         <div class="checkbox" guest-visibility="disabled">
           <span class="controlled-setting-with-label">
             <input id="instant-enabled-control" type="checkbox"
-                metric="Options_InstantEnabled"
-                i18n-values="pref:instant_enabled">
+                pref="instant_extended.instant_enabled"
+                metric="Options_InstantExtendedEnabled">
             <span>
-              <!-- TODO(estade) There's a link in here which should not be
-                   inside a <label>. -->
-              <label id="instant-enabled-label" for="instant-enabled-control"
-                  i18n-values=".innerHTML:instantPrefAndWarning">
+              <!-- The content of the label is inserted by JS -->
+              <label id="instant-enabled-label" for="instant-enabled-control">
               </label>
-              <span id="instant-enabled-indicator"
-                  class="controlled-setting-indicator"
-                  i18n-values="pref:instant_enabled">
+              <span class="controlled-setting-indicator"
+                  pref="instant_extended.instant_enabled">
               </span>
             </span>
           </span>

@@ -501,11 +501,8 @@ const char kUrlBlacklist[] = "policy.url_blacklist";
 // Allows access to the listed host patterns, as exceptions to the blacklist.
 const char kUrlWhitelist[] = "policy.url_whitelist";
 
-// Boolean pref indicating if instant is enabled.
-const char kInstantEnabled[] = "instant.enabled";
-
-// Boolean pref indicating if instant is enabled for instant extended.
-const char kInstantExtendedEnabled[] = "instant_extended.enabled";
+// Boolean pref indicating whether Instant search result previews are enabled.
+const char kSearchInstantEnabled[] = "instant_extended.instant_enabled";
 
 // Prefix URL for the experimental Instant ZeroSuggest provider.
 const char kInstantUIZeroSuggestUrlPrefix[] =

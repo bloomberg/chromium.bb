@@ -1204,16 +1204,6 @@
   },
 
   "InstantEnabled": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "can_be_recommended": true,
-    "test_policy": { "InstantEnabled": true },
-    "pref_mappings": [
-      { "pref": "instant.enabled",
-        "indicator_tests": [
-          { "policy": { "InstantEnabled": true } }
-        ]
-      }
-    ]
   },
 
   "TranslateEnabled": {

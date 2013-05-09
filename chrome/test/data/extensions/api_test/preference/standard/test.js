@@ -26,7 +26,6 @@ var preferences_to_test = [
     preferences: [
       'alternateErrorPagesEnabled',
       'autofillEnabled',
-      'instantEnabled',
       'safeBrowsingEnabled',
       'searchSuggestEnabled',
       'spellingServiceEnabled',

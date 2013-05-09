@@ -237,7 +237,6 @@
         'browser/ui/panels/test_panel_notification_observer.h',
         'browser/ui/panels/test_panel_collection_squeeze_observer.cc',
         'browser/ui/panels/test_panel_collection_squeeze_observer.h',
-        'browser/ui/search/instant_interactive_uitest.cc',
         'browser/ui/search/instant_extended_interactive_uitest.cc',
         'browser/ui/search/instant_extended_manual_interactive_uitest.cc',
         'browser/ui/search/instant_test_utils.h',

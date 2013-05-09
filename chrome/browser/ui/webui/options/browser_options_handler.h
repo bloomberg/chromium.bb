@@ -59,8 +59,9 @@ class BrowserOptionsHandler
   // Will be called when the kSigninAllowed pref has changed.
   void OnSigninAllowedPrefChange();
 
-  // Will be called when the kSearchSuggestEnabled pref has changed.
-  void OnSearchSuggestPrefChange();
+  // Called whenever prefs::kSearchSuggestEnabled or the default search engine
+  // changes, so that we can update the state of the Instant pref checkbox.
+  void UpdateInstantCheckboxState();
 
   // ShellIntegration::DefaultWebClientObserver implementation.
   virtual void SetDefaultWebClientUIState(

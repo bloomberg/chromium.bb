@@ -33,11 +33,6 @@
             "value": ["autofillEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome offers to automatically fill in forms. This preference's value is a boolean, defaulting to <code>true</code>."
           },
-          "instantEnabled": {
-            "$ref": "types.ChromeSetting",
-            "value": ["instantEnabled", {"type":"boolean"}],
-            "description": "If enabled, Chrome automatically performs and displays search requests for text you type into the Omnibox as you type it. This preference's value is a boolean, defaulting to <code>true</code>."
-          },
           "safeBrowsingEnabled": {
             "$ref": "types.ChromeSetting",
             "value": ["safeBrowsingEnabled", {"type":"boolean"}],

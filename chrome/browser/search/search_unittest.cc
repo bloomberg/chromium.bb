@@ -295,7 +295,7 @@ class SearchTest : public BrowserWithTestWindowTest {
     } else {
       data.SetURL("http://foo.com/url?bar={searchTerms}");
       data.instant_url = "http://foo.com/instant?"
-          "{google:omniboxStartMarginParameter}foo=foo#foo=foo";
+          "{google:omniboxStartMarginParameter}foo=foo#foo=foo&strk";
       data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
       data.search_terms_replacement_key = "strk";
     }
@@ -485,31 +485,14 @@ TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
   }
 }
 
-TEST_F(SearchTest, GetInstantURLExtendedDisabled) {
-  // Instant is disabled, so no Instant URL.
-  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
-
-  // Enable Instant.
-  profile()->GetPrefs()->SetBoolean(prefs::kInstantEnabled, true);
-  EXPECT_EQ(GURL("http://foo.com/instant?foo=foo#foo=foo"),
-            GetInstantURL(profile(), kDisableStartMargin));
-
-  // Override the Instant URL on the commandline.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kInstantURL,
-      "http://myserver.com:9000/dev?bar=bar#bar=bar");
-  EXPECT_EQ(GURL("http://myserver.com:9000/dev?bar=bar#bar=bar"),
-            GetInstantURL(profile(), kDisableStartMargin));
-}
-
 TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
-  EnableInstantExtendedAPIForTesting();
-
   // Instant is disabled, so no Instant URL.
   EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
 
   // Enable Instant. Still no Instant URL because "strk" is missing.
-  profile()->GetPrefs()->SetBoolean(prefs::kInstantExtendedEnabled, true);
+  EnableInstantExtendedAPIForTesting();
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, true);
+  SetDefaultInstantTemplateUrl(false);
   EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
 
   // Set an Instant URL with a valid search terms replacement key.
@@ -525,7 +508,7 @@ TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
             GetInstantURL(profile(), kDisableStartMargin));
 
   // Disable Instant. No difference, because suggest is still enabled.
-  profile()->GetPrefs()->SetBoolean(prefs::kInstantExtendedEnabled, false);
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, false);
   EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
             GetInstantURL(profile(), kDisableStartMargin));
 
@@ -551,21 +534,23 @@ TEST_F(SearchTest, StartMarginCGI) {
   // Instant is disabled, so no Instant URL.
   EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
 
-  // Enable Instant.  No margin.
-  profile()->GetPrefs()->SetBoolean(prefs::kInstantEnabled, true);
-  EXPECT_EQ(GURL("http://foo.com/instant?foo=foo#foo=foo"),
+  // Enable Instant. No margin.
+  EnableInstantExtendedAPIForTesting();
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
+
+  EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
             GetInstantURL(profile(), kDisableStartMargin));
 
   // With start margin.
-  EXPECT_EQ(GURL("http://foo.com/instant?es_sm=10&foo=foo#foo=foo"),
+  EXPECT_EQ(GURL("https://foo.com/instant?es_sm=10&foo=foo#foo=foo&strk"),
             GetInstantURL(profile(), 10));
 }
 
 TEST_F(SearchTest, DefaultSearchProviderSupportsInstant) {
+  // Enable Instant.
   EnableInstantExtendedAPIForTesting();
-
-  // Enable Instant. Still no Instant URL because "strk" is missing.
-  profile()->GetPrefs()->SetBoolean(prefs::kInstantExtendedEnabled, true);
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, true);
+  SetDefaultInstantTemplateUrl(false);
 
   // No default search provider support yet.
   EXPECT_FALSE(DefaultSearchProviderSupportsInstant(profile()));
@@ -580,7 +565,7 @@ TEST_F(SearchTest, DefaultSearchProviderSupportsInstant) {
   EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
 
   // Disable Instant. No difference.
-  profile()->GetPrefs()->SetBoolean(prefs::kInstantExtendedEnabled, false);
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, false);
   EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
 
   // Override the Instant URL on the commandline. Oops, forgot "strk".
@@ -605,34 +590,6 @@ TEST_F(SearchTest, DefaultSearchProviderSupportsInstant) {
   EXPECT_FALSE(DefaultSearchProviderSupportsInstant(profile()));
 }
 
-TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedDisabled) {
-  // Enable suggest.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
-
-  // Set an Instant URL with a valid search terms replacement key.
-  SetDefaultInstantTemplateUrl(true);
-
-  const char* pref_name = GetInstantPrefName();
-  profile()->GetPrefs()->SetBoolean(pref_name, true);
-
-  EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
-  EXPECT_TRUE(IsInstantCheckboxChecked(profile()));
-
-  // Set an Instant URL with no valid search terms replacement key.
-  SetDefaultInstantTemplateUrl(false);
-
-  // For non-extended instant, the checkbox should still be enabled and checked.
-  EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
-  EXPECT_TRUE(IsInstantCheckboxChecked(profile()));
-
-  // Disable suggest.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
-
-  // With suggest off, the checkbox should now be disabled and unchecked.
-  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
-  EXPECT_FALSE(IsInstantCheckboxChecked(profile()));
-}
-
 TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabled) {
   // Enable instant extended.
   EnableInstantExtendedAPIForTesting();
@@ -643,8 +600,7 @@ TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabled) {
   // Set an Instant URL with a valid search terms replacement key.
   SetDefaultInstantTemplateUrl(true);
 
-  const char* pref_name = GetInstantPrefName();
-  profile()->GetPrefs()->SetBoolean(pref_name, true);
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, true);
 
   EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
   EXPECT_TRUE(IsInstantCheckboxChecked(profile()));

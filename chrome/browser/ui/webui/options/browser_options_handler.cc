@@ -422,14 +422,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       "defaultSearchGroupLabel",
       l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION, omnibox_url));
 
-  std::string instant_pref_name = chrome::GetInstantPrefName();
-  int instant_message_id = instant_pref_name == prefs::kInstantEnabled ?
-      IDS_INSTANT_PREF : IDS_INSTANT_EXTENDED_PREF;
-  values->SetString("instant_enabled", instant_pref_name);
-  values->SetString(
-      "instantPrefAndWarning",
-      l10n_util::GetStringUTF16(instant_message_id));
-
 #if defined(OS_CHROMEOS)
   const chromeos::User* user = chromeos::UserManager::Get()->GetLoggedInUser();
   values->SetString("username", user ? user->email() : std::string());
@@ -631,48 +623,14 @@ void BrowserOptionsHandler::OnSigninAllowedPrefChange() {
   SendProfilesInfo();
 }
 
-void BrowserOptionsHandler::OnSearchSuggestPrefChange() {
+void BrowserOptionsHandler::UpdateInstantCheckboxState() {
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  bool instant_extended =
-      chrome::GetInstantPrefName() == prefs::kInstantExtendedEnabled;
-
-  string16 checkbox_label;
-  if (chrome::IsInstantCheckboxEnabled(profile)) {
-    int instant_message_id = instant_extended ?
-        IDS_INSTANT_EXTENDED_PREF : IDS_INSTANT_PREF;
-
-    checkbox_label = l10n_util::GetStringUTF16(instant_message_id);
-  } else if (!chrome::DefaultSearchProviderSupportsInstant(profile)) {
-    int instant_message_id = instant_extended ?
-        IDS_INSTANT_EXTENDED_PREF_PREDICTION_NOT_SUPPORTED :
-        IDS_INSTANT_PREF_PREDICTION_NOT_SUPPORTED;
-
-    const TemplateURL* default_url =
-        template_url_service_->GetDefaultSearchProvider();
-    string16 search_provider;
-    if (default_url)
-      search_provider = default_url->short_name();
-    if (search_provider.empty()) {
-      search_provider = l10n_util::GetStringUTF16(
-          IDS_INSTANT_PREF_SEARCH_ENGINE_NAME_NOT_FOUND);
-    }
-
-    checkbox_label = l10n_util::GetStringFUTF16(instant_message_id,
-                                                search_provider);
-  } else {
-    int instant_message_id = instant_extended ?
-        IDS_INSTANT_EXTENDED_PREF_PREDICTION_DISABLED :
-        IDS_INSTANT_PREF_PREDICTION_DISABLED;
-
-    checkbox_label = l10n_util::GetStringUTF16(instant_message_id);
-  }
-
   web_ui()->CallJavascriptFunction(
-      "BrowserOptions.updateInstantState",
+      "BrowserOptions.updateInstantCheckboxState",
       base::FundamentalValue(chrome::IsInstantCheckboxEnabled(profile)),
       base::FundamentalValue(chrome::IsInstantCheckboxChecked(profile)),
-      StringValue(checkbox_label));
+      StringValue(chrome::GetInstantCheckboxLabel(profile)));
 }
 
 void BrowserOptionsHandler::PageLoadStarted() {
@@ -752,7 +710,7 @@ void BrowserOptionsHandler::InitializeHandler() {
                  base::Unretained(this)));
   profile_pref_registrar_.Add(
       prefs::kSearchSuggestEnabled,
-      base::Bind(&BrowserOptionsHandler::OnSearchSuggestPrefChange,
+      base::Bind(&BrowserOptionsHandler::UpdateInstantCheckboxState,
                  base::Unretained(this)));
 
 #if !defined(OS_CHROMEOS)
@@ -766,7 +724,7 @@ void BrowserOptionsHandler::InitializeHandler() {
 void BrowserOptionsHandler::InitializePage() {
   page_initialized_ = true;
 
-  // Note that OnTemplateURLServiceChanged calls OnSearchSuggestPrefChange.
+  // Note that OnTemplateURLServiceChanged calls UpdateInstantCheckboxState.
   OnTemplateURLServiceChanged();
 
   ObserveThemeChanged();
@@ -961,9 +919,9 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
       base::FundamentalValue(
           template_url_service_->is_default_search_managed()));
 
-  // Update the state of the Instant checkbox as the new search engine may
-  // not support Instant.
-  OnSearchSuggestPrefChange();
+  // Update the state of the Instant checkbox as the new search engine may not
+  // support Instant.
+  UpdateInstantCheckboxState();
 }
 
 // static

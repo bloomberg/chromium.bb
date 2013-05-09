@@ -95,12 +95,7 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
 // Registers Instant-related user preferences. Called at startup.
 void RegisterInstantUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
-// Returns prefs::kInstantExtendedEnabled in extended mode;
-// prefs::kInstantEnabled otherwise.
-const char* GetInstantPrefName();
-
-// Sets the default value of prefs::kInstantExtendedEnabled, based on field
-// trials and the current value of prefs::kInstantEnabled.
+// Sets the default value of prefs::kSearchInstantEnabled based on field trials.
 void SetInstantExtendedPrefDefault(Profile* profile);
 
 // Returns whether the Instant checkbox in chrome://settings/ should be enabled
@@ -112,6 +107,9 @@ bool IsInstantCheckboxEnabled(Profile* profile);
 // (i.e., with a tick mark). This returns true iff IsInstantCheckboxEnabled()
 // and the pref indicated by GetInstantPrefName() is set to true.
 bool IsInstantCheckboxChecked(Profile* profile);
+
+// Returns the label for the Instant checkbox in chrome://settings/.
+string16 GetInstantCheckboxLabel(Profile* profile);
 
 // Returns the Instant URL of the default search engine. Returns an empty GURL
 // if the engine doesn't have an Instant URL, or if it shouldn't be used (say

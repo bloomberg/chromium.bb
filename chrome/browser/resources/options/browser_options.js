@@ -164,15 +164,6 @@ cr.define('options', function() {
       };
       $('default-search-engine').addEventListener('change',
           this.setDefaultSearchEngine_);
-      if (loadTimeData.getValue('instant_enabled') ==
-          'instant_extended.enabled') {
-        // We don't want to see the confirm dialog for instant extended.
-        $('instant-enabled-control').removeAttribute('dialog-pref');
-        $('instant-enabled-indicator').removeAttribute('dialog-pref');
-        // And we want to upload a different metric name.
-        $('instant-enabled-control').setAttribute(
-            'metric', 'Options_InstantExtendedEnabled');
-      }
 
       // Users section.
       if (loadTimeData.valueExists('profilesInfo')) {
@@ -699,11 +690,11 @@ cr.define('options', function() {
         expander.textContent = loadTimeData.getString('hideAdvancedSettings');
     },
 
-    updateInstantState_: function(enabled, checked, checkboxLabel) {
+    updateInstantCheckboxState_: function(enabled, checked, checkboxLabel) {
       var checkbox = $('instant-enabled-control');
       checkbox.disabled = !enabled;
       checkbox.checked = checked;
-       $('instant-enabled-label').textContent = checkboxLabel;
+      $('instant-enabled-label').textContent = checkboxLabel;
     },
 
     /**
@@ -1432,7 +1423,7 @@ cr.define('options', function() {
     'updateAccountPicture',
     'updateAutoLaunchState',
     'updateDefaultBrowserState',
-    'updateInstantState',
+    'updateInstantCheckboxState',
     'updateSearchEngines',
     'updateStartupPages',
     'updateSyncState',

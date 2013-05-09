@@ -2586,7 +2586,8 @@
       'name': 'InstantEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:11-28', 'chrome_os:0.11-0.28'],
+      'deprecated': True,
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -2603,7 +2604,9 @@
 
       If you enable or disable this setting, users cannot change or override this setting.
 
-      If this setting is left not set the user can decide to use this function or not.''',
+      If this setting is left not set the user can decide to use this function or not.
+
+      This setting has been removed from Chrome 29 and higher versions.''',
     },
     {
       'name': 'TranslateEnabled',
@@ -2890,7 +2893,7 @@
       'name': 'HideWebStorePromo',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:15-21', 'chrome_os:0.15-21'],
+      'supported_on': ['chrome.*:15-21', 'chrome_os:0.15-0.21'],
       'deprecated': True,
       'features': {
         'dynamic_refresh': False,

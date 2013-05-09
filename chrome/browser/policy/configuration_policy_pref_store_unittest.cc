@@ -249,8 +249,6 @@ INSTANTIATE_TEST_CASE_P(
                       prefs::kDisableAuthNegotiateCnameLookup),
         PolicyAndPref(key::kEnableAuthNegotiatePort,
                       prefs::kEnableAuthNegotiatePort),
-        PolicyAndPref(key::kInstantEnabled,
-                      prefs::kInstantEnabled),
         PolicyAndPref(key::kDisablePluginFinder,
                       prefs::kDisablePluginFinder),
         PolicyAndPref(key::kDefaultBrowserSettingEnabled,

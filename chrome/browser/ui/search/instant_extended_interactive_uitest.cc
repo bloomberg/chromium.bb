@@ -1027,11 +1027,6 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ProcessIsolation) {
 // Test that a search query will not be displayed for navsuggest queries.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
                        SearchQueryNotDisplayedForNavsuggest) {
-  // Use only the local overlay.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableLocalOnlyInstantExtendedAPI);
-  ASSERT_TRUE(chrome::IsLocalOnlyInstantExtendedAPIEnabled());
-
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   // The second argument indicates to use only the local overlay and NTP.

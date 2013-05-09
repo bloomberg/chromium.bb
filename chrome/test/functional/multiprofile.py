@@ -264,8 +264,9 @@ class MultiprofileTest(pyauto.PyUITest):
                     msg='Multi-profile is not enabled')
     # Launch browser with new Profile 1, enable instant search
     self.OpenNewBrowserWindowWithNewProfile()
-    self.SetPrefs(pyauto.kInstantEnabled, True, windex=1)
-    self.assertTrue(self.GetPrefsInfo(windex=1).Prefs(pyauto.kInstantEnabled))
+    self.SetPrefs(pyauto.kSearchInstantEnabled, True, windex=1)
+    prefs_info = self.GetPrefsInfo(windex=1)
+    self.assertTrue(prefs_info.Prefs(pyauto.kSearchInstantEnabled))
     # Launch browser with new Profile 2.
     self.OpenNewBrowserWindowWithNewProfile()
     # Exit Profile 1 / Profile 2
@@ -274,11 +275,11 @@ class MultiprofileTest(pyauto.PyUITest):
     # Relaunch Browser with Profile 1, verify instant search is enabled.
     self.AppendBrowserLaunchSwitch('--profile-directory=Profile 1')
     self.RestartBrowser(clear_profile=False)
-    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kInstantEnabled))
+    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kSearchInstantEnabled))
     # Relaunch Browser with Profile 2, verify instant search is disabled.
     self.AppendBrowserLaunchSwitch('--profile-directory=Profile 2')
     self.RestartBrowser(clear_profile=False)
-    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kInstantEnabled))
+    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kSearchInstantEnabled))
 
   def testMakeSearchEngineDefaultInMultiprofile(self):
     """Test adding and making a search engine default for Multi-profiles."""
