@@ -28,7 +28,7 @@ DirectoryUpload status=stable
 EncryptedMedia condition=ENCRYPTED_MEDIA, status=stable
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
-ExperimentalShadowDOM status=test
+ExperimentalShadowDOM status=experimental
 ExperimentalWebSocket
 FileSystem status=stable
 FontLoadEvents status=experimental
