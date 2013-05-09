@@ -51,6 +51,8 @@ webkit.org/b/111649 [ Mac Win Linux ] fast/events/intercept-postmessage.html [ S
 webkit.org/b/111640 [ Mac Win ] fast/dom/Window/window-special-properties.html [ Slow ]
 webkit.org/b/113129 [ Win7 Debug ] inspector/styles/edit-inspector-stylesheet.html [ Slow ]
 webkit.org/b/82954 svg/hixie/perf/007.xml [ Slow ]	
+crbug.com/239465 [ Mac ] fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
+crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ Pass Crash Timeout ]
 
 # These tests started being slow when we switched to DRT.
 webkit.org/b/90488 [ Debug ] inspector [ Slow ]
