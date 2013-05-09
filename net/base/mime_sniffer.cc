@@ -176,6 +176,40 @@ static const MagicNumber kMagicNumbers[] = {
   // On balance, we do not include these patterns.
 };
 
+// The number of content bytes we need to use all our Microsoft Office magic
+// numbers.
+static const size_t kBytesRequiredForOfficeMagic = 8;
+
+static const MagicNumber kOfficeMagicNumbers[] = {
+  MAGIC_NUMBER("CFB", "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1")
+  MAGIC_NUMBER("OOXML", "PK\x03\x04")
+};
+
+enum OfficeDocType {
+  DOC_TYPE_WORD,
+  DOC_TYPE_EXCEL,
+  DOC_TYPE_POWERPOINT,
+  DOC_TYPE_NONE
+};
+
+struct OfficeExtensionType {
+  OfficeDocType doc_type;
+  const char* extension;
+  size_t extension_len;
+};
+
+#define OFFICE_EXTENSION(type, extension) \
+  { (type), (extension), sizeof(extension) - 1 },
+
+static const OfficeExtensionType kOfficeExtensionTypes[] = {
+  OFFICE_EXTENSION(DOC_TYPE_WORD, ".doc")
+  OFFICE_EXTENSION(DOC_TYPE_EXCEL, ".xls")
+  OFFICE_EXTENSION(DOC_TYPE_POWERPOINT, ".ppt")
+  OFFICE_EXTENSION(DOC_TYPE_WORD, ".docx")
+  OFFICE_EXTENSION(DOC_TYPE_EXCEL, ".xlsx")
+  OFFICE_EXTENSION(DOC_TYPE_POWERPOINT, ".pptx")
+};
+
 // Our HTML sniffer differs slightly from Mozilla.  For example, Mozilla will
 // decide that a document that begins "<!DOCTYPE SOAP-ENV:Envelope PUBLIC " is
 // HTML, but we will not.
@@ -334,6 +368,81 @@ static bool SniffForMagicNumbers(const char* content,
   return CheckForMagicNumbers(content, size,
                               kMagicNumbers, arraysize(kMagicNumbers),
                               counter, result);
+}
+
+// Returns true and sets result if the content matches any of
+// kOfficeMagicNumbers, and the URL has the proper extension.
+// Clears |have_enough_content| if more data could possibly change the result.
+static bool SniffForOfficeDocs(const char* content,
+                               size_t size,
+                               const GURL& url,
+                               bool* have_enough_content,
+                               std::string* result) {
+  *have_enough_content &= TruncateSize(kBytesRequiredForOfficeMagic, &size);
+
+  // Check our table of magic numbers for Office file types.
+  std::string office_version;
+  if (!CheckForMagicNumbers(content, size,
+                            kOfficeMagicNumbers, arraysize(kOfficeMagicNumbers),
+                            NULL, &office_version))
+    return false;
+
+  OfficeDocType type = DOC_TYPE_NONE;
+  for (size_t i = 0; i < arraysize(kOfficeExtensionTypes); ++i) {
+    if (url.path().length() < kOfficeExtensionTypes[i].extension_len)
+      continue;
+
+    const char* extension =
+        &url.path()[url.path().length() -
+                    kOfficeExtensionTypes[i].extension_len];
+
+    if (0 == base::strncasecmp(extension, kOfficeExtensionTypes[i].extension,
+                               kOfficeExtensionTypes[i].extension_len)) {
+      type = kOfficeExtensionTypes[i].doc_type;
+      break;
+    }
+  }
+
+  if (type == DOC_TYPE_NONE)
+    return false;
+
+  if (office_version == "CFB") {
+    switch (type) {
+      case DOC_TYPE_WORD:
+        *result = "application/msword";
+        return true;
+      case DOC_TYPE_EXCEL:
+        *result = "application/vnd.ms-excel";
+        return true;
+      case DOC_TYPE_POWERPOINT:
+        *result = "application/vnd.ms-powerpoint";
+        return true;
+      case DOC_TYPE_NONE:
+        NOTREACHED();
+        return false;
+    }
+  } else if (office_version == "OOXML") {
+    switch (type) {
+      case DOC_TYPE_WORD:
+        *result = "application/vnd.openxmlformats-officedocument."
+                  "wordprocessingml.document";
+        return true;
+      case DOC_TYPE_EXCEL:
+        *result = "application/vnd.openxmlformats-officedocument."
+                  "spreadsheetml.sheet";
+        return true;
+      case DOC_TYPE_POWERPOINT:
+        *result = "application/vnd.openxmlformats-officedocument."
+                  "presentationml.presentation";
+        return true;
+      case DOC_TYPE_NONE:
+        NOTREACHED();
+        return false;
+    }
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 // Byte order marks
@@ -671,6 +780,13 @@ bool SniffMimeType(const char* content, size_t content_size,
   if (SniffCRX(content, content_size, url, type_hint,
                &have_enough_content, result))
     return true;
+
+  // Check the file extension and magic numbers to see if this is an Office
+  // document.  This needs to be checked before the general magic numbers
+  // because zip files and office documents (OOXML) have the same magic number.
+  if (SniffForOfficeDocs(content, content_size, url,
+                         &have_enough_content, result))
+    return true;  // We've matched a magic number.  No more content needed.
 
   // We're not interested in sniffing for magic numbers when the type_hint
   // is application/octet-stream.  Time to bail out.
