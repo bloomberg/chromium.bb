@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_result_codes.h"
+#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -1231,6 +1232,26 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     // Notify the shell that associations have changed since Chrome was likely
     // unregistered.
     SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+
+    // TODO(huangs): Implement actual migration code and remove the hack below.
+    // Remove the "shadow" App Launcher registry keys.
+    if (installer_state.is_multi_install()) {
+      // If we're not uninstalling the legacy App Launcher, and if it was
+      // not installed in the first place, then delete the "shadow" keys.
+      chrome_launcher_support::InstallationState level_to_check =
+          installer_state.system_install() ?
+              chrome_launcher_support::INSTALLED_AT_SYSTEM_LEVEL :
+              chrome_launcher_support::INSTALLED_AT_USER_LEVEL;
+      bool has_legacy_app_launcher = level_to_check ==
+          chrome_launcher_support::GetAppLauncherInstallationState();
+      if (!has_legacy_app_launcher) {
+        BrowserDistribution* shadow_app_launcher_dist =
+            BrowserDistribution::GetSpecificDistribution(
+                BrowserDistribution::CHROME_APP_HOST);
+        InstallUtil::DeleteRegistryKey(reg_root,
+            shadow_app_launcher_dist->GetVersionKey());
+      }
+    }
   }
 
   if (product.is_chrome_frame()) {

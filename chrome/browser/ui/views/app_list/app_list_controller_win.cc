@@ -45,6 +45,7 @@
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -151,16 +152,29 @@ string16 GetAppModelId() {
 
 void SetDidRunForNDayActiveStats() {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
-  chrome_launcher_support::InstallationState launcher_state =
-      chrome_launcher_support::GetAppLauncherInstallationState();
-  if (launcher_state != chrome_launcher_support::NOT_INSTALLED) {
-    BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_APP_HOST);
+  base::FilePath exe_path;
+  if (!PathService::Get(base::DIR_EXE, &exe_path)) {
+    NOTREACHED();
+    return;
+  }
+  bool system_install =
+      !InstallUtil::IsPerUserInstall(exe_path.value().c_str());
+  // Using Chrome Binary dist: Chrome dist may not exist for the legacy
+  // App Launcher, and App Launcher dist may be "shadow", which does not
+  // contain the information needed to determine multi-install.
+  // Edge case involving Canary: crbug/239163.
+  BrowserDistribution* chrome_binaries_dist =
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BINARIES);
+  if (chrome_binaries_dist &&
+      InstallUtil::IsMultiInstall(chrome_binaries_dist, system_install)) {
+    BrowserDistribution* app_launcher_dist =
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_APP_HOST);
     GoogleUpdateSettings::UpdateDidRunStateForDistribution(
-        dist,
+        app_launcher_dist,
         true /* did_run */,
-        launcher_state == chrome_launcher_support::INSTALLED_AT_SYSTEM_LEVEL);
+        system_install);
   }
 }
 

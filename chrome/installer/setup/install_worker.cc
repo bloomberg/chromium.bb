@@ -1223,6 +1223,21 @@ void AddInstallWorkItems(const InstallationState& original_state,
                             install_list);
   }
 
+  // TODO(huangs): Implement actual migration code and remove the hack below.
+  // If installing Chrome without the legacy stand-alone App Launcher (to be
+  // handled later), add "shadow" App Launcher registry keys so Google Update
+  // would recognize the "dr" value in the App Launcher ClientState key.
+  // Checking .is_multi_install() excludes Chrome Canary and stand-alone Chrome.
+  if (installer_state.is_multi_install() &&
+      installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER) &&
+      !installer_state.FindProduct(BrowserDistribution::CHROME_APP_HOST)) {
+    BrowserDistribution* shadow_app_launcher_dist =
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_APP_HOST);
+    AddVersionKeyWorkItems(root, shadow_app_launcher_dist, new_version,
+                           add_language_identifier, install_list);
+  }
+
   // Add any remaining work items that involve special settings for
   // each product.
   AddProductSpecificWorkItems(original_state, installer_state, setup_path,
