@@ -87,6 +87,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   void Initialize();
 
   bool SetMaxSize(int max_bytes);
+  int max_size() const { return max_size_; }
 
   void Insert(const std::string& key);
   void Remove(const std::string& key);

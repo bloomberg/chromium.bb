@@ -238,6 +238,8 @@ int SimpleEntryImpl::WriteData(int stream_index,
       buf_len < 0) {
     return net::ERR_INVALID_ARGUMENT;
   }
+  if (backend_ && offset + buf_len > backend_->GetMaxFileSize())
+    return net::ERR_FAILED;
 
   int ret_value = net::ERR_FAILED;
   if (state_ == STATE_READY && pending_operations_.size() == 0) {

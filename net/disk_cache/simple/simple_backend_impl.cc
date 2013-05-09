@@ -35,6 +35,9 @@ namespace {
 // Cache size when all other size heuristics failed.
 const uint64 kDefaultCacheSize = 80 * 1024 * 1024;
 
+// Maximum fraction of the cache that one entry can consume.
+const int kMaxFileRatio = 8;
+
 // Must run on IO Thread.
 void DeleteBackendImpl(disk_cache::Backend** backend,
                        const net::CompletionCallback& callback,
@@ -167,6 +170,10 @@ int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
 bool SimpleBackendImpl::SetMaxSize(int max_bytes) {
   orig_max_size_ = max_bytes;
   return index_->SetMaxSize(max_bytes);
+}
+
+int SimpleBackendImpl::GetMaxFileSize() const {
+  return index_->max_size() / kMaxFileRatio;
 }
 
 void SimpleBackendImpl::OnDeactivated(const SimpleEntryImpl* entry) {

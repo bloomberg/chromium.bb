@@ -54,6 +54,9 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // Sets the maximum size for the total amount of data stored by this instance.
   bool SetMaxSize(int max_bytes);
 
+  // Returns the maximum file size permitted in this backend.
+  int GetMaxFileSize() const;
+
   // Removes |entry| from the |active_entries_| set, forcing future Open/Create
   // operations to construct a new object.
   void OnDeactivated(const SimpleEntryImpl* entry);
