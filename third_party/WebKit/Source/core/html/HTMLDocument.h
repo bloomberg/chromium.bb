@@ -77,7 +77,7 @@ public:
     static bool isCaseSensitiveAttribute(const QualifiedName&);
 
 protected:
-    HTMLDocument(Frame*, const KURL&, unsigned extendedDocumentClass = DefaultDocumentClass);
+    HTMLDocument(Frame*, const KURL&, DocumentClassFlags extendedDocumentClasses = DefaultDocumentClass);
 
 private:
     void addItemToMap(HashCountedSet<AtomicStringImpl*>&, const AtomicString&);

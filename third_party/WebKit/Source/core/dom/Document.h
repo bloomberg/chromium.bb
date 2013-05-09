@@ -201,6 +201,8 @@ enum DocumentClass {
     SVGDocumentClass = 1 << 5,
 };
 
+typedef unsigned char DocumentClassFlags;
+
 class Document : public ContainerNode, public TreeScope, public ScriptExecutionContext {
 public:
     static PassRefPtr<Document> create(Frame* frame, const KURL& url)
@@ -400,12 +402,12 @@ public:
     PassRefPtr<HTMLCollection> windowNamedItems(const AtomicString& name);
     PassRefPtr<HTMLCollection> documentNamedItems(const AtomicString& name);
 
-    bool isHTMLDocument() const { return m_documentClass & HTMLDocumentClass; }
-    bool isXHTMLDocument() const { return m_documentClass & XHTMLDocumentClass; }
-    bool isImageDocument() const { return m_documentClass & ImageDocumentClass; }
-    bool isSVGDocument() const { return m_documentClass & SVGDocumentClass; }
-    bool isPluginDocument() const { return m_documentClass & PluginDocumentClass; }
-    bool isMediaDocument() const { return m_documentClass & MediaDocumentClass; }
+    bool isHTMLDocument() const { return m_documentClasses & HTMLDocumentClass; }
+    bool isXHTMLDocument() const { return m_documentClasses & XHTMLDocumentClass; }
+    bool isImageDocument() const { return m_documentClasses & ImageDocumentClass; }
+    bool isSVGDocument() const { return m_documentClasses & SVGDocumentClass; }
+    bool isPluginDocument() const { return m_documentClasses & PluginDocumentClass; }
+    bool isMediaDocument() const { return m_documentClasses & MediaDocumentClass; }
 
 #if ENABLE(SVG)
     bool hasSVGRootNode() const;
@@ -1119,7 +1121,7 @@ public:
     PassRefPtr<FontLoader> fontloader();
 
 protected:
-    Document(Frame*, const KURL&, unsigned documentClass = DefaultDocumentClass);
+    Document(Frame*, const KURL&, DocumentClassFlags = DefaultDocumentClass);
 
     virtual void didUpdateSecurityOrigin() OVERRIDE;
 
@@ -1366,7 +1368,7 @@ private:
 
     bool m_useSecureKeyboardEntryWhenActive;
 
-    unsigned m_documentClass;
+    DocumentClassFlags m_documentClasses;
 
     bool m_isViewSource;
     bool m_sawElementsInKnownNamespaces;

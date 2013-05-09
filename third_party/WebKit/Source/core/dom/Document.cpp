@@ -373,7 +373,7 @@ static void printNavigationErrorMessage(Frame* frame, const KURL& activeURL, con
 
 uint64_t Document::s_globalTreeVersion = 0;
 
-Document::Document(Frame* frame, const KURL& url, unsigned documentClass)
+Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument)
     , TreeScope(this)
     , m_styleResolverThrowawayTimer(this, &Document::styleResolverThrowawayTimerFired)
@@ -408,7 +408,7 @@ Document::Document(Frame* frame, const KURL& url, unsigned documentClass)
     , m_createRenderers(true)
     , m_accessKeyMapValid(false)
     , m_useSecureKeyboardEntryWhenActive(false)
-    , m_documentClass(documentClass)
+    , m_documentClasses(documentClasses)
     , m_isViewSource(false)
     , m_sawElementsInKnownNamespaces(false)
     , m_isSrcdocDocument(false)

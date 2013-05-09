@@ -67,8 +67,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLDocument::HTMLDocument(Frame* frame, const KURL& url, unsigned extendedDocumentClass)
-    : Document(frame, url, HTMLDocumentClass | extendedDocumentClass)
+HTMLDocument::HTMLDocument(Frame* frame, const KURL& url, DocumentClassFlags extendedDocumentClasses)
+    : Document(frame, url, HTMLDocumentClass | extendedDocumentClasses)
 {
     ScriptWrappable::init(this);
     clearXMLVersion();
