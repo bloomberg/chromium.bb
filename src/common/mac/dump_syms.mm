@@ -276,7 +276,7 @@ bool DumpSymbols::ReadDwarf(google_breakpad::Module *module,
 
   // Find the __debug_info section.
   dwarf2reader::SectionMap::const_iterator debug_info_entry =
-      file_context.section_map().find(".debug_info");
+      file_context.section_map().find("__debug_info");
   assert(debug_info_entry != file_context.section_map().end());
   const std::pair<const char*, uint64>& debug_info_section =
       debug_info_entry->second;
