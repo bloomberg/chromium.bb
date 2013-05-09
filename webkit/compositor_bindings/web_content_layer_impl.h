@@ -31,7 +31,6 @@ class WebContentLayerImpl : public WebKit::WebContentLayer,
   virtual void setDoubleSided(bool double_sided);
   virtual void setUseLCDText(bool use_lcd_text);
   virtual void setDrawCheckerboardForMissingTiles(bool checkerboard);
-  virtual void setAutomaticallyComputeRasterScale(bool compute_raster);
 
  protected:
   virtual ~WebContentLayerImpl();

@@ -146,6 +146,7 @@ TEST(LayerIteratorTest, SimpleTree) {
                                                NULL,
                                                256,
                                                false,
+                                               false,
                                                &render_surface_layerList);
 
   IterateBackToFront(&render_surface_layerList);
@@ -192,6 +193,7 @@ TEST(LayerIteratorTest, ComplexTree) {
                                                1.f,
                                                NULL,
                                                256,
+                                               false,
                                                false,
                                                &render_surface_layerList);
 
@@ -254,6 +256,7 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
                                                1.f,
                                                NULL,
                                                256,
+                                               false,
                                                false,
                                                &render_surface_layerList);
 

@@ -299,6 +299,7 @@ void LayerTreeImpl::UpdateDrawProperties() {
         root_scroll_layer_,
         MaxTextureSize(),
         settings().can_use_lcd_text,
+        settings().layer_transforms_should_scale_layer_contents,
         &render_surface_layer_list_);
   }
 

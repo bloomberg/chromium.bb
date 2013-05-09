@@ -305,32 +305,6 @@ TEST_F(LayerTest, ReplaceChildWithNewChild) {
   EXPECT_FALSE(child2_->parent());
 }
 
-TEST_F(LayerTest, ReplaceChildWithNewChildAutomaticRasterScale) {
-  CreateSimpleTestTree();
-  scoped_refptr<Layer> child4 = Layer::Create();
-  EXPECT_SET_NEEDS_COMMIT(1, child1_->SetAutomaticallyComputeRasterScale(true));
-  EXPECT_SET_NEEDS_COMMIT(1, child2_->SetAutomaticallyComputeRasterScale(true));
-  EXPECT_SET_NEEDS_COMMIT(1, child3_->SetAutomaticallyComputeRasterScale(true));
-
-  EXPECT_FALSE(child4->parent());
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(
-      AtLeast(1), parent_->ReplaceChild(child2_.get(), child4));
-  EXPECT_FALSE(parent_->NeedsDisplayForTesting());
-  EXPECT_FALSE(child1_->NeedsDisplayForTesting());
-  EXPECT_FALSE(child2_->NeedsDisplayForTesting());
-  EXPECT_FALSE(child3_->NeedsDisplayForTesting());
-  EXPECT_FALSE(child4->NeedsDisplayForTesting());
-
-  ASSERT_EQ(3U, parent_->children().size());
-  EXPECT_EQ(child1_, parent_->children()[0]);
-  EXPECT_EQ(child4, parent_->children()[1]);
-  EXPECT_EQ(child3_, parent_->children()[2]);
-  EXPECT_EQ(parent_.get(), child4->parent());
-
-  EXPECT_FALSE(child2_->parent());
-}
-
 TEST_F(LayerTest, ReplaceChildWithNewChildThatHasOtherParent) {
   CreateSimpleTestTree();
 

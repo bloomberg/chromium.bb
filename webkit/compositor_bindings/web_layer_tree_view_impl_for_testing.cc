@@ -50,6 +50,11 @@ WebLayerTreeViewImplForTesting::~WebLayerTreeViewImplForTesting() {}
 bool WebLayerTreeViewImplForTesting::initialize(
     scoped_ptr<cc::Thread> compositor_thread) {
   cc::LayerTreeSettings settings;
+
+  // For web contents, layer transforms should scale up the contents of layers
+  // to keep content always crisp when possible.
+  settings.layer_transforms_should_scale_layer_contents = true;
+
   // Accelerated animations are disabled for layout tests, but enabled for unit
   // tests.
   settings.accelerated_animation_enabled =

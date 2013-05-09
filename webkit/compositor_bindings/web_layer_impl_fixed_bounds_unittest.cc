@@ -135,7 +135,8 @@ void CompareFixedBoundsLayerAndNormalLayer(
       kPageScaleFactor,
       root_layer->layer(),
       kMaxTextureSize,
-      false,
+      false,  // can_use_lcd_text
+      false,  // can_adjust_raster_scales
       &render_surface_layer_list);
   ExpectEqualLayerRectsInTarget(normal_layer->layer(),
                                 fixed_bounds_layer->layer());
@@ -152,7 +153,8 @@ void CompareFixedBoundsLayerAndNormalLayer(
       kPageScaleFactor,
       root_layer->layer(),
       kMaxTextureSize,
-      false,
+      false,  // can_use_lcd_text
+      false,  // can_adjust_raster_scales
       &render_surface_layer_list);
   ExpectEqualLayerRectsInTarget(normal_layer->layer(),
                                 fixed_bounds_layer->layer());

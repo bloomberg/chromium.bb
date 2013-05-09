@@ -52,8 +52,7 @@ Layer::Layer()
       draw_checkerboard_for_missing_tiles_(false),
       force_render_surface_(false),
       replica_layer_(NULL),
-      raster_scale_(1.f),
-      automatically_compute_raster_scale_(false),
+      raster_scale_(0.f),
       layer_scroll_client_(NULL) {
   if (layer_id_ < 0) {
     s_next_layer_id = 1;
@@ -103,6 +102,9 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (host) {
     layer_animation_controller_->SetAnimationRegistrar(
         host->animation_registrar());
+
+    if (host->settings().layer_transforms_should_scale_layer_contents)
+      reset_raster_scale_to_unknown();
   }
 
   if (host && layer_animation_controller_->has_any_animation())
@@ -170,11 +172,17 @@ void Layer::SetParent(Layer* layer) {
   parent_ = layer;
   SetLayerTreeHost(parent_ ? parent_->layer_tree_host() : NULL);
 
-  ForceAutomaticRasterScaleToBeRecomputed();
+  if (!layer_tree_host_)
+    return;
+  const LayerTreeSettings& settings = layer_tree_host_->settings();
+  if (!settings.layer_transforms_should_scale_layer_contents)
+    return;
+
+  reset_raster_scale_to_unknown();
   if (mask_layer_)
-    mask_layer_->ForceAutomaticRasterScaleToBeRecomputed();
+    mask_layer_->reset_raster_scale_to_unknown();
   if (replica_layer_ && replica_layer_->mask_layer_)
-    replica_layer_->mask_layer_->ForceAutomaticRasterScaleToBeRecomputed();
+    replica_layer_->mask_layer_->reset_raster_scale_to_unknown();
 }
 
 bool Layer::HasAncestor(Layer* ancestor) const {
@@ -736,37 +744,6 @@ bool Layer::NeedMoreUpdates() {
 
 void Layer::SetDebugName(const std::string& debug_name) {
   debug_name_ = debug_name;
-  SetNeedsCommit();
-}
-
-void Layer::SetRasterScale(float scale) {
-  if (raster_scale_ == scale)
-    return;
-  raster_scale_ = scale;
-
-  // When automatically computed, this acts like a draw property.
-  if (automatically_compute_raster_scale_)
-    return;
-  SetNeedsDisplay();
-}
-
-void Layer::SetAutomaticallyComputeRasterScale(bool automatic) {
-  if (automatically_compute_raster_scale_ == automatic)
-    return;
-  automatically_compute_raster_scale_ = automatic;
-
-  if (automatically_compute_raster_scale_)
-    ForceAutomaticRasterScaleToBeRecomputed();
-  else
-    SetRasterScale(1);
-}
-
-void Layer::ForceAutomaticRasterScaleToBeRecomputed() {
-  if (!automatically_compute_raster_scale_)
-    return;
-  if (!raster_scale_)
-    return;
-  raster_scale_ = 0.f;
   SetNeedsCommit();
 }
 

@@ -251,14 +251,23 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsRedrawRect);
 
 class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestNoExtraCommitFromInvalidate()
-      : root_layer_(ContentLayer::Create(&client_)) {}
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->layer_transforms_should_scale_layer_contents = true;
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    root_layer_ = Layer::Create();
+    root_layer_->SetBounds(gfx::Size(10, 20));
+
+    scaled_layer_ = FakeContentLayer::Create(&client_);
+    scaled_layer_->SetBounds(gfx::Size(1, 1));
+    root_layer_->AddChild(scaled_layer_);
+
+    layer_tree_host()->SetRootLayer(root_layer_);
+    LayerTreeHostTest::SetupTree();
+  }
 
   virtual void BeginTest() OVERRIDE {
-    root_layer_->SetAutomaticallyComputeRasterScale(false);
-    root_layer_->SetIsDrawable(true);
-    root_layer_->SetBounds(gfx::Size(1, 1));
-    layer_tree_host()->SetRootLayer(root_layer_);
     PostSetNeedsCommitToMainThread();
   }
 
@@ -270,8 +279,10 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
   virtual void DidCommit() OVERRIDE {
     switch (layer_tree_host()->commit_number()) {
       case 1:
-        // Changing the content bounds will cause a single commit!
-        root_layer_->SetRasterScale(4.f);
+        // Changing the device scale factor causes a commit. It also changes
+        // the content bounds of |scaled_layer_|, which should not generate
+        // a second commit as a result.
+        layer_tree_host()->SetDeviceScaleFactor(4.f);
         break;
       default:
         // No extra commits.
@@ -279,11 +290,15 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {
+    EXPECT_EQ(gfx::Size(4, 4).ToString(),
+              scaled_layer_->content_bounds().ToString());
+  }
 
  private:
   FakeContentLayerClient client_;
-  scoped_refptr<ContentLayer> root_layer_;
+  scoped_refptr<Layer> root_layer_;
+  scoped_refptr<FakeContentLayer> scaled_layer_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNoExtraCommitFromInvalidate);
@@ -291,10 +306,12 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNoExtraCommitFromInvalidate);
 class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate()
-      : root_layer_(FakeContentLayer::Create(&client_)) {}
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->layer_transforms_should_scale_layer_contents = true;
+  }
 
   virtual void SetupTree() OVERRIDE {
+    root_layer_ = Layer::Create();
     root_layer_->SetBounds(gfx::Size(10, 20));
 
     bool paint_scrollbar = true;
@@ -323,8 +340,10 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
   virtual void DidCommit() OVERRIDE {
     switch (layer_tree_host()->commit_number()) {
       case 1:
-        // This should cause a single commit.
-        scrollbar_->SetRasterScale(4.0f);
+        // Changing the device scale factor causes a commit. It also changes
+        // the content bounds of |scrollbar_|, which should not generate
+        // a second commit as a result.
+        layer_tree_host()->SetDeviceScaleFactor(4.f);
         break;
       default:
         // No extra commits.
@@ -332,11 +351,14 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {
+    EXPECT_EQ(gfx::Size(40, 40).ToString(),
+              scrollbar_->content_bounds().ToString());
+  }
 
  private:
   FakeContentLayerClient client_;
-  scoped_refptr<FakeContentLayer> root_layer_;
+  scoped_refptr<Layer> root_layer_;
   scoped_refptr<FakeScrollbarLayer> scrollbar_;
 };
 

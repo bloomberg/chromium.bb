@@ -194,28 +194,40 @@ class LayerTreeHostImplTest : public testing::Test,
     ASSERT_EQ(0, times_encountered);
   }
 
-  void SetupScrollAndContentsLayers(gfx::Size content_size) {
+  LayerImpl* SetupScrollAndContentsLayers(gfx::Size content_size) {
     scoped_ptr<LayerImpl> root =
         LayerImpl::Create(host_impl_->active_tree(), 1);
-    root->SetScrollable(true);
-    root->SetScrollOffset(gfx::Vector2d());
-    root->SetMaxScrollOffset(gfx::Vector2d(content_size.width(),
-                                           content_size.height()));
     root->SetBounds(content_size);
     root->SetContentBounds(content_size);
     root->SetPosition(gfx::PointF());
     root->SetAnchorPoint(gfx::PointF());
 
-    scoped_ptr<LayerImpl> contents =
+    scoped_ptr<LayerImpl> scroll =
         LayerImpl::Create(host_impl_->active_tree(), 2);
+    LayerImpl* scroll_layer = scroll.get();
+    scroll->SetScrollable(true);
+    scroll->SetScrollOffset(gfx::Vector2d());
+    scroll->SetMaxScrollOffset(gfx::Vector2d(content_size.width(),
+                                           content_size.height()));
+    scroll->SetBounds(content_size);
+    scroll->SetContentBounds(content_size);
+    scroll->SetPosition(gfx::PointF());
+    scroll->SetAnchorPoint(gfx::PointF());
+
+    scoped_ptr<LayerImpl> contents =
+        LayerImpl::Create(host_impl_->active_tree(), 3);
     contents->SetDrawsContent(true);
     contents->SetBounds(content_size);
     contents->SetContentBounds(content_size);
     contents->SetPosition(gfx::PointF());
     contents->SetAnchorPoint(gfx::PointF());
-    root->AddChild(contents.Pass());
+
+    scroll->AddChild(contents.Pass());
+    root->AddChild(scroll.Pass());
+
     host_impl_->active_tree()->SetRootLayer(root.Pass());
     host_impl_->active_tree()->DidBecomeActive();
+    return scroll_layer;
   }
 
   scoped_ptr<LayerImpl> CreateScrollableLayer(int id, gfx::Size size) {
@@ -443,9 +455,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutRenderer) {
 }
 
 TEST_F(LayerTreeHostImplTest, ReplaceTreeWhileScrolling) {
-  int scroll_layer_id = 1;
-
-  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   InitializeRendererAndDrawFrame();
 
@@ -454,7 +464,7 @@ TEST_F(LayerTreeHostImplTest, ReplaceTreeWhileScrolling) {
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
   host_impl_->active_tree()->DetachLayerTree();
 
-  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
 
   // We should still be scrolling, because the scrolled layer also exists in the
   // new tree.
@@ -462,7 +472,7 @@ TEST_F(LayerTreeHostImplTest, ReplaceTreeWhileScrolling) {
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
   host_impl_->ScrollEnd();
   scoped_ptr<ScrollAndScaleSet> scroll_info = host_impl_->ProcessScrollDeltas();
-  ExpectContains(*scroll_info, scroll_layer_id, scroll_delta);
+  ExpectContains(*scroll_info, scroll_layer->id(), scroll_delta);
 }
 
 TEST_F(LayerTreeHostImplTest, ClearRootRenderSurfaceAndScroll) {
@@ -701,12 +711,11 @@ TEST_F(LayerTreeHostImplTest,
 }
 
 TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
-  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   InitializeRendererAndDrawFrame();
 
-  LayerImpl* scroll_layer = host_impl_->RootScrollLayer();
-  DCHECK(scroll_layer);
+  EXPECT_EQ(scroll_layer, host_impl_->RootScrollLayer());
 
   float min_page_scale = 1.f, max_page_scale = 4.f;
 
@@ -729,8 +738,8 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
         host_impl_->ProcessScrollDeltas();
     EXPECT_EQ(scroll_info->page_scale_delta, page_scale_delta);
 
-    EXPECT_EQ(gfx::Vector2d(75, 75),
-              host_impl_->active_tree()->root_layer()->max_scroll_offset());
+    EXPECT_EQ(gfx::Vector2d(75, 75).ToString(),
+              scroll_layer->max_scroll_offset().ToString());
   }
 
   // Scrolling after a pinch gesture should always be in local space.  The
@@ -757,7 +766,7 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
     ExpectContains(*scroll_info.get(),
-                   host_impl_->active_tree()->root_layer()->id(),
+                   scroll_layer->id(),
                    scroll_delta);
   }
 }
@@ -1582,12 +1591,12 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
   new_page_scale_matrix.Scale(new_page_scale, new_page_scale);
 
   // Create a normal scrollable root layer and another scrollable child layer.
-  SetupScrollAndContentsLayers(surface_size);
+  LayerImpl* scroll = SetupScrollAndContentsLayers(surface_size);
   LayerImpl* root = host_impl_->active_tree()->root_layer();
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = scroll->children()[0];
 
   scoped_ptr<LayerImpl> scrollable_child =
-      CreateScrollableLayer(3, surface_size);
+      CreateScrollableLayer(4, surface_size);
   child->AddChild(scrollable_child.Pass());
   LayerImpl* grand_child = child->children()[0];
 
@@ -1599,6 +1608,8 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
 
   EXPECT_EQ(1.f, root->contents_scale_x());
   EXPECT_EQ(1.f, root->contents_scale_y());
+  EXPECT_EQ(1.f, scroll->contents_scale_x());
+  EXPECT_EQ(1.f, scroll->contents_scale_y());
   EXPECT_EQ(1.f, child->contents_scale_x());
   EXPECT_EQ(1.f, child->contents_scale_y());
   EXPECT_EQ(1.f, grand_child->contents_scale_x());
@@ -1611,8 +1622,10 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
   host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
   host_impl_->DidDrawAllLayers(frame);
 
-  EXPECT_EQ(new_page_scale, root->draw_transform().matrix().getDouble(0, 0));
-  EXPECT_EQ(new_page_scale, root->draw_transform().matrix().getDouble(1, 1));
+  EXPECT_EQ(1.f, root->draw_transform().matrix().getDouble(0, 0));
+  EXPECT_EQ(1.f, root->draw_transform().matrix().getDouble(1, 1));
+  EXPECT_EQ(new_page_scale, scroll->draw_transform().matrix().getDouble(0, 0));
+  EXPECT_EQ(new_page_scale, scroll->draw_transform().matrix().getDouble(1, 1));
   EXPECT_EQ(new_page_scale, child->draw_transform().matrix().getDouble(0, 0));
   EXPECT_EQ(new_page_scale, child->draw_transform().matrix().getDouble(1, 1));
   EXPECT_EQ(new_page_scale,
@@ -1854,7 +1867,7 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollAxisAlignedRotatedLayer) {
-  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
 
   // Rotate the root layer 90 degrees counter-clockwise about its center.
   gfx::Transform rotate_transform;
@@ -1876,11 +1889,11 @@ TEST_F(LayerTreeHostImplTest, ScrollAxisAlignedRotatedLayer) {
   // The layer should have scrolled down in its local coordinates.
   scoped_ptr<ScrollAndScaleSet> scroll_info = host_impl_->ProcessScrollDeltas();
   ExpectContains(*scroll_info.get(),
-                 host_impl_->active_tree()->root_layer()->id(),
+                 scroll_layer->id(),
                  gfx::Vector2d(0, gesture_scroll_delta.x()));
 
   // Reset and scroll down with the wheel.
-  host_impl_->active_tree()->root_layer()->SetScrollDelta(gfx::Vector2dF());
+  scroll_layer->SetScrollDelta(gfx::Vector2dF());
   gfx::Vector2d wheel_scroll_delta(0, 10);
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(),
@@ -1891,19 +1904,19 @@ TEST_F(LayerTreeHostImplTest, ScrollAxisAlignedRotatedLayer) {
   // The layer should have scrolled down in its local coordinates.
   scroll_info = host_impl_->ProcessScrollDeltas();
   ExpectContains(*scroll_info.get(),
-                 host_impl_->active_tree()->root_layer()->id(),
+                 scroll_layer->id(),
                  wheel_scroll_delta);
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
-  SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  int child_layer_id = 3;
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  int child_layer_id = 4;
   float child_layer_angle = -20.f;
 
   // Create a child layer that is rotated to a non-axis-aligned angle.
   scoped_ptr<LayerImpl> child = CreateScrollableLayer(
       child_layer_id,
-      host_impl_->active_tree()->root_layer()->content_bounds());
+      scroll_layer->content_bounds());
   gfx::Transform rotate_transform;
   rotate_transform.Translate(-50.0, -50.0);
   rotate_transform.Rotate(child_layer_angle);
@@ -1912,7 +1925,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
 
   // Only allow vertical scrolling.
   child->SetMaxScrollOffset(gfx::Vector2d(0, child->content_bounds().height()));
-  host_impl_->active_tree()->root_layer()->AddChild(child.Pass());
+  scroll_layer->AddChild(child.Pass());
 
   gfx::Size surface_size(50, 50);
   host_impl_->SetViewportSize(surface_size);
@@ -1936,13 +1949,13 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
         host_impl_->ProcessScrollDeltas();
     ExpectContains(*scroll_info.get(), child_layer_id, expected_scroll_delta);
 
-    // The root layer should not have scrolled, because the input delta was
-    // close to the layer's axis of movement.
+    // The root scroll layer should not have scrolled, because the input delta
+    // was close to the layer's axis of movement.
     EXPECT_EQ(scroll_info->scrolls.size(), 1u);
   }
   {
     // Now reset and scroll the same amount horizontally.
-    host_impl_->active_tree()->root_layer()->children()[1]->SetScrollDelta(
+    scroll_layer->children()[1]->SetScrollDelta(
         gfx::Vector2dF());
     gfx::Vector2d gesture_scroll_delta(10, 0);
     EXPECT_EQ(InputHandler::ScrollStarted,
@@ -1961,26 +1974,27 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
         host_impl_->ProcessScrollDeltas();
     ExpectContains(*scroll_info.get(), child_layer_id, expected_scroll_delta);
 
-    // The root layer should have scrolled more, since the input scroll delta
-    // was mostly orthogonal to the child layer's vertical scroll axis.
+    // The root scroll layer should have scrolled more, since the input scroll
+    // delta was mostly orthogonal to the child layer's vertical scroll axis.
     gfx::Vector2d expected_root_scroll_delta(
         gesture_scroll_delta.x() *
             std::pow(std::cos(MathUtil::Deg2Rad(child_layer_angle)), 2),
         0);
     ExpectContains(*scroll_info.get(),
-                   host_impl_->active_tree()->root_layer()->id(),
+                   scroll_layer->id(),
                    expected_root_scroll_delta);
   }
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
-  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  LayerImpl* scroll_layer =
+      SetupScrollAndContentsLayers(gfx::Size(100, 100));
 
   // Scale the layer to twice its normal size.
   int scale = 2;
   gfx::Transform scale_transform;
   scale_transform.Scale(scale, scale);
-  host_impl_->active_tree()->root_layer()->SetTransform(scale_transform);
+  scroll_layer->SetTransform(scale_transform);
 
   gfx::Size surface_size(50, 50);
   host_impl_->SetViewportSize(surface_size);
@@ -1997,11 +2011,11 @@ TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
   // amount.
   scoped_ptr<ScrollAndScaleSet> scroll_info = host_impl_->ProcessScrollDeltas();
   ExpectContains(*scroll_info.get(),
-                 host_impl_->active_tree()->root_layer()->id(),
+                 scroll_layer->id(),
                  gfx::Vector2d(0, scroll_delta.y() / scale));
 
   // Reset and scroll down with the wheel.
-  host_impl_->active_tree()->root_layer()->SetScrollDelta(gfx::Vector2dF());
+  scroll_layer->SetScrollDelta(gfx::Vector2dF());
   gfx::Vector2d wheel_scroll_delta(0, 10);
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
@@ -2011,7 +2025,7 @@ TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
   // The scale should not have been applied to the scroll delta.
   scroll_info = host_impl_->ProcessScrollDeltas();
   ExpectContains(*scroll_info.get(),
-                 host_impl_->active_tree()->root_layer()->id(),
+                 scroll_layer->id(),
                  wheel_scroll_delta);
 }
 
@@ -2043,18 +2057,19 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
 
 TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   TestScrollOffsetDelegate scroll_delegate;
-  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
 
   // Setting the delegate results in the current scroll offset being set.
-  gfx::Vector2dF initial_scroll_delta(10, 10);
-  host_impl_->active_tree()->root_layer()->SetScrollOffset(gfx::Vector2d());
-  host_impl_->active_tree()->root_layer()->SetScrollDelta(initial_scroll_delta);
+  gfx::Vector2dF initial_scroll_delta(10.f, 10.f);
+  scroll_layer->SetScrollOffset(gfx::Vector2d());
+  scroll_layer->SetScrollDelta(initial_scroll_delta);
   host_impl_->SetRootLayerScrollOffsetDelegate(&scroll_delegate);
-  EXPECT_EQ(initial_scroll_delta, scroll_delegate.last_set_scroll_offset());
+  EXPECT_EQ(initial_scroll_delta.ToString(),
+            scroll_delegate.last_set_scroll_offset().ToString());
 
   // Scrolling should be relative to the offset as returned by the delegate.
-  gfx::Vector2d scroll_delta(0, 10);
-  gfx::Vector2d current_offset(7, 8);
+  gfx::Vector2dF scroll_delta(0.f, 10.f);
+  gfx::Vector2dF current_offset(7.f, 8.f);
 
   scroll_delegate.set_getter_return_value(current_offset);
   EXPECT_EQ(InputHandler::ScrollStarted,
@@ -2064,7 +2079,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   EXPECT_EQ(current_offset + scroll_delta,
             scroll_delegate.last_set_scroll_offset());
 
-  current_offset = gfx::Vector2d(42, 41);
+  current_offset = gfx::Vector2dF(42.f, 41.f);
   scroll_delegate.set_getter_return_value(current_offset);
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
   EXPECT_EQ(current_offset + scroll_delta,
@@ -2073,12 +2088,12 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
 
   // Un-setting the delegate should propagate the delegate's current offset to
   // the root scrollable layer.
-  current_offset = gfx::Vector2d(13, 12);
+  current_offset = gfx::Vector2dF(13.f, 12.f);
   scroll_delegate.set_getter_return_value(current_offset);
   host_impl_->SetRootLayerScrollOffsetDelegate(NULL);
 
-  EXPECT_EQ(current_offset,
-            host_impl_->active_tree()->root_layer()->TotalScrollOffset());
+  EXPECT_EQ(current_offset.ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
 }
 
 class BlendStateTrackerContext: public TestWebGraphicsContext3D {
@@ -2645,7 +2660,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   // expected swap rect: flipped damage rect, but also clamped to viewport
   layer_tree_host_impl->SetViewportSize(gfx::Size(10, 10));
   // This will damage everything.
-  layer_tree_host_impl->active_tree()->root_layer()->SetOpacity(0.7f);
+  layer_tree_host_impl->active_tree()->root_layer()->SetBackgroundColor(
+      SK_ColorBLACK);
   EXPECT_TRUE(layer_tree_host_impl->PrepareToDraw(&frame, gfx::Rect()));
   layer_tree_host_impl->DrawLayers(&frame, base::TimeTicks::Now());
   host_impl_->DidDrawAllLayers(frame);
@@ -2671,7 +2687,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerDoesntCreateExtraSurface) {
   root->SetBounds(gfx::Size(10, 10));
   root->SetContentBounds(gfx::Size(10, 10));
   root->SetDrawsContent(true);
-  root->SetOpacity(0.7f);
+  root->SetForceRenderSurface(true);
   root->AddChild(child.Pass());
 
   host_impl_->active_tree()->SetRootLayer(root.Pass());
@@ -4807,6 +4823,15 @@ class FakeMaskLayerImpl : public LayerImpl {
 };
 
 TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
+  LayerTreeSettings settings;
+  settings.layer_transforms_should_scale_layer_contents = true;
+  host_impl_ = LayerTreeHostImpl::Create(settings,
+                                         this,
+                                         &proxy_,
+                                         &stats_instrumentation_);
+  host_impl_->InitializeRenderer(CreateOutputSurface());
+  host_impl_->SetViewportSize(gfx::Size(10, 10));
+
   // Root
   //  |
   //  +-- Scaling Layer (adds a 2x scale)

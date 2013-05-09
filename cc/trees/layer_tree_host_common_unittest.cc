@@ -61,7 +61,6 @@ void SetLayerPropertiesForTesting(Layer* layer,
                                               position,
                                               bounds,
                                               preserves3d);
-  layer->SetAutomaticallyComputeRasterScale(true);
 }
 
 void SetLayerPropertiesForTesting(LayerImpl* layer,
@@ -105,6 +104,7 @@ void ExecuteCalculateDrawProperties(Layer* root_layer,
       page_scale_application_layer,
       dummy_max_texture_size,
       can_use_lcd_text,
+      true,  // can_adjust_raster_scale
       &dummy_render_surface_layer_list);
 }
 
@@ -131,6 +131,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
       page_scale_application_layer,
       dummy_max_texture_size,
       can_use_lcd_text,
+      true,  // can_adjust_raster_scale
       &dummy_render_surface_layer_list);
 }
 
@@ -1527,6 +1528,7 @@ TEST(LayerTreeHostCommonTest,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // The child layer's content is entirely outside the parent's clip rect, so
@@ -1575,6 +1577,7 @@ TEST(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Since the layer is transparent, render_surface1->render_surface() should
@@ -1633,6 +1636,7 @@ TEST(LayerTreeHostCommonTest, ForceRenderSurface) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // The root layer always creates a render surface
@@ -1649,6 +1653,7 @@ TEST(LayerTreeHostCommonTest, ForceRenderSurface) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
   EXPECT_TRUE(parent->render_surface());
   EXPECT_FALSE(render_surface1->render_surface());
@@ -1749,6 +1754,7 @@ TEST(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   ASSERT_EQ(2U, render_surface_layer_list.size());
@@ -1829,6 +1835,7 @@ TEST(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Without an animation, we should cull child and grand_child from the
@@ -1852,6 +1859,7 @@ TEST(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // With an animating transform, we should keep child and grand_child in the
@@ -1955,6 +1963,7 @@ TEST(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   ASSERT_TRUE(root->render_surface());
@@ -1983,6 +1992,7 @@ TEST(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   ASSERT_TRUE(root->render_surface());
@@ -2010,6 +2020,7 @@ TEST(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   ASSERT_TRUE(root->render_surface());
@@ -2117,6 +2128,7 @@ TEST(LayerTreeHostCommonTest, drawable_content_rectForLayers) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   EXPECT_RECT_EQ(gfx::Rect(5, 5, 10, 10),
@@ -2261,6 +2273,7 @@ TEST(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   ASSERT_TRUE(grand_child1->render_surface());
@@ -3590,6 +3603,7 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Verify which render surfaces were created.
@@ -3783,6 +3797,7 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Verify which render surfaces were created.
@@ -3922,6 +3937,7 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   EXPECT_FALSE(child->render_surface());
@@ -4049,6 +4065,7 @@ TEST(LayerTreeHostCommonTest,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Verify which render surfaces were created.
@@ -4126,6 +4143,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -4201,6 +4219,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayerAndHud) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -4268,6 +4287,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForUninvertibleTransform) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -4344,6 +4364,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSinglePositionedLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -4409,6 +4430,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleRotatedLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -4487,6 +4509,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSinglePerspectiveLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -4576,6 +4599,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayerWithScaledContents) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -4676,6 +4700,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSimpleClippedLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -4809,6 +4834,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultiClippedRotatedLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -4935,6 +4961,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForNonClippingIntermediateLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -5052,6 +5079,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultipleLayers) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -5205,6 +5233,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultipleLayerLists) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -5322,6 +5351,7 @@ TEST(LayerTreeHostCommonTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -5419,6 +5449,7 @@ TEST(LayerTreeHostCommonTest,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -5506,6 +5537,7 @@ TEST(LayerTreeHostCommonTest,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -5611,6 +5643,7 @@ TEST(LayerTreeHostCommonTest,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -5723,6 +5756,7 @@ TEST(LayerTreeHostCommonTest,
                                                root.get(),
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -5862,6 +5896,7 @@ TEST(LayerTreeHostCommonTest,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
@@ -6006,6 +6041,7 @@ TEST(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
                                                parent.get(),
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
@@ -6142,6 +6178,7 @@ TEST(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
                                                parent.get(),
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
@@ -6241,6 +6278,7 @@ TEST(LayerTreeHostCommonTest,
                                                parent.get(),
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
@@ -6318,7 +6356,8 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   double initial_child_scale = 1.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
-  float fixed_raster_scale = 2.5f;
+  scoped_refptr<Layer> root = Layer::Create();
+  root->SetBounds(gfx::Size(100, 100));
 
   scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
   SetLayerPropertiesForTesting(parent.get(),
@@ -6359,22 +6398,11 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
                                gfx::Size(10, 10),
                                true);
 
-  scoped_refptr<ContentLayer> child_no_auto_scale =
-      CreateDrawableContentLayer(&delegate);
-  SetLayerPropertiesForTesting(child_no_auto_scale.get(),
-                               child_scale_matrix,
-                               identity_matrix,
-                               gfx::PointF(),
-                               gfx::PointF(22.f, 22.f),
-                               gfx::Size(10, 10),
-                               true);
-  child_no_auto_scale->SetAutomaticallyComputeRasterScale(false);
-  child_no_auto_scale->SetRasterScale(fixed_raster_scale);
+  root->AddChild(parent);
 
   parent->AddChild(child_scale);
   parent->AddChild(child_empty);
   parent->AddChild(child_no_scale);
-  parent->AddChild(child_no_auto_scale);
 
   LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
@@ -6382,13 +6410,14 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   float device_scale_factor = 2.5f;
   float page_scale_factor = 1.f;
 
-  LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
-                                               parent->bounds(),
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
@@ -6400,9 +6429,6 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
                            initial_parent_scale * initial_child_scale,
                            child_empty);
   EXPECT_CONTENTS_SCALE_EQ(1, child_no_scale);
-  EXPECT_CONTENTS_SCALE_EQ(
-      device_scale_factor * page_scale_factor * fixed_raster_scale,
-      child_no_auto_scale);
 
   // The parent is scaled up and shouldn't need to scale during draw. The child
   // that can scale its contents should also not need to scale during draw. This
@@ -6419,12 +6445,6 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor *
                   initial_parent_scale * initial_child_scale,
                   child_no_scale->draw_transform().matrix().getDouble(1, 1));
-  EXPECT_FLOAT_EQ(
-      initial_parent_scale * initial_child_scale / fixed_raster_scale,
-      child_no_auto_scale->draw_transform().matrix().getDouble(0, 0));
-  EXPECT_FLOAT_EQ(
-      initial_parent_scale * initial_child_scale / fixed_raster_scale,
-      child_no_auto_scale->draw_transform().matrix().getDouble(1, 1));
 
   // If the device_scale_factor or page_scale_factor changes, then it should be
   // updated using the initial transform as the raster scale.
@@ -6432,13 +6452,14 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   page_scale_factor = 1.25f;
 
   render_surface_layer_list.clear();
-  LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
-                                               parent->bounds(),
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
                            initial_parent_scale,
@@ -6450,9 +6471,6 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
                            initial_parent_scale * initial_child_scale,
                            child_empty);
   EXPECT_CONTENTS_SCALE_EQ(1, child_no_scale);
-  EXPECT_CONTENTS_SCALE_EQ(
-      device_scale_factor * page_scale_factor * fixed_raster_scale,
-      child_no_auto_scale);
 
   // If the transform changes, we expect the raster scale to be reset to 1.0.
   double second_child_scale = 1.75;
@@ -6462,13 +6480,14 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   child_empty->SetTransform(child_scale_matrix);
 
   render_surface_layer_list.clear();
-  LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
-                                               parent->bounds(),
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
@@ -6486,13 +6505,14 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   page_scale_factor = 1.75f;
 
   render_surface_layer_list.clear();
-  LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
-                                               parent->bounds(),
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
@@ -6503,12 +6523,10 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
                            child_empty);
   EXPECT_CONTENTS_SCALE_EQ(1, child_no_scale);
-  EXPECT_CONTENTS_SCALE_EQ(
-      device_scale_factor * page_scale_factor * fixed_raster_scale,
-      child_no_auto_scale);
 }
 
-TEST(LayerTreeHostCommonTest, SmallContentsScale) {
+TEST(LayerTreeHostCommonTest,
+     ContentsScale_LayerTransformsDontAffectContentsScale) {
   MockContentLayerClient delegate;
   gfx::Transform identity_matrix;
 
@@ -6517,8 +6535,11 @@ TEST(LayerTreeHostCommonTest, SmallContentsScale) {
   parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
 
   gfx::Transform child_scale_matrix;
-  double initial_child_scale = 0.25;
+  double initial_child_scale = 1.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
+
+  scoped_refptr<Layer> root = Layer::Create();
+  root->SetBounds(gfx::Size(100, 100));
 
   scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
   SetLayerPropertiesForTesting(parent.get(),
@@ -6539,6 +6560,114 @@ TEST(LayerTreeHostCommonTest, SmallContentsScale) {
                                gfx::Size(10, 10),
                                true);
 
+  scoped_refptr<ContentLayer> child_empty =
+      CreateDrawableContentLayer(&delegate);
+  SetLayerPropertiesForTesting(child_empty.get(),
+                               child_scale_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(2.f, 2.f),
+                               gfx::Size(),
+                               true);
+
+  scoped_refptr<NoScaleContentLayer> child_no_scale =
+      CreateNoScaleDrawableContentLayer(&delegate);
+  SetLayerPropertiesForTesting(child_no_scale.get(),
+                               child_scale_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(12.f, 12.f),
+                               gfx::Size(10, 10),
+                               true);
+
+  root->AddChild(parent);
+
+  parent->AddChild(child_scale);
+  parent->AddChild(child_empty);
+  parent->AddChild(child_no_scale);
+
+  LayerList render_surface_layer_list;
+  int dummy_max_texture_size = 512;
+
+  float device_scale_factor = 2.5f;
+  float page_scale_factor = 1.f;
+
+  LayerTreeHostCommon::CalculateDrawProperties(
+      root.get(),
+      root->bounds(),
+      device_scale_factor,
+      page_scale_factor,
+      parent.get(),
+      dummy_max_texture_size,
+      false,
+      false,  // can_adjust_raster_scale
+      &render_surface_layer_list);
+
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
+                           child_scale);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
+                           child_empty);
+  EXPECT_CONTENTS_SCALE_EQ(1, child_no_scale);
+
+  // Since the transform scale does not affect contents scale, it should affect
+  // the draw transform instead.
+  EXPECT_FLOAT_EQ(initial_parent_scale,
+                  parent->draw_transform().matrix().getDouble(0, 0));
+  EXPECT_FLOAT_EQ(initial_parent_scale,
+                  parent->draw_transform().matrix().getDouble(1, 1));
+  EXPECT_FLOAT_EQ(initial_parent_scale * initial_child_scale,
+                  child_scale->draw_transform().matrix().getDouble(0, 0));
+  EXPECT_FLOAT_EQ(initial_parent_scale * initial_child_scale,
+                  child_scale->draw_transform().matrix().getDouble(1, 1));
+  EXPECT_FLOAT_EQ(initial_parent_scale * initial_child_scale,
+                  child_empty->draw_transform().matrix().getDouble(0, 0));
+  EXPECT_FLOAT_EQ(initial_parent_scale * initial_child_scale,
+                  child_empty->draw_transform().matrix().getDouble(1, 1));
+  EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor *
+                  initial_parent_scale * initial_child_scale,
+                  child_no_scale->draw_transform().matrix().getDouble(0, 0));
+  EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor *
+                  initial_parent_scale * initial_child_scale,
+                  child_no_scale->draw_transform().matrix().getDouble(1, 1));
+}
+
+TEST(LayerTreeHostCommonTest, SmallContentsScale) {
+  MockContentLayerClient delegate;
+  gfx::Transform identity_matrix;
+
+  gfx::Transform parent_scale_matrix;
+  double initial_parent_scale = 1.75;
+  parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
+
+  gfx::Transform child_scale_matrix;
+  double initial_child_scale = 0.25;
+  child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
+
+  scoped_refptr<Layer> root = Layer::Create();
+  root->SetBounds(gfx::Size(100, 100));
+
+  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  SetLayerPropertiesForTesting(parent.get(),
+                               parent_scale_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(100, 100),
+                               true);
+
+  scoped_refptr<ContentLayer> child_scale =
+      CreateDrawableContentLayer(&delegate);
+  SetLayerPropertiesForTesting(child_scale.get(),
+                               child_scale_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(2.f, 2.f),
+                               gfx::Size(10, 10),
+                               true);
+
+  root->AddChild(parent);
+
   parent->AddChild(child_scale);
 
   LayerList render_surface_layer_list;
@@ -6547,13 +6676,14 @@ TEST(LayerTreeHostCommonTest, SmallContentsScale) {
   float device_scale_factor = 2.5f;
   float page_scale_factor = 0.01f;
 
-  LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
-                                               parent->bounds(),
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
@@ -6571,13 +6701,14 @@ TEST(LayerTreeHostCommonTest, SmallContentsScale) {
   child_scale->SetTransform(child_scale_matrix);
 
   render_surface_layer_list.clear();
-  LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
-                                               parent->bounds(),
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
@@ -6600,7 +6731,8 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
   double initial_child_scale = 3.0;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
-  float fixed_raster_scale = 4.f;
+  scoped_refptr<Layer> root = Layer::Create();
+  root->SetBounds(gfx::Size(100, 100));
 
   scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
   SetLayerPropertiesForTesting(parent.get(),
@@ -6671,41 +6803,10 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
                                gfx::Size(10, 10),
                                true);
 
-  scoped_refptr<ContentLayer> surface_no_auto_scale =
-      CreateDrawableContentLayer(&delegate);
-  SetLayerPropertiesForTesting(surface_no_auto_scale.get(),
-                               child_scale_matrix,
-                               identity_matrix,
-                               gfx::PointF(),
-                               gfx::PointF(22.f, 22.f),
-                               gfx::Size(10, 10),
-                               true);
-  surface_no_auto_scale->SetAutomaticallyComputeRasterScale(false);
-  surface_no_auto_scale->SetRasterScale(fixed_raster_scale);
-
-  scoped_refptr<ContentLayer> surface_no_auto_scale_child_scale =
-      CreateDrawableContentLayer(&delegate);
-  SetLayerPropertiesForTesting(surface_no_auto_scale_child_scale.get(),
-                               child_scale_matrix,
-                               identity_matrix,
-                               gfx::PointF(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true);
-
-  scoped_refptr<NoScaleContentLayer> surface_no_auto_scale_child_no_scale =
-      CreateNoScaleDrawableContentLayer(&delegate);
-  SetLayerPropertiesForTesting(surface_no_auto_scale_child_no_scale.get(),
-                               child_scale_matrix,
-                               identity_matrix,
-                               gfx::PointF(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true);
+  root->AddChild(parent);
 
   parent->AddChild(surface_scale);
   parent->AddChild(surface_no_scale);
-  parent->AddChild(surface_no_auto_scale);
 
   surface_scale->SetForceRenderSurface(true);
   surface_scale->AddChild(surface_scale_child_scale);
@@ -6715,23 +6816,20 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
   surface_no_scale->AddChild(surface_no_scale_child_scale);
   surface_no_scale->AddChild(surface_no_scale_child_no_scale);
 
-  surface_no_auto_scale->SetForceRenderSurface(true);
-  surface_no_auto_scale->AddChild(surface_no_auto_scale_child_scale);
-  surface_no_auto_scale->AddChild(surface_no_auto_scale_child_no_scale);
-
   LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
 
   double device_scale_factor = 5;
   double page_scale_factor = 7;
 
-  LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
-                                               parent->bounds(),
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
                            initial_parent_scale,
@@ -6740,9 +6838,6 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
                            initial_parent_scale * initial_child_scale,
                            surface_scale);
   EXPECT_CONTENTS_SCALE_EQ(1, surface_no_scale);
-  EXPECT_CONTENTS_SCALE_EQ(
-      device_scale_factor * page_scale_factor * fixed_raster_scale,
-      surface_no_auto_scale);
   EXPECT_CONTENTS_SCALE_EQ(
       device_scale_factor * page_scale_factor * initial_parent_scale *
       initial_child_scale * initial_child_scale,
@@ -6753,11 +6848,6 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
       initial_child_scale * initial_child_scale,
       surface_no_scale_child_scale);
   EXPECT_CONTENTS_SCALE_EQ(1, surface_no_scale_child_no_scale);
-  EXPECT_CONTENTS_SCALE_EQ(
-      device_scale_factor * page_scale_factor * initial_parent_scale *
-      initial_child_scale * initial_child_scale,
-      surface_no_auto_scale_child_scale);
-  EXPECT_CONTENTS_SCALE_EQ(1, surface_no_auto_scale_child_no_scale);
 
   // The parent is scaled up and shouldn't need to scale during draw.
   EXPECT_FLOAT_EQ(1.0, parent->draw_transform().matrix().getDouble(0, 0));
@@ -6840,51 +6930,219 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
       initial_child_scale * initial_child_scale,
       surface_no_scale_child_no_scale->draw_transform().matrix().getDouble(1,
                                                                            1));
+}
 
-  // RenderSurfaces should always be 1:1 with their target.
+TEST(LayerTreeHostCommonTest,
+     ContentsScaleForSurfaces_LayerTransformsDontAffectContentsScale) {
+  MockContentLayerClient delegate;
+  gfx::Transform identity_matrix;
+
+  gfx::Transform parent_scale_matrix;
+  double initial_parent_scale = 2.0;
+  parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
+
+  gfx::Transform child_scale_matrix;
+  double initial_child_scale = 3.0;
+  child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
+
+  scoped_refptr<Layer> root = Layer::Create();
+  root->SetBounds(gfx::Size(100, 100));
+
+  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  SetLayerPropertiesForTesting(parent.get(),
+                               parent_scale_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(100, 100),
+                               true);
+
+  scoped_refptr<ContentLayer> surface_scale =
+      CreateDrawableContentLayer(&delegate);
+  SetLayerPropertiesForTesting(surface_scale.get(),
+                               child_scale_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(2.f, 2.f),
+                               gfx::Size(10, 10),
+                               true);
+
+  scoped_refptr<ContentLayer> surface_scale_child_scale =
+      CreateDrawableContentLayer(&delegate);
+  SetLayerPropertiesForTesting(surface_scale_child_scale.get(),
+                               child_scale_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(10, 10),
+                               true);
+
+  scoped_refptr<NoScaleContentLayer> surface_scale_child_no_scale =
+      CreateNoScaleDrawableContentLayer(&delegate);
+  SetLayerPropertiesForTesting(surface_scale_child_no_scale.get(),
+                               child_scale_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(10, 10),
+                               true);
+
+  scoped_refptr<NoScaleContentLayer> surface_no_scale =
+      CreateNoScaleDrawableContentLayer(&delegate);
+  SetLayerPropertiesForTesting(surface_no_scale.get(),
+                               child_scale_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(12.f, 12.f),
+                               gfx::Size(10, 10),
+                               true);
+
+  scoped_refptr<ContentLayer> surface_no_scale_child_scale =
+      CreateDrawableContentLayer(&delegate);
+  SetLayerPropertiesForTesting(surface_no_scale_child_scale.get(),
+                               child_scale_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(10, 10),
+                               true);
+
+  scoped_refptr<NoScaleContentLayer> surface_no_scale_child_no_scale =
+      CreateNoScaleDrawableContentLayer(&delegate);
+  SetLayerPropertiesForTesting(surface_no_scale_child_no_scale.get(),
+                               child_scale_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(10, 10),
+                               true);
+
+  root->AddChild(parent);
+
+  parent->AddChild(surface_scale);
+  parent->AddChild(surface_no_scale);
+
+  surface_scale->SetForceRenderSurface(true);
+  surface_scale->AddChild(surface_scale_child_scale);
+  surface_scale->AddChild(surface_scale_child_no_scale);
+
+  surface_no_scale->SetForceRenderSurface(true);
+  surface_no_scale->AddChild(surface_no_scale_child_scale);
+  surface_no_scale->AddChild(surface_no_scale_child_no_scale);
+
+  LayerList render_surface_layer_list;
+  int dummy_max_texture_size = 512;
+
+  double device_scale_factor = 5;
+  double page_scale_factor = 7;
+
+  LayerTreeHostCommon::CalculateDrawProperties(
+      root.get(),
+      root->bounds(),
+      device_scale_factor,
+      page_scale_factor,
+      parent.get(),
+      dummy_max_texture_size,
+      false,
+      false,  // can_adjust_raster_scale
+      &render_surface_layer_list);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
+                           parent);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
+                           surface_scale);
+  EXPECT_CONTENTS_SCALE_EQ(1.f, surface_no_scale);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
+                           surface_scale_child_scale);
+  EXPECT_CONTENTS_SCALE_EQ(1.f, surface_scale_child_no_scale);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
+                           surface_no_scale_child_scale);
+  EXPECT_CONTENTS_SCALE_EQ(1.f, surface_no_scale_child_no_scale);
+
+  // The parent is scaled up during draw, since its contents are not scaled by
+  // the transform hierarchy.
+  EXPECT_FLOAT_EQ(initial_parent_scale,
+                  parent->draw_transform().matrix().getDouble(0, 0));
+  EXPECT_FLOAT_EQ(initial_parent_scale,
+                  parent->draw_transform().matrix().getDouble(1, 1));
+
+  // The child surface is scaled up during draw since its subtree is not scaled
+  // by the transform hierarchy.
+  EXPECT_FLOAT_EQ(
+      initial_parent_scale * initial_child_scale,
+      surface_scale->render_surface()->draw_transform().matrix().getDouble(0,
+                                                                           0));
+  EXPECT_FLOAT_EQ(
+      initial_parent_scale * initial_child_scale,
+      surface_scale->render_surface()->draw_transform().matrix().getDouble(1,
+                                                                           1));
+
+  // The surface_scale's RenderSurface is scaled during draw, so the layer does
+  // not need to be scaled when drawing into its surface.
   EXPECT_FLOAT_EQ(1.0,
-                  surface_no_auto_scale->render_surface()->draw_transform()
-                      .matrix().getDouble(0, 0));
+                  surface_scale->draw_transform().matrix().getDouble(0, 0));
   EXPECT_FLOAT_EQ(1.0,
-                  surface_no_auto_scale->render_surface()->draw_transform()
-                      .matrix().getDouble(1, 1));
+                  surface_scale->draw_transform().matrix().getDouble(1, 1));
 
-  // The surface_no_auto_scale layer has a fixed contents scale, so it needs to
-  // be scaled during draw.
+  // The surface_scale_child_scale is scaled when drawing into its surface,
+  // since its content bounds are not scaled by the transform hierarchy.
   EXPECT_FLOAT_EQ(
-      device_scale_factor * page_scale_factor * initial_parent_scale *
-      initial_child_scale /
-      (device_scale_factor * page_scale_factor * fixed_raster_scale),
-      surface_no_auto_scale->draw_transform().matrix().getDouble(0, 0));
+      initial_child_scale,
+      surface_scale_child_scale->draw_transform().matrix().getDouble(0, 0));
   EXPECT_FLOAT_EQ(
-      device_scale_factor * page_scale_factor * initial_parent_scale *
-      initial_child_scale /
-      (device_scale_factor * page_scale_factor * fixed_raster_scale),
-      surface_no_auto_scale->draw_transform().matrix().getDouble(1, 1));
+      initial_child_scale,
+      surface_scale_child_scale->draw_transform().matrix().getDouble(1, 1));
 
-  // The surface_scale_child_scale can apply contents scale so it shouldn't need
-  // to scale during draw.
+  // The surface_scale_child_no_scale has a fixed contents scale of 1, so it
+  // needs to be scaled by the device and page scale factors, along with the
+  // transform hierarchy.
   EXPECT_FLOAT_EQ(
-      1.0,
-      surface_no_auto_scale_child_scale->draw_transform().matrix().getDouble(
+      device_scale_factor * page_scale_factor * initial_child_scale,
+      surface_scale_child_no_scale->draw_transform().matrix().getDouble(0, 0));
+  EXPECT_FLOAT_EQ(
+      device_scale_factor * page_scale_factor * initial_child_scale,
+      surface_scale_child_no_scale->draw_transform().matrix().getDouble(1, 1));
+
+  // The child surface is scaled up during draw since its subtree is not scaled
+  // by the transform hierarchy.
+  EXPECT_FLOAT_EQ(
+      initial_parent_scale * initial_child_scale,
+      surface_no_scale->render_surface()->draw_transform().matrix().getDouble(
           0, 0));
   EXPECT_FLOAT_EQ(
-      1.0,
-      surface_no_auto_scale_child_scale->draw_transform().matrix().getDouble(
+      initial_parent_scale * initial_child_scale,
+      surface_no_scale->render_surface()->draw_transform().matrix().getDouble(
           1, 1));
 
-  // The surface_scale_child_no_scale can not apply contents scale, so it needs
-  // to be scaled during draw.
+  // The surface_no_scale layer has a fixed contents scale of 1, so it needs to
+  // be scaled by the device and page scale factors. Its surface is already
+  // scaled by the transform hierarchy so those don't need to scale the layer's
+  // drawing.
+  EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor,
+                  surface_no_scale->draw_transform().matrix().getDouble(0, 0));
+  EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor,
+                  surface_no_scale->draw_transform().matrix().getDouble(1, 1));
+
+  // The surface_no_scale_child_scale has its contents scaled by the page and
+  // device scale factors, but needs to be scaled by the transform hierarchy
+  // when drawing.
   EXPECT_FLOAT_EQ(
-      device_scale_factor * page_scale_factor * initial_parent_scale *
-      initial_child_scale * initial_child_scale,
-      surface_no_auto_scale_child_no_scale->draw_transform().matrix().getDouble(
-          0, 0));
+      initial_child_scale,
+      surface_no_scale_child_scale->draw_transform().matrix().getDouble(0, 0));
   EXPECT_FLOAT_EQ(
-      device_scale_factor * page_scale_factor * initial_parent_scale *
-      initial_child_scale * initial_child_scale,
-      surface_no_auto_scale_child_no_scale->draw_transform().matrix().getDouble(
-          1, 1));
+      initial_child_scale,
+      surface_no_scale_child_scale->draw_transform().matrix().getDouble(1, 1));
+
+  // The surface_no_scale_child_no_scale has a fixed contents scale of 1, so it
+  // needs to be scaled by the device and page scale factors. It also needs to
+  // be scaled by any transform heirarchy below its target surface.
+  EXPECT_FLOAT_EQ(
+      device_scale_factor * page_scale_factor * initial_child_scale,
+      surface_no_scale_child_no_scale->draw_transform().matrix().getDouble(0,
+                                                                           0));
+  EXPECT_FLOAT_EQ(
+      device_scale_factor * page_scale_factor * initial_child_scale,
+      surface_no_scale_child_no_scale->draw_transform().matrix().getDouble(1,
+                                                                           1));
 }
 
 TEST(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
@@ -6898,6 +7156,9 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
   gfx::Transform child_scale_matrix;
   double initial_child_scale = 1.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
+
+  scoped_refptr<Layer> root = Layer::Create();
+  root->SetBounds(gfx::Size(100, 100));
 
   scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
   SetLayerPropertiesForTesting(parent.get(),
@@ -6918,6 +7179,8 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
                                gfx::Size(10, 10),
                                true);
 
+  root->AddChild(parent);
+
   parent->AddChild(child_scale);
 
   // Now put an animating transform on child.
@@ -6927,13 +7190,14 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
   LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
 
-  LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
-                                               parent->bounds(),
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
                                                1.f,
                                                1.f,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   EXPECT_CONTENTS_SCALE_EQ(initial_parent_scale, parent);
@@ -6944,13 +7208,14 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
   // Remove the animation, now it can save a raster scale.
   child_scale->layer_animation_controller()->RemoveAnimation(animation_id);
 
-  LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
-                                               parent->bounds(),
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
                                                1.f,
                                                1.f,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   EXPECT_CONTENTS_SCALE_EQ(initial_parent_scale, parent);
@@ -7020,6 +7285,7 @@ TEST(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // We should have two render surfaces. The root's render surface and child's
@@ -7156,6 +7422,7 @@ TEST(LayerTreeHostCommonTest,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // We should have two render surfaces. The root's render surface and child's
@@ -7309,6 +7576,7 @@ TEST(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
   // We should have one render surface and two layers. The child

@@ -309,21 +309,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
                                       float* contents_scale_y,
                                       gfx::Size* content_bounds);
 
-  // The scale at which contents should be rastered, to match the scale at
-  // which they will drawn to the screen. This scale is a component of the
-  // contentsScale() but does not include page/device scale factors.
-  void SetRasterScale(float scale);
-  float raster_scale() const { return raster_scale_; }
-
-  // When true, the RasterScale() will be set by the compositor. If false, it
-  // will use whatever value is given to it by the embedder.
-  bool automatically_compute_raster_scale() {
-    return automatically_compute_raster_scale_;
-  }
-  void SetAutomaticallyComputeRasterScale(bool automatic);
-
-  void ForceAutomaticRasterScaleToBeRecomputed();
-
   LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 
   // Set the priority of all desired textures in this layer.
@@ -382,6 +367,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return paint_properties_;
   }
 
+  // The scale at which contents should be rastered, to match the scale at
+  // which they will drawn to the screen. This scale is a component of the
+  // contents scale but does not include page/device scale factors.
+  // TODO(danakj): This goes away when TiledLayer goes away.
+  void set_raster_scale(float scale) { raster_scale_ = scale; }
+  float raster_scale() const { return raster_scale_; }
+  bool raster_scale_is_unknown() const { return raster_scale_ == 0.f; }
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -392,6 +385,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetNeedsCommit();
   void SetNeedsFullTreeSync();
   bool IsPropertyChangeAllowed() const;
+
+  void reset_raster_scale_to_unknown() { raster_scale_ = 0.f; }
 
   // This flag is set when layer need repainting/updating.
   bool needs_display_;
@@ -481,7 +476,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   // Transient properties.
   float raster_scale_;
-  bool automatically_compute_raster_scale_;
 
   std::vector<RequestCopyAsBitmapCallback> request_copy_callbacks_;
 

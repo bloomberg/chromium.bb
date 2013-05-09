@@ -46,6 +46,7 @@ void CalcDrawProps(Layer* root, float device_scale) {
       NULL,
       1024,
       false,
+      false,
       &render_surface_layer_list);
 }
 

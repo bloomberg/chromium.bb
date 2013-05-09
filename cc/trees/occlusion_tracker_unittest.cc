@@ -320,7 +320,8 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
         1.f,
         NULL,
         dummy_max_texture_size,
-        false,
+        false,  // can_use_lcd_text
+        true,  // can_adjust_raster_scales
         &render_surface_layer_list_impl_);
 
     layer_iterator_ = layer_iterator_begin_ =
@@ -333,14 +334,16 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
     DCHECK(!root->render_surface());
 
-    LayerTreeHostCommon::CalculateDrawProperties(root,
-                                                 root->bounds(),
-                                                 1.f,
-                                                 1.f,
-                                                 NULL,
-                                                 dummy_max_texture_size,
-                                                 false,
-                                                 &render_surface_layer_list_);
+    LayerTreeHostCommon::CalculateDrawProperties(
+        root,
+        root->bounds(),
+        1.f,
+        1.f,
+        NULL,
+        dummy_max_texture_size,
+        false,  // can_use_lcd_text
+        true,  // can_adjust_raster_scales
+        &render_surface_layer_list_);
 
     layer_iterator_ = layer_iterator_begin_ =
         Types::TestLayerIterator::Begin(&render_surface_layer_list_);

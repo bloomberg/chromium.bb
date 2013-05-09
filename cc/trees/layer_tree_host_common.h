@@ -34,6 +34,7 @@ class CC_EXPORT LayerTreeHostCommon {
       Layer* page_scale_application_layer,
       int max_texture_size,
       bool can_use_lcd_text,
+      bool can_adjust_raster_scales,
       LayerList* render_surface_layer_list);
   static void CalculateDrawProperties(
       LayerImpl* root_layer,
@@ -43,6 +44,7 @@ class CC_EXPORT LayerTreeHostCommon {
       LayerImpl* page_scale_application_layer,
       int max_texture_size,
       bool can_use_lcd_text,
+      bool can_adjust_raster_scales,
       LayerImplList* render_surface_layer_list);
 
   // Performs hit testing for a given render_surface_layer_list.

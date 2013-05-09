@@ -117,6 +117,7 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
                                                NULL,
                                                1024,
                                                false,
+                                               false,
                                                &render_surface_layer_list);
 
   EXPECT_FALSE(layer->contents_opaque());

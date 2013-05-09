@@ -87,6 +87,11 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   CommandLine* cmd = CommandLine::ForCurrentProcess();
 
   cc::LayerTreeSettings settings;
+
+  // For web contents, layer transforms should scale up the contents of layers
+  // to keep content always crisp when possible.
+  settings.layer_transforms_should_scale_layer_contents = true;
+
   settings.accelerate_painting =
       cmd->HasSwitch(switches::kEnableAcceleratedPainting);
   settings.render_vsync_enabled = !cmd->HasSwitch(switches::kDisableGpuVsync);

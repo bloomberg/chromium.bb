@@ -288,30 +288,31 @@ static bool SubtreeShouldRenderToSeparateSurface(
   // any of these rules hold:
   //
 
-  // The root layer should always have a render_surface.
-  if (IsRootLayer(layer))
-    return true;
-
-  // If we force it.
-  if (layer->force_render_surface())
-    return true;
-
-  // If we'll make a copy of the layer's contents.
-  if (layer->HasRequestCopyCallback())
-    return true;
+  // The root layer owns a render surface, but it never acts as a contributing
+  // surface to another render target. Compositor features that are applied via
+  // a contributing surface can not be applied to the root layer. In order to
+  // use these effects, another child of the root would need to be introduced
+  // in order to act as a contributing surface to the root layer's surface.
+  bool is_root = IsRootLayer(layer);
 
   // If the layer uses a mask.
-  if (layer->mask_layer())
+  if (layer->mask_layer()) {
+    DCHECK(!is_root);
     return true;
+  }
 
   // If the layer has a reflection.
-  if (layer->replica_layer())
+  if (layer->replica_layer()) {
+    DCHECK(!is_root);
     return true;
+  }
 
   // If the layer uses a CSS filter.
   if (!layer->filters().isEmpty() || !layer->background_filters().isEmpty() ||
-      layer->filter())
+      layer->filter()) {
+    DCHECK(!is_root);
     return true;
+  }
 
   int num_descendants_that_draw_content =
       layer->draw_properties().num_descendants_that_draw_content;
@@ -324,6 +325,7 @@ static bool SubtreeShouldRenderToSeparateSurface(
         "cc",
         "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface flattening",
         TRACE_EVENT_SCOPE_THREAD);
+    DCHECK(!is_root);
     return true;
   }
 
@@ -337,6 +339,7 @@ static bool SubtreeShouldRenderToSeparateSurface(
         "cc",
         "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface clipping",
         TRACE_EVENT_SCOPE_THREAD);
+    DCHECK(!is_root);
     return true;
   }
 
@@ -355,8 +358,26 @@ static bool SubtreeShouldRenderToSeparateSurface(
         "cc",
         "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface opacity",
         TRACE_EVENT_SCOPE_THREAD);
+    DCHECK(!is_root);
     return true;
   }
+
+  // The root layer should always have a render_surface.
+  if (is_root)
+    return true;
+
+  //
+  // These are allowed on the root surface, as they don't require the surface to
+  // be used as a contributing surface in order to apply correctly.
+  //
+
+  // If we force it.
+  if (layer->force_render_surface())
+    return true;
+
+  // If we'll make a copy of the layer's contents.
+  if (layer->HasRequestCopyCallback())
+    return true;
 
   return false;
 }
@@ -648,6 +669,7 @@ static inline void CalculateContentsScale(LayerType* layer,
 
 static inline void UpdateLayerContentsScale(
     LayerImpl* layer,
+    bool can_adjust_raster_scale,
     float ideal_contents_scale,
     float device_scale_factor,
     float page_scale_factor,
@@ -661,22 +683,21 @@ static inline void UpdateLayerContentsScale(
 
 static inline void UpdateLayerContentsScale(
     Layer* layer,
+    bool can_adjust_raster_scale,
     float ideal_contents_scale,
     float device_scale_factor,
     float page_scale_factor,
     bool animating_transform_to_screen) {
-  float raster_scale = layer->raster_scale();
-
-  if (layer->automatically_compute_raster_scale()) {
+  if (can_adjust_raster_scale) {
     float ideal_raster_scale =
         ideal_contents_scale / (device_scale_factor * page_scale_factor);
 
-    bool need_to_set_raster_scale = !raster_scale;
+    bool need_to_set_raster_scale = layer->raster_scale_is_unknown();
 
     // If we've previously saved a raster_scale but the ideal changes, things
     // are unpredictable and we should just use 1.
-    if (raster_scale && raster_scale != 1.f &&
-        ideal_raster_scale != raster_scale) {
+    if (!need_to_set_raster_scale && layer->raster_scale() != 1.f &&
+        ideal_raster_scale != layer->raster_scale()) {
       ideal_raster_scale = 1.f;
       need_to_set_raster_scale = true;
     }
@@ -684,15 +705,15 @@ static inline void UpdateLayerContentsScale(
     if (need_to_set_raster_scale) {
       bool use_and_save_ideal_scale =
           ideal_raster_scale >= 1.f && !animating_transform_to_screen;
-      if (use_and_save_ideal_scale) {
-        raster_scale = ideal_raster_scale;
-        layer->SetRasterScale(raster_scale);
-      }
+      if (use_and_save_ideal_scale)
+        layer->set_raster_scale(ideal_raster_scale);
     }
   }
 
-  if (!raster_scale)
-    raster_scale = 1.f;
+  float raster_scale = 1.f;
+  if (!layer->raster_scale_is_unknown())
+    raster_scale = layer->raster_scale();
+
 
   float contents_scale = raster_scale * device_scale_factor * page_scale_factor;
   CalculateContentsScale(layer,
@@ -791,6 +812,7 @@ static void CalculateDrawPropertiesInternal(
     LayerType* page_scale_application_layer,
     bool in_subtree_of_page_scale_application_layer,
     bool subtree_can_use_lcd_text,
+    bool subtree_can_adjust_raster_scales,
     gfx::Rect* drawable_content_rect_of_subtree) {
   // This function computes the new matrix transformations recursively for this
   // layer and all its descendants. It also computes the appropriate render
@@ -1015,14 +1037,21 @@ static void CalculateDrawPropertiesInternal(
 
   // Compute the 2d scale components of the transform hierarchy up to the target
   // surface. From there, we can decide on a contents scale for the layer.
+  float layer_scale_factors =
+      device_scale_factor * page_scale_factor_applied_to_layer;
   gfx::Vector2dF combined_transform_scales =
       MathUtil::ComputeTransform2dScaleComponents(
           combined_transform,
-          device_scale_factor * page_scale_factor_applied_to_layer);
+          layer_scale_factors);
+
   float ideal_contents_scale =
-      std::max(combined_transform_scales.x(), combined_transform_scales.y());
+      subtree_can_adjust_raster_scales
+      ? std::max(combined_transform_scales.x(),
+                 combined_transform_scales.y())
+      : layer_scale_factors;
   UpdateLayerContentsScale(
       layer,
+      subtree_can_adjust_raster_scales,
       ideal_contents_scale,
       device_scale_factor,
       page_scale_factor_applied_to_layer,
@@ -1064,7 +1093,13 @@ static void CalculateDrawPropertiesInternal(
   gfx::Transform next_hierarchy_matrix = full_hierarchy_matrix;
   gfx::Transform sublayer_matrix;
 
-  gfx::Vector2dF render_surface_sublayer_scale = combined_transform_scales;
+  // If the subtree will scale layer contents by the transform hierarchy, then
+  // we should scale things into the render surface by the transform hierarchy
+  // to take advantage of that.
+  gfx::Vector2dF render_surface_sublayer_scale =
+      subtree_can_adjust_raster_scales
+      ? combined_transform_scales
+      : gfx::Vector2dF(layer_scale_factors, layer_scale_factors);
 
   if (SubtreeShouldRenderToSeparateSurface(
           layer, combined_transform.IsScaleOrTranslation())) {
@@ -1087,6 +1122,15 @@ static void CalculateDrawPropertiesInternal(
     combined_transform.Scale(1.0 / render_surface_sublayer_scale.x(),
                              1.0 / render_surface_sublayer_scale.y());
     render_surface->SetDrawTransform(combined_transform);
+
+    // If this is the root layer, there should be no scale in the surface's draw
+    // transform.
+    if (IsRootLayer(layer)) {
+      DCHECK_EQ(render_surface_sublayer_scale.x(),
+                combined_transform_scales.x());
+      DCHECK_EQ(render_surface_sublayer_scale.y(),
+                combined_transform_scales.y());
+    }
 
     // The owning layer's transform was re-parented by the surface, so the
     // layer's new draw_transform only needs to scale the layer to surface
@@ -1297,6 +1341,7 @@ static void CalculateDrawPropertiesInternal(
         page_scale_application_layer,
         in_subtree_of_page_scale_application_layer,
         subtree_can_use_lcd_text,
+        subtree_can_adjust_raster_scales,
         &drawable_content_rect_of_child_subtree);
     if (!drawable_content_rect_of_child_subtree.IsEmpty()) {
       accumulated_drawable_content_rect_of_children.Union(
@@ -1471,6 +1516,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     Layer* page_scale_application_layer,
     int max_texture_size,
     bool can_use_lcd_text,
+    bool can_adjust_raster_scales,
     LayerList* render_surface_layer_list) {
   gfx::Rect total_drawable_content_rect;
   gfx::Transform identity_matrix;
@@ -1507,6 +1553,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       page_scale_application_layer,
       in_subtree_of_page_scale_application_layer,
       can_use_lcd_text,
+      can_adjust_raster_scales,
       &total_drawable_content_rect);
 
   // The dummy layer list should not have been used.
@@ -1524,6 +1571,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     LayerImpl* page_scale_application_layer,
     int max_texture_size,
     bool can_use_lcd_text,
+    bool can_adjust_raster_scales,
     LayerImplList* render_surface_layer_list) {
   gfx::Rect total_drawable_content_rect;
   gfx::Transform identity_matrix;
@@ -1563,6 +1611,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       page_scale_application_layer,
       in_subtree_of_page_scale_application_layer,
       can_use_lcd_text,
+      can_adjust_raster_scales,
       &total_drawable_content_rect);
 
   // The dummy layer list should not have been used.

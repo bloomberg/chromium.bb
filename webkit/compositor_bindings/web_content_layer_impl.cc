@@ -48,10 +48,6 @@ void WebContentLayerImpl::setDoubleSided(bool double_sided) {
   layer_->layer()->SetDoubleSided(double_sided);
 }
 
-void WebContentLayerImpl::setAutomaticallyComputeRasterScale(bool automatic) {
-  layer_->layer()->SetAutomaticallyComputeRasterScale(automatic);
-}
-
 // TODO(alokp): Remove this function from WebContentLayer API.
 void WebContentLayerImpl::setUseLCDText(bool enable) {}
 

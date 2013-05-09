@@ -41,6 +41,7 @@ void ExecuteCalculateDrawProperties(
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
+                                               false,
                                                &render_surface_layer_list);
 }
 
@@ -414,8 +415,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForPerspectiveClippedLayer) {
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForBlurredSurface) {
-  scoped_ptr<LayerImpl> root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->children()[0];
+  scoped_ptr<LayerImpl> root = CreateAndSetUpTestTreeWithTwoSurfaces();
+  LayerImpl* surface = root->children()[0];
+  LayerImpl* child = surface->children()[0];
 
   WebFilterOperations filters;
   filters.append(WebFilterOperation::createBlurFilter(5));
@@ -424,21 +426,21 @@ TEST_F(DamageTrackerTest, VerifyDamageForBlurredSurface) {
 
   // Setting the filter will damage the whole surface.
   ClearDamageForAllSurfaces(root.get());
-  root->SetFilters(filters);
+  surface->SetFilters(filters);
   EmulateDrawingOneFrame(root.get());
 
   // Setting the update rect should cause the corresponding damage to the
   // surface, blurred based on the size of the blur filter.
   ClearDamageForAllSurfaces(root.get());
-  child->set_update_rect(gfx::RectF(10.f, 11.f, 12.f, 13.f));
+  child->set_update_rect(gfx::RectF(1.f, 2.f, 3.f, 4.f));
   EmulateDrawingOneFrame(root.get());
 
-  // Damage position on the surface should be: position of update_rect (10, 11)
-  // relative to the child (100, 100), but expanded by the blur outsets.
+  // Damage position on the surface should be: position of update_rect (1, 2)
+  // relative to the child (300, 300), but expanded by the blur outsets.
   gfx::RectF root_damage_rect =
           root->render_surface()->damage_tracker()->current_damage_rect();
   gfx::RectF expected_damage_rect =
-          gfx::RectF(110.f, 111.f, 12.f, 13.f);
+          gfx::RectF(301.f, 302.f, 3.f, 4.f);
 
   expected_damage_rect.Inset(-outset_left,
                              -outset_top,

@@ -55,6 +55,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
       page_scale_application_layer,
       dummy_max_texture_size,
       can_use_lcd_text,
+      false,
       &dummy_render_surface_layer_list);
 }
 

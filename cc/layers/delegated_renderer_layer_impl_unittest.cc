@@ -461,12 +461,14 @@ class DelegatedRendererLayerImplTestTransform
     : public DelegatedRendererLayerImplTest {
  public:
   void SetUpTest() {
+    host_impl_->SetDeviceScaleFactor(2.f);
+
     scoped_ptr<LayerImpl> root_layer = LayerImpl::Create(
         host_impl_->active_tree(), 1);
     scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer =
         FakeDelegatedRendererLayerImpl::Create(host_impl_->active_tree(), 2);
 
-    host_impl_->SetViewportSize(gfx::Size(100, 100));
+    host_impl_->SetViewportSize(gfx::Size(200, 200));
     root_layer->SetBounds(gfx::Size(100, 100));
 
     delegated_renderer_layer->SetPosition(gfx::Point(20, 20));
@@ -651,7 +653,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_NoSurface) {
 
   // When the quads don't have a clip of their own, the clip rect is set to
   // the drawable_content_rect of the delegated renderer layer.
-  EXPECT_EQ(gfx::Rect(21, 21, 60, 60).ToString(),
+  EXPECT_EQ(gfx::Rect(42, 42, 120, 120).ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());
 
   // Even though the quads in the root pass have no clip of their own, they
@@ -660,6 +662,8 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_NoSurface) {
   EXPECT_TRUE(root_delegated_shared_quad_state->is_clipped);
 
   gfx::Transform expected;
+  // Device scale factor is 2.
+  expected.Scale(2.0, 2.0);
   // This is the transform from the layer's space to its target.
   // The position (20) - the width / scale (30 / 2) = 20 - 15 = 5
   expected.Translate(5.0, 5.0);
@@ -709,16 +713,20 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_NoSurface) {
   // (clip rect position (10) * scale to layer (30/50) + translate (8)) *
   //     layer scale (2) + layer position (20) = 48
   // But the layer is centered, so: 48 - (width / 2) = 48 - 30 / 2 = 33
+  // The device scale is 2, so everything gets doubled, giving 66.
   //
   // The size is 35x35 scaled to fit inside the layer's bounds at 30x30 from
-  // a frame at 50x50: 35 * 2 (layer's scale) * 30 / 50 = 42.
-  EXPECT_EQ(gfx::Rect(33, 33, 42, 42).ToString(),
+  // a frame at 50x50: 35 * 2 (device scale) * 30 / 50 = 42. The device scale
+  // doubles this to 84.
+  EXPECT_EQ(gfx::Rect(66, 66, 84, 84).ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());
 
   // The quads had a clip and it should be preserved.
   EXPECT_TRUE(root_delegated_shared_quad_state->is_clipped);
 
   gfx::Transform expected;
+  // Device scale factor is 2.
+  expected.Scale(2.0, 2.0);
   // This is the transform from the layer's space to its target.
   // The position (20) - the width / scale (30 / 2) = 20 - 15 = 5
   expected.Translate(5.0, 5.0);
@@ -767,9 +775,9 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_Surface) {
   // When the layer owns a surface, then its position and translation are not
   // a part of its draw transform.
   // The position of the resulting clip_rect is:
-  // (clip rect position (10) * scale to layer (30/50)) * layer scale (2) = 12
+  // (clip rect position (10) * scale to layer (30/50)) * device scale (2) = 12
   // The size is 35x35 scaled to fit inside the layer's bounds at 30x30 from
-  // a frame at 50x50: 35 * 2 (layer's scale) * 30 / 50 = 42.
+  // a frame at 50x50: 35 * 2 (device scale) * 30 / 50 = 42.
   EXPECT_EQ(gfx::Rect(12, 12, 42, 42).ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());
 
@@ -778,6 +786,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_Surface) {
   EXPECT_FALSE(root_delegated_shared_quad_state->is_clipped);
 
   gfx::Transform expected;
+  // Device scale factor is 2.
   expected.Scale(2.0, 2.0);
   // The frame has size 50x50 but the layer's bounds are 30x30.
   expected.Scale(30.0 / 50.0, 30.0 / 50.0);
@@ -822,9 +831,9 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_Surface) {
   // When the layer owns a surface, then its position and translation are not
   // a part of its draw transform.
   // The position of the resulting clip_rect is:
-  // (clip rect position (10) * scale to layer (30/50)) * layer scale (2) = 12
+  // (clip rect position (10) * scale to layer (30/50)) * device scale (2) = 12
   // The size is 35x35 scaled to fit inside the layer's bounds at 30x30 from
-  // a frame at 50x50: 35 * 2 (layer's scale) * 30 / 50 = 42.
+  // a frame at 50x50: 35 * 2 (device scale) * 30 / 50 = 42.
   EXPECT_EQ(gfx::Rect(12, 12, 42, 42).ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());
 
@@ -832,6 +841,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_Surface) {
   EXPECT_TRUE(root_delegated_shared_quad_state->is_clipped);
 
   gfx::Transform expected;
+  // Device scale factor is 2.
   expected.Scale(2.0, 2.0);
   // The frame has size 50x50 but the layer's bounds are 30x30.
   expected.Scale(30.0 / 50.0, 30.0 / 50.0);

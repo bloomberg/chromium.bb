@@ -784,6 +784,7 @@ void LayerTreeHost::UpdateLayers(Layer* root_layer,
         root_scroll,
         GetRendererCapabilities().max_texture_size,
         settings_.can_use_lcd_text,
+        settings_.layer_transforms_should_scale_layer_contents,
         &update_list);
   }
 
