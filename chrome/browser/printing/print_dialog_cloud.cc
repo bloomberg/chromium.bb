@@ -221,7 +221,6 @@ void CloudPrintDataSender::SendPrintData() {
       base::StringPiece(reinterpret_cast<const char*>(data_->front()),
                         data_->size()),
       &base64_data);
-  data_ = NULL;
   std::string header("data:");
   header.append(file_type_);
   header.append(";base64,");
@@ -332,14 +331,10 @@ void CloudPrintFlowHandler::Observe(
       break;
     }
     case content::NOTIFICATION_LOAD_STOP: {
-      // Take the opportunity to set some (minimal) additional
-      // script permissions required for the web UI.
       GURL url = web_ui()->GetWebContents()->GetURL();
-      GURL dialog_url = CloudPrintURL(
-          Profile::FromWebUI(web_ui())).GetCloudPrintServiceDialogURL();
-      if (url.host() == dialog_url.host() &&
-          url.path() == dialog_url.path() &&
-          url.scheme() == dialog_url.scheme()) {
+      if (IsCloudPrintDialogUrl(url)) {
+        // Take the opportunity to set some (minimal) additional
+        // script permissions required for the web UI.
         RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
         if (rvh) {
           WebPreferences webkit_prefs = rvh->GetWebkitPreferences();
@@ -348,15 +343,14 @@ void CloudPrintFlowHandler::Observe(
         } else {
           NOTREACHED();
         }
+        // Choose one or the other.  If you need to debug, bring up the
+        // debugger.  You can then use the various chrome.send()
+        // registrations above to kick of the various function calls,
+        // including chrome.send("SendPrintData") in the javaScript
+        // console and watch things happen with:
+        // HandleShowDebugger(NULL);
+        HandleSendPrintData(NULL);
       }
-
-      // Choose one or the other.  If you need to debug, bring up the
-      // debugger.  You can then use the various chrome.send()
-      // registrations above to kick of the various function calls,
-      // including chrome.send("SendPrintData") in the javaScript
-      // console and watch things happen with:
-      // HandleShowDebugger(NULL);
-      HandleSendPrintData(NULL);
       break;
     }
   }
@@ -381,7 +375,6 @@ CloudPrintFlowHandler::CreateCloudPrintDataSender() {
   scoped_refptr<CloudPrintDataSender> sender(
       new CloudPrintDataSender(print_data_helper_.get(), print_job_title_,
                                print_ticket_, file_type_, data_));
-  data_ = NULL;
   return sender;
 }
 
@@ -461,12 +454,7 @@ void CloudPrintFlowHandler::StoreDialogClientSize() const {
 
 bool CloudPrintFlowHandler::NavigationToURLDidCloseDialog(const GURL& url) {
   if (close_after_signin_) {
-    GURL dialog_url = CloudPrintURL(
-        Profile::FromWebUI(web_ui())).GetCloudPrintServiceURL();
-
-    if (url.host() == dialog_url.host() &&
-        StartsWithASCII(url.path(), dialog_url.path(), false) &&
-        url.scheme() == dialog_url.scheme()) {
+    if (IsCloudPrintDialogUrl(url)) {
       StoreDialogClientSize();
       web_ui()->GetWebContents()->GetRenderViewHost()->ClosePage();
       callback_.Run();
@@ -474,6 +462,14 @@ bool CloudPrintFlowHandler::NavigationToURLDidCloseDialog(const GURL& url) {
     }
   }
   return false;
+}
+
+bool CloudPrintFlowHandler::IsCloudPrintDialogUrl(const GURL& url) {
+  GURL cloud_print_url =
+      CloudPrintURL(Profile::FromWebUI(web_ui())).GetCloudPrintServiceURL();
+  return url.host() == cloud_print_url.host() &&
+         StartsWithASCII(url.path(), cloud_print_url.path(), false) &&
+         url.scheme() == cloud_print_url.scheme();
 }
 
 CloudPrintWebDialogDelegate::CloudPrintWebDialogDelegate(

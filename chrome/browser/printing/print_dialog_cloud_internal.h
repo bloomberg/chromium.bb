@@ -138,6 +138,7 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
   void ShowDebugger();
 
   void CancelAnyRunningTask();
+  bool IsCloudPrintDialogUrl(const GURL& url);
 
   CloudPrintWebDialogDelegate* dialog_delegate_;
   content::NotificationRegistrar registrar_;
