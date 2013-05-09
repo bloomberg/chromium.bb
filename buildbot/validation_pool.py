@@ -449,8 +449,7 @@ class PatchSeries(object):
     if val is None:
       git_repo = self.GetGitRepoForChange(change)
       val = self._change_deps_cache[change] = (
-          change.GerritDependencies(
-              git_repo, self.GetTrackingBranchForChange(change)),
+          change.GerritDependencies(),
           change.PaladinDependencies(git_repo))
     return val
 

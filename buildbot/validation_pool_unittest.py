@@ -179,14 +179,8 @@ class TestPatchSeries(base):
       raise return_value
     return return_value
 
-  def assertGerritDependencies(self, _patch, return_value, path,
-                               tracking):
-    self.assertEqual(tracking, 'refs/remotes/cros/master')
-    return self.assertPath(_patch, return_value, path)
-
   def SetPatchDeps(self, patch, parents=(), cq=()):
-    patch.GerritDependencies = functools.partial(
-        self.assertGerritDependencies, patch, parents)
+    patch.GerritDependencies = lambda: parents
     patch.PaladinDependencies = functools.partial(
         self.assertPath, patch, cq)
     patch.Fetch = functools.partial(
@@ -462,26 +456,6 @@ class TestPatchSeries(base):
     self.mox.ReplayAll()
     self.assertResults(series, patches,
                        [patch3], [patch2, patch1], [patch4])
-    self.mox.VerifyAll()
-
-  def testApplyMissingChangeId(self):
-    """Test that applies changes correctly with a dep with missing changeid."""
-    series = self.GetPatchSeries()
-
-    patch1, patch2 = patches = self.GetPatches(2)
-
-    git_repo = os.path.join(self.build_root, patch1.project)
-    patch1.Fetch(git_repo)
-    patch1.GerritDependencies(
-        git_repo,
-        'refs/remotes/cros/master').AndRaise(
-            cros_patch.BrokenChangeID(patch1, 'Could not find changeid'))
-
-    self.SetPatchDeps(patch2)
-    self.SetPatchApply(patch2)
-
-    self.mox.ReplayAll()
-    self.assertResults(series, patches, [patch2], [patch1], [])
     self.mox.VerifyAll()
 
   def testComplexApply(self):

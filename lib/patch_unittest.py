@@ -322,71 +322,6 @@ I am the first commit.
     return self.CommitFile(repo, filename, content, commit=commit,
                            ChangeId=changeid, **kwargs)
 
-  def _assertGerritDependencies(self, remote=constants.EXTERNAL_REMOTE):
-    convert = str
-    tracking = 'refs/remotes/%s/master' % remote
-    if remote == constants.INTERNAL_REMOTE:
-      convert = lambda val: '*%s' % (val,)
-    git1 = self._MakeRepo('git1', self.source, remote=remote)
-    # Check that we handle the edge case of the first commit in a
-    # repo...
-    patch = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'), remote=remote)
-    self.assertEqual(
-        patch.GerritDependencies(git1, tracking),
-        [])
-    cid1, cid2, cid3 = self.MakeChangeId(3)
-    patch = self.CommitChangeIdFile(git1, cid1, remote=remote)
-    # Since its parent is ToT, there are no deps.
-    self.assertEqual(
-        patch.GerritDependencies(git1, tracking),
-        [])
-    patch = self.CommitChangeIdFile(git1, cid2, content='monkeys',
-                                    remote=remote)
-    self.assertEqual(
-        patch.GerritDependencies(git1, tracking),
-        [convert(cid1)])
-
-    # Check the behaviour for missing ChangeId in a parent next.
-    patch = self.CommitChangeIdFile(git1, cid1, content='fling poo',
-                                    raw_changeid_text='', remote=remote)
-
-    # Verify it returns just the parrent, rather than all parents.
-    self.assertEqual(
-        patch.GerritDependencies(git1, tracking),
-        [convert(cid2)])
-
-    parent_sha1 = patch.sha1
-    # Verify if a Change-Id exists but is invalid, it's flagged.
-    for content in ('asdfg', '%sg' % ('0' * 39)):
-      patch = self.CommitChangeIdFile(git1, content='thus %s' % content,
-                                      raw_changeid_text='Change-Id: I%s'
-                                      % content, remote=remote)
-      patch = self.CommitChangeIdFile(git1, cid3, content='update',
-                                      remote=remote)
-      self.assertRaises2(cros_patch.BrokenChangeID,
-                         patch.GerritDependencies, git1,
-                         tracking,
-                         msg="Change-Id: I%s failed to trigger a "
-                         "BrokenChangeId" % (content,))
-      # Now wipe those commits since they'll interfere w/ the next run, and the
-      # following code.
-      git.RunGit(git1, ['reset', '--hard', 'HEAD^^'])
-
-    # Verify that if a ChangeId is lacking, it switches back to commit based
-    # ids.
-    patch = self.CommitChangeIdFile(git1, raw_changeid_text='',
-                                    content='the glass walls.',
-                                    remote=remote)
-    self.assertEqual(
-        patch.GerritDependencies(git1, tracking),
-        map(convert, [parent_sha1]))
-
-  def testExternalGerritDependencies(self):
-    self._assertGerritDependencies()
-
-  def testInternalGerritDependencies(self):
-    self._assertGerritDependencies(constants.INTERNAL_REMOTE)
-
   def _CheckPaladin(self, repo, master_id, ids, extra):
     patch = self.CommitChangeIdFile(
         repo, master_id, extra=extra,
@@ -611,6 +546,27 @@ class TestGerritPatch(TestGitRepoPatch):
       msg = 'Expected %r, but got %r (approvals=%r)' % (
           expected, patch.approval_timestamp, approvals)
       self.assertEqual(patch.approval_timestamp, expected, msg)
+
+  def _assertGerritDependencies(self, remote=constants.EXTERNAL_REMOTE):
+    convert = str
+    if remote == constants.INTERNAL_REMOTE:
+      convert = lambda val: '*%s' % (val,)
+    git1 = self._MakeRepo('git1', self.source, remote=remote)
+    patch = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'), remote=remote)
+    cid1, cid2 = '1', '2'
+
+    # Test cases with no dependencies, 1 dependency, and 2 dependencies.
+    self.assertEqual(patch.GerritDependencies(), [])
+    patch.patch_dict['dependsOn'] = [{'number': cid1}]
+    self.assertEqual(patch.GerritDependencies(), [convert(cid1)])
+    patch.patch_dict['dependsOn'].append({'number': cid2})
+    self.assertEqual(patch.GerritDependencies(), [convert(cid1), convert(cid2)])
+
+  def testExternalGerritDependencies(self):
+    self._assertGerritDependencies()
+
+  def testInternalGerritDependencies(self):
+    self._assertGerritDependencies(constants.INTERNAL_REMOTE)
 
 
 class PrepareRemotePatchesTest(cros_test_lib.TestCase):
