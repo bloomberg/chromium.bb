@@ -74,14 +74,16 @@ MEDIA_EXPORT int64 ConvertToTimeBase(const AVRational& time_base,
 
 void AVStreamToAudioDecoderConfig(
     const AVStream* stream,
-    AudioDecoderConfig* config);
+    AudioDecoderConfig* config,
+    bool record_stats);
 void AudioDecoderConfigToAVCodecContext(
     const AudioDecoderConfig& config,
     AVCodecContext* codec_context);
 
 void AVStreamToVideoDecoderConfig(
     const AVStream* stream,
-    VideoDecoderConfig* config);
+    VideoDecoderConfig* config,
+    bool record_stats);
 void VideoDecoderConfigToAVCodecContext(
     const VideoDecoderConfig& config,
     AVCodecContext* codec_context);
@@ -97,12 +99,6 @@ VideoFrame::Format PixelFormatToVideoFormat(PixelFormat pixel_format);
 
 // Converts video formats to its corresponding FFmpeg's pixel formats.
 PixelFormat VideoFormatToPixelFormat(VideoFrame::Format video_format);
-
-// Converts an FFmpeg video codec ID into its corresponding supported codec id.
-VideoCodec CodecIDToVideoCodec(AVCodecID codec_id);
-
-// Converts an FFmpeg audio codec ID into its corresponding supported codec id.
-AudioCodec CodecIDToAudioCodec(AVCodecID codec_id);
 
 }  // namespace media
 

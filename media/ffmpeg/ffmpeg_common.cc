@@ -57,7 +57,8 @@ int64 ConvertToTimeBase(const AVRational& time_base,
   return av_rescale_q(timestamp.InMicroseconds(), kMicrosBase, time_base);
 }
 
-AudioCodec CodecIDToAudioCodec(AVCodecID codec_id) {
+// Converts an FFmpeg audio codec ID into its corresponding supported codec id.
+static AudioCodec CodecIDToAudioCodec(AVCodecID codec_id) {
   switch (codec_id) {
     case AV_CODEC_ID_AAC:
       return kCodecAAC;
@@ -137,7 +138,8 @@ static AVCodecID AudioCodecToCodecID(AudioCodec audio_codec,
   return AV_CODEC_ID_NONE;
 }
 
-VideoCodec CodecIDToVideoCodec(AVCodecID codec_id) {
+// Converts an FFmpeg video codec ID into its corresponding supported codec id.
+static VideoCodec CodecIDToVideoCodec(AVCodecID codec_id) {
   switch (codec_id) {
     case AV_CODEC_ID_H264:
       return kCodecH264;
@@ -264,7 +266,8 @@ static AVSampleFormat SampleFormatToAVSampleFormat(SampleFormat sample_format) {
 static void AVCodecContextToAudioDecoderConfig(
     const AVCodecContext* codec_context,
     bool is_encrypted,
-    AudioDecoderConfig* config) {
+    AudioDecoderConfig* config,
+    bool record_stats) {
   DCHECK_EQ(codec_context->codec_type, AVMEDIA_TYPE_AUDIO);
 
   AudioCodec codec = CodecIDToAudioCodec(codec_context->codec_id);
@@ -288,7 +291,7 @@ static void AVCodecContextToAudioDecoderConfig(
                      codec_context->extradata,
                      codec_context->extradata_size,
                      is_encrypted,
-                     true);
+                     record_stats);
   if (codec != kCodecOpus) {
     DCHECK_EQ(av_get_bytes_per_sample(codec_context->sample_fmt) * 8,
               config->bits_per_channel());
@@ -297,13 +300,14 @@ static void AVCodecContextToAudioDecoderConfig(
 
 void AVStreamToAudioDecoderConfig(
     const AVStream* stream,
-    AudioDecoderConfig* config) {
+    AudioDecoderConfig* config,
+    bool record_stats) {
   bool is_encrypted = false;
   AVDictionaryEntry* key = av_dict_get(stream->metadata, "enc_key_id", NULL, 0);
   if (key)
     is_encrypted = true;
-  return AVCodecContextToAudioDecoderConfig(stream->codec,
-                                            is_encrypted, config);
+  return AVCodecContextToAudioDecoderConfig(
+      stream->codec, is_encrypted, config, record_stats);
 }
 
 void AudioDecoderConfigToAVCodecContext(const AudioDecoderConfig& config,
@@ -336,7 +340,8 @@ void AudioDecoderConfigToAVCodecContext(const AudioDecoderConfig& config,
 
 void AVStreamToVideoDecoderConfig(
     const AVStream* stream,
-    VideoDecoderConfig* config) {
+    VideoDecoderConfig* config,
+    bool record_stats) {
   gfx::Size coded_size(stream->codec->coded_width, stream->codec->coded_height);
 
   // TODO(vrk): This assumes decoded frame data starts at (0, 0), which is true
@@ -386,7 +391,7 @@ void AVStreamToVideoDecoderConfig(
                      coded_size, visible_rect, natural_size,
                      stream->codec->extradata, stream->codec->extradata_size,
                      is_encrypted,
-                     true);
+                     record_stats);
 }
 
 void VideoDecoderConfigToAVCodecContext(
