@@ -40,6 +40,7 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Collection.h"
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8EventListenerList.h"
@@ -4274,6 +4275,15 @@ v8::Handle<v8::Value> V8TestObj::constructorCallback(const v8::Arguments& args)
     return TestObjV8Internal::constructor(args);
 }
 
+v8::Handle<v8::Value> V8TestObj::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
+{
+    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
+    TestObj* collection = toNative(info.Holder());
+    RefPtr<Node> element = collection->anonymousIndexedGetter(index);
+    if (!element)
+        return v8Undefined();
+    return toV8Fast(element.release(), info, collection);
+}
 static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
@@ -4301,6 +4311,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persi
         {"enabledAtRuntimeAttr2", TestObjV8Internal::enabledAtRuntimeAttr2AttrGetterCallback, TestObjV8Internal::enabledAtRuntimeAttr2AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate, currentWorldType);
     }
+    desc->InstanceTemplate()->SetIndexedPropertyHandler(V8TestObj::indexedPropertyGetter, 0, 0, 0, nodeCollectionIndexedPropertyEnumerator<TestObj>);
 
     // Custom Signature 'voidMethodWithArgs'
     const int voidMethodWithArgsArgc = 3;

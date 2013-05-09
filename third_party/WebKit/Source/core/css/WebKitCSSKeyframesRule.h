@@ -88,6 +88,7 @@ public:
 
     // For IndexedGetter and CSSRuleList.
     unsigned length() const;
+    WebKitCSSKeyframeRule* anonymousIndexedGetter(unsigned index) const;
     WebKitCSSKeyframeRule* item(unsigned index) const;
 
 private:

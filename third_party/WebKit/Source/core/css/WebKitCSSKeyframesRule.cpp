@@ -180,6 +180,11 @@ unsigned WebKitCSSKeyframesRule::length() const
     return m_keyframesRule->keyframes().size(); 
 }
 
+WebKitCSSKeyframeRule* WebKitCSSKeyframesRule::anonymousIndexedGetter(unsigned index) const
+{
+    return item(index);
+}
+
 WebKitCSSKeyframeRule* WebKitCSSKeyframesRule::item(unsigned index) const
 { 
     if (index >= length())

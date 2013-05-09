@@ -571,18 +571,6 @@ sub GetSVGPropertyTypes
     return ($svgPropertyType, $svgListPropertyType, $svgNativeType);
 }
 
-sub MakeDummyFunction
-{
-    my $returnType = shift;
-    my $methodName = shift;
-    my $function = domFunction->new();
-    $function->signature(domSignature->new());
-    $function->signature->type($returnType);
-    $function->signature->name($methodName);
-    $function->signature->extendedAttributes({});
-    return $function;
-}
-
 sub GetIndexedGetterFunction
 {
     my $interface = shift;
@@ -591,12 +579,6 @@ sub GetIndexedGetterFunction
     # because CSSValueList(which is parent of WebKitCSSMixFunctionValue) has indexed property getter.
     if ($interface->name eq "WebKitCSSMixFunctionValue") {
         return 0;
-    }
-
-    # FIXME: add getter method to WebKitCSSKeyframesRule.idl or remove special case of WebKitCSSKeyframesRule.idl
-    # Currently return type and method name is hard coded because it can not be obtained from IDL.
-    if ($interface->name eq "WebKitCSSKeyframesRule") {
-        return MakeDummyFunction("WebKitCSSKeyframeRule", "item")
     }
 
     return GetSpecialGetterFunctionForType($interface, "unsigned long");
@@ -625,7 +607,7 @@ sub GetSpecialGetterFunctionForType
             my $specials = $function->signature->specials;
             my $getterExists = grep { $_ eq "getter" } @$specials;
             my $parameters = $function->parameters;
-            if ($getterExists and scalar(@$parameters) == 1 and $parameters->[0]->type eq $type ) {
+            if ($getterExists and scalar(@$parameters) == 1 and $parameters->[0]->type eq $type) {
                 return $function;
             }
         }
@@ -2126,6 +2108,10 @@ sub GenerateFunctionCallback
     my $v8InterfaceName = "V8$interfaceName";
     my $name = $function->signature->name;
 
+    if ($name eq "") {
+        return;
+    }
+
     my $conditionalString = GenerateConditionalString($function->signature);
     my $code = "";
     $code .= "#if ${conditionalString}\n\n" if $conditionalString;
@@ -2159,7 +2145,7 @@ sub GenerateFunction
     my $name = $function->signature->name;
     my $funcExt = $function->signature->extendedAttributes;
 
-    if (HasCustomMethod($funcExt)) {
+    if (HasCustomMethod($funcExt) || $name eq "") {
         return;
     }
 
@@ -3144,7 +3130,11 @@ sub GenerateImplementationIndexedProperty
     my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"};
     my $hasCustomIndexedGetter = $interface->extendedAttributes->{"CustomIndexedGetter"};
 
-    my $hasEnumerator = $indexedGetterfunction || $hasCustomIndexedGetter;
+    if (!$indexedGetterfunction && !$hasCustomIndexedGetter) {
+        return "";
+    }
+
+    my $hasEnumerator = 1;
     # FIXME: Remove the special cases. Interfaces that have indexedPropertyGetter should have indexedPropertyEnumerator.
     $hasEnumerator = 0 if $interfaceName eq "WebKitCSSKeyframesRule";
     $hasEnumerator = 0 if $interfaceName eq "HTMLAppletElement";
@@ -3152,10 +3142,6 @@ sub GenerateImplementationIndexedProperty
     $hasEnumerator = 0 if $interfaceName eq "HTMLObjectElement";
     $hasEnumerator = 0 if $interfaceName eq "DOMWindow";
     $hasEnumerator = 0 if $interfaceName eq "Storage";
-
-    if (!$indexedGetterfunction && !$hasCustomIndexedGetter) {
-        return "";
-    }
 
     AddToImplIncludes("bindings/v8/V8Collection.h");
 
@@ -3180,7 +3166,7 @@ sub GenerateImplementationIndexedProperty
 
     if ($indexedGetterfunction && !$hasCustomIndexedGetter) {
         my $returnType = $indexedGetterfunction->signature->type;
-        my $methodName = $indexedGetterfunction->signature->name;
+        my $methodName = $indexedGetterfunction->signature->name || "anonymousIndexedGetter";
         AddToImplIncludes("bindings/v8/V8Collection.h");
         my $jsValue = "";
         my $nativeType = GetNativeType($returnType);
@@ -3596,6 +3582,7 @@ END
         next if $function->{overloadIndex} > 1;
         # Don't put any nonstandard functions into this table:
         next if !IsStandardFunction($interface, $function);
+        next if $function->signature->name eq "";
         if (!$has_callbacks) {
             $has_callbacks = 1;
             $code .= "static const V8DOMConfiguration::BatchedMethod ${v8InterfaceName}Methods[] = {\n";
@@ -3803,6 +3790,7 @@ END
     foreach my $function (@normalFunctions) {
         # Only one accessor is needed for overloaded methods:
         next if $function->{overloadIndex} > 1;
+        next if $function->signature->name eq "";
 
         $total_functions++;
         next if IsStandardFunction($interface, $function);

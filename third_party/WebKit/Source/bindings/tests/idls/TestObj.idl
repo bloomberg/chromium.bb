@@ -88,6 +88,9 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     void serializedValue(SerializedScriptValue serializedArg);
     void optionsObject(Dictionary oo, optional Dictionary ooo);
 
+    // Indexed/named properties
+    getter  Node(unsigned long index);
+
     // Exceptions
     [RaisesException] void methodWithException();
     [GetterRaisesException] attribute long attrWithGetterException;
