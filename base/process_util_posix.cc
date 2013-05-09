@@ -398,13 +398,9 @@ typedef scoped_ptr_malloc<DIR, ScopedDIRClose> ScopedDIR;
   static const char kFDDir[] = "/proc/self/fd";
 #endif
 
-void CloseSuperfluousFds(const base::InjectiveMultimap& saved_mapping) {
-  // DANGER: no calls to malloc are allowed from now on:
-  // http://crbug.com/36678
-
-  // Get the maximum number of FDs possible.
-  struct rlimit nofile;
+size_t GetMaxFds() {
   rlim_t max_fds;
+  struct rlimit nofile;
   if (getrlimit(RLIMIT_NOFILE, &nofile)) {
     // getrlimit failed. Take a best guess.
     max_fds = kSystemDefaultMaxFds;
@@ -416,11 +412,20 @@ void CloseSuperfluousFds(const base::InjectiveMultimap& saved_mapping) {
   if (max_fds > INT_MAX)
     max_fds = INT_MAX;
 
-  DirReaderPosix fd_dir(kFDDir);
+  return static_cast<size_t>(max_fds);
+}
 
+void CloseSuperfluousFds(const base::InjectiveMultimap& saved_mapping) {
+  // DANGER: no calls to malloc are allowed from now on:
+  // http://crbug.com/36678
+
+  // Get the maximum number of FDs possible.
+  size_t max_fds = GetMaxFds();
+
+  DirReaderPosix fd_dir(kFDDir);
   if (!fd_dir.IsValid()) {
     // Fallback case: Try every possible fd.
-    for (rlim_t i = 0; i < max_fds; ++i) {
+    for (size_t i = 0; i < max_fds; ++i) {
       const int fd = static_cast<int>(i);
       if (fd == STDIN_FILENO || fd == STDOUT_FILENO || fd == STDERR_FILENO)
         continue;

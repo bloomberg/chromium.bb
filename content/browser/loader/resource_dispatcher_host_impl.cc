@@ -121,6 +121,10 @@ const int kMaxOutstandingRequestsCostPerProcess = 26214400;
 // rather than being intended as fully accurate.
 const int kUserGestureWindowMs = 3500;
 
+// Ratio of |max_num_in_flight_requests_| that any one renderer is allowed to
+// use. Arbitrarily chosen.
+const double kMaxRequestsPerProcessRatio = 0.45;
+
 // All possible error codes from the network module. Note that the error codes
 // are all positive (since histograms expect positive sample values).
 const int kAllNetErrorCodes[] = {
@@ -307,6 +311,11 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
     : save_file_manager_(new SaveFileManager()),
       request_id_(-1),
       is_shutdown_(false),
+      num_in_flight_requests_(0),
+      max_num_in_flight_requests_(base::SharedMemory::GetHandleLimit()),
+      max_num_in_flight_requests_per_process_(
+          static_cast<int>(
+              max_num_in_flight_requests_ * kMaxRequestsPerProcessRatio)),
       max_outstanding_requests_cost_per_process_(
           kMaxOutstandingRequestsCostPerProcess),
       filter_(NULL),
@@ -332,6 +341,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
 }
 
 ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {
+  DCHECK(outstanding_requests_stats_map_.empty());
   DCHECK(g_resource_dispatcher_host);
   g_resource_dispatcher_host = NULL;
 }
@@ -378,6 +388,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
        i != pending_loaders_.end();) {
     if (i->second->GetRequestInfo()->GetContext() == context) {
       loaders_to_cancel.push_back(i->second);
+      IncrementOutstandingRequestsMemory(-1, *i->second->GetRequestInfo());
       pending_loaders_.erase(i++);
     } else {
       ++i;
@@ -403,8 +414,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
         // We make the assumption that all requests on the list have the same
         // ResourceContext.
         DCHECK_EQ(context, info->GetContext());
-        IncrementOutstandingRequestsMemoryCost(-1 * info->memory_cost(),
-                                               info->GetChildID());
+        IncrementOutstandingRequestsMemory(-1, *info);
         loaders_to_cancel.push_back(loader);
       }
       delete loaders;
@@ -913,6 +923,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
     if (it != pending_loaders_.end()) {
       if (it->second->is_transferring()) {
         deferred_loader = it->second;
+        IncrementOutstandingRequestsMemory(-1,
+                                           *deferred_loader->GetRequestInfo());
         pending_loaders_.erase(it);
       } else {
         RecordAction(UserMetricsAction("BadMessageTerminate_RDH"));
@@ -1105,6 +1117,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   if (deferred_loader.get()) {
     pending_loaders_[extra_info->GetGlobalRequestID()] = deferred_loader;
+    IncrementOutstandingRequestsMemory(1, *extra_info);
     deferred_loader->CompleteTransfer(handler.Pass());
   } else {
     BeginRequestInternal(new_request.Pass(), handler.Pass());
@@ -1316,14 +1329,6 @@ void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
   GetLoader(id)->MarkAsTransferring();
 }
 
-int ResourceDispatcherHostImpl::GetOutstandingRequestsMemoryCost(
-    int child_id) const {
-  OutstandingRequestsMemoryCostMap::const_iterator entry =
-      outstanding_requests_memory_cost_map_.find(child_id);
-  return (entry == outstanding_requests_memory_cost_map_.end()) ?
-      0 : entry->second;
-}
-
 // The object died, so cancel and detach all requests associated with it except
 // for downloads, which belong to the browser process even if initiated via a
 // renderer.
@@ -1439,8 +1444,7 @@ void ResourceDispatcherHostImpl::RemovePendingLoader(
 
   // Remove the memory credit that we added when pushing the request onto
   // the pending list.
-  IncrementOutstandingRequestsMemoryCost(-1 * info->memory_cost(),
-                                         info->GetChildID());
+  IncrementOutstandingRequestsMemory(-1, *info);
 
   pending_loaders_.erase(iter);
 
@@ -1471,25 +1475,77 @@ void ResourceDispatcherHostImpl::CancelRequest(int child_id,
   loader->CancelRequest(from_renderer);
 }
 
-int ResourceDispatcherHostImpl::IncrementOutstandingRequestsMemoryCost(
-    int cost,
-    int child_id) {
-  // Retrieve the previous value (defaulting to 0 if not found).
-  OutstandingRequestsMemoryCostMap::iterator prev_entry =
-      outstanding_requests_memory_cost_map_.find(child_id);
-  int new_cost = 0;
-  if (prev_entry != outstanding_requests_memory_cost_map_.end())
-    new_cost = prev_entry->second;
+ResourceDispatcherHostImpl::OustandingRequestsStats
+ResourceDispatcherHostImpl::GetOutstandingRequestsStats(
+    const ResourceRequestInfoImpl& info) {
+  OutstandingRequestsStatsMap::iterator entry =
+      outstanding_requests_stats_map_.find(info.GetChildID());
+  OustandingRequestsStats stats = { 0, 0 };
+  if (entry != outstanding_requests_stats_map_.end())
+    stats = entry->second;
+  return stats;
+}
 
-  // Insert/update the total; delete entries when their value reaches 0.
-  new_cost += cost;
-  CHECK(new_cost >= 0);
-  if (new_cost == 0)
-    outstanding_requests_memory_cost_map_.erase(child_id);
+void ResourceDispatcherHostImpl::UpdateOutstandingRequestsStats(
+    const ResourceRequestInfoImpl& info,
+    const OustandingRequestsStats& stats) {
+  if (stats.memory_cost == 0 && stats.num_requests == 0)
+    outstanding_requests_stats_map_.erase(info.GetChildID());
   else
-    outstanding_requests_memory_cost_map_[child_id] = new_cost;
+    outstanding_requests_stats_map_[info.GetChildID()] = stats;
+}
 
-  return new_cost;
+ResourceDispatcherHostImpl::OustandingRequestsStats
+ResourceDispatcherHostImpl::IncrementOutstandingRequestsMemory(
+    int count,
+    const ResourceRequestInfoImpl& info) {
+  DCHECK_EQ(1, abs(count));
+
+  // Retrieve the previous value (defaulting to 0 if not found).
+  OustandingRequestsStats stats = GetOutstandingRequestsStats(info);
+
+  // Insert/update the total; delete entries when their count reaches 0.
+  stats.memory_cost += count * info.memory_cost();
+  DCHECK_GE(stats.memory_cost, 0);
+  UpdateOutstandingRequestsStats(info, stats);
+
+  return stats;
+}
+
+ResourceDispatcherHostImpl::OustandingRequestsStats
+ResourceDispatcherHostImpl::IncrementOutstandingRequestsCount(
+    int count,
+    const ResourceRequestInfoImpl& info) {
+  DCHECK_EQ(1, abs(count));
+  num_in_flight_requests_ += count;
+
+  OustandingRequestsStats stats = GetOutstandingRequestsStats(info);
+  stats.num_requests += count;
+  DCHECK_GE(stats.num_requests, 0);
+  UpdateOutstandingRequestsStats(info, stats);
+
+  return stats;
+}
+
+bool ResourceDispatcherHostImpl::HasSufficientResourcesForRequest(
+    const net::URLRequest* request_) {
+  const ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
+  OustandingRequestsStats stats = IncrementOutstandingRequestsCount(1, *info);
+
+  if (stats.num_requests > max_num_in_flight_requests_per_process_)
+    return false;
+  if (num_in_flight_requests_ > max_num_in_flight_requests_)
+    return false;
+
+  return true;
+}
+
+void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
+    const net::URLRequest* request_) {
+  const ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
+  IncrementOutstandingRequestsCount(-1, *info);
 }
 
 // static
@@ -1523,12 +1579,11 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
 
   // Add the memory estimate that starting this request will consume.
   info->set_memory_cost(CalculateApproximateMemoryCost(request.get()));
-  int memory_cost = IncrementOutstandingRequestsMemoryCost(info->memory_cost(),
-                                                           info->GetChildID());
 
   // If enqueing/starting this request will exceed our per-process memory
   // bound, abort it right away.
-  if (memory_cost > max_outstanding_requests_cost_per_process_) {
+  OustandingRequestsStats stats = IncrementOutstandingRequestsMemory(1, *info);
+  if (stats.memory_cost > max_outstanding_requests_cost_per_process_) {
     // We call "CancelWithError()" as a way of setting the net::URLRequest's
     // status -- it has no effect beyond this, since the request hasn't started.
     request->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
@@ -1539,8 +1594,7 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
       NOTREACHED();
     }
 
-    IncrementOutstandingRequestsMemoryCost(-1 * info->memory_cost(),
-                                           info->GetChildID());
+    IncrementOutstandingRequestsMemory(-1, *info);
 
     // A ResourceHandler must not outlive its associated URLRequest.
     handler.reset();
@@ -1735,8 +1789,7 @@ void ResourceDispatcherHostImpl::ProcessBlockedRequestsForRoute(
     linked_ptr<ResourceLoader> loader = *loaders_iter;
     ResourceRequestInfoImpl* info = loader->GetRequestInfo();
     if (cancel_requests) {
-      IncrementOutstandingRequestsMemoryCost(-1 * info->memory_cost(),
-                                             info->GetChildID());
+      IncrementOutstandingRequestsMemory(-1, *info);
     } else {
       StartLoading(info, loader);
     }

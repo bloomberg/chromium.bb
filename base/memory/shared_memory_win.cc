@@ -87,6 +87,13 @@ void SharedMemory::CloseHandle(const SharedMemoryHandle& handle) {
   ::CloseHandle(handle);
 }
 
+// static
+size_t SharedMemory::GetHandleLimit() {
+  // Rounded down from value reported here:
+  // http://blogs.technet.com/b/markrussinovich/archive/2009/09/29/3283844.aspx
+  return static_cast<size_t>(1 << 23);
+}
+
 bool SharedMemory::CreateAndMapAnonymous(size_t size) {
   return CreateAnonymous(size) && Map(size);
 }

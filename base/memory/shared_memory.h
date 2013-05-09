@@ -101,6 +101,9 @@ class BASE_EXPORT SharedMemory {
   // Closes a shared memory handle.
   static void CloseHandle(const SharedMemoryHandle& handle);
 
+  // Returns the maximum number of handles that can be open at once per process.
+  static size_t GetHandleLimit();
+
   // Creates a shared memory object as described by the options struct.
   // Returns true on success and false on failure.
   bool Create(const SharedMemoryCreateOptions& options);

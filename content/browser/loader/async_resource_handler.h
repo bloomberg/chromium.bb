@@ -87,6 +87,7 @@ class AsyncResourceHandler : public ResourceHandler,
 
   bool did_defer_;
 
+  bool has_checked_for_sufficient_resources_;
   bool sent_received_response_msg_;
   bool sent_first_data_msg_;
 

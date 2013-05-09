@@ -223,6 +223,10 @@ BASE_EXPORT extern const char kProcSelfExe[];
 // Returns the ID for the parent of the given process.
 BASE_EXPORT ProcessId GetParentProcessId(ProcessHandle process);
 
+// Returns the maximum number of file descriptors that can be open by a process
+// at once. If the number is unavailable, a conservative best guess is returned.
+size_t GetMaxFds();
+
 // Close all file descriptors, except those which are a destination in the
 // given multimap. Only call this function in a child process where you know
 // that there aren't any other threads.

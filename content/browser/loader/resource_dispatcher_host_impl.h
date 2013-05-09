@@ -138,13 +138,15 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
     return static_cast<int>(pending_loaders_.size());
   }
 
-  // Intended for unit-tests only. Returns the memory cost of all the
-  // outstanding requests (pending and blocked) for |child_id|.
-  int GetOutstandingRequestsMemoryCost(int child_id) const;
-
   // Intended for unit-tests only. Overrides the outstanding requests bound.
   void set_max_outstanding_requests_cost_per_process(int limit) {
     max_outstanding_requests_cost_per_process_ = limit;
+  }
+  void set_max_num_in_flight_requests_per_process(int limit) {
+    max_num_in_flight_requests_per_process_ = limit;
+  }
+  void set_max_num_in_flight_requests(int limit) {
+    max_num_in_flight_requests_ = limit;
   }
 
   // The average private bytes increase of the browser for each new pending
@@ -231,15 +233,29 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   ResourceScheduler* scheduler() { return scheduler_.get(); }
 
+  // Called by a ResourceHandler when it's ready to start reading data and
+  // sending it to the renderer. Returns true if there are enough file
+  // descriptors available for the shared memory buffer. If false is returned,
+  // the request should cancel.
+  bool HasSufficientResourcesForRequest(const net::URLRequest* request_);
+
+  // Called by a ResourceHandler after it has finished its request and is done
+  // using its shared memory buffer. Frees up that file descriptor to be used
+  // elsewhere.
+  void FinishedWithResourcesForRequest(const net::URLRequest* request_);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestBlockedRequestsProcessDies);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
-                           IncrementOutstandingRequestsMemoryCost);
-  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            CalculateApproximateMemoryCost);
 
   class ShutdownTask;
+
+  struct OustandingRequestsStats {
+    int memory_cost;
+    int num_requests;
+  };
 
   friend class ShutdownTask;
   friend class ResourceMessageDelegate;
@@ -289,14 +305,36 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void StartLoading(ResourceRequestInfoImpl* info,
                     const linked_ptr<ResourceLoader>& loader);
 
-  // Updates the "cost" of outstanding requests for |child_id|.
-  // The "cost" approximates how many bytes are consumed by all the in-memory
-  // data structures supporting this request (net::URLRequest object,
-  // HttpNetworkTransaction, etc...).
-  // The value of |cost| is added to the running total, and the resulting
-  // sum is returned.
-  int IncrementOutstandingRequestsMemoryCost(int cost,
-                                             int child_id);
+  // We keep track of how much memory each request needs and how many requests
+  // are issued by each renderer. These are known as OustandingRequestStats.
+  // Memory limits apply to all requests sent to us by the renderers. There is a
+  // limit for each renderer. File descriptor limits apply to requests that are
+  // receiving their body. These are known as in-flight requests. There is a
+  // global limit that applies for the browser process. Each render is allowed
+  // to use up to a fraction of that.
+
+  // Returns the OustandingRequestsStats for |info|'s renderer, or an empty
+  // struct if that renderer has no outstanding requests.
+  OustandingRequestsStats GetOutstandingRequestsStats(
+      const ResourceRequestInfoImpl& info);
+
+  // Updates |outstanding_requests_stats_map_| with the specified |stats| for
+  // the renderer that made the request in |info|.
+  void UpdateOutstandingRequestsStats(const ResourceRequestInfoImpl& info,
+                                      const OustandingRequestsStats& stats);
+
+  // Called every time an outstanding request is created or deleted. |count|
+  // indicates whether the request is new or deleted. |count| must be 1 or -1.
+  OustandingRequestsStats IncrementOutstandingRequestsMemory(
+      int count,
+      const ResourceRequestInfoImpl& info);
+
+  // Called every time an in flight request is issued or finished. |count|
+  // indicates whether the request is issuing or finishing. |count| must be 1
+  // or -1.
+  OustandingRequestsStats IncrementOutstandingRequestsCount(
+      int count,
+      const ResourceRequestInfoImpl& info);
 
   // Estimate how much heap space |request| will consume to run.
   static int CalculateApproximateMemoryCost(net::URLRequest* request);
@@ -416,8 +454,24 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Maps the child_ids to the approximate number of bytes
   // being used to service its resource requests. No entry implies 0 cost.
-  typedef std::map<int, int> OutstandingRequestsMemoryCostMap;
-  OutstandingRequestsMemoryCostMap outstanding_requests_memory_cost_map_;
+  typedef std::map<int, OustandingRequestsStats> OutstandingRequestsStatsMap;
+  OutstandingRequestsStatsMap outstanding_requests_stats_map_;
+
+  // |num_in_flight_requests_| is the total number of requests currently issued
+  // summed across all renderers.
+  int num_in_flight_requests_;
+
+  // |max_num_in_flight_requests_| is the upper bound on how many requests
+  // can be in flight at once. It's based on the maximum number of file
+  // descriptors open per process. We need a global limit for the browser
+  // process.
+  int max_num_in_flight_requests_;
+
+  // |max_num_in_flight_requests_| is the upper bound on how many requests
+  // can be issued at once. It's based on the maximum number of file
+  // descriptors open per process. We need a per-renderer limit so that no
+  // single renderer can hog the browser's limit.
+  int max_num_in_flight_requests_per_process_;
 
   // |max_outstanding_requests_cost_per_process_| is the upper bound on how
   // many outstanding requests can be issued per child process host.

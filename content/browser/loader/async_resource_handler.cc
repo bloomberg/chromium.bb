@@ -91,12 +91,15 @@ AsyncResourceHandler::AsyncResourceHandler(
       pending_data_count_(0),
       allocation_size_(0),
       did_defer_(false),
+      has_checked_for_sufficient_resources_(false),
       sent_received_response_msg_(false),
       sent_first_data_msg_(false) {
   InitializeResourceBufferConstants();
 }
 
 AsyncResourceHandler::~AsyncResourceHandler() {
+  if (has_checked_for_sufficient_resources_)
+    rdh_->FinishedWithResourcesForRequest(request_);
 }
 
 bool AsyncResourceHandler::OnMessageReceived(const IPC::Message& message,
@@ -337,6 +340,14 @@ bool AsyncResourceHandler::OnResponseCompleted(
 bool AsyncResourceHandler::EnsureResourceBufferIsInitialized() {
   if (buffer_ && buffer_->IsInitialized())
     return true;
+
+  if (!has_checked_for_sufficient_resources_) {
+    has_checked_for_sufficient_resources_ = true;
+    if (!rdh_->HasSufficientResourcesForRequest(request_)) {
+      controller()->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
+      return false;
+    }
+  }
 
   buffer_ = new ResourceBuffer();
   return buffer_->Initialize(kBufferSize,
