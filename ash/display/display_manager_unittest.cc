@@ -592,7 +592,15 @@ TEST_F(DisplayManagerTest, EnsurePointerInDisplays) {
   EXPECT_EQ("150,140", env->last_mouse_location().ToString());
 }
 
-TEST_F(DisplayManagerTest, EnsurePointerInDisplays_2ndOnLeft) {
+#if defined(OS_WIN)
+// Flaky failures on Win8 due to window activation messages. crbug.com/239539
+#define MAYBE_EnsurePointerInDisplays_2ndOnLeft \
+  DISABLED_EnsurePointerInDisplays_2ndOnLeft
+#else
+#define MAYBE_EnsurePointerInDisplays_2ndOnLeft \
+  EnsurePointerInDisplays_2ndOnLeft
+#endif
+TEST_F(DisplayManagerTest, MAYBE_EnsurePointerInDisplays_2ndOnLeft) {
   // Set the 2nd display on the left.
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();

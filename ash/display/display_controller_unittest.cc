@@ -601,7 +601,15 @@ TEST_F(DisplayControllerTest, MAYBE_SwapPrimaryById) {
   EXPECT_TRUE(primary_root->Contains(launcher_window));
 }
 
-TEST_F(DisplayControllerTest, CursorDeviceScaleFactorSwapPrimary) {
+#if defined(OS_WIN)
+// Flaky failures on Win8 due to window activation messages. crbug.com/239539
+#define MAYBE_CursorDeviceScaleFactorSwapPrimary \
+    DISABLED_CursorDeviceScaleFactorSwapPrimary
+#else
+#define MAYBE_CursorDeviceScaleFactorSwapPrimary \
+    CursorDeviceScaleFactorSwapPrimary
+#endif
+TEST_F(DisplayControllerTest, MAYBE_CursorDeviceScaleFactorSwapPrimary) {
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
 
