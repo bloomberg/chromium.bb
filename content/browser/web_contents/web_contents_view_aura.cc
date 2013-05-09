@@ -1194,17 +1194,17 @@ void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
                                                  OverscrollMode new_mode) {
   // Reset any in-progress overscroll animation first.
   ResetOverscrollTransform();
-  aura::Window* target = GetWindowToAnimateForOverscroll();
-  if (target) {
-    StopObservingImplicitAnimations();
-    target->layer()->GetAnimator()->AbortAllAnimations();
-  }
 
   if (new_mode == OVERSCROLL_NONE ||
       !GetContentNativeView() ||
       (navigation_overlay_.get() && navigation_overlay_->has_window())) {
     current_overscroll_gesture_ = OVERSCROLL_NONE;
   } else {
+    aura::Window* target = GetWindowToAnimateForOverscroll();
+    if (target) {
+      StopObservingImplicitAnimations();
+      target->layer()->GetAnimator()->AbortAllAnimations();
+    }
     // Cleanup state of the content window first, because that can reset the
     // value of |current_overscroll_gesture_|.
     PrepareContentWindowForOverscroll();
