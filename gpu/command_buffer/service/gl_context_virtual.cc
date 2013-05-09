@@ -52,12 +52,9 @@ void GLContextVirtual::Destroy() {
 }
 
 bool GLContextVirtual::MakeCurrent(gfx::GLSurface* surface) {
-  // If we have the decoder, we should restore state in
-  // MakeVirtuallyCurrent(). Otherwise just make the
-  // context/surface current (if needed).
   if (decoder_.get() && decoder_->initialized())
     shared_context_->MakeVirtuallyCurrent(this, surface);
-  else if (!IsCurrent(surface))
+  else
     shared_context_->MakeCurrent(surface);
   return true;
 }
