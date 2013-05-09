@@ -686,6 +686,8 @@ class RequestProxy
 
   void PopulateResponseInfo(net::URLRequest* request,
                             ResourceResponseInfo* info) const {
+    if (request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING)
+      request->GetLoadTimingInfo(&info->load_timing);
     info->request_time = request->request_time();
     info->response_time = request->response_time();
     info->headers = request->response_headers();
