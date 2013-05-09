@@ -152,7 +152,9 @@ BlobOriginCache::BlobOriginCache()
 
 SecurityOrigin* BlobOriginCache::cachedOrigin(const KURL& url)
 {
-    return originMap()->get(url.string());
+    if (url.protocolIs("blob"))
+        return originMap()->get(url.string());
+    return 0;
 }
 
 } // namespace WebCore
