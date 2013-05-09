@@ -48,8 +48,8 @@ void ViewRendererHost::OnPictureUpdated() {
 void ViewRendererHost::OnDidActivateAcceleratedCompositing(
     int input_handler_id) {
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kMergeUIAndRendererCompositorThreads)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNoMergeUIAndRendererCompositorThreads)) {
     return;
   }
 

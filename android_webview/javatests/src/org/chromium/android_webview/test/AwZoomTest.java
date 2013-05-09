@@ -13,6 +13,7 @@ import android.view.ViewConfiguration;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -193,16 +194,24 @@ public class AwZoomTest extends AwTestBase {
         assertTrue("Should be able to zoom in", canZoomInOnUiThread());
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView"})
+    http://crbug.com/239144
+    */
+    @DisabledTest
     public void testMagnification() throws Throwable {
         runMagnificationTest(true);
     }
 
     // According to Android CTS test, zoomIn/Out must work
     // even if supportZoom is turned off.
+    /*
     @SmallTest
     @Feature({"AndroidWebView"})
+    http://crbug.com/239144
+    */
+    @DisabledTest
     public void testMagnificationWithZoomSupportOff() throws Throwable {
         runMagnificationTest(false);
     }
@@ -225,8 +234,12 @@ public class AwZoomTest extends AwTestBase {
         assertFalse(isMultiTouchZoomSupportedOnUiThread());
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView"})
+    http://crbug.com/239144
+    */
+    @DisabledTest
     public void testZoomControls() throws Throwable {
         AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
         int onScaleChangedCallCount = mContentsClient.getOnScaleChangedHelper().getCallCount();

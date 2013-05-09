@@ -2354,8 +2354,12 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(viewportTagSpecifiedWidth, getTitleOnUiThread(awContents));
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView", "Preferences"})
+    http://crbug.com/239144
+    */
+    @DisabledTest
     public void testUseWideViewportControlsDoubleTabToZoom() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -2382,8 +2386,12 @@ public class AwSettingsTest extends AwTestBase {
                 zoomedOutScale < initialScale);
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
+    http://crbug.com/239144
+    */
+    @DisabledTest
     public void testLoadWithOverviewModeWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -2393,8 +2401,12 @@ public class AwSettingsTest extends AwTestBase {
                         views.getContents1(), views.getClient1(), false));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /*
+     @SmallTest
+     @Feature({"AndroidWebView", "Preferences"})
+     http://crbug.com/239144
+     */
+    @DisabledTest
     public void testLoadWithOverviewModeViewportTagWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(

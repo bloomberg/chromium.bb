@@ -9,6 +9,7 @@ import android.view.View;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -45,8 +46,13 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
     }
 
 
-    @Feature({"AndroidWebView"})
-    @SmallTest
+    /**
+     * @Feature({"AndroidWebView"})
+     * @SmallTest
+     *
+     * http://crbug.com/238735
+     */
+    @DisabledTest
     public void testGetVideoLoadingProgressView() throws Throwable {
         TestAwContentsClient contentsClient =
                 new FullScreenVideoTestAwContentsClient(getActivity()) {

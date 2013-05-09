@@ -122,11 +122,11 @@ BrowserViewRendererImpl* BrowserViewRendererImpl::Create(
     BrowserViewRenderer::Client* client,
     JavaHelper* java_helper) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kMergeUIAndRendererCompositorThreads)) {
-    return new InProcessViewRenderer(client, java_helper);
+      switches::kNoMergeUIAndRendererCompositorThreads)) {
+    return new BrowserViewRendererImpl(client, java_helper);
   }
 
-  return new BrowserViewRendererImpl(client, java_helper);
+  return new InProcessViewRenderer(client, java_helper);
 }
 
 // static

@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/in_process_renderer/in_process_renderer_client.h"
+#include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_geolocation_permission_context.h"
@@ -13,6 +14,7 @@
 #include "android_webview/native/aw_web_contents_view_delegate.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -21,6 +23,17 @@
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace android_webview {
+
+namespace {
+
+base::LazyInstance<scoped_ptr<ScopedAllowWaitForLegacyWebViewApi> >
+    g_allow_wait_in_ui_thread = LAZY_INSTANCE_INITIALIZER;
+
+bool UIAndRendererCompositorThreadsNotMerged() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNoMergeUIAndRendererCompositorThreads);
+}
+}
 
 AwMainDelegate::AwMainDelegate() {
 }
@@ -35,13 +48,12 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
       ::EnableVirtualizedContext();
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
-  // Set the command line to enable synchronous API compatibility.
-  if (cl->HasSwitch(switches::kMergeUIAndRendererCompositorThreads)) {
-    cl->AppendSwitch(switches::kEnableSynchronousRendererCompositor);
-  } else {
+  if (UIAndRendererCompositorThreadsNotMerged()) {
     cl->AppendSwitch(switches::kEnableWebViewSynchronousAPIs);
+  } else {
+    // Set the command line to enable synchronous API compatibility.
+    cl->AppendSwitch(switches::kEnableSynchronousRendererCompositor);
   }
-
   return false;
 }
 
@@ -63,6 +75,12 @@ int AwMainDelegate::RunProcess(
     browser_runner_.reset(content::BrowserMainRunner::Create());
     int exit_code = browser_runner_->Initialize(main_function_params);
     DCHECK(exit_code < 0);
+
+    // This is temporary until we remove the browser compositor
+    if (!UIAndRendererCompositorThreadsNotMerged()) {
+      g_allow_wait_in_ui_thread.Get().reset(
+          new ScopedAllowWaitForLegacyWebViewApi());
+    }
 
     // Return 0 so that we do NOT trigger the default behavior. On Android, the
     // UI message loop is managed by the Java application.
@@ -90,12 +108,10 @@ content::ContentRendererClient*
   DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
   // During transition period allow running in either threading mode; eventually
   // only the compositor/UI thread merge mode will be supported.
-  const bool merge_threads =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMergeUIAndRendererCompositorThreads);
+  const bool no_merge_threads = UIAndRendererCompositorThreadsNotMerged();
   content_renderer_client_.reset(
-      merge_threads ? new InProcessRendererClient() :
-                      new AwContentRendererClient());
+      no_merge_threads ? new AwContentRendererClient() :
+                         new InProcessRendererClient());
   return content_renderer_client_.get();
 }
 

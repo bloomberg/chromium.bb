@@ -7,8 +7,8 @@
 
 namespace switches {
 
-// Merge the Browser UI and the renderer compositor threads.
-extern const char kMergeUIAndRendererCompositorThreads[];
+// Do not merge the Browser UI and the renderer compositor threads.
+extern const char kNoMergeUIAndRendererCompositorThreads[];
 
 // Uses zero-copy buffers in graphics pipeline.
 extern const char kUseZeroCopyBuffers[];
