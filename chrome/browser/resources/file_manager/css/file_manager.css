@@ -1157,7 +1157,7 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
   padding-left: 26px;
 }
 
-#list-container list > *,
+#list-container list > li,
 #list-container grid > *,
 #default-actions-list > * {
   background-color: transparent;

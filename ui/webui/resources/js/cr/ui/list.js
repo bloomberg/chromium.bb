@@ -1259,6 +1259,38 @@ cr.define('cr.ui', function() {
       this.redraw();
       return item;
     },
+
+    /**
+     * Starts drag selection by reacting 'dragstart' event.
+     * @param {Event} event Event of dragstart.
+     */
+    startDragSelection: function(event) {
+      event.preventDefault();
+      var border = document.createElement('div');
+      border.className = 'drag-selection-border';
+      var rect = this.getBoundingClientRect();
+      var startX = event.clientX - rect.left + this.scrollLeft;
+      var startY = event.clientY - rect.top + this.scrollTop;
+      border.style.left = startX + 'px';
+      border.style.top = startY + 'px';
+      var onMouseMove = function(event) {
+        var inRect = this.getBoundingClientRect();
+        var x = event.clientX - inRect.left + this.scrollLeft;
+        var y = event.clientY - inRect.top + this.scrollTop;
+        border.style.left = Math.min(startX, x) + 'px';
+        border.style.top = Math.min(startY, y) + 'px';
+        border.style.width = Math.abs(startX - x) + 'px';
+        border.style.height = Math.abs(startY - y) + 'px';
+      }.bind(this);
+      var onMouseUp = function() {
+        this.removeChild(border);
+        document.removeEventListener('mousemove', onMouseMove, true);
+        document.removeEventListener('mouseup', onMouseUp, true);
+      }.bind(this);
+      document.addEventListener('mousemove', onMouseMove, true);
+      document.addEventListener('mouseup', onMouseUp, true);
+      this.appendChild(border);
+    },
   };
 
   cr.defineProperty(List, 'disabled', cr.PropertyKind.BOOL_ATTR);
