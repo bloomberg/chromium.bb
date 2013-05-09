@@ -84,8 +84,9 @@ PIMAGE_TLS_CALLBACK p_thread_callback_dllmain_typical_entry = on_callback;
 #endif  // _WIN64
 }  // extern "C"
 
+// Custom crash code to get a unique entry in crash reports.
 NOINLINE static void CrashOnProcessDetach() {
-  *((int*)0) = 0x356;
+  *static_cast<volatile int*>(0) = 0x356;
 }
 
 // Make DllMain call the listed callbacks.  This way any third parties that are
