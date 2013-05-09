@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
+#include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/wallet/wallet_service_url.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
@@ -859,10 +860,24 @@ void AutofillDialogViews::UpdateSection(DialogSection section) {
 void AutofillDialogViews::FillSection(DialogSection section,
                                       const DetailInput& originating_input) {
   DetailsGroup* group = GroupForSection(section);
+  // Make sure to overwrite the originating input.
   TextfieldMap::iterator text_mapping =
       group->textfields.find(&originating_input);
   if (text_mapping != group->textfields.end())
     text_mapping->second->textfield()->SetText(string16());
+
+  // If the Autofill data comes from a credit card, make sure to overwrite the
+  // CC comboboxes (even if they already have something in them). If the
+  // Autofill data comes from an AutofillProfile, leave the comboboxes alone.
+  if ((section == SECTION_CC || section == SECTION_CC_BILLING) &&
+      AutofillType(originating_input.type).group() ==
+              AutofillType::CREDIT_CARD) {
+    for (ComboboxMap::const_iterator it = group->comboboxes.begin();
+         it != group->comboboxes.end(); ++it) {
+      if (AutofillType(it->first->type).group() == AutofillType::CREDIT_CARD)
+        it->second->SetSelectedIndex(it->second->model()->GetDefaultIndex());
+    }
+  }
 
   UpdateSectionImpl(section, false);
 }
@@ -1420,10 +1435,13 @@ void AutofillDialogViews::UpdateSectionImpl(
     ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
     if (combo_mapping != group->comboboxes.end()) {
       views::Combobox* combobox = combo_mapping->second;
-      for (int i = 0; i < combobox->model()->GetItemCount(); ++i) {
-        if (input.initial_value == combobox->model()->GetItemAt(i)) {
-          combobox->SetSelectedIndex(i);
-          break;
+      if (combobox->selected_index() == combobox->model()->GetDefaultIndex() ||
+          clobber_inputs) {
+        for (int i = 0; i < combobox->model()->GetItemCount(); ++i) {
+          if (input.initial_value == combobox->model()->GetItemAt(i)) {
+            combobox->SetSelectedIndex(i);
+            break;
+          }
         }
       }
     }

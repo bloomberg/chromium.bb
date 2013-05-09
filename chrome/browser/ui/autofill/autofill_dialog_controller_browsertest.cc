@@ -331,6 +331,92 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_TRUE(controller()->ShouldShowDetailArea());
   EXPECT_FALSE(controller()->ShouldShowProgressBar());
 }
+
+// Tests that changing the value of a CC expiration date combobox works as
+// expected when Autofill is used to fill text inputs.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillComboboxFromAutofill) {
+  InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+
+  CreditCard card1;
+  test::SetCreditCardInfo(&card1, "JJ Smith", "4111111111111111", "12", "2018");
+  controller()->GetTestingManager()->AddTestingCreditCard(&card1);
+  CreditCard card2;
+  test::SetCreditCardInfo(&card2, "B Bird", "3111111111111111", "11", "2017");
+  controller()->GetTestingManager()->AddTestingCreditCard(&card2);
+  AutofillProfile full_profile(test::GetFullProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_CC);
+  const DetailInput& triggering_input = inputs[0];
+  string16 value = card1.GetRawInfo(triggering_input.type);
+  TestableAutofillDialogView* view = controller()->view()->GetTestableView();
+  view->SetTextContentsOfInput(triggering_input,
+                               value.substr(0, value.size() / 2));
+  view->ActivateInput(triggering_input);
+
+  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+  controller()->DidAcceptSuggestion(string16(), 0);
+
+  // All inputs should be filled.
+  AutofillCreditCardWrapper wrapper1(&card1);
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    EXPECT_EQ(wrapper1.GetInfo(inputs[i].type),
+              view->GetTextContentsOfInput(inputs[i]));
+  }
+
+  // Try again with different data. Only expiration date and the triggering
+  // input should be overwritten.
+  value = card2.GetRawInfo(triggering_input.type);
+  view->SetTextContentsOfInput(triggering_input,
+                               value.substr(0, value.size() / 2));
+  view->ActivateInput(triggering_input);
+  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+  controller()->DidAcceptSuggestion(string16(), 0);
+
+  AutofillCreditCardWrapper wrapper2(&card2);
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    const DetailInput& input = inputs[i];
+    if (&input == &triggering_input ||
+        input.type == CREDIT_CARD_EXP_MONTH ||
+        input.type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
+      EXPECT_EQ(wrapper2.GetInfo(input.type),
+                view->GetTextContentsOfInput(input));
+    } else if (input.type == CREDIT_CARD_VERIFICATION_CODE) {
+      EXPECT_TRUE(view->GetTextContentsOfInput(input).empty());
+    } else {
+      EXPECT_EQ(wrapper1.GetInfo(input.type),
+                view->GetTextContentsOfInput(input));
+    }
+  }
+
+  // Now fill from a profile. It should not overwrite any CC info.
+  const DetailInputs& billing_inputs =
+      controller()->RequestedFieldsForSection(SECTION_BILLING);
+  const DetailInput& billing_triggering_input = billing_inputs[0];
+  value = full_profile.GetRawInfo(triggering_input.type);
+  view->SetTextContentsOfInput(billing_triggering_input,
+                               value.substr(0, value.size() / 2));
+  view->ActivateInput(billing_triggering_input);
+
+  ASSERT_EQ(&billing_triggering_input, controller()->input_showing_popup());
+  controller()->DidAcceptSuggestion(string16(), 0);
+
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    const DetailInput& input = inputs[i];
+    if (&input == &triggering_input ||
+        input.type == CREDIT_CARD_EXP_MONTH ||
+        input.type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
+      EXPECT_EQ(wrapper2.GetInfo(input.type),
+                view->GetTextContentsOfInput(input));
+    } else if (input.type == CREDIT_CARD_VERIFICATION_CODE) {
+      EXPECT_TRUE(view->GetTextContentsOfInput(input).empty());
+    } else {
+      EXPECT_EQ(wrapper1.GetInfo(input.type),
+                view->GetTextContentsOfInput(input));
+    }
+  }
+}
 #endif  // defined(TOOLKIT_VIEWS)
 
 }  // namespace autofill
