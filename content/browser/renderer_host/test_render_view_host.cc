@@ -35,6 +35,9 @@ SessionStorageNamespaceImpl* CreateSessionStorageNamespace(
   return new SessionStorageNamespaceImpl(
       static_cast<DOMStorageContextImpl*>(dom_storage_context));
 }
+
+const int64 kFrameId = 13UL;
+
 }  // namespace
 
 
@@ -248,6 +251,8 @@ TestRenderViewHost::TestRenderViewHost(
   // deleted in the destructor below, because
   // TestRenderWidgetHostView::Destroy() doesn't |delete this|.
   SetView(new TestRenderWidgetHostView(this));
+
+  main_frame_id_ = kFrameId;
 }
 
 TestRenderViewHost::~TestRenderViewHost() {
@@ -287,7 +292,7 @@ void TestRenderViewHost::SendNavigateWithTransition(
 
 void TestRenderViewHost::SendNavigateWithOriginalRequestURL(
     int page_id, const GURL& url, const GURL& original_request_url) {
-  OnDidStartProvisionalLoadForFrame(0, -1, true, url);
+  OnDidStartProvisionalLoadForFrame(kFrameId, -1, true, url);
   SendNavigateWithParameters(page_id, url, PAGE_TRANSITION_LINK,
                              original_request_url, 200, 0);
 }
@@ -301,7 +306,7 @@ void TestRenderViewHost::SendNavigateWithFile(
 void TestRenderViewHost::SendNavigateWithTransitionAndResponseCode(
     int page_id, const GURL& url, PageTransition transition,
     int response_code) {
-  OnDidStartProvisionalLoadForFrame(0, -1, true, url);
+  OnDidStartProvisionalLoadForFrame(kFrameId, -1, true, url);
   SendNavigateWithParameters(page_id, url, transition, url, response_code, 0);
 }
 
@@ -311,7 +316,7 @@ void TestRenderViewHost::SendNavigateWithParameters(
     const base::FilePath* file_path_for_history_item) {
   ViewHostMsg_FrameNavigate_Params params;
   params.page_id = page_id;
-  params.frame_id = 0;
+  params.frame_id = kFrameId;
   params.url = url;
   params.referrer = Referrer();
   params.transition = transition;

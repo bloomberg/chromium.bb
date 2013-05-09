@@ -692,6 +692,7 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog,
                         OnOpenDateTimeDialog)
 #endif
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FrameAttached, OnFrameAttached)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FrameDetached, OnFrameDetached)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -2425,9 +2426,45 @@ void WebContentsImpl::OnUpdateFaviconURL(
                     DidUpdateFaviconURL(page_id, candidates));
 }
 
-void WebContentsImpl::OnFrameDetached(int64 frame_id) {
+FrameTreeNode* WebContentsImpl::FindFrameTreeNodeByID(int64 frame_id) {
+  FrameTreeNode* node = NULL;
+  std::queue<FrameTreeNode*> queue;
+  queue.push(frame_tree_root_.get());
+
+  while (!queue.empty()) {
+    node = queue.front();
+    queue.pop();
+    if (node->frame_id() == frame_id)
+      return node;
+
+    for (size_t i = 0; i < node->child_count(); ++i)
+      queue.push(node->child_at(i));
+  }
+
+  return NULL;
+}
+
+void WebContentsImpl::OnFrameAttached(
+    int64 parent_frame_id,
+    int64 frame_id,
+    const std::string& frame_name) {
+  FrameTreeNode* parent = FindFrameTreeNodeByID(parent_frame_id);
+  if (!parent)
+    return;
+
+  FrameTreeNode* node = new FrameTreeNode(frame_id, frame_name);
+  parent->AddChild(node);
+}
+
+void WebContentsImpl::OnFrameDetached(int64 parent_frame_id, int64 frame_id) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     FrameDetached(message_source_, frame_id));
+
+  FrameTreeNode* parent = FindFrameTreeNodeByID(parent_frame_id);
+  if (!parent)
+    return;
+
+  parent->RemoveChild(frame_id);
 }
 
 void WebContentsImpl::DidChangeVisibleSSLState() {
@@ -2720,6 +2757,14 @@ void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
 void WebContentsImpl::DidNavigate(
     RenderViewHost* rvh,
     const ViewHostMsg_FrameNavigate_Params& params) {
+  // If we don't have a frame tree root yet, this is the first navigation in
+  // using the current RenderViewHost, so we need to create it with the proper
+  // frame id.
+  if (!frame_tree_root_.get()) {
+    DCHECK(PageTransitionIsMainFrame(params.transition));
+    frame_tree_root_.reset(new FrameTreeNode(params.frame_id, std::string()));
+  }
+
   if (PageTransitionIsMainFrame(params.transition)) {
     // When overscroll navigation gesture is enabled, a screenshot of the page
     // in its current state is taken so that it can be used during the
@@ -2732,6 +2777,10 @@ void WebContentsImpl::DidNavigate(
 
     render_manager_.DidNavigateMainFrame(rvh);
   }
+
+  // We expect to have a valid frame tree root node at all times when
+  // navigating.
+  DCHECK(frame_tree_root_.get());
 
   // Update the site of the SiteInstance if it doesn't have one yet, unless
   // this is for about:blank.  In that case, the SiteInstance can still be
@@ -3306,6 +3355,24 @@ void WebContentsImpl::NotifySwappedFromRenderManager(RenderViewHost* rvh) {
     view_->SetOverscrollControllerEnabled(delegate_->CanOverscrollContent());
 
   view_->RenderViewSwappedIn(render_manager_.current_host());
+
+  FrameTreeNode* root = NULL;
+  RenderViewHostImpl* new_rvh = static_cast<RenderViewHostImpl*>(
+      render_manager_.current_host());
+
+  // We are doing a cross-site navigation and swapping processes. Since frame
+  // ids are unique to a process, we need to recreate the frame tree with the
+  // proper main frame id.
+  // Note that it is possible for this method to be called before the new RVH
+  // has committed a navigation (if RenderViewHostManager short-circuits the
+  // CommitPending call because the current RVH is dead). In that case, we
+  // haven't heard a valid frame id to use to initialize the root node, so clear
+  // out the root node and the first subsequent navigation message will set it
+  // correctly.
+  if (new_rvh->main_frame_id() != -1)
+    root = new FrameTreeNode(new_rvh->main_frame_id(), std::string());
+
+  frame_tree_root_.reset(root);
 }
 
 int WebContentsImpl::CreateOpenerRenderViewsForRenderManager(

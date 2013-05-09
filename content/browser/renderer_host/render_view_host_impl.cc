@@ -171,6 +171,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       suspended_nav_params_(NULL),
       is_swapped_out_(swapped_out),
       is_subframe_(false),
+      main_frame_id_(-1),
       run_modal_reply_msg_(NULL),
       run_modal_opener_id_(MSG_ROUTING_NONE),
       is_waiting_for_beforeunload_ack_(false),
@@ -1116,6 +1117,7 @@ void RenderViewHostImpl::OnRenderViewGone(int status, int exit_code) {
 
   // Reset state.
   ClearPowerSaveBlockers();
+  main_frame_id_ = -1;
 
   // Our base class RenderWidgetHost needs to reset some stuff.
   RendererExited(render_view_termination_status_, exit_code);
@@ -1186,6 +1188,18 @@ void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
   if (is_waiting_for_unload_ack_)
     return;
 
+  // Cache the main frame id, so we can use it for creating the frame tree
+  // root node when needed.
+  if (PageTransitionIsMainFrame(validated_params.transition)) {
+    if (main_frame_id_ == -1) {
+      main_frame_id_ = validated_params.frame_id;
+    } else {
+      // TODO(nasko): We plan to remove the usage of frame_id in navigation
+      // and move to routing ids. This is in place to ensure that a
+      // renderer is not misbehaving and sending us incorrect data.
+      DCHECK_EQ(main_frame_id_, validated_params.frame_id);
+    }
+  }
   RenderProcessHost* process = GetProcess();
 
   // If the --site-per-process flag is passed, then the renderer process is

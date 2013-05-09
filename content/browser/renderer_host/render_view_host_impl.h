@@ -395,6 +395,10 @@ class CONTENT_EXPORT RenderViewHostImpl
     is_subframe_ = is_subframe;
   }
 
+  int64 main_frame_id() const {
+    return main_frame_id_;
+  }
+
   // Set the opener to null in the renderer process.
   void DisownOpener();
 
@@ -606,6 +610,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Whether this RenderView is responsible for displaying a subframe in a
   // different process from its parent page.
   bool is_subframe_;
+
+  // The frame id of the main (top level) frame. This value is set on the
+  // initial navigation of a RenderView and reset when the RenderView is
+  // terminated (in RenderViewGone).
+  int64 main_frame_id_;
 
   // If we were asked to RunModal, then this will hold the reply_msg that we
   // must return to the renderer to unblock it.

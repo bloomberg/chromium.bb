@@ -2776,6 +2776,8 @@ WebCookieJar* RenderViewImpl::cookieJar(WebFrame* frame) {
 }
 
 void RenderViewImpl::didCreateFrame(WebFrame* parent, WebFrame* child) {
+  Send(new ViewHostMsg_FrameAttached(routing_id_, parent->identifier(),
+      child->identifier(), UTF16ToUTF8(child->assignedName())));
 }
 
 void RenderViewImpl::didDisownOpener(WebKit::WebFrame* frame) {
@@ -2791,7 +2793,12 @@ void RenderViewImpl::didDisownOpener(WebKit::WebFrame* frame) {
 }
 
 void RenderViewImpl::frameDetached(WebFrame* frame) {
-  Send(new ViewHostMsg_FrameDetached(routing_id_, frame->identifier()));
+  int64 parent_frame_id = -1;
+  if (frame->parent())
+    parent_frame_id = frame->parent()->identifier();
+
+  Send(new ViewHostMsg_FrameDetached(routing_id_, parent_frame_id,
+      frame->identifier()));
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameDetached(frame));
 }

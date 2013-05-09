@@ -682,6 +682,8 @@
     'browser/renderer_host/dip_util.h',
     'browser/renderer_host/file_utilities_message_filter.cc',
     'browser/renderer_host/file_utilities_message_filter.h',
+    'browser/renderer_host/frame_tree_node.cc',
+    'browser/renderer_host/frame_tree_node.h',
     'browser/renderer_host/gamepad_browser_message_filter.cc',
     'browser/renderer_host/gamepad_browser_message_filter.h',
     'browser/renderer_host/gesture_event_filter.cc',
