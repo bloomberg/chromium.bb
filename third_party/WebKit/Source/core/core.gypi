@@ -737,7 +737,6 @@
             'editing/DeleteFromTextNodeCommand.cpp',
             'editing/DeleteFromTextNodeCommand.h',
             'editing/DeleteSelectionCommand.cpp',
-            'editing/DictationAlternative.cpp',
             'editing/EditCommand.cpp',
             'editing/EditingStyle.cpp',
             'editing/Editor.cpp',

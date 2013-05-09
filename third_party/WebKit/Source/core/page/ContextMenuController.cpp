@@ -347,8 +347,6 @@ void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)
         if (Page* page = frame->page())
             page->inspectorController()->inspect(m_hitTestResult.innerNonSharedNode());
         break;
-    case ContextMenuItemTagDictationAlternative:
-        break;
     default:
         break;
     }
@@ -852,7 +850,6 @@ void ContextMenuController::checkOrEnableIfNeeded(ContextMenuItem& item) const
         case ContextMenuItemCustomTagNoAction:
         case ContextMenuItemLastCustomTag:
         case ContextMenuItemBaseApplicationTag:
-        case ContextMenuItemTagDictationAlternative:
             break;
         case ContextMenuItemTagMediaPlayPause:
             if (m_hitTestResult.mediaPlaying())

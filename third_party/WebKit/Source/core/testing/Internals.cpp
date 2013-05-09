@@ -182,8 +182,6 @@ static bool markerTypesFrom(const String& markerType, DocumentMarker::MarkerType
         result =  DocumentMarker::SpellCheckingExemption;
     else if (equalIgnoringCase(markerType, "DeletedAutocorrection"))
         result =  DocumentMarker::DeletedAutocorrection;
-    else if (equalIgnoringCase(markerType, "DictationAlternatives"))
-        result =  DocumentMarker::DictationAlternatives;
     else
         return false;
 

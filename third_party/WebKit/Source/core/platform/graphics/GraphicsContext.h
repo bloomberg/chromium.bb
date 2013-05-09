@@ -399,7 +399,6 @@ public:
         DocumentMarkerSpellingLineStyle,
         DocumentMarkerGrammarLineStyle,
         DocumentMarkerAutocorrectionReplacementLineStyle,
-        DocumentMarkerDictationAlternativesLineStyle
     };
     void drawLineForDocumentMarker(const FloatPoint&, float width, DocumentMarkerLineStyle);
 

@@ -1245,8 +1245,6 @@ static GraphicsContext::DocumentMarkerLineStyle lineStyleForMarkerType(DocumentM
         return GraphicsContext::DocumentMarkerGrammarLineStyle;
     case DocumentMarker::CorrectionIndicator:
         return GraphicsContext::DocumentMarkerAutocorrectionReplacementLineStyle;
-    case DocumentMarker::DictationAlternatives:
-        return GraphicsContext::DocumentMarkerDictationAlternativesLineStyle;
     default:
         ASSERT_NOT_REACHED();
         return GraphicsContext::DocumentMarkerSpellingLineStyle;
@@ -1274,8 +1272,7 @@ void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const FloatPoint& b
     if (m_truncation != cNoTruncation)
         markerSpansWholeBox = false;
 
-    bool isDictationMarker = marker->type() == DocumentMarker::DictationAlternatives;
-    if (!markerSpansWholeBox || grammar || isDictationMarker) {
+    if (!markerSpansWholeBox || grammar) {
         int startPosition = max<int>(marker->startOffset() - m_start, 0);
         int endPosition = min<int>(marker->endOffset() - m_start, m_len);
         
@@ -1295,7 +1292,7 @@ void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const FloatPoint& b
         
         // Store rendered rects for bad grammar markers, so we can hit-test against it elsewhere in order to
         // display a toolTip. We don't do this for misspelling markers.
-        if (grammar || isDictationMarker) {
+        if (grammar) {
             markerRect.move(-boxOrigin.x(), -boxOrigin.y());
             markerRect = renderer()->localToAbsoluteQuad(FloatRect(markerRect)).enclosingBoundingBox();
             toRenderedDocumentMarker(marker)->setRenderedRect(markerRect);
@@ -1386,7 +1383,6 @@ void InlineTextBox::paintDocumentMarkers(GraphicsContext* pt, const FloatPoint& 
             case DocumentMarker::Spelling:
             case DocumentMarker::CorrectionIndicator:
             case DocumentMarker::Replacement:
-            case DocumentMarker::DictationAlternatives:
                 if (background)
                     continue;
                 break;
@@ -1411,7 +1407,6 @@ void InlineTextBox::paintDocumentMarkers(GraphicsContext* pt, const FloatPoint& 
         switch (marker->type()) {
             case DocumentMarker::Spelling:
             case DocumentMarker::CorrectionIndicator:
-            case DocumentMarker::DictationAlternatives:
                 paintDocumentMarker(pt, boxOrigin, marker, style, font, false);
                 break;
             case DocumentMarker::Grammar:

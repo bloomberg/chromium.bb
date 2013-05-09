@@ -51,7 +51,6 @@
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/CreateLinkCommand.h"
 #include "core/editing/DeleteSelectionCommand.h"
-#include "core/editing/DictationAlternative.h"
 #include "core/editing/IndentOutdentCommand.h"
 #include "core/editing/InsertListCommand.h"
 #include "core/editing/ModifySelectionListLevel.h"
@@ -2097,7 +2096,7 @@ void Editor::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSelectionA
     Document* document = m_frame->document();
     RefPtr<Range> wordRange = Range::create(document, startOfFirstWord.deepEquivalent(), endOfLastWord.deepEquivalent());
 
-    document->markers()->removeMarkers(wordRange.get(), DocumentMarker::Spelling | DocumentMarker::Grammar | DocumentMarker::CorrectionIndicator | DocumentMarker::SpellCheckingExemption | DocumentMarker::DictationAlternatives, DocumentMarkerController::RemovePartiallyOverlappingMarker);
+    document->markers()->removeMarkers(wordRange.get(), DocumentMarker::Spelling | DocumentMarker::Grammar | DocumentMarker::CorrectionIndicator | DocumentMarker::SpellCheckingExemption, DocumentMarkerController::RemovePartiallyOverlappingMarker);
     document->markers()->clearDescriptionOnMarkersIntersectingRange(wordRange.get(), DocumentMarker::Replacement);
 }
 

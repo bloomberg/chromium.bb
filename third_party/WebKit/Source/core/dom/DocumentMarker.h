@@ -63,9 +63,6 @@ public:
         // word again at this position, it will not be autocorrected again. The description of this
         // marker is the original word before autocorrection was applied.
         DeletedAutocorrection = 1 << 8,
-        // This marker indicates that the range of text spanned by the marker is entered by voice dictation,
-        // and it has alternative text.
-        DictationAlternatives = 1 << 9
     };
 
     class MarkerTypes {
@@ -87,7 +84,7 @@ public:
     class AllMarkers : public MarkerTypes {
     public:
         AllMarkers()
-            : MarkerTypes(Spelling | Grammar | TextMatch | Replacement | CorrectionIndicator | RejectedCorrection | Autocorrected | SpellCheckingExemption | DeletedAutocorrection | DictationAlternatives)
+            : MarkerTypes(Spelling | Grammar | TextMatch | Replacement | CorrectionIndicator | RejectedCorrection | Autocorrected | SpellCheckingExemption | DeletedAutocorrection)
         {
         }
     };

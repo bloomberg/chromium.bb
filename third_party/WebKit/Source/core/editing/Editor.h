@@ -28,7 +28,6 @@
 
 #include "core/dom/ClipboardAccessPolicy.h"
 #include "core/dom/DocumentMarker.h"
-#include "core/editing/DictationAlternative.h"
 #include "core/editing/EditAction.h"
 #include "core/editing/EditingBehavior.h"
 #include "core/editing/EditingStyle.h"
