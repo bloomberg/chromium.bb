@@ -33,7 +33,7 @@ UPGRADED = 'Upgraded'
 STANDARD_BOARD_ARCHS = set(['amd64', 'arm', 'x86'])
 
 # Files we do not include in our upgrades by convention.
-BLACKLISTED_FILES = set(['Manifest', 'ChangeLog*', 'metadata.xml'])
+BLACKLISTED_FILES = set(['Manifest', 'ChangeLog*'])
 
 class PInfo(object):
   """Class to accumulate package info during upgrade process.
