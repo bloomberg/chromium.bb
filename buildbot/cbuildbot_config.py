@@ -72,6 +72,11 @@ def OverrideConfigForTrybot(build_config, options):
         constants.USE_CHROME_PDF in useflags):
       useflags.remove(constants.USE_CHROME_PDF)
 
+    # Use the local manifest which only requires elevated access if it's really
+    # needed to build.
+    if not options.remote_trybot:
+      my_config['manifest'] = my_config['dev_manifest']
+
     my_config['upload_symbols'] = False
     my_config['push_image'] = False
     if options.hwtest:
@@ -220,6 +225,11 @@ _settings = dict(
 # manifest -- The name of the manifest to use. E.g., to use the buildtools
 #             manifest, specify 'buildtools'.
   manifest=constants.DEFAULT_MANIFEST,
+
+# dev_manifest -- The name of the manifest to use if we're building on a local
+#                 trybot. This should only require elevated access if it's
+#                 really needed to build this config.
+  dev_manifest=constants.DEFAULT_MANIFEST,
 
 # useflags -- emerge use flags to use while setting up the board, building
 #             packages, making images, etc.
@@ -683,8 +693,10 @@ internal = _config(
   manifest_repo_url=constants.MANIFEST_INT_URL,
 )
 
-# This adds Chrome branding.
+# This adds Chrome branding. It also adds extra official sources, which may
+# require elevated access to build.
 official_chrome = _config(
+  manifest='official.xml',
   useflags=[constants.USE_CHROME_INTERNAL, constants.USE_CHROME_PDF],
 )
 
@@ -1077,7 +1089,7 @@ internal_incremental = internal.derive(
 )
 
 sonic = _config(
-  manifest='sonic.xml',
+  dev_manifest='sonic.xml',
   boards=['sonic'],
   # Until these are configured and ready, disable them.
   unittests=False,
