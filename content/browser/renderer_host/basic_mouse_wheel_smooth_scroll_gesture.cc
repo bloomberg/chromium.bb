@@ -26,17 +26,10 @@ bool BasicMouseWheelSmoothScrollGesture::ForwardInputEvents(
   if (pixels_scrolled_ >= pixels_to_scroll_)
     return false;
 
-  double position_delta = 10;
-  if (!last_tick_time_.is_null()) {
-    RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(host);
-    base::TimeDelta desired_interval =
-        rwhi->GetSyntheticScrollMessageInterval();
-    double velocity = 10 / desired_interval.InMillisecondsF();
-    double time_delta = (now - last_tick_time_).InMillisecondsF();
-    position_delta = velocity * time_delta;
-  }
+  double position_delta = smooth_scroll_calculator_.GetScrollDelta(
+      now,
+      RenderWidgetHostImpl::From(host)->GetSyntheticScrollMessageInterval());
 
-  last_tick_time_ = now;
 
   WebKit::WebMouseWheelEvent event;
   event.type = WebKit::WebInputEvent::MouseWheel;

@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/surface_texture_transport_client_android.h"
+#include "content/browser/renderer_host/touch_smooth_scroll_gesture_android.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
@@ -523,6 +524,16 @@ void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
     return;
 
   content_view_core_->ShowDisambiguationPopup(target_rect, zoomed_bitmap);
+}
+
+SmoothScrollGesture* RenderWidgetHostViewAndroid::CreateSmoothScrollGesture(
+    bool scroll_down, int pixels_to_scroll, int mouse_event_x,
+    int mouse_event_y) {
+  return new TouchSmoothScrollGestureAndroid(
+      pixels_to_scroll,
+      GetRenderWidgetHost(),
+      content_view_core_->CreateSmoothScroller(
+          scroll_down, mouse_event_x, mouse_event_y));
 }
 
 void RenderWidgetHostViewAndroid::OnAcceleratedCompositingStateChange() {

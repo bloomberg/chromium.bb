@@ -154,6 +154,9 @@ class RenderWidgetHostViewAndroid
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) OVERRIDE;
+  virtual SmoothScrollGesture* CreateSmoothScrollGesture(
+      bool scroll_down, int pixels_to_scroll, int mouse_event_x,
+      int mouse_event_y) OVERRIDE;
 
   // cc::TextureLayerClient implementation.
   virtual unsigned PrepareTexture(cc::ResourceUpdateQueue* queue) OVERRIDE;
