@@ -126,11 +126,11 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
 }
 
 // Returns a HttpResponse created from the given file path.
-scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
+scoped_ptr<net::test_server::HttpResponse> CreateHttpResponseFromFile(
     const base::FilePath& file_path) {
   std::string content;
   if (!file_util::ReadFileToString(file_path, &content))
-    return scoped_ptr<test_server::HttpResponse>();
+    return scoped_ptr<net::test_server::HttpResponse>();
 
   std::string content_type = "text/plain";
   if (EndsWith(file_path.AsUTF8Unsafe(), ".json", true /* case sensitive */)) {
@@ -139,9 +139,9 @@ scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
     content_type = "application/atom+xml";
   }
 
-  scoped_ptr<test_server::HttpResponse> http_response(
-      new test_server::HttpResponse);
-  http_response->set_code(test_server::SUCCESS);
+  scoped_ptr<net::test_server::HttpResponse> http_response(
+      new net::test_server::HttpResponse);
+  http_response->set_code(net::test_server::SUCCESS);
   http_response->set_content(content);
   http_response->set_content_type(content_type);
   return http_response.Pass();
@@ -152,16 +152,16 @@ void DoNothingForReAuthenticateCallback(
   NOTREACHED();
 }
 
-scoped_ptr<test_server::HttpResponse> HandleDownloadRequest(
+scoped_ptr<net::test_server::HttpResponse> HandleDownloadRequest(
     const GURL& base_url,
-    test_server::HttpRequest* out_request,
-    const test_server::HttpRequest& request) {
+    net::test_server::HttpRequest* out_request,
+    const net::test_server::HttpRequest& request) {
   *out_request = request;
 
   GURL absolute_url = base_url.Resolve(request.relative_url);
   std::string remaining_path;
   if (!RemovePrefix(absolute_url.path(), "/files/", &remaining_path))
-    return scoped_ptr<test_server::HttpResponse>();
+    return scoped_ptr<net::test_server::HttpResponse>();
   return CreateHttpResponseFromFile(GetTestFilePath(remaining_path));
 }
 

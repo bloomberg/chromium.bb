@@ -21,9 +21,9 @@
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/download_test_observer.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/embedded_test_server/http_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using content::BrowserContext;
@@ -35,9 +35,9 @@ using content::ResourceController;
 using content::WebContents;
 using extensions::Event;
 using extensions::ExtensionSystem;
-using google_apis::test_server::HttpRequest;
-using google_apis::test_server::HttpResponse;
-using google_apis::test_server::HttpServer;
+using net::test_server::HttpRequest;
+using net::test_server::HttpResponse;
+using net::test_server::EmbeddedTestServer;
 using testing::_;
 
 namespace {
@@ -50,7 +50,7 @@ scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
   // For relative path "/doc_path.doc", return success response with MIME type
   // "application/msword".
   if (request.relative_url == "/doc_path.doc") {
-    response->set_code(google_apis::test_server::SUCCESS);
+    response->set_code(net::test_server::SUCCESS);
     response->set_content_type("application/msword");
     return response.Pass();
   }
@@ -59,7 +59,7 @@ scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
   // MIME type "plain/text" and content "txt content". Also, set content
   // disposition to be attachment.
   if (request.relative_url == "/text_path_attch.txt") {
-    response->set_code(google_apis::test_server::SUCCESS);
+    response->set_code(net::test_server::SUCCESS);
     response->set_content("txt content");
     response->set_content_type("plain/text");
     response->AddCustomHeader("Content-Disposition",
@@ -69,7 +69,7 @@ scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
   // For relative path "/test_path_attch.txt", return success response with
   // MIME type "plain/text" and content "txt content".
   if (request.relative_url == "/text_path.txt") {
-    response->set_code(google_apis::test_server::SUCCESS);
+    response->set_code(net::test_server::SUCCESS);
     response->set_content("txt content");
     response->set_content_type("plain/text");
     return response.Pass();
@@ -77,7 +77,7 @@ scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
 
   // No other requests should be handled in the tests.
   EXPECT_TRUE(false) << "NOTREACHED!";
-  response->set_code(google_apis::test_server::NOT_FOUND);
+  response->set_code(net::test_server::NOT_FOUND);
   return response.Pass();
 }
 
@@ -94,7 +94,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // Init test server.
-    test_server_.reset(new HttpServer(
+    test_server_.reset(new EmbeddedTestServer(
                            content::BrowserThread::GetMessageLoopProxyForThread(
                                content::BrowserThread::IO)));
     ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
@@ -192,7 +192,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
  protected:
   std::string test_extension_id_;
   // The HTTP server used in the tests.
-  scoped_ptr<HttpServer> test_server_;
+  scoped_ptr<EmbeddedTestServer> test_server_;
   base::ScopedTempDir downloads_dir_;
 };
 

@@ -14,9 +14,9 @@
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/embedded_test_server/http_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -95,7 +95,7 @@ class DriveApiOperationsTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
-  test_server::HttpServer test_server_;
+  net::test_server::EmbeddedTestServer test_server_;
   OperationRegistry operation_registry_;
   scoped_ptr<DriveApiUrlGenerator> url_generator_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
@@ -116,7 +116,7 @@ class DriveApiOperationsTest : public testing::Test {
   // The incoming HTTP request is saved so tests can verify the request
   // parameters like HTTP method (ex. some operations should use DELETE
   // instead of GET).
-  test_server::HttpRequest http_request_;
+  net::test_server::HttpRequest http_request_;
 
  private:
   void ResetExpectedResponse() {
@@ -128,21 +128,21 @@ class DriveApiOperationsTest : public testing::Test {
 
   // For "Children: delete" request, the server will return "204 No Content"
   // response meaning "success".
-  scoped_ptr<test_server::HttpResponse> HandleChildrenDeleteRequest(
-      const test_server::HttpRequest& request) {
-    if (request.method != test_server::METHOD_DELETE ||
+  scoped_ptr<net::test_server::HttpResponse> HandleChildrenDeleteRequest(
+      const net::test_server::HttpRequest& request) {
+    if (request.method != net::test_server::METHOD_DELETE ||
         request.relative_url.find("/children/") == string::npos) {
       // The request is not the "Children: delete" operation. Delegate the
       // processing to the next handler.
-      return scoped_ptr<test_server::HttpResponse>();
+      return scoped_ptr<net::test_server::HttpResponse>();
     }
 
     http_request_ = request;
 
     // Return the response with just "204 No Content" status code.
-    scoped_ptr<test_server::HttpResponse> http_response(
-        new test_server::HttpResponse);
-    http_response->set_code(test_server::NO_CONTENT);
+    scoped_ptr<net::test_server::HttpResponse> http_response(
+        new net::test_server::HttpResponse);
+    http_response->set_code(net::test_server::NO_CONTENT);
     return http_response.Pass();
   }
 
@@ -150,12 +150,12 @@ class DriveApiOperationsTest : public testing::Test {
   // for the request.
   // To use this method, it is necessary to set |expected_data_file_path_|
   // to the appropriate file path before sending the request to the server.
-  scoped_ptr<test_server::HttpResponse> HandleDataFileRequest(
-      const test_server::HttpRequest& request) {
+  scoped_ptr<net::test_server::HttpResponse> HandleDataFileRequest(
+      const net::test_server::HttpRequest& request) {
     if (expected_data_file_path_.empty()) {
       // The file is not specified. Delegate the processing to the next
       // handler.
-      return scoped_ptr<test_server::HttpResponse>();
+      return scoped_ptr<net::test_server::HttpResponse>();
     }
 
     http_request_ = request;
@@ -169,19 +169,19 @@ class DriveApiOperationsTest : public testing::Test {
   // have any content.
   // To use this method, it is necessary to set |expected_upload_path_|
   // to the string representation of the url to be returned.
-  scoped_ptr<test_server::HttpResponse> HandleInitiateUploadRequest(
-      const test_server::HttpRequest& request) {
+  scoped_ptr<net::test_server::HttpResponse> HandleInitiateUploadRequest(
+      const net::test_server::HttpRequest& request) {
     if (request.relative_url == expected_upload_path_ ||
         expected_upload_path_.empty()) {
       // The request is for resume uploading or the expected upload url is not
       // set. Delegate the processing to the next handler.
-      return scoped_ptr<test_server::HttpResponse>();
+      return scoped_ptr<net::test_server::HttpResponse>();
     }
 
     http_request_ = request;
 
-    scoped_ptr<test_server::HttpResponse> response(
-        new test_server::HttpResponse);
+    scoped_ptr<net::test_server::HttpResponse> response(
+        new net::test_server::HttpResponse);
 
     // Check an ETag.
     std::map<std::string, std::string>::const_iterator found =
@@ -189,7 +189,7 @@ class DriveApiOperationsTest : public testing::Test {
     if (found != request.headers.end() &&
         found->second != "*" &&
         found->second != kTestETag) {
-      response->set_code(test_server::PRECONDITION);
+      response->set_code(net::test_server::PRECONDITION);
       return response.Pass();
     }
 
@@ -198,23 +198,23 @@ class DriveApiOperationsTest : public testing::Test {
     found = request.headers.find("X-Upload-Content-Length");
     if (found == request.headers.end() ||
         !base::StringToInt64(found->second, &content_length_)) {
-      return scoped_ptr<test_server::HttpResponse>();
+      return scoped_ptr<net::test_server::HttpResponse>();
     }
     received_bytes_ = 0;
 
-    response->set_code(test_server::SUCCESS);
+    response->set_code(net::test_server::SUCCESS);
     response->AddCustomHeader(
         "Location",
         test_server_.base_url().Resolve(expected_upload_path_).spec());
     return response.Pass();
   }
 
-  scoped_ptr<test_server::HttpResponse> HandleResumeUploadRequest(
-      const test_server::HttpRequest& request) {
+  scoped_ptr<net::test_server::HttpResponse> HandleResumeUploadRequest(
+      const net::test_server::HttpRequest& request) {
     if (request.relative_url != expected_upload_path_) {
       // The request path is different from the expected path for uploading.
       // Delegate the processing to the next handler.
-      return scoped_ptr<test_server::HttpResponse>();
+      return scoped_ptr<net::test_server::HttpResponse>();
     }
 
     http_request_ = request;
@@ -224,7 +224,7 @@ class DriveApiOperationsTest : public testing::Test {
           request.headers.find("Content-Range");
       if (iter == request.headers.end()) {
         // The range must be set.
-        return scoped_ptr<test_server::HttpResponse>();
+        return scoped_ptr<net::test_server::HttpResponse>();
       }
 
       int64 length = 0;
@@ -233,7 +233,7 @@ class DriveApiOperationsTest : public testing::Test {
       if (!test_util::ParseContentRangeHeader(
               iter->second, &start_position, &end_position, &length)) {
         // Invalid "Content-Range" value.
-        return scoped_ptr<test_server::HttpResponse>();
+        return scoped_ptr<net::test_server::HttpResponse>();
       }
 
       EXPECT_EQ(start_position, received_bytes_);
@@ -244,10 +244,10 @@ class DriveApiOperationsTest : public testing::Test {
     }
 
     if (received_bytes_ < content_length_) {
-      scoped_ptr<test_server::HttpResponse> response(
-          new test_server::HttpResponse);
+      scoped_ptr<net::test_server::HttpResponse> response(
+          new net::test_server::HttpResponse);
       // Set RESUME INCOMPLETE (308) status code.
-      response->set_code(test_server::RESUME_INCOMPLETE);
+      response->set_code(net::test_server::RESUME_INCOMPLETE);
 
       // Add Range header to the response, based on the values of
       // Content-Range header in the request.
@@ -262,13 +262,13 @@ class DriveApiOperationsTest : public testing::Test {
 
     // All bytes are received. Return the "success" response with the file's
     // (dummy) metadata.
-    scoped_ptr<test_server::HttpResponse> response =
+    scoped_ptr<net::test_server::HttpResponse> response =
         test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("chromeos/drive/file_entry.json"));
 
     // The response code is CREATED if it is new file uploading.
     if (http_request_.relative_url == kTestUploadNewFilePath) {
-      response->set_code(test_server::CREATED);
+      response->set_code(net::test_server::CREATED);
     }
 
     return response.Pass();
@@ -277,19 +277,19 @@ class DriveApiOperationsTest : public testing::Test {
   // Returns the response based on set expected content and its type.
   // To use this method, both |expected_content_type_| and |expected_content_|
   // must be set in advance.
-  scoped_ptr<test_server::HttpResponse> HandleContentResponse(
-      const test_server::HttpRequest& request) {
+  scoped_ptr<net::test_server::HttpResponse> HandleContentResponse(
+      const net::test_server::HttpRequest& request) {
     if (expected_content_type_.empty() || expected_content_.empty()) {
       // Expected content is not set. Delegate the processing to the next
       // handler.
-      return scoped_ptr<test_server::HttpResponse>();
+      return scoped_ptr<net::test_server::HttpResponse>();
     }
 
     http_request_ = request;
 
-    scoped_ptr<test_server::HttpResponse> response(
-        new test_server::HttpResponse);
-    response->set_code(test_server::SUCCESS);
+    scoped_ptr<net::test_server::HttpResponse> response(
+        new net::test_server::HttpResponse);
+    response->set_code(net::test_server::SUCCESS);
     response->set_content_type(expected_content_type_);
     response->set_content(expected_content_);
     return response.Pass();
@@ -320,7 +320,7 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidJson) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/drive/v2/about", http_request_.relative_url);
 
   scoped_ptr<AboutResource> expected(
@@ -354,7 +354,7 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidJson) {
 
   // "parse error" should be returned, and the about resource should be NULL.
   EXPECT_EQ(GDATA_PARSE_ERROR, error);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/drive/v2/about", http_request_.relative_url);
   EXPECT_FALSE(about_resource.get());
 }
@@ -379,7 +379,7 @@ TEST_F(DriveApiOperationsTest, GetApplistOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/drive/v2/apps", http_request_.relative_url);
   EXPECT_TRUE(result);
 }
@@ -407,7 +407,7 @@ TEST_F(DriveApiOperationsTest, GetChangelistOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/drive/v2/changes?startChangeId=100&maxResults=500",
             http_request_.relative_url);
   EXPECT_TRUE(result);
@@ -435,7 +435,7 @@ TEST_F(DriveApiOperationsTest, GetFilelistOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/drive/v2/files?maxResults=50&q=%22abcde%22+in+parents",
             http_request_.relative_url);
   EXPECT_TRUE(result);
@@ -462,7 +462,7 @@ TEST_F(DriveApiOperationsTest, ContinueGetFileListOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/continue/get/file/list", http_request_.relative_url);
   EXPECT_TRUE(result);
 }
@@ -491,7 +491,7 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/drive/v2/files", http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
@@ -534,7 +534,7 @@ TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(test_server::METHOD_PATCH, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PATCH, http_request_.method);
   EXPECT_EQ("/drive/v2/files/resource_id", http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
@@ -567,7 +567,7 @@ TEST_F(DriveApiOperationsTest, CopyResourceOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/drive/v2/files/resource_id/copy", http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
@@ -599,7 +599,7 @@ TEST_F(DriveApiOperationsTest, TrashResourceOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/drive/v2/files/resource_id/trash", http_request_.relative_url);
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_TRUE(http_request_.content.empty());
@@ -629,7 +629,7 @@ TEST_F(DriveApiOperationsTest, InsertResourceOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/drive/v2/files/parent_resource_id/children",
             http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
@@ -658,7 +658,7 @@ TEST_F(DriveApiOperationsTest, DeleteResourceOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_NO_CONTENT, error);
-  EXPECT_EQ(test_server::METHOD_DELETE, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_DELETE, http_request_.method);
   EXPECT_EQ("/drive/v2/files/parent_resource_id/children/resource_id",
             http_request_.relative_url);
   EXPECT_FALSE(http_request_.has_content);
@@ -699,7 +699,7 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
   EXPECT_EQ(base::Int64ToString(kTestContent.size()),
             http_request_.headers["X-Upload-Content-Length"]);
 
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/upload/drive/v2/files?uploadType=resumable",
             http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
@@ -739,7 +739,7 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   // Request should go to the upload URL.
   EXPECT_EQ(upload_url.path(), http_request_.relative_url);
   // Content-Range header should be added.
@@ -792,7 +792,7 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
   EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
   EXPECT_EQ("0", http_request_.headers["X-Upload-Content-Length"]);
 
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/upload/drive/v2/files?uploadType=resumable",
             http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
@@ -832,7 +832,7 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   // Request should go to the upload URL.
   EXPECT_EQ(upload_url.path(), http_request_.relative_url);
   // Content-Range header should NOT be added.
@@ -884,7 +884,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
   EXPECT_EQ(base::Int64ToString(kTestContent.size()),
             http_request_.headers["X-Upload-Content-Length"]);
 
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/upload/drive/v2/files?uploadType=resumable",
             http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
@@ -930,7 +930,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
     MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
-    EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+    EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
     // Request should go to the upload URL.
     EXPECT_EQ(upload_url.path(), http_request_.relative_url);
     // Content-Range header should be added.
@@ -995,7 +995,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
             http_request_.headers["X-Upload-Content-Length"]);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
 
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   EXPECT_EQ("/upload/drive/v2/files/resource_id?uploadType=resumable",
             http_request_.relative_url);
   EXPECT_TRUE(http_request_.has_content);
@@ -1029,7 +1029,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   // Request should go to the upload URL.
   EXPECT_EQ(upload_url.path(), http_request_.relative_url);
   // Content-Range header should be added.
@@ -1083,7 +1083,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
             http_request_.headers["X-Upload-Content-Length"]);
   EXPECT_EQ(kTestETag, http_request_.headers["If-Match"]);
 
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   EXPECT_EQ("/upload/drive/v2/files/resource_id?uploadType=resumable",
             http_request_.relative_url);
   EXPECT_TRUE(http_request_.has_content);
@@ -1117,7 +1117,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   // Request should go to the upload URL.
   EXPECT_EQ(upload_url.path(), http_request_.relative_url);
   // Content-Range header should be added.
@@ -1170,7 +1170,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETagConflicting) {
             http_request_.headers["X-Upload-Content-Length"]);
   EXPECT_EQ("Conflicting-etag", http_request_.headers["If-Match"]);
 
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   EXPECT_EQ("/upload/drive/v2/files/resource_id?uploadType=resumable",
             http_request_.relative_url);
   EXPECT_TRUE(http_request_.has_content);

@@ -12,10 +12,9 @@
 #include "net/test/embedded_test_server/http_request.h"
 
 namespace net {
-class StreamListenSocket;
-}
 
-namespace google_apis {
+class StreamListenSocket;
+
 namespace test_server {
 
 class HttpConnection;
@@ -31,7 +30,7 @@ typedef base::Callback<void(HttpConnection* connection,
 // If a valid request is parsed, then |callback_| is invoked.
 class HttpConnection {
  public:
-  HttpConnection(net::StreamListenSocket* socket,
+  HttpConnection(StreamListenSocket* socket,
                  const HandleRequestCallback& callback);
   ~HttpConnection();
 
@@ -39,14 +38,14 @@ class HttpConnection {
   void SendResponse(scoped_ptr<HttpResponse> response) const;
 
  private:
-  friend class HttpServer;
+  friend class EmbeddedTestServer;
 
   // Accepts raw chunk of data from the client. Internally, passes it to the
   // HttpRequestParser class. If a request is parsed, then |callback_| is
   // called.
   void ReceiveData(const base::StringPiece& data);
 
-  scoped_refptr<net::StreamListenSocket> socket_;
+  scoped_refptr<StreamListenSocket> socket_;
   const HandleRequestCallback callback_;
   HttpRequestParser request_parser_;
 
@@ -54,6 +53,6 @@ class HttpConnection {
 };
 
 }  // namespace test_server
-}  // namespace google_apis
+}  // namespace net
 
 #endif  // NET_TEST_EMBEDDED_TEST_SERVER_HTTP_CONNECTION_H_

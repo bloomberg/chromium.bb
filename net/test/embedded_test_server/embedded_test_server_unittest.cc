@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/test/embedded_test_server/http_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
@@ -14,13 +14,13 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace google_apis {
+namespace net {
 namespace test_server {
 
 namespace {
 
 // Gets the content from the given URLFetcher.
-std::string GetContentFromFetcher(const net::URLFetcher& fetcher) {
+std::string GetContentFromFetcher(const URLFetcher& fetcher) {
   std::string result;
   const bool success = fetcher.GetResponseAsString(&result);
   EXPECT_TRUE(success);
@@ -28,8 +28,8 @@ std::string GetContentFromFetcher(const net::URLFetcher& fetcher) {
 }
 
 // Gets the content type from the given URLFetcher.
-std::string GetContentTypeFromFetcher(const net::URLFetcher& fetcher) {
-  const net::HttpResponseHeaders* headers = fetcher.GetResponseHeaders();
+std::string GetContentTypeFromFetcher(const URLFetcher& fetcher) {
+  const HttpResponseHeaders* headers = fetcher.GetResponseHeaders();
   if (headers) {
     std::string content_type;
     if (headers->GetMimeType(&content_type))
@@ -40,10 +40,10 @@ std::string GetContentTypeFromFetcher(const net::URLFetcher& fetcher) {
 
 }  // namespace
 
-class HttpServerTest : public testing::Test,
-                       public net::URLFetcherDelegate {
+class EmbeddedTestServerTest : public testing::Test,
+                       public URLFetcherDelegate {
  public:
-  HttpServerTest()
+  EmbeddedTestServerTest()
       : num_responses_received_(0),
         num_responses_expected_(0),
         io_thread_("io_thread") {
@@ -54,10 +54,10 @@ class HttpServerTest : public testing::Test,
     thread_options.message_loop_type = MessageLoop::TYPE_IO;
     ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
 
-    request_context_getter_ = new net::TestURLRequestContextGetter(
+    request_context_getter_ = new TestURLRequestContextGetter(
         io_thread_.message_loop_proxy());
 
-    server_.reset(new HttpServer(io_thread_.message_loop_proxy()));
+    server_.reset(new EmbeddedTestServer(io_thread_.message_loop_proxy()));
     ASSERT_TRUE(server_->InitializeAndWaitUntilReady());
   }
 
@@ -65,8 +65,8 @@ class HttpServerTest : public testing::Test,
     ASSERT_TRUE(server_->ShutdownAndWaitUntilComplete());
   }
 
-  // net::URLFetcherDelegate override.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+  // URLFetcherDelegate override.
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
     ++num_responses_received_;
     if (num_responses_received_ == num_responses_expected_)
       MessageLoop::current()->Quit();
@@ -106,38 +106,39 @@ class HttpServerTest : public testing::Test,
   int num_responses_expected_;
   std::string request_relative_url_;
   base::Thread io_thread_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
-  scoped_ptr<HttpServer> server_;
+  scoped_refptr<TestURLRequestContextGetter> request_context_getter_;
+  scoped_ptr<EmbeddedTestServer> server_;
 };
 
-TEST_F(HttpServerTest, GetBaseURL) {
+TEST_F(EmbeddedTestServerTest, GetBaseURL) {
   EXPECT_EQ(base::StringPrintf("http://127.0.0.1:%d/", server_->port()),
                                server_->base_url().spec());
 }
 
-TEST_F(HttpServerTest, GetURL) {
+TEST_F(EmbeddedTestServerTest, GetURL) {
   EXPECT_EQ(base::StringPrintf("http://127.0.0.1:%d/path?query=foo",
                                server_->port()),
             server_->GetURL("/path?query=foo").spec());
 }
 
-TEST_F(HttpServerTest, RegisterRequestHandler) {
-  server_->RegisterRequestHandler(base::Bind(&HttpServerTest::HandleRequest,
-                                            base::Unretained(this),
-                                            "/test",
-                                            "<b>Worked!</b>",
-                                            "text/html",
-                                            SUCCESS));
+TEST_F(EmbeddedTestServerTest, RegisterRequestHandler) {
+  server_->RegisterRequestHandler(
+      base::Bind(&EmbeddedTestServerTest::HandleRequest,
+                 base::Unretained(this),
+                 "/test",
+                 "<b>Worked!</b>",
+                 "text/html",
+                 SUCCESS));
 
-  scoped_ptr<net::URLFetcher> fetcher(
-      net::URLFetcher::Create(server_->GetURL("/test?q=foo"),
-                              net::URLFetcher::GET,
+  scoped_ptr<URLFetcher> fetcher(
+      URLFetcher::Create(server_->GetURL("/test?q=foo"),
+                              URLFetcher::GET,
                               this));
   fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->Start();
   WaitForResponses(1);
 
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
+  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
   EXPECT_EQ(SUCCESS, fetcher->GetResponseCode());
   EXPECT_EQ("<b>Worked!</b>", GetContentFromFetcher(*fetcher));
   EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher));
@@ -145,55 +146,55 @@ TEST_F(HttpServerTest, RegisterRequestHandler) {
   EXPECT_EQ("/test?q=foo", request_relative_url_);
 }
 
-TEST_F(HttpServerTest, DefaultNotFoundResponse) {
-  scoped_ptr<net::URLFetcher> fetcher(
-      net::URLFetcher::Create(server_->GetURL("/non-existent"),
-                              net::URLFetcher::GET,
+TEST_F(EmbeddedTestServerTest, DefaultNotFoundResponse) {
+  scoped_ptr<URLFetcher> fetcher(
+      URLFetcher::Create(server_->GetURL("/non-existent"),
+                              URLFetcher::GET,
                               this));
   fetcher->SetRequestContext(request_context_getter_.get());
 
   fetcher->Start();
   WaitForResponses(1);
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
+  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
   EXPECT_EQ(NOT_FOUND, fetcher->GetResponseCode());
 }
 
-TEST_F(HttpServerTest, ConcurrentFetches) {
+TEST_F(EmbeddedTestServerTest, ConcurrentFetches) {
   server_->RegisterRequestHandler(
-      base::Bind(&HttpServerTest::HandleRequest,
+      base::Bind(&EmbeddedTestServerTest::HandleRequest,
                  base::Unretained(this),
                  "/test1",
                  "Raspberry chocolate",
                  "text/html",
                  SUCCESS));
   server_->RegisterRequestHandler(
-      base::Bind(&HttpServerTest::HandleRequest,
+      base::Bind(&EmbeddedTestServerTest::HandleRequest,
                  base::Unretained(this),
                  "/test2",
                  "Vanilla chocolate",
                  "text/html",
                  SUCCESS));
   server_->RegisterRequestHandler(
-      base::Bind(&HttpServerTest::HandleRequest,
+      base::Bind(&EmbeddedTestServerTest::HandleRequest,
                  base::Unretained(this),
                  "/test3",
                  "No chocolates",
                  "text/plain",
                  NOT_FOUND));
 
-  scoped_ptr<net::URLFetcher> fetcher1 = scoped_ptr<net::URLFetcher>(
-      net::URLFetcher::Create(server_->GetURL("/test1"),
-                              net::URLFetcher::GET,
+  scoped_ptr<URLFetcher> fetcher1 = scoped_ptr<URLFetcher>(
+      URLFetcher::Create(server_->GetURL("/test1"),
+                              URLFetcher::GET,
                               this));
   fetcher1->SetRequestContext(request_context_getter_.get());
-  scoped_ptr<net::URLFetcher> fetcher2 = scoped_ptr<net::URLFetcher>(
-      net::URLFetcher::Create(server_->GetURL("/test2"),
-                              net::URLFetcher::GET,
+  scoped_ptr<URLFetcher> fetcher2 = scoped_ptr<URLFetcher>(
+      URLFetcher::Create(server_->GetURL("/test2"),
+                              URLFetcher::GET,
                               this));
   fetcher2->SetRequestContext(request_context_getter_.get());
-  scoped_ptr<net::URLFetcher> fetcher3 = scoped_ptr<net::URLFetcher>(
-      net::URLFetcher::Create(server_->GetURL("/test3"),
-                              net::URLFetcher::GET,
+  scoped_ptr<URLFetcher> fetcher3 = scoped_ptr<URLFetcher>(
+      URLFetcher::Create(server_->GetURL("/test3"),
+                              URLFetcher::GET,
                               this));
   fetcher3->SetRequestContext(request_context_getter_.get());
 
@@ -203,21 +204,21 @@ TEST_F(HttpServerTest, ConcurrentFetches) {
   fetcher3->Start();
   WaitForResponses(3);
 
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, fetcher1->GetStatus().status());
+  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher1->GetStatus().status());
   EXPECT_EQ(SUCCESS, fetcher1->GetResponseCode());
   EXPECT_EQ("Raspberry chocolate", GetContentFromFetcher(*fetcher1));
   EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher1));
 
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, fetcher2->GetStatus().status());
+  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher2->GetStatus().status());
   EXPECT_EQ(SUCCESS, fetcher2->GetResponseCode());
   EXPECT_EQ("Vanilla chocolate", GetContentFromFetcher(*fetcher2));
   EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher2));
 
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, fetcher3->GetStatus().status());
+  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher3->GetStatus().status());
   EXPECT_EQ(NOT_FOUND, fetcher3->GetResponseCode());
   EXPECT_EQ("No chocolates", GetContentFromFetcher(*fetcher3));
   EXPECT_EQ("text/plain", GetContentTypeFromFetcher(*fetcher3));
 }
 
 }  // namespace test_server
-}  // namespace google_apis
+}  // namespace net

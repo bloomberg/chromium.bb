@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 
-namespace google_apis {
+namespace net {
 namespace test_server {
 
 namespace {
@@ -199,4 +199,4 @@ HttpMethod HttpRequestParser::GetMethodType(const std::string& token) const {
 }
 
 }  // namespace test_server
-}  // namespace google_apis
+}  // namespace net

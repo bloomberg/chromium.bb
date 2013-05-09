@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 
-namespace google_apis {
+namespace net {
 namespace test_server {
 
 enum ResponseCode {
@@ -65,7 +65,7 @@ class HttpResponse {
   std::map<std::string, std::string> custom_headers_;
 };
 
-}  // namespace test_servers
-}  // namespace google_apis
+}  // namespace test_server
+}  // namespace net
 
 #endif  // NET_TEST_EMBEDDED_TEST_SERVER_HTTP_RESPONSE_H_

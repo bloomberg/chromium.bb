@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/test/embedded_test_server/http_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -14,7 +14,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/tools/fetch/http_listen_socket.h"
 
-namespace google_apis {
+namespace net {
 namespace test_server {
 
 namespace {
@@ -37,21 +37,21 @@ scoped_ptr<HttpResponse> HandleDefaultRequest(const GURL& url,
 }  // namespace
 
 HttpListenSocket::HttpListenSocket(const SocketDescriptor socket_descriptor,
-                                   net::StreamListenSocket::Delegate* delegate)
-    : net::TCPListenSocket(socket_descriptor, delegate) {
+                                   StreamListenSocket::Delegate* delegate)
+    : TCPListenSocket(socket_descriptor, delegate) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void HttpListenSocket::Listen() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  net::TCPListenSocket::Listen();
+  TCPListenSocket::Listen();
 }
 
 HttpListenSocket::~HttpListenSocket() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-HttpServer::HttpServer(
+EmbeddedTestServer::EmbeddedTestServer(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread)
     : io_thread_(io_thread),
       port_(-1),
@@ -60,17 +60,18 @@ HttpServer::HttpServer(
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-HttpServer::~HttpServer() {
+EmbeddedTestServer::~EmbeddedTestServer() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-bool HttpServer::InitializeAndWaitUntilReady() {
+bool EmbeddedTestServer::InitializeAndWaitUntilReady() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::RunLoop run_loop;
   if (!io_thread_->PostTaskAndReply(
           FROM_HERE,
-          base::Bind(&HttpServer::InitializeOnIOThread, base::Unretained(this)),
+          base::Bind(&EmbeddedTestServer::InitializeOnIOThread,
+                     base::Unretained(this)),
           run_loop.QuitClosure())) {
     return false;
   }
@@ -79,13 +80,14 @@ bool HttpServer::InitializeAndWaitUntilReady() {
   return Started();
 }
 
-bool HttpServer::ShutdownAndWaitUntilComplete() {
+bool EmbeddedTestServer::ShutdownAndWaitUntilComplete() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::RunLoop run_loop;
   if (!io_thread_->PostTaskAndReply(
           FROM_HERE,
-          base::Bind(&HttpServer::ShutdownOnIOThread, base::Unretained(this)),
+          base::Bind(&EmbeddedTestServer::ShutdownOnIOThread,
+                     base::Unretained(this)),
           run_loop.QuitClosure())) {
     return false;
   }
@@ -94,7 +96,7 @@ bool HttpServer::ShutdownAndWaitUntilComplete() {
   return true;
 }
 
-void HttpServer::InitializeOnIOThread() {
+void EmbeddedTestServer::InitializeOnIOThread() {
   DCHECK(io_thread_->BelongsToCurrentThread());
   DCHECK(!Started());
 
@@ -102,10 +104,10 @@ void HttpServer::InitializeOnIOThread() {
   int try_port = kPort;
 
   while (retries_left > 0) {
-    SocketDescriptor socket_descriptor = net::TCPListenSocket::CreateAndBind(
+    SocketDescriptor socket_descriptor = TCPListenSocket::CreateAndBind(
         kIp,
         try_port);
-    if (socket_descriptor != net::TCPListenSocket::kInvalidSocket) {
+    if (socket_descriptor != TCPListenSocket::kInvalidSocket) {
       listen_socket_ = new HttpListenSocket(socket_descriptor, this);
       listen_socket_->Listen();
       base_url_ = GURL(base::StringPrintf("http://%s:%d", kIp, try_port));
@@ -117,7 +119,7 @@ void HttpServer::InitializeOnIOThread() {
   }
 }
 
-void HttpServer::ShutdownOnIOThread() {
+void EmbeddedTestServer::ShutdownOnIOThread() {
   DCHECK(io_thread_->BelongsToCurrentThread());
 
   listen_socket_ = NULL;  // Release the listen socket.
@@ -126,7 +128,7 @@ void HttpServer::ShutdownOnIOThread() {
   connections_.clear();
 }
 
-void HttpServer::HandleRequest(HttpConnection* connection,
+void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
                                scoped_ptr<HttpRequest> request) {
   DCHECK(io_thread_->BelongsToCurrentThread());
 
@@ -151,28 +153,29 @@ void HttpServer::HandleRequest(HttpConnection* connection,
   delete connection;
 }
 
-GURL HttpServer::GetURL(const std::string& relative_url) const {
+GURL EmbeddedTestServer::GetURL(const std::string& relative_url) const {
   DCHECK(StartsWithASCII(relative_url, "/", true /* case_sensitive */))
       << relative_url;
   return base_url_.Resolve(relative_url);
 }
 
-void HttpServer::RegisterRequestHandler(
+void EmbeddedTestServer::RegisterRequestHandler(
     const HandleRequestCallback& callback) {
   request_handlers_.push_back(callback);
 }
 
-void HttpServer::DidAccept(net::StreamListenSocket* server,
-                           net::StreamListenSocket* connection) {
+void EmbeddedTestServer::DidAccept(StreamListenSocket* server,
+                           StreamListenSocket* connection) {
   DCHECK(io_thread_->BelongsToCurrentThread());
 
   HttpConnection* http_connection = new HttpConnection(
       connection,
-      base::Bind(&HttpServer::HandleRequest, weak_factory_.GetWeakPtr()));
+      base::Bind(&EmbeddedTestServer::HandleRequest,
+                 weak_factory_.GetWeakPtr()));
   connections_[connection] = http_connection;
 }
 
-void HttpServer::DidRead(net::StreamListenSocket* connection,
+void EmbeddedTestServer::DidRead(StreamListenSocket* connection,
                          const char* data,
                          int length) {
   DCHECK(io_thread_->BelongsToCurrentThread());
@@ -185,7 +188,7 @@ void HttpServer::DidRead(net::StreamListenSocket* connection,
   http_connection->ReceiveData(std::string(data, length));
 }
 
-void HttpServer::DidClose(net::StreamListenSocket* connection) {
+void EmbeddedTestServer::DidClose(StreamListenSocket* connection) {
   DCHECK(io_thread_->BelongsToCurrentThread());
 
   HttpConnection* http_connection = FindConnection(connection);
@@ -197,11 +200,11 @@ void HttpServer::DidClose(net::StreamListenSocket* connection) {
   connections_.erase(connection);
 }
 
-HttpConnection* HttpServer::FindConnection(
-    net::StreamListenSocket* socket) {
+HttpConnection* EmbeddedTestServer::FindConnection(
+    StreamListenSocket* socket) {
   DCHECK(io_thread_->BelongsToCurrentThread());
 
-  std::map<net::StreamListenSocket*, HttpConnection*>::iterator it =
+  std::map<StreamListenSocket*, HttpConnection*>::iterator it =
       connections_.find(socket);
   if (it == connections_.end()) {
     return NULL;
@@ -210,4 +213,4 @@ HttpConnection* HttpServer::FindConnection(
 }
 
 }  // namespace test_server
-}  // namespace google_apis
+}  // namespace net

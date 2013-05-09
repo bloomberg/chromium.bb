@@ -24,6 +24,13 @@ class FilePath;
 class Value;
 }
 
+namespace net {
+namespace test_server {
+struct HttpRequest;
+class HttpResponse;
+}
+}
+
 namespace google_apis {
 
 class AboutResource;
@@ -33,11 +40,6 @@ class AuthenticatedOperationInterface;
 class ResourceEntry;
 class ResourceList;
 struct UploadRangeResponse;
-
-namespace test_server {
-struct HttpRequest;
-class HttpResponse;
-}
 
 namespace test_util {
 
@@ -87,7 +89,7 @@ bool CreateFileOfSpecifiedSize(const base::FilePath& temp_dir,
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 
 // Returns a HttpResponse created from the given file path.
-scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
+scoped_ptr<net::test_server::HttpResponse> CreateHttpResponseFromFile(
     const base::FilePath& file_path);
 
 // Does nothing for ReAuthenticateCallback(). This function should be used
@@ -100,10 +102,10 @@ void DoNothingForReAuthenticateCallback(
 // directory and returns the content. Also, copies the |request| to the memory
 // pointed by |out_request|.
 // |base_url| must be set to the server's base url.
-scoped_ptr<test_server::HttpResponse> HandleDownloadRequest(
+scoped_ptr<net::test_server::HttpResponse> HandleDownloadRequest(
     const GURL& base_url,
-    test_server::HttpRequest* out_request,
-    const test_server::HttpRequest& request);
+    net::test_server::HttpRequest* out_request,
+    const net::test_server::HttpRequest& request);
 
 // Returns true if |json_data| is not NULL and equals to the content in
 // |expected_json_file_path|. The failure reason will be logged into LOG(ERROR)

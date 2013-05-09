@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 
-namespace google_apis {
+namespace net {
 namespace test_server {
 
 HttpResponse::HttpResponse() : code_(SUCCESS) {
@@ -51,4 +51,4 @@ std::string HttpResponse::ToResponseString() const {
 }
 
 }  // namespace test_server
-}  // namespace google_apis
+}  // namespace net

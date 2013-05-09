@@ -22,9 +22,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/embedded_test_server/http_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
@@ -85,7 +85,7 @@ class GDataContactsServiceTest : public testing::Test {
             content::BrowserThread::IO));
 
     test_server_.reset(
-        new google_apis::test_server::HttpServer(
+        new net::test_server::EmbeddedTestServer(
             content::BrowserThread::GetMessageLoopProxyForThread(
                 content::BrowserThread::IO)));
     ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
@@ -137,7 +137,7 @@ class GDataContactsServiceTest : public testing::Test {
   }
 
   scoped_ptr<GDataContactsService> service_;
-  scoped_ptr<google_apis::test_server::HttpServer> test_server_;
+  scoped_ptr<net::test_server::EmbeddedTestServer> test_server_;
 
  private:
   // Rewrites |original_url|, a photo URL from a contacts feed, to instead point
@@ -164,11 +164,11 @@ class GDataContactsServiceTest : public testing::Test {
 
   // Handles a request for downloading a file. Reads a requested file and
   // returns the content.
-  scoped_ptr<google_apis::test_server::HttpResponse> HandleDownloadRequest(
-      const google_apis::test_server::HttpRequest& request) {
+  scoped_ptr<net::test_server::HttpResponse> HandleDownloadRequest(
+      const net::test_server::HttpRequest& request) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     // Requested url must not contain a query string.
-    scoped_ptr<google_apis::test_server::HttpResponse> result =
+    scoped_ptr<net::test_server::HttpResponse> result =
         google_apis::test_util::CreateHttpResponseFromFile(
             google_apis::test_util::GetTestFilePath(
                 std::string("chromeos/gdata/contacts") + request.relative_url));

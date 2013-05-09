@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TEST_EMBEDDED_TEST_SERVER_HTTP_SERVER_H_
-#define NET_TEST_EMBEDDED_TEST_SERVER_HTTP_SERVER_H_
+#ifndef NET_TEST_EMBEDDED_TEST_SERVER_EMBEDDED_TEST_SERVER_H_
+#define NET_TEST_EMBEDDED_TEST_SERVER_EMBEDDED_TEST_SERVER_H_
 
 #include <map>
 #include <string>
@@ -17,7 +17,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/socket/tcp_listen_socket.h"
 
-namespace google_apis {
+namespace net {
 namespace test_server {
 
 class HttpConnection;
@@ -25,10 +25,10 @@ class HttpResponse;
 struct HttpRequest;
 
 // This class is required to be able to have composition instead of inheritance,
-class HttpListenSocket : public net::TCPListenSocket {
+class HttpListenSocket : public TCPListenSocket {
  public:
   HttpListenSocket(const SocketDescriptor socket_descriptor,
-                   net::StreamListenSocket::Delegate* delegate);
+                   StreamListenSocket::Delegate* delegate);
   virtual void Listen();
 
  private:
@@ -45,14 +45,15 @@ class HttpListenSocket : public net::TCPListenSocket {
 // The common use case is below:
 //
 // base::Thread io_thread_;
-// scoped_ptr<HttpServer> test_server_;
+// scoped_ptr<EmbeddedTestServer> test_server_;
 //
 // void SetUp() {
 //   base::Thread::Options thread_options;
 //   thread_options.message_loop_type = MessageLoop::TYPE_IO;
 //   ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
 //
-//   test_server_.reset(new HttpServer(io_thread_.message_loop_proxy()));
+//   test_server_.reset(
+//       new EmbeddedTestServer(io_thread_.message_loop_proxy()));
 //   ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
 //   test_server_->RegisterRequestHandler(
 //       base::Bind(&FooTest::HandleRequest, base::Unretained(this)));
@@ -70,7 +71,7 @@ class HttpListenSocket : public net::TCPListenSocket {
 //   return http_response.Pass();
 // }
 //
-class HttpServer : public net::StreamListenSocket::Delegate {
+class EmbeddedTestServer : public StreamListenSocket::Delegate {
  public:
   typedef base::Callback<scoped_ptr<HttpResponse>(const HttpRequest& request)>
       HandleRequestCallback;
@@ -78,9 +79,9 @@ class HttpServer : public net::StreamListenSocket::Delegate {
   // Creates a http test server. |io_thread| is a task runner
   // with IO message loop, used as a backend thread.
   // InitializeAndWaitUntilReady() must be called to start the server.
-  explicit HttpServer(
+  explicit EmbeddedTestServer(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread);
-  virtual ~HttpServer();
+  virtual ~EmbeddedTestServer();
 
   // Initializes and waits until the server is ready to accept requests.
   bool InitializeAndWaitUntilReady() WARN_UNUSED_RESULT;
@@ -124,15 +125,15 @@ class HttpServer : public net::StreamListenSocket::Delegate {
   void HandleRequest(HttpConnection* connection,
                      scoped_ptr<HttpRequest> request);
 
-  // net::StreamListenSocket::Delegate overrides:
-  virtual void DidAccept(net::StreamListenSocket* server,
-                         net::StreamListenSocket* connection) OVERRIDE;
-  virtual void DidRead(net::StreamListenSocket* connection,
+  // StreamListenSocket::Delegate overrides:
+  virtual void DidAccept(StreamListenSocket* server,
+                         StreamListenSocket* connection) OVERRIDE;
+  virtual void DidRead(StreamListenSocket* connection,
                        const char* data,
                        int length) OVERRIDE;
-  virtual void DidClose(net::StreamListenSocket* connection) OVERRIDE;
+  virtual void DidClose(StreamListenSocket* connection) OVERRIDE;
 
-  HttpConnection* FindConnection(net::StreamListenSocket* socket);
+  HttpConnection* FindConnection(StreamListenSocket* socket);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
 
@@ -141,21 +142,21 @@ class HttpServer : public net::StreamListenSocket::Delegate {
   GURL base_url_;
 
   // Owns the HttpConnection objects.
-  std::map<net::StreamListenSocket*, HttpConnection*> connections_;
+  std::map<StreamListenSocket*, HttpConnection*> connections_;
 
   // Vector of registered request handlers.
   std::vector<HandleRequestCallback> request_handlers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<HttpServer> weak_factory_;
+  base::WeakPtrFactory<EmbeddedTestServer> weak_factory_;
 
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(HttpServer);
+  DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServer);
 };
 
 }  // namespace test_servers
-}  // namespace google_apis
+}  // namespace net
 
-#endif  // NET_TEST_EMBEDDED_TEST_SERVER_HTTP_SERVER_H_
+#endif  // NET_TEST_EMBEDDED_TEST_SERVER_EMBEDDED_TEST_SERVER_H_

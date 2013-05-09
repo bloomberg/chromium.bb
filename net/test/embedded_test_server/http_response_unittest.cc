@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace google_apis {
+namespace net {
 namespace test_server {
 
 TEST(HttpResponseTest, GenerateResponse) {
@@ -28,4 +28,4 @@ TEST(HttpResponseTest, GenerateResponse) {
 }
 
 }  // namespace test_server
-}  // namespace google_apis
+}  // namespace net

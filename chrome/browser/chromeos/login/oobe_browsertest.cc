@@ -24,14 +24,13 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/embedded_test_server/http_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace google_apis;
-using namespace google_apis::test_server;
+using namespace net::test_server;
 
 namespace {
 
@@ -152,7 +151,7 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    test_server_ = new HttpServer(
+    test_server_ = new EmbeddedTestServer(
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::IO));
     CHECK(test_server_->InitializeAndWaitUntilReady());
@@ -180,7 +179,7 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
 
     scoped_ptr<HttpResponse> http_response(new HttpResponse());
     if (url.path() == "/ServiceLogin") {
-      http_response->set_code(test_server::SUCCESS);
+      http_response->set_code(net::test_server::SUCCESS);
       http_response->set_content(service_login_response_);
       http_response->set_content_type("text/html");
     } else if (url.path() == "/ServiceLoginAuth") {
@@ -191,7 +190,7 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
       int continue_arg_end = request.content.find("&", continue_arg_begin);
       const std::string continue_url = request.content.substr(
           continue_arg_begin, continue_arg_end - continue_arg_begin);
-      http_response->set_code(test_server::SUCCESS);
+      http_response->set_code(net::test_server::SUCCESS);
       const std::string redirect_js =
           "document.location.href = unescape('" + continue_url + "');";
       http_response->set_content(
@@ -206,8 +205,8 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
   scoped_ptr<TestContentBrowserClient> content_browser_client_;
   content::ContentBrowserClient* original_content_browser_client_;
   std::string service_login_response_;
-  HttpServer* test_server_;  // cant use scoped_ptr because destructor
-                             // needs UI thread.
+  EmbeddedTestServer* test_server_;  // cant use scoped_ptr because destructor
+                                     // needs UI thread.
 };
 
 IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {

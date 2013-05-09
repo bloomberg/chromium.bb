@@ -15,9 +15,9 @@
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/embedded_test_server/http_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,7 +70,7 @@ class BaseOperationsServerTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
-  test_server::HttpServer test_server_;
+  net::test_server::EmbeddedTestServer test_server_;
   scoped_ptr<TestingProfile> profile_;
   OperationRegistry operation_registry_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
@@ -78,7 +78,7 @@ class BaseOperationsServerTest : public testing::Test {
   // The incoming HTTP request is saved so tests can verify the request
   // parameters like HTTP method (ex. some operations should use DELETE
   // instead of GET).
-  test_server::HttpRequest http_request_;
+  net::test_server::HttpRequest http_request_;
 };
 
 TEST_F(BaseOperationsServerTest, DownloadFileOperation_ValidFile) {
@@ -105,7 +105,7 @@ TEST_F(BaseOperationsServerTest, DownloadFileOperation_ValidFile) {
   file_util::Delete(temp_file, false);
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/files/chromeos/gdata/testfile.txt", http_request_.relative_url);
 
   const base::FilePath expected_path =
@@ -141,7 +141,7 @@ TEST_F(BaseOperationsServerTest,
   file_util::Delete(temp_file, false);
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/files/chromeos/gdata/no-such-file.txt",
             http_request_.relative_url);
   // Do not verify the not found message.

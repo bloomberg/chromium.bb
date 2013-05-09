@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 
-namespace google_apis {
+namespace net {
 namespace test_server {
 
 // Methods of HTTP requests supported by the test HTTP server.
@@ -110,6 +110,6 @@ class HttpRequestParser {
 };
 
 }  // namespace test_server
-}  // namespace google_apis
+}  // namespace net
 
 #endif  // NET_TEST_EMBEDDED_TEST_SERVER_HTTP_REQUEST_H_

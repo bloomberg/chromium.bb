@@ -7,10 +7,10 @@
 #include "net/socket/stream_listen_socket.h"
 #include "net/test/embedded_test_server/http_response.h"
 
-namespace google_apis {
+namespace net {
 namespace test_server {
 
-HttpConnection::HttpConnection(net::StreamListenSocket* socket,
+HttpConnection::HttpConnection(StreamListenSocket* socket,
                                const HandleRequestCallback& callback)
     : socket_(socket),
       callback_(callback) {
@@ -32,4 +32,4 @@ void HttpConnection::ReceiveData(const base::StringPiece& data) {
 }
 
 }  // namespace test_server
-}  // namespace google_apis
+}  // namespace net

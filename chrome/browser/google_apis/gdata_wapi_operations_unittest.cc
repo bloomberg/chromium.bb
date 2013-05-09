@@ -24,9 +24,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/escape.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/embedded_test_server/http_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -89,14 +89,14 @@ class GDataWapiOperationsTest : public testing::Test {
 
  protected:
   // Handles a request for fetching a resource feed.
-  scoped_ptr<test_server::HttpResponse> HandleResourceFeedRequest(
-      const test_server::HttpRequest& request) {
+  scoped_ptr<net::test_server::HttpResponse> HandleResourceFeedRequest(
+      const net::test_server::HttpRequest& request) {
     http_request_ = request;
 
     const GURL absolute_url = test_server_.GetURL(request.relative_url);
     std::string remaining_path;
     if (absolute_url.path() == "/feeds/default/private/full" &&
-        request.method == test_server::METHOD_POST) {
+        request.method == net::test_server::METHOD_POST) {
       // This is a request for copying a document.
       // TODO(satorux): we should generate valid JSON data for the newly
       // copied document but for now, just return "file_entry.json"
@@ -107,7 +107,7 @@ class GDataWapiOperationsTest : public testing::Test {
     if (!test_util::RemovePrefix(absolute_url.path(),
                                  "/feeds/default/private/full",
                                  &remaining_path)) {
-      return scoped_ptr<test_server::HttpResponse>();
+      return scoped_ptr<net::test_server::HttpResponse>();
     }
 
     if (remaining_path.empty()) {
@@ -122,7 +122,7 @@ class GDataWapiOperationsTest : public testing::Test {
         return test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("chromeos/gdata/file_entry.json"));
       } else if (resource_id == "folder:root/contents" &&
-                 request.method == test_server::METHOD_POST) {
+                 request.method == net::test_server::METHOD_POST) {
         // This is a request for creating a directory in the root directory.
         // TODO(satorux): we should generate valid JSON data for the newly
         // created directory but for now, just return "directory_entry.json"
@@ -130,7 +130,7 @@ class GDataWapiOperationsTest : public testing::Test {
             test_util::GetTestFilePath("chromeos/gdata/directory_entry.json"));
       } else if (resource_id ==
                  "folder:root/contents/file:2_file_resource_id" &&
-                 request.method == test_server::METHOD_DELETE) {
+                 request.method == net::test_server::METHOD_DELETE) {
         // This is a request for deleting a file from the root directory.
         // TODO(satorux): Investigate what's returned from the server, and
         // copy it. For now, just return a random file, as the contents don't
@@ -140,7 +140,7 @@ class GDataWapiOperationsTest : public testing::Test {
       } else if (resource_id == "invalid_resource_id") {
         // Check if this is an authorization request for an app.
         // This emulates to return invalid formatted result from the server.
-        if (request.method == test_server::METHOD_PUT &&
+        if (request.method == net::test_server::METHOD_PUT &&
             request.content.find("<docs:authorizedApp>") != std::string::npos) {
           return test_util::CreateHttpResponseFromFile(
               test_util::GetTestFilePath("chromeos/gdata/testfile.txt"));
@@ -148,19 +148,19 @@ class GDataWapiOperationsTest : public testing::Test {
       }
     }
 
-    return scoped_ptr<test_server::HttpResponse>();
+    return scoped_ptr<net::test_server::HttpResponse>();
   }
 
   // Handles a request for fetching a metadata feed.
-  scoped_ptr<test_server::HttpResponse> HandleMetadataRequest(
-      const test_server::HttpRequest& request) {
+  scoped_ptr<net::test_server::HttpResponse> HandleMetadataRequest(
+      const net::test_server::HttpRequest& request) {
     http_request_ = request;
 
     const GURL absolute_url = test_server_.GetURL(request.relative_url);
     if (absolute_url.path() != "/feeds/metadata/default")
-      return scoped_ptr<test_server::HttpResponse>();
+      return scoped_ptr<net::test_server::HttpResponse>();
 
-    scoped_ptr<test_server::HttpResponse> result(
+    scoped_ptr<net::test_server::HttpResponse> result(
         test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath(
                 "chromeos/gdata/account_metadata.json")));
@@ -186,8 +186,8 @@ class GDataWapiOperationsTest : public testing::Test {
   }
 
   // Handles a request for creating a session for uploading.
-  scoped_ptr<test_server::HttpResponse> HandleCreateSessionRequest(
-      const test_server::HttpRequest& request) {
+  scoped_ptr<net::test_server::HttpResponse> HandleCreateSessionRequest(
+      const net::test_server::HttpRequest& request) {
     http_request_ = request;
 
     const GURL absolute_url = test_server_.GetURL(request.relative_url);
@@ -195,8 +195,8 @@ class GDataWapiOperationsTest : public testing::Test {
                         "/feeds/upload/create-session/default/private/full",
                         true)) {  // case sensitive
       // This is an initiating upload URL.
-      scoped_ptr<test_server::HttpResponse> http_response(
-          new test_server::HttpResponse);
+      scoped_ptr<net::test_server::HttpResponse> http_response(
+          new net::test_server::HttpResponse);
 
       // Check an ETag.
       std::map<std::string, std::string>::const_iterator found =
@@ -204,7 +204,7 @@ class GDataWapiOperationsTest : public testing::Test {
       if (found != request.headers.end() &&
           found->second != "*" &&
           found->second != kTestETag) {
-        http_response->set_code(test_server::PRECONDITION);
+        http_response->set_code(net::test_server::PRECONDITION);
         return http_response.Pass();
       }
 
@@ -213,47 +213,47 @@ class GDataWapiOperationsTest : public testing::Test {
       found = request.headers.find("X-Upload-Content-Length");
       if (found == request.headers.end() ||
           !base::StringToInt64(found->second, &content_length_)) {
-        return scoped_ptr<test_server::HttpResponse>();
+        return scoped_ptr<net::test_server::HttpResponse>();
       }
       received_bytes_ = 0;
 
-      http_response->set_code(test_server::SUCCESS);
+      http_response->set_code(net::test_server::SUCCESS);
       GURL upload_url;
       // POST is used for a new file, and PUT is used for an existing file.
-      if (request.method == test_server::METHOD_POST) {
+      if (request.method == net::test_server::METHOD_POST) {
         upload_url = test_server_.GetURL("/upload_new_file");
-      } else if (request.method == test_server::METHOD_PUT) {
+      } else if (request.method == net::test_server::METHOD_PUT) {
         upload_url = test_server_.GetURL("/upload_existing_file");
       } else {
-        return scoped_ptr<test_server::HttpResponse>();
+        return scoped_ptr<net::test_server::HttpResponse>();
       }
       http_response->AddCustomHeader("Location", upload_url.spec());
       return http_response.Pass();
     }
 
-    return scoped_ptr<test_server::HttpResponse>();
+    return scoped_ptr<net::test_server::HttpResponse>();
   }
 
   // Handles a request for uploading content.
-  scoped_ptr<test_server::HttpResponse> HandleUploadRequest(
-      const test_server::HttpRequest& request) {
+  scoped_ptr<net::test_server::HttpResponse> HandleUploadRequest(
+      const net::test_server::HttpRequest& request) {
     http_request_ = request;
 
     const GURL absolute_url = test_server_.GetURL(request.relative_url);
     if (absolute_url.path() != "/upload_new_file" &&
         absolute_url.path() != "/upload_existing_file") {
-      return scoped_ptr<test_server::HttpResponse>();
+      return scoped_ptr<net::test_server::HttpResponse>();
     }
 
     // TODO(satorux): We should create a correct JSON data for the uploaded
     // file, but for now, just return file_entry.json.
-    scoped_ptr<test_server::HttpResponse> response =
+    scoped_ptr<net::test_server::HttpResponse> response =
         test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("chromeos/gdata/file_entry.json"));
     // response.code() is set to SUCCESS. Change it to CREATED if it's a new
     // file.
     if (absolute_url.path() == "/upload_new_file")
-      response->set_code(test_server::CREATED);
+      response->set_code(net::test_server::CREATED);
 
     // Check if the Content-Range header is present. This must be present if
     // the request body is not empty.
@@ -261,7 +261,7 @@ class GDataWapiOperationsTest : public testing::Test {
       std::map<std::string, std::string>::const_iterator iter =
           request.headers.find("Content-Range");
       if (iter == request.headers.end())
-        return scoped_ptr<test_server::HttpResponse>();
+        return scoped_ptr<net::test_server::HttpResponse>();
       int64 length = 0;
       int64 start_position = 0;
       int64 end_position = 0;
@@ -269,7 +269,7 @@ class GDataWapiOperationsTest : public testing::Test {
                                               &start_position,
                                               &end_position,
                                               &length)) {
-        return scoped_ptr<test_server::HttpResponse>();
+        return scoped_ptr<net::test_server::HttpResponse>();
       }
       EXPECT_EQ(start_position, received_bytes_);
       EXPECT_EQ(length, content_length_);
@@ -288,7 +288,7 @@ class GDataWapiOperationsTest : public testing::Test {
 
     // Change the code to RESUME_INCOMPLETE if upload is not complete.
     if (received_bytes_ < content_length_)
-      response->set_code(test_server::RESUME_INCOMPLETE);
+      response->set_code(net::test_server::RESUME_INCOMPLETE);
 
     return response.Pass();
   }
@@ -297,7 +297,7 @@ class GDataWapiOperationsTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
-  test_server::HttpServer test_server_;
+  net::test_server::EmbeddedTestServer test_server_;
   scoped_ptr<TestingProfile> profile_;
   OperationRegistry operation_registry_;
   scoped_ptr<GDataWapiUrlGenerator> url_generator_;
@@ -314,7 +314,7 @@ class GDataWapiOperationsTest : public testing::Test {
   // The incoming HTTP request is saved so tests can verify the request
   // parameters like HTTP method (ex. some operations should use DELETE
   // instead of GET).
-  test_server::HttpRequest http_request_;
+  net::test_server::HttpRequest http_request_;
 };
 
 }  // namespace
@@ -339,7 +339,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full?v=3&alt=json&showroot=true&"
             "showfolders=true&include-shared=true&max-results=500",
             http_request_.relative_url);
@@ -372,7 +372,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/files/chromeos/gdata/root_feed.json?v=3&alt=json&showroot=true&"
             "showfolders=true&include-shared=true&max-results=500",
             http_request_.relative_url);
@@ -406,7 +406,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/files/chromeos/gdata/testfile.txt?v=3&alt=json&showroot=true&"
             "showfolders=true&include-shared=true&max-results=500",
             http_request_.relative_url);
@@ -431,7 +431,7 @@ TEST_F(GDataWapiOperationsTest, SearchByTitleOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full?v=3&alt=json&showroot=true&"
             "showfolders=true&include-shared=true&max-results=500"
             "&title=search-title&title-exact=true",
@@ -456,7 +456,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_ValidResourceId) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full/file%3A2_file_resource_id"
             "?v=3&alt=json&showroot=true",
             http_request_.relative_url);
@@ -482,7 +482,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_InvalidResourceId) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full/%3Cinvalid%3E?v=3&alt=json"
             "&showroot=true",
             http_request_.relative_url);
@@ -506,7 +506,7 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/feeds/metadata/default?v=3&alt=json&showroot=true"
             "&include-installed-apps=true",
             http_request_.relative_url);
@@ -546,7 +546,7 @@ TEST_F(GDataWapiOperationsTest,
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/feeds/metadata/default?v=3&alt=json&showroot=true",
             http_request_.relative_url);
 
@@ -583,7 +583,7 @@ TEST_F(GDataWapiOperationsTest, DeleteResourceOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_DELETE, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_DELETE, http_request_.method);
   EXPECT_EQ(
       "/feeds/default/private/full/file%3A2_file_resource_id?v=3&alt=json"
       "&showroot=true",
@@ -609,7 +609,7 @@ TEST_F(GDataWapiOperationsTest, DeleteResourceOperationWithETag) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_DELETE, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_DELETE, http_request_.method);
   EXPECT_EQ(
       "/feeds/default/private/full/file%3A2_file_resource_id?v=3&alt=json"
       "&showroot=true",
@@ -637,7 +637,7 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full/folder%3Aroot/contents?v=3&alt=json"
             "&showroot=true",
             http_request_.relative_url);
@@ -673,7 +673,7 @@ TEST_F(GDataWapiOperationsTest, CopyHostedDocumentOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full?v=3&alt=json&showroot=true",
             http_request_.relative_url);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
@@ -706,7 +706,7 @@ TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   EXPECT_EQ(
       "/feeds/default/private/full/file%3A2_file_resource_id?v=3&alt=json"
       "&showroot=true",
@@ -742,7 +742,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full/file%3A2_file_resource_id"
             "?v=3&alt=json&showroot=true",
             http_request_.relative_url);
@@ -778,7 +778,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full/invalid_resource_id"
             "?v=3&alt=json&showroot=true",
             http_request_.relative_url);
@@ -814,7 +814,7 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full/folder%3Aroot/contents?v=3&alt=json"
             "&showroot=true",
             http_request_.relative_url);
@@ -850,7 +850,7 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   // DELETE method should be used, without the body content.
-  EXPECT_EQ(test_server::METHOD_DELETE, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_DELETE, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full/folder%3Aroot/contents/"
             "file%3A2_file_resource_id?v=3&alt=json&showroot=true",
             http_request_.relative_url);
@@ -887,7 +887,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server_.GetURL("/upload_new_file"), upload_url);
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
   EXPECT_EQ(
       "/feeds/upload/create-session/default/private/full/folder%3Aid/contents"
@@ -934,7 +934,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   // Request should go to the upload URL.
   EXPECT_EQ(upload_url.path(), http_request_.relative_url);
   // Content-Range header should be added.
@@ -989,7 +989,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server_.GetURL("/upload_new_file"), upload_url);
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
   EXPECT_EQ(
       "/feeds/upload/create-session/default/private/full/folder%3Aid/contents"
@@ -1033,7 +1033,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
     MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
-    EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+    EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
     // Request should go to the upload URL.
     EXPECT_EQ(upload_url.path(), http_request_.relative_url);
     // Content-Range header should be added.
@@ -1089,7 +1089,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
     MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
-    EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+    EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
     // Request should go to the upload URL.
     EXPECT_EQ(upload_url.path(), http_request_.relative_url);
     // Content-Range header should be added.
@@ -1136,7 +1136,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
     MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
-    EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+    EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
     // Request should go to the upload URL.
     EXPECT_EQ(upload_url.path(), http_request_.relative_url);
     // Content-Range header should be added.
@@ -1187,7 +1187,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server_.GetURL("/upload_new_file"), upload_url);
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
   EXPECT_EQ(
       "/feeds/upload/create-session/default/private/full/folder%3Aid/contents"
@@ -1234,7 +1234,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   // Request should go to the upload URL.
   EXPECT_EQ(upload_url.path(), http_request_.relative_url);
   // Content-Range header should not exit if the content is empty.
@@ -1281,7 +1281,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server_.GetURL("/upload_existing_file"), upload_url);
   // For updating an existing file, METHOD_PUT should be used.
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
   EXPECT_EQ("/feeds/upload/create-session/default/private/full/file%3Afoo"
             "?convert=false&v=3&alt=json&showroot=true",
@@ -1326,7 +1326,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   // Request should go to the upload URL.
   EXPECT_EQ(upload_url.path(), http_request_.relative_url);
   // Content-Range header should be added.
@@ -1375,7 +1375,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server_.GetURL("/upload_existing_file"), upload_url);
   // For updating an existing file, METHOD_PUT should be used.
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
   EXPECT_EQ("/feeds/upload/create-session/default/private/full/file%3Afoo"
             "?convert=false&v=3&alt=json&showroot=true",
@@ -1420,7 +1420,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   // Request should go to the upload URL.
   EXPECT_EQ(upload_url.path(), http_request_.relative_url);
   // Content-Range header should be added.
@@ -1468,7 +1468,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETagConflict) {
 
   EXPECT_EQ(HTTP_PRECONDITION, result_code);
   // For updating an existing file, METHOD_PUT should be used.
-  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
   EXPECT_EQ("/feeds/upload/create-session/default/private/full/file%3Afoo"
             "?convert=false&v=3&alt=json&showroot=true",
