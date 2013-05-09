@@ -8,6 +8,7 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"
@@ -174,6 +175,13 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm192kHz) {
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoTulipWebm) {
   PlayVideo("tulip2.webm", GetParam());
+}
+
+// Covers tear-down when navigating away as opposed to browser exiting.
+IN_PROC_BROWSER_TEST_F(MediaTest, Navigate) {
+  PlayVideo("bear.ogv", false);
+  NavigateToURL(shell(), GURL("about:blank"));
+  EXPECT_FALSE(shell()->web_contents()->IsCrashed());
 }
 
 INSTANTIATE_TEST_CASE_P(File, MediaTest, ::testing::Values(false));
