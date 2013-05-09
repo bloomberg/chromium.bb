@@ -461,6 +461,12 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_QUIET_MODE_1DAY" desc="The button label to enter quiet mode in one day.">
         Quiet mode for one day
       </message>
+      <message name="IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the close button in a notification. Usually 'button' is suffixed to this text automatically.">
+	Notification close
+      </message>
+      <message name="IDS_MESSAGE_CENTER_EXPAND_NOTIFICATION_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the expand button in a notification. Usually 'button' is suffixed to this text automatically.">
+	Notification expand
+      </message>
       <message name="IDS_MESSAGE_CENTER_TOOLTIP" desc="Tooltip for notification tray icon without unread notifications">
         <ph name="product">$1<ex>Chrome</ex></ph> - Notifications
       </message>

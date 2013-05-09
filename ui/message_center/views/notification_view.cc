@@ -315,6 +315,7 @@ void NotificationButton::SetTitle(const string16& title) {
     title_->set_border(MakeEmptyBorder(kButtonTitleTopPadding, 0, 0, 0));
     AddChildView(title_);
   }
+  SetAccessibleName(title);
 }
 
 gfx::Size NotificationButton::GetPreferredSize() {
@@ -326,6 +327,7 @@ int NotificationButton::GetHeightForWidth(int width) {
 }
 
 void NotificationButton::OnFocus() {
+  views::CustomButton::OnFocus();
   ScrollRectToVisible(GetLocalBounds());
 }
 

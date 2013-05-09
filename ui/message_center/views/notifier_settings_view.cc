@@ -50,6 +50,7 @@ class EntryView : public views::View {
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
@@ -82,7 +83,13 @@ gfx::Size EntryView::GetPreferredSize() {
   return size;
 }
 
+void EntryView::GetAccessibleState(ui::AccessibleViewState* state) {
+  DCHECK_EQ(1, child_count());
+  child_at(0)->GetAccessibleState(state);
+}
+
 void EntryView::OnFocus() {
+  views::View::OnFocus();
   ScrollRectToVisible(GetLocalBounds());
 }
 
@@ -165,6 +172,7 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
     checkbox_->SetChecked(notifier_->enabled);
     checkbox_->set_listener(this);
     checkbox_->set_focusable(false);
+    checkbox_->SetAccessibleName(notifier_->name);
     AddChildView(checkbox_);
     UpdateIconImage(notifier_->icon);
     AddChildView(new views::Label(notifier_->name));
@@ -210,6 +218,10 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
     // back to the previous state.
     checkbox_->SetChecked(!checkbox_->checked());
     CustomButton::NotifyClick(event);
+  }
+
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+    static_cast<views::View*>(checkbox_)->GetAccessibleState(state);
   }
 
   scoped_ptr<Notifier> notifier_;
