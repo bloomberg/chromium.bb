@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/features/permission_feature.h"
 
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 
 namespace extensions {
 
@@ -29,7 +30,8 @@ Feature::Availability PermissionFeature::IsAvailableToContext(
   // Optional permissions need to be checked so an API will not be set to
   // undefined forever, when it could just need optional permissions.
   if (extension && !extension->HasAPIPermission(name()) &&
-      !extension->optional_permission_set()->HasAnyAccessToAPI(name())) {
+      !PermissionsData::GetOptionalPermissions(extension)->
+          HasAnyAccessToAPI(name())) {
     return CreateAvailability(NOT_PRESENT, extension->GetType());
   }
 

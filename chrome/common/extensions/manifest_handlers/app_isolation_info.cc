@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/error_utils.h"
 
 namespace keys = extension_manifest_keys;
@@ -47,7 +48,7 @@ bool AppIsolationHandler::Parse(Extension* extension, string16* error) {
   // Other apps only get it if it is requested _and_ experimental APIs are
   // enabled.
   if (!extension->is_app() ||
-      !extension->initial_api_permissions()->count(
+      !PermissionsData::GetInitialAPIPermissions(extension)->count(
           APIPermission::kExperimental)) {
     return true;
   }

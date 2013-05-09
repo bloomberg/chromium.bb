@@ -12,10 +12,7 @@
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "net/dns/mock_host_resolver.h"
 
-using extensions::APIPermission;
-using extensions::APIPermissionSet;
-using extensions::PermissionSet;
-using extensions::URLPatternSet;
+namespace extensions {
 
 namespace {
 
@@ -80,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsGranted) {
   scoped_refptr<PermissionSet> granted_permissions =
       new PermissionSet(apis, explicit_hosts, URLPatternSet());
 
-  extensions::ExtensionPrefs* prefs =
+  ExtensionPrefs* prefs =
       browser()->profile()->GetExtensionService()->extension_prefs();
   prefs->AddGrantedPermissions("kjmkgkdkpedkejedfhmfcenooemhbpbo",
                                granted_permissions);
@@ -137,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsFileAccess) {
   PermissionsRequestFunction::SetAutoConfirmForTests(false);
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
 
-  extensions::ExtensionPrefs* prefs =
+  ExtensionPrefs* prefs =
       browser()->profile()->GetExtensionService()->extension_prefs();
 
   EXPECT_TRUE(
@@ -163,3 +160,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, HostSubsets) {
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
   EXPECT_TRUE(RunExtensionTest("permissions/host_subsets")) << message_;
 }
+
+}  // namespace extensions

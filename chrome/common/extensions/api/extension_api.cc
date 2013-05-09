@@ -21,6 +21,7 @@
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/simple_feature.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "googleurl/src/gurl.h"
 #include "grit/common_resources.h"
 #include "grit/extensions_api_resources.h"
@@ -576,8 +577,10 @@ std::string ExtensionAPI::GetAPINameFromFullName(const std::string& full_name,
 
 bool ExtensionAPI::IsAPIAllowed(const std::string& name,
                                 const Extension* extension) {
-  return extension->required_permission_set()->HasAnyAccessToAPI(name) ||
-      extension->optional_permission_set()->HasAnyAccessToAPI(name);
+  return PermissionsData::GetRequiredPermissions(extension)->
+          HasAnyAccessToAPI(name) ||
+      PermissionsData::GetOptionalPermissions(extension)->
+          HasAnyAccessToAPI(name);
 }
 
 bool ExtensionAPI::IsPrivilegedAPI(const std::string& name) {

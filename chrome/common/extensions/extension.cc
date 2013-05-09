@@ -30,19 +30,15 @@
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/feature_switch.h"
-#include "chrome/common/extensions/features/base_feature_provider.h"
-#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
@@ -80,8 +76,6 @@ const char kPublic[] = "PUBLIC";
 const char kPrivate[] = "PRIVATE";
 
 const int kRSAKeySize = 1024;
-
-const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
 
 // A singleton object containing global data needed by the extension objects.
 class ExtensionConfig {
@@ -140,21 +134,6 @@ bool ReadLaunchDimension(const extensions::Manifest* manifest,
     }
   }
   return true;
-}
-
-bool ContainsManifestForbiddenPermission(const APIPermissionSet& apis,
-                                         string16* error) {
-  CHECK(error);
-  for (APIPermissionSet::const_iterator i = apis.begin();
-      i != apis.end(); ++i) {
-    if ((*i)->ManifestEntryForbidden()) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kPermissionNotAllowedInManifest,
-          (*i)->info()->name());
-      return true;
-    }
-  }
-  return false;
 }
 
 }  // namespace
@@ -426,147 +405,6 @@ const Extension::ScriptingWhitelist* Extension::GetScriptingWhitelist() {
   return ExtensionConfig::GetInstance()->whitelist();
 }
 
-bool Extension::ParsePermissions(const char* key,
-                                 string16* error,
-                                 APIPermissionSet* api_permissions,
-                                 URLPatternSet* host_permissions) {
-  if (manifest_->HasKey(key)) {
-    const ListValue* permissions = NULL;
-    if (!manifest_->GetList(key, &permissions)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidPermissions,
-                                                   std::string());
-      return false;
-    }
-
-    // NOTE: We need to get the APIPermission before we check if features
-    // associated with them are available because the feature system does not
-    // know about aliases.
-
-    std::vector<std::string> host_data;
-    if (!APIPermissionSet::ParseFromJSON(permissions, api_permissions,
-                                         error, &host_data))
-      return false;
-
-    // Verify feature availability of permissions.
-    std::vector<APIPermission::ID> to_remove;
-    FeatureProvider* permission_features =
-        BaseFeatureProvider::GetByName("permission");
-    for (APIPermissionSet::const_iterator it = api_permissions->begin();
-         it != api_permissions->end(); ++it) {
-      extensions::Feature* feature =
-          permission_features->GetFeature(it->name());
-
-      // The feature should exist since we just got an APIPermission
-      // for it. The two systems should be updated together whenever a
-      // permission is added.
-      DCHECK(feature);
-      // http://crbug.com/176381
-      if (!feature) {
-        to_remove.push_back(it->id());
-        continue;
-      }
-
-      Feature::Availability availability =
-          feature->IsAvailableToManifest(
-              id(),
-              GetType(),
-              Feature::ConvertLocation(location()),
-              manifest_version());
-      if (!availability.is_available()) {
-        // Don't fail, but warn the developer that the manifest contains
-        // unrecognized permissions. This may happen legitimately if the
-        // extensions requests platform- or channel-specific permissions.
-        install_warnings_.push_back(InstallWarning(InstallWarning::FORMAT_TEXT,
-                                                   availability.message()));
-        to_remove.push_back(it->id());
-        continue;
-      }
-
-      if (it->id() == APIPermission::kExperimental) {
-        if (!CanSpecifyExperimentalPermission()) {
-          *error = ASCIIToUTF16(errors::kExperimentalFlagRequired);
-          return false;
-        }
-      }
-    }
-
-    // Remove permissions that are not available to this extension.
-    for (std::vector<APIPermission::ID>::const_iterator it = to_remove.begin();
-         it != to_remove.end(); ++it) {
-      api_permissions->erase(*it);
-    }
-
-    // Parse host pattern permissions.
-    const int kAllowedSchemes = CanExecuteScriptEverywhere() ?
-        URLPattern::SCHEME_ALL : kValidHostPermissionSchemes;
-
-    for (std::vector<std::string>::const_iterator it = host_data.begin();
-         it != host_data.end(); ++it) {
-      const std::string& permission_str = *it;
-
-      // Check if it's a host pattern permission.
-      URLPattern pattern = URLPattern(kAllowedSchemes);
-      URLPattern::ParseResult parse_result = pattern.Parse(permission_str);
-      if (parse_result == URLPattern::PARSE_SUCCESS) {
-        // The path component is not used for host permissions, so we force it
-        // to match all paths.
-        pattern.SetPath("/*");
-        int valid_schemes = pattern.valid_schemes();
-        if (pattern.MatchesScheme(chrome::kFileScheme) &&
-            !CanExecuteScriptEverywhere()) {
-          wants_file_access_ = true;
-          if (!(creation_flags_ & ALLOW_FILE_ACCESS))
-            valid_schemes &= ~URLPattern::SCHEME_FILE;
-        }
-
-        if (pattern.scheme() != chrome::kChromeUIScheme &&
-            !CanExecuteScriptEverywhere()) {
-          // Keep chrome:// in allowed schemes only if it's explicitly requested
-          // or CanExecuteScriptEverywhere is true. If the
-          // extensions_on_chrome_urls flag is not set, CanSpecifyHostPermission
-          // will fail, so don't check the flag here.
-          valid_schemes &= ~URLPattern::SCHEME_CHROMEUI;
-        }
-        pattern.SetValidSchemes(valid_schemes);
-
-        if (!CanSpecifyHostPermission(pattern, *api_permissions)) {
-          // TODO(aboxhall): make a warning (see line 633)
-          *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidPermissionScheme, permission_str);
-          return false;
-        }
-
-        host_permissions->AddPattern(pattern);
-
-        // We need to make sure all_urls matches chrome://favicon and
-        // (maybe) chrome://thumbnail, so add them back in to host_permissions
-        // separately.
-        if (pattern.match_all_urls()) {
-          host_permissions->AddPattern(
-              URLPattern(URLPattern::SCHEME_CHROMEUI,
-                         chrome::kChromeUIFaviconURL));
-          if (api_permissions->find(APIPermission::kExperimental) !=
-              api_permissions->end()) {
-            host_permissions->AddPattern(
-                URLPattern(URLPattern::SCHEME_CHROMEUI,
-                           chrome::kChromeUIThumbnailURL));
-          }
-        }
-        continue;
-      }
-
-      // It's probably an unknown API permission. Do not throw an error so
-      // extensions can retain backwards compatability (http://crbug.com/42742).
-      install_warnings_.push_back(InstallWarning(
-          InstallWarning::FORMAT_TEXT,
-          base::StringPrintf(
-              "Permission '%s' is unknown or URL pattern is malformed.",
-              permission_str.c_str())));
-    }
-  }
-  return true;
-}
-
 bool Extension::HasAPIPermission(APIPermission::ID permission) const {
   base::AutoLock auto_lock(runtime_data_lock_);
   return runtime_data_.GetActivePermissions()->HasAPIPermission(permission);
@@ -643,14 +481,12 @@ bool Extension::ShouldSkipPermissionWarnings() const {
   return IsTrustedId(id());
 }
 
-void Extension::SetActivePermissions(
-    const PermissionSet* permissions) const {
+void Extension::SetActivePermissions(const PermissionSet* permissions) const {
   base::AutoLock auto_lock(runtime_data_lock_);
   runtime_data_.SetActivePermissions(permissions);
 }
 
-scoped_refptr<const PermissionSet>
-    Extension::GetActivePermissions() const {
+scoped_refptr<const PermissionSet> Extension::GetActivePermissions() const {
   base::AutoLock auto_lock(runtime_data_lock_);
   return runtime_data_.GetActivePermissions();
 }
@@ -1095,13 +931,6 @@ Extension::~Extension() {
 bool Extension::InitFromValue(int flags, string16* error) {
   DCHECK(error);
 
-  base::AutoLock auto_lock(runtime_data_lock_);
-
-  // Initialize permissions with an empty, default permission set.
-  runtime_data_.SetActivePermissions(new PermissionSet());
-  optional_permission_set_ = new PermissionSet();
-  required_permission_set_ = new PermissionSet();
-
   creation_flags_ = flags;
 
   // Important to load manifest version first because many other features
@@ -1128,47 +957,9 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (is_app() && !LoadAppFeatures(error))
     return false;
 
-  initial_api_permissions_.reset(new APIPermissionSet);
-  URLPatternSet host_permissions;
-  if (!ParsePermissions(keys::kPermissions,
-                        error,
-                        initial_api_permissions_.get(),
-                        &host_permissions)) {
+  permissions_data_.reset(new PermissionsData);
+  if (!permissions_data_->ParsePermissions(this, error))
     return false;
-  }
-
-  // Check for any permissions that are optional only.
-  for (APIPermissionSet::const_iterator i = initial_api_permissions_->begin();
-       i != initial_api_permissions_->end(); ++i) {
-    if ((*i)->info()->must_be_optional()) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kPermissionMustBeOptional, (*i)->info()->name());
-      return false;
-    }
-  }
-
-  // TODO(jeremya/kalman) do this via the features system by exposing the
-  // app.window API to platform apps, with no dependency on any permissions.
-  // See http://crbug.com/120069.
-  if (is_platform_app()) {
-    initial_api_permissions_->insert(APIPermission::kAppCurrentWindowInternal);
-    initial_api_permissions_->insert(APIPermission::kAppRuntime);
-    initial_api_permissions_->insert(APIPermission::kAppWindow);
-  }
-
-  APIPermissionSet optional_api_permissions;
-  URLPatternSet optional_host_permissions;
-  if (!ParsePermissions(keys::kOptionalPermissions,
-                        error,
-                        &optional_api_permissions,
-                        &optional_host_permissions)) {
-    return false;
-  }
-
-  if (ContainsManifestForbiddenPermission(*initial_api_permissions_, error) ||
-      ContainsManifestForbiddenPermission(optional_api_permissions, error)) {
-    return false;
-  }
 
   if (!LoadSharedFeatures(error))
     return false;
@@ -1182,17 +973,9 @@ bool Extension::InitFromValue(int flags, string16* error) {
     return false;
   }
 
-  URLPatternSet scriptable_hosts = ContentScriptsInfo::GetScriptableHosts(this);
-
   finished_parsing_manifest_ = true;
 
-  runtime_data_.SetActivePermissions(new PermissionSet(
-      *initial_api_permissions_, host_permissions, scriptable_hosts));
-  required_permission_set_ = new PermissionSet(
-      *initial_api_permissions_, host_permissions, scriptable_hosts);
-  optional_permission_set_ = new PermissionSet(
-      optional_api_permissions, optional_host_permissions, URLPatternSet());
-  initial_api_permissions_.reset();
+  permissions_data_->FinalizePermissions(this);
 
   return true;
 }
@@ -1274,8 +1057,8 @@ bool Extension::LoadExtent(const char* key,
     std::string pattern_string;
     if (!pattern_list->GetString(i, &pattern_string)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(value_error,
-                                                       base::UintToString(i),
-                                                       errors::kExpectString);
+                                                   base::UintToString(i),
+                                                   errors::kExpectString);
       return false;
     }
 
@@ -1607,61 +1390,6 @@ void Extension::OverrideLaunchUrl(const GURL& override_url) {
     pattern.SetPath(pattern.path() + '*');
     extent_.AddPattern(pattern);
   }
-}
-
-bool Extension::CanSpecifyExperimentalPermission() const {
-  if (location() == Manifest::COMPONENT)
-    return true;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis)) {
-    return true;
-  }
-
-  // We rely on the webstore to check access to experimental. This way we can
-  // whitelist extensions to have access to experimental in just the store, and
-  // not have to push a new version of the client.
-  if (from_webstore())
-    return true;
-
-  return false;
-}
-
-bool Extension::CanSpecifyHostPermission(const URLPattern& pattern,
-    const APIPermissionSet& permissions) const {
-  if (!pattern.match_all_urls() &&
-      pattern.MatchesScheme(chrome::kChromeUIScheme)) {
-    // Regular extensions are only allowed access to chrome://favicon.
-    if (pattern.host() == chrome::kChromeUIFaviconHost)
-      return true;
-
-    // Experimental extensions are also allowed chrome://thumb.
-    //
-    // TODO: A public API should be created for retrieving thumbnails.
-    // See http://crbug.com/222856. A temporary hack is implemented here to
-    // make chrome://thumbs available to NTP Russia extension as
-    // non-experimental.
-    if (pattern.host() == chrome::kChromeUIThumbnailHost) {
-      return
-          permissions.find(APIPermission::kExperimental) != permissions.end() ||
-          (id() == kThumbsWhiteListedExtension && from_webstore());
-    }
-
-    // Component extensions can have access to all of chrome://*.
-    if (CanExecuteScriptEverywhere())
-      return true;
-
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExtensionsOnChromeURLs))
-      return true;
-
-    // TODO(aboxhall): return from_webstore() when webstore handles blocking
-    // extensions which request chrome:// urls
-    return false;
-  }
-
-  // Otherwise, the valid schemes were handled by URLPattern.
-  return true;
 }
 
 bool Extension::CheckMinimumChromeVersion(string16* error) const {

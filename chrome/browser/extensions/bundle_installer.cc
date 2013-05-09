@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -260,7 +261,8 @@ void BundleInstaller::ShowPrompt() {
   scoped_refptr<PermissionSet> permissions;
   for (size_t i = 0; i < dummy_extensions_.size(); ++i) {
     permissions = PermissionSet::CreateUnion(
-          permissions, dummy_extensions_[i]->required_permission_set());
+        permissions,
+        PermissionsData::GetRequiredPermissions(dummy_extensions_[i]));
   }
 
   if (g_auto_approve_for_test == PROCEED) {

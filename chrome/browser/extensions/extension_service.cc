@@ -89,6 +89,7 @@
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
@@ -2151,8 +2152,8 @@ void ExtensionService::UpdateActivePermissions(const Extension* extension) {
     //  b) active permissions must contains all default permissions
     scoped_refptr<PermissionSet> total_permissions =
         PermissionSet::CreateUnion(
-            extension->required_permission_set(),
-            extension->optional_permission_set());
+            extensions::PermissionsData::GetRequiredPermissions(extension),
+            extensions::PermissionsData::GetOptionalPermissions(extension));
 
     // Make sure the active permissions contain no more than optional + default.
     scoped_refptr<PermissionSet> adjusted_active =
@@ -2161,7 +2162,8 @@ void ExtensionService::UpdateActivePermissions(const Extension* extension) {
 
     // Make sure the active permissions contain the default permissions.
     adjusted_active = PermissionSet::CreateUnion(
-            extension->required_permission_set(), adjusted_active.get());
+        extensions::PermissionsData::GetRequiredPermissions(extension),
+        adjusted_active.get());
 
     extensions::PermissionsUpdater perms_updater(profile());
     perms_updater.UpdateActivePermissions(extension, adjusted_active);

@@ -47,6 +47,7 @@ class ImageSkia;
 }
 
 namespace extensions {
+class PermissionsData;
 class APIPermissionSet;
 class PermissionSet;
 
@@ -170,11 +171,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // In a few special circumstances, we want to create an Extension and give it
   // an explicit id. Most consumers should just use the other Create() method.
   static scoped_refptr<Extension> Create(const base::FilePath& path,
-      Manifest::Location location,
-      const base::DictionaryValue& value,
-      int flags,
-      const std::string& explicit_id,
-      std::string* error);
+                                         Manifest::Location location,
+                                         const base::DictionaryValue& value,
+                                         int flags,
+                                         const std::string& explicit_id,
+                                         std::string* error);
 
   // Valid schemes for web extent URLPatterns.
   static const int kValidWebExtentSchemes;
@@ -246,13 +247,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static void SetScriptingWhitelist(const ScriptingWhitelist& whitelist);
   static const ScriptingWhitelist* GetScriptingWhitelist();
 
-  // Parses the host and api permissions from the specified permission |key|
-  // from |manifest_|.
-  bool ParsePermissions(const char* key,
-                        string16* error,
-                        APIPermissionSet* api_permissions,
-                        URLPatternSet* host_permissions);
-
   // Returns true if this extension has the given permission. Prefer
   // IsExtensionWithPermissionOrSuggestInConsole when developers may be using an
   // api that requires a permission they didn't know about, e.g. open web apis.
@@ -260,7 +254,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool HasAPIPermission(const std::string& function_name) const;
   bool HasAPIPermissionForTab(int tab_id, APIPermission::ID permission) const;
 
-  bool CheckAPIPermissionWithParam(APIPermission::ID permission,
+  bool CheckAPIPermissionWithParam(
+      APIPermission::ID permission,
       const APIPermission::CheckParam* param) const;
 
   const URLPatternSet& GetEffectiveHostPermissions() const;
@@ -409,20 +404,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::vector<NaClModuleInfo>& nacl_modules() const {
     return nacl_modules_;
   }
-  const PermissionSet* optional_permission_set() const {
-    return optional_permission_set_.get();
+  PermissionsData* permissions_data() { return permissions_data_.get(); }
+  const PermissionsData* permissions_data() const {
+    return permissions_data_.get();
   }
-  const PermissionSet* required_permission_set() const {
-    return required_permission_set_.get();
-  }
-  // Returns the temporary APIPermissionSet used in initialization.
-  // (NULL after initialization is completed.)
-  APIPermissionSet* initial_api_permissions() {
-    return initial_api_permissions_.get();
-  }
-  const APIPermissionSet* initial_api_permissions() const {
-    return initial_api_permissions_.get();
-  }
+
   // Appends |new_warning[s]| to install_warnings_.
   void AddInstallWarning(const InstallWarning& new_warning);
   void AddInstallWarnings(const std::vector<InstallWarning>& new_warnings);
@@ -549,15 +535,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // |override_url|.
   void OverrideLaunchUrl(const GURL& override_url);
 
-  // Custom checks for the experimental permission that can't be expressed in
-  // _permission_features.json.
-  bool CanSpecifyExperimentalPermission() const;
-
-  // Checks whether the host |pattern| is allowed for this extension, given API
-  // permissions |permissions|.
-  bool CanSpecifyHostPermission(const URLPattern& pattern,
-                                const APIPermissionSet& permissions) const;
-
   bool CheckMinimumChromeVersion(string16* error) const;
 
   // Check that platform app features are valid. Called after InitFromValue.
@@ -594,15 +571,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   mutable base::Lock runtime_data_lock_;
   mutable RuntimeData runtime_data_;
 
-  // The API permission set; used during extension initialization.
-  // Cleared after permissions are finalized by SetActivePermissions.
-  scoped_ptr<APIPermissionSet> initial_api_permissions_;
-
-  // The set of permissions the extension can request at runtime.
-  scoped_refptr<const PermissionSet> optional_permission_set_;
-
-  // The extension's required / default set of permissions.
-  scoped_refptr<const PermissionSet> required_permission_set_;
+  scoped_ptr<PermissionsData> permissions_data_;
 
   // Any warnings that occurred when trying to create/parse the extension.
   std::vector<InstallWarning> install_warnings_;

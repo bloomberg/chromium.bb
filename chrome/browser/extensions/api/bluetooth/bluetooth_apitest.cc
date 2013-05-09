@@ -583,8 +583,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesError) {
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Permissions) {
-  PermissionsRequestFunction::SetAutoConfirmForTests(true);
-  PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
+  extensions::PermissionsRequestFunction::SetAutoConfirmForTests(true);
+  extensions::PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
 
   event_router()->AddProfile(
       "00001101-0000-1000-8000-00805f9b34fb", profile1_.get());

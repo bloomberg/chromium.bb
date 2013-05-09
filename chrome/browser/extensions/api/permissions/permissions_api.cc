@@ -13,26 +13,21 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
 
-using extensions::api::permissions::Permissions;
-using extensions::APIPermission;
-using extensions::APIPermissionSet;
-using extensions::ErrorUtils;
-using extensions::ExtensionPrefs;
-using extensions::ExtensionSystem;
-using extensions::PermissionSet;
-using extensions::PermissionsInfo;
-using extensions::PermissionsUpdater;
+namespace extensions {
 
-namespace Contains = extensions::api::permissions::Contains;
-namespace GetAll = extensions::api::permissions::GetAll;
-namespace Remove = extensions::api::permissions::Remove;
-namespace Request  = extensions::api::permissions::Request;
-namespace helpers = extensions::permissions_api_helpers;
+using api::permissions::Permissions;
+
+namespace Contains = api::permissions::Contains;
+namespace GetAll = api::permissions::GetAll;
+namespace Remove = api::permissions::Remove;
+namespace Request  = api::permissions::Request;
+namespace helpers = permissions_api_helpers;
 
 namespace {
 
@@ -91,7 +86,7 @@ bool PermissionsRemoveFunction::RunImpl() {
   if (!permissions.get())
     return false;
 
-  const extensions::Extension* extension = GetExtension();
+  const Extension* extension = GetExtension();
 
   // Make sure they're only trying to remove permissions supported by this API.
   APIPermissionSet apis = permissions->apis();
@@ -105,7 +100,8 @@ bool PermissionsRemoveFunction::RunImpl() {
   }
 
   // Make sure we don't remove any required pemissions.
-  const PermissionSet* required = extension->required_permission_set();
+  const PermissionSet* required =
+      PermissionsData::GetRequiredPermissions(extension);
   scoped_refptr<PermissionSet> intersection(
       PermissionSet::CreateIntersection(permissions.get(), required));
   if (!intersection->IsEmpty()) {
@@ -182,13 +178,12 @@ bool PermissionsRequestFunction::RunImpl() {
 
   // Filter out permissions that do not need to be listed in the optional
   // section of the manifest.
-  scoped_refptr<extensions::PermissionSet>
-      manifest_required_requested_permissions =
-          PermissionSet::ExcludeNotInManifestPermissions(
-              requested_permissions_.get());
+  scoped_refptr<PermissionSet> manifest_required_requested_permissions =
+      PermissionSet::ExcludeNotInManifestPermissions(
+          requested_permissions_.get());
 
   // The requested permissions must be defined as optional in the manifest.
-  if (!GetExtension()->optional_permission_set()->Contains(
+  if (!PermissionsData::GetOptionalPermissions(GetExtension())->Contains(
           *manifest_required_requested_permissions)) {
     error_ = kNotInOptionalPermissionsError;
     return false;
@@ -231,3 +226,5 @@ bool PermissionsRequestFunction::RunImpl() {
 
   return true;
 }
+
+}  // namespace extensions

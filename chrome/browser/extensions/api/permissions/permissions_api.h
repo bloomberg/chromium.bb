@@ -14,6 +14,8 @@
 
 class ExtensionService;
 
+namespace extensions {
+
 // chrome.permissions.contains
 class PermissionsContainsFunction : public SyncExtensionFunction {
  public:
@@ -76,5 +78,7 @@ class PermissionsRequestFunction : public AsyncExtensionFunction,
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
   scoped_refptr<extensions::PermissionSet> requested_permissions_;
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_PERMISSIONS_PERMISSIONS_API_H_

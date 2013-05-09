@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/error_utils.h"
 #include "grit/generated_resources.h"
@@ -110,7 +111,8 @@ bool DevToolsPageHandler::Parse(Extension* extension, string16* error) {
   }
   manifest_url->url_ = extension->GetResourceURL(devtools_str);
   extension->SetManifestData(keys::kDevToolsPage, manifest_url.release());
-  extension->initial_api_permissions()->insert(APIPermission::kDevtools);
+  PermissionsData::GetInitialAPIPermissions(extension)->insert(
+      APIPermission::kDevtools);
   return true;
 }
 

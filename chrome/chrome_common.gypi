@@ -295,6 +295,8 @@
         'common/extensions/permissions/permission_message.h',
         'common/extensions/permissions/permission_set.cc',
         'common/extensions/permissions/permission_set.h',
+        'common/extensions/permissions/permissions_data.cc',
+        'common/extensions/permissions/permissions_data.h',
         'common/extensions/permissions/permissions_info.cc',
         'common/extensions/permissions/permissions_info.h',
         'common/extensions/permissions/set_disjunction_permission.h',

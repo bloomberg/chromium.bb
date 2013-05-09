@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 
 namespace extensions {
 
@@ -36,7 +37,8 @@ bool SystemIndicatorHandler::Parse(Extension* extension, string16* error) {
 
   // Because the manifest was successfully parsed, auto-grant the permission.
   // TODO(dewittj) Add this for all extension action APIs.
-  extension->initial_api_permissions()->insert(APIPermission::kSystemIndicator);
+  PermissionsData::GetInitialAPIPermissions(extension)->insert(
+      APIPermission::kSystemIndicator);
 
   ActionInfo::SetSystemIndicatorInfo(extension, action_info.release());
   return true;

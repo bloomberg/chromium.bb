@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/error_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -149,7 +150,7 @@ bool BackgroundInfo::LoadBackgroundPage(const Extension* extension,
   if (extension->is_hosted_app()) {
     background_url_ = GURL(background_str);
 
-    if (!extension->initial_api_permissions()->count(
+    if (!PermissionsData::GetInitialAPIPermissions(extension)->count(
             APIPermission::kBackground)) {
       *error = ASCIIToUTF16(errors::kBackgroundPermissionNeeded);
       return false;
