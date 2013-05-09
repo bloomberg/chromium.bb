@@ -29,6 +29,7 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <fcntl.h>
@@ -1812,6 +1813,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
 	find_and_parse_output_edid(ec, output, connector);
+	if (connector->connector_type == DRM_MODE_CONNECTOR_LVDS)
+		output->base.connection_internal = 1;
 
 	output->base.origin = output->base.current;
 	output->base.start_repaint_loop = drm_output_start_repaint_loop;

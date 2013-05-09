@@ -315,6 +315,13 @@ AC_MSG_NOTICE([Weston's native backend: $WESTON_NATIVE_BACKEND])
 AC_DEFINE_UNQUOTED([WESTON_NATIVE_BACKEND], ["$WESTON_NATIVE_BACKEND"],
 		   [The default backend to load, if not wayland nor x11.])
 
+PKG_CHECK_MODULES(LCMS, lcms2,
+                  [have_lcms=yes], [have_lcms=no])
+if test "x$have_lcms" = xyes; then
+       AC_DEFINE(HAVE_LCMS, 1, [Have lcms support])
+fi
+AM_CONDITIONAL(HAVE_LCMS, [test "x$have_lcms" = xyes])
+
 WAYLAND_SCANNER_RULES(['$(top_srcdir)/protocol'])
 
 AC_CONFIG_FILES([Makefile

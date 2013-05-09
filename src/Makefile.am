@@ -96,6 +96,7 @@ moduledir = $(libdir)/weston
 module_LTLIBRARIES =				\
 	$(desktop_shell)			\
 	$(tablet_shell)				\
+	$(cms_static)				\
 	$(x11_backend)				\
 	$(drm_backend)				\
 	$(wayland_backend)			\
@@ -251,6 +252,17 @@ tablet_shell_la_SOURCES =			\
 	tablet-shell.c				\
 	tablet-shell-protocol.c			\
 	tablet-shell-server-protocol.h
+endif
+
+if HAVE_LCMS
+cms_static = cms-static.la
+cms_static_la_LDFLAGS = -module -avoid-version
+cms_static_la_LIBADD = $(COMPOSITOR_LIBS) $(LCMS_LIBS) ../shared/libshared.la
+cms_static_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS) $(LCMS_CFLAGS)
+cms_static_la_SOURCES =				\
+	cms-static.c				\
+	cms-helper.c				\
+	cms-helper.h
 endif
 
 BUILT_SOURCES =					\

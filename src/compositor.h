@@ -200,6 +200,7 @@ struct weston_output {
 	void (*set_backlight)(struct weston_output *output, uint32_t value);
 	void (*set_dpms)(struct weston_output *output, enum dpms_enum level);
 
+	int connection_internal;
 	uint16_t gamma_size;
 	void (*set_gamma)(struct weston_output *output,
 			  uint16_t size,
