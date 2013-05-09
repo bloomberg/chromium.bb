@@ -74,25 +74,8 @@ class DeprecatedPort(object):
             args = '--makeargs="%s"' % os.environ['MAKEFLAGS']
         return args
 
-    def update_webkit_command(self, non_interactive=False):
-        return self.script_shell_command("update-webkit")
-
     def check_webkit_style_command(self):
         return self.script_shell_command("check-webkit-style")
-
-    def prepare_changelog_command(self):
-        return self.script_shell_command("prepare-ChangeLog")
-
-    def build_webkit_command(self, build_style=None):
-        command = self.script_shell_command("build-webkit")
-        if build_style == "debug":
-            command.append("--debug")
-        if build_style == "release":
-            command.append("--release")
-        return command
-
-    def run_javascriptcore_tests_command(self):
-        return self.script_shell_command("run-javascriptcore-tests")
 
     def run_webkit_unit_tests_command(self):
         return None
@@ -113,19 +96,6 @@ class DeprecatedPort(object):
 class ChromiumPort(DeprecatedPort):
     port_flag_name = "chromium"
 
-    def update_webkit_command(self, non_interactive=False):
-        command = super(ChromiumPort, self).update_webkit_command(non_interactive=non_interactive)
-        command.append("--chromium")
-        if non_interactive:
-            command.append("--force-update")
-        return command
-
-    def build_webkit_command(self, build_style=None):
-        command = super(ChromiumPort, self).build_webkit_command(build_style=build_style)
-        command.append("--chromium")
-        command.append("--update-chromium")
-        return command
-
     def run_webkit_tests_command(self):
         # Note: This could be run-webkit-tests now.
         command = self.script_shell_command("new-run-webkit-tests")
@@ -136,22 +106,9 @@ class ChromiumPort(DeprecatedPort):
     def run_webkit_unit_tests_command(self):
         return self.script_shell_command("run-chromium-webkit-unit-tests")
 
-    def run_javascriptcore_tests_command(self):
-        return None
-
 
 class ChromiumAndroidPort(ChromiumPort):
     port_flag_name = "chromium-android"
-
-    def update_webkit_command(self, non_interactive=False):
-        command = super(ChromiumAndroidPort, self).update_webkit_command(non_interactive=non_interactive)
-        command.append("--chromium-android")
-        return command
-
-    def build_webkit_command(self, build_style=None):
-        command = super(ChromiumAndroidPort, self).build_webkit_command(build_style=build_style)
-        command.append("--chromium-android")
-        return command
 
 
 class ChromiumXVFBPort(ChromiumPort):

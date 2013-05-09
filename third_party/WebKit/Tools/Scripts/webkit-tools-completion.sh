@@ -65,46 +65,9 @@ _webkit-patch_complete()
     esac
 
     if [ $COMP_CWORD -eq 1 ]; then
-        __webkit-patch_generate_reply "--help apply-from-bug bugs-to-commit commit-message land land-from-bug obsolete-attachments patches-to-commit post upload tree-status rollout reviewed-patches"
+        __webkit-patch_generate_reply "--help"
         return
     fi
-
-    case "$command" in
-        apply-from-bug)
-            __webkit-patch_generate_reply "--force-clean --local-commit --no-clean --no-update"
-            return
-            ;;
-        commit-message)
-            return
-            ;;
-        land)
-            __webkit-patch_generate_reply "--no-build --no-close --no-test --reviewer= -r"
-            return
-            ;;
-        land-from-bug)
-            __webkit-patch_generate_reply "--force-clean --no-build --no-clean --no-test"
-            return
-            ;;
-        obsolete-attachments)
-            return
-            ;;
-        post)
-            __webkit-patch_generate_reply "--description --no-obsolete --no-review --request-commit -m --open-bug"
-            return
-            ;;
-        upload)
-            if [[ ${COMP_WORDS[COMP_CWORD-1]} == "--cc" || ${COMP_WORDS[COMP_CWORD-1]} == "=" && ${COMP_WORDS[COMP_CWORD-2]} == "--cc" ]]; then
-                __webkit-patch_upload_cc_generate_reply
-                return
-            fi
-            __webkit-patch_generate_reply "--description --no-obsolete --no-review --request-commit --cc -m --open-bug"
-            return
-            ;;
-        post-commits)
-            __webkit-patch_generate_reply "--bug-id= --no-comment --no-obsolete --no-review -b"
-            return
-            ;;
-    esac
 }
 
 complete -F _webkit-patch_complete webkit-patch

@@ -34,23 +34,11 @@ class MockPort(object):
     def check_webkit_style_command(self):
         return ["mock-check-webkit-style"]
 
-    def update_webkit_command(self, non_interactive=False):
-        return ["mock-update-webkit"]
-
-    def build_webkit_command(self, build_style=None):
-        return ["mock-build-webkit"]
-
-    def prepare_changelog_command(self):
-        return ['mock-prepare-ChangeLog']
-
     def run_python_unittests_command(self):
         return ['mock-test-webkitpy']
 
     def run_perl_unittests_command(self):
         return ['mock-test-webkitperl']
-
-    def run_javascriptcore_tests_command(self):
-        return ['mock-run-javacriptcore-tests']
 
     def run_webkit_unit_tests_command(self):
         return ['mock-run-webkit-unit-tests']

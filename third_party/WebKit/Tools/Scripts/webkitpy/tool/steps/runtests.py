@@ -66,11 +66,6 @@ class RunTests(AbstractStep):
                 _log.info("Running Perl unit tests")
                 self._tool.executive.run_and_throw_if_fail(perl_unittests_command, cwd=self._tool.scm().checkout_root)
 
-            javascriptcore_tests_command = self._tool.deprecated_port().run_javascriptcore_tests_command()
-            if javascriptcore_tests_command:
-                _log.info("Running JavaScriptCore tests")
-                self._tool.executive.run_and_throw_if_fail(javascriptcore_tests_command, quiet=True, cwd=self._tool.scm().checkout_root)
-
         bindings_tests_command = self._tool.deprecated_port().run_bindings_tests_command()
         if bindings_tests_command:
             _log.info("Running bindings generation tests")

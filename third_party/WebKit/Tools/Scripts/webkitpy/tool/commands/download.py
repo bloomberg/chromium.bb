@@ -54,15 +54,6 @@ class Clean(AbstractSequencedCommand):
         options.force_clean = True
 
 
-class Update(AbstractSequencedCommand):
-    name = "update"
-    help_text = "Update working copy (used internally)"
-    steps = [
-        steps.DiscardLocalChanges,
-        steps.Update,
-    ]
-
-
 class CheckStyleLocal(AbstractSequencedCommand):
     name = "check-style-local"
     help_text = "Run check-webkit-style on the current working directory diff"
