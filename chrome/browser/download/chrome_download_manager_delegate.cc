@@ -101,6 +101,22 @@ base::FilePath GetPlatformDownloadPath(Profile* profile,
       drive_download_handler->IsDriveDownload(download))
     return drive_download_handler->GetTargetPath(download);
 #endif
+  // The caller wants to open the download or show it in a file browser. The
+  // download could be in one of three states:
+  // - Complete: The path we want is GetTargetFilePath().
+  // - Not complete, but there's an intermediate file: GetFullPath() will be
+  //     non-empty and is the location of the intermediate file. Since no target
+  //     file exits yet, use GetFullPath(). This should only happen during
+  //     ShowDownloadInShell().
+  // - Not Complete, and there's no intermediate file: GetFullPath() will be
+  //     empty. This shouldn't happen since CanShowInFolder() returns false and
+  //     this function shouldn't have been called.
+  if (download->IsComplete()) {
+    DCHECK(!download->GetTargetFilePath().empty());
+    return download->GetTargetFilePath();
+  }
+
+  DCHECK(!download->GetFullPath().empty());
   return download->GetFullPath();
 }
 
@@ -353,11 +369,16 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
 }
 
 void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
+  DCHECK(download->IsComplete());
+  if (!download->CanOpenDownload())
+    return;
   platform_util::OpenItem(GetPlatformDownloadPath(profile_, download));
 }
 
 void ChromeDownloadManagerDelegate::ShowDownloadInShell(
     DownloadItem* download) {
+  if (!download->CanShowInFolder())
+    return;
   platform_util::ShowItemInFolder(GetPlatformDownloadPath(profile_, download));
 }
 
@@ -373,10 +394,10 @@ void ChromeDownloadManagerDelegate::CheckForFileExistence(
     return;
   }
 #endif
-  BrowserThread::PostTaskAndReplyWithResult(BrowserThread::FILE, FROM_HERE,
-                                            base::Bind(&file_util::PathExists,
-                                                       download->GetFullPath()),
-                                            callback);
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&file_util::PathExists, download->GetTargetFilePath()),
+      callback);
 }
 
 void ChromeDownloadManagerDelegate::ClearLastDownloadPath() {

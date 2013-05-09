@@ -88,7 +88,7 @@ bool IsPersistedDriveDownload(const base::FilePath& drive_tmp_download_path,
                               DownloadItem* download) {
   // Persisted downloads are not in IN_PROGRESS state when created, while newly
   // created downloads are.
-  return drive_tmp_download_path.IsParent(download->GetFullPath()) &&
+  return drive_tmp_download_path.IsParent(download->GetTargetFilePath()) &&
       download->GetState() != DownloadItem::IN_PROGRESS;
 }
 

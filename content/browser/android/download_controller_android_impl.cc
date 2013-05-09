@@ -268,7 +268,7 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
   ScopedJavaLocalRef<jstring> jmime_type =
       ConvertUTF8ToJavaString(env, item->GetMimeType());
   ScopedJavaLocalRef<jstring> jpath =
-      ConvertUTF8ToJavaString(env, item->GetFullPath().value());
+      ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value());
 
   ScopedJavaLocalRef<jobject> view_core = GetContentViewCoreFromWebContents(
       item->GetWebContents());

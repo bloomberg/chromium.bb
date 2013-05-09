@@ -1381,9 +1381,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   GetDownloads(browser(), &download_items);
   ASSERT_EQ(1UL, download_items.size());
   ASSERT_EQ(base::FilePath(FILE_PATH_LITERAL("a_zip_file.zip")),
-            download_items[0]->GetFullPath().BaseName());
-  ASSERT_TRUE(file_util::PathExists(download_items[0]->GetFullPath()));
-  EXPECT_TRUE(VerifyFile(download_items[0]->GetFullPath(),
+            download_items[0]->GetTargetFilePath().BaseName());
+  ASSERT_TRUE(file_util::PathExists(download_items[0]->GetTargetFilePath()));
+  EXPECT_TRUE(VerifyFile(download_items[0]->GetTargetFilePath(),
                          original_contents, origin_file_size));
 
   // Setup an incognito window.
@@ -1410,9 +1410,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   GetDownloads(incognito, &download_items);
   ASSERT_EQ(1UL, download_items.size());
   ASSERT_EQ(base::FilePath(FILE_PATH_LITERAL("a_zip_file (1).zip")),
-            download_items[0]->GetFullPath().BaseName());
-  ASSERT_TRUE(file_util::PathExists(download_items[0]->GetFullPath()));
-  EXPECT_TRUE(VerifyFile(download_items[0]->GetFullPath(),
+            download_items[0]->GetTargetFilePath().BaseName());
+  ASSERT_TRUE(file_util::PathExists(download_items[0]->GetTargetFilePath()));
+  EXPECT_TRUE(VerifyFile(download_items[0]->GetTargetFilePath(),
                          original_contents, origin_file_size));
 }
 
@@ -1832,6 +1832,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_History) {
   ASSERT_EQ(1UL, downloads.size());
   DownloadItem* item = downloads[0];
   ASSERT_EQ(file.value(), item->GetFullPath().BaseName().value());
+  ASSERT_EQ(file.value(), item->GetTargetFilePath().BaseName().value());
   ASSERT_EQ(download_url, item->GetURL());
 }
 
@@ -2631,7 +2632,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
             download_items[0]->GetOriginalUrl());
 
   // Check that the file contains the expected referrer.
-  base::FilePath file(download_items[0]->GetFullPath());
+  base::FilePath file(download_items[0]->GetTargetFilePath());
   std::string expected_contents = test_server()->GetURL(std::string()).spec();
   ASSERT_TRUE(VerifyFile(file, expected_contents, expected_contents.length()));
 }
@@ -2724,13 +2725,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
     content::DownloadItem* item = manager->GetDownload(index);
     ASSERT_TRUE(item);
     ASSERT_TRUE(item->IsComplete());
-    base::FilePath full_path(item->GetFullPath());
+    base::FilePath target_path(item->GetTargetFilePath());
     EXPECT_EQ(std::string("a_zip_file") +
         (index == 0 ? std::string(".zip") :
                       base::StringPrintf(" (%d).zip", index)),
-              full_path.BaseName().AsUTF8Unsafe());
-    ASSERT_TRUE(file_util::PathExists(full_path));
-    ASSERT_TRUE(VerifyFile(full_path, origin_contents, origin_contents.size()));
+              target_path.BaseName().AsUTF8Unsafe());
+    ASSERT_TRUE(file_util::PathExists(target_path));
+    ASSERT_TRUE(VerifyFile(target_path, origin_contents,
+                           origin_contents.size()));
   }
 }
 
@@ -2796,7 +2798,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_CrazyFilenames) {
     EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
     GetDownloads(browser(), &download_items);
     ASSERT_EQ(1UL, download_items.size());
-    base::FilePath downloaded(download_items[0]->GetFullPath());
+    base::FilePath downloaded(download_items[0]->GetTargetFilePath());
     download_items[0]->Remove();
     download_items.clear();
     ASSERT_TRUE(CheckDownloadFullPaths(
@@ -2821,7 +2823,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Remove) {
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
   GetDownloads(browser(), &download_items);
   ASSERT_EQ(1UL, download_items.size());
-  base::FilePath downloaded(download_items[0]->GetFullPath());
+  base::FilePath downloaded(download_items[0]->GetTargetFilePath());
 
   // Remove the DownloadItem but not the file, then check that the file still
   // exists.
@@ -2912,17 +2914,18 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
   // Check that the file downloaded correctly.
-  ASSERT_TRUE(file_util::PathExists(download_items[0]->GetFullPath()));
+  ASSERT_TRUE(file_util::PathExists(download_items[0]->GetTargetFilePath()));
   int64 downloaded_size = 0;
   ASSERT_TRUE(file_util::GetFileSize(
-      download_items[0]->GetFullPath(), &downloaded_size));
+      download_items[0]->GetTargetFilePath(), &downloaded_size));
 #if defined(OS_WIN)
   ASSERT_EQ(1, downloaded_size);
 #else
   ASSERT_EQ(size + 1, downloaded_size);
 #endif
   ASSERT_TRUE(file_util::DieFileDie(file_path, false));
-  ASSERT_TRUE(file_util::DieFileDie(download_items[0]->GetFullPath(), false));
+  ASSERT_TRUE(file_util::DieFileDie(download_items[0]->GetTargetFilePath(),
+                                    false));
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_DenyDanger) {

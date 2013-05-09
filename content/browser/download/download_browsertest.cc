@@ -760,13 +760,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   // Verify that the files have the expected data and size.
   // |file1| should be full of '*'s, and |file2| should be the same as the
   // source file.
-  base::FilePath file1(download1->GetFullPath());
+  base::FilePath file1(download1->GetTargetFilePath());
   size_t file_size1 = URLRequestSlowDownloadJob::kFirstDownloadSize +
                       URLRequestSlowDownloadJob::kSecondDownloadSize;
   std::string expected_contents(file_size1, '*');
   ASSERT_TRUE(VerifyFile(file1, expected_contents, file_size1));
 
-  base::FilePath file2(download2->GetFullPath());
+  base::FilePath file2(download2->GetTargetFilePath());
   ASSERT_TRUE(file_util::ContentsEqual(
       file2, GetTestFilePath("download", "download-test.lib")));
 }

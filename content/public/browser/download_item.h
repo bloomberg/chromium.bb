@@ -201,7 +201,14 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // Full path to the downloaded or downloading file. This is the path to the
   // physical file, if one exists. It should be considered a hint; changes to
   // this value and renames of the file on disk are not atomic with each other.
-  // May be empty if the in-progress path hasn't been determined yet.
+  // May be empty if the in-progress path hasn't been determined yet or if the
+  // download was interrupted.
+  //
+  // DO NOT USE THIS METHOD to access the target path of the DownloadItem. Use
+  // GetTargetFilePath() instead. While the download is in progress, the
+  // intermediate file named by GetFullPath() may be renamed or disappear
+  // completely on the FILE thread. The path may also be reset to empty when the
+  // download is interrupted.
   virtual const base::FilePath& GetFullPath() const = 0;
 
   // Target path of an in-progress download. We may be downloading to a
