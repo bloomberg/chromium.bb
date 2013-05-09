@@ -164,7 +164,7 @@ bool PbufferImageTransportSurface::SetBackbufferAllocation(bool allocation) {
 
   DestroySurface();
 
-  if (backbuffer_suggested_allocation_)
+  if (backbuffer_suggested_allocation_ && visible_size_.GetArea() != 0)
     return Resize(visible_size_);
   else
     return Resize(gfx::Size(1, 1));
