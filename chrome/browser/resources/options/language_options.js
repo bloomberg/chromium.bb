@@ -71,6 +71,71 @@ cr.define('options', function() {
     spellcheckDictionaryDownloadFailures_: 0,
 
     /**
+     * The preference is a boolean that enables/disables spell checking.
+     * @type {string}
+     * @private
+     * @const
+     */
+    enableSpellCheckPref_: 'browser.enable_spellchecking',
+
+    /**
+     * The preference is a CSV string that describes preload engines
+     * (i.e. active input methods).
+     * @type {string}
+     * @private
+     * @const
+     */
+    preloadEnginesPref_: 'settings.language.preload_engines',
+
+    /**
+     * The list of preload engines, like ['mozc', 'pinyin'].
+     * @type {Array}
+     * @private
+     */
+    preloadEngines_: [],
+
+    /**
+     * The preference that lists the extension IMEs that are enabled in the
+     * language menu.
+     * @type {string}
+     * @private
+     * @const
+     */
+    enabledExtensionImePref_: 'settings.language.enabled_extension_imes',
+
+    /**
+     * The list of extension IMEs that are enabled out of the language menu.
+     * @type {Array}
+     * @private
+     */
+    enabledExtensionImes_: [],
+
+    /**
+     * The preference key that is a string that describes the spell check
+     * dictionary language, like "en-US".
+     * @type {string}
+     * @private
+     * @const
+     */
+    spellCheckDictionaryPref_: 'spellcheck.dictionary',
+
+    /**
+     * The preference is a string that describes the spell check dictionary
+     * language, like "en-US".
+     * @type {string}
+     * @private
+     */
+    spellCheckDictionary_: '',
+
+    /**
+     * The map of language code to input method IDs, like:
+     * {'ja': ['mozc', 'mozc-jp'], 'zh-CN': ['pinyin'], ...}
+     * @type {Object}
+     * @private
+     */
+    languageCodeToInputMethodIdsMap_: {},
+
+    /**
      * Initializes LanguageOptions page.
      * Calls base class implementation to start preference initialization.
      */
@@ -98,7 +163,7 @@ cr.define('options', function() {
         this.initializeInputMethodList_();
         this.initializeLanguageCodeToInputMethodIdsMap_();
       }
-      Preferences.getInstance().addEventListener(this.spellCheckDictionaryPref,
+      Preferences.getInstance().addEventListener(this.spellCheckDictionaryPref_,
           this.handleSpellCheckDictionaryPrefChange_.bind(this));
 
       // Set up add button.
@@ -157,7 +222,7 @@ cr.define('options', function() {
         // Handle spell check enable/disable.
         if (!cr.isMac) {
           Preferences.getInstance().addEventListener(
-              this.enableSpellCheckPref,
+              this.enableSpellCheckPref_,
               this.updateEnableSpellCheck_.bind(this));
         }
       }
@@ -180,26 +245,6 @@ cr.define('options', function() {
       $('language-confirm').onclick =
           OptionsPage.closeOverlay.bind(OptionsPage);
     },
-
-    // The preference is a boolean that enables/disables spell checking.
-    enableSpellCheckPref: 'browser.enable_spellchecking',
-    // The preference is a CSV string that describes preload engines
-    // (i.e. active input methods).
-    preloadEnginesPref: 'settings.language.preload_engines',
-    // The list of preload engines, like ['mozc', 'pinyin'].
-    preloadEngines_: [],
-    // The preference that lists the extension IMEs that are filtered out of
-    // the language menu.
-    filteredExtensionImesPref: 'settings.language.filtered_extension_imes',
-    // The list of extension IMEs that are filtered out of the language menu.
-    filteredExtensionImes_: [],
-    // The preference is a string that describes the spell check
-    // dictionary language, like "en-US".
-    spellCheckDictionaryPref: 'spellcheck.dictionary',
-    spellCheckDictionary_: '',
-    // The map of language code to input method IDs, like:
-    // {'ja': ['mozc', 'mozc-jp'], 'zh-CN': ['pinyin'], ...}
-    languageCodeToInputMethodIdsMap_: {},
 
     /**
      * Initializes the input method list.
@@ -237,11 +282,11 @@ cr.define('options', function() {
 
       // Listen to pref change once the input method list is initialized.
       Preferences.getInstance().addEventListener(
-          this.preloadEnginesPref,
+          this.preloadEnginesPref_,
           this.handlePreloadEnginesPrefChange_.bind(this));
       Preferences.getInstance().addEventListener(
-          this.filteredExtensionImesPref,
-          this.handleFilteredExtensionsPrefChange_.bind(this));
+          this.enabledExtensionImePref_,
+          this.handleEnabledExtensionsPrefChange_.bind(this));
     },
 
     /**
@@ -683,14 +728,14 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles filteredExtensionImesPref change.
+     * Handles enabledExtensionImePref change.
      * @param {Event} e Change event.
      * @private
      */
-    handleFilteredExtensionsPrefChange_: function(e) {
+    handleEnabledExtensionsPrefChange_: function(e) {
       var value = e.value.value;
-      this.filteredExtensionImes_ = value.split(',');
-      this.updateCheckboxesFromFilteredExtensions_();
+      this.enabledExtensionImes_ = value.split(',');
+      this.updateCheckboxesFromEnabledExtensions_();
     },
 
     /**
@@ -725,8 +770,8 @@ cr.define('options', function() {
      */
     handleExtensionCheckboxClick_: function(e) {
       var checkbox = e.target;
-      this.updateFilteredExtensionsFromCheckboxes_();
-      this.saveFilteredExtensionPref_();
+      this.updateEnabledExtensionsFromCheckboxes_();
+      this.saveEnabledExtensionPref_();
     },
 
     /**
@@ -818,7 +863,7 @@ cr.define('options', function() {
     handleSpellCheckLanguageButtonClick_: function(e) {
       var languageCode = e.target.languageCode;
       // Save the preference.
-      Preferences.setStringPref(this.spellCheckDictionaryPref,
+      Preferences.setStringPref(this.spellCheckDictionaryPref_,
                                 languageCode, true);
       chrome.send('spellCheckLanguageChange', [languageCode]);
     },
@@ -883,46 +928,46 @@ cr.define('options', function() {
     },
 
     /**
-     * Saves the filtered extension preference.
+     * Saves the enabled extension preference.
      * @private
      */
-    saveFilteredExtensionPref_: function() {
-      Preferences.setStringPref(this.filteredExtensionImesPref,
-                                this.filteredExtensionImes_.join(','), true);
+    saveEnabledExtensionPref_: function() {
+      Preferences.setStringPref(this.enabledExtensionImePref_,
+                                this.enabledExtensionImes_.join(','), true);
     },
 
     /**
-     * Updates the checkboxes in the input method list from the filtered
+     * Updates the checkboxes in the input method list from the enabled
      * extensions preference.
      * @private
      */
-    updateCheckboxesFromFilteredExtensions_: function() {
+    updateCheckboxesFromEnabledExtensions_: function() {
       // Convert the list into a dictonary for simpler lookup.
       var dictionary = {};
-      for (var i = 0; i < this.filteredExtensionImes_.length; i++)
-        dictionary[this.filteredExtensionImes_[i]] = true;
+      for (var i = 0; i < this.enabledExtensionImes_.length; i++)
+        dictionary[this.enabledExtensionImes_[i]] = true;
 
       var inputMethodList = $('language-options-input-method-list');
       var checkboxes = inputMethodList.querySelectorAll('input');
       for (var i = 0; i < checkboxes.length; i++) {
         if (checkboxes[i].inputMethodId.match(/^_ext_ime_/))
-          checkboxes[i].checked = !(checkboxes[i].inputMethodId in dictionary);
+          checkboxes[i].checked = (checkboxes[i].inputMethodId in dictionary);
       }
     },
 
     /**
-     * Updates the filtered extensions preference from the checkboxes in the
+     * Updates the enabled extensions preference from the checkboxes in the
      * input method list.
      * @private
      */
-    updateFilteredExtensionsFromCheckboxes_: function() {
-      this.filteredExtensionImes_ = [];
+    updateEnabledExtensionsFromCheckboxes_: function() {
+      this.enabledExtensionImes_ = [];
       var inputMethodList = $('language-options-input-method-list');
       var checkboxes = inputMethodList.querySelectorAll('input');
       for (var i = 0; i < checkboxes.length; i++) {
         if (checkboxes[i].inputMethodId.match(/^_ext_ime_/)) {
-          if (!checkboxes[i].checked)
-            this.filteredExtensionImes_.push(checkboxes[i].inputMethodId);
+          if (checkboxes[i].checked)
+            this.enabledExtensionImes_.push(checkboxes[i].inputMethodId);
         }
       }
     },
@@ -932,7 +977,7 @@ cr.define('options', function() {
      * @private
      */
     savePreloadEnginesPref_: function() {
-      Preferences.setStringPref(this.preloadEnginesPref,
+      Preferences.setStringPref(this.preloadEnginesPref_,
                                 this.preloadEngines_.join(','), true);
     },
 
@@ -989,7 +1034,7 @@ cr.define('options', function() {
         dictionary[list[i].id] = true;
       }
 
-      var filteredPreloadEngines = [];
+      var enabledPreloadEngines = [];
       var seen = {};
       for (var i = 0; i < preloadEngines.length; i++) {
         // Check if the preload engine is present in the
@@ -998,11 +1043,11 @@ cr.define('options', function() {
         // "_comp_" is the special prefix of its ID.
         if ((preloadEngines[i] in dictionary && !(preloadEngines[i] in seen)) ||
             /^_comp_/.test(preloadEngines[i])) {
-          filteredPreloadEngines.push(preloadEngines[i]);
+          enabledPreloadEngines.push(preloadEngines[i]);
           seen[preloadEngines[i]] = true;
         }
       }
-      return filteredPreloadEngines;
+      return enabledPreloadEngines;
     },
 
     // TODO(kochi): This is an adapted copy from new_tab.js.

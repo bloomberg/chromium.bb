@@ -80,7 +80,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   virtual void RemoveInputMethodExtension(const std::string& id) OVERRIDE;
   virtual void GetInputMethodExtensions(
       InputMethodDescriptors* result) OVERRIDE;
-  virtual void SetFilteredExtensionImes(std::vector<std::string>* ids) OVERRIDE;
+  virtual void SetEnabledExtensionImes(std::vector<std::string>* ids) OVERRIDE;
   virtual bool SwitchToNextInputMethod() OVERRIDE;
   virtual bool SwitchToPreviousInputMethod() OVERRIDE;
   virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) OVERRIDE;
@@ -171,8 +171,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   // The active input method ids cache.
   std::vector<std::string> active_input_method_ids_;
 
-  // The list of IMEs that are filtered from the IME list.
-  std::vector<std::string> filtered_extension_imes_;
+  // The list of enabled extension IMEs.
+  std::vector<std::string> enabled_extension_imes_;
 
   // For screen locker. When the screen is locked, |previous_input_method_|,
   // |current_input_method_|, and |active_input_method_ids_| above are copied

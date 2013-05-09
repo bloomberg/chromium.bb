@@ -978,6 +978,14 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
       layouts,
       "en-US",
       NULL);
+
+  // Extension IMEs are not enabled by default.
+  EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
+
+  std::vector<std::string> extension_ime_ids;
+  extension_ime_ids.push_back(
+      extension_ime_util::GetInputMethodID("deadbeef", "engine_id"));
+  manager_->SetEnabledExtensionImes(&extension_ime_ids);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
 
   // should be started.
@@ -996,6 +1004,11 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
       layouts,
       "en-US",
       NULL);
+  EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
+
+  extension_ime_ids.push_back(
+      extension_ime_util::GetInputMethodID("cafebabe", "engine_id"));
+  manager_->SetEnabledExtensionImes(&extension_ime_ids);
   EXPECT_EQ(3U, manager_->GetNumActiveInputMethods());
   {
     scoped_ptr<InputMethodDescriptors> methods(
@@ -1042,12 +1055,19 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
       layouts,
       "en-US",
       NULL);
-  EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
+  // Extension IME is not enabled by default.
+  EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(1, observer.input_method_changed_count_);
+
+  std::vector<std::string> extension_ime_ids;
+  extension_ime_ids.push_back(
+      extension_ime_util::GetInputMethodID("deadbeef", "engine_id"));
+  manager_->SetEnabledExtensionImes(&extension_ime_ids);
+  EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
 
   // Switch to the IME.
   manager_->SwitchToNextInputMethod();
-  EXPECT_EQ(2, observer.input_method_changed_count_);
+  EXPECT_EQ(3, observer.input_method_changed_count_);
   EXPECT_EQ(extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
             manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us(dvorak)", xkeyboard_->last_layout_);

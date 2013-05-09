@@ -138,8 +138,8 @@ class InputMethodManager {
   // Returns a list of descriptors for all Input Method Extensions.
   virtual void GetInputMethodExtensions(InputMethodDescriptors* result) = 0;
 
-  // Sets the list of extension IME ids which should not be enabled.
-  virtual void SetFilteredExtensionImes(std::vector<std::string>* ids) = 0;
+  // Sets the list of extension IME ids which should be enabled.
+  virtual void SetEnabledExtensionImes(std::vector<std::string>* ids) = 0;
 
   // Gets the descriptor of the input method which is currently selected.
   virtual InputMethodDescriptor GetCurrentInputMethod() const = 0;

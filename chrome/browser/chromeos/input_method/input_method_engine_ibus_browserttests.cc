@@ -135,6 +135,13 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   // component. Here, there is two engine, thus expectation is at least twice.
   EXPECT_LE(3, ibus_client->register_component_call_count());
 
+  // Extension IMEs are not enabled by default.
+  std::vector<std::string> extension_ime_ids;
+  extension_ime_ids.push_back(kIdentityIMEID);
+  extension_ime_ids.push_back(kToUpperIMEID);
+  extension_ime_ids.push_back(kEchoBackIMEID);
+  GetInputMethodManager()->SetEnabledExtensionImes(&extension_ime_ids);
+
   InputMethodDescriptors extension_imes;
   GetInputMethodManager()->GetInputMethodExtensions(&extension_imes);
 

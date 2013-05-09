@@ -98,7 +98,7 @@ void MockInputMethodManager::GetInputMethodExtensions(
     InputMethodDescriptors* result) {
 }
 
-void MockInputMethodManager::SetFilteredExtensionImes(
+void MockInputMethodManager::SetEnabledExtensionImes(
     std::vector<std::string>* ids) {
 }
 
