@@ -621,6 +621,7 @@ extern const char kDevToolsVSplitLocation[];
 #if defined(OS_ANDROID) || defined(OS_IOS)
 // Used by Chrome Mobile.
 extern const char kSpdyProxyAuthEnabled[];
+extern const char kSpdyProxyAuthWasEnabledBefore[];
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 extern const char kSigninAllowed[];
 extern const char kSyncLastSyncedTime[];

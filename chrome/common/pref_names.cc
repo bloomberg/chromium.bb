@@ -1768,6 +1768,7 @@ const char kDevToolsVSplitLocation[] = "devtools.v_split_location";
 #if defined(OS_ANDROID) || defined(OS_IOS)
 // A boolean specifying whether a SPDY proxy is enabled.
 const char kSpdyProxyAuthEnabled[] = "spdy_proxy.enabled";
+const char kSpdyProxyAuthWasEnabledBefore[] = "spdy_proxy.was_enabled_before";
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 // Boolean which stores if the user is allowed to signin to chrome.

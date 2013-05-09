@@ -134,6 +134,11 @@ void Profile::RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kSpdyProxyAuthEnabled,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kSpdyProxyAuthWasEnabledBefore,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
 
