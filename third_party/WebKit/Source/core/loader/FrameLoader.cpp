@@ -774,7 +774,7 @@ void FrameLoader::checkCallImplicitClose()
     m_frame->document()->implicitClose();
 }
 
-void FrameLoader::loadURLIntoChildFrame(const KURL& url, const String& referer, Frame* childFrame)
+void FrameLoader::loadURLIntoChildFrame(const ResourceRequest& request, Frame* childFrame)
 {
     ASSERT(childFrame);
 
@@ -789,8 +789,7 @@ void FrameLoader::loadURLIntoChildFrame(const KURL& url, const String& referer, 
             return;
         }
     }
-
-    childFrame->loader()->loadURL(url, referer, "_self", FrameLoadTypeInitialInChildFrame, 0, 0);
+    childFrame->loader()->loadURL(request, "_self", FrameLoadTypeInitialInChildFrame, 0, 0);
 }
 
 ObjectContentType FrameLoader::defaultObjectContentType(const KURL& url, const String& mimeTypeIn, bool shouldPreferPlugInsForImages)
@@ -1028,26 +1027,31 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBac
         return;
     }
 
-    String argsReferrer = request.resourceRequest().httpReferrer();
+    ResourceRequest resourceRequest(request.resourceRequest());
+    String argsReferrer = resourceRequest.httpReferrer();
     if (argsReferrer.isEmpty())
         argsReferrer = outgoingReferrer();
 
     String referrer = SecurityPolicy::generateReferrerHeader(m_frame->document()->referrerPolicy(), url, argsReferrer);
     if (shouldSendReferrer == NeverSendReferrer)
         referrer = String();
-    
+
+    if (!referrer.isEmpty()) {
+        resourceRequest.setHTTPReferrer(referrer);
+        RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
+        addHTTPOriginIfNeeded(resourceRequest, referrerOrigin->toString());
+    } else
+        resourceRequest.clearHTTPReferrer();
+
     FrameLoadType loadType;
-    if (request.resourceRequest().cachePolicy() == ReloadIgnoringCacheData)
+    if (resourceRequest.cachePolicy() == ReloadIgnoringCacheData)
         loadType = FrameLoadTypeReload;
     else if (lockBackForwardList || history()->currentItemShouldBeReplaced())
         loadType = FrameLoadTypeRedirectWithLockedBackForwardList;
     else
         loadType = FrameLoadTypeStandard;
 
-    if (request.resourceRequest().httpMethod() == "POST")
-        loadPostRequest(request.resourceRequest(), referrer, request.frameName(), loadType, event, formState.get());
-    else
-        loadURL(request.resourceRequest().url(), referrer, request.frameName(), loadType, event, formState.get());
+    loadURL(resourceRequest, request.frameName(), loadType, event, formState.get());
 
     // FIXME: It's possible this targetFrame will not be the same frame that was targeted by the actual
     // load if frame names have changed.
@@ -1061,26 +1065,18 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBac
     }
 }
 
-void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const String& frameName, FrameLoadType newLoadType,
-    PassRefPtr<Event> event, PassRefPtr<FormState> prpFormState)
+void FrameLoader::loadURL(const ResourceRequest& request, const String& frameName, FrameLoadType newLoadType,
+    PassRefPtr<Event> event, PassRefPtr<FormState> formState)
 {
     if (m_inStopAllLoaders)
         return;
 
-    RefPtr<FormState> formState = prpFormState;
     bool isFormSubmission = formState;
-    
-    ResourceRequest request(newURL);
-    if (!referrer.isEmpty()) {
-        request.setHTTPReferrer(referrer);
-        RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
-        addHTTPOriginIfNeeded(request, referrerOrigin->toString());
-    }
 
     // The search for a target frame is done earlier in the case of form submission.
     Frame* targetFrame = isFormSubmission ? 0 : findFrameForNavigation(frameName);
     if (targetFrame && targetFrame != m_frame) {
-        targetFrame->loader()->loadURL(newURL, referrer, "_self", newLoadType, event, formState.release());
+        targetFrame->loader()->loadURL(request, "_self", newLoadType, event, formState);
         return;
     }
 
@@ -1090,11 +1086,10 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
     NavigationAction action(request, newLoadType, isFormSubmission, event);
 
     if (!targetFrame && !frameName.isEmpty()) {
-        checkNewWindowPolicyAndContinue(formState.release(), frameName, action);
+        checkNewWindowPolicyAndContinue(formState, frameName, action);
         return;
     }
-
-    loadWithNavigationAction(request, action, newLoadType, formState.release(), defaultSubstituteDataForURL(request.url()));
+    loadWithNavigationAction(request, action, newLoadType, formState, defaultSubstituteDataForURL(request.url()));
 }
 
 SubstituteData FrameLoader::defaultSubstituteDataForURL(const KURL& url)
@@ -1939,40 +1934,6 @@ void FrameLoader::addHTTPOriginIfNeeded(ResourceRequest& request, const String& 
     }
 
     request.setHTTPOrigin(origin);
-}
-
-void FrameLoader::loadPostRequest(const ResourceRequest& inRequest, const String& referrer, const String& frameName, FrameLoadType loadType, PassRefPtr<Event> event, PassRefPtr<FormState> prpFormState)
-{
-    RefPtr<FormState> formState = prpFormState;
-
-    // Previously when this method was reached, the original FrameLoadRequest had been deconstructed to build a 
-    // bunch of parameters that would come in here and then be built back up to a ResourceRequest.  In case
-    // any caller depends on the immutability of the original ResourceRequest, I'm rebuilding a ResourceRequest
-    // from scratch as it did all along.
-    const KURL& url = inRequest.url();
-    RefPtr<FormData> formData = inRequest.httpBody();
-    const String& contentType = inRequest.httpContentType();
-    String origin = inRequest.httpOrigin();
-
-    ResourceRequest workingResourceRequest(url);    
-
-    if (!referrer.isEmpty())
-        workingResourceRequest.setHTTPReferrer(referrer);
-    workingResourceRequest.setHTTPOrigin(origin);
-    workingResourceRequest.setHTTPMethod("POST");
-    workingResourceRequest.setHTTPBody(formData);
-    workingResourceRequest.setHTTPContentType(contentType);
-
-    NavigationAction action(workingResourceRequest, loadType, true, event);
-
-    if (!frameName.isEmpty()) {
-        // The search for a target frame is done earlier in the case of form submission.
-        if (Frame* targetFrame = formState ? 0 : findFrameForNavigation(frameName))
-            targetFrame->loader()->loadWithNavigationAction(workingResourceRequest, action, loadType, formState.release(), defaultSubstituteDataForURL(workingResourceRequest.url()));
-        else
-            checkNewWindowPolicyAndContinue(formState.release(), frameName, action);
-    } else
-        loadWithNavigationAction(workingResourceRequest, action, loadType, formState.release(), defaultSubstituteDataForURL(workingResourceRequest.url()));
 }
 
 unsigned long FrameLoader::loadResourceSynchronously(const ResourceRequest& request, StoredCredentials storedCredentials, ResourceError& error, ResourceResponse& response, Vector<char>& data)
