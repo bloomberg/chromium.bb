@@ -137,31 +137,6 @@ def IsCQType(b_type):
 # List of usable cbuildbot configs; see add_config method.
 config = {}
 
-# pylint: disable=W0102
-def GetSlavesForMaster(master_config, configs=config):
-  """Gets the important builds corresponding to a master builder.
-
-  Given a master builder, find all corresponding slaves that
-  are important to me.  These are those builders that share the same
-  build_type and manifest_version url.
-  """
-  assert not master_config['unified_manifest_version']
-  assert master_config['manifest_version']
-  assert master_config['master']
-  builders = []
-  build_type = master_config['build_type']
-  branch_config = master_config['branch']
-  chrome_rev = master_config['chrome_rev']
-  for build_name, conf in configs.iteritems():
-    if (conf['important'] and conf['manifest_version'] and
-        not conf['unified_manifest_version'] and
-        conf['build_type'] == build_type and
-        conf['chrome_rev'] == chrome_rev and
-        conf['branch'] == branch_config):
-      builders.append(build_name)
-
-  return builders
-
 
 # pylint: disable=W0102
 def GetCanariesForChromeLKGM(configs=config):
@@ -384,11 +359,6 @@ _settings = dict(
 #                     per-build manifests.
   manifest_version=False,
 
-# TODO(sosa): Merge with overlays == both once unified waterfall launched.
-# unified_manifest_version -- If True, publish manifests to both manifest
-# version repositories.
-  unified_manifest_version=False,
-
 # use_lkgm -- Use the Last Known Good Manifest blessed by Paladin.
   use_lkgm=False,
 
@@ -399,8 +369,9 @@ _settings = dict(
 # True if this build config is critical for the chrome_lkgm decision.
   critical_for_chrome=False,
 
-# prebuilts -- Upload prebuilts for this build.
-  prebuilts=True,
+# prebuilts -- Upload prebuilts for this build. Valid values are PUBLIC,
+#              PRIVATE, or False.
+  prebuilts=False,
 
 # use_sdk -- Use SDK as opposed to building the chroot from source.
   use_sdk=True,
@@ -662,6 +633,11 @@ full = _config(
   description='Full Builds',
 )
 
+# Full builders with prebuilts.
+full_prebuilts = full.derive(
+  prebuilts=constants.PUBLIC,
+)
+
 pfq = _config(
   build_type=constants.PFQ_TYPE,
   important=True,
@@ -673,10 +649,9 @@ pfq = _config(
 
 paladin = _config(
   important=True,
-  unified_manifest_version=True,
   build_type=constants.PALADIN_TYPE,
   overlays=constants.PUBLIC_OVERLAYS,
-  prebuilts=True,
+  prebuilts=constants.PUBLIC,
   manifest_version=True,
   trybot_list=True,
   description='Commit Queue',
@@ -687,7 +662,6 @@ incremental = _config(
   build_type=constants.INCREMENTAL_TYPE,
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
-  prebuilts=False,
   description='Incremental Builds',
 )
 
@@ -704,10 +678,9 @@ official = _config(
   useflags=[constants.USE_CHROME_INTERNAL, constants.USE_CHROME_PDF,
             '-highdpi'],
   chromeos_official=True,
-  prebuilts=False,
 )
 
-_cros_sdk = full.add_config('chromiumos-sdk',
+_cros_sdk = full_prebuilts.add_config('chromiumos-sdk',
   # The amd64-host has to be last as that is when the toolchains
   # are bundled up for inclusion in the sdk.
   boards=('x86-generic', 'arm-generic', 'amd64-generic'),
@@ -787,6 +760,7 @@ chromium_pfq = _config(
 internal_chromium_pfq = internal.derive(
   chromium_pfq,
   description='Preflight Chromium Build (internal)',
+  prebuilts=constants.PUBLIC,
 )
 
 internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
@@ -811,6 +785,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   overlays=constants.BOTH_OVERLAYS,
   description='Preflight Chrome build (internal)',
   upload_hw_test_artifacts=True,
+  prebuilts=False,
 )
 
 chrome_pfq.add_config('alex-chrome-pfq',
@@ -907,7 +882,7 @@ chromium_info_daisy.add_config('daisy-webrtc-chrome-pfq-informational',
 )
 
 arm_generic_full = \
-full.add_config('arm-generic-full', arm,
+full_prebuilts.add_config('arm-generic-full', arm,
   boards=['arm-generic'],
 )
 
@@ -916,7 +891,7 @@ arm_generic_full.add_config('daisy-full',
 )
 
 x86_generic_full = \
-full.add_config('x86-generic-full',
+full_prebuilts.add_config('x86-generic-full',
   boards=['x86-generic'],
   upload_hw_test_artifacts=True,
 )
@@ -925,35 +900,37 @@ x86_generic_full.add_config('x86-pineview-full',
   boards=['x86-pineview'],
 )
 
-full.add_config('x86-mario-full',
+full_prebuilts.add_config('x86-mario-full',
   boards=['x86-mario'],
 )
 
-full.add_config('x86-alex-full',
+full_prebuilts.add_config('x86-alex-full',
   boards=['x86-alex'],
 )
 
-full.add_config('stumpy-full',
+full_prebuilts.add_config('stumpy-full',
   boards=['stumpy'],
 )
 
 _toolchain_major = _cros_sdk.add_config('toolchain-major',
   latest_toolchain=True,
+  prebuilts=False,
   gcc_githash='gcc.gnu.org/branches/google/main',
   description='Test next major toolchain revision',
 )
 
 _toolchain_minor = _cros_sdk.add_config('toolchain-minor',
   latest_toolchain=True,
+  prebuilts=False,
   gcc_githash='gcc.gnu.org/branches/google/gcc-4_8-mobile',
   description='Test next minor toolchain revision',
 )
 
-full.add_config('amd64-generic-full',
+full_prebuilts.add_config('amd64-generic-full',
   boards=['amd64-generic'],
 )
 
-full.add_config('x32-generic-full',
+full_prebuilts.add_config('x32-generic-full',
   boards=['x32-generic'],
 )
 
@@ -997,11 +974,15 @@ incremental_arm.add_config('beaglebone-incremental',
 # Internal Builds
 #
 
-internal_pfq = internal.derive(pfq, overlays=constants.BOTH_OVERLAYS)
+internal_pfq = internal.derive(pfq,
+  overlays=constants.BOTH_OVERLAYS,
+  prebuilts=constants.PRIVATE,
+)
 internal_pfq_branch = internal_pfq.derive(overlays=constants.BOTH_OVERLAYS,
                                           trybot_list=False, branch=True)
 internal_paladin = internal.derive(paladin,
   overlays=constants.BOTH_OVERLAYS,
+  prebuilts=constants.PRIVATE,
   vm_tests=None,
   description=paladin['description'] + ' (internal)',
 )
@@ -1265,7 +1246,6 @@ release_pgo.add_group('lumpy-release-pgo',
 _release.add_config('link-release',
   boards=['link'],
   useflags=official['useflags'] + ['highdpi'],
-  prebuilts=False,
 )
 
 _release.add_config('parrot-release',
@@ -1323,7 +1303,6 @@ _arm_release.add_config('peach_pit-release',
 # end in -factory or -firmware suffixes.
 
 _factory_release = _release.derive(
-  prebuilts=False,
   upload_hw_test_artifacts=False,
   upload_symbols=False,
   hw_tests=[],
@@ -1340,7 +1319,6 @@ _firmware = _config(
   unittests=False,
   vm_tests=None,
   hw_tests=[],
-  prebuilts=False,
   dev_installer_prebuilts=False,
   upload_hw_test_artifacts=False,
   upload_symbols=False,

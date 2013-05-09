@@ -777,8 +777,8 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
     self._InitializeRepo()
     ManifestVersionedSyncStage.manifest_manager = self._GetInitializedManager(
         self.internal)
-    if (self._build_config['unified_manifest_version'] and
-        self._build_config['master']):
+    if (self._build_config['master'] and
+        self._GetSlavesForMaster(self._build_config)):
       assert self.internal, 'Unified masters must use an internal checkout.'
       LKGMCandidateSyncStage.sub_manager = self._GetInitializedManager(False)
 
@@ -800,9 +800,7 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
       manifest = self.manifest_manager.CreateNewCandidate()
       if LKGMCandidateSyncStage.sub_manager:
         LKGMCandidateSyncStage.sub_manager.CreateFromManifest(manifest)
-
       return manifest
-
     else:
       return self.manifest_manager.GetLatestCandidate()
 
@@ -958,20 +956,17 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       # Slaves only need to look at their own status.
       return ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
           [self._bot_id])
-    elif not LKGMCandidateSyncStage.sub_manager:
-      return ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
-          self._GetSlavesForMaster())
     else:
-      public_builders, private_builders = self._GetSlavesForUnifiedMaster()
-      statuses = {}
-      if public_builders:
-        statuses.update(
-          LKGMCandidateSyncStage.sub_manager.GetBuildersStatus(
-              public_builders))
-      if private_builders:
-        statuses.update(
-            ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
-                private_builders))
+      builders = self._GetSlavesForMaster(self._build_config)
+      manager = ManifestVersionedSyncStage.manifest_manager
+      sub_manager = LKGMCandidateSyncStage.sub_manager
+      if sub_manager:
+        public_builders = [b['name'] for b in builders if not b['internal']]
+        statuses = sub_manager.GetBuildersStatus(public_builders)
+        private_builders = [b['name'] for b in builders if b['internal']]
+        statuses.update(manager.GetBuildersStatus(private_builders))
+      else:
+        statuses = manager.GetBuildersStatus([b['name'] for b in builders])
       return statuses
 
   def _AbortCQHWTests(self):
@@ -2362,74 +2357,59 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
     board = self._current_board
     binhosts = []
 
+    # Whether we publish public prebuilts.
+    public = (self._build_config['prebuilts'] == constants.PUBLIC)
     # Common args we generate for all types of builds.
     generated_args = self.GenerateCommonArgs()
-    # Args we specifically add for public build types.
-    public_args = []
-    # Args we specifically add for private build types.
-    private_args = []
-
-    private_bucket = self._build_config['overlays'] in (
-        constants.PRIVATE_OVERLAYS, constants.BOTH_OVERLAYS)
+    # Args we specifically add for public/private build types.
+    public_args, private_args = [], []
+    # Public / private builders.
+    public_builders, private_builders = [], []
 
     # Distributed builders that use manifest-versions to sync with one another
     # share prebuilt logic by passing around versions.
-    unified_master = False
     if cbuildbot_config.IsPFQType(prebuilt_type):
-      # The master builder updates all the binhost conf files, and needs to do
-      # so only once so as to ensure it doesn't try to update the same file
-      # more than once. As multiple boards can be built on the same builder,
-      # we arbitrarily decided to update the binhost conf files when we run
-      # upload_prebuilts for the last board. The other boards are treated as
-      # slave boards.
-      if self._build_config['master'] and board == self._boards[-1]:
-        unified_master = self._build_config['unified_manifest_version']
-        generated_args.append('--sync-binhost-conf')
-        # Difference here is that unified masters upload for both
-        # public/private builders which have slightly different rules.
-        if not unified_master:
-          for builder in self._GetSlavesForMaster():
-            generated_args.extend(self._AddOptionsForSlave(builder, board))
-        else:
-          public_builders, private_builders = \
-              self._GetSlavesForUnifiedMaster()
-          for builder in public_builders:
-            public_args.extend(self._AddOptionsForSlave(builder, board))
-
-          for builder in private_builders:
-            private_args.extend(self._AddOptionsForSlave(builder, board))
-
       # Public pfqs should upload host preflight prebuilts.
-      if (cbuildbot_config.IsPFQType(prebuilt_type)
-          and prebuilt_type != constants.CHROME_PFQ_TYPE):
+      if prebuilt_type != constants.CHROME_PFQ_TYPE:
         public_args.append('--sync-host')
 
       # Deduplicate against previous binhosts.
       binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, board).split())
       binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, None).split())
-      for binhost in binhosts:
-        if binhost:
-          generated_args.extend(['--previous-binhost-url', binhost])
+      for binhost in filter(None, binhosts):
+        generated_args.extend(['--previous-binhost-url', binhost])
 
-    if unified_master:
-      # Upload the public/private prebuilts sequentially for unified master.
-      # We set board to None as the unified master is always internal.
+      if self._build_config['master'] and board == self._boards[-1]:
+        # The master builder updates all the binhost conf files, and needs to do
+        # so only once so as to ensure it doesn't try to update the same file
+        # more than once. As multiple boards can be built on the same builder,
+        # we arbitrarily decided to update the binhost conf files when we run
+        # upload_prebuilts for the last board. The other boards are treated as
+        # slave boards.
+        generated_args.append('--sync-binhost-conf')
+        for c in self._GetSlavesForMaster(self._build_config):
+          if c['prebuilts'] == constants.PUBLIC:
+            public_builders.append(c['name'])
+            public_args.extend(self._AddOptionsForSlave(c['name'], board))
+          elif c['prebuilts'] == constants.PRIVATE:
+            private_builders.append(c['name'])
+            private_args.extend(self._AddOptionsForSlave(c['name'], board))
+
+    # Upload the public prebuilts, if any.
+    if public_builders or public:
+      public_board = board if public else None
       commands.UploadPrebuilts(
           category=prebuilt_type, chrome_rev=self._chrome_rev,
-          private_bucket=False, buildroot=self._build_root, board=None,
-          extra_args=generated_args + public_args)
+          private_bucket=False, buildroot=self._build_root,
+          board=public_board, extra_args=generated_args + public_args)
+
+    # Upload the private prebuilts, if any.
+    if private_builders or not public:
+      private_board = board if not public else None
       commands.UploadPrebuilts(
           category=prebuilt_type, chrome_rev=self._chrome_rev,
-          private_bucket=True, buildroot=self._build_root, board=board,
+          private_bucket=True, buildroot=self._build_root, board=private_board,
           extra_args=generated_args + private_args)
-    else:
-      # Upload prebuilts for all other types of builders.
-      extra_args = private_args if private_bucket else public_args
-      commands.UploadPrebuilts(
-          category=prebuilt_type, chrome_rev=self._chrome_rev,
-          private_bucket=private_bucket,
-          buildroot=self._build_root, board=board,
-          extra_args=generated_args + extra_args)
 
 
 class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):

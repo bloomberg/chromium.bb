@@ -13,6 +13,7 @@ import sys
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
+from chromite.buildbot import builderstage
 from chromite.buildbot import cbuildbot_config
 from chromite.lib import cros_test_lib
 from chromite.lib import git
@@ -107,7 +108,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
       overlays = config['overlays']
       push_overlays = config['push_overlays']
       if (overlays and push_overlays and config['uprev'] and config['master']
-          and not config['branch'] and not config['unified_manifest_version']):
+          and not config['branch']):
         other_master = masters.get(push_overlays)
         err_msg = 'Found two masters for push_overlays=%s: %s and %s'
         self.assertFalse(other_master,
@@ -217,18 +218,26 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     for build_name, config in cbuildbot_config.config.iteritems():
       error = 'Unified config for %s has invalid values' % build_name
       # Unified masters must be internal and must rev both overlays.
-      if config['unified_manifest_version'] and config['master']:
+      if config['master']:
         self.assertTrue(
             config['internal'] and config['manifest_version'], error)
-        self.assertEqual(config['overlays'], constants.BOTH_OVERLAYS)
-      elif config['unified_manifest_version'] and not config['master']:
+      elif not config['master'] and config['manifest_version']:
         # Unified slaves can rev either public or both depending on whether
         # they are internal or not.
-        self.assertTrue(config['manifest_version'], error)
-        if config['internal']:
-          self.assertEqual(config['overlays'], constants.BOTH_OVERLAYS, error)
-        else:
+        if not config['internal']:
           self.assertEqual(config['overlays'], constants.PUBLIC_OVERLAYS, error)
+        elif cbuildbot_config.IsCQType(config['build_type']):
+          self.assertEqual(config['overlays'], constants.BOTH_OVERLAYS, error)
+
+  def testGetSlaves(self):
+    """Make sure every master has a sane list of slaves"""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if config['master']:
+        configs = builderstage.BuilderStage._GetSlavesForMaster(config)
+        self.assertEqual(
+            len(map(repr, configs)), len(set(map(repr, configs))),
+            'Duplicate board in slaves of %s will cause upload prebuilts'
+            ' failures' % build_name)
 
   def testFactoryFirmwareValidity(self):
     """Ensures that firmware/factory branches have at least 1 valid name."""
@@ -333,16 +342,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
           '%s did not match any types in %s' %
           (config_name, 'cbuildbot_config.CONFIG_TYPE_DUMP_ORDER'))
 
-  def testGetSlaves(self):
-    """Make sure every master has a sane list of slaves"""
-    for build_name, config in cbuildbot_config.config.iteritems():
-      if config['master'] and not config['unified_manifest_version']:
-        slaves = cbuildbot_config.GetSlavesForMaster(config)
-        self.assertEqual(
-            len(slaves), len(set(slaves)),
-            'Duplicate board in slaves of %s will cause upload prebuilts'
-            ' failures' % build_name)
-
   def testCantBeBothTypesOfLKGM(self):
     """Using lkgm and chrome_lkgm doesn't make sense."""
     for config in cbuildbot_config.config.values():
@@ -360,6 +359,20 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     """Using pgo_generate and pgo_use together doesn't work."""
     for config in cbuildbot_config.config.values():
       self.assertFalse(config['pgo_use'] and config['pgo_generate'])
+
+  def testValidPrebuilts(self):
+    """Verify all builders have valid prebuilt values."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      msg = 'Config %s: has unexpected prebuilts value.' % build_name
+      valid_values = (False, constants.PRIVATE, constants.PUBLIC)
+      self.assertTrue(config['prebuilts'] in valid_values, msg)
+
+  def testInternalPrebuilts(self):
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if (config['internal'] and
+          config['build_type'] != constants.CHROME_PFQ_TYPE):
+        msg = 'Config %s is internal but has public prebuilts.' % build_name
+        self.assertNotEqual(config['prebuilts'], constants.PUBLIC, msg)
 
 
 class FindFullTest(cros_test_lib.TestCase):

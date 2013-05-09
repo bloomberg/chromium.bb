@@ -232,9 +232,12 @@ SDK_VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
                                 'chromeos/binhost/host/sdk_version.conf')
 SDK_GS_BUCKET = 'chromiumos-sdk'
 
+PUBLIC = 'public'
+PRIVATE = 'private'
+
 BOTH_OVERLAYS = 'both'
-PUBLIC_OVERLAYS = 'public'
-PRIVATE_OVERLAYS = 'private'
+PUBLIC_OVERLAYS = PUBLIC
+PRIVATE_OVERLAYS = PRIVATE
 VALID_OVERLAYS = [BOTH_OVERLAYS, PUBLIC_OVERLAYS, PRIVATE_OVERLAYS, None]
 
 # Common default logging settings for use with the logging module.
