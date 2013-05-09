@@ -149,11 +149,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // access to the extension ID list before the ExtensionService is initialized.
   static ExtensionIdList GetExtensionsFrom(const PrefService* pref_service);
 
-  // Returns a copy of the Extensions prefs.
-  // TODO(erikkay) Remove this so that external consumers don't need to be
-  // aware of the internal structure of the preferences.
-  base::DictionaryValue* CopyCurrentExtensions();
-
   // Returns true if the specified external extension was uninstalled by the
   // user.
   bool IsExternalExtensionUninstalled(const std::string& id) const;
@@ -212,11 +207,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
       const std::string& extension_id,
       const std::string& pref_key,
       const base::DictionaryValue** out_value) const OVERRIDE;
-
-  // Getter and setter for browser action visibility.
-  bool GetBrowserActionVisibility(const Extension* extension);
-  void SetBrowserActionVisibility(const Extension* extension,
-     bool visible);
 
   // Did the extension ask to escalate its permission during an upgrade?
   bool DidExtensionEscalatePermissions(const std::string& id);

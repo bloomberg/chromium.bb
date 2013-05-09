@@ -451,42 +451,6 @@ class ExtensionPrefsAcknowledgment : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsAcknowledgment, Acknowledgment) {}
 
-// Tests force hiding browser actions.
-class ExtensionPrefsHidingBrowserActions : public ExtensionPrefsTest {
- public:
-  virtual void Initialize() OVERRIDE {
-    // Install 5 extensions.
-    for (int i = 0; i < 5; i++) {
-      std::string name = "test" + base::IntToString(i);
-      extensions_.push_back(prefs_.AddExtension(name));
-    }
-
-    ExtensionList::const_iterator iter;
-    for (iter = extensions_.begin(); iter != extensions_.end(); ++iter)
-      EXPECT_TRUE(prefs()->GetBrowserActionVisibility(*iter));
-
-    prefs()->SetBrowserActionVisibility(extensions_[0], false);
-    prefs()->SetBrowserActionVisibility(extensions_[1], true);
-  }
-
-  virtual void Verify() OVERRIDE {
-    // Make sure the one we hid is hidden.
-    EXPECT_FALSE(prefs()->GetBrowserActionVisibility(extensions_[0]));
-
-    // Make sure the other id's are not hidden.
-    ExtensionList::const_iterator iter = extensions_.begin() + 1;
-    for (; iter != extensions_.end(); ++iter) {
-      SCOPED_TRACE(base::StringPrintf("Loop %d ",
-                       static_cast<int>(iter - extensions_.begin())));
-      EXPECT_TRUE(prefs()->GetBrowserActionVisibility(*iter));
-    }
-  }
-
- private:
-  ExtensionList extensions_;
-};
-TEST_F(ExtensionPrefsHidingBrowserActions, ForceHide) {}
-
 // Tests the idle install information functions.
 class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
  public:

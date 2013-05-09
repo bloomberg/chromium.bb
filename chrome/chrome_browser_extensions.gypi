@@ -801,6 +801,7 @@
             ['include', '^browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.cc'],
             ['include', '^browser/extensions/api/declarative_webrequest/webrequest_constants.cc'],
             ['include', '^browser/extensions/api/declarative_webrequest/webrequest_rules_registry.cc'],
+            ['include', '^browser/extensions/api/extension_action/extension_action_api.cc'],
             ['include', '^browser/extensions/api/extension_action/extension_page_actions_api_constants.cc'],
             ['include', '^browser/extensions/api/file_handlers/app_file_handler_util.cc'],
             ['include', '^browser/extensions/api/location/location_manager.cc'],

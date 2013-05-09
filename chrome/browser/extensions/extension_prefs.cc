@@ -139,9 +139,6 @@ const char kPrefUserDraggedApp[] = "user_dragged_app_ntp";
 // A preference for storing extra data sent in update checks for an extension.
 const char kUpdateUrlData[] = "update_url_data";
 
-// Whether the browser action is visible in the toolbar.
-const char kBrowserActionVisible[] = "browser_action_visible";
-
 // Preferences that hold which permissions the user has granted the extension.
 // We explicitly keep track of these so that extensions can contain unknown
 // permissions, for backwards compatibility reasons, and we can still prompt
@@ -1360,32 +1357,6 @@ void ExtensionPrefs::SetExtensionState(const std::string& extension_id,
   bool enabled = (state == Extension::ENABLED);
   extension_pref_value_map_->SetExtensionState(extension_id, enabled);
   content_settings_store_->SetExtensionState(extension_id, enabled);
-}
-
-bool ExtensionPrefs::GetBrowserActionVisibility(const Extension* extension) {
-  const DictionaryValue* extension_prefs =
-      GetExtensionPref(extension->id());
-  if (!extension_prefs)
-    return true;
-
-  bool visible = false;
-  if (!extension_prefs->GetBoolean(kBrowserActionVisible, &visible))
-    return true;
-
-  return visible;
-}
-
-void ExtensionPrefs::SetBrowserActionVisibility(const Extension* extension,
-                                                bool visible) {
-  if (GetBrowserActionVisibility(extension) == visible)
-    return;
-
-  UpdateExtensionPref(extension->id(), kBrowserActionVisible,
-                        Value::CreateBooleanValue(visible));
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      content::Source<ExtensionPrefs>(this),
-      content::Details<const Extension>(extension));
 }
 
 std::string ExtensionPrefs::GetVersionString(const std::string& extension_id) {

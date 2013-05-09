@@ -21,12 +21,19 @@ class WebContents;
 }
 
 namespace extensions {
+class ExtensionPrefs;
 class TabHelper;
 
 class ExtensionActionAPI : public ProfileKeyedAPI {
  public:
   explicit ExtensionActionAPI(Profile* profile);
   virtual ~ExtensionActionAPI();
+
+  static bool GetBrowserActionVisibility(const ExtensionPrefs* prefs,
+                                         const std::string& extension_id);
+  static void SetBrowserActionVisibility(ExtensionPrefs* prefs,
+                                         const std::string& extension_id,
+                                         bool visible);
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<ExtensionActionAPI>* GetFactoryInstance();

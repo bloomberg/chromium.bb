@@ -18,6 +18,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
@@ -177,8 +178,8 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   else
     extension_data->SetInteger("order", 2);
 
-  if (!extension_service_->extension_prefs()->
-          GetBrowserActionVisibility(extension)) {
+  if (!extensions::ExtensionActionAPI::GetBrowserActionVisibility(
+          extension_service_->extension_prefs(), extension->id())) {
     extension_data->SetBoolean("enable_show_button", true);
   }
 
@@ -773,7 +774,8 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
       extension_service_->EnableExtension(extension_id);
 
       // Make sure any browser action contained within it is not hidden.
-      prefs->SetBrowserActionVisibility(extension, true);
+      extensions::ExtensionActionAPI::SetBrowserActionVisibility(
+          prefs, extension->id(), true);
     }
   } else {
     // Get managed user elevation for a specific extension id. The elevation
@@ -882,8 +884,8 @@ void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {
   const Extension* extension = GetActiveExtension(args);
   if (!extension)
     return;
-  extension_service_->extension_prefs()->
-      SetBrowserActionVisibility(extension, true);
+  extensions::ExtensionActionAPI::SetBrowserActionVisibility(
+      extension_service_->extension_prefs(), extension->id(), true);
 }
 
 void ExtensionSettingsHandler::HandleAutoUpdateMessage(const ListValue* args) {

@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -114,10 +115,11 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       ExtensionTabUtil::OpenOptionsPage(extension, browser_);
       break;
     case HIDE: {
-      ExtensionService* extension_service =
-          extensions::ExtensionSystem::Get(profile_)->extension_service();
-      extension_service->extension_prefs()->
-          SetBrowserActionVisibility(extension, false);
+      extensions::ExtensionActionAPI::SetBrowserActionVisibility(
+          extensions::ExtensionSystem::Get(profile_)->
+              extension_service()->extension_prefs(),
+          extension->id(),
+          false);
       break;
     }
     case UNINSTALL: {

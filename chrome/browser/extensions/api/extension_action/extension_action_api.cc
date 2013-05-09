@@ -44,6 +44,9 @@ const char kBadgeBackgroundColorStorageKey[] = "badge_background_color";
 const char kBadgeTextColorStorageKey[] = "badge_text_color";
 const char kAppearanceStorageKey[] = "appearance";
 
+// Whether the browser action is visible in the toolbar.
+const char kBrowserActionVisible[] = "browser_action_visible";
+
 // Errors.
 const char kNoExtensionActionError[] =
     "This extension has no action specified.";
@@ -225,6 +228,36 @@ ExtensionActionAPI::~ExtensionActionAPI() {
 ProfileKeyedAPIFactory<ExtensionActionAPI>*
 ExtensionActionAPI::GetFactoryInstance() {
   return &g_factory.Get();
+}
+
+// static
+bool ExtensionActionAPI::GetBrowserActionVisibility(
+    const ExtensionPrefs* prefs,
+    const std::string& extension_id) {
+  bool visible = false;
+  if (!prefs || !prefs->ReadPrefAsBoolean(extension_id,
+                                          kBrowserActionVisible,
+                                          &visible)) {
+    return true;
+  }
+  return visible;
+}
+
+// static
+void ExtensionActionAPI::SetBrowserActionVisibility(
+    ExtensionPrefs* prefs,
+    const std::string& extension_id,
+    bool visible) {
+  if (GetBrowserActionVisibility(prefs, extension_id) == visible)
+    return;
+
+  prefs->UpdateExtensionPref(extension_id,
+                             kBrowserActionVisible,
+                             Value::CreateBooleanValue(visible));
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+      content::Source<ExtensionPrefs>(prefs),
+      content::Details<const std::string>(&extension_id));
 }
 
 //

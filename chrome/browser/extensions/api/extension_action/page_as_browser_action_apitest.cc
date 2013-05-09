@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
@@ -60,9 +61,11 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
   ASSERT_FALSE(extension_action_manager()->GetPageAction(*extension));
 
   // With the "action box" there won't be browser actions unless they're pinned.
-  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service()->extension_prefs();
-  prefs->SetBrowserActionVisibility(extension, true);
+  ExtensionActionAPI::SetBrowserActionVisibility(
+      extensions::ExtensionSystem::Get(browser()->profile())->
+          extension_service()->extension_prefs(),
+      extension->id(),
+      true);
 
   // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());

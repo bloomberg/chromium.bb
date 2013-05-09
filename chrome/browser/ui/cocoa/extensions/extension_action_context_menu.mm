@@ -7,6 +7,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -214,10 +215,11 @@ enum {
       break;
     }
     case kExtensionContextHide: {
-      ExtensionService* extension_service = extensions::ExtensionSystem::Get(
-          browser_->profile())->extension_service();
-      extension_service->extension_prefs()->
-          SetBrowserActionVisibility(extension_, false);
+      extensions::ExtensionActionAPI::SetBrowserActionVisibility(
+          extensions::ExtensionSystem::Get(browser_->profile())->
+              extension_service()->extension_prefs(),
+          extension_->id(),
+          false);
       break;
     }
     case kExtensionContextManage: {

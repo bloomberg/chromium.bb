@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -182,6 +183,10 @@ void ExtensionToolbarModel::Observe(
   if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     extension = content::Details<extensions::UnloadedExtensionInfo>(
         details)->extension;
+  } else if (type ==
+      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED) {
+    extension = service_->GetExtensionById(
+        *content::Details<const std::string>(details).ptr(), true);
   } else {
     extension = content::Details<const Extension>(details).ptr();
   }
@@ -193,18 +198,22 @@ void ExtensionToolbarModel::Observe(
       if (toolbar_items_[i].get() == extension)
         return;  // Already exists.
     }
-    if (service_->extension_prefs()->GetBrowserActionVisibility(extension))
+    if (extensions::ExtensionActionAPI::GetBrowserActionVisibility(
+            service_->extension_prefs(), extension->id())) {
       AddExtension(extension);
+    }
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     RemoveExtension(extension);
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED) {
     UninstalledExtension(extension);
   } else if (type ==
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED) {
-    if (service_->extension_prefs()->GetBrowserActionVisibility(extension))
+    if (extensions::ExtensionActionAPI::GetBrowserActionVisibility(
+            service_->extension_prefs(), extension->id())) {
       AddExtension(extension);
-    else
+    } else {
       RemoveExtension(extension);
+    }
   } else {
     NOTREACHED() << "Received unexpected notification";
   }
@@ -328,8 +337,10 @@ void ExtensionToolbarModel::Populate(
     const Extension* extension = *it;
     if (!extension_action_manager->GetBrowserAction(*extension))
       continue;
-    if (!service_->extension_prefs()->GetBrowserActionVisibility(extension))
+    if (!extensions::ExtensionActionAPI::GetBrowserActionVisibility(
+            service_->extension_prefs(), extension->id())) {
       continue;
+    }
 
     extensions::ExtensionIdList::const_iterator pos =
         std::find(positions.begin(), positions.end(), extension->id());

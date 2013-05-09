@@ -13,6 +13,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_api_factory.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -590,7 +591,8 @@ bool DeveloperPrivateEnableFunction::RunImpl() {
       service->EnableExtension(extension_id);
 
       // Make sure any browser action contained within it is not hidden.
-      prefs->SetBrowserActionVisibility(extension, true);
+      ExtensionActionAPI::SetBrowserActionVisibility(
+          prefs, extension->id(), true);
     }
   } else {
     service->DisableExtension(extension_id, Extension::DISABLE_USER_ACTION);
