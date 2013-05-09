@@ -35,8 +35,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // BrowserViewRenderer overrides
   virtual void SetContents(
       content::ContentViewCore* content_view_core) OVERRIDE;
+  virtual bool PrepareDrawGL(int x, int y) OVERRIDE;
   virtual void DrawGL(AwDrawGLInfo* draw_info) OVERRIDE;
-  virtual void SetScrollForHWFrame(int x, int y) OVERRIDE;
   virtual bool DrawSW(jobject java_canvas,
                       const gfx::Rect& clip_bounds) OVERRIDE;
   virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture() OVERRIDE;
@@ -74,10 +74,15 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // When true, we should continuously invalidate and keep drawing, for example
   // to drive animation.
   bool continuous_invalidate_;
+  int width_, height_;  // TODO(boliu): Use these?
+
+  bool attached_to_window_;
+  bool hardware_initialized_;
+  bool hardware_failed_;
 
   // Used only for detecting Android View System context changes.
   // Not to be used between draw calls.
-  EGLContext last_frame_context_;
+  EGLContext egl_context_at_init_;
 
   // Last View scroll before hardware rendering is triggered.
   gfx::Point hw_rendering_scroll_;

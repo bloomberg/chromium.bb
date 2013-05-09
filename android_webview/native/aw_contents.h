@@ -101,8 +101,8 @@ class AwContents : public FindHelper::Listener,
               jint clip_y,
               jint clip_w,
               jint clip_h);
-  void SetScrollForHWFrame(JNIEnv* env, jobject obj,
-                           int scroll_x, int scroll_y);
+  bool PrepareDrawGL(JNIEnv* env, jobject obj,
+                     int scroll_x, int scroll_y);
   jint GetAwDrawGLViewContext(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jobject> CapturePicture(JNIEnv* env,
                                                             jobject obj);
@@ -137,6 +137,7 @@ class AwContents : public FindHelper::Listener,
   virtual void OnPageScaleFactorChanged(float page_scale_factor) OVERRIDE;
 
   // BrowserViewRenderer::Client implementation.
+  virtual void RequestProcessMode() OVERRIDE;
   virtual void Invalidate() OVERRIDE;
   virtual void OnNewPicture() OVERRIDE;
   virtual gfx::Point GetLocationOnScreen() OVERRIDE;

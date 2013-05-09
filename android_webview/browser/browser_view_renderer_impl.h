@@ -48,8 +48,8 @@ class BrowserViewRendererImpl
   // BrowserViewRenderer implementation.
   virtual void SetContents(
       content::ContentViewCore* content_view_core) OVERRIDE;
+  virtual bool PrepareDrawGL(int x, int y) OVERRIDE;
   virtual void DrawGL(AwDrawGLInfo* draw_info) OVERRIDE;
-  virtual void SetScrollForHWFrame(int x, int y) OVERRIDE;
   virtual bool DrawSW(jobject java_canvas, const gfx::Rect& clip) OVERRIDE;
   virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture() OVERRIDE;
   virtual void EnableOnNewPicture(bool enabled) OVERRIDE;

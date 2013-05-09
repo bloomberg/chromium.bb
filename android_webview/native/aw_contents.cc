@@ -467,6 +467,13 @@ void AwContents::OnReceivedTouchIconUrl(const std::string& url,
       env, obj.obj(), ConvertUTF8ToJavaString(env, url).obj(), precomposed);
 }
 
+void AwContents::RequestProcessMode() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (!obj.is_null())
+    Java_AwContents_requestProcessMode(env, obj.obj());
+}
+
 void AwContents::Invalidate() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
@@ -600,9 +607,9 @@ bool AwContents::DrawSW(JNIEnv* env,
       canvas, gfx::Rect(clip_x, clip_y, clip_w, clip_h));
 }
 
-void AwContents::SetScrollForHWFrame(JNIEnv* env, jobject obj,
-                                     int scroll_x, int scroll_y) {
-  browser_view_renderer_->SetScrollForHWFrame(scroll_x, scroll_y);
+bool AwContents::PrepareDrawGL(JNIEnv* env, jobject obj,
+                               int scroll_x, int scroll_y) {
+  return browser_view_renderer_->PrepareDrawGL(scroll_x, scroll_y);
 }
 
 void AwContents::SetPendingWebContentsForPopup(

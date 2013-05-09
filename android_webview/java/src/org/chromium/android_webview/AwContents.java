@@ -457,19 +457,11 @@ public class AwContents {
         return nativeGetAwDrawGLViewContext(mNativeAwContents);
     }
 
-    // TODO(michaelbai) : Remove this method once it is not called.
-    public boolean onPrepareDrawGL(Canvas canvas) {
-        if (mNativeAwContents == 0) return false;
-        nativeSetScrollForHWFrame(mNativeAwContents,
-                mContainerView.getScrollX(), mContainerView.getScrollY());
-
-        // returning false will cause a fallback to SW path.
-        return true;
-    }
-
     public void onDraw(Canvas canvas) {
         if (mNativeAwContents == 0) return;
-        if (canvas.isHardwareAccelerated() && onPrepareDrawGL(canvas) &&
+        if (canvas.isHardwareAccelerated() &&
+                nativePrepareDrawGL(mNativeAwContents,
+                        mContainerView.getScrollX(), mContainerView.getScrollY()) &&
                 mInternalAccessAdapter.requestDrawGL(canvas)) {
             return;
         }
@@ -1351,6 +1343,11 @@ public class AwContents {
     }
 
     @CalledByNative
+    private void requestProcessMode() {
+        mInternalAccessAdapter.requestDrawGL(null);
+    }
+
+    @CalledByNative
     private void invalidate() {
         mContainerView.invalidate();
     }
@@ -1450,7 +1447,7 @@ public class AwContents {
 
     private native void nativeAddVisitedLinks(int nativeAwContents, String[] visitedLinks);
 
-    private native void nativeSetScrollForHWFrame(int nativeAwContents, int scrollX, int scrollY);
+    private native boolean nativePrepareDrawGL(int nativeAwContents, int scrollX, int scrollY);
     private native void nativeFindAllAsync(int nativeAwContents, String searchString);
     private native void nativeFindNext(int nativeAwContents, boolean forward);
     private native void nativeClearMatches(int nativeAwContents);

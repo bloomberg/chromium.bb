@@ -215,6 +215,11 @@ void BrowserViewRendererImpl::WebContentsGone() {
   web_contents_ = NULL;
 }
 
+bool BrowserViewRendererImpl::PrepareDrawGL(int x, int y) {
+  hw_rendering_scroll_ = gfx::Point(x, y);
+  return true;
+}
+
 void BrowserViewRendererImpl::DrawGL(AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "BrowserViewRendererImpl::DrawGL");
 
@@ -305,10 +310,6 @@ void BrowserViewRendererImpl::DrawGL(AwDrawGLInfo* draw_info) {
   // Not setting them leads to graphical artifacts that can affect other apps.
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void BrowserViewRendererImpl::SetScrollForHWFrame(int x, int y) {
-  hw_rendering_scroll_ = gfx::Point(x, y);
 }
 
 bool BrowserViewRendererImpl::DrawSW(jobject java_canvas,

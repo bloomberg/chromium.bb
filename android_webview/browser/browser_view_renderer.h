@@ -27,18 +27,22 @@ class BrowserViewRenderer {
  public:
   class Client {
    public:
-     // Called to trigger view invalidations.
-     virtual void Invalidate() = 0;
+    // Request DrawGL be called with AwDrawGLInfo::kModeProcess. The callback
+    // may never be made, and the mode may be promoted to kModeDraw.
+    virtual void RequestProcessMode() = 0;
 
-     // Called when a new Picture is available. Needs to be enabled
-     // via the EnableOnNewPicture method.
-     virtual void OnNewPicture() = 0;
+    // Called when a new Picture is available. Needs to be enabled
+    // via the EnableOnNewPicture method.
+    virtual void OnNewPicture() = 0;
 
-     // Called to get view's absolute location on the screen.
-     virtual gfx::Point GetLocationOnScreen() = 0;
+    // Called to trigger view invalidations.
+    virtual void Invalidate() = 0;
+
+    // Called to get view's absolute location on the screen.
+    virtual gfx::Point GetLocationOnScreen() = 0;
 
    protected:
-     virtual ~Client() {}
+    virtual ~Client() {}
   };
 
   // Delegate to perform rendering actions involving Java objects.
@@ -69,8 +73,8 @@ class BrowserViewRenderer {
   virtual void SetContents(content::ContentViewCore* content_view_core) = 0;
 
   // Hardware rendering methods.
+  virtual bool PrepareDrawGL(int x, int y) = 0;
   virtual void DrawGL(AwDrawGLInfo* draw_info) = 0;
-  virtual void SetScrollForHWFrame(int x, int y) = 0;
 
   // Software rendering methods.
   virtual bool DrawSW(jobject java_canvas, const gfx::Rect& clip_bounds) = 0;

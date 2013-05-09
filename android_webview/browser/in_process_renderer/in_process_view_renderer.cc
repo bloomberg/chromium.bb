@@ -48,7 +48,12 @@ InProcessViewRenderer::InProcessViewRenderer(
       view_visible_(false),
       inside_draw_(false),
       continuous_invalidate_(false),
-      last_frame_context_(NULL) {
+      width_(0),
+      height_(0),
+      attached_to_window_(false),
+      hardware_initialized_(false),
+      hardware_failed_(false),
+      egl_context_at_init_(NULL) {
 }
 
 InProcessViewRenderer::~InProcessViewRenderer() {
@@ -79,10 +84,12 @@ void InProcessViewRenderer::BindSynchronousCompositor(
   if (compositor_)
     compositor_->SetClient(NULL);
   compositor_ = compositor;
+  hardware_initialized_ = false;
+  hardware_failed_ = false;
   compositor_->SetClient(this);
 
-  // TODO(boliu): If attached to window, ask java_helper_ to request
-  // GL Initialization.
+  if (attached_to_window_)
+    client_->RequestProcessMode();
 }
 
 void InProcessViewRenderer::SetContents(
@@ -108,9 +115,14 @@ bool InProcessViewRenderer::RenderPicture(SkCanvas* canvas) {
   return compositor_ && compositor_->DemandDrawSw(canvas);
 }
 
+bool InProcessViewRenderer::PrepareDrawGL(int x, int y) {
+  // No harm in updating |hw_rendering_scroll_| even if we return false.
+  hw_rendering_scroll_ = gfx::Point(x, y);
+  return attached_to_window_ && compositor_ && !hardware_failed_;
+}
+
 void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   DCHECK(view_visible_);
-  DCHECK_EQ(draw_info->mode, AwDrawGLInfo::kModeDraw);
 
   // We need to watch if the current Android context has changed and enforce
   // a clean-up in the compositor.
@@ -120,8 +132,16 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     return;
   }
 
-  if (last_frame_context_ != current_context) {
-    last_frame_context_ = current_context;
+  if (attached_to_window_ && compositor_ && !hardware_initialized_) {
+    // TODO(boliu): Actually initialize the compositor GL path.
+    hardware_initialized_ = true;
+    egl_context_at_init_ = current_context;
+  }
+
+  if (draw_info->mode == AwDrawGLInfo::kModeProcess)
+    return;
+
+  if (egl_context_at_init_ != current_context) {
     // TODO(boliu): Handle context lost
   }
 
@@ -156,10 +176,6 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     Invalidate();
 }
 
-void InProcessViewRenderer::SetScrollForHWFrame(int x, int y) {
-  hw_rendering_scroll_ = gfx::Point(x, y);
-}
-
 bool InProcessViewRenderer::DrawSW(jobject java_canvas,
                                    const gfx::Rect& clip) {
   return false;
@@ -179,16 +195,25 @@ void InProcessViewRenderer::OnVisibilityChanged(bool view_visible,
 }
 
 void InProcessViewRenderer::OnSizeChanged(int width, int height) {
+  width_ = width;
+  height_ = height;
 }
 
 void InProcessViewRenderer::OnAttachedToWindow(int width, int height) {
+  attached_to_window_ = true;
+  width_ = width;
+  height_ = height;
+  if (compositor_ && !hardware_initialized_)
+    client_->RequestProcessMode();
 }
 
 void InProcessViewRenderer::OnDetachedFromWindow() {
+  // TODO(joth): Release GL resources. crbug.com/231986.
+  attached_to_window_ = false;
 }
 
 bool InProcessViewRenderer::IsAttachedToWindow() {
-  return false;
+  return attached_to_window_;
 }
 
 bool InProcessViewRenderer::IsViewVisible() {
