@@ -178,6 +178,18 @@ class DriveFileSyncService
   typedef std::map<base::FilePath::StringType, RemoteChange> PathToChangeMap;
   typedef std::map<GURL, PathToChangeMap> OriginToChangesMap;
 
+  // Task types; used for task token handling.
+  enum TaskType {
+    // No task is holding this token.
+    TASK_TYPE_NONE,
+
+    // Token is granted for drive-related async task.
+    TASK_TYPE_DRIVE,
+
+    // Token is granted for async database task.
+    TASK_TYPE_DATABASE,
+  };
+
   typedef base::Callback<void(const base::Time& time,
                               SyncFileType remote_file_type,
                               SyncStatusCode status)> UpdatedTimeCallback;
@@ -198,15 +210,14 @@ class DriveFileSyncService
                                   bool created);
 
   // This should be called when an async task needs to get a task token.
-  scoped_ptr<TaskToken> GetToken(const tracked_objects::Location& from_here);
-  void NotifyTaskDone(SyncStatusCode status, scoped_ptr<TaskToken> token);
-  void UpdateServiceStateFromLastOperationStatus();
-
-  // Updates the service state. Also this may notify observers if the
-  // service state has been changed from the original value.
-  void UpdateServiceState(RemoteServiceState state,
-                          const std::string& description);
-
+  // |task_description| is optional but should give human-readable
+  // messages that describe the task that is acquiring the token.
+  scoped_ptr<TaskToken> GetToken(const tracked_objects::Location& from_here,
+                                 TaskType task_type,
+                                 const std::string& task_description);
+  void NotifyTaskDone(SyncStatusCode status,
+                      scoped_ptr<TaskToken> token);
+  void UpdateServiceState();
   base::WeakPtr<DriveFileSyncService> AsWeakPtr();
 
   void DidGetRemoteFileMetadata(
@@ -399,7 +410,7 @@ class DriveFileSyncService
   // A wrapper implementation to GDataErrorCodeToSyncStatusCode which returns
   // authentication error if the user is not signed in.
   SyncStatusCode GDataErrorCodeToSyncStatusCodeWrapper(
-      google_apis::GDataErrorCode error);
+      google_apis::GDataErrorCode error) const;
 
   base::FilePath temporary_file_dir_;
 
@@ -456,7 +467,6 @@ class DriveFileSyncService
 
   Profile* profile_;
   SyncStatusCode last_operation_status_;
-  google_apis::GDataErrorCode last_gdata_error_;  // TODO(kinuko): Cleanup this.
   std::deque<base::Closure> pending_tasks_;
 
   // The current remote service state. This does NOT reflect the

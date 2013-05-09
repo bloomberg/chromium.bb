@@ -295,10 +295,10 @@ class DriveFileSyncServiceMockTest : public testing::Test {
         profile_.get(), base_dir_.path(),
         sync_client_.PassAs<DriveFileSyncClientInterface>(),
         metadata_store_.Pass()).Pass();
+    sync_service_->SetSyncEnabled(enabled);
     sync_service_->AddServiceObserver(&mock_remote_observer_);
     sync_service_->AddFileStatusObserver(&mock_file_status_observer_);
     sync_service_->SetRemoteChangeProcessor(mock_remote_processor());
-    sync_service_->SetSyncEnabled(enabled);
     message_loop_.RunUntilIdle();
   }
 
@@ -621,10 +621,18 @@ TEST_F(DriveFileSyncServiceMockTest, BatchSyncOnInitialization) {
       .Times(AnyNumber())
       .InSequence(change_queue_seq);
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
+
   SetUpDriveServiceExpectCallsForGetAboutResource();
   SetUpDriveServiceExpectCallsForGetResourceListInDirectory(
       "chromeos/sync_file_system/listing_files_in_directory.json",
       kDirectoryResourceId1);
+
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
 
   // The service will get called for incremental sync at the end after
   // batch sync's done.
@@ -649,6 +657,9 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterNewOrigin) {
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AtLeast(1));
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(0))
       .Times(AnyNumber());
 
@@ -697,6 +708,9 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterExistingOrigin) {
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AtLeast(1));
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
@@ -748,6 +762,9 @@ TEST_F(DriveFileSyncServiceMockTest, UnregisterOrigin) {
   metadata_store()->AddBatchSyncOrigin(kOrigin2, kDirectoryResourceId2);
   metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AtLeast(1));
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
@@ -794,6 +811,9 @@ TEST_F(DriveFileSyncServiceMockTest, UpdateRegisteredOrigins) {
   metadata_store()->AddBatchSyncOrigin(kOrigin2, kDirectoryResourceId2);
   metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AtLeast(1));
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
@@ -857,6 +877,9 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_NoChange) {
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
@@ -881,6 +904,9 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Busy) {
   metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
   metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
@@ -918,6 +944,9 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_NewFile) {
   metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
   metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
@@ -961,6 +990,9 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_UpdateFile) {
   metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
   metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
@@ -1046,6 +1078,9 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Override) {
   metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
   metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
@@ -1107,6 +1142,9 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Folder) {
   metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
   metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
