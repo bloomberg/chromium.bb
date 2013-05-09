@@ -63,7 +63,8 @@ void DidHandleOriginForExtensionUnloadedEvent(
   DCHECK(chrome::NOTIFICATION_EXTENSION_UNLOADED == type);
   DCHECK(extension_misc::UNLOAD_REASON_DISABLE == reason ||
          extension_misc::UNLOAD_REASON_UNINSTALL == reason);
-  if (code != SYNC_STATUS_OK) {
+  if (code != SYNC_STATUS_OK &&
+      code != SYNC_STATUS_UNKNOWN_ORIGIN) {
     switch (reason) {
       case extension_misc::UNLOAD_REASON_DISABLE:
         LOG(WARNING) << "Disabling origin for UNLOAD(DISABLE) failed: "

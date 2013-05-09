@@ -483,8 +483,8 @@ void DriveFileSyncService::UninstallOrigin(
   // 2) origin or sync root folder is deleted on Drive.
   if (resource_id.empty()) {
     token->ResetTask(FROM_HERE);
-    NotifyTaskDone(last_operation_status_, token.Pass());
-    callback.Run(SYNC_STATUS_OK);
+    NotifyTaskDone(SYNC_STATUS_UNKNOWN_ORIGIN, token.Pass());
+    callback.Run(SYNC_STATUS_UNKNOWN_ORIGIN);
     return;
   }
 
@@ -518,7 +518,7 @@ void DriveFileSyncService::ProcessRemoteChange(
 
   if (pending_changes_.empty()) {
     token->ResetTask(FROM_HERE);
-    NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
+    NotifyTaskDone(SYNC_STATUS_NO_CHANGE_TO_SYNC, token.Pass());
     callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC, FileSystemURL());
     return;
   }
@@ -623,7 +623,7 @@ void DriveFileSyncService::ApplyLocalChange(
     // for the origins that are disabled.
     DVLOG(1) << "Got request for stray origin: " << url.origin().spec();
     token->ResetTask(FROM_HERE);
-    FinalizeLocalSync(token.Pass(), callback, SYNC_STATUS_NOT_INITIALIZED);
+    FinalizeLocalSync(token.Pass(), callback, SYNC_STATUS_UNKNOWN_ORIGIN);
     return;
   }
 
@@ -776,7 +776,6 @@ void DriveFileSyncService::UpdateServiceState() {
     case SYNC_STATUS_FILE_BUSY:
     case SYNC_STATUS_HAS_CONFLICT:
     case SYNC_STATUS_NO_CONFLICT:
-    case SYNC_STATUS_NO_CHANGE_TO_SYNC:
     case SYNC_FILE_ERROR_NOT_FOUND:
     case SYNC_FILE_ERROR_FAILED:
     case SYNC_FILE_ERROR_NO_SPACE:
@@ -806,9 +805,9 @@ void DriveFileSyncService::UpdateServiceState() {
       state_ = REMOTE_SERVICE_DISABLED;
       break;
 
-    // Requested origin is not initialized or has been unregistered.
-    // This shouldn't affect the global service state.
-    case SYNC_STATUS_NOT_INITIALIZED:
+    // These errors shouldn't affect the global service state.
+    case SYNC_STATUS_NO_CHANGE_TO_SYNC:
+    case SYNC_STATUS_UNKNOWN_ORIGIN:
       break;
 
     // Unexpected status code. They should be explicitly added to one of the

@@ -78,8 +78,8 @@ std::string SyncStatusCodeToString(SyncStatusCode status) {
       return "Sync: network error.";
     case SYNC_STATUS_AUTHENTICATION_FAILED:
       return "Sync: authentication failed.";
-    case SYNC_STATUS_NOT_INITIALIZED:
-      return "Sync: not initialized.";
+    case SYNC_STATUS_UNKNOWN_ORIGIN:
+      return "Sync: unknown origin.";
     case SYNC_STATUS_NOT_MODIFIED:
       return "Sync: file not modified.";
     case SYNC_STATUS_SYNC_DISABLED:
