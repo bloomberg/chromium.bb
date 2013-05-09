@@ -11,6 +11,7 @@ Attr
 Audio
 AudioProcessingEvent
 AutocompleteErrorEvent
+BarProp
 BeforeLoadEvent
 Blob
 Boolean

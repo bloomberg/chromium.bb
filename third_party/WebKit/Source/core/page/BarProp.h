@@ -6,13 +6,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -26,32 +26,32 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BarInfo_h
-#define BarInfo_h
+#ifndef BarProp_h
+#define BarProp_h
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/page/DOMWindowProperty.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
     class Frame;
 
-    class BarInfo : public ScriptWrappable, public RefCounted<BarInfo>, public DOMWindowProperty {
+    class BarProp : public ScriptWrappable, public RefCounted<BarProp>, public DOMWindowProperty {
     public:
         enum Type { Locationbar, Menubar, Personalbar, Scrollbars, Statusbar, Toolbar };
 
-        static PassRefPtr<BarInfo> create(Frame* frame, Type type) { return adoptRef(new BarInfo(frame, type)); }
+        static PassRefPtr<BarProp> create(Frame* frame, Type type) { return adoptRef(new BarProp(frame, type)); }
 
         Type type() const;
         bool visible() const;
 
     private:
-        BarInfo(Frame*, Type);
+        BarProp(Frame*, Type);
         Type m_type;
     };
 
 } // namespace WebCore
 
-#endif // BarInfo_h
+#endif // BarProp_h
