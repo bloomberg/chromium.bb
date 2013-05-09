@@ -613,11 +613,12 @@ function hideNtp() {
 
 
 /**
- * Shows the NTP (destroys the activeBox if exists and reloads the custom
- * theme).
+ * Shows the NTP (destroys the activeBox if exists, reloads the custom
+ * theme and shows the top visible bars).
  */
 function showNtp() {
   hideActiveSuggestions();
+  searchboxApiHandle.showBars();
   document.body.classList.remove(CLASSES.HIDE_NTP);
   onThemeChange();
 }
