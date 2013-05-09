@@ -47,7 +47,7 @@ void
 weston_seat_repick(struct weston_seat *seat)
 {
 	const struct weston_pointer_grab_interface *interface;
-	struct weston_surface *surface, *focus;
+	struct weston_surface *surface;
 	struct weston_pointer *pointer = seat->pointer;
 	wl_fixed_t sx, sy;
 
@@ -61,14 +61,6 @@ weston_seat_repick(struct weston_seat *seat)
 
 	interface = pointer->grab->interface;
 	interface->focus(pointer->grab, surface, sx, sy);
-
-	focus = (struct weston_surface *) pointer->grab->focus;
-	if (focus)
-		weston_surface_from_global_fixed(focus,
-						 pointer->x,
-						 pointer->y,
-					         &pointer->grab->x,
-					         &pointer->grab->y);
 }
 
 static void
@@ -126,14 +118,17 @@ default_grab_focus(struct weston_pointer_grab *grab,
 }
 
 static void
-default_grab_motion(struct weston_pointer_grab *grab,
-		    uint32_t time, wl_fixed_t x, wl_fixed_t y)
+default_grab_motion(struct weston_pointer_grab *grab, uint32_t time)
 {
-	struct wl_resource *resource;
+	struct weston_pointer *pointer = grab->pointer;
+	wl_fixed_t sx, sy;
 
-	resource = grab->pointer->focus_resource;
-	if (resource)
-		wl_pointer_send_motion(resource, time, x, y);
+	if (pointer->focus_resource) {
+		weston_surface_from_global_fixed(pointer->focus,
+						 pointer->x, pointer->y,
+						 &sx, &sy);
+		wl_pointer_send_motion(pointer->focus_resource, time, sx, sy);
+	}
 }
 
 static void
@@ -477,7 +472,6 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 
 	pointer->focus_resource = resource;
 	pointer->focus = surface;
-	pointer->default_grab.focus = surface;
 	wl_signal_emit(&pointer->focus_signal, pointer);
 }
 
@@ -670,8 +664,7 @@ notify_motion(struct weston_seat *seat,
 	move_pointer(seat, pointer->x + dx, pointer->y + dy);
 
 	interface = pointer->grab->interface;
-	interface->motion(pointer->grab, time,
-			  pointer->grab->x, pointer->grab->y);
+	interface->motion(pointer->grab, time);
 }
 
 WL_EXPORT void
@@ -687,8 +680,7 @@ notify_motion_absolute(struct weston_seat *seat,
 	move_pointer(seat, x, y);
 
 	interface = pointer->grab->interface;
-	interface->motion(pointer->grab, time,
-			  pointer->grab->x, pointer->grab->y);
+	interface->motion(pointer->grab, time);
 }
 
 WL_EXPORT void

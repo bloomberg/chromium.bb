@@ -252,17 +252,16 @@ drag_grab_focus(struct weston_pointer_grab *grab,
 	drag->focus_listener.notify = destroy_drag_focus;
 	wl_signal_add(&resource->destroy_signal, &drag->focus_listener);
 	drag->focus_resource = resource;
-	grab->focus = surface;
 }
 
 static void
-drag_grab_motion(struct weston_pointer_grab *grab,
-		 uint32_t time, wl_fixed_t x, wl_fixed_t y)
+drag_grab_motion(struct weston_pointer_grab *grab, uint32_t time)
 {
 	struct weston_drag *drag =
 		container_of(grab, struct weston_drag, grab);
 	struct weston_pointer *pointer = drag->grab.pointer;
 	float fx, fy;
+	wl_fixed_t sx, sy;
 
 	if (drag->icon) {
 		fx = wl_fixed_to_double(pointer->x) + drag->dx;
@@ -271,8 +270,13 @@ drag_grab_motion(struct weston_pointer_grab *grab,
 		weston_surface_schedule_repaint(drag->icon);
 	}
 
-	if (drag->focus_resource)
-		wl_data_device_send_motion(drag->focus_resource, time, x, y);
+	if (drag->focus_resource) {
+		weston_surface_from_global_fixed(drag->focus,
+						 pointer->x, pointer->y,
+						 &sx, &sy);
+
+		wl_data_device_send_motion(drag->focus_resource, time, sx, sy);
+	}
 }
 
 static void

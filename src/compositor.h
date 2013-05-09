@@ -214,10 +214,7 @@ struct weston_pointer_grab_interface {
 		      struct weston_surface *surface,
 		      wl_fixed_t x,
 		      wl_fixed_t y);
-	void (*motion)(struct weston_pointer_grab *grab,
-		       uint32_t time,
-		       wl_fixed_t x,
-		       wl_fixed_t y);
+	void (*motion)(struct weston_pointer_grab *grab, uint32_t time);
 	void (*button)(struct weston_pointer_grab *grab,
 		       uint32_t time, uint32_t button, uint32_t state);
 };
@@ -225,8 +222,6 @@ struct weston_pointer_grab_interface {
 struct weston_pointer_grab {
 	const struct weston_pointer_grab_interface *interface;
 	struct weston_pointer *pointer;
-	struct weston_surface *focus;
-	wl_fixed_t x, y;
 };
 
 struct weston_keyboard_grab;
