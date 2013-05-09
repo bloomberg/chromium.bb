@@ -66,7 +66,7 @@ LABEL_MAP = {
   'glyph_brightness_up': 'bright up',
   'glyph_enter': 'enter',
   'glyph_forward': 'forward',
-  'glyph_fullscreen': 'maximize',
+  'glyph_fullscreen': 'full screen',
   # Kana/Eisu key on Japanese keyboard
   'glyph_ime': u'\u304b\u306a\u0020\u002f\u0020\u82f1\u6570',
   'glyph_lock': 'lock',
@@ -160,6 +160,9 @@ COPYRIGHT_HEADER=\
 """// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// This is a generated file but may contain local modifications. See
+// src/tools/gen_keyboard_overlay_data/gen_keyboard_overlay_data.py --help
 """
 
 # A snippet for grd file
