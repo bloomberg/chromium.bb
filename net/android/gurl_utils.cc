@@ -17,6 +17,13 @@ jstring GetOrigin(JNIEnv* env, jclass clazz, jstring url) {
       host.GetOrigin().spec()).Release();
 }
 
+jstring GetScheme(JNIEnv* env, jclass clazz, jstring url) {
+  GURL host(base::android::ConvertJavaStringToUTF16(env, url));
+
+  return base::android::ConvertUTF8ToJavaString(env,
+      host.scheme()).Release();
+}
+
 bool RegisterGURLUtils(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
