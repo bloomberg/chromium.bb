@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/autofill/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/browser/autofill_xml_parser.h"
 #include "components/autofill/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +16,49 @@
 namespace autofill {
 namespace {
 
-TEST(AutofillQueryXmlParserTest, BasicQuery) {
+class AutofillQueryXmlParserTest : public testing::Test {
+ public:
+  AutofillQueryXmlParserTest(): upload_required_(USE_UPLOAD_RATES) {};
+  virtual ~AutofillQueryXmlParserTest() {};
+
+ protected:
+  void ParseQueryXML(const std::string& xml, bool should_succeed) {
+    // Create a parser.
+    AutofillQueryXmlParser parse_handler(&field_infos_,
+                                         &upload_required_,
+                                         &experiment_id_,
+                                         &page_meta_data_);
+    buzz::XmlParser parser(&parse_handler);
+    parser.Parse(xml.c_str(), xml.length(), true);
+    EXPECT_EQ(should_succeed, parse_handler.succeeded());
+  }
+
+  std::vector<AutofillServerFieldInfo> field_infos_;
+  UploadRequired upload_required_;
+  std::string experiment_id_;
+  autofill::AutocheckoutPageMetaData page_meta_data_;
+};
+
+class AutofillUploadXmlParserTest : public testing::Test {
+ public:
+  AutofillUploadXmlParserTest(): positive_(0), negative_(0) {};
+  virtual ~AutofillUploadXmlParserTest() {};
+
+ protected:
+  void ParseUploadXML(const std::string& xml, bool should_succeed) {
+    // Create a parser.
+    AutofillUploadXmlParser parse_handler(&positive_, &negative_);
+    buzz::XmlParser parser(&parse_handler);
+    parser.Parse(xml.c_str(), xml.length(), true);
+
+    EXPECT_EQ(should_succeed, parse_handler.succeeded());
+  }
+
+  double positive_;
+  double negative_;
+};
+
+TEST_F(AutofillQueryXmlParserTest, BasicQuery) {
   // An XML string representing a basic query response.
   std::string xml = "<autofillqueryresponse>"
                     "<field autofilltype=\"0\" />"
@@ -24,124 +67,88 @@ TEST(AutofillQueryXmlParserTest, BasicQuery) {
                     "<field autofilltype=\"2\" />"
                     "<field autofilltype=\"61\" defaultvalue=\"default\"/>"
                     "</autofillqueryresponse>";
+  ParseQueryXML(xml, true);
 
-  // Create a vector of AutofillServerFieldInfos, to assign the parsed field
-  // types to.
-  std::vector<AutofillServerFieldInfo> field_infos;
-  UploadRequired upload_required = USE_UPLOAD_RATES;
-  std::string experiment_id;
-
-  // Create a parser.
-  AutofillQueryXmlParser parse_handler(&field_infos, &upload_required,
-                                       &experiment_id);
-  buzz::XmlParser parser(&parse_handler);
-  parser.Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler.succeeded());
-  EXPECT_EQ(USE_UPLOAD_RATES, upload_required);
-  ASSERT_EQ(5U, field_infos.size());
-  EXPECT_EQ(NO_SERVER_DATA, field_infos[0].field_type);
-  EXPECT_EQ(UNKNOWN_TYPE, field_infos[1].field_type);
-  EXPECT_EQ(NAME_FIRST, field_infos[2].field_type);
-  EXPECT_EQ(EMPTY_TYPE, field_infos[3].field_type);
-  EXPECT_EQ("", field_infos[3].default_value);
-  EXPECT_EQ(FIELD_WITH_DEFAULT_VALUE, field_infos[4].field_type);
-  EXPECT_EQ("default", field_infos[4].default_value);
-  EXPECT_EQ(std::string(), experiment_id);
+  EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
+  ASSERT_EQ(5U, field_infos_.size());
+  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
+  EXPECT_EQ(UNKNOWN_TYPE, field_infos_[1].field_type);
+  EXPECT_EQ(NAME_FIRST, field_infos_[2].field_type);
+  EXPECT_EQ(EMPTY_TYPE, field_infos_[3].field_type);
+  EXPECT_TRUE(field_infos_[3].default_value.empty());
+  EXPECT_EQ(FIELD_WITH_DEFAULT_VALUE, field_infos_[4].field_type);
+  EXPECT_EQ("default", field_infos_[4].default_value);
+  EXPECT_TRUE(experiment_id_.empty());
 }
 
 // Test parsing the upload required attribute.
-TEST(AutofillQueryXmlParserTest, TestUploadRequired) {
-  std::vector<AutofillServerFieldInfo> field_infos;
-  UploadRequired upload_required = USE_UPLOAD_RATES;
-  std::string experiment_id;
-
+TEST_F(AutofillQueryXmlParserTest, TestUploadRequired) {
   std::string xml = "<autofillqueryresponse uploadrequired=\"true\">"
                     "<field autofilltype=\"0\" />"
                     "</autofillqueryresponse>";
 
-  scoped_ptr<AutofillQueryXmlParser> parse_handler(
-      new AutofillQueryXmlParser(&field_infos, &upload_required,
-                                 &experiment_id));
-  scoped_ptr<buzz::XmlParser> parser(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler->succeeded());
-  EXPECT_EQ(UPLOAD_REQUIRED, upload_required);
-  ASSERT_EQ(1U, field_infos.size());
-  EXPECT_EQ(NO_SERVER_DATA, field_infos[0].field_type);
-  EXPECT_EQ(std::string(), experiment_id);
+  ParseQueryXML(xml, true);
 
-  field_infos.clear();
+  EXPECT_EQ(upload_required_, upload_required_);
+  ASSERT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
+  EXPECT_TRUE(experiment_id_.empty());
+
+  field_infos_.clear();
   xml = "<autofillqueryresponse uploadrequired=\"false\">"
         "<field autofilltype=\"0\" />"
         "</autofillqueryresponse>";
 
-  parse_handler.reset(new AutofillQueryXmlParser(&field_infos, &upload_required,
-                                                 &experiment_id));
-  parser.reset(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler->succeeded());
-  EXPECT_EQ(UPLOAD_NOT_REQUIRED, upload_required);
-  ASSERT_EQ(1U, field_infos.size());
-  EXPECT_EQ(NO_SERVER_DATA, field_infos[0].field_type);
-  EXPECT_EQ(std::string(), experiment_id);
+  ParseQueryXML(xml, true);
 
-  field_infos.clear();
+  EXPECT_EQ(UPLOAD_NOT_REQUIRED, upload_required_);
+  ASSERT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
+  EXPECT_TRUE(experiment_id_.empty());
+
+  field_infos_.clear();
   xml = "<autofillqueryresponse uploadrequired=\"bad_value\">"
         "<field autofilltype=\"0\" />"
         "</autofillqueryresponse>";
 
-  parse_handler.reset(new AutofillQueryXmlParser(&field_infos, &upload_required,
-                                                 &experiment_id));
-  parser.reset(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler->succeeded());
-  EXPECT_EQ(USE_UPLOAD_RATES, upload_required);
-  ASSERT_EQ(1U, field_infos.size());
-  EXPECT_EQ(NO_SERVER_DATA, field_infos[0].field_type);
-  EXPECT_EQ(std::string(), experiment_id);
+  ParseQueryXML(xml, true);
+
+  EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
+  ASSERT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
+  EXPECT_TRUE(experiment_id_.empty());
 }
 
 // Test parsing the experiment id attribute
-TEST(AutofillQueryXmlParserTest, ParseExperimentId) {
-  std::vector<AutofillServerFieldInfo> field_infos;
-  UploadRequired upload_required = USE_UPLOAD_RATES;
-  std::string experiment_id;
-
+TEST_F(AutofillQueryXmlParserTest, ParseExperimentId) {
   // When the attribute is missing, we should get back the default value -- the
   // empty string.
   std::string xml = "<autofillqueryresponse>"
                     "<field autofilltype=\"0\" />"
                     "</autofillqueryresponse>";
 
-  scoped_ptr<AutofillQueryXmlParser> parse_handler(
-      new AutofillQueryXmlParser(&field_infos, &upload_required,
-                                 &experiment_id));
-  scoped_ptr<buzz::XmlParser> parser(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler->succeeded());
-  EXPECT_EQ(USE_UPLOAD_RATES, upload_required);
-  ASSERT_EQ(1U, field_infos.size());
-  EXPECT_EQ(NO_SERVER_DATA, field_infos[0].field_type);
-  EXPECT_EQ(std::string(), experiment_id);
+  ParseQueryXML(xml, true);
 
-  field_infos.clear();
+  EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
+  ASSERT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
+  EXPECT_TRUE(experiment_id_.empty());
+
+  field_infos_.clear();
 
   // When the attribute is present, make sure we parse it.
   xml = "<autofillqueryresponse experimentid=\"FancyNewAlgorithm\">"
         "<field autofilltype=\"0\" />"
         "</autofillqueryresponse>";
 
-  parse_handler.reset(new AutofillQueryXmlParser(&field_infos, &upload_required,
-                                                 &experiment_id));
-  parser.reset(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler->succeeded());
-  EXPECT_EQ(USE_UPLOAD_RATES, upload_required);
-  ASSERT_EQ(1U, field_infos.size());
-  EXPECT_EQ(NO_SERVER_DATA, field_infos[0].field_type);
-  EXPECT_EQ(std::string("FancyNewAlgorithm"), experiment_id);
+  ParseQueryXML(xml, true);
 
-  field_infos.clear();
+  EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
+  ASSERT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
+  EXPECT_EQ(std::string("FancyNewAlgorithm"), experiment_id_);
+
+  field_infos_.clear();
 
   // Make sure that we can handle parsing both the upload required and the
   // experiment id attribute together.
@@ -150,23 +157,16 @@ TEST(AutofillQueryXmlParserTest, ParseExperimentId) {
         "<field autofilltype=\"0\" />"
         "</autofillqueryresponse>";
 
-  parse_handler.reset(new AutofillQueryXmlParser(&field_infos, &upload_required,
-                                                 &experiment_id));
-  parser.reset(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler->succeeded());
-  EXPECT_EQ(UPLOAD_NOT_REQUIRED, upload_required);
-  ASSERT_EQ(1U, field_infos.size());
-  EXPECT_EQ(NO_SERVER_DATA, field_infos[0].field_type);
-  EXPECT_EQ(std::string("ServerSmartyPants"), experiment_id);
+  ParseQueryXML(xml, true);
+
+  EXPECT_EQ(UPLOAD_NOT_REQUIRED, upload_required_);
+  ASSERT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
+  EXPECT_EQ("ServerSmartyPants", experiment_id_);
 }
 
 // Test XML response with autofill_flow information.
-TEST(AutofillQueryXmlParserTest, ParseAutofillFlow) {
-  std::vector<AutofillServerFieldInfo> field_infos;
-  UploadRequired upload_required = USE_UPLOAD_RATES;
-  std::string experiment_id;
-
+TEST_F(AutofillQueryXmlParserTest, ParseAutofillFlow) {
   std::string xml = "<autofillqueryresponse>"
                     "<field autofilltype=\"55\"/>"
                     "<autofill_flow page_no=\"1\" total_pages=\"10\">"
@@ -174,21 +174,17 @@ TEST(AutofillQueryXmlParserTest, ParseAutofillFlow) {
                     "</autofill_flow>"
                     "</autofillqueryresponse>";
 
-  scoped_ptr<AutofillQueryXmlParser> parse_handler(
-      new AutofillQueryXmlParser(&field_infos, &upload_required,
-                                 &experiment_id));
-  scoped_ptr<buzz::XmlParser> parser(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler->succeeded());
-  EXPECT_EQ(1U, field_infos.size());
-  EXPECT_EQ(1, parse_handler->current_page_number());
-  EXPECT_EQ(10, parse_handler->total_pages());
-  EXPECT_EQ("foo", parse_handler->proceed_element_descriptor()->descriptor);
-  EXPECT_EQ(autofill::WebElementDescriptor::ID,
-            parse_handler->proceed_element_descriptor()->retrieval_method);
+  ParseQueryXML(xml, true);
 
-  // Clear |field_infos| for the next test;
-  field_infos.clear();
+  EXPECT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(1, page_meta_data_.current_page_number);
+  EXPECT_EQ(10, page_meta_data_.total_pages);
+  EXPECT_EQ("foo", page_meta_data_.proceed_element_descriptor.descriptor);
+  EXPECT_EQ(autofill::WebElementDescriptor::ID,
+            page_meta_data_.proceed_element_descriptor.retrieval_method);
+
+  // Clear |field_infos_| for the next test;
+  field_infos_.clear();
 
   // Test css_selector as page_advance_button.
   xml = "<autofillqueryresponse>"
@@ -198,171 +194,129 @@ TEST(AutofillQueryXmlParserTest, ParseAutofillFlow) {
         "</autofill_flow>"
         "</autofillqueryresponse>";
 
-  parse_handler.reset(new AutofillQueryXmlParser(&field_infos,
-                                                 &upload_required,
-                                                 &experiment_id));
-  parser.reset(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler->succeeded());
-  EXPECT_EQ(1U, field_infos.size());
-  EXPECT_EQ(1, parse_handler->current_page_number());
-  EXPECT_EQ(10, parse_handler->total_pages());
-  EXPECT_EQ("[name=\"foo\"]",
-            parse_handler->proceed_element_descriptor()->descriptor);
-  EXPECT_EQ(autofill::WebElementDescriptor::CSS_SELECTOR,
-            parse_handler->proceed_element_descriptor()->retrieval_method);
+  ParseQueryXML(xml, true);
 
-  // Clear |field_infos| for the next test;
-  field_infos.clear();
+  EXPECT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(1, page_meta_data_.current_page_number);
+  EXPECT_EQ(10, page_meta_data_.total_pages);
+  EXPECT_EQ("[name=\"foo\"]",
+            page_meta_data_.proceed_element_descriptor.descriptor);
+  EXPECT_EQ(autofill::WebElementDescriptor::CSS_SELECTOR,
+            page_meta_data_.proceed_element_descriptor.retrieval_method);
+
+  // Clear |field_infos_| for the next test;
+  field_infos_.clear();
 
   // Test first attribute is always the one set.
   xml = "<autofillqueryresponse>"
         "<field autofilltype=\"55\"/>"
         "<autofill_flow page_no=\"1\" total_pages=\"10\">"
         "<page_advance_button css_selector=\"[name=&quot;foo&quot;]\""
-        "   id=\"foo\"/>"
+        " id=\"foo\"/>"
         "</autofill_flow>"
         "</autofillqueryresponse>";
 
-  parse_handler.reset(new AutofillQueryXmlParser(&field_infos,
-                                                 &upload_required,
-                                                 &experiment_id));
-  parser.reset(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler->succeeded());
-  EXPECT_EQ(1U, field_infos.size());
-  EXPECT_EQ(1, parse_handler->current_page_number());
-  EXPECT_EQ(10, parse_handler->total_pages());
+  ParseQueryXML(xml, true);
+
+  EXPECT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(1, page_meta_data_.current_page_number);
+  EXPECT_EQ(10, page_meta_data_.total_pages);
   EXPECT_EQ("[name=\"foo\"]",
-            parse_handler->proceed_element_descriptor()->descriptor);
+            page_meta_data_.proceed_element_descriptor.descriptor);
   EXPECT_EQ(autofill::WebElementDescriptor::CSS_SELECTOR,
-            parse_handler->proceed_element_descriptor()->retrieval_method);
+            page_meta_data_.proceed_element_descriptor.retrieval_method);
 }
 
 // Test badly formed XML queries.
-TEST(AutofillQueryXmlParserTest, ParseErrors) {
-  std::vector<AutofillServerFieldInfo> field_infos;
-  UploadRequired upload_required = USE_UPLOAD_RATES;
-  std::string experiment_id;
-
+TEST_F(AutofillQueryXmlParserTest, ParseErrors) {
   // Test no Autofill type.
   std::string xml = "<autofillqueryresponse>"
                     "<field/>"
                     "</autofillqueryresponse>";
 
-  scoped_ptr<AutofillQueryXmlParser> parse_handler(
-      new AutofillQueryXmlParser(&field_infos, &upload_required,
-                                 &experiment_id));
-  scoped_ptr<buzz::XmlParser> parser(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_FALSE(parse_handler->succeeded());
-  EXPECT_EQ(USE_UPLOAD_RATES, upload_required);
-  EXPECT_EQ(0U, field_infos.size());
-  EXPECT_EQ(std::string(), experiment_id);
+  ParseQueryXML(xml, false);
+
+  EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
+  EXPECT_EQ(0U, field_infos_.size());
+  EXPECT_TRUE(experiment_id_.empty());
 
   // Test an incorrect Autofill type.
   xml = "<autofillqueryresponse>"
         "<field autofilltype=\"-1\"/>"
         "</autofillqueryresponse>";
 
-  parse_handler.reset(new AutofillQueryXmlParser(&field_infos, &upload_required,
-                                                 &experiment_id));
-  parser.reset(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler->succeeded());
-  EXPECT_EQ(USE_UPLOAD_RATES, upload_required);
-  ASSERT_EQ(1U, field_infos.size());
+  ParseQueryXML(xml, true);
+
+  EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
+  ASSERT_EQ(1U, field_infos_.size());
   // AutofillType was out of range and should be set to NO_SERVER_DATA.
-  EXPECT_EQ(NO_SERVER_DATA, field_infos[0].field_type);
-  EXPECT_EQ(std::string(), experiment_id);
+  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
+  EXPECT_TRUE(experiment_id_.empty());
 
   // Test upper bound for the field type, MAX_VALID_FIELD_TYPE.
-  field_infos.clear();
+  field_infos_.clear();
   xml = "<autofillqueryresponse><field autofilltype=\"" +
       base::IntToString(MAX_VALID_FIELD_TYPE) + "\"/></autofillqueryresponse>";
 
-  parse_handler.reset(new AutofillQueryXmlParser(&field_infos, &upload_required,
-                                                 &experiment_id));
-  parser.reset(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler->succeeded());
-  EXPECT_EQ(USE_UPLOAD_RATES, upload_required);
-  ASSERT_EQ(1U, field_infos.size());
+  ParseQueryXML(xml, true);
+
+  EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
+  ASSERT_EQ(1U, field_infos_.size());
   // AutofillType was out of range and should be set to NO_SERVER_DATA.
-  EXPECT_EQ(NO_SERVER_DATA, field_infos[0].field_type);
-  EXPECT_EQ(std::string(), experiment_id);
+  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
+  EXPECT_TRUE(experiment_id_.empty());
 
   // Test an incorrect Autofill type.
-  field_infos.clear();
+  field_infos_.clear();
   xml = "<autofillqueryresponse>"
         "<field autofilltype=\"No Type\"/>"
         "</autofillqueryresponse>";
 
-  // Parse fails but an entry is still added to field_infos.
-  parse_handler.reset(new AutofillQueryXmlParser(&field_infos, &upload_required,
-                                                 &experiment_id));
-  parser.reset(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_FALSE(parse_handler->succeeded());
-  EXPECT_EQ(USE_UPLOAD_RATES, upload_required);
-  ASSERT_EQ(1U, field_infos.size());
-  EXPECT_EQ(NO_SERVER_DATA, field_infos[0].field_type);
-  EXPECT_EQ(std::string(), experiment_id);
+  // Parse fails but an entry is still added to field_infos_.
+  ParseQueryXML(xml, false);
+
+  EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
+  ASSERT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
+  EXPECT_TRUE(experiment_id_.empty());
 }
 
 // Test successfull upload response.
-TEST(AutofillUploadXmlParser, TestSuccessfulResponse) {
-  std::string xml = "<autofilluploadresponse positiveuploadrate=\"0.5\" "
-                    "negativeuploadrate=\"0.3\"/>";
-  double positive = 0;
-  double negative = 0;
-  AutofillUploadXmlParser parse_handler(&positive, &negative);
-  buzz::XmlParser parser(&parse_handler);
-  parser.Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(parse_handler.succeeded());
-  EXPECT_DOUBLE_EQ(0.5, positive);
-  EXPECT_DOUBLE_EQ(0.3, negative);
+TEST_F(AutofillUploadXmlParserTest, TestSuccessfulResponse) {
+  ParseUploadXML("<autofilluploadresponse positiveuploadrate=\"0.5\" "
+                 "negativeuploadrate=\"0.3\"/>",
+                 true);
+
+  EXPECT_DOUBLE_EQ(0.5, positive_);
+  EXPECT_DOUBLE_EQ(0.3, negative_);
 }
 
 // Test failed upload response.
-TEST(AutofillUploadXmlParser, TestFailedResponse) {
-  std::string xml = "<autofilluploadresponse positiveuploadrate=\"\" "
-                    "negativeuploadrate=\"0.3\"/>";
-  double positive = 0;
-  double negative = 0;
-  scoped_ptr<AutofillUploadXmlParser> parse_handler(
-      new AutofillUploadXmlParser(&positive, &negative));
-  scoped_ptr<buzz::XmlParser> parser(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(!parse_handler->succeeded());
-  EXPECT_DOUBLE_EQ(0, positive);
-  EXPECT_DOUBLE_EQ(0.3, negative);  // Partially parsed.
-  negative = 0;
+TEST_F(AutofillUploadXmlParserTest, TestFailedResponse) {
+  ParseUploadXML("<autofilluploadresponse positiveuploadrate=\"\" "
+                 "negativeuploadrate=\"0.3\"/>",
+                 false);
 
-  xml = "<autofilluploadresponse positiveuploadrate=\"0.5\" "
-        "negativeuploadrate=\"0.3\"";
-  parse_handler.reset(new AutofillUploadXmlParser(&positive, &negative));
-  parser.reset(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(!parse_handler->succeeded());
-  EXPECT_DOUBLE_EQ(0, positive);
-  EXPECT_DOUBLE_EQ(0, negative);
+  EXPECT_DOUBLE_EQ(0, positive_);
+  EXPECT_DOUBLE_EQ(0.3, negative_);  // Partially parsed.
+  negative_ = 0;
 
-  xml = "bad data";
-  parse_handler.reset(new AutofillUploadXmlParser(&positive, &negative));
-  parser.reset(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(!parse_handler->succeeded());
-  EXPECT_DOUBLE_EQ(0, positive);
-  EXPECT_DOUBLE_EQ(0, negative);
+  ParseUploadXML("<autofilluploadresponse positiveuploadrate=\"0.5\" "
+                 "negativeuploadrate=\"0.3\"",
+                 false);
 
-  xml = "";
-  parse_handler.reset(new AutofillUploadXmlParser(&positive, &negative));
-  parser.reset(new buzz::XmlParser(parse_handler.get()));
-  parser->Parse(xml.c_str(), xml.length(), true);
-  EXPECT_TRUE(!parse_handler->succeeded());
-  EXPECT_DOUBLE_EQ(0, positive);
-  EXPECT_DOUBLE_EQ(0, negative);
+  EXPECT_DOUBLE_EQ(0, positive_);
+  EXPECT_DOUBLE_EQ(0, negative_);
+
+  ParseUploadXML("bad data", false);
+
+  EXPECT_DOUBLE_EQ(0, positive_);
+  EXPECT_DOUBLE_EQ(0, negative_);
+
+  ParseUploadXML(std::string(), false);
+
+  EXPECT_DOUBLE_EQ(0, positive_);
+  EXPECT_DOUBLE_EQ(0, negative_);
 }
 
 }  // namespace

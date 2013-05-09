@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "base/logging.h"
+#include "components/autofill/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/browser/autofill_server_field_info.h"
 #include "third_party/libjingle/source/talk/xmllite/qname.h"
 
@@ -35,14 +36,15 @@ void AutofillXmlParser::Error(buzz::XmlParseContext* context,
 AutofillQueryXmlParser::AutofillQueryXmlParser(
     std::vector<AutofillServerFieldInfo>* field_infos,
     UploadRequired* upload_required,
-    std::string* experiment_id)
+    std::string* experiment_id,
+    AutocheckoutPageMetaData* page_meta_data)
     : field_infos_(field_infos),
       upload_required_(upload_required),
-      current_page_number_(-1),
-      total_pages_(-1),
-      experiment_id_(experiment_id) {
+      experiment_id_(experiment_id),
+      page_meta_data_(page_meta_data) {
   DCHECK(upload_required_);
   DCHECK(experiment_id_);
+  DCHECK(page_meta_data_);
 }
 
 AutofillQueryXmlParser::~AutofillQueryXmlParser() {}
@@ -113,9 +115,9 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
       ++attrs;
       const std::string& attribute_name = attribute_qname.LocalPart();
       if (attribute_name.compare("page_no") == 0)
-        current_page_number_ = GetIntValue(context, *attrs);
+        page_meta_data_->current_page_number = GetIntValue(context, *attrs);
       else if (attribute_name.compare("total_pages") == 0)
-        total_pages_ = GetIntValue(context, *attrs);
+        page_meta_data_->total_pages = GetIntValue(context, *attrs);
       ++attrs;
     }
   } else if (element.compare("page_advance_button") == 0) {
@@ -130,17 +132,17 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
       ++attrs;
       const std::string& attribute_value = value_qname.LocalPart();
       if (attribute_name.compare("id") == 0 && !attribute_value.empty()) {
-        proceed_element_descriptor_.reset(new autofill::WebElementDescriptor());
-        proceed_element_descriptor_->retrieval_method =
+        page_meta_data_->proceed_element_descriptor.retrieval_method =
             autofill::WebElementDescriptor::ID;
-        proceed_element_descriptor_->descriptor = attribute_value;
+        page_meta_data_->proceed_element_descriptor.descriptor =
+            attribute_value;
         break;
       } else if (attribute_name.compare("css_selector") == 0 &&
                  !attribute_value.empty()) {
-        proceed_element_descriptor_.reset(new autofill::WebElementDescriptor());
-        proceed_element_descriptor_->retrieval_method =
+        page_meta_data_->proceed_element_descriptor.retrieval_method =
             autofill::WebElementDescriptor::CSS_SELECTOR;
-        proceed_element_descriptor_->descriptor = attribute_value;
+        page_meta_data_->proceed_element_descriptor.descriptor =
+            attribute_value;
         break;
       }
     }

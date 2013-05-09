@@ -14,10 +14,11 @@
 #include "components/autofill/browser/autofill_server_field_info.h"
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/form_structure.h"
-#include "components/autofill/common/web_element_descriptor.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
 
 namespace autofill {
+
+struct AutocheckoutPageMetaData;
 
 // The base class that contains common functionality between
 // AutofillQueryXmlParser and AutofillUploadXmlParser.
@@ -75,18 +76,9 @@ class AutofillQueryXmlParser : public AutofillXmlParser {
  public:
   AutofillQueryXmlParser(std::vector<AutofillServerFieldInfo>* field_infos,
                          UploadRequired* upload_required,
-                         std::string* experiment_id);
+                         std::string* experiment_id,
+                         AutocheckoutPageMetaData* page_meta_data);
   virtual ~AutofillQueryXmlParser();
-
-  int current_page_number() const { return current_page_number_; }
-
-  int total_pages() const { return total_pages_; }
-
-  // Returns the proceed element for multipage Autofill flows if the current
-  // page is part of such a flow or NULL otherwise.
-  const autofill::WebElementDescriptor* proceed_element_descriptor() const {
-    return proceed_element_descriptor_.get();
-  }
 
  private:
   // A callback for the beginning of a new <element>, called by Expat.
@@ -110,18 +102,12 @@ class AutofillQueryXmlParser : public AutofillXmlParser {
   // form is submitted.
   UploadRequired* upload_required_;
 
-  // Page number of present page in multipage autofill flow.
-  int current_page_number_;
-
-  // Total number of pages in multipage autofill flow.
-  int total_pages_;
-
-  // Proceed element for multipage Autofill flow.
-  scoped_ptr<autofill::WebElementDescriptor> proceed_element_descriptor_;
-
   // The server experiment to which this query response belongs.
   // For the default server implementation, this is empty.
   std::string* experiment_id_;
+
+  // Page metadata for multipage autofill flow.
+  AutocheckoutPageMetaData* page_meta_data_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillQueryXmlParser);
 };

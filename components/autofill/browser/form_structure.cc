@@ -532,19 +532,14 @@ void FormStructure::ParseQueryResponse(
   std::vector<AutofillServerFieldInfo> field_infos;
   UploadRequired upload_required;
   std::string experiment_id;
-  AutofillQueryXmlParser parse_handler(&field_infos, &upload_required,
-                                       &experiment_id);
+  AutofillQueryXmlParser parse_handler(&field_infos,
+                                       &upload_required,
+                                       &experiment_id,
+                                       page_meta_data);
   buzz::XmlParser parser(&parse_handler);
   parser.Parse(response_xml.c_str(), response_xml.length(), true);
   if (!parse_handler.succeeded())
     return;
-
-  page_meta_data->current_page_number = parse_handler.current_page_number();
-  page_meta_data->total_pages = parse_handler.total_pages();
-  if (parse_handler.proceed_element_descriptor()) {
-    page_meta_data->proceed_element_descriptor =
-        *parse_handler.proceed_element_descriptor();
-  }
 
   metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);
   metric_logger.LogServerExperimentIdForQuery(experiment_id);
