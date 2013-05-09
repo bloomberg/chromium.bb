@@ -3852,7 +3852,8 @@ CalendarPicker.prototype._setHighlight = function(dayOrWeekOrMonth) {
  * @return {!boolean}
  */
 CalendarPicker.prototype._stepMismatch = function(value) {
-    return (value - this.config.stepBase) % this.config.step != 0;
+    var nextAllowedValue = Math.ceil((value - this.config.stepBase) / this.config.step) * this.config.step + this.config.stepBase;
+    return nextAllowedValue >= value + this._dateTypeConstructor.DefaultStep;
 };
 
 /**
