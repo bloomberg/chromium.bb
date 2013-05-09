@@ -112,6 +112,11 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Returns the size of all the backing stores used for rendering
   static size_t BackingStoreMemorySize();
 
+  // Adds/removes a callback called on creation of each new RenderWidgetHost.
+  typedef base::Callback<void(RenderWidgetHost*)> CreatedCallback;
+  static void AddCreatedCallback(const CreatedCallback& callback);
+  static void RemoveCreatedCallback(const CreatedCallback& callback);
+
   virtual ~RenderWidgetHost() {}
 
   // Edit operations.

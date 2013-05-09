@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
+#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -111,6 +112,9 @@ float GetAccelerationRatio(float accelerated_delta, float unaccelerated_delta) {
   return unaccelerated_delta / accelerated_delta;
 }
 
+base::LazyInstance<std::vector<RenderWidgetHost::CreatedCallback> >
+g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 
@@ -198,6 +202,9 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   accessibility_mode_ =
       BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
 
+  for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
+    g_created_callbacks.Get().at(i).Run(this);
+
 #if defined(USE_AURA)
   bool overscroll_enabled = CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
@@ -223,6 +230,21 @@ RenderWidgetHostImpl::~RenderWidgetHostImpl() {
 // static
 RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
   return rwh->AsRenderWidgetHostImpl();
+}
+
+// static
+void RenderWidgetHost::AddCreatedCallback(const CreatedCallback& callback) {
+  g_created_callbacks.Get().push_back(callback);
+}
+
+// static
+void RenderWidgetHost::RemoveCreatedCallback(const CreatedCallback& callback) {
+  for (size_t i = 0; i < g_created_callbacks.Get().size(); ++i) {
+    if (g_created_callbacks.Get().at(i).Equals(callback)) {
+      g_created_callbacks.Get().erase(g_created_callbacks.Get().begin() + i);
+      return;
+    }
+  }
 }
 
 void RenderWidgetHostImpl::SetView(RenderWidgetHostView* view) {
