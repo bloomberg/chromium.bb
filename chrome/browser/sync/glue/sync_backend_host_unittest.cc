@@ -247,7 +247,8 @@ class SyncBackendHostTest : public testing::Test {
   }
 
  protected:
-  void DownloadReady(syncer::ModelTypeSet types) {
+  void DownloadReady(syncer::ModelTypeSet succeeded_types,
+                     syncer::ModelTypeSet failed_types) {
     MessageLoop::current()->Quit();
   }
 

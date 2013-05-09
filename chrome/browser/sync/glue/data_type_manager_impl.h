@@ -76,7 +76,8 @@ class DataTypeManagerImpl : public DataTypeManager,
   bool ProcessReconfigure();
 
   void Restart(syncer::ConfigureReason reason);
-  void DownloadReady(syncer::ModelTypeSet failed_configuration_types);
+  void DownloadReady(syncer::ModelTypeSet first_sync_types,
+                     syncer::ModelTypeSet failed_configuration_types);
 
   // Notification from the SBH that download failed due to a transient
   // error and it will be retried.

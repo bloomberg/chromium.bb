@@ -216,11 +216,13 @@ class SyncBackendHost::Core
       syncer::ModelTypeSet types_to_config,
       syncer::ModelTypeSet failed_types,
       const syncer::ModelSafeRoutingInfo routing_info,
-      const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
+      const base::Callback<void(syncer::ModelTypeSet,
+                                syncer::ModelTypeSet)>& ready_task,
       const base::Closure& retry_callback);
   void DoFinishConfigureDataTypes(
       syncer::ModelTypeSet types_to_config,
-      const base::Callback<void(syncer::ModelTypeSet)>& ready_task);
+      const base::Callback<void(syncer::ModelTypeSet,
+                                syncer::ModelTypeSet)>& ready_task);
   void DoRetryConfiguration(
       const base::Closure& retry_callback);
 
@@ -675,7 +677,8 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 void SyncBackendHost::ConfigureDataTypes(
     syncer::ConfigureReason reason,
     const DataTypeConfigStateMap& config_state_map,
-    const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
+    const base::Callback<void(syncer::ModelTypeSet,
+                              syncer::ModelTypeSet)>& ready_task,
     const base::Callback<void()>& retry_callback) {
   // Only one configure is allowed at a time.  This is guaranteed by our
   // callers.  The SyncBackendHost requests one configure as the backend is
@@ -824,7 +827,8 @@ void SyncBackendHost::RequestConfigureSyncer(
     syncer::ModelTypeSet types_to_config,
     syncer::ModelTypeSet failed_types,
     const syncer::ModelSafeRoutingInfo& routing_info,
-    const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
+    const base::Callback<void(syncer::ModelTypeSet,
+                              syncer::ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {
   sync_thread_.message_loop()->PostTask(FROM_HERE,
        base::Bind(&SyncBackendHost::Core::DoConfigureSyncer,
@@ -838,13 +842,15 @@ void SyncBackendHost::RequestConfigureSyncer(
 }
 
 void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop(
-    syncer::ModelTypeSet failed_configuration_types,
-    const base::Callback<void(syncer::ModelTypeSet)>& ready_task) {
+    const syncer::ModelTypeSet succeeded_configuration_types,
+    const syncer::ModelTypeSet failed_configuration_types,
+    const base::Callback<void(syncer::ModelTypeSet,
+                              syncer::ModelTypeSet)>& ready_task) {
   if (!frontend_)
     return;
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
   if (!ready_task.is_null())
-    ready_task.Run(failed_configuration_types);
+    ready_task.Run(succeeded_configuration_types, failed_configuration_types);
 }
 
 void SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop(
@@ -1397,7 +1403,8 @@ void SyncBackendHost::Core::DoConfigureSyncer(
     syncer::ModelTypeSet types_to_config,
     syncer::ModelTypeSet failed_types,
     const syncer::ModelSafeRoutingInfo routing_info,
-    const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
+    const base::Callback<void(syncer::ModelTypeSet,
+                              syncer::ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   sync_manager_->ConfigureSyncer(
@@ -1416,7 +1423,8 @@ void SyncBackendHost::Core::DoConfigureSyncer(
 
 void SyncBackendHost::Core::DoFinishConfigureDataTypes(
     syncer::ModelTypeSet types_to_config,
-    const base::Callback<void(syncer::ModelTypeSet)>& ready_task) {
+    const base::Callback<void(syncer::ModelTypeSet,
+                              syncer::ModelTypeSet)>& ready_task) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
   // Update the enabled types for the bridge and sync manager.
@@ -1428,9 +1436,11 @@ void SyncBackendHost::Core::DoFinishConfigureDataTypes(
 
   const syncer::ModelTypeSet failed_configuration_types =
       Difference(types_to_config, sync_manager_->InitialSyncEndedTypes());
+  const syncer::ModelTypeSet succeeded_configuration_types =
+      Difference(types_to_config, failed_configuration_types);
   host_.Call(FROM_HERE,
              &SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop,
-             failed_configuration_types,
+             succeeded_configuration_types, failed_configuration_types,
              ready_task);
 }
 

@@ -5,6 +5,7 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_DATA_TYPE_ASSOCIATION_STATS_H_
 #define SYNC_INTERNAL_API_PUBLIC_DATA_TYPE_ASSOCIATION_STATS_H_
 
+#include "base/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
@@ -37,6 +38,15 @@ struct SYNC_EXPORT DataTypeAssociationStats {
 
   // Whether a datatype unrecoverable error was encountered during association.
   bool had_error;
+
+  // Time spent on downloading data for association.
+  base::TimeDelta download_time;
+
+  // Time waiting for local model loading and preceding data types to finish.
+  base::TimeDelta association_wait_time;
+
+  // Time spent on association.
+  base::TimeDelta association_time;
 };
 
 }  // namespace syncer

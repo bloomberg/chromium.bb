@@ -41,17 +41,18 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
   virtual void ConfigureDataTypes(
       syncer::ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(ModelTypeSet)>& ready_task,
+      const base::Callback<void(ModelTypeSet,
+                                ModelTypeSet)>& ready_task,
       const base::Callback<void()>& retry_callback) OVERRIDE {
     last_ready_task_ = ready_task;
   }
 
-  base::Callback<void(ModelTypeSet)> last_ready_task() const {
+  base::Callback<void(ModelTypeSet, ModelTypeSet)> last_ready_task() const {
     return last_ready_task_;
   }
 
  private:
-  base::Callback<void(ModelTypeSet)> last_ready_task_;
+  base::Callback<void(ModelTypeSet, ModelTypeSet)> last_ready_task_;
 };
 
 // Mock DataTypeManagerObserver implementation.
@@ -115,10 +116,13 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   // Finish downloading for the given DTM. Should be done only after
   // a call to Configure().
   void FinishDownload(const DataTypeManager& dtm,
+                      ModelTypeSet types_to_configure,
                       ModelTypeSet failed_download_types) {
     EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
     ASSERT_FALSE(configurer_.last_ready_task().is_null());
-    configurer_.last_ready_task().Run(failed_download_types);
+    configurer_.last_ready_task().Run(
+        syncer::Difference(types_to_configure, failed_download_types),
+        failed_download_types);
   }
 
   // Adds a fake controller for the given type to |controllers_|.
@@ -157,7 +161,7 @@ TEST_F(SyncDataTypeManagerImplTest, NoControllers) {
   Configure(dtm_.get(), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
 
   dtm_->Stop();
@@ -175,7 +179,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOne) {
   Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
@@ -203,7 +207,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureSlowLoadingType) {
   Configure(dtm_.get(), types);
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, types, ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   base::OneShotTimer<ModelAssociationManager>* timer =
@@ -219,7 +223,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureSlowLoadingType) {
   SetConfigureStartExpectation();
   GetController(BOOKMARKS)->SimulateModelLoadFinishing();
 
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
   GetController(BOOKMARKS)->SimulateModelLoadFinishing();
 
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
@@ -247,7 +251,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileDownloadPending) {
     EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   }
 
-  configurer_.last_ready_task().Run(ModelTypeSet());
+  configurer_.last_ready_task().Run(ModelTypeSet(BOOKMARKS), ModelTypeSet());
 }
 
 // Set up a DTM with a single controller, configure it, finish
@@ -264,7 +268,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileStartingModel) {
     Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
     EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
-    FinishDownload(*dtm_, ModelTypeSet());
+    FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
     EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
     dtm_->Stop();
@@ -289,7 +293,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
     Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
     EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
-    FinishDownload(*dtm_, ModelTypeSet());
+    FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
     EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
     dtm_->Stop();
@@ -322,7 +326,7 @@ TEST_F(SyncDataTypeManagerImplTest, OneWaitingForCrypto) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 2.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, types, ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 3.
@@ -337,7 +341,7 @@ TEST_F(SyncDataTypeManagerImplTest, OneWaitingForCrypto) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 5.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, types, ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 6.
@@ -370,7 +374,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 2.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 3.
@@ -386,7 +390,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 5.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS, PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 6.
@@ -419,7 +423,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 2.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 3.
@@ -435,7 +439,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 5.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 6.
@@ -469,7 +473,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileOneInFlight) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 2.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 3.
@@ -486,7 +490,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileOneInFlight) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 5.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS, PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 6.
@@ -510,7 +514,7 @@ TEST_F(SyncDataTypeManagerImplTest, OneFailingController) {
   Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   GetController(BOOKMARKS)->FinishStart(
@@ -538,7 +542,7 @@ TEST_F(SyncDataTypeManagerImplTest, SecondControllerFails) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 2.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS, PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 3.
@@ -575,7 +579,7 @@ TEST_F(SyncDataTypeManagerImplTest, OneControllerFailsAssociation) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 2.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS, PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 3.
@@ -617,7 +621,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPending) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 3.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::BLOCKED, dtm_->state());
 
   // Pump the loop to run the posted DTMI::ConfigureImpl() task from
@@ -626,7 +630,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPending) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 4.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS, PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 5.
@@ -668,7 +672,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 3.
-  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS));
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::BLOCKED, dtm_->state());
 
   // Pump the loop to run the posted DTMI::ConfigureImpl() task from
@@ -677,7 +681,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Step 4.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS, PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 5.
@@ -701,7 +705,7 @@ TEST_F(SyncDataTypeManagerImplTest, MigrateAll) {
 
   // Initial setup.
   Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
 
   // We've now configured bookmarks and (implicitly) the control types.
@@ -716,11 +720,11 @@ TEST_F(SyncDataTypeManagerImplTest, MigrateAll) {
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
   dtm_->PurgeForMigration(to_migrate,
-                        syncer::CONFIGURE_REASON_MIGRATION);
+                          syncer::CONFIGURE_REASON_MIGRATION);
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // The DTM will call ConfigureDataTypes(), even though it is unnecessary.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   Mock::VerifyAndClearExpectations(&observer_);
 
@@ -728,7 +732,7 @@ TEST_F(SyncDataTypeManagerImplTest, MigrateAll) {
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
   Configure(dtm_.get(), to_migrate);
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, to_migrate, ModelTypeSet());
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
 }
@@ -742,7 +746,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureDuringPurge) {
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
   Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   Mock::VerifyAndClearExpectations(&observer_);
@@ -750,7 +754,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureDuringPurge) {
   // Purge the Nigori type.
   SetConfigureStartExpectation();
   dtm_->PurgeForMigration(ModelTypeSet(NIGORI),
-                        syncer::CONFIGURE_REASON_MIGRATION);
+                          syncer::CONFIGURE_REASON_MIGRATION);
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
   Mock::VerifyAndClearExpectations(&observer_);
 
@@ -765,7 +769,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureDuringPurge) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Invoke the callback we've been waiting for since we asked to purge NIGORI.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::BLOCKED, dtm_->state());
   Mock::VerifyAndClearExpectations(&observer_);
 
@@ -776,7 +780,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureDuringPurge) {
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   // Now invoke the callback for the second configure request.
-  FinishDownload(*dtm_, ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS, PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Start the preferences controller.  We don't need to start controller for

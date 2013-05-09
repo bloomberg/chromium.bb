@@ -57,7 +57,8 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
       syncer::ModelTypeSet types_to_config,
       syncer::ModelTypeSet failed_types,
       const syncer::ModelSafeRoutingInfo& routing_info,
-      const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
+      const base::Callback<void(syncer::ModelTypeSet,
+                                syncer::ModelTypeSet)>& ready_task,
       const base::Closure& retry_callback) OVERRIDE;
 
   virtual void HandleSyncManagerInitializationOnFrontendLoop(

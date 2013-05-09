@@ -57,6 +57,12 @@ class ModelAssociationManager {
   // Can be called at any time. Synchronously stops all datatypes.
   void Stop();
 
+  // Called before StartAssociationAsync() to flag types that are synced
+  // for the first time. For those types, |download_time| is recorded in their
+  // association stats.
+  void SetFirstSyncTypesAndDownloadTime(const syncer::ModelTypeSet& types,
+                                        const base::TimeDelta& download_time);
+
   // Should only be called after Initialize.
   // Starts the actual association. When this is completed
   // |OnModelAssociationDone| would be called invoked.
@@ -160,8 +166,13 @@ class ModelAssociationManager {
   // list to this list as they finish loading their model.
   std::vector<DataTypeController*> waiting_to_associate_;
 
+  // Time when StartAssociationAsync() is called to associate for a set of data
+  // types.
+  base::Time association_start_time_;
+
   // Controller currently doing model association.
   DataTypeController* currently_associating_;
+  base::Time current_type_association_start_time_;
 
   // Set of all registered controllers.
   const DataTypeController::TypeMap* controllers_;
@@ -178,6 +189,11 @@ class ModelAssociationManager {
       debug_info_listener_;
 
   base::WeakPtrFactory<ModelAssociationManager> weak_ptr_factory_;
+
+  // Types that are synced for the first time and time spent on downloading
+  // their data.
+  syncer::ModelTypeSet first_sync_types_;
+  base::TimeDelta first_sync_download_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelAssociationManager);
 };

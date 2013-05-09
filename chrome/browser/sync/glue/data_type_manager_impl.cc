@@ -185,6 +185,7 @@ void DataTypeManagerImpl::OnDownloadRetry() {
 }
 
 void DataTypeManagerImpl::DownloadReady(
+    syncer::ModelTypeSet first_sync_types,
     syncer::ModelTypeSet failed_configuration_types) {
   DCHECK_EQ(state_, DOWNLOAD_PENDING);
 
@@ -208,6 +209,9 @@ void DataTypeManagerImpl::DownloadReady(
   }
 
   state_ = CONFIGURING;
+
+  model_association_manager_.SetFirstSyncTypesAndDownloadTime(
+      first_sync_types, base::Time::Now() - last_restart_time_);
   model_association_manager_.StartAssociationAsync();
 }
 

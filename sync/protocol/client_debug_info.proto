@@ -86,8 +86,25 @@ message DatatypeAssociationStats {
   optional int32 num_sync_items_deleted = 10;
   optional int32 num_sync_items_modified = 11;
 
-  // The datatype ran into an error during model association.
+  // The data type ran into an error during model association.
   optional bool had_error = 12;
+
+  // Time spent on downloading sync data for first time sync.
+  // Note: This measures the time between asking backend to download data to
+  //       being notified of download-ready by backend. So it consists of
+  //       time on data downloading and processing at sync backend. But
+  //       downloading time should dominate. It's also the total time spent on
+  //       downloading data of all types in the priority group of
+  //       |data_type_id| instead of just one data type.
+  optional int64 download_time_us = 13;
+
+  // Time between when data of the type becomes ready to when association of
+  // the type starts. This measures the waiting time for local model loading
+  // and association of other preceding data types.
+  optional int64 association_wait_time_us = 14;
+
+  // Time spent on model association.
+  optional int64 association_time_us = 15;
 }
 
 message DebugEventInfo {

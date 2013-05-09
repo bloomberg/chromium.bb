@@ -245,7 +245,8 @@ class SyncBackendHost
   virtual void ConfigureDataTypes(
       syncer::ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
+      const base::Callback<void(syncer::ModelTypeSet,
+                                syncer::ModelTypeSet)>& ready_task,
       const base::Callback<void()>& retry_callback) OVERRIDE;
 
   // Turns on encryption of all present and future sync data.
@@ -364,13 +365,16 @@ class SyncBackendHost
       syncer::ModelTypeSet types_to_config,
       syncer::ModelTypeSet failed_types,
       const syncer::ModelSafeRoutingInfo& routing_info,
-      const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
+      const base::Callback<void(syncer::ModelTypeSet,
+                                syncer::ModelTypeSet)>& ready_task,
       const base::Closure& retry_callback);
 
   // Called when the syncer has finished performing a configuration.
   void FinishConfigureDataTypesOnFrontendLoop(
+      const syncer::ModelTypeSet succeeded_configuration_types,
       const syncer::ModelTypeSet failed_configuration_types,
-      const base::Callback<void(syncer::ModelTypeSet)>& ready_task);
+      const base::Callback<void(syncer::ModelTypeSet,
+                                syncer::ModelTypeSet)>& ready_task);
 
   // Called when the SyncManager has been constructed and initialized.
   // Stores |js_backend| and |debug_info_listener| on the UI thread for

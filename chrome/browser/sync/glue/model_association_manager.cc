@@ -75,7 +75,10 @@ class SortComparator : public std::binary_function<DataTypeController*,
 
 syncer::DataTypeAssociationStats BuildAssociationStatsFromMergeResults(
     const syncer::SyncMergeResult& local_merge_result,
-    const syncer::SyncMergeResult& syncer_merge_result) {
+    const syncer::SyncMergeResult& syncer_merge_result,
+    const base::TimeDelta& download_time,
+    const base::TimeDelta& association_wait_time,
+    const base::TimeDelta& association_time) {
   DCHECK_EQ(local_merge_result.model_type(), syncer_merge_result.model_type());
   syncer::DataTypeAssociationStats stats;
   stats.model_type = local_merge_result.model_type();
@@ -101,6 +104,9 @@ syncer::DataTypeAssociationStats BuildAssociationStatsFromMergeResults(
       syncer_merge_result.num_items_deleted();
   stats.num_sync_items_modified =
       syncer_merge_result.num_items_modified();
+  stats.download_time = download_time;
+  stats.association_wait_time = association_wait_time;
+  stats.association_time = association_time;
   return stats;
 }
 
@@ -187,10 +193,18 @@ void ModelAssociationManager::Initialize(syncer::ModelTypeSet desired_types) {
             SortComparator(&start_order_));
 }
 
+void ModelAssociationManager::SetFirstSyncTypesAndDownloadTime(
+    const syncer::ModelTypeSet& types, const base::TimeDelta& time) {
+  DCHECK_EQ(state_, INITIALIZED_TO_CONFIGURE);
+  first_sync_types_ = types;
+  first_sync_download_time_ = time;
+}
+
 void ModelAssociationManager::StartAssociationAsync() {
   DCHECK_EQ(state_, INITIALIZED_TO_CONFIGURE);
   state_ = CONFIGURING;
   DVLOG(1) << "ModelAssociationManager: Going to start model association";
+  association_start_time_ = base::Time::Now();
   LoadModelForNextType();
 }
 
@@ -340,9 +354,19 @@ void ModelAssociationManager::TypeStartCallback(
        start_result == DataTypeController::ASSOCIATION_FAILED) &&
       debug_info_listener_.IsInitialized() &&
       syncer::ProtocolTypes().Has(local_merge_result.model_type())) {
+    base::TimeDelta download_time_first_sync =
+        first_sync_types_.Has(local_merge_result.model_type()) ?
+            first_sync_download_time_ : base::TimeDelta();
+    base::TimeDelta association_wait_time =
+        current_type_association_start_time_ - association_start_time_;
+    base::TimeDelta association_time =
+        base::Time::Now() - current_type_association_start_time_;
     syncer::DataTypeAssociationStats stats =
         BuildAssociationStatsFromMergeResults(local_merge_result,
-                                              syncer_merge_result);
+                                              syncer_merge_result,
+                                              download_time_first_sync,
+                                              association_wait_time,
+                                              association_time);
     debug_info_listener_.Call(
         FROM_HERE,
         &syncer::DataTypeDebugInfoListener::OnDataTypeAssociationComplete,
@@ -498,6 +522,7 @@ void ModelAssociationManager::StartAssociatingNextType() {
     DataTypeController* dtc = waiting_to_associate_[0];
     waiting_to_associate_.erase(waiting_to_associate_.begin());
     currently_associating_ = dtc;
+    current_type_association_start_time_ = base::Time::Now();
     dtc->StartAssociating(base::Bind(
         &ModelAssociationManager::TypeStartCallback,
         weak_ptr_factory_.GetWeakPtr()));

@@ -201,6 +201,12 @@ void DebugInfoEventListener::OnDataTypeAssociationComplete(
   datatype_stats->set_num_sync_items_modified(
       association_stats.num_sync_items_modified);
   datatype_stats->set_had_error(association_stats.had_error);
+  datatype_stats->set_download_time_us(
+      association_stats.download_time.InMicroseconds());
+  datatype_stats->set_association_wait_time_us(
+        association_stats.association_wait_time.InMicroseconds());
+  datatype_stats->set_association_time_us(
+      association_stats.association_time.InMicroseconds());
 
   AddEventToQueue(association_event);
 }
