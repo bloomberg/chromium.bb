@@ -210,10 +210,7 @@ struct weston_output {
 
 struct weston_pointer_grab;
 struct weston_pointer_grab_interface {
-	void (*focus)(struct weston_pointer_grab *grab,
-		      struct weston_surface *surface,
-		      wl_fixed_t x,
-		      wl_fixed_t y);
+	void (*focus)(struct weston_pointer_grab *grab);
 	void (*motion)(struct weston_pointer_grab *grab, uint32_t time);
 	void (*button)(struct weston_pointer_grab *grab,
 		       uint32_t time, uint32_t button, uint32_t state);

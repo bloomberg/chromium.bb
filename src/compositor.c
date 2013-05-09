@@ -905,7 +905,7 @@ weston_compositor_get_time(void)
        return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
-struct weston_surface *
+WL_EXPORT struct weston_surface *
 weston_compositor_pick_surface(struct weston_compositor *compositor,
 			       wl_fixed_t x, wl_fixed_t y,
 			       wl_fixed_t *sx, wl_fixed_t *sy)

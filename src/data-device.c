@@ -212,11 +212,10 @@ destroy_drag_focus(struct wl_listener *listener, void *data)
 }
 
 static void
-drag_grab_focus(struct weston_pointer_grab *grab,
-		struct weston_surface *surface, wl_fixed_t x, wl_fixed_t y)
+weston_drag_set_focus(struct weston_drag *drag, struct weston_surface *surface,
+		      wl_fixed_t sx, wl_fixed_t sy)
 {
-	struct weston_drag *drag =
-		container_of(grab, struct weston_drag, grab);
+	struct weston_pointer *pointer = drag->grab.pointer;
 	struct wl_resource *resource, *offer = NULL;
 	struct wl_display *display;
 	uint32_t serial;
@@ -234,7 +233,7 @@ drag_grab_focus(struct weston_pointer_grab *grab,
 	if (!drag->data_source && surface->resource.client != drag->client)
 		return;
 
-	resource = find_resource(&drag->grab.pointer->seat->drag_resource_list,
+	resource = find_resource(&pointer->seat->drag_resource_list,
 				 surface->resource.client);
 	if (!resource)
 		return;
@@ -246,12 +245,28 @@ drag_grab_focus(struct weston_pointer_grab *grab,
 		offer = wl_data_source_send_offer(drag->data_source, resource);
 
 	wl_data_device_send_enter(resource, serial, &surface->resource,
-				  x, y, offer);
+				  sx, sy, offer);
 
 	drag->focus = surface;
 	drag->focus_listener.notify = destroy_drag_focus;
 	wl_signal_add(&resource->destroy_signal, &drag->focus_listener);
 	drag->focus_resource = resource;
+}
+
+static void
+drag_grab_focus(struct weston_pointer_grab *grab)
+{
+	struct weston_drag *drag =
+		container_of(grab, struct weston_drag, grab);
+	struct weston_pointer *pointer = grab->pointer;
+	struct weston_surface *surface;
+	wl_fixed_t sx, sy;
+
+	surface = weston_compositor_pick_surface(pointer->seat->compositor,
+						 pointer->x, pointer->y,
+						 &sx, &sy);
+	if (drag->focus != surface)
+		weston_drag_set_focus(drag, surface, sx, sy);
 }
 
 static void
@@ -291,8 +306,7 @@ data_device_end_drag_grab(struct weston_drag *drag)
 		wl_list_remove(&drag->icon_destroy_listener.link);
 	}
 
-	drag_grab_focus(&drag->grab, NULL,
-	                wl_fixed_from_int(0), wl_fixed_from_int(0));
+	weston_drag_set_focus(drag, NULL, 0, 0);
 
 	weston_pointer_end_grab(drag->grab.pointer);
 

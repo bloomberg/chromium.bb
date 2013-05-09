@@ -47,20 +47,12 @@ void
 weston_seat_repick(struct weston_seat *seat)
 {
 	const struct weston_pointer_grab_interface *interface;
-	struct weston_surface *surface;
-	struct weston_pointer *pointer = seat->pointer;
-	wl_fixed_t sx, sy;
 
-	if (!pointer)
+	if (seat->pointer == NULL)
 		return;
 
-	surface = weston_compositor_pick_surface(seat->compositor,
-						 pointer->x,
-						 pointer->y,
-						 &sx, &sy);
-
-	interface = pointer->grab->interface;
-	interface->focus(pointer->grab, surface, sx, sy);
+	interface = seat->pointer->grab->interface;
+	interface->focus(seat->pointer->grab);
 }
 
 static void
@@ -105,16 +97,21 @@ lose_touch_focus(struct wl_listener *listener, void *data)
 }
 
 static void
-default_grab_focus(struct weston_pointer_grab *grab,
-		   struct weston_surface *surface, wl_fixed_t x, wl_fixed_t y)
+default_grab_focus(struct weston_pointer_grab *grab)
 {
 	struct weston_pointer *pointer = grab->pointer;
+	struct weston_surface *surface;
+	wl_fixed_t sx, sy;
 
 	if (pointer->button_count > 0)
 		return;
 
+	surface = weston_compositor_pick_surface(pointer->seat->compositor,
+						 pointer->x, pointer->y,
+						 &sx, &sy);
+
 	if (pointer->focus != surface)
-		weston_pointer_set_focus(pointer, surface, x, y);
+		weston_pointer_set_focus(pointer, surface, sx, sy);
 }
 
 static void
@@ -537,37 +534,21 @@ weston_pointer_start_grab(struct weston_pointer *pointer,
 			  struct weston_pointer_grab *grab)
 {
 	const struct weston_pointer_grab_interface *interface;
-	struct weston_compositor *compositor = pointer->seat->compositor;
-	struct weston_surface *surface;
-	wl_fixed_t sx, sy;
 
 	pointer->grab = grab;
 	interface = pointer->grab->interface;
 	grab->pointer = pointer;
-
-	surface = weston_compositor_pick_surface(compositor,
-						 pointer->x, pointer->y,
-						 &sx, &sy);
-
-	if (surface)
-		interface->focus(pointer->grab, surface, sx, sy);
+	interface->focus(pointer->grab);
 }
 
 WL_EXPORT void
 weston_pointer_end_grab(struct weston_pointer *pointer)
 {
 	const struct weston_pointer_grab_interface *interface;
-	struct weston_compositor *compositor = pointer->seat->compositor;
-	struct weston_surface *surface;
-	wl_fixed_t sx, sy;
-
-	surface = weston_compositor_pick_surface(compositor,
-						 pointer->x, pointer->y,
-						 &sx, &sy);
 
 	pointer->grab = &pointer->default_grab;
 	interface = pointer->grab->interface;
-	interface->focus(pointer->grab, surface, sx, sy);
+	interface->focus(pointer->grab);
 }
 
 WL_EXPORT void
@@ -641,8 +622,6 @@ move_pointer(struct weston_seat *seat, wl_fixed_t x, wl_fixed_t y)
 						   ix, iy, NULL))
 			weston_output_update_zoom(output, ZOOM_FOCUS_POINTER);
 
-	weston_seat_repick(seat);
-
 	if (pointer->sprite) {
 		weston_surface_set_position(pointer->sprite,
 					    ix - pointer->hotspot_x,
@@ -664,6 +643,7 @@ notify_motion(struct weston_seat *seat,
 	move_pointer(seat, pointer->x + dx, pointer->y + dy);
 
 	interface = pointer->grab->interface;
+	interface->focus(pointer->grab);
 	interface->motion(pointer->grab, time);
 }
 
@@ -680,6 +660,7 @@ notify_motion_absolute(struct weston_seat *seat,
 	move_pointer(seat, x, y);
 
 	interface = pointer->grab->interface;
+	interface->focus(pointer->grab);
 	interface->motion(pointer->grab, time);
 }
 

@@ -1013,8 +1013,7 @@ bind_workspace_manager(struct wl_client *client,
 }
 
 static void
-noop_grab_focus(struct weston_pointer_grab *grab,
-		struct weston_surface *surface, wl_fixed_t x, wl_fixed_t y)
+noop_grab_focus(struct weston_pointer_grab *grab)
 {
 }
 
@@ -1230,10 +1229,16 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 }
 
 static void
-busy_cursor_grab_focus(struct weston_pointer_grab *base,
-		       struct weston_surface *surface, int32_t x, int32_t y)
+busy_cursor_grab_focus(struct weston_pointer_grab *base)
 {
 	struct shell_grab *grab = (struct shell_grab *) base;
+	struct weston_pointer *pointer = base->pointer;
+	struct weston_surface *surface;
+	wl_fixed_t sx, sy;
+
+	surface = weston_compositor_pick_surface(pointer->seat->compositor,
+						 pointer->x, pointer->y,
+						 &sx, &sy);
 
 	if (grab->shsurf->surface != surface) {
 		shell_grab_end(grab);
@@ -1895,18 +1900,21 @@ get_shell_seat(struct weston_seat *seat)
 }
 
 static void
-popup_grab_focus(struct weston_pointer_grab *grab,
-		 struct weston_surface *surface,
-		 wl_fixed_t x,
-		 wl_fixed_t y)
+popup_grab_focus(struct weston_pointer_grab *grab)
 {
 	struct weston_pointer *pointer = grab->pointer;
+	struct weston_surface *surface;
 	struct shell_seat *shseat =
 	    container_of(grab, struct shell_seat, popup_grab.grab);
 	struct wl_client *client = shseat->popup_grab.client;
+	wl_fixed_t sx, sy;
+
+	surface = weston_compositor_pick_surface(pointer->seat->compositor,
+						 pointer->x, pointer->y,
+						 &sx, &sy);
 
 	if (surface && surface->resource.client == client) {
-		weston_pointer_set_focus(pointer, surface, x, y);
+		weston_pointer_set_focus(pointer, surface, sx, sy);
 	} else {
 		weston_pointer_set_focus(pointer, NULL,
 					 wl_fixed_from_int(0),
