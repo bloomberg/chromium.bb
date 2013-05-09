@@ -114,7 +114,7 @@ class PeerConnectionEntry {
   std::map<string, StatsMap> stats_;
 };
 
-static const int64 FAKE_TIME_STAMP = 0;
+static const int64 FAKE_TIME_STAMP = 3600000;
 
 class WebRTCInternalsBrowserTest: public ContentBrowserTest {
  public:

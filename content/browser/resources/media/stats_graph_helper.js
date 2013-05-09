@@ -140,6 +140,7 @@ function drawSingleReport(peerConnectionElement, report) {
     // both the simple and compound graph cases.
     if (!graphViews[graphViewId].hasDataSeries(dataSeries[finalDataSeriesId]))
       graphViews[graphViewId].addDataSeries(dataSeries[finalDataSeriesId]);
+
     graphViews[graphViewId].updateEndDate();
   }
 }
