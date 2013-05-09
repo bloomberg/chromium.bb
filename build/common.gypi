@@ -3737,16 +3737,13 @@
                 '-Wstring-conversion',
               ],
               'OTHER_CPLUSPLUSFLAGS': [
-                # gnu++11 instead of c++11 so that __ANSI_C__ doesn't get
-                # defined.  (Else e.g. finite() in base/float_util.h needs to
-                # be isfinite() which doesn't exist on the android bots.)
-                # typeof() is also disabled in c++11 (but we could use
-                # decltype() instead).
-                # TODO(thakis): Use CLANG_CXX_LANGUAGE_STANDARD instead once all
-                # bots use xcode 4 -- http://crbug.com/147515).
+                # gnu++11 instead of c++11 is needed because some code uses
+                # typeof() (a GNU extension).
                 # TODO(thakis): Eventually switch this to c++11 instead of
                 # gnu++11 (once typeof can be removed, which is blocked on c++11
                 # being available everywhere).
+                # TODO(thakis): Use CLANG_CXX_LANGUAGE_STANDARD instead once all
+                # bots use xcode 4 -- http://crbug.com/147515).
                 '$(inherited)', '-std=gnu++11',
               ],
             }],
