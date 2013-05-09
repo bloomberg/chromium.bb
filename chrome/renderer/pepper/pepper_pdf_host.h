@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/host/resource_host.h"
@@ -69,7 +70,7 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
                        const SkBitmap& pixels_to_write,
                        ppapi::HostResource* result,
                        std::string* out_image_data_desc,
-                       ppapi::proxy::ImageHandle* out_image_handle,
+                       IPC::PlatformFileForTransit* out_image_handle,
                        uint32_t* out_byte_count);
 
   content::RendererPpapiHost* host_;

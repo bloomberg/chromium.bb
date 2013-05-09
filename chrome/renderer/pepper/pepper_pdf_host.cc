@@ -300,7 +300,7 @@ int32_t PepperPDFHost::OnHostMsgGetResourceImage(
 
   ppapi::HostResource host_resource;
   std::string image_data_desc;
-  ppapi::proxy::ImageHandle image_handle;
+  IPC::PlatformFileForTransit image_handle;
   uint32_t byte_count = 0;
   bool success = CreateImageData(
       pp_instance(),
@@ -318,22 +318,7 @@ int32_t PepperPDFHost::OnHostMsgGetResourceImage(
 
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
-  // This mess of #defines is needed to translate between ImageHandles and
-  // SerializedHandles. This is something that should be addressed with a
-  // refactoring of PPB_ImageData.
-#if defined(OS_WIN)
-  ppapi::proxy::SerializedHandle serialized_handle;
-  PpapiPluginMsg_PDF_GetResourceImageReply reply_msg(host_resource,
-                                                     image_data_desc,
-                                                     0);
-  ppapi::proxy::HostDispatcher* dispatcher =
-      ppapi::proxy::HostDispatcher::GetForInstance(pp_instance());
-  if (!dispatcher)
-    return PP_ERROR_FAILED;
-  serialized_handle.set_shmem(
-      dispatcher->ShareHandleWithRemote(image_handle, false), byte_count);
-  reply_context.params.AppendHandle(serialized_handle);
-#elif defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
   ppapi::proxy::SerializedHandle serialized_handle;
   PpapiPluginMsg_PDF_GetResourceImageReply reply_msg(host_resource,
                                                      image_data_desc,
@@ -341,10 +326,10 @@ int32_t PepperPDFHost::OnHostMsgGetResourceImage(
   serialized_handle.set_shmem(image_handle, byte_count);
   reply_context.params.AppendHandle(serialized_handle);
 #elif defined(OS_LINUX)
-  // For linux, we pass the SysV shared memory key in the message.
+  // For Linux, we pass the SysV shared memory key in the message.
   PpapiPluginMsg_PDF_GetResourceImageReply reply_msg(host_resource,
                                                      image_data_desc,
-                                                     image_handle);
+                                                     image_handle.fd);
 #else
   // Not supported on the other platforms.
   // This is a stub reply_msg not to break the build.
@@ -365,7 +350,7 @@ int32_t PepperPDFHost::OnHostMsgGetResourceImage(
 
 // TODO(raymes): This function is mainly copied from ppb_image_data_proxy.cc.
 // It's a mess and needs to be fixed in several ways but this is better done
-// when we refactor PPB_ImageData. On success, the serialized handle will be
+// when we refactor PPB_ImageData. On success, the image handle will be
 // non-null.
 bool PepperPDFHost::CreateImageData(
     PP_Instance instance,
@@ -374,18 +359,21 @@ bool PepperPDFHost::CreateImageData(
     const SkBitmap& pixels_to_write,
     ppapi::HostResource* result,
     std::string* out_image_data_desc,
-    ppapi::proxy::ImageHandle* out_image_handle,
+    IPC::PlatformFileForTransit* out_image_handle,
     uint32_t* out_byte_count) {
-  // Create the resource.
-  ppapi::thunk::EnterResourceCreation enter(instance);
-  if (enter.failed())
-    return false;
-
-  PP_Resource resource = enter.functions()->CreateImageData(instance, format,
-                                                            &size, PP_FALSE);
+  PP_ImageDataDesc desc;
+  PP_Resource resource = ppapi::proxy::PPB_ImageData_Proxy::CreateImageData(
+      instance,
+      format, size,
+      false /* init_to_zero */,
+      false /* is_nacl_plugin */,
+      &desc, out_image_handle, out_byte_count);
   if (!resource)
     return false;
+
   result->SetHostResource(instance, resource);
+  out_image_data_desc->resize(sizeof(PP_ImageDataDesc));
+  memcpy(&(*out_image_data_desc)[0], &desc, sizeof(PP_ImageDataDesc));
 
   // Write the image to the resource shared memory.
   ppapi::thunk::EnterResourceNoLock<ppapi::thunk::PPB_ImageData_API>
@@ -404,23 +392,6 @@ bool PepperPDFHost::CreateImageData(
   // ignore the allocated pixels in shared memory and re-allocate a new buffer.
   canvas->writePixels(pixels_to_write, 0, 0);
 
-  // Get the image description, it's just serialized as a string.
-  PP_ImageDataDesc desc;
-  if (enter_resource.object()->Describe(&desc) == PP_TRUE) {
-    out_image_data_desc->resize(sizeof(PP_ImageDataDesc));
-    memcpy(&(*out_image_data_desc)[0], &desc, sizeof(PP_ImageDataDesc));
-  } else {
-    return false;
-  }
-
-  // Get the shared memory handle.
-  int32_t handle = 0;
-  if (enter_resource.object()->GetSharedMemory(
-      &handle, out_byte_count) != PP_OK) {
-    return false;
-  }
-
-  *out_image_handle = ppapi::proxy::ImageData::HandleFromInt(handle);
   return true;
 }
 
