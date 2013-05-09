@@ -75,11 +75,11 @@ class AutofillDialogController {
   // Returns the icon that should be shown in the account chooser.
   virtual gfx::Image AccountChooserImage() = 0;
 
-  // Whether or not an Autocheckout flow is running.
-  virtual bool AutocheckoutIsRunning() const = 0;
+  // Whether or not the details container should be showing currently.
+  virtual bool ShouldShowDetailArea() const = 0;
 
-  // Whether or not there was an error in an Autocheckout flow.
-  virtual bool HadAutocheckoutError() const = 0;
+  // Whether or not the progress bar in the button strip should be showing.
+  virtual bool ShouldShowProgressBar() const = 0;
 
   // Whether or not the |button| should be enabled.
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const = 0;

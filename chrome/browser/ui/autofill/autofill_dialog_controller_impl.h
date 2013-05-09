@@ -91,6 +91,12 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // be in [0.0, 1.0].
   void UpdateProgressBar(double value);
 
+  // Whether Autocheckout is currently running.
+  bool AutocheckoutIsRunning() const;
+
+  // Whether there was an error in the previous Autocheckout flow.
+  bool HadAutocheckoutError() const;
+
   // Called when there is an error in an active Autocheckout flow.
   void OnAutocheckoutError();
 
@@ -110,8 +116,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
   virtual ui::MenuModel* MenuModelForAccountChooser() OVERRIDE;
   virtual gfx::Image AccountChooserImage() OVERRIDE;
-  virtual bool AutocheckoutIsRunning() const OVERRIDE;
-  virtual bool HadAutocheckoutError() const OVERRIDE;
+  virtual bool ShouldShowDetailArea() const OVERRIDE;
+  virtual bool ShouldShowProgressBar() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual const std::vector<ui::Range>& LegalDocumentLinks() OVERRIDE;
   virtual bool SectionIsActive(DialogSection section) const OVERRIDE;
@@ -450,8 +456,11 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // For logging UMA metrics.
   const AutofillMetrics metric_logger_;
   base::Time dialog_shown_timestamp_;
-  base::Time autocheckout_started_timestamp_;
   AutofillMetrics::DialogInitialUserStateMetric initial_user_state_;
+
+  // The time that Autocheckout started running. Reset on error. While this is
+  // a valid time, |AutocheckoutIsRunning()| will return true.
+  base::Time autocheckout_started_timestamp_;
 
   // Whether this is an Autocheckout or a requestAutocomplete dialog.
   const DialogType dialog_type_;
@@ -545,9 +554,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // True after the user first accepts the dialog and presses "Submit". May
   // continue to be true while processing required actions.
   bool is_submitting_;
-
-  // Whether or not an Autocheckout flow is running.
-  bool autocheckout_is_running_;
 
   // Whether or not there was an error in the Autocheckout flow.
   bool had_autocheckout_error_;

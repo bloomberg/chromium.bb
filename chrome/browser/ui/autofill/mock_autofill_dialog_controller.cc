@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
 
 namespace autofill {
-MockAutofillDialogController::MockAutofillDialogController() {}
 
+MockAutofillDialogController::MockAutofillDialogController() {}
 MockAutofillDialogController::~MockAutofillDialogController() {}
 
 string16 MockAutofillDialogController::DialogTitle() const {
@@ -53,7 +53,9 @@ DialogSignedInState MockAutofillDialogController::SignedInState() const {
    return REQUIRES_RESPONSE;
 }
 
-bool MockAutofillDialogController::ShouldShowSpinner() const { return false; }
+bool MockAutofillDialogController::ShouldShowSpinner() const {
+  return false;
+}
 
 bool MockAutofillDialogController::ShouldOfferToSaveInChrome() const {
    return false;
@@ -63,11 +65,11 @@ gfx::Image MockAutofillDialogController::AccountChooserImage() {
   return gfx::Image();
 }
 
-bool MockAutofillDialogController::AutocheckoutIsRunning() const {
+bool MockAutofillDialogController::ShouldShowProgressBar() const {
   return false;
 }
 
-bool MockAutofillDialogController::HadAutocheckoutError() const {
+bool MockAutofillDialogController::ShouldShowDetailArea() const {
   return false;
 }
 

@@ -402,11 +402,20 @@ void AutofillDialogControllerImpl::UpdateProgressBar(double value) {
   view_->UpdateProgressBar(value);
 }
 
+bool AutofillDialogControllerImpl::AutocheckoutIsRunning() const {
+  return !autocheckout_started_timestamp_.is_null();
+}
+
+bool AutofillDialogControllerImpl::HadAutocheckoutError() const {
+  return had_autocheckout_error_;
+}
+
 void AutofillDialogControllerImpl::OnAutocheckoutError() {
   had_autocheckout_error_ = true;
-  autocheckout_is_running_ = false;
+  autocheckout_started_timestamp_ = base::Time();
   view_->UpdateNotificationArea();
   view_->UpdateButtonStrip();
+  view_->UpdateDetailArea();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -489,16 +498,14 @@ string16 AutofillDialogControllerImpl::SignInLinkText() const {
 }
 
 bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
-  return !IsPayingWithWallet() && !profile_->IsOffTheRecord() &&
-      IsManuallyEditingAnySection();
-}
-
-bool AutofillDialogControllerImpl::AutocheckoutIsRunning() const {
-  return autocheckout_is_running_;
-}
-
-bool AutofillDialogControllerImpl::HadAutocheckoutError() const {
-  return had_autocheckout_error_;
+  // If Autocheckout is running, hide this checkbox so the progress bar has some
+  // room. If Autocheckout had an error, neither the [X] Save details in chrome
+  // nor the progress bar should show.
+  return !IsPayingWithWallet() &&
+      !profile_->IsOffTheRecord() &&
+      IsManuallyEditingAnySection() &&
+      !ShouldShowProgressBar() &&
+      !HadAutocheckoutError();
 }
 
 bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
@@ -590,6 +597,7 @@ void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
   SignedInStateUpdated();
   SuggestionsUpdated();
   UpdateAccountChooserView();
+
   if (view_)
     view_->UpdateButtonStrip();
 
@@ -753,6 +761,18 @@ gfx::Image AutofillDialogControllerImpl::AccountChooserImage() {
           account_chooser_model_.checked_item()),
       &icon);
   return icon;
+}
+
+bool AutofillDialogControllerImpl::ShouldShowDetailArea() const {
+  // Hide the detail area when Autocheckout is running or there was an error (as
+  // there's nothing they can do after an error but cancel).
+  return !(AutocheckoutIsRunning() || HadAutocheckoutError());
+}
+
+bool AutofillDialogControllerImpl::ShouldShowProgressBar() const {
+  // Show the progress bar while Autocheckout is running but hide it on errors,
+  // as there's no use leaving it up if the flow has failed.
+  return AutocheckoutIsRunning() && !HadAutocheckoutError();
 }
 
 string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
@@ -1174,9 +1194,9 @@ void AutofillDialogControllerImpl::FocusMoved() {
 void AutofillDialogControllerImpl::ViewClosed() {
   GetManager()->RemoveObserver(this);
 
-  if (autocheckout_is_running_ || had_autocheckout_error_) {
+  if (AutocheckoutIsRunning() || had_autocheckout_error_) {
     AutofillMetrics::AutocheckoutCompletionStatus metric =
-        autocheckout_is_running_ ?
+        AutocheckoutIsRunning() ?
             AutofillMetrics::AUTOCHECKOUT_SUCCEEDED :
             AutofillMetrics::AUTOCHECKOUT_FAILED;
     GetMetricLogger().LogAutocheckoutDuration(
@@ -1677,7 +1697,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       is_first_run_(!profile_->GetPrefs()->HasPrefPath(
           ::prefs::kAutofillDialogPayWithoutWallet)),
       is_submitting_(false),
-      autocheckout_is_running_(false),
       had_autocheckout_error_(false),
       was_ui_latency_logged_(false) {
   // TODO(estade): remove duplicates from |form_structure|?
@@ -2283,9 +2302,9 @@ void AutofillDialogControllerImpl::FinishSubmit() {
       // Stop observing PersonalDataManager to avoid the dialog redrawing while
       // in an Autocheckout flow.
       GetManager()->RemoveObserver(this);
-      autocheckout_is_running_ = true;
       autocheckout_started_timestamp_ = base::Time::Now();
       view_->UpdateButtonStrip();
+      view_->UpdateDetailArea();
       break;
 
     case DIALOG_TYPE_REQUEST_AUTOCOMPLETE:

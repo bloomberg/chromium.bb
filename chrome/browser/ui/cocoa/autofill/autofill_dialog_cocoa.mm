@@ -53,6 +53,9 @@ void AutofillDialogCocoa::UpdateAccountChooser() {
 void AutofillDialogCocoa::UpdateButtonStrip() {
 }
 
+void AutofillDialogCocoa::UpdateDetailArea() {
+}
+
 void AutofillDialogCocoa::UpdateNotificationArea() {
 }
 

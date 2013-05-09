@@ -126,6 +126,10 @@ void AutofillDialogViewAndroid::UpdateButtonStrip() {
   NOTIMPLEMENTED();
 }
 
+void AutofillDialogViewAndroid::UpdateDetailArea() {
+  NOTIMPLEMENTED();
+}
+
 void AutofillDialogViewAndroid::UpdateSection(DialogSection section) {
   UpdateOrFillSectionToJava(section, true, UNKNOWN_TYPE);
 }

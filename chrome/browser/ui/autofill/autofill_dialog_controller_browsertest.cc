@@ -305,6 +305,32 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
     EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i]));
   }
 }
+
+// Test that the Autocheckout progress bar is showing after submitting the
+// dialog for controller with type DIALOG_TYPE_AUTOCHECKOUT.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       AutocheckoutShowsProgressBar) {
+  InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
+  EXPECT_TRUE(controller()->ShouldShowDetailArea());
+  EXPECT_FALSE(controller()->ShouldShowProgressBar());
+
+  controller()->view()->GetTestableView()->SubmitForTesting();
+  EXPECT_FALSE(controller()->ShouldShowDetailArea());
+  EXPECT_TRUE(controller()->ShouldShowProgressBar());
+}
+
+// Test that the Autocheckout progress bar is not showing after submitting the
+// dialog for controller with type DIALOG_TYPE_REQUEST_AUTOCOMPLETE.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       RequestAutocompleteDoesntShowProgressBar) {
+  InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  EXPECT_TRUE(controller()->ShouldShowDetailArea());
+  EXPECT_FALSE(controller()->ShouldShowProgressBar());
+
+  controller()->view()->GetTestableView()->SubmitForTesting();
+  EXPECT_TRUE(controller()->ShouldShowDetailArea());
+  EXPECT_FALSE(controller()->ShouldShowProgressBar());
+}
 #endif  // defined(TOOLKIT_VIEWS)
 
 }  // namespace autofill

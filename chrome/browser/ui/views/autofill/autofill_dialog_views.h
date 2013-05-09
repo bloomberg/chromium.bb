@@ -78,6 +78,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void Hide() OVERRIDE;
   virtual void UpdateAccountChooser() OVERRIDE;
   virtual void UpdateButtonStrip() OVERRIDE;
+  virtual void UpdateDetailArea() OVERRIDE;
   virtual void UpdateNotificationArea() OVERRIDE;
   virtual void UpdateSection(DialogSection section) OVERRIDE;
   virtual void FillSection(DialogSection section,
@@ -490,6 +491,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // time to show a suggestion popup and possibly reset the validity state of
   // the input.
   void TextfieldEditedOrActivated(views::Textfield* textfield, bool was_edit);
+
+  // Updates the [X] Save in Chrome checkbox in the button strip.
+  void UpdateSaveInChromeCheckbox();
 
   // Call this when the size of anything in |contents_| might've changed.
   void ContentsPreferredSizeChanged();

@@ -37,6 +37,10 @@ class AutofillDialogView {
   // Updates the button strip based on the current controller state.
   virtual void UpdateButtonStrip() = 0;
 
+  // Updates the container for the detail inputs. Used to hide this container
+  // while Autocheckout is running.
+  virtual void UpdateDetailArea() = 0;
+
   // Called when the contents of a section have changed.
   virtual void UpdateSection(DialogSection section) = 0;
 

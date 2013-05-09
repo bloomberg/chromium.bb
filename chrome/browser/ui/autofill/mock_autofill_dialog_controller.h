@@ -30,8 +30,8 @@ class MockAutofillDialogController : public AutofillDialogController {
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
   MOCK_METHOD0(MenuModelForAccountChooser, ui::MenuModel*());
   virtual gfx::Image AccountChooserImage() OVERRIDE;
-  virtual bool AutocheckoutIsRunning() const OVERRIDE;
-  virtual bool HadAutocheckoutError() const OVERRIDE;
+  virtual bool ShouldShowProgressBar() const OVERRIDE;
+  virtual bool ShouldShowDetailArea() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual const std::vector<ui::Range>& LegalDocumentLinks() OVERRIDE;
   virtual bool SectionIsActive(DialogSection section) const OVERRIDE;

@@ -777,6 +777,7 @@ void AutofillDialogViews::Show() {
   InitChildViews();
   UpdateAccountChooser();
   UpdateNotificationArea();
+  UpdateSaveInChromeCheckbox();
 
   // Ownership of |contents_| is handed off by this call. The widget will take
   // care of deleting itself after calling DeleteDelegate().
@@ -833,14 +834,15 @@ void AutofillDialogViews::UpdateAccountChooser() {
 void AutofillDialogViews::UpdateButtonStrip() {
   button_strip_extra_view_->SetVisible(
       GetDialogButtons() != ui::DIALOG_BUTTON_NONE);
-  save_in_chrome_checkbox_->SetVisible(!(controller_->AutocheckoutIsRunning() ||
-                                         controller_->HadAutocheckoutError()));
+  UpdateSaveInChromeCheckbox();
   autocheckout_progress_bar_view_->SetVisible(
-      controller_->AutocheckoutIsRunning());
-  details_container_->SetVisible(!(controller_->AutocheckoutIsRunning() ||
-                                   controller_->HadAutocheckoutError()));
-
+      controller_->ShouldShowProgressBar());
   GetDialogClientView()->UpdateDialogButtons();
+  ContentsPreferredSizeChanged();
+}
+
+void AutofillDialogViews::UpdateDetailArea() {
+  details_container_->SetVisible(controller_->ShouldShowDetailArea());
   ContentsPreferredSizeChanged();
 }
 
@@ -887,6 +889,7 @@ string16 AutofillDialogViews::GetCvc() {
 }
 
 bool AutofillDialogViews::SaveDetailsLocally() {
+  DCHECK(save_in_chrome_checkbox_->visible());
   return save_in_chrome_checkbox_->checked();
 }
 
@@ -1449,8 +1452,7 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
 
   // Show or hide the "Save in chrome" checkbox. If nothing is in editing mode,
   // hide. If the controller tells us not to show it, likewise hide.
-  save_in_chrome_checkbox_->SetVisible(
-      controller_->ShouldOfferToSaveInChrome());
+  UpdateSaveInChromeCheckbox();
 
   const bool has_menu = !!controller_->MenuModelForSection(group.section);
 
@@ -1613,6 +1615,11 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
 
   gfx::Image icon = controller_->IconForField(type, textfield->text());
   textfield->SetIcon(icon.AsImageSkia());
+}
+
+void AutofillDialogViews::UpdateSaveInChromeCheckbox() {
+  save_in_chrome_checkbox_->SetVisible(
+      controller_->ShouldOfferToSaveInChrome());
 }
 
 void AutofillDialogViews::ContentsPreferredSizeChanged() {
