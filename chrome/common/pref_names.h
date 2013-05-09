@@ -834,6 +834,9 @@ extern const char kPinnedLauncherApps[];
 extern const char kShowLogoutButtonInTray[];
 extern const char kShelfPreferences[];
 
+extern const char kImmersiveModeRevealDelayMs[];
+extern const char kImmersiveModeRevealXThresholdPixels[];
+
 extern const char kWorkspaceCyclerShallowerThanSelectedYOffsets[];
 extern const char kWorkspaceCyclerDeeperThanSelectedYOffsets[];
 extern const char kWorkspaceCyclerSelectedYOffset[];

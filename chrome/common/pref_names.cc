@@ -2309,6 +2309,12 @@ const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 // kShelfAutoHideBehavior.
 const char kShelfPreferences[] = "shelf_preferences";
 
+// Tuning for immersive fullscreen.
+const char kImmersiveModeRevealDelayMs[] =
+    "immersive_mode.reveal_delay_ms";
+const char kImmersiveModeRevealXThresholdPixels[] =
+    "immersive_mode.reveal_x_threshold_pixels";
+
 // Tuning settings for the animations when a user is cycling through workspaces
 // via a three finger vertical scroll.
 const char kWorkspaceCyclerShallowerThanSelectedYOffsets[] =

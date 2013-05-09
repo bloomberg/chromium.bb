@@ -97,6 +97,8 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   void SetMouseHoveredForTest(bool hovered);
 
  private:
+  friend class ImmersiveModeControllerAshTest;
+
   enum Animate {
     ANIMATE_NO,
     ANIMATE_SLOW,
@@ -126,15 +128,21 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Enables or disables observers for mouse move, focus, and window restore.
   void EnableWindowObservers(bool enable);
 
-  // Update |mouse_revealed_lock_| based on the current mouse state and the
+  // Updates |top_edge_hover_timer_| based on a mouse |event|. If the mouse is
+  // hovered at the top of the screen the timer is started. If the mouse moves
+  // away from the top edge, or moves too much in the x direction, the timer is
+  // stopped.
+  void UpdateTopEdgeHoverTimer(ui::MouseEvent* event);
+
+  // Updates |mouse_revealed_lock_| based on the current mouse state and the
   // currently active widget.
   // |maybe_drag| is true if the user may be in the middle of a drag.
   void UpdateMouseRevealedLock(bool maybe_drag);
 
-  // Acquire the mouse revealed lock if it is not already held.
+  // Acquires the mouse revealed lock if it is not already held.
   void AcquireMouseRevealedLock();
 
-  // Update |focus_revealed_lock_| based on the currently active view and the
+  // Updates |focus_revealed_lock_| based on the currently active view and the
   // currently active widget.
   void UpdateFocusRevealedLock();
 
@@ -208,8 +216,12 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // when immersive mode is enabled and the top-of-window views are closed.
   TabIndicatorVisibility tab_indicator_visibility_;
 
-  // Timer to track cursor being held at the top.
-  base::OneShotTimer<ImmersiveModeController> top_timer_;
+  // Timer to track cursor being held at the top edge of the screen.
+  base::OneShotTimer<ImmersiveModeController> top_edge_hover_timer_;
+
+  // The cursor x position in root coordinates when the cursor first hit
+  // the top edge of the screen.
+  int mouse_x_when_hit_top_;
 
   // Lock which keeps the top-of-window views revealed based on the current
   // mouse state.

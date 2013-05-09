@@ -21,6 +21,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/gestures/gesture_configuration.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
@@ -29,13 +30,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
+using ui::GestureConfiguration;
 using views::View;
 
 namespace {
-
-// Time after which the edge trigger fires and top-chrome is revealed. This is
-// after the mouse stops moving.
-const int kTopEdgeRevealDelayMs = 200;
 
 // The slide open/closed animation looks better if it starts and ends just a
 // few pixels before the view goes completely off the screen, which reduces
@@ -347,6 +345,7 @@ ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
       reveal_state_(CLOSED),
       revealed_lock_count_(0),
       tab_indicator_visibility_(TAB_INDICATORS_HIDE),
+      mouse_x_when_hit_top_(-1),
       native_window_(NULL),
       weak_ptr_factory_(this),
       gesture_begun_(false) {
@@ -435,7 +434,7 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     anchored_widget_manager_->OnImmersiveModeEnabled();
   } else {
     // Stop cursor-at-top tracking.
-    top_timer_.Stop();
+    top_edge_hover_timer_.Stop();
     // Snap immediately to the closed state.
     reveal_state_ = CLOSED;
     EnablePaintToLayer(false);
@@ -523,21 +522,9 @@ void ImmersiveModeControllerAsh::OnMouseEvent(ui::MouseEvent* event) {
   if (!views::Widget::GetWidgetForNativeWindow(native_window_)->IsActive())
     return;
 
-  if ((reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED) &&
-      event->root_location().y() == 0) {
-    // Start a reveal if the mouse touches the top of the screen and then stops
-    // moving for a little while. This mirrors the Ash launcher behavior.
-    top_timer_.Stop();
-    // Timer is stopped when |this| is destroyed, hence Unretained() is safe.
-    top_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kTopEdgeRevealDelayMs),
-        base::Bind(&ImmersiveModeControllerAsh::AcquireMouseRevealedLock,
-                   base::Unretained(this)));
-  } else {
-    // Cursor left the top edge or the top-of-window views are already revealed.
-    top_timer_.Stop();
-  }
+  // Mouse hover might trigger a reveal if the cursor pauses at the top of the
+  // screen for a while.
+  UpdateTopEdgeHoverTimer(event);
 
   UpdateMouseRevealedLock(false);
   // Pass along event for further handling.
@@ -610,7 +597,7 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
     bool active) {
   // Mouse hover should not initiate revealing the top-of-window views while
   // |native_window_| is inactive.
-  top_timer_.Stop();
+  top_edge_hover_timer_.Stop();
 
   UpdateMouseRevealedLock(true);
   UpdateFocusRevealedLock();
@@ -696,6 +683,38 @@ void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
 
   if (!enable)
     StopObservingImplicitAnimations();
+}
+
+void ImmersiveModeControllerAsh::UpdateTopEdgeHoverTimer(
+    ui::MouseEvent* event) {
+  DCHECK(enabled_);
+  // If the top-of-window views are already revealed or the cursor left the
+  // top edge we don't need to trigger based on a timer anymore.
+  if (reveal_state_ == SLIDING_OPEN ||
+      reveal_state_ == REVEALED ||
+      event->root_location().y() != 0) {
+    top_edge_hover_timer_.Stop();
+    return;
+  }
+  // The cursor is now at the top of the screen. Consider the cursor "not
+  // moving" even if it moves a little bit in x, because users don't have
+  // perfect pointing precision.
+  int mouse_x = event->root_location().x();
+  if (top_edge_hover_timer_.IsRunning() &&
+      abs(mouse_x - mouse_x_when_hit_top_) <=
+          GestureConfiguration::immersive_mode_reveal_x_threshold_pixels())
+    return;
+
+  // Start the reveal if the cursor doesn't move for some amount of time.
+  mouse_x_when_hit_top_ = mouse_x;
+  top_edge_hover_timer_.Stop();
+  // Timer is stopped when |this| is destroyed, hence Unretained() is safe.
+  top_edge_hover_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(
+          GestureConfiguration::immersive_mode_reveal_delay_ms()),
+      base::Bind(&ImmersiveModeControllerAsh::AcquireMouseRevealedLock,
+                 base::Unretained(this)));
 }
 
 void ImmersiveModeControllerAsh::UpdateMouseRevealedLock(bool maybe_drag) {

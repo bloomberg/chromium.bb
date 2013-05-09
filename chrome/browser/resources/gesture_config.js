@@ -335,6 +335,34 @@ function OverscrollConfig() {
 }
 
 /**
+ * Returns a GeneralConfig for configuring immersive.* preferences for
+ * immersive fullscreen in Ash.
+ * @return {object} A GeneralConfig object.
+ */
+function ImmersiveConfig() {
+  /** @const */ var IMMERSIVE_TITLE = 'Immersive Fullscreen Configuration';
+
+  /** @const */ var IMMERSIVE_PREFIX = 'immersive_mode.';
+
+  var IMMERSIVE_FIELDS = [
+    {
+      key: 'reveal_delay_ms',
+      label: 'Top-of-screen reveal delay',
+      units: 'milliseconds'
+    },
+    {
+      key: 'reveal_x_threshold_pixels',
+      label: 'Top-of-screen mouse x threshold',
+      units: 'pixels'
+    },
+  ];
+
+  return new GeneralConfig(IMMERSIVE_TITLE,
+                           IMMERSIVE_PREFIX,
+                           IMMERSIVE_FIELDS);
+}
+
+/**
  * Returns a GeneralConfig for configuring workspace_cycler.* preferences.
  * @return {object} A GeneralConfig object.
  */
@@ -457,8 +485,7 @@ function FlingConfig() {
 }
 
 /**
- * WebUI instance for configuring gesture.* and overscroll.* preference values
- * used by Chrome's gesture recognition system.
+ * WebUI instance for configuring preference values related to gesture input.
  */
 window.gesture_config = {
   /**
@@ -474,6 +501,9 @@ window.gesture_config = {
     var f = FlingConfig();
     f.buildAll();
 
+    var i = ImmersiveConfig();
+    i.buildAll();
+
     var c = WorkspaceCyclerConfig();
     c.buildAll();
 
@@ -481,6 +511,7 @@ window.gesture_config = {
       g.onReset();
       o.onReset();
       f.onReset();
+      i.onReset();
       c.onReset();
     };
   },

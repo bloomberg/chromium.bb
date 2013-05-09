@@ -67,6 +67,11 @@ const std::vector<OverscrollPref>& GetOverscrollPrefs() {
 }
 
 #if defined(USE_ASH)
+const char* kImmersiveModePrefs[] = {
+  prefs::kImmersiveModeRevealDelayMs,
+  prefs::kImmersiveModeRevealXThresholdPixels,
+};
+
 struct WorkspaceCyclerPref {
   const char* pref_name;
   WorkspaceCyclerConfiguration::Property property;
@@ -134,6 +139,8 @@ class GesturePrefsObserver : public ProfileKeyedService {
   // Notification helper to push overscroll preferences into
   // content.
   void UpdateOverscrollPrefs();
+
+  void UpdateImmersiveModePrefs();
   void UpdateWorkspaceCyclerPrefs();
 
   PrefChangeRegistrar registrar_;
@@ -212,6 +219,9 @@ GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
     registrar_.Add(kFlingTouchscreenPrefs[i], notify_callback);
 
 #if defined(USE_ASH)
+  for (size_t i = 0; i < arraysize(kImmersiveModePrefs); ++i)
+    registrar_.Add(kImmersiveModePrefs[i], callback);
+
   const std::vector<WorkspaceCyclerPref>& cycler_prefs =
       GetWorkspaceCyclerPrefs();
   for (size_t i = 0; i < cycler_prefs.size(); ++i)
@@ -302,6 +312,7 @@ void GesturePrefsObserver::Update() {
           prefs::kRailStartProportion));
 
   UpdateOverscrollPrefs();
+  UpdateImmersiveModePrefs();
   UpdateWorkspaceCyclerPrefs();
 }
 
@@ -311,6 +322,15 @@ void GesturePrefsObserver::UpdateOverscrollPrefs() {
     content::SetOverscrollConfig(overscroll_prefs[i].config,
         static_cast<float>(prefs_->GetDouble(overscroll_prefs[i].pref_name)));
   }
+}
+
+void GesturePrefsObserver::UpdateImmersiveModePrefs() {
+#if defined(USE_ASH)
+  GestureConfiguration::set_immersive_mode_reveal_delay_ms(
+      prefs_->GetInteger(prefs::kImmersiveModeRevealDelayMs));
+  GestureConfiguration::set_immersive_mode_reveal_x_threshold_pixels(
+      prefs_->GetInteger(prefs::kImmersiveModeRevealXThresholdPixels));
+#endif  // USE_ASH
 }
 
 void GesturePrefsObserver::UpdateWorkspaceCyclerPrefs() {
@@ -386,6 +406,20 @@ void GesturePrefsObserverFactoryAura::RegisterFlingCurveParameters(
         kFlingTouchscreenPrefs[i],
         def_prefs.touchscreen_fling_profile[i],
         user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+void GesturePrefsObserverFactoryAura::RegisterImmersiveModePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+#if defined(USE_ASH)
+  registry->RegisterIntegerPref(
+      prefs::kImmersiveModeRevealDelayMs,
+      GestureConfiguration::immersive_mode_reveal_delay_ms(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kImmersiveModeRevealXThresholdPixels,
+      GestureConfiguration::immersive_mode_reveal_x_threshold_pixels(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif  // USE_ASH
 }
 
 void GesturePrefsObserverFactoryAura::RegisterWorkspaceCyclerPrefs(
@@ -530,6 +564,7 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(
 
   RegisterOverscrollPrefs(registry);
   RegisterFlingCurveParameters(registry);
+  RegisterImmersiveModePrefs(registry);
   RegisterWorkspaceCyclerPrefs(registry);
 }
 
