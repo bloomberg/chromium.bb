@@ -5,31 +5,26 @@
 #include "chrome/browser/ui/search/search_ui.h"
 
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "grit/theme_resources.h"
-#include "ui/base/theme_provider.h"
 
 namespace chrome {
 
-SkColor GetDetachedBookmarkBarBackgroundColor(
-    ui::ThemeProvider* theme_provider) {
-  bool themed = theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND);
-  if (themed)
-    return theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR);
-  else
-    return SkColorSetARGB(0xFF, 0xF1, 0xF1, 0xF1);
+SkColor GetDetachedBookmarkBarBackgroundColor(ThemeService* theme_service) {
+  if (!theme_service->UsingDefaultTheme())
+    return theme_service->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  return SkColorSetARGB(0xFF, 0xF1, 0xF1, 0xF1);
 }
 
-SkColor GetDetachedBookmarkBarSeparatorColor(
-    ui::ThemeProvider* theme_provider) {
-  bool themed = theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND);
-  if (!themed) {
+SkColor GetDetachedBookmarkBarSeparatorColor(ThemeService* theme_service) {
+  if (!theme_service->UsingDefaultTheme()) {
     return ThemeProperties::GetDefaultColor(
         ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
   }
 
   // Use 50% of bookmark text color as separator color.
   return SkColorSetA(
-      theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT), 128);
+      theme_service->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT), 128);
 }
 
 }  // namespace chrome

@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -24,27 +25,6 @@ using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SetArgumentPointee;
 
-// When testing the floating drawing, we need to have a source of theme data.
-class MockThemeProvider : public ui::ThemeProvider {
- public:
-  // Cross platform methods
-  MOCK_METHOD1(Init, void(Profile*));
-  MOCK_CONST_METHOD1(GetBitmapNamed, SkBitmap*(int));
-  MOCK_CONST_METHOD1(GetImageSkiaNamed, gfx::ImageSkia*(int));
-  MOCK_CONST_METHOD1(GetColor, SkColor(int));
-  MOCK_CONST_METHOD2(GetDisplayProperty, bool(int, int*));
-  MOCK_CONST_METHOD0(ShouldUseNativeFrame, bool());
-  MOCK_CONST_METHOD1(HasCustomImage, bool(int));
-  MOCK_CONST_METHOD2(GetRawData, base::RefCountedMemory*(int, ui::ScaleFactor));
-
-  // OSX stuff
-  MOCK_CONST_METHOD2(GetNSImageNamed, NSImage*(int, bool));
-  MOCK_CONST_METHOD2(GetNSImageColorNamed, NSColor*(int, bool));
-  MOCK_CONST_METHOD2(GetNSColor, NSColor*(int, bool));
-  MOCK_CONST_METHOD2(GetNSColorTint, NSColor*(int, bool));
-  MOCK_CONST_METHOD1(GetNSGradient, NSGradient*(int));
-};
-
 // Allows us to inject our fake controller below.
 @interface BookmarkBarToolbarView (TestingAPI)
 -(void)setController:(id<BookmarkBarToolbarViewController>)controller;
@@ -61,12 +41,12 @@ class MockThemeProvider : public ui::ThemeProvider {
     NSObject<BookmarkBarState, BookmarkBarToolbarViewController> {
  @private
   int currentTabContentsHeight_;
-  ui::ThemeProvider* themeProvider_;
+  ThemeService* themeService_;
   BookmarkBar::State state_;
   BOOL isEmpty_;
 }
 @property (nonatomic, assign) int currentTabContentsHeight;
-@property (nonatomic, assign) ui::ThemeProvider* themeProvider;
+@property (nonatomic, assign) ThemeService* themeService;
 @property (nonatomic, assign) BookmarkBar::State state;
 @property (nonatomic, assign) BOOL isEmpty;
 
@@ -85,7 +65,7 @@ class MockThemeProvider : public ui::ThemeProvider {
 
 @implementation DrawDetachedBarFakeController
 @synthesize currentTabContentsHeight = currentTabContentsHeight_;
-@synthesize themeProvider = themeProvider_;
+@synthesize themeService = themeService_;
 @synthesize state = state_;
 @synthesize isEmpty = isEmpty_;
 
@@ -127,24 +107,9 @@ class BookmarkBarToolbarViewTest : public CocoaTest {
 
 TEST_VIEW(BookmarkBarToolbarViewTest, view_)
 
-// Test drawing (part 1), mostly to ensure nothing leaks or crashes.
+// Test drawing, mostly to ensure nothing leaks or crashes.
 TEST_F(BookmarkBarToolbarViewTest, DisplayAsNormalBar) {
   [controller_.get() setState:BookmarkBar::SHOW];
-  [view_ display];
-}
-
-// Test drawing (part 2), mostly to ensure nothing leaks or crashes.
-TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithNoImage) {
-  [controller_.get() setState:BookmarkBar::DETACHED];
-
-  // Tests where we don't have a background image, only a color.
-  NiceMock<MockThemeProvider> provider;
-  EXPECT_CALL(provider, GetColor(ThemeProperties::COLOR_NTP_BACKGROUND))
-      .WillRepeatedly(Return(SK_ColorWHITE));
-  EXPECT_CALL(provider, HasCustomImage(IDR_THEME_NTP_BACKGROUND))
-      .WillRepeatedly(Return(false));
-  [controller_.get() setThemeProvider:&provider];
-
   [view_ display];
 }
 
@@ -157,42 +122,6 @@ ACTION(SetBackgroundTiling) {
 ACTION(SetAlignLeft) {
   *arg1 = ThemeProperties::ALIGN_LEFT;
   return true;
-}
-
-// Test drawing (part 3), mostly to ensure nothing leaks or crashes.
-TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithBgImage) {
-  [controller_.get() setState:BookmarkBar::DETACHED];
-
-  // Tests where we have a background image, with positioning information.
-  NiceMock<MockThemeProvider> provider;
-
-  // Advertise having an image.
-  EXPECT_CALL(provider, GetColor(ThemeProperties::COLOR_NTP_BACKGROUND))
-      .WillRepeatedly(Return(SK_ColorRED));
-  EXPECT_CALL(provider, HasCustomImage(IDR_THEME_NTP_BACKGROUND))
-      .WillRepeatedly(Return(true));
-
-  // Return the correct tiling/alignment information.
-  EXPECT_CALL(provider,
-      GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_TILING, _))
-      .WillRepeatedly(SetBackgroundTiling());
-  EXPECT_CALL(provider,
-      GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_ALIGNMENT, _))
-      .WillRepeatedly(SetAlignLeft());
-
-  // Create a dummy bitmap full of not-red to blit with.
-  SkBitmap fake_bg_bitmap;
-  fake_bg_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 800, 800);
-  fake_bg_bitmap.allocPixels();
-  fake_bg_bitmap.eraseColor(SK_ColorGREEN);
-  gfx::ImageSkia fake_bg = gfx::ImageSkia::CreateFrom1xBitmap(fake_bg_bitmap);
-  EXPECT_CALL(provider, GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND))
-      .WillRepeatedly(Return(&fake_bg));
-
-  [controller_.get() setThemeProvider:&provider];
-  [controller_.get() setCurrentTabContentsHeight:200];
-
-  [view_ display];
 }
 
 // TODO(viettrungluu): write more unit tests, especially after my refactoring.

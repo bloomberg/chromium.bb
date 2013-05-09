@@ -6,6 +6,7 @@
 
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -61,8 +62,8 @@ const CGFloat kBorderRadius = 3.0;
 
   NSRect bounds = [self bounds];
 
-  ui::ThemeProvider* themeProvider = [controller_ themeProvider];
-  if (!themeProvider)
+  ThemeService* themeService = [controller_ themeService];
+  if (!themeService)
     return;
 
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;
@@ -84,7 +85,7 @@ const CGFloat kBorderRadius = 3.0;
     gfx::CanvasSkiaPaint canvas(bounds, true);
     gfx::Rect area(0, 0, NSWidth(bounds), NSHeight(bounds));
 
-    NtpBackgroundUtil::PaintBackgroundDetachedMode(themeProvider, &canvas,
+    NtpBackgroundUtil::PaintBackgroundDetachedMode(themeService, &canvas,
         area, [controller_ currentTabContentsHeight]);
   }
 
@@ -104,7 +105,7 @@ const CGFloat kBorderRadius = 3.0;
 
   // Draw the rounded rectangle.
   NSColor* toolbarColor =
-      themeProvider->GetNSColor(ThemeProperties::COLOR_TOOLBAR, true);
+      themeService->GetNSColor(ThemeProperties::COLOR_TOOLBAR, true);
   CGFloat alpha = morph * [toolbarColor alphaComponent];
   [[toolbarColor colorWithAlphaComponent:alpha] set];  // Set with opacity.
   [border fill];
@@ -123,7 +124,7 @@ const CGFloat kBorderRadius = 3.0;
   }
 
   // Draw the border of the rounded rectangle.
-  NSColor* borderColor = themeProvider->GetNSColor(
+  NSColor* borderColor = themeService->GetNSColor(
       ThemeProperties::COLOR_TOOLBAR_BUTTON_STROKE, true);
   alpha = morph * [borderColor alphaComponent];
   [[borderColor colorWithAlphaComponent:alpha] set];  // Set with opacity.
@@ -149,8 +150,8 @@ const CGFloat kBorderRadius = 3.0;
 - (void)drawAsDetachedInstantExtendedUI {
   CGFloat morph = [controller_ detachedMorphProgress];
   NSRect bounds = [self bounds];
-  ui::ThemeProvider* themeProvider = [controller_ themeProvider];
-  if (!themeProvider)
+  ThemeService* themeService = [controller_ themeService];
+  if (!themeService)
     return;
 
   [[NSColor whiteColor] set];
@@ -158,7 +159,7 @@ const CGFloat kBorderRadius = 3.0;
 
   // Overlay with a lighter background color.
   NSColor* toolbarColor = gfx::SkColorToCalibratedNSColor(
-        chrome::GetDetachedBookmarkBarBackgroundColor(themeProvider));
+        chrome::GetDetachedBookmarkBarBackgroundColor(themeService));
   CGFloat alpha = morph * [toolbarColor alphaComponent];
   [[toolbarColor colorWithAlphaComponent:alpha] set];
   NSRectFillUsingOperation(bounds, NSCompositeSourceOver);
@@ -177,7 +178,7 @@ const CGFloat kBorderRadius = 3.0;
 
   // Bottom stroke.
   NSColor* strokeColor = gfx::SkColorToCalibratedNSColor(
-        chrome::GetDetachedBookmarkBarSeparatorColor(themeProvider));
+        chrome::GetDetachedBookmarkBarSeparatorColor(themeService));
   strokeColor = [[self strokeColor] blendedColorWithFraction:morph
                                                      ofColor:strokeColor];
   strokeColor = [strokeColor colorWithAlphaComponent:0.5];

@@ -29,6 +29,9 @@ class BookmarkModel;
 class BookmarkNode;
 class Browser;
 class GURL;
+namespace ui {
+class ThemeProvider;
+}
 
 namespace bookmarks {
 

@@ -2201,7 +2201,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return NSHeight([[browserController tabContentArea] frame]);
 }
 
-- (ui::ThemeProvider*)themeProvider {
+- (ThemeService*)themeService {
   return ThemeServiceFactory::GetForProfile(browser_->profile());
 }
 

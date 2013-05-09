@@ -1693,8 +1693,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return y;
 }
 
-- (ui::ThemeProvider*)themeProvider {
-  return [parentController_ themeProvider];
+- (ThemeService*)themeService {
+  return [parentController_ themeService];
 }
 
 - (void)childFolderWillShow:(id<BookmarkButtonControllerProtocol>)child {

@@ -32,6 +32,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -178,14 +179,14 @@ const int kNewtabBarRoundness = 5;
 // will be removed.
 void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
                               DetachableToolbarView* view,
-                              ui::ThemeProvider* theme_provider) {
+                              ThemeService* theme_service) {
   // Paint background for detached state; if animating, this is fade in/out.
   canvas->DrawColor(
-      chrome::GetDetachedBookmarkBarBackgroundColor(theme_provider));
+      chrome::GetDetachedBookmarkBarBackgroundColor(theme_service));
   // Draw the separators above and below bookmark bar;
   // if animating, these are fading in/out.
   SkColor separator_color =
-      chrome::GetDetachedBookmarkBarSeparatorColor(theme_provider);
+      chrome::GetDetachedBookmarkBarSeparatorColor(theme_service);
   DetachableToolbarView::PaintHorizontalBorder(canvas, view, true,
                                                separator_color);
   // The bottom border needs to be 1-px thick in both regular and retina
@@ -287,7 +288,6 @@ BookmarkExtensionBackground::BookmarkExtensionBackground(
 
 void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
                                         views::View* view) const {
-  ui::ThemeProvider* tp = host_view_->GetThemeProvider();
   int toolbar_overlap = host_view_->GetToolbarOverlap();
   // The client edge is drawn below the toolbar bounds.
   if (toolbar_overlap)
@@ -305,8 +305,10 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     //   - cross-fade the bar backgrounds
     //   - fade in/out the separator between toolbar and bookmark bar.
     if (chrome::IsInstantExtendedAPIEnabled()) {
+      ThemeService* ts =
+          ThemeServiceFactory::GetForProfile(browser_->profile());
       if (current_state == 0.0 || current_state == 1.0) {
-        PaintDetachedBookmarkBar(canvas, host_view_, tp);
+        PaintDetachedBookmarkBar(canvas, host_view_, ts);
         return;
       }
       // While animating, set opacity to cross-fade between attached and
@@ -323,13 +325,13 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
                                  toolbar_overlap);
         canvas->Restore();
         canvas->SaveLayerAlpha(detached_alpha);
-        PaintDetachedBookmarkBar(canvas, host_view_, tp);
+        PaintDetachedBookmarkBar(canvas, host_view_, ts);
       } else {
         // To animate from detached to attached state:
         // - fade out detached background
         // - fade in attached background.
         canvas->SaveLayerAlpha(detached_alpha);
-        PaintDetachedBookmarkBar(canvas, host_view_, tp);
+        PaintDetachedBookmarkBar(canvas, host_view_, ts);
         canvas->Restore();
         canvas->SaveLayerAlpha(attached_alpha);
         PaintAttachedBookmarkBar(canvas, host_view_, browser_view_,
@@ -341,6 +343,7 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     }
 
     // Draw the background to match the new tab page.
+    ui::ThemeProvider* tp = host_view_->GetThemeProvider();
     int height = 0;
     WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
     if (contents && contents->GetView())
