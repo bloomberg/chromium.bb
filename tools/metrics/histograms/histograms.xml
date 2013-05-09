@@ -11306,8 +11306,9 @@ other types of suffix sets.
 </fieldtrial>
 
 <fieldtrial name="LevelDBEnvPlatformFileErrors" separator="">
-  <group name="NewRandomAccessFile" label="NewRandomAccessFile"/>
-  <group name="LockFile" label="LockFile"/>
+  <group name="LockFile" label="ChromiumEnv::LockFile"/>
+  <group name="NewRandomAccessFile" label="ChromiumEnv::NewRandomAccessFile"/>
+  <group name="RenameFile" label="ChromiumEnv::RenameFile"/>
   <affected-histogram name="LevelDBEnv.IDB.IOError."/>
   <affected-histogram name="LevelDBEnv.IOError."/>
 </fieldtrial>
