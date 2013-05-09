@@ -36,6 +36,7 @@ import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentVideoView;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.LoadUrlParams;
@@ -321,6 +322,22 @@ public class AwContents {
                 isAccessFromFileURLsGrantedByDefault, new AwLayoutSizer());
     }
 
+    private static ContentViewCore createAndInitializeContentViewCore(ViewGroup containerView,
+            InternalAccessDelegate internalDispatcher, int nativeWebContents,
+            ContentViewCore.PinchGestureStateListener pinchGestureStateListener,
+            ContentViewClient contentViewClient,
+            ContentViewCore.ZoomControlsDelegate zoomControlsDelegate) {
+      ContentViewCore contentViewCore = new ContentViewCore(containerView.getContext());
+      // Note INPUT_EVENTS_DELIVERED_IMMEDIATELY is passed to avoid triggering vsync in the
+      // compositor, not because input events are delivered immediately.
+      contentViewCore.initialize(containerView, internalDispatcher, nativeWebContents, null,
+                ContentViewCore.INPUT_EVENTS_DELIVERED_IMMEDIATELY);
+      contentViewCore.setPinchGestureStateListener(pinchGestureStateListener);
+      contentViewCore.setContentViewClient(contentViewClient);
+      contentViewCore.setZoomControlsDelegate(zoomControlsDelegate);
+      return contentViewCore;
+    }
+
     /**
      * @param layoutSizer the AwLayoutSizer instance implementing the sizing policy for the view.
      *
@@ -336,8 +353,6 @@ public class AwContents {
         mDIPScale = DeviceDisplayInfo.create(containerView.getContext()).getDIPScale();
         // Note that ContentViewCore must be set up before AwContents, as ContentViewCore
         // setup performs process initialisation work needed by AwContents.
-        mContentViewCore = new ContentViewCore(containerView.getContext());
-        mContentViewCore.setPinchGestureStateListener(new AwPinchGestureStateListener());
         mContentsClientBridge = new AwContentsClientBridge(contentsClient);
         mLayoutSizer = layoutSizer;
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
@@ -349,11 +364,11 @@ public class AwContents {
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
 
         int nativeWebContents = nativeGetWebContents(mNativeAwContents);
-        mContentViewCore.initialize(
-                containerView, internalAccessAdapter, nativeWebContents, null);
-        mContentViewCore.setContentViewClient(mContentsClient.getContentViewClient());
         mZoomControls = new AwZoomControls(this);
-        mContentViewCore.setZoomControlsDelegate(mZoomControls);
+        mContentViewCore = createAndInitializeContentViewCore(
+                containerView, internalAccessAdapter, nativeWebContents,
+                new AwPinchGestureStateListener(), mContentsClient.getContentViewClient(),
+                mZoomControls);
         mContentsClient.installWebContentsObserver(mContentViewCore);
 
         mSettings = new AwSettings(mContentViewCore.getContext(), nativeWebContents,
@@ -615,10 +630,10 @@ public class AwContents {
     private void setNewWebContents(int newWebContentsPtr) {
         // When setting a new WebContents, we new up a ContentViewCore that will
         // wrap it and then swap it.
-        ContentViewCore newCore = new ContentViewCore(mContainerView.getContext());
-        newCore.initialize(mContainerView, mInternalAccessAdapter, newWebContentsPtr, null);
-        newCore.setContentViewClient(mContentsClient.getContentViewClient());
-        newCore.setZoomControlsDelegate(mZoomControls);
+        ContentViewCore newCore = createAndInitializeContentViewCore(
+                mContainerView, mInternalAccessAdapter, newWebContentsPtr,
+                new AwPinchGestureStateListener(), mContentsClient.getContentViewClient(),
+                mZoomControls);
         mContentsClient.installWebContentsObserver(newCore);
 
         // Now swap the Java side reference.

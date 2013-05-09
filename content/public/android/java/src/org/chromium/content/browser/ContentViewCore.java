@@ -69,6 +69,16 @@ import java.util.Map;
  */
 @JNINamespace("content")
 public class ContentViewCore implements MotionEventDelegate, NavigationClient {
+    /**
+     * Indicates that input events are batched together and delivered just before vsync.
+     */
+    public static final int INPUT_EVENTS_DELIVERED_AT_VSYNC = 1;
+
+    /**
+     * Opposite of INPUT_EVENTS_DELIVERED_AT_VSYNC.
+     */
+    public static final int INPUT_EVENTS_DELIVERED_IMMEDIATELY = 0;
+
     private static final String TAG = ContentViewCore.class.getName();
 
     // Used to avoid enabling zooming in / out if resulting zooming will
@@ -581,7 +591,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     // Note that the caller remains the owner of the nativeWebContents and is responsible for
     // deleting it after destroying the ContentViewCore.
     public void initialize(ViewGroup containerView, InternalAccessDelegate internalDispatcher,
-            int nativeWebContents, WindowAndroid windowAndroid) {
+            int nativeWebContents, WindowAndroid windowAndroid,
+            int inputEventDeliveryMode) {
         // Check whether to use hardware acceleration. This is a bit hacky, and
         // only works if the Context is actually an Activity (as it is in the
         // Chrome application).
@@ -610,7 +621,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         mNativeContentViewCore = nativeInit(mHardwareAccelerated,
                 nativeWebContents, viewAndroidNativePointer, windowNativePointer);
         mContentSettings = new ContentSettings(this, mNativeContentViewCore);
-        initializeContainerView(internalDispatcher);
+        initializeContainerView(internalDispatcher, inputEventDeliveryMode);
 
         mAccessibilityInjector = AccessibilityInjector.newInstance(this);
         mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
@@ -644,7 +655,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * @param internalDispatcher Handles dispatching all hidden or super methods to the
      *                           containerView.
      */
-    private void initializeContainerView(InternalAccessDelegate internalDispatcher) {
+    private void initializeContainerView(InternalAccessDelegate internalDispatcher,
+            int inputEventDeliveryMode) {
         TraceEvent.begin();
         mContainerViewInternals = internalDispatcher;
 
@@ -659,7 +671,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         }
 
         mZoomManager = new ZoomManager(mContext, this);
-        mContentViewGestureHandler = new ContentViewGestureHandler(mContext, this, mZoomManager);
+        mContentViewGestureHandler = new ContentViewGestureHandler(mContext, this, mZoomManager,
+                inputEventDeliveryMode);
         mZoomControlsDelegate = new ZoomControlsDelegate() {
             @Override
             public void invokeZoomPicker() {}

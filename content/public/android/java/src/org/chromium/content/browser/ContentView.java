@@ -119,7 +119,10 @@ public class ContentView extends FrameLayout
         super(context, attrs, defStyle);
 
         mContentViewCore = new ContentViewCore(context);
-        mContentViewCore.initialize(this, this, nativeWebContents, windowAndroid);
+        mContentViewCore.initialize(this, this, nativeWebContents, windowAndroid,
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN ?
+                ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC :
+                ContentViewCore.INPUT_EVENTS_DELIVERED_IMMEDIATELY);
     }
 
     // PageInfo implementation.

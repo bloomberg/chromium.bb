@@ -5,7 +5,6 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
@@ -128,7 +127,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
     private float mAccumulatedScrollErrorY = 0;
 
     // Whether input events are delivered right before vsync.
-    private boolean mInputEventsDeliveredAtVSync = false;
+    private final boolean mInputEventsDeliveredAtVSync;
 
     static final int GESTURE_SHOW_PRESSED_STATE = 0;
     static final int GESTURE_DOUBLE_TAP = 1;
@@ -207,15 +206,15 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     ContentViewGestureHandler(
-            Context context, MotionEventDelegate delegate, ZoomManager zoomManager) {
+            Context context, MotionEventDelegate delegate, ZoomManager zoomManager,
+            int inputEventDeliveryMode) {
         mExtraParamBundle = new Bundle();
         mLongPressDetector = new LongPressDetector(context, this);
         mMotionEventDelegate = delegate;
         mZoomManager = zoomManager;
         mSnapScrollController = new SnapScrollController(context, mZoomManager);
-
-        // Input events are delivered at vsync time on JB+.
-        mInputEventsDeliveredAtVSync = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN);
+        mInputEventsDeliveredAtVSync =
+                inputEventDeliveryMode == ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC;
 
         initGestureDetectors(context);
     }
