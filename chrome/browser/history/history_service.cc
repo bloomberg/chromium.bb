@@ -264,7 +264,7 @@ void HistoryService::UnloadBackend() {
   in_memory_backend_.reset();
 
   // Give the InMemoryURLIndex a chance to shutdown.
-  if (in_memory_url_index_.get())
+  if (in_memory_url_index_)
     in_memory_url_index_->ShutDown();
 
   // The backend's destructor must run on the history thread since it is not
@@ -329,7 +329,7 @@ history::URLDatabase* HistoryService::InMemoryDatabase() {
   // LoadBackendIfNecessary() here even though it won't affect the return value
   // for this call.
   LoadBackendIfNecessary();
-  if (in_memory_backend_.get())
+  if (in_memory_backend_)
     return in_memory_backend_->db();
   return NULL;
 }
@@ -1068,7 +1068,7 @@ void HistoryService::SetInMemoryBackend(int backend_id,
     delete mem_backend;
     return;
   }
-  DCHECK(!in_memory_backend_.get()) << "Setting mem DB twice";
+  DCHECK(!in_memory_backend_) << "Setting mem DB twice";
   in_memory_backend_.reset(mem_backend);
 
   // The database requires additional initialization once we own it.
@@ -1108,7 +1108,7 @@ void HistoryService::ExpireHistoryBetween(
     CancelableTaskTracker* tracker) {
   DCHECK(thread_);
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(history_backend_.get());
+  DCHECK(history_backend_);
   tracker->PostTaskAndReply(
       thread_->message_loop_proxy(),
       FROM_HERE,
@@ -1123,7 +1123,7 @@ void HistoryService::ExpireHistory(
     CancelableTaskTracker* tracker) {
   DCHECK(thread_);
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(history_backend_.get());
+  DCHECK(history_backend_);
   tracker->PostTaskAndReply(
       thread_->message_loop_proxy(),
       FROM_HERE,

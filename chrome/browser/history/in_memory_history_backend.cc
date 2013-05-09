@@ -34,7 +34,7 @@ bool InMemoryHistoryBackend::Init(const base::FilePath& history_filename,
 }
 
 void InMemoryHistoryBackend::AttachToHistoryService(Profile* profile) {
-  if (!db_.get()) {
+  if (!db_) {
     NOTREACHED();
     return;
   }
@@ -103,7 +103,7 @@ void InMemoryHistoryBackend::Observe(
 
 void InMemoryHistoryBackend::OnTypedURLsModified(
     const URLsModifiedDetails& details) {
-  DCHECK(db_.get());
+  DCHECK(db_);
 
   // Add or update the URLs.
   //
@@ -124,7 +124,7 @@ void InMemoryHistoryBackend::OnTypedURLsModified(
 }
 
 void InMemoryHistoryBackend::OnURLsDeleted(const URLsDeletedDetails& details) {
-  DCHECK(db_.get());
+  DCHECK(db_);
 
   if (details.all_history) {
     // When all history is deleted, the individual URLs won't be listed. Just

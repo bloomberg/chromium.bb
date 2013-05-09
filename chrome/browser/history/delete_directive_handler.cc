@@ -166,7 +166,7 @@ bool DeleteDirectiveHandler::DeleteDirectiveTask::RunOnDBThread(
 }
 
 void DeleteDirectiveHandler::DeleteDirectiveTask::DoneRunOnMainThread() {
-  if (delete_directive_handler_.get()) {
+  if (delete_directive_handler_) {
     delete_directive_handler_->FinishProcessing(post_processing_action_,
                                                 delete_directives_);
   }
@@ -341,7 +341,7 @@ bool DeleteDirectiveHandler::CreateDeleteDirectives(
 syncer::SyncError DeleteDirectiveHandler::ProcessLocalDeleteDirective(
     const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!sync_processor_.get()) {
+  if (!sync_processor_) {
     return syncer::SyncError(
         FROM_HERE,
         "Cannot send local delete directive to sync",
@@ -370,7 +370,7 @@ syncer::SyncError DeleteDirectiveHandler::ProcessSyncChanges(
     HistoryService* history_service,
     const syncer::SyncChangeList& change_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!sync_processor_.get()) {
+  if (!sync_processor_) {
     return syncer::SyncError(
         FROM_HERE, "Sync is disabled.", syncer::HISTORY_DELETE_DIRECTIVES);
   }

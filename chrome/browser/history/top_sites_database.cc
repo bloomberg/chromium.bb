@@ -32,7 +32,7 @@ bool TopSitesDatabase::Init(const base::FilePath& db_name) {
     may_need_history_migration_ = true;
 
   db_.reset(CreateDB(db_name));
-  if (!db_.get())
+  if (!db_)
     return false;
 
   bool does_meta_exist = sql::MetaTable::DoesTableExist(db_.get());
@@ -50,7 +50,7 @@ bool TopSitesDatabase::Init(const base::FilePath& db_name) {
       return false;
     }
     db_.reset(CreateDB(db_name));
-    if (!db_.get())
+    if (!db_)
       return false;
   }
 

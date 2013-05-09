@@ -181,7 +181,7 @@ class HistoryQueryTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    if (history_.get()) {
+    if (history_) {
       history_->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
       history_->Cleanup();
       history_.reset();

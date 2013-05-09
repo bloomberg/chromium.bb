@@ -122,7 +122,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
                                   NULL);
     backend_->Init(std::string(), false);
     db_ = backend_->db_.get();
-    DCHECK(in_mem_backend_.get()) << "Mem backend should have been set by "
+    DCHECK(in_mem_backend_) << "Mem backend should have been set by "
         "HistoryBackend::Init";
   }
 
@@ -712,7 +712,7 @@ class HistoryTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    if (history_service_.get())
+    if (history_service_)
       CleanupHistoryService();
 
     // Make sure we don't have any event pending that could disrupt the next
@@ -722,7 +722,7 @@ class HistoryTest : public testing::Test {
   }
 
   void CleanupHistoryService() {
-    DCHECK(history_service_.get());
+    DCHECK(history_service_);
 
     history_service_->NotifyRenderProcessHostDestruction(0);
     history_service_->SetOnBackendDestroyTask(MessageLoop::QuitClosure());

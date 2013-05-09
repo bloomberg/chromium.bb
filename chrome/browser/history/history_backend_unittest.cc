@@ -378,7 +378,7 @@ class HistoryBackendTest : public testing::Test {
   friend class HistoryBackendTestDelegate;
 
   virtual void TearDown() {
-    if (backend_.get())
+    if (backend_)
       backend_->Closing();
     backend_ = NULL;
     mem_backend_.reset();

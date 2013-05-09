@@ -73,7 +73,7 @@ bool InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::RunOnDBThread(
   data_ = URLIndexPrivateData::RebuildFromHistory(db, languages_,
                                                   scheme_whitelist_);
   succeeded_ = data_.get() && !data_->Empty();
-  if (!succeeded_ && data_.get())
+  if (!succeeded_ && data_)
     data_->Clear();
   return true;
 }

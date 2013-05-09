@@ -339,14 +339,14 @@ void ExpireHistoryBackend::InitWorkQueue() {
 }
 
 const ExpiringVisitsReader* ExpireHistoryBackend::GetAllVisitsReader() {
-  if (!all_visits_reader_.get())
+  if (!all_visits_reader_)
     all_visits_reader_.reset(new AllVisitsReader());
   return all_visits_reader_.get();
 }
 
 const ExpiringVisitsReader*
     ExpireHistoryBackend::GetAutoSubframeVisitsReader() {
-  if (!auto_subframe_visits_reader_.get())
+  if (!auto_subframe_visits_reader_)
     auto_subframe_visits_reader_.reset(new AutoSubframeVisitsReader());
   return auto_subframe_visits_reader_.get();
 }

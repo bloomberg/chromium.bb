@@ -373,7 +373,7 @@ void WebHistoryService::ExpireHistoryCompletionCallback(
   scoped_ptr<DictionaryValue> response_value;
   if (success) {
     response_value = ReadResponse(static_cast<RequestImpl*>(request));
-    if (response_value.get())
+    if (response_value)
       response_value->GetString("version_info", &server_version_info_);
   }
   callback.Run(request, response_value.get() && success);

@@ -198,7 +198,7 @@ class ExpireHistoryTest : public testing::Test,
 // The IDs of the added URLs, and the times of the four added visits will be
 // added to the given arrays.
 void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
-  if (!main_db_.get() || !text_db_.get())
+  if (!main_db_.get() || !text_db_)
     return;
 
   // Four times for each visit.
@@ -292,7 +292,7 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
 }
 
 void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
-  if (!main_db_.get())
+  if (!main_db_)
     return;
 
   Time last_visit_time = Time::Now();
@@ -349,7 +349,7 @@ bool ExpireHistoryTest::HasThumbnail(URLID url_id) {
 }
 
 int ExpireHistoryTest::CountTextMatchesForURL(const GURL& url) {
-  if (!text_db_.get())
+  if (!text_db_)
     return 0;
 
   // "body" should match all pages in the example data.
