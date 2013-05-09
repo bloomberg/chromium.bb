@@ -53,7 +53,6 @@ public:
 protected:
 #ifndef NDEBUG
     bool isUnreachableNode(EventTarget*);
-    bool isReachable(Node*) const;
 #endif
     RefPtr<Node> m_node;
     RefPtr<EventTarget> m_currentTarget;
@@ -107,18 +106,7 @@ inline TouchEventContext* toTouchEventContext(EventContext* eventContext)
 inline bool EventContext::isUnreachableNode(EventTarget* target)
 {
     // FIXME: Checks also for SVG elements.
-    return target && target->toNode() && !target->toNode()->isSVGElement() && !isReachable(target->toNode());
-}
-
-inline bool EventContext::isReachable(Node* target) const
-{
-    ASSERT(target);
-    TreeScope* targetScope = target->treeScope();
-    for (TreeScope* scope = m_node->treeScope(); scope; scope = scope->parentTreeScope()) {
-        if (scope == targetScope)
-            return true;
-    }
-    return false;
+    return target && target->toNode() && !target->toNode()->isSVGElement() && !target->toNode()->treeScope()->isInclusiveAncestorOf(m_node->treeScope());
 }
 #endif
 

@@ -157,6 +157,7 @@ public:
     void setUnderlyingEvent(PassRefPtr<Event>);
 
     EventPath& eventPath() { return m_eventPath; }
+    PassRefPtr<NodeList> path() const;
 
     virtual bool storesResultAsString() const;
     virtual void storeResult(const String&);

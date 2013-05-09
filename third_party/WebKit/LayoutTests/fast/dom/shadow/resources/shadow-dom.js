@@ -81,10 +81,18 @@ function dumpNode(node)
 {
     if (!node)
       return 'null';
-    var output = '' + node;
     if (node.id)
-        output += ' id=' + node.id;
-    return output;
+        return '#' + node.id;
+    return '' + node;
+}
+
+function dumpNodeList(nodeList) {
+    var result = "";
+    var length = nodeList.length;
+    for (var i = 0; i < length; i++)
+        result += dumpNode(nodeList[i]) + ", ";
+    result += "length: " + length;
+    return result;
 }
 
 function innermostActiveElement(element)

@@ -441,4 +441,14 @@ int TreeScope::refCount() const
     return 0;
 }
 
+bool TreeScope::isInclusiveAncestorOf(const TreeScope* scope) const
+{
+    ASSERT(scope);
+    for (; scope; scope = scope->parentTreeScope()) {
+        if (scope == this)
+            return true;
+    }
+    return false;
+}
+
 } // namespace WebCore

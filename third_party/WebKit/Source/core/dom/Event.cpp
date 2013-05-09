@@ -26,6 +26,7 @@
 #include "core/dom/EventDispatcher.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventTarget.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/CurrentTime.h>
@@ -199,6 +200,22 @@ void Event::setUnderlyingEvent(PassRefPtr<Event> ue)
         if (e == this)
             return;
     m_underlyingEvent = ue;
+}
+
+PassRefPtr<NodeList> Event::path() const
+{
+    if (!m_currentTarget || !m_currentTarget->toNode())
+        return StaticNodeList::createEmpty();
+    TreeScope* currentScope = m_currentTarget->toNode()->treeScope();
+    Vector<RefPtr<Node> > nodes;
+    size_t eventPathSize = m_eventPath.size();
+    for (size_t i = 0; i < eventPathSize; ++i) {
+        Node* node = m_eventPath[i]->node();
+        ASSERT(node);
+        if (node->treeScope()->isInclusiveAncestorOf(currentScope))
+            nodes.append(node);
+    }
+    return StaticNodeList::adopt(nodes);
 }
 
 } // namespace WebCore

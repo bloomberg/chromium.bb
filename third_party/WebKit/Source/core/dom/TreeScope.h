@@ -127,6 +127,8 @@ public:
 
     void removedLastRefToScope();
 
+    bool isInclusiveAncestorOf(const TreeScope*) const;
+
 protected:
     TreeScope(ContainerNode*, Document*);
     TreeScope(Document*);
