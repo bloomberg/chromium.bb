@@ -480,8 +480,8 @@ void FileSystem::PinAfterGetEntryInfoByPath(
   }
   DCHECK(entry);
 
-  cache_->Pin(entry->resource_id(), entry->file_specific_info().file_md5(),
-              callback);
+  cache_->PinOnUIThread(entry->resource_id(),
+                        entry->file_specific_info().file_md5(), callback);
 }
 
 void FileSystem::Unpin(const base::FilePath& file_path,
@@ -512,8 +512,8 @@ void FileSystem::UnpinAfterGetEntryInfoByPath(
   }
   DCHECK(entry);
 
-  cache_->Unpin(entry->resource_id(), entry->file_specific_info().file_md5(),
-                callback);
+  cache_->UnpinOnUIThread(entry->resource_id(),
+                          entry->file_specific_info().file_md5(), callback);
 }
 
 void FileSystem::GetFileByPath(const base::FilePath& file_path,
@@ -860,7 +860,7 @@ void FileSystem::GetResolvedFileByPath(
 
   // Returns absolute path of the file if it were cached or to be cached.
   ResourceEntry* entry_ptr = params->entry.get();
-  cache_->GetFile(
+  cache_->GetFileOnUIThread(
       entry_ptr->resource_id(),
       entry_ptr->file_specific_info().file_md5(),
       base::Bind(
@@ -970,7 +970,7 @@ void FileSystem::GetResolvedFileByPathAfterRefreshEntry(
 
   int64 file_size = entry->file_info().size();
   params->entry = entry.Pass();  // Update the entry in |params|.
-  cache_->FreeDiskSpaceIfNeededFor(
+  cache_->FreeDiskSpaceIfNeededForOnUIThread(
       file_size,
       base::Bind(&FileSystem::GetResolvedFileByPathAfterFreeDiskSpace,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -1047,7 +1047,7 @@ void FileSystem::GetResolvedFileByPathAfterDownloadFile(
   // If user cancels download of a pinned-but-not-fetched file, mark file as
   // unpinned so that we do not sync the file again.
   if (status == google_apis::GDATA_CANCELLED) {
-    cache_->GetCacheEntry(
+    cache_->GetCacheEntryOnUIThread(
         params->entry->resource_id(),
         params->entry->file_specific_info().file_md5(),
         base::Bind(
@@ -1064,14 +1064,15 @@ void FileSystem::GetResolvedFileByPathAfterDownloadFile(
   }
 
   ResourceEntry* entry = params->entry.get();
-  cache_->Store(entry->resource_id(),
-                entry->file_specific_info().file_md5(),
-                downloaded_file_path,
-                internal::FileCache::FILE_OPERATION_MOVE,
-                base::Bind(&FileSystem::GetResolvedFileByPathAfterStore,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           base::Passed(&params),
-                           downloaded_file_path));
+  cache_->StoreOnUIThread(
+      entry->resource_id(),
+      entry->file_specific_info().file_md5(),
+      downloaded_file_path,
+      internal::FileCache::FILE_OPERATION_MOVE,
+      base::Bind(&FileSystem::GetResolvedFileByPathAfterStore,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&params),
+                 downloaded_file_path));
 }
 
 void FileSystem::GetResolvedFileByPathAfterGetCacheEntryForCancel(
@@ -1083,9 +1084,9 @@ void FileSystem::GetResolvedFileByPathAfterGetCacheEntryForCancel(
   // TODO(hshi): http://crbug.com/127138 notify when file properties change.
   // This allows file manager to clear the "Available offline" checkbox.
   if (success && cache_entry.is_pinned()) {
-    cache_->Unpin(resource_id,
-                  md5,
-                  base::Bind(&util::EmptyFileOperationCallback));
+    cache_->UnpinOnUIThread(resource_id,
+                            md5,
+                            base::Bind(&util::EmptyFileOperationCallback));
   }
 }
 
@@ -1109,7 +1110,7 @@ void FileSystem::GetResolvedFileByPathAfterStore(
   OnDirectoryChanged(params->drive_file_path.DirName());
 
   ResourceEntry* entry = params->entry.get();
-  cache_->GetFile(
+  cache_->GetFileOnUIThread(
       entry->resource_id(),
       entry->file_specific_info().file_md5(),
       base::Bind(&FileSystem::GetResolvedFileByPathAfterGetFile,
@@ -1392,11 +1393,11 @@ void FileSystem::AddUploadedFileToCache(
   // At this point, upload to the server is fully succeeded. Failure to store to
   // cache is not a fatal error, so we wrap the callback with IgnoreError, and
   // always return success to the caller.
-  cache_->Store(params.resource_id,
-                params.md5,
-                params.file_content_path,
-                internal::FileCache::FILE_OPERATION_COPY,
-                base::Bind(&IgnoreError, params.callback));
+  cache_->StoreOnUIThread(params.resource_id,
+                          params.md5,
+                          params.file_content_path,
+                          internal::FileCache::FILE_OPERATION_COPY,
+                          base::Bind(&IgnoreError, params.callback));
 }
 
 void FileSystem::GetMetadata(
@@ -1440,9 +1441,9 @@ void FileSystem::MarkCacheFileAsMountedAfterGetEntryInfo(
   }
 
   DCHECK(entry);
-  cache_->MarkAsMounted(entry->resource_id(),
-                        entry->file_specific_info().file_md5(),
-                        callback);
+  cache_->MarkAsMountedOnUIThread(entry->resource_id(),
+                                  entry->file_specific_info().file_md5(),
+                                  callback);
 }
 
 void FileSystem::MarkCacheFileAsUnmounted(
@@ -1455,7 +1456,7 @@ void FileSystem::MarkCacheFileAsUnmounted(
     callback.Run(FILE_ERROR_FAILED);
     return;
   }
-  cache_->MarkAsUnmounted(cache_file_path, callback);
+  cache_->MarkAsUnmountedOnUIThread(cache_file_path, callback);
 }
 
 void FileSystem::GetCacheEntryByResourceId(
@@ -1466,7 +1467,7 @@ void FileSystem::GetCacheEntryByResourceId(
   DCHECK(!resource_id.empty());
   DCHECK(!callback.is_null());
 
-  cache_->GetCacheEntry(resource_id, md5, callback);
+  cache_->GetCacheEntryOnUIThread(resource_id, md5, callback);
 }
 
 void FileSystem::OnDisableDriveHostedFilesChanged() {
@@ -1590,7 +1591,7 @@ void FileSystem::OnGetFileCompleteForOpenFile(
   // OpenFile ensures that the file is a regular file.
   DCHECK(entry && !entry->file_specific_info().is_hosted_document());
 
-  cache_->MarkDirty(
+  cache_->MarkDirtyOnUIThread(
       params.resource_id,
       params.md5,
       base::Bind(&FileSystem::OnMarkDirtyInCacheCompleteForOpenFile,
@@ -1609,7 +1610,7 @@ void FileSystem::OnMarkDirtyInCacheCompleteForOpenFile(
     return;
   }
 
-  cache_->GetFile(params.resource_id, params.md5, params.callback);
+  cache_->GetFileOnUIThread(params.resource_id, params.md5, params.callback);
 }
 
 void FileSystem::OnOpenFileFinished(
@@ -1676,9 +1677,9 @@ void FileSystem::CloseFileAfterGetEntryInfo(
   // if the file has not been modified. Come up with a way to detect the
   // intactness effectively, or provide a method for user to declare it when
   // calling CloseFile().
-  cache_->CommitDirty(entry->resource_id(),
-                      entry->file_specific_info().file_md5(),
-                      callback);
+  cache_->CommitDirtyOnUIThread(entry->resource_id(),
+                                entry->file_specific_info().file_md5(),
+                                callback);
 }
 
 void FileSystem::CloseFileFinalize(const base::FilePath& file_path,
@@ -1714,7 +1715,7 @@ void FileSystem::CheckLocalModificationAndRun(
   // Checks if the file is cached and modified locally.
   const std::string resource_id = entry->resource_id();
   const std::string md5 = entry->file_specific_info().file_md5();
-  cache_->GetCacheEntry(
+  cache_->GetCacheEntryOnUIThread(
       resource_id,
       md5,
       base::Bind(
@@ -1741,7 +1742,7 @@ void FileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
   // Gets the cache file path.
   const std::string& resource_id = entry->resource_id();
   const std::string& md5 = entry->file_specific_info().file_md5();
-  cache_->GetFile(
+  cache_->GetFileOnUIThread(
       resource_id,
       md5,
       base::Bind(

@@ -98,52 +98,59 @@ class SyncClientTest : public testing::Test {
 
     // Prepare 3 pinned-but-not-present files.
     FileError error = FILE_ERROR_OK;
-    cache_->Pin("resource_id_not_fetched_foo", "",
-                google_apis::test_util::CreateCopyResultCallback(&error));
+    cache_->PinOnUIThread(
+        "resource_id_not_fetched_foo", "",
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(FILE_ERROR_OK, error);
 
-    cache_->Pin("resource_id_not_fetched_bar", "",
-                google_apis::test_util::CreateCopyResultCallback(&error));
+    cache_->PinOnUIThread(
+        "resource_id_not_fetched_bar", "",
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(FILE_ERROR_OK, error);
 
-    cache_->Pin("resource_id_not_fetched_baz", "",
-                google_apis::test_util::CreateCopyResultCallback(&error));
+    cache_->PinOnUIThread(
+        "resource_id_not_fetched_baz", "",
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(FILE_ERROR_OK, error);
 
     // Prepare a pinned-and-fetched file.
     const std::string resource_id_fetched = "resource_id_fetched";
     const std::string md5_fetched = "md5";
-    cache_->Store(resource_id_fetched, md5_fetched, temp_file,
-                  internal::FileCache::FILE_OPERATION_COPY,
-                  google_apis::test_util::CreateCopyResultCallback(&error));
+    cache_->StoreOnUIThread(
+        resource_id_fetched, md5_fetched, temp_file,
+        internal::FileCache::FILE_OPERATION_COPY,
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(FILE_ERROR_OK, error);
-    cache_->Pin(resource_id_fetched, md5_fetched,
-                google_apis::test_util::CreateCopyResultCallback(&error));
+    cache_->PinOnUIThread(
+        resource_id_fetched, md5_fetched,
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(FILE_ERROR_OK, error);
 
     // Prepare a pinned-and-fetched-and-dirty file.
     const std::string resource_id_dirty = "resource_id_dirty";
     const std::string md5_dirty = "";  // Don't care.
-    cache_->Store(resource_id_dirty, md5_dirty, temp_file,
-                  internal::FileCache::FILE_OPERATION_COPY,
-                  google_apis::test_util::CreateCopyResultCallback(&error));
+    cache_->StoreOnUIThread(
+        resource_id_dirty, md5_dirty, temp_file,
+        internal::FileCache::FILE_OPERATION_COPY,
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(FILE_ERROR_OK, error);
-    cache_->Pin(resource_id_dirty, md5_dirty,
-                google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(FILE_ERROR_OK, error);
-    cache_->MarkDirty(
+    cache_->PinOnUIThread(
         resource_id_dirty, md5_dirty,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(FILE_ERROR_OK, error);
-    cache_->CommitDirty(
+    cache_->MarkDirtyOnUIThread(
+        resource_id_dirty, md5_dirty,
+        google_apis::test_util::CreateCopyResultCallback(&error));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_EQ(FILE_ERROR_OK, error);
+    cache_->CommitDirtyOnUIThread(
         resource_id_dirty, md5_dirty,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();

@@ -281,9 +281,9 @@ class DriveFileSystemTest : public testing::Test {
                                      const std::string& md5,
                                      FileCacheEntry* cache_entry) {
     bool result = false;
-    cache_->GetCacheEntry(resource_id, md5,
-                          google_apis::test_util::CreateCopyResultCallback(
-                              &result, cache_entry));
+    cache_->GetCacheEntryOnUIThread(
+        resource_id, md5,
+        google_apis::test_util::CreateCopyResultCallback(&result, cache_entry));
     google_apis::test_util::RunBlockingPoolTask();
     return result;
   }
@@ -1062,10 +1062,10 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
 
   // The content is "x"s of the file size.
   base::FilePath cache_file_path;
-  cache_->GetFile(file->resource_id(),
-                  file->file_specific_info().file_md5(),
-                  google_apis::test_util::CreateCopyResultCallback(
-                      &error, &cache_file_path));
+  cache_->GetFileOnUIThread(file->resource_id(),
+                            file->file_specific_info().file_md5(),
+                            google_apis::test_util::CreateCopyResultCallback(
+                                &error, &cache_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
@@ -1679,9 +1679,10 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   ASSERT_TRUE(google_apis::test_util::WriteStringToFile(tmp_file, content));
 
   FileError error = FILE_ERROR_FAILED;
-  cache_->Store("<resource_id>", "<md5>", tmp_file,
-                internal::FileCache::FILE_OPERATION_COPY,
-                google_apis::test_util::CreateCopyResultCallback(&error));
+  cache_->StoreOnUIThread(
+      "<resource_id>", "<md5>", tmp_file,
+      internal::FileCache::FILE_OPERATION_COPY,
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(CacheEntryExists("<resource_id>", "<md5>"));
@@ -1740,12 +1741,12 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
 
   // Store something as cached version of this file.
   FileError error = FILE_ERROR_OK;
-  cache_->Store(entry->resource_id(),
-                entry->file_specific_info().file_md5(),
-                google_apis::test_util::GetTestFilePath(
-                    "chromeos/gdata/root_feed.json"),
-                internal::FileCache::FILE_OPERATION_COPY,
-                google_apis::test_util::CreateCopyResultCallback(&error));
+  cache_->StoreOnUIThread(
+      entry->resource_id(),
+      entry->file_specific_info().file_md5(),
+      google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
+      internal::FileCache::FILE_OPERATION_COPY,
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
@@ -1906,12 +1907,12 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
 
   // Store something as cached version of this file.
   FileError error = FILE_ERROR_FAILED;
-  cache_->Store(entry->resource_id(),
-                entry->file_specific_info().file_md5(),
-                google_apis::test_util::GetTestFilePath(
-                    "chromeos/gdata/root_feed.json"),
-                internal::FileCache::FILE_OPERATION_COPY,
-                google_apis::test_util::CreateCopyResultCallback(&error));
+  cache_->StoreOnUIThread(
+      entry->resource_id(),
+      entry->file_specific_info().file_md5(),
+      google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
+      internal::FileCache::FILE_OPERATION_COPY,
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
@@ -1948,32 +1949,35 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   // Pin the file so it'll be store in "persistent" directory.
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(kResourceId, kMd5)).Times(1);
   FileError error = FILE_ERROR_OK;
-  cache_->Pin(kResourceId, kMd5,
-              google_apis::test_util::CreateCopyResultCallback(&error));
+  cache_->PinOnUIThread(
+      kResourceId, kMd5,
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // First store a file to cache.
-  cache_->Store(kResourceId,
-                kMd5,
-                // Anything works.
-                google_apis::test_util::GetTestFilePath(
-                    "chromeos/gdata/root_feed.json"),
-                internal::FileCache::FILE_OPERATION_COPY,
-                google_apis::test_util::CreateCopyResultCallback(&error));
+  cache_->StoreOnUIThread(
+      kResourceId,
+      kMd5,
+      // Anything works.
+      google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
+      internal::FileCache::FILE_OPERATION_COPY,
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Add the dirty bit.
-  cache_->MarkDirty(kResourceId, kMd5,
-                    google_apis::test_util::CreateCopyResultCallback(&error));
+  cache_->MarkDirtyOnUIThread(
+      kResourceId, kMd5,
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Commit the dirty bit.
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(kResourceId)).Times(1);
-  cache_->CommitDirty(kResourceId, kMd5,
-                      google_apis::test_util::CreateCopyResultCallback(&error));
+  cache_->CommitDirtyOnUIThread(
+      kResourceId, kMd5,
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
@@ -2187,9 +2191,9 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   EXPECT_TRUE(cache_entry.is_persistent());
 
   base::FilePath cache_file_path;
-  cache_->GetFile(file_resource_id, file_md5,
-                  google_apis::test_util::CreateCopyResultCallback(
-                      &error, &cache_file_path));
+  cache_->GetFileOnUIThread(file_resource_id, file_md5,
+                            google_apis::test_util::CreateCopyResultCallback(
+                                &error, &cache_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(cache_file_path, opened_file_path);
@@ -2256,12 +2260,12 @@ TEST_F(DriveFileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
 
   // Write to cache.
   FileError error = FILE_ERROR_FAILED;
-  cache_->Store(entry->resource_id(),
-                entry->file_specific_info().file_md5(),
-                google_apis::test_util::GetTestFilePath(
-                    "chromeos/gdata/root_feed.json"),
-                internal::FileCache::FILE_OPERATION_COPY,
-                google_apis::test_util::CreateCopyResultCallback(&error));
+  cache_->StoreOnUIThread(
+      entry->resource_id(),
+      entry->file_specific_info().file_md5(),
+      google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
+      internal::FileCache::FILE_OPERATION_COPY,
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);
 
@@ -2275,7 +2279,7 @@ TEST_F(DriveFileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
 
   bool success = false;
   FileCacheEntry cache_entry;
-  cache_->GetCacheEntry(
+  cache_->GetCacheEntryOnUIThread(
       entry->resource_id(),
       entry->file_specific_info().file_md5(),
       google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
@@ -2294,7 +2298,7 @@ TEST_F(DriveFileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   success = false;
-  cache_->GetCacheEntry(
+  cache_->GetCacheEntryOnUIThread(
       entry->resource_id(),
       entry->file_specific_info().file_md5(),
       google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));

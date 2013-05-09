@@ -76,14 +76,15 @@ void UpdateOperation::UpdateFileByEntryInfo(
 
   // Extract a pointer before we call Pass() so we can use it below.
   ResourceEntry* entry_ptr = entry.get();
-  cache_->GetFile(entry_ptr->resource_id(),
-                  entry_ptr->file_specific_info().file_md5(),
-                  base::Bind(&UpdateOperation::OnGetFileCompleteForUpdateFile,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             context,
-                             callback,
-                             drive_file_path,
-                             base::Passed(&entry)));
+  cache_->GetFileOnUIThread(
+      entry_ptr->resource_id(),
+      entry_ptr->file_specific_info().file_md5(),
+      base::Bind(&UpdateOperation::OnGetFileCompleteForUpdateFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 context,
+                 callback,
+                 drive_file_path,
+                 base::Passed(&entry)));
 }
 
 void UpdateOperation::OnGetFileCompleteForUpdateFile(
@@ -155,9 +156,9 @@ void UpdateOperation::OnUpdatedFileRefreshed(
   observer_->OnDirectoryChangedByOperation(drive_file_path.DirName());
 
   // Clear the dirty bit if we have updated an existing file.
-  cache_->ClearDirty(entry->resource_id(),
-                     entry->file_specific_info().file_md5(),
-                     callback);
+  cache_->ClearDirtyOnUIThread(entry->resource_id(),
+                               entry->file_specific_info().file_md5(),
+                               callback);
 }
 
 }  // namespace file_system

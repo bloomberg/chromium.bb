@@ -80,17 +80,17 @@ void SyncClient::StartProcessingBacklog() {
 
   std::vector<std::string>* to_fetch = new std::vector<std::string>;
   std::vector<std::string>* to_upload = new std::vector<std::string>;
-  cache_->Iterate(base::Bind(&CollectBacklog, to_fetch, to_upload),
-                  base::Bind(&SyncClient::OnGetResourceIdsOfBacklog,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             base::Owned(to_fetch),
-                             base::Owned(to_upload)));
+  cache_->IterateOnUIThread(base::Bind(&CollectBacklog, to_fetch, to_upload),
+                            base::Bind(&SyncClient::OnGetResourceIdsOfBacklog,
+                                       weak_ptr_factory_.GetWeakPtr(),
+                                       base::Owned(to_fetch),
+                                       base::Owned(to_upload)));
 }
 
 void SyncClient::StartCheckingExistingPinnedFiles() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  cache_->Iterate(
+  cache_->IterateOnUIThread(
       base::Bind(&SyncClient::OnGetResourceIdOfExistingPinnedFile,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&base::DoNothing));
@@ -262,10 +262,10 @@ void SyncClient::OnGetEntryInfoByResourceId(
   // file when we have a locally modified version.
   if (entry->file_specific_info().file_md5() != cache_entry.md5() &&
       !cache_entry.is_dirty()) {
-    cache_->Remove(resource_id,
-                   base::Bind(&SyncClient::OnRemove,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              resource_id));
+    cache_->RemoveOnUIThread(resource_id,
+                             base::Bind(&SyncClient::OnRemove,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        resource_id));
   }
 }
 
@@ -280,11 +280,11 @@ void SyncClient::OnRemove(const std::string& resource_id,
 
   // Before fetching, we should pin this file again, so that the fetched file
   // is downloaded properly to the persistent directory and marked pinned.
-  cache_->Pin(resource_id,
-              std::string(),
-              base::Bind(&SyncClient::OnPinned,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         resource_id));
+  cache_->PinOnUIThread(resource_id,
+                        std::string(),
+                        base::Bind(&SyncClient::OnPinned,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   resource_id));
 }
 
 void SyncClient::OnPinned(const std::string& resource_id,

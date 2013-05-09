@@ -30,7 +30,7 @@ void DebugInfoCollector::IterateFileCache(
   DCHECK(!iteration_callback.is_null());
   DCHECK(!completion_callback.is_null());
 
-  file_cache_->Iterate(iteration_callback, completion_callback);
+  file_cache_->IterateOnUIThread(iteration_callback, completion_callback);
 }
 
 void DebugInfoCollector::GetMetadata(

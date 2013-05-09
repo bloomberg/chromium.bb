@@ -204,11 +204,12 @@ void CopyOperation::ScheduleTransferRegularFileAfterGetEntryInfo(
     return;
   }
 
-  cache_->StoreLocallyModified(entry->resource_id(),
-                               entry->file_specific_info().file_md5(),
-                               local_file_path,
-                               internal::FileCache::FILE_OPERATION_COPY,
-                               callback);
+  cache_->StoreLocallyModifiedOnUIThread(
+      entry->resource_id(),
+      entry->file_specific_info().file_md5(),
+      local_file_path,
+      internal::FileCache::FILE_OPERATION_COPY,
+      callback);
 }
 
 void CopyOperation::CopyHostedDocumentToDirectory(

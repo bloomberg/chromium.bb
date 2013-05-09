@@ -218,7 +218,7 @@ void DriveSystemService::ClearCacheAndRemountFileSystem(
   DCHECK(!callback.is_null());
 
   RemoveDriveMountPoint();
-  cache_->ClearAll(base::Bind(
+  cache_->ClearAllOnUIThread(base::Bind(
       &DriveSystemService::ReinitializeResourceMetadataAfterClearCache,
       weak_ptr_factory_.GetWeakPtr(),
       callback));

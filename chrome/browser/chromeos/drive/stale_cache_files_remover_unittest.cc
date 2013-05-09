@@ -121,18 +121,19 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
 
   // Create a stale cache file.
   FileError error = FILE_ERROR_OK;
-  cache_->Store(resource_id, md5, dummy_file,
-                internal::FileCache::FILE_OPERATION_COPY,
-                google_apis::test_util::CreateCopyResultCallback(&error));
+  cache_->StoreOnUIThread(
+      resource_id, md5, dummy_file,
+      internal::FileCache::FILE_OPERATION_COPY,
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Verify that the cache entry exists.
   bool success = false;
   FileCacheEntry cache_entry;
-  cache_->GetCacheEntry(resource_id, md5,
-                        google_apis::test_util::CreateCopyResultCallback(
-                            &success, &cache_entry));
+  cache_->GetCacheEntryOnUIThread(
+      resource_id, md5,
+      google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_TRUE(success);
 
@@ -153,9 +154,9 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   google_apis::test_util::RunBlockingPoolTask();
 
   // Verify that the cache entry is deleted.
-  cache_->GetCacheEntry(resource_id, md5,
-                        google_apis::test_util::CreateCopyResultCallback(
-                            &success, &cache_entry));
+  cache_->GetCacheEntryOnUIThread(
+      resource_id, md5,
+      google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_FALSE(success);
 }

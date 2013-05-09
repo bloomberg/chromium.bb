@@ -43,7 +43,7 @@ StaleCacheFilesRemover::~StaleCacheFilesRemover() {
 void StaleCacheFilesRemover::OnInitialLoadFinished() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  cache_->Iterate(
+  cache_->IterateOnUIThread(
       base::Bind(
           &StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary,
           weak_ptr_factory_.GetWeakPtr()),
@@ -73,7 +73,8 @@ void StaleCacheFilesRemover::RemoveCacheIfNecessary(
 
   // The entry is not found in the file system.
   if (error != FILE_ERROR_OK) {
-    cache_->Remove(resource_id, base::Bind(&EmitErrorLog, resource_id));
+    cache_->RemoveOnUIThread(resource_id,
+                             base::Bind(&EmitErrorLog, resource_id));
     return;
   }
 
@@ -81,7 +82,8 @@ void StaleCacheFilesRemover::RemoveCacheIfNecessary(
   DCHECK(entry.get());
   if (!entry->has_file_specific_info() ||
       cache_md5 != entry->file_specific_info().file_md5()) {
-    cache_->Remove(resource_id, base::Bind(&EmitErrorLog, resource_id));
+    cache_->RemoveOnUIThread(resource_id,
+                             base::Bind(&EmitErrorLog, resource_id));
     return;
   }
 }

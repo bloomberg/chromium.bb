@@ -132,7 +132,7 @@ class FileCacheTest : public testing::Test {
                 std::string("chromeos/") + resource.source_file);
 
         FileError error = FILE_ERROR_OK;
-        cache_->Store(
+        cache_->StoreOnUIThread(
             resource.resource_id,
             resource.md5,
             source_path,
@@ -146,7 +146,7 @@ class FileCacheTest : public testing::Test {
         FileError error = FILE_ERROR_OK;
         EXPECT_CALL(*mock_cache_observer_,
                     OnCachePinned(resource.resource_id, resource.md5)).Times(1);
-        cache_->Pin(
+        cache_->PinOnUIThread(
             resource.resource_id,
             resource.md5,
             google_apis::test_util::CreateCopyResultCallback(&error));
@@ -156,7 +156,7 @@ class FileCacheTest : public testing::Test {
       // Mark dirty.
       if (resource.is_dirty) {
         FileError error = FILE_ERROR_OK;
-        cache_->MarkDirty(
+        cache_->MarkDirtyOnUIThread(
             resource.resource_id,
             resource.md5,
             google_apis::test_util::CreateCopyResultCallback(&error));
@@ -165,7 +165,7 @@ class FileCacheTest : public testing::Test {
 
         EXPECT_CALL(*mock_cache_observer_,
                     OnCacheCommitted(resource.resource_id)).Times(1);
-        cache_->CommitDirty(
+        cache_->CommitDirtyOnUIThread(
             resource.resource_id,
             resource.md5,
             google_apis::test_util::CreateCopyResultCallback(&error));
@@ -182,9 +182,9 @@ class FileCacheTest : public testing::Test {
       const std::string& expected_file_extension) {
     FileError error = FILE_ERROR_OK;
     base::FilePath cache_file_path;
-    cache_->GetFile(resource_id, md5,
-                    google_apis::test_util::CreateCopyResultCallback(
-                        &error, &cache_file_path));
+    cache_->GetFileOnUIThread(resource_id, md5,
+                              google_apis::test_util::CreateCopyResultCallback(
+                                  &error, &cache_file_path));
     google_apis::test_util::RunBlockingPoolTask();
 
     EXPECT_EQ(expected_error, error);
@@ -214,9 +214,10 @@ class FileCacheTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
 
     FileError error = FILE_ERROR_OK;
-    cache_->Store(resource_id, md5, source_path,
-                  FileCache::FILE_OPERATION_COPY,
-                  google_apis::test_util::CreateCopyResultCallback(&error));
+    cache_->StoreOnUIThread(
+        resource_id, md5, source_path,
+        FileCache::FILE_OPERATION_COPY,
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     VerifyCacheFileState(error, resource_id, md5);
   }
@@ -235,7 +236,7 @@ class FileCacheTest : public testing::Test {
     expect_outgoing_symlink_ = expected_outgoing_symlink;
 
     FileError error = FILE_ERROR_OK;
-    cache_->StoreLocallyModified(
+    cache_->StoreLocallyModifiedOnUIThread(
         resource_id, md5, source_path,
         FileCache::FILE_OPERATION_COPY,
         google_apis::test_util::CreateCopyResultCallback(&error));
@@ -248,7 +249,7 @@ class FileCacheTest : public testing::Test {
     expected_error_ = expected_error;
 
     FileError error = FILE_ERROR_OK;
-    cache_->Remove(
+    cache_->RemoveOnUIThread(
         resource_id,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
@@ -345,8 +346,9 @@ class FileCacheTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
 
     FileError error = FILE_ERROR_OK;
-    cache_->Pin(resource_id, md5,
-                google_apis::test_util::CreateCopyResultCallback(&error));
+    cache_->PinOnUIThread(
+        resource_id, md5,
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     VerifyCacheFileState(error, resource_id, md5);
   }
@@ -362,8 +364,9 @@ class FileCacheTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
 
     FileError error = FILE_ERROR_OK;
-    cache_->Unpin(resource_id, md5,
-                  google_apis::test_util::CreateCopyResultCallback(&error));
+    cache_->UnpinOnUIThread(
+        resource_id, md5,
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     VerifyCacheFileState(error, resource_id, md5);
   }
@@ -379,7 +382,7 @@ class FileCacheTest : public testing::Test {
     expect_outgoing_symlink_ = false;
 
     FileError error = FILE_ERROR_OK;
-    cache_->MarkDirty(
+    cache_->MarkDirtyOnUIThread(
         resource_id, md5,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
@@ -389,9 +392,10 @@ class FileCacheTest : public testing::Test {
     // Verify filename.
     if (error == FILE_ERROR_OK) {
       base::FilePath cache_file_path;
-      cache_->GetFile(resource_id, md5,
-                      google_apis::test_util::CreateCopyResultCallback(
-                          &error, &cache_file_path));
+      cache_->GetFileOnUIThread(
+          resource_id, md5,
+          google_apis::test_util::CreateCopyResultCallback(
+              &error, &cache_file_path));
       google_apis::test_util::RunBlockingPoolTask();
 
       EXPECT_EQ(FILE_ERROR_OK, error);
@@ -415,7 +419,7 @@ class FileCacheTest : public testing::Test {
     expect_outgoing_symlink_ = true;
 
     FileError error = FILE_ERROR_OK;
-    cache_->CommitDirty(
+    cache_->CommitDirtyOnUIThread(
         resource_id, md5,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
@@ -434,7 +438,7 @@ class FileCacheTest : public testing::Test {
     expect_outgoing_symlink_ = false;
 
     FileError error = FILE_ERROR_OK;
-    cache_->ClearDirty(
+    cache_->ClearDirtyOnUIThread(
         resource_id, md5,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
@@ -454,9 +458,10 @@ class FileCacheTest : public testing::Test {
 
     FileError error = FILE_ERROR_OK;
     base::FilePath cache_file_path;
-    cache_->MarkAsMounted(resource_id, md5,
-                          google_apis::test_util::CreateCopyResultCallback(
-                              &error, &cache_file_path));
+    cache_->MarkAsMountedOnUIThread(
+        resource_id, md5,
+        google_apis::test_util::CreateCopyResultCallback(
+            &error, &cache_file_path));
     google_apis::test_util::RunBlockingPoolTask();
 
     EXPECT_TRUE(file_util::PathExists(cache_file_path));
@@ -480,15 +485,16 @@ class FileCacheTest : public testing::Test {
     expect_outgoing_symlink_ = false;
 
     FileError error = FILE_ERROR_OK;
-    cache_->MarkAsUnmounted(
+    cache_->MarkAsUnmountedOnUIThread(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
 
     base::FilePath cache_file_path;
-    cache_->GetFile(resource_id, md5,
-                    google_apis::test_util::CreateCopyResultCallback(
-                        &error, &cache_file_path));
+    cache_->GetFileOnUIThread(
+        resource_id, md5,
+        google_apis::test_util::CreateCopyResultCallback(
+            &error, &cache_file_path));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(FILE_ERROR_OK, error);
 
@@ -572,9 +578,9 @@ class FileCacheTest : public testing::Test {
                                      const std::string& md5,
                                      FileCacheEntry* cache_entry) {
     bool result = false;
-    cache_->GetCacheEntry(resource_id, md5,
-                          google_apis::test_util::CreateCopyResultCallback(
-                              &result, cache_entry));
+    cache_->GetCacheEntryOnUIThread(
+        resource_id, md5,
+        google_apis::test_util::CreateCopyResultCallback(&result, cache_entry));
     google_apis::test_util::RunBlockingPoolTask();
     return result;
   }
@@ -1047,7 +1053,7 @@ TEST_F(FileCacheTest, PinAndUnpinDirtyCache) {
   // Verifies dirty file exists.
   base::FilePath dirty_path;
   FileError error = FILE_ERROR_FAILED;
-  cache_->GetFile(
+  cache_->GetFileOnUIThread(
       resource_id, md5,
       google_apis::test_util::CreateCopyResultCallback(&error, &dirty_path));
   google_apis::test_util::RunBlockingPoolTask();
@@ -1264,7 +1270,7 @@ TEST_F(FileCacheTest, MountUnmount) {
   // Clear mounted state of the file.
   base::FilePath file_path;
   FileError error = FILE_ERROR_FAILED;
-  cache_->GetFile(
+  cache_->GetFileOnUIThread(
       resource_id, md5,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
   google_apis::test_util::RunBlockingPoolTask();
@@ -1286,7 +1292,7 @@ TEST_F(FileCacheTest, Iterate) {
   std::vector<std::string> resource_ids;
   std::vector<FileCacheEntry> cache_entries;
   bool completed = false;
-  cache_->Iterate(
+  cache_->IterateOnUIThread(
       base::Bind(&OnIterate, &resource_ids, &cache_entries),
       base::Bind(&OnIterateCompleted, &completed));
   google_apis::test_util::RunBlockingPoolTask();
@@ -1324,7 +1330,8 @@ TEST_F(FileCacheTest, ClearAll) {
 
   // Clear cache.
   bool success = false;
-  cache_->ClearAll(google_apis::test_util::CreateCopyResultCallback(&success));
+  cache_->ClearAllOnUIThread(
+      google_apis::test_util::CreateCopyResultCallback(&success));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_TRUE(success);
 
