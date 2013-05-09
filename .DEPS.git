@@ -224,7 +224,7 @@ deps_os = {
         'src/native_client/src/third_party/ppapi':
             None,
         'src/testing/iossim/third_party/class-dump':
-            Var('git_url') + '/chromium/deps/class-dump.git@8461cdd762a604887dc7f251a619d7ec1c1c930d',
+            Var('git_url') + '/chromium/deps/class-dump.git@89bd40883c767584240b4dade8b74e6f57b9bdab',
         'src/third_party/GTM':
             Var('git_url') + '/external/google-toolbox-for-mac.git@1f3578bb9c3cfdf1293f106f07e5b0b3e19ae543',
         'src/third_party/WebKit':
@@ -381,7 +381,7 @@ deps_os = {
         'src/third_party/swig/win':
             Var('git_url') + '/chromium/deps/swig/win.git@986f013ba518541adf5c839811efb35630a31031',
         'src/third_party/syzygy/binaries':
-            Var('git_url') + '/external/sawbuck/syzygy/binaries.git@66e72bb1f4c400f6ab0153f666a15cdd8967ace8',
+            Var('git_url') + '/external/sawbuck/syzygy/binaries.git@7ff41f417abc46c42cad4a0ccdd6e1d4ef737c6f',
         'src/third_party/xulrunner-sdk':
             Var('git_url') + '/chromium/deps/xulrunner-sdk.git@e9b241c183fa4e7af838ecd70714069ca0eb150c',
         'src/third_party/yasm/binaries':
