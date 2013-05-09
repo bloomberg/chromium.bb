@@ -70,11 +70,9 @@ bool AshKeyboardControllerProxy::OnMessageReceived(
   return handled;
 }
 
-void AshKeyboardControllerProxy::OnKeyboardBoundsChanged(
-    const gfx::Rect& keyboard_bounds) {
-  if (keyboard_bounds.IsEmpty())
-    return;
-
+void AshKeyboardControllerProxy::ShowKeyboardContainer(
+    aura::Window* container) {
+  KeyboardControllerProxy::ShowKeyboardContainer(container);
   gfx::Rect showing_area =
       ash::DisplayController::GetPrimaryDisplay().work_area();
   GetInputMethod()->GetTextInputClient()->EnsureCaretInRect(showing_area);

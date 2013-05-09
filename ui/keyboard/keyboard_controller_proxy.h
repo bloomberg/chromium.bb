@@ -40,9 +40,15 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // text input context.
   virtual ui::InputMethod* GetInputMethod() = 0;
 
-  // Called after the keyboard bounds or visibility have changed, and after all
-  // KeyboardController::Observer's have been notified.
-  virtual void OnKeyboardBoundsChanged(const gfx::Rect& new_bounds) = 0;
+  // Shows the container window of the keyboard. The default implementation
+  // simply shows the container. An overridden implementation can set up
+  // necessary animation, or delay the visibility change as it desires.
+  virtual void ShowKeyboardContainer(aura::Window* container);
+
+  // Hides the container window of the keyboard. The default implementation
+  // simply hides the container. An overridden implementation can set up
+  // necesasry animation, or delay the visibility change as it desires.
+  virtual void HideKeyboardContainer(aura::Window* container);
 
  protected:
   // Gets the BrowserContext to use for creating the WebContents hosting the

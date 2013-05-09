@@ -9,6 +9,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/aura/window.h"
 #include "ui/keyboard/keyboard_constants.h"
 
 namespace {
@@ -69,6 +70,14 @@ aura::Window* KeyboardControllerProxy::GetKeyboardWindow() {
   }
 
   return keyboard_contents_->GetView()->GetNativeView();
+}
+
+void KeyboardControllerProxy::ShowKeyboardContainer(aura::Window* container) {
+  container->Show();
+}
+
+void KeyboardControllerProxy::HideKeyboardContainer(aura::Window* container) {
+  container->Hide();
 }
 
 void KeyboardControllerProxy::SetupWebContents(content::WebContents* contents) {

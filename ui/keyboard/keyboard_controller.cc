@@ -191,11 +191,9 @@ void KeyboardController::OnTextInputStateChanged(
         OnKeyboardBoundsChanging(new_bounds));
 
     if (should_show)
-      container_->Show();
+      proxy_->ShowKeyboardContainer(container_);
     else
-      container_->Hide();
-
-    proxy_->OnKeyboardBoundsChanged(new_bounds);
+      proxy_->HideKeyboardContainer(container_);
   }
 
   // TODO(bryeung): whenever the TextInputClient changes we need to notify the

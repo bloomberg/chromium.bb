@@ -70,7 +70,6 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
   virtual ui::InputMethod* GetInputMethod() OVERRIDE {
     return input_method_.get();
   }
-  virtual void OnKeyboardBoundsChanged(const gfx::Rect& new_bounds) OVERRIDE {}
 
  private:
   scoped_ptr<aura::Window> window_;
