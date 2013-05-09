@@ -6,6 +6,7 @@
 
 #include "chrome/browser/renderer_host/pepper/pepper_broker_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_crx_file_system_message_filter.h"
+#include "chrome/browser/renderer_host/pepper/pepper_extensions_common_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_device_id_host.h"
@@ -41,6 +42,22 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
   // Make sure the plugin is giving us a valid instance for this resource.
   if (!host_->IsValidInstance(instance))
     return scoped_ptr<ResourceHost>();
+
+  // Dev interfaces.
+  if (host_->GetPpapiHost()->permissions().HasPermission(
+      ppapi::PERMISSION_DEV)) {
+    switch (message.type()) {
+      case PpapiHostMsg_ExtensionsCommon_Create::ID: {
+        scoped_refptr<ResourceMessageFilter> extensions_common_filter(
+            PepperExtensionsCommonMessageFilter::Create(host_, instance));
+        if (!extensions_common_filter.get())
+          return scoped_ptr<ResourceHost>();
+        return scoped_ptr<ResourceHost>(new MessageFilterHost(
+            host_->GetPpapiHost(), instance, params.pp_resource(),
+            extensions_common_filter));
+      }
+    }
+  }
 
   // Private interfaces.
   if (host_->GetPpapiHost()->permissions().HasPermission(

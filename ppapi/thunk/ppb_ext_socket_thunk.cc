@@ -32,7 +32,7 @@ int32_t Create(PP_Instance instance,
   input_args.push_back(type);
   input_args.push_back(options);
   output_args.push_back(create_info);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.create", input_args, output_args, enter.callback()));
 }
 
@@ -43,7 +43,7 @@ void Destroy(PP_Instance instance, PP_Var socket_id) {
 
   std::vector<PP_Var> args;
   args.push_back(socket_id);
-  enter.functions()->Post("socket.destroy", args);
+  enter.functions()->PostRenderer("socket.destroy", args);
 }
 
 int32_t Connect(PP_Instance instance,
@@ -62,7 +62,7 @@ int32_t Connect(PP_Instance instance,
   input_args.push_back(hostname);
   input_args.push_back(port);
   output_args.push_back(result);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.connect", input_args, output_args, enter.callback()));
 }
 
@@ -82,7 +82,7 @@ int32_t Bind(PP_Instance instance,
   input_args.push_back(address);
   input_args.push_back(port);
   output_args.push_back(result);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.bind", input_args, output_args, enter.callback()));
 }
 
@@ -93,7 +93,7 @@ void Disconnect(PP_Instance instance, PP_Var socket_id) {
 
   std::vector<PP_Var> args;
   args.push_back(socket_id);
-  enter.functions()->Post("socket.disconnect", args);
+  enter.functions()->PostRenderer("socket.disconnect", args);
 }
 
 int32_t Read(PP_Instance instance,
@@ -110,7 +110,7 @@ int32_t Read(PP_Instance instance,
   input_args.push_back(socket_id);
   input_args.push_back(buffer_size);
   output_args.push_back(read_info);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.read", input_args, output_args, enter.callback()));
 }
 
@@ -128,7 +128,7 @@ int32_t Write(PP_Instance instance,
   input_args.push_back(socket_id);
   input_args.push_back(data);
   output_args.push_back(write_info);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.write", input_args, output_args, enter.callback()));
 }
 
@@ -146,7 +146,7 @@ int32_t RecvFrom(PP_Instance instance,
   input_args.push_back(socket_id);
   input_args.push_back(buffer_size);
   output_args.push_back(recv_from_info);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.recvFrom", input_args, output_args, enter.callback()));
 }
 
@@ -168,7 +168,7 @@ int32_t SendTo(PP_Instance instance,
   input_args.push_back(address);
   input_args.push_back(port);
   output_args.push_back(write_info);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.sendTo", input_args, output_args, enter.callback()));
 }
 
@@ -190,7 +190,7 @@ int32_t Listen(PP_Instance instance,
   input_args.push_back(port);
   input_args.push_back(backlog);
   output_args.push_back(result);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.listen", input_args, output_args, enter.callback()));
 }
 
@@ -206,7 +206,7 @@ int32_t Accept(PP_Instance instance,
   std::vector<PP_Var*> output_args;
   input_args.push_back(socket_id);
   output_args.push_back(accept_info);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.accept", input_args, output_args, enter.callback()));
 }
 
@@ -226,7 +226,7 @@ int32_t SetKeepAlive(PP_Instance instance,
   input_args.push_back(enable);
   input_args.push_back(delay);
   output_args.push_back(result);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.setKeepAlive", input_args, output_args, enter.callback()));
 }
 
@@ -244,7 +244,7 @@ int32_t SetNoDelay(PP_Instance instance,
   input_args.push_back(socket_id);
   input_args.push_back(no_delay);
   output_args.push_back(result);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.setNoDelay", input_args, output_args, enter.callback()));
 }
 
@@ -260,7 +260,7 @@ int32_t GetInfo(PP_Instance instance,
   std::vector<PP_Var*> output_args;
   input_args.push_back(socket_id);
   output_args.push_back(result);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.getInfo", input_args, output_args, enter.callback()));
 }
 
@@ -274,7 +274,7 @@ int32_t GetNetworkList(PP_Instance instance,
   std::vector<PP_Var> input_args;
   std::vector<PP_Var*> output_args;
   output_args.push_back(result);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "socket.getNetworkList", input_args, output_args, enter.callback()));
 }
 

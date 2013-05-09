@@ -21,12 +21,18 @@ class PPAPI_THUNK_EXPORT ExtensionsCommon_API {
  public:
   virtual ~ExtensionsCommon_API() {}
 
-  virtual int32_t Call(const std::string& request_name,
-                       const std::vector<PP_Var>& input_args,
-                       const std::vector<PP_Var*>& output_args,
-                       scoped_refptr<TrackedCallback> callback) = 0;
-  virtual void Post(const std::string& request_name,
-                    const std::vector<PP_Var>& args) = 0;
+  virtual int32_t CallRenderer(const std::string& request_name,
+                               const std::vector<PP_Var>& input_args,
+                               const std::vector<PP_Var*>& output_args,
+                               scoped_refptr<TrackedCallback> callback) = 0;
+  virtual void PostRenderer(const std::string& request_name,
+                            const std::vector<PP_Var>& args) = 0;
+  virtual int32_t CallBrowser(const std::string& request_name,
+                              const std::vector<PP_Var>& input_args,
+                              const std::vector<PP_Var*>& output_args,
+                              scoped_refptr<TrackedCallback> callback) = 0;
+  virtual void PostBrowser(const std::string& request_name,
+                           const std::vector<PP_Var>& args) = 0;
 
   static const SingletonResourceID kSingletonResourceID =
       EXTENSIONS_COMMON_SINGLETON_ID;

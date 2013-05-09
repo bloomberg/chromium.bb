@@ -25,7 +25,7 @@ void Create(PP_Instance instance,
   std::vector<PP_Var> args;
   args.push_back(name);
   args.push_back(alarm_info);
-  enter.functions()->Post("alarms.create", args);
+  enter.functions()->PostRenderer("alarms.create", args);
 }
 
 int32_t Get(PP_Instance instance,
@@ -40,7 +40,7 @@ int32_t Get(PP_Instance instance,
   std::vector<PP_Var*> output_args;
   input_args.push_back(name);
   output_args.push_back(alarm);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "alarms.get", input_args, output_args, enter.callback()));
 }
 
@@ -54,7 +54,7 @@ int32_t GetAll(PP_Instance instance,
   std::vector<PP_Var> input_args;
   std::vector<PP_Var*> output_args;
   output_args.push_back(alarms);
-  return enter.SetResult(enter.functions()->Call(
+  return enter.SetResult(enter.functions()->CallRenderer(
       "alarms.getAll", input_args, output_args, enter.callback()));
 }
 
@@ -65,7 +65,7 @@ void Clear(PP_Instance instance, PP_Var name) {
 
   std::vector<PP_Var> args;
   args.push_back(name);
-  enter.functions()->Post("alarms.clear", args);
+  enter.functions()->PostRenderer("alarms.clear", args);
 }
 
 void ClearAll(PP_Instance instance) {
@@ -74,7 +74,7 @@ void ClearAll(PP_Instance instance) {
     return;
 
   std::vector<PP_Var> args;
-  enter.functions()->Post("alarms.clearAll", args);
+  enter.functions()->PostRenderer("alarms.clearAll", args);
 }
 
 const PPB_Ext_Alarms_Dev_0_1 g_ppb_ext_alarms_dev_0_1_thunk = {

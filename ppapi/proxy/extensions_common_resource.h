@@ -30,14 +30,30 @@ class ExtensionsCommonResource : public PluginResource,
   virtual thunk::ExtensionsCommon_API* AsExtensionsCommon_API() OVERRIDE;
 
   // ExtensionsCommon_API implementation.
-  virtual int32_t Call(const std::string& request_name,
-                       const std::vector<PP_Var>& input_args,
-                       const std::vector<PP_Var*>& output_args,
-                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual void Post(const std::string& request_name,
-                    const std::vector<PP_Var>& args) OVERRIDE;
+  virtual int32_t CallRenderer(
+      const std::string& request_name,
+      const std::vector<PP_Var>& input_args,
+      const std::vector<PP_Var*>& output_args,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual void PostRenderer(const std::string& request_name,
+                            const std::vector<PP_Var>& args) OVERRIDE;
+  virtual int32_t CallBrowser(const std::string& request_name,
+                              const std::vector<PP_Var>& input_args,
+                              const std::vector<PP_Var*>& output_args,
+                              scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual void PostBrowser(const std::string& request_name,
+                           const std::vector<PP_Var>& args) OVERRIDE;
 
  private:
+  int32_t CommonCall(Destination dest,
+                     const std::string& request_name,
+                     const std::vector<PP_Var>& input_args,
+                     const std::vector<PP_Var*>& output_args,
+                     scoped_refptr<TrackedCallback> callback);
+  void CommonPost(Destination dest,
+                  const std::string& request_name,
+                  const std::vector<PP_Var>& args);
+
   void OnPluginMsgCallReply(const std::vector<PP_Var*>& output_args,
                             scoped_refptr<TrackedCallback> callback,
                             const ResourceMessageReplyParams& params,
