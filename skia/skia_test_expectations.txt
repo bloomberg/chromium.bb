@@ -56,4 +56,10 @@ crbug.com/237634 virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnly
 # Font metric calculations were fixed in r9005
 crbug.com/238630 css2.1/t100801-c548-ln-ht-02-b-ag.html [ Failure ]
 
+# Windows font metric handling has changed
+crbug.com/239436  svg/batik/text/textEffect3.svg [ ImageOnlyFailure ]
+crbug.com/239436  svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure ]
+crbug.com/239436  svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ ImageOnlyFailure ]
+crbug.com/239436  svg/transforms/text-with-pattern-with-svg-transform.svg [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
