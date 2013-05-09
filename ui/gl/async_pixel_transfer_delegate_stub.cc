@@ -31,8 +31,7 @@ AsyncPixelTransferState* AsyncPixelTransferDelegateStub::
   return new AsyncPixelTransferStateImpl;
 }
 
-bool AsyncPixelTransferDelegateStub::BindCompletedAsyncTransfers() {
-  return false;
+void AsyncPixelTransferDelegateStub::BindCompletedAsyncTransfers() {
 }
 
 void AsyncPixelTransferDelegateStub::AsyncNotifyCompletion(
@@ -67,8 +66,7 @@ base::TimeDelta AsyncPixelTransferDelegateStub::GetTotalTextureUploadTime() {
   return base::TimeDelta();
 }
 
-bool AsyncPixelTransferDelegateStub::ProcessMorePendingTransfers() {
-  return false;
+void AsyncPixelTransferDelegateStub::ProcessMorePendingTransfers() {
 }
 
 bool AsyncPixelTransferDelegateStub::NeedsProcessMorePendingTransfers() {

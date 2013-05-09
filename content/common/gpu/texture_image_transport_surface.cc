@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "content/common/gpu/gl_scoped_binders.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -16,6 +15,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "ui/gl/scoped_binders.h"
 
 using gpu::gles2::ContextGroup;
 using gpu::gles2::MailboxManager;
@@ -416,7 +416,7 @@ void TextureImageTransportSurface::CreateBackTexture() {
       CreateTextureDefinition(current_size_, service_id));
 
   {
-    ScopedTextureBinder texture_binder(service_id);
+    ui::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, service_id);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -432,7 +432,7 @@ void TextureImageTransportSurface::CreateBackTexture() {
 
 void TextureImageTransportSurface::AttachBackTextureToFBO() {
   DCHECK(backbuffer_->service_id());
-  ScopedFrameBufferBinder fbo_binder(fbo_id_);
+  ui::ScopedFrameBufferBinder fbo_binder(fbo_id_);
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
       GL_COLOR_ATTACHMENT0,
       GL_TEXTURE_2D,

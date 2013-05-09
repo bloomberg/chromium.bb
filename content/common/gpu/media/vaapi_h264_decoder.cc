@@ -11,11 +11,11 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "content/common/gpu/gl_scoped_binders.h"
 #include "content/common/gpu/media/vaapi_h264_decoder.h"
 #include "third_party/libva/va/va.h"
 #include "third_party/libva/va/va_x11.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/scoped_binders.h"
 
 namespace {
 
@@ -284,7 +284,7 @@ VaapiH264Decoder::DecodeSurface::DecodeSurface(
   if (!make_context_current_.Run())
     return;
 
-  content::ScopedTextureBinder texture_binder(texture_id_);
+  ui::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, texture_id_);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

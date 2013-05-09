@@ -33,7 +33,7 @@ class MockAsyncPixelTransferDelegate : public gfx::AsyncPixelTransferDelegate {
   MOCK_METHOD2(CreatePixelTransferState,
       gfx::AsyncPixelTransferState*(
           GLuint service_id, const AsyncTexImage2DParams& define_params));
-  MOCK_METHOD0(BindCompletedAsyncTransfers, bool());
+  MOCK_METHOD0(BindCompletedAsyncTransfers, void());
   MOCK_METHOD2(AsyncNotifyCompletion,
       void(const AsyncMemoryParams& mem_params,
            const CompletionCallback& callback));
@@ -49,7 +49,7 @@ class MockAsyncPixelTransferDelegate : public gfx::AsyncPixelTransferDelegate {
   MOCK_METHOD1(WaitForTransferCompletion, void(gfx::AsyncPixelTransferState*));
   MOCK_METHOD0(GetTextureUploadCount, uint32());
   MOCK_METHOD0(GetTotalTextureUploadTime, base::TimeDelta());
-  MOCK_METHOD0(ProcessMorePendingTransfers, bool());
+  MOCK_METHOD0(ProcessMorePendingTransfers, void());
   MOCK_METHOD0(NeedsProcessMorePendingTransfers, bool());
 
  private:

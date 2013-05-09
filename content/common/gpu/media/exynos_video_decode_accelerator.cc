@@ -17,9 +17,9 @@
 #include "base/message_loop_proxy.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/shared_memory.h"
-#include "content/common/gpu/gl_scoped_binders.h"
 #include "content/common/gpu/media/exynos_video_decode_accelerator.h"
 #include "content/common/gpu/media/h264_parser.h"
+#include "ui/gl/scoped_binders.h"
 
 namespace content {
 
@@ -457,7 +457,7 @@ void ExynosVideoDecodeAccelerator::AssignPictureBuffers(
     EGL_NONE,
   };
   Display* x_display = base::MessagePumpForUI::GetDefaultXDisplay();
-  ScopedTextureBinder bind_restore(0);
+  ui::ScopedTextureBinder bind_restore(GL_TEXTURE_2D, 0);
   for (size_t i = 0; i < pic_buffers_ref->picture_buffers.size(); ++i) {
     PictureBufferArrayRef::PictureBufferRef& buffer =
         pic_buffers_ref->picture_buffers[i];

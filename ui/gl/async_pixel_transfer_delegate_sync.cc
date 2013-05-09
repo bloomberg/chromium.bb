@@ -51,9 +51,8 @@ AsyncPixelTransferState* AsyncPixelTransferDelegateSync::
   return new AsyncPixelTransferStateImpl;
 }
 
-bool AsyncPixelTransferDelegateSync::BindCompletedAsyncTransfers() {
+void AsyncPixelTransferDelegateSync::BindCompletedAsyncTransfers() {
   // Everything is already bound.
-  return false;
 }
 
 void AsyncPixelTransferDelegateSync::AsyncNotifyCompletion(
@@ -125,8 +124,7 @@ base::TimeDelta AsyncPixelTransferDelegateSync::GetTotalTextureUploadTime() {
   return total_texture_upload_time_;
 }
 
-bool AsyncPixelTransferDelegateSync::ProcessMorePendingTransfers() {
-  return false;
+void AsyncPixelTransferDelegateSync::ProcessMorePendingTransfers() {
 }
 
 bool AsyncPixelTransferDelegateSync::NeedsProcessMorePendingTransfers() {

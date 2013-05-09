@@ -17,6 +17,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/safe_shared_memory_pool.h"
+#include "ui/gl/scoped_binders.h"
 
 #if defined(OS_ANDROID)
 // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
@@ -176,9 +177,7 @@ class TransferStateInternal
     DCHECK(texture_id_);
     DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
 
-    // We can only change the active texture and unit 0,
-    // as that is all that will be restored.
-    glBindTexture(GL_TEXTURE_2D, texture_id_);
+    ui::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, texture_id_);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, egl_image_);
     bind_callback_.Run();
 
@@ -395,8 +394,7 @@ AsyncPixelTransferState* AsyncPixelTransferDelegateEGL::
                                     use_image_preserved);
 }
 
-bool AsyncPixelTransferDelegateEGL::BindCompletedAsyncTransfers() {
-  bool texture_dirty = false;
+void AsyncPixelTransferDelegateEGL::BindCompletedAsyncTransfers() {
   while(!pending_allocations_.empty()) {
     if (!pending_allocations_.front().get()) {
       pending_allocations_.pop_front();
@@ -410,11 +408,9 @@ bool AsyncPixelTransferDelegateEGL::BindCompletedAsyncTransfers() {
       break;
     // If the transfer is finished, bind it to the texture
     // and remove it from pending list.
-    texture_dirty = true;
     state->BindTransfer();
     pending_allocations_.pop_front();
   }
-  return texture_dirty;
 }
 
 void AsyncPixelTransferDelegateEGL::AsyncNotifyCompletion(
@@ -566,8 +562,7 @@ base::TimeDelta AsyncPixelTransferDelegateEGL::GetTotalTextureUploadTime() {
   return total_texture_upload_time;
 }
 
-bool AsyncPixelTransferDelegateEGL::ProcessMorePendingTransfers() {
-  return false;
+void AsyncPixelTransferDelegateEGL::ProcessMorePendingTransfers() {
 }
 
 bool AsyncPixelTransferDelegateEGL::NeedsProcessMorePendingTransfers() {

@@ -211,8 +211,6 @@
     'common/gpu/client/gpu_video_decode_accelerator_host.h',
     'common/gpu/client/webgraphicscontext3d_command_buffer_impl.cc',
     'common/gpu/client/webgraphicscontext3d_command_buffer_impl.h',
-    'common/gpu/gl_scoped_binders.cc',
-    'common/gpu/gl_scoped_binders.h',
     'common/gpu/gpu_channel.cc',
     'common/gpu/gpu_channel.h',
     'common/gpu/gpu_channel_manager.cc',

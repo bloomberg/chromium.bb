@@ -79,8 +79,7 @@ class GL_EXPORT AsyncPixelTransferDelegate {
       GLuint texture_id,
       const AsyncTexImage2DParams& define_params) = 0;
 
-  // Returns true iff a texture was bound to texture-unit zero.
-  virtual bool BindCompletedAsyncTransfers() = 0;
+  virtual void BindCompletedAsyncTransfers() = 0;
 
   // There's no guarantee that callback will run on the caller thread.
   virtual void AsyncNotifyCompletion(
@@ -112,9 +111,7 @@ class GL_EXPORT AsyncPixelTransferDelegate {
   // NeedsProcessMorePendingTransfers() returns true. Implementations
   // that can't dispatch work to separate threads should use
   // this to avoid blocking the caller thread inappropriately.
-  // ProcessMorePendingTransfers() returns true iff a texture was
-  // bound to texture-unit zero.
-  virtual bool ProcessMorePendingTransfers() = 0;
+  virtual void ProcessMorePendingTransfers() = 0;
   virtual bool NeedsProcessMorePendingTransfers() = 0;
 
  protected:

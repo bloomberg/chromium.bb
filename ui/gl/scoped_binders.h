@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_GL_SCOPED_BINDERS_H_
-#define CONTENT_COMMON_GPU_GL_SCOPED_BINDERS_H_
+#ifndef UI_GL_SCOPED_BINDERS_H_
+#define UI_GL_SCOPED_BINDERS_H_
 
-namespace content {
+#include "ui/gl/gl_export.h"
 
-class ScopedFrameBufferBinder {
+namespace ui {
+
+class GL_EXPORT ScopedFrameBufferBinder {
  public:
   explicit ScopedFrameBufferBinder(unsigned int fbo);
   ~ScopedFrameBufferBinder();
@@ -16,15 +18,16 @@ class ScopedFrameBufferBinder {
   int old_fbo_;
 };
 
-class ScopedTextureBinder {
+class GL_EXPORT ScopedTextureBinder {
  public:
-  explicit ScopedTextureBinder(unsigned int id);
+  ScopedTextureBinder(unsigned int target, unsigned int id);
   ~ScopedTextureBinder();
 
  private:
+  int target_;
   int old_id_;
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_COMMON_GPU_GL_SCOPED_BINDERS_H_
+#endif  // UI_GL_SCOPED_BINDERS_H_

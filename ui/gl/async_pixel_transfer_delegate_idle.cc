@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
 #include "ui/gl/safe_shared_memory_pool.h"
+#include "ui/gl/scoped_binders.h"
 
 using base::SharedMemory;
 using base::SharedMemoryHandle;
@@ -92,9 +93,8 @@ AsyncPixelTransferState* AsyncPixelTransferDelegateIdle::
   return new AsyncPixelTransferStateImpl(texture_id);
 }
 
-bool AsyncPixelTransferDelegateIdle::BindCompletedAsyncTransfers() {
+void AsyncPixelTransferDelegateIdle::BindCompletedAsyncTransfers() {
   // Everything is already bound.
-  return false;
 }
 
 void AsyncPixelTransferDelegateIdle::AsyncNotifyCompletion(
@@ -207,9 +207,9 @@ base::TimeDelta AsyncPixelTransferDelegateIdle::GetTotalTextureUploadTime() {
   return total_texture_upload_time_;
 }
 
-bool AsyncPixelTransferDelegateIdle::ProcessMorePendingTransfers() {
+void AsyncPixelTransferDelegateIdle::ProcessMorePendingTransfers() {
   if (tasks_.empty())
-    return false;
+    return;
 
   // First task should always be a pixel transfer task.
   DCHECK(tasks_.front().transfer_id);
@@ -217,7 +217,6 @@ bool AsyncPixelTransferDelegateIdle::ProcessMorePendingTransfers() {
   tasks_.pop_front();
 
   ProcessNotificationTasks();
-  return true;
 }
 
 bool AsyncPixelTransferDelegateIdle::NeedsProcessMorePendingTransfers() {
@@ -258,7 +257,7 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D(
   void* data = GetAddress(safe_shared_memory->shared_memory(),
                           mem_params.shm_data_offset);
 
-  glBindTexture(tex_params.target, texture_id);
+  ui::ScopedTextureBinder texture_binder(tex_params.target, texture_id);
 
   {
     TRACE_EVENT0("gpu", "glTexImage2D");
@@ -291,7 +290,7 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D(
                           mem_params.shm_data_offset);
 
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
-  glBindTexture(tex_params.target, texture_id);
+  ui::ScopedTextureBinder texture_binder(tex_params.target, texture_id);
 
   {
     TRACE_EVENT0("gpu", "glTexSubImage2D");

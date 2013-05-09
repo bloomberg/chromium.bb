@@ -8274,12 +8274,7 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
     EXPECT_TRUE(texture->IsImmutable());
     // Wait for completion.
     EXPECT_CALL(*delegate, WaitForTransferCompletion(state));
-    EXPECT_CALL(*delegate, BindCompletedAsyncTransfers())
-        .WillOnce(Return(true))
-        .RetiresOnSaturation();
-    // State restoration after binding.
-    EXPECT_CALL(*gl_, ActiveTexture(_));
-    EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, _));
+    EXPECT_CALL(*delegate, BindCompletedAsyncTransfers());
     EXPECT_EQ(error::kNoError, ExecuteCmd(wait_cmd));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
   }

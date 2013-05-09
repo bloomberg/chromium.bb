@@ -24,7 +24,7 @@ class AsyncPixelTransferDelegateIdle : public AsyncPixelTransferDelegate,
   virtual AsyncPixelTransferState* CreatePixelTransferState(
       GLuint texture_id,
       const AsyncTexImage2DParams& define_params) OVERRIDE;
-  virtual bool BindCompletedAsyncTransfers() OVERRIDE;
+  virtual void BindCompletedAsyncTransfers() OVERRIDE;
   virtual void AsyncNotifyCompletion(
       const AsyncMemoryParams& mem_params,
       const CompletionCallback& callback) OVERRIDE;
@@ -41,7 +41,7 @@ class AsyncPixelTransferDelegateIdle : public AsyncPixelTransferDelegate,
       AsyncPixelTransferState* transfer_state) OVERRIDE;
   virtual uint32 GetTextureUploadCount() OVERRIDE;
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
-  virtual bool ProcessMorePendingTransfers() OVERRIDE;
+  virtual void ProcessMorePendingTransfers() OVERRIDE;
   virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
 
  private:
