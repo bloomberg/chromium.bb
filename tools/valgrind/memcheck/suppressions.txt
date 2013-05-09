@@ -4149,6 +4149,13 @@
    fun:_ZN23ExtensionTestingProfileD0Ev
 }
 {
+   bug_106912
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15tracked_objects10ThreadData23InitializeThreadContextERKSs
+   fun:_ZN4base14PlatformThread7SetNameEPKc
+}
+{
    bug_107503
    Memcheck:Uninitialized
    ...
