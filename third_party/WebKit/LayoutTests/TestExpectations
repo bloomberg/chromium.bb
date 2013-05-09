@@ -80,6 +80,8 @@ webkit.org/b/111054 [ Debug ] fast/forms/time-multiple-fields/time-multiple-fiel
 
 crbug.com/229435 [ Debug ] editing/selection/caret-at-bidi-boundary.html [ Slow ]
 
+crbug.com/239554 http/tests/security/frameNavigation/opener.html [ Pass Timeout ]
+
 # -----------------------------------------------------------------
 # TEMPORARILY SKIPPED TESTS
 # -----------------------------------------------------------------
