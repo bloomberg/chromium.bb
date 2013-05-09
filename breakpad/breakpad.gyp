@@ -206,18 +206,13 @@
         {
           'target_name': 'dump_syms',
           'type': 'executable',
-          'include_dirs++': [
-            # ++ ensures this comes before src brought in from target_defaults.
-            'pending/src',
-          ],
           'include_dirs': [
             'src/common/mac',
           ],
           'sources': [
-            'pending/src/common/dwarf_cu_to_module.cc',
-            'pending/src/common/module.cc',
             'src/common/dwarf/bytereader.cc',
             'src/common/dwarf_cfi_to_module.cc',
+            'src/common/dwarf_cu_to_module.cc',
             'src/common/dwarf/dwarf2diehandler.cc',
             'src/common/dwarf/dwarf2reader.cc',
             'src/common/dwarf_line_to_module.cc',
@@ -231,6 +226,7 @@
             'src/common/mac/macho_utilities.cc',
             'src/common/mac/macho_walker.cc',
             'src/common/md5.cc',
+            'src/common/module.cc',
             'src/common/stabs_reader.cc',
             'src/common/stabs_to_module.cc',
             'src/tools/mac/dump_syms/dump_syms_tool.mm',
