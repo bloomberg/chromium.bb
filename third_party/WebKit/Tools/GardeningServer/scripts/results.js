@@ -467,26 +467,6 @@ results.unifyRegressionRanges = function(builderNameList, testName, callback)
     });
 };
 
-results.countFailureOccurences = function(builderNameList, testName, callback)
-{
-    var failureCount = 0;
-
-    var tracker = new base.RequestTracker(builderNameList.length, function() {
-        callback(failureCount);
-    });
-
-    $.each(builderNameList, function(index, builderName) {
-        walkHistory(config.currentPlatform, builderName, testName, function(revision, resultNode) {
-            if (isUnexpectedFailure(resultNode)) {
-                ++failureCount;
-                return true;
-            }
-            tracker.requestComplete();
-            return false;
-        });
-    });
-};
-
 results.resultNodeForTest = function(resultsTree, testName)
 {
     var testNamePath = testName.split('/');
