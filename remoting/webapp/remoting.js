@@ -64,7 +64,16 @@ remoting.init = function() {
       document.getElementById('wcs-sandbox');
   remoting.wcsSandbox = new remoting.WcsSandboxContainer(sandbox.contentWindow);
 
-  remoting.identity.getEmail(remoting.onEmail, remoting.showErrorMessage);
+  /** @param {remoting.Error} error */
+  var onGetEmailError = function(error) {
+    // No need to show the error message for NOT_AUTHENTICATED
+    // because we will show "auth-dialog".
+    if (error != remoting.Error.NOT_AUTHENTICATED) {
+      remoting.showErrorMessage(error);
+    }
+  }
+
+  remoting.identity.getEmail(remoting.onEmail, onGetEmailError);
 
   remoting.showOrHideIT2MeUi();
   remoting.showOrHideMe2MeUi();
