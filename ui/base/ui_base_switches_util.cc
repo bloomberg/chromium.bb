@@ -19,4 +19,13 @@ bool IsTouchEditingEnabled() {
       switches::kEnableTouchEditing);
 }
 
+bool IsNewDialogStyleEnabled() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableNewDialogStyle))
+    return false;
+  if (command_line->HasSwitch(switches::kEnableNewDialogStyle))
+    return true;
+  return false;
+}
+
 }  // namespace switches

@@ -9,6 +9,9 @@ namespace switches {
 // Disables use of DWM composition for top level windows.
 const char kDisableDwmComposition[] = "disable-dwm-composition";
 
+// Disables the new visual style for application dialogs and controls.
+const char kDisableNewDialogStyle[] = "disable-new-dialog-style";
+
 // Disables touch adjustment.
 const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
 
@@ -24,7 +27,7 @@ const char kDisableViewsTextfield[] = "disable-views-textfield";
 // Enables support for bezel touch.
 const char kEnableBezelTouch[] = "enable-bezel-touch";
 
-// Enables the new dialog style wherever it is available.
+// Enables the new visual style for application dialogs and controls.
 const char kEnableNewDialogStyle[] = "enable-new-dialog-style";
 
 // Enables touch event based drag and drop.

@@ -11,18 +11,17 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/root_window.h"
-#include "ui/views/corewm/compound_event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -164,8 +163,7 @@ void SystemModalContainerLayoutManager::CreateModalBackground() {
         "SystemModalContainerLayoutManager.ModalBackground");
     views::View* contents_view = new views::View();
     contents_view->set_background(views::Background::CreateSolidBackground(
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableNewDialogStyle) ? SK_ColorWHITE : SK_ColorBLACK));
+        switches::IsNewDialogStyleEnabled() ? SK_ColorWHITE : SK_ColorBLACK));
     modal_background_->SetContentsView(contents_view);
     modal_background_->GetNativeView()->layer()->SetOpacity(0.0f);
   }

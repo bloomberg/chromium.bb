@@ -15,6 +15,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/range/range.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/selection_model.h"
@@ -57,7 +58,7 @@ bool Textfield::IsViewsTextfieldEnabled() {
   if (command_line->HasSwitch(switches::kEnableViewsTextfield))
     return true;
   // The new dialog style cannot host native Windows textfield controls.
-  if (command_line->HasSwitch(switches::kEnableNewDialogStyle))
+  if (switches::IsNewDialogStyleEnabled())
     return true;
 #endif
   return true;

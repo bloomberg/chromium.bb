@@ -43,7 +43,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -305,8 +305,7 @@ void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
   return;
 #endif
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNewDialogStyle)) {
+  if (switches::IsNewDialogStyleEnabled()) {
     bool already_deemphasized = !!dimmed_color_overlay_.get();
     if (already_deemphasized == deemphasized)
       return;

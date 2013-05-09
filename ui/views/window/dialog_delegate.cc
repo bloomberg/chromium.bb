@@ -4,11 +4,10 @@
 
 #include "ui/views/window/dialog_delegate.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
@@ -30,9 +29,7 @@ DialogDelegate::~DialogDelegate() {
 
 // static
 bool DialogDelegate::UseNewStyle() {
-  static const bool use_new_style = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNewDialogStyle);
-  return use_new_style;
+  return switches::IsNewDialogStyleEnabled();
 }
 
 // static
