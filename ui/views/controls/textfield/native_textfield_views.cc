@@ -1111,7 +1111,7 @@ void NativeTextfieldViews::UpdateCursor() {
 }
 
 void NativeTextfieldViews::RepaintCursor() {
-  gfx::Rect r(GetCaretBounds());
+  gfx::Rect r(GetRenderText()->GetUpdatedCursorBounds());
   r.Inset(-1, -1, -1, -1);
   SchedulePaintInRect(r);
 }
