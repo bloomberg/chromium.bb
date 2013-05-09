@@ -326,13 +326,51 @@ function handleLoadForTree(e) {
   processHash();
 }
 
+function getAllUrls(nodes) {
+  var urls = [];
+
+  // Adds the node and all its direct children.
+  function addNodes(node) {
+    if (node.id == 'new')
+      return;
+
+    if (node.children) {
+      node.children.forEach(function(child) {
+        if (!bmm.isFolder(child))
+          urls.push(child.url);
+      });
+    } else {
+      urls.push(node.url);
+    }
+  }
+
+  // Get a future promise for the nodes.
+  var promises = nodes.map(function(node) {
+    if (bmm.isFolder(node))
+      return bmm.loadSubtree(node.id);
+    // Not a folder so we already have all the data we need.
+    return new Promise(node);
+  });
+
+  var urlsPromise = new Promise();
+
+  var p = Promise.all.apply(null, promises);
+  p.addListener(function(nodes) {
+    nodes.forEach(function(node) {
+      addNodes(node);
+    });
+    urlsPromise.value = urls;
+  });
+
+  return urlsPromise;
+}
+
 /**
- * Returns the bookmark nodes that should be opened through the open context
- * menu commands.
- * @param {HTMLElement} target The target list or tree.
- * @return {!Array.<!BookmarkTreeNode>} .
+ * Returns the nodes (non recursive) to use for the open commands.
+ * @param {HTMLElement} target .
+ * @return {Array.<BookmarkTreeNode>} .
  */
-function getBookmarkNodesForOpenCommands(target) {
+function getNodesForOpen(target) {
   if (target == tree) {
     var folderItem = tree.selectedItem;
     return folderItem == recentTreeItem || folderItem == searchTreeItem ?
@@ -343,57 +381,41 @@ function getBookmarkNodesForOpenCommands(target) {
 }
 
 /**
+ * Returns a promise that will contain all URLs of all the selected bookmarks
+ * and the nested bookmarks for use with the open commands.
+ * @param {HTMLElement} target The target list or tree.
+ * @return {Promise} .
+ */
+function getUrlsForOpenCommands(target) {
+  return getAllUrls(getNodesForOpen(target));
+}
+
+function notNewNode(node) {
+  return node.id != 'new';
+}
+
+/**
  * Helper function that updates the canExecute and labels for the open-like
  * commands.
  * @param {!cr.ui.CanExecuteEvent} e The event fired by the command system.
  * @param {!cr.ui.Command} command The command we are currently processing.
  */
-function updateOpenCommands(e, command) {
-  var selectedItems = getBookmarkNodesForOpenCommands(e.target);
-  var isFolder = selectedItems.length == 1 && bmm.isFolder(selectedItems[0]);
-  var multiple = selectedItems.length != 1 || isFolder;
+function updateOpenCommand(e, command, singularId, pluralId, commandDisabled) {
+  // The command label reflects the selection which might not reflect
+  // how many bookmarks will be opened. For example if you right click an empty
+  // area in a folder with 1 bookmark the text should still say "all".
+  var selectedNodes = getSelectedBookmarkNodes(e.target).filter(notNewNode);
+  var singular = selectedNodes.length == 1 && !bmm.isFolder(selectedNodes[0]);
 
-  function hasBookmarks(node) {
-    for (var i = 0; i < node.children.length; i++) {
-      if (!bmm.isFolder(node.children[i]))
-        return true;
-    }
-    return false;
-  }
+  var urlsP = getUrlsForOpenCommands(e.target);
+  urlsP.addListener(function(urls) {
+    var enabled = urls.length && !commandDisabled;
+    command.disabled = !enabled;
+    if (singularId)
+      command.label = loadTimeData.getString(singular ? singularId : pluralId);
+  });
 
-  var commandDisabled = false;
-  switch (command.id) {
-    case 'open-in-new-tab-command':
-      command.label = loadTimeData.getString(multiple ?
-          'open_all' : 'open_in_new_tab');
-      break;
-
-    case 'open-in-new-window-command':
-      command.label = loadTimeData.getString(multiple ?
-          'open_all_new_window' : 'open_in_new_window');
-      // Disabled when incognito is forced.
-      commandDisabled = incognitoModeAvailability == 'forced' ||
-          !canOpenNewWindows;
-      break;
-    case 'open-incognito-window-command':
-      command.label = loadTimeData.getString(multiple ?
-          'open_all_incognito' : 'open_incognito');
-      // Not available withn incognito is disabled.
-      commandDisabled = incognitoModeAvailability == 'disabled';
-      break;
-  }
-  e.canExecute = selectedItems.length > 0 && !commandDisabled;
-  if (isFolder && e.canExecute) {
-    // We need to get all the bookmark items in this tree. If the tree does not
-    // contain any non-folders, we need to disable the command.
-    var p = bmm.loadSubtree(selectedItems[0].id);
-    p.addListener(function(node) {
-      var selectedItems = getBookmarkNodesForOpenCommands(e.target);
-      if (node.id != selectedItems[0].id)
-        return;
-      command.disabled = !node || !hasBookmarks(node);
-    });
-  }
+  e.canExecute = !commandDisabled;
 }
 
 /**
@@ -464,10 +486,22 @@ function canExecuteShared(e, isRecentOrSearch) {
       break;
 
     case 'open-in-new-tab-command':
+      updateOpenCommand(e, command, 'open_in_new_tab', 'open_all', false);
+      break;
     case 'open-in-background-tab-command':
+      updateOpenCommand(e, command, '', '', false);
+      break;
     case 'open-in-new-window-command':
+      updateOpenCommand(e, command,
+          'open_in_new_window', 'open_all_new_window',
+          // Disabled when incognito is forced.
+          incognitoModeAvailability == 'forced' || !canOpenNewWindows);
+      break;
     case 'open-incognito-window-command':
-      updateOpenCommands(e, command);
+      updateOpenCommand(e, command,
+          'open_incognito', 'open_all_incognito',
+          // Not available when incognito is disabled.
+          incognitoModeAvailability == 'disabled');
       break;
 
     case 'undo-delete-command':
@@ -614,8 +648,8 @@ function updateCommandsBasedOnSelection(e) {
     // Paste only needs to be updated when the tree selection changes.
     var commandNames = ['copy', 'cut', 'delete', 'rename-folder', 'edit',
       'add-new-bookmark', 'new-folder', 'open-in-new-tab',
-      'open-in-new-window', 'open-incognito-window', 'open-in-same-window',
-      'show-in-folder'];
+      'open-in-background-tab', 'open-in-new-window', 'open-incognito-window',
+      'open-in-same-window', 'show-in-folder'];
 
     if (e.target == tree) {
       commandNames.push('paste-from-context-menu', 'paste-from-organize-menu',
@@ -772,42 +806,12 @@ function getSelectedBookmarkIds() {
  * @param {HTMLElement} opt_eventTarget The target of the user initiated event.
  */
 function openBookmarks(kind, opt_eventTarget) {
-  // If we have selected any folders, we need to find all items recursively.
-  // We use multiple async calls to getSubtree instead of getting the whole
-  // tree since we would like to minimize the amount of data sent.
+  // If we have selected any folders, we need to find all the bookmarks one
+  // level down. We use multiple async calls to getSubtree instead of getting
+  // the whole tree since we would like to minimize the amount of data sent.
 
-  var urls = [];
-
-  // Adds the node and all its children.
-  function addNodes(node) {
-    if (node.children) {
-      node.children.forEach(function(child) {
-        if (!bmm.isFolder(child))
-          urls.push(child.url);
-      });
-    } else {
-      urls.push(node.url);
-    }
-  }
-
-  var nodes = getBookmarkNodesForOpenCommands(opt_eventTarget);
-
-  // Get a future promise for every selected item.
-  var promises = nodes.map(function(node) {
-    if (bmm.isFolder(node))
-      return bmm.loadSubtree(node.id);
-    // Not a folder so we already have all the data we need.
-    return new Promise(node.url);
-  });
-
-  var p = Promise.all.apply(null, promises);
-  p.addListener(function(values) {
-    values.forEach(function(v) {
-      if (typeof v == 'string')
-        urls.push(v);
-      else
-        addNodes(v);
-    });
+  var urlsP = getUrlsForOpenCommands(opt_eventTarget);
+  urlsP.addListener(function(urls) {
     getLinkController().openUrls(urls, kind);
     chrome.bookmarkManagerPrivate.recordLaunch();
   });
