@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.ui.LocalizationUtils;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.NavigationClient;
@@ -40,10 +41,7 @@ import java.util.Set;
  */
 public class NavigationPopup extends ListPopupWindow implements AdapterView.OnItemClickListener {
 
-    private static final int LIST_ITEM_HEIGHT_DP = 48;
     private static final int FAVICON_SIZE_DP = 16;
-    private static final int PADDING_DP = 8;
-    private static final int TEXT_SIZE_SP = 18;
 
     private static final int MAXIMUM_HISTORY_ITEMS = 8;
 
@@ -51,10 +49,9 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     private final NavigationClient mNavigationClient;
     private final NavigationHistory mHistory;
     private final NavigationAdapter mAdapter;
+    private final ListItemFactory mListItemFactory;
 
-    private final int mListItemHeight;
     private final int mFaviconSize;
-    private final int mPadding;
 
     private int mNativeNavigationPopup;
 
@@ -75,9 +72,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         mAdapter = new NavigationAdapter();
 
         float density = mContext.getResources().getDisplayMetrics().density;
-        mListItemHeight = (int) (density * LIST_ITEM_HEIGHT_DP);
         mFaviconSize = (int) (density * FAVICON_SIZE_DP);
-        mPadding = (int) (density * PADDING_DP);
 
         setModal(true);
         setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
@@ -85,6 +80,8 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         setOnItemClickListener(this);
 
         setAdapter(new HeaderViewListAdapter(null, null, mAdapter));
+
+        mListItemFactory = new ListItemFactory(context);
     }
 
     /**
@@ -142,17 +139,6 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         dismiss();
     }
 
-    private TextView createListItem() {
-        TextView view = new TextView(mContext);
-        view.setSingleLine();
-        view.setTextSize(TEXT_SIZE_SP);
-        view.setMinimumHeight(mListItemHeight);
-        view.setGravity(Gravity.CENTER_VERTICAL);
-        view.setCompoundDrawablePadding(mPadding);
-        view.setPadding(mPadding, 0, mPadding, 0);
-        return view;
-    }
-
     private void updateBitmapForTextView(TextView view, Bitmap bitmap) {
         Drawable faviconDrawable = null;
         if (bitmap != null) {
@@ -163,6 +149,56 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         }
         faviconDrawable.setBounds(0, 0, mFaviconSize, mFaviconSize);
         view.setCompoundDrawables(faviconDrawable, null, null, null);
+    }
+
+    private static class ListItemFactory {
+        private static final int LIST_ITEM_HEIGHT_DP = 48;
+        private static final int PADDING_DP = 8;
+        private static final int TEXT_SIZE_SP = 18;
+        private static final float FADE_LENGTH_DP = 25.0f;
+        private static final float FADE_STOP = 0.75f;
+
+        int mFadeEdgeLength;
+        int mFadePadding;
+        int mListItemHeight;
+        int mPadding;
+        boolean mIsLayoutDirectionRTL;
+        Context mContext;
+
+        public ListItemFactory(Context context) {
+            mContext = context;
+            computeFadeDimensions();
+        }
+
+        private void computeFadeDimensions() {
+            // Fade with linear gradient starting 25dp from right margin.
+            // Reaches 0% opacity at 75% length. (Simulated with extra padding)
+            float density = mContext.getResources().getDisplayMetrics().density;
+            float fadeLength = (FADE_LENGTH_DP * density);
+            mFadeEdgeLength = (int)(fadeLength * FADE_STOP);
+            mFadePadding = (int)(fadeLength * (1 - FADE_STOP));
+            mListItemHeight = (int) (density * LIST_ITEM_HEIGHT_DP);
+            mPadding = (int) (density * PADDING_DP);
+            mIsLayoutDirectionRTL = LocalizationUtils.isSystemLayoutDirectionRtl();
+        }
+
+        public TextView createListItem() {
+            TextView view = new TextView(mContext);
+            view.setFadingEdgeLength(mFadeEdgeLength);
+            view.setHorizontalFadingEdgeEnabled(true);
+            view.setSingleLine();
+            view.setTextSize(TEXT_SIZE_SP);
+            view.setMinimumHeight(mListItemHeight);
+            view.setGravity(Gravity.CENTER_VERTICAL);
+            view.setCompoundDrawablePadding(mPadding);
+            if (!mIsLayoutDirectionRTL) {
+                view.setPadding(mPadding, 0, mPadding + mFadePadding , 0);
+            }
+            else {
+                view.setPadding(mPadding + mFadePadding, 0, mPadding, 0);
+            }
+            return view;
+        }
     }
 
     private class NavigationAdapter extends BaseAdapter {
@@ -187,7 +223,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
             if (convertView != null && convertView instanceof TextView) {
                 view = (TextView) convertView;
             } else {
-                view = createListItem();
+                view = mListItemFactory.createListItem();
             }
             NavigationEntry entry = (NavigationEntry) getItem(position);
 
