@@ -770,7 +770,7 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   void UpdateConnectionStatus();
   // Record histograms for channel id support during full handshakes - resumed
   // handshakes are ignored.
-  void RecordChannelIDSupport() const;
+  void RecordChannelIDSupport();
 
   ////////////////////////////////////////////////////////////////////////////
   // Methods that are ONLY called on the network task runner:
@@ -785,6 +785,10 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   void OnNSSBufferUpdated(int amount_in_read_buffer);
   void DidNSSRead(int result);
   void DidNSSWrite(int result);
+  void RecordChannelIDSupportOnNetworkTaskRunner(
+      bool negotiated_channel_id,
+      bool channel_id_enabled,
+      bool supports_ecc) const;
 
   ////////////////////////////////////////////////////////////////////////////
   // Methods that are called on both the network task runner and the NSS
@@ -2524,9 +2528,28 @@ void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
   }
 }
 
-void SSLClientSocketNSS::Core::RecordChannelIDSupport() const {
+void SSLClientSocketNSS::Core::RecordChannelIDSupport() {
+  DCHECK(OnNSSTaskRunner());
   if (nss_handshake_state_.resumed_handshake)
     return;
+
+  // Copy the NSS task runner-only state to the network task runner and
+  // log histograms from there, since the histograms also need access to the
+  // network task runner state.
+  PostOrRunCallback(
+      FROM_HERE,
+      base::Bind(&Core::RecordChannelIDSupportOnNetworkTaskRunner,
+                 this,
+                 channel_id_xtn_negotiated_,
+                 ssl_config_.channel_id_enabled,
+                 crypto::ECPrivateKey::IsSupported()));
+}
+
+void SSLClientSocketNSS::Core::RecordChannelIDSupportOnNetworkTaskRunner(
+    bool negotiated_channel_id,
+    bool channel_id_enabled,
+    bool supports_ecc) const {
+  DCHECK(OnNetworkTaskRunner());
 
   // Since this enum is used for a histogram, do not change or re-use values.
   enum {
@@ -2538,12 +2561,12 @@ void SSLClientSocketNSS::Core::RecordChannelIDSupport() const {
     CLIENT_NO_SERVER_BOUND_CERT_SERVICE = 5,
     DOMAIN_BOUND_CERT_USAGE_MAX
   } supported = DISABLED;
-  if (channel_id_xtn_negotiated_) {
+  if (negotiated_channel_id) {
     supported = CLIENT_AND_SERVER;
-  } else if (ssl_config_.channel_id_enabled) {
+  } else if (channel_id_enabled) {
     if (!server_bound_cert_service_)
       supported = CLIENT_NO_SERVER_BOUND_CERT_SERVICE;
-    else if (!crypto::ECPrivateKey::IsSupported())
+    else if (!supports_ecc)
       supported = CLIENT_NO_ECC;
     else if (!server_bound_cert_service_->IsSystemTimeValid())
       supported = CLIENT_BAD_SYSTEM_TIME;
