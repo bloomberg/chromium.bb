@@ -107,6 +107,20 @@ var commandShortcutMap = cr.isMac ? {
 };
 
 /**
+ * Mapping for folder id to suffix of UMA. These names will be appeared
+ * after "BookmarkManager_NavigateTo_" in UMA dashboard.
+ * @const
+ */
+var folderMetricsNameMap = {
+  '1': 'BookmarkBar',
+  '2': 'Other',
+  '3': 'Mobile',
+  'recent': 'Recent',
+  'q=': 'Search',
+  'subfolder': 'SubFolder',
+};
+
+/**
  * Adds an event listener to a node that will remove itself after firing once.
  * @param {!Element} node The DOM node to add the listener to.
  * @param {string} name The name of the event listener to add to.
@@ -154,6 +168,11 @@ function navigateTo(id, callback) {
     callback();
     return;
   }
+
+  var metricsId = folderMetricsNameMap[id.replace(/^q=.*/, 'q=')] ||
+                  folderMetricsNameMap['subfolder'];
+  chrome.metricsPrivate.recordUserAction(
+      'BookmarkManager_NavigateTo_' + metricsId);
 
   addOneShotEventListener(list, 'load', callback);
   updateParentId(id);
