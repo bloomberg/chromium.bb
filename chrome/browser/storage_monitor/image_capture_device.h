@@ -30,15 +30,18 @@ class ImageCaptureDeviceListener {
 
   // Get a notification that a particular item has been found on the device.
   // These calls will come automatically after a new device is initialized.
+  // Names are in relative path form, so subdirectories and files in them will
+  // be passed as "dir/subdir/filename". These same relative filenames should
+  // be used as keys to download files.
   virtual void ItemAdded(const std::string& name,
                          const base::PlatformFileInfo& info) = 0;
 
   // Called when there are no more items to retrieve.
   virtual void NoMoreItems() = 0;
 
-  // Called upon completion of a file download request. The |path| is the
-  // requested download file. Note: in NOT_FOUND error case, can be called
-  // inline with the download request.
+  // Called upon completion of a file download request.
+  // Note: in NOT_FOUND error case, may be called inline with the download
+  // request.
   virtual void DownloadedFile(const std::string& name,
                               base::PlatformFileError error) = 0;
 
@@ -57,6 +60,7 @@ class ImageCaptureDeviceListener {
  @private
   scoped_nsobject<ICCameraDevice> camera_;
   base::WeakPtr<ImageCaptureDeviceListener> listener_;
+  bool closing_;
 }
 
 - (id)initWithCameraDevice:(ICCameraDevice*)cameraDevice;
@@ -64,8 +68,9 @@ class ImageCaptureDeviceListener {
 - (void)open;
 - (void)close;
 
-// Download the given |file| to the provided |local_path|. Completion notice
-// will be sent to the listener's DownloadedFile method.
+// Download the given file |name| to the provided |local_path|. Completion
+// notice will be sent to the listener's DownloadedFile method. The name
+// should be of the same form as those sent to the listener's ItemAdded method.
 - (void)downloadFile:(const std::string&)name
            localPath:(const base::FilePath&)localPath;
 

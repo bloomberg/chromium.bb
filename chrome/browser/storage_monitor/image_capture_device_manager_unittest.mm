@@ -127,13 +127,43 @@ const char kTestFileContents[] = "test";
 
 @end
 
+@interface MockICCameraFolder : ICCameraFolder {
+ @private
+  scoped_nsobject<NSString> name_;
+}
+
+- (id)initWithName:(NSString*)name;
+
+@end
+
+@implementation MockICCameraFolder
+
+- (id)initWithName:(NSString*)name {
+  if ((self = [super init])) {
+    name_.reset([name retain]);
+  }
+  return self;
+}
+
+- (NSString*)name {
+  return name_;
+}
+
+- (ICCameraFolder*)parentFolder {
+  return nil;
+}
+
+@end
+
 @interface MockICCameraFile : ICCameraFile {
  @private
   scoped_nsobject<NSString> name_;
   scoped_nsobject<NSDate> date_;
+  scoped_nsobject<MockICCameraFolder> parent_;
 }
 
 - (id)init:(NSString*)name;
+- (void)setParent:(NSString*)parent;
 
 @end
 
@@ -147,8 +177,16 @@ const char kTestFileContents[] = "test";
   return self;
 }
 
+- (void)setParent:(NSString*)parent {
+  parent_.reset([[MockICCameraFolder alloc] initWithName:parent]);
+}
+
+- (ICCameraFolder*)parentFolder {
+  return parent_.get();
+}
+
 - (NSString*)name {
-  return name_.get();
+  return name_;
 }
 
 - (NSString*)UTI {
@@ -312,7 +350,7 @@ TEST_F(ImageCaptureDeviceManagerTest, RemoveCamera) {
 }
 
 TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
-  scoped_ptr<content::TestBrowserThread> file_thread_(
+  scoped_ptr<content::TestBrowserThread> file_thread(
       new content::TestBrowserThread(
           content::BrowserThread::FILE, &message_loop_));
 
@@ -360,6 +398,46 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
   ASSERT_EQ(2U, listener_.downloads().size());
   EXPECT_EQ(kTestFileName, listener_.downloads()[1]);
   ASSERT_EQ(base::PLATFORM_FILE_OK, listener_.last_error());
+  char file_contents[5];
+  ASSERT_EQ(4, file_util::ReadFile(temp_file, file_contents,
+                                   strlen(kTestFileContents)));
+  EXPECT_EQ(kTestFileContents,
+            std::string(file_contents, strlen(kTestFileContents)));
+
+  [camera didRemoveDevice:device];
+}
+
+TEST_F(ImageCaptureDeviceManagerTest, TestSubdirectories) {
+  scoped_ptr<content::TestBrowserThread> file_thread(
+      new content::TestBrowserThread(
+          content::BrowserThread::FILE, &message_loop_));
+
+  chrome::ImageCaptureDeviceManager manager;
+  manager.SetNotifications(monitor_.receiver());
+  MockICCameraDevice* device = AttachDevice(&manager);
+
+  scoped_nsobject<ImageCaptureDevice> camera(
+      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId)
+          retain]);
+
+  [camera setListener:listener_.AsWeakPtr()];
+  [camera open];
+
+  std::string kTestFileName("pic1");
+  scoped_nsobject<MockICCameraFile> picture1(
+      [[MockICCameraFile alloc]
+          init:base::SysUTF8ToNSString(kTestFileName)]);
+  [picture1 setParent:base::SysUTF8ToNSString("dir")];
+  [device addMediaFile:picture1];
+  [camera cameraDevice:nil didAddItem:picture1];
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath temp_file = temp_dir.path().Append("tempfile");
+
+  [camera downloadFile:("dir/" + kTestFileName) localPath:temp_file];
+  message_loop_.RunUntilIdle();
+
   char file_contents[5];
   ASSERT_EQ(4, file_util::ReadFile(temp_file, file_contents,
                                    strlen(kTestFileContents)));

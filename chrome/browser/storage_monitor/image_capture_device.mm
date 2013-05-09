@@ -33,6 +33,25 @@ base::Time NSDateToBaseTime(NSDate* date) {
   return base::Time::FromDoubleT([date timeIntervalSince1970]);
 }
 
+base::FilePath PathForCameraItem(ICCameraItem* item) {
+  std::string name = base::SysNSStringToUTF8([item name]);
+
+  std::vector<std::string> components;
+  ICCameraFolder* folder = [item parentFolder];
+  while (folder != nil) {
+    components.push_back(base::SysNSStringToUTF8([folder name]));
+    folder = [folder parentFolder];
+  }
+  base::FilePath path;
+  for (std::vector<std::string>::reverse_iterator i = components.rbegin();
+       i != components.rend(); ++i) {
+    path = path.Append(*i);
+  }
+  path = path.Append(name);
+
+  return path;
+}
+
 }  // namespace
 
 @implementation ImageCaptureDevice
@@ -41,6 +60,7 @@ base::Time NSDateToBaseTime(NSDate* date) {
   if ((self = [super init])) {
     camera_.reset([cameraDevice retain]);
     [camera_ setDelegate:self];
+    closing_ = false;
   }
   return self;
 }
@@ -66,6 +86,8 @@ base::Time NSDateToBaseTime(NSDate* date) {
 
 - (void)close {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  closing_ = true;
+  [camera_ cancelDownload];
   [camera_ requestCloseSession];
   [camera_ setDelegate:nil];
   listener_.reset();
@@ -74,9 +96,10 @@ base::Time NSDateToBaseTime(NSDate* date) {
 - (void)downloadFile:(const std::string&)name
            localPath:(const base::FilePath&)localPath {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
   // Find the file with that name and start download.
   for (ICCameraItem* item in [camera_ mediaFiles]) {
-    std::string itemName = base::SysNSStringToUTF8([item name]);
+    std::string itemName = PathForCameraItem(item).value();
     if (itemName == name) {
       // To create save options for ImageCapture, we need to
       // split the target filename into directory/name
@@ -108,18 +131,20 @@ base::Time NSDateToBaseTime(NSDate* date) {
 }
 
 - (void)cameraDevice:(ICCameraDevice*)camera didAddItem:(ICCameraItem*)item {
-  std::string name = base::SysNSStringToUTF8([item name]);
   base::PlatformFileInfo info;
   if ([[item UTI] isEqualToString:base::mac::CFToNSCast(kUTTypeFolder)])
     info.is_directory = true;
   else
     info.size = [base::mac::ObjCCastStrict<ICCameraFile>(item) fileSize];
+
+  base::FilePath path = PathForCameraItem(item);
+
   info.last_modified = NSDateToBaseTime([item modificationDate]);
   info.creation_time = NSDateToBaseTime([item creationDate]);
   info.last_accessed = info.last_modified;
 
   if (listener_)
-    listener_->ItemAdded(name, info);
+    listener_->ItemAdded(path.value(), info);
 }
 
 - (void)cameraDevice:(ICCameraDevice*)camera didAddItems:(NSArray*)items {
@@ -155,7 +180,10 @@ base::Time NSDateToBaseTime(NSDate* date) {
                   error:(NSError*)error
                 options:(NSDictionary*)options
             contextInfo:(void*)contextInfo {
-  std::string name = base::SysNSStringToUTF8([file name]);
+  if (closing_)
+    return;
+
+  std::string name = PathForCameraItem(file).value();
 
   if (error) {
     DLOG(INFO) << "error..."

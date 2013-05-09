@@ -38,10 +38,14 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
       const base::FilePath& file_path,
       const GetFileInfoSuccessCallback& success_callback,
       const ErrorCallback& error_callback) OVERRIDE;
+
+  // Note: passed absolute paths, but expects relative paths in reply.
   virtual void ReadDirectory(
       const base::FilePath& root,
       const ReadDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback) OVERRIDE;
+
+  // Note: passed absolute paths.
   virtual void CreateSnapshotFile(
       const base::FilePath& device_file_path,
       const base::FilePath& local_path,
@@ -106,15 +110,27 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
   base::hash_map<base::FilePath::StringType,
                  base::PlatformFileInfo> file_info_;
 
-  // List of files received from the camera.
+  // List of filenames received from the camera.
   std::vector<base::FilePath> file_paths_;
 
   // Set to true when all file metadata has been received from the camera.
   bool received_all_files_;
 
-  typedef std::map<std::string,
-                   std::pair<CreateSnapshotFileSuccessCallback,
-                             ErrorCallback> > ReadFileTransactionMap;
+  struct ReadFileRequest {
+    ReadFileRequest();
+    ReadFileRequest(const std::string& request_file,
+                    const base::FilePath& snapshot_filename,
+                    CreateSnapshotFileSuccessCallback success_cb,
+                    ErrorCallback error_cb);
+    ~ReadFileRequest();
+
+    std::string request_file;
+    base::FilePath snapshot_file;
+    CreateSnapshotFileSuccessCallback success_callback;
+    ErrorCallback error_callback;
+  };
+
+  typedef std::list<ReadFileRequest> ReadFileTransactionList;
 
   struct ReadDirectoryRequest {
     ReadDirectoryRequest(const base::FilePath& dir,
@@ -129,7 +145,7 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
 
   typedef std::list<ReadDirectoryRequest> ReadDirTransactionList;
 
-  ReadFileTransactionMap read_file_transactions_;
+  ReadFileTransactionList read_file_transactions_;
   ReadDirTransactionList read_dir_transactions_;
 
   base::WeakPtrFactory<MTPDeviceDelegateImplMac> weak_factory_;

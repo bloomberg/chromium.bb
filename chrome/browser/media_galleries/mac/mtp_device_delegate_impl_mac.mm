@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/mac/mtp_device_delegate_impl_mac.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_nsobject.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
@@ -130,6 +132,7 @@ MTPDeviceDelegateImplMac::MTPDeviceDelegateImplMac(
   // Make a synthetic entry for the root of the filesystem.
   base::PlatformFileInfo info;
   info.is_directory = true;
+  file_paths_.push_back(root_path_);
   file_info_[root_path_.value()] = info;
 
   camera_interface_.reset(new DeviceListener(this));
@@ -272,10 +275,14 @@ void MTPDeviceDelegateImplMac::DownloadFile(
     return;
   }
 
-  read_file_transactions_[device_file_path.BaseName().value()] =
-      std::make_pair(success_callback, error_callback);
-  camera_interface_->DownloadFile(device_file_path.BaseName().value(),
-                                  local_path);
+  base::FilePath relative_path;
+  root_path_.AppendRelativePath(device_file_path, &relative_path);
+
+  read_file_transactions_.push_back(
+      ReadFileRequest(relative_path.value(), local_path,
+                      success_callback, error_callback));
+
+  camera_interface_->DownloadFile(relative_path.value(), local_path);
 }
 
 void MTPDeviceDelegateImplMac::CancelAndDelete() {
@@ -287,6 +294,7 @@ void MTPDeviceDelegateImplMac::CancelAndDelete() {
   CancelDownloads();
 
   // Schedule the camera session to be closed and the interface deleted.
+  // This will cancel any downloads in progress.
   camera_interface_->ResetDelegate();
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&DeviceListener::CloseCameraSessionAndDelete,
@@ -297,10 +305,11 @@ void MTPDeviceDelegateImplMac::CancelAndDelete() {
 
 void MTPDeviceDelegateImplMac::CancelDownloads() {
   // Cancel any outstanding callbacks.
-  for (ReadFileTransactionMap::iterator iter = read_file_transactions_.begin();
+  for (ReadFileTransactionList::iterator iter = read_file_transactions_.begin();
        iter != read_file_transactions_.end(); ++iter) {
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-        base::Bind(iter->second.second, base::PLATFORM_FILE_ERROR_ABORT));
+        base::Bind(iter->error_callback,
+                   base::PLATFORM_FILE_ERROR_ABORT));
   }
   read_file_transactions_.clear();
 
@@ -310,9 +319,6 @@ void MTPDeviceDelegateImplMac::CancelDownloads() {
         base::Bind(iter->error_callback, base::PLATFORM_FILE_ERROR_ABORT));
   }
   read_dir_transactions_.clear();
-
-  // TODO(gbillock): ImageCapture currently offers no way to cancel
-  // in-progress downloads.
 }
 
 // Called on the UI thread by the listener
@@ -321,13 +327,17 @@ void MTPDeviceDelegateImplMac::ItemAdded(
   if (received_all_files_)
     return;
 
-  // TODO(gbillock): Currently we flatten all files into a single
-  // directory. That's pretty much how PTP devices work, but if we want
-  // to support ImageCapture for USB, we need to change this.
-  if (info.is_directory)
-    return;
+  // This kinda should go in a Join method in FilePath...
+  base::FilePath relative_path(name);
+  std::vector<base::FilePath::StringType> components;
+  relative_path.GetComponents(&components);
+  base::FilePath item_filename = root_path_;
+  for (std::vector<base::FilePath::StringType>::iterator iter =
+           components.begin();
+       iter != components.end(); ++iter) {
+    item_filename = item_filename.Append(*iter);
+  }
 
-  base::FilePath item_filename = root_path_.Append(name);
   file_info_[item_filename.value()] = info;
   file_paths_.push_back(item_filename);
 
@@ -338,27 +348,55 @@ void MTPDeviceDelegateImplMac::ItemAdded(
 // Called in the UI thread by delegate.
 void MTPDeviceDelegateImplMac::NoMoreItems() {
   received_all_files_ = true;
+  std::sort(file_paths_.begin(), file_paths_.end());
+
   NotifyReadDir();
 }
 
 void MTPDeviceDelegateImplMac::NotifyReadDir() {
-  // Note: this assumes the only directory read we get is for the root.
-  // When this class supports directory hierarchies, this will change.
   for (ReadDirTransactionList::iterator iter = read_dir_transactions_.begin();
        iter != read_dir_transactions_.end(); ++iter) {
+    base::FilePath read_path = iter->directory;
+    // This code assumes that the list of paths is sorted, so we skip to
+    // where we find the entry for the directory, then read out all first-level
+    // children. We then break when the DirName is greater than the read_path,
+    // as that means we've passed the subdir we're reading.
     fileapi::AsyncFileUtil::EntryList entry_list;
+    bool found_path = false;
     for (size_t i = 0; i < file_paths_.size(); ++i) {
+      if (file_paths_[i] == read_path) {
+        found_path = true;
+        continue;
+      }
+      if (!read_path.IsParent(file_paths_[i])) {
+        if (read_path < file_paths_[i].DirName())
+          break;
+        continue;
+      }
+      if (file_paths_[i].DirName() != read_path)
+        continue;
+
+      base::FilePath relative_path;
+      read_path.AppendRelativePath(file_paths_[i], &relative_path);
       base::PlatformFileInfo info = file_info_[file_paths_[i].value()];
       base::FileUtilProxy::Entry entry;
-      entry.name = file_paths_[i].value();
+      entry.name = relative_path.value();
       entry.is_directory = info.is_directory;
       entry.size = info.size;
       entry.last_modified_time = info.last_modified;
       entry_list.push_back(entry);
     }
-    content::BrowserThread::PostTask(content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(iter->success_callback, entry_list, false));
+
+    if (found_path) {
+      content::BrowserThread::PostTask(content::BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(iter->success_callback, entry_list, false));
+    } else {
+      content::BrowserThread::PostTask(content::BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(iter->error_callback,
+                     base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    }
   }
 
   read_dir_transactions_.clear();
@@ -371,22 +409,53 @@ void MTPDeviceDelegateImplMac::DownloadedFile(
   if (!camera_interface_.get())
     return;
 
-  ReadFileTransactionMap::iterator iter = read_file_transactions_.find(name);
-  if (iter == read_file_transactions_.end())
+  bool found = false;
+  ReadFileTransactionList::iterator iter = read_file_transactions_.begin();
+  for (; iter != read_file_transactions_.end(); ++iter) {
+    if (iter->request_file == name) {
+      found = true;
+      break;
+    }
+  }
+  if (!found)
     return;
 
   if (error != base::PLATFORM_FILE_OK) {
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-        base::Bind(iter->second.second, error));
+        base::Bind(iter->error_callback, error));
     read_file_transactions_.erase(iter);
     return;
   }
 
-  base::PlatformFileInfo info = file_info_[name];
+  base::FilePath relative_path(name);
+  std::vector<base::FilePath::StringType> components;
+  relative_path.GetComponents(&components);
+  base::FilePath item_filename = root_path_;
+  for (std::vector<base::FilePath::StringType>::iterator i =
+           components.begin();
+       i != components.end(); ++i) {
+    item_filename = item_filename.Append(*i);
+  }
+
+  base::PlatformFileInfo info = file_info_[item_filename.value()];
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-      base::Bind(iter->second.first, info, base::FilePath(name)));
+      base::Bind(iter->success_callback, info, iter->snapshot_file));
   read_file_transactions_.erase(iter);
 }
+
+MTPDeviceDelegateImplMac::ReadFileRequest::ReadFileRequest(
+    const std::string& file,
+    const base::FilePath& snapshot_filename,
+    CreateSnapshotFileSuccessCallback success_cb,
+    ErrorCallback error_cb)
+    : request_file(file),
+      snapshot_file(snapshot_filename),
+      success_callback(success_cb),
+      error_callback(error_cb) {}
+
+MTPDeviceDelegateImplMac::ReadFileRequest::ReadFileRequest() {}
+
+MTPDeviceDelegateImplMac::ReadFileRequest::~ReadFileRequest() {}
 
 MTPDeviceDelegateImplMac::ReadDirectoryRequest::ReadDirectoryRequest(
     const base::FilePath& dir,

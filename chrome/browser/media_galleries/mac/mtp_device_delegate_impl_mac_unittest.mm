@@ -417,14 +417,14 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestGetFileInfo) {
   ASSERT_EQ(2U, file_list_.size());
   EXPECT_EQ(time1, file_list_[0].last_modified_time);
   EXPECT_FALSE(file_list_[0].is_directory);
-  EXPECT_EQ("/ic:id/name1", file_list_[0].name);
+  EXPECT_EQ("name1", file_list_[0].name);
 
   EXPECT_EQ(time1, file_list_[1].last_modified_time);
   EXPECT_FALSE(file_list_[1].is_directory);
-  EXPECT_EQ("/ic:id/name2", file_list_[1].name);
+  EXPECT_EQ("name2", file_list_[1].name);
 }
 
-TEST_F(MTPDeviceDelegateImplMacTest, TestIgnoreDirectories) {
+TEST_F(MTPDeviceDelegateImplMacTest, TestDirectoriesAndSorting) {
   base::Time time1 = base::Time::Now();
   base::PlatformFileInfo info1;
   info1.size = 1;
@@ -433,26 +433,106 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestIgnoreDirectories) {
   info1.last_modified = time1;
   info1.last_accessed = time1;
   info1.creation_time = time1;
-  delegate_->ItemAdded("name1", info1);
+  delegate_->ItemAdded("name2", info1);
 
   info1.is_directory = true;
-  delegate_->ItemAdded("dir1", info1);
   delegate_->ItemAdded("dir2", info1);
+  delegate_->ItemAdded("dir1", info1);
 
   info1.is_directory = false;
-  delegate_->ItemAdded("name2", info1);
+  delegate_->ItemAdded("name1", info1);
   delegate_->NoMoreItems();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, ReadDir(base::FilePath(kDevicePath)));
 
-  ASSERT_EQ(2U, file_list_.size());
-  EXPECT_EQ(time1, file_list_[0].last_modified_time);
-  EXPECT_FALSE(file_list_[0].is_directory);
-  EXPECT_EQ("/ic:id/name1", file_list_[0].name);
+  ASSERT_EQ(4U, file_list_.size());
+  EXPECT_EQ("dir1", file_list_[0].name);
+  EXPECT_EQ("dir2", file_list_[1].name);
+  EXPECT_EQ(time1, file_list_[2].last_modified_time);
+  EXPECT_FALSE(file_list_[2].is_directory);
+  EXPECT_EQ("name1", file_list_[2].name);
 
-  EXPECT_EQ(time1, file_list_[1].last_modified_time);
-  EXPECT_FALSE(file_list_[1].is_directory);
-  EXPECT_EQ("/ic:id/name2", file_list_[1].name);
+  EXPECT_EQ(time1, file_list_[3].last_modified_time);
+  EXPECT_FALSE(file_list_[3].is_directory);
+  EXPECT_EQ("name2", file_list_[3].name);
+}
+
+TEST_F(MTPDeviceDelegateImplMacTest, SubDirectories) {
+  base::Time time1 = base::Time::Now();
+  base::PlatformFileInfo info1;
+  info1.size = 0;
+  info1.is_directory = true;
+  info1.is_symbolic_link = false;
+  info1.last_modified = time1;
+  info1.last_accessed = time1;
+  info1.creation_time = time1;
+  delegate_->ItemAdded("dir1", info1);
+
+  info1.size = 1;
+  info1.is_directory = false;
+  info1.is_symbolic_link = false;
+  info1.last_modified = time1;
+  info1.last_accessed = time1;
+  info1.creation_time = time1;
+  delegate_->ItemAdded("dir1/name1", info1);
+
+  info1.is_directory = true;
+  info1.size = 0;
+  delegate_->ItemAdded("dir2", info1);
+
+  info1.is_directory = false;
+  info1.size = 1;
+  delegate_->ItemAdded("dir2/name2", info1);
+
+  info1.is_directory = true;
+  info1.size = 0;
+  delegate_->ItemAdded("dir2/subdir", info1);
+
+  info1.is_directory = false;
+  info1.size = 1;
+  delegate_->ItemAdded("dir2/subdir/name3", info1);
+  delegate_->ItemAdded("name4", info1);
+
+  delegate_->NoMoreItems();
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK, ReadDir(base::FilePath(kDevicePath)));
+  ASSERT_EQ(3U, file_list_.size());
+  EXPECT_TRUE(file_list_[0].is_directory);
+  EXPECT_EQ("dir1", file_list_[0].name);
+  EXPECT_TRUE(file_list_[1].is_directory);
+  EXPECT_EQ("dir2", file_list_[1].name);
+  EXPECT_FALSE(file_list_[2].is_directory);
+  EXPECT_EQ("name4", file_list_[2].name);
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ReadDir(base::FilePath(kDevicePath).Append("dir1")));
+  ASSERT_EQ(1U, file_list_.size());
+  EXPECT_FALSE(file_list_[0].is_directory);
+  EXPECT_EQ("name1", file_list_[0].name);
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ReadDir(base::FilePath(kDevicePath).Append("dir2")));
+  ASSERT_EQ(2U, file_list_.size());
+  EXPECT_FALSE(file_list_[0].is_directory);
+  EXPECT_EQ("name2", file_list_[0].name);
+  EXPECT_TRUE(file_list_[1].is_directory);
+  EXPECT_EQ("subdir", file_list_[1].name);
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ReadDir(base::FilePath(kDevicePath)
+                    .Append("dir2").Append("subdir")));
+  ASSERT_EQ(1U, file_list_.size());
+  EXPECT_FALSE(file_list_[0].is_directory);
+  EXPECT_EQ("name3", file_list_[0].name);
+
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+            ReadDir(base::FilePath(kDevicePath)
+                    .Append("dir2").Append("subdir").Append("subdir")));
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+            ReadDir(base::FilePath(kDevicePath)
+                    .Append("dir3").Append("subdir")));
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+            ReadDir(base::FilePath(kDevicePath).Append("dir3")));
 }
 
 TEST_F(MTPDeviceDelegateImplMacTest, TestDownload) {
@@ -475,7 +555,7 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestDownload) {
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, ReadDir(base::FilePath(kDevicePath)));
   ASSERT_EQ(1U, file_list_.size());
-  ASSERT_EQ("/ic:id/filename", file_list_[0].name);
+  ASSERT_EQ("filename", file_list_[0].name);
 
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             DownloadFile(base::FilePath("/ic:id/nonexist"),
