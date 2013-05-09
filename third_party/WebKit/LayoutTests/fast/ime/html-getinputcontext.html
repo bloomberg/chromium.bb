@@ -1,0 +1,29 @@
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+description("This tests getInputContext() which is an additional interface for HTMLElement.");
+
+var html = document.documentElement;
+
+// Checks creating an InputMethodContext object via new throws exception.
+shouldThrow('new InputMethodContext()');
+
+// Checks existence of getInputContext()
+shouldBeNonNull(html.getInputContext);
+shouldBeEqualToString('typeof(html.getInputContext)', 'function');
+
+// Checks getInputContext() returns an InputMethodContext object.
+var context = html.getInputContext();
+shouldBeTrue('context instanceof InputMethodContext');
+
+// Checks the same InputMethodCOntext objects are returned from an element.
+var context2 = html.getInputContext();
+shouldBeTrue('context2 instanceof InputMethodContext');
+shouldBeTrue('context === context2');
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

@@ -160,6 +160,7 @@ IDBTransaction
 IDBVersionChangeEvent
 Image
 ImageData
+InputMethodContext
 Int16Array
 Int32Array
 Int8Array

@@ -30,7 +30,6 @@
 
 // http://www.w3.org/TR/ime-api/
 [
-    NoInterfaceObject,
     ImplementationLacksVTable
 ] interface InputMethodContext {
     readonly attribute Composition composition;

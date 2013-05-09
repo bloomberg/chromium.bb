@@ -35,7 +35,7 @@ FontLoadEvents status=experimental
 Fullscreen status=stable
 Gamepad status=stable
 Geolocation status=stable
-IMEAPI
+IMEAPI status=test
 IndexedDB status=stable
 InputTypeDateTime condition=INPUT_TYPE_DATETIME_INCOMPLETE, status=test
 InputTypeWeek status=stable
