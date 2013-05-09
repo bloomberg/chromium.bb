@@ -1657,3 +1657,5 @@ crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/resize-corner-hidpi.html 
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/video-controls-in-hidpi.html [ Pass Timeout ]
 
 crbug.com/239077 fast/canvas/webgl/index-validation-with-resized-buffer.html  [ Crash ]
+
+crbug.com/238813 [ Mac Debug ] inspector/debugger/pause-in-internal-script.html [ Pass Crash ]
