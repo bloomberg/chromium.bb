@@ -1077,8 +1077,6 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
         addHTTPOriginIfNeeded(request, referrerOrigin->toString());
     }
 
-    ASSERT(newLoadType != FrameLoadTypeSame);
-
     // The search for a target frame is done earlier in the case of form submission.
     Frame* targetFrame = isFormSubmission ? 0 : findFrameForNavigation(frameName);
     if (targetFrame && targetFrame != m_frame) {
@@ -1096,13 +1094,7 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
         return;
     }
 
-    bool sameURL = shouldTreatURLAsSameAsCurrent(newURL);
     loadWithNavigationAction(request, action, newLoadType, formState.release(), defaultSubstituteDataForURL(request.url()));
-    // Example of this case are sites that reload the same URL with a different cookie
-    // driving the generated content, or a master frame with links that drive a target
-    // frame, where the user has clicked on the same link repeatedly.
-    if (sameURL && newLoadType != FrameLoadTypeReload && newLoadType != FrameLoadTypeReloadFromOrigin)
-        m_loadType = FrameLoadTypeSame;
 }
 
 SubstituteData FrameLoader::defaultSubstituteDataForURL(const KURL& url)
@@ -1138,7 +1130,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
 
     FrameLoadType type;
     if (shouldTreatURLAsSameAsCurrent(r.url()))
-        type = FrameLoadTypeSame;
+        type = FrameLoadTypeReload;
     else if (shouldTreatURLAsSameAsCurrent(unreachableURL) && m_loadType == FrameLoadTypeReload)
         type = FrameLoadTypeReload;
     else
@@ -2073,7 +2065,6 @@ bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const S
     return (!isFormSubmission || equalIgnoringCase(httpMethod, "GET"))
         && loadType != FrameLoadTypeReload
         && loadType != FrameLoadTypeReloadFromOrigin
-        && loadType != FrameLoadTypeSame
         && !shouldReload(m_frame->document()->url(), url)
         // We don't want to just scroll if a link from within a
         // frameset is trying to reload the frameset into _top.

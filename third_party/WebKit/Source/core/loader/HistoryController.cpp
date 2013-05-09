@@ -194,7 +194,6 @@ void HistoryController::restoreDocumentState()
     switch (m_frame->loader()->loadType()) {
         case FrameLoadTypeReload:
         case FrameLoadTypeReloadFromOrigin:
-        case FrameLoadTypeSame:
         case FrameLoadTypeReplace:
             break;
         case FrameLoadTypeBackForward:
@@ -370,7 +369,6 @@ void HistoryController::updateForCommit()
         return;
     case FrameLoadTypeReload:
     case FrameLoadTypeReloadFromOrigin:
-    case FrameLoadTypeSame:
     case FrameLoadTypeReplace:
         updateForReload();
         return;
