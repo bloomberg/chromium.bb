@@ -72,6 +72,7 @@ public:
     void startLoadingDynamicSheet();
 
     StyleSheetContents* rootStyleSheet() const;
+    bool hasSingleOwnerNode() const;
     Node* singleOwnerNode() const;
     Document* singleOwnerDocument() const;
 

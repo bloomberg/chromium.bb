@@ -375,6 +375,14 @@ StyleSheetContents* StyleSheetContents::rootStyleSheet() const
     return const_cast<StyleSheetContents*>(root);
 }
 
+bool StyleSheetContents::hasSingleOwnerNode() const
+{
+    StyleSheetContents* root = rootStyleSheet();
+    if (root->m_clients.isEmpty())
+        return false;
+    return root->m_clients.size() == 1;
+}
+
 Node* StyleSheetContents::singleOwnerNode() const
 {
     StyleSheetContents* root = rootStyleSheet();

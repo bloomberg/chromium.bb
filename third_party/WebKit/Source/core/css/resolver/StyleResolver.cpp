@@ -616,7 +616,7 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
     while (thisCousin) {
         while (currentNode) {
             ++subcount;
-            if (currentNode->renderStyle() == parentStyle && currentNode->lastChild()
+            if (!currentNode->hasScopedHTMLStyleChild() && currentNode->renderStyle() == parentStyle && currentNode->lastChild()
                 && currentNode->isElementNode() && !parentElementPreventsSharing(toElement(currentNode))
                 && !toElement(currentNode)->shadow()
                 ) {

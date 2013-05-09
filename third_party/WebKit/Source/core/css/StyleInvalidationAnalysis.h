@@ -28,11 +28,13 @@
 
 #include <wtf/HashSet.h>
 #include <wtf/PassOwnPtr.h>
+#include <wtf/Vector.h>
 #include <wtf/text/AtomicStringImpl.h>
 
 namespace WebCore {
 
 class Document;
+class Node;
 class StyleSheetContents;
 
 class StyleInvalidationAnalysis {
@@ -49,6 +51,7 @@ private:
     bool m_dirtiesAllStyle;
     HashSet<AtomicStringImpl*> m_idScopes;
     HashSet<AtomicStringImpl*> m_classScopes;
+    Vector<Node*, 8> m_scopingNodes;
 };
 
 }

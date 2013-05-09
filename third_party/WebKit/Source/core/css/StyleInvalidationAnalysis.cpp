@@ -29,9 +29,12 @@
 #include "core/css/CSSSelectorList.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/StyledElement.h"
+#include "core/html/HTMLStyleElement.h"
 
 namespace WebCore {
 
@@ -68,6 +71,39 @@ static bool determineSelectorScopes(const CSSSelectorList& selectorList, HashSet
     return true;
 }
 
+static bool hasDistributedRule(StyleSheetContents* styleSheetContents)
+{
+    const Vector<RefPtr<StyleRuleBase> >& rules = styleSheetContents->childRules();
+    for (unsigned i = 0; i < rules.size(); i++) {
+        const StyleRuleBase* rule = rules[i].get();
+        if (!rule->isStyleRule())
+            continue;
+
+        const StyleRule* styleRule = toStyleRule(rule);
+        const CSSSelectorList& selectorList = styleRule->selectorList();
+        for (size_t selectorIndex = 0; selectorIndex != notFound; selectorIndex = selectorList.indexOfNextSelectorAfter(selectorIndex)) {
+            if (selectorList.hasShadowDistributedAt(selectorIndex))
+                return true;
+        }
+    }
+    return false;
+}
+
+static Node* determineScopingNodeForStyleScoped(HTMLStyleElement* ownerElement, StyleSheetContents* styleSheetContents)
+{
+    ASSERT(ownerElement && ownerElement->isRegisteredAsScoped());
+
+    if (ownerElement->isInShadowTree() && hasDistributedRule(styleSheetContents)) {
+        ContainerNode* scope = ownerElement;
+        do {
+            scope = scope->containingShadowRoot()->shadowHost();
+        } while (scope->isInShadowTree());
+
+        return scope;
+    }
+    return ownerElement->isRegisteredInShadowRoot() ? ownerElement->containingShadowRoot()->shadowHost() : ownerElement->parentNode();
+}
+
 void StyleInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* styleSheetContents)
 {
     ASSERT(!styleSheetContents->isLoading());
@@ -82,6 +118,14 @@ void StyleInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* styleSheet
         if (m_dirtiesAllStyle)
             return;
     }
+    if (styleSheetContents->hasSingleOwnerNode()) {
+        Node* ownerNode = styleSheetContents->singleOwnerNode();
+        if (ownerNode && isHTMLStyleElement(ownerNode) && toHTMLStyleElement(ownerNode)->isRegisteredAsScoped()) {
+            m_scopingNodes.append(determineScopingNodeForStyleScoped(toHTMLStyleElement(ownerNode), styleSheetContents));
+            return;
+        }
+    }
+
     const Vector<RefPtr<StyleRuleBase> >& rules = styleSheetContents->childRules();
     for (unsigned i = 0; i < rules.size(); i++) {
         StyleRuleBase* rule = rules[i].get();
@@ -115,6 +159,12 @@ static bool elementMatchesSelectorScopes(const Element* element, const HashSet<A
 void StyleInvalidationAnalysis::invalidateStyle(Document* document)
 {
     ASSERT(!m_dirtiesAllStyle);
+
+    if (!m_scopingNodes.isEmpty()) {
+        for (unsigned i = 0; i < m_scopingNodes.size(); ++i)
+            m_scopingNodes.at(i)->setNeedsStyleRecalc();
+    }
+
     if (m_idScopes.isEmpty() && m_classScopes.isEmpty())
         return;
     Element* element = ElementTraversal::firstWithin(document);
