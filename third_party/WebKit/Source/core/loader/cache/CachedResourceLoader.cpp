@@ -233,6 +233,7 @@ bool CachedResourceLoader::checkInsecureContent(CachedResource::Type type, const
     case CachedResource::SVGDocumentResource:
 #endif
     case CachedResource::CSSStyleSheet:
+    case CachedResource::RawResource:
         // These resource can inject script into the current document (Script,
         // XSL) or exfiltrate the content of the current document (CSS).
         if (Frame* f = frame())
@@ -241,7 +242,6 @@ bool CachedResourceLoader::checkInsecureContent(CachedResource::Type type, const
         break;
     case CachedResource::TextTrackResource:
     case CachedResource::ShaderResource:
-    case CachedResource::RawResource:
     case CachedResource::ImageResource:
     case CachedResource::FontResource: {
         // These resources can corrupt only the frame's pixels.
