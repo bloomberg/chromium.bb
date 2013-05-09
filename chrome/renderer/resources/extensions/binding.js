@@ -203,6 +203,33 @@ Binding.prototype = {
   generate: function() {
     var schema = this.schema_;
 
+    function shouldCheckUnprivileged() {
+      var shouldCheck = 'unprivileged' in schema;
+      if (shouldCheck)
+        return shouldCheck;
+
+      ['functions', 'events'].forEach(function(type) {
+        if (schema.hasOwnProperty(type)) {
+          schema[type].forEach(function(node) {
+            if ('unprivileged' in node)
+              shouldCheck = true;
+          });
+        }
+      });
+      if (shouldCheck)
+        return shouldCheck;
+
+      for (var property in schema.properties) {
+        if (schema.hasOwnProperty(property) &&
+            'unprivileged' in schema.properties[property]) {
+          shouldCheck = true;
+          break;
+        }
+      }
+      return shouldCheck;
+    }
+    var checkUnprivileged = shouldCheckUnprivileged();
+
     // TODO(kalman/cduvall): Make GetAvailability handle this, then delete the
     // supporting code.
     if (!isSchemaNodeSupported(schema, platform, manifestVersion)) {
@@ -211,14 +238,6 @@ Binding.prototype = {
       return undefined;
     }
 
-    var availability = GetAvailability(schema.namespace);
-    if (!availability.is_available) {
-      console.error('chrome.' + schema.namespace + ' is not available: ' +
-                    availability.message);
-      return undefined;
-    }
-
-    // See comment on internalAPIs at the top.
     var mod = {};
 
     var namespaces = schema.namespace.split('.');
@@ -238,6 +257,7 @@ Binding.prototype = {
       }, this);
     }
 
+    // TODO(cduvall): Take out when all APIs have been converted to features.
     // Returns whether access to the content of a schema should be denied,
     // based on the presence of "unprivileged" and whether this is an
     // extension process (versus e.g. a content script).
@@ -246,16 +266,6 @@ Binding.prototype = {
              schema.unprivileged ||
              itemSchema.unprivileged;
     };
-
-    // Adds a getter that throws an access denied error to object |mod|
-    // for property |name|.
-    function addUnprivilegedAccessGetter(mod, name) {
-      mod.__defineGetter__(name, function() {
-        throw new Error(
-            '"' + name + '" can only be used in extension processes. See ' +
-            'the content scripts documentation for more details.');
-      });
-    }
 
     // Setup Functions.
     if (schema.functions) {
@@ -269,15 +279,16 @@ Binding.prototype = {
           this.apiFunctions_.registerUnavailable(functionDef.name);
           return;
         }
-        if (!isSchemaAccessAllowed(functionDef)) {
-          this.apiFunctions_.registerUnavailable(functionDef.name);
-          addUnprivilegedAccessGetter(mod, functionDef.name);
-          return;
-        }
 
         var apiFunction = {};
         apiFunction.definition = functionDef;
         apiFunction.name = schema.namespace + '.' + functionDef.name;
+
+        if (!GetAvailability(apiFunction.name).is_available ||
+            (checkUnprivileged && !isSchemaAccessAllowed(functionDef))) {
+          this.apiFunctions_.registerUnavailable(functionDef.name);
+          return;
+        }
 
         // TODO(aa): It would be best to run this in a unit test, but in order
         // to do that we would need to better factor this code so that it
@@ -336,14 +347,14 @@ Binding.prototype = {
         }
         if (!isSchemaNodeSupported(eventDef, platform, manifestVersion))
           return;
-        if (!isSchemaAccessAllowed(eventDef)) {
-          addUnprivilegedAccessGetter(mod, eventDef.name);
+
+        var eventName = schema.namespace + "." + eventDef.name;
+        if (!GetAvailability(eventName).is_available ||
+            (checkUnprivileged && !isSchemaAccessAllowed(eventDef))) {
           return;
         }
 
-        var eventName = schema.namespace + "." + eventDef.name;
         var options = eventDef.options || {};
-
         if (eventDef.filters && eventDef.filters.length > 0)
           options.supportsFilters = true;
 
@@ -370,8 +381,9 @@ Binding.prototype = {
           return;  // TODO(kalman): be strict like functions/events somehow.
         if (!isSchemaNodeSupported(propertyDef, platform, manifestVersion))
           return;
-        if (!isSchemaAccessAllowed(propertyDef)) {
-          addUnprivilegedAccessGetter(m, propertyName);
+        if (!GetAvailability(schema.namespace + "." +
+              propertyName).is_available ||
+            (checkUnprivileged && !isSchemaAccessAllowed(propertyDef))) {
           return;
         }
 
@@ -413,6 +425,14 @@ Binding.prototype = {
     };
 
     addProperties(mod, schema);
+
+    var availability = GetAvailability(schema.namespace);
+    if (!availability.is_available && Object.keys(mod).length == 0) {
+      console.error('chrome.' + schema.namespace + ' is not available: ' +
+                        availability.message);
+      return;
+    }
+
     this.runHooks_(mod);
     return mod;
   }

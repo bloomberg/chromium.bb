@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/strings/string_piece.h"
@@ -64,7 +65,9 @@
 #include "chrome/renderer/resource_bundle_source_map.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/view_type.h"
+#include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
@@ -112,6 +115,26 @@ static v8::Handle<v8::Object> GetOrCreateChrome(
   CHECK(chrome->IsObject());
   return chrome->ToObject();
 }
+
+class TestFeaturesNativeHandler : public ObjectBackedNativeHandler {
+ public:
+  explicit TestFeaturesNativeHandler(v8::Handle<v8::Context> context)
+      : ObjectBackedNativeHandler(context) {
+    RouteFunction("GetAPIFeatures",
+        base::Bind(&TestFeaturesNativeHandler::GetAPIFeatures,
+                   base::Unretained(this)));
+  }
+
+ private:
+  v8::Handle<v8::Value> GetAPIFeatures(const v8::Arguments& args) {
+    base::Value* value = base::JSONReader::Read(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_EXTENSION_API_FEATURES).as_string());
+    scoped_ptr<content::V8ValueConverter> converter(
+        content::V8ValueConverter::create());
+    return converter->ToV8Value(value, v8_context());
+  }
+};
 
 class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
  public:
@@ -699,7 +722,7 @@ void Dispatcher::RegisterSchemaGeneratedBindings(
   for (std::set<std::string>::iterator it = apis.begin();
        it != apis.end(); ++it) {
     const std::string& api_name = *it;
-    if (!context->GetAvailabilityForContext(api_name).is_available())
+    if (!context->IsAnyFeatureAvailableToContext(api_name))
       continue;
 
     Feature* feature =
@@ -1014,6 +1037,8 @@ void Dispatcher::DidCreateScriptContext(
           new SchemaRegistryNativeHandler(v8_schema_registry(), v8_context)));
   module_system->RegisterNativeHandler("v8_context",
       scoped_ptr<NativeHandler>(new V8ContextNativeHandler(context, this)));
+  module_system->RegisterNativeHandler("test_features",
+      scoped_ptr<NativeHandler>(new TestFeaturesNativeHandler(v8_context)));
 
   int manifest_version = extension ? extension->manifest_version() : 1;
   bool send_request_disabled =

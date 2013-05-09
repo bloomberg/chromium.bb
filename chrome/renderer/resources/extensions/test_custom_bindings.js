@@ -11,6 +11,7 @@ var chrome = requireNative('chrome').GetChrome();
 var GetExtensionAPIDefinitions =
     requireNative('apiDefinitions').GetExtensionAPIDefinitions;
 var GetAvailability = requireNative('v8_context').GetAvailability;
+var GetAPIFeatures = requireNative('test_features').GetAPIFeatures;
 var json = require('json');
 
 binding.registerCustomHook(function(api) {
@@ -289,6 +290,10 @@ binding.registerCustomHook(function(api) {
     return GetExtensionAPIDefinitions().filter(function(api) {
       return GetAvailability(api.namespace).is_available;
     });
+  });
+
+  apiFunctions.setHandleRequest('getApiFeatures', function() {
+    return GetAPIFeatures();
   });
 });
 

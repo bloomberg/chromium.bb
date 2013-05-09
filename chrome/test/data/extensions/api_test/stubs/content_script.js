@@ -14,6 +14,14 @@ function logToConsoleAndStdout(msg) {
 // responds we start the test.
 console.log("asking for api ...");
 chrome.extension.sendRequest("getApi", function(apis) {
+  var apiFeatures = chrome.test.getApiFeatures();
+  function isAvailableToContentScripts(namespace, path) {
+    if (apiFeatures.hasOwnProperty(path))
+      return apiFeatures[path]['contexts'].indexOf('content_script') != -1
+    return apiFeatures.hasOwnProperty(namespace) &&
+        apiFeatures[namespace]['contexts'].indexOf('content_script') != -1;
+  }
+
   console.log("got api response");
   var privilegedPaths = [];
   var unprivilegedPaths = [];
@@ -31,11 +39,8 @@ chrome.extension.sendRequest("getApi", function(apis) {
         }
 
         var path = namespace + "." + entry.name;
-        // TODO(cduvall): Make this inspect _api_features.json.
-        // http://crbug.com/232247
-        // Manually add chrome.app to the unprivileged APIs since it uses the
-        // feature system now.
-        if (module.unprivileged || entry.unprivileged || namespace == 'app') {
+        if (module.unprivileged || entry.unprivileged ||
+            isAvailableToContentScripts(namespace, path)) {
           unprivilegedPaths.push(path);
         } else {
           privilegedPaths.push(path);
@@ -46,7 +51,8 @@ chrome.extension.sendRequest("getApi", function(apis) {
     if (module.properties) {
       for (var propName in module.properties) {
         var path = namespace + "." + propName;
-        if (module.unprivileged || module.properties[propName].unprivileged) {
+        if (module.unprivileged || module.properties[propName].unprivileged ||
+            isAvailableToContentScripts(namespace, path)) {
           unprivilegedPaths.push(path);
         } else {
           privilegedPaths.push(path);
@@ -84,11 +90,13 @@ function testPath(path, expectError) {
       try {
         if (typeof(module[parts[i]]) == "undefined" &&
             path != "extension.lastError" &&
-            path != "runtime.lastError" &&
-            path != "runtime.id") {
-          logToConsoleAndStdout(" fail (undefined and not throwing error): " +
-                                path);
-          return false;
+            path != "runtime.lastError") {
+          if (expectError) {
+            return true;
+          } else {
+            logToConsoleAndStdout(" fail (should not be undefined): " + path);
+            return false;
+          }
         } else if (!expectError) {
           return true;
         }

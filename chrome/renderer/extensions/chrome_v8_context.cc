@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/module_system.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
@@ -152,22 +153,19 @@ bool ChromeV8Context::CallChromeHiddenMethod(
   return true;
 }
 
+bool ChromeV8Context::IsAnyFeatureAvailableToContext(
+    const std::string& api_name) {
+  return ExtensionAPI::GetSharedInstance()->IsAnyFeatureAvailableToContext(
+      api_name,
+      context_type_,
+      UserScriptSlave::GetDataSourceURLForFrame(web_frame_));
+}
+
 Feature::Availability ChromeV8Context::GetAvailability(
     const std::string& api_name) {
-  return GetAvailabilityInternal(api_name, extension_);
-}
-
-Feature::Availability ChromeV8Context::GetAvailabilityForContext(
-    const std::string& api_name) {
-  return GetAvailabilityInternal(api_name, NULL);
-}
-
-Feature::Availability ChromeV8Context::GetAvailabilityInternal(
-    const std::string& api_name,
-    const Extension* extension) {
   return ExtensionAPI::GetSharedInstance()->IsAvailable(
       api_name,
-      extension,
+      extension_,
       context_type_,
       UserScriptSlave::GetDataSourceURLForFrame(web_frame_));
 }

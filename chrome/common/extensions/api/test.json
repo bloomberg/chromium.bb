@@ -292,6 +292,13 @@
         ]
       },
       {
+        "name": "getApiFeatures",
+        "type": "function",
+        "unprivileged": true,
+        "nocompile": true,
+        "parameters": []
+      },
+      {
         "name": "getApiDefinitions",
         "type": "function",
         "nocompile": true,

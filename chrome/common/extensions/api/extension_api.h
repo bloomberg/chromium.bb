@@ -76,6 +76,12 @@ class ExtensionAPI {
                                     Feature::Context context,
                                     const GURL& url);
 
+  // Determines whether an API, or any parts of that API, are available in
+  // |context|.
+  bool IsAnyFeatureAvailableToContext(const std::string& api_name,
+                                      Feature::Context context,
+                                      const GURL& url);
+
   // Returns true if |name| is a privileged API path. Privileged paths can only
   // be called from extension code which is running in its own designated
   // extension process. They cannot be called from extension code running in
