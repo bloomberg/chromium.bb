@@ -85,9 +85,6 @@ fullScreenEnabled initial=false
 asynchronousSpellCheckingEnabled initial=false
 memoryInfoEnabled initial=false
 
-# This feature requires an implementation of ValidationMessageClient.
-interactiveFormValidationEnabled initial=false
-
 hyperlinkAuditingEnabled initial=false
 forceCompositingMode initial=false
 allowDisplayOfInsecureContent initial=true

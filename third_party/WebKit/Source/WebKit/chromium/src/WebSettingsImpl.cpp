@@ -546,7 +546,7 @@ void WebSettingsImpl::setCaretBrowsingEnabled(bool enabled)
 
 void WebSettingsImpl::setInteractiveFormValidationEnabled(bool enabled)
 {
-    m_settings->setInteractiveFormValidationEnabled(enabled);
+    // FIXME: Remove this function when all of callsites are removed.
 }
 
 void WebSettingsImpl::setValidationMessageTimerMagnification(int newValue)
