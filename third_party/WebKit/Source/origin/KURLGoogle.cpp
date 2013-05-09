@@ -32,8 +32,6 @@
 #include "config.h"
 #include "core/platform/KURL.h"
 
-#include "core/platform/NotImplemented.h"
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "wtf/HashMap.h"
 #include "wtf/MemoryInstrumentationString.h"
 #include "wtf/StdLibExtras.h"
@@ -45,9 +43,10 @@
 #include <googleurl/src/url_util.h>
 #include <stdio.h>
 
+// FIXME: Merge this file with KURL.cpp.
+
 using WTF::isASCIILower;
 using WTF::toASCIILower;
-using std::binary_search;
 
 namespace WebCore {
 
@@ -386,7 +385,7 @@ const String& KURLGooglePrivate::string() const
 
 void KURLGooglePrivate::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
-    MemoryClassInfo info(memoryObjectInfo, this);
+    WTF::MemoryClassInfo info(memoryObjectInfo, this);
     info.addMember(m_utf8, "utf8");
     info.addMember(m_string, "string");
     info.addMember(m_innerURL, "innerURL");
@@ -447,20 +446,6 @@ KURL::KURL(const CString& canonicalSpec,
     else
         m_url.setAscii(canonicalSpec);
 }
-
-#if USE(CF)
-KURL::KURL(CFURLRef)
-{
-    notImplemented();
-    invalidate();
-}
-
-CFURLRef KURL::createCFURL() const
-{
-    notImplemented();
-    return 0;
-}
-#endif
 
 KURL KURL::copy() const
 {

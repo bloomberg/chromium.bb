@@ -317,6 +317,7 @@
         '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../wtf/wtf.gyp:wtf',
         '../../config.gyp:config',
+        '../../origin/origin.gyp:origin',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',

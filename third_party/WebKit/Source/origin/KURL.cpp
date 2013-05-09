@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/KURL.h"
+#include "origin/KURL.h"
 
 #include "wtf/HashMap.h"
 #include "wtf/HexNumber.h"
@@ -206,7 +206,7 @@ bool portAllowed(const KURL& url)
 
 void KURL::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
-    MemoryClassInfo info(memoryObjectInfo, this);
+    WTF::MemoryClassInfo info(memoryObjectInfo, this);
     info.addMember(m_url, "url");
 }
 
