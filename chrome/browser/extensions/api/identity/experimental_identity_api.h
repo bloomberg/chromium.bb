@@ -10,9 +10,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/api/identity/experimental_web_auth_flow.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
-#include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
@@ -110,7 +110,7 @@ class ExperimentalIdentityGetAuthTokenFunction
 
 class ExperimentalIdentityLaunchWebAuthFlowFunction
     : public AsyncExtensionFunction,
-      public WebAuthFlow::Delegate {
+      public ExperimentalWebAuthFlow::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION("experimental.identity.launchWebAuthFlow",
                              EXPERIMENTAL_IDENTITY_LAUNCHWEBAUTHFLOW);
@@ -130,12 +130,13 @@ class ExperimentalIdentityLaunchWebAuthFlowFunction
   // Helper to initialize final URLs vector.
   void InitFinalRedirectURLPrefixes(const std::string& extension_id);
 
-  scoped_ptr<WebAuthFlow> auth_flow_;
+  scoped_ptr<ExperimentalWebAuthFlow> auth_flow_;
   std::vector<GURL> final_prefixes_;
 
  private:
-  // WebAuthFlow::Delegate implementation.
-  virtual void OnAuthFlowFailure(WebAuthFlow::Failure failure) OVERRIDE;
+  // ExperimentalWebAuthFlow::Delegate implementation.
+  virtual void OnAuthFlowFailure(ExperimentalWebAuthFlow::Failure failure)
+      OVERRIDE;
   virtual void OnAuthFlowURLChange(const GURL& redirect_url) OVERRIDE;
 };
 

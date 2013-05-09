@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "chrome/browser/extensions/api/identity/web_auth_flow.h"
+#include "chrome/browser/extensions/api/identity/experimental_web_auth_flow.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -18,35 +18,36 @@ using content::BrowserThread;
 using content::TestBrowserThread;
 using content::WebContents;
 using content::WebContentsTester;
-using extensions::WebAuthFlow;
+using extensions::ExperimentalWebAuthFlow;
 using testing::Return;
 using testing::ReturnRef;
 
 namespace {
 
-class MockDelegate : public WebAuthFlow::Delegate {
+class MockDelegate : public ExperimentalWebAuthFlow::Delegate {
  public:
-  MOCK_METHOD1(OnAuthFlowFailure, void(WebAuthFlow::Failure failure));
+  MOCK_METHOD1(OnAuthFlowFailure,
+               void(ExperimentalWebAuthFlow::Failure failure));
   MOCK_METHOD1(OnAuthFlowURLChange, void(const GURL& redirect_url));
 };
 
-class MockWebAuthFlow : public WebAuthFlow {
+class MockExperimentalWebAuthFlow : public ExperimentalWebAuthFlow {
  public:
-  MockWebAuthFlow(
-     WebAuthFlow::Delegate* delegate,
-     Profile* profile,
-     const GURL& provider_url,
-     bool interactive)
-     : WebAuthFlow(
-           delegate,
-           profile,
-           provider_url,
-           interactive ? WebAuthFlow::INTERACTIVE : WebAuthFlow::SILENT,
-           gfx::Rect(),
-           chrome::GetActiveDesktop()),
-       profile_(profile),
-       web_contents_(NULL),
-       window_shown_(false) { }
+  MockExperimentalWebAuthFlow(ExperimentalWebAuthFlow::Delegate* delegate,
+                              Profile* profile,
+                              const GURL& provider_url,
+                              bool interactive)
+      : ExperimentalWebAuthFlow(
+            delegate,
+            profile,
+            provider_url,
+            interactive ? ExperimentalWebAuthFlow::INTERACTIVE
+                        : ExperimentalWebAuthFlow::SILENT,
+            gfx::Rect(),
+            chrome::GetActiveDesktop()),
+        profile_(profile),
+        web_contents_(NULL),
+        window_shown_(false) {}
 
   virtual WebContents* CreateWebContents() OVERRIDE {
     CHECK(!web_contents_);
@@ -67,7 +68,7 @@ class MockWebAuthFlow : public WebAuthFlow {
     delete web_contents_;
   }
 
-  virtual ~MockWebAuthFlow() { }
+  virtual ~MockExperimentalWebAuthFlow() { }
 
  private:
   Profile* profile_;
@@ -77,9 +78,9 @@ class MockWebAuthFlow : public WebAuthFlow {
 
 }  // namespace
 
-class WebAuthFlowTest : public ChromeRenderViewHostTestHarness {
+class ExperimentalWebAuthFlowTest : public ChromeRenderViewHostTestHarness {
  protected:
-  WebAuthFlowTest()
+  ExperimentalWebAuthFlowTest()
       : thread_(BrowserThread::UI, &message_loop_) {
   }
 
@@ -97,11 +98,11 @@ class WebAuthFlowTest : public ChromeRenderViewHostTestHarness {
 
   void CreateAuthFlow(const GURL& url,
                       bool interactive) {
-    flow_.reset(new MockWebAuthFlow(
+    flow_.reset(new MockExperimentalWebAuthFlow(
         &delegate_, profile(), url, interactive));
   }
 
-  WebAuthFlow* flow_base() {
+  ExperimentalWebAuthFlow* flow_base() {
     return flow_.get();
   }
 
@@ -115,10 +116,11 @@ class WebAuthFlowTest : public ChromeRenderViewHostTestHarness {
 
   TestBrowserThread thread_;
   MockDelegate delegate_;
-  scoped_ptr<MockWebAuthFlow> flow_;
+  scoped_ptr<MockExperimentalWebAuthFlow> flow_;
 };
 
-TEST_F(WebAuthFlowTest, SilentRedirectToChromiumAppUrlNonInteractive) {
+TEST_F(ExperimentalWebAuthFlowTest,
+       SilentRedirectToChromiumAppUrlNonInteractive) {
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("https://abcdefghij.chromiumapp.org/google_cb");
 
@@ -128,7 +130,7 @@ TEST_F(WebAuthFlowTest, SilentRedirectToChromiumAppUrlNonInteractive) {
   CallBeforeUrlLoaded(result);
 }
 
-TEST_F(WebAuthFlowTest, SilentRedirectToChromiumAppUrlInteractive) {
+TEST_F(ExperimentalWebAuthFlowTest, SilentRedirectToChromiumAppUrlInteractive) {
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("https://abcdefghij.chromiumapp.org/google_cb");
 
@@ -138,7 +140,7 @@ TEST_F(WebAuthFlowTest, SilentRedirectToChromiumAppUrlInteractive) {
   CallBeforeUrlLoaded(result);
 }
 
-TEST_F(WebAuthFlowTest, SilentRedirectToChromeExtensionSchemeUrl) {
+TEST_F(ExperimentalWebAuthFlowTest, SilentRedirectToChromeExtensionSchemeUrl) {
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("chrome-extension://abcdefghij/google_cb");
 
@@ -148,17 +150,18 @@ TEST_F(WebAuthFlowTest, SilentRedirectToChromeExtensionSchemeUrl) {
   CallBeforeUrlLoaded(result);
 }
 
-TEST_F(WebAuthFlowTest, NeedsUIButNonInteractive) {
+TEST_F(ExperimentalWebAuthFlowTest, NeedsUIButNonInteractive) {
   GURL url("https://accounts.google.com/o/oauth2/auth");
 
   CreateAuthFlow(url, false);
-  EXPECT_CALL(
-      delegate_, OnAuthFlowFailure(WebAuthFlow::INTERACTION_REQUIRED)).Times(1);
+  EXPECT_CALL(delegate_,
+              OnAuthFlowFailure(ExperimentalWebAuthFlow::INTERACTION_REQUIRED))
+      .Times(1);
   flow_->Start();
   CallAfterUrlLoaded();
 }
 
-TEST_F(WebAuthFlowTest, UIResultsInSuccess) {
+TEST_F(ExperimentalWebAuthFlowTest, UIResultsInSuccess) {
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("chrome-extension://abcdefghij/google_cb");
 
@@ -170,13 +173,14 @@ TEST_F(WebAuthFlowTest, UIResultsInSuccess) {
   CallBeforeUrlLoaded(result);
 }
 
-TEST_F(WebAuthFlowTest, UIClosedByUser) {
+TEST_F(ExperimentalWebAuthFlowTest, UIClosedByUser) {
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("chrome-extension://abcdefghij/google_cb");
 
   CreateAuthFlow(url, true);
-  EXPECT_CALL(
-      delegate_, OnAuthFlowFailure(WebAuthFlow::WINDOW_CLOSED)).Times(1);
+  EXPECT_CALL(delegate_,
+              OnAuthFlowFailure(ExperimentalWebAuthFlow::WINDOW_CLOSED))
+      .Times(1);
   flow_->Start();
   CallAfterUrlLoaded();
   EXPECT_TRUE(flow_->HasWindow());

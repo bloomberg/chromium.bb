@@ -269,9 +269,9 @@ bool ExperimentalIdentityLaunchWebAuthFlowFunction::RunImpl() {
   const identity_exp::ExperimentalWebAuthFlowDetails& details = params->details;
 
   GURL auth_url(params->details.url);
-  WebAuthFlow::Mode mode =
+  ExperimentalWebAuthFlow::Mode mode =
       params->details.interactive && *params->details.interactive ?
-      WebAuthFlow::INTERACTIVE : WebAuthFlow::SILENT;
+      ExperimentalWebAuthFlow::INTERACTIVE : ExperimentalWebAuthFlow::SILENT;
 
   // Set up acceptable target URLs. (Includes chrome-extension scheme
   // for this version of the API.)
@@ -294,7 +294,7 @@ bool ExperimentalIdentityLaunchWebAuthFlowFunction::RunImpl() {
   Browser* current_browser = this->GetCurrentBrowser();
   chrome::HostDesktopType host_desktop_type = current_browser ?
       current_browser->host_desktop_type() : chrome::GetActiveDesktop();
-  auth_flow_.reset(new WebAuthFlow(
+  auth_flow_.reset(new ExperimentalWebAuthFlow(
       this, profile(), auth_url, mode, initial_bounds,
       host_desktop_type));
   auth_flow_->Start();
@@ -320,12 +320,12 @@ void ExperimentalIdentityLaunchWebAuthFlowFunction::
 }
 
 void ExperimentalIdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure(
-    WebAuthFlow::Failure failure) {
+    ExperimentalWebAuthFlow::Failure failure) {
   switch (failure) {
-    case WebAuthFlow::WINDOW_CLOSED:
+    case ExperimentalWebAuthFlow::WINDOW_CLOSED:
       error_ = identity_constants::kUserRejected;
       break;
-    case WebAuthFlow::INTERACTION_REQUIRED:
+    case ExperimentalWebAuthFlow::INTERACTION_REQUIRED:
       error_ = identity_constants::kInteractionRequired;
       break;
     default:

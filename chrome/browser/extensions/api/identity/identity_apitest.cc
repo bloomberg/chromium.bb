@@ -6,13 +6,14 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
-#include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_service.h"
@@ -22,6 +23,8 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "googleurl/src/gurl.h"
+#include "grit/browser_resources.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -917,37 +920,61 @@ IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, MatchingToken) {
 }
 
 class LaunchWebAuthFlowFunctionTest : public AsyncExtensionBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // Reduce performance test variance by disabling background networking.
+    command_line->AppendSwitch(switches::kDisableBackgroundNetworking);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, UserCloseWindow) {
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-      content::NotificationService::AllSources());
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL(
+          "chrome/test/data/extensions/api_test/identity")));
+  ASSERT_TRUE(https_server.Start());
+  GURL auth_url(https_server.GetURL("files/interaction_required.html"));
 
-  scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
-      new IdentityLaunchWebAuthFlowFunction());
-
-  RunFunctionAsync(
-      function, "[{\"interactive\": true, \"url\": \"data:text/html,auth\"}]");
-
-  observer.Wait();
-  Browser* web_auth_flow_browser =
-      content::Source<Browser>(observer.source()).ptr();
-  web_auth_flow_browser->window()->Close();
-
-  EXPECT_EQ(std::string(errors::kUserRejected), WaitForError(function));
-}
-
-IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, InteractionRequired) {
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
   scoped_refptr<Extension> empty_extension(
       utils::CreateEmptyExtension());
   function->set_extension(empty_extension.get());
 
-  std::string error = utils::RunFunctionAndReturnError(
-      function, "[{\"interactive\": false, \"url\": \"data:text/html,auth\"}]",
-      browser());
+  content::WindowedNotificationObserver popup_observer(
+      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+      content::NotificationService::AllSources());
+
+  std::string args = "[{\"interactive\": true, \"url\": \"" +
+      auth_url.spec() + "\"}]";
+  RunFunctionAsync(function, args);
+
+  popup_observer.Wait();
+  content::Source<Browser>(popup_observer.source())->window()->Close();
+
+  EXPECT_EQ(std::string(errors::kUserRejected), WaitForError(function));
+}
+
+IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, InteractionRequired) {
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL(
+          "chrome/test/data/extensions/api_test/identity")));
+  ASSERT_TRUE(https_server.Start());
+  GURL auth_url(https_server.GetURL("files/interaction_required.html"));
+
+  scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
+      new IdentityLaunchWebAuthFlowFunction());
+  scoped_refptr<Extension> empty_extension(
+      utils::CreateEmptyExtension());
+  function->set_extension(empty_extension.get());
+
+  std::string args = "[{\"interactive\": false, \"url\": \"" +
+      auth_url.spec() + "\"}]";
+  std::string error = utils::RunFunctionAndReturnError(function, args,
+                                                       browser());
 
   EXPECT_EQ(std::string(errors::kInteractionRequired), error);
 }
@@ -995,6 +1022,14 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     LaunchWebAuthFlowFunctionTest, InteractiveSecondNavigationSuccess) {
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL(
+          "chrome/test/data/extensions/api_test/identity")));
+  ASSERT_TRUE(https_server.Start());
+  GURL auth_url(https_server.GetURL("files/redirect_to_chromiumapp.html"));
+
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
   scoped_refptr<Extension> empty_extension(
@@ -1002,12 +1037,10 @@ IN_PROC_BROWSER_TEST_F(
   function->set_extension(empty_extension.get());
 
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");
+  std::string args = "[{\"interactive\": true, \"url\": \"" +
+      auth_url.spec() + "\"}]";
   scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
-      function,
-      "[{\"interactive\": true,"
-      "\"url\": \"data:text/html,<script>window.location.replace('"
-      "https://abcdefghij.chromiumapp.org/callback#test')</script>\"}]",
-      browser()));
+      function, args, browser()));
 
   std::string url;
   EXPECT_TRUE(value->GetAsString(&url));
