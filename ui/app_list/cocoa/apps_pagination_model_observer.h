@@ -15,6 +15,9 @@
 // Invoked when the selected page index is changed.
 - (void)selectedPageChanged:(int)newSelected;
 
+// Invoked when the portion of pages that are visible have changed.
+- (void)pageVisibilityChanged;
+
 @end
 
 #endif  // UI_APP_LIST_COCOA_APP_LIST_APPS_PAGINATION_MODEL_OBSERVER_H_

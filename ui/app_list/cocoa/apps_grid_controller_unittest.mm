@@ -19,11 +19,14 @@
   int totalPagesChangedCount_;
   int selectedPageChangedCount_;
   int lastNewSelectedPage_;
+  bool visibilityDidChange_;
 }
 
 @property(assign, nonatomic) int totalPagesChangedCount;
 @property(assign, nonatomic) int selectedPageChangedCount;
 @property(assign, nonatomic) int lastNewSelectedPage;
+
+- (bool)readVisibilityDidChange;
 
 @end
 
@@ -33,6 +36,12 @@
 @synthesize selectedPageChangedCount = selectedPageChangedCount_;
 @synthesize lastNewSelectedPage = lastNewSelectedPage_;
 
+- (bool)readVisibilityDidChange {
+  bool truth = visibilityDidChange_;
+  visibilityDidChange_ = false;
+  return truth;
+}
+
 - (void)totalPagesChanged {
   ++totalPagesChangedCount_;
 }
@@ -40,6 +49,10 @@
 - (void)selectedPageChanged:(int)newSelected {
   ++selectedPageChangedCount_;
   lastNewSelectedPage_ = newSelected;
+}
+
+- (void)pageVisibilityChanged {
+  visibilityDidChange_ = true;
 }
 
 @end
@@ -283,6 +296,7 @@ TEST_F(AppsGridControllerTest, PaginationObserverPagesChanged) {
   EXPECT_EQ(3, [observer totalPagesChangedCount]);
   EXPECT_EQ(4u, [apps_grid_controller_ pageCount]);
 
+  EXPECT_FALSE([observer readVisibilityDidChange]);
   EXPECT_EQ(0, [observer selectedPageChangedCount]);
 
   [apps_grid_controller_ setPaginationObserver:nil];
@@ -300,15 +314,25 @@ TEST_F(AppsGridControllerTest, PaginationObserverSelectedPageChanged) {
   EXPECT_EQ(1, [observer totalPagesChangedCount]);
   EXPECT_EQ(4u, [apps_grid_controller_ pageCount]);
 
+  EXPECT_FALSE([observer readVisibilityDidChange]);
   EXPECT_EQ(0, [observer selectedPageChangedCount]);
 
   [apps_grid_controller_ scrollToPage:1];
   EXPECT_EQ(1, [observer selectedPageChangedCount]);
   EXPECT_EQ(1, [observer lastNewSelectedPage]);
+  EXPECT_TRUE([observer readVisibilityDidChange]);
+  EXPECT_FALSE([observer readVisibilityDidChange]);  // Testing test behaviour.
+  EXPECT_EQ(0.0, [apps_grid_controller_ visiblePortionOfPage:0]);
+  EXPECT_EQ(1.0, [apps_grid_controller_ visiblePortionOfPage:1]);
+  EXPECT_EQ(0.0, [apps_grid_controller_ visiblePortionOfPage:2]);
+  EXPECT_EQ(0.0, [apps_grid_controller_ visiblePortionOfPage:3]);
 
   [apps_grid_controller_ scrollToPage:0];
   EXPECT_EQ(2, [observer selectedPageChangedCount]);
   EXPECT_EQ(0, [observer lastNewSelectedPage]);
+  EXPECT_TRUE([observer readVisibilityDidChange]);
+  EXPECT_EQ(1.0, [apps_grid_controller_ visiblePortionOfPage:0]);
+  EXPECT_EQ(0.0, [apps_grid_controller_ visiblePortionOfPage:1]);
 
   [apps_grid_controller_ scrollToPage:3];
   // Note: with no animations, there is only a single page change. However, with
@@ -316,6 +340,9 @@ TEST_F(AppsGridControllerTest, PaginationObserverSelectedPageChanged) {
   // view updates and sends out NSViewBoundsDidChangeNotification.
   EXPECT_EQ(3, [observer selectedPageChangedCount]);
   EXPECT_EQ(3, [observer lastNewSelectedPage]);
+  EXPECT_TRUE([observer readVisibilityDidChange]);
+  EXPECT_EQ(0.0, [apps_grid_controller_ visiblePortionOfPage:0]);
+  EXPECT_EQ(1.0, [apps_grid_controller_ visiblePortionOfPage:3]);
 
   [apps_grid_controller_ setPaginationObserver:nil];
 }

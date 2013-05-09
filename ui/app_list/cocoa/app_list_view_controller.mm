@@ -8,6 +8,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_view_delegate.h"
+#import "ui/app_list/cocoa/app_list_pager_view.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 
 namespace {
@@ -15,8 +16,8 @@ namespace {
 // The roundedness of the corners of the bubble.
 const CGFloat kBubbleCornerRadius = 3;
 
-// Padding between the bottom of the pager and the bottom of the view.
-const CGFloat kViewPagerOffsetY = 12;
+// Height of the pager.
+const CGFloat kPagerPreferredHeight = 57;
 // Padding between the bottom of the grid and the bottom of the view.
 const CGFloat kViewGridOffsetY = 38;
 
@@ -48,8 +49,6 @@ const CGFloat kMaxSegmentWidth = 80;
 @interface AppListViewController ()
 
 - (void)loadAndSetView;
-
-- (void)onPagerClicked:(id)sender;
 
 @end
 
@@ -91,9 +90,8 @@ const CGFloat kMaxSegmentWidth = 80;
 }
 
 -(void)loadAndSetView {
-  pagerControl_.reset([[NSSegmentedControl alloc] initWithFrame:NSZeroRect]);
-  [pagerControl_ setSegmentStyle:NSSegmentStyleRounded];
-  [pagerControl_ setTarget:self];
+  pagerControl_.reset([[AppListPagerView alloc] init]);
+  [pagerControl_ setTarget:appsGridController_];
   [pagerControl_ setAction:@selector(onPagerClicked:)];
 
   [[appsGridController_ view] setFrameOrigin:NSMakePoint(0, kViewGridOffsetY)];
@@ -103,19 +101,9 @@ const CGFloat kMaxSegmentWidth = 80;
   scoped_nsobject<BackgroundView> backgroundView(
       [[BackgroundView alloc] initWithFrame:backgroundRect]);
 
-  [backgroundView addSubview:pagerControl_];
   [backgroundView addSubview:[appsGridController_ view]];
+  [backgroundView addSubview:pagerControl_];
   [self setView:backgroundView];
-}
-
-- (void)onPagerClicked:(id)sender {
-  int selectedSegment = [sender selectedSegment];
-  if (selectedSegment < 0)
-    return;  // No selection.
-
-  int pageIndex = [[sender cell] tagForSegment:selectedSegment];
-  if (pageIndex >= 0)
-    [appsGridController_ scrollToPage:pageIndex];
 }
 
 - (void)totalPagesChanged {
@@ -136,13 +124,19 @@ const CGFloat kMaxSegmentWidth = 80;
 
   // Center in view.
   [pagerControl_ sizeToFit];
-  [pagerControl_ setFrameOrigin:
-      NSMakePoint(NSMidX(viewFrame) - NSMidX([pagerControl_ bounds]),
-                  kViewPagerOffsetY)];
+  [pagerControl_ setFrame:
+      NSMakeRect(NSMidX(viewFrame) - NSMidX([pagerControl_ bounds]),
+                 0,
+                 [pagerControl_ bounds].size.width,
+                 kPagerPreferredHeight)];
 }
 
 - (void)selectedPageChanged:(int)newSelected {
   [pagerControl_ selectSegmentWithTag:newSelected];
+}
+
+- (void)pageVisibilityChanged {
+  [pagerControl_ setNeedsDisplay:YES];
 }
 
 @end

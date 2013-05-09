@@ -63,6 +63,8 @@ TEST_F(AppListViewControllerTest, PagerChangingPage) {
 
   EXPECT_EQ(0, [pager selectedSegment]);
   EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(1.0, [apps_grid_controller_ visiblePortionOfPage:0]);
+  EXPECT_EQ(0.0, [apps_grid_controller_ visiblePortionOfPage:1]);
 
   // Emulate a click on the second segment to navigate to the second page.
   [pager setSelectedSegment:1];
@@ -71,12 +73,15 @@ TEST_F(AppListViewControllerTest, PagerChangingPage) {
 
   EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
   EXPECT_EQ(1, [pager selectedSegment]);
+  EXPECT_EQ(0.0, [apps_grid_controller_ visiblePortionOfPage:0]);
+  EXPECT_EQ(1.0, [apps_grid_controller_ visiblePortionOfPage:1]);
 
   // Replace with a single page model, and ensure we go back to the first page.
   ReplaceTestModel(1);
   EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
   EXPECT_EQ(0, [pager selectedSegment]);
   EXPECT_EQ(1, [pager segmentCount]);
+  EXPECT_EQ(1.0, [apps_grid_controller_ visiblePortionOfPage:0]);
 }
 
 }  // namespace test

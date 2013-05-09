@@ -259,8 +259,10 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 }
 
 - (void)boundsDidChange:(NSNotification*)notification {
-  if ([self nearestPageIndex] == visiblePage_)
+  if ([self nearestPageIndex] == visiblePage_) {
+    [paginationObserver_ pageVisibilityChanged];
     return;
+  }
 
   // Clear any selection on the previous page (unless it has been removed).
   if (visiblePage_ < [pages_ count]) {
@@ -269,6 +271,7 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   }
   visiblePage_ = [self nearestPageIndex];
   [paginationObserver_ selectedPageChanged:visiblePage_];
+  [paginationObserver_ pageVisibilityChanged];
 }
 
 - (void)onItemClicked:(id)sender {
@@ -444,6 +447,28 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   }
 
   [self updatePages:start];
+}
+
+- (CGFloat)visiblePortionOfPage:(int)page {
+  CGFloat scrollOffsetOfPage =
+      NSMinX([[[self gridScrollView] contentView] bounds]) / kViewWidth - page;
+  if (scrollOffsetOfPage <= -1.0 || scrollOffsetOfPage >= 1.0)
+    return 0.0;
+
+  if (scrollOffsetOfPage <= 0.0)
+    return scrollOffsetOfPage + 1.0;
+
+  return -1.0 + scrollOffsetOfPage;
+}
+
+- (void)onPagerClicked:(AppListPagerView*)sender {
+  int selectedSegment = [sender selectedSegment];
+  if (selectedSegment < 0)
+    return;  // No selection.
+
+  int pageIndex = [[sender cell] tagForSegment:selectedSegment];
+  if (pageIndex >= 0)
+    [self scrollToPage:pageIndex];
 }
 
 @end

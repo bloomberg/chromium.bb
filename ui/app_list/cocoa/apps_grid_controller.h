@@ -10,6 +10,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
+#import "ui/app_list/cocoa/app_list_pager_view.h"
 #import "ui/app_list/cocoa/scroll_view_with_no_scrollbars.h"
 
 namespace app_list {
@@ -24,7 +25,8 @@ class AppsGridDelegateBridge;
 
 // Controls a grid of views, representing AppListModel::Apps sub models.
 APP_LIST_EXPORT
-@interface AppsGridController : NSViewController<GestureScrollDelegate> {
+@interface AppsGridController : NSViewController<GestureScrollDelegate,
+                                                 AppListPagerDelegate> {
  @private
   scoped_ptr<app_list::AppListModel> model_;
   app_list::AppListViewDelegate* delegate_;  // Weak. Owned by view controller.

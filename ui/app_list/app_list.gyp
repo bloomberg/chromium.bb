@@ -38,6 +38,8 @@
         'app_list_switches.h',
         'app_list_view_delegate.h',
         'apps_grid_view_delegate.h',
+        'cocoa/app_list_pager_view.h',
+        'cocoa/app_list_pager_view.mm',
         'cocoa/app_list_view_controller.h',
         'cocoa/app_list_view_controller.mm',
         'cocoa/app_list_window_controller.h',

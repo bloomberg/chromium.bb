@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
@@ -25,12 +26,6 @@ const int kMinButtonWidth = 28;
 const int kButtonHeight = 6;
 const int kButtonCornerRadius = 2;
 const int kButtonStripPadding = 20;
-
-const SkColor kHoverColor = SkColorSetRGB(0xB4, 0xB4, 0xB4);
-
-const SkColor kNormalColor = SkColorSetRGB(0xE2, 0xE2, 0xE2);
-
-const SkColor kSelectedColor = SkColorSetRGB(0x46, 0x8F, 0xFC);
 
 class PageSwitcherButton : public views::CustomButton {
  public:
@@ -58,9 +53,9 @@ class PageSwitcherButton : public views::CustomButton {
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     if (state() == STATE_HOVERED) {
-      PaintButton(canvas, kHoverColor);
+      PaintButton(canvas, app_list::kPagerHoverColor);
     } else {
-      PaintButton(canvas, kNormalColor);
+      PaintButton(canvas, app_list::kPagerNormalColor);
     }
   }
 
@@ -99,7 +94,7 @@ class PageSwitcherButton : public views::CustomButton {
       selected_path.addRoundRect(gfx::RectToSkRect(selected_rect),
                                  SkIntToScalar(kButtonCornerRadius),
                                  SkIntToScalar(kButtonCornerRadius));
-      paint.setColor(kSelectedColor);
+      paint.setColor(app_list::kPagerSelectedColor);
       canvas->DrawPath(selected_path, paint);
     }
   }
