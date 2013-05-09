@@ -99,10 +99,10 @@ void Buffer::SetInfo(
     bool is_client_side_array) {
   usage_ = usage;
   is_client_side_array_ = is_client_side_array;
+  ClearCache();
   if (size != size_ || shadow != shadowed_) {
     shadowed_ = shadow;
     size_ = size;
-    ClearCache();
     if (shadowed_) {
       shadow_.reset(new int8[size]);
     } else {
