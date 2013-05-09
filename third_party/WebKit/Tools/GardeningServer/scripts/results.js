@@ -370,8 +370,11 @@ function walkHistory(platform, builderName, testName, callback)
                 return;
             }
             var resultNode = results.resultNodeForTest(resultsTree, testName);
-            var revision = parseInt(resultsTree['revision'])
-            if (isNaN(revision))
+            var revision = parseInt(resultsTree['blink_revision'])
+            // FIXME: full_results.json files before 150044 are busted.
+            // Remove this check once all the bots have cycled enough that they
+            // wouldn't try to load older revisions than 150044.
+            if (isNaN(revision) || revision < 150044)
                 revision = 0;
             processResultNode(revision, resultNode);
         });
