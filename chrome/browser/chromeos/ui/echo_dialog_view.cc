@@ -95,7 +95,7 @@ void EchoDialogView::InitForDisabledEcho() {
 void EchoDialogView::Show(gfx::NativeWindow parent) {
   DCHECK(cancel_button_label_id_);
 
-  views::DialogDelegateView::CreateDialogWidget(this, parent, parent);
+  views::DialogDelegate::CreateDialogWidget(this, parent, parent);
   GetWidget()->SetSize(GetWidget()->GetRootView()->GetPreferredSize());
   GetWidget()->Show();
 }

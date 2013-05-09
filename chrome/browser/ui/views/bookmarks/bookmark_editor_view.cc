@@ -218,7 +218,7 @@ void BookmarkEditorView::ExecuteCommand(int command_id, int event_flags) {
 }
 
 void BookmarkEditorView::Show(gfx::NativeWindow parent) {
-  views::DialogDelegateView::CreateDialogWidget(this, NULL, parent);
+  views::DialogDelegate::CreateDialogWidget(this, NULL, parent);
   UserInputChanged();
   if (show_tree_ && bb_model_->loaded())
     ExpandAndSelect();

@@ -560,7 +560,7 @@ void TaskManagerView::Show(bool highlight_background_resources,
   if (!window)
     window = ash::wm::GetActiveWindow();
 #endif
-  DialogDelegateView::CreateDialogWidget(instance_, window, NULL);
+  DialogDelegate::CreateDialogWidget(instance_, window, NULL);
   instance_->InitAlwaysOnTopState();
   instance_->model_->StartUpdating();
   instance_->GetWidget()->Show();

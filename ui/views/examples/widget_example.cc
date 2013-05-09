@@ -103,7 +103,7 @@ void WidgetExample::ButtonPressed(Button* sender, const ui::Event& event) {
       ShowWidget(sender, Widget::InitParams(Widget::InitParams::TYPE_POPUP));
       break;
     case DIALOG: {
-      DialogDelegateView::CreateDialogWidget(new DialogExample(), NULL,
+      DialogDelegate::CreateDialogWidget(new DialogExample(), NULL,
           sender->GetWidget()->GetNativeView())->Show();
       break;
     }

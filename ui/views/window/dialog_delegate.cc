@@ -22,15 +22,26 @@
 
 namespace views {
 
-namespace {
+////////////////////////////////////////////////////////////////////////////////
+// DialogDelegate:
 
-// Create a widget to host the dialog.
-Widget* CreateDialogWidgetImpl(DialogDelegateView* dialog_delegate_view,
-                               gfx::NativeWindow context,
-                               gfx::NativeWindow parent) {
+DialogDelegate::~DialogDelegate() {
+}
+
+// static
+bool DialogDelegate::UseNewStyle() {
+  static const bool use_new_style = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNewDialogStyle);
+  return use_new_style;
+}
+
+// static
+Widget* DialogDelegate::CreateDialogWidget(DialogDelegate* dialog,
+                                           gfx::NativeWindow context,
+                                           gfx::NativeWindow parent) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
-  params.delegate = dialog_delegate_view;
+  params.delegate = dialog;
   if (DialogDelegate::UseNewStyle()) {
     // Note: Transparent widgets cannot host native Windows textfield controls.
     params.transparent = true;
@@ -47,22 +58,6 @@ Widget* CreateDialogWidgetImpl(DialogDelegateView* dialog_delegate_view,
 #endif
   }
   return widget;
-}
-
-}  // namespace
-
-
-////////////////////////////////////////////////////////////////////////////////
-// DialogDelegate:
-
-DialogDelegate::~DialogDelegate() {
-}
-
-// static
-bool DialogDelegate::UseNewStyle() {
-  static const bool use_new_style = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNewDialogStyle);
-  return use_new_style;
 }
 
 int DialogDelegate::GetDialogButtons() const {
@@ -206,13 +201,6 @@ DialogDelegateView::DialogDelegateView() {
 }
 
 DialogDelegateView::~DialogDelegateView() {}
-
-// static
-Widget* DialogDelegateView::CreateDialogWidget(DialogDelegateView* dialog,
-                                               gfx::NativeWindow context,
-                                               gfx::NativeWindow parent) {
-  return CreateDialogWidgetImpl(dialog, context, parent);
-}
 
 void DialogDelegateView::DeleteDelegate() {
   delete this;

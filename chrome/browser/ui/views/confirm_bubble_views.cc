@@ -101,7 +101,7 @@ namespace chrome {
 void ShowConfirmBubble(gfx::NativeView view,
                        const gfx::Point& origin,
                        ConfirmBubbleModel* model) {
-  views::DialogDelegateView::CreateDialogWidget(
+  views::DialogDelegate::CreateDialogWidget(
       new ConfirmBubbleViews(model), NULL, view)->Show();
 }
 

@@ -32,6 +32,11 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Returns whether to use the new dialog style.
   static bool UseNewStyle();
 
+  // Create a |dialog| window Widget with the specified |context| or |parent|.
+  static Widget* CreateDialogWidget(DialogDelegate* dialog,
+                                    gfx::NativeWindow context,
+                                    gfx::NativeWindow parent);
+
   // Returns a mask specifying which of the available DialogButtons are visible
   // for the dialog. Note: Dialogs with just an OK button are frowned upon.
   virtual int GetDialogButtons() const;
@@ -119,11 +124,6 @@ class VIEWS_EXPORT DialogDelegateView : public DialogDelegate,
  public:
   DialogDelegateView();
   virtual ~DialogDelegateView();
-
-  // Create a |dialog| window Widget with the specified |context| or |parent|.
-  static Widget* CreateDialogWidget(DialogDelegateView* dialog,
-                                    gfx::NativeWindow context,
-                                    gfx::NativeWindow parent);
 
   // Overridden from DialogDelegate:
   virtual void DeleteDelegate() OVERRIDE;

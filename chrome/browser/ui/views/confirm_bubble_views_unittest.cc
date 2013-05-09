@@ -28,7 +28,7 @@ TEST_F(ConfirmBubbleViewsTest, CreateAndClose) {
       new TestConfirmBubbleModel(&model_deleted, NULL, NULL, NULL);
   ConfirmBubbleViews* bubble = new ConfirmBubbleViews(model);
   gfx::NativeView parent = parent_widget->GetNativeView();
-  views::DialogDelegateView::CreateDialogWidget(bubble, NULL, parent)->Show();
+  views::DialogDelegate::CreateDialogWidget(bubble, NULL, parent)->Show();
 
   // Clean up.
   bubble->GetWidget()->CloseNow();
