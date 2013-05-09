@@ -1,0 +1,13 @@
+Name: Jinja2 Python Template Engine
+Short Name: jinja2
+URL: http://jinja.pocoo.org/
+Version: 2.6
+License: BSD 3-clause License
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+Template engine for code generation in Blink.
+
+Local Modifications:
+This only includes the jinja2 directory from the tarball and the LICENSE and AUTHORS files. Unit tests have been removed.
