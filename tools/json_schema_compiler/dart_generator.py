@@ -208,16 +208,18 @@ class _Generator(object):
           (type_name, prop.name, type_name, prop.name))
     elif self._IsSerializableObjectType(prop.type_):
       c.Append("%s get %s => new %s._proxy(JS('', '#.%s', "
-               "this._jsObject));"
-        % (type_name, prop.name, type_name, prop.name))
+               "this._jsObject));" %
+          (type_name, prop.name, type_name, prop.name))
     elif self._IsListOfSerializableObjects(prop.type_):
       (c.Sblock('%s get %s {' % (type_name, prop.name))
         .Append('%s __proxy_%s = new %s();' % (type_name, prop.name,
                                                type_name))
-        .Sblock("for (var o in JS('List', '#.%s', this._jsObject)) {" %
-                prop.name)
-        .Append('__proxy_%s.add(new %s._proxy(o));' % (prop.name,
-             self._GetDartType(prop.type_.item_type)))
+        .Append("int count = JS('int', '#.%s.length', this._jsObject);" %
+            prop.name)
+        .Sblock("for (int i = 0; i < count; i++) {")
+        .Append("var item = JS('', '#.%s', this._jsObject);" % prop.name)
+        .Append('__proxy_%s.add(new %s._proxy(item));' % (prop.name,
+            self._GetDartType(prop.type_.item_type)))
         .Eblock('}')
         .Append('return __proxy_%s;' % prop.name)
         .Eblock('}')
@@ -437,7 +439,7 @@ class _Generator(object):
         (c.Sblock('%s %s(void callback(%s)) {' % (ret_type, event_func,
                                                  param_list))
           .Concat(self._GenerateProxiedFunction(event, 'callback'))
-          .Append('super.%s(callback);' % event_func)
+          .Append('super.%s(__proxy_callback);' % event_func)
           .Eblock('}')
         )
       else:

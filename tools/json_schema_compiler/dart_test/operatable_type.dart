@@ -10,6 +10,39 @@ part of chrome;
  * Types
  */
 
+class Operatable_typeDictType extends ChromeObject {
+  /*
+   * Public constructor
+   */
+  Operatable_typeDictType({int x, int y}) {
+    if (?x)
+      this.x = x;
+    if (?y)
+      this.y = y;
+  }
+
+  /*
+   * Private constructor
+   */
+  Operatable_typeDictType._proxy(_jsObject) : super._proxy(_jsObject);
+
+  /*
+   * Public accessors
+   */
+  int get x => JS('int', '#.x', this._jsObject);
+
+  void set x(int x) {
+    JS('void', '#.x = #', this._jsObject, x);
+  }
+
+  int get y => JS('int', '#.y', this._jsObject);
+
+  void set y(int y) {
+    JS('void', '#.y = #', this._jsObject, y);
+  }
+
+}
+
 class Operatable_typeOperatableType extends ChromeObject {
   /*
    * Private constructor
@@ -30,8 +63,20 @@ class Operatable_typeOperatableType extends ChromeObject {
   /*
    * Methods
    */
-  /// Documentation for staticFoo.
-  void staticFoo() => JS('void', '#.staticFoo()', this._jsObject);
+  /// Function returning nothing, taking nothing.
+  void voidFunc() => JS('void', '#.voidFunc()', this._jsObject);
+
+  /// Function returning primitive type.
+  int intRetFunc() => new int._proxy(JS('', '#.intRetFunc()', this._jsObject));
+
+  /// Function returning dictionary.
+  Operatable_typeDictType dictRetFunc() => new Operatable_typeDictType._proxy(JS('', '#.dictRetFunc()', this._jsObject));
+
+  /// Function taking primitive type.
+  void intArgFunc(int i) => JS('void', '#.intArgFunc(#)', this._jsObject, i);
+
+  /// Function taking dict type.
+  void dictArgFunc(Operatable_typeDictType d) => JS('void', '#.dictArgFunc(#)', this._jsObject, convertArgument(d));
 
 }
 

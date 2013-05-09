@@ -3,12 +3,29 @@
 // found in the LICENSE file.
 
 namespace operatable_type {
+  dictionary DictType {
+    int x;
+    int y;
+  };
+
   // Documentation for OperatableType.
   dictionary OperatableType {
     // Documentation for the String t.
     DOMString t;
 
-    // Documentation for staticFoo.
-    static void staticFoo();
+    // Function returning nothing, taking nothing.
+    static void voidFunc();
+
+    // Function returning primitive type.
+    static int intRetFunc();
+
+    // Function returning dictionary.
+    static DictType dictRetFunc();
+
+    // Function taking primitive type.
+    static void intArgFunc(int i);
+
+    // Function taking dict type.
+    static void dictArgFunc(DictType d);
   };
 };

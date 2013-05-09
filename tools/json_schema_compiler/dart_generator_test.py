@@ -50,12 +50,6 @@ class DartTest(unittest.TestCase):
     # Increase the maximum diff amount to see the full diff on a failed test.
     self.maxDiff = 2000
 
-  def testBasicEvent(self):
-    self._RunTest('basic_event')
-
-  def testBasicFunction(self):
-    self._RunTest('basic_function')
-
   def testComments(self):
     self._RunTest('comments')
 
@@ -67,6 +61,15 @@ class DartTest(unittest.TestCase):
 
   def testEmptyType(self):
     self._RunTest('empty_type')
+
+  def testEvents(self):
+    self._RunTest('enums')
+
+  def testEvents(self):
+    self._RunTest('events')
+
+  def testBasicFunction(self):
+    self._RunTest('functions')
 
   def testOpratableType(self):
     self._RunTest('operatable_type')
