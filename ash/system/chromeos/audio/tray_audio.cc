@@ -615,10 +615,14 @@ void TrayAudio::OnActiveInputNodeChanged() {
 }
 
 void TrayAudio::Update() {
+  if (tray_view())
+      tray_view()->SetVisible(GetInitialVisibility());
   if (audio_detail_)
     audio_detail_->Update();
-  if (volume_view_)
+  if (volume_view_) {
+    volume_view_->SetVolumeLevel(GetVolumeLevel());
     volume_view_->Update();
+  }
 }
 
 }  // namespace internal
