@@ -309,7 +309,7 @@ TEST_F(PanelWindowResizerTest, MAYBE_DetachAcrossDisplays) {
 }
 
 TEST_F(PanelWindowResizerTest, MAYBE_DetachThenAttachToSecondDisplay) {
-  UpdateDisplay("600x600,600x800");
+  UpdateDisplay("600x400,600x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
       CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
