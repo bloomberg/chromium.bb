@@ -401,7 +401,7 @@ deps_os = {
 
     # class-dump utility to generate header files for undocumented SDKs
     "src/testing/iossim/third_party/class-dump":
-      "/trunk/deps/third_party/class-dump@147231",
+      "/trunk/deps/third_party/class-dump@199203",
 
     # Pull only the headers from WebKit.
     "src/third_party/WebKit/Source/WebKit/chromium/public":
