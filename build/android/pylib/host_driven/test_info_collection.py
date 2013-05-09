@@ -93,9 +93,10 @@ class TestInfoCollection(object):
                       'Assuming "SmallTest":\n%s',
                       '\n'.join(test_names))
       available_tests += tests_without_annotation
-    excluded_tests = [t for t in available_tests if
-                      self._AnnotationIncludesTest(t, exclude_annotations)]
-    available_tests = list(set(available_tests) - set(excluded_tests))
+    if exclude_annotations:
+      excluded_tests = [t for t in available_tests if
+                        self._AnnotationIncludesTest(t, exclude_annotations)]
+      available_tests = list(set(available_tests) - set(excluded_tests))
     available_tests = [t for t in available_tests if
                        self._NameFilterIncludesTest(t, name_filter)]
 
