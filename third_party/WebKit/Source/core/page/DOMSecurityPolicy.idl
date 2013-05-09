@@ -23,7 +23,6 @@
  */
 
 [
-    NoInterfaceObject,
     InterfaceName=SecurityPolicy
 ] interface DOMSecurityPolicy {
     readonly attribute boolean allowsEval;

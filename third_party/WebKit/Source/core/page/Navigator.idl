@@ -17,9 +17,7 @@
     Boston, MA 02110-1301, USA.
 */
 
-[
-    NoInterfaceObject,
-] interface Navigator {
+interface Navigator {
     readonly attribute DOMString appCodeName;
     readonly attribute DOMString appName;
     readonly attribute DOMString appVersion;

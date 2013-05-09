@@ -29,9 +29,7 @@
  */
 
 // See: http://dev.w3.org/2006/webapi/WebTiming/
-[
-     NoInterfaceObject,
-] interface PerformanceTiming {
+interface PerformanceTiming {
     readonly attribute unsigned long long navigationStart;
     readonly attribute unsigned long long unloadEventStart;
     readonly attribute unsigned long long unloadEventEnd;

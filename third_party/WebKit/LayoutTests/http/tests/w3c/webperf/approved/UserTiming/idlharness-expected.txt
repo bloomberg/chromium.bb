@@ -17,22 +17,12 @@ interface PerformanceMeasure : PerformanceEntry {
 };
 
 
-FAIL Performance interface: operation mark(DOMString) assert_own_property: window does not have own property "Performance" expected property "Performance" missing
-FAIL Performance interface: operation clearMarks(DOMString) assert_own_property: window does not have own property "Performance" expected property "Performance" missing
-FAIL Performance interface: operation measure(DOMString,DOMString,DOMString) assert_own_property: window does not have own property "Performance" expected property "Performance" missing
-FAIL Performance interface: operation clearMeasures(DOMString) assert_own_property: window does not have own property "Performance" expected property "Performance" missing
-FAIL Performance must be primary interface of window.performance assert_own_property: window does not have own property "Performance" expected property "Performance" missing
-FAIL Stringification of window.performance assert_class_string is not defined(stack: ReferenceError: assert_class_string is not defined
-    at IdlObject. (http://127.0.0.1:8000/w3c/resources/idlharness.js:1563:9)
-    at Object.Test.step (http://127.0.0.1:8000/w3c/resources/testharness.js:876:18)
-    at test (http://127.0.0.1:8000/w3c/resources/testharness.js:338:18)
-    at IdlObject.IdlInterface.test_primary_interface_of (http://127.0.0.1:8000/w3c/resources/idlharness.js:1559:5)
-    at IdlObject.IdlInterface.test_object (http://127.0.0.1:8000/w3c/resources/idlharness.js:1509:10)
-    at null. (http://127.0.0.1:8000/w3c/resources/idlharness.js:440:36)
-    at Array.forEach (native)
-    at IdlArray.test (http://127.0.0.1:8000/w3c/resources/idlharness.js:438:32)
-    at http://127.0.0.1:8000/w3c/webperf/approved/UserTiming/idlharness.html:54:13
-    at http://127.0.0.1:8000/w3c/webperf/approved/UserTiming/idlharness.html:55:3)
+FAIL Performance interface: operation mark(DOMString) assert_true: property is not configurable expected true got false
+FAIL Performance interface: operation clearMarks(DOMString) assert_true: property is not configurable expected true got false
+FAIL Performance interface: operation measure(DOMString,DOMString,DOMString) assert_true: property is not configurable expected true got false
+FAIL Performance interface: operation clearMeasures(DOMString) assert_true: property is not configurable expected true got false
+PASS Performance must be primary interface of window.performance 
+PASS Stringification of window.performance 
 PASS Performance interface: window.performance must inherit property "mark" with the proper type (0) 
 PASS Performance interface: calling mark(DOMString) on window.performance with too few arguments must throw TypeError 
 PASS Performance interface: window.performance must inherit property "clearMarks" with the proper type (1) 
@@ -41,10 +31,10 @@ PASS Performance interface: window.performance must inherit property "measure" w
 PASS Performance interface: calling measure(DOMString,DOMString,DOMString) on window.performance with too few arguments must throw TypeError 
 PASS Performance interface: window.performance must inherit property "clearMeasures" with the proper type (3) 
 PASS Performance interface: calling clearMeasures(DOMString) on window.performance with too few arguments must throw TypeError 
-FAIL PerformanceMark interface: existence and properties of interface object assert_own_property: window does not have own property "PerformanceMark" expected property "PerformanceMark" missing
-FAIL PerformanceMark interface: existence and properties of interface prototype object assert_own_property: window does not have own property "PerformanceMark" expected property "PerformanceMark" missing
-FAIL PerformanceMark interface: existence and properties of interface prototype object's "constructor" property assert_own_property: window does not have own property "PerformanceMark" expected property "PerformanceMark" missing
-FAIL PerformanceMeasure interface: existence and properties of interface object assert_own_property: window does not have own property "PerformanceMeasure" expected property "PerformanceMeasure" missing
-FAIL PerformanceMeasure interface: existence and properties of interface prototype object assert_own_property: window does not have own property "PerformanceMeasure" expected property "PerformanceMeasure" missing
-FAIL PerformanceMeasure interface: existence and properties of interface prototype object's "constructor" property assert_own_property: window does not have own property "PerformanceMeasure" expected property "PerformanceMeasure" missing
+PASS PerformanceMark interface: existence and properties of interface object 
+FAIL PerformanceMark interface: existence and properties of interface prototype object assert_equals: class string of PerformanceMark.prototype expected "[object PerformanceMarkPrototype]" but got "[object Object]"
+PASS PerformanceMark interface: existence and properties of interface prototype object's "constructor" property 
+PASS PerformanceMeasure interface: existence and properties of interface object 
+FAIL PerformanceMeasure interface: existence and properties of interface prototype object assert_equals: class string of PerformanceMeasure.prototype expected "[object PerformanceMeasurePrototype]" but got "[object Object]"
+PASS PerformanceMeasure interface: existence and properties of interface prototype object's "constructor" property 
 

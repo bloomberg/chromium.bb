@@ -23,7 +23,5 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    NoInterfaceObject,
-] interface PerformanceMeasure : PerformanceEntry {
+interface PerformanceMeasure : PerformanceEntry {
 };

@@ -148,6 +148,7 @@ HTMLUListElement
 HTMLUnknownElement
 HTMLVideoElement
 HashChangeEvent
+History
 IDBCursor
 IDBCursorWithValue
 IDBDatabase
@@ -166,6 +167,7 @@ Int16Array
 Int32Array
 Int8Array
 KeyboardEvent
+Location
 MIDIConnectionEvent
 MIDIMessageEvent
 MediaController
@@ -184,6 +186,7 @@ MutationEvent
 MutationObserver
 MutationRecord
 NamedNodeMap
+Navigator
 Node
 NodeFilter
 NodeList
@@ -196,6 +199,13 @@ Option
 OverflowEvent
 PageTransitionEvent
 Path
+Performance
+PerformanceEntry
+PerformanceMark
+PerformanceMeasure
+PerformanceNavigation
+PerformanceResourceTiming
+PerformanceTiming
 Plugin
 PluginArray
 PopStateEvent
@@ -352,6 +362,8 @@ SVGViewElement
 SVGViewSpec
 SVGZoomAndPan
 SVGZoomEvent
+Screen
+SecurityPolicy
 SecurityPolicyViolationEvent
 Selection
 SpeechInputEvent

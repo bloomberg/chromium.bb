@@ -46,54 +46,34 @@ partial interface Window {
 
 FAIL Window interface: attribute performance assert_true: The prototype object must have a property "performance" expected true got false
 PASS Window must be primary interface of window 
-FAIL Stringification of window assert_class_string is not defined(stack: ReferenceError: assert_class_string is not defined
-    at IdlObject. (http://127.0.0.1:8000/w3c/resources/idlharness.js:1563:9)
-    at Object.Test.step (http://127.0.0.1:8000/w3c/resources/testharness.js:876:18)
-    at test (http://127.0.0.1:8000/w3c/resources/testharness.js:338:18)
-    at IdlObject.IdlInterface.test_primary_interface_of (http://127.0.0.1:8000/w3c/resources/idlharness.js:1559:5)
-    at IdlObject.IdlInterface.test_object (http://127.0.0.1:8000/w3c/resources/idlharness.js:1509:10)
-    at null. (http://127.0.0.1:8000/w3c/resources/idlharness.js:440:36)
-    at Array.forEach (native)
-    at IdlArray.test (http://127.0.0.1:8000/w3c/resources/idlharness.js:438:32)
-    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:82:13
-    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:83:3)
+FAIL Stringification of window assert_equals: class string of window expected "[object Window]" but got "[object global]"
 FAIL Window interface: window must inherit property "performance" with the proper type (0) assert_inherits: property "performance" found on object expected in prototype chain
-FAIL PerformanceTiming interface: existence and properties of interface object assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: existence and properties of interface prototype object assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: existence and properties of interface prototype object's "constructor" property assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute navigationStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute unloadEventStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute unloadEventEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute redirectStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute redirectEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute fetchStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute domainLookupStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute domainLookupEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute connectStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute connectEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute secureConnectionStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute requestStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute responseStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute responseEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute domLoading assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute domInteractive assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute domContentLoadedEventStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute domContentLoadedEventEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute domComplete assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute loadEventStart assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming interface: attribute loadEventEnd assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL PerformanceTiming must be primary interface of window.performance.timing assert_own_property: window does not have own property "PerformanceTiming" expected property "PerformanceTiming" missing
-FAIL Stringification of window.performance.timing assert_class_string is not defined(stack: ReferenceError: assert_class_string is not defined
-    at IdlObject. (http://127.0.0.1:8000/w3c/resources/idlharness.js:1563:9)
-    at Object.Test.step (http://127.0.0.1:8000/w3c/resources/testharness.js:876:18)
-    at test (http://127.0.0.1:8000/w3c/resources/testharness.js:338:18)
-    at IdlObject.IdlInterface.test_primary_interface_of (http://127.0.0.1:8000/w3c/resources/idlharness.js:1559:5)
-    at IdlObject.IdlInterface.test_object (http://127.0.0.1:8000/w3c/resources/idlharness.js:1509:10)
-    at null. (http://127.0.0.1:8000/w3c/resources/idlharness.js:440:36)
-    at Array.forEach (native)
-    at IdlArray.test (http://127.0.0.1:8000/w3c/resources/idlharness.js:438:32)
-    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:82:13
-    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:83:3)
+PASS PerformanceTiming interface: existence and properties of interface object 
+FAIL PerformanceTiming interface: existence and properties of interface prototype object assert_equals: class string of PerformanceTiming.prototype expected "[object PerformanceTimingPrototype]" but got "[object Object]"
+PASS PerformanceTiming interface: existence and properties of interface prototype object's "constructor" property 
+FAIL PerformanceTiming interface: attribute navigationStart assert_true: The prototype object must have a property "navigationStart" expected true got false
+FAIL PerformanceTiming interface: attribute unloadEventStart assert_true: The prototype object must have a property "unloadEventStart" expected true got false
+FAIL PerformanceTiming interface: attribute unloadEventEnd assert_true: The prototype object must have a property "unloadEventEnd" expected true got false
+FAIL PerformanceTiming interface: attribute redirectStart assert_true: The prototype object must have a property "redirectStart" expected true got false
+FAIL PerformanceTiming interface: attribute redirectEnd assert_true: The prototype object must have a property "redirectEnd" expected true got false
+FAIL PerformanceTiming interface: attribute fetchStart assert_true: The prototype object must have a property "fetchStart" expected true got false
+FAIL PerformanceTiming interface: attribute domainLookupStart assert_true: The prototype object must have a property "domainLookupStart" expected true got false
+FAIL PerformanceTiming interface: attribute domainLookupEnd assert_true: The prototype object must have a property "domainLookupEnd" expected true got false
+FAIL PerformanceTiming interface: attribute connectStart assert_true: The prototype object must have a property "connectStart" expected true got false
+FAIL PerformanceTiming interface: attribute connectEnd assert_true: The prototype object must have a property "connectEnd" expected true got false
+FAIL PerformanceTiming interface: attribute secureConnectionStart assert_true: The prototype object must have a property "secureConnectionStart" expected true got false
+FAIL PerformanceTiming interface: attribute requestStart assert_true: The prototype object must have a property "requestStart" expected true got false
+FAIL PerformanceTiming interface: attribute responseStart assert_true: The prototype object must have a property "responseStart" expected true got false
+FAIL PerformanceTiming interface: attribute responseEnd assert_true: The prototype object must have a property "responseEnd" expected true got false
+FAIL PerformanceTiming interface: attribute domLoading assert_true: The prototype object must have a property "domLoading" expected true got false
+FAIL PerformanceTiming interface: attribute domInteractive assert_true: The prototype object must have a property "domInteractive" expected true got false
+FAIL PerformanceTiming interface: attribute domContentLoadedEventStart assert_true: The prototype object must have a property "domContentLoadedEventStart" expected true got false
+FAIL PerformanceTiming interface: attribute domContentLoadedEventEnd assert_true: The prototype object must have a property "domContentLoadedEventEnd" expected true got false
+FAIL PerformanceTiming interface: attribute domComplete assert_true: The prototype object must have a property "domComplete" expected true got false
+FAIL PerformanceTiming interface: attribute loadEventStart assert_true: The prototype object must have a property "loadEventStart" expected true got false
+FAIL PerformanceTiming interface: attribute loadEventEnd assert_true: The prototype object must have a property "loadEventEnd" expected true got false
+PASS PerformanceTiming must be primary interface of window.performance.timing 
+PASS Stringification of window.performance.timing 
 FAIL PerformanceTiming interface: window.performance.timing must inherit property "navigationStart" with the proper type (0) assert_inherits: property "navigationStart" found on object expected in prototype chain
 FAIL PerformanceTiming interface: window.performance.timing must inherit property "unloadEventStart" with the proper type (1) assert_inherits: property "unloadEventStart" found on object expected in prototype chain
 FAIL PerformanceTiming interface: window.performance.timing must inherit property "unloadEventEnd" with the proper type (2) assert_inherits: property "unloadEventEnd" found on object expected in prototype chain
@@ -115,54 +95,34 @@ FAIL PerformanceTiming interface: window.performance.timing must inherit propert
 FAIL PerformanceTiming interface: window.performance.timing must inherit property "domComplete" with the proper type (18) assert_inherits: property "domComplete" found on object expected in prototype chain
 FAIL PerformanceTiming interface: window.performance.timing must inherit property "loadEventStart" with the proper type (19) assert_inherits: property "loadEventStart" found on object expected in prototype chain
 FAIL PerformanceTiming interface: window.performance.timing must inherit property "loadEventEnd" with the proper type (20) assert_inherits: property "loadEventEnd" found on object expected in prototype chain
-FAIL PerformanceNavigation interface: existence and properties of interface object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation interface: existence and properties of interface prototype object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation interface: existence and properties of interface prototype object's "constructor" property assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation interface: constant TYPE_NAVIGATE on interface object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation interface: constant TYPE_NAVIGATE on interface prototype object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation interface: constant TYPE_RELOAD on interface object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation interface: constant TYPE_RELOAD on interface prototype object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface prototype object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation interface: constant TYPE_RESERVED on interface object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation interface: constant TYPE_RESERVED on interface prototype object assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation interface: attribute type assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation interface: attribute redirectCount assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL PerformanceNavigation must be primary interface of window.performance.navigation assert_own_property: window does not have own property "PerformanceNavigation" expected property "PerformanceNavigation" missing
-FAIL Stringification of window.performance.navigation assert_class_string is not defined(stack: ReferenceError: assert_class_string is not defined
-    at IdlObject. (http://127.0.0.1:8000/w3c/resources/idlharness.js:1563:9)
-    at Object.Test.step (http://127.0.0.1:8000/w3c/resources/testharness.js:876:18)
-    at test (http://127.0.0.1:8000/w3c/resources/testharness.js:338:18)
-    at IdlObject.IdlInterface.test_primary_interface_of (http://127.0.0.1:8000/w3c/resources/idlharness.js:1559:5)
-    at IdlObject.IdlInterface.test_object (http://127.0.0.1:8000/w3c/resources/idlharness.js:1509:10)
-    at null. (http://127.0.0.1:8000/w3c/resources/idlharness.js:440:36)
-    at Array.forEach (native)
-    at IdlArray.test (http://127.0.0.1:8000/w3c/resources/idlharness.js:438:32)
-    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:82:13
-    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:83:3)
+PASS PerformanceNavigation interface: existence and properties of interface object 
+FAIL PerformanceNavigation interface: existence and properties of interface prototype object assert_equals: class string of PerformanceNavigation.prototype expected "[object PerformanceNavigationPrototype]" but got "[object Object]"
+PASS PerformanceNavigation interface: existence and properties of interface prototype object's "constructor" property 
+FAIL PerformanceNavigation interface: constant TYPE_NAVIGATE on interface object assert_false: property is configurable expected false got true
+FAIL PerformanceNavigation interface: constant TYPE_NAVIGATE on interface prototype object assert_false: property is configurable expected false got true
+FAIL PerformanceNavigation interface: constant TYPE_RELOAD on interface object assert_false: property is configurable expected false got true
+FAIL PerformanceNavigation interface: constant TYPE_RELOAD on interface prototype object assert_false: property is configurable expected false got true
+FAIL PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface object assert_false: property is configurable expected false got true
+FAIL PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface prototype object assert_false: property is configurable expected false got true
+FAIL PerformanceNavigation interface: constant TYPE_RESERVED on interface object assert_false: property is configurable expected false got true
+FAIL PerformanceNavigation interface: constant TYPE_RESERVED on interface prototype object assert_false: property is configurable expected false got true
+FAIL PerformanceNavigation interface: attribute type assert_true: The prototype object must have a property "type" expected true got false
+FAIL PerformanceNavigation interface: attribute redirectCount assert_true: The prototype object must have a property "redirectCount" expected true got false
+PASS PerformanceNavigation must be primary interface of window.performance.navigation 
+PASS Stringification of window.performance.navigation 
 PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_NAVIGATE" with the proper type (0) 
 PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_RELOAD" with the proper type (1) 
 PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_BACK_FORWARD" with the proper type (2) 
 PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_RESERVED" with the proper type (3) 
 FAIL PerformanceNavigation interface: window.performance.navigation must inherit property "type" with the proper type (4) assert_inherits: property "type" found on object expected in prototype chain
 FAIL PerformanceNavigation interface: window.performance.navigation must inherit property "redirectCount" with the proper type (5) assert_inherits: property "redirectCount" found on object expected in prototype chain
-FAIL Performance interface: existence and properties of interface object assert_own_property: window does not have own property "Performance" expected property "Performance" missing
-FAIL Performance interface: existence and properties of interface prototype object assert_own_property: window does not have own property "Performance" expected property "Performance" missing
-FAIL Performance interface: existence and properties of interface prototype object's "constructor" property assert_own_property: window does not have own property "Performance" expected property "Performance" missing
-FAIL Performance interface: attribute timing assert_own_property: window does not have own property "Performance" expected property "Performance" missing
-FAIL Performance interface: attribute navigation assert_own_property: window does not have own property "Performance" expected property "Performance" missing
-FAIL Performance must be primary interface of window.performance assert_own_property: window does not have own property "Performance" expected property "Performance" missing
-FAIL Stringification of window.performance assert_class_string is not defined(stack: ReferenceError: assert_class_string is not defined
-    at IdlObject. (http://127.0.0.1:8000/w3c/resources/idlharness.js:1563:9)
-    at Object.Test.step (http://127.0.0.1:8000/w3c/resources/testharness.js:876:18)
-    at test (http://127.0.0.1:8000/w3c/resources/testharness.js:338:18)
-    at IdlObject.IdlInterface.test_primary_interface_of (http://127.0.0.1:8000/w3c/resources/idlharness.js:1559:5)
-    at IdlObject.IdlInterface.test_object (http://127.0.0.1:8000/w3c/resources/idlharness.js:1509:10)
-    at null. (http://127.0.0.1:8000/w3c/resources/idlharness.js:440:36)
-    at Array.forEach (native)
-    at IdlArray.test (http://127.0.0.1:8000/w3c/resources/idlharness.js:438:32)
-    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:82:13
-    at http://127.0.0.1:8000/w3c/webperf/approved/navigation-timing/html/idlharness.html:83:3)
+PASS Performance interface: existence and properties of interface object 
+FAIL Performance interface: existence and properties of interface prototype object assert_equals: class string of Performance.prototype expected "[object PerformancePrototype]" but got "[object Object]"
+PASS Performance interface: existence and properties of interface prototype object's "constructor" property 
+FAIL Performance interface: attribute timing assert_true: The prototype object must have a property "timing" expected true got false
+FAIL Performance interface: attribute navigation assert_true: The prototype object must have a property "navigation" expected true got false
+PASS Performance must be primary interface of window.performance 
+PASS Stringification of window.performance 
 FAIL Performance interface: window.performance must inherit property "timing" with the proper type (0) assert_inherits: property "timing" found on object expected in prototype chain
 FAIL Performance interface: window.performance must inherit property "navigation" with the proper type (1) assert_inherits: property "navigation" found on object expected in prototype chain
 
