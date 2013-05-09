@@ -45,12 +45,12 @@ The USB API requires a special permission "usb" in the manifest file:
 Every device in a USB bus is identified
 by its vendor and product IDs.
 To find a device,
-use the <code>findDevice()</code> method
-which has four parameters:
+use the <code>findDevices()</code> method
+which has two parameters:
 </p>
 
 <pre>
-chrome.usb.findDevice(vendorId, productId, options, onDeviceFoundCallback)
+chrome.usb.findDevices(FindDeviceOptions, callback)
 </pre>
 
 <br>
@@ -61,28 +61,26 @@ chrome.usb.findDevice(vendorId, productId, options, onDeviceFoundCallback)
     <th scope="col"> Description </th>
   </tr>
   <tr>
-    <td>vendorId (long)</td>
-    <td>The vendor ID for your USB device (in Linux, use lsusb to find it).</td>
-  </tr>
-  <tr>
-    <td>productId (long)</td>
-    <td>The product ID for your USB device (in Linux, use lsusb to find it).</td>
-  </tr>
-  <tr>
-    <td>options (object)</td>
-    <td>An object with a single key, "onEvent",
-      that will be called whenever an event is received from the corresponding device.
-      This will be the primary method of receiving information from the device.
-      As the host-initiated USB protocol is complex, read on to learn more.
+    <td>FindDeviceOptions (object)</td>
+    <td>An object specifying both a <code>vendorId</code> (long) and
+      <code>productId</code> (long) used to find the correct type of device on
+      the bus. Before calling this, your extension manifest must declare the
+      <code>optional_permissons</code> with a <code>usbDevices</code>
+      section containing the same <code>vendorId</code> and
+      <code>deviceId</code> combination and must have received user consent
+      via <code>chrome.permissions.request(...)</code>.
     </td>
   </tr>
   <tr>
-    <td>onDeviceFoundCallback (function)</td>
-    <td>Called when the device is found.
-      The callback will be executed with one parameter, an object
+    <td>callback (function)</td>
+    <td>Called when the device scan is finished.
+      The callback will be executed with one parameter, an array of device objects
       with three properties: <code>handle</code>,
       <code>vendorId</code>,
-      <code>productId</code>. If the device could not be found, the parameter will be <code>null</code>. Save this parameter for later use, as it's required in the other methods.</td>
+      <code>productId</code>. If the optional permissions for this USB device
+      were not declared in the extension manifest or the user did not consent
+      to the permissions requested, the parameter will be <code>null</code>.
+      If no devices could be found, the array will be empty.</td>
   </tr>
 </table>
 
@@ -91,20 +89,20 @@ Example:
 </p>
 
 <pre>
-var onDeviceFound = function(device) {
-  _this.device=device;
-  if (device) {
-     console.log("Device found: "+device.handle);
+var onDeviceFound = function(devices) {
+  _this.devices=devices;
+  if (devices) {
+    if (devices.length &gt; 0) {
+      console.log("Device(s) found: "+devices.length);
+    } else {
+      console.log("Device could not be found");
+    }
   } else {
-     console.log("Device could not be found");
+    console.log("Did not request correct permissions");
   }
 };
 
-var onUsbEvent = function(event) {
-     console.log("Got some message from the USB device!");
-};
-
-chrome.usb.findDevice(vendorId, productId, {"onEvent": onUsbEvent}, onDeviceFound);
+chrome.usb.findDevices({"vendorId": vendorId, "productId": productId}, onDeviceFound);
 </pre>
 
 <h3 id="usb_transfers">USB transfers and receiving data from a device</h3>
@@ -117,11 +115,11 @@ device-to-host (inbound) and host-to-device (outbound).
 </p>
 
 <p>
-However, due to the nature of the USB protocol, both inbound and outbound messages must be initiated by the host (your computer). For inbound (device-to-host) messages, the host, your JavaScript code, sends a message flagged as "inbound" to the device. The exact contents of the message depends on the device, but usually will have some identification of what you are requesting from it. The device then responds with the requested data. The device's response is handled by Chrome and delivered assynchronously to the <code>onEvent</code> callback you defined in the <code>findDevice</code> method.
-An outbound (host-to-device) message is much simpler and doesn't generate an answer from the device.</p>
+However, due to the nature of the USB protocol, both inbound and outbound messages must be initiated by the host (your computer). For inbound (device-to-host) messages, the host, your JavaScript code, sends a message flagged as "inbound" to the device. The exact contents of the message depends on the device, but usually will have some identification of what you are requesting from it. The device then responds with the requested data. The device's response is handled by Chrome and delivered asynchronously to the callback you specified in the transfer method.
+An outbound (host-to-device) message is similar, but the response doesn't contain data returned from the device.</p>
 
 <p>For each message from the device,
-the <code>onEvent</code> callback will receive 
+the specified callback will receive 
 an event object with the following properties:
 </p>
 
@@ -133,21 +131,13 @@ an event object with the following properties:
     <th scope="col"> Description </th>
   </tr>
   <tr>
-    <td>type (string)</td>
-    <td>Currently always contains the string "transferResult".</td>
-  </tr>
-  <tr>
     <td>resultCode (integer)</td>
-    <td>0 is success; other values indicate failure.</td>
+    <td>0 is success; other values indicate failure. An error string can be read from
+      <code>chrome.extension.lastError</code> when a failure is indicated.</td>
   </tr>
   <tr>
     <td>data (arraybuffer)</td>
-    <td>Contains the data sent by the device.
-    </td>
-  </tr>
-  <tr>
-    <td>error (string)</td>
-    <td>If resultCode is not 0, this field will contain a textual description of the error that occurred during the transfer.
+    <td>Contains the data sent by the device if transfer was inbound.
     </td>
   </tr>
 </table>
@@ -157,13 +147,13 @@ Example:
 </p>
 
 <pre>
-var onUsbEvent = function(event) {
-    if (event &amp;&amp; event.resultCode===0 &amp;&amp; event.data) {
+var onTransferCallback = function(event) {
+   if (event &amp;&amp; event.resultCode === 0 &amp;&amp; event.data) {
      console.log("got "+event.data.byteLength+" bytes");
-    }
+   }
 };
 
-chrome.usb.findDevice( vendorId, productId, {"onEvent": onUsbEvent}, onDeviceFound);
+chrome.usb.bulkTransfer(device, transferInfo, onTransferCallback);
 </pre>
 
 <h3 id="control_transfers">CONTROL transfers</h3>
@@ -197,10 +187,6 @@ chrome.usb.controlTransfer(deviceObj, transferInfo, transferCallback)
   <tr>
     <td>transferCallback()</td>
     <td>Invoked when the transfer has completed.
-      Please note this only indicates that
-      the transfer has been processed.
-      The device's response, if any, will always be sent through
-      the <code>onEvent()</code> callback set on <code>findDevice()</code>.
     </td>
   </tr>
 </table>
@@ -301,11 +287,6 @@ chrome.usb.isochronousTransfer(deviceObj, isochronousTransferInfo, transferCallb
   <tr>
     <td>transferCallback()</td>
     <td>Invoked when the transfer has completed.
-      Notice that this callback doesn't contain any response from the device.
-      It's just to notify you that the asynchronous transfer request
-      has been processed and you can go ahead.
-      The device's response, if any, will always be sent through
-      the <code>onEvent()</code> callback set on <code>findDevice()</code>.
     </td>
   </tr>
 </table>
@@ -393,11 +374,6 @@ chrome.usb.bulkTransfer(deviceObj, transferInfo, transferCallback)
   <tr>
     <td>transferCallback</td>
     <td>Invoked when the transfer has completed.
-      Notice that this callback doesn't contain the device's response.
-      It's just to notify your code that the asynchronous transfer request
-      has been processed and you can go ahead.
-      The device's response, if any, will always be sent through
-      the <code>onEvent()</code> callback set on <code>findDevice()</code>.
     </td>
   </tr>
 </table>
