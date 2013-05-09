@@ -73,6 +73,9 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         # For CHECK(...)
         'platform',
         ],
+    'minidump_generator': [
+        'pthread',
+        ],
     }
 
 # Untrusted only library dependencies.

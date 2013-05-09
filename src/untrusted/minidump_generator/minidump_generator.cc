@@ -5,12 +5,15 @@
  */
 
 #include <assert.h>
+#include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+
+#include <algorithm>
 
 #include "breakpad/src/google_breakpad/common/minidump_format.h"
 #include "native_client/src/include/elf_constants.h"
@@ -22,13 +25,27 @@
 extern char __executable_start[];  // Start of code segment
 extern char __etext[];  // End of code segment
 
+// @IGNORE_LINES_FOR_CODE_HYGIENE[1]
+#if defined(__GLIBC__)
+// Variable defined by ld.so, used as a workaround for
+// https://code.google.com/p/nativeclient/issues/detail?id=3431.
+extern void *__libc_stack_end;
+#endif
+
 class MinidumpFileWriter;
+
+// Restrict how much of the stack we dump to reduce upload size and to
+// avoid dynamic allocation.
+static const size_t kLimitStackDumpSize = 512 * 1024;
+
+static const size_t kLimitNonStackSize = 64 * 1024;
 
 // The crash reporter is expected to be used in a situation where the
 // current process is damaged or out of memory, so it avoids dynamic
 // memory allocation and allocates a fixed-size buffer of the
 // following size at startup.
-static const int kMinidumpBufferSize = 0x10000;
+static const size_t kMinidumpBufferSize =
+    kLimitStackDumpSize + kLimitNonStackSize;
 
 static const char *g_module_name = "main.nexe";
 static MDGUID g_module_build_id;
@@ -210,6 +227,42 @@ static void ConvertRegisters(MinidumpFileWriter *minidump_writer,
 #undef COPY_REG
 }
 
+static MDMemoryDescriptor SnapshotMemory(MinidumpFileWriter *minidump_writer,
+                                         uintptr_t start, size_t size) {
+  TypedMDRVA<uint8_t> mem_copy(minidump_writer);
+  MDMemoryDescriptor desc = {0};
+  if (mem_copy.AllocateArray(size)) {
+    memcpy(mem_copy.get(), (void *) start, size);
+
+    desc.start_of_memory_range = start;
+    desc.memory = mem_copy.location();
+  }
+  return desc;
+}
+
+static bool GetStackEnd(void **stack_end) {
+  // @IGNORE_LINES_FOR_CODE_HYGIENE[1]
+#if defined(__GLIBC__)
+  void *stack_base;
+  size_t stack_size;
+  pthread_attr_t attr;
+  if (pthread_getattr_np(pthread_self(), &attr) == 0 &&
+      pthread_attr_getstack(&attr, &stack_base, &stack_size) == 0) {
+    *stack_end = (void *) ((char *) stack_base + stack_size);
+    pthread_attr_destroy(&attr);
+    return true;
+  }
+  // pthread_getattr_np() currently fails on the initial thread.  As a
+  // workaround, if we reach here, assume we are on the initial thread
+  // and get the initial thread's stack end as recorded by glibc.
+  // See https://code.google.com/p/nativeclient/issues/detail?id=3431
+  *stack_end = __libc_stack_end;
+  return true;
+#else
+  return pthread_get_stack_end_np(pthread_self(), stack_end) == 0;
+#endif
+}
+
 static void WriteThreadList(MinidumpFileWriter *minidump_writer,
                             MDRawDirectory *dirent,
                             struct NaClExceptionContext *context) {
@@ -224,10 +277,23 @@ static void WriteThreadList(MinidumpFileWriter *minidump_writer,
 
   MDRawThread thread = {0};
   ConvertRegisters(minidump_writer, context, &thread);
-  list.CopyIndexAfterObject(0, &thread, sizeof(thread));
 
-  // TODO(mseaborn): Snapshot the stack too.  This will require a
-  // libpthread interface for finding the max address of the stack.
+  // Record the stack contents.
+  NaClExceptionPortableContext *pcontext =
+      nacl_exception_context_get_portable(context);
+  uintptr_t stack_start = pcontext->stack_ptr;
+  if (context->arch == EM_X86_64) {
+    // Include the x86-64 red zone too to capture local variables.
+    stack_start -= 128;
+  }
+  void *stack_end;
+  if (GetStackEnd(&stack_end) && stack_start <= (uintptr_t) stack_end) {
+    size_t stack_size = (uintptr_t) stack_end - stack_start;
+    stack_size = std::min(stack_size, kLimitStackDumpSize);
+    thread.stack = SnapshotMemory(minidump_writer, stack_start, stack_size);
+  }
+
+  list.CopyIndexAfterObject(0, &thread, sizeof(thread));
 
   dirent->stream_type = MD_THREAD_LIST_STREAM;
   dirent->location = list.location();
