@@ -212,22 +212,6 @@ model.unexpectedFailureInfoForTestName = function(testName)
     });
 };
 
-model.analyzeUnexpectedSuccesses = function(callback)
-{
-    var unexpectedSuccesses = results.unexpectedSuccessesByTest(model.state.resultsByBuilder);
-    $.each(unexpectedSuccesses, function(testName, resultNodesByBuilder) {
-        var successAnalysis = {
-            'testName': testName,
-            'resultNodesByBuilder': resultNodesByBuilder,
-        };
-
-        // FIXME: Consider looking at the history to see how long this test
-        // has been unexpectedly passing.
-
-        callback(successAnalysis);
-    });
-};
-
 model.analyzeexpectedFailures = function(callback)
 {
     var expectedFailures = results.expectedFailuresByTest(model.state.resultsByBuilder);

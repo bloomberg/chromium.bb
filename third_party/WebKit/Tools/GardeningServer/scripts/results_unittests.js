@@ -44,19 +44,23 @@ unittest.kExampleResultsJSON = {
             "unexpected-wontfix": {
                 "expected": "IMAGE",
                 "actual": "TEXT",
+                "is_unexpected": true,
                 "wontfix": true
             },
             "flaky-scrollbar.html": {
                 "expected": "PASS",
                 "actual": "PASS TEXT"
+                "is_unexpected": true,
             },
             "unexpected-failing-flaky-scrollbar.html": {
                 "expected": "TEXT",
                 "actual": "TIMEOUT TEXT"
+                "is_unexpected": true,
             },
             "unexpected-pass.html": {
                 "expected": "FAIL",
                 "actual": "PASS"
+                "is_unexpected": true,
             }
         },
         "userscripts": {
@@ -67,6 +71,7 @@ unittest.kExampleResultsJSON = {
             "another-test.html": {
                 "expected": "PASS",
                 "actual": "TEXT"
+                "is_unexpected": true,
             }
         },
     },
@@ -84,81 +89,70 @@ unittest.kExampleResultsJSON = {
     "revision": "90430"
 };
 
-test("ResultAnalyzer", 55, function() {
+test("ResultAnalyzer", 44, function() {
     var analyzer;
 
-    analyzer = new results.ResultAnalyzer({expected: 'PASS', actual: 'TEXT'});
-    ok(analyzer.expectedToSucceed());
+    analyzer = new results.ResultAnalyzer({expected: 'PASS', actual: 'TEXT', is_unexpected: true});
     ok(analyzer.hasUnexpectedFailures());
     deepEqual(analyzer.unexpectedResults(), ['TEXT']);
     ok(!analyzer.succeeded());
     ok(!analyzer.flaky());
 
-    analyzer = new results.ResultAnalyzer({expected: 'PASS TIMEOUT', actual: 'TEXT'});
-    ok(analyzer.expectedToSucceed());
+    analyzer = new results.ResultAnalyzer({expected: 'PASS TIMEOUT', actual: 'TEXT', is_unexpected: true});
     ok(analyzer.hasUnexpectedFailures());
     deepEqual(analyzer.unexpectedResults(), ['TEXT']);
     ok(!analyzer.succeeded());
     ok(!analyzer.flaky());
 
-    analyzer = new results.ResultAnalyzer({expected: 'TEXT', actual: 'TEXT TIMEOUT'});
-    ok(!analyzer.expectedToSucceed());
+    analyzer = new results.ResultAnalyzer({expected: 'TEXT', actual: 'TEXT TIMEOUT', is_unexpected: true});
     ok(analyzer.hasUnexpectedFailures());
     deepEqual(analyzer.unexpectedResults(), ['TIMEOUT']);
     ok(!analyzer.succeeded());
     ok(analyzer.flaky());
 
-    analyzer = new results.ResultAnalyzer({expected: 'PASS', actual: 'TEXT TIMEOUT'});
-    ok(analyzer.expectedToSucceed());
+    analyzer = new results.ResultAnalyzer({expected: 'PASS', actual: 'TEXT TIMEOUT', is_unexpected: true});
     ok(analyzer.hasUnexpectedFailures());
     deepEqual(analyzer.unexpectedResults(), ['TEXT', 'TIMEOUT']);
     ok(!analyzer.succeeded());
     ok(analyzer.flaky());
 
     analyzer = new results.ResultAnalyzer({expected: 'PASS TIMEOUT', actual: 'PASS TIMEOUT'});
-    ok(analyzer.expectedToSucceed());
     ok(!analyzer.hasUnexpectedFailures());
     deepEqual(analyzer.unexpectedResults(), []);
     ok(analyzer.succeeded());
     ok(analyzer.flaky());
 
     analyzer = new results.ResultAnalyzer({expected: 'PASS TIMEOUT', actual: 'TIMEOUT PASS'});
-    ok(analyzer.expectedToSucceed());
     ok(!analyzer.hasUnexpectedFailures());
     deepEqual(analyzer.unexpectedResults(), []);
     ok(analyzer.succeeded());
     ok(analyzer.flaky());
 
-    analyzer = new results.ResultAnalyzer({expected: 'FAIL', actual: 'TIMEOUT'});
-    ok(!analyzer.expectedToSucceed());
+    analyzer = new results.ResultAnalyzer({expected: 'FAIL', actual: 'TIMEOUT', is_unexpected: true});
     ok(analyzer.hasUnexpectedFailures());
     deepEqual(analyzer.unexpectedResults(), ['TIMEOUT']);
     ok(!analyzer.succeeded());
     ok(!analyzer.flaky());
 
-    analyzer = new results.ResultAnalyzer({expected: 'FAIL', actual: 'IMAGE'});
-    ok(!analyzer.expectedToSucceed());
+    analyzer = new results.ResultAnalyzer({expected: 'FAIL', actual: 'IMAGE', is_unexpected: true});
     ok(analyzer.hasUnexpectedFailures());
     deepEqual(analyzer.unexpectedResults(), ['IMAGE']);
     ok(!analyzer.succeeded());
     ok(!analyzer.flaky());
 
     analyzer = new results.ResultAnalyzer({expected: 'FAIL', actual: 'AUDIO'});
-    ok(!analyzer.expectedToSucceed());
     ok(!analyzer.hasUnexpectedFailures());
     deepEqual(analyzer.unexpectedResults(), []);
     ok(!analyzer.succeeded());
     ok(!analyzer.flaky());
 
     analyzer = new results.ResultAnalyzer({expected: 'FAIL', actual: 'TEXT'});
-    ok(!analyzer.expectedToSucceed());
     ok(!analyzer.hasUnexpectedFailures());
     deepEqual(analyzer.unexpectedResults(), []);
     ok(!analyzer.succeeded());
     ok(!analyzer.flaky());
 
     analyzer = new results.ResultAnalyzer({expected: 'FAIL', actual: 'IMAGE+TEXT'});
-    ok(!analyzer.expectedToSucceed());
     ok(!analyzer.hasUnexpectedFailures());
     deepEqual(analyzer.unexpectedResults(), []);
     ok(!analyzer.succeeded());
@@ -198,20 +192,6 @@ test("unexpectedFailuresByTest", 1, function() {
             "Mock Builder": {
                 "expected": "PASS",
                 "actual": "TEXT"
-            }
-        }
-    });
-});
-
-test("unexpectedSuccessesByTest", 1, function() {
-    var unexpectedFailuresByTest = results.unexpectedSuccessesByTest({
-        "Mock Builder": unittest.kExampleResultsJSON
-    });
-    deepEqual(unexpectedFailuresByTest, {
-        "scrollbars/unexpected-pass.html": {
-            "Mock Builder": {
-                "expected": "FAIL",
-                "actual": "PASS"
             }
         }
     });

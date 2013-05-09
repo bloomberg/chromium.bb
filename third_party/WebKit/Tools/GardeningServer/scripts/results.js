@@ -219,6 +219,7 @@ var g_resultsCache = new base.AsynchronousCache(function (key, callback) {
 results.ResultAnalyzer = base.extends(Object, {
     init: function(resultNode)
     {
+        this._isUnexpected = resultNode.is_unexpected;
         this._actual = resultNode ? results.failureTypeList(resultNode.actual) : [];
         this._expected = resultNode ? this._addImpliedExpectations(results.failureTypeList(resultNode.expected)) : [];
         this._wontfix = resultNode ? resultNode.wontfix : false;
@@ -243,10 +244,6 @@ results.ResultAnalyzer = base.extends(Object, {
     {
         return this._hasPass(this._actual);
     },
-    expectedToSucceed: function()
-    {
-        return this._hasPass(this._expected);
-    },
     flaky: function()
     {
         return this._actual.length > 1;
@@ -257,17 +254,7 @@ results.ResultAnalyzer = base.extends(Object, {
     },
     hasUnexpectedFailures: function()
     {
-        var difference = {};
-        this._actual.forEach(function(actual) {
-            difference[actual] = actual !== PASS;
-        });
-        this._expected.forEach(function(expected) {
-            if (expected !== PASS)
-                delete difference[expected];
-        });
-        return Object.keys(difference).some(function(key) {
-            return difference[key];
-        });
+        return this._isUnexpected;
     }
 })
 
@@ -298,14 +285,6 @@ results.unexpectedFailures = function(resultsTree)
     return base.filterTree(resultsTree.tests, isResultNode, isUnexpectedFailure);
 };
 
-results.unexpectedSuccesses = function(resultsTree)
-{
-    return base.filterTree(resultsTree.tests, isResultNode, function(resultNode) {
-        var analyzer = new results.ResultAnalyzer(resultNode);
-        return !analyzer.expectedToSucceed() && analyzer.succeeded() && !analyzer.flaky();
-    });
-};
-
 function resultsByTest(resultsByBuilder, filter)
 {
     var resultsByTest = {};
@@ -328,11 +307,6 @@ results.expectedFailuresByTest = function(resultsByBuilder)
 results.unexpectedFailuresByTest = function(resultsByBuilder)
 {
     return resultsByTest(resultsByBuilder, results.unexpectedFailures);
-};
-
-results.unexpectedSuccessesByTest = function(resultsByBuilder)
-{
-    return resultsByTest(resultsByBuilder, results.unexpectedSuccesses);
 };
 
 results.failureInfoForTestAndBuilder = function(resultsByTest, testName, builderName)
