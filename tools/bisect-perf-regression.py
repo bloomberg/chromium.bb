@@ -702,7 +702,7 @@ class BisectPerformanceMetrics(object):
 
       elapsed_minutes = (time.time() - start_time) / 60.0
 
-      if elapsed_minutes >= self.opts.repeat_test_max_time:
+      if elapsed_minutes >= self.opts.repeat_test_max_time or not metric_values:
         break
 
     os.chdir(cwd)
@@ -723,7 +723,8 @@ class BisectPerformanceMetrics(object):
       print
       return (values, 0)
     else:
-      return ('No values returned from performance test.', -1)
+      return ('Invalid metric specified, or no values returned from '
+          'performance test.', -1)
 
   def FindAllRevisionsToSync(self, revision, depot):
     """Finds all dependant revisions and depots that need to be synced for a
