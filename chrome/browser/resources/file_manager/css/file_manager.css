@@ -582,6 +582,7 @@ body[new-ui] .dialog-body {
 }
 
 body[new-ui] .dialog-middlebar-contents {
+  display: -webkit-box;
   max-width: 50%;
   min-width: 45px;
   position: relative;
