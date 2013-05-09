@@ -11,6 +11,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
 
 namespace {
@@ -120,6 +121,31 @@ void NativeThemeGtk2::PaintMenuPopupBackground(
   }
 }
 
+void NativeThemeGtk2::PaintMenuItemBackground(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const MenuListExtraParams& menu_list) const {
+  SkColor color;
+  SkPaint paint;
+  switch (state) {
+    case NativeTheme::kNormal:
+    case NativeTheme::kDisabled:
+      color = GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor);
+      paint.setColor(color);
+      break;
+    case NativeTheme::kHovered:
+      color = GetSystemColor(
+          NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
+      paint.setColor(color);
+      break;
+    default:
+      NOTREACHED() << "Invalid state " << state;
+      break;
+  }
+  canvas->drawRect(gfx::RectToSkRect(rect), paint);
+}
+
 GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
   switch (color_id) {
     // Windows
@@ -141,9 +167,8 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
       return GetMenuItemStyle()->text[GTK_STATE_NORMAL];
     case kColorId_DisabledMenuItemForegroundColor:
       return GetMenuItemStyle()->text[GTK_STATE_INSENSITIVE];
-    // TODO(erg): We also need a FocusedMenuItemForegroundColor, since the
-    // accessibility theme HighContrastInverse is unreadable without it. That
-    // will require careful threading through existing menu code though.
+    case kColorId_SelectedMenuItemForegroundColor:
+      return GetMenuItemStyle()->text[GTK_STATE_SELECTED];
     case kColorId_FocusedMenuItemBackgroundColor:
       return GetMenuItemStyle()->bg[GTK_STATE_SELECTED];
     case kColorId_HoverMenuItemBackgroundColor:

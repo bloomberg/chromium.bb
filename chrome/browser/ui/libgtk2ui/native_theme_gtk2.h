@@ -27,6 +27,11 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
       SkCanvas* canvas,
       const gfx::Size& size,
       const MenuBackgroundExtraParams& menu_background) const OVERRIDE;
+  virtual void PaintMenuItemBackground(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const MenuListExtraParams& menu_list) const OVERRIDE;
 
  private:
   NativeThemeGtk2();

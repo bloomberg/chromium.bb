@@ -234,6 +234,14 @@ void NativeThemeAura::PaintMenuPopupBackground(
   }
 }
 
+void NativeThemeAura::PaintMenuItemBackground(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const MenuListExtraParams& menu_list) const {
+  CommonThemePaintMenuItemBackground(canvas, state, rect);
+}
+
 void NativeThemeAura::PaintScrollbarTrack(
     SkCanvas* canvas,
     Part part,

@@ -26,6 +26,11 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
       SkCanvas* canvas,
       const gfx::Size& size,
       const MenuBackgroundExtraParams& menu_background) const OVERRIDE;
+  virtual void PaintMenuItemBackground(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const MenuListExtraParams& menu_list) const OVERRIDE;
   virtual void PaintScrollbarTrack(
       SkCanvas* canvas,
       Part part,
