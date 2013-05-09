@@ -1410,7 +1410,7 @@ webkit.org/b/107962 [ Release ] http/tests/loading/redirect-methods.html [ Pass 
 webkit.org/b/108876 [ Linux Win ] media/track/track-cues-cuechange.html [ Slow ]
 webkit.org/b/108876 [ Linux Win ] media/track/track-cues-enter-exit.html [ Slow ]
 
-webkit.org/b/108912 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Pass Failure ]
+crbug.com/239549 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Pass Failure Timeout ]
 
 webkit.org/b/109312 fast/canvas/canvas-drawImage-shadow.html [ Pass Failure ]
 webkit.org/b/109312 virtual/gpu/fast/canvas/canvas-drawImage-shadow.html [ Pass Failure ]
