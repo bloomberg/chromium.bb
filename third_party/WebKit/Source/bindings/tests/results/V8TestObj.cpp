@@ -33,7 +33,6 @@
 #include "V8ScriptProfile.h"
 #include "V8TestCallback.h"
 #include "V8TestNode.h"
-#include "V8TestObj.h"
 #include "V8TestSubObj.h"
 #include "V8bool.h"
 #include "bindings/v8/Dictionary.h"

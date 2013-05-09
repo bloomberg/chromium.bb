@@ -4042,14 +4042,12 @@ sub GenerateHeaderContentHeader
 sub GenerateImplementationContentHeader
 {
     my $interface = shift;
-    my $v8InterfaceName = "V8" . $interface->name;
     my $conditionalString = GenerateConditionalString($interface);
 
     my @implContentHeader = split("\r", $headerTemplate);
 
     push(@implContentHeader, "\n#include \"config.h\"\n");
     push(@implContentHeader, "#if ${conditionalString}\n") if $conditionalString;
-    push(@implContentHeader, "#include \"${v8InterfaceName}.h\"\n\n");
     return @implContentHeader;
 }
 
@@ -5104,9 +5102,11 @@ sub WriteData
         UpdateFile($implFileName, $implementation{root}->toString());
     } else {
         my $contents = join "", @implContentHeader;
+        my $mainInclude = "\"V8$name.h\"";
+        $contents .= "#include $mainInclude\n\n";
 
         foreach my $include (sort @includes) {
-            $contents .= "#include $include\n";
+            $contents .= "#include $include\n" unless $include eq $mainInclude;
         }
         foreach my $condition (sort keys %implIncludeConditions) {
             $contents .= "\n#if " . GenerateConditionalStringFromAttributeValue($condition) . "\n";
