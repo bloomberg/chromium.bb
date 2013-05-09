@@ -42,6 +42,10 @@ class StorageMonitorWin : public StorageMonitor {
       string16* device_location,
       string16* storage_object_id) const OVERRIDE;
 
+  virtual void EjectDevice(
+      const std::string& device_id,
+      base::Callback<void(EjectStatus)> callback) OVERRIDE;
+
  private:
   class PortableDeviceNotifications;
   friend class test::TestStorageMonitorWin;

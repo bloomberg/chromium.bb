@@ -5,17 +5,24 @@
 #include "chrome/browser/storage_monitor/volume_mount_watcher_win.h"
 
 #include <windows.h>
+
 #include <dbt.h>
 #include <fileapi.h>
+#include <winioctl.h>
 
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 
 using content::BrowserThread;
 
@@ -27,6 +34,15 @@ enum DeviceType {
   FLOPPY,
   REMOVABLE,
   FIXED,
+};
+
+// Histogram values for recording frequencies of eject attempts and
+// outcomes.
+enum EjectWinLockOutcomes {
+  LOCK_ATTEMPT,
+  LOCK_TIMEOUT,
+  LOCK_TIMEOUT2,
+  NUM_LOCK_OUTCOMES,
 };
 
 // We are trying to figure out whether the drive is a fixed volume,
@@ -187,6 +203,120 @@ std::vector<base::FilePath> GetAttachedDevices() {
 
   FindVolumeClose(find_handle);
   return result;
+}
+
+// Eject a removable volume at the specified |device| path. This works by
+// 1) locking the volume,
+// 2) unmounting the volume,
+// 3) ejecting the volume.
+// If the lock fails, it will re-schedule itself.
+// See http://support.microsoft.com/kb/165721
+void EjectDeviceInThreadPool(
+    const base::FilePath& device,
+    base::Callback<void(chrome::StorageMonitor::EjectStatus)> callback,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    int iteration) {
+  base::FilePath::StringType volume_name;
+  base::FilePath::CharType drive_letter = device.value()[0];
+  // Don't try to eject if the path isn't a simple one -- we're not
+  // sure how to do that yet. Need to figure out how to eject volumes mounted
+  // at not-just-drive-letter paths.
+  if (drive_letter < L'A' || drive_letter > L'Z' ||
+      device != device.DirName()) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(callback, chrome::StorageMonitor::EJECT_FAILURE));
+    return;
+  }
+  base::SStringPrintf(&volume_name, L"\\\\.\\%lc:", drive_letter);
+
+  base::win::ScopedHandle volume_handle(CreateFile(
+      volume_name.c_str(),
+      GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+      NULL, OPEN_EXISTING, 0, NULL));
+
+  if (!volume_handle.IsValid()) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(callback, chrome::StorageMonitor::EJECT_FAILURE));
+    return;
+  }
+
+  DWORD bytes_returned = 0;  // Unused, but necessary for ioctl's.
+
+  // Lock the drive to be ejected (so that other processes can't open
+  // files on it). If this fails, it means some other process has files
+  // open on the device. Note that the lock is released when the volume
+  // handle is closed, and this is done by the ScopedHandle above.
+  BOOL locked = DeviceIoControl(volume_handle, FSCTL_LOCK_VOLUME,
+                                NULL, 0, NULL, 0, &bytes_returned, NULL);
+  UMA_HISTOGRAM_ENUMERATION("StorageMonitor.EjectWinLock",
+                            LOCK_ATTEMPT, NUM_LOCK_OUTCOMES);
+  if (!locked) {
+    UMA_HISTOGRAM_ENUMERATION("StorageMonitor.EjectWinLock",
+                              iteration == 0 ? LOCK_TIMEOUT : LOCK_TIMEOUT2,
+                              NUM_LOCK_OUTCOMES);
+    const int kNumLockRetries = 1;
+    const base::TimeDelta kLockRetryInterval =
+        base::TimeDelta::FromMilliseconds(500);
+    if (iteration < kNumLockRetries) {
+      // Try again -- the lock may have been a transient one. This happens on
+      // things like AV disk lock for some reason, or another process
+      // transient disk lock.
+      task_runner->PostDelayedTask(FROM_HERE,
+          base::Bind(&EjectDeviceInThreadPool,
+                     device, callback, task_runner, iteration + 1),
+          kLockRetryInterval);
+      return;
+    }
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(callback, chrome::StorageMonitor::EJECT_IN_USE));
+    return;
+  }
+
+  // Unmount the device from the filesystem -- this will remove it from
+  // the file picker, drive enumerations, etc.
+  BOOL dismounted = DeviceIoControl(volume_handle, FSCTL_DISMOUNT_VOLUME,
+                                    NULL, 0, NULL, 0, &bytes_returned, NULL);
+
+  // Reached if we acquired a lock, but could not dismount. This might
+  // occur if another process unmounted without locking. Call this OK,
+  // since the volume is now unreachable.
+  if (!dismounted) {
+    DeviceIoControl(volume_handle, FSCTL_UNLOCK_VOLUME,
+                    NULL, 0, NULL, 0, &bytes_returned, NULL);
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(callback, chrome::StorageMonitor::EJECT_OK));
+    return;
+  }
+
+  PREVENT_MEDIA_REMOVAL pmr_buffer;
+  pmr_buffer.PreventMediaRemoval = FALSE;
+  // Mark the device as safe to remove.
+  if (!DeviceIoControl(volume_handle, IOCTL_STORAGE_MEDIA_REMOVAL,
+                       &pmr_buffer, sizeof(PREVENT_MEDIA_REMOVAL),
+                       NULL, 0, &bytes_returned, NULL)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(callback, chrome::StorageMonitor::EJECT_FAILURE));
+    return;
+  }
+
+  // Physically eject or soft-eject the device.
+  if (!DeviceIoControl(volume_handle, IOCTL_STORAGE_EJECT_MEDIA,
+                       NULL, 0, NULL, 0, &bytes_returned, NULL)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(callback, chrome::StorageMonitor::EJECT_FAILURE));
+    return;
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, chrome::StorageMonitor::EJECT_OK));
 }
 
 }  // namespace
@@ -380,6 +510,25 @@ void VolumeMountWatcherWin::HandleDeviceDetachEventOnUIThread(
   if (notifications_)
     notifications_->ProcessDetach(device_info->second.device_id);
   device_metadata_.erase(device_info);
+}
+
+void VolumeMountWatcherWin::EjectDevice(
+    const std::string& device_id,
+    base::Callback<void(StorageMonitor::EjectStatus)> callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::FilePath device =
+      chrome::MediaStorageUtil::FindDevicePathById(device_id);
+  if (device.empty()) {
+    callback.Run(StorageMonitor::EJECT_FAILURE);
+    return;
+  }
+  if (device_metadata_.erase(device.value()) == 0) {
+    callback.Run(StorageMonitor::EJECT_FAILURE);
+    return;
+  }
+
+  task_runner_->PostTask(FROM_HERE,
+      base::Bind(&EjectDeviceInThreadPool, device, callback, task_runner_, 0));
 }
 
 }  // namespace chrome

@@ -551,6 +551,12 @@ void PortableDeviceWatcherWin::SetNotifications(
   storage_notifications_ = notifications;
 }
 
+void PortableDeviceWatcherWin::EjectDevice(
+    const std::string& device_id,
+    base::Callback<void(StorageMonitor::EjectStatus)> callback) {
+  callback.Run(chrome::StorageMonitor::EJECT_FAILURE);
+}
+
 void PortableDeviceWatcherWin::EnumerateAttachedDevices() {
   DCHECK(media_task_runner_.get());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));

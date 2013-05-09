@@ -55,6 +55,9 @@ class VolumeMountWatcherWin {
   // removable volumes are found.
   void SetNotifications(StorageMonitor::Receiver* notifications);
 
+  void EjectDevice(const std::string& device_id,
+                   base::Callback<void(StorageMonitor::EjectStatus)> callback);
+
  protected:
   typedef base::Callback<bool(const base::FilePath&,
                               StorageInfo*)> GetDeviceDetailsCallbackType;
