@@ -377,15 +377,6 @@ void FillDriveEntryPropertiesValue(
 
   property_dict->SetString("thumbnailUrl", file_specific_info.thumbnail_url());
 
-  if (!file_specific_info.alternate_url().empty())
-    property_dict->SetString("editUrl", file_specific_info.alternate_url());
-
-  if (!file_specific_info.share_url().empty())
-    property_dict->SetString("shareUrl", file_specific_info.share_url());
-
-  if (!entry_proto.download_url().empty())
-    property_dict->SetString("contentUrl", entry_proto.download_url());
-
   property_dict->SetBoolean("isHosted",
                             file_specific_info.is_hosted_document());
 

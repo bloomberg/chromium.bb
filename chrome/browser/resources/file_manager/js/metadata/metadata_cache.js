@@ -12,7 +12,7 @@
  * {
  *   filesystem: size, modificationTime
  *   internal: presence
- *   drive: pinned, present, hosted, editUrl, contentUrl, availableOffline
+ *   drive: pinned, present, hosted, availableOffline
  *   streaming: (no property)
  *
  *   Following are not fetched for non-present drive files.
@@ -855,8 +855,6 @@ DriveProvider.prototype.convert_ = function(data, url) {
     dirty: data.isDirty,
     availableOffline: DriveProvider.isAvailableOffline(data, url),
     availableWhenMetered: DriveProvider.isAvailableWhenMetered(data),
-    contentUrl: (data.contentUrl || '').replace(/\?.*$/gi, ''),
-    editUrl: data.editUrl || '',
     driveApps: data.driveApps || [],
     contentMimeType: data.contentMimeType || '',
     sharedWithMe: data.sharedWithMe
