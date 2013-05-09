@@ -134,6 +134,15 @@
                   '|Source/core/page/FrameView.*' \
                   '|Source/core/page/scrolling'
     },
+    'css_regions': {
+      'filepath': 'Source/core/rendering/.*(Region|FlowThread).*' \
+                  '|Source/core/dom/NodeRendering.*' \
+                  '|Source/core/dom/.*NamedFlow.*' \
+                  '|Source/core/css/.*Region.*' \
+                  '|LayoutTests/compositing/regions/' \
+                  '|LayoutTests/fast/regions/' \
+                  '|LayoutTests/platform/chromium.*/fast/regions/'
+    },
   },
 
   'WATCHLISTS': {
@@ -187,5 +196,6 @@
     'fileapi': [ 'kinuko@chromium.org' ],
     'quota': [ 'kinuko@chromium.org' ],
     'viewport_interaction': [ 'kenneth.christiansen@gmail.com' ],
+    'css_regions': [ 'ChromiumBugTracker@adobe.com' ],
   },
 }
