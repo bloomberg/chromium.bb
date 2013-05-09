@@ -1817,7 +1817,7 @@ void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation
     if (paintingDisabled())
         return;
 
-    m_skiaState->m_xferMode = WebCoreCompositeToSkiaComposite(compositeOperation);
+    m_skiaState->m_xferMode = WebCoreCompositeToSkiaComposite(compositeOperation, blendMode);
 }
 
 CompositeOperator GraphicsContext::compositeOperation() const

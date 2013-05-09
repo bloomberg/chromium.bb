@@ -61,8 +61,36 @@ static const struct CompositOpToXfermodeMode {
     { CompositePlusLighter,     SkXfermode::kPlus_Mode }
 };
 
-SkXfermode::Mode WebCoreCompositeToSkiaComposite(CompositeOperator op)
+// keep this array in sync with BlendMode enum in GraphicsTypes.h
+static const uint8_t gMapBlendOpsToXfermodeModes[] = {
+    SkXfermode::kClear_Mode, // BlendModeNormal
+    SkXfermode::kMultiply_Mode, // BlendModeMultiply
+    SkXfermode::kScreen_Mode, // BlendModeScreen
+    SkXfermode::kOverlay_Mode, // BlendModeOverlay
+    SkXfermode::kDarken_Mode, // BlendModeDarken
+    SkXfermode::kLighten_Mode, // BlendModeLighten
+    SkXfermode::kColorDodge_Mode, // BlendModeColorDodge
+    SkXfermode::kColorBurn_Mode, // BlendModeColorBurn
+    SkXfermode::kHardLight_Mode, // BlendModeHardLight
+    SkXfermode::kSoftLight_Mode, // BlendModeSoftLight
+    SkXfermode::kDifference_Mode, // BlendModeDifference
+    SkXfermode::kExclusion_Mode, // BlendModeExclusion
+    SkXfermode::kHue_Mode, // BlendModeHue
+    SkXfermode::kSaturation_Mode, // BlendModeSaturation
+    SkXfermode::kColor_Mode, // BlendModeColor
+    SkXfermode::kLuminosity_Mode // BlendModeLuminosity
+};
+
+SkXfermode::Mode WebCoreCompositeToSkiaComposite(CompositeOperator op, BlendMode blendMode)
 {
+    if (blendMode != BlendModeNormal) {
+        if ((uint8_t)blendMode >= SK_ARRAY_COUNT(gMapBlendOpsToXfermodeModes)) {
+            SkDEBUGF(("GraphicsContext::setPlatformCompositeOperation unknown BlendMode %d\n", blendMode));
+            return SkXfermode::kSrcOver_Mode;
+        }
+        return (SkXfermode::Mode)gMapBlendOpsToXfermodeModes[(uint8_t)blendMode];
+    }
+
     const CompositOpToXfermodeMode* table = gMapCompositOpsToXfermodeModes;
     
     for (unsigned i = 0; i < SK_ARRAY_COUNT(gMapCompositOpsToXfermodeModes); i++) {

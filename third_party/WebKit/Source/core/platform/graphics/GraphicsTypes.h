@@ -47,6 +47,7 @@ namespace WebCore {
         CompositeDifference
     };
 
+    // keep it in sync with gMapBlendOpsToXfermodeModes array in SkiaUtils.h
     enum BlendMode {
         BlendModeNormal,
         BlendModeMultiply,

@@ -35,6 +35,7 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"
@@ -611,6 +612,8 @@ void CanvasRenderingContext2D::setGlobalCompositeOperation(const String& operati
     BlendMode blendMode = BlendModeNormal;
     if (!parseCompositeAndBlendOperator(operation, op, blendMode))
         return;
+    if (!RuntimeEnabledFeatures::cssCompositingEnabled() && blendMode != BlendModeNormal)
+        blendMode = BlendModeNormal;
     if ((state().m_globalComposite == op) && (state().m_globalBlend == blendMode))
         return;
     realizeSaves();
