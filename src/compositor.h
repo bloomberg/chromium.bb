@@ -233,8 +233,6 @@ struct weston_keyboard_grab_interface {
 struct weston_keyboard_grab {
 	const struct weston_keyboard_grab_interface *interface;
 	struct weston_keyboard *keyboard;
-	struct weston_surface *focus;
-	uint32_t key;
 };
 
 struct weston_touch_grab;
@@ -257,7 +255,6 @@ struct weston_touch_grab_interface {
 struct weston_touch_grab {
 	const struct weston_touch_grab_interface *interface;
 	struct weston_touch *touch;
-	struct weston_surface *focus;
 };
 
 struct wl_data_offer {
