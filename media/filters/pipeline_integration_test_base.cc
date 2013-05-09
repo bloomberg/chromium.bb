@@ -28,7 +28,8 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       pipeline_(new Pipeline(message_loop_.message_loop_proxy(),
                              new MediaLog())),
       ended_(false),
-      pipeline_status_(PIPELINE_OK) {
+      pipeline_status_(PIPELINE_OK),
+      last_video_frame_format_(VideoFrame::INVALID) {
   base::MD5Init(&md5_context_);
   EXPECT_CALL(*this, OnSetOpaque(true)).Times(AnyNumber());
 }
@@ -228,9 +229,9 @@ PipelineIntegrationTestBase::CreateFilterCollection(
 
   ScopedVector<VideoDecoder> video_decoders;
   video_decoders.push_back(
-      new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
-  video_decoders.push_back(
       new VpxVideoDecoder(message_loop_.message_loop_proxy()));
+  video_decoders.push_back(
+      new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
 
   // Disable frame dropping if hashing is enabled.
   scoped_ptr<VideoRenderer> renderer(new VideoRendererBase(
@@ -278,6 +279,7 @@ void PipelineIntegrationTestBase::SetDecryptor(
 
 void PipelineIntegrationTestBase::OnVideoRendererPaint(
     const scoped_refptr<VideoFrame>& frame) {
+  last_video_frame_format_ = frame->format();
   if (!hashing_enabled_)
     return;
   frame->HashFrameForTesting(&md5_context_);

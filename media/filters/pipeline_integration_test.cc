@@ -928,6 +928,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
                     PIPELINE_OK));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_EQ(last_video_frame_format_, VideoFrame::YV12A);
 }
 
 }  // namespace media

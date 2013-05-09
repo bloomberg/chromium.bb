@@ -10,6 +10,7 @@
 #include "media/audio/null_audio_sink.h"
 #include "media/base/filter_collection.h"
 #include "media/base/pipeline.h"
+#include "media/base/video_frame.h"
 #include "media/filters/video_renderer_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -81,6 +82,7 @@ class PipelineIntegrationTestBase {
   bool ended_;
   PipelineStatus pipeline_status_;
   NeedKeyCB need_key_cb_;
+  VideoFrame::Format last_video_frame_format_;
 
   void OnStatusCallbackChecked(PipelineStatus expected_status,
                                PipelineStatus status);

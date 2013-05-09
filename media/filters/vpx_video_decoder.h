@@ -20,6 +20,10 @@ class MessageLoopProxy;
 
 namespace media {
 
+// Libvpx video decoder wrapper.
+// Note: VpxVideoDecoder accepts only YV12A VP8 content or VP9 content. This is
+// done to avoid usurping FFmpeg for all vp8 decoding, because the FFmpeg VP8
+// decoder is faster than the libvpx VP8 decoder.
 class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
  public:
   explicit VpxVideoDecoder(
