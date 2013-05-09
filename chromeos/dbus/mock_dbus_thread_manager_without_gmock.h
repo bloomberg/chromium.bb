@@ -125,20 +125,36 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
     return fake_bluetooth_profile_manager_client_.get();
   }
 
-  FakeCryptohomeClient* fake_cryptohome_client() {
-    return fake_cryptohome_client_.get();
+  FakeCrosDisksClient* fake_cros_disks_client() {
+    return fake_cros_disks_client_.get();
   }
 
-  FakeShillManagerClient* fake_shill_manager_client() {
-    return fake_shill_manager_client_.get();
+  FakeCryptohomeClient* fake_cryptohome_client() {
+    return fake_cryptohome_client_.get();
   }
 
   FakeImageBurnerClient* fake_image_burner_client() {
     return fake_image_burner_client_.get();
   }
 
+  FakeSessionManagerClient* fake_session_manager_client() {
+    return fake_session_manager_client_.get();
+  }
+
+  FakeShillManagerClient* fake_shill_manager_client() {
+    return fake_shill_manager_client_.get();
+  }
+
   FakeSystemClockClient* fake_system_clock_client() {
     return fake_system_clock_client_.get();
+  }
+
+  FakePowerManagerClient* fake_power_manager_client() {
+    return fake_power_manager_client_.get();
+  }
+
+  FakeUpdateEngineClient* fake_update_engine_client() {
+    return fake_update_engine_client_.get();
   }
 
   MockIBusClient* mock_ibus_client() {
