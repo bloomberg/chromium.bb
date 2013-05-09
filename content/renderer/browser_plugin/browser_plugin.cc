@@ -33,6 +33,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/plugins/sad_plugin.h"
 

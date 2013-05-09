@@ -13,7 +13,6 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"

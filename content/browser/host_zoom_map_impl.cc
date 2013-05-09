@@ -20,9 +20,6 @@
 #include "content/public/common/page_zoom.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-
-using WebKit::WebView;
 
 static const char* kHostZoomMapKeyName = "content_host_zoom_map";
 

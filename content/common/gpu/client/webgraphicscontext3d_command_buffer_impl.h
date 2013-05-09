@@ -16,7 +16,6 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 

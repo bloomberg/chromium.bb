@@ -6,7 +6,6 @@
 
 #include "cc/output/compositor_frame.h"
 #include "content/public/common/common_param_traits.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "ui/gfx/transform.h"
 

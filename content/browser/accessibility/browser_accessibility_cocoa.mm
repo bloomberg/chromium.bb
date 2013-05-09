@@ -16,7 +16,6 @@
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/public/common/content_client.h"
 #include "grit/webkit_strings.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 
 // See http://openradar.appspot.com/9896491. This SPI has been tested on 10.5,
 // 10.6, and 10.7. It allows accessibility clients to observe events posted on

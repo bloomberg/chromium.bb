@@ -34,7 +34,6 @@ class Transform;
 }
 
 namespace WebKit {
-class WebData;
 class WebFilterOperations;
 }
 

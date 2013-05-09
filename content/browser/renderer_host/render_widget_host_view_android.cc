@@ -28,9 +28,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/android/device_display_info.h"
@@ -38,7 +35,6 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
-#include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
 namespace content {
 
