@@ -45,6 +45,9 @@
                   '|Source/core/css/*Event.*' \
                   '|Source/core/platform/*Event*.*'
     },
+    'html': {
+      'filepath': 'Source/core/html/'
+    },
     'loader': {
       'filepath': 'Source/core/loader',
     },
@@ -163,6 +166,7 @@
                   'eustas+blink@chromium.org',
                   'caseq+blink@chromium.org'],
     'bindings': [ 'abarth@chromium.org',
+                  'adamk+blink@chromium.org',
                   'japhet@chromium.org',
                   'jsbell+bindings@chromium.org',
                   'haraken@chromium.org' ],
@@ -180,11 +184,15 @@
     'platform': [ 'forgerbr@gmail.com' ],
     'svg': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org' ],
     'css': [ 'alexis.menard@intel.com', 'apavlov+blink@chromium.org' ],
-    'dom': [ 'eae+blinkwatch@chromium.org' ],
+    'dom': [ 'adamk+blink@chromium.org', 'eae+blinkwatch@chromium.org' ],
     'events': [ 'eae+blinkwatch@chromium.org' ],
+    'html': [ 'adamk+blink@chromium.org' ],
     'public_api': [ 'abarth@chromum.org', 'jamesr@chromium.org' ],
-    'wtf': [ 'abarth@chromium.org', 'forgerbr@gmail.com',
-             'loislo+blink@chromium.org', 'yurys+blink@chromium.org' ],
+    'wtf': [ 'abarth@chromium.org',
+             'adamk+blink@chromium.org',
+             'forgerbr@gmail.com',
+             'loislo+blink@chromium.org',
+             'yurys+blink@chromium.org' ],
     'indexed_db': ['alecflett@chromium.org','dgrogan@chromium.org',
                    'jsbell@chromium.org'],
     'rendering': [ 'eae+blinkwatch@chromium.org', 'jchaffraix+rendering@chromium.org', 'leviw+renderwatch@chromium.org' ],
