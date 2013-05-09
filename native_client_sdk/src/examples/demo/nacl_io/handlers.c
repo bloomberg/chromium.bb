@@ -12,7 +12,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include "nacl_io.h"
+#include "nacl_io_demo.h"
 
 #define MAX_OPEN_FILES 10
 

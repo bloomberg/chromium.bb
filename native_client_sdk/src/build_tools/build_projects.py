@@ -124,7 +124,7 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
       fh.write(out)
 
   # Generate top Make for examples
-  targets = ['api', 'demos', 'getting_started', 'tutorials']
+  targets = ['api', 'demo', 'getting_started', 'tutorial']
   targets = [x for x in targets if 'examples/'+x in project_tree]
   branch_name = 'examples'
   depth = len(branch_name.split('/'))

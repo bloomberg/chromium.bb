@@ -610,9 +610,17 @@ def BuildStepUpdateUserProjects(pepperdir, platform, toolchains,
     filters['EXPERIMENTAL'] = False
   if toolchains:
     filters['TOOLS'] = toolchains
+    if 'host' in toolchains:
+      filters['TOOLS'].append(platform)
 
   # Update examples and libraries
-  filters['DEST'] = ['examples', 'src']
+  filters['DEST'] = [
+    'examples/api',
+    'examples/demo',
+    'examples/getting_started',
+    'examples/tutorial',
+    'src'
+  ]
 
   tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
   build_projects.UpdateProjects(pepperdir, platform, tree, clobber=clobber,
