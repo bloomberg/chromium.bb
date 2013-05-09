@@ -737,6 +737,15 @@ class WalletClientTest : public testing::Test {
     return data;
   }
 
+  void DoEncryptionOrEscrowRequest(net::HttpStatusCode response_code,
+                                   const std::string& response_body) {
+    net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
+    ASSERT_TRUE(encryption_fetcher);
+    encryption_fetcher->set_response_code(response_code);
+    encryption_fetcher->SetResponseString(response_body);
+    encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  }
+
   void VerifyAndFinishRequest(net::HttpStatusCode response_code,
                               const std::string& request_body,
                               const std::string& response_body) {
@@ -751,12 +760,12 @@ class WalletClientTest : public testing::Test {
  protected:
   scoped_ptr<WalletClient> wallet_client_;
   MockWalletClientDelegate delegate_;
-  net::TestURLFetcherFactory factory_;
 
  private:
   // The profile's request context must be released on the IO thread.
   content::TestBrowserThread io_thread_;
   TestingProfile profile_;
+  net::TestURLFetcherFactory factory_;
 };
 
 TEST_F(WalletClientTest, WalletError) {
@@ -796,12 +805,12 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedVoidResponse) {
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
-  wallet_client_->SendAutocheckoutStatus(
-      autofill::SUCCESS, GURL(kMerchantUrl), std::string());
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
+                                         GURL(kMerchantUrl),
+                                         "google_transaction_id");
+  VerifyAndFinishRequest(net::HTTP_UNAUTHORIZED,
+                         kSendAutocheckoutStatusOfSuccessValidRequest,
+                         std::string());
 }
 
 TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
@@ -812,10 +821,9 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
   wallet_client_->GetWalletItems(GURL(kMerchantUrl));
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  VerifyAndFinishRequest(net::HTTP_UNAUTHORIZED,
+                         kGetWalletItemsValidRequest,
+                         std::string());
 }
 
 TEST_F(WalletClientTest, RequestError) {
@@ -824,12 +832,12 @@ TEST_F(WalletClientTest, RequestError) {
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_BAD_REQUEST);
 
-  wallet_client_->SendAutocheckoutStatus(
-      autofill::SUCCESS, GURL(kMerchantUrl), std::string());
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_BAD_REQUEST);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
+                                         GURL(kMerchantUrl),
+                                         "google_transaction_id");
+  VerifyAndFinishRequest(net::HTTP_BAD_REQUEST,
+                         kSendAutocheckoutStatusOfSuccessValidRequest,
+                         std::string());
 }
 
 TEST_F(WalletClientTest, GetFullWalletSuccess) {
@@ -846,12 +854,8 @@ TEST_F(WalletClientTest, GetFullWalletSuccess) {
       std::vector<WalletClient::RiskCapability>());
   wallet_client_->GetFullWallet(full_wallet_request);
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString(
-      "session_material|encrypted_one_time_pad");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK,
+                              "session_material|encrypted_one_time_pad");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kGetFullWalletValidRequest,
@@ -875,12 +879,8 @@ TEST_F(WalletClientTest, GetFullWalletWithRiskCapabilitesSuccess) {
       risk_capabilities);
   wallet_client_->GetFullWallet(full_wallet_request);
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString(
-      "session_material|encrypted_one_time_pad");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK,
+                              "session_material|encrypted_one_time_pad");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kGetFullWalletWithRiskCapabilitesValidRequest,
@@ -905,11 +905,7 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
       std::vector<WalletClient::RiskCapability>());
   wallet_client_->GetFullWallet(full_wallet_request);
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
-  encryption_fetcher->SetResponseString(std::string());
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_INTERNAL_SERVER_ERROR, std::string());
 
   EXPECT_EQ(0U, delegate_.full_wallets_received());
 }
@@ -930,12 +926,8 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionMalformed) {
       std::vector<WalletClient::RiskCapability>());
   wallet_client_->GetFullWallet(full_wallet_request);
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString(
-      "session_material:encrypted_one_time_pad");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK,
+                              "session_material:encrypted_one_time_pad");
 
   EXPECT_EQ(0U, delegate_.full_wallets_received());
 }
@@ -956,12 +948,8 @@ TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
       std::vector<WalletClient::RiskCapability>());
   wallet_client_->GetFullWallet(full_wallet_request);
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString(
-      "session_material|encrypted_one_time_pad");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK,
+                              "session_material|encrypted_one_time_pad");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kGetFullWalletValidRequest,
@@ -991,12 +979,9 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
   wallet_client_->AcceptLegalDocuments(docs.get(),
                                        kGoogleTransactionId,
                                        GURL(kMerchantUrl));
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kAcceptLegalDocumentsValidRequest, GetData(fetcher));
-  fetcher->SetResponseString(")]}'");  // Invalid JSON. Should be ignored.
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  VerifyAndFinishRequest(net::HTTP_OK,
+                         kAcceptLegalDocumentsValidRequest,
+                         ")}'");  // Invalid JSON. Should be ignored.
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentSucceeded) {
@@ -1010,11 +995,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentSucceeded) {
                                          "cvv",
                                          "obfuscated_gaia_id");
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kAuthenticateInstrumentValidRequest,
@@ -1032,11 +1013,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentFailed) {
                                          "cvv",
                                          "obfuscated_gaia_id");
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kAuthenticateInstrumentValidRequest,
@@ -1056,10 +1033,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentEscrowDown) {
                                          "cvv",
                                          "obfuscated_gaia_id");
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_INTERNAL_SERVER_ERROR, std::string());
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentEscrowMalformed) {
@@ -1074,10 +1048,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentEscrowMalformed) {
                                          "cvv",
                                          "obfuscated_gaia_id");
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, std::string());
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentFailedMalformedResponse) {
@@ -1092,11 +1063,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentFailedMalformedResponse) {
                                          "cvv",
                                          "obfuscated_gaia_id");
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kAuthenticateInstrumentValidRequest,
@@ -1193,11 +1160,7 @@ TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
                                  "obfuscated_gaia_id",
                                  GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentValidRequest,
@@ -1225,11 +1188,7 @@ TEST_F(WalletClientTest, SaveInstrumentWithRequiredActionsSucceeded) {
                                  "obfuscated_gaia_id",
                                  GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentValidRequest,
@@ -1248,11 +1207,7 @@ TEST_F(WalletClientTest, SaveInstrumentFailedInvalidRequiredActions) {
                                  "obfuscated_gaia_id",
                                  GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentValidRequest,
@@ -1271,11 +1226,7 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowDown) {
                                  "obfuscated_gaia_id",
                                  GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
-  encryption_fetcher->SetResponseString(std::string());
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_INTERNAL_SERVER_ERROR, std::string());
 }
 
 TEST_F(WalletClientTest, SaveInstrumentEscrowMalformed) {
@@ -1289,11 +1240,7 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowMalformed) {
                                  "obfuscated_gaia_id",
                                  GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString(std::string());
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, std::string());
 }
 
 TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
@@ -1307,11 +1254,7 @@ TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
                                  "obfuscated_gaia_id",
                                  GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentValidRequest,
@@ -1336,11 +1279,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
                                            "obfuscated_gaia_id",
                                            GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentAndAddressValidRequest,
                          kSaveInstrumentAndAddressValidResponse);
@@ -1373,11 +1312,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressWithRequiredActionsSucceeded) {
                                            "obfuscated_gaia_id",
                                            GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
   VerifyAndFinishRequest(
       net::HTTP_OK,
       kSaveInstrumentAndAddressValidRequest,
@@ -1399,11 +1334,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInvalidRequiredAction) {
                                            "obfuscated_gaia_id",
                                          GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentAndAddressValidRequest,
@@ -1426,11 +1357,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowDown) {
                                            "obfuscated_gaia_id",
                                            GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
-  encryption_fetcher->SetResponseString(std::string());
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_INTERNAL_SERVER_ERROR, std::string());
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowMalformed) {
@@ -1448,11 +1375,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowMalformed) {
                                            "obfuscated_gaia_id",
                                            GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString(std::string());
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, std::string());
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedAddressMissing) {
@@ -1470,11 +1393,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedAddressMissing) {
                                            "obfuscated_gaia_id",
                                            GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentAndAddressValidRequest,
@@ -1496,11 +1415,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInstrumentMissing) {
                                            "obfuscated_gaia_id",
                                            GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentAndAddressValidRequest,
@@ -1615,11 +1530,7 @@ TEST_F(WalletClientTest, UpdateInstrumentExpirationDateSuceeded) {
   wallet_client_->UpdateInstrument(update_instrument_request,
                                    scoped_ptr<Address>());
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentExpirationDateValidRequest,
@@ -1643,11 +1554,7 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressWithNameChangeSucceeded) {
 
   wallet_client_->UpdateInstrument(update_instrument_request, GetTestAddress());
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressWithNameChangeValidRequest,
@@ -1672,11 +1579,7 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressAndExpirationDateSucceeded) {
   update_instrument_request.obfuscated_gaia_id = "obfuscated_gaia_id";
   wallet_client_->UpdateInstrument(update_instrument_request, GetTestAddress());
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_OK);
-  encryption_fetcher->SetResponseString("escrow_handle");
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_OK, "escrow_handle");
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressAndExpirationDateValidRequest,
@@ -1746,11 +1649,7 @@ TEST_F(WalletClientTest, UpdateInstrumentEscrowFailed) {
 
   wallet_client_->UpdateInstrument(update_instrument_request, GetTestAddress());
 
-  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
-  ASSERT_TRUE(encryption_fetcher);
-  encryption_fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
-  encryption_fetcher->SetResponseString(std::string());
-  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  DoEncryptionOrEscrowRequest(net::HTTP_INTERNAL_SERVER_ERROR, std::string());
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
