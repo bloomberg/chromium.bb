@@ -330,9 +330,6 @@ weston_pointer_start_grab(struct weston_pointer *pointer,
 			  struct weston_pointer_grab *grab);
 void
 weston_pointer_end_grab(struct weston_pointer *pointer);
-void
-weston_pointer_set_current(struct weston_pointer *pointer,
-			   struct weston_surface *surface);
 
 struct weston_keyboard *
 weston_keyboard_create(void);
