@@ -28,6 +28,11 @@ class FileSystem : public Resource {
   /// use it.
   FileSystem();
 
+  /// The copy constructor for <code>FileSystem</code>.
+  ///
+  /// @param[in] other A reference to a <code>FileSystem</code>.
+  FileSystem(const FileSystem& other);
+
   /// A constructor used when you have received a PP_Resource as a return
   /// value that has already been reference counted.
   ///

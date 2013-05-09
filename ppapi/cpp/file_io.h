@@ -35,7 +35,7 @@ class FileIO : public Resource {
 
   /// The copy constructor for <code>FileIO</code>.
   ///
-  /// @param[in] other A pointer to a <code>FileIO</code>.
+  /// @param[in] other A reference to a <code>FileIO</code>.
   FileIO(const FileIO& other);
 
   /// Open() opens the specified regular file for I/O according to the given
