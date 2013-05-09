@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/HTMLDialogElement.h"
 
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/RenderBlock.h"

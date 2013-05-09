@@ -37,7 +37,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/StylePropertyShorthand.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/animation/AnimationBase.h"
 #include "core/platform/FloatConversion.h"

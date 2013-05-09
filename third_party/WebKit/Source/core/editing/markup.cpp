@@ -39,7 +39,7 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSValue.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/ContextFeatures.h"

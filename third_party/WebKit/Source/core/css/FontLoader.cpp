@@ -33,7 +33,7 @@
 #include "core/css/CSSParser.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/page/FrameView.h"
 

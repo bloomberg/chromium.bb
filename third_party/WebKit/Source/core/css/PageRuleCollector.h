@@ -23,7 +23,7 @@
 #define PageRuleCollector_h
 
 #include "core/css/DocumentRuleSets.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 

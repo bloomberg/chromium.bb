@@ -24,7 +24,7 @@
 
 #include "CSSPropertyNames.h"
 #include "core/css/CSSValueList.h"
-#include "core/css/StyleResolverState.h"
+#include "core/css/resolver/StyleResolverState.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
 
 namespace WebCore {

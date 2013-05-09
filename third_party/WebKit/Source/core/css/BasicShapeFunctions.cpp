@@ -33,7 +33,7 @@
 #include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/rendering/style/BasicShapes.h"
 
 namespace WebCore {

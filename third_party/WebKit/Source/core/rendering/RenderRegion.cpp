@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/rendering/RenderRegion.h"
 
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Range.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"

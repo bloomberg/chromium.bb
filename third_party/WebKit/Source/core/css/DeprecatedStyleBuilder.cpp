@@ -34,7 +34,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/page/Settings.h"

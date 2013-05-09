@@ -27,7 +27,7 @@
 #include "core/svg/SVGMaskElement.h"
 
 #include "SVGNames.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Attribute.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/SVGRenderSupport.h"

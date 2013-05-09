@@ -38,7 +38,7 @@
 #include "core/css/MediaQueryList.h"
 #include "core/css/MediaQueryMatcher.h"
 #include "core/css/StyleMedia.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/BeforeUnloadEvent.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/DeviceOrientationController.h"

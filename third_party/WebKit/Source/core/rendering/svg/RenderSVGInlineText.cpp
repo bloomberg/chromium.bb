@@ -27,7 +27,7 @@
 #include "core/rendering/svg/RenderSVGInlineText.h"
 
 #include "core/css/CSSFontSelector.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/page/Settings.h"
 #include "core/platform/FloatConversion.h"

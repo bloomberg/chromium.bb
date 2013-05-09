@@ -30,7 +30,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityMenuList.h"
 #include "core/css/CSSFontSelector.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"

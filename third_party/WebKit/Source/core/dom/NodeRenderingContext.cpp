@@ -27,7 +27,7 @@
 #include "core/dom/NodeRenderingContext.h"
 
 #include "HTMLNames.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/Node.h"

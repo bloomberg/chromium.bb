@@ -33,7 +33,7 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/Event.h"
 #include "core/dom/NodeRenderStyle.h"

@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/rendering/style/StyleRareNonInheritedData.h"
 
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/style/ContentData.h"
@@ -255,7 +255,7 @@ bool StyleRareNonInheritedData::counterDataEquivalent(const StyleRareNonInherite
 {
     if (m_counterDirectives.get() == o.m_counterDirectives.get())
         return true;
-        
+
     if (m_counterDirectives && o.m_counterDirectives && *m_counterDirectives == *o.m_counterDirectives)
         return true;
 

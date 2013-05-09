@@ -20,12 +20,12 @@
  */
 
 #include "config.h"
-#include "core/css/StyleResolverState.h"
+#include "core/css/resolver/StyleResolverState.h"
 
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/NodeRenderStyle.h"
+#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/StyledElement.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/rendering/RenderTheme.h"

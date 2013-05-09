@@ -25,7 +25,7 @@
 #import "HTMLNames.h"
 #import "UserAgentStyleSheets.h"
 #import "core/css/CSSValueList.h"
-#import "core/css/StyleResolver.h"
+#import "core/css/resolver/StyleResolver.h"
 #import "core/dom/Document.h"
 #import "core/dom/Element.h"
 #import "core/fileapi/FileList.h"

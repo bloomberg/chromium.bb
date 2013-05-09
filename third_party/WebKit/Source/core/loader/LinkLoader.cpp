@@ -33,7 +33,7 @@
 #include "core/loader/LinkLoader.h"
 
 #include "core/css/CSSStyleSheet.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/html/LinkRelAttribute.h"

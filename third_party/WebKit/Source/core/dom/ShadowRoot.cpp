@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/dom/ShadowRoot.h"
 
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/Text.h"
 #include "core/editing/markup.h"

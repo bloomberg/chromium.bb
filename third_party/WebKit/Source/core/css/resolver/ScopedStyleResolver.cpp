@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/css/ScopedStyleResolver.h"
+#include "core/css/resolver/ScopedStyleResolver.h"
 
 #include "HTMLNames.h"
 #include "core/css/CSSStyleRule.h"
@@ -38,9 +38,9 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/shadow/ContentDistributor.h"
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationVector.h>
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
+#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 

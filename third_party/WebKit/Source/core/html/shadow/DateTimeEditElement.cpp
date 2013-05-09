@@ -28,7 +28,7 @@
 #include "core/html/shadow/DateTimeEditElement.h"
 
 #include "HTMLNames.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/Text.h"

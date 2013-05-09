@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
@@ -58,7 +58,6 @@
 #include "core/css/Counter.h"
 #include "core/css/DeprecatedStyleBuilder.h"
 #include "core/css/ElementRuleCollector.h"
-#include "core/css/FilterOperationResolver.h"
 #include "core/css/FontFeatureValue.h"
 #include "core/css/FontValue.h"
 #include "core/css/MediaList.h"
@@ -75,11 +74,12 @@
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/StyleSheetList.h"
-#include "core/css/TransformBuilder.h"
-#include "core/css/ViewportStyleResolver.h"
 #include "core/css/WebKitCSSKeyframeRule.h"
 #include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/css/WebKitCSSRegionRule.h"
+#include "core/css/resolver/FilterOperationResolver.h"
+#include "core/css/resolver/TransformBuilder.h"
+#include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
@@ -126,11 +126,11 @@
 #include "core/rendering/style/StylePendingImage.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFontFaceElement.h"
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"
@@ -145,6 +145,7 @@
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/WebKitCSSMixFunctionValue.h"
 #include "core/css/WebKitCSSShaderValue.h"
+#include "core/html/track/WebVTTElement.h"
 #include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
@@ -158,8 +159,6 @@
 #include "core/rendering/style/StyleCustomFilterProgramCache.h"
 #include "core/rendering/style/StylePendingShader.h"
 #include "core/rendering/style/StyleShader.h"
-
-#include "core/html/track/WebVTTElement.h"
 
 using namespace std;
 
@@ -497,7 +496,7 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector)
 
     // In quirks mode, we match rules from the quirks user agent sheet.
     if (document()->inQuirksMode())
-      matchUARules(collector, CSSDefaultStyleSheets::defaultQuirksStyle);
+        matchUARules(collector, CSSDefaultStyleSheets::defaultQuirksStyle);
 
     // If document uses view source styles (in view source mode or in xml viewer mode), then we match rules from the view source style sheet.
     if (document()->isViewSource())
@@ -549,10 +548,10 @@ void StyleResolver::matchAllRules(ElementRuleCollector& collector, bool matchAut
     // Now check our inline style attribute.
     if (matchAuthorAndUserStyles && m_state.styledElement() && m_state.styledElement()->inlineStyle()) {
         // Inline style is immutable as long as there is no CSSOM wrapper.
-      // FIXME: Media control shadow trees seem to have problems with caching.
-      bool isInlineStyleCacheable = !m_state.styledElement()->inlineStyle()->isMutable() && !m_state.styledElement()->isInShadowTree();
-      // FIXME: Constify.
-      collector.addElementStyleProperties(m_state.styledElement()->inlineStyle(), isInlineStyleCacheable);
+        // FIXME: Media control shadow trees seem to have problems with caching.
+        bool isInlineStyleCacheable = !m_state.styledElement()->inlineStyle()->isMutable() && !m_state.styledElement()->isInShadowTree();
+        // FIXME: Constify.
+        collector.addElementStyleProperties(m_state.styledElement()->inlineStyle(), isInlineStyleCacheable);
     }
 
 #if ENABLE(SVG)
@@ -906,7 +905,7 @@ static void setStylesForPaginationMode(Pagination::Mode paginationMode, RenderSt
 {
     if (paginationMode == Pagination::Unpaginated)
         return;
-        
+
     switch (paginationMode) {
     case Pagination::LeftToRightPaginated:
         style->setColumnAxis(HorizontalColumnAxis);
@@ -1101,8 +1100,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     state.initForStyleResolve(document(), element, defaultParent, regionForStyling);
     if (sharingBehavior == AllowStyleSharing && !state.distributedToInsertionPoint()) {
         RenderStyle* sharedStyle = locateSharedStyle();
-        if (sharedStyle)
-        {
+        if (sharedStyle) {
             state.clear();
             return sharedStyle;
         }
@@ -1148,7 +1146,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     if (matchingBehavior == MatchOnlyUserAgentRules)
         matchUARules(collector);
     else
-      matchAllRules(collector, m_matchAuthorAndUserStyles, matchingBehavior != MatchAllRulesExcludingSMIL);
+        matchAllRules(collector, m_matchAuthorAndUserStyles, matchingBehavior != MatchAllRulesExcludingSMIL);
 
     applyMatchedProperties(collector.matchedResult(), element);
 
@@ -1200,7 +1198,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(const RenderStyle* eleme
 
     // Start loading resources referenced by this style.
     loadPendingResources();
-    
+
     // Add all the animating properties to the keyframe.
     if (const StylePropertySet* styleDeclaration = keyframe->properties()) {
         unsigned propertyCount = styleDeclaration->propertyCount();
@@ -1462,7 +1460,7 @@ static EDisplay equivalentBlockDisplay(EDisplay display, bool isFloating, bool s
     return BLOCK;
 }
 
-// CSS requires text-decoration to be reset at each DOM element for tables, 
+// CSS requires text-decoration to be reset at each DOM element for tables,
 // inline blocks, inline tables, run-ins, shadow DOM crossings, floating elements,
 // and absolute or relatively positioned elements.
 static bool doesNotInheritTextDecoration(RenderStyle* style, Element* e)
@@ -1796,7 +1794,7 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
     if (rulesToInclude & UAAndUserCSSRules) {
         // First we match rules from the user agent sheet.
         matchUARules(collector);
-        
+
         // Now we check user sheet rules.
         if (m_matchAuthorAndUserStyles)
             matchUserRules(collector, rulesToInclude & EmptyCSSRules);
@@ -1939,7 +1937,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, bool 
 
 unsigned StyleResolver::computeMatchedPropertiesHash(const MatchedProperties* properties, unsigned size)
 {
-    
+
     return StringHasher::hashMemory(properties, sizeof(MatchedProperties) * size);
 }
 
@@ -2044,7 +2042,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     const MatchedPropertiesCacheItem* cacheItem = 0;
     if (cacheHash && (cacheItem = findFromMatchedPropertiesCache(cacheHash, matchResult))) {
         // We can build up the style by copying non-inherited properties from an earlier style object built using the same exact
-        // style declarations. We then only need to apply the inherited properties, if any, as their values can depend on the 
+        // style declarations. We then only need to apply the inherited properties, if any, as their values can depend on the
         // element context. This is fast and saves memory by reusing the style data structures.
         state.style()->copyNonInheritedFrom(cacheItem->renderStyle.get());
         if (state.parentStyle()->inheritedDataShared(cacheItem->parentRenderStyle.get()) && !isAtShadowBoundary(element)) {
@@ -2057,7 +2055,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
             state.style()->setInsideLink(linkStatus);
             return;
         }
-        applyInheritedOnly = true; 
+        applyInheritedOnly = true;
     }
 
     // First apply all variable definitions, as they may be used during application of later properties.
@@ -2097,10 +2095,10 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
 
     // Now do the normal priority UA properties.
     applyMatchedProperties<LowPriorityProperties>(matchResult, false, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
-    
+
     // Cache our border and background so that we can examine them later.
     state.cacheBorderAndBackground();
-    
+
     // Now do the author and user normal priority properties and all the !important properties.
     applyMatchedProperties<LowPriorityProperties>(matchResult, false, matchResult.ranges.lastUARule + 1, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
     if (RuntimeEnabledFeatures::webAnimationEnabled())
@@ -2108,12 +2106,12 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     applyMatchedProperties<LowPriorityProperties>(matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
-   
+
     // Start loading resources referenced by this style.
     loadPendingResources();
-    
+
     ASSERT(!state.fontDirty());
-    
+
     if (cacheItem || !cacheHash)
         return;
     if (!isCacheableInMatchedPropertiesCache(state.element(), state.style(), state.parentStyle()))
@@ -2900,7 +2898,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     // CSS Text Layout Module Level 3: Vertical writing support
     case CSSPropertyWebkitWritingMode: {
         HANDLE_INHERIT_AND_INITIAL(writingMode, WritingMode);
-        
+
         if (primitiveValue)
             setWritingMode(*primitiveValue);
 
@@ -3390,8 +3388,8 @@ void StyleResolver::checkForGenericFamilyChange(RenderStyle* style, RenderStyle*
             ? static_cast<float>(settings->defaultFixedFontSize()) / settings->defaultFontSize()
             : 1;
         size = parentFont.useFixedDefaultSize() ?
-                childFont.specifiedSize() / fixedScaleFactor :
-                childFont.specifiedSize() * fixedScaleFactor;
+            childFont.specifiedSize() / fixedScaleFactor :
+            childFont.specifiedSize() * fixedScaleFactor;
     }
 
     FontDescription newFontDescription(childFont);
@@ -3485,14 +3483,14 @@ const int totalKeywords = 8;
 // WinIE/Nav4 table for font sizes. Designed to match the legacy font mapping system of HTML.
 static const int quirksFontSizeTable[fontSizeTableMax - fontSizeTableMin + 1][totalKeywords] =
 {
-      { 9,    9,     9,     9,    11,    14,    18,    28 },
-      { 9,    9,     9,    10,    12,    15,    20,    31 },
-      { 9,    9,     9,    11,    13,    17,    22,    34 },
-      { 9,    9,    10,    12,    14,    18,    24,    37 },
-      { 9,    9,    10,    13,    16,    20,    26,    40 }, // fixed font default (13)
-      { 9,    9,    11,    14,    17,    21,    28,    42 },
-      { 9,   10,    12,    15,    17,    23,    30,    45 },
-      { 9,   10,    13,    16,    18,    24,    32,    48 } // proportional font default (16)
+    { 9,    9,     9,     9,    11,    14,    18,    28 },
+    { 9,    9,     9,    10,    12,    15,    20,    31 },
+    { 9,    9,     9,    11,    13,    17,    22,    34 },
+    { 9,    9,    10,    12,    14,    18,    24,    37 },
+    { 9,    9,    10,    13,    16,    20,    26,    40 }, // fixed font default (13)
+    { 9,    9,    11,    14,    17,    21,    28,    42 },
+    { 9,   10,    12,    15,    17,    23,    30,    45 },
+    { 9,   10,    13,    16,    18,    24,    32,    48 } // proportional font default (16)
 };
 // HTML       1      2      3      4      5      6      7
 // CSS  xxs   xs     s      m      l     xl     xxl
@@ -3502,14 +3500,14 @@ static const int quirksFontSizeTable[fontSizeTableMax - fontSizeTableMin + 1][to
 // Strict mode table matches MacIE and Mozilla's settings exactly.
 static const int strictFontSizeTable[fontSizeTableMax - fontSizeTableMin + 1][totalKeywords] =
 {
-      { 9,    9,     9,     9,    11,    14,    18,    27 },
-      { 9,    9,     9,    10,    12,    15,    20,    30 },
-      { 9,    9,    10,    11,    13,    17,    22,    33 },
-      { 9,    9,    10,    12,    14,    18,    24,    36 },
-      { 9,   10,    12,    13,    16,    20,    26,    39 }, // fixed font default (13)
-      { 9,   10,    12,    14,    17,    21,    28,    42 },
-      { 9,   10,    13,    15,    18,    23,    30,    45 },
-      { 9,   10,    13,    16,    18,    24,    32,    48 } // proportional font default (16)
+    { 9,    9,     9,     9,    11,    14,    18,    27 },
+    { 9,    9,     9,    10,    12,    15,    20,    30 },
+    { 9,    9,    10,    11,    13,    17,    22,    33 },
+    { 9,    9,    10,    12,    14,    18,    24,    36 },
+    { 9,   10,    12,    13,    16,    20,    26,    39 }, // fixed font default (13)
+    { 9,   10,    12,    14,    17,    21,    28,    42 },
+    { 9,   10,    13,    15,    18,    23,    30,    45 },
+    { 9,   10,    13,    16,    18,    24,    32,    48 } // proportional font default (16)
 };
 // HTML       1      2      3      4      5      6      7
 // CSS  xxs   xs     s      m      l     xl     xxl
@@ -3782,7 +3780,7 @@ void StyleResolver::loadPendingResources()
 
     // Start loading the shaders referenced by this style.
     loadPendingShaders();
-    
+
 #if ENABLE(SVG)
     // Start loading the SVG Documents referenced by this style.
     loadPendingSVGDocuments();
@@ -3842,7 +3840,7 @@ void StyleResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     // FIXME: move this to a place where it would be called only once?
     info.addMember(CSSDefaultStyleSheets::defaultStyle, "defaultStyle");
     info.addMember(CSSDefaultStyleSheets::defaultQuirksStyle, "defaultQuirksStyle");
-    info.addMember(CSSDefaultStyleSheets::defaultPrintStyle,"defaultPrintStyle");
+    info.addMember(CSSDefaultStyleSheets::defaultPrintStyle, "defaultPrintStyle");
     info.addMember(CSSDefaultStyleSheets::defaultViewSourceStyle, "defaultViewSourceStyle");
 }
 

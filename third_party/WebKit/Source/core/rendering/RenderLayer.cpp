@@ -47,7 +47,7 @@
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentEventQueue.h"
 #include "core/dom/OverflowEvent.h"

@@ -30,8 +30,8 @@
 #include "CSSValueKeywords.h"
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/StyleResolver.h"
-#include "core/css/TransformBuilder.h"
+#include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/TransformBuilder.h"
 #include "core/dom/ExceptionCode.h"
 #include <wtf/MathExtras.h>
 

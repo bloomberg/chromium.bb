@@ -34,7 +34,7 @@
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #endif
 
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>

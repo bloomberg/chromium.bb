@@ -27,11 +27,11 @@
 #ifndef ScopedStyleResolver_h
 #define ScopedStyleResolver_h
 
-#include <wtf/Assertions.h>
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Assertions.h"
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

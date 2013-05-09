@@ -25,7 +25,7 @@
 #include "core/svg/SVGClipPathElement.h"
 
 #include "SVGNames.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"

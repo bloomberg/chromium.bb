@@ -37,7 +37,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaQueryExp.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"

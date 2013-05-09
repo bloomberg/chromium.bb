@@ -31,7 +31,7 @@
 #include <algorithm>
 #include "HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/FrameSelection.h"

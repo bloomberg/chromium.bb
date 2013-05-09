@@ -32,8 +32,8 @@
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaQueryEvaluator.h"
-#include "core/css/StyleResolver.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 
 namespace WebCore {
@@ -126,7 +126,7 @@ void DocumentRuleSets::appendAuthorStyleSheets(unsigned firstNew, const Vector<R
         StyleSheetContents* sheet = cssSheet->contents();
         if (const ContainerNode* scope = ScopedStyleResolver::scopeFor(cssSheet)) {
             // FIXME: Remove a dependency to calling a StyleResolver's member function.
-            // If we can avoid calling resolver->ensureScopeResolver() here, we don't have to include "core/css/StyleResolver.h".
+            // If we can avoid calling resolver->ensureScopeResolver() here, we don't have to include "core/css/resolver/StyleResolver.h".
             // https://bugs.webkit.org/show_bug.cgi?id=108890
             resolver->ensureScopeResolver()->ensureRuleSetFor(scope)->addRulesFromSheet(sheet, *medium, resolver, scope);
             continue;

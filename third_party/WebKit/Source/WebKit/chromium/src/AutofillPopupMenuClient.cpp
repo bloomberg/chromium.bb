@@ -37,7 +37,7 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/css/CSSFontSelector.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"

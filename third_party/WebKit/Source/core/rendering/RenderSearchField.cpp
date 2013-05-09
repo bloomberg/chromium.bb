@@ -27,7 +27,7 @@
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/editing/FrameSelection.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"

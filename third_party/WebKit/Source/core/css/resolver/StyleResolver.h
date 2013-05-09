@@ -22,6 +22,7 @@
 #ifndef StyleResolver_h
 #define StyleResolver_h
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSToStyleMap.h"
 #include "core/css/CSSValueList.h"
@@ -30,26 +31,25 @@
 #include "core/css/MediaQueryExp.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
-#include "core/css/ScopedStyleResolver.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
 #include "core/css/SiblingTraversalStrategies.h"
-#include "core/css/StyleResolverState.h"
-#include "core/css/ViewportStyleResolver.h"
-#include "RuntimeEnabledFeatures.h"
-#include "core/platform/LinkHash.h"
-#include "core/platform/ScrollTypes.h"
-#include "core/rendering/style/RenderStyle.h"
 #if ENABLE(SVG)
 #include "core/css/WebKitCSSSVGDocumentValue.h"
 #endif
+#include "core/css/resolver/ScopedStyleResolver.h"
+#include "core/css/resolver/StyleResolverState.h"
+#include "core/css/resolver/ViewportStyleResolver.h"
+#include "core/platform/LinkHash.h"
+#include "core/platform/ScrollTypes.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/AtomicStringHash.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/Vector.h>
+#include "core/rendering/style/RenderStyle.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicStringHash.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

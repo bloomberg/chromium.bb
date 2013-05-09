@@ -73,7 +73,7 @@
 #include "WebTextInputInfo.h"
 #include "WebViewClient.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/KeyboardEvent.h"

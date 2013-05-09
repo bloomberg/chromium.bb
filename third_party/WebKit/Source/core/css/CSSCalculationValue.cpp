@@ -32,7 +32,7 @@
 #include "core/css/CSSCalculationValue.h"
 
 #include "core/css/CSSValueList.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/platform/Length.h"
 

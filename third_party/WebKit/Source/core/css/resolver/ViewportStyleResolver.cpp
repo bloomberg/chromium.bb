@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/css/ViewportStyleResolver.h"
+#include "core/css/resolver/ViewportStyleResolver.h"
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
 

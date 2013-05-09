@@ -33,7 +33,7 @@
 #include "core/css/CSSParser.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Attr.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"

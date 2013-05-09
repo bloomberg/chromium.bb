@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderScrollbar.h"
 
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/RenderPart.h"

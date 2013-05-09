@@ -27,15 +27,15 @@
  */
 
 #include "config.h"
-#include "core/css/FilterOperationResolver.h"
+#include "core/css/resolver/FilterOperationResolver.h"
 
 #include "core/css/CSSParser.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/ShadowValue.h"
-#include "core/css/TransformBuilder.h"
 #include "core/css/WebKitCSSFilterValue.h"
 #include "core/css/WebKitCSSMixFunctionValue.h"
 #include "core/css/WebKitCSSShaderValue.h"
+#include "core/css/resolver/TransformBuilder.h"
 #include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"

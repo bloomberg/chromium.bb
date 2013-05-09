@@ -35,7 +35,7 @@
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/platform/animation/CSSAnimationData.h"
 #include "core/rendering/style/FillLayer.h"
 

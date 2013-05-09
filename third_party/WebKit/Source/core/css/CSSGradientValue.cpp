@@ -28,7 +28,7 @@
 
 #include "CSSValueKeywords.h"
 #include "core/css/CSSCalculationValue.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/GeneratorGeneratedImage.h"

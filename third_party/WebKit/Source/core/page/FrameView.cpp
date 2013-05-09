@@ -31,7 +31,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/FontLoader.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/OverflowEvent.h"
 #include "core/editing/FrameSelection.h"

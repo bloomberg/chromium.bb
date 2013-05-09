@@ -33,7 +33,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/StyleResolver.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Clipboard.h"
 #include "core/dom/ClipboardEvent.h"
 #include "core/dom/CompositionEvent.h"
