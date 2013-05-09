@@ -62,6 +62,17 @@ class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
     animations_completed_ = completed;
   }
 
+  bool WasAnimationAbortedForProperty(
+      LayerAnimationElement::AnimatableProperty property) const {
+    return ImplicitAnimationObserver::WasAnimationAbortedForProperty(property);
+  }
+
+  bool WasAnimationCompletedForProperty(
+      LayerAnimationElement::AnimatableProperty property) const {
+    return ImplicitAnimationObserver::WasAnimationCompletedForProperty(
+        property);
+  }
+
  private:
   // ImplicitAnimationObserver implementation
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
@@ -1596,6 +1607,8 @@ TEST(LayerAnimatorTest, ImplicitAnimationObservers) {
   base::TimeTicks start_time = animator->last_step_time();
   element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
   EXPECT_TRUE(observer.animations_completed());
+  EXPECT_TRUE(observer.WasAnimationCompletedForProperty(
+      LayerAnimationElement::BRIGHTNESS));
   EXPECT_FLOAT_EQ(0.0f, delegate.GetBrightnessForAnimation());
 }
 
@@ -1622,6 +1635,8 @@ TEST(LayerAnimatorTest, InterruptedImplicitAnimationObservers) {
   // notified immediately.
   animator->SetBrightness(1.0f);
   EXPECT_TRUE(observer.animations_completed());
+  EXPECT_TRUE(observer.WasAnimationCompletedForProperty(
+      LayerAnimationElement::BRIGHTNESS));
   EXPECT_FLOAT_EQ(1.0f, delegate.GetBrightnessForAnimation());
 }
 
@@ -1651,9 +1666,50 @@ TEST(LayerAnimatorTest, ImplicitObserversAtAnimatorDestruction) {
   EXPECT_FALSE(observer_do_not_notify.animations_completed());
   animator = NULL;
   EXPECT_TRUE(observer_notify.animations_completed());
+  EXPECT_TRUE(observer_notify.WasAnimationAbortedForProperty(
+      LayerAnimationElement::BRIGHTNESS));
   EXPECT_FALSE(observer_do_not_notify.animations_completed());
 }
 
+TEST(LayerAnimatorTest, AbortedAnimationStatusInImplicitObservers) {
+  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  animator->set_disable_timer_for_test(true);
+  TestImplicitAnimationObserver observer(false);
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  EXPECT_FALSE(observer.animations_completed());
+  animator->SetBrightness(1.0f);
+
+  {
+    ScopedLayerAnimationSettings settings(animator.get());
+    settings.AddObserver(&observer);
+    animator->SetBrightness(0.0f);
+  }
+  EXPECT_FALSE(observer.animations_completed());
+
+  animator->AbortAllAnimations();
+  EXPECT_TRUE(observer.animations_completed());
+  EXPECT_TRUE(observer.WasAnimationAbortedForProperty(
+      LayerAnimationElement::BRIGHTNESS));
+  EXPECT_FALSE(observer.WasAnimationAbortedForProperty(
+      LayerAnimationElement::OPACITY));
+
+  observer.set_animations_completed(false);
+  {
+    ScopedLayerAnimationSettings settings(animator.get());
+    settings.AddObserver(&observer);
+    animator->SetOpacity(0.0f);
+  }
+  EXPECT_FALSE(observer.animations_completed());
+
+  animator->AbortAllAnimations();
+  EXPECT_TRUE(observer.animations_completed());
+  EXPECT_TRUE(observer.WasAnimationAbortedForProperty(
+      LayerAnimationElement::BRIGHTNESS));
+  EXPECT_TRUE(observer.WasAnimationAbortedForProperty(
+      LayerAnimationElement::OPACITY));
+}
 
 TEST(LayerAnimatorTest, RemoveObserverShouldRemoveFromSequences) {
   scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
@@ -1749,6 +1805,8 @@ TEST(LayerAnimatorTest, ObserverAttachedAfterAnimationStarted) {
   }
 
   EXPECT_TRUE(observer.animations_completed());
+  EXPECT_TRUE(observer.WasAnimationCompletedForProperty(
+                  LayerAnimationElement::BRIGHTNESS));
 }
 
 TEST(LayerAnimatorTest, ObserverDetachedBeforeAnimationFinished) {
@@ -1780,6 +1838,12 @@ TEST(LayerAnimatorTest, ObserverDetachedBeforeAnimationFinished) {
   sequence->RemoveObserver(&observer);
 
   EXPECT_TRUE(observer.animations_completed());
+
+  // The animation didn't complete, and neither was it aborted.
+  EXPECT_FALSE(observer.WasAnimationCompletedForProperty(
+                  LayerAnimationElement::BRIGHTNESS));
+  EXPECT_FALSE(observer.WasAnimationAbortedForProperty(
+                  LayerAnimationElement::BRIGHTNESS));
 }
 
 // This checks that if an animation is deleted due to a callback, that the

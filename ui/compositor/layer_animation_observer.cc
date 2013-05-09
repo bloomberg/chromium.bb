@@ -76,8 +76,19 @@ void ImplicitAnimationObserver::StopObservingImplicitAnimations() {
   StopObserving();
 }
 
+bool ImplicitAnimationObserver::WasAnimationAbortedForProperty(
+    LayerAnimationElement::AnimatableProperty property) const {
+  return AnimationStatusForProperty(property) == ANIMATION_STATUS_ABORTED;
+}
+
+bool ImplicitAnimationObserver::WasAnimationCompletedForProperty(
+    LayerAnimationElement::AnimatableProperty property) const {
+  return AnimationStatusForProperty(property) == ANIMATION_STATUS_COMPLETED;
+}
+
 void ImplicitAnimationObserver::OnLayerAnimationEnded(
     LayerAnimationSequence* sequence) {
+  UpdatePropertyAnimationStatus(sequence, ANIMATION_STATUS_COMPLETED);
   bool destroyed = false;
   destroyed_ = &destroyed;
   sequence->RemoveObserver(this);
@@ -90,6 +101,7 @@ void ImplicitAnimationObserver::OnLayerAnimationEnded(
 
 void ImplicitAnimationObserver::OnLayerAnimationAborted(
     LayerAnimationSequence* sequence) {
+  UpdatePropertyAnimationStatus(sequence, ANIMATION_STATUS_ABORTED);
   sequence->RemoveObserver(this);
   DCHECK(attached_sequences().find(sequence) == attached_sequences().end());
   CheckCompleted();
@@ -118,6 +130,26 @@ void ImplicitAnimationObserver::CheckCompleted() {
     active_ = false;
     OnImplicitAnimationsCompleted();
   }
+}
+
+void ImplicitAnimationObserver::UpdatePropertyAnimationStatus(
+    LayerAnimationSequence* sequence,
+    AnimationStatus status) {
+  const LayerAnimationElement::AnimatableProperties& properties =
+      sequence->properties();
+  for (LayerAnimationElement::AnimatableProperties::const_iterator i =
+           properties.begin(); i != properties.end(); ++i) {
+    property_animation_status_[(*i)] = status;
+  }
+}
+
+ImplicitAnimationObserver::AnimationStatus
+ImplicitAnimationObserver::AnimationStatusForProperty(
+    LayerAnimationElement::AnimatableProperty property) const {
+  PropertyAnimationStatusMap::const_iterator iter =
+      property_animation_status_.find(property);
+  return iter == property_animation_status_.end() ? ANIMATION_STATUS_UNKNOWN :
+      iter->second;
 }
 
 }  // namespace ui
