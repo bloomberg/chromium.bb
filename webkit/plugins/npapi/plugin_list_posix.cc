@@ -218,7 +218,10 @@ void PluginList::GetPluginsInDir(
     // its path to find dependent data files.
     // MakeAbsoluteFilePath calls through to realpath(), which resolves
     // symlinks.
-    base::FilePath orig_path = base::MakeAbsoluteFilePath(path);
+    base::FilePath orig_path = path;
+    path = base::MakeAbsoluteFilePath(path);
+    if (path.empty())
+      path = orig_path;
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "Resolved " << orig_path.value() << " -> " << path.value();
 
