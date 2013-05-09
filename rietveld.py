@@ -82,15 +82,20 @@ class Rietveld(object):
     self.post("/%d/close" % issue, [('xsrf_token', self.xsrf_token())])
 
   def get_description(self, issue):
-    """Returns the issue's description."""
-    return self.get('/%d/description' % issue)
+    """Returns the issue's description.
+
+    Converts any CRLF into LF and strip extraneous whitespace.
+    """
+    return '\n'.join(self.get('/%d/description' % issue).strip().splitlines())
 
   def get_issue_properties(self, issue, messages):
     """Returns all the issue's metadata as a dictionary."""
     url = '/api/%d' % issue
     if messages:
       url += '?messages=true'
-    return json.loads(self.get(url))
+    data = json.loads(self.get(url))
+    data['description'] = '\n'.join(data['description'].strip().splitlines())
+    return data
 
   def get_patchset_properties(self, issue, patchset):
     """Returns the patchset properties."""

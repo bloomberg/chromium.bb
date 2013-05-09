@@ -403,11 +403,12 @@ class CachingRietveldTest(BaseFixture):
     self.assertEqual(expected, self.rietveld.get_description(1))
 
   def test_get_issue_properties(self):
+    data = {'description': 'wow\r\nno CR!', 'messages': 'foo'}
     self.requests = [
-      ('/api/1?messages=true', rietveld.json.dumps({'messages': 'foo'})),
+      ('/api/1?messages=true', rietveld.json.dumps(data)),
     ]
-    expected = {}
-    expected_msg = {'messages': 'foo'}
+    expected = {u'description': u'wow\nno CR!'}
+    expected_msg = {u'description': u'wow\nno CR!', u'messages': u'foo'}
     self.assertEqual(expected, self.rietveld.get_issue_properties(1, False))
     self.assertEqual(expected_msg, self.rietveld.get_issue_properties(1, True))
 
