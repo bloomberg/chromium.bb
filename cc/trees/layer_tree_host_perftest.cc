@@ -27,13 +27,30 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
  public:
   LayerTreeHostPerfTest()
       : num_draws_(0),
-        full_damage_each_frame_(false) {
+        full_damage_each_frame_(false),
+        animation_driven_drawing_(false),
+        measure_commit_cost_(false) {
     fake_content_layer_client_.set_paint_all_opaque(true);
   }
 
   virtual void BeginTest() OVERRIDE {
     BuildTree();
     PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void Animate(base::TimeTicks monotonic_time) OVERRIDE {
+    if (animation_driven_drawing_ && !TestEnded())
+      layer_tree_host()->SetNeedsAnimate();
+  }
+
+  virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    if (measure_commit_cost_)
+      commit_start_time_ = base::TimeTicks::HighResNow();
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    if (measure_commit_cost_ && num_draws_ >= kWarmupRuns)
+      total_commit_time_ += base::TimeTicks::HighResNow() - commit_start_time_;
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
@@ -49,7 +66,8 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
         return;
       }
     }
-    impl->SetNeedsRedraw();
+    if (!animation_driven_drawing_)
+      impl->SetNeedsRedraw();
     if (full_damage_each_frame_)
       impl->SetFullRootLayerDamage();
   }
@@ -61,6 +79,11 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
     printf("*RESULT %s: frames= %.2f runs/s\n",
            test_name_.c_str(),
            num_draws_ / elapsed_.InSecondsF());
+    if (measure_commit_cost_) {
+      printf("*RESULT %s: commit_cost= %.2f ms/commit\n",
+             test_name_.c_str(),
+             total_commit_time_.InMillisecondsF() / num_draws_);
+    }
   }
 
  protected:
@@ -70,6 +93,11 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
   base::TimeDelta elapsed_;
   FakeContentLayerClient fake_content_layer_client_;
   bool full_damage_each_frame_;
+  bool animation_driven_drawing_;
+
+  bool measure_commit_cost_;
+  base::TimeTicks commit_start_time_;
+  base::TimeDelta total_commit_time_;
 };
 
 
@@ -139,6 +167,25 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
 TEST_F(ScrollingLayerTreePerfTest, LongScrollablePage) {
   ReadTestFile("long_scrollable_page");
   RunTest(false);
+}
+
+// Simulates impl-side painting.
+class ImplSidePaintingPerfTest : public LayerTreeHostPerfTestJsonReader {
+ public:
+  ImplSidePaintingPerfTest()
+      : LayerTreeHostPerfTestJsonReader() {}
+
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->impl_side_painting = true;
+  }
+};
+
+// Simulates a page with several large, transformed and animated layers.
+TEST_F(ImplSidePaintingPerfTest, HeavyPage) {
+  animation_driven_drawing_ = true;
+  measure_commit_cost_ = true;
+  ReadTestFile("heavy_layer_tree");
+  RunTest(true);
 }
 
 }  // namespace

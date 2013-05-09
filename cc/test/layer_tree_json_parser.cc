@@ -9,6 +9,7 @@
 #include "cc/layers/content_layer.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/nine_patch_layer.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
 
 namespace cc {
@@ -62,6 +63,8 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
         gfx::Rect(aperture_x, aperture_y, aperture_width, aperture_height));
 
     new_layer = nine_patch_layer;
+  } else if (layer_type == "PictureLayer") {
+    new_layer = PictureLayer::Create(content_client);
   } else {  // Type "Layer" or "unknown"
     new_layer = Layer::Create();
   }
