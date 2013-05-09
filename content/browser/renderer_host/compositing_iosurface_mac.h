@@ -224,8 +224,9 @@ class CompositingIOSurfaceMac {
 
   CompositingIOSurfaceMac(
       IOSurfaceSupport* io_surface_support,
-      scoped_refptr<CompositingIOSurfaceContext> context,
-      CVDisplayLinkRef display_link);
+      scoped_refptr<CompositingIOSurfaceContext> context);
+
+  void SetupCVDisplayLink();
 
   // If this IOSurface has moved to a different window, use that window's
   // GL context (if multiple visible windows are using the same GL context

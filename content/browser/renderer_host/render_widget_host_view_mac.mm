@@ -1156,6 +1156,14 @@ void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
                 1000000 * static_cast<int64>(numerator) / denominator;
             render_widget_host_->UpdateVSyncParameters(
                 timebase, base::TimeDelta::FromMicroseconds(interval_micros));
+          } else {
+            // Pass reasonable default values if unable to get the actual ones
+            // (e.g. CVDisplayLink failed to return them because the display is
+            // in sleep mode).
+            static const int64 kOneOverSixtyMicroseconds = 16669;
+            render_widget_host_->UpdateVSyncParameters(
+                base::TimeTicks::Now(),
+                base::TimeDelta::FromMicroseconds(kOneOverSixtyMicroseconds));
           }
         }
       }
