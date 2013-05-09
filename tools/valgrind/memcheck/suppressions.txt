@@ -7102,21 +7102,6 @@
    fun:_ZN3ash4test53FocusCyclerTest_CycleFocusThroughWindowWithPanes_Test8TestBodyEv
 }
 {
-   bug_236862_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN5drive4util19DriveFileReaderTest5SetUpEv
-}
-{
-   bug_236862_b
-   Memcheck:Leak
-   ...
-   fun:_ZN4base26PostTaskAndReplyWithResultIiiEEbPNS_10TaskRunnerERKN15tracked_objects8LocationERKNS_8CallbackIFT_vEEERKNS7_IFvT0_EEE
-   fun:_ZN5drive4util10FileReader4OpenERKN4base8FilePathElRKNS2_8CallbackIFviEEE
-   fun:_ZN5drive4util*DriveFileReaderTest_*_Test8TestBodyEv
-}
-{
    bug_238170a
    Memcheck:Uninitialized
    fun:_ZN7WebCore20ElementRuleCollector20collectMatchingRulesERKNS_12MatchRequestERNS_13StyleResolver9RuleRangeE
