@@ -1192,6 +1192,8 @@
             'page/Screen.cpp',
             'page/Screen.h',
             'page/SecurityOrigin.cpp',
+            'page/SecurityOrigin.h',
+            'page/SecurityOriginCache.h',
             'page/SecurityPolicy.cpp',
             'page/Settings.cpp',
             'page/SpatialNavigation.cpp',

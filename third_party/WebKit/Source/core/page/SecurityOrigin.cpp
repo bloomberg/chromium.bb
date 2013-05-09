@@ -29,9 +29,9 @@
 #include "config.h"
 #include "core/page/SecurityOrigin.h"
 
-#include "core/fileapi/ThreadableBlobRegistry.h"
+#include "core/page/SecurityOriginCache.h"
 #include "core/page/SecurityPolicy.h"
-#include "core/platform/KURL.h"
+#include "origin/KURL.h"
 #include "origin/SchemeRegistry.h"
 #include "wtf/HexNumber.h"
 #include "wtf/MainThread.h"
@@ -42,6 +42,8 @@ namespace WebCore {
 
 const int InvalidPort = 0;
 const int MaxAllowedPort = 65535;
+
+static SecurityOriginCache* s_originCache = 0;
 
 static bool schemeRequiresAuthority(const KURL& url)
 {
@@ -122,6 +124,12 @@ static String encodeForFileName(const String& inputStr)
     return String(buffer.data(), p - buffer.data());
 }
 
+static SecurityOrigin* cachedOrigin(const KURL& url)
+{
+    if (s_originCache)
+        return s_originCache->cachedOrigin(url);
+}
+
 bool SecurityOrigin::shouldUseInnerURL(const KURL& url)
 {
     // FIXME: Blob URLs don't have inner URLs. Their form is "blob:<inner-origin>/<UUID>", so treating the part after "blob:" as a URL is incorrect.
@@ -144,11 +152,9 @@ KURL SecurityOrigin::extractInnerURL(const KURL& url)
     return KURL(ParsedURLString, decodeURLEscapeSequences(url.path()));
 }
 
-static PassRefPtr<SecurityOrigin> getCachedOrigin(const KURL& url)
+void SecurityOrigin::setCache(SecurityOriginCache* originCache)
 {
-    if (url.protocolIs("blob"))
-        return ThreadableBlobRegistry::getCachedOrigin(url);
-    return 0;
+    s_originCache = originCache;
 }
 
 static bool shouldTreatAsUniqueOrigin(const KURL& url)
@@ -233,9 +239,8 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
 
 PassRefPtr<SecurityOrigin> SecurityOrigin::create(const KURL& url)
 {
-    RefPtr<SecurityOrigin> cachedOrigin = getCachedOrigin(url);
-    if (cachedOrigin.get())
-        return cachedOrigin;
+    if (RefPtr<SecurityOrigin> origin = cachedOrigin(url))
+        return origin.release();
 
     if (shouldTreatAsUniqueOrigin(url)) {
         RefPtr<SecurityOrigin> origin = adoptRef(new SecurityOrigin());
@@ -351,7 +356,7 @@ bool SecurityOrigin::canRequest(const KURL& url) const
     if (m_universalAccess)
         return true;
 
-    if (getCachedOrigin(url) == this)
+    if (cachedOrigin(url) == this)
         return true;
 
     if (isUnique())

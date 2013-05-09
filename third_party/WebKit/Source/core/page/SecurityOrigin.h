@@ -29,12 +29,13 @@
 #ifndef SecurityOrigin_h
 #define SecurityOrigin_h
 
-#include <wtf/ThreadSafeRefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/ThreadSafeRefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class KURL;
+class SecurityOriginCache;
 
 class SecurityOrigin : public ThreadSafeRefCounted<SecurityOrigin> {
 public:
@@ -50,6 +51,8 @@ public:
     static PassRefPtr<SecurityOrigin> createFromDatabaseIdentifier(const String&);
     static PassRefPtr<SecurityOrigin> createFromString(const String&);
     static PassRefPtr<SecurityOrigin> create(const String& protocol, const String& host, int port);
+
+    static void setCache(SecurityOriginCache*);
 
     // Some URL schemes use nested URLs for their security context. For example,
     // filesystem URLs look like the following:

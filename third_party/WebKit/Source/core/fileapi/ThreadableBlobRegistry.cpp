@@ -29,22 +29,28 @@
  */
 
 #include "config.h"
-
 #include "core/fileapi/ThreadableBlobRegistry.h"
 
 #include "core/fileapi/BlobURL.h"
 #include "core/page/SecurityOrigin.h"
+#include "core/page/SecurityOriginCache.h"
 #include "core/platform/network/BlobData.h"
 #include "core/platform/network/BlobRegistry.h"
-#include <wtf/HashMap.h>
-#include <wtf/MainThread.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/ThreadSpecific.h>
+#include "wtf/HashMap.h"
+#include "wtf/MainThread.h"
+#include "wtf/RefPtr.h"
+#include "wtf/ThreadSpecific.h"
+#include "wtf/text/StringHash.h"
 
 using WTF::ThreadSpecific;
 
 namespace WebCore {
+
+class BlobOriginCache : public SecurityOriginCache {
+public:
+    BlobOriginCache();
+    virtual SecurityOrigin* cachedOrigin(const KURL&) OVERRIDE;
+};
 
 struct BlobRegistryContext {
     WTF_MAKE_FAST_ALLOCATED;
@@ -72,10 +78,13 @@ public:
     OwnPtr<BlobData> blobData;
 };
 
-typedef HashMap<String, RefPtr<SecurityOrigin> > BlobUrlOriginMap;
-static ThreadSpecific<BlobUrlOriginMap>& originMap()
+typedef HashMap<String, RefPtr<SecurityOrigin> > BlobURLOriginMap;
+static ThreadSpecific<BlobURLOriginMap>& originMap()
 {
-    AtomicallyInitializedStatic(ThreadSpecific<BlobUrlOriginMap>*, map = new ThreadSpecific<BlobUrlOriginMap>);
+    // We want to create the BlobOriginCache exactly once because it is shared by all the threads.
+    AtomicallyInitializedStatic(BlobOriginCache*, cache = new BlobOriginCache);
+
+    AtomicallyInitializedStatic(ThreadSpecific<BlobURLOriginMap>*, map = new ThreadSpecific<BlobURLOriginMap>);
     return *map;
 }
 
@@ -103,7 +112,9 @@ static void registerBlobURLFromTask(void* context)
 
 void ThreadableBlobRegistry::registerBlobURL(SecurityOrigin* origin, const KURL& url, const KURL& srcURL)
 {
-    // If the blob URL contains null origin, as in the context with unique security origin or file URL, save the mapping between url and origin so that the origin can be retrived when doing security origin check.
+    // If the blob URL contains null origin, as in the context with unique
+    // security origin or file URL, save the mapping between url and origin so
+    // that the origin can be retrived when doing security origin check.
     if (origin && BlobURL::getOrigin(url) == "null")
         originMap()->add(url.string(), origin);
 
@@ -134,7 +145,12 @@ void ThreadableBlobRegistry::unregisterBlobURL(const KURL& url)
     }
 }
 
-PassRefPtr<SecurityOrigin> ThreadableBlobRegistry::getCachedOrigin(const KURL& url)
+BlobOriginCache::BlobOriginCache()
+{
+    SecurityOrigin::setCache(this);
+}
+
+SecurityOrigin* BlobOriginCache::cachedOrigin(const KURL& url)
 {
     return originMap()->get(url.string());
 }
