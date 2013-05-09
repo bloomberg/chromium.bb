@@ -572,6 +572,14 @@ bool RenderWidget::ForceCompositingModeEnabled() {
 
 scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+#if defined(OS_ANDROID)
+  if (command_line.HasSwitch(switches::kEnableSynchronousRendererCompositor)) {
+    return scoped_ptr<cc::OutputSurface>(
+        new SynchronousCompositorOutputSurface(routing_id()));
+  }
+#endif
+
   if (command_line.HasSwitch(switches::kEnableSoftwareCompositingGLAdapter)) {
       return scoped_ptr<cc::OutputSurface>(
           new CompositorOutputSurface(routing_id(), NULL,
@@ -596,16 +604,6 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
       CreateGraphicsContext3D(attributes);
   if (!context)
     return scoped_ptr<cc::OutputSurface>();
-
-#if defined(OS_ANDROID)
-  if (command_line.HasSwitch(switches::kEnableSynchronousRendererCompositor)) {
-    // TODO(joth): Move above the |context| creation step above when the
-    // SynchronousCompositor no longer depends on externally created context.
-    return scoped_ptr<cc::OutputSurface>(
-        new SynchronousCompositorOutputSurface(routing_id(),
-                                               context));
-  }
-#endif
 
   bool composite_to_mailbox =
       command_line.HasSwitch(cc::switches::kCompositeToMailbox) &&

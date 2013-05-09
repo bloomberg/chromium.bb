@@ -5,7 +5,14 @@
 #ifndef CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSTIOR_
 #define CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_
 
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
+
 class SkCanvas;
+
+namespace gfx {
+class Transform;
+};
 
 namespace content {
 
@@ -25,6 +32,13 @@ class SynchronousCompositor {
   // "On demand" SW draw, into the supplied canvas (observing the transform
   // and clip set there-in).
   virtual bool DemandDrawSw(SkCanvas* canvas) = 0;
+
+  // "On demand" hardware draw. The content is first clipped to |damage_area|,
+  // then transformed through |transform|, and finally clipped to |view_size|.
+  virtual bool DemandDrawHw(
+      gfx::Size view_size,
+      const gfx::Transform& transform,
+      gfx::Rect damage_area) = 0;
 
  protected:
   virtual ~SynchronousCompositor() {}

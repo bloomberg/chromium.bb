@@ -17,6 +17,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -26,8 +27,14 @@ namespace android_webview {
 
 namespace {
 
+// TODO(boliu): Remove these global Allows once the underlying issues
+// are resolved. See AwMainDelegate::RunProcess below.
+
 base::LazyInstance<scoped_ptr<ScopedAllowWaitForLegacyWebViewApi> >
     g_allow_wait_in_ui_thread = LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<scoped_ptr<base::ThreadRestrictions::ScopedAllowIO> >
+    g_allow_io_in_ui_thread = LAZY_INSTANCE_INITIALIZER;
 
 bool UIAndRendererCompositorThreadsNotMerged() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
@@ -76,10 +83,16 @@ int AwMainDelegate::RunProcess(
     int exit_code = browser_runner_->Initialize(main_function_params);
     DCHECK(exit_code < 0);
 
-    // This is temporary until we remove the browser compositor
     if (!UIAndRendererCompositorThreadsNotMerged()) {
+      // This is temporary until we remove the browser compositor
       g_allow_wait_in_ui_thread.Get().reset(
-          new ScopedAllowWaitForLegacyWebViewApi());
+          new ScopedAllowWaitForLegacyWebViewApi);
+
+      // TODO(boliu): This is a HUGE hack to work around the fact that
+      // cc::WorkerPool joins on worker threads on the UI thread.
+      // See crbug.com/239423.
+      g_allow_io_in_ui_thread.Get().reset(
+          new base::ThreadRestrictions::ScopedAllowIO);
     }
 
     // Return 0 so that we do NOT trigger the default behavior. On Android, the

@@ -37,18 +37,13 @@ class BrowserViewRendererImpl
       public ViewRendererHost::Client,
       public content::Compositor::Client {
  public:
-  static BrowserViewRendererImpl* Create(BrowserViewRenderer::Client* client,
+  static BrowserViewRenderer* Create(BrowserViewRenderer::Client* client,
                                          JavaHelper* java_helper);
   static BrowserViewRendererImpl* FromWebContents(
       content::WebContents* contents);
-  static BrowserViewRendererImpl* FromId(int render_process_id,
-                                         int render_view_id);
   static void SetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table);
 
   virtual ~BrowserViewRendererImpl();
-
-  virtual void BindSynchronousCompositor(
-      content::SynchronousCompositor* compositor);
 
   // BrowserViewRenderer implementation.
   virtual void SetContents(
@@ -72,9 +67,6 @@ class BrowserViewRendererImpl
 
   // ViewRendererHost::Client implementation.
   virtual void OnPictureUpdated(int process_id, int render_view_id) OVERRIDE;
-  virtual void OnPageScaleFactorChanged(int process_id,
-                                        int render_view_id,
-                                        float page_scale_factor) OVERRIDE;
 
  protected:
   BrowserViewRendererImpl(BrowserViewRenderer::Client* client,

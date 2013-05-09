@@ -20,14 +20,25 @@ struct LoadCommittedDetails;
 
 namespace android_webview {
 
+class AwRenderViewHostExtClient {
+ public:
+  // Called when the RenderView page scale changes.
+  virtual void OnPageScaleFactorChanged(float page_scale_factor) = 0;
+
+ protected:
+  virtual ~AwRenderViewHostExtClient() {}
+};
+
 // Provides RenderViewHost wrapper functionality for sending WebView-specific
 // IPC messages to the renderer and from there to WebKit.
 class AwRenderViewHostExt : public content::WebContentsObserver,
                             public base::NonThreadSafe {
  public:
+
   // To send receive messages to a RenderView we take the WebContents instance,
   // as it internally handles RenderViewHost instances changing underneath us.
-  AwRenderViewHostExt(content::WebContents* contents);
+  AwRenderViewHostExt(
+      AwRenderViewHostExtClient* client, content::WebContents* contents);
   virtual ~AwRenderViewHostExt();
 
   // |result| will be invoked with the outcome of the request.
@@ -70,9 +81,12 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
 
   void OnDocumentHasImagesResponse(int msg_id, bool has_images);
   void OnUpdateHitTestData(const AwHitTestData& hit_test_data);
-  void OnPictureUpdated();
+  void OnDidActivateAcceleratedCompositing(int input_handler_id);
+  void OnPageScaleFactorChanged(float page_scale_factor);
 
   bool IsRenderViewReady() const;
+
+  AwRenderViewHostExtClient* client_;
 
   std::map<int, DocumentHasImagesResult> pending_document_has_images_requests_;
 

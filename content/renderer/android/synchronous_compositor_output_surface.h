@@ -28,25 +28,33 @@ class SynchronousCompositorOutputSurface
     : NON_EXPORTED_BASE(public cc::OutputSurface),
       NON_EXPORTED_BASE(public SynchronousCompositor) {
  public:
-  SynchronousCompositorOutputSurface(
-      int32 routing_id,
-      WebGraphicsContext3DCommandBufferImpl* context);
+  explicit SynchronousCompositorOutputSurface(int32 routing_id);
   virtual ~SynchronousCompositorOutputSurface();
 
   // OutputSurface.
   virtual bool BindToClient(cc::OutputSurfaceClient* surface_client) OVERRIDE;
+  virtual void Reshape(gfx::Size size) OVERRIDE;
   virtual void SendFrameToParentCompositor(cc::CompositorFrame* frame) OVERRIDE;
+  virtual void EnableVSyncNotification(bool enable_vsync) OVERRIDE;
+  virtual void SwapBuffers(const cc::LatencyInfo& info) OVERRIDE;
 
   // SynchronousCompositor.
   virtual void SetClient(SynchronousCompositorClient* compositor_client)
       OVERRIDE;
   virtual bool DemandDrawSw(SkCanvas* canvas) OVERRIDE;
+  virtual bool DemandDrawHw(
+      gfx::Size view_size,
+      const gfx::Transform& transform,
+      gfx::Rect clip) OVERRIDE;
 
  private:
+  void UpdateCompositorClientSettings();
   bool CalledOnValidThread() const;
 
   SynchronousCompositorClient* compositor_client_;
   int routing_id_;
+  bool vsync_enabled_;
+  bool did_swap_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorOutputSurface);
 };

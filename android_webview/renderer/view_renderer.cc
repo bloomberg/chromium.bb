@@ -4,8 +4,10 @@
 
 #include "android_webview/renderer/view_renderer.h"
 
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/renderer_picture_map.h"
+#include "base/command_line.h"
 #include "content/public/renderer/render_view.h"
 #include "skia/ext/refptr.h"
 
@@ -13,7 +15,10 @@ namespace android_webview {
 
 // static
 void ViewRenderer::RenderViewCreated(content::RenderView* render_view) {
-  new ViewRenderer(render_view);  // |render_view| takes ownership.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNoMergeUIAndRendererCompositorThreads)) {
+    new ViewRenderer(render_view);  // |render_view| takes ownership.
+  }
 }
 
 ViewRenderer::ViewRenderer(content::RenderView* render_view)
@@ -38,11 +43,6 @@ bool ViewRenderer::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void ViewRenderer::DidActivateCompositor(int input_handler_identifier) {
-  Send(new AwViewHostMsg_DidActivateAcceleratedCompositing(
-           routing_id(), input_handler_identifier));
 }
 
 void ViewRenderer::DidCommitCompositorFrame() {

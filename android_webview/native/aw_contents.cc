@@ -9,7 +9,6 @@
 #include "android_webview/browser/browser_view_renderer_impl.h"
 #include "android_webview/browser/gpu_memory_buffer_impl.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
-#include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
@@ -145,7 +144,8 @@ void AwContents::SetWebContents(content::WebContents* web_contents) {
   AwContentsClientBridgeBase::Associate(web_contents_.get(),
                                         contents_client_bridge_.get());
   web_contents_->SetDelegate(web_contents_delegate_.get());
-  render_view_host_ext_.reset(new AwRenderViewHostExt(web_contents_.get()));
+  render_view_host_ext_.reset(
+      new AwRenderViewHostExt(this, web_contents_.get()));
 }
 
 void AwContents::SetWebContents(JNIEnv* env, jobject obj, jint new_wc) {

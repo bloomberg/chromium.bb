@@ -6,21 +6,28 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/common/render_view_messages.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositorInputHandler.h"
 
 namespace android_webview {
 
-AwRenderViewHostExt::AwRenderViewHostExt(content::WebContents* contents)
+AwRenderViewHostExt::AwRenderViewHostExt(
+    AwRenderViewHostExtClient* client, content::WebContents* contents)
     : content::WebContentsObserver(contents),
+      client_(client),
       has_new_hit_test_data_(false) {
+  DCHECK(client_);
 }
 
 AwRenderViewHostExt::~AwRenderViewHostExt() {}
@@ -105,6 +112,10 @@ bool AwRenderViewHostExt::OnMessageReceived(const IPC::Message& message) {
                         OnDocumentHasImagesResponse)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_UpdateHitTestData,
                         OnUpdateHitTestData)
+    IPC_MESSAGE_HANDLER(AwViewHostMsg_DidActivateAcceleratedCompositing,
+                        OnDidActivateAcceleratedCompositing)
+    IPC_MESSAGE_HANDLER(AwViewHostMsg_PageScaleFactorChanged,
+                        OnPageScaleFactorChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -129,6 +140,31 @@ void AwRenderViewHostExt::OnUpdateHitTestData(
   DCHECK(CalledOnValidThread());
   last_hit_test_data_ = hit_test_data;
   has_new_hit_test_data_ = true;
+}
+
+void AwRenderViewHostExt::OnDidActivateAcceleratedCompositing(
+    int input_handler_id) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNoMergeUIAndRendererCompositorThreads)) {
+    return;
+  }
+
+  // This call is only meaningful and thread-safe when the UI and renderer
+  // compositor share the same thread.  Any other case will likely yield
+  // terrible, terrible damage.
+  WebKit::WebCompositorInputHandler* input_handler =
+      WebKit::WebCompositorInputHandler::fromIdentifier(input_handler_id);
+  if (!input_handler)
+    return;
+
+  content::ContentViewCore* content_view_core
+      = content::ContentViewCore::FromWebContents(web_contents());
+  if (content_view_core)
+    content_view_core->SetInputHandler(input_handler);
+}
+
+void AwRenderViewHostExt::OnPageScaleFactorChanged(float page_scale_factor) {
+  client_->OnPageScaleFactorChanged(page_scale_factor);
 }
 
 }  // namespace android_webview

@@ -118,7 +118,7 @@ class BrowserViewRendererImpl::UserData : public content::WebContents::Data {
 };
 
 // static
-BrowserViewRendererImpl* BrowserViewRendererImpl::Create(
+BrowserViewRenderer* BrowserViewRendererImpl::Create(
     BrowserViewRenderer::Client* client,
     JavaHelper* java_helper) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -133,15 +133,6 @@ BrowserViewRendererImpl* BrowserViewRendererImpl::Create(
 BrowserViewRendererImpl* BrowserViewRendererImpl::FromWebContents(
     content::WebContents* contents) {
   return UserData::GetInstance(contents);
-}
-
-// static
-BrowserViewRendererImpl* BrowserViewRendererImpl::FromId(int render_process_id,
-                                                         int render_view_id) {
-  const content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-  if (!rvh) return NULL;
-  return FromWebContents(content::WebContents::FromRenderViewHost(rvh));
 }
 
 BrowserViewRendererImpl::BrowserViewRendererImpl(
@@ -180,11 +171,6 @@ BrowserViewRendererImpl::BrowserViewRendererImpl(
 
 BrowserViewRendererImpl::~BrowserViewRendererImpl() {
   SetContents(NULL);
-}
-
-void BrowserViewRendererImpl::BindSynchronousCompositor(
-    content::SynchronousCompositor* compositor) {
-  NOTREACHED();  // Must be handled by the InProcessViewRenderer
 }
 
 // static
@@ -491,17 +477,6 @@ void BrowserViewRendererImpl::OnPictureUpdated(int process_id,
 
   // TODO(mkosiba): Remove when invalidation path is re-implemented.
   Invalidate();
-}
-
-void BrowserViewRendererImpl::OnPageScaleFactorChanged(
-    int process_id,
-    int render_view_id,
-    float page_scale_factor) {
-  CHECK_EQ(web_contents_->GetRenderProcessHost()->GetID(), process_id);
-  if (render_view_id != web_contents_->GetRoutingID())
-    return;
-
-  client_->OnPageScaleFactorChanged(page_scale_factor);
 }
 
 void BrowserViewRendererImpl::SetCompositorVisibility(bool visible) {

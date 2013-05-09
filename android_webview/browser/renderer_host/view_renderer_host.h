@@ -18,9 +18,6 @@ class ViewRendererHost : public content::WebContentsObserver,
   class Client {
    public:
     virtual void OnPictureUpdated(int process_id, int render_view_id) = 0;
-    virtual void OnPageScaleFactorChanged(int process_id,
-                                          int render_view_id,
-                                          float page_scale_factor) = 0;
 
    protected:
     virtual ~Client() {}
@@ -45,8 +42,6 @@ class ViewRendererHost : public content::WebContentsObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnPictureUpdated();
-  void OnDidActivateAcceleratedCompositing(int input_handler_id);
-  void OnPageScaleFactorChanged(float page_scale_factor);
 
   bool IsRenderViewReady() const;
 

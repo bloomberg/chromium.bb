@@ -17,7 +17,12 @@ class SynchronousCompositorClient {
   // SynchronousCompositor::SetClient(NULL) to release the back pointer.
   virtual void DidDestroyCompositor(SynchronousCompositor* compositor) = 0;
 
-  // TODO(joth): Add scroll getters and setters, and invalidations.
+  // TODO(joth): Add scroll getters and setters.
+
+  // When true, should periodically call
+  // SynchronousCompositorOutputSurface::DemandDrawHw. Note that this value
+  // can change inside DemandDrawHw call.
+  virtual void SetContinuousInvalidate(bool invalidate) = 0;
 
  protected:
   virtual ~SynchronousCompositorClient() {}

@@ -38,6 +38,7 @@ class AwWebContentsDelegate;
 // level of indirection provided by the AwContentsContainer abstraction.
 class AwContents : public FindHelper::Listener,
                    public IconHelper::Listener,
+                   public AwRenderViewHostExtClient,
                    public BrowserViewRenderer::Client {
  public:
   // Returns the AwContents instance associated with |web_contents|, or NULL.
@@ -132,11 +133,13 @@ class AwContents : public FindHelper::Listener,
   virtual void OnReceivedTouchIconUrl(const std::string& url,
                                       const bool precomposed) OVERRIDE;
 
+  // AwRenderViewHostExtClient implementation.
+  virtual void OnPageScaleFactorChanged(float page_scale_factor) OVERRIDE;
+
   // BrowserViewRenderer::Client implementation.
   virtual void Invalidate() OVERRIDE;
   virtual void OnNewPicture() OVERRIDE;
   virtual gfx::Point GetLocationOnScreen() OVERRIDE;
-  virtual void OnPageScaleFactorChanged(float page_scale_factor) OVERRIDE;
 
   void ClearCache(JNIEnv* env, jobject obj, jboolean include_disk_files);
   void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);

@@ -4,7 +4,7 @@
 
 #include "android_webview/browser/in_process_renderer/in_process_renderer_client.h"
 
-#include "android_webview/browser/browser_view_renderer_impl.h"
+#include "android_webview/browser/in_process_renderer/in_process_view_renderer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -39,8 +39,8 @@ MessageLoop* InProcessRendererClient::OverrideCompositorMessageLoop() const {
 void InProcessRendererClient::DidCreateSynchronousCompositor(
     int render_view_id,
     content::SynchronousCompositor* compositor) {
-  BrowserViewRendererImpl* view_renderer =
-      BrowserViewRendererImpl::FromId(GetInProcessRendererId(), render_view_id);
+  InProcessViewRenderer* view_renderer =
+      InProcessViewRenderer::FromId(GetInProcessRendererId(), render_view_id);
   if (view_renderer)
     view_renderer->BindSynchronousCompositor(compositor);
 }
