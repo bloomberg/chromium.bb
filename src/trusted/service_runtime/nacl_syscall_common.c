@@ -49,6 +49,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_test_crash.h"
+#include "native_client/src/trusted/service_runtime/internal_errno.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
@@ -1707,10 +1708,16 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
      * virtual addresses.
      */
     if (NaClPtrIsNegErrno(&map_result)) {
-      NaClLog(LOG_FATAL,
-              ("NaClSysMmap: Map failed, but we"
-               " cannot handle address space move, error %"NACL_PRIuS"\n"),
-              (size_t) map_result);
+      if ((uintptr_t) -NACL_ABI_E_MOVE_ADDRESS_SPACE == map_result) {
+        NaClLog(LOG_FATAL,
+                ("NaClSysMmap: Map failed, but we"
+                 " cannot handle address space move, error %"NACL_PRIuS"\n"),
+                (size_t) map_result);
+      }
+      /*
+       * Propagate all other errors to user code.
+       */
+      goto cleanup;
     }
     if (map_result != sysaddr) {
       NaClLog(LOG_FATAL, "system mmap did not honor NACL_ABI_MAP_FIXED\n");

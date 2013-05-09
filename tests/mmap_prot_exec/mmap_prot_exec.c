@@ -433,6 +433,32 @@ int map_private_test_ro(int d, size_t file_size, void *test_specifics) {
 }
 
 /*
+ * Try to map with PROT_READ | PROT_WRITE but MAP_SHARED a read-only file.
+ * Check that it fails, with errno set to EACCES.
+ */
+int map_rw_ronly_file_test(int d, size_t file_size, void *test_specifics) {
+  void *view;
+
+  UNREFERENCED_PARAMETER(test_specifics);
+  errno = 0;
+  view = mmap(NULL, file_size, PROT_READ | PROT_WRITE, MAP_SHARED, d,
+              /* offset */ 0);
+  if (MAP_FAILED != view) {
+    fprintf(stderr,
+            "map_rw_ronly_file_test: mmap of read-only file did not fail\n");
+    return 1;
+  }
+  if (errno != EACCES) {
+    fprintf(stderr,
+            "map_rw_ronly_file_test: failed mmap but errno is %d,"
+            " expected %d\n",
+            errno, EACCES);
+    return 1;
+  }
+  return 0;
+}
+
+/*
  * Write out num_bytes (a multiple of 4) bytes of data.  If
  * !halt_fill, ASCII NUL is used; otherwise NACL_HALT_WORD is used.
  */
@@ -656,6 +682,17 @@ struct TestParams tests[] = {
     .test_name = "Shared Mapping Test",
     .test_func = map_shared_test,
     .open_flags = (O_RDWR | O_CREAT),
+    .file_mode = 0666,
+    .file_size = NUM_FILE_BYTES,
+    .map_size = NUM_FILE_BYTES,
+    .halt_fill = FALSE,
+    .test_data_start = NULL,
+    .test_data_size = 0,
+    .test_specifics = NULL,
+  }, {
+    .test_name = "PROT_READ | PROT_WRITE, MAP_SHARED, with O_RDONLY descriptor",
+    .test_func = map_rw_ronly_file_test,
+    .open_flags = O_RDONLY,
     .file_mode = 0666,
     .file_size = NUM_FILE_BYTES,
     .map_size = NUM_FILE_BYTES,
