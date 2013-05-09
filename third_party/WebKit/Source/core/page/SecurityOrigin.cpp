@@ -128,6 +128,7 @@ static SecurityOrigin* cachedOrigin(const KURL& url)
 {
     if (s_originCache)
         return s_originCache->cachedOrigin(url);
+    return 0;
 }
 
 bool SecurityOrigin::shouldUseInnerURL(const KURL& url)
