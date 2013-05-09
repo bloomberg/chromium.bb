@@ -74,6 +74,7 @@ class AccessibilityDetailedView : public TrayDetailsView,
   views::View* high_contrast_view_;
   views::View* screen_magnifier_view_;;
   views::View* help_view_;
+  views::View* settings_view_;
 
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;

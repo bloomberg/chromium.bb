@@ -193,6 +193,9 @@ class SystemTrayDelegate {
   // Show accessilibity help.
   virtual void ShowAccessibilityHelp() = 0;
 
+  // Show the settings related to accessilibity.
+  virtual void ShowAccessibilitySettings() = 0;
+
   // Shows more information about public account mode.
   virtual void ShowPublicAccountInfo() = 0;
 

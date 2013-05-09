@@ -173,6 +173,9 @@ void TestSystemTrayDelegate::ShowHelp() {
 void TestSystemTrayDelegate::ShowAccessibilityHelp() {
 }
 
+void TestSystemTrayDelegate::ShowAccessibilitySettings() {
+}
+
 void TestSystemTrayDelegate::ShowPublicAccountInfo() {
 }
 

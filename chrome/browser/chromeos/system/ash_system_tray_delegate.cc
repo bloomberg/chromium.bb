@@ -563,6 +563,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     accessibility::ShowAccessibilityHelp(GetAppropriateBrowser());
   }
 
+  virtual void ShowAccessibilitySettings() OVERRIDE {
+    content::RecordAction(
+        content::UserMetricsAction("ShowAccessibilitySettings"));
+    std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
+        l10n_util::GetStringUTF8(
+            IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY);
+    chrome::ShowSettingsSubPage(GetAppropriateBrowser(), sub_page);
+  }
+
   virtual void ShowPublicAccountInfo() OVERRIDE {
     chrome::ShowPolicy(GetAppropriateBrowser());
   }

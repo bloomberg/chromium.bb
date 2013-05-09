@@ -377,6 +377,9 @@ Press Shift + Alt to switch.
      to open a webpage (article on help center) containing explanation about accessibility feature.">
         Learn more...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS" desc="The label of the item 'Settings...' used in the accessibility menu of the system tray to open an accessibility setting page.">
+        Settings...
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL" desc="The label in the tray dialog to indicate that the battery is full.">
         Battery full
       </message>

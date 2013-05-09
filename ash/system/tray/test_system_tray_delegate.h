@@ -51,6 +51,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowIMESettings() OVERRIDE;
   virtual void ShowHelp() OVERRIDE;
   virtual void ShowAccessibilityHelp() OVERRIDE;
+  virtual void ShowAccessibilitySettings() OVERRIDE;
   virtual void ShowPublicAccountInfo() OVERRIDE;
   virtual void ShowEnterpriseInfo() OVERRIDE;
   virtual void ShowLocallyManagedUserInfo() OVERRIDE;

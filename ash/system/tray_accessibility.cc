@@ -108,6 +108,7 @@ AccessibilityDetailedView::AccessibilityDetailedView(
         high_contrast_view_(NULL),
         screen_magnifier_view_(NULL),
         help_view_(NULL),
+        settings_view_(NULL),
         spoken_feedback_enabled_(false),
         high_contrast_enabled_(false),
         screen_magnifier_enabled_(false),
@@ -172,8 +173,12 @@ void AccessibilityDetailedView::AppendHelpEntries() {
   bottom_row->AddChildView(help);
   help_view_ = help;
 
-  // TODO(yoshiki): Add "Customize accessibility" button when the customize is
-  // available. crbug.com/158281
+  TrayPopupLabelButton* settings = new TrayPopupLabelButton(
+      this,
+      bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS));
+  bottom_row->AddChildView(settings);
+  settings_view_ = settings;
 
   AddChildView(bottom_row);
 }
@@ -207,6 +212,8 @@ void AccessibilityDetailedView::ButtonPressed(views::Button* sender,
       Shell::GetInstance()->system_tray_delegate();
   if (sender == help_view_)
     tray_delegate->ShowAccessibilityHelp();
+  else if (sender == settings_view_)
+    tray_delegate->ShowAccessibilitySettings();
 }
 
 }  // namespace tray
