@@ -632,6 +632,18 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/geometry"));
 }
 
+// This appears to be unreliable on linux.
+// TODO(stevenjb): Investigate and enable
+#if defined(OS_LINUX) && !defined(USE_ASH)
+#define MAYBE_ShellWindowRestoreState DISABLED_ShellWindowRestoreState
+#else
+#define MAYBE_ShellWindowRestoreState ShellWindowRestoreState
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       MAYBE_ShellWindowRestoreState) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/restore_state"));
+}
+
 namespace {
 
 class PlatformAppDevToolsBrowserTest : public PlatformAppBrowserTest {

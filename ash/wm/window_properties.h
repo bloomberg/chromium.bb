@@ -57,10 +57,6 @@ extern const aura::WindowProperty<bool>* const
 // True if this window is an attached panel.
 ASH_EXPORT extern const aura::WindowProperty<bool>* const kPanelAttachedKey;
 
-// Used to remember the show state before the window was minimized.
-extern const aura::WindowProperty<ui::WindowShowState>* const
-    kRestoreShowStateKey;
-
 extern const aura::WindowProperty<RootWindowController*>* const
     kRootWindowControllerKey;
 

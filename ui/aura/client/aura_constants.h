@@ -44,6 +44,11 @@ AURA_EXPORT extern const WindowProperty<ui::ModalType>* const kModalKey;
 // A property key to store the restore bounds for a window.
 AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const kRestoreBoundsKey;
 
+// A property key to store ui::WindowShowState for restoring a window.
+// Used in Ash to remember the show state before the window was minimized.
+AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
+    kRestoreShowStateKey;
+
 // A property key to store an input method object that handles a key event.
 AURA_EXPORT extern const WindowProperty<ui::InputMethod*>* const
     kRootWindowInputMethodKey;

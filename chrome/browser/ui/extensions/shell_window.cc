@@ -72,7 +72,7 @@ ShellWindow::CreateParams::CreateParams()
     transparent_background(false),
     bounds(INT_MIN, INT_MIN, 0, 0),
     creator_process_id(0),
-    state(STATE_NORMAL),
+    state(ui::SHOW_STATE_DEFAULT),
     hidden(false),
     resizable(true),
     focused(true) {
@@ -104,7 +104,7 @@ ShellWindow::ShellWindow(Profile* profile,
 
 void ShellWindow::Init(const GURL& url,
                        ShellWindowContents* shell_window_contents,
-                       const ShellWindow::CreateParams& params) {
+                       const CreateParams& params) {
   // Initialize the render interface and web contents
   shell_window_contents_.reset(shell_window_contents);
   shell_window_contents_->Initialize(profile(), url);
@@ -130,6 +130,7 @@ void ShellWindow::Init(const GURL& url,
   // If left and top are left undefined, the native shell window will center
   // the window on the main screen in a platform-defined manner.
 
+  ui::WindowShowState cached_state = ui::SHOW_STATE_DEFAULT;
   if (!params.window_key.empty()) {
     window_key_ = params.window_key;
 
@@ -138,11 +139,12 @@ void ShellWindow::Init(const GURL& url,
           shell_window_geometry_cache();
     gfx::Rect cached_bounds;
     if (cache->GetGeometry(extension()->id(), params.window_key,
-                           &cached_bounds))
+                           &cached_bounds, &cached_state)) {
       bounds = cached_bounds;
+    }
   }
 
-  ShellWindow::CreateParams new_params = params;
+  CreateParams new_params = params;
 
   gfx::Size& minimum_size = new_params.minimum_size;
   gfx::Size& maximum_size = new_params.maximum_size;
@@ -166,29 +168,26 @@ void ShellWindow::Init(const GURL& url,
 
   new_params.bounds = bounds;
 
+  if (cached_state != ui::SHOW_STATE_DEFAULT)
+    new_params.state = cached_state;
+
   native_app_window_.reset(NativeAppWindow::Create(this, new_params));
-  OnNativeWindowChanged();
 
-  switch (params.state) {
-    case CreateParams::STATE_NORMAL:
-      break;
-    case CreateParams::STATE_FULLSCREEN:
-      Fullscreen();
-      break;
-    case CreateParams::STATE_MAXIMIZED:
-      Maximize();
-      break;
-    case CreateParams::STATE_MINIMIZED:
-      Minimize();
-      break;
-  }
-
-  if (!params.hidden) {
+  if (!new_params.hidden) {
     if (window_type_is_panel())
       GetBaseWindow()->ShowInactive();  // Panels are not activated by default.
     else
       GetBaseWindow()->Show();
   }
+
+  if (new_params.state == ui::SHOW_STATE_FULLSCREEN)
+    Fullscreen();
+  else if (new_params.state == ui::SHOW_STATE_MAXIMIZED)
+    Maximize();
+  else if (new_params.state == ui::SHOW_STATE_MINIMIZED)
+    Minimize();
+
+  OnNativeWindowChanged();
 
   // When the render view host is changed, the native window needs to know
   // about it in case it has any setup to do to make the renderer appear
@@ -576,7 +575,8 @@ void ShellWindow::SaveWindowPosition() {
 
   gfx::Rect bounds = native_app_window_->GetRestoredBounds();
   bounds.Inset(native_app_window_->GetFrameInsets());
-  cache->SaveGeometry(extension()->id(), window_key_, bounds);
+  ui::WindowShowState window_state = native_app_window_->GetRestoredState();
+  cache->SaveGeometry(extension()->id(), window_key_, bounds, window_state);
 }
 
 // static

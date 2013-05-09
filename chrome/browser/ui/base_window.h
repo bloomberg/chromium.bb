@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BASE_WINDOW_H_
 
 #include "base/compiler_specific.h"
+#include "ui/base/ui_base_types.h"  // WindowShowState
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -37,6 +38,9 @@ class BaseWindow {
   // Returns the nonmaximized bounds of the window (even if the window is
   // currently maximized or minimized) in terms of the screen coordinates.
   virtual gfx::Rect GetRestoredBounds() const = 0;
+
+  // Returns the restore state for the window (platform dependent).
+  virtual ui::WindowShowState GetRestoredState() const = 0;
 
   // Retrieves the window's current bounds, including its window.
   // This will only differ from GetRestoredBounds() for maximized
