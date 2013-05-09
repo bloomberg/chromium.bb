@@ -324,7 +324,7 @@ class DriveFileSystemTest : public testing::Test {
     if (error != FILE_ERROR_OK)
       return false;
 
-    resource_metadata->SetLargestChangestamp(
+    resource_metadata->SetLargestChangestampOnUIThread(
         param == USE_SERVER_TIMESTAMP ? 654321 : 1,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
@@ -335,7 +335,7 @@ class DriveFileSystemTest : public testing::Test {
     base::FilePath file_path;
 
     // drive/root
-    resource_metadata->AddEntry(
+    resource_metadata->AddEntryOnUIThread(
         util::CreateMyDriveRootEntry(root_resource_id),
         google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -350,7 +350,7 @@ class DriveFileSystemTest : public testing::Test {
     file1.mutable_file_specific_info()->set_file_md5("md5");
     file1.mutable_file_info()->set_is_directory(false);
     file1.mutable_file_info()->set_size(1048576);
-    resource_metadata->AddEntry(
+    resource_metadata->AddEntryOnUIThread(
         file1,
         google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -363,7 +363,7 @@ class DriveFileSystemTest : public testing::Test {
     dir1.set_resource_id("resource_id:Dir1");
     dir1.set_parent_resource_id(root_resource_id);
     dir1.mutable_file_info()->set_is_directory(true);
-    resource_metadata->AddEntry(
+    resource_metadata->AddEntryOnUIThread(
         dir1,
         google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -378,7 +378,7 @@ class DriveFileSystemTest : public testing::Test {
     file2.mutable_file_specific_info()->set_file_md5("md5");
     file2.mutable_file_info()->set_is_directory(false);
     file2.mutable_file_info()->set_size(555);
-    resource_metadata->AddEntry(
+    resource_metadata->AddEntryOnUIThread(
         file2,
         google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -391,7 +391,7 @@ class DriveFileSystemTest : public testing::Test {
     dir2.set_resource_id("resource_id:SubDir2");
     dir2.set_parent_resource_id(dir1.resource_id());
     dir2.mutable_file_info()->set_is_directory(true);
-    resource_metadata->AddEntry(
+    resource_metadata->AddEntryOnUIThread(
         dir2,
         google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -406,7 +406,7 @@ class DriveFileSystemTest : public testing::Test {
     file3.mutable_file_specific_info()->set_file_md5("md5");
     file3.mutable_file_info()->set_is_directory(false);
     file3.mutable_file_info()->set_size(12345);
-    resource_metadata->AddEntry(
+    resource_metadata->AddEntryOnUIThread(
         file3,
         google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
     google_apis::test_util::RunBlockingPoolTask();

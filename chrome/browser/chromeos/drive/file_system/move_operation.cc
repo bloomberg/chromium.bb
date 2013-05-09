@@ -36,7 +36,7 @@ void MoveOperation::Move(const base::FilePath& src_file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  metadata_->GetEntryInfoPairByPaths(
+  metadata_->GetEntryInfoPairByPathsOnUIThread(
       src_file_path,
       dest_file_path.DirName(),
       base::Bind(&MoveOperation::MoveAfterGetEntryInfoPair,
@@ -173,7 +173,7 @@ void MoveOperation::RenameLocally(const base::FilePath& src_path,
     callback.Run(error, base::FilePath());
     return;
   }
-  metadata_->RenameEntry(src_path, new_name.AsUTF8Unsafe(), callback);
+  metadata_->RenameEntryOnUIThread(src_path, new_name.AsUTF8Unsafe(), callback);
 }
 
 
@@ -204,7 +204,7 @@ void MoveOperation::AddToDirectoryLocally(const base::FilePath& src_path,
     callback.Run(error, base::FilePath());
     return;
   }
-  metadata_->MoveEntryToDirectory(src_path, dest_dir_path, callback);
+  metadata_->MoveEntryToDirectoryOnUIThread(src_path, dest_dir_path, callback);
 }
 
 void MoveOperation::RemoveFromDirectory(

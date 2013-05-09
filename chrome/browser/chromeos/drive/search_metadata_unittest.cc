@@ -108,7 +108,7 @@ class SearchMetadataTest : public testing::Test {
     FileError error = FILE_ERROR_FAILED;
     base::FilePath drive_path;
 
-    resource_metadata_->AddEntry(
+    resource_metadata_->AddEntryOnUIThread(
         entry,
         google_apis::test_util::CreateCopyResultCallback(&error, &drive_path));
     google_apis::test_util::RunBlockingPoolTask();

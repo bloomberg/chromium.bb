@@ -250,8 +250,9 @@ FileSystem::FileSystem(
 }
 
 void FileSystem::Reload() {
-  resource_metadata_->Reset(base::Bind(&FileSystem::ReloadAfterReset,
-                                       weak_ptr_factory_.GetWeakPtr()));
+  resource_metadata_->ResetOnUIThread(base::Bind(
+      &FileSystem::ReloadAfterReset,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FileSystem::Initialize() {
@@ -337,7 +338,7 @@ void FileSystem::GetEntryInfoByResourceId(
   DCHECK(!resource_id.empty());
   DCHECK(!callback.is_null());
 
-  resource_metadata_->GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
       resource_id,
       base::Bind(&FileSystem::GetEntryInfoByResourceIdAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -520,7 +521,7 @@ void FileSystem::GetFileByPath(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       file_path,
       base::Bind(&FileSystem::OnGetEntryInfoCompleteForGetFileByPath,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -561,7 +562,7 @@ void FileSystem::GetFileByResourceId(
   DCHECK(!resource_id.empty());
   DCHECK(!get_file_callback.is_null());
 
-  resource_metadata_->GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
       resource_id,
       base::Bind(&FileSystem::GetFileByResourceIdAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -606,7 +607,7 @@ void FileSystem::GetFileContentByPath(
   DCHECK(!get_content_callback.is_null());
   DCHECK(!completion_callback.is_null());
 
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       file_path,
       base::Bind(&FileSystem::GetFileContentByPathAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -655,7 +656,7 @@ void FileSystem::GetEntryInfoByPath(const base::FilePath& file_path,
   // always knows about the root directory. For "fast fetch"
   // (crbug.com/178348) to work, it's needed to delay the resource metadata
   // loading until the first call to ReadDirectoryByPath().
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       file_path,
       base::Bind(&FileSystem::GetEntryInfoByPathAfterGetEntry1,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -698,7 +699,7 @@ void FileSystem::GetEntryInfoByPathAfterLoad(
     return;
   }
 
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       file_path,
       base::Bind(&FileSystem::GetEntryInfoByPathAfterGetEntry2,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -743,7 +744,7 @@ void FileSystem::LoadDirectoryIfNeeded(const base::FilePath& directory_path,
   // As described in GetEntryInfoByPath(), ResourceMetadata may know
   // about the entry even if the file system is not yet fully loaded, hence we
   // should just ask ResourceMetadata first.
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       directory_path,
       base::Bind(&FileSystem::LoadDirectoryIfNeededAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -795,7 +796,7 @@ void FileSystem::ReadDirectoryByPathAfterLoad(
     return;
   }
 
-  resource_metadata_->ReadDirectoryByPath(
+  resource_metadata_->ReadDirectoryByPathOnUIThread(
       directory_path,
       base::Bind(&FileSystem::ReadDirectoryByPathAfterRead,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -945,7 +946,7 @@ void FileSystem::GetResolvedFileByPathAfterGetResourceEntry(
   }
 
   DCHECK_EQ(params->entry->resource_id(), entry->resource_id());
-  resource_metadata_->RefreshEntry(
+  resource_metadata_->RefreshEntryOnUIThread(
       ConvertToResourceEntry(*entry),
       base::Bind(&FileSystem::GetResolvedFileByPathAfterRefreshEntry,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -1137,7 +1138,7 @@ void FileSystem::RefreshDirectory(
   DCHECK(!callback.is_null());
 
   // Make sure the destination directory exists.
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       directory_path,
       base::Bind(&FileSystem::RefreshDirectoryAfterGetEntryInfo,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -1261,7 +1262,7 @@ void FileSystem::OnSearch(const SearchCallback& search_callback,
                    should_run_callback,
                    callback);
 
-    resource_metadata_->RefreshEntry(entry, entry_info_callback);
+    resource_metadata_->RefreshEntryOnUIThread(entry, entry_info_callback);
   }
 }
 
@@ -1364,7 +1365,7 @@ void FileSystem::AddUploadedFile(
                                entry->resource_id(),
                                entry->file_md5());
 
-  resource_metadata_->AddEntry(
+  resource_metadata_->AddEntryOnUIThread(
       ConvertToResourceEntry(*entry),
       base::Bind(&FileSystem::AddUploadedFileToCache,
                  weak_ptr_factory_.GetWeakPtr(), params));
@@ -1410,7 +1411,7 @@ void FileSystem::GetMetadata(
   metadata.last_update_check_time = last_update_check_time_;
   metadata.last_update_check_error = last_update_check_error_;
 
-  resource_metadata_->GetLargestChangestamp(
+  resource_metadata_->GetLargestChangestampOnUIThread(
       base::Bind(&OnGetLargestChangestamp, metadata, callback));
 }
 
@@ -1519,7 +1520,7 @@ void FileSystem::OpenFile(const base::FilePath& file_path,
   }
   open_files_.insert(file_path);
 
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       file_path,
       base::Bind(&FileSystem::OnGetEntryInfoCompleteForOpenFile,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -1642,7 +1643,7 @@ void FileSystem::CloseFile(const base::FilePath& file_path,
   }
 
   // Step 1 of CloseFile: Get resource_id and md5 for |file_path|.
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       file_path,
       base::Bind(&FileSystem::CloseFileAfterGetEntryInfo,
                  weak_ptr_factory_.GetWeakPtr(),

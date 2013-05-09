@@ -90,7 +90,7 @@ void CopyOperation::Copy(const base::FilePath& src_file_path,
   BrowserThread::CurrentlyOn(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  metadata_->GetEntryInfoPairByPaths(
+  metadata_->GetEntryInfoPairByPathsOnUIThread(
       src_file_path,
       dest_file_path.DirName(),
       base::Bind(&CopyOperation::CopyAfterGetEntryInfoPair,
@@ -148,7 +148,7 @@ void CopyOperation::TransferFileFromLocalToRemote(
   DCHECK(!callback.is_null());
 
   // Make sure the destination directory exists.
-  metadata_->GetEntryInfoByPath(
+  metadata_->GetEntryInfoByPathOnUIThread(
       remote_dest_file_path.DirName(),
       base::Bind(
           &CopyOperation::TransferFileFromLocalToRemoteAfterGetEntryInfo,
@@ -186,7 +186,7 @@ void CopyOperation::ScheduleTransferRegularFileAfterCreate(
     return;
   }
 
-  metadata_->GetEntryInfoByPath(
+  metadata_->GetEntryInfoByPathOnUIThread(
       remote_dest_file_path,
       base::Bind(&CopyOperation::ScheduleTransferRegularFileAfterGetEntryInfo,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -246,11 +246,12 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
   // The entry was added in the root directory on the server, so we should
   // first add it to the root to mirror the state and then move it to the
   // destination directory by MoveEntryFromRootDirectory().
-  metadata_->AddEntry(ConvertToResourceEntry(*resource_entry),
-                      base::Bind(&CopyOperation::MoveEntryFromRootDirectory,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 dir_path,
-                                 callback));
+  metadata_->AddEntryOnUIThread(
+      ConvertToResourceEntry(*resource_entry),
+      base::Bind(&CopyOperation::MoveEntryFromRootDirectory,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 dir_path,
+                 callback));
 }
 
 void CopyOperation::MoveEntryFromRootDirectory(

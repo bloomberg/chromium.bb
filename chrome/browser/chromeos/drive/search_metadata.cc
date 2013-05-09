@@ -120,7 +120,7 @@ class SearchMetadataHelper {
 
   // Starts searching the local resource metadata.
   void Start() {
-    resource_metadata_->IterateEntries(
+    resource_metadata_->IterateEntriesOnUIThread(
         base::Bind(&SearchMetadataHelper::MaybeAddEntryToResult,
                    base::Unretained(this)),
         base::Bind(&SearchMetadataHelper::PrepareResults,
@@ -160,7 +160,7 @@ class SearchMetadataHelper {
       Finish(FILE_ERROR_OK);
       return;
     }
-    resource_metadata_->GetEntryInfoByResourceId(
+    resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
         result_candidates_.top()->entry.resource_id(),
         base::Bind(&SearchMetadataHelper::ContinuePrepareResults,
                    weak_ptr_factory_.GetWeakPtr()));

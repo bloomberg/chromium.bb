@@ -80,9 +80,9 @@ class ResourceMetadataTest : public testing::Test {
 
   // Adds a ResourceEntry to the metadata tree. Returns true on success.
   static bool AddResourceEntry(ResourceMetadata* resource_metadata,
-                                 int sequence_id,
-                                 bool is_directory,
-                                 const std::string& parent_resource_id);
+                               int sequence_id,
+                               bool is_directory,
+                               const std::string& parent_resource_id);
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -107,7 +107,7 @@ class ResourceMetadataTest : public testing::Test {
       const base::FilePath& file_path) {
     FileError error = FILE_ERROR_OK;
     scoped_ptr<ResourceEntry> entry;
-    resource_metadata_->GetEntryInfoByPath(
+    resource_metadata_->GetEntryInfoByPathOnUIThread(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     google_apis::test_util::RunBlockingPoolTask();
@@ -121,7 +121,7 @@ class ResourceMetadataTest : public testing::Test {
       const base::FilePath& directory_path) {
     FileError error = FILE_ERROR_OK;
     scoped_ptr<ResourceEntryVector> entries;
-    resource_metadata_->ReadDirectoryByPath(
+    resource_metadata_->ReadDirectoryByPathOnUIThread(
         directory_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entries));
     google_apis::test_util::RunBlockingPoolTask();
@@ -151,7 +151,7 @@ void ResourceMetadataTest::Init(ResourceMetadata* resource_metadata) {
   {
     error = FILE_ERROR_FAILED;
     base::FilePath drive_path;
-    resource_metadata->AddEntry(
+    resource_metadata->AddEntryOnUIThread(
         util::CreateMyDriveRootEntry(kTestRootResourceId),
         google_apis::test_util::CreateCopyResultCallback(&error, &drive_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -183,7 +183,7 @@ void ResourceMetadataTest::Init(ResourceMetadata* resource_metadata) {
   ASSERT_TRUE(AddResourceEntry(
       resource_metadata, sequence_id++, false, "resource_id:dir3"));
 
-  resource_metadata->SetLargestChangestamp(
+  resource_metadata->SetLargestChangestampOnUIThread(
       kTestChangestamp,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
@@ -230,7 +230,7 @@ bool ResourceMetadataTest::AddResourceEntry(
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_path;
 
-  resource_metadata->AddEntry(
+  resource_metadata->AddEntryOnUIThread(
       entry,
       google_apis::test_util::CreateCopyResultCallback(&error, &drive_path));
   google_apis::test_util::RunBlockingPoolTask();
@@ -248,14 +248,14 @@ TEST_F(ResourceMetadataTest, LargestChangestamp) {
   ASSERT_EQ(FILE_ERROR_OK, error);
 
   int64 in_changestamp = 123456;
-  resource_metadata->SetLargestChangestamp(
+  resource_metadata->SetLargestChangestampOnUIThread(
       in_changestamp,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   int64 out_changestamp = 0;
-  resource_metadata->GetLargestChangestamp(
+  resource_metadata->GetLargestChangestampOnUIThread(
       google_apis::test_util::CreateCopyResultCallback(&out_changestamp));
   google_apis::test_util::RunBlockingPoolTask();
   DCHECK_EQ(in_changestamp, out_changestamp);
@@ -275,7 +275,7 @@ TEST_F(ResourceMetadataTest, GetEntryInfoByResourceId_RootDirectory) {
   scoped_ptr<ResourceEntry> entry;
 
   // Look up the root directory by its resource ID.
-  resource_metadata->GetEntryInfoByResourceId(
+  resource_metadata->GetEntryInfoByResourceIdOnUIThread(
       util::kDriveGrandRootSpecialResourceId,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -291,7 +291,7 @@ TEST_F(ResourceMetadataTest, GetEntryInfoByResourceId) {
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
   scoped_ptr<ResourceEntry> entry;
-  resource_metadata_->GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
       "resource_id:file4",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -305,7 +305,7 @@ TEST_F(ResourceMetadataTest, GetEntryInfoByResourceId) {
   // Confirm that a non existing file is not found.
   error = FILE_ERROR_FAILED;
   entry.reset();
-  resource_metadata_->GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
       "file:non_existing",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -318,7 +318,7 @@ TEST_F(ResourceMetadataTest, GetEntryInfoByPath) {
   // Confirm that an existing file is found.
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<ResourceEntry> entry;
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
@@ -329,7 +329,7 @@ TEST_F(ResourceMetadataTest, GetEntryInfoByPath) {
   // Confirm that a non existing file is not found.
   error = FILE_ERROR_FAILED;
   entry.reset();
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existing"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
@@ -339,7 +339,7 @@ TEST_F(ResourceMetadataTest, GetEntryInfoByPath) {
   // Confirm that the root is found.
   error = FILE_ERROR_FAILED;
   entry.reset();
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
@@ -349,7 +349,7 @@ TEST_F(ResourceMetadataTest, GetEntryInfoByPath) {
   // Confirm that a non existing file is not found at the root level.
   error = FILE_ERROR_FAILED;
   entry.reset();
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("non_existing"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
@@ -359,7 +359,7 @@ TEST_F(ResourceMetadataTest, GetEntryInfoByPath) {
   // Confirm that an entry is not found with a wrong root.
   error = FILE_ERROR_FAILED;
   entry.reset();
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("non_existing/root"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
@@ -371,7 +371,7 @@ TEST_F(ResourceMetadataTest, ReadDirectoryByPath) {
   // Confirm that an existing directory is found.
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<ResourceEntryVector> entries;
-  resource_metadata_->ReadDirectoryByPath(
+  resource_metadata_->ReadDirectoryByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entries));
   google_apis::test_util::RunBlockingPoolTask();
@@ -387,7 +387,7 @@ TEST_F(ResourceMetadataTest, ReadDirectoryByPath) {
   // Confirm that a non existing directory is not found.
   error = FILE_ERROR_FAILED;
   entries.reset();
-  resource_metadata_->ReadDirectoryByPath(
+  resource_metadata_->ReadDirectoryByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/non_existing"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entries));
   google_apis::test_util::RunBlockingPoolTask();
@@ -397,7 +397,7 @@ TEST_F(ResourceMetadataTest, ReadDirectoryByPath) {
   // Confirm that reading a file results in FILE_ERROR_NOT_A_DIRECTORY.
   error = FILE_ERROR_FAILED;
   entries.reset();
-  resource_metadata_->ReadDirectoryByPath(
+  resource_metadata_->ReadDirectoryByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entries));
   google_apis::test_util::RunBlockingPoolTask();
@@ -408,7 +408,7 @@ TEST_F(ResourceMetadataTest, ReadDirectoryByPath) {
 TEST_F(ResourceMetadataTest, GetEntryInfoPairByPaths) {
   // Confirm that existing two files are found.
   scoped_ptr<EntryInfoPairResult> pair_result;
-  resource_metadata_->GetEntryInfoPairByPaths(
+  resource_metadata_->GetEntryInfoPairByPathsOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file5"),
       google_apis::test_util::CreateCopyResultCallback(&pair_result));
@@ -428,7 +428,7 @@ TEST_F(ResourceMetadataTest, GetEntryInfoPairByPaths) {
 
   // Confirm that the first non existent file is not found.
   pair_result.reset();
-  resource_metadata_->GetEntryInfoPairByPaths(
+  resource_metadata_->GetEntryInfoPairByPathsOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existent"),
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file5"),
       google_apis::test_util::CreateCopyResultCallback(&pair_result));
@@ -445,7 +445,7 @@ TEST_F(ResourceMetadataTest, GetEntryInfoPairByPaths) {
 
   // Confirm that the second non existent file is not found.
   pair_result.reset();
-  resource_metadata_->GetEntryInfoPairByPaths(
+  resource_metadata_->GetEntryInfoPairByPathsOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existent"),
       google_apis::test_util::CreateCopyResultCallback(&pair_result));
@@ -469,7 +469,7 @@ TEST_F(ResourceMetadataTest, RemoveEntry) {
   base::FilePath drive_file_path;
   const std::string file9_resource_id = "resource_id:file9";
   scoped_ptr<ResourceEntry> entry;
-  resource_metadata_->GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
       file9_resource_id,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -481,7 +481,7 @@ TEST_F(ResourceMetadataTest, RemoveEntry) {
   EXPECT_EQ("file9", entry->base_name());
 
   // Remove file9 using RemoveEntry.
-  resource_metadata_->RemoveEntry(
+  resource_metadata_->RemoveEntryOnUIThread(
       file9_resource_id,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
@@ -491,7 +491,7 @@ TEST_F(ResourceMetadataTest, RemoveEntry) {
             drive_file_path);
 
   // file9 should no longer exist.
-  resource_metadata_->GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
       file9_resource_id,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -501,7 +501,7 @@ TEST_F(ResourceMetadataTest, RemoveEntry) {
 
   // Look for dir3.
   const std::string dir3_resource_id = "resource_id:dir3";
-  resource_metadata_->GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
       dir3_resource_id,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -513,7 +513,7 @@ TEST_F(ResourceMetadataTest, RemoveEntry) {
   EXPECT_EQ("dir3", entry->base_name());
 
   // Remove dir3 using RemoveEntry.
-  resource_metadata_->RemoveEntry(
+  resource_metadata_->RemoveEntryOnUIThread(
       dir3_resource_id,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
@@ -522,7 +522,7 @@ TEST_F(ResourceMetadataTest, RemoveEntry) {
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1"), drive_file_path);
 
   // dir3 should no longer exist.
-  resource_metadata_->GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
       dir3_resource_id,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -531,7 +531,7 @@ TEST_F(ResourceMetadataTest, RemoveEntry) {
   EXPECT_FALSE(entry.get());
 
   // Remove unknown resource_id using RemoveEntry.
-  resource_metadata_->RemoveEntry(
+  resource_metadata_->RemoveEntryOnUIThread(
       "foo",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
@@ -539,7 +539,7 @@ TEST_F(ResourceMetadataTest, RemoveEntry) {
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
   // Try removing root. This should fail.
-  resource_metadata_->RemoveEntry(
+  resource_metadata_->RemoveEntryOnUIThread(
       util::kDriveGrandRootSpecialResourceId,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
@@ -553,7 +553,7 @@ TEST_F(ResourceMetadataTest, MoveEntryToDirectory) {
   scoped_ptr<ResourceEntry> entry;
 
   // Move file8 to drive/dir1.
-  resource_metadata_->MoveEntryToDirectory(
+  resource_metadata_->MoveEntryToDirectoryOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir2/file8"),
       base::FilePath::FromUTF8Unsafe("drive/root/dir1"),
       google_apis::test_util::CreateCopyResultCallback(
@@ -564,7 +564,7 @@ TEST_F(ResourceMetadataTest, MoveEntryToDirectory) {
             drive_file_path);
 
   // Look up the entry by its resource id and make sure it really moved.
-  resource_metadata_->GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
       "resource_id:file8",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -574,7 +574,7 @@ TEST_F(ResourceMetadataTest, MoveEntryToDirectory) {
             drive_file_path);
 
   // Move non-existent file to drive/dir1. This should fail.
-  resource_metadata_->MoveEntryToDirectory(
+  resource_metadata_->MoveEntryToDirectoryOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir2/file8"),
       base::FilePath::FromUTF8Unsafe("drive/root/dir1"),
       google_apis::test_util::CreateCopyResultCallback(
@@ -584,7 +584,7 @@ TEST_F(ResourceMetadataTest, MoveEntryToDirectory) {
   EXPECT_EQ(base::FilePath(), drive_file_path);
 
   // Move existing file to non-existent directory. This should fail.
-  resource_metadata_->MoveEntryToDirectory(
+  resource_metadata_->MoveEntryToDirectoryOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file8"),
       base::FilePath::FromUTF8Unsafe("drive/root/dir4"),
       google_apis::test_util::CreateCopyResultCallback(
@@ -594,7 +594,7 @@ TEST_F(ResourceMetadataTest, MoveEntryToDirectory) {
   EXPECT_EQ(base::FilePath(), drive_file_path);
 
   // Move existing file to existing file (non-directory). This should fail.
-  resource_metadata_->MoveEntryToDirectory(
+  resource_metadata_->MoveEntryToDirectoryOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file8"),
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
       google_apis::test_util::CreateCopyResultCallback(
@@ -604,7 +604,7 @@ TEST_F(ResourceMetadataTest, MoveEntryToDirectory) {
   EXPECT_EQ(base::FilePath(), drive_file_path);
 
   // Move the file to root.
-  resource_metadata_->MoveEntryToDirectory(
+  resource_metadata_->MoveEntryToDirectoryOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file8"),
       base::FilePath::FromUTF8Unsafe("drive/root"),
       google_apis::test_util::CreateCopyResultCallback(
@@ -615,7 +615,7 @@ TEST_F(ResourceMetadataTest, MoveEntryToDirectory) {
             drive_file_path);
 
   // Move the file from root.
-  resource_metadata_->MoveEntryToDirectory(
+  resource_metadata_->MoveEntryToDirectoryOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/file8"),
       base::FilePath::FromUTF8Unsafe("drive/root/dir2"),
       google_apis::test_util::CreateCopyResultCallback(
@@ -626,7 +626,7 @@ TEST_F(ResourceMetadataTest, MoveEntryToDirectory) {
             drive_file_path);
 
   // Make sure file is still ok.
-  resource_metadata_->GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
       "resource_id:file8",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -642,7 +642,7 @@ TEST_F(ResourceMetadataTest, RenameEntry) {
   scoped_ptr<ResourceEntry> entry;
 
   // Rename file8 to file11.
-  resource_metadata_->RenameEntry(
+  resource_metadata_->RenameEntryOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir2/file8"),
       "file11",
       google_apis::test_util::CreateCopyResultCallback(
@@ -653,7 +653,7 @@ TEST_F(ResourceMetadataTest, RenameEntry) {
             drive_file_path);
 
   // Lookup the file by resource id to make sure the file actually got renamed.
-  resource_metadata_->GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
       "resource_id:file8",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -663,7 +663,7 @@ TEST_F(ResourceMetadataTest, RenameEntry) {
             drive_file_path);
 
   // Rename to file7 to force a duplicate name.
-  resource_metadata_->RenameEntry(
+  resource_metadata_->RenameEntryOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir2/file11"),
       "file7",
       google_apis::test_util::CreateCopyResultCallback(
@@ -674,7 +674,7 @@ TEST_F(ResourceMetadataTest, RenameEntry) {
             drive_file_path);
 
   // Rename to same name. This should fail.
-  resource_metadata_->RenameEntry(
+  resource_metadata_->RenameEntryOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir2/file7 (2)"),
       "file7 (2)",
       google_apis::test_util::CreateCopyResultCallback(
@@ -684,7 +684,7 @@ TEST_F(ResourceMetadataTest, RenameEntry) {
   EXPECT_EQ(base::FilePath(), drive_file_path);
 
   // Rename non-existent.
-  resource_metadata_->RenameEntry(
+  resource_metadata_->RenameEntryOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir2/file11"),
       "file11",
       google_apis::test_util::CreateCopyResultCallback(
@@ -711,7 +711,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   ResourceEntry file_entry(*entry);
   file_entry.set_title("file100");
   entry.reset();
-  resource_metadata_->RefreshEntry(
+  resource_metadata_->RefreshEntryOnUIThread(
       file_entry,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -729,7 +729,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   file_entry = *entry;
   file_entry.mutable_file_specific_info()->set_file_md5(updated_md5);
   entry.reset();
-  resource_metadata_->RefreshEntry(
+  resource_metadata_->RefreshEntryOnUIThread(
       file_entry,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -762,7 +762,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   dir_entry.set_title("dir100");
   dir_entry.set_parent_resource_id("resource_id:dir3");
   entry.reset();
-  resource_metadata_->RefreshEntry(
+  resource_metadata_->RefreshEntryOnUIThread(
       dir_entry,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -792,7 +792,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   dir_entry.set_title("new-root-name");
   dir_entry.set_parent_resource_id("resource_id:dir1");
   entry.reset();
-  resource_metadata_->RefreshEntry(
+  resource_metadata_->RefreshEntryOnUIThread(
       dir_entry,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry));
@@ -827,7 +827,7 @@ TEST_F(ResourceMetadataTest, RefreshDirectory_EmtpyMap) {
   // Update the directory with an empty map.
   base::FilePath file_path;
   ResourceEntryMap entry_map;
-  resource_metadata_->RefreshDirectory(
+  resource_metadata_->RefreshDirectoryOnUIThread(
       DirectoryFetchInfo(dir1_proto->resource_id(), kNewChangestamp),
       entry_map,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
@@ -918,7 +918,7 @@ TEST_F(ResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
 
   // Update the directory with the map.
   base::FilePath file_path;
-  resource_metadata_->RefreshDirectory(
+  resource_metadata_->RefreshDirectoryOnUIThread(
       DirectoryFetchInfo(dir1_proto->resource_id(), kNewChangestamp),
       entry_map,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
@@ -1013,7 +1013,7 @@ TEST_F(ResourceMetadataTest, RefreshDirectory_WrongParentResourceId) {
   // Update the directory with the map.
   base::FilePath file_path;
   FileError error = FILE_ERROR_FAILED;
-  resource_metadata_->RefreshDirectory(
+  resource_metadata_->RefreshDirectoryOnUIThread(
       DirectoryFetchInfo(dir1_proto->resource_id(), kNewChangestamp),
       entry_map,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
@@ -1037,7 +1037,7 @@ TEST_F(ResourceMetadataTest, AddEntry) {
   base::FilePath drive_file_path;
 
   // Add to dir3.
-  resource_metadata_->AddEntry(
+  resource_metadata_->AddEntryOnUIThread(
       file_entry,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
@@ -1050,7 +1050,7 @@ TEST_F(ResourceMetadataTest, AddEntry) {
   ResourceEntry dir_entry = CreateResourceEntry(
       sequence_id++, true, "resource_id:dir1");
 
-  resource_metadata_->AddEntry(
+  resource_metadata_->AddEntryOnUIThread(
       dir_entry,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
@@ -1063,7 +1063,7 @@ TEST_F(ResourceMetadataTest, AddEntry) {
   ResourceEntry file_entry3 = CreateResourceEntry(
       sequence_id++, false, "resource_id:invalid");
 
-  resource_metadata_->AddEntry(
+  resource_metadata_->AddEntryOnUIThread(
       file_entry3,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
@@ -1071,7 +1071,7 @@ TEST_F(ResourceMetadataTest, AddEntry) {
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
   // Add an existing file.
-  resource_metadata_->AddEntry(
+  resource_metadata_->AddEntryOnUIThread(
       file_entry,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
@@ -1083,21 +1083,21 @@ TEST_F(ResourceMetadataTest, GetChildDirectories) {
   std::set<base::FilePath> child_directories;
 
   // file9: not a directory, so no children.
-  resource_metadata_->GetChildDirectories(
+  resource_metadata_->GetChildDirectoriesOnUIThread(
       "resource_id:file9",
       google_apis::test_util::CreateCopyResultCallback(&child_directories));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_TRUE(child_directories.empty());
 
   // dir2: no child directories.
-  resource_metadata_->GetChildDirectories(
+  resource_metadata_->GetChildDirectoriesOnUIThread(
       "resource_id:dir2",
       google_apis::test_util::CreateCopyResultCallback(&child_directories));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_TRUE(child_directories.empty());
 
   // dir1: dir3 is the only child
-  resource_metadata_->GetChildDirectories(
+  resource_metadata_->GetChildDirectoriesOnUIThread(
       "resource_id:dir1",
       google_apis::test_util::CreateCopyResultCallback(&child_directories));
   google_apis::test_util::RunBlockingPoolTask();
@@ -1132,7 +1132,7 @@ TEST_F(ResourceMetadataTest, GetChildDirectories) {
   ASSERT_TRUE(AddResourceEntry(
       resource_metadata_.get(), sequence_id++, true, "resource_id:dir106"));
 
-  resource_metadata_->GetChildDirectories(
+  resource_metadata_->GetChildDirectoriesOnUIThread(
       "resource_id:dir2",
       google_apis::test_util::CreateCopyResultCallback(&child_directories));
   google_apis::test_util::RunBlockingPoolTask();
@@ -1155,7 +1155,7 @@ TEST_F(ResourceMetadataTest, Reset) {
 
   // Reset.
   FileError error = FILE_ERROR_FAILED;
-  resource_metadata_->Reset(
+  resource_metadata_->ResetOnUIThread(
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -1165,7 +1165,7 @@ TEST_F(ResourceMetadataTest, Reset) {
 
   // change stamp should be reset.
   int64 changestamp = -1;
-  resource_metadata_->GetLargestChangestamp(
+  resource_metadata_->GetLargestChangestampOnUIThread(
       google_apis::test_util::CreateCopyResultCallback(&changestamp));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(0, changestamp);
@@ -1191,7 +1191,7 @@ TEST_F(ResourceMetadataTest, Reset) {
 TEST_F(ResourceMetadataTest, IterateEntries) {
   int count = 0;
   bool completed = false;
-  resource_metadata_->IterateEntries(
+  resource_metadata_->IterateEntriesOnUIThread(
       base::Bind(&CountFile, &count),
       base::Bind(google_apis::test_util::CreateCopyResultCallback(&completed),
                  true));

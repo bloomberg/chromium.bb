@@ -173,7 +173,7 @@ void ChangeListLoader::Load(const DirectoryFetchInfo& directory_fetch_info,
   }
 
   // Check the current status of local metadata, and start loading if needed.
-  resource_metadata_->GetLargestChangestamp(
+  resource_metadata_->GetLargestChangestampOnUIThread(
       base::Bind(is_initial_load ? &ChangeListLoader::DoInitialLoad
                                  : &ChangeListLoader::DoUpdateLoad,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -562,7 +562,7 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
     // <other> directory should always exist, but mydrive root should be
     // created by root resource id retrieved from the server.
     // Here, we check if mydrive root exists, and if not, create it.
-    resource_metadata_->GetEntryInfoByPath(
+    resource_metadata_->GetEntryInfoByPathOnUIThread(
         base::FilePath(util::kDriveMyDriveRootPath),
         base::Bind(
             &ChangeListLoader
@@ -639,7 +639,7 @@ void ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
       util::CreateMyDriveRootEntry(root_resource_id);
   grand_root_entry_map[util::kDriveOtherDirSpecialResourceId] =
       util::CreateOtherDirEntry();
-  resource_metadata_->RefreshDirectory(
+  resource_metadata_->RefreshDirectoryOnUIThread(
       directory_fetch_info,
       grand_root_entry_map,
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
@@ -669,7 +669,7 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
   // purposes.
   ChangeListProcessor change_list_processor(resource_metadata_);
   change_list_processor.FeedToEntryProtoMap(change_lists.Pass(), NULL, NULL);
-  resource_metadata_->RefreshDirectory(
+  resource_metadata_->RefreshDirectoryOnUIThread(
       directory_fetch_info,
       change_list_processor.entry_map(),
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,

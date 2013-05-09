@@ -132,7 +132,7 @@ void ChangeListProcessor::ApplyEntryProtoMap(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!is_delta_feed) {  // Full update.
-    resource_metadata_->Reset(
+    resource_metadata_->ResetOnUIThread(
         base::Bind(&ChangeListProcessor::ApplyEntryProtoMapAfterReset,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(&about_resource)));
@@ -214,7 +214,7 @@ void ChangeListProcessor::ApplyEntryProto(const ResourceEntry& entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Lookup the entry.
-  resource_metadata_->GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
       entry.resource_id(),
       base::Bind(&ChangeListProcessor::ContinueApplyEntryProto,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -248,7 +248,7 @@ void ChangeListProcessor::ContinueApplyEntryProto(
 void ChangeListProcessor::AddEntry(const ResourceEntry& entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  resource_metadata_->AddEntry(
+  resource_metadata_->AddEntryOnUIThread(
       entry,
       base::Bind(&ChangeListProcessor::NotifyForAddEntry,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -285,7 +285,7 @@ void ChangeListProcessor::RemoveEntryFromParent(
     OnGetChildrenForRemove(entry, file_path, std::set<base::FilePath>());
   } else {
     // If entry is a directory, notify its children.
-    resource_metadata_->GetChildDirectories(
+    resource_metadata_->GetChildDirectoriesOnUIThread(
         entry.resource_id(),
         base::Bind(&ChangeListProcessor::OnGetChildrenForRemove,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -301,7 +301,7 @@ void ChangeListProcessor::OnGetChildrenForRemove(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!file_path.empty());
 
-  resource_metadata_->RemoveEntry(
+  resource_metadata_->RemoveEntryOnUIThread(
       entry.resource_id(),
       base::Bind(&ChangeListProcessor::NotifyForRemoveEntryFromParent,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -340,7 +340,7 @@ void ChangeListProcessor::RefreshEntry(const ResourceEntry& entry,
                                       const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  resource_metadata_->RefreshEntry(
+  resource_metadata_->RefreshEntryOnUIThread(
       entry,
       base::Bind(&ChangeListProcessor::NotifyForRefreshEntry,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -425,7 +425,7 @@ void ChangeListProcessor::UpdateRootEntry(const base::Closure& closure) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!closure.is_null());
 
-  resource_metadata_->GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPathOnUIThread(
       util::GetDriveMyDriveRootPath(),
       base::Bind(&ChangeListProcessor::UpdateRootEntryAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -451,7 +451,7 @@ void ChangeListProcessor::UpdateRootEntryAfterGetEntry(
   root_proto->mutable_directory_specific_info()->set_changestamp(
       largest_changestamp_);
 
-  resource_metadata_->RefreshEntry(
+  resource_metadata_->RefreshEntryOnUIThread(
       *root_proto,
       base::Bind(&ChangeListProcessor::UpdateRootEntryAfterRefreshEntry,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -473,7 +473,7 @@ void ChangeListProcessor::UpdateRootEntryAfterRefreshEntry(
 void ChangeListProcessor::OnComplete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  resource_metadata_->SetLargestChangestamp(
+  resource_metadata_->SetLargestChangestampOnUIThread(
       largest_changestamp_,
       base::Bind(&RunOnCompleteCallback, on_complete_callback_));
 }

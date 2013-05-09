@@ -165,7 +165,7 @@ void CreateDirectoryOperation::AddNewDirectory(
     return;
   }
 
-  metadata_->AddEntry(
+  metadata_->AddEntryOnUIThread(
       ConvertToResourceEntry(*entry),
       base::Bind(&CreateDirectoryOperation::ContinueCreateDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -245,7 +245,7 @@ void CreateDirectoryOperation::FindFirstMissingParentDirectoryInternal(
   // Need a reference to current_path before we call base::Passed because the
   // order of evaluation of arguments is indeterminate.
   const base::FilePath& current_path = params->current_path;
-  metadata_->GetEntryInfoByPath(
+  metadata_->GetEntryInfoByPathOnUIThread(
       current_path,
       base::Bind(
           &CreateDirectoryOperation::ContinueFindFirstMissingParentDirectory,

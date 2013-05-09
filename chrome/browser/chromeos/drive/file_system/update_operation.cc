@@ -46,7 +46,7 @@ void UpdateOperation::UpdateFileByResourceId(
 
   // TODO(satorux): GetEntryInfoByResourceId() is called twice for
   // UpdateFileByResourceId(). crbug.com/143873
-  metadata_->GetEntryInfoByResourceId(
+  metadata_->GetEntryInfoByResourceIdOnUIThread(
       resource_id,
       base::Bind(&UpdateOperation::UpdateFileByEntryInfo,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -128,7 +128,7 @@ void UpdateOperation::OnUpdatedFileUploaded(
     return;
   }
 
-  metadata_->RefreshEntry(
+  metadata_->RefreshEntryOnUIThread(
       ConvertToResourceEntry(*resource_entry),
       base::Bind(&UpdateOperation::OnUpdatedFileRefreshed,
                  weak_ptr_factory_.GetWeakPtr(), callback));
