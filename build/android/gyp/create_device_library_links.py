@@ -76,6 +76,11 @@ def TriggerSymlinkScript(options):
 
 
 def main(argv):
+  if not build_utils.IsDeviceReady():
+    build_utils.PrintBigWarning(
+        'Zero (or multiple) devices attached. Skipping creating symlinks.')
+    return
+
   parser = optparse.OptionParser()
   parser.add_option('--apk', help='Path to the apk.')
   parser.add_option('--script-host-path',

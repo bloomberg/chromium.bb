@@ -56,6 +56,11 @@ def RecordInstallMetadata(apk_package, metadata_path):
 
 
 def main(argv):
+  if not build_utils.IsDeviceReady():
+    build_utils.PrintBigWarning(
+        'Zero (or multiple) devices attached. Skipping APK install.')
+    return
+
   parser = optparse.OptionParser()
   parser.add_option('--android-sdk-tools',
       help='Path to Android SDK tools.')

@@ -48,6 +48,11 @@ def DoPush(options):
 
 
 def main(argv):
+  if not build_utils.IsDeviceReady():
+    build_utils.PrintBigWarning(
+        'Zero (or multiple) devices attached. Skipping native library push.')
+    return
+
   parser = optparse.OptionParser()
   parser.add_option('--libraries-dir',
       help='Directory that contains stripped libraries.')

@@ -81,7 +81,8 @@ def ReadJson(path):
 # This can be used in most cases like subprocess.check_call. The output,
 # particularly when the command fails, better highlights the command's failure.
 # This call will directly exit on a failure in the subprocess so that no python
-# stacktrace is printed after the output of the failed command.
+# stacktrace is printed after the output of the failed command (and will
+# instead print a python stack trace before the output of the failed command)
 def CheckCallDie(args, suppress_output=False, cwd=None):
   if not cwd:
     cwd = os.getcwd()
@@ -128,3 +129,18 @@ def IsTimeStale(output, inputs):
     if GetModifiedTime(input) > output_time:
       return True
   return False
+
+
+def IsDeviceReady():
+  device_state = CheckCallDie(['adb', 'get-state'], suppress_output=True)
+  return device_state.strip() == 'device'
+
+
+def PrintWarning(message):
+  print 'WARNING: ' + message
+
+
+def PrintBigWarning(message):
+  print '*****     ' * 8
+  PrintWarning(message)
+  print '*****     ' * 8
