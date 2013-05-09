@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Generate a CL to roll webkit to the specified revision number and post
+"""Generate a CL to roll Blink to the specified revision number and post
 it to Rietveld so that the CL will land automatically if it passes the
 commit-queue's checks.
 """
@@ -44,7 +44,7 @@ def process_deps(path, new_rev, is_dry_run):
 
 def main():
   tool_dir = os.path.dirname(os.path.abspath(__file__))
-  parser = optparse.OptionParser(usage='%prog [options] <new webkit rev>')
+  parser = optparse.OptionParser(usage='%prog [options] <new blink rev>')
   parser.add_option('-v', '--verbose', action='count', default=0)
   parser.add_option('--dry-run', action='store_true')
   parser.add_option('--commit', action='store_true', default=True,
