@@ -213,6 +213,10 @@ bool QuicSession::IsCryptoHandshakeConfirmed() {
 }
 
 void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
+  if (event == QuicSession::HANDSHAKE_CONFIRMED) {
+    connection_->SetConnectionTimeout(
+        GetCryptoStream()->negotiated_params().idle_connection_state_lifetime);
+  }
 }
 
 void QuicSession::ActivateStream(ReliableQuicStream* stream) {

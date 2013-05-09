@@ -39,6 +39,9 @@ class QuicCongestionManagerTest : public ::testing::Test {
   void SetUpCongestionType(CongestionFeedbackType congestion_type) {
     manager_.reset(new QuicCongestionManagerPeer(&clock_, congestion_type));
   }
+
+  static const HasRetransmittableData kIgnored = HAS_RETRANSMITTABLE_DATA;
+
   MockClock clock_;
   scoped_ptr<QuicCongestionManagerPeer> manager_;
 };
@@ -55,10 +58,10 @@ TEST_F(QuicCongestionManagerTest, Bandwidth) {
 
   for (int i = 1; i <= 100; ++i) {
     QuicTime::Delta advance_time = manager_->TimeUntilSend(
-        clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+        clock_.Now(), NOT_RETRANSMISSION, kIgnored);
     clock_.AdvanceTime(advance_time);
     EXPECT_TRUE(manager_->TimeUntilSend(
-        clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA).IsZero());
+        clock_.Now(), NOT_RETRANSMISSION, kIgnored).IsZero());
     manager_->SentPacket(i, clock_.Now(), 1000, NOT_RETRANSMISSION);
     // Ack the packet we sent.
     ack.received_info.largest_observed = i;
@@ -83,7 +86,7 @@ TEST_F(QuicCongestionManagerTest, BandwidthWith1SecondGap) {
       ++sequence_number) {
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
     EXPECT_TRUE(manager_->TimeUntilSend(
-        clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA).IsZero());
+        clock_.Now(), NOT_RETRANSMISSION, kIgnored).IsZero());
     manager_->SentPacket(
         sequence_number, clock_.Now(), 1000, NOT_RETRANSMISSION);
     // Ack the packet we sent.
@@ -101,7 +104,7 @@ TEST_F(QuicCongestionManagerTest, BandwidthWith1SecondGap) {
   EXPECT_TRUE(manager_->SentBandwidth(clock_.Now()).IsZero());
   for (int i = 1; i <= 150; ++i) {
     EXPECT_TRUE(manager_->TimeUntilSend(
-        clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA).IsZero());
+        clock_.Now(), NOT_RETRANSMISSION, kIgnored).IsZero());
     manager_->SentPacket(i + 100, clock_.Now(), 1000, NOT_RETRANSMISSION);
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
     // Ack the packet we sent.

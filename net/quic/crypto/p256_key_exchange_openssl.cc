@@ -20,8 +20,7 @@ P256KeyExchange::P256KeyExchange(EC_KEY* private_key, const uint8* public_key)
   memcpy(public_key_, public_key, sizeof(public_key_));
 }
 
-P256KeyExchange::~P256KeyExchange() {
-}
+P256KeyExchange::~P256KeyExchange() {}
 
 // static
 P256KeyExchange* P256KeyExchange::New(StringPiece key) {
@@ -39,13 +38,10 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
   }
 
   uint8 public_key[kUncompressedP256PointBytes];
-  if (EC_POINT_point2oct(
-      EC_KEY_get0_group(private_key.get()),
-      EC_KEY_get0_public_key(private_key.get()),
-      POINT_CONVERSION_UNCOMPRESSED,
-      public_key,
-      sizeof(public_key),
-      NULL) != sizeof(public_key)) {
+  if (EC_POINT_point2oct(EC_KEY_get0_group(private_key.get()),
+                         EC_KEY_get0_public_key(private_key.get()),
+                         POINT_CONVERSION_UNCOMPRESSED, public_key,
+                         sizeof(public_key), NULL) != sizeof(public_key)) {
     DLOG(INFO) << "Can't get public key.";
     return NULL;
   }
@@ -76,34 +72,34 @@ string P256KeyExchange::NewPrivateKey() {
   return string(reinterpret_cast<char*>(private_key.get()), key_len);
 }
 
-bool P256KeyExchange::CalculateSharedKey(
-    const StringPiece& peer_public_value,
-    string* out_result) const {
+KeyExchange* P256KeyExchange::NewKeyPair(QuicRandom* /*rand*/) const {
+  // TODO(agl): avoid the serialisation/deserialisation in this function.
+  const string private_value = NewPrivateKey();
+  return P256KeyExchange::New(private_value);
+}
+
+bool P256KeyExchange::CalculateSharedKey(const StringPiece& peer_public_value,
+                                         string* out_result) const {
   if (peer_public_value.size() != kUncompressedP256PointBytes) {
     DLOG(INFO) << "Peer public value is invalid";
     return false;
   }
 
   crypto::ScopedOpenSSL<EC_POINT, EC_POINT_free> point(
-    EC_POINT_new(EC_KEY_get0_group(private_key_.get())));
+      EC_POINT_new(EC_KEY_get0_group(private_key_.get())));
   if (!point.get() ||
       !EC_POINT_oct2point( /* also test if point is on curve */
           EC_KEY_get0_group(private_key_.get()),
           point.get(),
           reinterpret_cast<const uint8*>(peer_public_value.data()),
-          peer_public_value.size(),
-          NULL)) {
+          peer_public_value.size(), NULL)) {
     DLOG(INFO) << "Can't convert peer public value to curve point.";
     return false;
   }
 
   uint8 result[kP256FieldBytes];
-  if (ECDH_compute_key(
-      result,
-      sizeof(result),
-      point.get(),
-      private_key_.get(),
-      NULL) != sizeof(result)) {
+  if (ECDH_compute_key(result, sizeof(result), point.get(), private_key_.get(),
+                       NULL) != sizeof(result)) {
     DLOG(INFO) << "Can't compute ECDH shared key.";
     return false;
   }
@@ -117,9 +113,7 @@ StringPiece P256KeyExchange::public_value() const {
                      sizeof(public_key_));
 }
 
-CryptoTag P256KeyExchange::tag() const {
-  return kP256;
-}
+QuicTag P256KeyExchange::tag() const { return kP256; }
 
 }  // namespace net
 

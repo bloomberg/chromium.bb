@@ -29,10 +29,9 @@ class QuicEpollClock : public QuicClock {
   // Note: this use significant resources please use only if needed.
   virtual QuicTime Now() const OVERRIDE;
 
-  // Returns the current time as an offset from the Unix epoch (1970-01-01
-  // 00:00:00 GMT). This function may return a smaller Delta in subsequent
-  // calls if the system clock is changed.
-  virtual QuicTime::Delta NowAsDeltaSinceUnixEpoch() const OVERRIDE;
+  // WallNow returns the current wall-time - a time is consistent across
+  // different clocks.
+  virtual QuicWallTime WallNow() const OVERRIDE;
 
  protected:
   EpollServer* epoll_server_;

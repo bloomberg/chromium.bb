@@ -39,9 +39,20 @@ QuicClient::QuicClient(IPEndPoint server_address,
       initialized_(false),
       packets_dropped_(0),
       overflow_supported_(false) {
-  epoll_server_.set_timeout_in_us(50 * 1000);
   config_.SetDefaults();
-  crypto_config_.SetDefaults();
+}
+
+QuicClient::QuicClient(IPEndPoint server_address,
+                       const string& server_hostname,
+                       const QuicConfig& config)
+    : server_address_(server_address),
+      server_hostname_(server_hostname),
+      config_(config),
+      local_port_(0),
+      fd_(-1),
+      initialized_(false),
+      packets_dropped_(0),
+      overflow_supported_(false) {
 }
 
 QuicClient::~QuicClient() {
@@ -52,7 +63,10 @@ QuicClient::~QuicClient() {
 }
 
 bool QuicClient::Initialize() {
+  epoll_server_.set_timeout_in_us(50 * 1000);
+  crypto_config_.SetDefaults();
   int address_family = server_address_.GetSockAddrFamily();
+
   fd_ = socket(address_family, SOCK_DGRAM | SOCK_NONBLOCK, IPPROTO_UDP);
   if (fd_ < 0) {
     LOG(ERROR) << "CreateSocket() failed: " << strerror(errno);

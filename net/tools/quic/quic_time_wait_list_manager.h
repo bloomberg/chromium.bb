@@ -71,8 +71,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
 
   // FramerVisitorInterface
   virtual void OnError(QuicFramer* framer) OVERRIDE;
-  virtual bool OnProtocolVersionMismatch(
-      QuicVersionTag received_version) OVERRIDE;
+  virtual bool OnProtocolVersionMismatch(QuicTag received_version) OVERRIDE;
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnPacket() OVERRIDE {}
   virtual void OnPublicResetPacket(

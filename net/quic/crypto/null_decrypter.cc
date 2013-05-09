@@ -11,9 +11,7 @@ using std::string;
 
 namespace net {
 
-bool NullDecrypter::SetKey(StringPiece key) {
-  return key.empty();
-}
+bool NullDecrypter::SetKey(StringPiece key) { return key.empty(); }
 
 bool NullDecrypter::SetNoncePrefix(StringPiece nonce_prefix) {
   return nonce_prefix.empty();
@@ -69,12 +67,8 @@ QuicData* NullDecrypter::DecryptPacket(QuicPacketSequenceNumber /*seq_number*/,
   return new QuicData(plaintext.data(), plaintext.length());
 }
 
-StringPiece NullDecrypter::GetKey() const {
-  return StringPiece();
-}
+StringPiece NullDecrypter::GetKey() const { return StringPiece(); }
 
-StringPiece NullDecrypter::GetNoncePrefix() const {
-  return StringPiece();
-}
+StringPiece NullDecrypter::GetNoncePrefix() const { return StringPiece(); }
 
 }  // namespace net

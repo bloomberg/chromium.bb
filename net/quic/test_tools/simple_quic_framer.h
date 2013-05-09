@@ -43,6 +43,7 @@ class SimpleQuicFramer {
   const std::vector<QuicRstStreamFrame>& rst_stream_frames() const;
   const std::vector<QuicStreamFrame>& stream_frames() const;
   const QuicFecData& fec_data() const;
+  QuicFramer* framer();
 
  private:
   QuicFramer framer_;

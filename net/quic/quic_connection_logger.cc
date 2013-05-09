@@ -147,8 +147,7 @@ void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,
                  packet.length()));
 }
 
-void QuicConnectionLogger::OnProtocolVersionMismatch(
-    QuicVersionTag received_version) {
+void QuicConnectionLogger::OnProtocolVersionMismatch(QuicTag received_version) {
   // TODO(rtenneti): Add logging.
 }
 

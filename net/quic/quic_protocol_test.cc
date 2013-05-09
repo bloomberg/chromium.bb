@@ -11,6 +11,16 @@ namespace net {
 namespace test {
 namespace {
 
+TEST(QuicProtocolTest, MakeQuicTag) {
+  QuicTag tag = MakeQuicTag('A', 'B', 'C', 'D');
+  char bytes[4];
+  memcpy(bytes, &tag, 4);
+  EXPECT_EQ('A', bytes[0]);
+  EXPECT_EQ('B', bytes[1]);
+  EXPECT_EQ('C', bytes[2]);
+  EXPECT_EQ('D', bytes[3]);
+}
+
 TEST(QuicProtocolTest, IsAawaitingPacket) {
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 10u;

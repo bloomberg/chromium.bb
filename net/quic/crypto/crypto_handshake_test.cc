@@ -21,18 +21,17 @@ namespace test {
 class QuicCryptoServerConfigPeer {
  public:
   explicit QuicCryptoServerConfigPeer(QuicCryptoServerConfig* server_config)
-      : server_config_(server_config) {
-  }
+      : server_config_(server_config) {}
 
   string NewSourceAddressToken(IPEndPoint ip,
                                QuicRandom* rand,
-                               QuicTime::Delta now) {
+                               QuicWallTime now) {
     return server_config_->NewSourceAddressToken(ip, rand, now);
   }
 
   bool ValidateSourceAddressToken(StringPiece srct,
                                   IPEndPoint ip,
-                                  QuicTime::Delta now) {
+                                  QuicWallTime now) {
     return server_config_->ValidateSourceAddressToken(srct, ip, now);
   }
 
@@ -46,7 +45,8 @@ TEST(QuicCryptoServerConfigTest, ServerConfig) {
   CryptoHandshakeMessage extra_tags;
 
   scoped_ptr<CryptoHandshakeMessage>(
-      server.AddDefaultConfig(QuicRandom::GetInstance(), &clock, extra_tags));
+      server.AddDefaultConfig(QuicRandom::GetInstance(), &clock, extra_tags,
+                              QuicCryptoServerConfig::kDefaultExpiry));
 }
 
 TEST(QuicCryptoServerConfigTest, SourceAddressTokens) {
@@ -63,10 +63,11 @@ TEST(QuicCryptoServerConfigTest, SourceAddressTokens) {
   IPEndPoint ip6 = IPEndPoint(ip, 2);
   QuicRandom* rand = QuicRandom::GetInstance();
   MockClock clock;
+  clock.AdvanceTime(QuicTime::Delta::FromSeconds(1000000));
   QuicCryptoServerConfigPeer peer(&server);
 
-  QuicTime::Delta now = clock.NowAsDeltaSinceUnixEpoch();
-  const QuicTime::Delta original_time = now;
+  QuicWallTime now = clock.WallNow();
+  const QuicWallTime original_time = now;
 
   const string token4 = peer.NewSourceAddressToken(ip4, rand, now);
   const string token6 = peer.NewSourceAddressToken(ip6, rand, now);

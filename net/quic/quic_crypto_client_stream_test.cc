@@ -45,22 +45,6 @@ class TestQuicVisitor : public NoOpFramerVisitor {
   DISALLOW_COPY_AND_ASSIGN(TestQuicVisitor);
 };
 
-// The same as MockSession, except that WriteData() is not mocked.
-class TestMockSession : public MockSession {
- public:
-  TestMockSession(QuicConnection* connection, bool is_server)
-      : MockSession(connection, is_server) {
-  }
-  virtual ~TestMockSession() {}
-
-  virtual QuicConsumedData WriteData(QuicStreamId id,
-                                     base::StringPiece data,
-                                     QuicStreamOffset offset,
-                                     bool fin) OVERRIDE {
-    return QuicSession::WriteData(id, data, offset, fin);
-  }
-};
-
 class QuicCryptoClientStreamTest : public ::testing::Test {
  public:
   QuicCryptoClientStreamTest()
@@ -68,6 +52,7 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
         connection_(new PacketSavingConnection(1, addr_, true)),
         session_(connection_, true),
         stream_(kServerHostname, config_, &session_, &crypto_config_) {
+    session_.SetCryptoStream(&stream_);
     config_.SetDefaults();
     crypto_config_.SetDefaults();
   }
@@ -84,7 +69,7 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
 
   IPEndPoint addr_;
   PacketSavingConnection* connection_;
-  TestMockSession session_;
+  TestSession session_;
   QuicCryptoClientStream stream_;
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;

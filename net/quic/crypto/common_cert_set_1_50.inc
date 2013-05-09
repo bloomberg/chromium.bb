@@ -3,6 +3,9 @@
  * found in the LICENSE file.
  */
 
+/* This file contains common certificates. It's designed to be #included in
+ * another file, in a namespace. */
+
 #if 0
 Certificate:
     Data:

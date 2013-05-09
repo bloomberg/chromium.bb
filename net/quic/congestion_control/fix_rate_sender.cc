@@ -61,7 +61,7 @@ void FixRateSender::SentPacket(QuicTime sent_time,
                                Retransmission is_retransmission) {
   fix_rate_leaky_bucket_.Add(sent_time, bytes);
   paced_sender_.SentPacket(sent_time, bytes);
-  if (!is_retransmission) {
+  if (is_retransmission == NOT_RETRANSMISSION) {
     data_in_flight_ += bytes;
   }
 }

@@ -9,6 +9,7 @@
 
 #include "base/strings/string_piece.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_session.h"
 #include "net/quic/quic_spdy_decompressor.h"
 #include "net/spdy/spdy_framer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -62,9 +63,7 @@ class MockConnection : public QuicConnection {
     return QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
   }
 
-  virtual bool OnProtocolVersionMismatch(QuicVersionTag version) {
-    return false;
-  }
+  virtual bool OnProtocolVersionMismatch(QuicTag version) { return false; }
 
  private:
   const bool has_mock_helper_;
@@ -81,6 +80,24 @@ class TestDecompressorVisitor : public QuicSpdyDecompressor::Visitor {
 
  private:
   std::string data_;
+};
+
+class TestSession : public QuicSession {
+ public:
+  TestSession(QuicConnection* connection, bool is_server);
+  virtual ~TestSession();
+
+  MOCK_METHOD1(CreateIncomingReliableStream,
+               ReliableQuicStream*(QuicStreamId id));
+  MOCK_METHOD0(CreateOutgoingReliableStream, ReliableQuicStream*());
+
+  void SetCryptoStream(QuicCryptoStream* stream);
+
+  virtual QuicCryptoStream* GetCryptoStream();
+
+ private:
+  QuicCryptoStream* crypto_stream_;
+  DISALLOW_COPY_AND_ASSIGN(TestSession);
 };
 
 }  // namespace test

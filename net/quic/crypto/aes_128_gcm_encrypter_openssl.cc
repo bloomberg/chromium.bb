@@ -26,9 +26,7 @@ Aes128GcmEncrypter::Aes128GcmEncrypter() {
 }
 
 // static
-bool Aes128GcmEncrypter::IsSupported() {
-  return true;
-}
+bool Aes128GcmEncrypter::IsSupported() { return true; }
 
 bool Aes128GcmEncrypter::SetKey(StringPiece key) {
   DCHECK_EQ(key.size(), sizeof(key_));
@@ -63,8 +61,7 @@ bool Aes128GcmEncrypter::Encrypt(StringPiece nonce,
   ScopedEVPCipherCtx ctx;
 
   // Set the cipher type and the key. The IV (nonce) is set below.
-  if (EVP_EncryptInit_ex(ctx.get(), EVP_aes_128_gcm(), NULL, key_,
-                         NULL) == 0) {
+  if (EVP_EncryptInit_ex(ctx.get(), EVP_aes_128_gcm(), NULL, key_, NULL) == 0) {
     return false;
   }
 
@@ -74,9 +71,9 @@ bool Aes128GcmEncrypter::Encrypt(StringPiece nonce,
     return false;
   }
   // Set the IV (nonce).
-  if (EVP_EncryptInit_ex(ctx.get(), NULL, NULL, NULL,
-                         reinterpret_cast<const unsigned char*>(
-                             nonce.data())) == 0) {
+  if (EVP_EncryptInit_ex(
+          ctx.get(), NULL, NULL, NULL,
+          reinterpret_cast<const unsigned char*>(nonce.data())) == 0) {
     return false;
   }
 
@@ -85,18 +82,18 @@ bool Aes128GcmEncrypter::Encrypt(StringPiece nonce,
   if (!associated_data.empty()) {
     // Set the associated data. The second argument (output buffer) must be
     // NULL.
-    if (EVP_EncryptUpdate(ctx.get(), NULL, &output_len,
-                          reinterpret_cast<const unsigned char*>(
-                              associated_data.data()),
-                          associated_data.size()) == 0) {
+    if (EVP_EncryptUpdate(
+            ctx.get(), NULL, &output_len,
+            reinterpret_cast<const unsigned char*>(associated_data.data()),
+            associated_data.size()) == 0) {
       return false;
     }
   }
 
-  if (EVP_EncryptUpdate(ctx.get(), output, &output_len,
-                        reinterpret_cast<const unsigned char*>(
-                            plaintext.data()),
-                        plaintext.size()) == 0) {
+  if (EVP_EncryptUpdate(
+          ctx.get(), output, &output_len,
+          reinterpret_cast<const unsigned char*>(plaintext.data()),
+          plaintext.size()) == 0) {
     return false;
   }
   output += output_len;
@@ -134,9 +131,7 @@ QuicData* Aes128GcmEncrypter::EncryptPacket(
   return new QuicData(ciphertext.release(), ciphertext_size, true);
 }
 
-size_t Aes128GcmEncrypter::GetKeySize() const {
-  return kKeySize;
-}
+size_t Aes128GcmEncrypter::GetKeySize() const { return kKeySize; }
 
 size_t Aes128GcmEncrypter::GetNoncePrefixSize() const {
   return kNoncePrefixSize;

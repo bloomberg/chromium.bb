@@ -154,7 +154,7 @@ void QuicTimeWaitListManager::OnError(QuicFramer* framer) {
 }
 
 bool QuicTimeWaitListManager::OnProtocolVersionMismatch(
-    QuicVersionTag received_version) {
+    QuicTag received_version) {
   // Drop such packets whose version don't match.
   return false;
 }

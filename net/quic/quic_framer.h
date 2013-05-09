@@ -64,7 +64,7 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // |quic_version_|. The visitor should return true after it updates the
   // version of the |framer_| to |received_version| or false to stop processing
   // this packet.
-  virtual bool OnProtocolVersionMismatch(QuicVersionTag received_version) = 0;
+  virtual bool OnProtocolVersionMismatch(QuicTag received_version) = 0;
 
   // Called when a new packet has been received, before it
   // has been validated or processed.
@@ -153,14 +153,14 @@ class NET_EXPORT_PRIVATE QuicFramer {
  public:
   // Constructs a new framer that installs a kNULL QuicEncrypter and
   // QuicDecrypter for level ENCRYPTION_NONE.
-  QuicFramer(QuicVersionTag quic_version,
+  QuicFramer(QuicTag quic_version,
              QuicTime creation_time,
              bool is_server);
 
   virtual ~QuicFramer();
 
   // Returns true if |version| is a supported protocol version.
-  bool IsSupportedVersion(QuicVersionTag version);
+  bool IsSupportedVersion(QuicTag version);
 
   // Calculates the largest observed packet to advertise in the case an Ack
   // Frame was truncated.  last_written in this case is the iterator for the
@@ -184,11 +184,11 @@ class NET_EXPORT_PRIVATE QuicFramer {
     fec_builder_ = builder;
   }
 
-  QuicVersionTag version() const {
+  QuicTag version() const {
     return quic_version_;
   }
 
-  void set_version(QuicVersionTag version) {
+  void set_version(QuicTag version) {
     DCHECK(IsSupportedVersion(version));
     quic_version_ = version;
   }
@@ -271,7 +271,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   QuicEncryptedPacket* ConstructVersionNegotiationPacket(
       const QuicPacketPublicHeader& header,
-      const QuicVersionTagList& supported_versions);
+      const QuicTagVector& supported_versions);
 
   // SetDecrypter sets the primary decrypter, replacing any that already exists,
   // and takes ownership. If an alternative decrypter is in place then the
@@ -295,6 +295,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // takes ownership of |encrypter|.
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
   const QuicEncrypter* encrypter(EncryptionLevel level) const;
+
+  // SwapCryptersForTest exchanges the state of the crypters with |other|. To
+  // be used in tests only.
+  void SwapCryptersForTest(QuicFramer* other);
 
   // Returns a new encrypted packet, owned by the caller.
   QuicEncryptedPacket* EncryptPacket(EncryptionLevel level,
@@ -396,7 +400,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Buffer containing decrypted payload data during parsing.
   scoped_ptr<QuicData> decrypted_;
   // Version of the protocol being used.
-  QuicVersionTag quic_version_;
+  QuicTag quic_version_;
   // Primary decrypter used to decrypt packets during parsing.
   scoped_ptr<QuicDecrypter> decrypter_;
   // Alternative decrypter that can also be used to decrypt packets.

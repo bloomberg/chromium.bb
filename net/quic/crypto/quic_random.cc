@@ -61,8 +61,6 @@ DefaultRandom::DefaultRandom() {
 }  // namespace
 
 // static
-QuicRandom* QuicRandom::GetInstance() {
-  return DefaultRandom::GetInstance();
-}
+QuicRandom* QuicRandom::GetInstance() { return DefaultRandom::GetInstance(); }
 
 }  // namespace net

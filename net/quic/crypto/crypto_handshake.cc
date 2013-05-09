@@ -23,7 +23,6 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
-#include "net/quic/quic_clock.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 
@@ -69,23 +68,23 @@ const QuicData& CryptoHandshakeMessage::GetSerialized() const {
   return *serialized_.get();
 }
 
-void CryptoHandshakeMessage::Insert(CryptoTagValueMap::const_iterator begin,
-                                    CryptoTagValueMap::const_iterator end) {
+void CryptoHandshakeMessage::Insert(QuicTagValueMap::const_iterator begin,
+                                    QuicTagValueMap::const_iterator end) {
   tag_value_map_.insert(begin, end);
 }
 
-void CryptoHandshakeMessage::SetTaglist(CryptoTag tag, ...) {
-  // Warning, if sizeof(CryptoTag) > sizeof(int) then this function will break
+void CryptoHandshakeMessage::SetTaglist(QuicTag tag, ...) {
+  // Warning, if sizeof(QuicTag) > sizeof(int) then this function will break
   // because the terminating 0 will only be promoted to int.
-  COMPILE_ASSERT(sizeof(CryptoTag) <= sizeof(int),
+  COMPILE_ASSERT(sizeof(QuicTag) <= sizeof(int),
                  crypto_tag_not_be_larger_than_int_or_varargs_will_break);
 
-  vector<CryptoTag> tags;
+  vector<QuicTag> tags;
   va_list ap;
 
   va_start(ap, tag);
   for (;;) {
-    CryptoTag list_item = va_arg(ap, CryptoTag);
+    QuicTag list_item = va_arg(ap, QuicTag);
     if (list_item == 0) {
       break;
     }
@@ -100,20 +99,20 @@ void CryptoHandshakeMessage::SetTaglist(CryptoTag tag, ...) {
   va_end(ap);
 }
 
-void CryptoHandshakeMessage::SetStringPiece(CryptoTag tag, StringPiece value) {
+void CryptoHandshakeMessage::SetStringPiece(QuicTag tag, StringPiece value) {
   tag_value_map_[tag] = value.as_string();
 }
 
-QuicErrorCode CryptoHandshakeMessage::GetTaglist(CryptoTag tag,
-                                                 const CryptoTag** out_tags,
+QuicErrorCode CryptoHandshakeMessage::GetTaglist(QuicTag tag,
+                                                 const QuicTag** out_tags,
                                                  size_t* out_len) const {
-  CryptoTagValueMap::const_iterator it = tag_value_map_.find(tag);
+  QuicTagValueMap::const_iterator it = tag_value_map_.find(tag);
   *out_len = 0;
   QuicErrorCode ret = QUIC_NO_ERROR;
 
   if (it == tag_value_map_.end()) {
     ret = QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
-  } else if (it->second.size() % sizeof(CryptoTag) != 0) {
+  } else if (it->second.size() % sizeof(QuicTag) != 0) {
     ret = QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
 
@@ -123,14 +122,14 @@ QuicErrorCode CryptoHandshakeMessage::GetTaglist(CryptoTag tag,
     return ret;
   }
 
-  *out_tags = reinterpret_cast<const CryptoTag*>(it->second.data());
-  *out_len = it->second.size() / sizeof(CryptoTag);
+  *out_tags = reinterpret_cast<const QuicTag*>(it->second.data());
+  *out_len = it->second.size() / sizeof(QuicTag);
   return ret;
 }
 
-bool CryptoHandshakeMessage::GetStringPiece(CryptoTag tag,
+bool CryptoHandshakeMessage::GetStringPiece(QuicTag tag,
                                             StringPiece* out) const {
-  CryptoTagValueMap::const_iterator it = tag_value_map_.find(tag);
+  QuicTagValueMap::const_iterator it = tag_value_map_.find(tag);
   if (it == tag_value_map_.end()) {
     return false;
   }
@@ -138,7 +137,7 @@ bool CryptoHandshakeMessage::GetStringPiece(CryptoTag tag,
   return true;
 }
 
-QuicErrorCode CryptoHandshakeMessage::GetNthValue16(CryptoTag tag,
+QuicErrorCode CryptoHandshakeMessage::GetNthValue24(QuicTag tag,
                                                     unsigned index,
                                                     StringPiece* out) const {
   StringPiece value;
@@ -150,15 +149,16 @@ QuicErrorCode CryptoHandshakeMessage::GetNthValue16(CryptoTag tag,
     if (value.empty()) {
       return QUIC_CRYPTO_MESSAGE_INDEX_NOT_FOUND;
     }
-    if (value.size() < 2) {
+    if (value.size() < 3) {
       return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
     }
 
     const unsigned char* data =
         reinterpret_cast<const unsigned char*>(value.data());
     size_t size = static_cast<size_t>(data[0]) |
-                  (static_cast<size_t>(data[1]) << 8);
-    value.remove_prefix(2);
+                  (static_cast<size_t>(data[1]) << 8) |
+                  (static_cast<size_t>(data[2]) << 16);
+    value.remove_prefix(3);
 
     if (value.size() < size) {
       return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
@@ -173,8 +173,8 @@ QuicErrorCode CryptoHandshakeMessage::GetNthValue16(CryptoTag tag,
   }
 }
 
-bool CryptoHandshakeMessage::GetString(CryptoTag tag, string* out) const {
-  CryptoTagValueMap::const_iterator it = tag_value_map_.find(tag);
+bool CryptoHandshakeMessage::GetString(QuicTag tag, string* out) const {
+  QuicTagValueMap::const_iterator it = tag_value_map_.find(tag);
   if (it == tag_value_map_.end()) {
     return false;
   }
@@ -182,14 +182,19 @@ bool CryptoHandshakeMessage::GetString(CryptoTag tag, string* out) const {
   return true;
 }
 
-QuicErrorCode CryptoHandshakeMessage::GetUint16(CryptoTag tag,
+QuicErrorCode CryptoHandshakeMessage::GetUint16(QuicTag tag,
                                                 uint16* out) const {
   return GetPOD(tag, out, sizeof(uint16));
 }
 
-QuicErrorCode CryptoHandshakeMessage::GetUint32(CryptoTag tag,
+QuicErrorCode CryptoHandshakeMessage::GetUint32(QuicTag tag,
                                                 uint32* out) const {
   return GetPOD(tag, out, sizeof(uint32));
+}
+
+QuicErrorCode CryptoHandshakeMessage::GetUint64(QuicTag tag,
+                                                uint64* out) const {
+  return GetPOD(tag, out, sizeof(uint64));
 }
 
 string CryptoHandshakeMessage::DebugString() const {
@@ -197,8 +202,8 @@ string CryptoHandshakeMessage::DebugString() const {
 }
 
 QuicErrorCode CryptoHandshakeMessage::GetPOD(
-    CryptoTag tag, void* out, size_t len) const {
-  CryptoTagValueMap::const_iterator it = tag_value_map_.find(tag);
+    QuicTag tag, void* out, size_t len) const {
+  QuicTagValueMap::const_iterator it = tag_value_map_.find(tag);
   QuicErrorCode ret = QUIC_NO_ERROR;
 
   if (it == tag_value_map_.end()) {
@@ -220,10 +225,10 @@ QuicErrorCode CryptoHandshakeMessage::GetPOD(
 // that converts a tag to a string. It will try to maintain the human friendly
 // name if possible (i.e. kABCD -> "ABCD"), or will just treat it as a number
 // if not.
-static string TagToString(CryptoTag tag) {
+static string TagToString(QuicTag tag) {
   char chars[4];
   bool ascii = true;
-  const CryptoTag orig_tag = tag;
+  const QuicTag orig_tag = tag;
 
   for (size_t i = 0; i < sizeof(chars); i++) {
     chars[i] = tag;
@@ -247,52 +252,52 @@ static string TagToString(CryptoTag tag) {
 string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
   string ret = string(2 * indent, ' ') + TagToString(tag_) + "<\n";
   ++indent;
-  for (CryptoTagValueMap::const_iterator it = tag_value_map_.begin();
+  for (QuicTagValueMap::const_iterator it = tag_value_map_.begin();
        it != tag_value_map_.end(); ++it) {
     ret += string(2 * indent, ' ') + TagToString(it->first) + ": ";
 
     bool done = false;
     switch (it->first) {
-    case kKATO:
-    case kVERS:
-      // uint32 value
-      if (it->second.size() == 4) {
-        uint32 value;
-        memcpy(&value, it->second.data(), sizeof(value));
-        ret += base::UintToString(value);
-        done = true;
-      }
-      break;
-    case kKEXS:
-    case kAEAD:
-    case kCGST:
-    case kPDMD:
-      // tag lists
-      if (it->second.size() % sizeof(CryptoTag) == 0) {
-        for (size_t j = 0; j < it->second.size(); j += sizeof(CryptoTag)) {
-          CryptoTag tag;
-          memcpy(&tag, it->second.data() + j, sizeof(tag));
-          if (j > 0) {
-            ret += ",";
-          }
-          ret += TagToString(tag);
-        }
-        done = true;
-      }
-      break;
-    case kSCFG:
-      // nested messages.
-      if (!it->second.empty()) {
-        scoped_ptr<CryptoHandshakeMessage> msg(
-            CryptoFramer::ParseMessage(it->second));
-        if (msg.get()) {
-          ret += "\n";
-          ret += msg->DebugStringInternal(indent + 1);
-
+      case kKATO:
+      case kVERS:
+        // uint32 value
+        if (it->second.size() == 4) {
+          uint32 value;
+          memcpy(&value, it->second.data(), sizeof(value));
+          ret += base::UintToString(value);
           done = true;
         }
-      }
-      break;
+        break;
+      case kKEXS:
+      case kAEAD:
+      case kCGST:
+      case kPDMD:
+        // tag lists
+        if (it->second.size() % sizeof(QuicTag) == 0) {
+          for (size_t j = 0; j < it->second.size(); j += sizeof(QuicTag)) {
+            QuicTag tag;
+            memcpy(&tag, it->second.data() + j, sizeof(tag));
+            if (j > 0) {
+              ret += ",";
+            }
+            ret += TagToString(tag);
+          }
+          done = true;
+        }
+        break;
+      case kSCFG:
+        // nested messages.
+        if (!it->second.empty()) {
+          scoped_ptr<CryptoHandshakeMessage> msg(
+              CryptoFramer::ParseMessage(it->second));
+          if (msg.get()) {
+            ret += "\n";
+            ret += msg->DebugStringInternal(indent + 1);
+
+            done = true;
+          }
+        }
+        break;
     }
 
     if (!done) {
@@ -313,16 +318,20 @@ QuicCryptoNegotiatedParameters::QuicCryptoNegotiatedParameters()
       aead(0) {
 }
 
-QuicCryptoNegotiatedParameters::~QuicCryptoNegotiatedParameters() {
-}
+QuicCryptoNegotiatedParameters::~QuicCryptoNegotiatedParameters() {}
 
+CrypterPair::CrypterPair() {}
+CrypterPair::~CrypterPair() {}
 
 // static
-const char QuicCryptoConfig::kLabel[] = "QUIC key expansion";
+const char QuicCryptoConfig::kInitialLabel[] = "QUIC key expansion";
+
+const char QuicCryptoConfig::kForwardSecureLabel[] =
+    "QUIC forward secure key expansion";
 
 QuicCryptoConfig::QuicCryptoConfig()
     : version(0),
-      common_cert_set_(new CommonCertSetQUIC) {
+      common_cert_set_(new CommonCertSetsQUIC) {
 }
 
 QuicCryptoConfig::~QuicCryptoConfig() {}
@@ -355,8 +364,7 @@ QuicCryptoClientConfig::CachedState::GetServerConfig() const {
   return scfg_.get();
 }
 
-bool QuicCryptoClientConfig::CachedState::SetServerConfig(
-    StringPiece scfg) {
+bool QuicCryptoClientConfig::CachedState::SetServerConfig(StringPiece scfg) {
   scfg_.reset(CryptoFramer::ParseMessage(scfg));
   if (!scfg_.get()) {
     return false;
@@ -365,8 +373,8 @@ bool QuicCryptoClientConfig::CachedState::SetServerConfig(
   return true;
 }
 
-void QuicCryptoClientConfig::CachedState::SetProof(
-    const vector<string>& certs, StringPiece signature) {
+void QuicCryptoClientConfig::CachedState::SetProof(const vector<string>& certs,
+                                                   StringPiece signature) {
   bool has_changed = signature != server_config_sig_;
 
   if (certs_.size() != certs.size()) {
@@ -395,8 +403,7 @@ void QuicCryptoClientConfig::CachedState::SetProofValid() {
   server_config_valid_ = true;
 }
 
-const string&
-QuicCryptoClientConfig::CachedState::server_config() const {
+const string& QuicCryptoClientConfig::CachedState::server_config() const {
   return server_config_;
 }
 
@@ -466,7 +473,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   out->SetValue(kVERS, version);
 
   if (!cached->source_address_token().empty()) {
-    out->SetStringPiece(kSRCT, cached->source_address_token());
+    out->SetStringPiece(kSourceAddressTokenTag, cached->source_address_token());
   }
 
   out->SetTaglist(kPDMD, kX509, 0);
@@ -476,6 +483,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   }
 
   const vector<string>& certs = cached->certs();
+  out_params->cached_certs = certs;
   if (!certs.empty()) {
     vector<uint64> hashes;
     hashes.reserve(certs.size());
@@ -488,7 +496,6 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     // client config is being used for multiple connections, another connection
     // doesn't update the cached certificates and cause us to be unable to
     // process the server's compressed certificate chain.
-    out_params->cached_certs = certs;
   }
 }
 
@@ -496,7 +503,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const string& server_hostname,
     QuicGuid guid,
     const CachedState* cached,
-    const QuicClock* clock,
+    QuicWallTime now,
     QuicRandom* rand,
     QuicCryptoNegotiatedParameters* out_params,
     CryptoHandshakeMessage* out,
@@ -513,6 +520,17 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     return QUIC_CRYPTO_INTERNAL_ERROR;
   }
 
+  uint64 expiry_seconds;
+  if (scfg->GetUint64(kEXPY, &expiry_seconds) != QUIC_NO_ERROR) {
+    *error_details = "SCFG missing EXPY";
+    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
+
+  if (static_cast<uint64>(now.ToUNIXSeconds()) >= expiry_seconds) {
+    *error_details = "SCFG expired";
+    return QUIC_CRYPTO_SERVER_CONFIG_EXPIRED;
+  }
+
   StringPiece scid;
   if (!scfg->GetStringPiece(kSCID, &scid)) {
     *error_details = "SCFG missing SCID";
@@ -527,8 +545,8 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     return QUIC_CRYPTO_VERSION_NOT_SUPPORTED;
   }
 
-  const CryptoTag* their_aeads;
-  const CryptoTag* their_key_exchanges;
+  const QuicTag* their_aeads;
+  const QuicTag* their_key_exchanges;
   size_t num_their_aeads, num_their_key_exchanges;
   if (scfg->GetTaglist(kAEAD, &their_aeads,
                        &num_their_aeads) != QUIC_NO_ERROR ||
@@ -539,16 +557,13 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   }
 
   size_t key_exchange_index;
-  if (!CryptoUtils::FindMutualTag(aead,
-                                  their_aeads, num_their_aeads,
-                                  CryptoUtils::PEER_PRIORITY,
-                                  &out_params->aead,
+  if (!CryptoUtils::FindMutualTag(aead, their_aeads, num_their_aeads,
+                                  CryptoUtils::PEER_PRIORITY, &out_params->aead,
                                   NULL) ||
-      !CryptoUtils::FindMutualTag(kexs,
-                                  their_key_exchanges, num_their_key_exchanges,
-                                  CryptoUtils::PEER_PRIORITY,
-                                  &out_params->key_exchange,
-                                  &key_exchange_index)) {
+      !CryptoUtils::FindMutualTag(
+          kexs, their_key_exchanges, num_their_key_exchanges,
+          CryptoUtils::PEER_PRIORITY, &out_params->key_exchange,
+          &key_exchange_index)) {
     *error_details = "Unsupported AEAD or KEXS";
     return QUIC_CRYPTO_NO_SUPPORT;
   }
@@ -556,7 +571,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   out->SetTaglist(kKEXS, out_params->key_exchange, 0);
 
   StringPiece public_value;
-  if (scfg->GetNthValue16(kPUBS, key_exchange_index, &public_value) !=
+  if (scfg->GetNthValue24(kPUBS, key_exchange_index, &public_value) !=
           QUIC_NO_ERROR) {
     *error_details = "Missing public value";
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
@@ -568,44 +583,52 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
   }
 
-  string nonce;
-  CryptoUtils::GenerateNonce(clock->NowAsDeltaSinceUnixEpoch(), rand, orbit,
-                             &nonce);
-  out->SetStringPiece(kNONC, nonce);
-
-  scoped_ptr<KeyExchange> key_exchange;
-  switch (out_params->key_exchange) {
-  case kC255:
-    key_exchange.reset(Curve25519KeyExchange::New(
-          Curve25519KeyExchange::NewPrivateKey(rand)));
-    break;
-  case kP256:
-    key_exchange.reset(P256KeyExchange::New(
-          P256KeyExchange::NewPrivateKey()));
-    break;
-  default:
-    DCHECK(false);
-    *error_details = "Configured to support an unknown key exchange";
-    return QUIC_CRYPTO_INTERNAL_ERROR;
+  CryptoUtils::GenerateNonce(now, rand, orbit, &out_params->client_nonce);
+  out->SetStringPiece(kNONC, out_params->client_nonce);
+  if (!out_params->server_nonce.empty()) {
+    out->SetStringPiece(kServerNonceTag, out_params->server_nonce);
   }
 
-  if (!key_exchange->CalculateSharedKey(public_value,
-                                        &out_params->premaster_secret)) {
+  switch (out_params->key_exchange) {
+    case kC255:
+      out_params->client_key_exchange.reset(Curve25519KeyExchange::New(
+          Curve25519KeyExchange::NewPrivateKey(rand)));
+      break;
+    case kP256:
+      out_params->client_key_exchange
+          .reset(P256KeyExchange::New(P256KeyExchange::NewPrivateKey()));
+      break;
+    default:
+      DCHECK(false);
+      *error_details = "Configured to support an unknown key exchange";
+      return QUIC_CRYPTO_INTERNAL_ERROR;
+  }
+
+  if (!out_params->client_key_exchange->CalculateSharedKey(
+          public_value, &out_params->initial_premaster_secret)) {
     *error_details = "Key exchange failure";
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
-  out->SetStringPiece(kPUBS, key_exchange->public_value());
+  out->SetStringPiece(kPUBS, out_params->client_key_exchange->public_value());
 
-  string hkdf_input(QuicCryptoConfig::kLabel,
-                    strlen(QuicCryptoConfig::kLabel) + 1);
-  hkdf_input.append(reinterpret_cast<char*>(&guid), sizeof(guid));
-
+  out_params->hkdf_input_suffix.clear();
+  out_params->hkdf_input_suffix.append(reinterpret_cast<char*>(&guid),
+                                       sizeof(guid));
   const QuicData& client_hello_serialized = out->GetSerialized();
-  hkdf_input.append(client_hello_serialized.data(),
-                   client_hello_serialized.length());
-  hkdf_input.append(cached->server_config());
+  out_params->hkdf_input_suffix.append(client_hello_serialized.data(),
+                                       client_hello_serialized.length());
+  out_params->hkdf_input_suffix.append(cached->server_config());
 
-  CryptoUtils::DeriveKeys(out_params, nonce, hkdf_input, CryptoUtils::CLIENT);
+  string hkdf_input;
+  const size_t label_len = strlen(QuicCryptoConfig::kInitialLabel) + 1;
+  hkdf_input.reserve(label_len + out_params->hkdf_input_suffix.size());
+  hkdf_input.append(QuicCryptoConfig::kInitialLabel, label_len);
+  hkdf_input.append(out_params->hkdf_input_suffix);
+
+  CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
+                          out_params->aead, out_params->client_nonce,
+                          out_params->server_nonce, hkdf_input,
+                          CryptoUtils::CLIENT, &out_params->initial_crypters);
 
   return QUIC_NO_ERROR;
 }
@@ -629,19 +652,19 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
   }
 
   StringPiece token;
-  if (rej.GetStringPiece(kSRCT, &token)) {
+  if (rej.GetStringPiece(kSourceAddressTokenTag, &token)) {
     cached->set_source_address_token(token);
   }
 
   StringPiece nonce;
-  if (rej.GetStringPiece(kNONC, &nonce) &&
-      nonce.size() == kNonceSize) {
+  if (rej.GetStringPiece(kServerNonceTag, &nonce) && nonce.size() ==
+      kNonceSize) {
     out_params->server_nonce = nonce.as_string();
   }
 
   StringPiece proof, cert_bytes;
   if (rej.GetStringPiece(kPROF, &proof) &&
-      rej.GetStringPiece(kCERT, &cert_bytes)) {
+      rej.GetStringPiece(kCertificateTag, &cert_bytes)) {
     vector<string> certs;
     if (!CertCompressor::DecompressChain(cert_bytes, out_params->cached_certs,
                                          common_cert_set_.get(), &certs)) {
@@ -657,7 +680,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
 
 QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     const CryptoHandshakeMessage& server_hello,
-    const string& nonce,
+    QuicGuid guid,
     QuicCryptoNegotiatedParameters* out_params,
     string* error_details) {
   DCHECK(error_details != NULL);
@@ -669,7 +692,29 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
 
   // TODO(agl):
   //   learn about updated SCFGs.
-  //   read ephemeral public value for forward-secret keys.
+
+  StringPiece public_value;
+  if (!server_hello.GetStringPiece(kPUBS, &public_value)) {
+    *error_details = "server hello missing forward secure public value";
+    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
+
+  if (!out_params->client_key_exchange->CalculateSharedKey(
+          public_value, &out_params->forward_secure_premaster_secret)) {
+    *error_details = "Key exchange failure";
+    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
+
+  string hkdf_input;
+  const size_t label_len = strlen(QuicCryptoConfig::kForwardSecureLabel) + 1;
+  hkdf_input.reserve(label_len + out_params->hkdf_input_suffix.size());
+  hkdf_input.append(QuicCryptoConfig::kForwardSecureLabel, label_len);
+  hkdf_input.append(out_params->hkdf_input_suffix);
+
+  CryptoUtils::DeriveKeys(
+      out_params->forward_secure_premaster_secret, out_params->aead,
+      out_params->client_nonce, out_params->server_nonce, hkdf_input,
+      CryptoUtils::CLIENT, &out_params->forward_secure_crypters);
 
   return QUIC_NO_ERROR;
 }

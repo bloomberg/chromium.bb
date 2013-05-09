@@ -20,7 +20,7 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id,
       visitor_(NULL),
       stream_bytes_read_(0),
       stream_bytes_written_(0),
-      headers_complete_(false),
+      headers_decompressed_(false),
       headers_id_(0),
       stream_error_(QUIC_STREAM_NO_ERROR),
       connection_error_(QUIC_NO_ERROR),
@@ -99,7 +99,7 @@ void ReliableQuicStream::Close(QuicRstStreamErrorCode error) {
 }
 
 int ReliableQuicStream::Readv(const struct iovec* iov, int iov_len) {
-  if (headers_complete_ && decompressed_headers_.empty()) {
+  if (headers_decompressed_ && decompressed_headers_.empty()) {
     return sequencer_.Readv(iov, iov_len);
   }
   size_t bytes_consumed = 0;
@@ -119,7 +119,7 @@ int ReliableQuicStream::Readv(const struct iovec* iov, int iov_len) {
 }
 
 int ReliableQuicStream::GetReadableRegions(iovec* iov, int iov_len) {
-  if (headers_complete_ && decompressed_headers_.empty()) {
+  if (headers_decompressed_ && decompressed_headers_.empty()) {
     return sequencer_.GetReadableRegions(iov, iov_len);
   }
   if (iov_len == 0) {
@@ -132,7 +132,7 @@ int ReliableQuicStream::GetReadableRegions(iovec* iov, int iov_len) {
 }
 
 bool ReliableQuicStream::IsHalfClosed() const {
-  if (!headers_complete_ || !decompressed_headers_.empty()) {
+  if (!headers_decompressed_ || !decompressed_headers_.empty()) {
     return false;
   }
   return sequencer_.IsHalfClosed();
@@ -254,9 +254,16 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
   DCHECK_NE(0u, headers_id_);
 
   // Once the headers are finished, we simply pass the data through.
-  if (headers_complete_ && decompressed_headers_.empty()) {
-    DVLOG(1) << "Delegating procesing to ProcessData";
-    return total_bytes_consumed + ProcessData(data, data_len);
+  if (headers_decompressed_) {
+    // Some buffered header data remains.
+    if (!decompressed_headers_.empty()) {
+      ProcessHeaderData();
+    }
+    if (decompressed_headers_.empty()) {
+      DVLOG(1) << "Delegating procesing to ProcessData";
+      total_bytes_consumed += ProcessData(data, data_len);
+    }
+    return total_bytes_consumed;
   }
 
   QuicHeaderId current_header_id =
@@ -264,9 +271,11 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
   // Ensure that this header id looks sane.
   if (headers_id_ < current_header_id ||
       headers_id_ > kMaxHeaderIdDelta + current_header_id) {
-    DVLOG(1) << "Invalud headers for stream: " << id()
-             << " header_id: " << headers_id_;
+    DVLOG(1) << "Invalid headers for stream: " << id()
+             << " header_id: " << headers_id_
+             << " current_header_id: " << current_header_id;
     session_->connection()->SendConnectionClose(QUIC_INVALID_HEADER_ID);
+    return total_bytes_consumed;
   }
 
   // If we are head-of-line blocked on decompression, then back up.
@@ -284,18 +293,10 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
 
   // Headers are complete if the decompressor has moved on to the
   // next stream.
-  headers_complete_ =
+  headers_decompressed_ =
       session_->decompressor()->current_header_id() != headers_id_;
 
-  if (!decompressed_headers_.empty()) {
-    size_t bytes_processed = ProcessData(decompressed_headers_.data(),
-                                         decompressed_headers_.length());
-    if (bytes_processed == decompressed_headers_.length()) {
-      decompressed_headers_.clear();
-    } else {
-      decompressed_headers_ = decompressed_headers_.erase(0, bytes_processed);
-    }
-  }
+  ProcessHeaderData();
 
   // We have processed all of the decompressed data but we might
   // have some more raw data to process.
@@ -327,24 +328,24 @@ uint32 ReliableQuicStream::ProcessHeaderData() {
 void ReliableQuicStream::OnDecompressorAvailable() {
   DCHECK_EQ(headers_id_,
             session_->decompressor()->current_header_id());
-  DCHECK(!headers_complete_);
+  DCHECK(!headers_decompressed_);
   DCHECK_EQ(0u, decompressed_headers_.length());
 
   size_t total_bytes_consumed = 0;
   struct iovec iovecs[5];
-  while (!headers_complete_) {
+  while (!headers_decompressed_) {
     size_t num_iovecs =
         sequencer_.GetReadableRegions(iovecs, arraysize(iovecs));
 
     if (num_iovecs == 0) {
       return;
     }
-    for (size_t i = 0; i < num_iovecs && !headers_complete_; i++) {
+    for (size_t i = 0; i < num_iovecs && !headers_decompressed_; i++) {
       total_bytes_consumed += session_->decompressor()->DecompressData(
           StringPiece(static_cast<char*>(iovecs[i].iov_base),
                       iovecs[i].iov_len), this);
 
-      headers_complete_ =
+      headers_decompressed_ =
           session_->decompressor()->current_header_id() != headers_id_;
     }
   }
@@ -354,7 +355,7 @@ void ReliableQuicStream::OnDecompressorAvailable() {
 
   ProcessHeaderData();  // Unprocessed headers remain in decompressed_headers_.
 
-  if (headers_complete_ && decompressed_headers_.empty()) {
+  if (headers_decompressed_ && decompressed_headers_.empty()) {
     sequencer_.FlushBufferedFrames();
   }
 }

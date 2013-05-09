@@ -18,14 +18,15 @@ TEST(QuicEpollClockTest, ApproximateNowInUsec) {
   epoll_server.set_now_in_usec(1000000);
   EXPECT_EQ(1000000,
             clock.ApproximateNow().Subtract(QuicTime::Zero()).ToMicroseconds());
-  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(1000000),
-            clock.NowAsDeltaSinceUnixEpoch());
+  EXPECT_EQ(1u, clock.WallNow().ToUNIXSeconds());
 
   epoll_server.AdvanceBy(5);
   EXPECT_EQ(1000005,
             clock.ApproximateNow().Subtract(QuicTime::Zero()).ToMicroseconds());
-  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(1000005),
-            clock.NowAsDeltaSinceUnixEpoch());
+  EXPECT_EQ(1u, clock.WallNow().ToUNIXSeconds());
+
+  epoll_server.AdvanceBy(10 * 1000000);
+  EXPECT_EQ(11u, clock.WallNow().ToUNIXSeconds());
 }
 
 TEST(QuicEpollClockTest, NowInUsec) {
@@ -35,14 +36,10 @@ TEST(QuicEpollClockTest, NowInUsec) {
   epoll_server.set_now_in_usec(1000000);
   EXPECT_EQ(1000000,
             clock.Now().Subtract(QuicTime::Zero()).ToMicroseconds());
-  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(1000000),
-            clock.NowAsDeltaSinceUnixEpoch());
 
   epoll_server.AdvanceBy(5);
   EXPECT_EQ(1000005,
             clock.Now().Subtract(QuicTime::Zero()).ToMicroseconds());
-  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(1000005),
-            clock.NowAsDeltaSinceUnixEpoch());
 }
 
 }  // namespace test

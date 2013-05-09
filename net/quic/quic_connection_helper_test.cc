@@ -372,11 +372,11 @@ TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
   Initialize();
 
   EXPECT_TRUE(connection_->connected());
-  EXPECT_EQ(0u, clock_.NowAsDeltaSinceUnixEpoch().ToMicroseconds());
+  QuicTime start = clock_.ApproximateNow();
 
   // When we send a packet, the timeout will change to 5000 + kDefaultTimeout.
   clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(5000));
-  EXPECT_EQ(5000u, clock_.NowAsDeltaSinceUnixEpoch().ToMicroseconds());
+  EXPECT_EQ(5000u, clock_.ApproximateNow().Subtract(start).ToMicroseconds());
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION));
 
   // Send an ack so we don't set the retransmission alarm.
@@ -395,8 +395,8 @@ TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
   EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, false));
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, NOT_RETRANSMISSION));
   runner_->RunNextTask();
-  EXPECT_EQ(kDefaultTimeoutUs + 5000,
-            clock_.NowAsDeltaSinceUnixEpoch().ToMicroseconds());
+  EXPECT_EQ(kDefaultTimeoutUs + 5000, clock_.ApproximateNow().Subtract(
+      QuicTime::Zero()).ToMicroseconds());
   EXPECT_FALSE(connection_->connected());
   EXPECT_TRUE(AtEof());
 }

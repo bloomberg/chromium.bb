@@ -20,15 +20,20 @@ TEST(QuicClockTest, Now) {
   EXPECT_LE(now, end);
 }
 
-TEST(QuicClockTest, NowAsDeltaSinceUnixEpoch) {
+TEST(QuicClockTest, WallNow) {
   QuicClock clock;
 
-  QuicTime::Delta start(base::Time::Now() - base::Time::UnixEpoch());
-  QuicTime::Delta now = clock.NowAsDeltaSinceUnixEpoch();
-  QuicTime::Delta end(base::Time::Now() - base::Time::UnixEpoch());
+  base::Time start = base::Time::Now();
+  QuicWallTime now = clock.WallNow();
+  base::Time end = base::Time::Now();
 
-  EXPECT_LE(start, now);
-  EXPECT_LE(now, end);
+  // If end > start, then we can check now is between start and end.
+  if (end > start) {
+    EXPECT_LE(static_cast<uint64>(start.ToInternalValue() / 1000000),
+              now.ToUNIXSeconds());
+    EXPECT_LE(now.ToUNIXSeconds(),
+              static_cast<uint64>(end.ToInternalValue() / 1000000));
+  }
 }
 
 }  // namespace test

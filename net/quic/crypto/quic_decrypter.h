@@ -15,7 +15,7 @@ class NET_EXPORT_PRIVATE QuicDecrypter {
  public:
   virtual ~QuicDecrypter() {}
 
-  static QuicDecrypter* Create(CryptoTag algorithm);
+  static QuicDecrypter* Create(QuicTag algorithm);
 
   // Sets the encryption key. Returns true on success, false on failure.
   //

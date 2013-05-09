@@ -67,7 +67,7 @@ ssize_t QuicSpdyClientStream::SendRequest(const BalsaHeaders& headers,
 
   bool has_body = !body.empty();
 
-  WriteData(headers_string, fin && !has_body);
+  WriteData(headers_string, fin && !has_body);  // last_data
 
   if (has_body) {
     WriteData(body, fin);

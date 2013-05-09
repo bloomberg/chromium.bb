@@ -13,11 +13,18 @@
 
 namespace net {
 
+class QuicRandom;
+
 // KeyExchange is an abstract class that provides an interface to a
 // key-exchange primitive.
 class NET_EXPORT_PRIVATE KeyExchange {
  public:
-  virtual ~KeyExchange() { }
+  virtual ~KeyExchange() {}
+
+  // NewKeyPair generates a new public, private key pair. The caller takes
+  // ownership of the return value. (This is intended for servers that need to
+  // generate forward-secure keys.)
+  virtual KeyExchange* NewKeyPair(QuicRandom* rand) const = 0;
 
   // CalculateSharedKey computes the shared key between the local private key
   // (which is implicitly known by a KeyExchange object) and a public value
@@ -32,7 +39,7 @@ class NET_EXPORT_PRIVATE KeyExchange {
   virtual base::StringPiece public_value() const = 0;
 
   // tag returns the tag value that identifies this key exchange function.
-  virtual CryptoTag tag() const = 0;
+  virtual QuicTag tag() const = 0;
 };
 
 }  // namespace net

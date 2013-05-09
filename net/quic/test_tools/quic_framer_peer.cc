@@ -28,7 +28,7 @@ void QuicFramerPeer::SetIsServer(QuicFramer* framer, bool is_server) {
   framer->is_server_ = is_server;
 }
 
-void QuicFramerPeer::SetVersion(QuicFramer* framer, QuicVersionTag version) {
+void QuicFramerPeer::SetVersion(QuicFramer* framer, QuicTag version) {
   framer->quic_version_ = version;
 }
 

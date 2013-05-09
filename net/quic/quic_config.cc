@@ -29,7 +29,7 @@ void QuicConfig::SetDefaults() {
 }
 
 bool QuicConfig::SetFromHandshakeMessage(const CryptoHandshakeMessage& scfg) {
-  const CryptoTag* cgst;
+  const QuicTag* cgst;
   size_t num_cgst;
   QuicErrorCode error;
 
@@ -73,7 +73,7 @@ QuicErrorCode QuicConfig::ProcessFinalPeerHandshake(
     string* error_details) const {
   DCHECK(error_details != NULL);
 
-  const CryptoTag* their_congestion_controls;
+  const QuicTag* their_congestion_controls;
   size_t num_their_congestion_controls;
   QuicErrorCode error;
 

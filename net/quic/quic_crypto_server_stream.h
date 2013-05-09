@@ -34,9 +34,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   virtual void OnHandshakeMessage(
       const CryptoHandshakeMessage& message) OVERRIDE;
 
-  const QuicNegotiatedParameters& negotiated_params() const;
-  const QuicCryptoNegotiatedParameters& crypto_negotiated_params() const;
-
  private:
   friend class test::CryptoTestUtils;
 
@@ -45,9 +42,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   const QuicConfig& config_;
   // crypto_config_ contains crypto parameters for the handshake.
   const QuicCryptoServerConfig& crypto_config_;
-
-  QuicNegotiatedParameters negotiated_params_;
-  QuicCryptoNegotiatedParameters crypto_negotiated_params_;
 };
 
 }  // namespace net

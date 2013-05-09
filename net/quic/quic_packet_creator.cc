@@ -177,7 +177,7 @@ SerializedPacket QuicPacketCreator::SerializeConnectionClose(
 }
 
 QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
-    const QuicVersionTagList& supported_versions) {
+    const QuicTagVector& supported_versions) {
   DCHECK(is_server_);
   QuicPacketPublicHeader header;
   header.guid = guid_;

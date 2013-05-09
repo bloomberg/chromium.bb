@@ -27,6 +27,10 @@ namespace tools {
 class QuicClient : public EpollCallbackInterface {
  public:
   QuicClient(IPEndPoint server_address, const std::string& server_hostname);
+  QuicClient(IPEndPoint server_address,
+             const std::string& server_hostname,
+             const QuicConfig& config);
+
   virtual ~QuicClient();
 
   // Initializes the client to create a connection. Should be called exactly
@@ -116,6 +120,11 @@ class QuicClient : public EpollCallbackInterface {
   // Hostname of the server. This may be a DNS name or an IP address literal.
   const std::string server_hostname_;
 
+  // config_ and crypto_config_ contain configuration and cached state about
+  // servers.
+  QuicConfig config_;
+  QuicCryptoClientConfig crypto_config_;
+
   // Address of the client if the client is connected to the server.
   IPEndPoint client_address_;
 
@@ -142,11 +151,6 @@ class QuicClient : public EpollCallbackInterface {
   // True if the kernel supports SO_RXQ_OVFL, the number of packets dropped
   // because the socket would otherwise overflow.
   bool overflow_supported_;
-
-  // config_ and crypto_config_ contain configuration and cached state about
-  // servers.
-  QuicConfig config_;
-  QuicCryptoClientConfig crypto_config_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };

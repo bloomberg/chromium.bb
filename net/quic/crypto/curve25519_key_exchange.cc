@@ -13,11 +13,9 @@ using std::string;
 
 namespace net {
 
-Curve25519KeyExchange::Curve25519KeyExchange() {
-}
+Curve25519KeyExchange::Curve25519KeyExchange() {}
 
-Curve25519KeyExchange::~Curve25519KeyExchange() {
-}
+Curve25519KeyExchange::~Curve25519KeyExchange() {}
 
 // static
 Curve25519KeyExchange* Curve25519KeyExchange::New(
@@ -29,9 +27,8 @@ Curve25519KeyExchange* Curve25519KeyExchange::New(
   COMPILE_ASSERT(
       sizeof(ka->private_key_) == crypto::curve25519::kScalarBytes,
       header_out_of_sync);
-  COMPILE_ASSERT(
-      sizeof(ka->public_key_) == crypto::curve25519::kBytes,
-      header_out_of_sync);
+  COMPILE_ASSERT(sizeof(ka->public_key_) == crypto::curve25519::kBytes,
+                 header_out_of_sync);
 
   if (private_key.size() != crypto::curve25519::kScalarBytes) {
     return NULL;
@@ -57,6 +54,11 @@ string Curve25519KeyExchange::NewPrivateKey(QuicRandom* rand) {
   return string(reinterpret_cast<char*>(private_key), sizeof(private_key));
 }
 
+KeyExchange* Curve25519KeyExchange::NewKeyPair(QuicRandom* rand) const {
+  const string private_value = NewPrivateKey(rand);
+  return Curve25519KeyExchange::New(private_value);
+}
+
 bool Curve25519KeyExchange::CalculateSharedKey(
     const StringPiece& peer_public_value,
     string* out_result) const {
@@ -79,8 +81,6 @@ StringPiece Curve25519KeyExchange::public_value() const {
                      sizeof(public_key_));
 }
 
-CryptoTag Curve25519KeyExchange::tag() const {
-  return kC255;
-}
+QuicTag Curve25519KeyExchange::tag() const { return kC255; }
 
 }  // namespace net

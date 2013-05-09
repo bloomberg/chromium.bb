@@ -99,4 +99,56 @@ QuicTime::Delta QuicTime::Subtract(const QuicTime& other) const {
   return QuicTime::Delta(ticks_ - other.ticks_);
 }
 
+// static
+QuicWallTime QuicWallTime::FromUNIXSeconds(uint64 seconds) {
+  return QuicWallTime(seconds);
+}
+
+uint64 QuicWallTime::ToUNIXSeconds() const {
+  return seconds_;
+}
+
+bool QuicWallTime::IsAfter(QuicWallTime other) const {
+  return seconds_ > other.seconds_;
+}
+
+bool QuicWallTime::IsBefore(QuicWallTime other) const {
+  return seconds_ < other.seconds_;
+}
+
+QuicTime::Delta QuicWallTime::AbsoluteDifference(QuicWallTime other) const {
+  uint64 d;
+
+  if (seconds_ > other.seconds_) {
+    d = seconds_ - other.seconds_;
+  } else {
+    d = other.seconds_ - seconds_;
+  }
+
+  if (d > static_cast<uint64>(kint64max)) {
+    d = kint64max;
+  }
+  return QuicTime::Delta::FromSeconds(d);
+}
+
+QuicWallTime QuicWallTime::Add(QuicTime::Delta delta) const {
+  uint64 seconds = seconds_ + delta.ToSeconds();
+  if (seconds < seconds_) {
+    seconds = kuint64max;
+  }
+  return QuicWallTime(seconds);
+}
+
+QuicWallTime QuicWallTime::Subtract(QuicTime::Delta delta) const {
+  uint64 seconds = seconds_ - delta.ToSeconds();
+  if (seconds > seconds_) {
+    seconds = 0;
+  }
+  return QuicWallTime(seconds);
+}
+
+QuicWallTime::QuicWallTime(uint64 seconds)
+    : seconds_(seconds) {
+}
+
 }  // namespace net

@@ -18,21 +18,21 @@ using std::string;
 namespace net {
 
 // static
-bool CryptoUtils::FindMutualTag(const CryptoTagVector& our_tags_vector,
-                                const CryptoTag* their_tags,
+bool CryptoUtils::FindMutualTag(const QuicTagVector& our_tags_vector,
+                                const QuicTag* their_tags,
                                 size_t num_their_tags,
                                 Priority priority,
-                                CryptoTag* out_result,
+                                QuicTag* out_result,
                                 size_t* out_index) {
   if (our_tags_vector.empty()) {
     return false;
   }
   const size_t num_our_tags = our_tags_vector.size();
-  const CryptoTag* our_tags = &our_tags_vector[0];
+  const QuicTag* our_tags = &our_tags_vector[0];
 
   size_t num_priority_tags, num_inferior_tags;
-  const CryptoTag* priority_tags;
-  const CryptoTag* inferior_tags;
+  const QuicTag* priority_tags;
+  const QuicTag* inferior_tags;
   if (priority == LOCAL_PRIORITY) {
     num_priority_tags = num_our_tags;
     priority_tags = our_tags;
@@ -64,14 +64,14 @@ bool CryptoUtils::FindMutualTag(const CryptoTagVector& our_tags_vector,
   return false;
 }
 
-void CryptoUtils::GenerateNonce(QuicTime::Delta now,
+void CryptoUtils::GenerateNonce(QuicWallTime now,
                                 QuicRandom* random_generator,
                                 StringPiece orbit,
                                 string* nonce) {
   // a 4-byte timestamp + 28 random bytes.
   nonce->reserve(kNonceSize);
   nonce->resize(kNonceSize);
-  uint32 gmt_unix_time = now.ToSeconds();
+  uint32 gmt_unix_time = now.ToUNIXSeconds();
   // The time in the nonce must be encoded in big-endian because the
   // strike-register depends on the nonces being ordered by time.
   (*nonce)[0] = static_cast<char>(gmt_unix_time >> 24);
@@ -88,34 +88,37 @@ void CryptoUtils::GenerateNonce(QuicTime::Delta now,
                               kNonceSize - bytes_written);
 }
 
-void CryptoUtils::DeriveKeys(QuicCryptoNegotiatedParameters* params,
+void CryptoUtils::DeriveKeys(StringPiece premaster_secret,
+                             QuicTag aead,
                              StringPiece client_nonce,
+                             StringPiece server_nonce,
                              const string& hkdf_input,
-                             Perspective perspective) {
-  params->encrypter.reset(QuicEncrypter::Create(params->aead));
-  params->decrypter.reset(QuicDecrypter::Create(params->aead));
-  size_t key_bytes = params->encrypter->GetKeySize();
-  size_t nonce_prefix_bytes = params->encrypter->GetNoncePrefixSize();
+                             Perspective perspective,
+                             CrypterPair* out) {
+  out->encrypter.reset(QuicEncrypter::Create(aead));
+  out->decrypter.reset(QuicDecrypter::Create(aead));
+  size_t key_bytes = out->encrypter->GetKeySize();
+  size_t nonce_prefix_bytes = out->encrypter->GetNoncePrefixSize();
 
   StringPiece nonce = client_nonce;
   string nonce_storage;
-  if (!params->server_nonce.empty()) {
-    nonce_storage = client_nonce.as_string() + params->server_nonce;
+  if (!server_nonce.empty()) {
+    nonce_storage = client_nonce.as_string() + server_nonce.as_string();
     nonce = nonce_storage;
   }
 
-  crypto::HKDF hkdf(params->premaster_secret, nonce,
-                    hkdf_input, key_bytes, nonce_prefix_bytes);
+  crypto::HKDF hkdf(premaster_secret, nonce, hkdf_input, key_bytes,
+                    nonce_prefix_bytes);
   if (perspective == SERVER) {
-    params->encrypter->SetKey(hkdf.server_write_key());
-    params->encrypter->SetNoncePrefix(hkdf.server_write_iv());
-    params->decrypter->SetKey(hkdf.client_write_key());
-    params->decrypter->SetNoncePrefix(hkdf.client_write_iv());
+    out->encrypter->SetKey(hkdf.server_write_key());
+    out->encrypter->SetNoncePrefix(hkdf.server_write_iv());
+    out->decrypter->SetKey(hkdf.client_write_key());
+    out->decrypter->SetNoncePrefix(hkdf.client_write_iv());
   } else {
-    params->encrypter->SetKey(hkdf.client_write_key());
-    params->encrypter->SetNoncePrefix(hkdf.client_write_iv());
-    params->decrypter->SetKey(hkdf.server_write_key());
-    params->decrypter->SetNoncePrefix(hkdf.server_write_iv());
+    out->encrypter->SetKey(hkdf.client_write_key());
+    out->encrypter->SetNoncePrefix(hkdf.client_write_iv());
+    out->decrypter->SetKey(hkdf.server_write_key());
+    out->decrypter->SetNoncePrefix(hkdf.server_write_iv());
   }
 }
 

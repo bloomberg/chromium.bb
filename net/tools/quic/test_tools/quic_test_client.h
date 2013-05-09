@@ -24,6 +24,10 @@ class HTTPMessage;
 class QuicTestClient :  public ReliableQuicStream::Visitor {
  public:
   QuicTestClient(IPEndPoint server_address, const string& server_hostname);
+  QuicTestClient(IPEndPoint server_address,
+                 const string& server_hostname,
+                 const QuicConfig& config);
+
   virtual ~QuicTestClient();
 
   // Clears any outstanding state and sends a simple GET of 'uri' to the

@@ -87,7 +87,7 @@ void TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
                                 QuicByteCount bytes,
                                 Retransmission is_retransmission) {
   bytes_in_flight_ += bytes;
-  if (!is_retransmission && update_end_sequence_number_) {
+  if (is_retransmission == NOT_RETRANSMISSION && update_end_sequence_number_) {
     end_sequence_number_ = sequence_number;
     if (AvailableCongestionWindow() == 0) {
       update_end_sequence_number_ = false;
@@ -105,7 +105,8 @@ QuicTime::Delta TcpCubicSender::TimeUntilSend(
     QuicTime now,
     Retransmission is_retransmission,
     HasRetransmittableData has_retransmittable_data) {
-  if (is_retransmission || !has_retransmittable_data) {
+  if (is_retransmission == IS_RETRANSMISSION ||
+      has_retransmittable_data == NO_RETRANSMITTABLE_DATA) {
     // For TCP we can always send a retransmission and/or an ACK immediately.
     return QuicTime::Delta::Zero();
   }

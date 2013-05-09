@@ -21,13 +21,10 @@ const size_t kAuthTagSize = 16;
 
 }  // namespace
 
-Aes128GcmDecrypter::Aes128GcmDecrypter() {
-}
+Aes128GcmDecrypter::Aes128GcmDecrypter() {}
 
 // static
-bool Aes128GcmDecrypter::IsSupported() {
-  return true;
-}
+bool Aes128GcmDecrypter::IsSupported() { return true; }
 
 bool Aes128GcmDecrypter::SetKey(StringPiece key) {
   DCHECK_EQ(key.size(), sizeof(key_));
@@ -63,8 +60,7 @@ bool Aes128GcmDecrypter::Decrypt(StringPiece nonce,
   ScopedEVPCipherCtx ctx;
 
   // Set the cipher type and the key. The IV (nonce) is set below.
-  if (EVP_DecryptInit_ex(ctx.get(), EVP_aes_128_gcm(), NULL, key_,
-                         NULL) == 0) {
+  if (EVP_DecryptInit_ex(ctx.get(), EVP_aes_128_gcm(), NULL, key_, NULL) == 0) {
     return false;
   }
 
@@ -74,16 +70,16 @@ bool Aes128GcmDecrypter::Decrypt(StringPiece nonce,
     return false;
   }
   // Set the IV (nonce).
-  if (EVP_DecryptInit_ex(ctx.get(), NULL, NULL, NULL,
-                         reinterpret_cast<const unsigned char*>(
-                             nonce.data())) == 0) {
+  if (EVP_DecryptInit_ex(
+          ctx.get(), NULL, NULL, NULL,
+          reinterpret_cast<const unsigned char*>(nonce.data())) == 0) {
     return false;
   }
 
   // Set the authentication tag.
-  if (EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_TAG, kAuthTagSize,
-                          const_cast<char*>(ciphertext.data()) +
-                          plaintext_size) == 0) {
+  if (EVP_CIPHER_CTX_ctrl(
+          ctx.get(), EVP_CTRL_GCM_SET_TAG, kAuthTagSize,
+          const_cast<char*>(ciphertext.data()) + plaintext_size) == 0) {
     return false;
   }
 
@@ -92,18 +88,18 @@ bool Aes128GcmDecrypter::Decrypt(StringPiece nonce,
   if (!associated_data.empty()) {
     // Set the associated data. The second argument (output buffer) must be
     // NULL.
-    if (EVP_DecryptUpdate(ctx.get(), NULL, &len,
-                          reinterpret_cast<const unsigned char*>(
-                              associated_data.data()),
-                          associated_data.size()) == 0) {
+    if (EVP_DecryptUpdate(
+            ctx.get(), NULL, &len,
+            reinterpret_cast<const unsigned char*>(associated_data.data()),
+            associated_data.size()) == 0) {
       return false;
     }
   }
 
-  if (EVP_DecryptUpdate(ctx.get(), output, &len,
-                        reinterpret_cast<const unsigned char*>(
-                            ciphertext.data()),
-                        plaintext_size) == 0) {
+  if (EVP_DecryptUpdate(
+          ctx.get(), output, &len,
+          reinterpret_cast<const unsigned char*>(ciphertext.data()),
+          plaintext_size) == 0) {
     return false;
   }
   output += len;

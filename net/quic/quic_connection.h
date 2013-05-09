@@ -93,8 +93,7 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitorInterface {
 
   // Called when the protocol version on the received packet doensn't match
   // current protocol version of the connection.
-  virtual void OnProtocolVersionMismatch(
-      QuicVersionTag version) = 0;
+  virtual void OnProtocolVersionMismatch(QuicTag version) = 0;
 
   // Called when the complete header of a packet has been parsed.
   virtual void OnPacketHeader(const QuicPacketHeader& header) = 0;
@@ -258,14 +257,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // queued writes to happen.  Returns false if the socket has become blocked.
   virtual bool OnCanWrite() OVERRIDE;
 
-  QuicVersionTag version() const {
-    return quic_version_;
-  }
+  QuicTag version() const { return quic_version_; }
 
   // From QuicFramerVisitorInterface
   virtual void OnError(QuicFramer* framer) OVERRIDE;
-  virtual bool OnProtocolVersionMismatch(
-      QuicVersionTag received_version) OVERRIDE;
+  virtual bool OnProtocolVersionMismatch(QuicTag received_version) OVERRIDE;
   virtual void OnPacket() OVERRIDE;
   virtual void OnPublicResetPacket(
       const QuicPublicResetPacket& packet) OVERRIDE;
@@ -329,6 +325,10 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Returns true if the connection has queued packets or frames.
   bool HasQueuedData() const;
+
+  // Sets (or resets) the idle state connection timeout. Also, checks and times
+  // out the connection if network timer has expired for |timeout|.
+  void SetConnectionTimeout(QuicTime::Delta timeout);
 
   // If the connection has timed out, this will close the connection and return
   // true.  Otherwise, it will return false and will reset the timeout alarm.
@@ -420,6 +420,9 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   QuicConnectionHelperInterface* helper() { return helper_.get(); }
 
+ protected:
+  QuicFramer framer_;
+
  private:
   friend class test::QuicConnectionPeer;
 
@@ -480,8 +483,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Selects and updates the version of the protocol being used by selecting a
   // version from |available_versions| which is also supported. Returns true if
   // such a version exists, false otherwise.
-  bool SelectMutualVersion(
-      const QuicVersionTagList& available_versions);
+  bool SelectMutualVersion(const QuicTagVector& available_versions);
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();
 
@@ -508,7 +510,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   void CloseFecGroupsBefore(QuicPacketSequenceNumber sequence_number);
 
   scoped_ptr<QuicConnectionHelperInterface> helper_;
-  QuicFramer framer_;
   EncryptionLevel encryption_level_;
   const QuicClock* clock_;
   QuicRandom* random_generator_;
@@ -580,7 +581,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicPacketGenerator packet_generator_;
 
   // Network idle time before we kill of this connection.
-  const QuicTime::Delta timeout_;
+  QuicTime::Delta timeout_;
 
   // Statistics for this session.
   QuicConnectionStats stats_;
@@ -603,7 +604,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicVersionNegotiationState version_negotiation_state_;
 
   // The version of the protocol this connection is using.
-  QuicVersionTag quic_version_;
+  QuicTag quic_version_;
 
   // Tracks if the connection was created by the server.
   bool is_server_;

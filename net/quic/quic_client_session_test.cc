@@ -99,7 +99,7 @@ TEST_F(QuicClientSessionTest, GoAwayReceived) {
   EXPECT_EQ(NULL, session_.CreateOutgoingReliableStream());
 }
 
-TEST_F(QuicClientSessionTest, Logging) {
+TEST_F(QuicClientSessionTest, DISABLED_Logging) {
   if (!Aes128GcmEncrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;

@@ -16,6 +16,7 @@
 
 namespace net {
 
+class EphemeralKeySource;
 class KeyExchange;
 class ProofSource;
 class QuicClock;
@@ -36,6 +37,12 @@ class QuicCryptoServerConfigPeer;
 // need to consider locking.
 class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
  public:
+  enum {
+    // kDefaultExpiry can be passed to DefaultConfig to select the default
+    // expiry time.
+    kDefaultExpiry = 0,
+  };
+
   // |source_address_token_secret|: secret key material used for encrypting and
   //     decrypting source address tokens. It can be of any length as it is fed
   //     into a KDF before use. In tests, use TESTING.
@@ -46,25 +53,29 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // TESTING is a magic parameter for passing to the constructor in tests.
   static const char TESTING[];
 
-  // DefaultConfig generates a QuicServerConfigProtobuf protobuf suitable
-  // for using in tests. |extra_tags| contains additional key/value pairs that
-  // will be inserted into the config.
+  // DefaultConfig generates a QuicServerConfigProtobuf protobuf suitable for
+  // using in tests. |extra_tags| contains additional key/value pairs that will
+  // be inserted into the config. If |expiry_time| is non-zero then it's used
+  // as the expiry for the server config in UNIX epoch seconds. Otherwise the
+  // default expiry time is six months from now.
   static QuicServerConfigProtobuf* DefaultConfig(
       QuicRandom* rand,
       const QuicClock* clock,
-      const CryptoHandshakeMessage& extra_tags);
+      const CryptoHandshakeMessage& extra_tags,
+      uint64 expiry_time);
 
   // AddConfig adds a QuicServerConfigProtobuf to the availible configurations.
   // It returns the SCFG message from the config if successful. The caller
   // takes ownership of the CryptoHandshakeMessage.
   CryptoHandshakeMessage* AddConfig(QuicServerConfigProtobuf* protobuf);
 
-  // AddDefaultConfig creates a config and then calls AddConfig to
-  // add it. Any tags in |extra_tags| will be copied into the config.
+  // AddDefaultConfig creates a config and then calls AddConfig to add it. See
+  // the comment for |DefaultConfig| for details of the arguments.
   CryptoHandshakeMessage* AddDefaultConfig(
       QuicRandom* rand,
       const QuicClock* clock,
-      const CryptoHandshakeMessage& extra_tags);
+      const CryptoHandshakeMessage& extra_tags,
+      uint64 expiry_time);
 
   // ProcessClientHello processes |client_hello| and decides whether to accept
   // or reject the connection. If the connection is to be accepted, |out| is
@@ -76,8 +87,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // guid: the GUID for the connection, which is used in key derivation.
   // client_ip: the IP address of the client, which is used to generate and
   //     validate source-address tokens.
-  // now_since_epoch: the current time, as a delta since the unix epoch,
-  //     which is used to validate client nonces.
+  // clock: used to validate client nonces and ephemeral keys.
   // rand: an entropy source
   // params: the state of the handshake. This may be updated with a server
   //     nonce when we send a rejection. After a successful handshake, this will
@@ -87,7 +97,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   QuicErrorCode ProcessClientHello(const CryptoHandshakeMessage& client_hello,
                                    QuicGuid guid,
                                    const IPEndPoint& client_ip,
-                                   QuicTime::Delta now_since_epoch,
+                                   const QuicClock* now,
                                    QuicRandom* rand,
                                    QuicCryptoNegotiatedParameters* params,
                                    CryptoHandshakeMessage* out,
@@ -96,6 +106,12 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // SetProofSource installs |proof_source| as the ProofSource for handshakes.
   // This object takes ownership of |proof_source|.
   void SetProofSource(ProofSource* proof_source);
+
+  // SetEphemeralKeySource installs an object that can cache ephemeral keys for
+  // a short period of time. This object takes ownership of
+  // |ephemeral_key_source|. If not set then ephemeral keys will be generated
+  // per-connection.
+  void SetEphemeralKeySource(EphemeralKeySource* ephemeral_key_source);
 
  private:
   friend class test::QuicCryptoServerConfigPeer;
@@ -121,7 +137,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     std::vector<KeyExchange*> key_exchanges;
 
     // tag_value_map contains the raw key/value pairs for the config.
-    CryptoTagValueMap tag_value_map;
+    QuicTagValueMap tag_value_map;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Config);
@@ -131,14 +147,14 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // IP address.
   std::string NewSourceAddressToken(const IPEndPoint& ip,
                                     QuicRandom* rand,
-                                    QuicTime::Delta now_since_epoch) const;
+                                    QuicWallTime now) const;
 
   // ValidateSourceAddressToken returns true if the source address token in
   // |token| is a valid and timely token for the IP address |ip| given that the
   // current time is |now|.
   bool ValidateSourceAddressToken(base::StringPiece token,
                                   const IPEndPoint& ip,
-                                  QuicTime::Delta now_since_epoch) const;
+                                  QuicWallTime now) const;
 
   std::map<ServerConfigID, Config*> configs_;
 
@@ -157,6 +173,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // proof_source_ contains an object that can provide certificate chains and
   // signatures.
   scoped_ptr<ProofSource> proof_source_;
+
+  // ephemeral_key_source_ contains an object that caches ephemeral keys for a
+  // short period of time.
+  scoped_ptr<EphemeralKeySource> ephemeral_key_source_;
 };
 
 }  // namespace net

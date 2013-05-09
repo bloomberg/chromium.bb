@@ -109,6 +109,7 @@ class EndToEndTest : public ::testing::Test {
     net::IPAddressNumber ip;
     CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &ip));
     server_address_ = IPEndPoint(ip, 0);
+    config_.SetDefaults();
 
     AddToCache("GET", kLargeRequest, "HTTP/1.1", "200", "OK", kFooResponseBody);
     AddToCache("GET", "https://www.google.com/foo",
@@ -123,7 +124,8 @@ class EndToEndTest : public ::testing::Test {
 
   virtual QuicTestClient* CreateQuicClient() {
     QuicTestClient* client = new QuicTestClient(server_address_,
-                                                server_hostname_);
+                                                server_hostname_,
+                                                config_);
     client->Connect();
     return client;
   }
@@ -152,8 +154,10 @@ class EndToEndTest : public ::testing::Test {
   void StopServer() {
     if (!server_started_)
       return;
-    server_thread_->quit()->Signal();
-    server_thread_->Join();
+    if (server_thread_.get()) {
+      server_thread_->quit()->Signal();
+      server_thread_->Join();
+    }
   }
 
   void AddToCache(const StringPiece& method,
@@ -192,6 +196,7 @@ class EndToEndTest : public ::testing::Test {
   scoped_ptr<ServerThread> server_thread_;
   scoped_ptr<QuicTestClient> client_;
   bool server_started_;
+  QuicConfig config_;
 };
 
 TEST_F(EndToEndTest, SimpleRequestResponse) {
@@ -499,11 +504,11 @@ TEST_F(EndToEndTest, MultipleTermination) {
 }
 
 /*TEST_F(EndToEndTest, Timeout) {
-  FLAGS_negotiated_timeout_us = 500;
+  config_.set_idle_connection_state_lifetime(
+      QuicTime::Delta::FromMicroseconds(500));
   // Note: we do NOT ASSERT_TRUE: we may time out during initial handshake:
   // that's enough to validate timeout in this case.
   Initialize();
-
   while (client_->client()->connected()) {
     client_->client()->WaitForEvents();
   }

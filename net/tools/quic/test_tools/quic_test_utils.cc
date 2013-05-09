@@ -27,7 +27,8 @@ MockConnection::MockConnection(QuicGuid guid,
 MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                bool is_server)
-    : QuicConnection(guid, address, new MockHelper(), is_server),
+    : QuicConnection(guid, address, new testing::NiceMock<MockHelper>(),
+                     is_server),
       has_mock_helper_(true) {
 }
 
@@ -51,6 +52,21 @@ void MockConnection::AdvanceTime(QuicTime::Delta delta) {
 bool TestDecompressorVisitor::OnDecompressedData(StringPiece data) {
   data.AppendToString(&data_);
   return true;
+}
+
+TestSession::TestSession(QuicConnection* connection, bool is_server)
+    : QuicSession(connection, is_server),
+      crypto_stream_(NULL) {
+}
+
+TestSession::~TestSession() {}
+
+void TestSession::SetCryptoStream(QuicCryptoStream* stream) {
+  crypto_stream_ = stream;
+}
+
+QuicCryptoStream* TestSession::GetCryptoStream() {
+  return crypto_stream_;
 }
 
 }  // namespace test

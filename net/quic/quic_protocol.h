@@ -36,9 +36,10 @@ typedef uint64 QuicPacketSequenceNumber;
 typedef QuicPacketSequenceNumber QuicFecGroupNumber;
 typedef uint64 QuicPublicResetNonceProof;
 typedef uint8 QuicPacketEntropyHash;
-typedef uint32 QuicVersionTag;
-typedef std::vector<QuicVersionTag> QuicVersionTagList;
 typedef uint32 QuicHeaderId;
+// QuicTag is the type of a tag in the wire protocol.
+typedef uint32 QuicTag;
+typedef std::vector<QuicTag> QuicTagVector;
 
 // TODO(rch): Consider Quic specific names for these constants.
 // Maximum size in bytes of a QUIC packet.
@@ -75,7 +76,7 @@ NET_EXPORT_PRIVATE size_t GetStartOfFecProtectedData(bool include_version);
 // Index of the first byte in a QUIC packet of encrypted data.
 NET_EXPORT_PRIVATE size_t GetStartOfEncryptedData(bool include_version);
 // Returns true if |version| is a supported protocol version.
-NET_EXPORT_PRIVATE bool IsSupportedVersion(QuicVersionTag version);
+NET_EXPORT_PRIVATE bool IsSupportedVersion(QuicTag version);
 
 // Index of the first byte in a QUIC packet which is used in hash calculation.
 const size_t kStartOfHashData = 0;
@@ -95,13 +96,13 @@ const uint8 kNoFecOffset = 0xFF;
 const int64 kDefaultTimeoutUs = 600000000;  // 10 minutes.
 
 enum Retransmission {
-  NOT_RETRANSMISSION = 0,
-  IS_RETRANSMISSION = 1,
+  NOT_RETRANSMISSION,
+  IS_RETRANSMISSION,
 };
 
 enum HasRetransmittableData {
-  HAS_RETRANSMITTABLE_DATA = 0,
-  NO_RETRANSMITTABLE_DATA = 1,
+  NO_RETRANSMITTABLE_DATA,
+  HAS_RETRANSMITTABLE_DATA,
 };
 
 enum QuicFrameType {
@@ -233,6 +234,11 @@ enum QuicErrorCode {
   QUIC_PROOF_INVALID,
   // A crypto message was received with a duplicate tag.
   QUIC_CRYPTO_DUPLICATE_TAG,
+  // A crypto message was received with the wrong encryption level (i.e. it
+  // should have been encrypted but was not.)
+  QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT,
+  // The server config for a server has expired.
+  QUIC_CRYPTO_SERVER_CONFIG_EXPIRED,
 
   // No error. Used as bound while iterating.
   QUIC_LAST_ERROR,
@@ -248,8 +254,11 @@ enum QuicErrorCode {
 // The TAG macro is used in header files to ensure that we don't create static
 // initialisers. In normal code, the MakeQuicTag function should be used.
 #define TAG(a, b, c, d) ((d << 24) + (c << 16) + (b << 8) + a)
-const QuicVersionTag kUnsupportedVersion = -1;
-const QuicVersionTag kQuicVersion1 = TAG('Q', '1', '.', '0');
+const QuicTag kUnsupportedVersion = -1;
+// Each time the wire format changes, this need needs to be incremented.
+// At some point, we will actually freeze the wire format and make an official
+// version number, but this works for now.
+const QuicTag kQuicVersion1 = TAG('Q', '0', '0', '1');
 #undef TAG
 
 // MakeQuicTag returns a value given the four bytes. For example:
@@ -267,7 +276,7 @@ struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
   QuicGuid guid;
   bool reset_flag;
   bool version_flag;
-  QuicVersionTagList versions;
+  QuicTagVector versions;
 };
 
 // Header for Data or FEC packets.

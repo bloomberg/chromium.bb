@@ -40,16 +40,6 @@ bool QuicCryptoClientStream::CryptoConnect() {
   return true;
 }
 
-const QuicNegotiatedParameters&
-QuicCryptoClientStream::negotiated_params() const {
-  return negotiated_params_;
-}
-
-const QuicCryptoNegotiatedParameters&
-QuicCryptoClientStream::crypto_negotiated_params() const {
-  return crypto_negotiated_params_;
-}
-
 int QuicCryptoClientStream::num_sent_client_hellos() const {
   return num_client_hellos_;
 }
@@ -98,7 +88,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             server_hostname_,
             session()->connection()->guid(),
             cached,
-            session()->connection()->clock(),
+            session()->connection()->clock()->WallNow(),
             session()->connection()->random_generator(),
             &crypto_negotiated_params_,
             &out,
@@ -119,19 +109,25 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         SendHandshakeMessage(out);
         // Be prepared to decrypt with the new server write key.
         session()->connection()->SetAlternativeDecrypter(
-            crypto_negotiated_params_.decrypter.release(),
+            crypto_negotiated_params_.initial_crypters.decrypter.release(),
             true /* latch once used */);
         // Send subsequent packets under encryption on the assumption that the
         // server will accept the handshake.
         session()->connection()->SetEncrypter(
             ENCRYPTION_INITIAL,
-            crypto_negotiated_params_.encrypter.release());
+            crypto_negotiated_params_.initial_crypters.encrypter.release());
         session()->connection()->SetDefaultEncryptionLevel(
             ENCRYPTION_INITIAL);
         if (!encryption_established_) {
-          session()->OnCryptoHandshakeEvent(
-              QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
-          encryption_established_ = true;
+          // TODO(agl): the following, commented code should live here and not
+          // down when the handshake is confirmed. However, it causes
+          // EndToEndTest.LargePost to be flaky (b/8074678), seemingly because
+          // the packets dropped when the client hello is dropped cause the
+          // congestion control to be too conservative and the server times
+          // out.
+          //   session()->OnCryptoHandshakeEvent(
+          //       QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
+          //   encryption_established_ = true;
         } else {
           session()->OnCryptoHandshakeEvent(
               QuicSession::ENCRYPTION_REESTABLISHED);
@@ -180,10 +176,19 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             ENCRYPTION_NONE);
         next_state_ = STATE_SEND_CHLO;
         break;
-      case STATE_RECV_SHLO:
+      case STATE_RECV_SHLO: {
         // We sent a CHLO that we expected to be accepted and now we're hoping
         // for a SHLO from the server to confirm that.
         if (in->tag() == kREJ) {
+          // alternative_decrypter will be NULL if the original alternative
+          // decrypter latched and became the primary decrypter. That happens
+          // if we received a message encrypted with the INITIAL key.
+          if (session()->connection()->alternative_decrypter() == NULL) {
+            // The rejection was sent encrypted!
+            CloseConnectionWithDetails(QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT,
+                                       "encrypted REJ message");
+            return;
+          }
           next_state_ = STATE_RECV_REJ;
           break;
         }
@@ -192,11 +197,46 @@ void QuicCryptoClientStream::DoHandshakeLoop(
                                      "Expected SHLO or REJ");
           return;
         }
-        // TODO(agl): enable this once the tests are corrected to permit it.
-        // DCHECK(session()->connection()->alternative_decrypter() == NULL);
+        // alternative_decrypter will be NULL if the original alternative
+        // decrypter latched and became the primary decrypter. That happens
+        // if we received a message encrypted with the INITIAL key.
+        if (session()->connection()->alternative_decrypter() != NULL) {
+          // The server hello was sent without encryption.
+          CloseConnectionWithDetails(QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT,
+                                     "unencrypted SHLO message");
+          return;
+        }
+        error = crypto_config_->ProcessServerHello(
+            *in, session()->connection()->guid(), &crypto_negotiated_params_,
+            &error_details);
+        if (error != QUIC_NO_ERROR) {
+          CloseConnectionWithDetails(
+              error, "Server hello invalid: " + error_details);
+          return;
+        }
+        CrypterPair* crypters =
+            &crypto_negotiated_params_.forward_secure_crypters;
+        // TODO(agl): we don't currently latch this decrypter because the idea
+        // has been floated that the server shouldn't send packets encrypted
+        // with the FORWARD_SECURE key until it receives a FORWARD_SECURE
+        // packet from the client.
+        session()->connection()->SetAlternativeDecrypter(
+            crypters->decrypter.release(), false /* don't latch */);
+        session()->connection()->SetEncrypter(
+            ENCRYPTION_FORWARD_SECURE, crypters->encrypter.release());
+        session()->connection()->SetDefaultEncryptionLevel(
+            ENCRYPTION_FORWARD_SECURE);
+
+        // TODO(agl): this code shouldn't be here. See the TODO further up
+        // about it.
+        session()->OnCryptoHandshakeEvent(
+            QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
+        encryption_established_ = true;
+
         handshake_confirmed_ = true;
         session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
         return;
+      }
       case STATE_IDLE:
         // This means that the peer sent us a message that we weren't expecting.
         CloseConnection(QUIC_INVALID_CRYPTO_MESSAGE_TYPE);

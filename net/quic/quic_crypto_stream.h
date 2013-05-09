@@ -7,6 +7,7 @@
 
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_utils.h"
+#include "net/quic/quic_config.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/reliable_quic_stream.h"
 
@@ -45,6 +46,9 @@ class NET_EXPORT_PRIVATE QuicCryptoStream
   bool encryption_established() { return encryption_established_; }
   bool handshake_confirmed() { return handshake_confirmed_; }
 
+  const QuicNegotiatedParameters& negotiated_params() const;
+  const QuicCryptoNegotiatedParameters& crypto_negotiated_params() const;
+
  protected:
   // Closes the connection
   void CloseConnection(QuicErrorCode error);
@@ -52,6 +56,9 @@ class NET_EXPORT_PRIVATE QuicCryptoStream
 
   bool encryption_established_;
   bool handshake_confirmed_;
+
+  QuicNegotiatedParameters negotiated_params_;
+  QuicCryptoNegotiatedParameters crypto_negotiated_params_;
 
  private:
   CryptoFramer crypto_framer_;

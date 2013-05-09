@@ -25,7 +25,7 @@ class MockClock : public QuicClock {
 
   virtual QuicTime ApproximateNow() const OVERRIDE;
 
-  virtual QuicTime::Delta NowAsDeltaSinceUnixEpoch() const OVERRIDE;
+  virtual QuicWallTime WallNow() const OVERRIDE;
 
   base::TimeTicks NowInTicks() const;
 

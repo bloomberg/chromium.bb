@@ -49,16 +49,6 @@ class TestCryptoVisitor : public ::net::CryptoFramerVisitorInterface {
   vector<CryptoHandshakeMessage> messages_;
 };
 
-TEST(CryptoFramerTest, MakeCryptoTag) {
-  CryptoTag tag = MakeQuicTag('A', 'B', 'C', 'D');
-  char bytes[4];
-  memcpy(bytes, &tag, 4);
-  EXPECT_EQ('A', bytes[0]);
-  EXPECT_EQ('B', bytes[1]);
-  EXPECT_EQ('C', bytes[2]);
-  EXPECT_EQ('D', bytes[3]);
-}
-
 TEST(CryptoFramerTest, ConstructHandshakeMessage) {
   CryptoHandshakeMessage message;
   message.set_tag(0xFFAA7733);
@@ -356,8 +346,8 @@ TEST(CryptoFramerTest, ProcessEndOffsetsOutOfOrder) {
     0x00, 0x00, 0x00, 0x00,
   };
 
-  EXPECT_FALSE(framer.ProcessInput(StringPiece(AsChars(input),
-                                               arraysize(input))));
+  EXPECT_FALSE(
+      framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
   EXPECT_EQ(QUIC_CRYPTO_TAGS_OUT_OF_ORDER, framer.error());
 }
 
@@ -375,8 +365,8 @@ TEST(CryptoFramerTest, ProcessInputTooManyEntries) {
     0x00, 0x00,
   };
 
-  EXPECT_FALSE(framer.ProcessInput(StringPiece(AsChars(input),
-                                               arraysize(input))));
+  EXPECT_FALSE(
+      framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
   EXPECT_EQ(QUIC_CRYPTO_TOO_MANY_ENTRIES, framer.error());
 }
 
@@ -402,8 +392,8 @@ TEST(CryptoFramerTest, ProcessInputZeroLength) {
     0x05, 0x00, 0x00, 0x00,
   };
 
-  EXPECT_TRUE(framer.ProcessInput(StringPiece(AsChars(input),
-                                              arraysize(input))));
+  EXPECT_TRUE(
+      framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
 }
 
 }  // namespace test

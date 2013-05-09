@@ -149,9 +149,14 @@ string P256KeyExchange::NewPrivateKey() {
   return string(&result[0], result_size);
 }
 
-bool P256KeyExchange::CalculateSharedKey(
-    const StringPiece& peer_public_value,
-    string* out_result) const {
+KeyExchange* P256KeyExchange::NewKeyPair(QuicRandom* /*rand*/) const {
+  // TODO(agl): avoid the serialisation/deserialisation in this function.
+  const string private_value = NewPrivateKey();
+  return P256KeyExchange::New(private_value);
+}
+
+bool P256KeyExchange::CalculateSharedKey(const StringPiece& peer_public_value,
+                                         string* out_result) const {
   if (peer_public_value.size() != kUncompressedP256PointBytes ||
       peer_public_value[0] != kUncompressedECPointForm) {
     DLOG(INFO) << "Peer public value is invalid.";
@@ -222,9 +227,7 @@ StringPiece P256KeyExchange::public_value() const {
                      sizeof(public_key_));
 }
 
-CryptoTag P256KeyExchange::tag() const {
-  return kP256;
-}
+QuicTag P256KeyExchange::tag() const { return kP256; }
 
 }  // namespace net
 

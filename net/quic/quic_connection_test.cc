@@ -1889,7 +1889,7 @@ TEST_F(QuicConnectionTest, CheckSentEntropyHash) {
 
 // TODO(satyamsehkhar): Add more test when we start supporting more versions.
 TEST_F(QuicConnectionTest, SendVersionNegotiationPacket) {
-  QuicVersionTag kRandomVersion = 143;
+  QuicTag kRandomVersion = 143;
   QuicFramerPeer::SetVersion(&framer_, kRandomVersion);
 
   QuicPacketHeader header;

@@ -22,9 +22,9 @@ namespace net {
 //      that they already have. In the event that one of them is to be
 //      compressed, it can be replaced with just the hash.
 //   2) The peer may provide a number of hashes that represent sets of
-//      pre-shared certificates. If one of those certificates is to be
-//      compressed, and it's known to the given CommonCertSet, then it can be
-//      replaced with a set hash and index.
+//      pre-shared certificates (CommonCertSets). If one of those certificates
+//      is to be compressed, and it's known to the given CommonCertSets, then it
+//      can be replaced with a set hash and certificate index.
 //   3) Otherwise the certificates are compressed with zlib using a pre-shared
 //      dictionary that consists of the certificates handled with the above
 //      methods and a small chunk of common substrings.
@@ -37,8 +37,8 @@ class NET_EXPORT_PRIVATE CertCompressor {
   // hashes of certificates that the peer already possesses.
   static std::string CompressChain(const std::vector<std::string>& certs,
                                    base::StringPiece client_common_set_hashes,
-                                   base::StringPiece client_cached,
-                                   CommonCertSet* common_set);
+                                   base::StringPiece client_cached_cert_hashes,
+                                   const CommonCertSets* common_set);
 
   // DecompressChain decompresses the result of |CompressChain|, given in |in|,
   // into a series of certificates that are written to |out_certs|.
@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE CertCompressor {
   // |common_set| contains the common certificate sets known locally.
   static bool DecompressChain(base::StringPiece in,
                               const std::vector<std::string>& cached_certs,
-                              CommonCertSet* common_set,
+                              const CommonCertSets* common_set,
                               std::vector<std::string>* out_certs);
 };
 

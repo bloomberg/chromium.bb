@@ -13,19 +13,19 @@
 
 namespace net {
 
-// CommonCertSet is an interface to an object that contains a number of common
+// CommonCertSets is an interface to an object that contains a number of common
 // certificate sets and can match against them.
-class NET_EXPORT_PRIVATE CommonCertSet {
+class NET_EXPORT_PRIVATE CommonCertSets {
  public:
-  virtual ~CommonCertSet();
+  virtual ~CommonCertSets();
 
   // GetCommonHashes returns a StringPiece containing the hashes of common sets
   // supported by this object.
-  virtual base::StringPiece GetCommonHashes() = 0;
+  virtual base::StringPiece GetCommonHashes() const = 0;
 
   // GetCert returns a specific certificate in the common set identified by
   // |hash|. If no such certificate is known, an empty StringPiece is returned.
-  virtual base::StringPiece GetCert(uint64 hash, uint32 index) = 0;
+  virtual base::StringPiece GetCert(uint64 hash, uint32 index) const = 0;
 
   // MatchCert tries to find |cert| in one of the common certificate sets
   // identified by |common_set_hashes|. On success it puts the hash in
@@ -34,27 +34,27 @@ class NET_EXPORT_PRIVATE CommonCertSet {
   virtual bool MatchCert(base::StringPiece cert,
                          base::StringPiece common_set_hashes,
                          uint64* out_hash,
-                         uint32* out_index) = 0;
+                         uint32* out_index) const = 0;
 };
 
-// CommonCertSetQUIC implements the CommonCertSet interface using the default
+// CommonCertSetsQUIC implements the CommonCertSet interface using the default
 // certificate sets.
-class NET_EXPORT_PRIVATE CommonCertSetQUIC : public CommonCertSet {
+class NET_EXPORT_PRIVATE CommonCertSetsQUIC : public CommonCertSets {
  public:
-  CommonCertSetQUIC();
+  CommonCertSetsQUIC();
 
-  // CommonCertSet interface.
-  virtual base::StringPiece GetCommonHashes() OVERRIDE;
+  // CommonCertSets interface.
+  virtual base::StringPiece GetCommonHashes() const OVERRIDE;
 
-  virtual base::StringPiece GetCert(uint64 hash, uint32 index) OVERRIDE;
+  virtual base::StringPiece GetCert(uint64 hash, uint32 index) const OVERRIDE;
 
   virtual bool MatchCert(base::StringPiece cert,
                          base::StringPiece common_set_hashes,
                          uint64* out_hash,
-                         uint32* out_index) OVERRIDE;
+                         uint32* out_index) const OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CommonCertSetQUIC);
+  DISALLOW_COPY_AND_ASSIGN(CommonCertSetsQUIC);
 };
 
 }  // namespace net

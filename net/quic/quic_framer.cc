@@ -45,7 +45,7 @@ QuicPacketSequenceNumber ClosestTo(QuicPacketSequenceNumber target,
 
 }  // namespace
 
-QuicFramer::QuicFramer(QuicVersionTag version,
+QuicFramer::QuicFramer(QuicTag version,
                        QuicTime creation_time,
                        bool is_server)
     : visitor_(NULL),
@@ -54,6 +54,7 @@ QuicFramer::QuicFramer(QuicVersionTag version,
       last_sequence_number_(0),
       quic_version_(version),
       decrypter_(QuicDecrypter::Create(kNULL)),
+      alternative_decrypter_latch_(false),
       is_server_(is_server),
       creation_time_(creation_time) {
   DCHECK(IsSupportedVersion(version));
@@ -101,7 +102,7 @@ size_t QuicFramer::GetMinGoAwayFrameSize() {
       kQuicStreamIdSize;
 }
 
-bool QuicFramer::IsSupportedVersion(QuicVersionTag version) {
+bool QuicFramer::IsSupportedVersion(QuicTag version) {
   return version == kQuicVersion1;
 }
 
@@ -288,7 +289,7 @@ QuicEncryptedPacket* QuicFramer::ConstructPublicResetPacket(
 
 QuicEncryptedPacket* QuicFramer::ConstructVersionNegotiationPacket(
     const QuicPacketPublicHeader& header,
-    const QuicVersionTagList& supported_versions) {
+    const QuicTagVector& supported_versions) {
   DCHECK(header.version_flag);
   size_t len = GetVersionNegotiationPacketSize(supported_versions.size());
   QuicDataWriter writer(len);
@@ -350,7 +351,7 @@ bool QuicFramer::ProcessVersionNegotiationPacket(
   DCHECK(!is_server_);
   // Try reading at least once to raise error if the packet is invalid.
   do {
-    QuicVersionTag version;
+    QuicTag version;
     if (!reader_->ReadBytes(&version, kQuicVersionSize)) {
       set_detailed_error("Unable to read supported version in negotiation.");
       return RaiseError(QUIC_INVALID_VERSION_NEGOTIATION_PACKET);
@@ -553,7 +554,7 @@ bool QuicFramer::ProcessPublicHeader(QuicPacketPublicHeader* public_header) {
   }
 
   if (public_header->version_flag && is_server_) {
-    QuicVersionTag version;
+    QuicTag version;
     if (!reader_->ReadUInt32(&version)) {
       // Read the version only if the packet is from the client.
       // version flag from the server means version negotiation packet.
@@ -1068,6 +1069,18 @@ const QuicEncrypter* QuicFramer::encrypter(EncryptionLevel level) const {
   return encrypter_[level].get();
 }
 
+void QuicFramer::SwapCryptersForTest(QuicFramer* other) {
+  for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; i++) {
+    encrypter_[i].swap(other->encrypter_[i]);
+  }
+  decrypter_.swap(other->decrypter_);
+  alternative_decrypter_.swap(other->alternative_decrypter_);
+
+  const bool other_latch = other->alternative_decrypter_latch_;
+  other->alternative_decrypter_latch_ = alternative_decrypter_latch_;
+  alternative_decrypter_latch_ = other_latch;
+}
+
 QuicEncryptedPacket* QuicFramer::EncryptPacket(
     EncryptionLevel level,
     QuicPacketSequenceNumber packet_sequence_number,
@@ -1116,26 +1129,21 @@ bool QuicFramer::DecryptPayload(QuicPacketSequenceNumber sequence_number,
     return false;
   }
   DCHECK(decrypter_.get() != NULL);
-  LOG(INFO) << "Decrypting packet";
   decrypted_.reset(decrypter_->DecryptPacket(
       sequence_number,
       GetAssociatedDataFromEncryptedPacket(packet, version_flag),
       encrypted));
   if  (decrypted_.get() == NULL && alternative_decrypter_.get() != NULL) {
-    LOG(INFO) << "Trying alternative";
     decrypted_.reset(alternative_decrypter_->DecryptPacket(
         sequence_number,
         GetAssociatedDataFromEncryptedPacket(packet, version_flag),
         encrypted));
     if (decrypted_.get() != NULL) {
-      LOG(INFO) << "alternative ok";
       if (alternative_decrypter_latch_) {
-        LOG(INFO) << "  latching";
         // Switch to the alternative decrypter and latch so that we cannot
         // switch back.
         decrypter_.reset(alternative_decrypter_.release());
       } else {
-        LOG(INFO) << "  swapping";
         // Switch the alternative decrypter so that we use it first next time.
         decrypter_.swap(alternative_decrypter_);
       }

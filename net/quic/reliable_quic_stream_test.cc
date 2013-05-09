@@ -43,7 +43,7 @@ class TestStream : public ReliableQuicStream {
   }
 
   virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE {
-    LOG(INFO) << "data_len: " << data_len;
+    DVLOG(1) << "ProcessData data_len: " << data_len;
     data_ += string(data, data_len);
     return should_process_data_ ? data_len : 0;
   }
@@ -68,8 +68,10 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   }
 
   void Initialize(bool stream_should_process_data) {
-    connection_ = new MockConnection(kGuid, IPEndPoint(), kIsServer);
-    session_.reset(new MockSession(connection_, kIsServer));
+    connection_ = new testing::StrictMock<MockConnection>(
+        kGuid, IPEndPoint(), kIsServer);
+    session_.reset(new testing::StrictMock<MockSession>(
+        connection_, kIsServer));
     stream_.reset(new TestStream(kStreamId, session_.get(),
                                  stream_should_process_data));
     stream2_.reset(new TestStream(kStreamId + 2, session_.get(),
@@ -306,6 +308,26 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersEarly) {
   EXPECT_EQ(2u, session_->decompressor()->current_header_id());
   stream2_->OnDecompressorAvailable();
   EXPECT_EQ(decompressed_headers2, stream2_->data());
+}
+TEST_F(ReliableQuicStreamTest, ProcessHeadersDelay) {
+  Initialize(!kShouldProcessData);
+
+  string compressed_headers = compressor_->CompressHeaders(headers_);
+  QuicStreamFrame frame1(stream_->id(), false, 0, compressed_headers);
+  string decompressed_headers =
+      SpdyUtils::SerializeUncompressedHeaders(headers_);
+
+  // Send the headers to the stream and verify they were decompressed.
+  stream_->OnStreamFrame(frame1);
+  EXPECT_EQ(2u, session_->decompressor()->current_header_id());
+
+  // Verify that we are now able to handle the body data,
+  // even though the stream has not processed the headers.
+  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_HEADER_ID))
+      .Times(0);
+  QuicStreamFrame frame2(stream_->id(), false, compressed_headers.length(),
+                         "body data");
+  stream_->OnStreamFrame(frame2);
 }
 
 }  // namespace

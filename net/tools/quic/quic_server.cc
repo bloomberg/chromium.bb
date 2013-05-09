@@ -51,8 +51,9 @@ QuicServer::QuicServer()
   QuicEpollClock clock(&epoll_server_);
 
   scoped_ptr<CryptoHandshakeMessage> scfg(
-      crypto_config_.AddDefaultConfig(QuicRandom::GetInstance(), &clock,
-                                      extra_tags));
+      crypto_config_.AddDefaultConfig(
+          QuicRandom::GetInstance(), &clock, extra_tags,
+          QuicCryptoServerConfig::kDefaultExpiry));
   // If we were using the same config in many servers then we would have to
   // parse a QuicConfig from config_tags here.
   if (!config_.SetFromHandshakeMessage(*scfg)) {

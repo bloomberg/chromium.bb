@@ -16,7 +16,7 @@ using net::StrikeRegister;
 using std::set;
 using std::string;
 
-const uint8 kOrbit[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+const uint8 kOrbit[8] = { 1, 2, 3, 4, 5, 6, 7, 8 };
 
 void
 NonceSetTimeAndOrbit(uint8 nonce[32], unsigned time, const uint8 orbit[8]) {
@@ -54,7 +54,7 @@ TEST(StrikeRegisterTest, BadOrbit) {
   StrikeRegister set(10 /* max size */, 1000 /* current time */,
                      100 /* window secs */, kOrbit);
   uint8 nonce[32];
-  static const uint8 kBadOrbit[8] = {0, 0, 0, 0, 1, 1, 1, 1};
+  static const uint8 kBadOrbit[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
   NonceSetTimeAndOrbit(nonce, 1101, kBadOrbit);
   ASSERT_FALSE(set.Insert(nonce, 1100));
 }
@@ -186,7 +186,7 @@ class SlowStrikeRegister {
   void DropOldestEntry() {
     set<string>::iterator oldest = nonces_.begin(), it;
     uint32 oldest_time =
-      TimeFromBytes(reinterpret_cast<const uint8*>(oldest->data()));
+        TimeFromBytes(reinterpret_cast<const uint8*>(oldest->data()));
 
     for (it = oldest; it != nonces_.end(); it++) {
       uint32 t = TimeFromBytes(reinterpret_cast<const uint8*>(it->data()));
@@ -214,10 +214,10 @@ TEST(StrikeRegisterStressTest, Stress) {
   srand(42);
   unsigned max_entries = 64;
   uint32 current_time = 10000, window = 200;
-  scoped_ptr<StrikeRegister> s1(new StrikeRegister(
-      max_entries, current_time, window, kOrbit));
-  scoped_ptr<SlowStrikeRegister> s2(new SlowStrikeRegister(
-      max_entries, current_time, window, kOrbit));
+  scoped_ptr<StrikeRegister> s1(
+      new StrikeRegister(max_entries, current_time, window, kOrbit));
+  scoped_ptr<SlowStrikeRegister> s2(
+      new SlowStrikeRegister(max_entries, current_time, window, kOrbit));
   uint64 i;
 
   // When making changes it's worth removing the limit on this test and running
@@ -231,8 +231,8 @@ TEST(StrikeRegisterStressTest, Stress) {
       current_time = rand() % 10000;
       window = rand() % 500;
       s1.reset(new StrikeRegister(max_entries, current_time, window, kOrbit));
-      s2.reset(new SlowStrikeRegister(max_entries, current_time, window,
-                                      kOrbit));
+      s2.reset(
+          new SlowStrikeRegister(max_entries, current_time, window, kOrbit));
     }
 
     int32 time_delta = rand() % (window * 4);

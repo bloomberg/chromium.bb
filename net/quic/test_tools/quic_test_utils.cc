@@ -5,7 +5,6 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 
 #include "base/stl_util.h"
-#include "base/strings/string_piece.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_utils.h"
@@ -56,7 +55,7 @@ MockFramerVisitor::MockFramerVisitor() {
 MockFramerVisitor::~MockFramerVisitor() {
 }
 
-bool NoOpFramerVisitor::OnProtocolVersionMismatch(QuicVersionTag version) {
+bool NoOpFramerVisitor::OnProtocolVersionMismatch(QuicTag version) {
   return false;
 }
 
@@ -189,7 +188,8 @@ void MockHelper::AdvanceTime(QuicTime::Delta delta) {
 MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                bool is_server)
-    : QuicConnection(guid, address, new MockHelper(), is_server),
+    : QuicConnection(guid, address, new testing::NiceMock<MockHelper>(),
+                     is_server),
       has_mock_helper_(true) {
 }
 
@@ -218,6 +218,7 @@ PacketSavingConnection::PacketSavingConnection(QuicGuid guid,
 
 PacketSavingConnection::~PacketSavingConnection() {
   STLDeleteElements(&packets_);
+  STLDeleteElements(&encrypted_packets_);
 }
 
 bool PacketSavingConnection::SendOrQueuePacket(
@@ -227,6 +228,9 @@ bool PacketSavingConnection::SendOrQueuePacket(
     QuicPacketEntropyHash entropy_hash,
     HasRetransmittableData retransmittable) {
   packets_.push_back(packet);
+  QuicEncryptedPacket* encrypted =
+      framer_.EncryptPacket(level, sequence_number, *packet);
+  encrypted_packets_.push_back(encrypted);
   return true;
 }
 
@@ -237,6 +241,22 @@ MockSession::MockSession(QuicConnection* connection, bool is_server)
 }
 
 MockSession::~MockSession() {
+}
+
+TestSession::TestSession(QuicConnection* connection, bool is_server)
+    : QuicSession(connection, is_server),
+      crypto_stream_(NULL) {
+}
+
+TestSession::~TestSession() {
+}
+
+void TestSession::SetCryptoStream(QuicCryptoStream* stream) {
+  crypto_stream_ = stream;
+}
+
+QuicCryptoStream* TestSession::GetCryptoStream() {
+  return crypto_stream_;
 }
 
 MockSendAlgorithm::MockSendAlgorithm() {
@@ -355,7 +375,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   return quic_framer.ConstructFrameDataPacket(header, frames).packet;
 }
 
-QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag) {
+QuicPacket* ConstructHandshakePacket(QuicGuid guid, QuicTag tag) {
   CryptoHandshakeMessage message;
   message.set_tag(tag);
   return ConstructPacketFromHandshakeMessage(guid, message, false);

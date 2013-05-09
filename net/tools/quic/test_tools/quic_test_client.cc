@@ -45,6 +45,19 @@ QuicTestClient::QuicTestClient(IPEndPoint address, const string& hostname)
       never_connected_(true) {
 }
 
+QuicTestClient::QuicTestClient(IPEndPoint address,
+                               const string& hostname,
+                               const QuicConfig& config)
+    : server_address_(address),
+      client_(address, hostname, config),
+      stream_(NULL),
+      stream_error_(QUIC_STREAM_NO_ERROR),
+      connection_error_(QUIC_NO_ERROR),
+      bytes_read_(0),
+      bytes_written_(0),
+      never_connected_(true) {
+}
+
 QuicTestClient::~QuicTestClient() {
   if (stream_) {
     stream_->set_visitor(NULL);

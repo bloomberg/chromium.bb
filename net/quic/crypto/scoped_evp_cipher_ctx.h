@@ -18,9 +18,7 @@ namespace net {
 // functions.
 class ScopedEVPCipherCtx {
  public:
-  ScopedEVPCipherCtx() {
-    EVP_CIPHER_CTX_init(&ctx_);
-  }
+  ScopedEVPCipherCtx() { EVP_CIPHER_CTX_init(&ctx_); }
 
   ~ScopedEVPCipherCtx() {
     int rv = EVP_CIPHER_CTX_cleanup(&ctx_);

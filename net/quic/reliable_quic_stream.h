@@ -126,6 +126,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // Close the write side of the socket.  Further writes will fail.
   void CloseWriteSide();
 
+  bool fin_buffered() { return fin_buffered_; }
+
   QuicSession* session() { return session_; }
 
   // Sends as much of 'data' to the connection as the connection will consume,
@@ -154,7 +156,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   uint64 stream_bytes_read_;
   uint64 stream_bytes_written_;
   // True if the headers have been completely decompresssed.
-  bool headers_complete_;
+  bool headers_decompressed_;
   // ID of the header block sent by the peer, once parsed.
   QuicHeaderId headers_id_;
   // Buffer into which we write bytes from the headers_id_

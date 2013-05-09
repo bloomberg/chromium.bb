@@ -22,7 +22,7 @@ class QuicFramerPeer {
       QuicFramer* framer,
       QuicPacketSequenceNumber packet_sequence_number);
   static void SetIsServer(QuicFramer* framer, bool is_server);
-  static void SetVersion(QuicFramer* framer, QuicVersionTag version);
+  static void SetVersion(QuicFramer* framer, QuicTag version);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicFramerPeer);

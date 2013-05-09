@@ -72,18 +72,18 @@ static unsigned char kGIACertificate[] = {
   0x95, 0x87, 0xbc, 0xbc, 0x90, 0xf9, 0x50, 0x32,
 };
 
-TEST(CommonCertSet, FindGIA) {
+TEST(CommonCertSets, FindGIA) {
   StringPiece gia(reinterpret_cast<const char*>(kGIACertificate),
                   sizeof(kGIACertificate));
 
-  CommonCertSetQUIC set;
+  CommonCertSetsQUIC set;
 
   const uint64 in_hash = GG_UINT64_C(0xde8086f914a3af54);
   uint64 hash;
   uint32 index;
   ASSERT_TRUE(set.MatchCert(
-      gia, StringPiece(reinterpret_cast<const char*>(&in_hash),
-                       sizeof(in_hash)),
+      gia,
+      StringPiece(reinterpret_cast<const char*>(&in_hash), sizeof(in_hash)),
       &hash, &index));
   EXPECT_EQ(in_hash, hash);
 
@@ -93,15 +93,15 @@ TEST(CommonCertSet, FindGIA) {
   EXPECT_TRUE(0 == memcmp(gia.data(), gia_copy.data(), gia.size()));
 }
 
-TEST(CommonCertSet, NonMatch) {
-  CommonCertSetQUIC set;
+TEST(CommonCertSets, NonMatch) {
+  CommonCertSetsQUIC set;
   StringPiece not_a_cert("hello");
   const uint64 in_hash = GG_UINT64_C(0xde8086f914a3af54);
   uint64 hash;
   uint32 index;
   EXPECT_FALSE(set.MatchCert(
-      not_a_cert, StringPiece(reinterpret_cast<const char*>(&in_hash),
-                              sizeof(in_hash)),
+      not_a_cert,
+      StringPiece(reinterpret_cast<const char*>(&in_hash), sizeof(in_hash)),
       &hash, &index));
 }
 

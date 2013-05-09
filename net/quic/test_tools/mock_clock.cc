@@ -24,8 +24,9 @@ QuicTime MockClock::ApproximateNow() const {
   return now_;
 }
 
-QuicTime::Delta MockClock::NowAsDeltaSinceUnixEpoch() const {
-  return now_.Subtract(QuicTime::Zero());
+QuicWallTime MockClock::WallNow() const {
+  return QuicWallTime::FromUNIXSeconds(
+      now_.Subtract(QuicTime::Zero()).ToSeconds());
 }
 
 base::TimeTicks MockClock::NowInTicks() const {

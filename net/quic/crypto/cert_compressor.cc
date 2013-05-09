@@ -18,7 +18,8 @@ namespace net {
 namespace {
 
 // kCommonCertSubstrings contains ~1500 bytes of common certificate substrings
-// in order to help zlib.
+// in order to help zlib. This was generated via a fairly dumb algorithm from
+// the Alexa Top 5000 set - we could probably do better.
 static unsigned char kCommonCertSubstrings[] = {
   0x04, 0x02, 0x30, 0x00, 0x30, 0x1d, 0x06, 0x03, 0x55, 0x1d, 0x25, 0x04,
   0x16, 0x30, 0x14, 0x06, 0x08, 0x2b, 0x06, 0x01, 0x05, 0x05, 0x07, 0x03,
@@ -158,7 +159,7 @@ struct CertEntry {
     // be replaced by its 64-bit hash (in |hash|).
     CACHED = 2,
     // COMMON means that the certificate is in a common certificate set known
-    // to the peer with hash |set_hash| and index |index|.
+    // to the peer with hash |set_hash| and certificate index |index|.
     COMMON = 3,
   };
 
@@ -171,16 +172,17 @@ struct CertEntry {
 // MatchCerts returns a vector of CertEntries describing how to most
 // efficiently represent |certs| to a peer who has the common sets identified
 // by |client_common_set_hashes| and who has cached the certificates with the
-// 64-bit, FNV-1a hashes in |client_cached|.
+// 64-bit, FNV-1a hashes in |client_cached_cert_hashes|.
 vector<CertEntry> MatchCerts(const vector<string>& certs,
                              StringPiece client_common_set_hashes,
-                             StringPiece client_cached,
-                             CommonCertSet* common_set) {
+                             StringPiece client_cached_cert_hashes,
+                             const CommonCertSets* common_set) {
   vector<CertEntry> entries;
   entries.reserve(certs.size());
 
-  const bool cached_valid = client_cached.size() % sizeof(uint64) == 0 &&
-                            !client_cached.empty();
+  const bool cached_valid =
+      client_cached_cert_hashes.size() % sizeof(uint64) == 0 &&
+      !client_cached_cert_hashes.empty();
 
   for (vector<string>::const_iterator i = certs.begin();
        i != certs.end(); ++i) {
@@ -191,9 +193,11 @@ vector<CertEntry> MatchCerts(const vector<string>& certs,
 
       uint64 hash = QuicUtils::FNV1a_64_Hash(i->data(), i->size());
       // This assumes that the machine is little-endian.
-      for (size_t i = 0; i < client_cached.size(); i += sizeof(uint64)) {
+      for (size_t i = 0; i < client_cached_cert_hashes.size();
+           i += sizeof(uint64)) {
         uint64 cached_hash;
-        memcpy(&cached_hash, client_cached.data() + i, sizeof(uint64));
+        memcpy(&cached_hash, client_cached_cert_hashes.data() + i,
+               sizeof(uint64));
         if (hash != cached_hash) {
           continue;
         }
@@ -210,9 +214,8 @@ vector<CertEntry> MatchCerts(const vector<string>& certs,
       }
     }
 
-    if (common_set &&
-        common_set->MatchCert(*i, client_common_set_hashes, &entry.set_hash,
-                              &entry.index)) {
+    if (common_set && common_set->MatchCert(*i, client_common_set_hashes,
+                                            &entry.set_hash, &entry.index)) {
       entry.type = CertEntry::COMMON;
       entries.push_back(entry);
       continue;
@@ -329,7 +332,7 @@ vector<uint64> HashCerts(const vector<string>& certs) {
 // |in_out| is updated to contain the trailing data.
 bool ParseEntries(StringPiece* in_out,
                   const vector<string>& cached_certs,
-                  CommonCertSet* common_set,
+                  const CommonCertSets* common_set,
                   vector<CertEntry>* out_entries,
                   vector<string>* out_certs) {
   StringPiece in = *in_out;
@@ -419,14 +422,9 @@ class ScopedZLib {
     DEFLATE,
   };
 
-  explicit ScopedZLib(Type type)
-      : z_(NULL),
-        type_(type) {
-  }
+  explicit ScopedZLib(Type type) : z_(NULL), type_(type) {}
 
-  void reset(z_stream* z) {
-    z_ = z;
-  }
+  void reset(z_stream* z) { z_ = z; }
 
   ~ScopedZLib() {
     if (z_) {
@@ -450,10 +448,10 @@ class ScopedZLib {
 // static
 string CertCompressor::CompressChain(const vector<string>& certs,
                                      StringPiece client_common_set_hashes,
-                                     StringPiece client_cached,
-                                     CommonCertSet* common_set) {
+                                     StringPiece client_cached_cert_hashes,
+                                     const CommonCertSets* common_set) {
   const vector<CertEntry> entries = MatchCerts(
-      certs, client_common_set_hashes, client_cached, common_set);
+      certs, client_common_set_hashes, client_cached_cert_hashes, common_set);
   DCHECK_EQ(entries.size(), certs.size());
 
   size_t uncompressed_size = 0;
@@ -551,7 +549,7 @@ string CertCompressor::CompressChain(const vector<string>& certs,
 // static
 bool CertCompressor::DecompressChain(StringPiece in,
                                      const vector<string>& cached_certs,
-                                     CommonCertSet* common_set,
+                                     const CommonCertSets* common_set,
                                      vector<string>* out_certs) {
   vector<CertEntry> entries;
   if (!ParseEntries(&in, cached_certs, common_set, &entries, out_certs)) {
@@ -600,9 +598,7 @@ bool CertCompressor::DecompressChain(StringPiece in,
       rv = inflate(&z, Z_FINISH);
     }
 
-    if (Z_STREAM_END != rv ||
-        z.avail_out > 0 ||
-        z.avail_in > 0) {
+    if (Z_STREAM_END != rv || z.avail_out > 0 || z.avail_in > 0) {
       return false;
     }
 

@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "net/base/net_export.h"
+#include "net/quic/quic_protocol.h"
 
 // Version and Crypto tags are written to the wire with a big-endian
 // representation of the name of the tag.  For example
@@ -20,60 +20,77 @@
 // to reverse the order of the bytes.
 //
 // We use a macro to ensure that no static initialisers are created. Use the
-// QuicTag function in normal code.
+// MakeQuicTag function in normal code.
 #define TAG(a, b, c, d) ((d << 24) + (c << 16) + (b << 8) + a)
 
 namespace net {
 
-// CryptoTag is the type of a tag in the wire protocol.
-typedef uint32 CryptoTag;
 typedef std::string ServerConfigID;
-typedef std::map<CryptoTag, std::string> CryptoTagValueMap;
-typedef std::vector<CryptoTag> CryptoTagVector;
+typedef std::map<QuicTag, std::string> QuicTagValueMap;
 
-const CryptoTag kCHLO = TAG('C', 'H', 'L', 'O');  // Client hello
-const CryptoTag kSHLO = TAG('S', 'H', 'L', 'O');  // Server hello
-const CryptoTag kSCFG = TAG('S', 'C', 'F', 'G');  // Server config
-const CryptoTag kREJ  = TAG('R', 'E', 'J', '\0'); // Reject
+const QuicTag kCHLO = TAG('C', 'H', 'L', 'O');  // Client hello
+const QuicTag kSHLO = TAG('S', 'H', 'L', 'O');  // Server hello
+const QuicTag kSCFG = TAG('S', 'C', 'F', 'G');  // Server config
+const QuicTag kREJ  = TAG('R', 'E', 'J', '\0'); // Reject
 
 // Key exchange methods
-const CryptoTag kP256 = TAG('P', '2', '5', '6');  // ECDH, Curve P-256
-const CryptoTag kC255 = TAG('C', '2', '5', '5');  // ECDH, Curve25519
+const QuicTag kP256 = TAG('P', '2', '5', '6');  // ECDH, Curve P-256
+const QuicTag kC255 = TAG('C', '2', '5', '5');  // ECDH, Curve25519
 
 // AEAD algorithms
-const CryptoTag kNULL = TAG('N', 'U', 'L', 'L');  // null algorithm
-const CryptoTag kAESG = TAG('A', 'E', 'S', 'G');  // AES128 + GCM
+const QuicTag kNULL = TAG('N', 'U', 'L', 'L');  // null algorithm
+const QuicTag kAESG = TAG('A', 'E', 'S', 'G');  // AES128 + GCM
 
 // Congestion control feedback types
-const CryptoTag kQBIC = TAG('Q', 'B', 'I', 'C');  // TCP cubic
-const CryptoTag kINAR = TAG('I', 'N', 'A', 'R');  // Inter arrival
+const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');  // TCP cubic
+const QuicTag kINAR = TAG('I', 'N', 'A', 'R');  // Inter arrival
 
 // Proof types (i.e. certificate types)
-const CryptoTag kX509 = TAG('X', '5', '0', '9');  // X.509 certificate
+const QuicTag kX509 = TAG('X', '5', '0', '9');  // X.509 certificate
 
 // Client hello tags
-const CryptoTag kVERS = TAG('V', 'E', 'R', 'S');  // Version
-const CryptoTag kNONC = TAG('N', 'O', 'N', 'C');  // The connection nonce
-const CryptoTag kSSID = TAG('S', 'S', 'I', 'D');  // Session ID
-const CryptoTag kKEXS = TAG('K', 'E', 'X', 'S');  // Key exchange methods
-const CryptoTag kAEAD = TAG('A', 'E', 'A', 'D');  // Authenticated
-                                                  // encryption algorithms
-const CryptoTag kCGST = TAG('C', 'G', 'S', 'T');  // Congestion control
-                                                  // feedback types
-const CryptoTag kICSL = TAG('I', 'C', 'S', 'L');  // Idle connection state
-                                                  // lifetime
-const CryptoTag kKATO = TAG('K', 'A', 'T', 'O');  // Keepalive timeout
-const CryptoTag kSNI  = TAG('S', 'N', 'I', '\0'); // Server name
-                                                  // indication
-const CryptoTag kPUBS = TAG('P', 'U', 'B', 'S');  // Public key values
-const CryptoTag kSCID = TAG('S', 'C', 'I', 'D');  // Server config id
-const CryptoTag kSRCT = TAG('S', 'R', 'C', 'T');  // Source-address token
-const CryptoTag kORBT = TAG('O', 'B', 'I', 'T');  // Server orbit.
-const CryptoTag kPDMD = TAG('P', 'D', 'M', 'D');  // Proof demand.
-const CryptoTag kCERT = TAG('C', 'E', 'R', 'T');  // Certificate chain
-const CryptoTag kPROF = TAG('P', 'R', 'O', 'F');  // Proof (signature).
-const CryptoTag kCCS  = TAG('C', 'C', 'S', 0);    // Common certificate set
-const CryptoTag kCCRT = TAG('C', 'C', 'R', 'T');  // Cached certificate
+const QuicTag kVERS = TAG('V', 'E', 'R', 'S');  // Version
+const QuicTag kNONC = TAG('N', 'O', 'N', 'C');  // The client's nonce
+const QuicTag kSSID = TAG('S', 'S', 'I', 'D');  // Session ID
+const QuicTag kKEXS = TAG('K', 'E', 'X', 'S');  // Key exchange methods
+const QuicTag kAEAD = TAG('A', 'E', 'A', 'D');  // Authenticated
+                                                // encryption algorithms
+const QuicTag kCGST = TAG('C', 'G', 'S', 'T');  // Congestion control
+                                                // feedback types
+const QuicTag kICSL = TAG('I', 'C', 'S', 'L');  // Idle connection state
+                                                // lifetime
+const QuicTag kKATO = TAG('K', 'A', 'T', 'O');  // Keepalive timeout
+const QuicTag kSNI  = TAG('S', 'N', 'I', '\0'); // Server name
+                                                // indication
+const QuicTag kPUBS = TAG('P', 'U', 'B', 'S');  // Public key values
+const QuicTag kSCID = TAG('S', 'C', 'I', 'D');  // Server config id
+const QuicTag kORBT = TAG('O', 'B', 'I', 'T');  // Server orbit.
+const QuicTag kPDMD = TAG('P', 'D', 'M', 'D');  // Proof demand.
+const QuicTag kPROF = TAG('P', 'R', 'O', 'F');  // Proof (signature).
+const QuicTag kCCS  = TAG('C', 'C', 'S', 0);    // Common certificate set
+const QuicTag kCCRT = TAG('C', 'C', 'R', 'T');  // Cached certificate
+const QuicTag kEXPY = TAG('E', 'X', 'P', 'Y');  // Expiry
+
+// These tags have a special form so that they appear either at the beginning
+// or the end of a handshake message. Since handshake messages are sorted by
+// tag value, the tags with 0 at the end will sort first and those with 255 at
+// the end will sort last.
+//
+// The certificate chain should have a tag that will cause it to be sorted at
+// the end of any handshake messages because it's likely to be large and the
+// client might be able to get everything that it needs from the small values at
+// the beginning.
+//
+// Likewise tags with random values should be towards the beginning of the
+// message because the server mightn't hold state for a rejected client hello
+// and therefore the client may have issues reassembling the rejection message
+// in the event that it sent two client hellos.
+const QuicTag kServerNonceTag =
+    TAG('S', 'N', 'O', 0);  // The server's nonce
+const QuicTag kSourceAddressTokenTag =
+    TAG('S', 'T', 'K', 0);  // Source-address token
+const QuicTag kCertificateTag =
+    TAG('C', 'R', 'T', 255);  // Certificate chain
 
 #undef TAG
 

@@ -19,6 +19,9 @@ namespace net {
 
 static const uint64 kNumMicrosPerSecond = base::Time::kMicrosecondsPerSecond;
 
+// A QuicTime is a purely relative time. QuicTime values from different clocks
+// cannot be compared to each other. If you need an absolute time, see
+// QuicWallTime, below.
 class NET_EXPORT_PRIVATE QuicTime {
  public:
   // A QuicTime::Delta represents the signed difference between two points in
@@ -94,6 +97,40 @@ class NET_EXPORT_PRIVATE QuicTime {
   friend class QuicClockTest;
 
   base::TimeTicks ticks_;
+};
+
+// A QuicWallTime represents an absolute time that is globally consistent. It
+// provides, at most, one second granularity and, in practice, clock-skew means
+// that you shouldn't even depend on that.
+class NET_EXPORT_PRIVATE QuicWallTime {
+ public:
+  // FromUNIXSeconds constructs a QuicWallTime from a count of the seconds
+  // since the UNIX epoch.
+  static QuicWallTime FromUNIXSeconds(uint64 seconds);
+
+  // ToUNIXSeconds converts a QuicWallTime into a count of seconds since the
+  // UNIX epoch.
+  uint64 ToUNIXSeconds() const;
+
+  bool IsAfter(QuicWallTime other) const;
+  bool IsBefore(QuicWallTime other) const;
+
+  // AbsoluteDifference returns the absolute value of the time difference
+  // between |this| and |other|.
+  QuicTime::Delta AbsoluteDifference(QuicWallTime other) const;
+
+  // Add returns a new QuicWallTime that represents the time of |this| plus
+  // |delta|.
+  QuicWallTime Add(QuicTime::Delta delta) const;
+
+  // Subtract returns a new QuicWallTime that represents the time of |this|
+  // minus |delta|.
+  QuicWallTime Subtract(QuicTime::Delta delta) const;
+
+ private:
+  explicit QuicWallTime(uint64 seconds);
+
+  uint64 seconds_;
 };
 
 // Non-member relational operators for QuicTime::Delta.

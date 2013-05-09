@@ -37,9 +37,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // TODO(agl): this should probably return void.
   virtual bool CryptoConnect();
 
-  const QuicNegotiatedParameters& negotiated_params() const;
-  const QuicCryptoNegotiatedParameters& crypto_negotiated_params() const;
-
   // num_sent_client_hellos returns the number of client hello messages that
   // have been sent. If the handshake has completed then this is one greater
   // than the number of round-trips needed for the handshake.
@@ -66,9 +63,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
 
   const QuicConfig& config_;
   QuicCryptoClientConfig* const crypto_config_;
-
-  QuicNegotiatedParameters negotiated_params_;
-  QuicCryptoNegotiatedParameters crypto_negotiated_params_;
 
   // Client's connection nonce (4-byte timestamp + 28 random bytes)
   std::string nonce_;

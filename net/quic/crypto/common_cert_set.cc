@@ -16,11 +16,15 @@ namespace common_cert_set_0 {
 #include "net/quic/crypto/common_cert_set_0.c"
 }
 
-
 struct CertSet {
+  // num_certs contains the number of certificates in this set.
   size_t num_certs;
+  // certs is an array of |num_certs| pointers to the DER encoded certificates.
   const unsigned char* const* certs;
+  // lens is an array of |num_certs| integers describing the length, in bytes,
+  // of each certificate.
   const size_t* lens;
+  // hash contains the 64-bit, FNV-1a hash of this set.
   uint64 hash;
 };
 
@@ -37,18 +41,18 @@ static const uint64 kSetHashes[] = {
   common_cert_set_0::kHash,
 };
 
-CommonCertSet::~CommonCertSet() {
+CommonCertSets::~CommonCertSets() {
 }
 
-CommonCertSetQUIC::CommonCertSetQUIC() {
+CommonCertSetsQUIC::CommonCertSetsQUIC() {
 }
 
-StringPiece CommonCertSetQUIC::GetCommonHashes() {
+StringPiece CommonCertSetsQUIC::GetCommonHashes() const {
   return StringPiece(reinterpret_cast<const char*>(kSetHashes),
                      sizeof(uint64) * arraysize(kSetHashes));
 }
 
-StringPiece CommonCertSetQUIC::GetCert(uint64 hash, uint32 index) {
+StringPiece CommonCertSetsQUIC::GetCert(uint64 hash, uint32 index) const {
   for (size_t i = 0; i < arraysize(kSets); i++) {
     if (kSets[i].hash == hash) {
       if (index >= kSets[i].num_certs) {
@@ -82,10 +86,10 @@ static int Compare(StringPiece a, const unsigned char* b, size_t b_len) {
   return 0;
 }
 
-bool CommonCertSetQUIC::MatchCert(StringPiece cert,
-                                  StringPiece common_set_hashes,
-                                  uint64* out_hash,
-                                  uint32* out_index) {
+bool CommonCertSetsQUIC::MatchCert(StringPiece cert,
+                                   StringPiece common_set_hashes,
+                                   uint64* out_hash,
+                                   uint32* out_index) const {
   if (common_set_hashes.size() % sizeof(uint64) != 0) {
     return false;
   }

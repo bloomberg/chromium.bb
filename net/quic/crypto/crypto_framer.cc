@@ -17,7 +17,7 @@ namespace net {
 
 namespace {
 
-const size_t kCryptoTagSize = sizeof(uint32);
+const size_t kQuicTagSize = sizeof(uint32);
 const size_t kCryptoEndOffsetSize = sizeof(uint32);
 const size_t kNumEntriesSize = sizeof(uint16);
 const size_t kValueLenSize = sizeof(uint16);
@@ -30,18 +30,14 @@ class OneShotVisitor : public CryptoFramerVisitorInterface {
         error_(false) {
   }
 
-  virtual void OnError(CryptoFramer* framer) OVERRIDE {
-    error_ = true;
-  }
+  virtual void OnError(CryptoFramer* framer) OVERRIDE { error_ = true; }
 
   virtual void OnHandshakeMessage(
       const CryptoHandshakeMessage& message) OVERRIDE {
     *out_ = message;
   }
 
-  bool error() const {
-    return error_;
-  }
+  bool error() const { return error_; }
 
  private:
   CryptoHandshakeMessage* const out_;
@@ -66,8 +62,7 @@ CryptoHandshakeMessage* CryptoFramer::ParseMessage(StringPiece in) {
   CryptoFramer framer;
 
   framer.set_visitor(&visitor);
-  if (!framer.ProcessInput(in) ||
-      visitor.error() ||
+  if (!framer.ProcessInput(in) || visitor.error() ||
       framer.InputBytesRemaining()) {
     return NULL;
   }
@@ -86,10 +81,10 @@ bool CryptoFramer::ProcessInput(StringPiece input) {
 
   switch (state_) {
     case STATE_READING_TAG:
-      if (reader.BytesRemaining() < kCryptoTagSize) {
+      if (reader.BytesRemaining() < kQuicTagSize) {
         break;
       }
-      CryptoTag message_tag;
+      QuicTag message_tag;
       reader.ReadUInt32(&message_tag);
       message_.set_tag(message_tag);
       state_ = STATE_READING_NUM_ENTRIES;
@@ -109,14 +104,14 @@ bool CryptoFramer::ProcessInput(StringPiece input) {
       state_ = STATE_READING_TAGS_AND_LENGTHS;
       values_len_ = 0;
     case STATE_READING_TAGS_AND_LENGTHS: {
-      if (reader.BytesRemaining() < num_entries_ * (kCryptoTagSize +
-                                                    kCryptoEndOffsetSize)) {
+      if (reader.BytesRemaining() <
+              num_entries_ * (kQuicTagSize + kCryptoEndOffsetSize)) {
         break;
       }
 
       uint32 last_end_offset = 0;
       for (unsigned i = 0; i < num_entries_; ++i) {
-        CryptoTag tag;
+        QuicTag tag;
         reader.ReadUInt32(&tag);
         if (i > 0 && tag <= tags_and_lengths_[i-1].first) {
           if (tag == tags_and_lengths_[i-1].first) {
@@ -145,7 +140,7 @@ bool CryptoFramer::ProcessInput(StringPiece input) {
       if (reader.BytesRemaining() < values_len_) {
         break;
       }
-      for (vector<pair<CryptoTag, size_t> >::const_iterator
+      for (vector<pair<QuicTag, size_t> >::const_iterator
            it = tags_and_lengths_.begin(); it != tags_and_lengths_.end();
            it++) {
         StringPiece value;
@@ -168,14 +163,14 @@ QuicData* CryptoFramer::ConstructHandshakeMessage(
   if (message.tag_value_map().size() > kMaxEntries) {
     return NULL;
   }
-  size_t len = kCryptoTagSize;  // message tag
-  len += sizeof(uint16);  // number of map entries
-  len += sizeof(uint16);  // padding.
-  CryptoTagValueMap::const_iterator it = message.tag_value_map().begin();
+  size_t len = kQuicTagSize;    // message tag
+  len += sizeof(uint16);        // number of map entries
+  len += sizeof(uint16);        // padding.
+  QuicTagValueMap::const_iterator it = message.tag_value_map().begin();
   while (it != message.tag_value_map().end()) {
-    len += kCryptoTagSize;  // tag
+    len += kQuicTagSize;          // tag
     len += kCryptoEndOffsetSize;  // end offset
-    len += it->second.length(); // value
+    len += it->second.length();   // value
     ++it;
   }
 

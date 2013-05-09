@@ -50,6 +50,10 @@ void QuicSpdyServerStream::TerminateFromPeer(bool half_close) {
   if (!half_close) {
     return;
   }
+  if (write_side_closed() || fin_buffered()) {
+    return;
+  }
+
   if (!request_headers_received_) {
     SendErrorResponse();  // We're not done writing headers.
   } else if ((headers().content_length_status() ==

@@ -19,10 +19,10 @@ class QuicServerConfigProtobuf {
  public:
   class PrivateKey {
    public:
-    CryptoTag tag() const {
+    QuicTag tag() const {
       return tag_;
     }
-    void set_tag(CryptoTag tag) {
+    void set_tag(QuicTag tag) {
       tag_ = tag;
     }
     std::string private_key() const {
@@ -33,7 +33,7 @@ class QuicServerConfigProtobuf {
     }
 
    private:
-    CryptoTag tag_;
+    QuicTag tag_;
     std::string private_key_;
   };
 

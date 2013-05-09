@@ -24,10 +24,6 @@ using std::set;
 using std::string;
 
 namespace net {
-
-// TODO(pwestin): kDefaultTimeoutUs is in int64.
-int32 kNegotiatedTimeoutUs = kDefaultTimeoutUs;
-
 namespace {
 
 // The largest gap in packets we'll accept without closing the connection.
@@ -77,10 +73,10 @@ QuicConnection::QuicConnection(QuicGuid guid,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper,
                                bool is_server)
-    : helper_(helper),
-      framer_(kQuicVersion1,
+    : framer_(kQuicVersion1,
               helper->GetClock()->ApproximateNow(),
               is_server),
+      helper_(helper),
       encryption_level_(ENCRYPTION_NONE),
       clock_(helper->GetClock()),
       random_generator_(helper->GetRandomGenerator()),
@@ -136,7 +132,7 @@ QuicConnection::~QuicConnection() {
 }
 
 bool QuicConnection::SelectMutualVersion(
-    const QuicVersionTagList& available_versions) {
+    const QuicTagVector& available_versions) {
   // TODO(satyamshekhar): Make this generic.
   if (std::find(available_versions.begin(), available_versions.end(),
                 kQuicVersion1) == available_versions.end()) {
@@ -178,8 +174,7 @@ void QuicConnection::OnPublicResetPacket(
   CloseConnection(QUIC_PUBLIC_RESET, true);
 }
 
-bool QuicConnection::OnProtocolVersionMismatch(
-    QuicVersionTag received_version) {
+bool QuicConnection::OnProtocolVersionMismatch(QuicTag received_version) {
   // TODO(satyamshekhar): Implement no server state in this mode.
   if (!is_server_) {
     LOG(DFATAL) << "Framer called OnProtocolVersionMismatch for server. "
@@ -680,7 +675,7 @@ void QuicConnection::MaybeSendAckInResponseToPacket() {
 }
 
 void QuicConnection::SendVersionNegotiationPacket() {
-  QuicVersionTagList supported_versions;
+  QuicTagVector supported_versions;
   supported_versions.push_back(kQuicVersion1);
   QuicEncryptedPacket* encrypted =
       packet_creator_.SerializeVersionNegotiationPacket(supported_versions);
@@ -1292,6 +1287,11 @@ void QuicConnection::CloseFecGroupsBefore(
 
 bool QuicConnection::HasQueuedData() const {
   return !queued_packets_.empty() || packet_generator_.HasQueuedData();
+}
+
+void QuicConnection::SetConnectionTimeout(QuicTime::Delta timeout) {
+  timeout_ = timeout;
+  CheckForTimeout();
 }
 
 bool QuicConnection::CheckForTimeout() {

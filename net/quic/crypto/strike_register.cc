@@ -37,25 +37,15 @@ class StrikeRegister::InternalNode {
     data_[1] |= otherbits;
   }
 
-  void SetNextPtr(uint32 next) {
-    data_[0] = next;
-  }
+  void SetNextPtr(uint32 next) { data_[0] = next; }
 
-  uint32 next() const {
-    return data_[0];
-  }
+  uint32 next() const { return data_[0]; }
 
-  uint32 child(unsigned n) const {
-    return data_[n] >> 8;
-  }
+  uint32 child(unsigned n) const { return data_[n] >> 8; }
 
-  uint8 critbyte() const {
-    return data_[0];
-  }
+  uint8 critbyte() const { return data_[0]; }
 
-  uint8 otherbits() const {
-    return data_[1];
-  }
+  uint8 otherbits() const { return data_[1]; }
 
   // These bytes are organised thus:
   //   <24 bits> left child
@@ -88,9 +78,7 @@ StrikeRegister::StrikeRegister(unsigned max_entries,
   Reset();
 }
 
-StrikeRegister::~StrikeRegister() {
-  delete[] internal_nodes_;
-}
+StrikeRegister::~StrikeRegister() { delete[] internal_nodes_; }
 
 void StrikeRegister::Reset() {
   // Thread a free list through all of the internal nodes.
@@ -242,7 +230,7 @@ bool StrikeRegister::Insert(const uint8 nonce[32],
 
     uint8 c = value[node->critbyte()];
     const int direction =
-      (1 + static_cast<unsigned>(node->otherbits() | c)) >> 8;
+        (1 + static_cast<unsigned>(node->otherbits() | c)) >> 8;
     where_index = &node->data_[direction];
   }
 
@@ -299,7 +287,7 @@ uint32 StrikeRegister::BestMatch(const uint8 v[24]) const {
     InternalNode* node = &internal_nodes_[next];
     uint8 b = v[node->critbyte()];
     unsigned direction =
-      (1 + static_cast<unsigned>(node->otherbits() | b)) >> 8;
+        (1 + static_cast<unsigned>(node->otherbits() | b)) >> 8;
     next = node->child(direction);
   }
 
@@ -347,7 +335,7 @@ void StrikeRegister::DropNode() {
   // (whereq) when walking down the tree.
 
   uint32 p = internal_node_head_ >> 8, *wherep = &internal_node_head_,
-             *whereq = NULL;
+         *whereq = NULL;
   while ((p & kExternalFlag) == 0) {
     whereq = wherep;
     InternalNode* inode = &internal_nodes_[p];
@@ -440,8 +428,8 @@ void StrikeRegister::ValidateTree(
       CHECK_EQ(used_external_nodes->count(ext), 0u);
       used_external_nodes->insert(ext);
       const uint8* bytes = external_node(ext);
-      for (vector<pair<unsigned, bool> >::const_iterator
-           i = bits.begin(); i != bits.end(); i++) {
+      for (vector<pair<unsigned, bool> >::const_iterator i = bits.begin();
+           i != bits.end(); i++) {
         unsigned byte = i->first / 8;
         DCHECK_LE(byte, 0xffu);
         unsigned bit = i->first % 8;

@@ -190,8 +190,7 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     revived_packets_++;
   }
 
-  virtual bool OnProtocolVersionMismatch(
-      QuicVersionTag version) OVERRIDE {
+  virtual bool OnProtocolVersionMismatch(QuicTag version) OVERRIDE {
     DCHECK(false);
     return true;
   }
@@ -573,7 +572,7 @@ TEST_F(QuicFramerTest, PacketHeaderWithVersionFlag) {
     // public flags (version)
     0x01,
     // version tag
-    'Q', '1', '.', '0',
+    'Q', '0', '0', '1',
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -818,7 +817,7 @@ TEST_F(QuicFramerTest, StreamFrameWithVersion) {
     // public flags (version)
     0x01,
     // version tag
-    'Q', '1', '.', '0',
+    'Q', '0', '0', '1',
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -1627,7 +1626,7 @@ TEST_F(QuicFramerTest, VersionNegotiationPacket) {
     // public flags (version)
     0x01,
     // version tag
-    'Q', '1', '.', '0',
+    'Q', '0', '0', '1',
     'Q', '2', '.', '0',
   };
 
@@ -1826,7 +1825,7 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacketWithVersionFlag) {
     // public flags (version)
     0x01,
     // version tag
-    'Q', '1', '.', '0',
+    'Q', '0', '0', '1',
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -1874,12 +1873,12 @@ TEST_F(QuicFramerTest, ConstructVersionNegotiationPacket) {
     // public flags (version)
     0x01,
     // version tag
-    'Q', '1', '.', '0',
+    'Q', '0', '0', '1',
     'Q', '2', '.', '0',
   };
 
   const int kQuicVersion2 = MakeQuicTag('Q', '2', '.', '0');
-  QuicVersionTagList versions;
+  QuicTagVector versions;
   versions.push_back(kQuicVersion1);
   versions.push_back(kQuicVersion2);
   scoped_ptr<QuicEncryptedPacket> data(

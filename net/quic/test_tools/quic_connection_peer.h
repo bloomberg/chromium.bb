@@ -14,6 +14,7 @@ namespace net {
 struct QuicAckFrame;
 class QuicConnection;
 class QuicConnectionVisitorInterface;
+class QuicFramer;
 class QuicPacketCreator;
 class ReceiveAlgorithmInterface;
 class SendAlgorithmInterface;
@@ -66,6 +67,8 @@ class QuicConnectionPeer {
   static bool IsServer(QuicConnection* connection);
 
   static void SetIsServer(QuicConnection* connection, bool is_server);
+
+  static void SwapCrypters(QuicConnection* connection, QuicFramer* framer);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);

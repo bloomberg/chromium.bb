@@ -115,5 +115,11 @@ void QuicConnectionPeer::SetIsServer(QuicConnection* connection,
   QuicFramerPeer::SetIsServer(&connection->framer_, is_server);
 }
 
+// static
+void QuicConnectionPeer::SwapCrypters(QuicConnection* connection,
+                                      QuicFramer* framer) {
+  framer->SwapCryptersForTest(&connection->framer_);
+}
+
 }  // namespace test
 }  // namespace net

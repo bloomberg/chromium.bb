@@ -179,7 +179,7 @@ TEST_F(QuicPacketCreatorTest, CreateStreamFrameFinOnly) {
 
 TEST_F(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
   QuicPacketCreatorPeer::SetIsServer(&creator_, true);
-  QuicVersionTagList versions;
+  QuicTagVector versions;
   versions.push_back(kQuicVersion1);
   scoped_ptr<QuicEncryptedPacket> encrypted(
       creator_.SerializeVersionNegotiationPacket(versions));

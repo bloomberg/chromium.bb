@@ -54,18 +54,6 @@ class TestQuicVisitor : public NoOpFramerVisitor {
   DISALLOW_COPY_AND_ASSIGN(TestQuicVisitor);
 };
 
-class TestSession: public QuicSession {
- public:
-  TestSession(QuicConnection* connection, bool is_server)
-      : QuicSession(connection, is_server) {
-  }
-
-  MOCK_METHOD1(CreateIncomingReliableStream,
-               ReliableQuicStream*(QuicStreamId id));
-  MOCK_METHOD0(GetCryptoStream, QuicCryptoStream*());
-  MOCK_METHOD0(CreateOutgoingReliableStream, ReliableQuicStream*());
-};
-
 class QuicCryptoServerStreamTest : public ::testing::Test {
  public:
   QuicCryptoServerStreamTest()
@@ -76,6 +64,7 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
         session_(connection_, true),
         crypto_config_(QuicCryptoServerConfig::TESTING),
         stream_(config_, crypto_config_, &session_) {
+    session_.SetCryptoStream(&stream_);
     // We advance the clock initially because the default time is zero and the
     // strike register worries that we've just overflowed a uint32 time.
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(100000));
@@ -152,8 +141,8 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
       new PacketSavingConnection(guid, addr, false);
   PacketSavingConnection* server_conn =
       new PacketSavingConnection(guid, addr, false);
-  client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(1000000));
-  server_conn->AdvanceTime(QuicTime::Delta::FromSeconds(1000000));
+  client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(100000));
+  server_conn->AdvanceTime(QuicTime::Delta::FromSeconds(100000));
 
   scoped_ptr<TestSession> client_session(new TestSession(client_conn, true));
   scoped_ptr<TestSession> server_session(new TestSession(server_conn, true));
@@ -167,6 +156,7 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
   scoped_ptr<QuicCryptoClientStream> client(new QuicCryptoClientStream(
         "test.example.com", client_config, client_session.get(),
         &client_crypto_config));
+  client_session->SetCryptoStream(client.get());
 
   // Do a first handshake in order to prime the client config with the server's
   // information.
@@ -176,6 +166,7 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
   scoped_ptr<QuicCryptoServerStream> server(
       new QuicCryptoServerStream(config_, crypto_config_,
                                  server_session.get()));
+  server_session->SetCryptoStream(server.get());
 
   CryptoTestUtils::CommunicateHandshakeMessages(
       client_conn, client.get(), server_conn, server.get());
@@ -188,8 +179,8 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
   server_conn = new PacketSavingConnection(guid, addr, false);
   // We need to advance time past the strike-server window so that it's
   // authoritative in this time span.
-  client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(1002000));
-  server_conn->AdvanceTime(QuicTime::Delta::FromSeconds(1002000));
+  client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(102000));
+  server_conn->AdvanceTime(QuicTime::Delta::FromSeconds(102000));
 
   // This causes the client's nonce to be different and thus stops the
   // strike-register from rejecting the repeated nonce.
@@ -199,8 +190,11 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
   client.reset(new QuicCryptoClientStream(
         "test.example.com", client_config, client_session.get(),
         &client_crypto_config));
+  client_session->SetCryptoStream(client.get());
+
   server.reset(new QuicCryptoServerStream(config_, crypto_config_,
                                           server_session.get()));
+  server_session->SetCryptoStream(server.get());
 
   CHECK(client->CryptoConnect());
 

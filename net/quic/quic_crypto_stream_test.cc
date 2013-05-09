@@ -98,7 +98,11 @@ TEST_F(QuicCryptoStreamTest, ProcessData) {
 
 TEST_F(QuicCryptoStreamTest, ProcessBadData) {
   string bad(message_data_->data(), message_data_->length());
-  bad[8] = 0x7F;  // out of order tag
+  const int kFirstTagIndex = sizeof(uint32) +  // message tag
+                             sizeof(uint16) +  // number of tag-value pairs
+                             sizeof(uint16);   // padding
+  EXPECT_EQ(1, bad[kFirstTagIndex]);
+  bad[kFirstTagIndex] = 0x7F;  // out of order tag
 
   EXPECT_CALL(*connection_,
               SendConnectionClose(QUIC_CRYPTO_TAGS_OUT_OF_ORDER));

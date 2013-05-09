@@ -19,7 +19,7 @@ class NET_EXPORT_PRIVATE QuicNegotiatedParameters {
  public:
   QuicNegotiatedParameters();
 
-  CryptoTag congestion_control;
+  QuicTag congestion_control;
   QuicTime::Delta idle_connection_state_lifetime;
   QuicTime::Delta keepalive_timeout;
 };
@@ -30,6 +30,11 @@ class NET_EXPORT_PRIVATE QuicConfig {
  public:
   QuicConfig();
   ~QuicConfig();
+
+  void set_idle_connection_state_lifetime(
+      QuicTime::Delta idle_connection_state_lifetime) {
+    idle_connection_state_lifetime_ = idle_connection_state_lifetime;
+  }
 
   // SetDefaults sets the members to sensible, default values.
   void SetDefaults();
@@ -54,7 +59,7 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
  private:
   // Congestion control feedback type.
-  CryptoTagVector congestion_control_;
+  QuicTagVector congestion_control_;
   // Idle connection state lifetime
   QuicTime::Delta idle_connection_state_lifetime_;
   // Keepalive timeout, or 0 to turn off keepalive probes

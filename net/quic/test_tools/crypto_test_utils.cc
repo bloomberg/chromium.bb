@@ -14,6 +14,7 @@
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_crypto_stream.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
 
@@ -25,18 +26,6 @@ namespace net {
 namespace test {
 
 namespace {
-
-class TestSession : public QuicSession {
- public:
-  TestSession(QuicConnection* connection, bool is_server)
-      : QuicSession(connection, is_server) {
-  }
-
-  MOCK_METHOD1(CreateIncomingReliableStream,
-               ReliableQuicStream*(QuicStreamId id));
-  MOCK_METHOD0(GetCryptoStream, QuicCryptoStream*());
-  MOCK_METHOD0(CreateOutgoingReliableStream, ReliableQuicStream*());
-};
 
 // CryptoFramerVisitor is a framer visitor that records handshake messages.
 class CryptoFramerVisitor : public CryptoFramerVisitorInterface {
@@ -73,16 +62,24 @@ class CryptoFramerVisitor : public CryptoFramerVisitorInterface {
 // than the last packet processed.
 void MovePackets(PacketSavingConnection* source_conn,
                  size_t *inout_packet_index,
-                 QuicCryptoStream* dest_stream) {
+                 QuicCryptoStream* dest_stream,
+                 PacketSavingConnection* dest_conn) {
   SimpleQuicFramer framer;
   CryptoFramer crypto_framer;
   CryptoFramerVisitor crypto_visitor;
 
+  // In order to properly test the code we need to perform encryption and
+  // decryption so that the crypters latch when expected. The crypters are in
+  // |dest_conn|, but we don't want to try and use them there. Instead we swap
+  // them into |framer|, perform the decryption with them, and then swap them
+  // back.
+  QuicConnectionPeer::SwapCrypters(dest_conn, framer.framer());
+
   crypto_framer.set_visitor(&crypto_visitor);
 
   size_t index = *inout_packet_index;
-  for (; index < source_conn->packets_.size(); index++) {
-    ASSERT_TRUE(framer.ProcessPacket(*source_conn->packets_[index]));
+  for (; index < source_conn->encrypted_packets_.size(); index++) {
+    ASSERT_TRUE(framer.ProcessPacket(*source_conn->encrypted_packets_[index]));
     for (vector<QuicStreamFrame>::const_iterator
          i =  framer.stream_frames().begin();
          i != framer.stream_frames().end(); ++i) {
@@ -91,6 +88,8 @@ void MovePackets(PacketSavingConnection* source_conn,
     }
   }
   *inout_packet_index = index;
+
+  QuicConnectionPeer::SwapCrypters(dest_conn, framer.framer());
 
   ASSERT_EQ(0u, crypto_framer.InputBytesRemaining());
 
@@ -114,7 +113,7 @@ void CryptoTestUtils::CommunicateHandshakeMessages(
     ASSERT_GT(a_conn->packets_.size(), a_i);
     LOG(INFO) << "Processing " << a_conn->packets_.size() - a_i
               << " packets a->b";
-    MovePackets(a_conn, &a_i, b);
+    MovePackets(a_conn, &a_i, b, b_conn);
 
     ASSERT_GT(b_conn->packets_.size(), b_i);
     LOG(INFO) << "Processing " << b_conn->packets_.size() - b_i
@@ -122,7 +121,7 @@ void CryptoTestUtils::CommunicateHandshakeMessages(
     if (b_conn->packets_.size() - b_i == 2) {
       LOG(INFO) << "here";
     }
-    MovePackets(b_conn, &b_i, a);
+    MovePackets(b_conn, &b_i, a, a_conn);
   }
 }
 
@@ -146,6 +145,7 @@ int CryptoTestUtils::HandshakeWithFakeServer(
       &config, &crypto_config);
 
   QuicCryptoServerStream server(config, crypto_config, &server_session);
+  server_session.SetCryptoStream(&server);
 
   // The client's handshake must have been started already.
   CHECK_NE(0u, client_conn->packets_.size());
@@ -177,6 +177,7 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   // crypto_config.SetProofVerifier(ProofVerifierForTesting());
   QuicCryptoClientStream client("test.example.com", config, &client_session,
                                 &crypto_config);
+  client_session.SetCryptoStream(&client);
 
   CHECK(client.CryptoConnect());
   CHECK_EQ(1u, client_conn->packets_.size());
@@ -199,7 +200,8 @@ void CryptoTestUtils::SetupCryptoServerConfigForTest(
   config->ToHandshakeMessage(&extra_tags);
 
   scoped_ptr<CryptoHandshakeMessage> scfg(
-      crypto_config->AddDefaultConfig(rand, clock, extra_tags));
+      crypto_config->AddDefaultConfig(
+          rand, clock, extra_tags, QuicCryptoServerConfig::kDefaultExpiry));
   if (!config->SetFromHandshakeMessage(*scfg)) {
     CHECK(false) << "Crypto config could not be parsed by QuicConfig.";
   }
@@ -207,28 +209,28 @@ void CryptoTestUtils::SetupCryptoServerConfigForTest(
 
 // static
 string CryptoTestUtils::GetValueForTag(const CryptoHandshakeMessage& message,
-                                       CryptoTag tag) {
-  CryptoTagValueMap::const_iterator it = message.tag_value_map().find(tag);
+                                       QuicTag tag) {
+  QuicTagValueMap::const_iterator it = message.tag_value_map().find(tag);
   if (it == message.tag_value_map().end()) {
     return string();
   }
   return it->second;
 }
 
-class MockCommonCertSet : public CommonCertSet {
+class MockCommonCertSets : public CommonCertSets {
  public:
-  MockCommonCertSet(StringPiece cert, uint64 hash, uint32 index)
+  MockCommonCertSets(StringPiece cert, uint64 hash, uint32 index)
       : cert_(cert.as_string()),
         hash_(hash),
         index_(index) {
   }
 
-  virtual StringPiece GetCommonHashes() OVERRIDE {
+  virtual StringPiece GetCommonHashes() const OVERRIDE {
     CHECK(false) << "not implemented";
     return StringPiece();
   }
 
-  virtual StringPiece GetCert(uint64 hash, uint32 index) OVERRIDE {
+  virtual StringPiece GetCert(uint64 hash, uint32 index) const OVERRIDE {
     if (hash == hash_ && index == index_) {
       return cert_;
     }
@@ -238,7 +240,7 @@ class MockCommonCertSet : public CommonCertSet {
   virtual bool MatchCert(StringPiece cert,
                          StringPiece common_set_hashes,
                          uint64* out_hash,
-                         uint32* out_index) OVERRIDE {
+                         uint32* out_index) const OVERRIDE {
     if (cert != cert_) {
       return false;
     }
@@ -271,10 +273,10 @@ class MockCommonCertSet : public CommonCertSet {
   const uint32 index_;
 };
 
-CommonCertSet* CryptoTestUtils::MockCommonCertSet(StringPiece cert,
-                                                  uint64 hash,
-                                                  uint32 index) {
-  return new class MockCommonCertSet(cert, hash, index);
+CommonCertSets* CryptoTestUtils::MockCommonCertSets(StringPiece cert,
+                                                   uint64 hash,
+                                                   uint32 index) {
+  return new class MockCommonCertSets(cert, hash, index);
 }
 
 void CryptoTestUtils::CompareClientAndServerKeys(
@@ -282,26 +284,45 @@ void CryptoTestUtils::CompareClientAndServerKeys(
     QuicCryptoServerStream* server) {
   const QuicEncrypter* client_encrypter(
       client->session()->connection()->encrypter(ENCRYPTION_INITIAL));
-  // Normally we would expect the client's INITIAL decrypter to have latched
-  // from the receipt of the server hello. However, when using a
-  // PacketSavingConnection (at the tests do) we don't actually encrypt with
-  // the correct encrypter.
-  // TODO(agl): make the tests more realistic.
   const QuicDecrypter* client_decrypter(
+      client->session()->connection()->decrypter());
+  const QuicEncrypter* client_forward_secure_encrypter(
+      client->session()->connection()->encrypter(ENCRYPTION_FORWARD_SECURE));
+  const QuicDecrypter* client_forward_secure_decrypter(
       client->session()->connection()->alternative_decrypter());
   const QuicEncrypter* server_encrypter(
       server->session()->connection()->encrypter(ENCRYPTION_INITIAL));
   const QuicDecrypter* server_decrypter(
       server->session()->connection()->decrypter());
+  const QuicEncrypter* server_forward_secure_encrypter(
+      server->session()->connection()->encrypter(ENCRYPTION_FORWARD_SECURE));
+  const QuicDecrypter* server_forward_secure_decrypter(
+      server->session()->connection()->alternative_decrypter());
 
   StringPiece client_encrypter_key = client_encrypter->GetKey();
   StringPiece client_encrypter_iv = client_encrypter->GetNoncePrefix();
   StringPiece client_decrypter_key = client_decrypter->GetKey();
   StringPiece client_decrypter_iv = client_decrypter->GetNoncePrefix();
+  StringPiece client_forward_secure_encrypter_key =
+      client_forward_secure_encrypter->GetKey();
+  StringPiece client_forward_secure_encrypter_iv =
+      client_forward_secure_encrypter->GetNoncePrefix();
+  StringPiece client_forward_secure_decrypter_key =
+      client_forward_secure_decrypter->GetKey();
+  StringPiece client_forward_secure_decrypter_iv =
+      client_forward_secure_decrypter->GetNoncePrefix();
   StringPiece server_encrypter_key = server_encrypter->GetKey();
   StringPiece server_encrypter_iv = server_encrypter->GetNoncePrefix();
   StringPiece server_decrypter_key = server_decrypter->GetKey();
   StringPiece server_decrypter_iv = server_decrypter->GetNoncePrefix();
+  StringPiece server_forward_secure_encrypter_key =
+      server_forward_secure_encrypter->GetKey();
+  StringPiece server_forward_secure_encrypter_iv =
+      server_forward_secure_encrypter->GetNoncePrefix();
+  StringPiece server_forward_secure_decrypter_key =
+      server_forward_secure_decrypter->GetKey();
+  StringPiece server_forward_secure_decrypter_iv =
+      server_forward_secure_decrypter->GetNoncePrefix();
 
   CompareCharArraysWithHexError("client write key",
                                 client_encrypter_key.data(),
@@ -323,6 +344,26 @@ void CryptoTestUtils::CompareClientAndServerKeys(
                                 server_encrypter_iv.length(),
                                 client_decrypter_iv.data(),
                                 client_decrypter_iv.length());
+  CompareCharArraysWithHexError("client forward secure write key",
+                                client_forward_secure_encrypter_key.data(),
+                                client_forward_secure_encrypter_key.length(),
+                                server_forward_secure_decrypter_key.data(),
+                                server_forward_secure_decrypter_key.length());
+  CompareCharArraysWithHexError("client forward secure write IV",
+                                client_forward_secure_encrypter_iv.data(),
+                                client_forward_secure_encrypter_iv.length(),
+                                server_forward_secure_decrypter_iv.data(),
+                                server_forward_secure_decrypter_iv.length());
+  CompareCharArraysWithHexError("server forward secure write key",
+                                server_forward_secure_encrypter_key.data(),
+                                server_forward_secure_encrypter_key.length(),
+                                client_forward_secure_decrypter_key.data(),
+                                client_forward_secure_decrypter_key.length());
+  CompareCharArraysWithHexError("server forward secure write IV",
+                                server_forward_secure_encrypter_iv.data(),
+                                server_forward_secure_encrypter_iv.length(),
+                                client_forward_secure_decrypter_iv.data(),
+                                client_forward_secure_decrypter_iv.length());
 }
 }  // namespace test
 }  // namespace net

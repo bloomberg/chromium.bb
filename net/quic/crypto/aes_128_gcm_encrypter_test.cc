@@ -285,18 +285,15 @@ TEST(Aes128GcmEncrypterTest, Encrypt) {
     const TestGroupInfo& test_info = test_group_info[i];
     for (size_t j = 0; test_vector[j].key != NULL; j++) {
       // Decode the test vector.
-      ASSERT_TRUE(DecodeHexString(test_vector[j].key, key, &key_len,
-                                  sizeof(key)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].iv, iv, &iv_len,
-                                  sizeof(iv)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].pt, pt, &pt_len,
-                                  sizeof(pt)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].aad, aad, &aad_len,
-                                  sizeof(aad)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].ct, ct, &ct_len,
-                                  sizeof(ct)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].tag, tag, &tag_len,
-                                  sizeof(tag)));
+      ASSERT_TRUE(
+          DecodeHexString(test_vector[j].key, key, &key_len, sizeof(key)));
+      ASSERT_TRUE(DecodeHexString(test_vector[j].iv, iv, &iv_len, sizeof(iv)));
+      ASSERT_TRUE(DecodeHexString(test_vector[j].pt, pt, &pt_len, sizeof(pt)));
+      ASSERT_TRUE(
+          DecodeHexString(test_vector[j].aad, aad, &aad_len, sizeof(aad)));
+      ASSERT_TRUE(DecodeHexString(test_vector[j].ct, ct, &ct_len, sizeof(ct)));
+      ASSERT_TRUE(
+          DecodeHexString(test_vector[j].tag, tag, &tag_len, sizeof(tag)));
 
       // The test vector's lengths should look sane. Note that the lengths
       // in |test_info| are in bits.
@@ -314,16 +311,14 @@ TEST(Aes128GcmEncrypterTest, Encrypt) {
           // OpenSSL fails if NULL is set as the AAD, as opposed to a
           // zero-length, non-NULL pointer. This deliberately tests that we
           // handle this case.
-          StringPiece(aad_len ? aad : NULL, aad_len),
-          StringPiece(pt, pt_len)));
+          StringPiece(aad_len ? aad : NULL, aad_len), StringPiece(pt, pt_len)));
       ASSERT_TRUE(encrypted.get());
       ASSERT_EQ(ct_len + tag_len, encrypted->length());
+      test::CompareCharArraysWithHexError("ciphertext", encrypted->data(),
+                                          ct_len, ct, ct_len);
       test::CompareCharArraysWithHexError(
-          "ciphertext", encrypted->data(), ct_len,
-          ct, ct_len);
-      test::CompareCharArraysWithHexError(
-          "authentication tag", encrypted->data() + ct_len, tag_len,
-          tag, tag_len);
+          "authentication tag", encrypted->data() + ct_len, tag_len, tag,
+          tag_len);
     }
   }
 }

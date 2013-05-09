@@ -23,8 +23,8 @@ TEST(CertCompressor, EmptyChain) {
   EXPECT_EQ("00", base::HexEncode(compressed.data(), compressed.size()));
 
   vector<string> chain2, cached_certs;
-  ASSERT_TRUE(CertCompressor::DecompressChain(
-      compressed, cached_certs, NULL, &chain2));
+  ASSERT_TRUE(
+      CertCompressor::DecompressChain(compressed, cached_certs, NULL, &chain2));
   EXPECT_EQ(chain.size(), chain2.size());
 }
 
@@ -37,8 +37,8 @@ TEST(CertCompressor, Compressed) {
   EXPECT_EQ("0100", base::HexEncode(compressed.substr(0, 2).data(), 2));
 
   vector<string> chain2, cached_certs;
-  ASSERT_TRUE(CertCompressor::DecompressChain(
-      compressed, cached_certs, NULL, &chain2));
+  ASSERT_TRUE(
+      CertCompressor::DecompressChain(compressed, cached_certs, NULL, &chain2));
   EXPECT_EQ(chain.size(), chain2.size());
   EXPECT_EQ(chain[0], chain2[0]);
 }
@@ -47,22 +47,22 @@ TEST(CertCompressor, Common) {
   vector<string> chain;
   chain.push_back("testcert");
   static const uint64 set_hash = 42;
-  scoped_ptr<CommonCertSet> common_set(
-      CryptoTestUtils::MockCommonCertSet(chain[0], set_hash, 1));
+  scoped_ptr<CommonCertSets> common_set(
+      CryptoTestUtils::MockCommonCertSets(chain[0], set_hash, 1));
   const string compressed = CertCompressor::CompressChain(
-      chain, StringPiece(reinterpret_cast<const char*>(&set_hash),
-                         sizeof(set_hash)),
+      chain,
+      StringPiece(reinterpret_cast<const char*>(&set_hash), sizeof(set_hash)),
       StringPiece(), common_set.get());
-  const string common("03" /* common */
+  const string common("03"               /* common */
                       "2A00000000000000" /* set hash 42 */
-                      "01000000" /* index 1 */
-                      "00" /* end of list */);
+                      "01000000"         /* index 1 */
+                      "00"               /* end of list */);
   EXPECT_EQ(common.data(),
             base::HexEncode(compressed.data(), compressed.size()));
 
   vector<string> chain2, cached_certs;
-  ASSERT_TRUE(CertCompressor::DecompressChain(
-      compressed, cached_certs, common_set.get(), &chain2));
+  ASSERT_TRUE(CertCompressor::DecompressChain(compressed, cached_certs,
+                                              common_set.get(), &chain2));
   EXPECT_EQ(chain.size(), chain2.size());
   EXPECT_EQ(chain[0], chain2[0]);
 }
@@ -82,8 +82,8 @@ TEST(CertCompressor, Cached) {
 
   vector<string> cached_certs, chain2;
   cached_certs.push_back(chain[0]);
-  ASSERT_TRUE(CertCompressor::DecompressChain(
-      compressed, cached_certs, NULL, &chain2));
+  ASSERT_TRUE(
+      CertCompressor::DecompressChain(compressed, cached_certs, NULL, &chain2));
   EXPECT_EQ(chain.size(), chain2.size());
   EXPECT_EQ(chain[0], chain2[0]);
 }
@@ -116,7 +116,7 @@ TEST(CertCompressor, BadInputs) {
                       hash_and_index_truncated.size()),
       cached_certs, NULL, &chain));
 
-  /* without a CommonCertSet */
+  /* without a CommonCertSets */
   const string without_a_common_cert_set(
       "03" "0000000000000000" "00000000");
   EXPECT_FALSE(CertCompressor::DecompressChain(
@@ -124,8 +124,8 @@ TEST(CertCompressor, BadInputs) {
                       without_a_common_cert_set.size()),
       cached_certs, NULL, &chain));
 
-  scoped_ptr<CommonCertSet> common_set(
-      CryptoTestUtils::MockCommonCertSet("foo", 42, 1));
+  scoped_ptr<CommonCertSets> common_set(
+      CryptoTestUtils::MockCommonCertSets("foo", 42, 1));
 
   /* incorrect hash and index */
   const string incorrect_hash_and_index(

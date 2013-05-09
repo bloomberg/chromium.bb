@@ -10,7 +10,7 @@
 namespace net {
 
 // static
-QuicDecrypter* QuicDecrypter::Create(CryptoTag algorithm) {
+QuicDecrypter* QuicDecrypter::Create(QuicTag algorithm) {
   switch (algorithm) {
     case kAESG:
       return new Aes128GcmDecrypter();

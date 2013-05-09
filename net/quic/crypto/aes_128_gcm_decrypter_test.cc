@@ -333,18 +333,15 @@ TEST(Aes128GcmDecrypterTest, Decrypt) {
     const TestGroupInfo& test_info = test_group_info[i];
     for (size_t j = 0; test_vector[j].key != NULL; j++) {
       // Decode the test vector.
-      ASSERT_TRUE(DecodeHexString(test_vector[j].key, key, &key_len,
-                                  sizeof(key)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].iv, iv, &iv_len,
-                                  sizeof(iv)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].ct, ct, &ct_len,
-                                  sizeof(ct)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].aad, aad, &aad_len,
-                                  sizeof(aad)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].tag, tag, &tag_len,
-                                  sizeof(tag)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].pt, pt, &pt_len,
-                                  sizeof(pt)));
+      ASSERT_TRUE(
+          DecodeHexString(test_vector[j].key, key, &key_len, sizeof(key)));
+      ASSERT_TRUE(DecodeHexString(test_vector[j].iv, iv, &iv_len, sizeof(iv)));
+      ASSERT_TRUE(DecodeHexString(test_vector[j].ct, ct, &ct_len, sizeof(ct)));
+      ASSERT_TRUE(
+          DecodeHexString(test_vector[j].aad, aad, &aad_len, sizeof(aad)));
+      ASSERT_TRUE(
+          DecodeHexString(test_vector[j].tag, tag, &tag_len, sizeof(tag)));
+      ASSERT_TRUE(DecodeHexString(test_vector[j].pt, pt, &pt_len, sizeof(pt)));
 
       // The test vector's lengths should look sane. Note that the lengths
       // in |test_info| are in bits.
@@ -365,8 +362,7 @@ TEST(Aes128GcmDecrypterTest, Decrypt) {
           &decrypter, StringPiece(iv, iv_len),
           // OpenSSL fails if NULL is set as the AAD, as opposed to a
           // zero-length, non-NULL pointer.
-          StringPiece(aad_len ? aad : NULL, aad_len),
-          ciphertext));
+          StringPiece(aad_len ? aad : NULL, aad_len), ciphertext));
       if (!decrypted.get()) {
         EXPECT_EQ((size_t)-1, pt_len);
         continue;
@@ -374,9 +370,8 @@ TEST(Aes128GcmDecrypterTest, Decrypt) {
       ASSERT_NE((size_t)-1, pt_len);
 
       ASSERT_EQ(pt_len, decrypted->length());
-      test::CompareCharArraysWithHexError(
-          "plaintext", decrypted->data(), pt_len,
-          pt, pt_len);
+      test::CompareCharArraysWithHexError("plaintext", decrypted->data(),
+                                          pt_len, pt, pt_len);
     }
   }
 }
