@@ -97,9 +97,6 @@ int writeToFile(PlatformFileHandle, const char* data, int length);
 // Returns number of bytes actually written if successful, -1 otherwise.
 int readFromFile(PlatformFileHandle, char* data, int length);
 
-// Encode a string for use within a file name.
-String encodeForFileName(const String&);
-
 } // namespace WebCore
 
 #endif // FileSystem_h

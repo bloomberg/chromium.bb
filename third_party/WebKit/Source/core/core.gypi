@@ -2449,7 +2449,6 @@
             'platform/FileIconLoader.h',
             'platform/FileMetadata.h',
             'platform/FileStream.cpp',
-            'platform/FileSystem.cpp',
             'platform/FloatConversion.h',
             'platform/HashTools.h',
             'platform/KillRing.h',
