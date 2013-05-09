@@ -30,18 +30,18 @@ class SecureHashSHA256OpenSSL : public SecureHash {
     OPENSSL_cleanse(&ctx_, sizeof(ctx_));
   }
 
-  virtual void Update(const void* input, size_t len) {
+  virtual void Update(const void* input, size_t len) OVERRIDE {
     SHA256_Update(&ctx_, static_cast<const unsigned char*>(input), len);
   }
 
-  virtual void Finish(void* output, size_t len) {
+  virtual void Finish(void* output, size_t len) OVERRIDE {
     ScopedOpenSSLSafeSizeBuffer<SHA256_DIGEST_LENGTH> result(
         static_cast<unsigned char*>(output), len);
     SHA256_Final(result.safe_buffer(), &ctx_);
   }
 
-  virtual bool Serialize(Pickle* pickle);
-  virtual bool Deserialize(PickleIterator* data_iterator);
+  virtual bool Serialize(Pickle* pickle) OVERRIDE;
+  virtual bool Deserialize(PickleIterator* data_iterator) OVERRIDE;
 
  private:
   SHA256_CTX ctx_;
