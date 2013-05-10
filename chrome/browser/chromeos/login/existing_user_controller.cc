@@ -41,10 +41,10 @@
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -776,7 +776,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
       InitializeStartUrls();
 #ifndef NDEBUG
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kOobeSkipPostLogin)) {
+          chromeos::switches::kOobeSkipPostLogin)) {
       LoginUtils::Get()->DoBrowserLaunch(profile, host_);
       host_ = NULL;
     } else {

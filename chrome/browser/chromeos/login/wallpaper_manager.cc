@@ -32,6 +32,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -253,7 +254,7 @@ void WallpaperManager::InitializeWallpaper() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UserManager* user_manager = UserManager::Get();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType))
     WizardController::SetZeroDelays();
 
   // Zero delays is also set in autotests.

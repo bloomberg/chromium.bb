@@ -15,9 +15,9 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "content/public/browser/page_navigator.h"
@@ -255,7 +255,7 @@ content::WebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
   source->AddString("keyboardOverlayLearnMoreURL", UTF8ToUTF16(kLearnMoreURL));
   source->AddBoolean("keyboardOverlayHasChromeOSDiamondKey",
                      CommandLine::ForCurrentProcess()->HasSwitch(
-                         switches::kHasChromeOSDiamondKey));
+                         chromeos::switches::kHasChromeOSDiamondKey));
   ash::Shell* shell = ash::Shell::GetInstance();
   ash::internal::DisplayManager* display_manager = shell->display_manager();
   source->AddBoolean("keyboardOverlayIsDisplayRotationEnabled",

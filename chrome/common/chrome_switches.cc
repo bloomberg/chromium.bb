@@ -10,8 +10,11 @@
 namespace switches {
 
 // -----------------------------------------------------------------------------
-// Can't find the switch you are looking for? try looking in
-// base/base_switches.cc instead.
+// Can't find the switch you are looking for? Try looking in:
+// ash/ash_switches.cc
+// base/base_switches.cc
+// chromeos/chromeos_switches.cc
+// etc.
 //
 // When commenting your switch, please use the same voice as surrounding
 // comments. Imagine "This switch..." at the beginning of the phrase, and it'll
@@ -1492,118 +1495,6 @@ const char kTabletUI[]                      = "tablet-ui";
 const char kAshDisableTabScrubbing[]        = "ash-disable-tab-scrubbing";
 const char kOpenAsh[]                       = "open-ash";
 #endif
-
-#if defined(OS_CHROMEOS)
-// When wallpaper boot animation is not disabled this switch
-// is used to override OOBE/sign in WebUI init type.
-// Possible values: parallel|postpone. Default: parallel.
-const char kAshWebUIInit[]                  = "ash-webui-init";
-
-// Enables switching between different cellular carriers from the UI.
-const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
-
-// Disables Kiosk app mode for ChromeOS.
-const char kDisableAppMode[]                = "disable-app-mode";
-
-// Disables wallpaper boot animation (except of OOBE case).
-const char kDisableBootAnimation[]          = "disable-boot-animation";
-
-// Disables Chrome Captive Portal detector, which initiates Captive
-// Portal detection for new active networks.
-const char kDisableChromeCaptivePortalDetector[] =
-    "disable-chrome-captive-portal-detector";
-
-// Disables Google Drive integration.
-const char kDisableDrive[]                  = "disable-drive";
-
-// Disable policy-configured local accounts.
-const char kDisableLocalAccounts[]          = "disable-local-accounts";
-
-// Avoid doing expensive animations upon login.
-const char kDisableLoginAnimations[]        = "disable-login-animations";
-
-// Avoid doing animations upon oobe.
-const char kDisableOobeAnimation[]          = "disable-oobe-animation";
-
-// Enables component extension that initializes background pages of
-// certain hosted applications.
-const char kEnableBackgroundLoader[]        = "enable-background-loader";
-
-// Enables Chrome Captive Portal detector, which initiates Captive
-// Portal detection for new active networks.
-const char kEnableChromeCaptivePortalDetector[] =
-    "enable-chrome-captive-portal-detector";
-
-// Enables touchpad three-finger-click as middle button.
-const char kEnableTouchpadThreeFingerClick[]
-    = "enable-touchpad-three-finger-click";
-
-// Enables touchpad three-finger swipe.
-const char kEnableTouchpadThreeFingerSwipe[]
-    = "enable-touchpad-three-finger-swipe";
-
-// Enable Kiosk mode for ChromeOS.
-const char kEnableKioskMode[]               = "enable-kiosk-mode";
-
-// Enables request of tablet site (via user agent override).
-const char kEnableRequestTabletSite[]       = "enable-request-tablet-site";
-
-// Enables static ip configuration. This flag should be removed when it's on by
-// default.
-const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
-
-// If true, the Chromebook has a Chrome OS keyboard. Don't use the flag for
-// Chromeboxes.
-const char kHasChromeOSKeyboard[]           = "has-chromeos-keyboard";
-
-// If true, the Chromebook has a keyboard with a diamond key.
-const char kHasChromeOSDiamondKey[]         = "has-chromeos-diamond-key";
-
-// Path for the screensaver used in Kiosk mode
-const char kKioskModeScreensaverPath[]      = "kiosk-mode-screensaver-path";
-
-// Enables natural scroll by default.
-const char kNaturalScrollDefault[]          = "enable-natural-scroll-default";
-
-// Disables tab discard in low memory conditions, a feature which silently
-// closes inactive tabs to free memory and to attempt to avoid the kernel's
-// out-of-memory process killer.
-const char kNoDiscardTabs[]                 = "no-discard-tabs";
-
-// Enables overriding the path for the default echo component extension.
-// Useful for testing.
-const char kEchoExtensionPath[]             = "echo-ext-path";
-
-// Indicates that a stub implementation of CrosSettings that stores settings in
-// memory without signing should be used, treating current user as the owner.
-// This option is for testing the chromeos build of chrome on the desktop only.
-const char kStubCrosSettings[]              = "stub-cros-settings";
-
-// Enables overriding the path for the default authentication extension.
-const char kAuthExtensionPath[]             = "auth-ext-path";
-
-// Power of the power-of-2 initial modulus that will be used by the
-// auto-enrollment client. E.g. "4" means the modulus will be 2^4 = 16.
-const char kEnterpriseEnrollmentInitialModulus[] =
-    "enterprise-enrollment-initial-modulus";
-
-// Power of the power-of-2 maximum modulus that will be used by the
-// auto-enrollment client.
-const char kEnterpriseEnrollmentModulusLimit[] =
-    "enterprise-enrollment-modulus-limit";
-
-// Loads the File Manager as an extension instead of a platform app.
-// This flag is obsolete. Remove it, once Files.app v2 is stable.
-const char kFileManagerLegacy[]             = "file-manager-legacy";
-
-// Loads the File Manager with the legacy UI.
-const char kFileManagerLegacyUI[]           = "file-manager-legacy-ui";
-
-#ifndef NDEBUG
-// Skips all other OOBE pages after user login.
-const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
-#endif  // NDEBUG
-#endif  // OS_CHROMEOS
 
 #if defined(OS_POSIX)
 // A flag, generated internally by Chrome for renderer and other helper process

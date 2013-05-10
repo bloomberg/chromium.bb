@@ -19,8 +19,8 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "crypto/sha2.h"
 
 namespace em = enterprise_management;
@@ -109,9 +109,10 @@ void AutoEnrollmentClient::RegisterPrefs(PrefRegistrySimple* registry) {
 // static
 bool AutoEnrollmentClient::IsDisabled() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return
-      !command_line->HasSwitch(switches::kEnterpriseEnrollmentInitialModulus) &&
-      !command_line->HasSwitch(switches::kEnterpriseEnrollmentModulusLimit);
+  return !command_line->HasSwitch(
+             chromeos::switches::kEnterpriseEnrollmentInitialModulus) &&
+         !command_line->HasSwitch(
+             chromeos::switches::kEnterpriseEnrollmentModulusLimit);
 }
 
 // static
@@ -130,9 +131,9 @@ AutoEnrollmentClient* AutoEnrollmentClient::Create(
   }
 
   int power_initial = GetSanitizedArg(
-      switches::kEnterpriseEnrollmentInitialModulus);
+      chromeos::switches::kEnterpriseEnrollmentInitialModulus);
   int power_limit = GetSanitizedArg(
-      switches::kEnterpriseEnrollmentModulusLimit);
+      chromeos::switches::kEnterpriseEnrollmentModulusLimit);
   if (power_initial > power_limit) {
     LOG(ERROR) << "Initial auto-enrollment modulus is larger than the limit, "
                << "clamping to the limit.";

@@ -250,9 +250,9 @@ void ComponentLoader::AddFileManagerExtension() {
 #if defined(FILE_MANAGER_EXTENSION)
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   int manifest_id;
-  if (command_line->HasSwitch(switches::kFileManagerLegacy))
+  if (command_line->HasSwitch(chromeos::switches::kFileManagerLegacy))
     manifest_id = IDR_FILEMANAGER_MANIFEST_V1;
-  else if (command_line->HasSwitch(switches::kFileManagerLegacyUI))
+  else if (command_line->HasSwitch(chromeos::switches::kFileManagerLegacyUI))
     manifest_id = IDR_FILEMANAGER_MANIFEST;
   else
     manifest_id = IDR_FILEMANAGER_MANIFEST_NEW_UI;
@@ -449,9 +449,9 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
     base::FilePath echo_extension_path(FILE_PATH_LITERAL(
         "/usr/share/chromeos-assets/echo"));
-    if (command_line->HasSwitch(switches::kEchoExtensionPath)) {
-      echo_extension_path =
-          command_line->GetSwitchValuePath(switches::kEchoExtensionPath);
+    if (command_line->HasSwitch(chromeos::switches::kEchoExtensionPath)) {
+      echo_extension_path = command_line->GetSwitchValuePath(
+          chromeos::switches::kEchoExtensionPath);
     }
     Add(IDR_ECHO_MANIFEST, echo_extension_path);
 

@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_member.h"
 #include "base/stringprintf.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/mock_xkeyboard.h"
 #include "ui/base/x/x11_util.h"
 
@@ -890,7 +890,7 @@ TEST_F(EventRewriterTest, TestRewriteNumPadKeysWithDiamondKeyFlag) {
   // Make sure the num lock works correctly even when Diamond key exists.
   const CommandLine original_cl(*CommandLine::ForCurrentProcess());
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kHasChromeOSDiamondKey, "");
+      chromeos::switches::kHasChromeOSDiamondKey, "");
 
   TestRewriteNumPadKeys();
   *CommandLine::ForCurrentProcess() = original_cl;
@@ -944,7 +944,7 @@ TEST_F(EventRewriterTest,
   // Makes sure the num lock works correctly even when Diamond key exists.
   const CommandLine original_cl(*CommandLine::ForCurrentProcess());
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kHasChromeOSDiamondKey, "");
+      chromeos::switches::kHasChromeOSDiamondKey, "");
 
   TestRewriteNumPadKeysOnAppleKeyboard();
   *CommandLine::ForCurrentProcess() = original_cl;
@@ -1680,7 +1680,7 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteDiamondKeyWithFlag) {
 
   const CommandLine original_cl(*CommandLine::ForCurrentProcess());
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kHasChromeOSDiamondKey, "");
+      chromeos::switches::kHasChromeOSDiamondKey, "");
 
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(prefs.registry());
@@ -2226,7 +2226,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
   rewriter.set_pref_service_for_testing(&prefs);
 
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kHasChromeOSKeyboard, "");
+      chromeos::switches::kHasChromeOSKeyboard, "");
 
   // Alt+Search+Down -> End
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,

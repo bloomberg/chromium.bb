@@ -32,9 +32,9 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -409,7 +409,7 @@ void DriveInternalsWebUIHandler::UpdateDriveRelatedFlagsSection() {
 
   const char* kDriveRelatedFlags[] = {
     google_apis::switches::kEnableDriveV2Api,
-    switches::kDisableDrive,
+    chromeos::switches::kDisableDrive,
   };
 
   base::ListValue flags;

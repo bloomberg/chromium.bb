@@ -31,8 +31,8 @@
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
@@ -119,7 +119,7 @@ bool IsRight(KeySym native_keysym) {
 
 bool HasDiamondKey() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHasChromeOSDiamondKey);
+      chromeos::switches::kHasChromeOSDiamondKey);
 }
 
 bool IsMod3UsedByCurrentInputMethod() {

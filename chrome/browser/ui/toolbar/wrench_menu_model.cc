@@ -584,7 +584,7 @@ void WrenchMenuModel::Build(bool is_new_menu) {
 
 #if defined(OS_CHROMEOS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableRequestTabletSite))
+          chromeos::switches::kEnableRequestTabletSite))
     AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
                              IDS_TOGGLE_REQUEST_TABLET_SITE);
 #endif

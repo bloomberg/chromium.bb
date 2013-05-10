@@ -46,8 +46,8 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/time_format.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_ip_config.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_constants.h"
@@ -1347,7 +1347,7 @@ void InternetOptionsHandler::PopulateIPConfigsCallback(
   bool staticIPConfig = type == chromeos::TYPE_ETHERNET ||
       (type == chromeos::TYPE_WIFI &&
        CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kEnableStaticIPConfig));
+           chromeos::switches::kEnableStaticIPConfig));
   dictionary.SetBoolean(kTagShowStaticIPConfig, staticIPConfig);
 
   dictionary.SetBoolean(kTagShowPreferred,
@@ -1463,7 +1463,7 @@ void InternetOptionsHandler::PopulateCellularDetails(
     DictionaryValue* dictionary) {
   dictionary->SetBoolean(kTagCarrierSelectFlag,
                          CommandLine::ForCurrentProcess()->HasSwitch(
-                             switches::kEnableCarrierSwitching));
+                             chromeos::switches::kEnableCarrierSwitching));
   // Cellular network / connection settings.
   dictionary->SetString(kTagServiceName, cellular->name());
   dictionary->SetString(kTagNetworkTechnology,
@@ -1533,7 +1533,7 @@ void InternetOptionsHandler::PopulateCellularDetails(
                        cellular_property_ui_data);
 
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableCarrierSwitching)) {
+            chromeos::switches::kEnableCarrierSwitching)) {
       base::ListValue* supported_carriers = device->supported_carriers();
       if (supported_carriers) {
         dictionary->Set(kTagCarriers, supported_carriers->DeepCopy());

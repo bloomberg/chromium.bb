@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #include "grit/browser_resources.h"
 
 namespace chromeos {

@@ -42,6 +42,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/storage_partition.h"
@@ -309,12 +310,12 @@ bool FileManageTabExists(const base::FilePath& path, TAB_REUSE_MODE mode) {
 
 bool IsFileManagerPackaged() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kFileManagerLegacy);
+  return !command_line->HasSwitch(chromeos::switches::kFileManagerLegacy);
 }
 
 bool IsFileManagerNewUI() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kFileManagerLegacyUI);
+  return !command_line->HasSwitch(chromeos::switches::kFileManagerLegacyUI);
 }
 
 // Grants file system access to the file browser.

@@ -209,7 +209,7 @@ class StubLogin : public LoginStatusConsumer,
 
 bool ShouldAutoLaunchKioskApp(const CommandLine& command_line) {
   KioskAppManager* app_manager = KioskAppManager::Get();
-  return !command_line.HasSwitch(::switches::kDisableAppMode) &&
+  return !command_line.HasSwitch(switches::kDisableAppMode) &&
       command_line.HasSwitch(switches::kLoginManager) &&
       !command_line.HasSwitch(switches::kForceLoginManagerInTests) &&
       !app_manager->GetAutoLaunchApp().empty() &&
@@ -244,7 +244,7 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
 
     // If app mode is enabled, reset reboot after update flag when login
     // screen is shown.
-    if (!parsed_command_line.HasSwitch(::switches::kDisableAppMode)) {
+    if (!parsed_command_line.HasSwitch(switches::kDisableAppMode)) {
       if (!g_browser_process->browser_policy_connector()->
           IsEnterpriseManaged()) {
         PrefService* local_state = g_browser_process->local_state();

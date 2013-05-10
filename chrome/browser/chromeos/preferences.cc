@@ -101,7 +101,7 @@ void Preferences::RegisterUserPrefs(
   registry->RegisterBooleanPref(
       prefs::kNaturalScroll,
       CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kNaturalScrollDefault),
+          switches::kNaturalScrollDefault),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kPrimaryMouseButtonRight,
@@ -881,7 +881,7 @@ void Preferences::OnIsSyncingChanged() {
 void Preferences::ForceNaturalScrollDefault() {
   DVLOG(1) << "ForceNaturalScrollDefault";
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kNaturalScrollDefault) &&
+          switches::kNaturalScrollDefault) &&
       prefs_->IsSyncing() &&
       !prefs_->GetUserPrefValue(prefs::kNaturalScroll)) {
     DVLOG(1) << "Natural scroll forced to true";

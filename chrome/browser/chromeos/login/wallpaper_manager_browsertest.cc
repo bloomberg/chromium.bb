@@ -409,8 +409,8 @@ class WallpaperManagerBrowserTestNoAnimation
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
-    command_line->AppendSwitch(::switches::kDisableLoginAnimations);
-    command_line->AppendSwitch(::switches::kDisableBootAnimation);
+    command_line->AppendSwitch(chromeos::switches::kDisableLoginAnimations);
+    command_line->AppendSwitch(chromeos::switches::kDisableBootAnimation);
   }
 };
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_stub.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 
 namespace chromeos {
 
@@ -18,7 +19,7 @@ namespace {
 NetworkPortalDetector* g_network_portal_detector = NULL;
 
 bool IsTestMode() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType);
+  return CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType);
 }
 
 }  // namespace

@@ -184,7 +184,7 @@ void BrowserPolicyConnector::Init(
   }
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisableLocalAccounts)) {
+  if (!command_line->HasSwitch(chromeos::switches::kDisableLocalAccounts)) {
     device_local_account_policy_service_.reset(
         new DeviceLocalAccountPolicyService(
             chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),

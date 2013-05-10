@@ -1016,7 +1016,7 @@ void SigninScreenHandler::LoadAuthExtension(
   }
 
   // Test automation data:
-  if (command_line->HasSwitch(::switches::kAuthExtensionPath)) {
+  if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
     if (!test_user_.empty()) {
       params.SetString("test_email", test_user_);
       test_user_.clear();

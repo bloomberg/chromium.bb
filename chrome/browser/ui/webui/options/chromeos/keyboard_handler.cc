@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/values.h"
-#include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
@@ -95,11 +95,11 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
 void KeyboardHandler::InitializePage() {
   bool chromeos_keyboard = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHasChromeOSKeyboard);
+      chromeos::switches::kHasChromeOSKeyboard);
   const base::FundamentalValue show_caps_lock_options(!chromeos_keyboard);
 
   bool has_diamond_key = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHasChromeOSDiamondKey);
+      chromeos::switches::kHasChromeOSDiamondKey);
   const base::FundamentalValue show_diamond_key_options(has_diamond_key);
 
   web_ui()->CallJavascriptFunction(

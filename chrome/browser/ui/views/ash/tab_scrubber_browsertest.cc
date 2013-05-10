@@ -27,6 +27,10 @@
 #include "ui/aura/window.h"
 #include "ui/base/events/event_utils.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 namespace {
 
 class TabScrubberTest : public InProcessBrowserTest,
@@ -38,7 +42,7 @@ class TabScrubberTest : public InProcessBrowserTest,
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
 #if defined(OS_CHROMEOS)
-    command_line->AppendSwitch(switches::kNaturalScrollDefault);
+    command_line->AppendSwitch(chromeos::switches::kNaturalScrollDefault);
 #endif
     command_line->AppendSwitch(switches::kOpenAsh);
   }

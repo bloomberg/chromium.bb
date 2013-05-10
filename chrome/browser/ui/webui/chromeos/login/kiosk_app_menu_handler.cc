@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
@@ -35,7 +35,8 @@ void KioskAppMenuHandler::GetLocalizedStrings(
     base::DictionaryValue* localized_strings) {
   localized_strings->SetBoolean(
       "enableAppMode",
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAppMode));
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableAppMode));
   localized_strings->SetString(
       "showApps",
       l10n_util::GetStringUTF16(IDS_KIOSK_APPS_BUTTON));

@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/ui/echo_dialog_view.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace utils = extension_function_test_utils;

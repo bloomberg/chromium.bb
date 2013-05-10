@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/settings/system_settings_provider.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
