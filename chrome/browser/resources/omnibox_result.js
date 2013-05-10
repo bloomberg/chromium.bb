@@ -18,4 +18,8 @@ var EMBEDDER_ORIGIN = "{{ORIGIN}}";
 window.addEventListener('click', function(event) {
   top.postMessage({click: event.button}, EMBEDDER_ORIGIN);
 });
+
+window.addEventListener('contextmenu', function(event) {
+  event.preventDefault();
+});
 })();
