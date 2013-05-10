@@ -46,6 +46,7 @@ public:
     enum State {
         CreatingInitialEmptyDocument,
         DisplayingInitialEmptyDocument,
+        DisplayingInitialEmptyDocumentPostCommit,
         CommittedFirstRealLoad
     };
 

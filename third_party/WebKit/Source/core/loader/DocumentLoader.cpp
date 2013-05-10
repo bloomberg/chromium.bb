@@ -647,8 +647,6 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
 
         if (frameLoader()->stateMachine()->creatingInitialEmptyDocument())
             return;
-        if (frameLoader()->stateMachine()->isDisplayingInitialEmptyDocument())
-            frameLoader()->stateMachine()->advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
         
         // The origin is the MHTML file, we need to set the base URL to the document encoded in the MHTML so
         // relative URLs are resolved properly.

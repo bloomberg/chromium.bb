@@ -480,7 +480,7 @@ void FrameLoader::didExplicitOpen()
 
     // Calling document.open counts as committing the first real document load.
     if (!m_stateMachine.committedFirstRealDocumentLoad())
-        m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
+        m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
     
     // Prevent window.open(url) -- eg window.open("about:blank") -- from blowing away results
     // from a subsequent window.document.open / window.document.write call. 
@@ -543,6 +543,9 @@ void FrameLoader::clear(bool clearWindowProperties, bool clearScriptObjects, boo
     m_checkTimer.stop();
     m_shouldCallCheckCompleted = false;
     m_shouldCallCheckLoadComplete = false;
+
+    if (m_stateMachine.isDisplayingInitialEmptyDocument() && m_stateMachine.committedFirstRealDocumentLoad())
+        m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
 }
 
 void FrameLoader::receivedFirstData()
@@ -989,6 +992,7 @@ void FrameLoader::prepareForHistoryNavigation()
         frame()->page()->backForward()->setCurrentItem(currentItem.get());
 
         ASSERT(stateMachine()->isDisplayingInitialEmptyDocument());
+        stateMachine()->advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
         stateMachine()->advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
     }
 }
@@ -1487,6 +1491,9 @@ void FrameLoader::transitionToCommitted()
 
     history()->updateForCommit();
     m_client->transitionToCommittedForNewPage();
+
+    if (!m_stateMachine.creatingInitialEmptyDocument() && !m_stateMachine.committedFirstRealDocumentLoad())
+        m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
 }
 
 void FrameLoader::clientRedirectCancelledOrFinished()
