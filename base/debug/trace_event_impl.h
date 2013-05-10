@@ -510,6 +510,7 @@ class BASE_EXPORT TraceLog {
                     const char** arg_names,
                     const unsigned char* arg_types,
                     const unsigned long long* arg_values,
+                    scoped_ptr<ConvertableToTraceFormat> convertable_values[],
                     unsigned char flags);
   static void ApplyATraceEnabledFlag(unsigned char* category_group_enabled);
 #endif

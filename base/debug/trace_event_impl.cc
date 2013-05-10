@@ -1094,7 +1094,8 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 
 #if defined(OS_ANDROID)
   SendToATrace(phase, GetCategoryGroupName(category_group_enabled), name, id,
-               num_args, arg_names, arg_types, arg_values, flags);
+               num_args, arg_names, arg_types, arg_values, convertable_values,
+               flags);
 #endif
 
   TimeTicks now = timestamp - time_offset_;
