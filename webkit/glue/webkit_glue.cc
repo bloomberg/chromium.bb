@@ -84,9 +84,6 @@ static const char kFileTestPrefix[] = "(file test):";
 
 namespace webkit_glue {
 
-// Global variable used by the plugin quirk "die after unload".
-bool g_forcefully_terminate_plugin_process = false;
-
 void SetJavaScriptFlags(const std::string& str) {
   v8::V8::SetFlagsFromString(str.data(), static_cast<int>(str.size()));
 }
@@ -158,14 +155,6 @@ void PlatformFileInfoToWebFileInfo(
     web_file_info->type = WebKit::WebFileInfo::TypeDirectory;
   else
     web_file_info->type = WebKit::WebFileInfo::TypeFile;
-}
-
-void SetForcefullyTerminatePluginProcess(bool value) {
-  g_forcefully_terminate_plugin_process = value;
-}
-
-bool ShouldForcefullyTerminatePluginProcess() {
-  return g_forcefully_terminate_plugin_process;
 }
 
 WebCanvas* ToWebCanvas(skia::PlatformCanvas* canvas) {

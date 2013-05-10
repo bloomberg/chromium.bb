@@ -571,6 +571,8 @@
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/support/webkit_support.gyp:glue',
+            '../webkit/support/webkit_support.gyp:plugins',
+            '../webkit/support/webkit_support.gyp:plugins_common',
             '../webkit/support/webkit_support.gyp:webkit_base',
             '../webkit/support/webkit_support.gyp:webkit_media',
             '../webkit/support/webkit_support.gyp:webkit_storage',

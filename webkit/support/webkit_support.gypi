@@ -28,6 +28,8 @@
         '<(DEPTH)/webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(DEPTH)/webkit/gpu/webkit_gpu.gyp:webkit_gpu',
         'glue',
+        'plugins',
+        'plugins_common',
         'user_agent',
         'webkit_base',
         'webkit_media',

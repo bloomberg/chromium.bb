@@ -6,7 +6,6 @@
 #define WEBKIT_PLUGINS_NPAPI_PLUGIN_UTILS_H_
 
 #include "base/string16.h"
-#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace base {
 class Version;
@@ -17,12 +16,22 @@ namespace npapi {
 
 // Parse a version string as used by a plug-in. This method is more lenient
 // in accepting weird version strings than base::Version::GetFromString()
-WEBKIT_PLUGINS_EXPORT void CreateVersionFromString(
+void CreateVersionFromString(
     const base::string16& version_string,
     base::Version* parsed_version);
 
 // Returns true iff NPAPI plugins are supported on the current platform.
-WEBKIT_PLUGINS_EXPORT bool NPAPIPluginsSupported();
+bool NPAPIPluginsSupported();
+
+// Tells the plugin thread to terminate the process forcefully instead of
+// exiting cleanly.
+void SetForcefullyTerminatePluginProcess(bool value);
+
+// Returns true if the plugin thread should terminate the process forcefully
+// instead of exiting cleanly.
+bool ShouldForcefullyTerminatePluginProcess();
+
+
 }  // namespace npapi
 }  // namespace webkit
 
