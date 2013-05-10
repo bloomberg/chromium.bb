@@ -315,6 +315,12 @@ function parseAndShowNotificationCards(response, callback) {
 function requestNotificationCards(position, callback) {
   console.log('requestNotificationCards ' + JSON.stringify(position) +
       ' from ' + NOTIFICATION_CARDS_URL);
+
+  if (!NOTIFICATION_CARDS_URL) {
+    callback();
+    return;
+  }
+
   recordEvent(DiagnosticEvent.REQUEST_FOR_CARDS_TOTAL);
 
   // TODO(vadimt): Should we use 'q' as the parameter name?
