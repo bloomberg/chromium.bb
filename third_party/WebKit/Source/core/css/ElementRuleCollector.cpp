@@ -286,6 +286,10 @@ bool ElementRuleCollector::hasAnyMatchingRules(RuleSet* ruleSet)
     clearMatchedRules();
 
     m_mode = SelectorChecker::SharingRules;
+    // To check whether a given RuleSet has any rule matching a given element,
+    // should not see the element's treescope. Because RuleSet has no
+    // information about "scope".
+    m_behaviorAtBoundary = SelectorChecker::StaysWithinTreeScope;
     int firstRuleIndex = -1, lastRuleIndex = -1;
     StyleResolver::RuleRange ruleRange(firstRuleIndex, lastRuleIndex);
     collectMatchingRules(MatchRequest(ruleSet), ruleRange);
