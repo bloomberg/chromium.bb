@@ -55,6 +55,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -266,7 +267,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
 
   bool keyboard_driven_oobe = false;
   system::StatisticsProvider::GetInstance()->GetMachineFlag(
-      chrome::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+      chromeos::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
   if (keyboard_driven_oobe)
     views::FocusManager::set_arrow_key_traversal_enabled(true);
 }

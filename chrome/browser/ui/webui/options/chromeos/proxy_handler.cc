@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/common/chrome_constants.h"
+#include "chromeos/chromeos_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -69,7 +70,7 @@ void ProxyHandler::InitializePage() {
 
   bool keyboard_driven_oobe = false;
   system::StatisticsProvider::GetInstance()->GetMachineFlag(
-      chrome::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+      chromeos::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
   if (keyboard_driven_oobe) {
     web_ui()->CallJavascriptFunction(
         "DetailsInternetPage.initializeKeyboardFlow");

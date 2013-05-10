@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_constants.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -102,7 +103,7 @@ ProxySettingsUI::ProxySettingsUI(content::WebUI* web_ui)
 
   bool keyboard_driven_oobe = false;
   system::StatisticsProvider::GetInstance()->GetMachineFlag(
-      chrome::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+      chromeos::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
   localized_strings->SetString("highlightStrength",
                                keyboard_driven_oobe ? "strong" : "normal");
 

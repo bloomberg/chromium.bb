@@ -98,6 +98,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -1916,7 +1917,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       !chromeos::StartupUtils::IsOobeCompleted()) {
     bool keyboard_driven_oobe = false;
     chromeos::system::StatisticsProvider::GetInstance()->GetMachineFlag(
-        chrome::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+        chromeos::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
     if (keyboard_driven_oobe)
        web_prefs->password_echo_enabled = true;
   }

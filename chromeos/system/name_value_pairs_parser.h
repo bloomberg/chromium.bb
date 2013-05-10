@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_NAME_VALUE_PAIRS_PARSER_H_
-#define CHROME_BROWSER_CHROMEOS_SYSTEM_NAME_VALUE_PAIRS_PARSER_H_
+#ifndef CHROMEOS_SYSTEM_NAME_VALUE_PAIRS_PARSER_H_
+#define CHROMEOS_SYSTEM_NAME_VALUE_PAIRS_PARSER_H_
 
 #include <map>
 #include <string>
 
 #include "base/basictypes.h"
+#include "chromeos/chromeos_export.h"
 
 namespace base {
 class FilePath;
@@ -19,7 +20,7 @@ namespace system {
 
 // The parser is used to get machine info as name-value pairs. Defined
 // here to be accessible by tests.
-class NameValuePairsParser {
+class CHROMEOS_EXPORT NameValuePairsParser {
  public:
   typedef std::map<std::string, std::string> NameValueMap;
 
@@ -79,4 +80,4 @@ class NameValuePairsParser {
 }  // namespace system
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_NAME_VALUE_PAIRS_PARSER_H_
+#endif  // CHROMEOS_SYSTEM_NAME_VALUE_PAIRS_PARSER_H_

@@ -15,14 +15,16 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_oem_manifest_parser.h"
-#include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
-#include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chromeos/app_mode/kiosk_oem_manifest_parser.h"
+#include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/system/name_value_pairs_parser.h"
 #include "content/public/browser/browser_thread.h"
+
+#if defined(GOOGLE_CHROME_BUILD)
+// TODO(phajdan.jr): Drop that dependency, http://crbug.com/180711 .
+#include "chrome/common/chrome_version_info.h"
+#endif
 
 using content::BrowserThread;
 
@@ -251,13 +253,13 @@ void StatisticsProviderImpl::LoadOemManifestFromFile(
   if (!KioskOemManifestParser::Load(file, &oem_manifest))
     return;
 
-  machine_info_[chrome::kOemDeviceRequisitionKey] =
+  machine_info_[chromeos::kOemDeviceRequisitionKey] =
       oem_manifest.device_requisition;
-  machine_flags_[chrome::kOemIsEnterpriseManagedKey] =
+  machine_flags_[chromeos::kOemIsEnterpriseManagedKey] =
       oem_manifest.enterprise_managed;
-  machine_flags_[chrome::kOemCanExitEnterpriseEnrollmentKey] =
+  machine_flags_[chromeos::kOemCanExitEnterpriseEnrollmentKey] =
       oem_manifest.can_exit_enrollment;
-  machine_flags_[chrome::kOemKeyboardDrivenOobeKey] =
+  machine_flags_[chromeos::kOemKeyboardDrivenOobeKey] =
       oem_manifest.keyboard_driven_oobe;
 }
 

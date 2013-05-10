@@ -93,14 +93,6 @@ extern const base::FilePath::CharType kPepperFlashPluginFilename[];
 // directory names
 extern const wchar_t kUserDataDirname[];
 
-#if defined(OS_CHROMEOS)
-extern const base::FilePath::CharType kDriveCacheDirname[];
-extern const char kOemDeviceRequisitionKey[];
-extern const char kOemIsEnterpriseManagedKey[];
-extern const char kOemCanExitEnterpriseEnrollmentKey[];
-extern const char kOemKeyboardDrivenOobeKey[];
-#endif  // defined(OS_CHROMEOS)
-
 extern const bool kRecordModeEnabled;
 
 // The language code used when the language of a page could not be detected.
