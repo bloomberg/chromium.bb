@@ -123,6 +123,20 @@
 #define OVERRIDE
 #endif
 
+// Annotate a virtual method indicating that subclasses must not override it,
+// or annotate a class to indicate that it cannot be subclassed.
+// Use like:
+//   virtual void foo() FINAL;
+//   class B FINAL : public A {};
+#if defined(COMPILER_MSVC)
+// TODO(jered): Change this to "final" when chromium no longer uses MSVC 2010.
+#define FINAL sealed
+#elif defined(__clang__)
+#define FINAL final
+#else
+#define FINAL
+#endif
+
 // Annotate a function indicating the caller must examine the return value.
 // Use like:
 //   int foo() WARN_UNUSED_RESULT;
