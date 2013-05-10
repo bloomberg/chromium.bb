@@ -265,6 +265,9 @@ void GLES2Implementation::WaitForCmd() {
 bool GLES2Implementation::IsExtensionAvailable(const char* ext) {
   const char* extensions =
       reinterpret_cast<const char*>(GetStringHelper(GL_EXTENSIONS));
+  if (!extensions)
+    return false;
+
   int length = strlen(ext);
   while (true) {
     int n = strcspn(extensions, " ");
