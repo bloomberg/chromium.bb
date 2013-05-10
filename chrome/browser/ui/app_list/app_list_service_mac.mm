@@ -8,7 +8,7 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/browser/ui/app_list/app_list_service_mac.h"
+#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -21,35 +21,34 @@ class ImageSkia;
 
 namespace {
 
-// AppListControllerCocoa manages global resources needed for the app list to
+// AppListServiceMac manages global resources needed for the app list to
 // operate, and controls when the app list is opened and closed.
-// TODO(tapted): rename this class to AppListServiceMac and move entire file to
-// chrome/browser/ui/app_list/app_list_service_mac.cc .
-class AppListControllerCocoa : public AppListService {
+class AppListServiceMac : public AppListServiceImpl {
  public:
-  virtual ~AppListControllerCocoa() {}
+  virtual ~AppListServiceMac() {}
 
-  static AppListControllerCocoa* GetInstance() {
-    return Singleton<AppListControllerCocoa,
-                     LeakySingletonTraits<AppListControllerCocoa> >::get();
+  static AppListServiceMac* GetInstance() {
+    return Singleton<AppListServiceMac,
+                     LeakySingletonTraits<AppListServiceMac> >::get();
   }
 
   void CreateAppList(Profile* profile);
   NSWindow* GetNativeWindow();
 
   // AppListService overrides:
-  virtual void ShowAppList(Profile* profile) OVERRIDE;
+  virtual void ShowAppList(Profile* requested_profile) OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
+  virtual void EnableAppList() OVERRIDE;
 
  private:
-  friend struct DefaultSingletonTraits<AppListControllerCocoa>;
+  friend struct DefaultSingletonTraits<AppListServiceMac>;
 
-  AppListControllerCocoa() {}
+  AppListServiceMac() {}
 
   scoped_nsobject<AppListWindowController> window_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListControllerCocoa);
+  DISALLOW_COPY_AND_ASSIGN(AppListServiceMac);
 };
 
 class AppListControllerDelegateCocoa : public AppListControllerDelegate {
@@ -78,11 +77,11 @@ AppListControllerDelegateCocoa::AppListControllerDelegateCocoa() {}
 AppListControllerDelegateCocoa::~AppListControllerDelegateCocoa() {}
 
 void AppListControllerDelegateCocoa::DismissView() {
-  AppListControllerCocoa::GetInstance()->DismissAppList();
+  AppListServiceMac::GetInstance()->DismissAppList();
 }
 
 gfx::NativeWindow AppListControllerDelegateCocoa::GetAppListWindow() {
-  return AppListControllerCocoa::GetInstance()->GetNativeWindow();
+  return AppListServiceMac::GetInstance()->GetNativeWindow();
 }
 
 bool AppListControllerDelegateCocoa::CanPin() {
@@ -105,41 +104,64 @@ void AppListControllerDelegateCocoa::LaunchApp(
       profile, extension, NEW_FOREGROUND_TAB));
 }
 
-void AppListControllerCocoa::CreateAppList(Profile* profile) {
+void AppListServiceMac::CreateAppList(Profile* requested_profile) {
+  if (profile() == requested_profile)
+    return;
+
+  SetProfile(requested_profile);
   scoped_ptr<app_list::AppListViewDelegate> delegate(
-      new AppListViewDelegate(new AppListControllerDelegateCocoa(), profile));
+      new AppListViewDelegate(new AppListControllerDelegateCocoa(), profile()));
   window_controller_.reset([[AppListWindowController alloc] init]);
   [[window_controller_ appListViewController] setDelegate:delegate.Pass()];
 }
 
-void AppListControllerCocoa::ShowAppList(Profile* profile) {
-  if (!window_controller_)
-    CreateAppList(profile);
+void AppListServiceMac::ShowAppList(Profile* requested_profile) {
+  InvalidatePendingProfileLoads();
 
+  if (IsAppListVisible() && (requested_profile == profile())) {
+    DCHECK(window_controller_);
+    [[window_controller_ window] makeKeyAndOrderFront:nil];
+    [NSApp activateIgnoringOtherApps:YES];
+    return;
+  }
+
+  SaveProfilePathToLocalState(requested_profile->GetPath());
+
+  DismissAppList();
+  CreateAppList(requested_profile);
+
+  DCHECK(window_controller_);
   [[window_controller_ window] makeKeyAndOrderFront:nil];
+  [NSApp activateIgnoringOtherApps:YES];
 }
 
-void AppListControllerCocoa::DismissAppList() {
+void AppListServiceMac::DismissAppList() {
   if (!window_controller_)
     return;
 
   [[window_controller_ window] close];
 }
 
-bool AppListControllerCocoa::IsAppListVisible() const {
+bool AppListServiceMac::IsAppListVisible() const {
   return [[window_controller_ window] isVisible];
 }
 
-NSWindow* AppListControllerCocoa::GetNativeWindow() {
+void AppListServiceMac::EnableAppList() {
+  // TODO(tapted): Implement enable logic here for OSX.
+}
+
+NSWindow* AppListServiceMac::GetNativeWindow() {
   return [window_controller_ window];
 }
 
 }  // namespace
 
-namespace chrome {
-
-AppListService* GetAppListServiceMac() {
-  return AppListControllerCocoa::GetInstance();
+// static
+AppListService* AppListService::Get() {
+  return AppListServiceMac::GetInstance();
 }
 
-}  // namespace chrome
+// static
+void AppListService::InitAll(Profile* initial_profile) {
+  Get()->Init(initial_profile);
+}
