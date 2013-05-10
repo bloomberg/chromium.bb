@@ -14,11 +14,14 @@
 
 #include "base/logging.h"
 #include "skia/ext/convolver.h"
+#include "skia/ext/recursive_gaussian_convolution.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "ui/gfx/color_analysis.h"
 
 namespace {
+
+const float kSigmaThresholdForRecursive = 1.5f;
 
 template<class InputIterator, class OutputIterator, class Compare>
 void SlidingWindowMinMax(InputIterator first,
@@ -75,37 +78,6 @@ void ApplyGaussianGradientMagnitudeFilter(SkBitmap* input_bitmap,
   DCHECK(input_bitmap->getPixels());
   DCHECK_EQ(SkBitmap::kA8_Config, input_bitmap->config());
 
-  const int tail_length = static_cast<int>(4.0f * kernel_sigma + 0.5f);
-  const int kernel_size = tail_length * 2 + 1;
-  const float sigmasq = kernel_sigma * kernel_sigma;
-  std::vector<float> smoother_weights(kernel_size, 0.0);
-  float kernel_sum = 1.0f;
-
-  smoother_weights[tail_length] = 1.0f;
-
-  for (int ii = 1; ii <= tail_length; ++ii) {
-    float v = std::exp(-0.5f * ii * ii / sigmasq);
-    smoother_weights[tail_length + ii] = v;
-    smoother_weights[tail_length - ii] = v;
-    kernel_sum += 2.0f * v;
-  }
-
-  for (int i = 0; i < kernel_size; ++i)
-    smoother_weights[i] /= kernel_sum;
-
-  std::vector<float> gradient_weights(kernel_size, 0.0);
-  gradient_weights[tail_length] = 0.0;
-  for (int ii = 1; ii <= tail_length; ++ii) {
-    float v = sigmasq * smoother_weights[tail_length + ii] / ii;
-    gradient_weights[tail_length + ii] = v;
-    gradient_weights[tail_length - ii] = -v;
-  }
-
-  skia::ConvolutionFilter1D smoothing_filter;
-  skia::ConvolutionFilter1D gradient_filter;
-  smoothing_filter.AddFilter(0, &smoother_weights[0], smoother_weights.size());
-  gradient_filter.AddFilter(0, &gradient_weights[0], gradient_weights.size());
-
   // To perform computations we will need one intermediate buffer. It can
   // very well be just another bitmap.
   const SkISize image_size = SkISize::Make(input_bitmap->width(),
@@ -115,49 +87,110 @@ void ApplyGaussianGradientMagnitudeFilter(SkBitmap* input_bitmap,
       input_bitmap->config(), image_size.width(), image_size.height());
   intermediate.allocPixels();
 
-  skia::SingleChannelConvolveX1D(
-      input_bitmap->getAddr8(0, 0),
-      static_cast<int>(input_bitmap->rowBytes()),
-      0, input_bitmap->bytesPerPixel(),
-      smoothing_filter,
-      image_size,
-      intermediate.getAddr8(0, 0),
-      static_cast<int>(intermediate.rowBytes()),
-      0, intermediate.bytesPerPixel(), false);
-  skia::SingleChannelConvolveY1D(
-      intermediate.getAddr8(0, 0),
-      static_cast<int>(intermediate.rowBytes()),
-      0, intermediate.bytesPerPixel(),
-      smoothing_filter,
-      image_size,
-      input_bitmap->getAddr8(0, 0),
-      static_cast<int>(input_bitmap->rowBytes()),
-      0, input_bitmap->bytesPerPixel(), false);
-
-  // Now the gradient operator (we will need two buffers).
   SkBitmap intermediate2;
   intermediate2.setConfig(
       input_bitmap->config(), image_size.width(), image_size.height());
   intermediate2.allocPixels();
 
-  skia::SingleChannelConvolveX1D(
-      input_bitmap->getAddr8(0, 0),
-      static_cast<int>(input_bitmap->rowBytes()),
-      0, input_bitmap->bytesPerPixel(),
-      gradient_filter,
-      image_size,
-      intermediate.getAddr8(0, 0),
-      static_cast<int>(intermediate.rowBytes()),
-      0, intermediate.bytesPerPixel(), true);
-  skia::SingleChannelConvolveY1D(
-      input_bitmap->getAddr8(0, 0),
-      static_cast<int>(input_bitmap->rowBytes()),
-      0, input_bitmap->bytesPerPixel(),
-      gradient_filter,
-      image_size,
-      intermediate2.getAddr8(0, 0),
-      static_cast<int>(intermediate2.rowBytes()),
-      0, intermediate2.bytesPerPixel(), true);
+
+  if (kernel_sigma <= kSigmaThresholdForRecursive) {
+    // For small kernels classic implementation is faster.
+    skia::ConvolutionFilter1D smoothing_filter;
+    skia::SetUpGaussianConvolutionKernel(
+        &smoothing_filter, kernel_sigma, false);
+    skia::SingleChannelConvolveX1D(
+        input_bitmap->getAddr8(0, 0),
+        static_cast<int>(input_bitmap->rowBytes()),
+        0, input_bitmap->bytesPerPixel(),
+        smoothing_filter,
+        image_size,
+        intermediate.getAddr8(0, 0),
+        static_cast<int>(intermediate.rowBytes()),
+        0, intermediate.bytesPerPixel(), false);
+    skia::SingleChannelConvolveY1D(
+        intermediate.getAddr8(0, 0),
+        static_cast<int>(intermediate.rowBytes()),
+        0, intermediate.bytesPerPixel(),
+        smoothing_filter,
+        image_size,
+        input_bitmap->getAddr8(0, 0),
+        static_cast<int>(input_bitmap->rowBytes()),
+        0, input_bitmap->bytesPerPixel(), false);
+
+    skia::ConvolutionFilter1D gradient_filter;
+    skia::SetUpGaussianConvolutionKernel(&gradient_filter, kernel_sigma, true);
+    skia::SingleChannelConvolveX1D(
+        input_bitmap->getAddr8(0, 0),
+        static_cast<int>(input_bitmap->rowBytes()),
+        0, input_bitmap->bytesPerPixel(),
+        gradient_filter,
+        image_size,
+        intermediate.getAddr8(0, 0),
+        static_cast<int>(intermediate.rowBytes()),
+        0, intermediate.bytesPerPixel(), true);
+    skia::SingleChannelConvolveY1D(
+        input_bitmap->getAddr8(0, 0),
+        static_cast<int>(input_bitmap->rowBytes()),
+        0, input_bitmap->bytesPerPixel(),
+        gradient_filter,
+        image_size,
+        intermediate2.getAddr8(0, 0),
+        static_cast<int>(intermediate2.rowBytes()),
+        0, intermediate2.bytesPerPixel(), true);
+  } else {
+    // For larger sigma values use the recursive filter.
+    skia::RecursiveFilter smoothing_filter(kernel_sigma,
+                                           skia::RecursiveFilter::FUNCTION);
+    skia::SingleChannelRecursiveGaussianX(
+        input_bitmap->getAddr8(0, 0),
+        static_cast<int>(input_bitmap->rowBytes()),
+        0, input_bitmap->bytesPerPixel(),
+        smoothing_filter,
+        image_size,
+        intermediate.getAddr8(0, 0),
+        static_cast<int>(intermediate.rowBytes()),
+        0, intermediate.bytesPerPixel(), false);
+    unsigned char smoothed_max = skia::SingleChannelRecursiveGaussianY(
+        intermediate.getAddr8(0, 0),
+        static_cast<int>(intermediate.rowBytes()),
+        0, intermediate.bytesPerPixel(),
+        smoothing_filter,
+        image_size,
+        input_bitmap->getAddr8(0, 0),
+        static_cast<int>(input_bitmap->rowBytes()),
+        0, input_bitmap->bytesPerPixel(), false);
+    if (smoothed_max < 127) {
+      int bit_shift = 8 - static_cast<int>(
+          std::log10(static_cast<float>(smoothed_max)) / std::log10(2.0f));
+      for (int r = 0; r < image_size.height(); ++r) {
+        uint8* row = input_bitmap->getAddr8(0, r);
+        for (int c = 0; c < image_size.width(); ++c, ++row) {
+          *row <<= bit_shift;
+        }
+      }
+    }
+
+    skia::RecursiveFilter gradient_filter(
+        kernel_sigma, skia::RecursiveFilter::FIRST_DERIVATIVE);
+    skia::SingleChannelRecursiveGaussianX(
+        input_bitmap->getAddr8(0, 0),
+        static_cast<int>(input_bitmap->rowBytes()),
+        0, input_bitmap->bytesPerPixel(),
+        gradient_filter,
+        image_size,
+        intermediate.getAddr8(0, 0),
+        static_cast<int>(intermediate.rowBytes()),
+        0, intermediate.bytesPerPixel(), true);
+    skia::SingleChannelRecursiveGaussianY(
+        input_bitmap->getAddr8(0, 0),
+        static_cast<int>(input_bitmap->rowBytes()),
+        0, input_bitmap->bytesPerPixel(),
+        gradient_filter,
+        image_size,
+        intermediate2.getAddr8(0, 0),
+        static_cast<int>(intermediate2.rowBytes()),
+        0, intermediate2.bytesPerPixel(), true);
+  }
 
   unsigned grad_max = 0;
   for (int r = 0; r < image_size.height(); ++r) {
@@ -175,7 +208,7 @@ void ApplyGaussianGradientMagnitudeFilter(SkBitmap* input_bitmap,
     bit_shift = static_cast<int>(
         std::log10(static_cast<float>(grad_max)) / std::log10(2.0f)) - 7;
   for (int r = 0; r < image_size.height(); ++r) {
-    const uint8* grad_x_row =intermediate.getAddr8(0, r);
+    const uint8* grad_x_row = intermediate.getAddr8(0, r);
     const uint8* grad_y_row = intermediate2.getAddr8(0, r);
     uint8* target_row = input_bitmap->getAddr8(0, r);
     for (int c = 0; c < image_size.width(); ++c) {

@@ -4,6 +4,8 @@
 
 #include <string.h>
 #include <time.h>
+#include <algorithm>
+#include <numeric>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -471,6 +473,57 @@ TEST(Convolver, SeparableSingleConvolutionEdges) {
   EXPECT_NEAR(output[test_column + dest_row_stride * (kImgHeight - 2)], 80, 1);
   EXPECT_NEAR(output[test_column + dest_row_stride * (kImgHeight - 3)], 60, 1);
   EXPECT_NEAR(output[test_column + dest_row_stride * (kImgHeight - 4)], 40, 1);
+}
+
+TEST(Convolver, SetUpGaussianConvolutionFilter) {
+  ConvolutionFilter1D smoothing_filter;
+  ConvolutionFilter1D gradient_filter;
+  SetUpGaussianConvolutionKernel(&smoothing_filter, 4.5f, false);
+  SetUpGaussianConvolutionKernel(&gradient_filter, 3.0f, true);
+
+  int specified_filter_length;
+  int filter_offset;
+  int filter_length;
+
+  const ConvolutionFilter1D::Fixed* smoothing_kernel =
+      smoothing_filter.GetSingleFilter(
+          &specified_filter_length, &filter_offset, &filter_length);
+  EXPECT_TRUE(smoothing_kernel);
+  std::vector<float> fp_smoothing_kernel(filter_length);
+  std::transform(smoothing_kernel,
+                 smoothing_kernel + filter_length,
+                 fp_smoothing_kernel.begin(),
+                 ConvolutionFilter1D::FixedToFloat);
+  // Should sum-up to 1 (nearly), and all values whould be in ]0, 1[.
+  EXPECT_NEAR(std::accumulate(
+      fp_smoothing_kernel.begin(), fp_smoothing_kernel.end(), 0.0f),
+              1.0f, 0.01f);
+  EXPECT_GT(*std::min_element(fp_smoothing_kernel.begin(),
+                              fp_smoothing_kernel.end()), 0.0f);
+  EXPECT_LT(*std::max_element(fp_smoothing_kernel.begin(),
+                              fp_smoothing_kernel.end()), 1.0f);
+
+  const ConvolutionFilter1D::Fixed* gradient_kernel =
+      gradient_filter.GetSingleFilter(
+          &specified_filter_length, &filter_offset, &filter_length);
+  EXPECT_TRUE(gradient_kernel);
+  std::vector<float> fp_gradient_kernel(filter_length);
+  std::transform(gradient_kernel,
+                 gradient_kernel + filter_length,
+                 fp_gradient_kernel.begin(),
+                 ConvolutionFilter1D::FixedToFloat);
+  // Should sum-up to 0, and all values whould be in ]-1.5, 1.5[.
+  EXPECT_NEAR(std::accumulate(
+      fp_gradient_kernel.begin(), fp_gradient_kernel.end(), 0.0f),
+              0.0f, 0.01f);
+  EXPECT_GT(*std::min_element(fp_gradient_kernel.begin(),
+                              fp_gradient_kernel.end()), -1.5f);
+  EXPECT_LT(*std::min_element(fp_gradient_kernel.begin(),
+                              fp_gradient_kernel.end()), 0.0f);
+  EXPECT_LT(*std::max_element(fp_gradient_kernel.begin(),
+                              fp_gradient_kernel.end()), 1.5f);
+  EXPECT_GT(*std::max_element(fp_gradient_kernel.begin(),
+                              fp_gradient_kernel.end()), 0.0f);
 }
 
 }  // namespace skia

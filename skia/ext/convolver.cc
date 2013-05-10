@@ -672,4 +672,39 @@ void SingleChannelConvolveY1D(const unsigned char* source_data,
   }
 }
 
+void SetUpGaussianConvolutionKernel(ConvolutionFilter1D* filter,
+                                    float kernel_sigma,
+                                    bool derivative) {
+  DCHECK(filter != NULL);
+  DCHECK_GT(kernel_sigma, 0.0);
+  const int tail_length = static_cast<int>(4.0f * kernel_sigma + 0.5f);
+  const int kernel_size = tail_length * 2 + 1;
+  const float sigmasq = kernel_sigma * kernel_sigma;
+  std::vector<float> kernel_weights(kernel_size, 0.0);
+  float kernel_sum = 1.0f;
+
+  kernel_weights[tail_length] = 1.0f;
+
+  for (int ii = 1; ii <= tail_length; ++ii) {
+    float v = std::exp(-0.5f * ii * ii / sigmasq);
+    kernel_weights[tail_length + ii] = v;
+    kernel_weights[tail_length - ii] = v;
+    kernel_sum += 2.0f * v;
+  }
+
+  for (int i = 0; i < kernel_size; ++i)
+    kernel_weights[i] /= kernel_sum;
+
+  if (derivative) {
+    kernel_weights[tail_length] = 0.0;
+    for (int ii = 1; ii <= tail_length; ++ii) {
+      float v = sigmasq * kernel_weights[tail_length + ii] / ii;
+      kernel_weights[tail_length + ii] = v;
+      kernel_weights[tail_length - ii] = -v;
+    }
+  }
+
+  filter->AddFilter(0, &kernel_weights[0], kernel_weights.size());
+}
+
 }  // namespace skia

@@ -178,6 +178,8 @@
         'ext/platform_device_linux.cc',
         'ext/platform_device_mac.cc',
         'ext/platform_device_win.cc',
+        'ext/recursive_gaussian_convolution.cc',
+        'ext/recursive_gaussian_convolution.h',
         'ext/refptr.h',
         'ext/SkMemory_new_handler.cpp',
         'ext/skia_trace_shim.h',

@@ -1767,6 +1767,7 @@
         '../skia/ext/convolver_unittest.cc',
         '../skia/ext/image_operations_unittest.cc',
         '../skia/ext/platform_canvas_unittest.cc',
+        '../skia/ext/recursive_gaussian_convolution_unittest.cc',
         '../skia/ext/refptr_unittest.cc',
         '../skia/ext/skia_utils_ios_unittest.mm',
         '../skia/ext/skia_utils_mac_unittest.mm',

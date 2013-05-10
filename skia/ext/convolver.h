@@ -115,9 +115,9 @@ class ConvolutionFilter1D {
   // There will be |filter_length| values in the return array.
   // Returns NULL if the filter is 0-length (for instance when all floating
   // point values passed to AddFilter were clipped to 0).
-  const Fixed* GetSingleFilter(int* specified_filter_length,
-                               int* filter_offset,
-                               int* filter_length) const;
+  SK_API const Fixed* GetSingleFilter(int* specified_filter_length,
+                                      int* filter_offset,
+                                      int* filter_length) const;
 
   inline void PaddingForSIMD() {
     // Padding |padding_count| of more dummy coefficients after the coefficients
@@ -218,6 +218,13 @@ SK_API void SingleChannelConvolveY1D(const unsigned char* source_data,
                                      int output_channel_index,
                                      int output_channel_count,
                                      bool absolute_values);
+
+// Set up the |filter| instance with a gaussian kernel. |kernel_sigma| is the
+// parameter of gaussian. If |derivative| is true, the kernel will be that of
+// the first derivative. Intended for use with the two routines above.
+SK_API void SetUpGaussianConvolutionKernel(ConvolutionFilter1D* filter,
+                                           float kernel_sigma,
+                                           bool derivative);
 
 }  // namespace skia
 
