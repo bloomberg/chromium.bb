@@ -1632,7 +1632,7 @@ crbug.com/238363 [ Debug ] media/track/track-cue-rendering-first-line-box.html [
 crbug.com/238363 [ Debug ] svg/animations/remove-animation-element-while-animation-is-running.html [ Crash ]
 
 # WebGL tests are getting an exception thrown and failing.
-crbug.com/239470 [ MountainLion Debug ] fast/canvas/webgl [ Pass Missing ]
+crbug.com/239470 [ Mac Debug ] fast/canvas/webgl [ Pass Missing ]
 
 # Need rebaselines after landing fix for crbug.com/238644
 crbug.com/238644 compositing/direct-image-compositing.html [ ImageOnlyFailure ]
