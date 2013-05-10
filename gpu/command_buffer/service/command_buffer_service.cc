@@ -137,8 +137,10 @@ Buffer CommandBufferService::CreateTransferBuffer(size_t size,
   static int32 next_id = 1;
   *id = next_id++;
 
-  if (!RegisterTransferBuffer(*id, &buffer, size))
+  if (!RegisterTransferBuffer(*id, &buffer, size)) {
+    *id = -1;
     return Buffer();
+  }
 
   return GetTransferBuffer(*id);
 }
