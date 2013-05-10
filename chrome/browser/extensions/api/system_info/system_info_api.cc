@@ -185,7 +185,11 @@ void SystemInfoEventRouter::RemoveEventListener(
     const std::string& event_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  watching_event_set_.erase(event_name);
+  std::multiset<std::string>::iterator it =
+      watching_event_set_.find(event_name);
+  if (it != watching_event_set_.end())
+    watching_event_set_.erase(it);
+
   if (watching_event_set_.count(event_name) > 0)
     return;
 
