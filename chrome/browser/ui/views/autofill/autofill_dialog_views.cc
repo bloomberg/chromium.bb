@@ -266,6 +266,7 @@ AutofillDialogViews::ErrorBubble::ErrorBubble(views::View* anchor,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   views::Widget* anchor_widget = anchor->GetWidget();
+  DCHECK(anchor_widget);
   params.parent = anchor_widget->GetNativeView();
 
   gfx::Rect anchor_bounds = anchor->GetBoundsInScreen();
@@ -1511,7 +1512,7 @@ void AutofillDialogViews::SetValidityForInput(
 
   if (invalid) {
     validity_map_[input] = message;
-    if (!error_bubble_ || !error_bubble_->IsShowing())
+    if ((!error_bubble_ || !error_bubble_->IsShowing()) && input->GetWidget())
       error_bubble_.reset(new ErrorBubble(input, message));
   } else {
     validity_map_.erase(input);
