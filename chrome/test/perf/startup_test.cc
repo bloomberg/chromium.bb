@@ -23,6 +23,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/perf/perf_test.h"
+#include "chrome/test/perf/perf_ui_test_suite.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
@@ -103,7 +104,7 @@ class StartupTest : public UIPerfTest {
   // Rewrite the preferences file to point to the proper image directory.
   virtual void SetUpProfile() OVERRIDE {
     UIPerfTest::SetUpProfile();
-    if (profile_type_ != UITestBase::COMPLEX_THEME)
+    if (profile_type_ != PerfUITestSuite::COMPLEX_THEME)
       return;
 
     const base::FilePath pref_template_path(user_data_dir().
@@ -148,16 +149,16 @@ class StartupTest : public UIPerfTest {
 
   void RunStartupTest(const char* graph, const char* trace,
                       TestColdness test_cold, TestImportance test_importance,
-                      UITestBase::ProfileType profile_type,
+                      PerfUITestSuite::ProfileType profile_type,
                       int num_tabs, int nth_timed_tab) {
     bool important = (test_importance == IMPORTANT);
     profile_type_ = profile_type;
 
     // Sets the profile data for the run.  For now, this is only used for
     // the non-default themes test.
-    if (profile_type != UITestBase::DEFAULT_THEME) {
-      set_template_user_data(UITest::ComputeTypicalUserDataSource(
-          profile_type));
+    if (profile_type != PerfUITestSuite::DEFAULT_THEME) {
+      set_template_user_data(
+          PerfUITestSuite::GetPathForProfileType(profile_type));
     }
 
 #if defined(NDEBUG)
@@ -301,17 +302,20 @@ class StartupTest : public UIPerfTest {
   base::FilePath profiling_file_;
   bool collect_profiling_stats_;
   std::string trace_file_prefix_;
+
+  // Are we using a profile with a complex theme?
+  PerfUITestSuite::ProfileType profile_type_;
 };
 
 TEST_F(StartupTest, PerfWarm) {
   RunStartupTest("warm", "t", WARM, IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 0, 0);
+                 PerfUITestSuite::DEFAULT_THEME, 0, 0);
 }
 
 TEST_F(StartupTest, PerfReferenceWarm) {
   UseReferenceBuild();
   RunStartupTest("warm", "t_ref", WARM, IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 0, 0);
+                 PerfUITestSuite::DEFAULT_THEME, 0, 0);
 }
 
 // TODO(mpcomplete): Should we have reference timings for all these?
@@ -325,7 +329,7 @@ TEST_F(StartupTest, PerfReferenceWarm) {
 
 TEST_F(StartupTest, MAYBE_PerfCold) {
   RunStartupTest("cold", "t", COLD, NOT_IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 0, 0);
+                 PerfUITestSuite::DEFAULT_THEME, 0, 0);
 }
 
 void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
@@ -361,7 +365,7 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
     launch_arguments_ = new_launch_arguments;
   }
   RunStartupTest(graph, trace, WARM, NOT_IMPORTANT,
-                 UITestBase::DEFAULT_THEME, tab_count, nth_timed_tab);
+                 PerfUITestSuite::DEFAULT_THEME, tab_count, nth_timed_tab);
 }
 
 // http://crbug.com/101591
@@ -444,33 +448,33 @@ TEST_F(StartupTest, PerfExtensionEmpty) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("empty");
   RunStartupTest("warm", "extension_empty", WARM, NOT_IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 1, 0);
+                 PerfUITestSuite::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, PerfExtensionContentScript1) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("content_scripts1");
   RunStartupTest("warm", "extension_content_scripts1", WARM, NOT_IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 1, 0);
+                 PerfUITestSuite::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, MAYBE_PerfExtensionContentScript50) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("content_scripts50");
   RunStartupTest("warm", "extension_content_scripts50", WARM, NOT_IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 1, 0);
+                 PerfUITestSuite::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, MAYBE_PerfComplexTheme) {
   RunStartupTest("warm", "t-theme", WARM, NOT_IMPORTANT,
-                 UITestBase::COMPLEX_THEME, 0, 0);
+                 PerfUITestSuite::COMPLEX_THEME, 0, 0);
 }
 
 TEST_F(StartupTest, ProfilingScript1) {
   SetUpWithFileURL();
   SetUpWithProfiling();
   RunStartupTest("warm", "profiling_scripts1", WARM, NOT_IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 1, 0);
+                 PerfUITestSuite::DEFAULT_THEME, 1, 0);
 }
 
 }  // namespace
