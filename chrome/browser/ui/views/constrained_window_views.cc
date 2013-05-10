@@ -122,8 +122,7 @@ class WebContentsModalDialogHostObserverViews
     if (border) {
       // Align the first row of pixels inside the border. This is the apparent
       // top of the dialog.
-      gfx::Insets border_insets = border->GetInsets();
-      position -= gfx::Vector2d(border_insets.left(), border_insets.top());
+      position.set_y(position.y() - border->GetInsets().top());
     }
     target_widget_->SetBounds(gfx::Rect(position, size));
   }
