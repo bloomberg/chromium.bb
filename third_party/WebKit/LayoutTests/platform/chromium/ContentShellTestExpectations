@@ -97,12 +97,12 @@ crbug.com/233889 plugins/reentrant-update-widget-positions.html [ Timeout ]
 crbug.com/235449 fast/loader/stateobjects/state-attribute-history-getter.html [ Pass Failure ]
 crbug.com/235448 fast/loader/stateobjects/popstate-fires-on-history-traversal.html [ Pass Failure ]
 crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Skip ]
-crbug.com/238648 http/tests/websocket/tests/hybi/extensions-with-experimental-flag.html [ Text ]
-crbug.com/238648 http/tests/websocket/tests/hybi/permessage-deflate-comp-bit-onoff.html [ Text ]
-crbug.com/238648 http/tests/websocket/tests/hybi/permessage-deflate-invalid-parameter.html [ Text ]
-crbug.com/238648 http/tests/websocket/tests/hybi/permessage-deflate-parameter.html [ Text ]
-crbug.com/238648 http/tests/websocket/tests/hybi/permessage-deflate-set-bfinal.html [ Text ]
-crbug.com/238648 http/tests/websocket/tests/hybi/permessage-deflate-window-bits.html [ Text ]
+crbug.com/238648 http/tests/websocket/tests/hybi/extensions-with-experimental-flag.html [ Failure ]
+crbug.com/238648 http/tests/websocket/tests/hybi/permessage-deflate-comp-bit-onoff.html [ Failure ]
+crbug.com/238648 http/tests/websocket/tests/hybi/permessage-deflate-invalid-parameter.html [ Failure ]
+crbug.com/238648 http/tests/websocket/tests/hybi/permessage-deflate-parameter.html [ Failure ]
+crbug.com/238648 http/tests/websocket/tests/hybi/permessage-deflate-set-bfinal.html [ Failure ]
+crbug.com/238648 http/tests/websocket/tests/hybi/permessage-deflate-window-bits.html [ Failure ]
 
 # -----------------------------------------------------------------
 # To be rebaselined
