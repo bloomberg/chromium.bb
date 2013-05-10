@@ -137,13 +137,19 @@ FileTasks.prototype.processTasks_ = function(tasks) {
 
   for (var i = 0; i < tasks.length; i++) {
     var task = tasks[i];
+    var taskParts = task.taskId.split('|');
 
     // Skip Drive App if the file is not on Drive.
     if (!isOnDrive && task.driveApp)
       continue;
 
+    // Skip internal Files.app's handlers.
+    if (taskParts[0] == id && (taskParts[2] == 'auto-open' ||
+        taskParts[2] == 'select' || taskParts[2] == 'open')) {
+      continue;
+    }
+
     // Tweak images, titles of internal tasks.
-    var taskParts = task.taskId.split('|');
     if (taskParts[0] == id && taskParts[1] == 'file') {
       if (taskParts[2] == 'play') {
         // TODO(serya): This hack needed until task.iconUrl is working
