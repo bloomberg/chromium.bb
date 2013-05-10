@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "init_webrtc.h"
 #include "talk/base/basictypes.h"
 #include "talk/media/webrtc/webrtcmediaengine.h"
 
@@ -19,13 +20,6 @@
 #define ALLOC_EXPORT __attribute__((visibility("default")))
 #endif
 
-typedef cricket::MediaEngineInterface* (*CreateWebRtcMediaEngineFunction)(
-    webrtc::AudioDeviceModule* adm,
-    webrtc::AudioDeviceModule* adm_sc,
-    cricket::WebRtcVideoDecoderFactory* decoder_factory);
-typedef void (*DestroyWebRtcMediaEngineFunction)(
-    cricket::MediaEngineInterface* media_engine);
-
 #if !defined(OS_MACOSX)
 // These are used by our new/delete overrides in
 // allocator_shim/allocator_proxy.cc
@@ -36,7 +30,9 @@ DellocateFunction g_dealloc = NULL;
 // Forward declare of the libjingle internal factory and destroy methods for the
 // WebRTC media engine.
 cricket::MediaEngineInterface* CreateWebRtcMediaEngine(
-    webrtc::AudioDeviceModule* adm, webrtc::AudioDeviceModule* adm_sc,
+    webrtc::AudioDeviceModule* adm,
+    webrtc::AudioDeviceModule* adm_sc,
+    cricket::WebRtcVideoEncoderFactory* encoder_factory,
     cricket::WebRtcVideoDecoderFactory* decoder_factory);
 
 void DestroyWebRtcMediaEngine(cricket::MediaEngineInterface* media_engine);
@@ -68,6 +64,8 @@ bool InitializeModule(const CommandLine& command_line,
     // done the equivalent thing via the GetCommandLine() API.
     CommandLine::ForCurrentProcess()->AppendArguments(command_line, true);
 #endif
+
+    // TODO(tommi): Use SetLogMessageHandler.
     logging::InitLogging(
         FILE_PATH_LITERAL("libpeerconnection.log"),
         logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,

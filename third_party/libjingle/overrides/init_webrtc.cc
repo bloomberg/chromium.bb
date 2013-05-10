@@ -84,13 +84,15 @@ bool InitializeWebRtcModule() {
 cricket::MediaEngineInterface* CreateWebRtcMediaEngine(
     webrtc::AudioDeviceModule* adm,
     webrtc::AudioDeviceModule* adm_sc,
+    cricket::WebRtcVideoEncoderFactory* encoder_factory,
     cricket::WebRtcVideoDecoderFactory* decoder_factory) {
   // For convenience of tests etc, we call InitializeWebRtcModule here.
   // For Chrome however, InitializeWebRtcModule must be called
   // explicitly before the sandbox is initialized.  In that case, this call is
   // effectively a noop.
   InitializeWebRtcModule();
-  return g_create_webrtc_media_engine(adm, adm_sc, decoder_factory);
+  return g_create_webrtc_media_engine(adm, adm_sc, encoder_factory,
+      decoder_factory);
 }
 
 void DestroyWebRtcMediaEngine(cricket::MediaEngineInterface* media_engine) {

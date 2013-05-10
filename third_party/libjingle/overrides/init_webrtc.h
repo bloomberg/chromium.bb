@@ -12,6 +12,7 @@ class CommandLine;
 namespace cricket {
 class MediaEngineInterface;
 class WebRtcVideoDecoderFactory;
+class WebRtcVideoEncoderFactory;
 }  // namespace cricket
 
 namespace webrtc {
@@ -21,6 +22,7 @@ class AudioDeviceModule;
 typedef cricket::MediaEngineInterface* (*CreateWebRtcMediaEngineFunction)(
     webrtc::AudioDeviceModule* adm,
     webrtc::AudioDeviceModule* adm_sc,
+    cricket::WebRtcVideoEncoderFactory* encoder_factory,
     cricket::WebRtcVideoDecoderFactory* decoder_factory);
 
 typedef void (*DestroyWebRtcMediaEngineFunction)(
@@ -40,11 +42,13 @@ typedef bool (*InitializeModuleFunction)(
     CreateWebRtcMediaEngineFunction* create_media_engine,
     DestroyWebRtcMediaEngineFunction* destroy_media_engine);
 
+#if !defined(LIBPEERCONNECTION_IMPLEMENTATION)
 // Load and initialize the shared WebRTC module (libpeerconnection).
 // Call this explicitly to load and initialize the WebRTC module (e.g. before
 // initializing the sandbox in Chrome).
 // If not called explicitly, this function will still be called from the main
 // CreateWebRtcMediaEngine factory function the first time it is called.
 bool InitializeWebRtcModule();
+#endif
 
 #endif // THIRD_PARTY_LIBJINGLE_OVERRIDES_INIT_WEBRTC_H_
