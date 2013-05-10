@@ -200,9 +200,6 @@ class ASH_EXPORT Shell
       int container_id,
       aura::RootWindow* priority_root);
 
-  // True if "launcher per display" feature  is enabled.
-  static bool IsLauncherPerDisplayEnabled();
-
   // True if an experimental maximize mode is enabled which forces browser and
   // application windows to be maximized only.
   static bool IsForcedMaximizeMode();

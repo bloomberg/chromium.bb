@@ -700,18 +700,14 @@ bool AcceleratorController::PerformAction(int action,
       break;
     case SHOW_SYSTEM_TRAY_BUBBLE: {
       internal::RootWindowController* controller =
-          Shell::IsLauncherPerDisplayEnabled() ?
-          internal::RootWindowController::ForActiveRootWindow() :
-          Shell::GetPrimaryRootWindowController();
+          internal::RootWindowController::ForActiveRootWindow();
       if (!controller->GetSystemTray()->HasSystemBubble())
         controller->GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
       break;
     }
     case SHOW_MESSAGE_CENTER_BUBBLE: {
       internal::RootWindowController* controller =
-          Shell::IsLauncherPerDisplayEnabled() ?
-          internal::RootWindowController::ForActiveRootWindow() :
-          Shell::GetPrimaryRootWindowController();
+          internal::RootWindowController::ForActiveRootWindow();
       internal::StatusAreaWidget* status_area_widget =
           controller->shelf()->status_area_widget();
       if (status_area_widget) {

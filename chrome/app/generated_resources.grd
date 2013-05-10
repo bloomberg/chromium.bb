@@ -7053,12 +7053,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_DESCRIPTION" desc="Description for the flag to switch lock animations.">
           Disables new lock animations.
         </message>
-        <message name="IDS_FLAGS_DISABLE_LAUNCHER_PER_DISPLAY_NAME" desc="Name for the flag to disable a launcher on secondary display.">
-          Disable a launcher on secondary display.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_LAUNCHER_PER_DISPLAY_DESCRIPTION" desc="Description for the flag to disable a launcher on secondary display.">
-          Diables showing the launcher on the second display.
-        </message>
         <message name="IDS_FLAGS_DISABLE_KIOSK_APPS_NAME" desc="Name for the flag to disable kiosk applications.">
           Disable kiosk applications.
         </message>

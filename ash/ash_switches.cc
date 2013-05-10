@@ -48,9 +48,6 @@ const char kAshDisableBootAnimation2[] = "ash-disable-boot-animation2";
 const char kAshDisableDisplayChangeLimiter[] =
     "ash-disable-display-change-limiter";
 
-// Disables creating a launcher per display.
-const char kAshDisableLauncherPerDisplay[] = "ash-disable-launcher-per-display";
-
 // Disable the new cras audio handler.
 const char kAshDisableNewAudioHandler[] = "ash-disable-new-audio-handler";
 

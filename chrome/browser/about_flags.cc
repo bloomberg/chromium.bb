@@ -1078,13 +1078,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerLegacyUI),
   },
   {
-    "disable-launcher-per-display",
-    IDS_FLAGS_DISABLE_LAUNCHER_PER_DISPLAY_NAME,
-    IDS_FLAGS_DISABLE_LAUNCHER_PER_DISPLAY_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshDisableLauncherPerDisplay),
-  },
-  {
     "disable-app-mode",
     IDS_FLAGS_DISABLE_KIOSK_APPS_NAME,
     IDS_FLAGS_DISABLE_KIOSK_APPS_DESCRIPTION,

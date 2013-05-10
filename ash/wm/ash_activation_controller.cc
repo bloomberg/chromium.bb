@@ -96,9 +96,7 @@ aura::Window* AshActivationController::PrepareToActivateLauncher() {
   if (!Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
     return NULL;
   ShelfWidget* shelf = GetRootWindowController(
-      Shell::IsLauncherPerDisplayEnabled() ?
-          Shell::GetActiveRootWindow() :
-          Shell::GetPrimaryRootWindow())->shelf();
+      Shell::GetActiveRootWindow())->shelf();
   // Launcher's window may be already destroyed in shutting down process.
   if (!shelf)
     return NULL;

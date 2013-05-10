@@ -1253,8 +1253,6 @@ void LauncherView::LauncherItemChanged(int model_index,
       break;
     }
     case TYPE_BROWSER_SHORTCUT:
-      if (!Shell::IsLauncherPerDisplayEnabled())
-        break;
       // Fallthrough for the new Launcher since it needs to show the activation
       // change as well.
     case TYPE_APP_SHORTCUT:

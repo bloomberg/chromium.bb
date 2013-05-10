@@ -104,25 +104,23 @@ TEST_F(ShelfWidgetTest, TestAlignment) {
                           SHELF_ALIGNMENT_LEFT,
                           "48,0 252x300");
   }
-  if (Shell::IsLauncherPerDisplayEnabled()) {
-    {
-      SCOPED_TRACE("Secondary Bottom");
-      TestLauncherAlignment(root_windows[1],
-                            SHELF_ALIGNMENT_BOTTOM,
-                            "300,0 500x452");
-    }
-    {
-      SCOPED_TRACE("Secondary Right");
-      TestLauncherAlignment(root_windows[1],
-                            SHELF_ALIGNMENT_RIGHT,
-                            "300,0 452x500");
-    }
-    {
-      SCOPED_TRACE("Secondary Left");
-      TestLauncherAlignment(root_windows[1],
-                            SHELF_ALIGNMENT_LEFT,
-                            "348,0 452x500");
-    }
+  {
+    SCOPED_TRACE("Secondary Bottom");
+    TestLauncherAlignment(root_windows[1],
+                          SHELF_ALIGNMENT_BOTTOM,
+                          "300,0 500x452");
+  }
+  {
+    SCOPED_TRACE("Secondary Right");
+    TestLauncherAlignment(root_windows[1],
+                          SHELF_ALIGNMENT_RIGHT,
+                          "300,0 452x500");
+  }
+  {
+    SCOPED_TRACE("Secondary Left");
+    TestLauncherAlignment(root_windows[1],
+                          SHELF_ALIGNMENT_LEFT,
+                          "348,0 452x500");
   }
 }
 

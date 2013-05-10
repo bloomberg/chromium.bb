@@ -183,10 +183,7 @@ RootWindowController::~RootWindowController() {
 
 // static
 RootWindowController* RootWindowController::ForLauncher(aura::Window* window) {
-  if (Shell::IsLauncherPerDisplayEnabled())
-    return GetRootWindowController(window->GetRootWindow());
-  else
-    return Shell::GetPrimaryRootWindowController();
+  return GetRootWindowController(window->GetRootWindow());
 }
 
 // static
@@ -275,17 +272,15 @@ void RootWindowController::InitForPrimaryDisplay() {
   shelf_.reset(new ash::ShelfWidget(
       shelf_container, status_container, workspace_controller()));
 
-  if (Shell::IsLauncherPerDisplayEnabled() ||
-      root_window_ == Shell::GetPrimaryRootWindow()) {
-    // Create Panel layout manager
-    aura::Window* panel_container = GetContainer(
-        internal::kShellWindowId_PanelContainer);
-    panel_layout_manager_ =
-        new internal::PanelLayoutManager(panel_container);
-    panel_container_handler_.reset(
-        new ToplevelWindowEventHandler(panel_container));
-    panel_container->SetLayoutManager(panel_layout_manager_);
-  }
+  // Create Panel layout manager
+  aura::Window* panel_container = GetContainer(
+      internal::kShellWindowId_PanelContainer);
+  panel_layout_manager_ =
+      new internal::PanelLayoutManager(panel_container);
+  panel_container_handler_.reset(
+      new ToplevelWindowEventHandler(panel_container));
+  panel_container->SetLayoutManager(panel_layout_manager_);
+
   if (Shell::GetInstance()->session_state_delegate()->HasActiveUser())
     shelf_->CreateLauncher();
 
@@ -416,11 +411,9 @@ SystemTray* RootWindowController::GetSystemTray() {
 
 void RootWindowController::ShowContextMenu(
     const gfx::Point& location_in_screen) {
-  aura::RootWindow* target = Shell::IsLauncherPerDisplayEnabled() ?
-      root_window() : Shell::GetPrimaryRootWindow();
   DCHECK(Shell::GetInstance()->delegate());
   scoped_ptr<ui::MenuModel> menu_model(
-      Shell::GetInstance()->delegate()->CreateContextMenu(target));
+      Shell::GetInstance()->delegate()->CreateContextMenu(root_window()));
   if (!menu_model)
     return;
 

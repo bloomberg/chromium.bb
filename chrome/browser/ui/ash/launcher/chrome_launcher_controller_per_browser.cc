@@ -645,11 +645,7 @@ void ChromeLauncherControllerPerBrowser::SetAppImage(
 void ChromeLauncherControllerPerBrowser::OnAutoHideBehaviorChanged(
     ash::ShelfAutoHideBehavior new_behavior) {
     std::string behavior_string;
-  ash::Shell::RootWindowList root_windows;
-  if (ash::Shell::IsLauncherPerDisplayEnabled())
-    root_windows = ash::Shell::GetAllRootWindows();
-  else
-    root_windows.push_back(ash::Shell::GetPrimaryRootWindow());
+  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
 
   for (ash::Shell::RootWindowList::const_iterator iter =
            root_windows.begin();
@@ -1272,11 +1268,7 @@ void ChromeLauncherControllerPerBrowser::SetShelfAutoHideBehaviorPrefs(
 }
 
 void ChromeLauncherControllerPerBrowser::SetShelfAutoHideBehaviorFromPrefs() {
-  ash::Shell::RootWindowList root_windows;
-  if (ash::Shell::IsLauncherPerDisplayEnabled())
-    root_windows = ash::Shell::GetAllRootWindows();
-  else
-    root_windows.push_back(ash::Shell::GetPrimaryRootWindow());
+  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
 
   for (ash::Shell::RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
@@ -1290,11 +1282,7 @@ void ChromeLauncherControllerPerBrowser::SetShelfAlignmentFromPrefs() {
           switches::kShowLauncherAlignmentMenu))
     return;
 
-  ash::Shell::RootWindowList root_windows;
-  if (ash::Shell::IsLauncherPerDisplayEnabled())
-    root_windows = ash::Shell::GetAllRootWindows();
-  else
-    root_windows.push_back(ash::Shell::GetPrimaryRootWindow());
+  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
 
   for (ash::Shell::RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
