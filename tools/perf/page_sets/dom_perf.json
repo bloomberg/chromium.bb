@@ -1,0 +1,15 @@
+{
+  "description": "Dom Perf benchmark",
+  "pages": [
+    { "url": "file:///../../../data/dom_perf/run.html?run=Accessors&reportInJS=1" },
+    { "url": "file:///../../../data/dom_perf/run.html?run=CloneNodes&reportInJS=1" },
+    { "url": "file:///../../../data/dom_perf/run.html?run=CreateNodes&reportInJS=1" },
+    { "url": "file:///../../../data/dom_perf/run.html?run=DOMDivWalk&reportInJS=1" },
+    { "url": "file:///../../../data/dom_perf/run.html?run=DOMTable&reportInJS=1" },
+    { "url": "file:///../../../data/dom_perf/run.html?run=DOMWalk&reportInJS=1" },
+    { "url": "file:///../../../data/dom_perf/run.html?run=Events&reportInJS=1" },
+    { "url": "file:///../../../data/dom_perf/run.html?run=Get+Elements&reportInJS=1" },
+    { "url": "file:///../../../data/dom_perf/run.html?run=GridSort&reportInJS=1" },
+    { "url": "file:///../../../data/dom_perf/run.html?run=Template&reportInJS=1" }
+  ]
+}
