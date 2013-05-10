@@ -72,15 +72,6 @@ bool CreateTemporaryFile(const base::FilePath& dir_path,
 
 void EmptyStatusCallback(SyncStatusCode status) {}
 
-void DidHandleUnregisteredOrigin(const GURL& origin, SyncStatusCode status) {
-  // TODO(calvinlo): Disable syncing if status not ok (http://crbug.com/171611).
-  DCHECK_EQ(SYNC_STATUS_OK, status);
-  if (status != SYNC_STATUS_OK) {
-    LOG(WARNING) << "Remove origin failed for: " << origin.spec()
-                 << " status=" << status;
-  }
-}
-
 std::string PathToTitle(const base::FilePath& path) {
   if (!IsSyncDirectoryOperationEnabled())
     return path.AsUTF8Unsafe();
@@ -840,7 +831,7 @@ void DriveFileSyncService::UpdateRegisteredOrigins() {
 
     if (!extension_service->GetInstalledExtension(extension_id)) {
       // Extension has been uninstalled.
-      UninstallOrigin(origin, base::Bind(&DidHandleUnregisteredOrigin, origin));
+      UninstallOrigin(origin, base::Bind(&EmptyStatusCallback));
     } else if ((metadata_store_->IsBatchSyncOrigin(origin) ||
                 metadata_store_->IsIncrementalSyncOrigin(origin)) &&
                !extension_service->IsExtensionEnabled(extension_id)) {
