@@ -32,6 +32,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "webkit/base/file_path_string_conversions.h"
+#include "webkit/base/origin_url_conversions.h"
 #include "webkit/database/database_util.h"
 
 using webkit_database::DatabaseUtil;
@@ -237,7 +238,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   GURL origin_url =
-      DatabaseUtil::GetOriginFromIdentifier(params.database_identifier);
+      webkit_base::GetOriginURLFromIdentifier(params.database_identifier);
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 

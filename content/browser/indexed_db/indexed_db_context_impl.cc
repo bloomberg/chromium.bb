@@ -22,6 +22,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "webkit/base/file_path_string_conversions.h"
+#include "webkit/base/origin_url_conversions.h"
 #include "webkit/database/database_util.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
@@ -54,7 +55,7 @@ void GetAllOriginsAndPaths(
       WebKit::WebString origin_id_webstring =
           webkit_base::FilePathToWebString(file_path.BaseName());
       origins->push_back(
-          DatabaseUtil::GetOriginFromIdentifier(origin_id_webstring));
+          webkit_base::GetOriginURLFromIdentifier(origin_id_webstring));
       if (file_paths)
         file_paths->push_back(file_path);
     }
@@ -195,7 +196,8 @@ void IndexedDBContextImpl::ForceClose(const GURL& origin_url) {
 }
 
 base::FilePath IndexedDBContextImpl::GetFilePath(const GURL& origin_url) {
-  string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
+  base::string16 origin_id =
+      webkit_base::GetOriginIdentifierFromURL(origin_url);
   return GetIndexedDBFilePath(origin_id);
 }
 
@@ -309,7 +311,8 @@ base::FilePath IndexedDBContextImpl::GetIndexedDBFilePath(
 int64 IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {
   if (data_path_.empty())
     return 0;
-  string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
+  base::string16 origin_id =
+      webkit_base::GetOriginIdentifierFromURL(origin_url);
   base::FilePath file_path = GetIndexedDBFilePath(origin_id);
   return file_util::ComputeDirectorySize(file_path);
 }

@@ -14,6 +14,7 @@
 #include "base/task_runner_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "webkit/base/origin_url_conversions.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
 
@@ -28,7 +29,7 @@ int64 GetOriginUsageOnDBThread(
     const GURL& origin_url) {
   OriginInfo info;
   if (db_tracker->GetOriginInfo(
-          DatabaseUtil::GetOriginIdentifier(origin_url), &info))
+          webkit_base::GetOriginIdentifierFromURL(origin_url), &info))
     return info.TotalSize();
   return 0;
 }
@@ -41,7 +42,7 @@ void GetOriginsOnDBThread(
     for (std::vector<base::string16>::const_iterator iter =
          origin_identifiers.begin();
          iter != origin_identifiers.end(); ++iter) {
-      GURL origin = DatabaseUtil::GetOriginFromIdentifier(*iter);
+      GURL origin = webkit_base::GetOriginURLFromIdentifier(*iter);
       origins_ptr->insert(origin);
     }
   }
@@ -56,7 +57,7 @@ void GetOriginsForHostOnDBThread(
     for (std::vector<base::string16>::const_iterator iter =
          origin_identifiers.begin();
          iter != origin_identifiers.end(); ++iter) {
-      GURL origin = DatabaseUtil::GetOriginFromIdentifier(*iter);
+      GURL origin = webkit_base::GetOriginURLFromIdentifier(*iter);
       if (host == net::GetHostOrSpecFromURL(origin))
         origins_ptr->insert(origin);
     }
@@ -215,7 +216,7 @@ void DatabaseQuotaClient::DeleteOriginData(
       FROM_HERE,
       base::Bind(&DatabaseTracker::DeleteDataForOrigin,
                  db_tracker_,
-                 DatabaseUtil::GetOriginIdentifier(origin),
+                 webkit_base::GetOriginIdentifierFromURL(origin),
                  delete_callback),
       delete_callback);
 }

@@ -15,8 +15,8 @@
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
+#include "webkit/base/origin_url_conversions.h"
 #include "webkit/database/database_tracker.h"
-#include "webkit/database/database_util.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -202,9 +202,9 @@ class DatabaseTracker_TestHelper_Test {
     // Create and open three databases.
     int64 database_size = 0;
     const base::string16 kOrigin1 =
-        DatabaseUtil::GetOriginIdentifier(GURL(kOrigin1Url));
+        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin1Url));
     const base::string16 kOrigin2 =
-        DatabaseUtil::GetOriginIdentifier(GURL(kOrigin2Url));
+        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDB3 = ASCIIToUTF16("db3");
@@ -313,9 +313,9 @@ class DatabaseTracker_TestHelper_Test {
     // Open three new databases.
     int64 database_size = 0;
     const base::string16 kOrigin1 =
-        DatabaseUtil::GetOriginIdentifier(GURL(kOrigin1Url));
+        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin1Url));
     const base::string16 kOrigin2 =
-        DatabaseUtil::GetOriginIdentifier(GURL(kOrigin2Url));
+        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDB3 = ASCIIToUTF16("db3");
@@ -440,7 +440,8 @@ class DatabaseTracker_TestHelper_Test {
 
   static void DatabaseTrackerQuotaIntegration() {
     const GURL kOrigin(kOrigin1Url);
-    const base::string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
+    const base::string16 kOriginId =
+        webkit_base::GetOriginIdentifierFromURL(kOrigin);
     const base::string16 kName = ASCIIToUTF16("name");
     const base::string16 kDescription = ASCIIToUTF16("description");
 
@@ -535,9 +536,9 @@ class DatabaseTracker_TestHelper_Test {
   static void DatabaseTrackerClearSessionOnlyDatabasesOnExit() {
     int64 database_size = 0;
     const base::string16 kOrigin1 =
-        DatabaseUtil::GetOriginIdentifier(GURL(kOrigin1Url));
+        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin1Url));
     const base::string16 kOrigin2 =
-        DatabaseUtil::GetOriginIdentifier(GURL(kOrigin2Url));
+        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDescription = ASCIIToUTF16("database_description");
@@ -613,9 +614,9 @@ class DatabaseTracker_TestHelper_Test {
   static void DatabaseTrackerSetForceKeepSessionState() {
     int64 database_size = 0;
     const base::string16 kOrigin1 =
-        DatabaseUtil::GetOriginIdentifier(GURL(kOrigin1Url));
+        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin1Url));
     const base::string16 kOrigin2 =
-        DatabaseUtil::GetOriginIdentifier(GURL(kOrigin2Url));
+        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDescription = ASCIIToUTF16("database_description");
@@ -688,7 +689,8 @@ class DatabaseTracker_TestHelper_Test {
 
   static void EmptyDatabaseNameIsValid() {
     const GURL kOrigin(kOrigin1Url);
-    const base::string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
+    const base::string16 kOriginId =
+        webkit_base::GetOriginIdentifierFromURL(kOrigin);
     const base::string16 kEmptyName;
     const base::string16 kDescription(ASCIIToUTF16("description"));
     const base::string16 kChangedDescription(
@@ -736,7 +738,8 @@ class DatabaseTracker_TestHelper_Test {
 
   static void HandleSqliteError() {
     const GURL kOrigin(kOrigin1Url);
-    const base::string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
+    const base::string16 kOriginId =
+        webkit_base::GetOriginIdentifierFromURL(kOrigin);
     const base::string16 kName(ASCIIToUTF16("name"));
     const base::string16 kDescription(ASCIIToUTF16("description"));
 

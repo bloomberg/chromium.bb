@@ -20,6 +20,8 @@
         'data_element.h',
         'file_path_string_conversions.cc',
         'file_path_string_conversions.h',
+        'origin_url_conversions.cc',
+        'origin_url_conversions.h',
         'webkit_base_export.h',
       ],
     },

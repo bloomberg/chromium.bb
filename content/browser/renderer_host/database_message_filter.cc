@@ -16,6 +16,7 @@
 #include "content/public/common/result_codes.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/sqlite/sqlite3.h"
+#include "webkit/base/origin_url_conversions.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/vfs_backend.h"
 #include "webkit/quota/quota_manager.h"
@@ -259,7 +260,7 @@ void DatabaseMessageFilter::OnDatabaseGetSpaceAvailable(
   }
 
   quota_manager->GetUsageAndQuota(
-      DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+      webkit_base::GetOriginURLFromIdentifier(origin_identifier),
       quota::kStorageTypeTemporary,
       base::Bind(&DatabaseMessageFilter::OnDatabaseGetUsageAndQuota,
                  this, reply_msg));

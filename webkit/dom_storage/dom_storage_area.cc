@@ -9,8 +9,10 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "webkit/base/file_path_string_conversions.h"
+#include "webkit/base/origin_url_conversions.h"
 #include "webkit/database/database_util.h"
 #include "webkit/dom_storage/dom_storage_map.h"
 #include "webkit/dom_storage/dom_storage_namespace.h"
@@ -39,12 +41,12 @@ const base::FilePath::CharType DomStorageArea::kDatabaseFileExtension[] =
 
 // static
 base::FilePath DomStorageArea::DatabaseFileNameFromOrigin(const GURL& origin) {
-  std::string filename = fileapi::GetOriginIdentifierFromURL(origin);
+  base::string16 filename = webkit_base::GetOriginIdentifierFromURL(origin);
   // There is no base::FilePath.AppendExtension() method, so start with just the
   // extension as the filename, and then InsertBeforeExtension the desired
   // name.
   return base::FilePath().Append(kDatabaseFileExtension).
-      InsertBeforeExtensionASCII(filename);
+      InsertBeforeExtensionASCII(UTF16ToUTF8(filename));
 }
 
 // static
@@ -52,7 +54,7 @@ GURL DomStorageArea::OriginFromDatabaseFileName(const base::FilePath& name) {
   DCHECK(name.MatchesExtension(kDatabaseFileExtension));
   WebKit::WebString origin_id = webkit_base::FilePathToWebString(
       name.BaseName().RemoveExtension());
-  return DatabaseUtil::GetOriginFromIdentifier(origin_id);
+  return webkit_base::GetOriginURLFromIdentifier(origin_id);
 }
 
 DomStorageArea::DomStorageArea(const GURL& origin, const base::FilePath& directory,

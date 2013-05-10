@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "webkit/base/origin_url_conversions.h"
 #include "webkit/fileapi/file_system_url.h"
 
 namespace fileapi {
@@ -154,10 +155,11 @@ GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
 }
 
 std::string GetFileSystemName(const GURL& origin_url, FileSystemType type) {
-  std::string origin_identifier = GetOriginIdentifierFromURL(origin_url);
+  base::string16 origin_identifier =
+      webkit_base::GetOriginIdentifierFromURL(origin_url);
   std::string type_string = GetFileSystemTypeString(type);
   DCHECK(!type_string.empty());
-  return origin_identifier + ":" + type_string;
+  return UTF16ToUTF8(origin_identifier) + ":" + type_string;
 }
 
 FileSystemType QuotaStorageTypeToFileSystemType(
@@ -186,31 +188,6 @@ quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type) {
     default:
       return quota::kStorageTypeUnknown;
   }
-}
-
-// TODO(kinuko): Merge these two methods (conversion methods between
-// origin url <==> identifier) with the ones in the database module.
-// http://crbug.com/116476
-std::string GetOriginIdentifierFromURL(const GURL& url) {
-  WebKit::WebSecurityOrigin web_security_origin =
-      WebKit::WebSecurityOrigin::createFromString(UTF8ToUTF16(url.spec()));
-  return web_security_origin.databaseIdentifier().utf8();
-}
-
-GURL GetOriginURLFromIdentifier(const std::string& origin_identifier) {
-  WebKit::WebSecurityOrigin web_security_origin =
-      WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
-          UTF8ToUTF16(origin_identifier));
-
-  // We need this work-around for file:/// URIs as
-  // createFromDatabaseIdentifier returns null origin_url for them.
-  if (web_security_origin.isUnique()) {
-    if (origin_identifier.find("file__") == 0)
-      return GURL("file:///");
-    return GURL();
-  }
-
-  return GURL(web_security_origin.toString());
 }
 
 std::string GetFileSystemTypeString(FileSystemType type) {

@@ -11,12 +11,10 @@
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebIDBDatabase.h"
-#include "webkit/database/database_util.h"
+#include "webkit/base/origin_url_conversions.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
-
-using webkit_database::DatabaseUtil;
 
 namespace content {
 
@@ -67,9 +65,9 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
     idb_context->set_data_path_for_testing(temp_dir.path());
 
     normal_path = idb_context->GetFilePathForTesting(
-        DatabaseUtil::GetOriginIdentifier(kNormalOrigin));
+        webkit_base::GetOriginIdentifierFromURL(kNormalOrigin));
     session_only_path = idb_context->GetFilePathForTesting(
-        DatabaseUtil::GetOriginIdentifier(kSessionOnlyOrigin));
+        webkit_base::GetOriginIdentifierFromURL(kSessionOnlyOrigin));
     ASSERT_TRUE(file_util::CreateDirectory(normal_path));
     ASSERT_TRUE(file_util::CreateDirectory(session_only_path));
     message_loop_.RunUntilIdle();
@@ -114,9 +112,9 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
     idb_context->SetForceKeepSessionState();
 
     normal_path = idb_context->GetFilePathForTesting(
-        DatabaseUtil::GetOriginIdentifier(kNormalOrigin));
+        webkit_base::GetOriginIdentifierFromURL(kNormalOrigin));
     session_only_path = idb_context->GetFilePathForTesting(
-        DatabaseUtil::GetOriginIdentifier(kSessionOnlyOrigin));
+        webkit_base::GetOriginIdentifierFromURL(kSessionOnlyOrigin));
     ASSERT_TRUE(file_util::CreateDirectory(normal_path));
     ASSERT_TRUE(file_util::CreateDirectory(session_only_path));
     message_loop_.RunUntilIdle();
@@ -176,7 +174,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
     idb_context->set_data_path_for_testing(temp_dir.path());
 
     test_path = idb_context->GetFilePathForTesting(
-        DatabaseUtil::GetOriginIdentifier(kTestOrigin));
+        webkit_base::GetOriginIdentifierFromURL(kTestOrigin));
     ASSERT_TRUE(file_util::CreateDirectory(test_path));
 
     const bool kExpectForceClose = true;

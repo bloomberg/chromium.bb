@@ -16,7 +16,9 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/base/origin_url_conversions.h"
 #include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -225,7 +227,7 @@ class ObfuscatedOriginEnumerator
       origins_.pop_back();
     }
     current_ = record;
-    return GetOriginURLFromIdentifier(record.origin);
+    return webkit_base::GetOriginURLFromIdentifier(UTF8ToUTF16(record.origin));
   }
 
   // Returns the current origin's information.
@@ -920,8 +922,10 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
 
   // No other directories seem exist. Try deleting the entire origin directory.
   InitOriginDatabase(false);
-  if (origin_database_)
-    origin_database_->RemovePathForOrigin(GetOriginIdentifierFromURL(origin));
+  if (origin_database_) {
+    origin_database_->RemovePathForOrigin(
+        UTF16ToUTF8(webkit_base::GetOriginIdentifierFromURL(origin)));
+  }
   if (!file_util::Delete(origin_path, true /* recursive */))
     return false;
 
@@ -960,7 +964,9 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
     LOG(WARNING) << "Unknown filesystem type requested:" << type;
     return true;
   }
-  std::string key = GetOriginIdentifierFromURL(origin) + type_string;
+  std::string key =
+      UTF16ToUTF8(webkit_base::GetOriginIdentifierFromURL(origin)) +
+      type_string;
   DirectoryMap::iterator iter = directories_.find(key);
   if (iter != directories_.end()) {
     FileSystemDirectoryDatabase* database = iter->second;
@@ -1131,7 +1137,9 @@ FileSystemDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     LOG(WARNING) << "Unknown filesystem type requested:" << type;
     return NULL;
   }
-  std::string key = GetOriginIdentifierFromURL(origin) + type_string;
+  std::string key =
+      UTF16ToUTF8(webkit_base::GetOriginIdentifierFromURL(origin)) +
+      type_string;
   DirectoryMap::iterator iter = directories_.find(key);
   if (iter != directories_.end()) {
     MarkUsed();
@@ -1161,7 +1169,7 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
     return base::FilePath();
   }
   base::FilePath directory_name;
-  std::string id = GetOriginIdentifierFromURL(origin);
+  std::string id = UTF16ToUTF8(webkit_base::GetOriginIdentifierFromURL(origin));
 
   bool exists_in_db = origin_database_->HasOriginPath(id);
   if (!exists_in_db && !create) {

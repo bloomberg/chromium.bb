@@ -70,28 +70,6 @@ base::FilePath DatabaseUtil::GetFullFilePathForVfsFile(
   return full_path;
 }
 
-base::string16 DatabaseUtil::GetOriginIdentifier(const GURL& url) {
-  base::string16 spec = UTF8ToUTF16(url.spec());
-  return WebKit::WebSecurityOrigin::createFromString(spec).databaseIdentifier();
-}
-
-GURL DatabaseUtil::GetOriginFromIdentifier(
-    const base::string16& origin_identifier) {
-  WebKit::WebSecurityOrigin web_security_origin =
-      WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
-          origin_identifier);
-
-  // We need this work-around for file:/// URIs as
-  // createFromDatabaseIdentifier returns null origin_url for them.
-  if (web_security_origin.isUnique()) {
-    if (origin_identifier.find(UTF8ToUTF16("file__")) == 0)
-      return GURL("file:///");
-    return GURL();
-  }
-
-  return GURL(web_security_origin.toString());
-}
-
 bool DatabaseUtil::IsValidOriginIdentifier(
     const base::string16& origin_identifier) {
   base::string16 dotdot = ASCIIToUTF16("..");

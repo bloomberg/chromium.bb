@@ -95,18 +95,6 @@ WEBKIT_STORAGE_EXPORT FileSystemType QuotaStorageTypeToFileSystemType(
 WEBKIT_STORAGE_EXPORT quota::StorageType FileSystemTypeToQuotaStorageType(
     FileSystemType type);
 
-// Returns the origin identifier string for the given |url| and vice versa.
-// The origin identifier string is a serialized form of a security origin
-// and can be used as a path name as it contains no "/" or other possibly
-// unsafe characters. (See WebKit's SecurityOrigin code for more details.)
-//
-// Example:
-//   "http://www.example.com:80/"'s identifier should look like:
-//   "http_www.example.host_80"
-WEBKIT_STORAGE_EXPORT std::string GetOriginIdentifierFromURL(const GURL& url);
-WEBKIT_STORAGE_EXPORT GURL GetOriginURLFromIdentifier(
-    const std::string& origin_identifier);
-
 // Returns the string representation of the given filesystem |type|.
 // Returns an empty string if the |type| is invalid.
 WEBKIT_STORAGE_EXPORT std::string GetFileSystemTypeString(FileSystemType type);

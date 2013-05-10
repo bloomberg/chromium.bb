@@ -30,8 +30,6 @@ class WEBKIT_STORAGE_EXPORT DatabaseUtil {
   static base::FilePath GetFullFilePathForVfsFile(
       DatabaseTracker* db_tracker,
       const base::string16& vfs_file_name);
-  static base::string16 GetOriginIdentifier(const GURL& url);
-  static GURL GetOriginFromIdentifier(const base::string16& origin_identifier);
   static bool IsValidOriginIdentifier(const base::string16& origin_identifier);
 };
 

@@ -19,6 +19,7 @@
 #include "sql/meta_table.h"
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
+#include "webkit/base/origin_url_conversions.h"
 #include "webkit/database/database_quota_client.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/databases_table.h"
@@ -122,7 +123,7 @@ void DatabaseTracker::DatabaseOpened(const base::string16& origin_identifier,
   if (quota_manager_proxy_)
     quota_manager_proxy_->NotifyStorageAccessed(
         quota::QuotaClient::kDatabase,
-        DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+        webkit_base::GetOriginURLFromIdentifier(origin_identifier),
         quota::kStorageTypeTemporary);
 
   InsertOrUpdateDatabaseDetails(origin_identifier, database_name,
@@ -157,7 +158,7 @@ void DatabaseTracker::DatabaseClosed(const base::string16& origin_identifier,
   if (quota_manager_proxy_)
     quota_manager_proxy_->NotifyStorageAccessed(
         quota::QuotaClient::kDatabase,
-        DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+        webkit_base::GetOriginURLFromIdentifier(origin_identifier),
         quota::kStorageTypeTemporary);
 
   UpdateOpenDatabaseSizeAndNotify(origin_identifier, database_name);
@@ -368,7 +369,7 @@ bool DatabaseTracker::DeleteClosedDatabase(
   if (quota_manager_proxy_ && db_file_size)
     quota_manager_proxy_->NotifyStorageModified(
         quota::QuotaClient::kDatabase,
-        DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+        webkit_base::GetOriginURLFromIdentifier(origin_identifier),
         quota::kStorageTypeTemporary,
         -db_file_size);
 
@@ -429,7 +430,7 @@ bool DatabaseTracker::DeleteOrigin(const base::string16& origin_identifier,
   if (quota_manager_proxy_ && deleted_size) {
     quota_manager_proxy_->NotifyStorageModified(
         quota::QuotaClient::kDatabase,
-        DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+        webkit_base::GetOriginURLFromIdentifier(origin_identifier),
         quota::kStorageTypeTemporary,
         -deleted_size);
   }
@@ -616,7 +617,7 @@ int64 DatabaseTracker::UpdateOpenDatabaseInfoAndNotify(
     if (quota_manager_proxy_)
       quota_manager_proxy_->NotifyStorageModified(
           quota::QuotaClient::kDatabase,
-          DatabaseUtil::GetOriginFromIdentifier(origin_id),
+          webkit_base::GetOriginURLFromIdentifier(origin_id),
           quota::kStorageTypeTemporary,
           new_size - old_size);
     FOR_EACH_OBSERVER(Observer, observers_, OnDatabaseSizeChanged(
@@ -687,7 +688,7 @@ int DatabaseTracker::DeleteDataModifiedSince(
        ori != origins_identifiers.end(); ++ori) {
     if (special_storage_policy_.get() &&
         special_storage_policy_->IsStorageProtected(
-            DatabaseUtil::GetOriginFromIdentifier(*ori))) {
+            webkit_base::GetOriginURLFromIdentifier(*ori))) {
       continue;
     }
 
@@ -824,8 +825,7 @@ void DatabaseTracker::ClearSessionOnlyOrigins() {
   for (std::vector<base::string16>::iterator origin =
            origin_identifiers.begin();
        origin != origin_identifiers.end(); ++origin) {
-    GURL origin_url =
-        webkit_database::DatabaseUtil::GetOriginFromIdentifier(*origin);
+    GURL origin_url = webkit_base::GetOriginURLFromIdentifier(*origin);
     if (!special_storage_policy_->IsStorageSessionOnly(origin_url))
       continue;
     if (special_storage_policy_->IsStorageProtected(origin_url))
