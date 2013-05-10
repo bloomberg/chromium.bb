@@ -2118,6 +2118,8 @@
         'browser/task_manager/task_manager_os_resources_win.h',
         'browser/task_manager/task_manager_resource_providers.cc',
         'browser/task_manager/task_manager_resource_providers.h',
+        'browser/task_manager/task_manager_tab_contents_resource_provider.cc',
+        'browser/task_manager/task_manager_tab_contents_resource_provider.h',
         'browser/task_manager/task_manager_worker_resource_provider.cc',
         'browser/task_manager/task_manager_worker_resource_provider.h',
         'browser/task_profiler/auto_tracking.cc',

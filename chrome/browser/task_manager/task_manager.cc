@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_resource_providers.h"
+#include "chrome/browser/task_manager/task_manager_tab_contents_resource_provider.h"
 #include "chrome/browser/task_manager/task_manager_worker_resource_provider.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
