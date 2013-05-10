@@ -225,10 +225,6 @@ void PanelStackView::DrawSystemAttention(bool draw_attention) {
 #endif
 }
 
-void PanelStackView::OnPanelActivated(Panel* panel) {
-  // Nothing to do.
-}
-
 string16 PanelStackView::GetWindowTitle() const {
   return delegate_->GetTitle();
 }

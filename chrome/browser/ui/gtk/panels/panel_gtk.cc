@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -213,7 +212,6 @@ PanelGtk::PanelGtk(Panel* panel, const gfx::Rect& bounds)
       is_drawing_attention_(false),
       frame_cursor_(NULL),
       is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()),
-      is_minimized_(false),
       window_(NULL),
       window_container_(NULL),
       window_vbox_(NULL),
@@ -258,8 +256,6 @@ void PanelGtk::Init() {
                    G_CALLBACK(OnMainWindowDestroyThunk), this);
   g_signal_connect(window_, "configure-event",
                    G_CALLBACK(OnConfigureThunk), this);
-  g_signal_connect(window_, "window-state-event",
-                   G_CALLBACK(OnWindowStateThunk), this);
   g_signal_connect(window_, "key-press-event",
                    G_CALLBACK(OnKeyPressThunk), this);
   g_signal_connect(window_, "motion-notify-event",
@@ -322,15 +318,16 @@ void PanelGtk::SetWindowCornerStyle(panel::CornerStyle corner_style) {
 }
 
 void PanelGtk::MinimizePanelBySystem() {
-  gtk_window_iconify(window_);
+  NOTIMPLEMENTED();
 }
 
 bool PanelGtk::IsPanelMinimizedBySystem() const {
-  return is_minimized_;
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void PanelGtk::ShowShadow(bool show) {
-  // Shadow is not supported for GTK panel.
+  NOTIMPLEMENTED();
 }
 
 void PanelGtk::UpdateWindowShape() {
@@ -394,12 +391,6 @@ gboolean PanelGtk::OnConfigure(GtkWidget* widget,
       content::Source<Panel>(panel_.get()),
       content::NotificationService::NoDetails());
 
-  return FALSE;
-}
-
-gboolean PanelGtk::OnWindowState(GtkWidget* widget,
-                                 GdkEventWindowState* event) {
-  is_minimized_ = event->new_window_state & GDK_WINDOW_STATE_ICONIFIED;
   return FALSE;
 }
 
@@ -823,28 +814,7 @@ void PanelGtk::ActivatePanel() {
 }
 
 void PanelGtk::DeactivatePanel() {
-  // When a panel is deactivated, it should not be lowered to the bottom of the
-  // z-order. We could put it behind other panel window.
-  Panel* other_panel = NULL;
-  // First, try to pick the sibling panel in the same stack.
-  StackedPanelCollection* stack = panel_->stack();
-  if (stack && stack->num_panels()) {
-    other_panel = panel_ != stack->top_panel() ? stack->top_panel()
-                                               : stack->bottom_panel();
-  }
-  // Then, try to pick other detached or stacked panel.
-  if (!other_panel) {
-    std::vector<Panel*> panels =
-        panel_->manager()->GetDetachedAndStackedPanels();
-    if (!panels.empty())
-      other_panel = panel_ != panels.front() ? panels.front() : panels.back();
-  }
-
-  gdk_window_restack(
-      gtk_widget_get_window(GTK_WIDGET(window_)),
-      other_panel ? gtk_widget_get_window(
-          GTK_WIDGET(other_panel->GetNativeWindow())) : NULL,
-      false);
+  gdk_window_lower(gtk_widget_get_window(GTK_WIDGET(window_)));
 
   // Per ICCCM: http://tronche.com/gui/x/icccm/sec-4.html#s-4.1.7
   // A convention is also required for clients that want to give up the

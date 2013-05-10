@@ -333,10 +333,6 @@ void PanelStackWindowCocoa::DrawSystemAttention(bool draw_attention) {
   }
 }
 
-void PanelStackWindowCocoa::OnPanelActivated(Panel* panel) {
-  // Nothing to do.
-}
-
 void PanelStackWindowCocoa::TerminateBoundsAnimation() {
   if (!bounds_animation_)
     return;

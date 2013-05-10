@@ -402,7 +402,6 @@
             'browser/ui/panels/panel_browsertest.cc',
             'browser/ui/panels/panel_drag_browsertest.cc',
             'browser/ui/panels/panel_resize_browsertest.cc',
-            'browser/ui/panels/stacked_panel_browsertest.cc',
             'browser/ui/views/panels/panel_view_browsertest.cc',
             'browser/notifications/desktop_notifications_unittest.cc',
           ],

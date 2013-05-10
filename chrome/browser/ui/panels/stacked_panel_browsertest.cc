@@ -17,6 +17,10 @@
 class StackedPanelBrowserTest : public BasePanelBrowserTest {
 };
 
+// TODO(jianli): to be enabled for other platforms when grouping and snapping
+// are supported.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+
 IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, CheckStackedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
@@ -50,10 +54,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, CheckStackedPanelProperties) {
   EXPECT_TRUE(panel2_testing->IsButtonVisible(panel::CLOSE_BUTTON));
   EXPECT_TRUE(panel3_testing->IsButtonVisible(panel::CLOSE_BUTTON));
 
-  if (PanelManager::CanUseSystemMinimize())
-    EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
-  else
-    EXPECT_FALSE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
+  EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel2_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel3_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
 
@@ -152,10 +153,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   EXPECT_TRUE(panel2_testing->IsButtonVisible(panel::CLOSE_BUTTON));
   EXPECT_TRUE(panel3_testing->IsButtonVisible(panel::CLOSE_BUTTON));
 
-  if (PanelManager::CanUseSystemMinimize())
-    EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
-  else
-    EXPECT_FALSE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
+  EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel2_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel3_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
 
@@ -341,19 +339,18 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandToFitWithinScreen) {
   gfx::Rect work_area =
       panel_manager->display_settings_provider()->GetPrimaryWorkArea();
 
-  // Create 4 stacked panels. P4 is the active panel.
+  // Create 3 stacked panels.
   StackedPanelCollection* stack = panel_manager->CreateStack();
-  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 90, 200, 150), stack);
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 250, 200, 200), stack);
   Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack);
   Panel* panel3 = CreateStackedPanel("3", gfx::Rect(0, 0, 150, 120), stack);
-  Panel* panel4 = CreateStackedPanel("4", gfx::Rect(0, 0, 150, 100), stack);
-  ASSERT_EQ(4, stack->num_panels());
-  ASSERT_FALSE(panel1->IsMinimized());
-  ASSERT_FALSE(panel2->IsMinimized());
-  ASSERT_FALSE(panel3->IsMinimized());
-  ASSERT_FALSE(panel4->IsMinimized());
-  EXPECT_LE(panel4->GetBounds().bottom(), work_area.bottom());
-  int old_stack_top_position = panel1->GetBounds().y();
+  ASSERT_EQ(3, stack->num_panels());
+
+  // Create 1 detached panel such that all stacked panel are not focused.
+  CreateDetachedPanel("4", gfx::Rect(400, 150, 100, 100));
+  ASSERT_FALSE(panel1->IsActive());
+  ASSERT_FALSE(panel2->IsActive());
+  ASSERT_FALSE(panel3->IsActive());
 
   // Collapse P2.
   panel2->Minimize();
@@ -361,30 +358,20 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandToFitWithinScreen) {
   ASSERT_FALSE(panel1->IsMinimized());
   ASSERT_TRUE(panel2->IsMinimized());
   ASSERT_FALSE(panel3->IsMinimized());
-  ASSERT_FALSE(panel4->IsMinimized());
-
-  // Grow P2's restored height.
-  gfx::Size panel2_full_size = panel2->full_size();
-  panel2_full_size.set_height(panel2_full_size.height() + 30);
-  panel2->set_full_size(panel2_full_size);
 
   // Expand P2. Expect that the least recently active panel P1 is minimized in
   // order to make space for P2.
   panel2->Restore();
   WaitForBoundsAnimationFinished(panel2);
   WaitForBoundsAnimationFinished(panel3);
-  WaitForBoundsAnimationFinished(panel4);
   ASSERT_TRUE(panel1->IsMinimized());
   ASSERT_FALSE(panel2->IsMinimized());
   ASSERT_FALSE(panel3->IsMinimized());
-  ASSERT_FALSE(panel4->IsMinimized());
-  EXPECT_EQ(old_stack_top_position, panel1->GetBounds().y());
-  EXPECT_LE(panel4->GetBounds().bottom(), work_area.bottom());
-  EXPECT_EQ(panel2->GetBounds().height(), panel2_full_size.height());
+  EXPECT_LE(panel3->GetBounds().bottom(), work_area.bottom());
 
   // Grow P1's restored height.
   gfx::Size panel1_full_size = panel1->full_size();
-  panel1_full_size.set_height(panel1_full_size.height() + 180);
+  panel1_full_size.set_height(panel1_full_size.height() + 100);
   panel1->set_full_size(panel1_full_size);
 
   // Expand P1. Expect that both P2 and P3 are collapsed and the stack moves
@@ -393,33 +380,27 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandToFitWithinScreen) {
   WaitForBoundsAnimationFinished(panel1);
   WaitForBoundsAnimationFinished(panel2);
   WaitForBoundsAnimationFinished(panel3);
-  WaitForBoundsAnimationFinished(panel4);
   ASSERT_FALSE(panel1->IsMinimized());
   ASSERT_TRUE(panel2->IsMinimized());
   ASSERT_TRUE(panel3->IsMinimized());
-  ASSERT_FALSE(panel4->IsMinimized());
-  EXPECT_LT(panel1->GetBounds().y(), old_stack_top_position);
   EXPECT_GE(panel1->GetBounds().y(), work_area.y());
-  EXPECT_LE(panel4->GetBounds().bottom(), work_area.bottom());
+  EXPECT_LE(panel3->GetBounds().bottom(), work_area.bottom());
   EXPECT_EQ(panel1->GetBounds().height(), panel1_full_size.height());
-  old_stack_top_position = panel1->GetBounds().y();
 
   // Expand P3. Expect that P1 get collapsed in order to make space for P3.
   panel3->Restore();
   WaitForBoundsAnimationFinished(panel1);
   WaitForBoundsAnimationFinished(panel2);
   WaitForBoundsAnimationFinished(panel3);
-  WaitForBoundsAnimationFinished(panel4);
   ASSERT_TRUE(panel1->IsMinimized());
   ASSERT_TRUE(panel2->IsMinimized());
   ASSERT_FALSE(panel3->IsMinimized());
-  ASSERT_FALSE(panel4->IsMinimized());
-  EXPECT_EQ(old_stack_top_position, panel1->GetBounds().y());
-  EXPECT_LE(panel4->GetBounds().bottom(), work_area.bottom());
+  EXPECT_GE(panel1->GetBounds().y(), work_area.y());
+  EXPECT_LE(panel3->GetBounds().bottom(), work_area.bottom());
 
   // Grow P2's restored height by a very large value such that the stack with
   // P2 in full height will not fit within the screen.
-  panel2_full_size = panel2->full_size();
+  gfx::Size panel2_full_size = panel2->full_size();
   panel2_full_size.set_height(panel2_full_size.height() + 500);
   panel2->set_full_size(panel2_full_size);
 
@@ -431,13 +412,11 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandToFitWithinScreen) {
   WaitForBoundsAnimationFinished(panel1);
   WaitForBoundsAnimationFinished(panel2);
   WaitForBoundsAnimationFinished(panel3);
-  WaitForBoundsAnimationFinished(panel4);
   EXPECT_TRUE(panel1->IsMinimized());
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_TRUE(panel3->IsMinimized());
-  EXPECT_FALSE(panel4->IsMinimized());
   EXPECT_EQ(panel1->GetBounds().y(), work_area.y());
-  EXPECT_EQ(panel4->GetBounds().bottom(), work_area.bottom());
+  EXPECT_EQ(panel3->GetBounds().bottom(), work_area.bottom());
   EXPECT_LT(panel2->GetBounds().height(), panel2_full_size.height());
 
   panel_manager->CloseAll();
@@ -454,6 +433,12 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandAllToFitWithinScreen) {
   Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack);
   Panel* panel3 = CreateStackedPanel("3", gfx::Rect(0, 0, 150, 120), stack);
   ASSERT_EQ(3, stack->num_panels());
+
+  // Create 1 detached panel such that all stacked panel are not focused.
+  CreateDetachedPanel("4", gfx::Rect(400, 150, 100, 100));
+  ASSERT_FALSE(panel1->IsActive());
+  ASSERT_FALSE(panel2->IsActive());
+  ASSERT_FALSE(panel3->IsActive());
 
   scoped_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
@@ -515,10 +500,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, MinimizeButtonVisibility) {
       CreateNativePanelTesting(panel3));
 
   // Only P1 shows minimize button.
-  if (PanelManager::CanUseSystemMinimize())
-    EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
-  else
-    EXPECT_FALSE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
+  EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel2_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel3_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
 
@@ -534,13 +516,8 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, MinimizeButtonVisibility) {
   ASSERT_EQ(1, panel_manager->num_stacks());
   ASSERT_EQ(2, stack->num_panels());
 
-  if (PanelManager::CanUseSystemMinimize()) {
-    EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
-    EXPECT_TRUE(panel2_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
-  } else {
-    EXPECT_FALSE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
-    EXPECT_FALSE(panel2_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
-  }
+  EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
+  EXPECT_TRUE(panel2_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel3_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
 
   // Drag P1 to stack to the top edge of P2.
@@ -558,10 +535,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, MinimizeButtonVisibility) {
   ASSERT_EQ(1, panel_manager->num_stacks());
   ASSERT_EQ(3, stack->num_panels());
 
-  if (PanelManager::CanUseSystemMinimize())
-    EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
-  else
-    EXPECT_FALSE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
+  EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel2_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel3_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
 
@@ -711,7 +685,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create new panel. Expect that it will append to stack2 since it has most
   // panels.
-  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_ACTIVE);
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
   params.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* new_panel = CreatePanelWithParams(params);
   EXPECT_EQ(6, panel_manager->num_panels());
@@ -746,7 +720,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create new panel. Both stack1 and stack2 have same number of panels. Since
   // stack2 is right-most, new panel will be added to it.
-  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_ACTIVE);
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
   params.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* new_panel = CreatePanelWithParams(params);
   EXPECT_EQ(5, panel_manager->num_panels());
@@ -782,7 +756,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   // Create new panel. Both stack1 and stack2 have same number of panels and
   // same right position. Since stack2 is top-most, new panel will be added to
   // it.
-  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_ACTIVE);
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
   params.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* new_panel = CreatePanelWithParams(params);
   EXPECT_EQ(5, panel_manager->num_panels());
@@ -808,7 +782,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create new panel. Expect that new panel will stack to the bottom of panel2
   // since it is right-most.
-  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_ACTIVE);
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
   params.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* new_panel = CreatePanelWithParams(params);
   EXPECT_EQ(3, panel_manager->num_panels());
@@ -835,7 +809,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create new panel. Expect that new panel will stack to the bottom of panel2
   // since it is top-most.
-  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_ACTIVE);
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
   params.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* new_panel = CreatePanelWithParams(params);
   EXPECT_EQ(3, panel_manager->num_panels());
@@ -853,52 +827,59 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
                        AddNewPanelToStackWithCollapseToFit) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
-  // Create one stack with 4 panels.
-  // The panels from most recent active to least recent active are:
-  //   P4 P3 P2 P1
+  // Create one stack with 3 panels.
   StackedPanelCollection* stack = panel_manager->CreateStack();
-  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 50, 200, 140), stack);
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 50, 200, 120), stack);
   Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 150), stack);
   Panel* panel3 = CreateStackedPanel("3", gfx::Rect(0, 0, 180, 120), stack);
-  Panel* panel4 = CreateStackedPanel("4", gfx::Rect(0, 0, 170, 110), stack);
+  Panel* panel4 = CreateStackedPanel("4", gfx::Rect(0, 0, 170, 130), stack);
   ASSERT_EQ(4, panel_manager->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   ASSERT_EQ(4, stack->num_panels());
+
+  // Activate panel1. The panels from most recent active to least recent active
+  // are: P1 P4 P3 P2
+  panel1->Activate();
+  WaitForPanelActiveState(panel1, SHOW_AS_ACTIVE);
+
   EXPECT_FALSE(panel1->IsMinimized());
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_FALSE(panel3->IsMinimized());
   EXPECT_FALSE(panel4->IsMinimized());
 
-  // Create a panel. Expect the least recent active panel P1 gets minimized such
+  // Create a panel. Expect the least recent active panel P2 gets minimized such
   // that there is enough space for new panel to append to the stack.
-  // The panels from most recent active to least recent active are:
-  //   PM P4 P3 P2 P1*
-  CreatePanelParams params1("M", gfx::Rect(50, 50, 300, 110), SHOW_AS_ACTIVE);
+  CreatePanelParams params1("M", gfx::Rect(50, 50, 300, 110), SHOW_AS_INACTIVE);
   params1.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* new_panel1 = CreatePanelWithParams(params1);
   EXPECT_EQ(5, panel_manager->num_panels());
   EXPECT_EQ(1, panel_manager->num_stacks());
   EXPECT_EQ(5, stack->num_panels());
   EXPECT_TRUE(new_panel1 == stack->bottom_panel());
-  EXPECT_TRUE(panel1->IsMinimized());
-  EXPECT_FALSE(panel2->IsMinimized());
+  EXPECT_FALSE(panel1->IsMinimized());
+  EXPECT_TRUE(panel2->IsMinimized());
   EXPECT_FALSE(panel3->IsMinimized());
   EXPECT_FALSE(panel4->IsMinimized());
   EXPECT_FALSE(new_panel1->IsMinimized());
 
-  // Create another panel. Expect P2 and P3 are minimized such that there is
-  // enough space for new panel to append to the stack.
-  CreatePanelParams params2("N", gfx::Rect(50, 50, 300, 180), SHOW_AS_ACTIVE);
+  // Activate new_panel1. The panels from most recent active to least recent
+  // active are: PM P1 P4 P3 P2*
+  new_panel1->Activate();
+  WaitForPanelActiveState(new_panel1, SHOW_AS_ACTIVE);
+
+  // Create another panel. Expect P3 and P4 are minimized such that there is
+  // enoush space for new panel to append to the stack.
+  CreatePanelParams params2("N", gfx::Rect(50, 50, 300, 180), SHOW_AS_INACTIVE);
   params2.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* new_panel2 = CreatePanelWithParams(params2);
   EXPECT_EQ(6, panel_manager->num_panels());
   EXPECT_EQ(1, panel_manager->num_stacks());
   EXPECT_EQ(6, stack->num_panels());
   EXPECT_TRUE(new_panel2 == stack->bottom_panel());
-  EXPECT_TRUE(panel1->IsMinimized());
+  EXPECT_FALSE(panel1->IsMinimized());
   EXPECT_TRUE(panel2->IsMinimized());
   EXPECT_TRUE(panel3->IsMinimized());
-  EXPECT_FALSE(panel4->IsMinimized());
+  EXPECT_TRUE(panel4->IsMinimized());
   EXPECT_FALSE(new_panel1->IsMinimized());
   EXPECT_FALSE(new_panel2->IsMinimized());
 
@@ -910,17 +891,20 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create 2 detached panels.
-  // Since P2 is active, it will not get collapsed when the new panel to stack
-  // with needs the space.
-  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(100, 310, 200, 200));
-  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(300, 300, 150, 200));
+  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(300, 300, 200, 150));
+  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(250, 310, 150, 150));
   ASSERT_EQ(2, panel_manager->num_panels());
   ASSERT_EQ(0, panel_manager->num_stacks());
   ASSERT_EQ(2, panel_manager->detached_collection()->num_panels());
 
-  // Create new panel. Expect panel1 is minimized such that there is enough
-  // space for new panel to append to panel1.
-  CreatePanelParams params("N", gfx::Rect(50, 50, 300, 220), SHOW_AS_ACTIVE);
+  // Activate panel1 suhc that it will not get collapsed when the new panel
+  // needs the space.
+  panel1->Activate();
+  WaitForPanelActiveState(panel1, SHOW_AS_ACTIVE);
+
+  // Create new panel. Expect panel2 is minimized such that there is enough
+  // space for new panel to append to panel2.
+  CreatePanelParams params("N", gfx::Rect(50, 50, 300, 220), SHOW_AS_INACTIVE);
   params.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* new_panel = CreatePanelWithParams(params);
   EXPECT_EQ(3, panel_manager->num_panels());
@@ -928,10 +912,10 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   ASSERT_EQ(1, panel_manager->num_stacks());
   StackedPanelCollection* stack = panel_manager->stacks().front();
   EXPECT_EQ(2, stack->num_panels());
-  EXPECT_TRUE(panel1 == stack->top_panel());
+  EXPECT_TRUE(panel2 == stack->top_panel());
   EXPECT_TRUE(new_panel == stack->bottom_panel());
-  EXPECT_TRUE(panel1->IsMinimized());
-  EXPECT_FALSE(panel2->IsMinimized());
+  EXPECT_FALSE(panel1->IsMinimized());
+  EXPECT_TRUE(panel2->IsMinimized());
   EXPECT_FALSE(new_panel->IsMinimized());
 
   panel_manager->CloseAll();
@@ -958,7 +942,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create new panel. Expect that new panel has to be created as detached due
   // to that there is not enough space from any stack or detached panel.
-  CreatePanelParams params("N", gfx::Rect(50, 50, 300, 300), SHOW_AS_ACTIVE);
+  CreatePanelParams params("N", gfx::Rect(50, 50, 300, 300), SHOW_AS_INACTIVE);
   params.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* new_panel = CreatePanelWithParams(params);
   EXPECT_EQ(5, panel_manager->num_panels());
@@ -989,11 +973,11 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create 2 panels from extension1. Expect that these 2 panels stack together.
   CreatePanelParams params1(
-      extension1_app_name, gfx::Rect(50, 50, 100, 100), SHOW_AS_ACTIVE);
+      extension1_app_name, gfx::Rect(50, 50, 100, 100), SHOW_AS_INACTIVE);
   params1.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* panel1 = CreatePanelWithParams(params1);
   CreatePanelParams params2(
-      extension1_app_name, gfx::Rect(100, 100, 200, 100), SHOW_AS_ACTIVE);
+      extension1_app_name, gfx::Rect(100, 100, 200, 100), SHOW_AS_INACTIVE);
   params2.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* panel2 = CreatePanelWithParams(params2);
   EXPECT_EQ(2, panel_manager->num_panels());
@@ -1005,11 +989,11 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   // Create 2 panels from extension2. Expect that these 2 panels form a separate
   // stack.
   CreatePanelParams params3(
-      extension2_app_name, gfx::Rect(350, 350, 100, 100), SHOW_AS_ACTIVE);
+      extension2_app_name, gfx::Rect(350, 350, 100, 100), SHOW_AS_INACTIVE);
   params3.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* panel3 = CreatePanelWithParams(params3);
   CreatePanelParams params4(
-      extension2_app_name, gfx::Rect(100, 100, 200, 100), SHOW_AS_ACTIVE);
+      extension2_app_name, gfx::Rect(100, 100, 200, 100), SHOW_AS_INACTIVE);
   params4.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* panel4 = CreatePanelWithParams(params4);
   EXPECT_EQ(4, panel_manager->num_panels());
@@ -1021,7 +1005,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   // Create one more panel from extension1. Expect that new panel should join
   // with the stack of panel1 and panel2.
   CreatePanelParams params5(
-      extension1_app_name, gfx::Rect(0, 0, 100, 100), SHOW_AS_ACTIVE);
+      extension1_app_name, gfx::Rect(0, 0, 100, 100), SHOW_AS_INACTIVE);
   params5.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* panel5 = CreatePanelWithParams(params5);
   EXPECT_EQ(5, panel_manager->num_panels());
@@ -1031,7 +1015,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   // Create one more panel from extension2. Expect that new panel should join
   // with the stack of panel3 and panel4.
   CreatePanelParams params6(
-      extension2_app_name, gfx::Rect(0, 0, 100, 100), SHOW_AS_ACTIVE);
+      extension2_app_name, gfx::Rect(0, 0, 100, 100), SHOW_AS_INACTIVE);
   params6.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* panel6 = CreatePanelWithParams(params6);
   EXPECT_EQ(6, panel_manager->num_panels());
@@ -1051,12 +1035,12 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create 2 panels from profile1. Expect that these 2 panels stack together.
   CreatePanelParams params1(
-      "1", gfx::Rect(50, 50, 100, 100), SHOW_AS_ACTIVE);
+      "Panel", gfx::Rect(50, 50, 100, 100), SHOW_AS_INACTIVE);
   params1.create_mode = PanelManager::CREATE_AS_DETACHED;
   params1.profile = profile1;
   Panel* panel1 = CreatePanelWithParams(params1);
   CreatePanelParams params2(
-      "2", gfx::Rect(100, 100, 200, 100), SHOW_AS_ACTIVE);
+      "Panel", gfx::Rect(100, 100, 200, 100), SHOW_AS_INACTIVE);
   params2.create_mode = PanelManager::CREATE_AS_DETACHED;
   params2.profile = profile1;
   Panel* panel2 = CreatePanelWithParams(params2);
@@ -1069,12 +1053,12 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   // Create 2 panels from profile2. Expect that these 2 panels form a separate
   // stack.
   CreatePanelParams params3(
-      "3", gfx::Rect(350, 350, 100, 100), SHOW_AS_ACTIVE);
+      "Panel", gfx::Rect(350, 350, 100, 100), SHOW_AS_INACTIVE);
   params3.create_mode = PanelManager::CREATE_AS_DETACHED;
   params3.profile = profile2.get();
   Panel* panel3 = CreatePanelWithParams(params3);
   CreatePanelParams params4(
-      "4", gfx::Rect(100, 100, 200, 100), SHOW_AS_ACTIVE);
+      "Panel", gfx::Rect(100, 100, 200, 100), SHOW_AS_INACTIVE);
   params4.create_mode = PanelManager::CREATE_AS_DETACHED;
   params4.profile = profile2.get();
   Panel* panel4 = CreatePanelWithParams(params4);
@@ -1087,7 +1071,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   // Create one more panel from profile1. Expect that new panel should join
   // with the stack of panel1 and panel2.
   CreatePanelParams params5(
-      "5", gfx::Rect(0, 0, 100, 100), SHOW_AS_ACTIVE);
+      "Panel", gfx::Rect(0, 0, 100, 100), SHOW_AS_INACTIVE);
   params5.create_mode = PanelManager::CREATE_AS_DETACHED;
   params5.profile = profile1;
   Panel* panel5 = CreatePanelWithParams(params5);
@@ -1098,7 +1082,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   // Create one more panel from profile2. Expect that new panel should join
   // with the stack of panel3 and panel4.
   CreatePanelParams params6(
-      "6", gfx::Rect(0, 0, 100, 100), SHOW_AS_ACTIVE);
+      "Panel", gfx::Rect(0, 0, 100, 100), SHOW_AS_INACTIVE);
   params6.create_mode = PanelManager::CREATE_AS_DETACHED;
   params6.profile = profile2.get();
   Panel* panel6 = CreatePanelWithParams(params6);
@@ -1115,17 +1099,8 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   panel_manager->CloseAll();
 }
 
-// Skip the test since system-minimize might not be supported for some window
-// managers on Linux.
-#if defined(TOOLKIT_GTK)
-#define MAYBE_AddNewPanelNotWithSystemMinimizedDetachedPanel \
-    DISABLED_AddNewPanelNotWithSystemMinimizedDetachedPanel
-#else
-#define MAYBE_AddNewPanelNotWithSystemMinimizedDetachedPanel \
-    AddNewPanelNotWithSystemMinimizedDetachedPanel
-#endif
 IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
-                       MAYBE_AddNewPanelNotWithSystemMinimizedDetachedPanel) {
+                       AddNewPanelNotWithSystemMinimizedDetachedPanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create 1 detached panel.
@@ -1140,7 +1115,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create new panel. Expect that new panel will open as a separate detached
   // panel, instead of being grouped with the system-minimized detached panel.
-  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_ACTIVE);
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
   params.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* new_panel = CreatePanelWithParams(params);
   EXPECT_EQ(2, panel_manager->num_panels());
@@ -1152,17 +1127,8 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   panel_manager->CloseAll();
 }
 
-// Skip the test since system-minimize might not be supported for some window
-// managers on Linux.
-#if defined(TOOLKIT_GTK)
-#define MAYBE_AddNewPanelNotWithSystemMinimizedStack \
-    DISABLED_AddNewPanelNotWithSystemMinimizedStack
-#else
-#define MAYBE_AddNewPanelNotWithSystemMinimizedStack \
-    AddNewPanelNotWithSystemMinimizedStack
-#endif
 IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
-                       MAYBE_AddNewPanelNotWithSystemMinimizedStack) {
+                       AddNewPanelNotWithSystemMinimizedStack) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create one stack with 2 panels.
@@ -1181,7 +1147,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create new panel. Expect that new panel will open as a separate detached
   // panel, instead of appending to the system-minimized stack.
-  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_ACTIVE);
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
   params.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* new_panel = CreatePanelWithParams(params);
   EXPECT_EQ(3, panel_manager->num_panels());
@@ -1251,15 +1217,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ClosePanels) {
   panel_manager->CloseAll();
 }
 
-// Skip the test since active state might not be fully supported for some window
-// managers.
-#if defined(TOOLKIT_GTK)
-#define MAYBE_FocusNextPanelOnPanelClose DISABLED_FocusNextPanelOnPanelClose
-#else
-#define MAYBE_FocusNextPanelOnPanelClose FocusNextPanelOnPanelClose
-#endif
-IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
-                       MAYBE_FocusNextPanelOnPanelClose) {
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, FocusNextPanelOnPanelClose) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create 3 stacked panels.
@@ -1415,3 +1373,5 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   panel_manager->CloseAll();
 }
+
+#endif

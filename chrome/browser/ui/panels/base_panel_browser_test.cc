@@ -435,12 +435,9 @@ Panel* BasePanelBrowserTest::CreateStackedPanel(const std::string& name,
                                                 const gfx::Rect& bounds,
                                                 StackedPanelCollection* stack) {
   Panel* panel = CreateDetachedPanel(name, bounds);
-  panel->manager()->MovePanelToCollection(
-      panel,
-      stack,
-      static_cast<PanelCollection::PositioningMask>(
-          PanelCollection::DEFAULT_POSITION |
-          PanelCollection::COLLAPSE_TO_FIT));
+  panel->manager()->MovePanelToCollection(panel,
+                                          stack,
+                                          PanelCollection::DEFAULT_POSITION);
   EXPECT_EQ(PanelCollection::STACKED, panel->collection()->type());
   WaitForBoundsAnimationFinished(panel);
   return panel;

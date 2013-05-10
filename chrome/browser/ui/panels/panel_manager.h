@@ -49,12 +49,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayObserver,
   // Returns true if panel stacking support is enabled.
   static bool IsPanelStackingEnabled();
 
-  // Returns true if a panel can be system-minimized by the desktop
-  // environment. Some desktop environment, like Unity, does not trigger the
-  // "window-state-event" which prevents the minimize and unminimize from
-  // working.
-  static bool CanUseSystemMinimize();
-
   // Returns the default top-left position for a detached panel.
   gfx::Point GetDefaultDetachedPanelOrigin();
 

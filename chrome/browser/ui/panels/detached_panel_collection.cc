@@ -174,8 +174,7 @@ void DetachedPanelCollection::OnRestoreButtonClicked(
 bool DetachedPanelCollection::CanShowMinimizeButton(const Panel* panel) const {
   // We also show minimize button for detached panel when stacking mode is
   // enabled.
-  return PanelManager::IsPanelStackingEnabled() &&
-         PanelManager::CanUseSystemMinimize();
+  return PanelManager::IsPanelStackingEnabled();
 }
 
 bool DetachedPanelCollection::CanShowRestoreButton(const Panel* panel) const {
