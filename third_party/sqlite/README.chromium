@@ -89,6 +89,7 @@ patch -p0 < ../sqlite/mac_time_machine.patch
 patch -p0 < ../sqlite/system-sqlite.patch
 patch -p0 < ../sqlite/sqlite-3.7.6.3-fix-out-of-scope-memory-reference.patch
 patch -p0 < ../sqlite/misalignment.patch
+patch -p0 < ../sqlite/memcmp.patch
 
 This will only be the case if all changes we make also update the corresponding
 patch files. Therefore please remember to do that whenever you make a change!
@@ -196,3 +197,4 @@ Changes from Chrome:
  - src/recover.c file implements a virtual table which can read
    through corruption.
  - Enable the macro 'SQLITE_TEMP_STORE=3' for Android.
+ - memcmp.patch backports ASAN-related fixes from SQLite trunk.

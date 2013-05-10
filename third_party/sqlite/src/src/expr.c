@@ -578,12 +578,10 @@ void sqlite3ExprAssignVarNumber(Parse *pParse, Expr *pExpr){
     ** has never appeared before, reuse the same variable number
     */
     int i;
-    u32 n;
-    n = sqlite3Strlen30(z);
     for(i=0; i<pParse->nVarExpr; i++){
       Expr *pE = pParse->apVarExpr[i];
       assert( pE!=0 );
-      if( memcmp(pE->u.zToken, z, n)==0 && pE->u.zToken[n]==0 ){
+      if( strcmp(pE->u.zToken, z)==0 ){
         pExpr->iColumn = pE->iColumn;
         break;
       }
