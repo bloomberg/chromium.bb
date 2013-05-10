@@ -532,7 +532,7 @@ void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
   if (IsFormatAvailable(GetRtfFormatType(), buffer))
     types->push_back(UTF8ToUTF16(GetRtfFormatType().ToString()));
   if (IsFormatAvailable(GetBitmapFormatType(), buffer))
-    types->push_back(UTF8ToUTF16(GetBitmapFormatType().ToString()));
+    types->push_back(UTF8ToUTF16(kMimeTypePNG));
 
   AuraClipboard* clipboard = GetClipboard();
   if (clipboard->IsFormatAvailable(CUSTOM) && clipboard->GetData()) {
