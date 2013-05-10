@@ -6,6 +6,7 @@
 import atexit
 import multiprocessing
 import os
+import shutil
 import tempfile
 
 Import('env')
@@ -203,15 +204,27 @@ env.AddNodeToTestSuite(node,
 # infrastructure doesn't like empty files as a patch, so try jobs
 # would always fail.
 
-temporary_file = tempfile.mktemp()
+def MakeTempFile():
+  temporary = tempfile.mktemp()
+  def Cleanup():
+    try:
+      os.unlink(temporary)
+    except OSError:
+      pass
+  atexit.register(Cleanup)
+  return temporary
 
-def Cleanup():
-  try:
-    os.unlink(temporary_file)
-  except OSError:
-    pass
+def MakeTempDir():
+  temporary_dir = tempfile.mkdtemp()
+  def Cleanup():
+    try:
+      shutil.rmtree(temporary_dir)
+    except OSError:
+      pass
+  atexit.register(Cleanup)
+  return temporary_dir
 
-atexit.register(Cleanup)
+temporary_file = MakeTempFile()
 os.close(os.open(temporary_file, os.O_RDWR | os.O_CREAT | os.O_TRUNC, 0600))
 
 sysconf_nprocessors_nexe = env.ComponentProgram('sysconf_nprocessors_test',
@@ -233,3 +246,19 @@ if not env.Bit('coverage_enabled'):
   env.AddNodeToTestSuite(node,
                          ['small_tests', 'sel_ldr_tests'],
                          'run_sysconf_nprocessors_test')
+
+filepos_nexe = env.ComponentProgram('filepos_test',
+                                    ['filepos_test.c'],
+                                    EXTRA_LIBS=['imc_syscalls',
+                                                '${NONIRT_LIBS}',
+                                                '${PTHREAD_LIBS}'])
+
+node = env.CommandSelLdrTestNacl(
+  'filepos_test.out',
+  filepos_nexe,
+  ['-t', MakeTempDir()],
+  sel_ldr_flags=['-a'])
+
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_filepos_test')
