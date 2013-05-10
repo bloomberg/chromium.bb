@@ -557,7 +557,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationSignEnterpriseChallenge);
+        cryptohome::kCryptohomeTpmAttestationSignSimpleChallenge);
     dbus::MessageWriter writer(&method_call);
     bool is_user_specific = (key_type == attestation::KEY_USER);
     writer.AppendBool(is_user_specific);
