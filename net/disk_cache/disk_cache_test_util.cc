@@ -132,7 +132,9 @@ CallbackTest::~CallbackTest() {
 
 // On the actual callback, increase the number of tests received and check for
 // errors (an unexpected test received)
-void CallbackTest::Run(int params) {
+void CallbackTest::Run(int result) {
+  last_result_ = result;
+
   if (reuse_) {
     DCHECK_EQ(1, reuse_);
     if (2 == reuse_)

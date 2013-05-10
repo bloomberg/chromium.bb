@@ -141,10 +141,6 @@ int SimpleEntryImpl::CreateEntry(Entry** out_entry,
   if (backend_)
     backend_->index()->Insert(key_);
 
-  // Since we don't know the correct values for |last_used_| and
-  // |last_modified_| yet, we make this approximation.
-  last_used_ = last_modified_ = base::Time::Now();
-
   RunNextOperationIfNeeded();
   return ret_value;
 }
@@ -210,8 +206,10 @@ int SimpleEntryImpl::ReadData(int stream_index,
   DCHECK(io_thread_checker_.CalledOnValidThread());
   if (stream_index < 0 || stream_index >= kSimpleEntryFileCount || buf_len < 0)
     return net::ERR_INVALID_ARGUMENT;
-  if (offset >= data_size_[stream_index] || offset < 0 || !buf_len)
+  if (pending_operations_.empty() && (offset >= data_size_[stream_index] ||
+                                      offset < 0 || !buf_len)) {
     return 0;
+  }
 
   // TODO(felipeg): Optimization: Add support for truly parallel read
   // operations.
@@ -261,17 +259,6 @@ int SimpleEntryImpl::WriteData(int stream_index,
                    truncate));
     ret_value = net::ERR_IO_PENDING;
   }
-
-  if (truncate) {
-    data_size_[stream_index] = offset + buf_len;
-  } else {
-    data_size_[stream_index] = std::max(offset + buf_len,
-                                        data_size_[stream_index]);
-  }
-
-  // Since we don't know the correct values for |last_used_| and
-  // |last_modified_| yet, we make this approximation.
-  last_used_ = last_modified_ = base::Time::Now();
 
   RunNextOperationIfNeeded();
   return ret_value;
@@ -420,6 +407,10 @@ void SimpleEntryImpl::CreateEntryInternal(const CompletionCallback& callback,
 
   state_ = STATE_IO_PENDING;
 
+  // Since we don't know the correct values for |last_used_| and
+  // |last_modified_| yet, we make this approximation.
+  last_used_ = last_modified_ = base::Time::Now();
+
   // If creation succeeds, we should mark all streams to be saved on close.
   for (int i = 0; i < kSimpleEntryFileCount; ++i)
     have_written_[i] = true;
@@ -489,8 +480,7 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
     return;
   }
   DCHECK_EQ(STATE_READY, state_);
-  buf_len = std::min(buf_len, GetDataSize(stream_index) - offset);
-  if (offset < 0 || buf_len <= 0) {
+  if (offset >= data_size_[stream_index] || offset < 0 || !buf_len) {
     // If there is nothing to read, we bail out before setting state_ to
     // STATE_IO_PENDING.
     if (!callback.is_null())
@@ -498,6 +488,7 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
           callback, 0));
     return;
   }
+  buf_len = std::min(buf_len, GetDataSize(stream_index) - offset);
 
   state_ = STATE_IO_PENDING;
   if (backend_)
@@ -552,6 +543,17 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
     }
     crc32s_end_offset_[stream_index] = offset + buf_len;
   }
+
+  if (truncate) {
+    data_size_[stream_index] = offset + buf_len;
+  } else {
+    data_size_[stream_index] = std::max(offset + buf_len,
+                                        data_size_[stream_index]);
+  }
+
+  // Since we don't know the correct values for |last_used_| and
+  // |last_modified_| yet, we make this approximation.
+  last_used_ = last_modified_ = base::Time::Now();
 
   have_written_[stream_index] = true;
 

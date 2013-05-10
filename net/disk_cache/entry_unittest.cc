@@ -2792,4 +2792,104 @@ TEST_F(DiskCacheEntryTest, SimpleCacheEvictOldEntries) {
   }
 }
 
+// Tests that if a read and a following in-flight truncate are both in progress
+// simultaniously that they both can occur successfully. See
+// http://crbug.com/239223
+TEST_F(DiskCacheEntryTest, SimpleCacheInFlightTruncate)  {
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char key[] = "the first key";
+
+  const int kBufferSize = 1024;
+  scoped_refptr<net::IOBuffer> write_buffer(new net::IOBuffer(kBufferSize));
+  CacheTestFillBuffer(write_buffer->data(), kBufferSize, false);
+
+  disk_cache::Entry* entry = NULL;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+
+  EXPECT_EQ(kBufferSize,
+            WriteData(entry, 0, 0, write_buffer, kBufferSize, false));
+  entry->Close();
+  entry = NULL;
+
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+
+  MessageLoopHelper helper;
+  int expected = 0;
+
+  // Make a short read.
+  const int kReadBufferSize = 512;
+  scoped_refptr<net::IOBuffer> read_buffer(new net::IOBuffer(kReadBufferSize));
+  CallbackTest read_callback(&helper, false);
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            entry->ReadData(0, 0, read_buffer, kReadBufferSize,
+                            base::Bind(&CallbackTest::Run,
+                                       base::Unretained(&read_callback))));
+  ++expected;
+
+  // Truncate the entry to the length of that read.
+  scoped_refptr<net::IOBuffer>
+      truncate_buffer(new net::IOBuffer(kReadBufferSize));
+  CacheTestFillBuffer(truncate_buffer->data(), kReadBufferSize, false);
+  CallbackTest truncate_callback(&helper, false);
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            entry->WriteData(0, 0, truncate_buffer, kReadBufferSize,
+                             base::Bind(&CallbackTest::Run,
+                                        base::Unretained(&truncate_callback)),
+                             true));
+  ++expected;
+
+  // Wait for both the read and truncation to finish, and confirm that both
+  // succeeded.
+  EXPECT_TRUE(helper.WaitUntilCacheIoFinished(expected));
+  EXPECT_EQ(kReadBufferSize, read_callback.last_result());
+  EXPECT_EQ(kReadBufferSize, truncate_callback.last_result());
+  EXPECT_EQ(0,
+            memcmp(write_buffer->data(), read_buffer->data(), kReadBufferSize));
+  entry->Close();
+}
+
+// Tests that if a write and a read dependant on it are both in flight
+// simultaneiously that they both can complete successfully without erroneous
+// early returns. See http://crbug.com/239223
+TEST_F(DiskCacheEntryTest, SimpleCacheInFlightRead) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char key[] = "the first key";
+  disk_cache::Entry* entry = NULL;
+  ASSERT_EQ(net::OK,
+            cache_->CreateEntry(key, &entry, net::CompletionCallback()));
+
+  const int kBufferSize = 1024;
+  scoped_refptr<net::IOBuffer> write_buffer(new net::IOBuffer(kBufferSize));
+  CacheTestFillBuffer(write_buffer->data(), kBufferSize, false);
+
+  MessageLoopHelper helper;
+  int expected = 0;
+
+  CallbackTest write_callback(&helper, false);
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            entry->WriteData(0, 0, write_buffer, kBufferSize,
+                             base::Bind(&CallbackTest::Run,
+                                        base::Unretained(&write_callback)),
+                             true));
+  ++expected;
+
+  scoped_refptr<net::IOBuffer> read_buffer(new net::IOBuffer(kBufferSize));
+  CallbackTest read_callback(&helper, false);
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            entry->ReadData(0, 0, read_buffer, kBufferSize,
+                            base::Bind(&CallbackTest::Run,
+                                       base::Unretained(&read_callback))));
+  ++expected;
+
+  EXPECT_TRUE(helper.WaitUntilCacheIoFinished(expected));
+  EXPECT_EQ(kBufferSize, write_callback.last_result());
+  EXPECT_EQ(kBufferSize, read_callback.last_result());
+  EXPECT_EQ(0, memcmp(write_buffer->data(), read_buffer->data(), kBufferSize));
+  entry->Close();
+}
+
 #endif  // defined(OS_POSIX)
