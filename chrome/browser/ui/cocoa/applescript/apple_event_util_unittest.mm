@@ -21,7 +21,7 @@ struct TestCase {
   DescType expected_aedesc_type;
 };
 
-TEST_F(AppleEventUtilTest, ValueToAppleEventDescriptor) {
+TEST_F(AppleEventUtilTest, DISABLED_ValueToAppleEventDescriptor) {
   const struct TestCase cases[] = {
     { "null",         "'msng'",             typeType },
     { "-1000",        "-1000",              typeSInt32 },
