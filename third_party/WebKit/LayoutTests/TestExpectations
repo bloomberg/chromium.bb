@@ -1634,6 +1634,10 @@ crbug.com/238363 [ Debug ] svg/animations/remove-animation-element-while-animati
 # An exception is being thrown, causing tests to generate PNG output when they should not.
 crbug.com/239470 [ Mac ] fast/canvas/webgl [ Pass Missing ]
 
+# Some webgl tests are flaky crashing on windows.
+crbug.com/239839 [ Win ] fast/canvas/webgl/gl-vertex-attrib-zero-issues.html [ Pass Crash ]
+crbug.com/239839 [ Win ] fast/canvas/webgl/gl-uniformmatrix4fv.html [ Pass Crash ]
+
 # Need rebaselines after landing fix for crbug.com/238644
 crbug.com/238644 compositing/direct-image-compositing.html [ ImageOnlyFailure ]
 crbug.com/238644 compositing/geometry/fixed-position-transform-composited-page-scale.html [ ImageOnlyFailure ]
