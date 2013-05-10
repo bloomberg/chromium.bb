@@ -5,6 +5,7 @@
 #include "chrome/common/chrome_version_info.h"
 
 #include "base/base_paths.h"
+#include "base/debug/profiler.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -27,6 +28,10 @@ std::string VersionInfo::GetVersionStringModifier() {
   }
 #if defined(USE_AURA)
   channel += L" Aura";
+#endif
+#if defined(ADDRESS_SANITIZER)
+  if (base::debug::IsBinaryInstrumented())
+    channel += L" SyzyASan";
 #endif
   return UTF16ToASCII(channel);
 #else
