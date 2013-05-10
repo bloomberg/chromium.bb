@@ -107,17 +107,6 @@ utf8_next_char(const char *p)
 	return NULL;
 }
 
-static uint32_t
-utf8_characters(const char *p)
-{
-	uint32_t offset;
-
-	for (offset = 0; *p != 0; offset++)
-		p = utf8_next_char(p);
-
-	return offset;
-}
-
 static void text_entry_redraw_handler(struct widget *widget, void *data);
 static void text_entry_button_handler(struct widget *widget,
 				      struct input *input, uint32_t time,
