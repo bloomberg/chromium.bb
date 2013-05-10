@@ -9,10 +9,18 @@
 #include <string.h>
 
 #include "native_client/src/include/nacl/nacl_minidump.h"
+#include "native_client/src/untrusted/minidump_generator/build_id.h"
 
 
 const char *g_minidump_filename;
 
+
+/* TODO(mseaborn): Make build IDs work in the other toolchains. */
+#if defined(__arm__)
+# define BUILD_ID_WORKS 1
+#else
+# define BUILD_ID_WORKS 0
+#endif
 
 static void crash_callback(const void *minidump_data, size_t size) {
   assert(size != 0);
@@ -47,16 +55,21 @@ int main(int argc, char **argv) {
   assert(argc == 2);
   g_minidump_filename = argv[1];
 
-  /*
-   * TODO(mseaborn): Extract the real build ID from the nexe at run
-   * time.  This will require linker support.
-   */
-  uint8_t dummy_build_id[NACL_MINIDUMP_BUILD_ID_SIZE];
-  memset(dummy_build_id, 0x12, sizeof(dummy_build_id));
+  const char *id_data;
+  size_t id_size;
+  int got_build_id = nacl_get_build_id(&id_data, &id_size);
+  if (BUILD_ID_WORKS) {
+    assert(got_build_id);
+    assert(id_data != NULL);
+    assert(id_size == 20);  /* ld uses SHA1 hash by default. */
+  } else {
+    uint8_t dummy_build_id[NACL_MINIDUMP_BUILD_ID_SIZE];
+    memset(dummy_build_id, 0x12, sizeof(dummy_build_id));
+    nacl_minidump_set_module_build_id(dummy_build_id);
+  }
 
   nacl_minidump_set_callback(crash_callback);
   nacl_minidump_set_module_name("minidump_test.nexe");
-  nacl_minidump_set_module_build_id(dummy_build_id);
   nacl_minidump_register_crash_handler();
 
   /* Cause crash. */

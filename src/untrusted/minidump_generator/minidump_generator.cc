@@ -20,6 +20,7 @@
 #include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/include/nacl/nacl_minidump.h"
 #include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/minidump_generator/build_id.c"
 
 
 extern char __executable_start[];  // Start of code segment
@@ -48,6 +49,7 @@ static const size_t kMinidumpBufferSize =
 
 static const char *g_module_name = "main.nexe";
 static MDGUID g_module_build_id;
+static int g_module_build_id_set;
 static nacl_minidump_callback_t g_callback_func;
 static MinidumpFileWriter *g_minidump_writer;
 static int g_handling_exception = 0;
@@ -428,6 +430,21 @@ void nacl_minidump_register_crash_handler(void) {
     fprintf(stderr, "minidump: Failed to register an exception handler\n");
     return;
   }
+
+  if (!g_module_build_id_set) {
+    // Try to use the nexe's built-in build ID.
+    const char *data_ptr;
+    size_t size;
+    if (nacl_get_build_id(&data_ptr, &size)) {
+      // Truncate the ID if necessary.  The minidump format uses a 16
+      // byte ID, whereas ELF build IDs are typically 20-byte SHA1
+      // hashes.
+      memcpy(&g_module_build_id, data_ptr,
+             std::min(size, sizeof(g_module_build_id)));
+      g_module_build_id_set = 1;
+    }
+  }
+
   g_minidump_writer = new MinidumpFileWriter();
 }
 
@@ -443,4 +460,5 @@ void nacl_minidump_set_module_build_id(
     const uint8_t data[NACL_MINIDUMP_BUILD_ID_SIZE]) {
   assert(sizeof(g_module_build_id) == NACL_MINIDUMP_BUILD_ID_SIZE);
   memcpy(&g_module_build_id, data, NACL_MINIDUMP_BUILD_ID_SIZE);
+  g_module_build_id_set = 1;
 }

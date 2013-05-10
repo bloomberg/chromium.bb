@@ -10,4 +10,6 @@ env.Append(CPPPATH=['${SOURCE_ROOT}/breakpad/src'])
 # Breakpad's headers do not compile with "-pedantic".
 env.FilterOut(CCFLAGS=['-pedantic'])
 
-env.ComponentLibrary('minidump_generator', 'minidump_generator.cc')
+env.ComponentLibrary('minidump_generator',
+                     ['build_id.c',
+                      'minidump_generator.cc'])

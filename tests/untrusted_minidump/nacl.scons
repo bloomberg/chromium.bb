@@ -11,6 +11,14 @@ if env.Bit('bitcode'):
 if env.Bit('skip_nonstable_bitcode'):
   Return()
 
+# Add a build ID to the nexe in the cases where this works.
+# TODO(mseaborn): Make "--build-id" work with the other toolchains.
+#  * In the x86 nacl-gcc toolchain, "--build-id" produces a nexe that
+#    sel_ldr won't load.
+#  * pnacl-ld rejects "--build-id".
+if env.Bit('build_arm') and not env.Bit('bitcode'):
+  env.Append(LINKFLAGS=['-Wl,--build-id'])
+
 nexe = env.ComponentProgram('minidump_test', 'minidump_test.c',
                             EXTRA_LIBS=['minidump_generator'])
 

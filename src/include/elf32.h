@@ -84,6 +84,12 @@ typedef struct {
   Elf32_Word  sh_entsize;
 } Elf32_Shdr;
 
+typedef struct {
+  Elf32_Word n_namesz;
+  Elf32_Word n_descsz;
+  Elf32_Word n_type;
+} Elf32_Nhdr;
+
 /*
  * The auxiliary vector is passed on the stack between ELF loaders,
  * dynamic linkers, and program startup code.  The gratuitous union
