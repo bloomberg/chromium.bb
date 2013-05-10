@@ -411,10 +411,10 @@ webkit.org/b/84230 [ Mac ] svg/as-image/img-preserveAspectRatio-support-1.html [
 
 webkit.org/b/84719 [ Win ] svg/text/select-text-svgfont.html [ Failure Pass ]
 
-webkit.org/b/84854 [ Linux ] svg/batik/text/textOnPath.svg [ ImageOnlyFailure Pass ]
-webkit.org/b/84854 [ Linux ] svg/batik/text/verticalTextOnPath.svg [ ImageOnlyFailure Pass ]
-webkit.org/b/84854 [ Win ] svg/batik/text/textOnPath.svg [ Failure ImageOnlyFailure Pass ]
-webkit.org/b/84854 [ Win ] svg/batik/text/verticalTextOnPath.svg [ Failure ImageOnlyFailure Pass ]
+# webkit.org/b/84854 [ Linux ] svg/batik/text/textOnPath.svg [ ImageOnlyFailure Pass ]
+# webkit.org/b/84854 [ Linux ] svg/batik/text/verticalTextOnPath.svg [ ImageOnlyFailure Pass ]
+# webkit.org/b/84854 [ Win ] svg/batik/text/textOnPath.svg [ Failure ImageOnlyFailure Pass ]
+# webkit.org/b/84854 [ Win ] svg/batik/text/verticalTextOnPath.svg [ Failure ImageOnlyFailure Pass ]
 
 webkit.org/b/85107 svg/as-image/animated-svg-as-image.html [ ImageOnlyFailure Pass ]
 
@@ -1515,6 +1515,42 @@ crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-
 crbug.com/234555 [ Debug ] fast/ruby/ruby-svg-crash.html [ Failure ]
 
 crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
+
+# These tests use paths and need a rebaseline after crbug.com/227397
+crbug.com/227397 fast/borders/borderRadiusAllStylesAllCorners.html [ Pass ImageOnlyFailure ]
+crbug.com/227397 fast/borders/borderRadiusDashed01.html [ Pass ImageOnlyFailure ]
+crbug.com/227397 fast/borders/borderRadiusDashed03.html [ Pass ImageOnlyFailure ]
+crbug.com/227397 fast/borders/borderRadiusDashed04.html [ Pass ImageOnlyFailure ]
+crbug.com/227397 fast/borders/borderRadiusDashed05.html [ Pass ImageOnlyFailure ]
+crbug.com/227397 fast/borders/borderRadiusDotted02.html [ Pass ImageOnlyFailure ]
+crbug.com/227397 fast/borders/borderRadiusDotted03.html [ Pass ImageOnlyFailure ]
+crbug.com/227397 fast/borders/borderRadiusDotted04.html [ Pass ImageOnlyFailure ]
+crbug.com/227397 ietestcenter/css3/bordersbackgrounds/border-radius-style-001.htm [ Pass ImageOnlyFailure ]
+crbug.com/227397 ietestcenter/css3/bordersbackgrounds/border-radius-style-002.htm [ Pass ImageOnlyFailure ]
+crbug.com/227397 svg/W3C-SVG-1.1/animate-elem-08-t.svg [ Pass Failure ]
+crbug.com/227397 svg/W3C-SVG-1.1/text-path-01-b.svg [ Pass Failure ]
+crbug.com/227397 svg/animations/animate-elem-06-t-drt.html [ Pass Failure ]
+crbug.com/227397 svg/animations/animate-elem-07-t-drt.html [ Pass Failure ]
+crbug.com/227397 svg/animations/animate-elem-08-t-drt.html [ Pass Failure ]
+crbug.com/227397 svg/animations/animate-text-nested-transforms.html [ Pass Failure ]
+crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ Pass ImageOnlyFailure ]
+crbug.com/227397 svg/batik/text/smallFonts.svg [ Pass Failure ]
+crbug.com/227397 svg/batik/text/textGlyphOrientationHorizontal.svg [ Pass Failure ]
+# Note, after the rebaseline, need to uncomment the 2 other instances of textOnPath.svg above.
+crbug.com/227397 svg/batik/text/textOnPath.svg [ Pass Failure ]
+crbug.com/227397 svg/batik/text/textOnPath2.svg [ Pass Failure ]
+crbug.com/227397 svg/batik/text/textOnPath3.svg [ Pass Failure ]
+crbug.com/227397 svg/batik/text/textOnPathSpaces.svg [ Pass Failure ]
+crbug.com/227397 svg/batik/text/verticalText.svg [ Pass Failure ]
+# Note, after the rebaseline, need to uncomment the 2 other instances of verticalTextOnPath.svg above.
+crbug.com/227397 svg/batik/text/verticalTextOnPath.svg [ Pass Failure ]
+crbug.com/227397 svg/text/text-hkern.svg [ Pass Failure ]
+crbug.com/227397 svg/text/text-path-01-b.svg [ Pass Failure ]
+crbug.com/227397 svg/text/text-path-middle-align.svg [ Pass Failure ]
+crbug.com/227397 svg/text/textPathBoundsBug.svg [ Pass ImageOnlyFailure ]
+crbug.com/227397 svg/W3C-SVG-1.1/types-basicDOM-01-b.svg [ Pass Failure ]
+crbug.com/227397 svg/W3C-SVG-1.1/text-align-04-b.svg [ Pass Failure ]
+crbug.com/227397 svg/text/text-align-04-b.svg [ Pass Failure ]
 
 crbug.com/234758 [ Debug ] inspector-protocol/nmi-webaudio-leak-test.html [ Timeout Crash Pass ]
 crbug.com/234758 [ Win Debug ] tables/mozilla/other/test3.html [ Pass Crash ]
