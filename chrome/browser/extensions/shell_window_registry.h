@@ -98,10 +98,6 @@ class ShellWindowRegistry : public ProfileKeyedService {
   // ShellWindow::WindowType, or 0 for any window type.
   static bool IsShellWindowRegisteredInAnyProfile(int window_type_mask);
 
- protected:
-  void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
-
- private:
   class Factory : public ProfileKeyedServiceFactory {
    public:
     static ShellWindowRegistry* GetForProfile(Profile* profile, bool create);
@@ -122,6 +118,10 @@ class ShellWindowRegistry : public ProfileKeyedService {
         content::BrowserContext* context) const OVERRIDE;
   };
 
+ protected:
+  void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
+
+ private:
   Profile* profile_;
   ShellWindowSet shell_windows_;
   InspectedWindowSet inspected_windows_;

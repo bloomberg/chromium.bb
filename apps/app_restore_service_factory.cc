@@ -5,6 +5,7 @@
 #include "apps/app_restore_service_factory.h"
 
 #include "apps/app_restore_service.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
@@ -30,6 +31,7 @@ AppRestoreServiceFactory* AppRestoreServiceFactory::GetInstance() {
 AppRestoreServiceFactory::AppRestoreServiceFactory()
     : ProfileKeyedServiceFactory("AppRestoreService",
                                  ProfileDependencyManager::GetInstance()) {
+  DependsOn(extensions::ShellWindowRegistry::Factory::GetInstance());
 }
 
 AppRestoreServiceFactory::~AppRestoreServiceFactory() {
