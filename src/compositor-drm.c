@@ -2145,11 +2145,11 @@ drm_destroy(struct weston_compositor *ec)
 	wl_event_source_remove(d->udev_drm_source);
 	wl_event_source_remove(d->drm_source);
 
+	destroy_sprites(d);
+
 	weston_compositor_shutdown(ec);
 
 	ec->renderer->destroy(ec);
-
-	destroy_sprites(d);
 
 	if (d->gbm)
 		gbm_device_destroy(d->gbm);
