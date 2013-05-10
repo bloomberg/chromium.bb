@@ -2582,7 +2582,6 @@
             'platform/audio/chromium/FFTFrameOpenMAXDLAndroid.cpp',
             'platform/audio/ffmpeg/FFTFrameFFMPEG.cpp',
             'platform/audio/mac/FFTFrameMac.cpp',
-            'platform/audio/mkl/FFTFrameMKL.cpp',
             'platform/audio/ipp/FFTFrameIPP.cpp',
             'platform/chromium/ChromiumDataObject.cpp',
             'platform/chromium/ChromiumDataObject.h',

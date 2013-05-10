@@ -263,13 +263,6 @@ void FFTFrame::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_imagData, "imagData");
 #else // !USE_ACCELERATE_FFT
 
-#if USE(WEBAUDIO_MKL)
-    info.addMember(m_handle, "handle");
-    info.addMember(m_complexData, "complexData");
-    info.addMember(m_realData, "realData");
-    info.addMember(m_imagData, "imagData");
-#endif // USE(WEBAUDIO_MKL)
-
 #if USE(WEBAUDIO_FFMPEG)
     info.addMember(m_forwardContext, "forwardContext");
     info.addMember(m_inverseContext, "inverseContext");

@@ -258,24 +258,12 @@ void WTFReportBacktrace()
     WTFPrintBacktrace(samples + framesToSkip, frames - framesToSkip);
 }
 
-#if OS(DARWIN) || (OS(LINUX) && !OS(ANDROID))
-#define WTF_USE_DLADDR 1
-#endif
-
 void WTFPrintBacktrace(void** stack, int size)
 {
-#if USE(BACKTRACE_SYMBOLS)
-    char** symbols = backtrace_symbols(stack, size);
-    if (!symbols)
-        return;
-#endif
-
     for (int i = 0; i < size; ++i) {
         const char* mangledName = 0;
         char* cxaDemangled = 0;
-#if USE(BACKTRACE_SYMBOLS)
-        mangledName = symbols[i];
-#elif USE(DLADDR)
+#if OS(DARWIN) || (OS(LINUX) && !OS(ANDROID))
         Dl_info info;
         if (dladdr(stack[i], &info) && info.dli_sname)
             mangledName = info.dli_sname;
@@ -289,14 +277,7 @@ void WTFPrintBacktrace(void** stack, int size)
             printf_stderr_common("%-3d %p\n", frameNumber, stack[i]);
         free(cxaDemangled);
     }
-
-#if USE(BACKTRACE_SYMBOLS)
-    free(symbols);
-#endif
 }
-
-#undef WTF_USE_BACKTRACE_SYMBOLS
-#undef WTF_USE_DLADDR
 
 static WTFCrashHookFunction globalHook = 0;
 
