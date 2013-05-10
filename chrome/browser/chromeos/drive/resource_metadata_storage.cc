@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
-#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -64,6 +63,44 @@ DBInitStatus LevelDBStatusToDBInitStatus(const leveldb::Status status) {
 }
 
 }  // namespace
+
+ResourceMetadataStorage::Iterator::Iterator(scoped_ptr<leveldb::Iterator> it)
+  : it_(it.Pass()) {
+  DCHECK(it_);
+
+  // Skip the header entry.
+  // Note: The header entry comes before all other entries because its key
+  // starts with kDBKeyDelimeter. (i.e. '\0')
+  it_->Seek(leveldb::Slice(GetHeaderDBKey()));
+
+  Advance();
+}
+
+ResourceMetadataStorage::Iterator::~Iterator() {
+}
+
+bool ResourceMetadataStorage::Iterator::IsAtEnd() const {
+  return !it_->Valid();
+}
+
+const ResourceEntry& ResourceMetadataStorage::Iterator::Get() const {
+  DCHECK(!IsAtEnd());
+  return entry_;
+}
+
+void ResourceMetadataStorage::Iterator::Advance() {
+  DCHECK(!IsAtEnd());
+
+  for (it_->Next() ; it_->Valid(); it_->Next()) {
+    if (!IsChildEntryKey(it_->key()) &&
+        entry_.ParseFromArray(it_->value().data(), it_->value().size()))
+      break;
+  }
+}
+
+bool ResourceMetadataStorage::Iterator::HasError() const {
+  return !it_->status().ok();
+}
 
 ResourceMetadataStorage::ResourceMetadataStorage(
     const base::FilePath& directory_path)
@@ -249,25 +286,13 @@ bool ResourceMetadataStorage::RemoveEntry(const std::string& resource_id) {
   return status.ok();
 }
 
-void ResourceMetadataStorage::Iterate(const IterateCallback& callback) {
+scoped_ptr<ResourceMetadataStorage::Iterator>
+ResourceMetadataStorage::GetIterator() {
   base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(!callback.is_null());
 
   scoped_ptr<leveldb::Iterator> it(
       resource_map_->NewIterator(leveldb::ReadOptions()));
-
-  // Skip the header entry.
-  // Note: The header entry comes before all other entries because its key
-  // starts with kDBKeyDelimeter. (i.e. '\0')
-  it->Seek(leveldb::Slice(GetHeaderDBKey()));
-  it->Next();
-
-  ResourceEntry entry;
-  for (; it->Valid(); it->Next()) {
-    if (!IsChildEntryKey(it->key()) &&
-        entry.ParseFromArray(it->value().data(), it->value().size()))
-      callback.Run(entry);
-  }
+  return make_scoped_ptr(new Iterator(it.Pass()));
 }
 
 std::string ResourceMetadataStorage::GetChild(

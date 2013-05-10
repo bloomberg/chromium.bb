@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -116,6 +115,8 @@ struct EntryInfoPairResult {
 // Used to receive the result from GetEntryInfoPairCallback().
 typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
     GetEntryInfoPairCallback;
+
+typedef base::Callback<void(const ResourceEntry& entry)> IterateCallback;
 
 namespace internal {
 

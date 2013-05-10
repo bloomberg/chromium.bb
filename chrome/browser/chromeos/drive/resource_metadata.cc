@@ -438,7 +438,10 @@ void ResourceMetadata::IterateEntries(const IterateCallback& callback) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!callback.is_null());
 
-  storage_->Iterate(callback);
+  scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance())
+    callback.Run(it->Get());
+  DCHECK(!it->HasError());  // TODO(hashimoto): Report error correctly.
 }
 
 base::FilePath ResourceMetadata::GetFilePath(

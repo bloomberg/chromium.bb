@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -14,16 +13,6 @@
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace drive {
-
-namespace {
-
-// Stores the entry to the map.
-void StoreEntryToMap(std::map<std::string,ResourceEntry>* out,
-                     const ResourceEntry& entry) {
-  (*out)[entry.resource_id()] = entry;
-}
-
-}  // namespace
 
 class ResourceMetadataStorageTest : public testing::Test {
  protected:
@@ -143,7 +132,7 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   EXPECT_FALSE(storage_->GetEntry(key1));
 }
 
-TEST_F(ResourceMetadataStorageTest, Iterate) {
+TEST_F(ResourceMetadataStorageTest, Iterator) {
   // Prepare data.
   std::vector<ResourceEntry> entries;
   ResourceEntry entry;
@@ -160,9 +149,15 @@ TEST_F(ResourceMetadataStorageTest, Iterate) {
   for (size_t i = 0; i < entries.size(); ++i)
     EXPECT_TRUE(storage_->PutEntry(entries[i]));
 
-  // Call Iterate and check the result.
+  // Iterate and check the result.
   std::map<std::string, ResourceEntry> result;
-  storage_->Iterate(base::Bind(&StoreEntryToMap, base::Unretained(&result)));
+  scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
+  ASSERT_TRUE(it);
+  for (; !it->IsAtEnd(); it->Advance()) {
+    const ResourceEntry& entry = it->Get();
+    result[entry.resource_id()] = entry;
+  }
+  EXPECT_FALSE(it->HasError());
 
   EXPECT_EQ(entries.size(), result.size());
   for (size_t i = 0; i < entries.size(); ++i)

@@ -9,20 +9,19 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/drive/drive.pb.h"
 
 namespace leveldb {
 class DB;
+class Iterator;
 }
 
 namespace drive {
 
 class ResourceEntry;
 class ResourceMetadataHeader;
-
-typedef base::Callback<void(const ResourceEntry& entry)> IterateCallback;
 
 // Storage for ResourceMetadata which is responsible to manage entry info
 // and child-parent relationships between entries.
@@ -31,6 +30,30 @@ class ResourceMetadataStorage {
   // This should be incremented when incompatibility change is made to DB
   // format.
   static const int kDBVersion = 5;
+
+  class Iterator {
+   public:
+    explicit Iterator(scoped_ptr<leveldb::Iterator> it);
+    ~Iterator();
+
+    // Returns true if this iterator cannot advance any more.
+    bool IsAtEnd() const;
+
+    // Returns the entry currently pointed by this object.
+    const ResourceEntry& Get() const;
+
+    // Advances to the next entry.
+    void Advance();
+
+    // Returns true if this object has encountered any error.
+    bool HasError() const;
+
+   private:
+    ResourceEntry entry_;
+    scoped_ptr<leveldb::Iterator> it_;
+
+    DISALLOW_COPY_AND_ASSIGN(Iterator);
+  };
 
   explicit ResourceMetadataStorage(const base::FilePath& directory_path);
   virtual ~ResourceMetadataStorage();
@@ -53,8 +76,8 @@ class ResourceMetadataStorage {
   // Removes an entry from this storage.
   bool RemoveEntry(const std::string& resource_id);
 
-  // Iterates over entries stored in this storage.
-  void Iterate(const IterateCallback& callback);
+  // Returns an object to iterate over entries stored in this storage.
+  scoped_ptr<Iterator> GetIterator();
 
   // Returns resource ID of the parent's child.
   std::string GetChild(const std::string& parent_resource_id,
