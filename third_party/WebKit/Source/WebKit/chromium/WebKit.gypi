@@ -36,7 +36,6 @@
             'tests/Canvas2DLayerBridgeTest.cpp',
             'tests/Canvas2DLayerManagerTest.cpp',
             'tests/ChromeClientImplTest.cpp',
-            'tests/CompositorFakeWebGraphicsContext3D.h',
             'tests/DeferredImageDecoderTest.cpp',
             'tests/DragImageTest.cpp',
             'tests/DrawingBufferTest.cpp',
