@@ -51,7 +51,7 @@ class EnterpriseInstallAttributes {
   static const char kAttrEnterpriseOwned[];
   static const char kAttrEnterpriseUser[];
 
-  explicit EnterpriseInstallAttributes(
+  EnterpriseInstallAttributes(
       chromeos::CryptohomeLibrary* cryptohome,
       chromeos::CryptohomeClient* cryptohome_client);
   ~EnterpriseInstallAttributes();
@@ -96,6 +96,13 @@ class EnterpriseInstallAttributes {
   // are not locked yet will be DEVICE_MODE_UNKNOWN.
   DeviceMode GetMode();
 
+ protected:
+  bool device_locked_;
+  std::string registration_user_;
+  std::string registration_domain_;
+  std::string registration_device_id_;
+  DeviceMode registration_mode_;
+
  private:
   // Decodes the install attributes provided in |attr_map|.
   void DecodeInstallAttributes(
@@ -124,11 +131,6 @@ class EnterpriseInstallAttributes {
   chromeos::CryptohomeLibrary* cryptohome_;
   chromeos::CryptohomeClient* cryptohome_client_;
 
-  bool device_locked_;
-  std::string registration_user_;
-  std::string registration_domain_;
-  std::string registration_device_id_;
-  DeviceMode registration_mode_;
   base::WeakPtrFactory<EnterpriseInstallAttributes> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseInstallAttributes);

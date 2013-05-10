@@ -82,10 +82,10 @@ const char EnterpriseInstallAttributes::kAttrEnterpriseUser[] =
 EnterpriseInstallAttributes::EnterpriseInstallAttributes(
     chromeos::CryptohomeLibrary* cryptohome,
     chromeos::CryptohomeClient* cryptohome_client)
-    : cryptohome_(cryptohome),
-      cryptohome_client_(cryptohome_client),
-      device_locked_(false),
+    : device_locked_(false),
       registration_mode_(DEVICE_MODE_PENDING),
+      cryptohome_(cryptohome),
+      cryptohome_client_(cryptohome_client),
       weak_ptr_factory_(this) {}
 
 EnterpriseInstallAttributes::~EnterpriseInstallAttributes() {}
