@@ -212,6 +212,77 @@ typedef uint64 EGLuint64CHROMIUM;
 
 namespace gfx {
 
+struct GL_EXPORT DriverGL {
+  void Initialize();
+  void InitializeExtensions(GLContext* context);
+  void InitializeDebugBindings();
+  void ClearBindings();
+  void UpdateDebugExtensionBindings();
+
+  ProcsGL fn;
+  ProcsGL orig_fn;
+  ProcsGL debug_fn;
+  ExtensionsGL ext;
+
+ private:
+  void InitializeBindings();
+  void InitializeExtensionBindings(GLContext* context);
+};
+
+struct GL_EXPORT DriverOSMESA {
+  void InitializeBindings();
+  void InitializeExtensionBindings(GLContext* context);
+  void InitializeDebugBindings();
+  void ClearBindings();
+  void UpdateDebugExtensionBindings();
+
+  ProcsOSMESA fn;
+  ProcsOSMESA debug_fn;
+  ExtensionsOSMESA ext;
+};
+
+#if defined(OS_WIN)
+struct GL_EXPORT DriverWGL {
+  void InitializeBindings();
+  void InitializeExtensionBindings(GLContext* context);
+  void InitializeDebugBindings();
+  void ClearBindings();
+  void UpdateDebugExtensionBindings();
+
+  ProcsWGL fn;
+  ProcsWGL debug_fn;
+  ExtensionsWGL ext;
+};
+#endif
+
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID)
+struct GL_EXPORT DriverEGL {
+  void InitializeBindings();
+  void InitializeExtensionBindings(GLContext* context);
+  void InitializeDebugBindings();
+  void ClearBindings();
+  void UpdateDebugExtensionBindings();
+
+  ProcsEGL fn;
+  ProcsEGL debug_fn;
+  ExtensionsEGL ext;
+};
+#endif
+
+#if defined(USE_X11)
+struct GL_EXPORT DriverGLX {
+  void InitializeBindings();
+  void InitializeExtensionBindings(GLContext* context);
+  void InitializeDebugBindings();
+  void ClearBindings();
+  void UpdateDebugExtensionBindings();
+
+  ProcsGLX fn;
+  ProcsGLX debug_fn;
+  ExtensionsGLX ext;
+};
+#endif
+
 GL_EXPORT extern GLApi* g_current_gl_context;
 GL_EXPORT extern OSMESAApi* g_current_osmesa_context;
 GL_EXPORT extern DriverGL g_driver_gl;
