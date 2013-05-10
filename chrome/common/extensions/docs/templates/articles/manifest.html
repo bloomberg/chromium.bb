@@ -113,7 +113,7 @@ see <a href="i18n.html">Internationalization</a> for details.
 
 <p>
 Used by <a href="../apps/app_lifecycle.html#eventpage">packaged apps</a>
-to specify what types of files the app can handle. An app can have multiple <code>file_handlers</code>, with each one having an identifier, a list of MIME types that can be handled, and
+to specify what types of files the app can handle. An app can have multiple <code>file_handlers</code>, with each one having an identifier, a list of MIME types and/or a list of file extensions that can be handled, and
 a title. Here's an example of specifying file handlers:
 </p>
 
@@ -130,7 +130,16 @@ a title. Here's an example of specifying file handlers:
       "image/png",
       "image/jpeg"
     ],
+    "extensions": [
+      "tiff"
+    ]
     "title": "Image editor"
+  },
+  "any": {
+    "extensions": [
+      "*"
+    ]
+    "title": "Any file type editor"
   }
 }
 </pre>
