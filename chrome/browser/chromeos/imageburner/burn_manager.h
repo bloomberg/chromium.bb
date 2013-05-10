@@ -323,9 +323,10 @@ class BurnManager : public net::URLFetcherDelegate,
   // Must be called from FILE thread.
   void CreateImageDir();
 
-  // Returns directory image should be dopwnloaded to.
-  // The directory has to be previously created.
-  const base::FilePath& GetImageDir();
+  // Returns the directory to which the recovery image should be downloaded.
+  // If the directory hasn't been previously created, an empty path is returned
+  // (in which case |CreateImageDir()| should be called).
+  base::FilePath GetImageDir();
 
   const base::FilePath& target_device_path() { return target_device_path_; }
   void set_target_device_path(const base::FilePath& path) {
@@ -369,6 +370,7 @@ class BurnManager : public net::URLFetcherDelegate,
 
   BurnDeviceHandler device_handler_;
 
+  bool image_dir_created_;
   bool unzipping_;
   bool cancelled_;
   bool burning_;

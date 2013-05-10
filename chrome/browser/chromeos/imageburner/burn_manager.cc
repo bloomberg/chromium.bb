@@ -214,6 +214,7 @@ BurnManager::BurnManager(
     const base::FilePath& downloads_directory,
     scoped_refptr<net::URLRequestContextGetter> context_getter)
     : device_handler_(disks::DiskMountManager::GetInstance()),
+      image_dir_created_(false),
       unzipping_(false),
       cancelled_(false),
       burning_(false),
@@ -238,7 +239,7 @@ BurnManager::BurnManager(
 }
 
 BurnManager::~BurnManager() {
-  if (!image_dir_.empty()) {
+  if (image_dir_created_) {
     file_util::Delete(image_dir_, true);
   }
   NetworkStateHandler::Get()->RemoveObserver(this);
@@ -319,7 +320,7 @@ void BurnManager::OnError(int message_id) {
 }
 
 void BurnManager::CreateImageDir() {
-  if (image_dir_.empty()) {
+  if (!image_dir_created_) {
     BrowserThread::PostBlockingPoolTask(
         FROM_HERE,
         base::Bind(CreateDirectory,
@@ -340,11 +341,14 @@ void BurnManager::OnImageDirCreated(bool success) {
     return;
   }
 
+  image_dir_created_ = true;
   zip_image_file_path_ = image_dir_.Append(kImageZipFileName);
   FetchConfigFile();
 }
 
-const base::FilePath& BurnManager::GetImageDir() {
+base::FilePath BurnManager::GetImageDir() {
+  if (!image_dir_created_)
+    return base::FilePath();
   return image_dir_;
 }
 
