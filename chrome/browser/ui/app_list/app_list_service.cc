@@ -116,6 +116,8 @@ void AppListService::RecordAppListAppLaunch() {
 
 // static
 void AppListService::SendAppListStats() {
+  if (!g_browser_process || g_browser_process->IsShuttingDown())
+    return;
   SendDailyEventFrequency(prefs::kLastAppListLaunchPing,
                           prefs::kAppListLaunchCount,
                           &SendAppListLaunch);
