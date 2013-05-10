@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -84,6 +85,16 @@ bool FakeCryptohomeClient::InstallAttributesGet(const std::string& name,
 void FakeCryptohomeClient::AsyncMount(const std::string& username,
                                       const std::string& key, int flags,
                                       const AsyncMethodCallback& callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!handler_.is_null());
+
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   base::Bind(callback, 1 /* async_id */));
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   base::Bind(handler_,
+                                              1,     // async_id
+                                              true,  // return_status
+                                              cryptohome::MOUNT_ERROR_NONE));
 }
 
 void FakeCryptohomeClient::AsyncMountGuest(
@@ -123,6 +134,8 @@ bool FakeCryptohomeClient::InstallAttributesFinalize(bool* successful) {
 void FakeCryptohomeClient::SetAsyncCallStatusHandlers(
     const AsyncCallStatusHandler& handler,
     const AsyncCallStatusWithDataHandler& data_handler) {
+  handler_ = handler;
+  data_handler_ = data_handler;
 }
 
 bool FakeCryptohomeClient::CallTpmIsEnabledAndBlock(bool* enabled) {
@@ -186,6 +199,8 @@ void FakeCryptohomeClient::AsyncTpmAttestationCreateEnrollRequest(
 }
 
 void FakeCryptohomeClient::ResetAsyncCallStatusHandlers() {
+  handler_.Reset();
+  data_handler_.Reset();
 }
 
 void FakeCryptohomeClient::TpmAttestationDoesKeyExist(
@@ -212,6 +227,20 @@ void FakeCryptohomeClient::TpmAttestationSetKeyPayload(
 void FakeCryptohomeClient::GetSanitizedUsername(
     const std::string& username,
     const StringDBusMethodCallback& callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!handler_.is_null());
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 chromeos::DBUS_METHOD_CALL_SUCCESS,
+                 username));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(data_handler_,
+                 1,     // async_id
+                 true,  // return_status
+                 username));
 }
 
 void FakeCryptohomeClient::TpmAttestationSignEnterpriseChallenge(

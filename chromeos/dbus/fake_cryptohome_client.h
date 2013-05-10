@@ -135,7 +135,11 @@ class FakeCryptohomeClient : public CryptohomeClient {
   }
 
  private:
+  AsyncCallStatusHandler handler_;
+  AsyncCallStatusWithDataHandler data_handler_;
+
   bool unmount_result_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeCryptohomeClient);
 };
 
