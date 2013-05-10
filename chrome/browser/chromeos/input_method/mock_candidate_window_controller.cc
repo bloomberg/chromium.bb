@@ -16,12 +16,12 @@ MockCandidateWindowController::MockCandidateWindowController()
 MockCandidateWindowController::~MockCandidateWindowController() {
 }
 
-bool MockCandidateWindowController::Init(IBusController* controller) {
+bool MockCandidateWindowController::Init() {
   ++init_count_;
   return true;
 }
 
-void MockCandidateWindowController::Shutdown(IBusController* controller) {
+void MockCandidateWindowController::Shutdown() {
 }
 
 void MockCandidateWindowController::AddObserver(

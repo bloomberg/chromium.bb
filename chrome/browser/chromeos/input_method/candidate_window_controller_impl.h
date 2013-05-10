@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
-#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
 #include "chromeos/dbus/ibus/ibus_panel_service.h"
 #include "chromeos/ime/ibus_daemon_controller.h"
@@ -38,8 +37,8 @@ class CandidateWindowControllerImpl
   virtual ~CandidateWindowControllerImpl();
 
   // CandidateWindowController overrides:
-  virtual bool Init(IBusController* controller) OVERRIDE;
-  virtual void Shutdown(IBusController* controller) OVERRIDE;
+  virtual bool Init() OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
   virtual void AddObserver(
       CandidateWindowController::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(

@@ -68,7 +68,7 @@ InputMethodManagerImpl::~InputMethodManagerImpl() {
   IBusDaemonController::GetInstance()->RemoveObserver(this);
   if (candidate_window_controller_.get()) {
     candidate_window_controller_->RemoveObserver(this);
-    candidate_window_controller_->Shutdown(ibus_controller_.get());
+    candidate_window_controller_->Shutdown();
   }
 }
 
@@ -107,7 +107,7 @@ void InputMethodManagerImpl::SetState(State new_state) {
       break;
     case STATE_TERMINATING: {
       if (candidate_window_controller_.get()) {
-        candidate_window_controller_->Shutdown(ibus_controller_.get());
+        candidate_window_controller_->Shutdown();
         candidate_window_controller_.reset();
       }
       break;
@@ -730,7 +730,7 @@ void InputMethodManagerImpl::SetIBusControllerForTesting(
 void InputMethodManagerImpl::SetCandidateWindowControllerForTesting(
     CandidateWindowController* candidate_window_controller) {
   candidate_window_controller_.reset(candidate_window_controller);
-  candidate_window_controller_->Init(ibus_controller_.get());
+  candidate_window_controller_->Init();
   candidate_window_controller_->AddObserver(this);
 }
 
@@ -817,7 +817,7 @@ void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
 
   candidate_window_controller_.reset(
       CandidateWindowController::CreateCandidateWindowController());
-  if (candidate_window_controller_->Init(ibus_controller_.get()))
+  if (candidate_window_controller_->Init())
     candidate_window_controller_->AddObserver(this);
   else
     DVLOG(1) << "Failed to initialize the candidate window controller";

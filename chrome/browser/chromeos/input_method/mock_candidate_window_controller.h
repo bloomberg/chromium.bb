@@ -19,8 +19,8 @@ class MockCandidateWindowController : public CandidateWindowController {
   virtual ~MockCandidateWindowController();
 
   // CandidateWindowController overrides:
-  virtual bool Init(IBusController* controller) OVERRIDE;
-  virtual void Shutdown(IBusController* controller) OVERRIDE;
+  virtual bool Init() OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
 
