@@ -210,6 +210,14 @@ class TestEnvironment {
   }
 #endif
 
+  scoped_refptr<base::MessageLoopProxy> GetMediaThreadMessageLoopProxy() {
+    if (!media_thread_) {
+      media_thread_.reset(new base::Thread("Media"));
+      CHECK(media_thread_->Start());
+    }
+    return media_thread_->message_loop_proxy();
+  }
+
  private:
   // Data member at_exit_manager_ will take the ownership of the input
   // AtExitManager and manage its lifecycle.
@@ -217,6 +225,8 @@ class TestEnvironment {
   scoped_ptr<MessageLoopType> main_message_loop_;
   scoped_ptr<TestWebKitPlatformSupport> webkit_platform_support_;
   scoped_ptr<TestWebIDBFactory> idb_factory_;
+
+  scoped_ptr<base::Thread> media_thread_;
 
 #if defined(OS_ANDROID)
   base::FilePath mock_current_directory_;
@@ -409,6 +419,7 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
   return NULL;
 #else
   webkit_media::WebMediaPlayerParams params(
+      test_environment->GetMediaThreadMessageLoopProxy(),
       NULL, NULL, new media::MediaLog());
   return new webkit_media::WebMediaPlayerImpl(
       frame,

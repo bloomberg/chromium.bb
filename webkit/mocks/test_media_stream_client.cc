@@ -9,13 +9,11 @@
 #include "media/base/pipeline.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
 #include "webkit/media/media_stream_audio_renderer.h"
 #include "webkit/media/simple_video_frame_provider.h"
-#include "webkit/media/webmediaplayer_impl.h"
-#include "webkit/media/webmediaplayer_ms.h"
-#include "webkit/media/webmediaplayer_params.h"
 
 using namespace WebKit;
 
@@ -42,33 +40,6 @@ bool IsMockMediaStreamWithVideo(const WebURL& url) {
 }  // namespace
 
 namespace webkit_glue {
-
-WebKit::WebMediaPlayer* CreateMediaPlayer(
-    WebFrame* frame,
-    const WebURL& url,
-    WebMediaPlayerClient* client,
-    webkit_media::MediaStreamClient* media_stream_client) {
-  if (media_stream_client && media_stream_client->IsMediaStream(url)) {
-    return new webkit_media::WebMediaPlayerMS(
-        frame,
-        client,
-        base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
-        media_stream_client,
-        new media::MediaLog());
-  }
-
-#if defined(OS_ANDROID)
-  return NULL;
-#else
-  webkit_media::WebMediaPlayerParams params(
-      NULL, NULL, new media::MediaLog());
-  return new webkit_media::WebMediaPlayerImpl(
-      frame,
-      client,
-      base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
-      params);
-#endif
-}
 
 TestMediaStreamClient::TestMediaStreamClient() {}
 
