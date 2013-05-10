@@ -145,8 +145,11 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Sets the active audio input node to the node with |node_id|.
   virtual void SetActiveInputNode(uint64 node_id);
 
-  // Sets volume/gain level from a device.
+  // Sets volume/gain level for a device.
   virtual void SetVolumeGainPercentForDevice(uint64 device_id, int value);
+
+  // Sets the mute for device.
+  virtual void SetMuteForDevice(uint64 device_id, bool mute_on);
 
  protected:
   explicit CrasAudioHandler(

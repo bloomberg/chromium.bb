@@ -237,6 +237,17 @@ void CrasAudioHandler::SetVolumeGainPercentForDevice(uint64 device_id,
   audio_pref_handler_->SetVolumeGainValue(device_id, value);
 }
 
+void CrasAudioHandler::SetMuteForDevice(uint64 device_id, bool mute_on) {
+  if (device_id == active_output_node_id_) {
+    SetOutputMute(mute_on);
+    return;
+  } else if (device_id == active_input_node_id_) {
+    SetInputMute(mute_on);
+    return;
+  }
+  audio_pref_handler_->SetMuteValue(device_id, mute_on);
+}
+
 CrasAudioHandler::CrasAudioHandler(
     scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler)
     : audio_pref_handler_(audio_pref_handler),

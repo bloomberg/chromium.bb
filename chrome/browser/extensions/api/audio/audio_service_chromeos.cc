@@ -146,13 +146,13 @@ bool AudioServiceImpl::SetDeviceProperties(const std::string& device_id,
   if (!found)
     return false;
 
+  cras_audio_handler_->SetMuteForDevice(device.id, muted);
+
   if (!device.is_input && volume != -1) {
-    cras_audio_handler_->SetVolumeGainPercentForDevice(GetIdFromStr(device_id),
-                                                       volume);
+    cras_audio_handler_->SetVolumeGainPercentForDevice(device.id, volume);
     return true;
   } else if (device.is_input && gain != -1) {
-    cras_audio_handler_->SetVolumeGainPercentForDevice(GetIdFromStr(device_id),
-                                                       gain);
+    cras_audio_handler_->SetVolumeGainPercentForDevice(device.id, gain);
     return true;
   }
 
