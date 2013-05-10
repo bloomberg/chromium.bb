@@ -99,9 +99,9 @@ static inline bool featureWithPositiveNumber(const AtomicString& mediaFeature, c
         || mediaFeature == MediaFeatureNames::transform_3dMediaFeature
         || mediaFeature == MediaFeatureNames::transitionMediaFeature
         || mediaFeature == MediaFeatureNames::animationMediaFeature
-        || mediaFeature == MediaFeatureNames::device_pixel_ratioMediaFeature
-        || mediaFeature == MediaFeatureNames::max_device_pixel_ratioMediaFeature
-        || mediaFeature == MediaFeatureNames::min_device_pixel_ratioMediaFeature;
+        || mediaFeature == MediaFeatureNames::devicePixelRatioMediaFeature
+        || mediaFeature == MediaFeatureNames::maxDevicePixelRatioMediaFeature
+        || mediaFeature == MediaFeatureNames::minDevicePixelRatioMediaFeature;
 }
 
 static inline bool featureWithZeroOrOne(const AtomicString& mediaFeature, const CSSParserValue* value)
@@ -143,7 +143,7 @@ static inline bool featureWithoutValue(const AtomicString& mediaFeature)
         || mediaFeature == MediaFeatureNames::animationMediaFeature
         || mediaFeature == MediaFeatureNames::view_modeMediaFeature
         || mediaFeature == MediaFeatureNames::pointerMediaFeature
-        || mediaFeature == MediaFeatureNames::device_pixel_ratioMediaFeature
+        || mediaFeature == MediaFeatureNames::devicePixelRatioMediaFeature
         || mediaFeature == MediaFeatureNames::resolutionMediaFeature;
 }
 

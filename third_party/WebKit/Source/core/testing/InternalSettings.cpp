@@ -75,7 +75,6 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalTextAutosizingEnabled(settings->textAutosizingEnabled())
     , m_originalTextAutosizingWindowSizeOverride(settings->textAutosizingWindowSizeOverride())
     , m_originalTextAutosizingFontScaleFactor(settings->textAutosizingFontScaleFactor())
-    , m_originalResolutionOverride(settings->resolutionOverride())
     , m_originalMediaTypeOverride(settings->mediaTypeOverride())
     , m_originalDialogElementEnabled(RuntimeEnabledFeatures::dialogElementEnabled())
     , m_originalLazyLayoutEnabled(RuntimeEnabledFeatures::lazyLayoutEnabled())
@@ -100,7 +99,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setTextAutosizingEnabled(m_originalTextAutosizingEnabled);
     settings->setTextAutosizingWindowSizeOverride(m_originalTextAutosizingWindowSizeOverride);
     settings->setTextAutosizingFontScaleFactor(m_originalTextAutosizingFontScaleFactor);
-    settings->setResolutionOverride(m_originalResolutionOverride);
     settings->setMediaTypeOverride(m_originalMediaTypeOverride);
     RuntimeEnabledFeatures::setDialogElementEnabled(m_originalDialogElementEnabled);
     RuntimeEnabledFeatures::setLazyLayoutEnabled(m_originalLazyLayoutEnabled);
@@ -257,13 +255,6 @@ void InternalSettings::setTextAutosizingWindowSizeOverride(int width, int height
 {
     InternalSettingsGuardForSettings();
     settings()->setTextAutosizingWindowSizeOverride(IntSize(width, height));
-}
-
-void InternalSettings::setResolutionOverride(int dotsPerCSSInchHorizontally, int dotsPerCSSInchVertically, ExceptionCode& ec)
-{
-    InternalSettingsGuardForSettings();
-    // An empty size resets the override.
-    settings()->setResolutionOverride(IntSize(dotsPerCSSInchHorizontally, dotsPerCSSInchVertically));
 }
 
 void InternalSettings::setMediaTypeOverride(const String& mediaType, ExceptionCode& ec)

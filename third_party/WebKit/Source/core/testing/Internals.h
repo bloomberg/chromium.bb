@@ -249,6 +249,7 @@ public:
     String pageProperty(String, int, ExceptionCode& = ASSERT_NO_EXCEPTION) const;
     String pageSizeAndMarginsInPixels(int, int, int, int, int, int, int, ExceptionCode& = ASSERT_NO_EXCEPTION) const;
 
+    void setDeviceScaleFactor(float scaleFactor, ExceptionCode&);
     void setPageScaleFactor(float scaleFactor, int x, int y, ExceptionCode&);
 
     void setIsCursorVisible(Document*, bool, ExceptionCode&);

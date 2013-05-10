@@ -139,9 +139,7 @@ public:
         UTime,
         UFrequency,
         UViewportPercentageLength,
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
         UResolution,
-#endif
         UOther
     };
 
@@ -183,6 +181,11 @@ public:
     bool isDotsPerInch() const { return primitiveType() == CSS_DPI; }
     bool isDotsPerPixel() const { return primitiveType() == CSS_DPPX; }
     bool isDotsPerCentimeter() const { return primitiveType() == CSS_DPCM; }
+    bool isResolution() const
+    {
+        unsigned short type = primitiveType();
+        return type >= CSS_DPPX && type <= CSS_DPCM;
+    }
     bool isVariableName() const { return primitiveType() == CSS_VARIABLE_NAME; }
     bool isViewportPercentageLength() const { return m_primitiveUnitType >= CSS_VW && m_primitiveUnitType <= CSS_VMAX; }
     bool isFlex() const { return primitiveType() == CSS_FR; }

@@ -39,7 +39,6 @@
     [RaisesException] void setTextAutosizingEnabled(boolean enabled);
     [RaisesException] void setTextAutosizingWindowSizeOverride(long width, long height);
     [RaisesException] void setTextAutosizingFontScaleFactor(float fontScaleFactor);
-    [RaisesException] void setResolutionOverride(long dotsPerCSSInchHorizontally, long dotsPerCSSInchVertically);
     [RaisesException] void setMediaTypeOverride(DOMString mediaTypeOverride);
     [RaisesException] void setEditingBehavior(DOMString behavior);
 

@@ -207,10 +207,8 @@ void CSSStyleSheet::setMediaQueries(PassRefPtr<MediaQuerySet> mediaQueries)
     if (m_mediaCSSOMWrapper && m_mediaQueries)
         m_mediaCSSOMWrapper->reattach(m_mediaQueries.get());
 
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
     // Add warning message to inspector whenever dpi/dpcm values are used for "screen" media.
     reportMediaQueryWarningIfNeeded(ownerDocument(), m_mediaQueries.get());
-#endif
 }
 
 unsigned CSSStyleSheet::length() const
@@ -227,7 +225,7 @@ CSSRule* CSSStyleSheet::item(unsigned index)
     if (m_childRuleCSSOMWrappers.isEmpty())
         m_childRuleCSSOMWrappers.grow(ruleCount);
     ASSERT(m_childRuleCSSOMWrappers.size() == ruleCount);
-    
+
     RefPtr<CSSRule>& cssRule = m_childRuleCSSOMWrappers[index];
     if (!cssRule) {
         if (index == 0 && m_contents->hasCharsetRule()) {

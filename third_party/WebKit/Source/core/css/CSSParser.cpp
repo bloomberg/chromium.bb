@@ -1605,13 +1605,11 @@ bool CSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParserMode 
     case CSSPrimitiveValue::CSS_TURN:
         b = (unitflags & FAngle);
         break;
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
     case CSSPrimitiveValue::CSS_DPPX:
     case CSSPrimitiveValue::CSS_DPI:
     case CSSPrimitiveValue::CSS_DPCM:
         b = (unitflags & FResolution);
         break;
-#endif
     case CSSPrimitiveValue::CSS_HZ:
     case CSSPrimitiveValue::CSS_KHZ:
     case CSSPrimitiveValue::CSS_DIMENSION:
@@ -1633,16 +1631,10 @@ inline PassRefPtr<CSSPrimitiveValue> CSSParser::createPrimitiveNumericValue(CSSP
         return CSSPrimitiveValue::create(m_parsedCalculation.release());
     }
 
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
     ASSERT((value->unit >= CSSPrimitiveValue::CSS_NUMBER && value->unit <= CSSPrimitiveValue::CSS_KHZ)
         || (value->unit >= CSSPrimitiveValue::CSS_TURN && value->unit <= CSSPrimitiveValue::CSS_CHS)
         || (value->unit >= CSSPrimitiveValue::CSS_VW && value->unit <= CSSPrimitiveValue::CSS_VMAX)
         || (value->unit >= CSSPrimitiveValue::CSS_DPPX && value->unit <= CSSPrimitiveValue::CSS_DPCM));
-#else
-    ASSERT((value->unit >= CSSPrimitiveValue::CSS_NUMBER && value->unit <= CSSPrimitiveValue::CSS_KHZ)
-        || (value->unit >= CSSPrimitiveValue::CSS_TURN && value->unit <= CSSPrimitiveValue::CSS_CHS)
-        || (value->unit >= CSSPrimitiveValue::CSS_VW && value->unit <= CSSPrimitiveValue::CSS_VMAX));
-#endif
     return cssValuePool().createValue(value->fValue, static_cast<CSSPrimitiveValue::UnitTypes>(value->unit));
 }
 
@@ -1690,10 +1682,8 @@ inline PassRefPtr<CSSPrimitiveValue> CSSParser::parseValidPrimitive(int identifi
         return createPrimitiveNumericValue(value);
     if (value->unit >= CSSPrimitiveValue::CSS_VW && value->unit <= CSSPrimitiveValue::CSS_VMAX)
         return createPrimitiveNumericValue(value);
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
     if (value->unit >= CSSPrimitiveValue::CSS_DPPX && value->unit <= CSSPrimitiveValue::CSS_DPCM)
         return createPrimitiveNumericValue(value);
-#endif
     if (value->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME)
         return createPrimitiveVariableNameValue(value);
     if (value->unit >= CSSParserValue::Q_EMS)
@@ -9904,7 +9894,6 @@ inline void CSSParser::detectNumberToken(CharacterType* type, int length)
     case 'd':
         if (length == 3 && isASCIIAlphaCaselessEqual(type[1], 'e') && isASCIIAlphaCaselessEqual(type[2], 'g'))
             m_token = DEGS;
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
         else if (length > 2 && isASCIIAlphaCaselessEqual(type[1], 'p')) {
             if (length == 4) {
                 // There is a discussion about the name of this unit on www-style.
@@ -9917,7 +9906,6 @@ inline void CSSParser::detectNumberToken(CharacterType* type, int length)
             } else if (length == 3 && isASCIIAlphaCaselessEqual(type[2], 'i'))
                     m_token = DPI;
         }
-#endif
         return;
 
     case 'e':

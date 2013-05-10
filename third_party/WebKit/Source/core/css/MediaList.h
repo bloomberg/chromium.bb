@@ -121,10 +121,8 @@ private:
     CSSRule* m_parentRule;
 };
 
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
 // Adds message to inspector console whenever dpi or dpcm values are used for "screen" media.
 void reportMediaQueryWarningIfNeeded(Document*, const MediaQuerySet*);
-#endif
 
 } // namespace
 

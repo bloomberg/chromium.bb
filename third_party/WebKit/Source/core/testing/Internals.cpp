@@ -199,6 +199,7 @@ void Internals::resetToConsistentState(Page* page)
 {
     ASSERT(page);
 
+    page->setDeviceScaleFactor(1);
     page->setPageScaleFactor(1, IntPoint(0, 0));
     page->setPagination(Pagination());
     TextRun::setAllowsRoundingHacks(false);
@@ -1687,6 +1688,17 @@ String Internals::pageSizeAndMarginsInPixels(int pageNumber, int width, int heig
     }
 
     return PrintContext::pageSizeAndMarginsInPixels(frame(), pageNumber, width, height, marginTop, marginRight, marginBottom, marginLeft);
+}
+
+void Internals::setDeviceScaleFactor(float scaleFactor, ExceptionCode& ec)
+{
+    Document* document = contextDocument();
+    if (!document || !document->page()) {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+    Page* page = document->page();
+    page->setDeviceScaleFactor(scaleFactor);
 }
 
 void Internals::setPageScaleFactor(float scaleFactor, int x, int y, ExceptionCode& ec)

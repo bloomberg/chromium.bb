@@ -59,7 +59,6 @@ public:
         bool m_originalTextAutosizingEnabled;
         IntSize m_originalTextAutosizingWindowSizeOverride;
         float m_originalTextAutosizingFontScaleFactor;
-        IntSize m_originalResolutionOverride;
         String m_originalMediaTypeOverride;
         bool m_originalDialogElementEnabled;
         bool m_originalLazyLayoutEnabled;
@@ -96,7 +95,6 @@ public:
     void setImagesEnabled(bool, ExceptionCode&);
     void setMediaTypeOverride(const String& mediaType, ExceptionCode&);
     void setMockScrollbarsEnabled(bool, ExceptionCode&);
-    void setResolutionOverride(int dotsPerCSSInchHorizontally, int dotsPerCSSInchVertically, ExceptionCode&);
     void setTextAutosizingEnabled(bool, ExceptionCode&);
     void setTextAutosizingFontScaleFactor(float fontScaleFactor, ExceptionCode&);
     void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionCode&);

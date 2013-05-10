@@ -277,17 +277,18 @@ PASS expression min-monochrome: 0 should be parseable
 PASS expression min-monochrome: 1.0 should not be parseable 
 PASS expression min-monochrome: -1 should not be parseable 
 PASS expression min-monochrome: 1/1 should not be parseable 
-FAIL find_resolution assert_false: expected false got true
-PASS (resolution: dpi) should not apply 
+PASS find_resolution 
+PASS (resolution: dpi) should apply 
 PASS (resolution: dpi + 1) should not apply 
-FAIL (min-resolution: dpi - 1 ) should apply assert_true: expected true got false
+PASS (resolution: dpi - 1) should not apply 
+PASS (min-resolution: dpi - 1 ) should apply 
 PASS not all and (min-resolution: dpi - 1 ) should not apply 
-FAIL not all and (min-resolution: dpi + 1 ) should apply assert_true: expected true got false
+PASS not all and (min-resolution: dpi + 1 ) should apply 
 PASS all and (min-resolution: dpi + 1 ) should not apply 
-FAIL (min-resolution: dpcm (dpi - 1) ) should apply assert_true: expected true got false
-FAIL (max-resolution: dpcm  (dpi + 1) ) should apply assert_true: expected true got false
+PASS (min-resolution: dpcm (dpi - 1) ) should apply 
+PASS (max-resolution: dpcm  (dpi + 1) ) should apply 
 PASS (max-resolution: dpcm  (dpi - 1) ) should not apply 
-FAIL not all and (min-resolution: dpcm  (dpi + 1) ) should apply assert_true: expected true got false
+PASS not all and (min-resolution: dpcm  (dpi + 1) ) should apply 
 PASS expression grid should be parseable 
 PASS expression grid: 0 should be parseable 
 PASS expression grid: 1 should be parseable 

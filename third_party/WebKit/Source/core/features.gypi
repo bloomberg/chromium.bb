@@ -41,7 +41,6 @@
       'ENABLE_CSS_REGIONS=1',
       'ENABLE_CUSTOM_SCHEME_HANDLER=0',
       'ENABLE_ENCRYPTED_MEDIA=1',
-      'ENABLE_RESOLUTION_MEDIA_QUERY=0',
       'ENABLE_SVG=<(enable_svg)',
       'ENABLE_SVG_FONTS=<(enable_svg)',
       'ENABLE_TOUCH_ICON_LOADING=<(enable_touch_icon_loading)',

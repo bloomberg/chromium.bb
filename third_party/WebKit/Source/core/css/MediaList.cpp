@@ -304,7 +304,6 @@ void MediaList::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_parentRule, "parentRule");
 }
 
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
 static void addResolutionWarningMessageToConsole(Document* document, const String& serializedExpression, const CSSPrimitiveValue* value)
 {
     ASSERT(document);
@@ -359,6 +358,5 @@ void reportMediaQueryWarningIfNeeded(Document* document, const MediaQuerySet* me
         }
     }
 }
-#endif
 
 }

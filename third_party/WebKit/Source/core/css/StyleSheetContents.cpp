@@ -137,11 +137,9 @@ void StyleSheetContents::parserAppendRule(PassRefPtr<StyleRuleBase> rule)
         return;
     }
 
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
     // Add warning message to inspector if dpi/dpcm values are used for screen media.
     if (rule->isMediaRule())
         reportMediaQueryWarningIfNeeded(singleOwnerDocument(), static_cast<StyleRuleMedia*>(rule.get())->mediaQueries());
-#endif
 
     m_childRules.append(rule);
 }
@@ -149,7 +147,7 @@ void StyleSheetContents::parserAppendRule(PassRefPtr<StyleRuleBase> rule)
 StyleRuleBase* StyleSheetContents::ruleAt(unsigned index) const
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < ruleCount());
-    
+
     unsigned childVectorIndex = index;
     if (hasCharsetRule()) {
         if (index == 0)

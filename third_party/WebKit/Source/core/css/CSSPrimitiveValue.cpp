@@ -49,7 +49,7 @@
 using namespace WTF;
 
 namespace WebCore {
-    
+
 // Max/min values for CSS, needs to slightly smaller/larger than the true max/min values to allow for rounding without overflowing.
 // Subtract two (rather than one) to allow for values to be converted to float and back without exceeding the LayoutUnit::max.
 const int maxValueForCssLength = INT_MAX / kFixedPointDenominator - 2;
@@ -64,11 +64,9 @@ static inline bool isValidCSSUnitTypeForDoubleConversion(CSSPrimitiveValue::Unit
     case CSSPrimitiveValue::CSS_CM:
     case CSSPrimitiveValue::CSS_DEG:
     case CSSPrimitiveValue::CSS_DIMENSION:
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
     case CSSPrimitiveValue::CSS_DPPX:
     case CSSPrimitiveValue::CSS_DPI:
     case CSSPrimitiveValue::CSS_DPCM:
-#endif
     case CSSPrimitiveValue::CSS_EMS:
     case CSSPrimitiveValue::CSS_EXS:
     case CSSPrimitiveValue::CSS_GRAD:
@@ -96,11 +94,6 @@ static inline bool isValidCSSUnitTypeForDoubleConversion(CSSPrimitiveValue::Unit
     case CSSPrimitiveValue::CSS_ATTR:
     case CSSPrimitiveValue::CSS_COUNTER:
     case CSSPrimitiveValue::CSS_COUNTER_NAME:
-#if !ENABLE(RESOLUTION_MEDIA_QUERY)
-    case CSSPrimitiveValue::CSS_DPPX:
-    case CSSPrimitiveValue::CSS_DPI:
-    case CSSPrimitiveValue::CSS_DPCM:
-#endif
     case CSSPrimitiveValue::CSS_IDENT:
     case CSSPrimitiveValue::CSS_PAIR:
     case CSSPrimitiveValue::CSS_PARSER_HEXCOLOR:
@@ -155,12 +148,10 @@ static CSSPrimitiveValue::UnitCategory unitCategory(CSSPrimitiveValue::UnitTypes
     case CSSPrimitiveValue::CSS_VMIN:
     case CSSPrimitiveValue::CSS_VMAX:
         return CSSPrimitiveValue::UViewportPercentageLength;
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
     case CSSPrimitiveValue::CSS_DPPX:
     case CSSPrimitiveValue::CSS_DPI:
     case CSSPrimitiveValue::CSS_DPCM:
         return CSSPrimitiveValue::UResolution;
-#endif
     default:
         return CSSPrimitiveValue::UOther;
     }
@@ -662,10 +653,8 @@ CSSPrimitiveValue::UnitTypes CSSPrimitiveValue::canonicalUnitTypeForCategory(Uni
         return CSS_HZ;
     case UViewportPercentageLength:
         return CSS_UNKNOWN; // Cannot convert between numbers and relative lengths.
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
     case UResolution:
         return CSS_DPPX;
-#endif
     default:
         return CSS_UNKNOWN;
     }
@@ -881,7 +870,6 @@ String CSSPrimitiveValue::customCssText() const
         case CSS_CM:
             text = formatNumber(m_value.num, "cm");
             break;
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
         case CSS_DPPX:
             text = formatNumber(m_value.num, "dppx");
             break;
@@ -891,7 +879,6 @@ String CSSPrimitiveValue::customCssText() const
         case CSS_DPCM:
             text = formatNumber(m_value.num, "dpcm");
             break;
-#endif
         case CSS_MM:
             text = formatNumber(m_value.num, "mm");
             break;
@@ -1174,11 +1161,9 @@ PassRefPtr<CSSPrimitiveValue> CSSPrimitiveValue::cloneForCSSOM() const
     case CSS_VH:
     case CSS_VMIN:
     case CSS_VMAX:
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
     case CSS_DPPX:
     case CSS_DPI:
     case CSS_DPCM:
-#endif
         result = CSSPrimitiveValue::create(m_value.num, static_cast<UnitTypes>(m_primitiveUnitType));
         break;
     case CSS_IDENT:
@@ -1217,11 +1202,9 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case CSS_REMS:
     case CSS_PX:
     case CSS_CM:
-#if ENABLE(RESOLUTION_MEDIA_QUERY)
     case CSS_DPPX:
     case CSS_DPI:
     case CSS_DPCM:
-#endif
     case CSS_MM:
     case CSS_IN:
     case CSS_PT:

@@ -261,15 +261,6 @@ void Settings::setTextAutosizingFontScaleFactor(float fontScaleFactor)
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
-void Settings::setResolutionOverride(const IntSize& densityPerInchOverride)
-{
-    if (m_resolutionDensityPerInchOverride == densityPerInchOverride)
-        return;
-
-    m_resolutionDensityPerInchOverride = densityPerInchOverride;
-    m_page->setNeedsRecalcStyleInAllFrames();
-}
-
 void Settings::setMediaTypeOverride(const String& mediaTypeOverride)
 {
     if (m_mediaTypeOverride == mediaTypeOverride)
