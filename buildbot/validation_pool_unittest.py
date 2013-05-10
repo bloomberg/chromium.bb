@@ -206,8 +206,11 @@ class TestPatchSeries(base):
                     failed_inflight=(), frozen=True, dryrun=False):
     # Convenience; set the content pool as necessary.
     for remote in set(x.remote for x in changes):
-      helper = series._helper_pool.GetHelper(remote)
-      series._content_merging_projects.setdefault(helper, frozenset())
+      try:
+        helper = series._helper_pool.GetHelper(remote)
+        series._content_merging_projects.setdefault(helper, frozenset())
+      except validation_pool.GerritHelperNotAvailable:
+        continue
 
     manifest = MockManifest(self.build_root)
     result = series.Apply(changes, dryrun=dryrun,
@@ -329,31 +332,39 @@ class TestPatchSeries(base):
     self.assertTrue(applied[1] is patch1)
     self.mox.VerifyAll()
 
-  def testCrosGerritDeps(self):
+  def testCrosGerritDeps(self, cros_internal=True):
     """Test that we can apply changes correctly and respect deps.
 
     This tests a simple out-of-order change where change1 depends on change2
     but tries to get applied before change2.  What should happen is that
     we should notice change2 is a dep of change1 and apply it first.
     """
-    series = self.GetPatchSeries()
+    helper_pool = self.MakeHelper(cros_internal=cros_internal, cros=True)
+    series = self.GetPatchSeries(helper_pool=helper_pool)
 
     patch1 = self.MockPatch(remote=constants.EXTERNAL_REMOTE)
     patch2 = self.MockPatch(remote=constants.INTERNAL_REMOTE)
     patch3 = self.MockPatch(remote=constants.EXTERNAL_REMOTE)
     patches = [patch3, patch2, patch1]
+    applied_patches = patches if cros_internal else [patch3, patch1]
 
     self.SetPatchDeps(patch1)
     self.SetPatchDeps(patch2, cq=[patch1.id])
-    self.SetPatchDeps(patch3, cq=[patch2.id])
+    self.SetPatchDeps(patch3, cq=['*%s' % patch2.id])
 
     self.SetPatchApply(patch1)
-    self.SetPatchApply(patch2)
+    if cros_internal:
+      self.SetPatchApply(patch2)
+      self._SetQuery(series, patch2).AndReturn(patch2)
     self.SetPatchApply(patch3)
 
     self.mox.ReplayAll()
-    self.assertResults(series, patches, patches)
+    self.assertResults(series, patches, applied_patches)
     self.mox.VerifyAll()
+
+  def testExternalCrosGerritDeps(self):
+    """Test that we exclude internal deps on external trybot."""
+    self.testCrosGerritDeps(cros_internal=False)
 
   @staticmethod
   def _SetQuery(series, change, is_parent=False, query=None):
@@ -522,7 +533,6 @@ class TestPatchSeries(base):
 def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
              builder_name='foon', is_master=True, dryrun=True, **kwds):
   """Helper for creating ValidationPool objects for tests."""
-  kwds.setdefault('helper_pool', validation_pool.HelperPool.SimpleCreate())
   kwds.setdefault('changes', [])
   build_root = kwds.pop('build_root', '/fake_root')
 
@@ -1090,6 +1100,8 @@ class TestCreateDisjointTransactions(cros_test_lib.MockTestCase, base):
                      side_effect=self.GetDepsForChange)
     self.PatchObject(validation_pool.PatchSeries, '_GetGerritPatch',
                      side_effect=self.GetGerritPatch)
+    self.PatchObject(validation_pool.PatchSeries, '_LookupHelper',
+                     autospec=True)
 
   def GetDepsForChange(self, patch):
     return self.deps[patch], []

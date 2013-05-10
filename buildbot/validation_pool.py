@@ -261,6 +261,13 @@ class PatchSeries(object):
     trivial = False if dryrun else not self._IsContentMerging(change)
     return change.ApplyAgainstManifest(self.manifest, trivial=trivial)
 
+  def _LookupHelper(self, query):
+    """Returns the helper for a given query."""
+    remote = constants.EXTERNAL_REMOTE
+    if query.startswith('*'):
+      remote = constants.INTERNAL_REMOTE
+    return self._helper_pool.GetHelper(remote)
+
   def _GetGerritPatch(self, change, query, parent_lookup=False):
     """Query the configured helpers looking for a given change.
 
@@ -272,11 +279,7 @@ class PatchSeries(object):
         of the given change- as such limit the query purely to that
         project/branch.
     """
-    remote = constants.EXTERNAL_REMOTE
-    if query.startswith('*'):
-      remote = constants.INTERNAL_REMOTE
-    helper = self._helper_pool.GetHelper(remote)
-
+    helper = self._LookupHelper(query)
     query = query_text = cros_patch.FormatPatchDep(query, force_external=True)
     if parent_lookup:
       query_text = "project:%s AND branch:%s AND %s" % (
@@ -327,6 +330,13 @@ class PatchSeries(object):
     unsatisfied = []
     for dep in deps:
       if dep in self._committed_cache:
+        continue
+
+      try:
+        self._LookupHelper(dep)
+      except GerritHelperNotAvailable:
+        # Internal dependencies are irrelevant to external builders.
+        logging.info("Skipping internal dependency: %s", dep)
         continue
 
       dep_change = self._lookup_cache[dep]
@@ -483,8 +493,21 @@ class PatchSeries(object):
     self._lookup_cache.Inject(*changes)
 
   def FetchChanges(self, changes):
+    """Fetch the specified changes, if needed.
+
+    If we're an external builder, internal changes are filtered out.
+
+    Returns an iterator over a list of the filtered changes.
+    """
     for change in changes:
+      try:
+        self._helper_pool.ForChange(change)
+      except GerritHelperNotAvailable:
+        # Internal patches are irrelevant to external builders.
+        logging.info("Skipping internal patch: %s", change)
+        continue
       change.Fetch(self.GetGitRepoForChange(change))
+      yield change
 
   def _ApplyDecorator(functor):
     """Decorator for Apply that does appropriate self.manifest manipulation.
@@ -563,7 +586,7 @@ class PatchSeries(object):
 
     # Prefetch the changes; we need accurate change_id/id's, which is
     # guaranteed via Fetch.
-    self.FetchChanges(changes)
+    changes = list(self.FetchChanges(changes))
     if changes_filter:
       changes = changes_filter(self, changes)
 
@@ -827,7 +850,7 @@ class ValidationPool(object):
 
   def __init__(self, overlays, build_root, build_number, builder_name,
                is_master, dryrun, changes=None, non_os_changes=None,
-               conflicting_changes=None, pre_cq=False, helper_pool=None):
+               conflicting_changes=None, pre_cq=False):
     """Initializes an instance by setting default valuables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -848,23 +871,17 @@ class ValidationPool(object):
         flight.
       pre_cq: If set to True, this builder is verifying CLs before they go to
         the commit queue.
-      helper_pool: A HelperPool instance.  If not specified, a HelperPool
-        instance is created with full access to external and internal gerrit
-        instances; full access is used to allow cross gerrit dependencies
-        to be supported.
     """
 
-    if helper_pool is None:
-      helper_pool = HelperPool.SimpleCreate()
-
     self.build_root = build_root
-    self._helper_pool = helper_pool
 
     # These instances can be instantiated via both older, or newer pickle
     # dumps.  Thus we need to assert the given args since we may be getting
     # a value we no longer like (nor work with).
     if overlays not in constants.VALID_OVERLAYS:
       raise ValueError("Unknown/unsupported overlay: %r" % (overlays,))
+
+    self._helper_pool = self.GetGerritHelpersForOverlays(overlays)
 
     if not isinstance(build_number, int):
       raise ValueError("Invalid build_number: %r" % (build_number,))
@@ -910,7 +927,8 @@ class ValidationPool(object):
     self._overlays = overlays
     self._build_number = build_number
     self._builder_name = builder_name
-    self._patch_series = PatchSeries(self.build_root, helper_pool=helper_pool)
+    self._patch_series = PatchSeries(self.build_root,
+                                     helper_pool=self._helper_pool)
 
   @staticmethod
   def GetBuildDashboardForOverlays(overlays, trybot):

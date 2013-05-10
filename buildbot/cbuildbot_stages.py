@@ -391,10 +391,15 @@ class PatchChangesStage(bs.BuilderStage):
         return validation_pool.PatchSeries.ApplyChange(self, change,
                                                        dryrun=dryrun)
 
+    # If we're an external builder, ignore internal patches.
+    helper_pool = validation_pool.HelperPool.SimpleCreate(
+        cros_internal=self._build_config['internal'], cros=True)
+
     # Limit our resolution to non-manifest patches.
     patch_series = NoisyPatchSeries(
         self._build_root,
         force_content_merging=True,
+        helper_pool=helper_pool,
         deps_filter_fn=lambda p: not trybot_patch_pool.ManifestFilter(p))
 
     self._ApplyPatchSeries(patch_series, self.patch_pool)
