@@ -19,16 +19,17 @@ namespace util {
 
 bool IsDriveV2ApiEnabled() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+  // Disable Drive API v2 by default.
+  if (!command_line->HasSwitch(switches::kEnableDriveV2Api))
+    return false;
+
   std::string value =
       command_line->GetSwitchValueASCII(switches::kEnableDriveV2Api);
   StringToLowerASCII(&value);
-  if (value == "false") {
-    return false;
-  }
-
-  // The value should be empty or "true".
-  DCHECK(value.empty() || value == "true");
-  return true;
+  // The value must be "" or "true" for true, or "false" for false.
+  DCHECK(value.empty() || value == "true" || value == "false");
+  return value != "false";
 }
 
 }  // namespace util
