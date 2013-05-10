@@ -987,12 +987,12 @@ namespace {
 //----------------------------------------------------------------------
 // Pixel unpacking routines.
 template<int format, typename SourceType, typename DstType>
-ALWAYS_INLINE void unpack(const SourceType*, DstType*, unsigned)
+void unpack(const SourceType*, DstType*, unsigned)
 {
     ASSERT_NOT_REACHED();
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGB8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatRGB8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
@@ -1004,7 +1004,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGB8, uint8_t,
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatBGR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatBGR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[2];
@@ -1016,7 +1016,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatBGR8, uint8_t,
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatARGB8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatARGB8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[1];
@@ -1028,7 +1028,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatARGB8, uint8_t
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatABGR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatABGR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[3];
@@ -1040,7 +1040,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatABGR8, uint8_t
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatBGRA8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatBGRA8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     const uint32_t* source32 = reinterpret_cast_ptr<const uint32_t*>(source);
     uint32_t* destination32 = reinterpret_cast_ptr<uint32_t*>(destination);
@@ -1058,7 +1058,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatBGRA8, uint8_t
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGBA5551, uint16_t, uint8_t>(const uint16_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatRGBA5551, uint16_t, uint8_t>(const uint16_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::unpackOneRowOfRGBA5551ToRGBA8(source, destination, pixelsPerRow);
@@ -1077,7 +1077,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGBA5551, uint
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGBA4444, uint16_t, uint8_t>(const uint16_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatRGBA4444, uint16_t, uint8_t>(const uint16_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::unpackOneRowOfRGBA4444ToRGBA8(source, destination, pixelsPerRow);
@@ -1097,7 +1097,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGBA4444, uint
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGB565, uint16_t, uint8_t>(const uint16_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatRGB565, uint16_t, uint8_t>(const uint16_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::unpackOneRowOfRGB565ToRGBA8(source, destination, pixelsPerRow);
@@ -1116,7 +1116,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGB565, uint16
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
@@ -1128,7 +1128,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatR8, uint8_t, u
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRA8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatRA8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
@@ -1140,7 +1140,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRA8, uint8_t, 
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatAR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatAR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[1];
@@ -1152,7 +1152,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatAR8, uint8_t, 
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatA8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatA8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = 0x0;
@@ -1164,7 +1164,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatA8, uint8_t, u
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGBA8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatRGBA8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
 {
     const float scaleFactor = 1.0f / 255.0f;
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
@@ -1177,7 +1177,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGBA8, uint8_t
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatBGRA8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatBGRA8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
 {
     const float scaleFactor = 1.0f / 255.0f;
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
@@ -1190,7 +1190,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatBGRA8, uint8_t
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatABGR8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatABGR8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
 {
     const float scaleFactor = 1.0f / 255.0f;
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
@@ -1203,7 +1203,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatABGR8, uint8_t
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatARGB8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatARGB8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
 {
     const float scaleFactor = 1.0f / 255.0f;
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
@@ -1216,7 +1216,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatARGB8, uint8_t
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGB8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatRGB8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
 {
     const float scaleFactor = 1.0f / 255.0f;
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
@@ -1229,7 +1229,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGB8, uint8_t,
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatBGR8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatBGR8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
 {
     const float scaleFactor = 1.0f / 255.0f;
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
@@ -1242,7 +1242,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatBGR8, uint8_t,
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGB32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatRGB32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
@@ -1254,7 +1254,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRGB32F, float,
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatR32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatR32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
@@ -1266,7 +1266,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatR32F, float, f
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRA32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatRA32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
@@ -1278,7 +1278,7 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatRA32F, float, 
     }
 }
 
-template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatA32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void unpack<GraphicsContext3D::DataFormatA32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = 0;
@@ -1295,12 +1295,12 @@ template<> ALWAYS_INLINE void unpack<GraphicsContext3D::DataFormatA32F, float, f
 //
 
 template<int format, int alphaOp, typename SourceType, typename DstType>
-ALWAYS_INLINE void pack(const SourceType*, DstType*, unsigned)
+void pack(const SourceType*, DstType*, unsigned)
 {
     ASSERT_NOT_REACHED();
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatA8, GraphicsContext3D::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatA8, GraphicsContext3D::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[3];
@@ -1309,7 +1309,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatA8, GraphicsCont
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR8, GraphicsContext3D::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatR8, GraphicsContext3D::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
@@ -1318,7 +1318,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR8, GraphicsCont
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR8, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatR8, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
@@ -1330,7 +1330,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR8, GraphicsCont
 }
 
 // FIXME: this routine is lossy and must be removed.
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR8, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatR8, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -1341,7 +1341,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR8, GraphicsCont
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA8, GraphicsContext3D::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRA8, GraphicsContext3D::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
@@ -1351,7 +1351,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA8, GraphicsCon
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA8, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRA8, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
@@ -1364,7 +1364,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA8, GraphicsCon
 }
 
 // FIXME: this routine is lossy and must be removed.
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA8, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRA8, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -1376,7 +1376,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA8, GraphicsCon
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB8, GraphicsContext3D::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGB8, GraphicsContext3D::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
@@ -1387,7 +1387,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB8, GraphicsCo
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB8, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGB8, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
@@ -1403,7 +1403,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB8, GraphicsCo
 }
 
 // FIXME: this routine is lossy and must be removed.
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB8, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGB8, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -1419,12 +1419,12 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB8, GraphicsCo
 }
 
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA8, GraphicsContext3D::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA8, GraphicsContext3D::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     memcpy(destination, source, pixelsPerRow * 4);
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA8, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA8, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
@@ -1441,7 +1441,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA8, GraphicsC
 }
 
 // FIXME: this routine is lossy and must be removed.
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA8, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA8, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -1457,7 +1457,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA8, GraphicsC
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA4444, GraphicsContext3D::AlphaDoNothing, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA4444, GraphicsContext3D::AlphaDoNothing, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::packOneRowOfRGBA8ToUnsignedShort4444(source, destination, pixelsPerRow);
@@ -1472,7 +1472,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA4444, Graphi
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA4444, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA4444, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
@@ -1489,7 +1489,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA4444, Graphi
 }
 
 // FIXME: this routine is lossy and must be removed.
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA4444, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA4444, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -1505,7 +1505,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA4444, Graphi
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA5551, GraphicsContext3D::AlphaDoNothing, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA5551, GraphicsContext3D::AlphaDoNothing, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::packOneRowOfRGBA8ToUnsignedShort5551(source, destination, pixelsPerRow);
@@ -1520,7 +1520,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA5551, Graphi
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA5551, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA5551, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
@@ -1537,7 +1537,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA5551, Graphi
 }
 
 // FIXME: this routine is lossy and must be removed.
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA5551, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA5551, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -1553,7 +1553,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA5551, Graphi
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB565, GraphicsContext3D::AlphaDoNothing, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGB565, GraphicsContext3D::AlphaDoNothing, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::packOneRowOfRGBA8ToUnsignedShort565(source, destination, pixelsPerRow);
@@ -1567,7 +1567,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB565, Graphics
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB565, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGB565, GraphicsContext3D::AlphaDoPremultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] / 255.0f;
@@ -1583,7 +1583,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB565, Graphics
 }
 
 // FIXME: this routine is lossy and must be removed.
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB565, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGB565, GraphicsContext3D::AlphaDoUnmultiply, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -1598,7 +1598,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB565, Graphics
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB32F, GraphicsContext3D::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGB32F, GraphicsContext3D::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
@@ -1609,7 +1609,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB32F, Graphics
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB32F, GraphicsContext3D::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGB32F, GraphicsContext3D::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3];
@@ -1621,7 +1621,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB32F, Graphics
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB32F, GraphicsContext3D::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGB32F, GraphicsContext3D::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
@@ -1634,12 +1634,12 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB32F, Graphics
 }
 
 // Used only during RGBA8 or BGRA8 -> floating-point uploads.
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA32F, GraphicsContext3D::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA32F, GraphicsContext3D::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     memcpy(destination, source, pixelsPerRow * 4 * sizeof(float));
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA32F, GraphicsContext3D::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA32F, GraphicsContext3D::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3];
@@ -1652,7 +1652,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA32F, Graphic
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA32F, GraphicsContext3D::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA32F, GraphicsContext3D::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
@@ -1665,7 +1665,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA32F, Graphic
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatA32F, GraphicsContext3D::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatA32F, GraphicsContext3D::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[3];
@@ -1674,7 +1674,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatA32F, GraphicsCo
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR32F, GraphicsContext3D::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatR32F, GraphicsContext3D::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
@@ -1683,7 +1683,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR32F, GraphicsCo
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR32F, GraphicsContext3D::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatR32F, GraphicsContext3D::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3];
@@ -1693,7 +1693,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR32F, GraphicsCo
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR32F, GraphicsContext3D::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatR32F, GraphicsContext3D::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
@@ -1703,7 +1703,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR32F, GraphicsCo
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA32F, GraphicsContext3D::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRA32F, GraphicsContext3D::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         destination[0] = source[0];
@@ -1713,7 +1713,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA32F, GraphicsC
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA32F, GraphicsContext3D::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRA32F, GraphicsContext3D::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3];
@@ -1724,7 +1724,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA32F, GraphicsC
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA32F, GraphicsContext3D::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRA32F, GraphicsContext3D::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned int i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
@@ -1735,7 +1735,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA32F, GraphicsC
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA16F, GraphicsContext3D::AlphaDoNothing, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA16F, GraphicsContext3D::AlphaDoNothing, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = convertFloatToHalfFloat(source[0]);
@@ -1747,7 +1747,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA16F, Graphic
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA16F, GraphicsContext3D::AlphaDoPremultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA16F, GraphicsContext3D::AlphaDoPremultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3];
@@ -1760,7 +1760,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA16F, Graphic
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA16F, GraphicsContext3D::AlphaDoUnmultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGBA16F, GraphicsContext3D::AlphaDoUnmultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
@@ -1773,7 +1773,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGBA16F, Graphic
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB16F, GraphicsContext3D::AlphaDoNothing, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGB16F, GraphicsContext3D::AlphaDoNothing, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = convertFloatToHalfFloat(source[0]);
@@ -1784,7 +1784,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB16F, Graphics
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB16F, GraphicsContext3D::AlphaDoPremultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGB16F, GraphicsContext3D::AlphaDoPremultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3];
@@ -1796,7 +1796,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB16F, Graphics
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB16F, GraphicsContext3D::AlphaDoUnmultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRGB16F, GraphicsContext3D::AlphaDoUnmultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
@@ -1808,7 +1808,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRGB16F, Graphics
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA16F, GraphicsContext3D::AlphaDoNothing, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRA16F, GraphicsContext3D::AlphaDoNothing, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = convertFloatToHalfFloat(source[0]);
@@ -1818,7 +1818,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA16F, GraphicsC
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA16F, GraphicsContext3D::AlphaDoPremultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRA16F, GraphicsContext3D::AlphaDoPremultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3];
@@ -1829,7 +1829,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA16F, GraphicsC
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA16F, GraphicsContext3D::AlphaDoUnmultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatRA16F, GraphicsContext3D::AlphaDoUnmultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
@@ -1840,7 +1840,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatRA16F, GraphicsC
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR16F, GraphicsContext3D::AlphaDoNothing, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatR16F, GraphicsContext3D::AlphaDoNothing, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = convertFloatToHalfFloat(source[0]);
@@ -1849,7 +1849,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR16F, GraphicsCo
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR16F, GraphicsContext3D::AlphaDoPremultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatR16F, GraphicsContext3D::AlphaDoPremultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3];
@@ -1859,7 +1859,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR16F, GraphicsCo
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR16F, GraphicsContext3D::AlphaDoUnmultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatR16F, GraphicsContext3D::AlphaDoUnmultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
@@ -1869,7 +1869,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatR16F, GraphicsCo
     }
 }
 
-template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatA16F, GraphicsContext3D::AlphaDoNothing, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void pack<GraphicsContext3D::DataFormatA16F, GraphicsContext3D::AlphaDoNothing, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         destination[0] = convertFloatToHalfFloat(source[3]);
@@ -1878,7 +1878,7 @@ template<> ALWAYS_INLINE void pack<GraphicsContext3D::DataFormatA16F, GraphicsCo
     }
 }
 
-ALWAYS_INLINE bool HasAlpha(int format)
+bool HasAlpha(int format)
 {
     return format == GraphicsContext3D::DataFormatA8
         || format == GraphicsContext3D::DataFormatA16F
@@ -1897,7 +1897,7 @@ ALWAYS_INLINE bool HasAlpha(int format)
         || format == GraphicsContext3D::DataFormatRGBA5551;
 }
 
-ALWAYS_INLINE bool HasColor(int format)
+bool HasColor(int format)
 {
     return format == GraphicsContext3D::DataFormatRGBA8
         || format == GraphicsContext3D::DataFormatRGBA16F
@@ -1974,7 +1974,7 @@ struct IntermediateFormat {
     static const int Value = (IsFloatFormat<Format>::Value || IsHalfFloatFormat<Format>::Value) ? GraphicsContext3D::DataFormatRGBA32F : GraphicsContext3D::DataFormatRGBA8;
 };
 
-ALWAYS_INLINE unsigned TexelBytesForFormat(GraphicsContext3D::DataFormat format)
+unsigned TexelBytesForFormat(GraphicsContext3D::DataFormat format)
 {
     switch (format) {
     case GraphicsContext3D::DataFormatR8:
@@ -2032,13 +2032,13 @@ public:
 
 private:
     template<GraphicsContext3D::DataFormat SrcFormat>
-    ALWAYS_INLINE void convert(GraphicsContext3D::DataFormat dstFormat, GraphicsContext3D::AlphaOp);
+    void convert(GraphicsContext3D::DataFormat dstFormat, GraphicsContext3D::AlphaOp);
 
     template<GraphicsContext3D::DataFormat SrcFormat, GraphicsContext3D::DataFormat DstFormat>
-    ALWAYS_INLINE void convert(GraphicsContext3D::AlphaOp);
+    void convert(GraphicsContext3D::AlphaOp);
 
     template<GraphicsContext3D::DataFormat SrcFormat, GraphicsContext3D::DataFormat DstFormat, GraphicsContext3D::AlphaOp alphaOp>
-    ALWAYS_INLINE void convert();
+    void convert();
 
     const unsigned m_width, m_height;
     const void* const m_srcStart;
@@ -2080,7 +2080,7 @@ void FormatConverter::convert(GraphicsContext3D::DataFormat srcFormat, GraphicsC
 }
 
 template<GraphicsContext3D::DataFormat SrcFormat>
-ALWAYS_INLINE void FormatConverter::convert(GraphicsContext3D::DataFormat dstFormat, GraphicsContext3D::AlphaOp alphaOp)
+void FormatConverter::convert(GraphicsContext3D::DataFormat dstFormat, GraphicsContext3D::AlphaOp alphaOp)
 {
 #define FORMATCONVERTER_CASE_DSTFORMAT(DstFormat) \
     case DstFormat: \
@@ -2113,7 +2113,7 @@ ALWAYS_INLINE void FormatConverter::convert(GraphicsContext3D::DataFormat dstFor
 }
 
 template<GraphicsContext3D::DataFormat SrcFormat, GraphicsContext3D::DataFormat DstFormat>
-ALWAYS_INLINE void FormatConverter::convert(GraphicsContext3D::AlphaOp alphaOp)
+void FormatConverter::convert(GraphicsContext3D::AlphaOp alphaOp)
 {
 #define FORMATCONVERTER_CASE_ALPHAOP(alphaOp) \
     case alphaOp: \
@@ -2130,7 +2130,7 @@ ALWAYS_INLINE void FormatConverter::convert(GraphicsContext3D::AlphaOp alphaOp)
 }
 
 template<GraphicsContext3D::DataFormat SrcFormat, GraphicsContext3D::DataFormat DstFormat, GraphicsContext3D::AlphaOp alphaOp>
-ALWAYS_INLINE void FormatConverter::convert()
+void FormatConverter::convert()
 {
     // Many instantiations of this template function will never be entered, so we try
     // to return immediately in these cases to avoid the compiler to generate useless code.
