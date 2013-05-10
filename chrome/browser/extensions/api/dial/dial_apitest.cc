@@ -33,14 +33,8 @@ class DialAPITest : public ExtensionApiTest {
 
 }  // namespace
 
-// Flaky on windows: http://crbug.com/239023
-#if defined(OS_WIN)
-#define MAYBE_DeviceListEvents DISABLED_DeviceListEvents
-#else
-#define MAYBE_DeviceListEvents DeviceListEvents
-#endif
 // Test receiving DIAL API events.
-IN_PROC_BROWSER_TEST_F(DialAPITest, MAYBE_DeviceListEvents) {
+IN_PROC_BROWSER_TEST_F(DialAPITest, DeviceListEvents) {
   // Setup the test.
   ASSERT_TRUE(RunExtensionSubtest("dial/experimental", "device_list.html"));
 
