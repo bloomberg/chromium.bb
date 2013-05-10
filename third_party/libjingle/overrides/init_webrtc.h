@@ -6,6 +6,7 @@
 #define THIRD_PARTY_LIBJINGLE_OVERRIDES_INIT_WEBRTC_H_
 
 #include "allocator_shim/allocator_stub.h"
+#include "base/logging.h"
 
 class CommandLine;
 
@@ -39,6 +40,7 @@ typedef bool (*InitializeModuleFunction)(
     AllocateFunction alloc,
     DellocateFunction dealloc,
 #endif
+    logging::LogMessageHandlerFunction log_handler,
     CreateWebRtcMediaEngineFunction* create_media_engine,
     DestroyWebRtcMediaEngineFunction* destroy_media_engine);
 

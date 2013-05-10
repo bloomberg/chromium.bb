@@ -48,6 +48,7 @@ bool InitializeModule(const CommandLine& command_line,
                       AllocateFunction alloc,
                       DellocateFunction dealloc,
 #endif
+                      logging::LogMessageHandlerFunction log_handler,
                       CreateWebRtcMediaEngineFunction* create_media_engine,
                       DestroyWebRtcMediaEngineFunction* destroy_media_engine) {
 #if !defined(OS_MACOSX)
@@ -64,14 +65,15 @@ bool InitializeModule(const CommandLine& command_line,
     // done the equivalent thing via the GetCommandLine() API.
     CommandLine::ForCurrentProcess()->AppendArguments(command_line, true);
 #endif
-
-    // TODO(tommi): Use SetLogMessageHandler.
     logging::InitLogging(
-        FILE_PATH_LITERAL("libpeerconnection.log"),
-        logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
+        NULL,
+        logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
         logging::LOCK_LOG_FILE,
-        logging::APPEND_TO_OLD_LOG_FILE,
+        logging::DELETE_OLD_LOG_FILE,
         logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+
+    // Override the log message handler to forward logs to chrome's handler.
+    logging::SetLogMessageHandler(log_handler);
   }
 
   return true;

@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "talk/base/basictypes.h"
@@ -78,6 +77,7 @@ bool InitializeWebRtcModule() {
 #if !defined(OS_MACOSX)
       &Allocate, &Dellocate,
 #endif
+      logging::GetLogMessageHandler(),
       &g_create_webrtc_media_engine, &g_destroy_webrtc_media_engine);
 }
 
