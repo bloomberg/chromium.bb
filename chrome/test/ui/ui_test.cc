@@ -88,7 +88,8 @@ UITestBase::UITestBase()
       show_window_(false),
       clear_profile_(true),
       include_testing_id_(true),
-      enable_file_cookies_(true) {
+      enable_file_cookies_(true),
+      profile_type_(UITestBase::DEFAULT_THEME) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
@@ -102,7 +103,8 @@ UITestBase::UITestBase(base::MessageLoop::Type msg_loop_type)
       show_window_(false),
       clear_profile_(true),
       include_testing_id_(true),
-      enable_file_cookies_(true) {
+      enable_file_cookies_(true),
+      profile_type_(UITestBase::DEFAULT_THEME) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
@@ -415,6 +417,29 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
   }
 
   return result;
+}
+
+// static
+base::FilePath UITestBase::ComputeTypicalUserDataSource(
+    UITestBase::ProfileType profile_type) {
+  base::FilePath source_history_file;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA,
+                               &source_history_file));
+  source_history_file = source_history_file.AppendASCII("profiles");
+  switch (profile_type) {
+    case UITestBase::DEFAULT_THEME:
+      source_history_file = source_history_file.AppendASCII(
+          "profile_with_default_theme");
+      break;
+    case UITestBase::COMPLEX_THEME:
+      source_history_file = source_history_file.AppendASCII(
+          "profile_with_complex_theme");
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return source_history_file;
 }
 
 int UITestBase::GetCrashCount() const {

@@ -1261,6 +1261,34 @@ TEST_F(HistoryTest, MostVisitedURLs) {
   EXPECT_EQ(2U, most_visited_urls_[3].redirects.size());
 }
 
+// The version of the history database should be current in the "typical
+// history" example file or it will be imported on startup, throwing off timing
+// measurements.
+//
+// See test/data/profiles/profile_with_default_theme/README.txt for
+// instructions on how to up the version.
+TEST(HistoryProfileTest, TypicalProfileVersion) {
+  base::FilePath file;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &file));
+  file = file.AppendASCII("profiles");
+  file = file.AppendASCII("profile_with_default_theme");
+  file = file.AppendASCII("Default");
+  file = file.AppendASCII("History");
+
+  int cur_version = HistoryDatabase::GetCurrentVersion();
+
+  sql::Connection db;
+  ASSERT_TRUE(db.Open(file));
+
+  {
+    sql::Statement s(db.GetUniqueStatement(
+        "SELECT value FROM meta WHERE key = 'version'"));
+    EXPECT_TRUE(s.Step());
+    int file_version = s.ColumnInt(0);
+    EXPECT_EQ(cur_version, file_version);
+  }
+}
+
 namespace {
 
 // A HistoryDBTask implementation. Each time RunOnDBThread is invoked
