@@ -282,6 +282,8 @@ def UpdateBinhostConfFile(path, key, value):
   cwd = os.path.dirname(os.path.abspath(path))
   filename = os.path.basename(path)
   osutils.SafeMakedirs(cwd)
+  if not git.GetCurrentBranch(cwd):
+    git.CreatePushBranch(constants.STABLE_EBUILD_BRANCH, cwd, sync=False)
   osutils.WriteFile(path, '', mode='a')
   UpdateLocalFile(path, value, key)
   cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)

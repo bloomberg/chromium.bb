@@ -760,13 +760,14 @@ chromium_pfq = _config(
 internal_chromium_pfq = internal.derive(
   chromium_pfq,
   description='Preflight Chromium Build (internal)',
+  overlays=constants.BOTH_OVERLAYS,
   prebuilts=constants.PUBLIC,
 )
 
 internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
   boards=['x86-generic'],
   master=True,
-  push_overlays=constants.PUBLIC_OVERLAYS,
+  push_overlays=constants.BOTH_OVERLAYS,
 )
 
 internal_chromium_pfq.add_config('daisy-chromium-pfq',
