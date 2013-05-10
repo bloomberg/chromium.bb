@@ -63,19 +63,19 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
         canvas_size_.width(), canvas_size_.height(), opaque_));
   }
 
-  base::TimeTicks paint_start_time;
-  if (stats)
-    paint_start_time = base::TimeTicks::HighResNow();
+  base::TimeTicks start_time =
+      rendering_stats_instrumentation_->StartRecording();
   PaintContents(canvas_.get(),
                 content_rect,
                 contents_width_scale,
                 contents_height_scale,
                 resulting_opaque_rect,
                 stats);
-  if (stats) {
-    stats->total_paint_time += base::TimeTicks::HighResNow() - paint_start_time;
-    stats->total_pixels_painted += content_rect.width() * content_rect.height();
-  }
+  base::TimeDelta duration =
+      rendering_stats_instrumentation_->EndRecording(start_time);
+  rendering_stats_instrumentation_->AddPaint(
+      duration,
+      content_rect.width() * content_rect.height());
 }
 
 void BitmapContentLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,

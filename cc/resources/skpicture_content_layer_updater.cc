@@ -5,7 +5,7 @@
 #include "cc/resources/skpicture_content_layer_updater.h"
 
 #include "base/debug/trace_event.h"
-#include "cc/debug/rendering_stats.h"
+#include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_update_queue.h"
@@ -60,21 +60,18 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
     RenderingStats* stats) {
   SkCanvas* canvas =
       picture_.beginRecording(content_rect.width(), content_rect.height());
-  base::TimeTicks record_start_time;
-  if (stats)
-    record_start_time = base::TimeTicks::HighResNow();
+  base::TimeTicks start_time =
+      rendering_stats_instrumentation_->StartRecording();
   PaintContents(canvas,
                 content_rect,
                 contents_width_scale,
                 contents_height_scale,
                 resulting_opaque_rect,
                 stats);
-  if (stats) {
-    stats->total_record_time +=
-        base::TimeTicks::HighResNow() - record_start_time;
-    stats->total_pixels_recorded +=
-        content_rect.width() * content_rect.height();
-  }
+  base::TimeDelta duration =
+      rendering_stats_instrumentation_->EndRecording(start_time);
+  rendering_stats_instrumentation_->AddRecord(
+      duration, content_rect.width() * content_rect.height());
   picture_.endRecording();
 }
 
