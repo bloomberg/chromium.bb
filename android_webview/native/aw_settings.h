@@ -21,18 +21,17 @@ class AwSettings : public content::WebContentsObserver {
   AwSettings(JNIEnv* env, jobject obj);
   virtual ~AwSettings();
 
-  // Called from Java.
+  // Called from Java. Methods with "Locked" suffix require that the settings
+  // access lock is held during their execution.
   void Destroy(JNIEnv* env, jobject obj);
   void ResetScrollAndScaleState(JNIEnv* env, jobject obj);
-  void SetWebContents(JNIEnv* env, jobject obj, jint web_contents);
-  void UpdateEverything(JNIEnv* env, jobject obj);
-  void UpdateInitialPageScale(JNIEnv* env, jobject obj);
-  void UpdateUserAgent(JNIEnv* env, jobject obj);
-  void UpdateWebkitPreferences(JNIEnv* env, jobject obj);
+  void SetWebContentsLocked(JNIEnv* env, jobject obj, jint web_contents);
+  void UpdateEverythingLocked(JNIEnv* env, jobject obj);
+  void UpdateInitialPageScaleLocked(JNIEnv* env, jobject obj);
+  void UpdateUserAgentLocked(JNIEnv* env, jobject obj);
+  void UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj);
 
  private:
-  struct FieldIds;
-
   AwRenderViewHostExt* GetAwRenderViewHostExt();
   void UpdateEverything();
   void UpdatePreferredSizeMode();
@@ -40,9 +39,6 @@ class AwSettings : public content::WebContentsObserver {
   // WebContentsObserver overrides:
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
-
-  // Java field references for accessing the values in the Java object.
-  scoped_ptr<FieldIds> field_ids_;
 
   JavaObjectWeakGlobalRef aw_settings_;
 };

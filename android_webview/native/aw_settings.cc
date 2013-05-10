@@ -18,118 +18,11 @@
 #include "webkit/glue/webpreferences.h"
 #include "webkit/user_agent/user_agent.h"
 
-using base::android::CheckException;
 using base::android::ConvertJavaStringToUTF16;
-using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
-using base::android::GetClass;
-using base::android::GetFieldID;
-using base::android::GetMethodIDFromClassName;
 using base::android::ScopedJavaLocalRef;
 
 namespace android_webview {
-
-struct AwSettings::FieldIds {
-  // Note on speed. One may think that an approach that reads field values via
-  // JNI is ineffective and should not be used. Please keep in mind that in the
-  // legacy WebView the whole Sync method took <1ms on Xoom, and no one is
-  // expected to modify settings in performance-critical code.
-  FieldIds() { }
-
-  FieldIds(JNIEnv* env) {
-    const char* kStringClassName = "Ljava/lang/String;";
-
-    // FIXME: we should be using a new GetFieldIDFromClassName() with caching.
-    ScopedJavaLocalRef<jclass> clazz(
-        GetClass(env, "org/chromium/android_webview/AwSettings"));
-    text_size_percent = GetFieldID(env, clazz, "mTextSizePercent", "I");
-    standard_fond_family =
-        GetFieldID(env, clazz, "mStandardFontFamily", kStringClassName);
-    fixed_font_family =
-        GetFieldID(env, clazz, "mFixedFontFamily", kStringClassName);
-    sans_serif_font_family =
-        GetFieldID(env, clazz, "mSansSerifFontFamily", kStringClassName);
-    serif_font_family =
-        GetFieldID(env, clazz, "mSerifFontFamily", kStringClassName);
-    cursive_font_family =
-        GetFieldID(env, clazz, "mCursiveFontFamily", kStringClassName);
-    fantasy_font_family =
-        GetFieldID(env, clazz, "mFantasyFontFamily", kStringClassName);
-    default_text_encoding =
-        GetFieldID(env, clazz, "mDefaultTextEncoding", kStringClassName);
-    user_agent =
-        GetFieldID(env, clazz, "mUserAgent", kStringClassName);
-    minimum_font_size = GetFieldID(env, clazz, "mMinimumFontSize", "I");
-    minimum_logical_font_size =
-        GetFieldID(env, clazz, "mMinimumLogicalFontSize", "I");
-    default_font_size = GetFieldID(env, clazz, "mDefaultFontSize", "I");
-    default_fixed_font_size =
-        GetFieldID(env, clazz, "mDefaultFixedFontSize", "I");
-    load_images_automatically =
-        GetFieldID(env, clazz, "mLoadsImagesAutomatically", "Z");
-    images_enabled =
-        GetFieldID(env, clazz, "mImagesEnabled", "Z");
-    java_script_enabled =
-        GetFieldID(env, clazz, "mJavaScriptEnabled", "Z");
-    allow_universal_access_from_file_urls =
-        GetFieldID(env, clazz, "mAllowUniversalAccessFromFileURLs", "Z");
-    allow_file_access_from_file_urls =
-        GetFieldID(env, clazz, "mAllowFileAccessFromFileURLs", "Z");
-    java_script_can_open_windows_automatically =
-        GetFieldID(env, clazz, "mJavaScriptCanOpenWindowsAutomatically", "Z");
-    support_multiple_windows =
-        GetFieldID(env, clazz, "mSupportMultipleWindows", "Z");
-    dom_storage_enabled =
-        GetFieldID(env, clazz, "mDomStorageEnabled", "Z");
-    database_enabled =
-        GetFieldID(env, clazz, "mDatabaseEnabled", "Z");
-    use_wide_viewport =
-        GetFieldID(env, clazz, "mUseWideViewport", "Z");
-    load_with_overview_mode =
-        GetFieldID(env, clazz, "mLoadWithOverviewMode", "Z");
-    media_playback_requires_user_gesture =
-        GetFieldID(env, clazz, "mMediaPlaybackRequiresUserGesture", "Z");
-    default_video_poster_url =
-        GetFieldID(env, clazz, "mDefaultVideoPosterURL", kStringClassName);
-    support_deprecated_target_density_dpi =
-        GetFieldID(env, clazz, "mSupportDeprecatedTargetDensityDPI", "Z");
-    dip_scale =
-        GetFieldID(env, clazz, "mDIPScale", "D");
-    initial_page_scale_percent =
-        GetFieldID(env, clazz, "mInitialPageScalePercent", "F");
-  }
-
-  // Field ids
-  jfieldID text_size_percent;
-  jfieldID standard_fond_family;
-  jfieldID fixed_font_family;
-  jfieldID sans_serif_font_family;
-  jfieldID serif_font_family;
-  jfieldID cursive_font_family;
-  jfieldID fantasy_font_family;
-  jfieldID default_text_encoding;
-  jfieldID user_agent;
-  jfieldID minimum_font_size;
-  jfieldID minimum_logical_font_size;
-  jfieldID default_font_size;
-  jfieldID default_fixed_font_size;
-  jfieldID load_images_automatically;
-  jfieldID images_enabled;
-  jfieldID java_script_enabled;
-  jfieldID allow_universal_access_from_file_urls;
-  jfieldID allow_file_access_from_file_urls;
-  jfieldID java_script_can_open_windows_automatically;
-  jfieldID support_multiple_windows;
-  jfieldID dom_storage_enabled;
-  jfieldID database_enabled;
-  jfieldID use_wide_viewport;
-  jfieldID load_with_overview_mode;
-  jfieldID media_playback_requires_user_gesture;
-  jfieldID default_video_poster_url;
-  jfieldID support_deprecated_target_density_dpi;
-  jfieldID dip_scale;
-  jfieldID initial_page_scale_percent;
-};
 
 AwSettings::AwSettings(JNIEnv* env, jobject obj)
     : aw_settings_(env, obj) {
@@ -155,12 +48,13 @@ void AwSettings::ResetScrollAndScaleState(JNIEnv* env, jobject obj) {
   rvhe->ResetScrollAndScaleState();
 }
 
-void AwSettings::SetWebContents(JNIEnv* env, jobject obj, jint jweb_contents) {
+void AwSettings::SetWebContentsLocked(
+    JNIEnv* env, jobject obj, jint jweb_contents) {
   content::WebContents* web_contents =
       reinterpret_cast<content::WebContents*>(jweb_contents);
   Observe(web_contents);
 
-  UpdateEverything(env, obj);
+  UpdateEverythingLocked(env, obj);
 }
 
 void AwSettings::UpdateEverything() {
@@ -169,25 +63,23 @@ void AwSettings::UpdateEverything() {
   ScopedJavaLocalRef<jobject> scoped_obj = aw_settings_.get(env);
   jobject obj = scoped_obj.obj();
   if (!obj) return;
-  UpdateEverything(env, obj);
+  // Grab the lock and call UpdateEverythingLocked.
+  Java_AwSettings_updateEverything(env, obj);
 }
 
-void AwSettings::UpdateEverything(JNIEnv* env, jobject obj) {
-  UpdateInitialPageScale(env, obj);
-  UpdateWebkitPreferences(env, obj);
-  UpdateUserAgent(env, obj);
+void AwSettings::UpdateEverythingLocked(JNIEnv* env, jobject obj) {
+  UpdateInitialPageScaleLocked(env, obj);
+  UpdateWebkitPreferencesLocked(env, obj);
+  UpdateUserAgentLocked(env, obj);
   ResetScrollAndScaleState(env, obj);
   UpdatePreferredSizeMode();
 }
 
-void AwSettings::UpdateUserAgent(JNIEnv* env, jobject obj) {
+void AwSettings::UpdateUserAgentLocked(JNIEnv* env, jobject obj) {
   if (!web_contents()) return;
 
-  if (!field_ids_)
-    field_ids_.reset(new FieldIds(env));
-
-  ScopedJavaLocalRef<jstring> str(env, static_cast<jstring>(
-      env->GetObjectField(obj, field_ids_->user_agent)));
+  ScopedJavaLocalRef<jstring> str =
+      Java_AwSettings_getUserAgentLocked(env, obj);
   bool ua_overidden = str.obj() != NULL;
 
   if (ua_overidden) {
@@ -201,13 +93,10 @@ void AwSettings::UpdateUserAgent(JNIEnv* env, jobject obj) {
     controller.GetEntryAtIndex(i)->SetIsOverridingUserAgent(ua_overidden);
 }
 
-void AwSettings::UpdateWebkitPreferences(JNIEnv* env, jobject obj) {
+void AwSettings::UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj) {
   if (!web_contents()) return;
   AwRenderViewHostExt* render_view_host_ext = GetAwRenderViewHostExt();
   if (!render_view_host_ext) return;
-
-  if (!field_ids_)
-    field_ids_.reset(new FieldIds(env));
 
   content::RenderViewHost* render_view_host =
       web_contents()->GetRenderViewHost();
@@ -215,9 +104,9 @@ void AwSettings::UpdateWebkitPreferences(JNIEnv* env, jobject obj) {
   WebPreferences prefs = render_view_host->GetWebkitPreferences();
 
   prefs.text_autosizing_enabled =
-      Java_AwSettings_getTextAutosizingEnabled(env, obj);
+      Java_AwSettings_getTextAutosizingEnabledLocked(env, obj);
 
-  int text_size_percent = env->GetIntField(obj, field_ids_->text_size_percent);
+  int text_size_percent = Java_AwSettings_getTextSizePercentLocked(env, obj);
   if (prefs.text_autosizing_enabled) {
     prefs.font_scale_factor = text_size_percent / 100.0f;
     prefs.force_enable_zoom = text_size_percent >= 130;
@@ -229,126 +118,104 @@ void AwSettings::UpdateWebkitPreferences(JNIEnv* env, jobject obj) {
         text_size_percent / 100.0f));
   }
 
-  ScopedJavaLocalRef<jstring> str(
-      env, static_cast<jstring>(
-          env->GetObjectField(obj, field_ids_->standard_fond_family)));
   prefs.standard_font_family_map[webkit_glue::kCommonScript] =
-      ConvertJavaStringToUTF16(str);
+      ConvertJavaStringToUTF16(
+          Java_AwSettings_getStandardFontFamilyLocked(env, obj));
 
-  str.Reset(
-      env, static_cast<jstring>(
-          env->GetObjectField(obj, field_ids_->fixed_font_family)));
   prefs.fixed_font_family_map[webkit_glue::kCommonScript] =
-      ConvertJavaStringToUTF16(str);
+      ConvertJavaStringToUTF16(
+          Java_AwSettings_getFixedFontFamilyLocked(env, obj));
 
-  str.Reset(
-      env, static_cast<jstring>(
-          env->GetObjectField(obj, field_ids_->sans_serif_font_family)));
   prefs.sans_serif_font_family_map[webkit_glue::kCommonScript] =
-      ConvertJavaStringToUTF16(str);
+      ConvertJavaStringToUTF16(
+          Java_AwSettings_getSansSerifFontFamilyLocked(env, obj));
 
-  str.Reset(
-      env, static_cast<jstring>(
-          env->GetObjectField(obj, field_ids_->serif_font_family)));
   prefs.serif_font_family_map[webkit_glue::kCommonScript] =
-      ConvertJavaStringToUTF16(str);
+      ConvertJavaStringToUTF16(
+          Java_AwSettings_getSerifFontFamilyLocked(env, obj));
 
-  str.Reset(
-      env, static_cast<jstring>(
-          env->GetObjectField(obj, field_ids_->cursive_font_family)));
   prefs.cursive_font_family_map[webkit_glue::kCommonScript] =
-      ConvertJavaStringToUTF16(str);
+      ConvertJavaStringToUTF16(
+          Java_AwSettings_getCursiveFontFamilyLocked(env, obj));
 
-  str.Reset(
-      env, static_cast<jstring>(
-          env->GetObjectField(obj, field_ids_->fantasy_font_family)));
   prefs.fantasy_font_family_map[webkit_glue::kCommonScript] =
-      ConvertJavaStringToUTF16(str);
+      ConvertJavaStringToUTF16(
+          Java_AwSettings_getFantasyFontFamilyLocked(env, obj));
 
-  str.Reset(
-      env, static_cast<jstring>(
-          env->GetObjectField(obj, field_ids_->default_text_encoding)));
-  prefs.default_encoding = ConvertJavaStringToUTF8(str);
+  prefs.default_encoding = ConvertJavaStringToUTF8(
+      Java_AwSettings_getDefaultTextEncodingLocked(env, obj));
 
-  prefs.minimum_font_size =
-      env->GetIntField(obj, field_ids_->minimum_font_size);
+  prefs.minimum_font_size = Java_AwSettings_getMinimumFontSizeLocked(env, obj);
 
   prefs.minimum_logical_font_size =
-      env->GetIntField(obj, field_ids_->minimum_logical_font_size);
+      Java_AwSettings_getMinimumLogicalFontSizeLocked(env, obj);
 
-  prefs.default_font_size =
-      env->GetIntField(obj, field_ids_->default_font_size);
+  prefs.default_font_size = Java_AwSettings_getDefaultFontSizeLocked(env, obj);
 
   prefs.default_fixed_font_size =
-      env->GetIntField(obj, field_ids_->default_fixed_font_size);
+      Java_AwSettings_getDefaultFixedFontSizeLocked(env, obj);
 
   prefs.loads_images_automatically =
-      env->GetBooleanField(obj, field_ids_->load_images_automatically);
+      Java_AwSettings_getLoadsImagesAutomaticallyLocked(env, obj);
 
-  prefs.images_enabled =
-      env->GetBooleanField(obj, field_ids_->images_enabled);
+  prefs.images_enabled = Java_AwSettings_getImagesEnabledLocked(env, obj);
 
   prefs.javascript_enabled =
-      env->GetBooleanField(obj, field_ids_->java_script_enabled);
+      Java_AwSettings_getJavaScriptEnabledLocked(env, obj);
 
-  prefs.allow_universal_access_from_file_urls = env->GetBooleanField(
-      obj, field_ids_->allow_universal_access_from_file_urls);
+  prefs.allow_universal_access_from_file_urls =
+      Java_AwSettings_getAllowUniversalAccessFromFileURLsLocked(env, obj);
 
-  prefs.allow_file_access_from_file_urls = env->GetBooleanField(
-      obj, field_ids_->allow_file_access_from_file_urls);
+  prefs.allow_file_access_from_file_urls =
+      Java_AwSettings_getAllowFileAccessFromFileURLsLocked(env, obj);
 
-  prefs.javascript_can_open_windows_automatically = env->GetBooleanField(
-      obj, field_ids_->java_script_can_open_windows_automatically);
+  prefs.javascript_can_open_windows_automatically =
+      Java_AwSettings_getJavaScriptCanOpenWindowsAutomaticallyLocked(env, obj);
 
-  prefs.supports_multiple_windows = env->GetBooleanField(
-      obj, field_ids_->support_multiple_windows);
+  prefs.supports_multiple_windows =
+      Java_AwSettings_getSupportMultipleWindowsLocked(env, obj);
 
-  prefs.plugins_enabled = !Java_AwSettings_getPluginsDisabled(env, obj);
+  prefs.plugins_enabled = !Java_AwSettings_getPluginsDisabledLocked(env, obj);
 
   prefs.application_cache_enabled =
-      Java_AwSettings_getAppCacheEnabled(env, obj);
+      Java_AwSettings_getAppCacheEnabledLocked(env, obj);
 
-  prefs.local_storage_enabled = env->GetBooleanField(
-      obj, field_ids_->dom_storage_enabled);
+  prefs.local_storage_enabled =
+      Java_AwSettings_getDomStorageEnabledLocked(env, obj);
 
-  prefs.databases_enabled = env->GetBooleanField(
-      obj, field_ids_->database_enabled);
+  prefs.databases_enabled = Java_AwSettings_getDatabaseEnabledLocked(env, obj);
 
   prefs.double_tap_to_zoom_enabled = prefs.use_wide_viewport =
-      env->GetBooleanField(obj, field_ids_->use_wide_viewport);
+      Java_AwSettings_getUseWideViewportLocked(env, obj);
 
-  prefs.initialize_at_minimum_page_scale = env->GetBooleanField(
-      obj, field_ids_->load_with_overview_mode);
+  prefs.initialize_at_minimum_page_scale =
+      Java_AwSettings_getLoadWithOverviewModeLocked(env, obj);
 
-  prefs.user_gesture_required_for_media_playback = env->GetBooleanField(
-      obj, field_ids_->media_playback_requires_user_gesture);
+  prefs.user_gesture_required_for_media_playback =
+      Java_AwSettings_getMediaPlaybackRequiresUserGestureLocked(env, obj);
 
-  str.Reset(
-      env, static_cast<jstring>(
-          env->GetObjectField(obj, field_ids_->default_video_poster_url)));
-  prefs.default_video_poster_url = str.obj() ?
-      GURL(ConvertJavaStringToUTF8(str)) : GURL();
+  ScopedJavaLocalRef<jstring> url =
+      Java_AwSettings_getDefaultVideoPosterURLLocked(env, obj);
+  prefs.default_video_poster_url = url.obj() ?
+      GURL(ConvertJavaStringToUTF8(url)) : GURL();
 
-  prefs.support_deprecated_target_density_dpi = env->GetBooleanField(
-      obj, field_ids_->support_deprecated_target_density_dpi);
+  prefs.support_deprecated_target_density_dpi =
+      Java_AwSettings_getSupportDeprecatedTargetDensityDPILocked(env, obj);
 
   render_view_host->UpdateWebkitPreferences(prefs);
 }
 
-void AwSettings::UpdateInitialPageScale(JNIEnv* env, jobject obj) {
+void AwSettings::UpdateInitialPageScaleLocked(JNIEnv* env, jobject obj) {
   AwRenderViewHostExt* rvhe = GetAwRenderViewHostExt();
   if (!rvhe) return;
 
-  if (!field_ids_)
-    field_ids_.reset(new FieldIds(env));
-
   float initial_page_scale_percent =
-      env->GetFloatField(obj, field_ids_->initial_page_scale_percent);
+      Java_AwSettings_getInitialPageScalePercentLocked(env, obj);
   if (initial_page_scale_percent == 0) {
     rvhe->SetInitialPageScale(-1);
   } else {
     float dip_scale = static_cast<float>(
-        env->GetDoubleField(obj, field_ids_->dip_scale));
+        Java_AwSettings_getDIPScaleLocked(env, obj));
     rvhe->SetInitialPageScale(initial_page_scale_percent / dip_scale / 100.0f);
   }
 }
@@ -374,11 +241,12 @@ void AwSettings::RenderViewCreated(content::RenderViewHost* render_view_host) {
   UpdateEverything();
 }
 
+// Assumed to be called from the Java object's constructor, thus is "Locked".
 static jint Init(JNIEnv* env,
                  jobject obj,
                  jint web_contents) {
   AwSettings* settings = new AwSettings(env, obj);
-  settings->SetWebContents(env, obj, web_contents);
+  settings->SetWebContentsLocked(env, obj, web_contents);
   return reinterpret_cast<jint>(settings);
 }
 
