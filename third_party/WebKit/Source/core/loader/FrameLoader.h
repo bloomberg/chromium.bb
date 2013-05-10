@@ -144,7 +144,6 @@ public:
     FrameState state() const { return m_state; }
 
     const ResourceRequest& originalRequest() const;
-    const ResourceRequest& initialRequest() const;
     void receivedMainResourceError(const ResourceError&);
 
     bool willLoadMediaElementURL(KURL&);
@@ -246,8 +245,6 @@ public:
 
     bool suppressOpenerInNewFrame() const { return m_suppressOpenerInNewFrame; }
 
-    static ObjectContentType defaultObjectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages);
-
     bool shouldClose();
     
     void started();
@@ -261,8 +258,6 @@ public:
     PageDismissalType pageDismissalEventBeingDispatched() const { return m_pageDismissalEventBeingDispatched; }
 
     NetworkingContext* networkingContext() const;
-
-    const KURL& previousURL() const { return m_previousURL; }
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
@@ -301,8 +296,6 @@ private:
     void setState(FrameState);
 
     void closeOldDataSources();
-
-    bool shouldReloadToHandleUnreachableURL(const KURL&);
 
     void dispatchDidCommitLoad();
 
@@ -391,7 +384,6 @@ private:
 
     RefPtr<FrameNetworkingContext> m_networkingContext;
 
-    KURL m_previousURL;
     RefPtr<HistoryItem> m_requestedHistoryItem;
 };
 

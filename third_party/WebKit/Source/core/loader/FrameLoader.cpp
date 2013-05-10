@@ -795,25 +795,6 @@ void FrameLoader::loadURLIntoChildFrame(const ResourceRequest& request, Frame* c
     childFrame->loader()->loadURL(request, "_self", FrameLoadTypeInitialInChildFrame, 0, 0);
 }
 
-ObjectContentType FrameLoader::defaultObjectContentType(const KURL& url, const String& mimeTypeIn, bool shouldPreferPlugInsForImages)
-{
-    String mimeType = mimeTypeIn;
-
-    if (mimeType.isEmpty())
-        mimeType = mimeTypeFromURL(url);
-
-    if (mimeType.isEmpty())
-        return ObjectContentFrame; // Go ahead and hope that we can display the content.
-
-    if (MIMETypeRegistry::isSupportedImageMIMEType(mimeType))
-        return WebCore::ObjectContentImage;
-
-    if (MIMETypeRegistry::isSupportedNonImageMIMEType(mimeType))
-        return WebCore::ObjectContentFrame;
-
-    return WebCore::ObjectContentNone;
-}
-
 String FrameLoader::outgoingReferrer() const
 {
     // See http://www.whatwg.org/specs/web-apps/current-work/#fetching-resources
@@ -1143,29 +1124,15 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
         type = FrameLoadTypeReload;
     else
         type = FrameLoadTypeStandard;
-    
-    // When we loading alternate content for an unreachable URL that we're
-    // visiting in the history list, we treat it as a reload so the history list 
-    // is appropriately maintained.
-    //
-    // FIXME: This seems like a dangerous overloading of the meaning of "FrameLoadTypeReload" ...
-    // shouldn't a more explicit type of reload be defined, that means roughly 
-    // "load without affecting history" ? 
-    if (shouldReloadToHandleUnreachableURL(unreachableURL)) {
-        // shouldReloadToHandleUnreachableURL() returns true only when the original load type is back-forward.
-        // In this case we should save the document state now. Otherwise the state can be lost because load type is
-        // changed and updateForBackForwardNavigation() will not be called when loading is committed.
-        history()->saveDocumentAndScrollState();
-
-        ASSERT(type == FrameLoadTypeStandard);
-        type = FrameLoadTypeReload;
-    }
-
     loadWithNavigationAction(r, NavigationAction(r, type, false), type, 0, request.substituteData());
 }
 
 void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, FrameLoadType type, PassRefPtr<FormState> formState, const SubstituteData& substituteData, const String& overrideEncoding)
 {
+    ASSERT(m_client->hasWebView());
+    if (m_pageDismissalEventBeingDispatched != NoDismissal)
+        return;
+
     RefPtr<DocumentLoader> loader = m_client->createDocumentLoader(request, substituteData);
     loader->setTriggeringAction(action);
 
@@ -1178,22 +1145,6 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
 
     if (type == FrameLoadTypeRedirectWithLockedBackForwardList)
         loader->setIsClientRedirect(true);
-
-    // Retain because dispatchBeforeLoadEvent may release the last reference to it.
-    RefPtr<Frame> protect(m_frame);
-
-    ASSERT(m_client->hasWebView());
-
-    // Unfortunately the view must be non-nil, this is ultimately due
-    // to parser requiring a FrameView.  We should fix this dependency.
-
-    ASSERT(m_frame->view());
-
-    if (m_pageDismissalEventBeingDispatched != NoDismissal)
-        return;
-
-    if (m_frame->document())
-        m_previousURL = m_frame->document()->url();
 
     m_loadType = type;
     bool isFormSubmission = formState;
@@ -1215,11 +1166,6 @@ void FrameLoader::reportLocalLoadFailed(Frame* frame, const String& url)
     frame->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Not allowed to load local resource: " + url);
 }
 
-const ResourceRequest& FrameLoader::initialRequest() const
-{
-    return activeDocumentLoader()->originalRequest();
-}
-
 bool FrameLoader::willLoadMediaElementURL(KURL& url)
 {
     ResourceRequest request(url);
@@ -1232,23 +1178,6 @@ bool FrameLoader::willLoadMediaElementURL(KURL& url)
     url = request.url();
 
     return error.isNull();
-}
-
-bool FrameLoader::shouldReloadToHandleUnreachableURL(const KURL& unreachableURL)
-{
-    if (unreachableURL.isEmpty())
-        return false;
-
-    if (!m_delegateIsHandlingProvisionalLoadError)
-        return false;
-
-    if (!isBackForwardLoadType(m_loadType))
-        return false;
-
-    // We only treat unreachableURLs specially during the delegate callbacks
-    // for provisional load errors. Loading alternate content
-    // at other times behaves like a standard load.
-    return unreachableURL == m_provisionalDocumentLoader->request().url();
 }
 
 void FrameLoader::reload(bool endToEndReload, const KURL& overrideURL, const String& overrideEncoding)
@@ -1431,13 +1360,13 @@ void FrameLoader::commitProvisionalLoad()
     if (m_loadType != FrameLoadTypeReplace)
         closeOldDataSources();
 
-    transitionToCommitted();
-
-    if (pdl && m_documentLoader) {
-        // Check if the destination page is allowed to access the previous page's timing information.
+    // Check if the destination page is allowed to access the previous page's timing information.
+    if (m_frame->document()) {
         RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(pdl->request().url());
-        m_documentLoader->timing()->setHasSameOriginAsPreviousDocument(securityOrigin->canRequest(m_previousURL));
+        pdl->timing()->setHasSameOriginAsPreviousDocument(securityOrigin->canRequest(m_frame->document()->url()));
     }
+
+    transitionToCommitted();
 
     // Call clientRedirectCancelledOrFinished() here so that the frame load delegate is notified that the redirect's
     // status has changed, if there was a redirect.
@@ -2582,7 +2511,6 @@ void FrameLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_openedFrames, "openedFrames");
     info.addMember(m_outgoingReferrer, "outgoingReferrer");
     info.addMember(m_networkingContext, "networkingContext");
-    info.addMember(m_previousURL, "previousURL");
     info.addMember(m_requestedHistoryItem, "requestedHistoryItem");
 }
 
