@@ -43,7 +43,7 @@ class Storage;
 
 class StorageAreaProxy : public StorageArea {
 public:
-    StorageAreaProxy(WebKit::WebStorageArea*, StorageType);
+    StorageAreaProxy(PassOwnPtr<WebKit::WebStorageArea>, StorageType);
     virtual ~StorageAreaProxy();
 
     // The HTML5 DOM Storage API

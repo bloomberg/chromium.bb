@@ -49,9 +49,8 @@
 
 namespace WebCore {
 
-// FIXME: storageArea argument should be a PassOwnPtr.
-StorageAreaProxy::StorageAreaProxy(WebKit::WebStorageArea* storageArea, StorageType storageType)
-    : m_storageArea(adoptPtr(storageArea))
+StorageAreaProxy::StorageAreaProxy(PassOwnPtr<WebKit::WebStorageArea> storageArea, StorageType storageType)
+    : m_storageArea(storageArea)
     , m_storageType(storageType)
     , m_canAccessStorageCachedResult(false)
     , m_canAccessStorageCachedFrame(0)
