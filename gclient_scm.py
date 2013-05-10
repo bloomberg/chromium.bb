@@ -318,7 +318,8 @@ class GitWrapper(SCMWrapper):
     current_url = self._Capture(['config', 'remote.origin.url'])
     # TODO(maruel): Delete url != 'git://foo' since it's just to make the
     # unit test pass. (and update the comment above)
-    if current_url != url and url != 'git://foo':
+    if (current_url != url and url != 'git://foo' and
+        self._Capture(['config', 'remote.origin.gclient']) != 'getoffmylawn'):
       print('_____ switching %s to a new upstream' % self.relpath)
       # Make sure it's clean
       self._CheckClean(rev_str)
