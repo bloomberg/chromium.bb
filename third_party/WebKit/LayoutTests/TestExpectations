@@ -1630,6 +1630,7 @@ crbug.com/238363 [ Debug ] svg/W3C-SVG-1.1/animate-elem-40-t.svg [ Crash ]
 crbug.com/238363 [ Debug ] svg/W3C-SVG-1.1/animate-elem-83-t.svg [ Crash ]
 crbug.com/238363 [ Debug ] media/track/track-cue-rendering-first-line-box.html [ Crash ]
 crbug.com/238363 [ Debug ] svg/animations/remove-animation-element-while-animation-is-running.html [ Crash ]
+crbug.com/238363 [ Debug ] fast/runin/progress-run-in-crash.html [ Crash ]
 
 # An exception is being thrown, causing tests to generate PNG output when they should not.
 crbug.com/239470 [ Mac ] fast/canvas/webgl [ Pass Missing ]
