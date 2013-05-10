@@ -106,11 +106,6 @@ void URLRequestJob::StopCaching() {
   // Nothing to do here.
 }
 
-bool URLRequestJob::GetFullRequestHeaders(HttpRequestHeaders* headers) const {
-  // Most job types don't send request headers.
-  return false;
-}
-
 LoadState URLRequestJob::GetLoadState() const {
   return LOAD_STATE_IDLE;
 }

@@ -174,25 +174,15 @@ TestDelegate::TestDelegate()
       have_certificate_errors_(false),
       certificate_errors_are_fatal_(false),
       auth_required_(false),
-      have_full_request_headers_(false),
       buf_(new IOBuffer(kBufferSize)) {
 }
 
 TestDelegate::~TestDelegate() {}
 
-void TestDelegate::ClearFullRequestHeaders() {
-  full_request_headers_.Clear();
-  have_full_request_headers_ = false;
-}
-
 void TestDelegate::OnReceivedRedirect(URLRequest* request,
                                       const GURL& new_url,
                                       bool* defer_redirect) {
   EXPECT_TRUE(request->is_redirecting());
-
-  have_full_request_headers_ =
-      request->GetFullRequestHeaders(&full_request_headers_);
-
   received_redirect_count_++;
   if (quit_on_redirect_) {
     *defer_redirect = true;
@@ -230,9 +220,6 @@ void TestDelegate::OnResponseStarted(URLRequest* request) {
   // It doesn't make sense for the request to have IO pending at this point.
   DCHECK(!request->status().is_io_pending());
   EXPECT_FALSE(request->is_redirecting());
-
-  have_full_request_headers_ =
-      request->GetFullRequestHeaders(&full_request_headers_);
 
   response_started_count_++;
   if (cancel_in_rs_) {

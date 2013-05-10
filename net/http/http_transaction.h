@@ -15,7 +15,6 @@ namespace net {
 
 class AuthCredentials;
 class BoundNetLog;
-class HttpRequestHeaders;
 struct HttpRequestInfo;
 class HttpResponseInfo;
 class IOBuffer;
@@ -96,14 +95,6 @@ class NET_EXPORT_PRIVATE HttpTransaction {
 
   // Stops further caching of this request by the HTTP cache, if there is any.
   virtual void StopCaching() = 0;
-
-  // Gets the full request headers sent to the server.  This is guaranteed to
-  // work only if Start returns success and the underlying transaction supports
-  // it.  (Right now, this is only network transactions, not cache ones.)
-  //
-  // Returns true and overwrites headers if it can get the request headers;
-  // otherwise, returns false and does not modify headers.
-  virtual bool GetFullRequestHeaders(HttpRequestHeaders* headers) const = 0;
 
   // Called to tell the transaction that we have successfully reached the end
   // of the stream. This is equivalent to performing an extra Read() at the end

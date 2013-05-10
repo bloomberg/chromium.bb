@@ -32,7 +32,6 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_request_headers.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/url_request.h"
@@ -150,11 +149,6 @@ class TestDelegate : public URLRequest::Delegate {
     return certificate_errors_are_fatal_;
   }
   bool auth_required_called() const { return auth_required_; }
-  bool have_full_request_headers() const { return have_full_request_headers_; }
-  const HttpRequestHeaders& full_request_headers() const {
-    return full_request_headers_;
-  }
-  void ClearFullRequestHeaders();
 
   // URLRequest::Delegate:
   virtual void OnReceivedRedirect(URLRequest* request, const GURL& new_url,
@@ -196,8 +190,6 @@ class TestDelegate : public URLRequest::Delegate {
   bool certificate_errors_are_fatal_;
   bool auth_required_;
   std::string data_received_;
-  bool have_full_request_headers_;
-  HttpRequestHeaders full_request_headers_;
 
   // our read buffer
   scoped_refptr<IOBuffer> buf_;

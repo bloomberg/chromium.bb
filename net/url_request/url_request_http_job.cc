@@ -1249,14 +1249,6 @@ void URLRequestHttpJob::StopCaching() {
     transaction_->StopCaching();
 }
 
-bool URLRequestHttpJob::GetFullRequestHeaders(
-    HttpRequestHeaders* headers) const {
-  if (!transaction_)
-    return false;
-
-  return transaction_->GetFullRequestHeaders(headers);
-}
-
 void URLRequestHttpJob::DoneReading() {
   if (transaction_.get())
     transaction_->DoneReading();

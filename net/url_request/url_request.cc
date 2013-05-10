@@ -376,13 +376,6 @@ void URLRequest::SetExtraRequestHeaders(
   // for request headers are implemented.
 }
 
-bool URLRequest::GetFullRequestHeaders(HttpRequestHeaders* headers) const {
-  if (!job_)
-    return false;
-
-  return job_->GetFullRequestHeaders(headers);
-}
-
 LoadStateWithParam URLRequest::GetLoadState() const {
   if (blocked_on_delegate_) {
     return LoadStateWithParam(LOAD_STATE_WAITING_FOR_DELEGATE,
