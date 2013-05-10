@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/ui/app_launch_view.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_library.h"
@@ -154,6 +155,10 @@ void KioskAppLauncher::Start() {
   }
 
   running_instance_ = this;  // Reset in ReportLaunchResult.
+
+  // Show app launch splash. The spash is removed either after a successful
+  // launch or chrome exit because of launch failure.
+  chromeos::ShowAppLaunchSplashScreen(app_id_);
 
   // Check cryptohomed. If all goes good, flow goes to StartMount. Otherwise
   // it goes to ReportLaunchResult with failure.

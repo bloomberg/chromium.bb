@@ -35,7 +35,7 @@ body {
 
 #header {
   -webkit-padding-start: 108px;
-  background: url('chrome://theme/IDR_PRODUCT_LOGO_128') left center no-repeat;
+  background: left center no-repeat;
   background-size: 96px;
   color: #666;
   display: -webkit-box;

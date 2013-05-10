@@ -10,11 +10,8 @@
  * Initializes the click handler.
  */
 initialize = function() {
-  var query = window.location.search;
-
-  var appId = '';
-  if (query.substr(1, 4) == 'app=')
-    appId = query.substr(5);
+  var params = parseQueryParams(window.location);
+  var appId = params['app'] || '';
 
   chrome.send('initialize', [appId]);
 

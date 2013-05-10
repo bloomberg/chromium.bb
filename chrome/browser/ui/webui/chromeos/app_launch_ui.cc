@@ -13,10 +13,12 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
+#include "grit/chrome_unscaled_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/web_ui_util.h"
 
 namespace chromeos {
@@ -74,8 +76,13 @@ class AppLaunchUI::AppLaunchUIHandler : public content::WebUIMessageHandler {
     KioskAppManager::App app;
     KioskAppManager::Get()->GetApp(app_id, &app);
 
-    if (app.name.empty() || app.icon.isNull())
-      return;
+    if (app.name.empty())
+      app.name = l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME);
+
+    if (app.icon.isNull()) {
+      app.icon = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_PRODUCT_LOGO_128);
+    }
 
     base::DictionaryValue app_info;
     app_info.SetString("name", app.name);
@@ -109,10 +116,6 @@ AppLaunchUI::AppLaunchUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       handler_(NULL) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  // Set up the chrome://theme/ source, for Chrome logo.
-  ThemeSource* theme = new ThemeSource(profile);
-  content::URLDataSource::Add(profile, theme);
-  // Add data source.
   content::WebUIDataSource::Add(profile, CreateWebUIDataSource());
 
   handler_ = new AppLaunchUIHandler;

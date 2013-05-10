@@ -50,6 +50,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "policy/policy_constants.h"
+#include "ui/views/corewm/corewm_switches.h"
 
 using content::BrowserThread;
 
@@ -1095,6 +1096,10 @@ void UserManagerImpl::KioskAppLoggedIn(const std::string& username) {
   command_line->AppendSwitch(::switches::kForceAppMode);
   command_line->AppendSwitchASCII(::switches::kAppId,
                                   active_user_->GetAccountName(false));
+  // Disable window animation since kiosk app runs in a single full screen
+  // window and window animation causes start-up janks.
+  command_line->AppendSwitch(
+      views::corewm::switches::kWindowAnimationsDisabled);
 }
 
 void UserManagerImpl::RetailModeUserLoggedIn() {
