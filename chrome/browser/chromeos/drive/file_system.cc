@@ -1316,7 +1316,8 @@ void FileSystem::SearchMetadata(const std::string& query,
   if (hide_hosted_docs_)
     options |= SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS;
 
-  drive::SearchMetadata(resource_metadata_,
+  drive::SearchMetadata(blocking_task_runner_,
+                        resource_metadata_,
                         query,
                         options,
                         at_most_num_matches,

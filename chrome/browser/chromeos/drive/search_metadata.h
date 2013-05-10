@@ -21,12 +21,15 @@ class ResourceMetadata;
 // done in a case-insensitive fashion. The eligible entries are selected based
 // on the given |options|, which is a bit-wise OR of SearchMetadataOptions.
 // |callback| must not be null. Must be called on UI thread. Empty |query|
-// matches any base name. i.e. returns everything.
-void SearchMetadata(internal::ResourceMetadata* resource_metadata,
-                    const std::string& query,
-                    int search_options,
-                    int at_most_num_matches,
-                    const SearchMetadataCallback& callback);
+// matches any base name. i.e. returns everything. |blocking_task_runner| must
+// be the same one as |resource_metadata| uses.
+void SearchMetadata(
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+    internal::ResourceMetadata* resource_metadata,
+    const std::string& query,
+    int search_options,
+    int at_most_num_matches,
+    const SearchMetadataCallback& callback);
 
 // Finds |query| in |text| while ignoring case. Returns true if |query| is
 // found. Returns false if |query| is not found, or empty. |highlighted_text|

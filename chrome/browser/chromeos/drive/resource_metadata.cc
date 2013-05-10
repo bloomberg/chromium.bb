@@ -434,19 +434,25 @@ void ResourceMetadata::GetChildDirectoriesOnUIThread(
                  changed_dirs_callback));
 }
 
-void ResourceMetadata::IterateEntriesOnUIThread(
-    const IterateCallback& iterate_callback,
-    const base::Closure& completion_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!iterate_callback.is_null());
-  DCHECK(!completion_callback.is_null());
+void ResourceMetadata::IterateEntries(const IterateCallback& callback) {
+  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!callback.is_null());
 
-  blocking_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::IterateEntries,
-                 base::Unretained(this),
-                 iterate_callback),
-      completion_callback);
+  storage_->Iterate(callback);
+}
+
+base::FilePath ResourceMetadata::GetFilePath(
+    const std::string& resource_id) {
+  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+
+  base::FilePath path;
+  scoped_ptr<ResourceEntry> entry = storage_->GetEntry(resource_id);
+  if (entry) {
+    if (!entry->parent_resource_id().empty())
+      path = GetFilePath(entry->parent_resource_id());
+    path = path.Append(base::FilePath::FromUTF8Unsafe(entry->base_name()));
+  }
+  return path;
 }
 
 int64 ResourceMetadata::GetLargestChangestamp() {
@@ -780,19 +786,6 @@ scoped_ptr<ResourceEntry> ResourceMetadata::GetDirectory(
       entry.Pass() : scoped_ptr<ResourceEntry>();
 }
 
-base::FilePath ResourceMetadata::GetFilePath(
-    const std::string& resource_id) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  scoped_ptr<ResourceEntry> entry = storage_->GetEntry(resource_id);
-  DCHECK(entry);
-  base::FilePath path;
-  if (!entry->parent_resource_id().empty())
-    path = GetFilePath(entry->parent_resource_id());
-  path = path.Append(base::FilePath::FromUTF8Unsafe(entry->base_name()));
-  return path;
-}
-
 scoped_ptr<std::set<base::FilePath> > ResourceMetadata::GetChildDirectories(
     const std::string& resource_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
@@ -821,13 +814,6 @@ void ResourceMetadata::GetDescendantDirectoryPaths(
       GetDescendantDirectoryPaths(entry->resource_id(), child_directories);
     }
   }
-}
-
-void ResourceMetadata::IterateEntries(const IterateCallback& callback) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!callback.is_null());
-
-  storage_->Iterate(callback);
 }
 
 void ResourceMetadata::GetEntryInfoPairByPathsOnUIThreadAfterGetFirst(

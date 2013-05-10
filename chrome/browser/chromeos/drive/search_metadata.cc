@@ -98,130 +98,93 @@ bool IsEligibleEntry(const ResourceEntry& entry, int options) {
   return true;
 }
 
+// Used to implement SearchMetadata.
+// Adds entry to the result when appropriate.
+void MaybeAddEntryToResult(
+    internal::ResourceMetadata* resource_metadata,
+    const std::string& query,
+    int options,
+    size_t at_most_num_matches,
+    ScopedPriorityQueue<MetadataSearchResult,
+                        MetadataSearchResultComparator>* result_candidates,
+    const ResourceEntry& entry) {
+  DCHECK_GE(at_most_num_matches, result_candidates->size());
+
+  // Add |entry| to the result if the entry is eligible for the given
+  // |options| and matches the query. The base name of the entry must
+  // contains |query| to match the query.
+  std::string highlighted;
+  if (!IsEligibleEntry(entry, options) ||
+      !FindAndHighlight(entry.base_name(), query, &highlighted))
+    return;
+
+  base::FilePath path = resource_metadata->GetFilePath(entry.resource_id());
+  if (path.empty())
+    return;
+
+  // Make space for |entry| when appropriate.
+  if (result_candidates->size() == at_most_num_matches &&
+      CompareByTimestamp(entry, result_candidates->top()->entry))
+    result_candidates->pop();
+
+  // Add |entry| to the result when appropriate.
+  if (result_candidates->size() < at_most_num_matches)
+    result_candidates->push(new MetadataSearchResult(path, entry, highlighted));
+}
+
+// Implements SearchMetadata().
+scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
+    internal::ResourceMetadata* resource_metadata,
+    const std::string& query,
+    int options,
+    int at_most_num_matches) {
+  ScopedPriorityQueue<MetadataSearchResult,
+                      MetadataSearchResultComparator> result_candidates;
+  // Iterate over entries.
+  resource_metadata->IterateEntries(base::Bind(&MaybeAddEntryToResult,
+                                               resource_metadata,
+                                               query,
+                                               options,
+                                               at_most_num_matches,
+                                               &result_candidates));
+
+  // Prepare the result.
+  scoped_ptr<MetadataSearchResultVector> results(
+      new MetadataSearchResultVector);
+  for (; !result_candidates.empty(); result_candidates.pop())
+    results->push_back(*result_candidates.top());
+
+  // Reverse the order here because |result_candidates| puts the most
+  // uninterested candidate at the top.
+  std::reverse(results->begin(), results->end());
+
+  return results.Pass();
+}
+
 }  // namespace
 
-// Helper class for searching the local resource metadata.
-class SearchMetadataHelper {
- public:
-  SearchMetadataHelper(internal::ResourceMetadata* resource_metadata,
-                       const std::string& query,
-                       int options,
-                       int at_most_num_matches,
-                       const SearchMetadataCallback& callback)
-    : resource_metadata_(resource_metadata),
-      query_(query),
-      options_(options),
-      at_most_num_matches_(at_most_num_matches),
-      callback_(callback),
-      results_(new MetadataSearchResultVector),
-      weak_ptr_factory_(this) {
-    DCHECK_LE(0, at_most_num_matches);
-  }
-
-  // Starts searching the local resource metadata.
-  void Start() {
-    resource_metadata_->IterateEntriesOnUIThread(
-        base::Bind(&SearchMetadataHelper::MaybeAddEntryToResult,
-                   base::Unretained(this)),
-        base::Bind(&SearchMetadataHelper::PrepareResults,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-
- private:
-  // Adds entry to the result when appropriate.
-  void MaybeAddEntryToResult(const ResourceEntry& entry) {
-    DCHECK_GE(at_most_num_matches_,
-              static_cast<int>(result_candidates_.size()));
-
-    // Add |entry| to the result if the entry is eligible for the given
-    // |options| and matches the query. The base name of the entry must
-    // contains |query| to match the query.
-    std::string highlighted;
-    if (!IsEligibleEntry(entry, options_) ||
-        !FindAndHighlight(entry.base_name(), query_, &highlighted))
-      return;
-
-    // Make space for |entry| when appropriate.
-    if (static_cast<int>(result_candidates_.size()) == at_most_num_matches_ &&
-        CompareByTimestamp(entry, result_candidates_.top()->entry))
-      result_candidates_.pop();
-
-    // Add |entry| to the result when appropriate.
-    if (static_cast<int>(result_candidates_.size()) < at_most_num_matches_) {
-      result_candidates_.push(new MetadataSearchResult(
-          base::FilePath(), entry, highlighted));
-    }
-  }
-
-  // Prepares results by popping candidates one by one.
-  void PrepareResults() {
-    if (result_candidates_.empty()) {
-      Finish(FILE_ERROR_OK);
-      return;
-    }
-    resource_metadata_->GetEntryInfoByResourceIdOnUIThread(
-        result_candidates_.top()->entry.resource_id(),
-        base::Bind(&SearchMetadataHelper::ContinuePrepareResults,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  // Implements PrepareResults().
-  void ContinuePrepareResults(FileError error,
-                              const base::FilePath& path,
-                              scoped_ptr<ResourceEntry> unused_entry) {
-    if (error != FILE_ERROR_OK) {
-      Finish(error);
-      return;
-    }
-    results_->push_back(*result_candidates_.top());
-    results_->back().path = path;
-    result_candidates_.pop();
-    PrepareResults();
-  }
-
-  // Sends the result to the callback and deletes this instance.
-  void Finish(FileError error) {
-    // Reverse the order here because |result_candidates_| puts the most
-    // uninterested candidate at the top.
-    std::reverse(results_->begin(), results_->end());
-
-    if (error != FILE_ERROR_OK)
-      results_.reset();
-    callback_.Run(error, results_.Pass());
-    delete this;
-  }
-
-  internal::ResourceMetadata* resource_metadata_;
-  const std::string query_;
-  const int options_;
-  const int at_most_num_matches_;
-  const SearchMetadataCallback callback_;
-  ScopedPriorityQueue<MetadataSearchResult,
-                      MetadataSearchResultComparator> result_candidates_;
-  scoped_ptr<MetadataSearchResultVector> results_;
-
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<SearchMetadataHelper> weak_ptr_factory_;
-};
-
-void SearchMetadata(internal::ResourceMetadata* resource_metadata,
-                    const std::string& query,
-                    int options,
-                    int at_most_num_matches,
-                    const SearchMetadataCallback& callback) {
+void SearchMetadata(
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+    internal::ResourceMetadata* resource_metadata,
+    const std::string& query,
+    int options,
+    int at_most_num_matches,
+    const SearchMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_LE(0, at_most_num_matches);
   DCHECK(!callback.is_null());
 
-  // |helper| will delete itself when the search is done.
-  SearchMetadataHelper* helper =
-      new SearchMetadataHelper(resource_metadata,
-                               query,
-                               options,
-                               at_most_num_matches,
-                               callback);
-  helper->Start();
+  // TODO(hashimoto): Report error code from ResourceMetadata::IterateEntries
+  // and stop binding FILE_ERROR_OK to |callback|.
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner,
+      FROM_HERE,
+      base::Bind(&SearchMetadataOnBlockingPool,
+                 resource_metadata,
+                 query,
+                 options,
+                 at_most_num_matches),
+      base::Bind(callback, FILE_ERROR_OK));
 }
 
 bool FindAndHighlight(const std::string& text,

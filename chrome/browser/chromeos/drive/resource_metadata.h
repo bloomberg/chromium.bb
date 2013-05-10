@@ -235,12 +235,11 @@ class ResourceMetadata {
       const std::string& resource_id,
       const GetChildDirectoriesCallback& changed_dirs_callback);
 
-  // Iterates over entries and runs |iterate_callback| for each entry with
-  // |blocking_task_runner_|. Runs |completion_callback| after iterating over
-  // all entries.
-  // Must be called on the UI thread.
-  void IterateEntriesOnUIThread(const IterateCallback& iterate_callback,
-                                const base::Closure& completion_callback);
+  // Iterates over entries and runs |callback| for each entry.
+  void IterateEntries(const IterateCallback& callback);
+
+  // Returns virtual file path of the entry.
+  base::FilePath GetFilePath(const std::string& resource_id);
 
  private:
   // Note: Use Destroy() to delete this object.
@@ -309,9 +308,6 @@ class ResourceMetadata {
   scoped_ptr<std::set<base::FilePath> > GetChildDirectories(
       const std::string& resource_id);
 
-  // Used to implement IterateEntriesOnUIThread().
-  void IterateEntries(const IterateCallback& callback);
-
   // Continues with GetEntryInfoPairByPathsOnUIThread after the first entry has
   // been asynchronously fetched. This fetches the second entry only if the
   // first was found.
@@ -339,9 +335,6 @@ class ResourceMetadata {
   // not be empty. Returns NULL if it finds no corresponding entry, or the
   // corresponding entry is not a directory.
   scoped_ptr<ResourceEntry> GetDirectory(const std::string& resource_id);
-
-  // Returns virtual file path of the entry.
-  base::FilePath GetFilePath(const std::string& resource_id);
 
   // Recursively extracts the paths set of all sub-directories.
   void GetDescendantDirectoryPaths(const std::string& resource_id,

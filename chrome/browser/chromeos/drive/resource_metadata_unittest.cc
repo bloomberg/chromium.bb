@@ -1190,15 +1190,14 @@ TEST_F(ResourceMetadataTest, Reset) {
 
 TEST_F(ResourceMetadataTest, IterateEntries) {
   int count = 0;
-  bool completed = false;
-  resource_metadata_->IterateEntriesOnUIThread(
-      base::Bind(&CountFile, &count),
-      base::Bind(google_apis::test_util::CreateCopyResultCallback(&completed),
-                 true));
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ResourceMetadata::IterateEntries,
+                 base::Unretained(resource_metadata_.get()),
+                 base::Bind(&CountFile, &count)));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(7, count);
-  EXPECT_TRUE(completed);
 }
 
 }  // namespace internal
