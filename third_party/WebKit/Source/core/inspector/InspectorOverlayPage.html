@@ -354,12 +354,10 @@ function drawViewSize()
     var frameWidth = frameViewFullSize.width || canvasWidth;
     var textWidth = context.measureText(text).width;
     context.fillStyle = gridBackgroundColor;
-    context.fillRect(frameWidth - textWidth - 12, 15, frameWidth, 25);
+    context.fillRect(frameWidth - textWidth - 12, 0, frameWidth, 25);
     context.fillStyle = darkGridColor;
-    context.fillText(text, frameWidth - textWidth - 6, 33);
+    context.fillText(text, frameWidth - textWidth - 6, 18);
     context.restore();
-
-    _drawGrid(false, false);
 }
 
 function reset(resetData)
