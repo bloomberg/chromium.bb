@@ -53,8 +53,8 @@ TEST(AnimationTranslationUtilTest, createOpacityAnimation)
 {
     const double duration = 1;
     WebCore::KeyframeValueList values(AnimatedPropertyOpacity);
-    values.insert(new FloatAnimationValue(0, 0));
-    values.insert(new FloatAnimationValue(duration, 1));
+    values.insert(adoptPtr(new FloatAnimationValue(0, 0)));
+    values.insert(adoptPtr(new FloatAnimationValue(duration, 1)));
 
     RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
@@ -69,11 +69,11 @@ TEST(AnimationTranslationUtilTest, createTransformAnimation)
 
     TransformOperations operations1;
     operations1.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TRANSLATE_X));
-    values.insert(new TransformAnimationValue(0, &operations1));
+    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
 
     TransformOperations operations2;
     operations2.operations().append(TranslateTransformOperation::create(Length(4, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TRANSLATE_X));
-    values.insert(new TransformAnimationValue(duration, &operations2));
+    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
 
     RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
@@ -88,11 +88,11 @@ TEST(AnimationTranslationUtilTest, createTransformAnimationWithBigRotation)
 
     TransformOperations operations1;
     operations1.operations().append(RotateTransformOperation::create(0, TransformOperation::ROTATE));
-    values.insert(new TransformAnimationValue(0, &operations1));
+    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
 
     TransformOperations operations2;
     operations2.operations().append(RotateTransformOperation::create(270, TransformOperation::ROTATE));
-    values.insert(new TransformAnimationValue(duration, &operations2));
+    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
 
     RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
@@ -106,11 +106,11 @@ TEST(AnimationTranslationUtilTest, createTransformAnimationWithBigRotationAndEmp
     WebCore::KeyframeValueList values(AnimatedPropertyWebkitTransform);
 
     TransformOperations operations1;
-    values.insert(new TransformAnimationValue(0, &operations1));
+    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
 
     TransformOperations operations2;
     operations2.operations().append(RotateTransformOperation::create(270, TransformOperation::ROTATE));
-    values.insert(new TransformAnimationValue(duration, &operations2));
+    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
 
     RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
@@ -125,11 +125,11 @@ TEST(AnimationTranslationUtilTest, createTransformAnimationWithRotationInvolving
 
     TransformOperations operations1;
     operations1.operations().append(RotateTransformOperation::create(-330, TransformOperation::ROTATE));
-    values.insert(new TransformAnimationValue(0, &operations1));
+    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
 
     TransformOperations operations2;
     operations2.operations().append(RotateTransformOperation::create(-320, TransformOperation::ROTATE));
-    values.insert(new TransformAnimationValue(duration, &operations2));
+    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
 
     RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
@@ -144,11 +144,11 @@ TEST(AnimationTranslationUtilTest, createTransformAnimationWithSmallRotationInvo
 
     TransformOperations operations1;
     operations1.operations().append(RotateTransformOperation::create(270, TransformOperation::ROTATE));
-    values.insert(new TransformAnimationValue(0, &operations1));
+    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
 
     TransformOperations operations2;
     operations2.operations().append(RotateTransformOperation::create(360, TransformOperation::ROTATE));
-    values.insert(new TransformAnimationValue(duration, &operations2));
+    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
 
     RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
@@ -164,13 +164,13 @@ TEST(AnimationTranslationUtilTest, createTransformAnimationWithNonDecomposableMa
     TransformationMatrix matrix1;
     TransformOperations operations1;
     operations1.operations().append(Matrix3DTransformOperation::create(matrix1));
-    values.insert(new TransformAnimationValue(0, &operations1));
+    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
 
     TransformationMatrix matrix2;
     matrix2.setM11(0);
     TransformOperations operations2;
     operations2.operations().append(Matrix3DTransformOperation::create(matrix2));
-    values.insert(new TransformAnimationValue(duration, &operations2));
+    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
 
     RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
@@ -185,11 +185,11 @@ TEST(AnimationTranslationUtilTest, createTransformAnimationWithNonInvertibleTran
 
     TransformOperations operations1;
     operations1.operations().append(ScaleTransformOperation::create(1, 1, 1, TransformOperation::SCALE_3D));
-    values.insert(new TransformAnimationValue(0, &operations1));
+    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
 
     TransformOperations operations2;
     operations2.operations().append(ScaleTransformOperation::create(1, 0, 1, TransformOperation::SCALE_3D));
-    values.insert(new TransformAnimationValue(duration, &operations2));
+    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
 
     RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
@@ -204,11 +204,11 @@ TEST(AnimationTranslationUtilTest, createReversedAnimation)
 
     TransformOperations operations1;
     operations1.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TRANSLATE_X));
-    values.insert(new TransformAnimationValue(0, &operations1));
+    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
 
     TransformOperations operations2;
     operations2.operations().append(TranslateTransformOperation::create(Length(4, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TRANSLATE_X));
-    values.insert(new TransformAnimationValue(duration, &operations2));
+    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
 
     RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
@@ -224,11 +224,11 @@ TEST(AnimationTranslationUtilTest, createAlternatingAnimation)
 
     TransformOperations operations1;
     operations1.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TRANSLATE_X));
-    values.insert(new TransformAnimationValue(0, &operations1));
+    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
 
     TransformOperations operations2;
     operations2.operations().append(TranslateTransformOperation::create(Length(4, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TRANSLATE_X));
-    values.insert(new TransformAnimationValue(duration, &operations2));
+    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
 
     RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
@@ -245,11 +245,11 @@ TEST(AnimationTranslationUtilTest, createReversedAlternatingAnimation)
 
     TransformOperations operations1;
     operations1.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TRANSLATE_X));
-    values.insert(new TransformAnimationValue(0, &operations1));
+    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
 
     TransformOperations operations2;
     operations2.operations().append(TranslateTransformOperation::create(Length(4, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TRANSLATE_X));
-    values.insert(new TransformAnimationValue(duration, &operations2));
+    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
 
     RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);

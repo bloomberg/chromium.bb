@@ -63,7 +63,6 @@ enum DebugIDSpecialValues {
 
 namespace WebCore {
 
-class FloatPoint3D;
 class FloatRect;
 class GraphicsContext;
 class GraphicsLayerFactory;
@@ -75,21 +74,21 @@ class TimingFunction;
 // Base class for animation values (also used for transitions). Here to
 // represent values for properties being animated via the GraphicsLayer,
 // without pulling in style-related data from outside of the platform directory.
+// FIXME: Should be moved to its own header file.
 class AnimationValue {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    AnimationValue(float keyTime, PassRefPtr<TimingFunction> timingFunction = 0)
+    explicit AnimationValue(float keyTime, PassRefPtr<TimingFunction> timingFunction = 0)
         : m_keyTime(keyTime)
+        , m_timingFunction(timingFunction)
     {
-        if (timingFunction)
-            m_timingFunction = timingFunction;
     }
     
     virtual ~AnimationValue() { }
 
     float keyTime() const { return m_keyTime; }
     const TimingFunction* timingFunction() const { return m_timingFunction.get(); }
-    virtual AnimationValue* clone() const = 0;
+    virtual PassOwnPtr<AnimationValue> clone() const = 0;
 
 private:
     float m_keyTime;
@@ -97,6 +96,7 @@ private:
 };
 
 // Used to store one float value of an animation.
+// FIXME: Should be moved to its own header file.
 class FloatAnimationValue : public AnimationValue {
 public:
     FloatAnimationValue(float keyTime, float value, PassRefPtr<TimingFunction> timingFunction = 0)
@@ -104,7 +104,7 @@ public:
         , m_value(value)
     {
     }
-    virtual AnimationValue* clone() const { return new FloatAnimationValue(*this); }
+    virtual PassOwnPtr<AnimationValue> clone() const OVERRIDE { return adoptPtr(new FloatAnimationValue(*this)); }
 
     float value() const { return m_value; }
 
@@ -113,15 +113,16 @@ private:
 };
 
 // Used to store one transform value in a keyframe list.
+// FIXME: Should be moved to its own header file.
 class TransformAnimationValue : public AnimationValue {
 public:
-    TransformAnimationValue(float keyTime, const TransformOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = 0)
+    explicit TransformAnimationValue(float keyTime, const TransformOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = 0)
         : AnimationValue(keyTime, timingFunction)
     {
         if (value)
             m_value = *value;
     }
-    virtual AnimationValue* clone() const { return new TransformAnimationValue(*this); }
+    virtual PassOwnPtr<AnimationValue> clone() const OVERRIDE { return adoptPtr(new TransformAnimationValue(*this)); }
 
     const TransformOperations* value() const { return &m_value; }
 
@@ -130,15 +131,16 @@ private:
 };
 
 // Used to store one filter value in a keyframe list.
+// FIXME: Should be moved to its own header file.
 class FilterAnimationValue : public AnimationValue {
 public:
-    FilterAnimationValue(float keyTime, const FilterOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = 0)
+    explicit FilterAnimationValue(float keyTime, const FilterOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = 0)
         : AnimationValue(keyTime, timingFunction)
     {
         if (value)
             m_value = *value;
     }
-    virtual AnimationValue* clone() const { return new FilterAnimationValue(*this); }
+    virtual PassOwnPtr<AnimationValue> clone() const OVERRIDE { return adoptPtr(new FilterAnimationValue(*this)); }
 
     const FilterOperations* value() const { return &m_value; }
 
@@ -146,12 +148,12 @@ private:
     FilterOperations m_value;
 };
 
-// Used to store a series of values in a keyframe list. Values will all be of the same type,
-// which can be inferred from the property.
+// Used to store a series of values in a keyframe list.
+// Values will all be of the same type, which can be inferred from the property.
+// FIXME: Should be moved to its own header file.
 class KeyframeValueList {
 public:
-
-    KeyframeValueList(AnimatedPropertyID property)
+    explicit KeyframeValueList(AnimatedPropertyID property)
         : m_property(property)
     {
     }
@@ -161,11 +163,6 @@ public:
     {
         for (size_t i = 0; i < other.m_values.size(); ++i)
             m_values.append(other.m_values[i]->clone());
-    }
-
-    ~KeyframeValueList()
-    {
-        deleteAllValues(m_values);
     }
 
     KeyframeValueList& operator=(const KeyframeValueList& other)
@@ -184,13 +181,13 @@ public:
     AnimatedPropertyID property() const { return m_property; }
 
     size_t size() const { return m_values.size(); }
-    const AnimationValue* at(size_t i) const { return m_values.at(i); }
+    const AnimationValue* at(size_t i) const { return m_values.at(i).get(); }
     
-    // Insert, sorted by keyTime. Takes ownership of the pointer.
-    void insert(const AnimationValue*);
+    // Insert, sorted by keyTime.
+    void insert(PassOwnPtr<const AnimationValue>);
     
 protected:
-    Vector<const AnimationValue*> m_values;
+    Vector<OwnPtr<const AnimationValue> > m_values;
     AnimatedPropertyID m_property;
 };
 
