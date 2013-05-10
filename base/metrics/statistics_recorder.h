@@ -49,11 +49,6 @@ class BASE_EXPORT StatisticsRecorder {
   static const BucketRanges* RegisterOrDeleteDuplicateRanges(
       const BucketRanges* ranges);
 
-  // Method for collecting stats about histograms created in browser and
-  // renderer processes. |suffix| is appended to histogram names. |suffix| could
-  // be either browser or renderer.
-  static void CollectHistogramStats(const std::string& suffix);
-
   // Methods for printing histograms.  Only histograms which have query as
   // a substring are written to output (an empty string will process all
   // registered histograms).

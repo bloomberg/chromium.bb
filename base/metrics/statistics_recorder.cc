@@ -23,13 +23,6 @@ base::LazyInstance<base::StatisticsRecorder>::Leaky g_statistics_recorder_ =
 
 namespace base {
 
-// Collect the number of histograms created.
-static uint32 number_of_histograms_ = 0;
-// Collect the number of vectors saved because of caching ranges.
-static uint32 number_of_vectors_saved_ = 0;
-// Collect the number of ranges_ elements saved because of caching ranges.
-static size_t saved_ranges_size_ = 0;
-
 // static
 void StatisticsRecorder::Initialize() {
   // Ensure that an instance of the StatisticsRecorder object is created.
@@ -70,7 +63,6 @@ HistogramBase* StatisticsRecorder::RegisterOrDeleteDuplicate(
       if (histograms_->end() == it) {
         (*histograms_)[name] = histogram;
         ANNOTATE_LEAKING_OBJECT_PTR(histogram);  // see crbug.com/79322
-        ++number_of_histograms_;
         histogram_to_return = histogram;
       } else if (histogram == it->second) {
         // The histogram was registered before.
@@ -123,8 +115,6 @@ const BucketRanges* StatisticsRecorder::RegisterOrDeleteDuplicateRanges(
       if (existing_ranges == ranges) {
         return ranges;
       } else {
-        ++number_of_vectors_saved_;
-        saved_ranges_size_ += ranges->size();
         ranges_deleter.reset(ranges);
         return existing_ranges;
       }
@@ -134,51 +124,6 @@ const BucketRanges* StatisticsRecorder::RegisterOrDeleteDuplicateRanges(
   // new BucketRanges.
   checksum_matching_list->push_front(ranges);
   return ranges;
-}
-
-// static
-void StatisticsRecorder::CollectHistogramStats(const std::string& suffix) {
-  static int uma_upload_attempt = 0;
-  ++uma_upload_attempt;
-  if (uma_upload_attempt == 1) {
-    UMA_HISTOGRAM_COUNTS_10000(
-        "Histogram.SharedRange.Count.FirstUpload." + suffix,
-        number_of_histograms_);
-    UMA_HISTOGRAM_COUNTS_10000(
-        "Histogram.SharedRange.RangesSaved.FirstUpload." + suffix,
-        number_of_vectors_saved_);
-    UMA_HISTOGRAM_COUNTS(
-        "Histogram.SharedRange.ElementsSaved.FirstUpload." + suffix,
-        static_cast<int>(saved_ranges_size_));
-    number_of_histograms_ = 0;
-    number_of_vectors_saved_ = 0;
-    saved_ranges_size_ = 0;
-    return;
-  }
-  if (uma_upload_attempt == 2) {
-    UMA_HISTOGRAM_COUNTS_10000(
-        "Histogram.SharedRange.Count.SecondUpload." + suffix,
-        number_of_histograms_);
-    UMA_HISTOGRAM_COUNTS_10000(
-        "Histogram.SharedRange.RangesSaved.SecondUpload." + suffix,
-        number_of_vectors_saved_);
-    UMA_HISTOGRAM_COUNTS(
-        "Histogram.SharedRange.ElementsSaved.SecondUpload." + suffix,
-        static_cast<int>(saved_ranges_size_));
-    number_of_histograms_ = 0;
-    number_of_vectors_saved_ = 0;
-    saved_ranges_size_ = 0;
-    return;
-  }
-  UMA_HISTOGRAM_COUNTS_10000(
-      "Histogram.SharedRange.Count.RestOfUploads." + suffix,
-      number_of_histograms_);
-  UMA_HISTOGRAM_COUNTS_10000(
-      "Histogram.SharedRange.RangesSaved.RestOfUploads." + suffix,
-      number_of_vectors_saved_);
-  UMA_HISTOGRAM_COUNTS(
-      "Histogram.SharedRange.ElementsSaved.RestOfUploads." + suffix,
-      static_cast<int>(saved_ranges_size_));
 }
 
 // static

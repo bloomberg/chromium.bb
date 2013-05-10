@@ -55,8 +55,6 @@ void ChildHistogramMessageFilter::OnGetChildHistogramData(int sequence_number) {
 void ChildHistogramMessageFilter::UploadAllHistograms(int sequence_number) {
   DCHECK_EQ(0u, pickled_histograms_.size());
 
-  base::StatisticsRecorder::CollectHistogramStats("ChildProcess");
-
   // Push snapshots into our pickled_histograms_ vector.
   // Note: Before serializing, we set the kIPCSerializationSourceFlag for all
   // the histograms, so that the receiving process can distinguish them from the

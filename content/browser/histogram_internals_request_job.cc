@@ -28,12 +28,6 @@ HistogramInternalsRequestJob::HistogramInternalsRequestJob(
 }
 
 void AboutHistogram(std::string* data, const std::string& path) {
-#ifndef NDEBUG
-  // We only rush the acquisition of Histogram meta-data (meta-histograms) in
-  // Debug mode, so that developers don't damage our data that we upload to UMA
-  // (in official builds).
-  base::StatisticsRecorder::CollectHistogramStats("Browser");
-#endif
   HistogramSynchronizer::FetchHistograms();
 
   std::string unescaped_query;
