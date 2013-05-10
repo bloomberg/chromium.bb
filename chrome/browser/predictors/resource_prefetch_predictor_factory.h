@@ -9,6 +9,8 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
+class Profile;
+
 namespace predictors {
 
 class ResourcePrefetchPredictor;

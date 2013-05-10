@@ -15,6 +15,8 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
+class Profile;
+
 namespace chromeos {
 
 // This class enforces automatic restart on app and Chrome updates in app mode.

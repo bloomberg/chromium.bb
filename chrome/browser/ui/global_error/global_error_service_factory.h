@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class GlobalErrorService;
+class Profile;
 
 // Singleton that owns all GlobalErrorService and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up

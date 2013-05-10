@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "content/public/browser/browser_context.h"
 
 void ProfileKeyedServiceFactory::SetTestingFactory(
     content::BrowserContext* profile, FactoryFunction factory) {
