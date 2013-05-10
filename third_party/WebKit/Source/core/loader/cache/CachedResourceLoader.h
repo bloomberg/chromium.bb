@@ -144,7 +144,6 @@ private:
     RevalidationPolicy determineRevalidationPolicy(CachedResource::Type, ResourceRequest&, bool forPreload, CachedResource* existingResource, CachedResourceRequest::DeferOption) const;
 
     void determineTargetType(ResourceRequest&, CachedResource::Type);
-    ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, CachedResource::Type);
     void addAdditionalRequestHeaders(ResourceRequest&, CachedResource::Type);
 
     void notifyLoadedFromMemoryCache(CachedResource*);
