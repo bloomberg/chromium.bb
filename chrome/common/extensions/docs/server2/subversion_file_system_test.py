@@ -10,6 +10,7 @@ import unittest
 
 from fake_url_fetcher import FakeUrlFetcher
 from file_system import StatInfo
+from future import Future
 from subversion_file_system import SubversionFileSystem
 
 class SubversionFileSystemTest(unittest.TestCase):
@@ -55,6 +56,41 @@ class SubversionFileSystemTest(unittest.TestCase):
     file_system = self._CreateSubversionFileSystem()
     stat_info = file_system.Stat('stat/extension_api.h')
     self.assertEquals(StatInfo('146163'), stat_info)
+
+  def testRevisions(self):
+    # This is a super hacky test. Record the path that was fetched then exit the
+    # test. Compare.
+    class ValueErrorFetcher(object):
+      def __init__(self):
+        self.last_fetched = None
+
+      def FetchAsync(self, path):
+        self.last_fetched = path
+        raise ValueError()
+
+      def Fetch(self, path):
+        self.last_fetched = path
+        raise ValueError()
+
+    file_fetcher = ValueErrorFetcher()
+    stat_fetcher = ValueErrorFetcher()
+    svn_path = 'svn:'
+
+    svn_file_system = SubversionFileSystem(file_fetcher,
+                                           stat_fetcher,
+                                           svn_path,
+                                           revision=42)
+
+    self.assertRaises(ValueError, svn_file_system.ReadSingle, 'dir/file')
+    self.assertEqual('dir/file?p=42', file_fetcher.last_fetched)
+    # Stat() will always stat directories.
+    self.assertRaises(ValueError, svn_file_system.Stat, 'dir/file')
+    self.assertEqual('dir/?pathrev=42', stat_fetcher.last_fetched)
+
+    self.assertRaises(ValueError, svn_file_system.ReadSingle, 'dir/')
+    self.assertEqual('dir/?p=42', file_fetcher.last_fetched)
+    self.assertRaises(ValueError, svn_file_system.Stat, 'dir/')
+    self.assertEqual('dir/?pathrev=42', stat_fetcher.last_fetched)
 
 if __name__ == '__main__':
   unittest.main()

@@ -52,8 +52,9 @@ class MockFileSystemTest(unittest.TestCase):
     self.assertTrue(*fs.CheckAndReset())
 
     fs.ReadSingle('404.html')
-    fs.Read(['notfound.html', 'apps/'])
+    future = fs.Read(['notfound.html', 'apps/'])
     self.assertTrue(*fs.CheckAndReset(read_count=2))
+    self.assertRaises(FileNotFoundError, future.Get)
 
     fs.Stat('404.html')
     fs.Stat('404.html')
@@ -67,6 +68,71 @@ class MockFileSystemTest(unittest.TestCase):
     fs.Stat('apps/')
     self.assertTrue(*fs.CheckAndReset(read_count=1, stat_count=2))
     self.assertTrue(*fs.CheckAndReset())
+
+  def testUpdates(self):
+    fs = MockFileSystem(TestFileSystem(deepcopy(_TEST_DATA)))
+
+    self.assertEqual(StatInfo('0', child_versions={
+      '404.html': '0',
+      'apps/': '0',
+      'extensions/': '0'
+    }), fs.Stat('/'))
+    self.assertEqual(StatInfo('0'), fs.Stat('404.html'))
+    self.assertEqual(StatInfo('0', child_versions={
+      'a11y.html': '0',
+      'about_apps.html': '0',
+      'fakedir/': '0',
+    }), fs.Stat('apps/'))
+    self.assertEqual('404.html contents', fs.ReadSingle('404.html'))
+
+    fs.Update({
+      '404.html': 'New version!'
+    })
+
+    self.assertEqual(StatInfo('1', child_versions={
+      '404.html': '1',
+      'apps/': '0',
+      'extensions/': '0'
+    }), fs.Stat('/'))
+    self.assertEqual(StatInfo('1'), fs.Stat('404.html'))
+    self.assertEqual(StatInfo('0', child_versions={
+      'a11y.html': '0',
+      'about_apps.html': '0',
+      'fakedir/': '0',
+    }), fs.Stat('apps/'))
+    self.assertEqual('New version!', fs.ReadSingle('404.html'))
+
+    fs.Update({
+      '404.html': 'Newer version!',
+      'apps': {
+        'fakedir': {
+          'file.html': 'yo'
+        }
+      }
+    })
+
+    self.assertEqual(StatInfo('2', child_versions={
+      '404.html': '2',
+      'apps/': '2',
+      'extensions/': '0'
+    }), fs.Stat('/'))
+    self.assertEqual(StatInfo('2'), fs.Stat('404.html'))
+    self.assertEqual(StatInfo('2', child_versions={
+      'a11y.html': '0',
+      'about_apps.html': '0',
+      'fakedir/': '2',
+    }), fs.Stat('apps/'))
+    self.assertEqual(StatInfo('0'), fs.Stat('apps/a11y.html'))
+    self.assertEqual(StatInfo('2', child_versions={
+      'file.html': '2'
+    }), fs.Stat('apps/fakedir/'))
+    self.assertEqual(StatInfo('2'), fs.Stat('apps/fakedir/file.html'))
+    self.assertEqual(StatInfo('0', child_versions={
+      'activeTab.html': '0',
+      'alarms.html': '0'
+    }), fs.Stat('extensions/'))
+    self.assertEqual('Newer version!', fs.ReadSingle('404.html'))
+    self.assertEqual('yo', fs.ReadSingle('apps/fakedir/file.html'))
 
 if __name__ == '__main__':
   unittest.main()

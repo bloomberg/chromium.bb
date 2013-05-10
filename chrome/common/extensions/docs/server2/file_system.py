@@ -16,7 +16,8 @@ class StatInfo(object):
     self.child_versions = child_versions
 
   def __eq__(self, other):
-    return (self.version == other.version and
+    return (isinstance(other, StatInfo) and
+            self.version == other.version and
             self.child_versions == other.child_versions)
 
   def __ne__(self, other):
@@ -41,7 +42,6 @@ def ToUnicode(data):
 class FileSystem(object):
   '''A FileSystem interface that can read files and directories.
   '''
-
   def Read(self, paths, binary=False):
     '''Reads each file in paths and returns a dictionary mapping the path to the
     contents. If a path in paths ends with a '/', it is assumed to be a

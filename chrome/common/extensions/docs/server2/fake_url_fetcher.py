@@ -38,9 +38,11 @@ class FakeUrlFetcher(object):
     return html
 
   def FetchAsync(self, url):
+    url = url.rsplit('?', 1)[0]
     return Future(value=self.Fetch(url))
 
   def Fetch(self, url):
+    url = url.rsplit('?', 1)[0]
     result = _Response()
     if url.endswith('/'):
       result.content = self._ListDir(url)

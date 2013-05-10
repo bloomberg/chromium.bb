@@ -12,35 +12,88 @@ for more details about the presubmit API built into gcl.
 # third_party directory.
 import os
 import sys
-SYS_PATH = sys.path[:]
-try:
-  SERVER2_PATH = os.path.join('chrome',
-                              'common',
-                              'extensions',
-                              'docs',
-                              'server2')
-  if os.sep + 'src' in os.getcwd():
-    # Is 'src' is in the path, we can find the server2/ directory from there.
-    sys.path.insert(0, os.path.join(os.getcwd().rsplit(os.sep + 'src', 1)[0],
-                                    'src',
-                                    SERVER2_PATH))
-  else:
-    # Otherwise, we have to guess we're in the server2/ directory.
-    sys.path.insert(0, '.')
-  import build_server
-  build_server.main()
-finally:
-  sys.path = SYS_PATH
 
 WHITELIST = [ r'.+_test.py$' ]
 # The integration tests are selectively run from the PRESUBMIT in
 # chrome/common/extensions.
 BLACKLIST = [ r'integration_test.py$' ]
 
+def _BuildServer(input_api):
+  try:
+    sys.path.insert(0, input_api.PresubmitLocalPath())
+    import build_server
+    build_server.main()
+  finally:
+    sys.path.pop(0)
+
+def _ImportAppYamlHelper(input_api):
+  try:
+    sys.path.insert(0, input_api.PresubmitLocalPath())
+    from app_yaml_helper import AppYamlHelper
+    return AppYamlHelper
+  finally:
+    sys.path.pop(0)
+
+def _WarnIfAppYamlHasntChanged(input_api, output_api):
+  app_yaml_path = os.path.join(input_api.PresubmitLocalPath(), 'app.yaml')
+  if app_yaml_path in input_api.AbsoluteLocalPaths():
+    return []
+  return [output_api.PresubmitPromptOrNotify('''
+**************************************************
+CHANGE DETECTED IN SERVER2 WITHOUT APP.YAML UPDATE
+**************************************************
+Maybe this is ok? Follow this simple guide:
+
+Q: Does this change any data that might get stored?
+  * Did you add/remove/update a field to a data source?
+  * Did you add/remove/update some data that gets sent to templates?
+  * Is this change to support a new feature in the templates?
+  * Does this change include changes to templates?
+Yes? Bump the middle version, i.e. 2-5-2 -> 2-6-2.
+     THIS WILL CAUSE THE CURRENTLY RUNNING SERVER TO STOP UPDATING.
+     PUSH THE NEW VERSION ASAP.
+No? Continue.
+
+Q: Is this a non-trivial change to the server?
+Yes? Bump the end version.
+     Unlike above, the server will *not* stop updating.
+No? Are you sure? How much do you bet? This can't be rolled back...
+
+Q: Is this a spelling correction? New test? Better comments?
+Yes? Ok fine. Ignore this warning.
+No? I guess this presubmit check doesn't work.
+''')]
+
+def _CheckYamlConsistency(input_api, output_api):
+  app_yaml_path = os.path.join(input_api.PresubmitLocalPath(), 'app.yaml')
+  cron_yaml_path = os.path.join(input_api.PresubmitLocalPath(), 'cron.yaml')
+  if not (app_yaml_path in input_api.AbsoluteLocalPaths() or
+          cron_yaml_path in input_api.AbsoluteLocalPaths()):
+    return []
+
+  AppYamlHelper = _ImportAppYamlHelper(input_api)
+  app_yaml_version = AppYamlHelper.ExtractVersion(
+      input_api.ReadFile(app_yaml_path))
+  cron_yaml_version = AppYamlHelper.ExtractVersion(
+      input_api.ReadFile(cron_yaml_path), key='target')
+
+  if app_yaml_version == cron_yaml_version:
+    return []
+  return [output_api.PresubmitError(
+      'Versions of app.yaml (%s) and cron.yaml (%s) must match' % (
+          app_yaml_version, cron_yaml_version))]
+
+def _RunPresubmit(input_api, output_api):
+  _BuildServer(input_api)
+  return (
+      _WarnIfAppYamlHasntChanged(input_api, output_api) +
+      _CheckYamlConsistency(input_api, output_api) +
+      input_api.canned_checks.RunUnitTestsInDirectory(
+          input_api, output_api, '.', whitelist=WHITELIST, blacklist=BLACKLIST)
+  )
+
 def CheckChangeOnUpload(input_api, output_api):
-  return input_api.canned_checks.RunUnitTestsInDirectory(
-      input_api, output_api, '.', whitelist=WHITELIST, blacklist=BLACKLIST)
+  return _RunPresubmit(input_api, output_api)
 
 def CheckChangeOnCommit(input_api, output_api):
-  return input_api.canned_checks.RunUnitTestsInDirectory(
-      input_api, output_api, '.', whitelist=WHITELIST, blacklist=BLACKLIST)
+  return _RunPresubmit(input_api, output_api)

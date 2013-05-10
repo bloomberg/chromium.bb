@@ -113,3 +113,6 @@ class CachingFileSystem(FileSystem):
         results,
         self,
         read_object_store))
+
+  def GetIdentity(self):
+    return self._file_system.GetIdentity()

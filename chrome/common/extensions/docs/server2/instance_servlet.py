@@ -5,6 +5,7 @@
 from appengine_wrappers import IsDevServer
 from branch_utility import BranchUtility
 from caching_file_system import CachingFileSystem
+from empty_dir_file_system import EmptyDirFileSystem
 from github_file_system import GithubFileSystem
 from third_party.json_schema_compiler.memoize import memoize
 from offline_file_system import OfflineFileSystem

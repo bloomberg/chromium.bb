@@ -19,6 +19,7 @@ class ObjectStoreCreator(object):
   '''
   def __init__(self,
                channel,
+               # TODO(kalman): rename start_dirty?
                start_empty=_unspecified,
                # Override for testing. A custom ObjectStore type to construct
                # on Create(). Useful with TestObjectStore, for example.

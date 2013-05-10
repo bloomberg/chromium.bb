@@ -14,11 +14,9 @@ from sidenav_data_source import SidenavDataSource
 
 class SamplesDataSourceTest(unittest.TestCase):
   def setUp(self):
-    self._base_path = os.path.join(sys.path[0],
-                                   'test_data',
-                                   'sidenav_data_source')
+    self._json_path = 'docs/server2/test_data/sidenav_data_source'
     self._compiled_fs_factory = CompiledFileSystem.Factory(
-        LocalFileSystem(self._base_path),
+        LocalFileSystem.Create(),
         ObjectStoreCreator.ForTest())
 
   def _CheckLevels(self, items, level=2):
@@ -29,14 +27,14 @@ class SamplesDataSourceTest(unittest.TestCase):
 
   def testLevels(self):
     sidenav_data_source = SidenavDataSource.Factory(self._compiled_fs_factory,
-                                                    self._base_path).Create('')
+                                                    self._json_path).Create('')
     sidenav_json = sidenav_data_source.get('test')
     self._CheckLevels(sidenav_json)
 
   def testSelected(self):
     sidenav_data_source = SidenavDataSource.Factory(
         self._compiled_fs_factory,
-        self._base_path).Create('www.b.com')
+        self._json_path).Create('www.b.com')
     sidenav_json = sidenav_data_source.get('test')
     # This will be prettier once JSON is loaded with an OrderedDict.
     for item in sidenav_json:

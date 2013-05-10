@@ -28,6 +28,7 @@ class TestFileSystem(FileSystem):
     return result
 
   def __init__(self, obj):
+    assert obj is not None
     self._obj = obj
     self._path_stats = {}
     self._global_stat = 0

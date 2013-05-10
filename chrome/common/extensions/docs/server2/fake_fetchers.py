@@ -44,6 +44,7 @@ class FakeSubversionServer(_FakeFetcher):
     self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
 
   def fetch(self, url):
+    url = url.rsplit('?', 1)[0]
     path = os.path.join(os.pardir, self._base_pattern.match(url).group(1))
     if self._IsDir(path):
       html = ['<html>Revision 000000']
@@ -70,6 +71,7 @@ class FakeViewvcServer(_FakeFetcher):
     self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
 
   def fetch(self, url):
+    url = url.rsplit('?', 1)[0]
     path = os.path.join(os.pardir, self._base_pattern.match(url).group(1))
     if self._IsDir(path):
       html = ['<table><tbody><tr>...</tr>']

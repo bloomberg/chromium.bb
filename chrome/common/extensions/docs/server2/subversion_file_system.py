@@ -16,9 +16,11 @@ import svn_constants
 import url_constants
 
 class _AsyncFetchFuture(object):
-  def __init__(self, paths, fetcher, binary):
+  def __init__(self, paths, fetcher, binary, args=None):
+    def apply_args(path):
+      return path if args is None else '%s?%s' % (path, args)
     # A list of tuples of the form (path, Future).
-    self._fetches = [(path, fetcher.FetchAsync(path))
+    self._fetches = [(path, fetcher.FetchAsync(apply_args(path)))
                      for path in paths]
     self._value = {}
     self._error = None
@@ -54,7 +56,7 @@ class SubversionFileSystem(FileSystem):
   '''Class to fetch resources from src.chromium.org.
   '''
   @staticmethod
-  def Create(branch):
+  def Create(branch, revision=None):
     if branch == 'trunk':
       svn_path = 'trunk/src/%s' % svn_constants.EXTENSIONS_PATH
     else:
@@ -63,17 +65,24 @@ class SubversionFileSystem(FileSystem):
     return SubversionFileSystem(
         AppEngineUrlFetcher('%s/%s' % (url_constants.SVN_URL, svn_path)),
         AppEngineUrlFetcher('%s/%s' % (url_constants.VIEWVC_URL, svn_path)),
-        svn_path)
+        svn_path,
+        revision=revision)
 
-  def __init__(self, file_fetcher, stat_fetcher, svn_path):
+  def __init__(self, file_fetcher, stat_fetcher, svn_path, revision=None):
     self._file_fetcher = file_fetcher
     self._stat_fetcher = stat_fetcher
     self._svn_path = svn_path
+    self._revision = revision
 
   def Read(self, paths, binary=False):
+    args = None
+    if self._revision is not None:
+      # |fetcher| gets from svn.chromium.org which uses p= for version.
+      args = 'p=%s' % self._revision
     return Future(delegate=_AsyncFetchFuture(paths,
                                              self._file_fetcher,
-                                             binary))
+                                             binary,
+                                             args=args))
 
   def _ParseHTML(self, html):
     '''Unfortunately, the viewvc page has a stray </div> tag, so this takes care
@@ -142,6 +151,9 @@ class SubversionFileSystem(FileSystem):
   def Stat(self, path):
     directory, filename = posixpath.split(path)
     directory += '/'
+    if self._revision is not None:
+      # |stat_fetch| uses viewvc which uses pathrev= for version.
+      directory += '?pathrev=%s' % self._revision
     result = self._stat_fetcher.Fetch(directory)
     if result.status_code == 404:
       raise FileNotFoundError(
@@ -154,4 +166,6 @@ class SubversionFileSystem(FileSystem):
     return StatInfo(stat_info.child_versions[filename])
 
   def GetIdentity(self):
+    # NOTE: no revision here, consider it just an implementation detail of the
+    # file version that is handled by Stat.
     return '@'.join((self.__class__.__name__, StringIdentity(self._svn_path)))
