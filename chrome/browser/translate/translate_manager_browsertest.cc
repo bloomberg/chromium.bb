@@ -235,6 +235,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
     TranslateManager::GetInstance()->ClearTranslateScript();
     TranslateManager::GetInstance()->
         set_translate_script_expiration_delay(60 * 60 * 1000);
+    TranslateManager::GetInstance()->set_translate_max_reload_attemps(0);
 
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
@@ -766,6 +767,12 @@ TEST_F(TranslateManagerBrowserTest, Reload) {
   // And not show it if the reload fails
   ReloadAndWait(false);
   EXPECT_EQ(NULL, GetTranslateInfoBar());
+
+  // Set reload attempts to a high value, we will not see the infobar
+  // immediatly.
+  TranslateManager::GetInstance()->set_translate_max_reload_attemps(100);
+  ReloadAndWait(true);
+  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 }
 
 // Test that reloading the page by way of typing again the URL in the

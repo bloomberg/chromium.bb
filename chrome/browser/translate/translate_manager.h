@@ -86,11 +86,17 @@ class TranslateManager : public content::NotificationObserver,
   // net::URLFetcherDelegate implementation:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  // Used by unit-tests to override the default delay after which the translate
-  // script is fetched again from the translation server.
+  // Used by unit-tests to override some defaults:
+  // Delay after which the translate script is fetched again from the
+  // translation server.
   void set_translate_script_expiration_delay(int delay_ms) {
     translate_script_expiration_delay_ =
         base::TimeDelta::FromMilliseconds(delay_ms);
+  }
+
+  // Number of attempts before waiting for a page to be fully reloaded.
+  void set_translate_max_reload_attemps(int attempts) {
+    max_reload_check_attempts_ = attempts;
   }
 
   // Returns true if the URL can be translated.
@@ -142,9 +148,8 @@ class TranslateManager : public content::NotificationObserver,
 
   // If the tab identified by |process_id| and |render_id| has been closed, this
   // does nothing, otherwise it calls InitiateTranslation.
-  void InitiateTranslationPosted(int process_id,
-                                 int render_id,
-                                 const std::string& page_lang);
+  void InitiateTranslationPosted(int process_id, int render_id,
+                                 const std::string& page_lang, int attempt);
 
   // Sends a translation request to the RenderView of |web_contents|.
   void DoTranslatePage(content::WebContents* web_contents,
@@ -201,6 +206,9 @@ class TranslateManager : public content::NotificationObserver,
   // Delay after which the translate script is fetched again
   // from the translate server.
   base::TimeDelta translate_script_expiration_delay_;
+
+  // Max number of attempts before checking if a page has been reloaded.
+  int max_reload_check_attempts_;
 
   // Set when the translate JS is currently being retrieved. NULL otherwise.
   scoped_ptr<net::URLFetcher> translate_script_request_pending_;

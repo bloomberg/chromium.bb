@@ -167,6 +167,14 @@ const char kSourceLanguageQueryName[] = "sl";
 // Used in kReportLanguageDetectionErrorURL to specify the page URL.
 const char kUrlQueryName[] = "u";
 
+// The delay in ms that we'll wait to check if a page has finished loading
+// before attempting a translation.
+const int kTranslateLoadCheckDelayMs = 150;
+
+// The maximum number of attempts we'll do to see if the page has finshed
+// loading before giving up the translation
+const int kMaxTranslateLoadCheckAttempts = 20;
+
 const int kMaxRetryLanguageListFetch = 5;
 const int kTranslateScriptExpirationDelayDays = 1;
 
@@ -343,6 +351,7 @@ void TranslateManager::Observe(int type,
           load_details->type != content::NAVIGATION_TYPE_SAME_PAGE) {
         return;
       }
+
       // When doing a page reload, TAB_LANGUAGE_DETERMINED is not sent,
       // so the translation needs to be explicitly initiated, but only when the
       // page is translatable.
@@ -358,7 +367,7 @@ void TranslateManager::Observe(int type,
               weak_method_factory_.GetWeakPtr(),
               controller->GetWebContents()->GetRenderProcessHost()->GetID(),
               controller->GetWebContents()->GetRenderViewHost()->GetRoutingID(),
-              translate_tab_helper->language_state().original_language()));
+              translate_tab_helper->language_state().original_language(), 0));
       break;
     }
     case chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED: {
@@ -439,6 +448,7 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
       std::string data;
       source->GetResponseAsString(&data);
       translate_script_ += argument + data;
+
       // We'll expire the cached script after some time, to make sure long
       // running browsers still get fixes that might get pushed with newer
       // scripts.
@@ -498,9 +508,10 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 TranslateManager::TranslateManager()
-    : weak_method_factory_(this),
-      translate_script_expiration_delay_(
-          base::TimeDelta::FromDays(kTranslateScriptExpirationDelayDays)) {
+  : weak_method_factory_(this),
+    translate_script_expiration_delay_(base::TimeDelta::FromDays(
+        kTranslateScriptExpirationDelayDays)),
+    max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts) {
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this,
@@ -583,7 +594,7 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
 }
 
 void TranslateManager::InitiateTranslationPosted(
-    int process_id, int render_id, const std::string& page_lang) {
+    int process_id, int render_id, const std::string& page_lang, int attempt) {
   // The tab might have been closed.
   WebContents* web_contents =
       tab_util::GetWebContentsByID(process_id, render_id);
@@ -594,6 +605,20 @@ void TranslateManager::InitiateTranslationPosted(
       TranslateTabHelper::FromWebContents(web_contents);
   if (translate_tab_helper->language_state().translation_pending())
     return;
+
+  // During a reload we need web content to be available before the
+  // translate script is executed. Otherwise we will run the translate script on
+  // an empty DOM which will fail. Therefore we wait a bit to see if the page
+  // has finished.
+  if ((web_contents->IsLoading()) && attempt < kMaxTranslateLoadCheckAttempts) {
+    int backoff = attempt * max_reload_check_attempts_;
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&TranslateManager::InitiateTranslationPosted,
+                              weak_method_factory_.GetWeakPtr(), process_id,
+                              render_id, page_lang, ++attempt),
+        base::TimeDelta::FromMilliseconds(backoff));
+    return;
+  }
 
   InitiateTranslation(web_contents, GetLanguageCode(page_lang));
 }
@@ -856,6 +881,7 @@ void TranslateManager::RequestTranslateScript() {
       translate_script_url,
       kCallbackQueryName,
       kCallbackQueryValue);
+
   translate_script_url = AddHostLocaleToUrl(translate_script_url);
   translate_script_url = AddApiKeyToUrl(translate_script_url);
 
