@@ -1244,6 +1244,7 @@
         'browser/chromeos/policy/power_policy_browsertest.cc',
         'browser/chromeos/policy/variations_service_policy_browsertest.cc',
         'browser/chromeos/power/peripheral_battery_observer_browsertest.cc',
+        'browser/chromeos/profiles/profile_helper_browsertest.cc',
         'browser/chromeos/screensaver/screensaver_controller_browsertest.cc',
         'browser/chromeos/system/tray_accessibility_browsertest.cc',
         'browser/chromeos/ui/idle_logout_dialog_view_browsertest.cc',

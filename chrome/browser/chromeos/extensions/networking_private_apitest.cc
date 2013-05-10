@@ -34,6 +34,7 @@ namespace chromeos {
 namespace {
 
 const char kUser1ProfilePath[] = "/profile/user1/shill";
+const char kUserIdStubHashSuffix[] = "-hash";
 
 void AssignString(std::string* out,
                   DBusMethodCallStatus call_status,
@@ -58,7 +59,7 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
     std::string login_user =
         command_line->GetSwitchValueNative(switches::kLoginUser);
     // Do the same as CryptohomeClientStubImpl::GetSanitizedUsername
-    std::string sanitized_user = login_user + "-profile";
+    std::string sanitized_user = login_user + kUserIdStubHashSuffix;
     command_line->AppendSwitchASCII(switches::kLoginProfile, sanitized_user);
   }
 

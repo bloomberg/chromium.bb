@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 
@@ -20,6 +21,11 @@ namespace chromeos {
 class ProfileHelper : public BrowsingDataRemover::Observer,
                       public UserManager::UserSessionStateObserver {
  public:
+  // Chrome OS profile directories have custom prefix.
+  // Profile path format: [user_data_dir]/u-[$hash]
+  // Ex.: /home/chronos/u-0123456789
+  static const char kProfileDirPrefix[];
+
   ProfileHelper();
   virtual ~ProfileHelper();
 
@@ -29,6 +35,10 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // Returns OffTheRecord profile for use during signing phase.
   static Profile* GetSigninProfile();
 
+  // Returns user_id hash for |profile| instance or empty string if hash
+  // could not be extracted from |profile|.
+  static std::string GetUserIdHashFromProfile(Profile* profile);
+
   // Returns true if |profile| is the signin Profile. This can be used during
   // construction of the signin Profile to determine if that Profile is the
   // signin Profile.
@@ -37,6 +47,9 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // Initialize a bunch of services that are tied to a browser profile.
   // TODO(dzhioev): Investigate whether or not this method is needed.
   static void ProfileStartup(Profile* profile, bool process_startup);
+
+  // Returns active user profile dir in a format [u-$hash].
+  base::FilePath GetActiveUserProfileDir();
 
   // Should called once after UserManager instance has been created.
   void Initialize();
@@ -50,6 +63,8 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   void ClearSigninProfile(const base::Closure& on_clear_callback);
 
  private:
+  friend class ProfileHelperTest;
+
   // UserManager::UserSessionStateObserver implementation:
   virtual void ActiveUserHashChanged(const std::string& hash) OVERRIDE;
 

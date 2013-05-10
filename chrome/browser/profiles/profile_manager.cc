@@ -198,14 +198,6 @@ void CheckCryptohomeIsMounted(chromeos::DBusMethodCallStatus call_status,
     LOG(ERROR) << "Cryptohome is not mounted.";
 }
 
-// TODO(nkostylev): Remove this hack when http://crbug.com/224291 is fixed.
-// Now user homedirs are mounted to /home/user which is different from
-// user data dir (/home/chronos).
-base::FilePath GetChromeOSProfileDir(const base::FilePath& path) {
-  base::FilePath profile_dir(FILE_PATH_LITERAL("/home/user/"));
-  profile_dir = profile_dir.Append(path);
-  return profile_dir;
-}
 #endif
 
 } // namespace
@@ -349,7 +341,8 @@ base::FilePath ProfileManager::GetInitialProfileDir() {
         profile_helper()->active_user_id_hash();
     if (command_line.HasSwitch(switches::kMultiProfiles) &&
         !user_id_hash.empty()) {
-      profile_dir = base::FilePath(user_id_hash);
+      profile_dir = g_browser_process->platform_part()->
+          profile_helper()->GetActiveUserProfileDir();
     }
     relative_profile_dir = relative_profile_dir.Append(profile_dir);
     return relative_profile_dir;
@@ -416,13 +409,7 @@ Profile* ProfileManager::GetDefaultProfile(
 #if defined(OS_CHROMEOS)
   base::FilePath default_profile_dir(user_data_dir);
   if (logged_in_) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles) &&
-        base::chromeos::IsRunningOnChromeOS()) {
-      // TODO(nkostylev): Change to [user_data_dir]/profile-[hash]
-      default_profile_dir = GetChromeOSProfileDir(GetInitialProfileDir());
-    } else {
-      default_profile_dir = default_profile_dir.Append(GetInitialProfileDir());
-    }
+    default_profile_dir = default_profile_dir.Append(GetInitialProfileDir());
   } else {
     default_profile_dir = GetDefaultProfileDir(user_data_dir);
   }
@@ -549,15 +536,6 @@ void ProfileManager::CreateDefaultProfileAsync(const CreateCallback& callback) {
   // TODO(mirandac): current directory will not always be default in the future
   default_profile_dir = default_profile_dir.Append(
       profile_manager->GetInitialProfileDir());
-
-#if defined(OS_CHROMEOS)
-  // TODO(nkostylev): Change to [user_data_dir]/profile-[hash]
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles) &&
-      base::chromeos::IsRunningOnChromeOS()) {
-    default_profile_dir = GetChromeOSProfileDir(
-        profile_manager->GetInitialProfileDir());
-  }
-#endif
 
   // Chrome OS specific note: since we pass string16() here as the icon_url,
   // profile cache information will not get updated with the is_managed value

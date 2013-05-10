@@ -18,6 +18,10 @@ namespace chromeos {
 
 namespace {
 
+// This suffix is appended to user_id to get hash in stub implementation:
+// stub_hash = "[user_id]-hash";
+static const char kUserIdStubHashSuffix[] = "-hash";
+
 // The CryptohomeClient implementation.
 class CryptohomeClientImpl : public CryptohomeClient {
  public:
@@ -854,7 +858,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
       const StringDBusMethodCallback& callback) OVERRIDE {
     // Even for stub implementation we have to return different values
     // so that multi-profiles would work.
-    std::string sanitized_username = username + "-profile";
+    std::string sanitized_username = username + kUserIdStubHashSuffix;
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, sanitized_username));

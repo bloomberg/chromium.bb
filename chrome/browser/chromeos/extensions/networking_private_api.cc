@@ -7,8 +7,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/networking_private.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
@@ -101,14 +105,18 @@ bool NetworkingPrivateGetManagedPropertiesFunction::RunImpl() {
       api::GetManagedProperties::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // The profile of the requesting browser.
-  Profile* requesting_profile = profile();
-  // TODO(pneubeck): Use ProfileHelper to obtain the userhash, once it provides
-  // that functionality. crbug/238623.
-  std::string userhash = requesting_profile->GetPath().BaseName().value();
+  // User ID hash presence is only enforced when multi-profiles are turned on.
+  std::string user_id_hash;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
+    user_id_hash = g_browser_process->platform_part()->
+        profile_helper()->GetUserIdHashFromProfile(profile());
+  } else {
+    user_id_hash = g_browser_process->platform_part()->
+        profile_helper()->active_user_id_hash();
+  }
 
   ManagedNetworkConfigurationHandler::Get()->GetManagedProperties(
-      userhash,
+      user_id_hash,
       params->network_guid,  // service path
       base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Success,
                  this),
