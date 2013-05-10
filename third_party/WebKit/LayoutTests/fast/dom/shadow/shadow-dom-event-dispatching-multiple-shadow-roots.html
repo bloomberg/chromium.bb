@@ -15,17 +15,15 @@
         sandbox.appendChild(
             createDOM('div', {'id': 'top'},
                       createDOM('div', {'id': 'A'},
-                                createShadowRoot(
-                                    createDOM('content', {'id': 'C'}),
-                                    createDOM('div', {'id': 'D'})),
-                                createShadowRoot(
-                                    createDOM('shadow', {'id': 'E'}),
-                                    createDOM('div', {'id': 'F'})),
+                                createShadowRoot({'id': 'older-shadow-root'},
+                                                 createDOM('content', {'id': 'C'}),
+                                                 createDOM('div', {'id': 'D'})),
+                                createShadowRoot({'id': 'younger-shadow-root'},
+                                                 createDOM('shadow', {'id': 'E'}),
+                                                 createDOM('div', {'id': 'F'})),
                                 createDOM('div', {'id': 'B'}))));
 
         addEventListeners(['top', 'A', 'B', 'A/', 'A/C', 'A/D', 'A//', 'A//E', 'A//F']);
-        getNodeInShadowTreeStack('A/').id = 'older-shadow-root';
-        getNodeInShadowTreeStack('A//').id = 'younger-shadow-root';
         showSandboxTree();
 
         moveMouse('B', 'A');
@@ -35,4 +33,3 @@
     <script src="../../js/resources/js-test-post.js"></script>
 </body>
 </html>
-

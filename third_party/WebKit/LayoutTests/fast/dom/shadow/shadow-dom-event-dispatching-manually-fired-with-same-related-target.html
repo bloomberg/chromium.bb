@@ -15,11 +15,10 @@
         sandbox.appendChild(
             createDOM('div', {'id': 'top'},
                       createDOM('div', {'id': 'host'},
-                                createShadowRoot(
-                                    createDOM('div', {'id': 'div1'})))));
+                                createShadowRoot({'id': 'shadow-root'},
+                                                 createDOM('div', {'id': 'div1'})))));
 
         addEventListeners(['top', 'host', 'host/', 'host/div1']);
-        getNodeInShadowTreeStack('host/').id = 'shadow-root';
         showSandboxTree();
 
         var div1 = getNodeInShadowTreeStack('host/div1');
@@ -36,4 +35,3 @@
     <script src="../../js/resources/js-test-post.js"></script>
 </body>
 </html>
-

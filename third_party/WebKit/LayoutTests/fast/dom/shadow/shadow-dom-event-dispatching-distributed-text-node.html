@@ -16,10 +16,9 @@
         sandbox.appendChild(
             createDOM('div', {'id': 'top'},
                       createDOM('div', {'id': 'shadow-host'},
-                                createShadowRoot(
-                                    createDOM('content', {'id': 'content'})),
+                                createShadowRoot({'id': 'shadow-root'},
+                                                 createDOM('content', {'id': 'content'})),
                                 document.createTextNode('Text Node'))));
-        var shadowRoot = getNodeInShadowTreeStack('shadow-host/').id = 'shadow-root';
         addEventListeners(['top', 'shadow-host', 'shadow-host/', 'shadow-host/content']);
         showSandboxTree();
 

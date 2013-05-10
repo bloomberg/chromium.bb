@@ -15,16 +15,14 @@
         sandbox.appendChild(
             createDOM('div', {'id': 'top'},
                       createDOM('div', {'id': 'A'},
-                                createShadowRoot(
-                                    createDOM('div', {'id': 'B'},
-                                              createDOM('div', {'id': 'C'}))),
-                                createShadowRoot(
-                                    createDOM('div', {'id': 'D'})),
+                                createShadowRoot({'id': 'orphaned-shadow-root'},
+                                                 createDOM('div', {'id': 'B'},
+                                                           createDOM('div', {'id': 'C'}))),
+                                createShadowRoot({'id': 'youngest-shadow-root'},
+                                                 createDOM('div', {'id': 'D'})),
                                 createDOM('div', {'id': 'non-distributed-node'}))));
 
         addEventListeners(['top', 'A', 'A/', 'A/B', 'A/C', 'A//', 'A//D', 'non-distributed-node']);
-        getNodeInShadowTreeStack('A/').id = 'orphaned-shadow-root';
-        getNodeInShadowTreeStack('A//').id = 'youngest-shadow-root';
         parent.offsetLeft;
         showSandboxTree();
 
@@ -41,4 +39,3 @@
     <script src="../../js/resources/js-test-post.js"></script>
 </body>
 </html>
-

@@ -15,15 +15,14 @@
         sandbox.appendChild(
             createDOM('div', {'id': 'top'},
                       createDOM('div', {'id': 'shadow-host'},
-                                createShadowRoot(
-                                    createDOM('content', {'id': 'content', 'select': '#distributed-light-child',}),
-                                    createDOM('div', {'id': 'shadow-root-child'})),
+                                createShadowRoot({'id': 'shadow-root'},
+                                                 createDOM('content', {'id': 'content', 'select': '#distributed-light-child',}),
+                                                 createDOM('div', {'id': 'shadow-root-child'})),
                                 createDOM('div', {'id': 'distributed-light-child'}),
                                 createDOM('div', {'id': 'non-distributed-light-child'}))));
 
         addEventListeners(['top', 'shadow-host', 'shadow-host/', 'shadow-host/content', 'shadow-host/shadow-root-child',
                            'distributed-light-child', 'non-distributed-light-child']);
-        getNodeInShadowTreeStack('shadow-host/').id = 'shadow-root';
         showSandboxTree();
 
         moveMouse('shadow-host', 'shadow-host/shadow-root-child');
@@ -38,4 +37,3 @@
     <script src="../../js/resources/js-test-post.js"></script>
 </body>
 </html>
-

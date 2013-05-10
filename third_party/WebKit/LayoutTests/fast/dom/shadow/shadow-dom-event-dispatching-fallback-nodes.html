@@ -15,15 +15,14 @@
         sandbox.appendChild(
             createDOM('div', {'id': 'top'},
                       createDOM('div', {'id': 'A'},
-                                createShadowRoot(
-                                    createDOM('content', {'id': 'content1', 'select': '#none'},
-                                              createDOM('div', {'id': 'used-fallback'})),
-                                    createDOM('content', {'id': 'content2'},
-                                              createDOM('div', {'id': 'non-used-fallback'}))),
+                                createShadowRoot({'id': 'shadow-root'},
+                                                 createDOM('content', {'id': 'content1', 'select': '#none'},
+                                                           createDOM('div', {'id': 'used-fallback'})),
+                                                 createDOM('content', {'id': 'content2'},
+                                                           createDOM('div', {'id': 'non-used-fallback'}))),
                                 createDOM('div', {'id': 'B'}))));
 
         addEventListeners(['top', 'A', 'B', 'A/', 'A/content1', 'A/used-fallback', 'A/content2', 'A/non-used-fallback']);
-        getNodeInShadowTreeStack('A/').id = 'shadow-root';
         showSandboxTree();
 
         moveMouse('A/used-fallback', 'A');
@@ -37,4 +36,3 @@
     <script src="../../js/resources/js-test-post.js"></script>
 </body>
 </html>
-
