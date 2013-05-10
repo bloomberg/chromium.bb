@@ -219,6 +219,8 @@
         'ime/input_method_delegate.h',
         'ime/input_method_descriptor.cc',
         'ime/input_method_descriptor.h',
+        'ime/input_method_manager.cc',
+        'ime/input_method_manager.h',
         'ime/input_method_property.cc',
         'ime/input_method_property.h',
         'ime/input_method_whitelist.cc',

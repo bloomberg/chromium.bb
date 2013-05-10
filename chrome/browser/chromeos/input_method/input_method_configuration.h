@@ -23,6 +23,7 @@ void Initialize(
 // InputMethodManager such as MockInputMethodManager for testing.
 // The injected object will be owned by the internal pointer and deleted
 // by Shutdown().
+// TODO(nona): Remove this and use InputMethodManager::Initialize instead.
 void InitializeForTesting(InputMethodManager* mock_manager);
 
 // Destroys the global InputMethodManager instance.
@@ -30,6 +31,7 @@ void Shutdown();
 
 // Gets the global InputMethodManager. Initialize() or InitializeForTesting()
 // must be called first.
+// TODO(nona): Remove this and use InputMethodManager::Get() instead.
 InputMethodManager* GetInputMethodManager();
 
 }  // namespace input_method

@@ -18,7 +18,6 @@ namespace chromeos {
 namespace input_method {
 
 namespace {
-InputMethodManager* g_input_method_manager = NULL;
 InputMethodPersistence* g_input_method_persistence = NULL;
 BrowserStateMonitor* g_browser_state_monitor = NULL;
 }  // namespace
@@ -33,8 +32,6 @@ void OnSessionStateChange(InputMethodManagerImpl* input_method_manager_impl,
 void Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
-  DCHECK(!g_input_method_manager);
-
   IBusDaemonController::Initialize(ui_task_runner, file_task_runner);
   if (!base::chromeos::IsRunningOnChromeOS()) {
     // IBusBridge is for ChromeOS on desktop Linux not for ChromeOS Devices or
@@ -48,9 +45,8 @@ void Initialize(
   InputMethodManagerImpl* impl = new InputMethodManagerImpl(
       scoped_ptr<InputMethodDelegate>(new InputMethodDelegateImpl));
   impl->Init(ui_task_runner.get());
-  g_input_method_manager = impl;
-  g_input_method_persistence =
-      new InputMethodPersistence(g_input_method_manager);
+  InputMethodManager::Initialize(impl);
+  g_input_method_persistence = new InputMethodPersistence(impl);
   g_browser_state_monitor = new BrowserStateMonitor(
       base::Bind(&OnSessionStateChange, impl, g_input_method_persistence));
 
@@ -58,8 +54,7 @@ void Initialize(
 }
 
 void InitializeForTesting(InputMethodManager* mock_manager) {
-  DCHECK(!g_input_method_manager);
-  g_input_method_manager = mock_manager;
+  InputMethodManager::Initialize(mock_manager);
   DVLOG(1) << "InputMethodManager for testing initialized";
 }
 
@@ -70,8 +65,7 @@ void Shutdown() {
   delete g_input_method_persistence;
   g_input_method_persistence = NULL;
 
-  delete g_input_method_manager;
-  g_input_method_manager = NULL;
+  InputMethodManager::Shutdown();
 
   if (IBusBridge::Get()) {
     // TODO(nona): Remove this condition when ibus-daemon is gone.
@@ -83,8 +77,7 @@ void Shutdown() {
 }
 
 InputMethodManager* GetInputMethodManager() {
-  DCHECK(g_input_method_manager);
-  return g_input_method_manager;
+  return InputMethodManager::Get();
 }
 
 }  // namespace input_method

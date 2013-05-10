@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/ime/input_method_config.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_method_property.h"
@@ -29,7 +30,7 @@ class XKeyboard;
 // This class manages input methodshandles.  Classes can add themselves as
 // observers. Clients can get an instance of this library class by:
 // GetInputMethodManager().
-class InputMethodManager {
+class CHROMEOS_EXPORT InputMethodManager {
  public:
   enum State {
     STATE_LOGIN_SCREEN = 0,
@@ -64,6 +65,19 @@ class InputMethodManager {
   };
 
   virtual ~InputMethodManager() {}
+
+  // Gets the global instance of InputMethodManager. Initialize() must be called
+  // first.
+  static CHROMEOS_EXPORT InputMethodManager* Get();
+
+  // Sets the global instance. |instance| will be owned by the internal pointer
+  // and deleted by Shutdown().
+  // TODO(nona): Instanciate InputMethodManagerImpl inside of this function once
+  //             crbug.com/164375 is fixed.
+  static CHROMEOS_EXPORT void Initialize(InputMethodManager* instance);
+
+  // Destroy the global instance.
+  static CHROMEOS_EXPORT void Shutdown();
 
   // Adds an observer to receive notifications of input method related
   // changes as desribed in the Observer class above.
