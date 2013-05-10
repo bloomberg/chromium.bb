@@ -295,7 +295,8 @@ void Textfield::RemoveBorder() {
 void Textfield::SetBorderColor(SkColor color) {
   border_color_ = color;
   use_default_border_color_ = false;
-  native_wrapper_->UpdateBorderColor();
+  if (native_wrapper_)
+    native_wrapper_->UpdateBorderColor();
 }
 
 void Textfield::UseDefaultBorderColor() {
@@ -303,7 +304,8 @@ void Textfield::UseDefaultBorderColor() {
     return;
 
   use_default_border_color_ = true;
-  native_wrapper_->UpdateBorderColor();
+  if (native_wrapper_)
+    native_wrapper_->UpdateBorderColor();
 }
 
 void Textfield::SetIcon(const gfx::ImageSkia& icon) {
@@ -385,54 +387,44 @@ bool Textfield::IsIMEComposing() const {
 }
 
 ui::Range Textfield::GetSelectedRange() const {
-  DCHECK(native_wrapper_);
   return native_wrapper_->GetSelectedRange();
 }
 
 void Textfield::SelectRange(const ui::Range& range) {
-  DCHECK(native_wrapper_);
   native_wrapper_->SelectRange(range);
 }
 
 gfx::SelectionModel Textfield::GetSelectionModel() const {
-  DCHECK(native_wrapper_);
   return native_wrapper_->GetSelectionModel();
 }
 
 void Textfield::SelectSelectionModel(const gfx::SelectionModel& sel) {
-  DCHECK(native_wrapper_);
   native_wrapper_->SelectSelectionModel(sel);
 }
 
 size_t Textfield::GetCursorPosition() const {
-  DCHECK(native_wrapper_);
   return native_wrapper_->GetCursorPosition();
 }
 
 void Textfield::SetColor(SkColor value) {
-  DCHECK(native_wrapper_);
   return native_wrapper_->SetColor(value);
 }
 
 void Textfield::ApplyColor(SkColor value, const ui::Range& range) {
-  DCHECK(native_wrapper_);
   return native_wrapper_->ApplyColor(value, range);
 }
 
 void Textfield::SetStyle(gfx::TextStyle style, bool value) {
-  DCHECK(native_wrapper_);
   return native_wrapper_->SetStyle(style, value);
 }
 
 void Textfield::ApplyStyle(gfx::TextStyle style,
                            bool value,
                            const ui::Range& range) {
-  DCHECK(native_wrapper_);
   return native_wrapper_->ApplyStyle(style, value, range);
 }
 
 void Textfield::ClearEditHistory() {
-  DCHECK(native_wrapper_);
   native_wrapper_->ClearEditHistory();
 }
 
@@ -550,7 +542,6 @@ void Textfield::GetAccessibleState(ui::AccessibleViewState* state) {
     state->state |= ui::AccessibilityTypes::STATE_PROTECTED;
   state->value = text_;
 
-  DCHECK(native_wrapper_);
   const ui::Range range = native_wrapper_->GetSelectedRange();
   state->selection_start = range.start();
   state->selection_end = range.end();
