@@ -35,6 +35,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
+    UpdateDisplay("600x400");
     test::ShellTestApi test_api(Shell::GetInstance());
     model_ = test_api.launcher_model();
   }
@@ -263,7 +264,7 @@ TEST_F(PanelWindowResizerTest, MAYBE_PanelDetachReattachMultipleDisplays) {
 }
 
 TEST_F(PanelWindowResizerTest, MAYBE_DetachThenDragAcrossDisplays) {
-  UpdateDisplay("400x400,400x400");
+  UpdateDisplay("600x400,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
       CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
@@ -291,7 +292,7 @@ TEST_F(PanelWindowResizerTest, MAYBE_DetachThenDragAcrossDisplays) {
 }
 
 TEST_F(PanelWindowResizerTest, MAYBE_DetachAcrossDisplays) {
-  UpdateDisplay("400x400,400x400");
+  UpdateDisplay("600x400,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
       CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
@@ -309,7 +310,7 @@ TEST_F(PanelWindowResizerTest, MAYBE_DetachAcrossDisplays) {
 }
 
 TEST_F(PanelWindowResizerTest, MAYBE_DetachThenAttachToSecondDisplay) {
-  UpdateDisplay("400x400,400x600");
+  UpdateDisplay("600x400,600x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
       CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
@@ -339,7 +340,7 @@ TEST_F(PanelWindowResizerTest, MAYBE_DetachThenAttachToSecondDisplay) {
 }
 
 TEST_F(PanelWindowResizerTest, MAYBE_AttachToSecondDisplay) {
-  UpdateDisplay("400x400,400x600");
+  UpdateDisplay("600x400,600x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
       CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));

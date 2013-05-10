@@ -50,7 +50,8 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
 
  protected:
   // Overridden from views::View:
-  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
+  virtual void ChildVisibilityChanged(views::View* child) OVERRIDE;
 
  private:
   void UpdateWidgetSize();
