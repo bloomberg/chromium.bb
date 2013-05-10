@@ -404,7 +404,7 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateServerTcpSocket(
     return NULL;
 
   P2PSocketType type = (opts & talk_base::PacketSocketFactory::OPT_STUN) ?
-      P2P_SOCKET_STUN_TCP_CLIENT : P2P_SOCKET_TCP_CLIENT;
+      P2P_SOCKET_STUN_TCP_SERVER : P2P_SOCKET_TCP_SERVER;
   P2PSocketClient* socket_client = new P2PSocketClient(socket_dispatcher_);
   scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
   if (!socket->Init(type, socket_client, local_address,
@@ -424,7 +424,7 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
     return NULL;
 
   P2PSocketType type = (opts & talk_base::PacketSocketFactory::OPT_STUN) ?
-      P2P_SOCKET_STUN_TCP_SERVER : P2P_SOCKET_TCP_SERVER;
+      P2P_SOCKET_STUN_TCP_CLIENT : P2P_SOCKET_TCP_CLIENT;
   P2PSocketClient* socket_client = new P2PSocketClient(socket_dispatcher_);
   scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
   if (!socket->Init(type, socket_client, local_address,
