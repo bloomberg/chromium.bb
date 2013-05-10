@@ -6807,6 +6807,10 @@ other types of suffix sets.
   <summary>For each index load, whether the index file was corrupt.</summary>
 </histogram>
 
+<histogram name="SimpleCache.IndexCreatedEntryCount">
+  <summary>The number of entries in a newly created index file.</summary>
+</histogram>
+
 <histogram name="SimpleCache.IndexInitializationWaiters">
   <summary>
     At the time of index initialization, the number of enqueued jobs awaiting
@@ -10569,6 +10573,7 @@ other types of suffix sets.
 <enum name="SimpleCacheIndexInitializeMethod" type="int">
   <int value="0" label="Directory Scan"/>
   <int value="1" label="Index File"/>
+  <int value="2" label="New Cache"/>
 </enum>
 
 <enum name="SimpleCacheOpenEntryIndexState" type="int">

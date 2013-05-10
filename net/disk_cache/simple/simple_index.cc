@@ -409,6 +409,9 @@ void SimpleIndex::InitializeInternal(
     const IndexCompletionCallback& completion_callback) {
   // TODO(felipeg): probably could load a stale index and use it for something.
   scoped_ptr<EntrySet> index_file_entries;
+
+  const bool index_file_exists = file_util::PathExists(index_filename);
+
   // Only load if the index is not stale.
   const bool index_stale = SimpleIndex::IsIndexFileStale(index_filename);
   if (!index_stale) {
@@ -434,10 +437,27 @@ void SimpleIndex::InitializeInternal(
   UMA_HISTOGRAM_BOOLEAN("SimpleCache.IndexCorrupt",
                         (!index_stale && force_index_flush));
 
-  // 0 means Restored, 1 means Loaded from disk.
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.IndexInitializeMethod",
-                        !force_index_flush);
+  // Used in histograms. Please only add new values at the end.
+  enum {
+    INITIALIZE_METHOD_RECOVERED = 0,
+    INITIALIZE_METHOD_LOADED = 1,
+    INITIALIZE_METHOD_NEWCACHE = 2,
+    INITIALIZE_METHOD_MAX = 3,
+  };
+  int initialize_method;
+  if (index_file_exists) {
+    if (force_index_flush)
+      initialize_method = INITIALIZE_METHOD_RECOVERED;
+    else
+      initialize_method = INITIALIZE_METHOD_LOADED;
+  } else {
+    UMA_HISTOGRAM_COUNTS("SimpleCache.IndexCreatedEntryCount",
+                         index_file_entries->size());
+    initialize_method = INITIALIZE_METHOD_NEWCACHE;
+  }
 
+  UMA_HISTOGRAM_ENUMERATION("SimpleCache.IndexInitializeMethod",
+                            initialize_method, INITIALIZE_METHOD_MAX);
   io_thread->PostTask(FROM_HERE,
                       base::Bind(completion_callback,
                                  base::Passed(&index_file_entries),
