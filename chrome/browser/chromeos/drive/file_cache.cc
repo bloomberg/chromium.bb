@@ -265,6 +265,14 @@ void FileCache::GetCacheEntryOnUIThread(const std::string& resource_id,
                  callback, base::Owned(cache_entry)));
 }
 
+bool FileCache::GetCacheEntry(const std::string& resource_id,
+                              const std::string& md5,
+                              FileCacheEntry* entry) {
+  DCHECK(entry);
+  AssertOnSequencedWorkerPool();
+  return metadata_->GetCacheEntry(resource_id, md5, entry);
+}
+
 void FileCache::IterateOnUIThread(
     const CacheIterateCallback& iteration_callback,
     const base::Closure& completion_callback) {
@@ -530,14 +538,6 @@ void FileCache::InitializeOnBlockingPoolForTesting() {
 void FileCache::DestroyOnBlockingPool() {
   AssertOnSequencedWorkerPool();
   delete this;
-}
-
-bool FileCache::GetCacheEntry(const std::string& resource_id,
-                              const std::string& md5,
-                              FileCacheEntry* entry) {
-  DCHECK(entry);
-  AssertOnSequencedWorkerPool();
-  return metadata_->GetCacheEntry(resource_id, md5, entry);
 }
 
 void FileCache::Iterate(const CacheIterateCallback& iteration_callback) {

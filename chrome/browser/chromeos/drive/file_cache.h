@@ -133,6 +133,12 @@ class FileCache {
                                const std::string& md5,
                                const GetCacheEntryCallback& callback);
 
+  // Gets the cache entry by the given resource ID and MD5.
+  // See also GetCacheEntryOnUIThread().
+  bool GetCacheEntry(const std::string& resource_id,
+                     const std::string& md5,
+                     FileCacheEntry* entry);
+
   // Iterates all files in the cache and calls |iteration_callback| for each
   // file. |completion_callback| is run upon completion.
   // Must be called on the UI thread.
@@ -320,12 +326,6 @@ class FileCache {
 
   // Destroys the cache on the blocking pool.
   void DestroyOnBlockingPool();
-
-  // Gets the cache entry by the given resource ID and MD5.
-  // See also GetCacheEntryOnUIThread().
-  bool GetCacheEntry(const std::string& resource_id,
-                     const std::string& md5,
-                     FileCacheEntry* entry);
 
   // Used to implement IterateOnUIThread().
   void Iterate(const CacheIterateCallback& iteration_callback);
