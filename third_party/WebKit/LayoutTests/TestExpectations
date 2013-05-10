@@ -56,6 +56,9 @@ crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ Pass Cra
 crbug.com/239483 [ Release ] fast/events/resize-events.html [ Pass Timeout ]
 crbug.com/239794 [ Win Debug ] inspector/debugger/pause-in-internal-script.html [ Pass Timeout ]
 
+# Sometimes the output includes an empty line, sometimes it doesn't. Flake.
+crbug.com/239874   http/tests/xmlhttprequest/send-data-view.html [ Pass Failure ]
+
 # These tests started being slow when we switched to DRT.
 webkit.org/b/90488 [ Debug ] inspector [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector [ Slow ]
