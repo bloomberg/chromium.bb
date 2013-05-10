@@ -16,33 +16,49 @@
 namespace media {
 namespace vector_math {
 
+// If we know the minimum architecture at compile time, avoid CPU detection.
+// Force NaCl code to use C routines since (at present) nothing there uses these
+// methods and plumbing the -msse built library is non-trivial.  iOS lies about
+// its architecture, so we also need to exclude it here.
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_NACL) && !defined(OS_IOS)
+#if defined(__SSE__)
+#define FMAC_FUNC FMAC_SSE
+#define FMUL_FUNC FMUL_SSE
+void Initialize() {}
+#else
+// X86 CPU detection required.  Functions will be set by Initialize().
+// TODO(dalecurtis): Once Chrome moves to an SSE baseline this can be removed.
+#define FMAC_FUNC g_fmac_proc_
+#define FMUL_FUNC g_fmul_proc_
+
+typedef void (*MathProc)(const float src[], float scale, int len, float dest[]);
+static MathProc g_fmac_proc_ = NULL;
+static MathProc g_fmul_proc_ = NULL;
+
+void Initialize() {
+  CHECK(!g_fmac_proc_);
+  CHECK(!g_fmul_proc_);
+  const bool kUseSSE = base::CPU().has_sse();
+  g_fmac_proc_ = kUseSSE ? FMAC_SSE : FMAC_C;
+  g_fmul_proc_ = kUseSSE ? FMUL_SSE : FMUL_C;
+}
+#endif
+#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+#define FMAC_FUNC FMAC_NEON
+#define FMUL_FUNC FMUL_NEON
+void Initialize() {}
+#else
+// Unknown architecture.
+#define FMAC_FUNC FMAC_C
+#define FMUL_FUNC FMUL_C
+void Initialize() {}
+#endif
+
 void FMAC(const float src[], float scale, int len, float dest[]) {
   // Ensure |src| and |dest| are 16-byte aligned.
   DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(src) & (kRequiredAlignment - 1));
   DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(dest) & (kRequiredAlignment - 1));
-
-  typedef void (*VectorFMACProc)(const float src[], float scale, int len,
-                                 float dest[]);
-
-  // No NaCl code uses the SSE functionality of AudioBus and plumbing the -msse
-  // built library is non-trivial, so simply disable for now.  iOS lies about
-  // its architecture, so we need to exclude it here.
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_NACL) && !defined(OS_IOS)
-#if defined(__SSE__)
-  static const VectorFMACProc kVectorFMACProc = FMAC_SSE;
-#else
-  // TODO(dalecurtis): Remove function level static initialization, it's not
-  // thread safe: http://crbug.com/224662.
-  static const VectorFMACProc kVectorFMACProc =
-      base::CPU().has_sse() ? FMAC_SSE : FMAC_C;
-#endif
-#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
-  static const VectorFMACProc kVectorFMACProc = FMAC_NEON;
-#else
-  static const VectorFMACProc kVectorFMACProc = FMAC_C;
-#endif
-
-  return kVectorFMACProc(src, scale, len, dest);
+  return FMAC_FUNC(src, scale, len, dest);
 }
 
 void FMAC_C(const float src[], float scale, int len, float dest[]) {
@@ -54,29 +70,7 @@ void FMUL(const float src[], float scale, int len, float dest[]) {
   // Ensure |src| and |dest| are 16-byte aligned.
   DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(src) & (kRequiredAlignment - 1));
   DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(dest) & (kRequiredAlignment - 1));
-
-  typedef void (*VectorFMULProc)(const float src[], float scale, int len,
-                                 float dest[]);
-
-  // No NaCl code uses the SSE functionality of AudioBus and plumbing the -msse
-  // built library is non-trivial, so simply disable for now.  iOS lies about
-  // its architecture, so we need to exclude it here.
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_NACL) && !defined(OS_IOS)
-#if defined(__SSE__)
-  static const VectorFMULProc kVectorFMULProc = FMUL_SSE;
-#else
-  // TODO(dalecurtis): Remove function level static initialization, it's not
-  // thread safe: http://crbug.com/224662.
-  static const VectorFMULProc kVectorFMULProc =
-      base::CPU().has_sse() ? FMUL_SSE : FMUL_C;
-#endif
-#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
-  static const VectorFMULProc kVectorFMULProc = FMUL_NEON;
-#else
-  static const VectorFMULProc kVectorFMULProc = FMUL_C;
-#endif
-
-  return kVectorFMULProc(src, scale, len, dest);
+  return FMUL_FUNC(src, scale, len, dest);
 }
 
 void FMUL_C(const float src[], float scale, int len, float dest[]) {

@@ -38,6 +38,11 @@ MEDIA_EXPORT void InitializeMediaLibraryForTesting();
 // for the this process, without actually trying to initialize it.
 MEDIA_EXPORT bool IsMediaLibraryInitialized();
 
+// Use this if you need to initialize CPU specific features WITHOUT loading
+// DLLs, DSOs, etc.  Only necessary if InitializeMediaLibrary() is not called;
+// does nothing if the media library has already been initialized.
+MEDIA_EXPORT void InitializeCPUSpecificMediaFeatures();
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_MEDIA_H_

@@ -46,6 +46,7 @@
 #include "content/public/common/result_codes.h"
 #include "crypto/nss_util.h"
 #include "media/audio/audio_manager.h"
+#include "media/base/media.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
@@ -372,6 +373,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
   power_monitor_.reset(new base::PowerMonitor);
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+
+  media::InitializeCPUSpecificMediaFeatures();
   audio_manager_.reset(media::AudioManager::Create());
 
 #if !defined(OS_IOS)
