@@ -306,18 +306,7 @@ void ScrollView::notifyPageThatContentAreaWillPaint() const
 
 void ScrollView::setScrollOffset(const IntPoint& offset)
 {
-    int horizontalOffset = offset.x();
-    int verticalOffset = offset.y();
-    if (constrainsScrollingToContentEdge()) {
-        horizontalOffset = max(min(horizontalOffset, contentsWidth() - visibleWidth()), 0);
-        verticalOffset = max(min(verticalOffset, contentsHeight() - visibleHeight()), 0);
-    }
-
-    IntSize newOffset = m_scrollOffset;
-    newOffset.setWidth(horizontalOffset - scrollOrigin().x());
-    newOffset.setHeight(verticalOffset - scrollOrigin().y());
-
-    scrollTo(newOffset);
+    scrollTo(toIntSize(adjustScrollPositionWithinRange(offset)));
 }
 
 void ScrollView::scrollTo(const IntSize& newOffset)
@@ -555,7 +544,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
         adjustedScrollPosition = adjustScrollPositionWithinRange(adjustedScrollPosition);
 
     if (adjustedScrollPosition != scrollPosition() || scrollOriginChanged()) {
-        ScrollableArea::scrollToOffsetWithoutAnimation(adjustedScrollPosition + IntSize(scrollOrigin().x(), scrollOrigin().y()));
+        ScrollableArea::scrollToOffsetWithoutAnimation(adjustedScrollPosition);
         resetScrollOriginChanged();
     }
 

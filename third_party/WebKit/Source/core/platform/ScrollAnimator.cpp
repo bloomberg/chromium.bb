@@ -55,7 +55,7 @@ ScrollAnimator::~ScrollAnimator()
 bool ScrollAnimator::scroll(ScrollbarOrientation orientation, ScrollGranularity, float step, float multiplier)
 {
     float* currentPos = (orientation == HorizontalScrollbar) ? &m_currentPosX : &m_currentPosY;
-    float newPos = std::max(std::min(*currentPos + (step * multiplier), static_cast<float>(m_scrollableArea->scrollSize(orientation))), 0.0f);
+    float newPos = m_scrollableArea->clampScrollPosition(orientation, *currentPos + step * multiplier);
     float delta = *currentPos - newPos;
     if (*currentPos == newPos)
         return false;

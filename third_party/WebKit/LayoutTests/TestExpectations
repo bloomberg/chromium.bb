@@ -1699,3 +1699,6 @@ crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/video-controls-in-hidpi.h
 
 crbug.com/239077 fast/canvas/webgl/index-validation-with-resized-buffer.html  [ Crash ]
 
+# Transient. PNGs need to be uploaded separately.
+crbug.com/232063 virtual/gpu/compositedscrolling/scrollbars/scrollbars-on-positioned-content.html [ ImageOnlyFailure ]
+crbug.com/232063 virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ ImageOnlyFailure ]
