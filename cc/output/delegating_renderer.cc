@@ -11,7 +11,6 @@
 #include "base/debug/trace_event.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -123,6 +122,8 @@ const RendererCapabilities& DelegatingRenderer::Capabilities() const {
   return capabilities_;
 }
 
+bool DelegatingRenderer::CanReadPixels() const { return false; }
+
 static ResourceProvider::ResourceId AppendToArray(
     ResourceProvider::ResourceIdArray* array,
     ResourceProvider::ResourceId id) {
@@ -133,20 +134,16 @@ static ResourceProvider::ResourceId AppendToArray(
 void DelegatingRenderer::DrawFrame(
     RenderPassList* render_passes_in_draw_order) {
   TRACE_EVENT0("cc", "DelegatingRenderer::DrawFrame");
-  render_passes_for_swap_buffers_.swap(*render_passes_in_draw_order);
-  render_passes_in_draw_order->clear();
-}
 
-void DelegatingRenderer::SwapBuffers(const LatencyInfo& latency_info) {
-  TRACE_EVENT0("cc", "DelegatingRenderer::SwapBuffers");
+  DCHECK(!frame_for_swap_buffers_.delegated_frame_data);
 
-  CompositorFrame out_frame;
-  out_frame.metadata = client_->MakeCompositorFrameMetadata();
+  frame_for_swap_buffers_.metadata = client_->MakeCompositorFrameMetadata();
 
-  out_frame.delegated_frame_data = make_scoped_ptr(new DelegatedFrameData);
-  DelegatedFrameData& out_data = *out_frame.delegated_frame_data;
+  frame_for_swap_buffers_.delegated_frame_data =
+      make_scoped_ptr(new DelegatedFrameData);
+  DelegatedFrameData& out_data = *frame_for_swap_buffers_.delegated_frame_data;
   // Move the render passes and resources into the |out_frame|.
-  out_data.render_pass_list.swap(render_passes_for_swap_buffers_);
+  out_data.render_pass_list.swap(*render_passes_in_draw_order);
 
   // Collect all resource ids in the render passes into a ResourceIdArray.
   ResourceProvider::ResourceIdArray resources;
@@ -158,12 +155,17 @@ void DelegatingRenderer::SwapBuffers(const LatencyInfo& latency_info) {
       render_pass->quad_list[j]->IterateResources(append_to_array);
   }
   resource_provider_->PrepareSendToParent(resources, &out_data.resource_list);
+}
 
-  output_surface_->SendFrameToParentCompositor(&out_frame);
+void DelegatingRenderer::SwapBuffers(const LatencyInfo& latency_info) {
+  TRACE_EVENT0("cc", "DelegatingRenderer::SwapBuffers");
+
+  output_surface_->SendFrameToParentCompositor(&frame_for_swap_buffers_);
+  DCHECK(!frame_for_swap_buffers_.delegated_frame_data);
 }
 
 void DelegatingRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void DelegatingRenderer::ReceiveCompositorFrameAck(

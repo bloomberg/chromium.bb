@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/compositor_frame.h"
 #include "cc/output/renderer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
@@ -24,6 +25,8 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   virtual ~DelegatingRenderer();
 
   virtual const RendererCapabilities& Capabilities() const OVERRIDE;
+
+  virtual bool CanReadPixels() const OVERRIDE;
 
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order) OVERRIDE;
 
@@ -52,8 +55,8 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;
   RendererCapabilities capabilities_;
+  CompositorFrame frame_for_swap_buffers_;
   bool visible_;
-  RenderPassList render_passes_for_swap_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingRenderer);
 };

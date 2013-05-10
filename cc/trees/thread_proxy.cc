@@ -915,16 +915,20 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   // DrawLayers() depends on the result of PrepareToDraw(), it is guarded on
   // CanDraw() as well.
 
-  // If it is a forced draw, make sure we do a draw and swap.
-  gfx::Rect readback_rect;
-  if (readback_request_on_impl_thread_)
-    readback_rect = readback_request_on_impl_thread_->rect;
+  bool drawing_for_readback = !!readback_request_on_impl_thread_;
+  bool can_do_readback = layer_tree_host_impl_->renderer()->CanReadPixels();
 
   LayerTreeHostImpl::FrameData frame;
   bool draw_frame = false;
   bool start_ready_animations = true;
 
-  if (layer_tree_host_impl_->CanDraw()) {
+  if (layer_tree_host_impl_->CanDraw() &&
+      (!drawing_for_readback || can_do_readback)) {
+    // If it is for a readback, make sure we draw the portion being read back.
+    gfx::Rect readback_rect;
+    if (drawing_for_readback)
+      readback_rect = readback_request_on_impl_thread_->rect;
+
     // Do not start animations if we skip drawing the frame to avoid
     // checkerboarding.
     if (layer_tree_host_impl_->PrepareToDraw(&frame, readback_rect) ||

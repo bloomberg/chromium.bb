@@ -50,6 +50,8 @@ class CC_EXPORT Renderer {
   virtual void ViewportChanged() {}
   virtual void ReceiveCompositorFrameAck(const CompositorFrameAck& ack) {}
 
+  virtual bool CanReadPixels() const = 0;
+
   virtual void DecideRenderPassAllocationsForFrame(
       const RenderPassList& render_passes_in_draw_order) {}
   virtual bool HaveCachedResourcesForRenderPassId(RenderPass::Id id) const;

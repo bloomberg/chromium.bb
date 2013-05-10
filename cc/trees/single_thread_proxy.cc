@@ -60,6 +60,7 @@ bool SingleThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
   LayerTreeHostImpl::FrameData frame;
   if (!CommitAndComposite(base::TimeTicks::Now(),
                           device_viewport_damage_rect,
+                          true,  // for_readback
                           &frame))
     return false;
 
@@ -337,6 +338,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   LayerTreeHostImpl::FrameData frame;
   if (CommitAndComposite(frame_begin_time,
                          device_viewport_damage_rect,
+                         false,  // for_readback
                          &frame)) {
     layer_tree_host_impl_->SwapBuffers(frame);
     DidSwapFrame();
@@ -370,6 +372,7 @@ void SingleThreadProxy::ForceSerializeOnSwapBuffers() {
 bool SingleThreadProxy::CommitAndComposite(
     base::TimeTicks frame_begin_time,
     gfx::Rect device_viewport_damage_rect,
+    bool for_readback,
     LayerTreeHostImpl::FrameData* frame) {
   DCHECK(Proxy::IsMainThread());
 
@@ -399,6 +402,7 @@ bool SingleThreadProxy::CommitAndComposite(
   bool result = DoComposite(offscreen_context_provider,
                             frame_begin_time,
                             device_viewport_damage_rect,
+                            for_readback,
                             frame);
   layer_tree_host_->DidBeginFrame();
   return result;
@@ -414,6 +418,7 @@ bool SingleThreadProxy::DoComposite(
     scoped_refptr<cc::ContextProvider> offscreen_context_provider,
     base::TimeTicks frame_begin_time,
     gfx::Rect device_viewport_damage_rect,
+    bool for_readback,
     LayerTreeHostImpl::FrameData* frame) {
   DCHECK(!layer_tree_host_->output_surface_lost());
 
@@ -425,11 +430,13 @@ bool SingleThreadProxy::DoComposite(
     layer_tree_host_impl_->resource_provider()->
         set_offscreen_context_provider(offscreen_context_provider);
 
+    bool can_do_readback = layer_tree_host_impl_->renderer()->CanReadPixels();
+
     // We guard PrepareToDraw() with CanDraw() because it always returns a valid
     // frame, so can only be used when such a frame is possible. Since
     // DrawLayers() depends on the result of PrepareToDraw(), it is guarded on
     // CanDraw() as well.
-    if (!ShouldComposite()) {
+    if (!ShouldComposite() || (for_readback && !can_do_readback)) {
       layer_tree_host_impl_->UpdateBackgroundAnimateTicking(true);
       return false;
     }
