@@ -41,7 +41,7 @@ do
   shift
 done
 
-ubuntu_versions="10\.04|10\.10|11\.04|11\.10|12\.04|12\.10"
+ubuntu_versions="10\.04|10\.10|11\.04|11\.10|12\.04|12\.10|13\.04"
 ubuntu_codenames="lucid|maverick|natty|oneiric|precise|quantal"
 ubuntu_issue="Ubuntu ($ubuntu_versions|$ubuntu_codenames)"
 # GCEL is an Ubuntu-derived VM image used on Google Compute Engine; /etc/issue
@@ -257,7 +257,7 @@ packages="${dev_list} ${lib_list} ${dbg_list} ${arm_list}"
 echo "Packages required: " $packages
 echo
 new_list_cmd="sudo apt-get install --reinstall $(echo $packages)"
-if new_list="$(yes n | LANG=C $new_list_cmd)"; then
+if new_list="$(yes n | LANGUAGE=en LANG=C $new_list_cmd)"; then
   # We probably never hit this following line.
   echo "No missing packages, and the packages are up-to-date."
 elif [ $? -eq 1 ]; then
