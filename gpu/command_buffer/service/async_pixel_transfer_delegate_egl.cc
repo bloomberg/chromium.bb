@@ -177,7 +177,7 @@ class TransferStateInternal
     DCHECK(texture_id_);
     DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
 
-    ui::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, texture_id_);
+    gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, texture_id_);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, egl_image_);
     bind_callback_.Run();
 

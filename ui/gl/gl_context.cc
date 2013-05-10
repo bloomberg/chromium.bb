@@ -96,7 +96,11 @@ void GLContext::SetCurrent(GLContext* context, GLSurface* surface) {
 }
 
 GLStateRestorer* GLContext::GetGLStateRestorer() {
-  return NULL;
+  return state_restorer_.get();
+}
+
+void GLContext::SetGLStateRestorer(GLStateRestorer* state_restorer) {
+  state_restorer_ = make_scoped_ptr(state_restorer);
 }
 
 bool GLContext::WasAllocatedUsingRobustnessExtension() {

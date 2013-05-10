@@ -257,7 +257,7 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D(
   void* data = GetAddress(safe_shared_memory->shared_memory(),
                           mem_params.shm_data_offset);
 
-  ui::ScopedTextureBinder texture_binder(tex_params.target, texture_id);
+  gfx::ScopedTextureBinder texture_binder(tex_params.target, texture_id);
 
   {
     TRACE_EVENT0("gpu", "glTexImage2D");
@@ -290,7 +290,7 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D(
                           mem_params.shm_data_offset);
 
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
-  ui::ScopedTextureBinder texture_binder(tex_params.target, texture_id);
+  gfx::ScopedTextureBinder texture_binder(tex_params.target, texture_id);
 
   {
     TRACE_EVENT0("gpu", "glTexSubImage2D");

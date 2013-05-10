@@ -457,7 +457,7 @@ void ExynosVideoDecodeAccelerator::AssignPictureBuffers(
     EGL_NONE,
   };
   Display* x_display = base::MessagePumpForUI::GetDefaultXDisplay();
-  ui::ScopedTextureBinder bind_restore(GL_TEXTURE_2D, 0);
+  gfx::ScopedTextureBinder bind_restore(GL_TEXTURE_2D, 0);
   for (size_t i = 0; i < pic_buffers_ref->picture_buffers.size(); ++i) {
     PictureBufferArrayRef::PictureBufferRef& buffer =
         pic_buffers_ref->picture_buffers[i];

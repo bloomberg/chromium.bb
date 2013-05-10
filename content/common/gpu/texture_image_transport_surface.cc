@@ -416,7 +416,7 @@ void TextureImageTransportSurface::CreateBackTexture() {
       CreateTextureDefinition(current_size_, service_id));
 
   {
-    ui::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, service_id);
+    gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, service_id);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -432,7 +432,7 @@ void TextureImageTransportSurface::CreateBackTexture() {
 
 void TextureImageTransportSurface::AttachBackTextureToFBO() {
   DCHECK(backbuffer_->service_id());
-  ui::ScopedFrameBufferBinder fbo_binder(fbo_id_);
+  gfx::ScopedFrameBufferBinder fbo_binder(fbo_id_);
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
       GL_COLOR_ATTACHMENT0,
       GL_TEXTURE_2D,

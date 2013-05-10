@@ -25,6 +25,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
+#include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "ui/gl/gl_bindings.h"
@@ -483,6 +484,11 @@ void GpuCommandBufferStub::OnInitialize(
     LOG(ERROR) << "Failed to make context current.";
     OnInitializeFailed(reply_message);
     return;
+  }
+
+  if (!context->GetGLStateRestorer()) {
+    context->SetGLStateRestorer(
+        new gpu::GLStateRestorerImpl(decoder_->AsWeakPtr()));
   }
 
   if (!context->GetTotalGpuMemory(&total_gpu_memory_))

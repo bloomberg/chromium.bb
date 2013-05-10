@@ -17,7 +17,6 @@ GLContextVirtual::GLContextVirtual(
   : GLContext(share_group),
     shared_context_(shared_context),
     display_(NULL),
-    state_restorer_(new GLStateRestorerImpl(decoder)),
     decoder_(decoder) {
 }
 
@@ -27,6 +26,8 @@ gfx::Display* GLContextVirtual::display() {
 
 bool GLContextVirtual::Initialize(
     gfx::GLSurface* compatible_surface, gfx::GpuPreference gpu_preference) {
+  SetGLStateRestorer(new GLStateRestorerImpl(decoder_));
+
   display_ = static_cast<gfx::Display*>(compatible_surface->GetDisplay());
 
   // Virtual contexts obviously can't make a context that is compatible
@@ -77,10 +78,6 @@ bool GLContextVirtual::IsCurrent(gfx::GLSurface* surface) {
 
 void* GLContextVirtual::GetHandle() {
   return shared_context_->GetHandle();
-}
-
-gfx::GLStateRestorer* GLContextVirtual::GetGLStateRestorer() {
-  return state_restorer_.get();
 }
 
 void GLContextVirtual::SetSwapInterval(int interval) {

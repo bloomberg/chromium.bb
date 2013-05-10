@@ -284,7 +284,7 @@ VaapiH264Decoder::DecodeSurface::DecodeSurface(
   if (!make_context_current_.Run())
     return;
 
-  ui::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, texture_id_);
+  gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, texture_id_);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

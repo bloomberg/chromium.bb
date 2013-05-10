@@ -18,6 +18,8 @@ class GL_EXPORT GLStateRestorer {
   virtual ~GLStateRestorer();
 
   virtual void RestoreState() = 0;
+  virtual void RestoreAllTextureUnitBindings() = 0;
+  virtual void RestoreFramebufferBindings() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GLStateRestorer);
 };

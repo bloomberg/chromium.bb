@@ -102,6 +102,14 @@ void ContextState::RestoreActiveTexture() const {
   glActiveTexture(GL_TEXTURE0 + active_texture_unit);
 }
 
+void ContextState::RestoreAllTextureUnitBindings() const {
+  // Restore Texture state.
+  for (size_t ii = 0; ii < texture_units.size(); ++ii) {
+    RestoreTextureUnitBindings(ii);
+  }
+  RestoreActiveTexture();
+}
+
 void ContextState::RestoreAttribute(GLuint attrib_index) const {
   const VertexAttrib* attrib =
       vertex_attrib_manager->GetVertexAttrib(attrib_index);
@@ -140,11 +148,7 @@ void ContextState::RestoreGlobalState() const {
 }
 
 void ContextState::RestoreState() const {
-  // Restore Texture state.
-  for (size_t ii = 0; ii < texture_units.size(); ++ii) {
-    RestoreTextureUnitBindings(ii);
-  }
-  RestoreActiveTexture();
+  RestoreAllTextureUnitBindings();
 
   // Restore Attrib State
   // TODO: This if should not be needed. RestoreState is getting called

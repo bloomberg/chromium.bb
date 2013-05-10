@@ -21,4 +21,14 @@ void GLStateRestorerImpl::RestoreState() {
   decoder_->RestoreState();
 }
 
+void GLStateRestorerImpl::RestoreAllTextureUnitBindings() {
+  DCHECK(decoder_.get());
+  decoder_->RestoreAllTextureUnitBindings();
+}
+
+void GLStateRestorerImpl::RestoreFramebufferBindings() {
+  DCHECK(decoder_.get());
+  decoder_->RestoreFramebufferBindings();
+}
+
 }  // namespace gpu

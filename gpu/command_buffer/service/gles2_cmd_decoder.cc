@@ -604,6 +604,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual void RestoreActiveTexture() const OVERRIDE {
     state_.RestoreActiveTexture();
   }
+  virtual void RestoreAllTextureUnitBindings() const OVERRIDE {
+    state_.RestoreAllTextureUnitBindings();
+  }
   virtual void RestoreAttribute(unsigned index) const OVERRIDE {
     state_.RestoreAttribute(index);
   }

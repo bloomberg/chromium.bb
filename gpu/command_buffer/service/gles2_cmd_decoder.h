@@ -141,11 +141,12 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Gets the associated ContextGroup
   virtual ContextGroup* GetContextGroup() = 0;
 
-  // Gets the service id for any simulated backbuffer fbo.
+  // Restores all of the decoder GL state.
   virtual void RestoreState() const = 0;
 
   // Restore States.
   virtual void RestoreActiveTexture() const = 0;
+  virtual void RestoreAllTextureUnitBindings() const = 0;
   virtual void RestoreAttribute(unsigned index) const = 0;
   virtual void RestoreBufferBindings() const = 0;
   virtual void RestoreFramebufferBindings() const = 0;
