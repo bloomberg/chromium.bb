@@ -622,7 +622,7 @@
     ['enable_webrtc==1', {
       'targets': [
         {
-          'target_name': 'libjingle_webrtc',
+          'target_name': 'libjingle_webrtc_common',
           'type': 'static_library',
           'all_dependent_settings': {
             'conditions': [
@@ -632,8 +632,6 @@
             ],
           },
           'sources': [
-            'overrides/init_webrtc.cc',
-            'overrides/init_webrtc.h',
             'overrides/talk/media/webrtc/webrtcexport.h',
 
             '<(libjingle_source)/talk/app/webrtc/audiotrack.cc',
@@ -853,7 +851,18 @@
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render_module',
             'libjingle',
           ],
-        },  # target libjingle_webrtc
+        },  # target libjingle_webrtc_common
+        {
+          'target_name': 'libjingle_webrtc',
+          'type': 'static_library',
+          'sources': [
+            'overrides/init_webrtc.cc',
+            'overrides/init_webrtc.h',
+          ],
+          'dependencies': [
+            'libjingle_webrtc_common',
+          ],
+        },
         {
           'target_name': 'libpeerconnection',
           'type': '<(libpeer_target_type)',
@@ -868,7 +877,7 @@
             '<(DEPTH)/third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
             '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
             '<@(libjingle_peerconnection_additional_deps)',
-            'libjingle_webrtc',
+            'libjingle_webrtc_common',
           ],
           'conditions': [
             ['libpeer_allocator_shim==1 and '
