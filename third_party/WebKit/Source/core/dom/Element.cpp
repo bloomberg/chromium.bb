@@ -1452,12 +1452,10 @@ void Element::recalcStyle(StyleChange change)
             change = Force;
         }
 
-        if (change != Force) {
-            if (styleChangeType() >= FullStyleChange)
-                change = Force;
-            else
-                change = localChange;
-        }
+        if (styleChangeType() == FullStyleChange)
+            change = Force;
+        else if (change != Force)
+            change = localChange;
     }
     StyleResolverParentPusher parentPusher(this);
 
