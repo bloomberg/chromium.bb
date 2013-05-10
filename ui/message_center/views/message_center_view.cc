@@ -499,7 +499,8 @@ void RichMessageListView::RemoveNotificationAt(int i) {
     if (child->layer()) {
       deleting_views_.insert(child);
     } else {
-      animator_->StopAnimatingView(child);
+      if (animator_.get())
+        animator_->StopAnimatingView(child);
       delete child;
     }
     DoUpdateIfPossible();
