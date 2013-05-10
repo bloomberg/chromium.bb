@@ -33,8 +33,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
   Browser* new_browser = CreateBrowser(browser()->profile());
   int focused_window_id = ExtensionTabUtil::GetWindowId(new_browser);
 
-  scoped_refptr<WindowsGetLastFocusedFunction> function =
-      new WindowsGetLastFocusedFunction();
+  scoped_refptr<extensions::WindowsGetLastFocusedFunction> function =
+      new extensions::WindowsGetLastFocusedFunction();
   scoped_refptr<extensions::Extension> extension(utils::CreateEmptyExtension());
   function->set_extension(extension.get());
   scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
   ListValue* tabs = NULL;
   EXPECT_FALSE(result.get()->GetList(keys::kTabsKey, &tabs));
 
-  function = new WindowsGetLastFocusedFunction();
+  function = new extensions::WindowsGetLastFocusedFunction();
   function->set_extension(extension.get());
   result.reset(utils::ToDictionary(
       utils::RunFunctionAndReturnSingleResult(function.get(),
@@ -84,7 +84,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
   int focused_window_id = ExtensionTabUtil::GetWindowId(focused_window);
 
   // Get tabs in the 'last focused' window called from non-focused browser.
-  scoped_refptr<TabsQueryFunction> function = new TabsQueryFunction();
+  scoped_refptr<extensions::TabsQueryFunction> function =
+      new extensions::TabsQueryFunction();
   scoped_ptr<base::ListValue> result(utils::ToList(
       utils::RunFunctionAndReturnSingleResult(function.get(),
                                               "[{\"lastFocusedWindow\":true}]",
@@ -101,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
   }
 
   // Get tabs NOT in the 'last focused' window called from the focused browser.
-  function = new TabsQueryFunction();
+  function = new extensions::TabsQueryFunction();
   result.reset(utils::ToList(
       utils::RunFunctionAndReturnSingleResult(function.get(),
                                               "[{\"lastFocusedWindow\":false}]",

@@ -340,7 +340,7 @@ void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if !defined(OS_ANDROID)
-  TabsCaptureVisibleTabFunction::RegisterUserPrefs(registry);
+  extensions::TabsCaptureVisibleTabFunction::RegisterUserPrefs(registry);
   ChromeToMobileService::RegisterUserPrefs(registry);
   DeviceIDFetcher::RegisterUserPrefs(registry);
   DevToolsWindow::RegisterUserPrefs(registry);

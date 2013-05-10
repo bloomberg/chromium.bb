@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/extensions/user_script.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -19,6 +20,7 @@
 class BackingStore;
 class GURL;
 class SkBitmap;
+class TabStripModel;
 
 namespace base {
 class DictionaryValue;
@@ -28,17 +30,15 @@ namespace content {
 class WebContents;
 }
 
-namespace extensions {
-namespace api {
-namespace tabs {
-struct InjectDetails;
-}  // namespace tabs
-}  // namespace api
-}  // namespace extensions
+namespace ui {
+class ListSelectionModel;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
+
+namespace extensions {
 
 // Windows
 class WindowsGetFunction : public SyncExtensionFunction {
@@ -125,6 +125,10 @@ class TabsDuplicateFunction : public SyncExtensionFunction {
 class TabsHighlightFunction : public SyncExtensionFunction {
   virtual ~TabsHighlightFunction() {}
   virtual bool RunImpl() OVERRIDE;
+  bool HighlightTab(TabStripModel* tabstrip,
+                    ui::ListSelectionModel* selection,
+                    int *active_index,
+                    int index);
   DECLARE_EXTENSION_FUNCTION("tabs.highlight", TABS_HIGHLIGHT)
 };
 class TabsUpdateFunction : public AsyncExtensionFunction {
@@ -133,9 +137,9 @@ class TabsUpdateFunction : public AsyncExtensionFunction {
 
  protected:
   virtual ~TabsUpdateFunction() {}
-  virtual bool UpdateURLIfPresent(base::DictionaryValue* update_props,
-                                  int tab_id,
-                                  bool* is_async);
+  virtual bool UpdateURL(const std::string& url,
+                         int tab_id,
+                         bool* is_async);
   virtual void PopulateResult();
 
   content::WebContents* web_contents_;
@@ -152,6 +156,11 @@ class TabsUpdateFunction : public AsyncExtensionFunction {
 class TabsMoveFunction : public SyncExtensionFunction {
   virtual ~TabsMoveFunction() {}
   virtual bool RunImpl() OVERRIDE;
+  bool MoveTab(int tab_id,
+               int* new_index,
+               int iteration,
+               ListValue* tab_values,
+               int* window_id);
   DECLARE_EXTENSION_FUNCTION("tabs.move", TABS_MOVE)
 };
 class TabsReloadFunction : public SyncExtensionFunction {
@@ -162,6 +171,7 @@ class TabsReloadFunction : public SyncExtensionFunction {
 class TabsRemoveFunction : public SyncExtensionFunction {
   virtual ~TabsRemoveFunction() {}
   virtual bool RunImpl() OVERRIDE;
+  bool RemoveTab(int tab_id);
   DECLARE_EXTENSION_FUNCTION("tabs.remove", TABS_REMOVE)
 };
 class TabsDetectLanguageFunction : public AsyncExtensionFunction,
@@ -182,10 +192,7 @@ class TabsCaptureVisibleTabFunction : public AsyncExtensionFunction {
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
-  enum ImageFormat {
-    FORMAT_JPEG,
-    FORMAT_PNG
-  };
+  typedef api::tabs::CaptureVisibleTab::Params::Options::Format ImageFormat;
 
   // The default quality setting used when encoding jpegs.
   static const int kDefaultQuality;
@@ -261,11 +268,11 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
   int execute_tab_id_;
 
   // The injection details.
-  scoped_ptr<extensions::api::tabs::InjectDetails> details_;
+  scoped_ptr<api::tabs::InjectDetails> details_;
 
   // Contains extension resource built from path of file which is
   // specified in JSON arguments.
-  extensions::ExtensionResource resource_;
+  ExtensionResource resource_;
 };
 
 class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {
@@ -286,5 +293,7 @@ class TabsInsertCSSFunction : public ExecuteCodeInTabFunction {
 
   DECLARE_EXTENSION_FUNCTION("tabs.insertCSS", TABS_INSERTCSS)
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_API_H_

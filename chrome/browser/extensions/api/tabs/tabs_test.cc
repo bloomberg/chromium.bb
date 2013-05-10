@@ -24,7 +24,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/gfx/rect.h"
 
-namespace keys = extensions::tabs_constants;
+namespace extensions {
+
+namespace keys = tabs_constants;
 namespace utils = extension_function_test_utils;
 
 namespace {
@@ -39,7 +41,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
 
   // Invalid window ID error.
   scoped_refptr<WindowsGetFunction> function = new WindowsGetFunction();
-  scoped_refptr<extensions::Extension> extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> extension(utils::CreateEmptyExtension());
   function->set_extension(extension.get());
   EXPECT_TRUE(MatchPattern(
       utils::RunFunctionAndReturnError(
@@ -141,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetCurrentWindow) {
   // Get the current window using new_browser.
   scoped_refptr<WindowsGetCurrentFunction> function =
       new WindowsGetCurrentFunction();
-  scoped_refptr<extensions::Extension> extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> extension(utils::CreateEmptyExtension());
   function->set_extension(extension.get());
   scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
       utils::RunFunctionAndReturnSingleResult(function.get(),
@@ -181,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
   }
 
   scoped_refptr<WindowsGetAllFunction> function = new WindowsGetAllFunction();
-  scoped_refptr<extensions::Extension> extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> extension(utils::CreateEmptyExtension());
   function->set_extension(extension.get());
   scoped_ptr<base::ListValue> result(utils::ToList(
       utils::RunFunctionAndReturnSingleResult(function.get(),
@@ -230,8 +232,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateNoPermissions) {
   // tab data in the function result.
   scoped_refptr<TabsUpdateFunction> update_tab_function(
       new TabsUpdateFunction());
-  scoped_refptr<extensions::Extension> empty_extension(
-      utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
   update_tab_function->set_extension(empty_extension.get());
   // Without a callback the function will not generate a result.
   update_tab_function->set_has_callback(true);
@@ -255,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
                                       IncognitoModePrefs::FORCED);
   // Run without an explicit "incognito" param.
   scoped_refptr<WindowsCreateFunction> function(new WindowsCreateFunction());
-  scoped_refptr<extensions::Extension> extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> extension(utils::CreateEmptyExtension());
   function->set_extension(extension.get());
   scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
       utils::RunFunctionAndReturnSingleResult(
@@ -296,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
                                       IncognitoModePrefs::FORCED);
   // Run without an explicit "incognito" param.
   scoped_refptr<WindowsCreateFunction> function = new WindowsCreateFunction();
-  scoped_refptr<extensions::Extension> extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> extension(utils::CreateEmptyExtension());
   function->set_extension(extension.get());
   scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
       utils::RunFunctionAndReturnSingleResult(function.get(),
@@ -337,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
 
   // Run with an explicit "incognito" param.
   scoped_refptr<WindowsCreateFunction> function = new WindowsCreateFunction();
-  scoped_refptr<extensions::Extension> extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> extension(utils::CreateEmptyExtension());
   function->set_extension(extension.get());
   EXPECT_TRUE(MatchPattern(
       utils::RunFunctionAndReturnError(function.get(),
@@ -368,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
                                       IncognitoModePrefs::DISABLED);
   // Run in normal window.
   scoped_refptr<WindowsCreateFunction> function = new WindowsCreateFunction();
-  scoped_refptr<extensions::Extension> extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> extension(utils::CreateEmptyExtension());
   function->set_extension(extension.get());
   EXPECT_TRUE(MatchPattern(
       utils::RunFunctionAndReturnError(function.get(),
@@ -464,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
   static const char kArgsMinimizedWithFocus[] =
       "[%u, {\"state\": \"minimized\", \"focused\": true}]";
   scoped_refptr<WindowsUpdateFunction> function = new WindowsUpdateFunction();
-  scoped_refptr<extensions::Extension> extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> extension(utils::CreateEmptyExtension());
   function->set_extension(extension.get());
   EXPECT_TRUE(MatchPattern(
       utils::RunFunctionAndReturnError(
@@ -526,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
       utils::ParseDictionary(
       "{\"name\": \"Test\", \"version\": \"1.0\", \"permissions\": [\"tabs\"]}"
       ));
-  scoped_refptr<extensions::Extension> empty_tab_extension(
+  scoped_refptr<Extension> empty_tab_extension(
       utils::CreateExtension(test_extension_value.get()));
   duplicate_tab_function->set_extension(empty_tab_extension.get());
   duplicate_tab_function->set_has_callback(true);
@@ -566,8 +567,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
 
   scoped_refptr<TabsDuplicateFunction> duplicate_tab_function(
       new TabsDuplicateFunction());
-  scoped_refptr<extensions::Extension> empty_extension(
-      utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
   duplicate_tab_function->set_extension(empty_extension.get());
   duplicate_tab_function->set_has_callback(true);
 
@@ -589,3 +589,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
   // should not contain url, title, and faviconUrl in the function result.
   EXPECT_FALSE(utils::HasPrivacySensitiveFields(duplicate_result.get()));
 }
+
+}  // namespace extensions
