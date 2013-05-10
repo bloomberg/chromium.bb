@@ -52,10 +52,6 @@ class MEDIA_EXPORT MultiChannelResampler {
   // each channel (in channel order) as SincResampler needs more data.
   void ProvideInput(int channel, int frames, float* destination);
 
-  // Sanity check to ensure that ProvideInput() retrieves the same number of
-  // frames for every channel.
-  int last_frame_count_;
-
   // Source of data for resampling.
   ReadCB read_cb_;
 
@@ -64,8 +60,10 @@ class MEDIA_EXPORT MultiChannelResampler {
 
   // Buffers for audio data going into SincResampler from ReadCB.
   scoped_ptr<AudioBus> resampler_audio_bus_;
+
+  // To avoid a memcpy() on the first channel we create a wrapped AudioBus where
+  // the first channel points to the |destination| provided to ProvideInput().
   scoped_ptr<AudioBus> wrapped_resampler_audio_bus_;
-  std::vector<float*> resampler_audio_data_;
 
   // The number of output frames that have successfully been processed during
   // the current Resample() call.
