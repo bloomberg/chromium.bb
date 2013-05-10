@@ -38,6 +38,7 @@
 #include "core/dom/CrossThreadTask.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
+#include "wtf/MainThread.h"
 
 using namespace WebCore;
 
