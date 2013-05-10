@@ -894,7 +894,7 @@ void OmniboxEditModel::OnKillFocus() {
 bool OmniboxEditModel::OnEscapeKeyPressed() {
   if (has_temporary_text_) {
     AutocompleteMatch match;
-    InfoForCurrentSelection(&match, NULL);
+    GetInfoForCurrentText(&match, NULL);
     if (match.destination_url != original_url_) {
       RevertTemporaryText(true);
       return true;
@@ -1260,34 +1260,10 @@ string16 OmniboxEditModel::UserTextFromDisplayText(const string16& text) const {
   return KeywordIsSelected() ? (keyword_ + char16(' ') + text) : text;
 }
 
-void OmniboxEditModel::InfoForCurrentSelection(AutocompleteMatch* match,
-                                               GURL* alternate_nav_url) const {
-  DCHECK(match != NULL);
-  const AutocompleteResult& result = this->result();
-  if (!autocomplete_controller()->done()) {
-    // It's technically possible for |result| to be empty if no provider returns
-    // a synchronous result but the query has not completed synchronously;
-    // pratically, however, that should never actually happen.
-    if (result.empty())
-      return;
-    // The user cannot have manually selected a match, or the query would have
-    // stopped.  So the default match must be the desired selection.
-    *match = *result.default_match();
-  } else {
-    CHECK(popup_->IsOpen());
-    // If there are no results, the popup should be closed (so we should have
-    // failed the CHECK above), and URLsForDefaultMatch() should have been
-    // called instead.
-    CHECK(!result.empty());
-    CHECK(popup_->selected_line() < result.size());
-    *match = result.match_at(popup_->selected_line());
-  }
-  if (alternate_nav_url && popup_->manually_selected_match().empty())
-    *alternate_nav_url = result.alternate_nav_url();
-}
-
 void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
                                              GURL* alternate_nav_url) const {
+  DCHECK(match != NULL);
+
   // If there's temporary text and it has been set by Instant, we won't find it
   // in the popup model, so create the match based on the type Instant told us
   // (SWYT for queries and UWYT for URLs). We do this instead of classifying the
@@ -1336,7 +1312,24 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
       }
     }
   } else if (popup_->IsOpen() || query_in_progress()) {
-    InfoForCurrentSelection(match, alternate_nav_url);
+    if (query_in_progress()) {
+      // It's technically possible for |result| to be empty if no provider
+      // returns a synchronous result but the query has not completed
+      // synchronously; pratically, however, that should never actually happen.
+      if (result().empty())
+        return;
+      // The user cannot have manually selected a match, or the query would have
+      // stopped. So the default match must be the desired selection.
+      *match = *result().default_match();
+    } else {
+      // If there are no results, the popup should be closed, so we shouldn't
+      // have gotten here.
+      CHECK(!result().empty());
+      CHECK(popup_->selected_line() < result().size());
+      *match = result().match_at(popup_->selected_line());
+    }
+    if (alternate_nav_url && popup_->manually_selected_match().empty())
+      *alternate_nav_url = result().alternate_nav_url();
   } else {
     AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(
         UserTextFromDisplayText(view_->GetText()), KeywordIsSelected(), true,

@@ -370,21 +370,9 @@ class OmniboxEditModel {
   string16 DisplayTextFromUserText(const string16& text) const;
   string16 UserTextFromDisplayText(const string16& text) const;
 
-  // Copies the selected match into |match|.  If an update is in progress,
-  // "selected" means "default in the latest matches".  If there are no matches,
-  // does not update |match|.
-  //
-  // If |alternate_nav_url| is non-NULL, it will be set to the alternate
-  // navigation URL for |url| if one exists, or left unchanged otherwise.  See
-  // comments on AutocompleteResult::GetAlternateNavURL().
-  //
-  // TODO(pkasting): When manually_selected_match_ moves to the controller, this
-  // can move too.
-  void InfoForCurrentSelection(AutocompleteMatch* match,
-                               GURL* alternate_nav_url) const;
-
-  // Returns the default match for the current text, as well as the alternate
-  // nav URL, if |alternate_nav_url| is non-NULL and there is such a URL.
+  // If there's a selected match, copies it into |match|. Else, returns the
+  // default match for the current text, as well as the alternate nav URL, if
+  // |alternate_nav_url| is non-NULL and there is such a URL.
   void GetInfoForCurrentText(AutocompleteMatch* match,
                              GURL* alternate_nav_url) const;
 

@@ -162,7 +162,7 @@ void OmniboxPopupModel::SetSelectedLineState(LineState state) {
 }
 
 void OmniboxPopupModel::TryDeletingCurrentItem() {
-  // We could use InfoForCurrentSelection() here, but it seems better to try
+  // We could use GetInfoForCurrentText() here, but it seems better to try
   // and shift-delete the actual selection, rather than any "in progress, not
   // yet visible" one.
   if (selected_line_ == kNoMatch)
