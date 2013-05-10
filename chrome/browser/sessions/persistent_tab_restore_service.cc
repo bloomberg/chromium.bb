@@ -318,9 +318,16 @@ void PersistentTabRestoreService::Delegate::OnAddEntry() {
 }
 
 void PersistentTabRestoreService::Delegate::LoadTabsFromLastSession() {
-  if (load_state_ != NOT_LOADED ||
-      tab_restore_service_helper_->entries().size() == kMaxEntries)
+  if (load_state_ != NOT_LOADED)
     return;
+
+  if (tab_restore_service_helper_->entries().size() == kMaxEntries) {
+    // We already have the max number of entries we can take. There is no point
+    // in attempting to load since we'll just drop the results. Skip to loaded.
+    load_state_ = (LOADING | LOADED_LAST_SESSION | LOADED_LAST_TABS);
+    LoadStateChanged();
+    return;
+  }
 
 #if !defined(ENABLE_SESSION_SERVICE)
   // If sessions are not stored in the SessionService, default to
@@ -818,6 +825,7 @@ void PersistentTabRestoreService::Delegate::LoadStateChanged() {
   const Entries& entries = tab_restore_service_helper_->entries();
   if (staging_entries_.empty() || entries.size() >= kMaxEntries) {
     staging_entries_.clear();
+    tab_restore_service_helper_->NotifyLoaded();
     return;
   }
 
@@ -850,6 +858,8 @@ void PersistentTabRestoreService::Delegate::LoadStateChanged() {
 
   tab_restore_service_helper_->PruneEntries();
   tab_restore_service_helper_->NotifyTabsChanged();
+
+  tab_restore_service_helper_->NotifyLoaded();
 }
 
 void PersistentTabRestoreService::Delegate::RemoveEntryByID(

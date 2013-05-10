@@ -305,6 +305,11 @@ void TabRestoreServiceHelper::NotifyTabsChanged() {
                     TabRestoreServiceChanged(tab_restore_service_));
 }
 
+void TabRestoreServiceHelper::NotifyLoaded() {
+  FOR_EACH_OBSERVER(TabRestoreServiceObserver, observer_list_,
+                    TabRestoreServiceLoaded(tab_restore_service_));
+}
+
 void TabRestoreServiceHelper::AddEntry(Entry* entry,
                                        bool notify,
                                        bool to_front) {

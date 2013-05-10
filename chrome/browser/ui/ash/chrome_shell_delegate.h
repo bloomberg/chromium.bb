@@ -104,6 +104,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  class TabRestoreHelper;
+
   void PlatformInit();
 
   // Returns the browser for active ash window if any. Otherwise it searches
@@ -119,6 +121,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   base::WeakPtrFactory<ChromeShellDelegate> weak_factory_;
 
   ChromeLauncherController* launcher_delegate_;
+
+  scoped_ptr<TabRestoreHelper> tab_restore_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);
 };

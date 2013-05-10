@@ -18,6 +18,9 @@ class TabRestoreServiceObserver {
   // destructor is run.
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service) = 0;
 
+  // Sent when TabRestoreService finishes loading.
+  virtual void TabRestoreServiceLoaded(TabRestoreService* service) {}
+
  protected:
   virtual ~TabRestoreServiceObserver() {}
 };

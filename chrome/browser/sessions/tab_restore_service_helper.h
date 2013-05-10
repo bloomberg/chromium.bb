@@ -90,6 +90,9 @@ class TabRestoreServiceHelper {
   // Notifies observers the tabs have changed.
   void NotifyTabsChanged();
 
+  // Notifies observers the service has loaded.
+  void NotifyLoaded();
+
   // Adds |entry| to the list of entries and takes ownership. If |prune| is true
   // |PruneAndNotify| is invoked. If |to_front| is true the entry is added to
   // the front, otherwise the back. Normal closes go to the front, but

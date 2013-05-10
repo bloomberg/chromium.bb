@@ -12,6 +12,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
@@ -168,6 +169,33 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
       webkit_platform_support_;
   content::TestBrowserThread ui_thread_;
 };
+
+namespace {
+
+class TestTabRestoreServiceObserver : public TabRestoreServiceObserver {
+ public:
+  TestTabRestoreServiceObserver() : got_loaded_(false) {}
+
+  void clear_got_loaded() { got_loaded_ = false; }
+  bool got_loaded() const { return got_loaded_; }
+
+  // TabRestoreServiceObserver:
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE {
+  }
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE {
+  }
+  virtual void TabRestoreServiceLoaded(TabRestoreService* service) OVERRIDE {
+    got_loaded_ = true;
+  }
+
+ private:
+  // Was TabRestoreServiceLoaded() invoked?
+  bool got_loaded_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTabRestoreServiceObserver);
+};
+
+}  // namespace
 
 TEST_F(PersistentTabRestoreServiceTest, Basic) {
   AddThreeNavigations();
@@ -372,7 +400,13 @@ TEST_F(PersistentTabRestoreServiceTest, LoadPreviousSession) {
   SessionServiceFactory::GetForProfile(profile())->
       MoveCurrentSessionToLastSession();
 
+  EXPECT_FALSE(service_->IsLoaded());
+
+  TestTabRestoreServiceObserver observer;
+  service_->AddObserver(&observer);
   service_->LoadTabsFromLastSession();
+  EXPECT_TRUE(observer.got_loaded());
+  service_->RemoveObserver(&observer);
 
   // Make sure we get back one entry with one tab whose url is url1.
   ASSERT_EQ(1U, service_->entries().size());
@@ -694,4 +728,24 @@ TEST_F(PersistentTabRestoreServiceTest, PruneIsCalled) {
   // This should not crash.
   service_->LoadTabsFromLastSession();
   EXPECT_EQ(max_entries, service_->entries().size());
+}
+
+// Makes sure invoking LoadTabsFromLastSession() when the max number of entries
+// have been added results in IsLoaded() returning true and notifies observers.
+TEST_F(PersistentTabRestoreServiceTest, GoToLoadedWhenHaveMaxEntries) {
+  const size_t max_entries = kMaxEntries;
+  for (size_t i = 0; i < max_entries + 5; i++) {
+    NavigateAndCommit(
+        GURL(base::StringPrintf("http://%d", static_cast<int>(i))));
+    service_->CreateHistoricalTab(web_contents(), -1);
+  }
+
+  EXPECT_FALSE(service_->IsLoaded());
+  TestTabRestoreServiceObserver observer;
+  service_->AddObserver(&observer);
+  EXPECT_EQ(max_entries, service_->entries().size());
+  service_->LoadTabsFromLastSession();
+  EXPECT_TRUE(observer.got_loaded());
+  EXPECT_TRUE(service_->IsLoaded());
+  service_->RemoveObserver(&observer);
 }

@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/ash_keyboard_controller_proxy.h"
@@ -56,6 +57,57 @@
 
 // static
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
+
+namespace {
+
+void RestoreTabUsingProfile(Profile* profile) {
+  TabRestoreService* service = TabRestoreServiceFactory::GetForProfile(profile);
+  service->RestoreMostRecentEntry(NULL, chrome::HOST_DESKTOP_TYPE_ASH);
+}
+
+}  // namespace
+
+// TabRestoreHelper is used to restore a tab. In particular when the user
+// attempts to a restore a tab if the TabRestoreService hasn't finished loading
+// this waits for it. Once the TabRestoreService finishes loading the tab is
+// restored.
+class ChromeShellDelegate::TabRestoreHelper : public TabRestoreServiceObserver {
+ public:
+  TabRestoreHelper(ChromeShellDelegate* delegate,
+                   Profile* profile,
+                   TabRestoreService* service)
+      : delegate_(delegate),
+        profile_(profile),
+        tab_restore_service_(service) {
+    tab_restore_service_->AddObserver(this);
+  }
+
+  virtual ~TabRestoreHelper() {
+    tab_restore_service_->RemoveObserver(this);
+  }
+
+  TabRestoreService* tab_restore_service() { return tab_restore_service_; }
+
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE {
+  }
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE {
+    // This destroys us.
+    delegate_->tab_restore_helper_.reset();
+  }
+
+  virtual void TabRestoreServiceLoaded(TabRestoreService* service) OVERRIDE {
+    RestoreTabUsingProfile(profile_);
+    // This destroys us.
+    delegate_->tab_restore_helper_.reset();
+  }
+
+ private:
+  ChromeShellDelegate* delegate_;
+  Profile* profile_;
+  TabRestoreService* tab_restore_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabRestoreHelper);
+};
 
 ChromeShellDelegate::ChromeShellDelegate()
     : window_positioner_(new ash::WindowPositioner()),
@@ -150,25 +202,27 @@ void ChromeShellDelegate::ToggleMaximized() {
 }
 
 void ChromeShellDelegate::RestoreTab() {
-  Browser* browser = GetTargetBrowser();
-  // Do not restore tabs while in the incognito mode.
-  if (browser->profile()->IsOffTheRecord())
+  if (tab_restore_helper_.get()) {
+    DCHECK(!tab_restore_helper_->tab_restore_service()->IsLoaded());
+    return;
+  }
+
+  Browser* browser = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+  Profile* profile = browser ? browser->profile() : NULL;
+  if (!profile)
+    profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  if (profile->IsOffTheRecord())
     return;
   TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(browser->profile());
+      TabRestoreServiceFactory::GetForProfile(profile);
   if (!service)
     return;
+
   if (service->IsLoaded()) {
-    chrome::RestoreTab(browser);
+    RestoreTabUsingProfile(profile);
   } else {
+    tab_restore_helper_.reset(new TabRestoreHelper(this, profile, service));
     service->LoadTabsFromLastSession();
-    // LoadTabsFromLastSession is asynchronous, so TabRestoreService has not
-    // finished loading the entries at this point. Wait for next event cycle
-    // which loads the restored tab entries.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ChromeShellDelegate::RestoreTab,
-                   weak_factory_.GetWeakPtr()));
   }
 }
 
