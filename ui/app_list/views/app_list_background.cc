@@ -7,6 +7,8 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/search_box_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -25,9 +27,9 @@ const int kTopSeparatorSize = 1;
 namespace app_list {
 
 AppListBackground::AppListBackground(int corner_radius,
-                                     views::View* search_box_view)
+                                     AppListMainView* main_view)
     : corner_radius_(corner_radius),
-      search_box_view_(search_box_view) {
+      main_view_(main_view) {
 }
 
 AppListBackground::~AppListBackground() {
@@ -47,25 +49,30 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
 
-  const gfx::Rect search_box_view_bounds =
-      search_box_view_->ConvertRectToWidget(search_box_view_->GetLocalBounds());
-  gfx::Rect search_box_rect(bounds.x(),
-                            bounds.y(),
-                            bounds.width(),
-                            search_box_view_bounds.bottom() - bounds.y());
+  int contents_top = bounds.y();
+  if (main_view_->visible()) {
+    views::View* search_box_view = main_view_->search_box_view();
+    const gfx::Rect search_box_view_bounds =
+        search_box_view->ConvertRectToWidget(search_box_view->GetLocalBounds());
+    gfx::Rect search_box_rect(bounds.x(),
+                              bounds.y(),
+                              bounds.width(),
+                              search_box_view_bounds.bottom() - bounds.y());
 
-  paint.setColor(kSearchBoxBackground);
-  canvas->DrawRect(search_box_rect, paint);
+    paint.setColor(kSearchBoxBackground);
+    canvas->DrawRect(search_box_rect, paint);
 
-  gfx::Rect seperator_rect(search_box_rect);
-  seperator_rect.set_y(seperator_rect.bottom());
-  seperator_rect.set_height(kTopSeparatorSize);
-  canvas->FillRect(seperator_rect, kTopSeparatorColor);
+    gfx::Rect seperator_rect(search_box_rect);
+    seperator_rect.set_y(seperator_rect.bottom());
+    seperator_rect.set_height(kTopSeparatorSize);
+    canvas->FillRect(seperator_rect, kTopSeparatorColor);
+    contents_top = seperator_rect.bottom();
+  }
 
   gfx::Rect contents_rect(bounds.x(),
-                          seperator_rect.bottom(),
+                          contents_top,
                           bounds.width(),
-                          bounds.bottom() - seperator_rect.bottom());
+                          bounds.bottom() - contents_top);
 
   paint.setColor(kContentsBackgroundColor);
   canvas->DrawRect(contents_rect, paint);

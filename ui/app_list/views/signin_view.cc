@@ -6,6 +6,7 @@
 
 #include "ui/app_list/signin_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/font.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -14,12 +15,16 @@
 
 namespace {
 
-const int kTopPadding = 10;
-const int kBottomPadding = 10;
-const int kLeftPadding = 20;
-const int kRightPadding = 20;
+const int kTopPadding = 40;
+const int kBottomPadding = 40;
+const int kLeftPadding = 40;
+const int kRightPadding = 40;
 const int kHeadingPadding = 30;
-const int kButtonPadding = 100;
+const int kButtonPadding = 40;
+
+const int kTitleFontSize = 18;
+const int kTextFontSize = 13;
+const int kButtonFontSize = 12;
 
 }  // namespace
 
@@ -30,12 +35,22 @@ SigninView::SigninView(SigninDelegate* delegate, int width)
   if (!delegate_)
     return;
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::Font& base_font = rb.GetFont(ui::ResourceBundle::BaseFont);
+  title_font_.reset(new gfx::Font(base_font.GetFontName(), kTitleFontSize));
+  text_font_.reset(new gfx::Font(base_font.GetFontName(), kTextFontSize));
+  button_font_.reset(new gfx::Font(base_font.GetFontName(), kButtonFontSize));
+
+  int title_descender = title_font_->GetHeight() - title_font_->GetBaseline();
+  int text_descender = text_font_->GetHeight() - text_font_->GetBaseline();
+
   views::GridLayout* layout = new views::GridLayout(this);
-  layout->SetInsets(kTopPadding, kLeftPadding, kBottomPadding, kRightPadding);
+  layout->SetInsets(kTopPadding, kLeftPadding, kBottomPadding - text_descender,
+                    kRightPadding);
   SetLayoutManager(layout);
 
-  const int kTopSetId = 0;
-  views::ColumnSet* columns = layout->AddColumnSet(kTopSetId);
+  const int kNormalSetId = 0;
+  views::ColumnSet* columns = layout->AddColumnSet(kNormalSetId);
   columns->AddColumn(views::GridLayout::FILL,
                      views::GridLayout::FILL,
                      1,
@@ -43,60 +58,58 @@ SigninView::SigninView(SigninDelegate* delegate, int width)
                      0,
                      0);
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const int kButtonSetId = 1;
+  columns = layout->AddColumnSet(kButtonSetId);
+  columns->AddColumn(views::GridLayout::LEADING,
+                     views::GridLayout::FILL,
+                     1,
+                     views::GridLayout::USE_PREF,
+                     0,
+                     0);
 
   views::Label* heading = new views::Label(delegate_->GetSigninHeading());
-  heading->SetFont(rb.GetFont(ui::ResourceBundle::LargeFont));
+  heading->SetFont(*title_font_);
   heading->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  layout->StartRow(0, kTopSetId);
+  layout->StartRow(0, kNormalSetId);
   layout->AddView(heading);
 
   views::Label* text = new views::Label(delegate_->GetSigninText());
-  text->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
+  text->SetFont(*text_font_);
   text->SetMultiLine(true);
   text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->StartRowWithPadding(0, kTopSetId, 0, kHeadingPadding);
+  layout->StartRowWithPadding(0, kNormalSetId, 0,
+                              kHeadingPadding - title_descender);
   layout->AddView(text);
 
   views::LabelButton* signin_button = new views::LabelButton(
       this,
       delegate_->GetSigninButtonText());
   signin_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  layout->StartRowWithPadding(0, kTopSetId, 0, kButtonPadding);
+  layout->StartRowWithPadding(0, kButtonSetId, 0,
+                              kButtonPadding - text_descender);
   layout->AddView(signin_button);
 
-  const int kBottomSetId = 1;
-  columns = layout->AddColumnSet(kBottomSetId);
-  columns->AddColumn(views::GridLayout::FILL,
-                     views::GridLayout::FILL,
-                     0,
-                     views::GridLayout::USE_PREF,
-                     0,
-                     0);
-  columns->AddColumn(views::GridLayout::FILL,
-                     views::GridLayout::FILL,
-                     1,
-                     views::GridLayout::USE_PREF,
-                     0,
-                     0);
-
-  layout->StartRow(1, kBottomSetId);
+  layout->StartRow(1, kNormalSetId);
   learn_more_link_ = new views::Link(delegate_->GetLearnMoreLinkText());
   learn_more_link_->set_listener(this);
+  learn_more_link_->SetFont(*text_font_);
+  learn_more_link_->SetUnderline(false);
   layout->AddView(learn_more_link_,
                   1,
                   1,
                   views::GridLayout::LEADING,
                   views::GridLayout::TRAILING);
 
+  layout->StartRow(0, kNormalSetId);
   settings_link_ = new views::Link(delegate_->GetSettingsLinkText());
   settings_link_->set_listener(this);
-  settings_link_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  settings_link_->SetFont(*text_font_);
+  settings_link_->SetUnderline(false);
   layout->AddView(settings_link_,
                   1,
                   1,
-                  views::GridLayout::TRAILING,
+                  views::GridLayout::LEADING,
                   views::GridLayout::TRAILING);
 }
 

@@ -15284,7 +15284,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Search
     </message>
     <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher signin button text.">
-      SIGN IN
+      Sign in
     </message>
     <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_TEXT" desc="App launcher signin learn more link text.">
       Learn more
@@ -15293,7 +15293,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       https://support.google.com/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=165139&amp;p=settings_sign_in
     </message>
     <message name="IDS_APP_LIST_SIGNIN_SETTINGS_TEXT" desc="App launcher signin settings link text.">
-      Settings
+      App Launcher Settings
     </message>
     <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
       New window

@@ -15,11 +15,13 @@ class View;
 
 namespace app_list {
 
+class AppListMainView;
+
 // A class to paint bubble background.
 class AppListBackground : public views::Background {
  public:
   AppListBackground(int corner_radius,
-                    views::View* search_box_view);
+                    AppListMainView* main_view);
   virtual ~AppListBackground();
 
  private:
@@ -27,7 +29,7 @@ class AppListBackground : public views::Background {
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE;
 
   const int corner_radius_;
-  const views::View* search_box_view_;  // Owned by views hierarchy.
+  const AppListMainView* main_view_;  // Owned by views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(AppListBackground);
 };

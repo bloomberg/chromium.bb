@@ -101,12 +101,12 @@ void AppListView::InitAsBubble(gfx::NativeView parent,
   GetWidget()->GetNativeWindow()->layer()->SetMasksToBounds(true);
   GetBubbleFrameView()->set_background(new AppListBackground(
       GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
-      app_list_main_view_->search_box_view()));
+      app_list_main_view_));
   set_background(NULL);
 #else
   set_background(new AppListBackground(
       GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
-      app_list_main_view_->search_box_view()));
+      app_list_main_view_));
 
   // On non-aura the bubble has two widgets, and it's possible for the border
   // to be shown independently in odd situations. Explicitly hide the bubble
