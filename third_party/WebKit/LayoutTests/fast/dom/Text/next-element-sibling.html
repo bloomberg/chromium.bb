@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script>
+
+description('This tests the ChildNode interface nextElementSibling property on a Text node.');
+
+var element = document.createElement('div');
+var a = element.appendChild(new Text('a'));
+shouldBeNull('a.nextElementSibling');
+var b = element.appendChild(document.createElement('b'));
+shouldBe('a.nextElementSibling', 'b');
+var c = element.insertBefore(new Comment('c'), b);
+shouldBe('a.nextElementSibling', 'b');
+
+</script>
+<script src="../../js/resources/js-test-post.js"></script>

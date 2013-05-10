@@ -37,7 +37,9 @@ interface CharacterData : Node {
                                     [IsIndex,Default=Undefined] optional unsigned long length,
                                     [Default=Undefined] optional DOMString data);
 
-    // DOM 4
+    // ChildNode interface API
+    readonly attribute Element previousElementSibling;
+    readonly attribute Element nextElementSibling;
     [RaisesException] void remove();
 };
 

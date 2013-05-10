@@ -31,7 +31,9 @@ interface DocumentType : Node {
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString systemId;
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString internalSubset;        
 
-    // DOM 4
+    // ChildNode interface API
+    readonly attribute Element previousElementSibling;
+    readonly attribute Element nextElementSibling;
     [RaisesException] void remove();
 };
 

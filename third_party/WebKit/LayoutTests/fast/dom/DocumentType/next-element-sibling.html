@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script>
+
+description('This tests the ChildNode interface nextElementSibling property on a DocumentType node.');
+
+var doctype = document.doctype;
+shouldBe('doctype.nextElementSibling', 'document.documentElement');
+document.insertBefore(new Comment(), document.documentElement);
+shouldBe('doctype.nextElementSibling', 'document.documentElement');
+
+</script>
+<script src="../../js/resources/js-test-post.js"></script>

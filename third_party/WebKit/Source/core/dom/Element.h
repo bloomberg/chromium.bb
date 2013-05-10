@@ -507,8 +507,6 @@ public:
     // ElementTraversal API
     Element* firstElementChild() const;
     Element* lastElementChild() const;
-    Element* previousElementSibling() const;
-    Element* nextElementSibling() const;
     unsigned childElementCount() const;
 
     virtual bool matchesReadOnlyPseudoClass() const;
@@ -779,7 +777,7 @@ inline Element* Node::parentElement() const
     return parent && parent->isElementNode() ? toElement(parent) : 0;
 }
 
-inline Element* Element::previousElementSibling() const
+inline Element* Node::previousElementSibling() const
 {
     Node* n = previousSibling();
     while (n && !n->isElementNode())
@@ -787,7 +785,7 @@ inline Element* Element::previousElementSibling() const
     return static_cast<Element*>(n);
 }
 
-inline Element* Element::nextElementSibling() const
+inline Element* Node::nextElementSibling() const
 {
     Node* n = nextSibling();
     while (n && !n->isElementNode())

@@ -104,8 +104,6 @@
     // ElementTraversal API
     [PerWorldBindings] readonly attribute Element firstElementChild;
     [PerWorldBindings] readonly attribute Element lastElementChild;
-    [PerWorldBindings] readonly attribute Element previousElementSibling;
-    [PerWorldBindings] readonly attribute Element nextElementSibling;
     [PerWorldBindings] readonly attribute unsigned long childElementCount;
 
     // ShadowAware API
@@ -114,7 +112,9 @@
     [ImplementedAs=shadowRoot, PerWorldBindings] readonly attribute ShadowRoot webkitShadowRoot;
     [ImplementedAs=insertionParentForBinding, PerWorldBindings] readonly attribute Node webkitInsertionParent;
 
-    // DOM 4
+    // ChildNode interface API
+    [PerWorldBindings] readonly attribute Element previousElementSibling;
+    [PerWorldBindings] readonly attribute Element nextElementSibling;
     [RaisesException] void remove();
 
     // CSSOM View Module API
