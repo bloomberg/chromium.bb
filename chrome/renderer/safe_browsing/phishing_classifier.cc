@@ -96,7 +96,7 @@ void PhishingClassifier::BeginClassification(
   // asynchronously, rather than directly from this method.  To ensure that
   // this is the case, post a task to begin feature extraction on the next
   // iteration of the message loop.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PhishingClassifier::BeginFeatureExtraction,
                  weak_factory_.GetWeakPtr()));

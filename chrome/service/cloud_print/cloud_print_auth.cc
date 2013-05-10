@@ -41,7 +41,7 @@ void CloudPrintAuth::AuthenticateWithLsid(
           kProxyAuthUserAgent, kCloudPrintGaiaServiceId,
           GaiaUrls::GetInstance()->client_login_url(),
           g_service_process->io_thread()->message_loop_proxy()));
-  gaia_auth_for_print->set_message_loop(MessageLoop::current());
+  gaia_auth_for_print->set_message_loop(base::MessageLoop::current());
   if (gaia_auth_for_print->AuthenticateWithLsid(lsid)) {
     // Stash away the user email so we can save it in prefs.
     user_email_ = gaia_auth_for_print->email();
@@ -132,8 +132,9 @@ void CloudPrintAuth::OnRefreshTokenResponse(const std::string& access_token,
   DCHECK(expires_in_seconds > kTokenRefreshGracePeriodSecs);
   base::TimeDelta refresh_delay = base::TimeDelta::FromSeconds(
       expires_in_seconds - kTokenRefreshGracePeriodSecs);
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(&CloudPrintAuth::RefreshAccessToken, this),
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CloudPrintAuth::RefreshAccessToken, this),
       refresh_delay);
 }
 

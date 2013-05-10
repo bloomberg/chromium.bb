@@ -132,7 +132,7 @@ void PhishingDOMFeatureExtractor::ExtractFeatures(
     cur_document_ = web_view->mainFrame()->document();
   }
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout,
                  weak_factory_.GetWeakPtr()));
@@ -215,7 +215,7 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
           // clock granularity.
           UMA_HISTOGRAM_TIMES("SBClientPhishing.DOMFeatureChunkTime",
                               chunk_elapsed);
-          MessageLoop::current()->PostTask(
+          base::MessageLoop::current()->PostTask(
               FROM_HERE,
               base::Bind(
                   &PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout,

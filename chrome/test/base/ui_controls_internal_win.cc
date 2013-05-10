@@ -130,7 +130,7 @@ void InputDispatcher::MatchingMessageFound() {
   UninstallHook(this);
   // At the time we're invoked the event has not actually been processed.
   // Use PostTask to make sure the event has been processed before notifying.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&InputDispatcher::NotifyTask, this));
 }
 
@@ -266,7 +266,7 @@ bool SendMouseMoveImpl(long x, long y, const base::Closure& task) {
   ::GetCursorPos(&current_pos);
   if (x == current_pos.x && y == current_pos.y) {
     if (!task.is_null())
-      MessageLoop::current()->PostTask(FROM_HERE, task);
+      base::MessageLoop::current()->PostTask(FROM_HERE, task);
     return true;
   }
 

@@ -224,7 +224,7 @@ bool GenerateProfile(GenerateProfileTypes types,
   printf("Creating profiles for testing...\n");
 
   InitBrowserProcess initialize_browser_process;
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   content::TestBrowserThread db_thread(BrowserThread::DB, &message_loop);
   TestingProfile profile;

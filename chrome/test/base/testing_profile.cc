@@ -104,7 +104,7 @@ class QuittingHistoryDBTask : public history::HistoryDBTask {
   }
 
   virtual void DoneRunOnMainThread() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
  private:
@@ -205,9 +205,9 @@ TestingProfile::TestingProfile(const base::FilePath& path,
       delegate_(delegate) {
   Init();
   if (delegate_) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(&TestingProfile::FinishInit,
-                                                base::Unretained(this)));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&TestingProfile::FinishInit, base::Unretained(this)));
   } else {
     FinishInit();
   }
@@ -241,9 +241,9 @@ TestingProfile::TestingProfile(
   // TODO(atwilson): See if this is still required once we convert the current
   // users of the constructor that takes a Delegate* param.
   if (delegate_) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(&TestingProfile::FinishInit,
-                                                base::Unretained(this)));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&TestingProfile::FinishInit, base::Unretained(this)));
   } else {
     FinishInit();
   }
@@ -372,7 +372,7 @@ void TestingProfile::DestroyHistoryService() {
     return;
 
   history_service->NotifyRenderProcessHostDestruction(0);
-  history_service->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
+  history_service->SetOnBackendDestroyTask(base::MessageLoop::QuitClosure());
   history_service->Cleanup();
   HistoryServiceFactory::ShutdownForProfile(this);
 
@@ -380,12 +380,13 @@ void TestingProfile::DestroyHistoryService() {
   // moving to the next test. Note: if this never terminates, somebody is
   // probably leaking a reference to the history backend, so it never calls
   // our destroy task.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Make sure we don't have any event pending that could disrupt the next
   // test.
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
 }
 
 void TestingProfile::CreateTopSites() {
@@ -401,8 +402,8 @@ void TestingProfile::DestroyTopSites() {
     // TopSitesImpl::Shutdown schedules some tasks (from TopSitesBackend) that
     // need to be run to properly shutdown. Run all pending tasks now. This is
     // normally handled by browser_process shutdown.
-    if (MessageLoop::current())
-      MessageLoop::current()->RunUntilIdle();
+    if (base::MessageLoop::current())
+      base::MessageLoop::current()->RunUntilIdle();
   }
 }
 
@@ -477,7 +478,7 @@ base::FilePath TestingProfile::GetPath() {
 }
 
 scoped_refptr<base::SequencedTaskRunner> TestingProfile::GetIOTaskRunner() {
-  return MessageLoop::current()->message_loop_proxy();
+  return base::MessageLoop::current()->message_loop_proxy();
 }
 
 TestingPrefServiceSyncable* TestingProfile::GetTestingPrefService() {
@@ -730,11 +731,11 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(this, Profile::EXPLICIT_ACCESS);
   DCHECK(history_service);
-  DCHECK(MessageLoop::current());
+  DCHECK(base::MessageLoop::current());
 
   CancelableRequestConsumer consumer;
   history_service->ScheduleDBTask(new QuittingHistoryDBTask(), &consumer);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 chrome_browser_net::Predictor* TestingProfile::GetNetworkPredictor() {

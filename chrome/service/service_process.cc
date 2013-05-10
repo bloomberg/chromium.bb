@@ -122,7 +122,7 @@ ServiceProcess::ServiceProcess()
   g_service_process = this;
 }
 
-bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
+bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
                                 const CommandLine& command_line,
                                 ServiceProcessState* state) {
 #if defined(TOOLKIT_GTK)
@@ -144,7 +144,7 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
   service_process_state_.reset(state);
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.reset(new ServiceIOThread("ServiceProcess_IO"));
   file_thread_.reset(new base::Thread("ServiceProcess_File"));
   if (!io_thread_->StartWithOptions(options) ||
@@ -267,7 +267,7 @@ void ServiceProcess::Shutdown() {
 }
 
 void ServiceProcess::Terminate() {
-  main_message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  main_message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 bool ServiceProcess::HandleClientDisconnect() {
@@ -339,7 +339,7 @@ void ServiceProcess::OnServiceDisabled() {
 }
 
 void ServiceProcess::ScheduleShutdownCheck() {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ServiceProcess::ShutdownIfNeeded, base::Unretained(this)),
       base::TimeDelta::FromSeconds(kShutdownDelaySeconds));
@@ -360,7 +360,7 @@ void ServiceProcess::ShutdownIfNeeded() {
 }
 
 void ServiceProcess::ScheduleCloudPrintPolicyCheck() {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ServiceProcess::CloudPrintPolicyCheckIfNeeded,
                  base::Unretained(this)),

@@ -69,7 +69,7 @@ class ConnectorSettingsTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 };
 

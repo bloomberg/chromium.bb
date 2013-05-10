@@ -14,7 +14,7 @@
 namespace extensions {
 
 TEST(ChromeV8ContextSet, Lifecycle) {
-  MessageLoop loop;
+  base::MessageLoop loop;
 
   ChromeV8ContextSet context_set;
 

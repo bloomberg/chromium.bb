@@ -276,7 +276,7 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
 
   // Launch the IO thread.
   base::Thread::Options io_thread_options;
-  io_thread_options.message_loop_type = MessageLoop::TYPE_IO;
+  io_thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
   base::Thread *io_thread = new base::Thread("CrAppShimIO");
   io_thread->StartWithOptions(io_thread_options);
   g_io_thread = io_thread;
@@ -299,7 +299,7 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
   // the reply is received, Chrome will have opened its IPC port, guaranteed.
   [ReplyEventHandler pingProcess:psn andCall:base::Bind(&OnPingChromeReply)];
 
-  MessageLoopForUI main_message_loop;
+  base::MessageLoopForUI main_message_loop;
   main_message_loop.set_thread_name("MainThread");
   base::PlatformThread::SetName("CrAppShimMain");
   main_message_loop.Run();

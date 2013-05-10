@@ -42,7 +42,7 @@ void CommandExecutorImpl::Init() {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
-  base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
   CHECK(io_thread_.StartWithOptions(options));
   context_getter_ = new URLRequestContextGetter(
       io_thread_.message_loop_proxy());

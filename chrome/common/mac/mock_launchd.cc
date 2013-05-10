@@ -93,8 +93,10 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
   return bundle.get();
 }
 
-MockLaunchd::MockLaunchd(const base::FilePath& file, MessageLoop* loop,
-                         bool create_socket, bool as_service)
+MockLaunchd::MockLaunchd(const base::FilePath& file,
+                         base::MessageLoop* loop,
+                         bool create_socket,
+                         bool as_service)
     : file_(file),
       message_loop_(loop),
       create_socket_(create_socket),
@@ -258,7 +260,7 @@ CFDictionaryRef MockLaunchd::CopyDictionaryByCheckingIn(CFErrorRef* error) {
 
 bool MockLaunchd::RemoveJob(CFStringRef label, CFErrorRef* error) {
   remove_called_ = true;
-  message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   return true;
 }
 
@@ -267,7 +269,7 @@ bool MockLaunchd::RestartJob(Domain domain,
                              CFStringRef name,
                              CFStringRef session_type) {
   restart_called_ = true;
-  message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   return true;
 }
 

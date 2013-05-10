@@ -62,7 +62,7 @@ void TestTabStripModelObserver::RenderViewHostCreated(
 void TestTabStripModelObserver::TabBlockedStateChanged(
     content::WebContents* contents, int index) {
   // Need to do this later - the print preview dialog has not been created yet.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&TestTabStripModelObserver::ObservePrintPreviewDialog,
                  base::Unretained(this),

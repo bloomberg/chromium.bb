@@ -238,7 +238,7 @@ class UITestBase {
   static const wchar_t kFailedNoCrashService[];
 
   UITestBase();
-  explicit UITestBase(MessageLoop::Type msg_loop_type);
+  explicit UITestBase(base::MessageLoop::Type msg_loop_type);
 
   virtual ~UITestBase();
 
@@ -329,9 +329,8 @@ class UITestBase {
 class UITest : public UITestBase, public PlatformTest {
  protected:
   UITest() {}
-  explicit UITest(MessageLoop::Type msg_loop_type)
-    : UITestBase(), PlatformTest(), message_loop_(msg_loop_type) {
-  }
+  explicit UITest(base::MessageLoop::Type msg_loop_type)
+      : UITestBase(), PlatformTest(), message_loop_(msg_loop_type) {}
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
@@ -409,7 +408,7 @@ class UITest : public UITestBase, public PlatformTest {
   void NavigateToURLAsync(const GURL& url);
 
  private:
-  MessageLoop message_loop_;  // Enables PostTask to main thread.
+  base::MessageLoop message_loop_;  // Enables PostTask to main thread.
 };
 
 // These exist only to support the gTest assertion macros, and

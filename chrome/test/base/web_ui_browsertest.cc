@@ -277,8 +277,8 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   chrome::Navigate(&params);
   navigation_observer.WaitForObservation(
       base::Bind(&content::RunMessageLoop),
-      base::Bind(&MessageLoop::Quit,
-                 base::Unretained(MessageLoopForUI::current())));
+      base::Bind(&base::MessageLoop::Quit,
+                 base::Unretained(base::MessageLoopForUI::current())));
 }
 
 void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
@@ -289,8 +289,8 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
   chrome::Print(browser());
   tabstrip_observer.WaitForObservation(
       base::Bind(&content::RunMessageLoop),
-      base::Bind(&MessageLoop::Quit,
-                 base::Unretained(MessageLoopForUI::current())));
+      base::Bind(&base::MessageLoop::Quit,
+                 base::Unretained(base::MessageLoopForUI::current())));
 
   printing::PrintPreviewDialogController* tab_controller =
       printing::PrintPreviewDialogController::GetInstance();

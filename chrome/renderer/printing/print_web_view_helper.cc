@@ -654,7 +654,8 @@ void PrepareFrameAndViewForPrint::didStopLoading() {
   DCHECK(!on_ready_.is_null());
   // Don't call callback here, because it can delete |this| and WebView that is
   // called didStopLoading.
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
       base::Bind(&PrepareFrameAndViewForPrint::CallOnReady,
                  weak_ptr_factory_.GetWeakPtr()));
 }

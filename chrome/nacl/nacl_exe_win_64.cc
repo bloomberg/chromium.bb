@@ -29,7 +29,7 @@ extern int NaClMain(const content::MainFunctionParams&);
 int NaClBrokerMain(const content::MainFunctionParams& parameters) {
   const CommandLine& parsed_command_line = parameters.command_line;
 
-  MessageLoopForIO main_message_loop;
+  base::MessageLoopForIO main_message_loop;
   base::PlatformThread::SetName("CrNaClBrokerMain");
 
   base::PowerMonitor power_monitor;

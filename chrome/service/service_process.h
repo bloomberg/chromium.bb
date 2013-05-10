@@ -38,7 +38,7 @@ class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
 
   // Initialize the ServiceProcess with the message loop that it should run on.
   // ServiceProcess takes ownership of |state|.
-  bool Initialize(MessageLoopForUI* message_loop,
+  bool Initialize(base::MessageLoopForUI* message_loop,
                   const CommandLine& command_line,
                   ServiceProcessState* state);
 
@@ -134,7 +134,7 @@ class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
   base::WaitableEvent shutdown_event_;
 
   // Pointer to the main message loop that host this object.
-  MessageLoop* main_message_loop_;
+  base::MessageLoop* main_message_loop_;
 
   // Count of currently enabled services in this process.
   int enabled_services_;

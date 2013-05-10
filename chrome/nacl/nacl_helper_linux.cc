@@ -48,7 +48,7 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
   base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel,
                                               child_fds[kNaClBrowserFDIndex]);
 
-  MessageLoopForIO main_message_loop;
+  base::MessageLoopForIO main_message_loop;
   NaClListener listener;
   listener.set_prereserved_sandbox_size(prereserved_sandbox_size);
   listener.Listen();

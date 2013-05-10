@@ -47,11 +47,11 @@ namespace {
 
 bool g_good_shutdown = false;
 
-void ShutdownTask(MessageLoop* loop) {
+void ShutdownTask(base::MessageLoop* loop) {
   // Quit the main message loop.
   ASSERT_FALSE(g_good_shutdown);
   g_good_shutdown = true;
-  loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 }  // namespace
@@ -89,7 +89,7 @@ ServiceProcessStateTest::~ServiceProcessStateTest() {
 }
 
 void ServiceProcessStateTest::SetUp() {
-  base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
   ASSERT_TRUE(io_thread_.StartWithOptions(options));
 }
 
@@ -216,18 +216,18 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestReadyFalse) {
 }
 
 MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   message_loop.set_thread_name("ServiceProcessStateTestShutdownMainThread");
   base::Thread io_thread_("ServiceProcessStateTestShutdownIOThread");
-  base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
   EXPECT_TRUE(io_thread_.StartWithOptions(options));
   ServiceProcessState state;
   EXPECT_TRUE(state.Initialize());
-  EXPECT_TRUE(state.SignalReady(io_thread_.message_loop_proxy(),
-                                base::Bind(&ShutdownTask,
-                                           MessageLoop::current())));
+  EXPECT_TRUE(state.SignalReady(
+      io_thread_.message_loop_proxy(),
+      base::Bind(&ShutdownTask, base::MessageLoop::current())));
   message_loop.PostDelayedTask(FROM_HERE,
-                               MessageLoop::QuitClosure(),
+                               base::MessageLoop::QuitClosure(),
                                TestTimeouts::action_max_timeout());
   EXPECT_FALSE(g_good_shutdown);
   message_loop.Run();
@@ -258,7 +258,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
 
   virtual void SetUp() {
     base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
+    options.message_loop_type = base::MessageLoop::TYPE_IO;
     ASSERT_TRUE(io_thread_.StartWithOptions(options));
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(MockLaunchd::MakeABundle(GetTempDirPath(),
@@ -274,7 +274,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
         io_thread_.message_loop_proxy(),
         base::Closure()));
     loop_.PostDelayedTask(FROM_HERE,
-                          MessageLoop::QuitClosure(),
+                          base::MessageLoop::QuitClosure(),
                           TestTimeouts::action_max_timeout());
   }
 
@@ -290,7 +290,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
 
  private:
   base::ScopedTempDir temp_dir_;
-  MessageLoopForUI loop_;
+  base::MessageLoopForUI loop_;
   base::Thread io_thread_;
   base::FilePath executable_path_, bundle_path_;
   scoped_ptr<MockLaunchd> mock_launchd_;

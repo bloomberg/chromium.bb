@@ -18,13 +18,13 @@ void UMAHistogramHelper::Fetch() {
                                       base::Unretained(this));
 
   content::FetchHistogramsAsynchronously(
-      MessageLoop::current(),
+      base::MessageLoop::current(),
       callback,
       // If this call times out, it means that a child process is not
       // responding, which is something we should not ignore.  The timeout is
       // set to be longer than the normal browser test timeout so that it will
       // be prempted by the normal timeout.
-      TestTimeouts::action_max_timeout()*2);
+      TestTimeouts::action_max_timeout() * 2);
   content::RunMessageLoop();
 }
 
@@ -59,7 +59,7 @@ void UMAHistogramHelper::ExpectTotalCount(
 }
 
 void UMAHistogramHelper::FetchCallback() {
-  MessageLoopForUI::current()->Quit();
+  base::MessageLoopForUI::current()->Quit();
 }
 
 void UMAHistogramHelper::CheckBucketCount(

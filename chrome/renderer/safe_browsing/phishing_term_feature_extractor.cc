@@ -128,7 +128,7 @@ void PhishingTermFeatureExtractor::ExtractFeatures(
   done_callback_ = done_callback;
 
   state_.reset(new ExtractionState(*page_text_, clock_->Now()));
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout,
                  weak_factory_.GetWeakPtr()));
@@ -195,7 +195,7 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
         // clock granularity.
         UMA_HISTOGRAM_TIMES("SBClientPhishing.TermFeatureChunkTime",
                             chunk_elapsed);
-        MessageLoop::current()->PostTask(
+        base::MessageLoop::current()->PostTask(
             FROM_HERE,
             base::Bind(
                 &PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout,

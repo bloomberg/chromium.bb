@@ -31,11 +31,10 @@ void ClickOnView(const Browser* browser, ViewID vid) {
   views::View* view =
       BrowserView::GetBrowserViewForBrowser(browser)->GetViewByID(vid);
   DCHECK(view);
-  MoveMouseToCenterAndPress(
-      view,
-      ui_controls::LEFT,
-      ui_controls::DOWN | ui_controls::UP,
-      MessageLoop::QuitClosure());
+  MoveMouseToCenterAndPress(view,
+                            ui_controls::LEFT,
+                            ui_controls::DOWN | ui_controls::UP,
+                            base::MessageLoop::QuitClosure());
   content::RunMessageLoop();
 }
 

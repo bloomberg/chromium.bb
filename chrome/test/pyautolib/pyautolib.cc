@@ -48,7 +48,7 @@ PyUITestBase::PyUITestBase(bool clear_profile, std::wstring homepage)
   // We add this so that pyauto can execute javascript in the renderer and
   // read values back.
   dom_automation_enabled_ = true;
-  message_loop_ = GetSharedMessageLoop(MessageLoop::TYPE_DEFAULT);
+  message_loop_ = GetSharedMessageLoop(base::MessageLoop::TYPE_DEFAULT);
 }
 
 PyUITestBase::~PyUITestBase() {
@@ -59,9 +59,9 @@ MessageLoop* PyUITestBase::message_loop_ = NULL;
 
 // static
 MessageLoop* PyUITestBase::GetSharedMessageLoop(
-  MessageLoop::Type msg_loop_type) {
-  if (!message_loop_)   // Create a shared instance of MessageLoop
-    message_loop_ = new MessageLoop(msg_loop_type);
+    base::MessageLoop::Type msg_loop_type) {
+  if (!message_loop_)  // Create a shared instance of MessageLoop
+    message_loop_ = new base::MessageLoop(msg_loop_type);
   return message_loop_;
 }
 

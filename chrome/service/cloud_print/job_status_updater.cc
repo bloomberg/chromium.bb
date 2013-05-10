@@ -83,7 +83,7 @@ CloudPrintURLFetcher::ResponseAction JobStatusUpdater::HandleJSONData(
       DictionaryValue* json_data,
       bool succeeded) {
   if (last_job_details_.status == PRINT_JOB_STATUS_COMPLETED) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&JobStatusUpdater::Stop, this));
   }
   return CloudPrintURLFetcher::STOP_PROCESSING;

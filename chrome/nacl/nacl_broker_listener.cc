@@ -43,7 +43,7 @@ void NaClBrokerListener::Listen() {
   channel_.reset(new IPC::Channel(
       channel_name, IPC::Channel::MODE_CLIENT, this));
   CHECK(channel_->Connect());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 // NOTE: changes to this method need to be reviewed by the security team.
@@ -81,7 +81,7 @@ bool NaClBrokerListener::OnMessageReceived(const IPC::Message& msg) {
 
 void NaClBrokerListener::OnChannelError() {
   // The browser died unexpectedly, quit to avoid a zombie process.
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 void NaClBrokerListener::OnLaunchLoaderThroughBroker(
@@ -125,5 +125,5 @@ void NaClBrokerListener::OnLaunchDebugExceptionHandler(
 }
 
 void NaClBrokerListener::OnStopBroker() {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }

@@ -53,7 +53,7 @@ class NaClListener : public IPC::Listener {
 #endif
 
   // Used to identify what thread we're on.
-  MessageLoop* main_loop_;
+  base::MessageLoop* main_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClListener);
 };

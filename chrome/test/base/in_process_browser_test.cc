@@ -383,8 +383,8 @@ void InProcessBrowserTest::QuitBrowsers() {
   // Invoke AttemptExit on a running message loop.
   // AttemptExit exits the message loop after everything has been
   // shut down properly.
-  MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                        base::Bind(&chrome::AttemptExit));
+  base::MessageLoopForUI::current()->PostTask(FROM_HERE,
+                                              base::Bind(&chrome::AttemptExit));
   content::RunMessageLoop();
 
 #if defined(OS_MACOSX)

@@ -197,11 +197,11 @@ void EventQueueWatcher(const base::Closure& task) {
                                         dequeue:NO];
   // If there is still event in the queue, then we need to check again.
   if (event) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&EventQueueWatcher, task));
   } else {
-    MessageLoop::current()->PostTask(FROM_HERE, task);
+    base::MessageLoop::current()->PostTask(FROM_HERE, task);
   }
 }
 
@@ -233,7 +233,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool alt,
                                 bool command,
                                 const base::Closure& task) {
-  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
+  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
 
   std::vector<NSEvent*> events;
   SynthesizeKeyEventsSequence(
@@ -249,7 +249,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
     [[NSApplication sharedApplication] sendEvent:*iter];
 
   if (!task.is_null()) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&EventQueueWatcher, task));
   }
 
@@ -287,7 +287,7 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
   [[NSApplication sharedApplication] postEvent:event atStart:NO];
 
   if (!task.is_null()) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&EventQueueWatcher, task));
   }
 
@@ -346,7 +346,7 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
   [[NSApplication sharedApplication] postEvent:event atStart:NO];
 
   if (!task.is_null()) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&EventQueueWatcher, task));
   }
 

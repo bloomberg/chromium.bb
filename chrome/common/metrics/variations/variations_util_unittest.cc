@@ -56,7 +56,7 @@ class VariationsUtilTest : public ::testing::Test {
 
  private:
   base::FieldTrialList field_trial_list_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
 };
 

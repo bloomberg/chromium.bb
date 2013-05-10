@@ -97,8 +97,9 @@ void BrowserWithTestWindowTest::TearDown() {
 
   // A Task is leaked if we don't destroy everything, then run the message
   // loop.
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
 }
 
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {

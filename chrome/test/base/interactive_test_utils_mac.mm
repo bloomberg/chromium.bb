@@ -48,7 +48,7 @@ void ClickOnView(const Browser* browser, ViewID vid) {
       view,
       ui_controls::LEFT,
       ui_controls::DOWN | ui_controls::UP,
-      MessageLoop::QuitClosure());
+      base::MessageLoop::QuitClosure());
   content::RunMessageLoop();
 }
 

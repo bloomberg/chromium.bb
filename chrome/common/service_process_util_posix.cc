@@ -86,9 +86,12 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
                                                  bool* success) {
   DCHECK_EQ(g_signal_socket, -1);
   DCHECK(!signal->IsSignaled());
-   *success = MessageLoopForIO::current()->WatchFileDescriptor(
-      sockets_[0], true, MessageLoopForIO::WATCH_READ,
-      &watcher_, terminate_monitor_.get());
+  *success = base::MessageLoopForIO::current()->WatchFileDescriptor(
+      sockets_[0],
+      true,
+      base::MessageLoopForIO::WATCH_READ,
+      &watcher_,
+      terminate_monitor_.get());
   if (!*success) {
     DLOG(ERROR) << "WatchFileDescriptor";
     signal->Signal();

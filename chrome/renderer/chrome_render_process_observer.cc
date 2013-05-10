@@ -75,11 +75,11 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
     // Update the browser about our cache.
     // Rate limit informing the host of our cache stats.
     if (!weak_factory_.HasWeakPtrs()) {
-      MessageLoop::current()->PostDelayedTask(
-         FROM_HERE,
-         base::Bind(&RendererResourceDelegate::InformHostOfCacheStats,
-                    weak_factory_.GetWeakPtr()),
-         base::TimeDelta::FromMilliseconds(kCacheStatsDelayMS));
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&RendererResourceDelegate::InformHostOfCacheStats,
+                     weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(kCacheStatsDelayMS));
     }
 
     if (error_code == net::ERR_ABORTED) {

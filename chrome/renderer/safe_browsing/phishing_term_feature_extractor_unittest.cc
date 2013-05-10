@@ -113,7 +113,7 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
     msg_loop_.Quit();
   }
 
-  MessageLoop msg_loop_;
+  base::MessageLoop msg_loop_;
   MockFeatureExtractorClock clock_;
   scoped_ptr<PhishingTermFeatureExtractor> extractor_;
   base::hash_set<std::string> term_hashes_;

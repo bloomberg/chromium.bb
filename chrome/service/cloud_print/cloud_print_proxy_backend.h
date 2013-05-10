@@ -95,7 +95,7 @@ class CloudPrintProxyBackend {
   scoped_refptr<Core> core_;
   // A reference to the MessageLoop used to construct |this|, so we know how
   // to safely talk back to the SyncFrontend.
-  MessageLoop* const frontend_loop_;
+  base::MessageLoop* const frontend_loop_;
   // The frontend which is responsible for displaying UI and updating Prefs
   CloudPrintProxyFrontend* frontend_;
 

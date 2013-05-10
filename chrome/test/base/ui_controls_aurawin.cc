@@ -62,7 +62,7 @@ class UIControlsWin : public UIControlsAura {
   }
   virtual void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
     // On windows, posting UI events is synchronous so just post the closure.
-    MessageLoopForUI::current()->PostTask(FROM_HERE, closure);
+    base::MessageLoopForUI::current()->PostTask(FROM_HERE, closure);
   }
 
  private:

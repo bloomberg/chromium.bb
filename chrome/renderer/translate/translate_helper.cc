@@ -484,7 +484,7 @@ void TranslateHelper::CheckTranslateStatus() {
   }
 
   // The translation is still pending, check again later.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TranslateHelper::CheckTranslateStatus,
                  weak_method_factory_.GetWeakPtr()),
@@ -503,10 +503,11 @@ void TranslateHelper::TranslatePageImpl(int count) {
       NotifyBrowserTranslationFailed(TranslateErrors::INITIALIZATION_ERROR);
       return;
     }
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&TranslateHelper::TranslatePageImpl,
-                   weak_method_factory_.GetWeakPtr(), count),
+                   weak_method_factory_.GetWeakPtr(),
+                   count),
         AdjustDelay(count * kTranslateInitCheckDelayMs));
     return;
   }
@@ -529,7 +530,7 @@ void TranslateHelper::TranslatePageImpl(int count) {
     return;
   }
   // Check the status of the translation.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TranslateHelper::CheckTranslateStatus,
                  weak_method_factory_.GetWeakPtr()),

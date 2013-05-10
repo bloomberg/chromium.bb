@@ -29,7 +29,7 @@ void OnConnectFinished(base::RunLoop* run_loop, int* save_error, int error) {
   run_loop->Quit();
 }
 
-void RunPending(MessageLoop* loop) {
+void RunPending(base::MessageLoop* loop) {
   base::RunLoop run_loop;
   loop->PostTask(FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();
@@ -49,7 +49,7 @@ class Listener : public WebSocketListener {
     EXPECT_EQ(messages_[0], message);
     messages_.erase(messages_.begin());
     if (messages_.empty())
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   virtual void OnClose() OVERRIDE {
@@ -129,7 +129,7 @@ class WebSocketTest : public testing::Test {
     run_loop.Run();
   }
 
-  MessageLoopForIO loop_;
+  base::MessageLoopForIO loop_;
   TestHttpServer server_;
 };
 

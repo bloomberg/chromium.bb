@@ -27,7 +27,7 @@ class SyncWebSocketImplTest : public testing::Test {
   virtual ~SyncWebSocketImplTest() {}
 
   virtual void SetUp() OVERRIDE {
-    base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     ASSERT_TRUE(client_thread_.StartWithOptions(options));
     context_getter_ = new URLRequestContextGetter(
         client_thread_.message_loop_proxy());

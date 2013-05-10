@@ -83,6 +83,6 @@ void JavascriptTestObserver::EndTest() {
   finished_ = true;
   if (running_) {
     running_ = false;
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
   }
 }

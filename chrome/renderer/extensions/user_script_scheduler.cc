@@ -78,18 +78,18 @@ void UserScriptScheduler::DidFinishDocumentLoad() {
   current_location_ = UserScript::DOCUMENT_END;
   MaybeRun();
   // Schedule a run for DOCUMENT_IDLE
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(&UserScriptScheduler::IdleTimeout,
-                            weak_factory_.GetWeakPtr()),
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&UserScriptScheduler::IdleTimeout, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kUserScriptIdleTimeoutMs));
 }
 
 void UserScriptScheduler::DidFinishLoad() {
   current_location_ = UserScript::DOCUMENT_IDLE;
   // Ensure that running scripts does not keep any progress UI running.
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&UserScriptScheduler::MaybeRun,
-                            weak_factory_.GetWeakPtr()));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&UserScriptScheduler::MaybeRun, weak_factory_.GetWeakPtr()));
 }
 
 void UserScriptScheduler::DidStartProvisionalLoad() {

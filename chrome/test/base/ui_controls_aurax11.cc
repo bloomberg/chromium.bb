@@ -29,25 +29,25 @@ unsigned button_down_mask = 0;
 // Event waiter executes the specified closure|when a matching event
 // is found.
 // TODO(oshima): Move this to base.
-class EventWaiter : public MessageLoopForUI::Observer {
+class EventWaiter : public base::MessageLoopForUI::Observer {
  public:
   typedef bool (*EventWaiterMatcher)(const base::NativeEvent& event);
 
   EventWaiter(const base::Closure& closure, EventWaiterMatcher matcher)
       : closure_(closure),
         matcher_(matcher) {
-    MessageLoopForUI::current()->AddObserver(this);
+    base::MessageLoopForUI::current()->AddObserver(this);
   }
 
   virtual ~EventWaiter() {
-    MessageLoopForUI::current()->RemoveObserver(this);
+    base::MessageLoopForUI::current()->RemoveObserver(this);
   }
 
   // MessageLoop::Observer implementation:
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE {
     if ((*matcher_)(event)) {
-      MessageLoop::current()->PostTask(FROM_HERE, closure_);
+      base::MessageLoop::current()->PostTask(FROM_HERE, closure_);
       delete this;
     }
     return base::EVENT_CONTINUE;

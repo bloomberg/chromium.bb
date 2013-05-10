@@ -411,7 +411,7 @@ void CloudPrintConnector::AddPendingTask(const PendingTask& task) {
   pending_tasks_.push_back(task);
   // If this is the only pending task, we need to start the process.
   if (pending_tasks_.size() == 1) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&CloudPrintConnector::ProcessPendingTask, this));
   }
 }
@@ -446,7 +446,7 @@ void CloudPrintConnector::ContinuePendingTaskProcessing() {
   // Delete current task and repost if we have more task available.
   pending_tasks_.pop_front();
   if (pending_tasks_.size() != 0) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&CloudPrintConnector::ProcessPendingTask, this));
   }
 }

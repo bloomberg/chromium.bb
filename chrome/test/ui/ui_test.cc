@@ -93,7 +93,7 @@ UITestBase::UITestBase()
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
 
-UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
+UITestBase::UITestBase(base::MessageLoop::Type msg_loop_type)
     : launch_arguments_(CommandLine::NO_PROGRAM),
       expected_errors_(0),
       expected_crashes_(0),

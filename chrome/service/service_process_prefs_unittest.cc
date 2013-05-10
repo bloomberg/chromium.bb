@@ -28,7 +28,7 @@ class ServiceProcessPrefsTest : public testing::Test {
   // The path to temporary directory used to contain the test operations.
   base::ScopedTempDir temp_dir_;
   // A message loop that we can use as the file thread message loop.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<ServiceProcessPrefs> prefs_;
 };
 

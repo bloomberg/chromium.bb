@@ -208,8 +208,9 @@ class ThroughputTest : public BrowserPerfTest {
 
   void Wait(int ms) {
     base::RunLoop run_loop;
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        run_loop.QuitClosure(),
         base::TimeDelta::FromMilliseconds(ms));
     content::RunThisRunLoop(&run_loop);
   }

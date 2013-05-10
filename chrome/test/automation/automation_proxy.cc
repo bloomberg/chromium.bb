@@ -144,7 +144,7 @@ void AutomationProxy::InitializeThread() {
   scoped_ptr<base::Thread> thread(
       new base::Thread("AutomationProxy_BackgroundThread"));
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
   bool thread_result = thread->StartWithOptions(options);
   DCHECK(thread_result);
   thread_.swap(thread);

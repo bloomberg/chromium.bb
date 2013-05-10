@@ -142,7 +142,8 @@ NaClListener::NaClListener() : shutdown_event_(true, false),
                                prereserved_sandbox_size_(0),
 #endif
                                main_loop_(NULL) {
-  io_thread_.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
+  io_thread_.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 #if defined(OS_WIN)
   DCHECK(g_listener == NULL);
   g_listener = this;
@@ -159,7 +160,7 @@ NaClListener::~NaClListener() {
 
 bool NaClListener::Send(IPC::Message* msg) {
   DCHECK(main_loop_ != NULL);
-  if (MessageLoop::current() == main_loop_) {
+  if (base::MessageLoop::current() == main_loop_) {
     // This thread owns the channel.
     return channel_->Send(msg);
   } else {
@@ -177,7 +178,7 @@ void NaClListener::Listen() {
   filter_ = new IPC::SyncMessageFilter(&shutdown_event_);
   channel_->AddFilter(filter_.get());
   channel_->Init(channel_name, IPC::Channel::MODE_CLIENT, true);
-  main_loop_ = MessageLoop::current();
+  main_loop_ = base::MessageLoop::current();
   main_loop_->Run();
 }
 

@@ -36,7 +36,7 @@ class CancelableTaskTrackerTest : public testing::Test {
 
  private:
   // Needed by CancelableTaskTracker methods.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 void AddFailureAt(const tracked_objects::Location& location) {

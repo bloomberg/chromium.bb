@@ -15,7 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ServiceProcessTest, DISABLED_Run) {
-  MessageLoopForUI main_message_loop;
+  base::MessageLoopForUI main_message_loop;
   ServiceProcess process;
   ServiceProcessState state;
   CommandLine command_line(CommandLine::NO_PROGRAM);

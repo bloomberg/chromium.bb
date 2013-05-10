@@ -733,8 +733,8 @@ class PageLoadTest : public UITest {
   PrefService* GetLocalState(PrefRegistry* registry) {
     base::FilePath path = user_data_dir().Append(chrome::kLocalStateFilename);
     PrefServiceMockBuilder builder;
-    builder.WithUserFilePrefs(path,
-                              MessageLoop::current()->message_loop_proxy());
+    builder.WithUserFilePrefs(
+        path, base::MessageLoop::current()->message_loop_proxy());
     return builder.Create(registry);
   }
 

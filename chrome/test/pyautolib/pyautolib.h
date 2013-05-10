@@ -110,8 +110,9 @@ class PyUITestBase : public UITestBase {
   // class is re-entrant and multiple instances can be created.
   // This is necessary since python's unittest module creates instances of
   // TestCase at load time itself.
-  static MessageLoop* GetSharedMessageLoop(MessageLoop::Type msg_loop_type);
-  static MessageLoop* message_loop_;
+  static base::MessageLoop* GetSharedMessageLoop(
+      base::MessageLoop::Type msg_loop_type);
+  static base::MessageLoop* message_loop_;
 
   // Path to named channel id.
   std::string named_channel_id_;

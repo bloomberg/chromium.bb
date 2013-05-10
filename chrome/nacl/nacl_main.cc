@@ -20,7 +20,7 @@ int NaClMain(const content::MainFunctionParams& parameters) {
   const CommandLine& parsed_command_line = parameters.command_line;
 
   // The main thread of the plugin services IO.
-  MessageLoopForIO main_message_loop;
+  base::MessageLoopForIO main_message_loop;
   base::PlatformThread::SetName("CrNaClMain");
 
   base::PowerMonitor power_monitor;

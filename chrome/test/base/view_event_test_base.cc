@@ -84,7 +84,7 @@ ViewEventTestBase::ViewEventTestBase()
 }
 
 void ViewEventTestBase::Done() {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // We need to post a message to tickle the Dispatcher getting called and
@@ -97,7 +97,8 @@ void ViewEventTestBase::Done() {
   // need to quit twice. The second quit does that for us. Finish all
   // pending UI events before posting closure because events it may be
   // executed before UI events are executed.
-  ui_controls::RunClosureAfterAllPendingUIEvents(MessageLoop::QuitClosure());
+  ui_controls::RunClosureAfterAllPendingUIEvents(
+      base::MessageLoop::QuitClosure());
 }
 
 void ViewEventTestBase::SetUp() {
@@ -203,9 +204,8 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
 
   // Schedule a task that starts the test. Need to do this as we're going to
   // run the message loop.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ViewEventTestBase::DoTestOnMessageLoop, this));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&ViewEventTestBase::DoTestOnMessageLoop, this));
 
   content::RunMessageLoop();
 }

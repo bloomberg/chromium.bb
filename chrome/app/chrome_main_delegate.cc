@@ -511,7 +511,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
 
   // Enable Message Loop related state asap.
   if (command_line.HasSwitch(switches::kMessageLoopHistogrammer))
-    MessageLoop::EnableHistogrammer(true);
+    base::MessageLoop::EnableHistogrammer(true);
 
 #if !defined(OS_ANDROID)
   // Android does InitLogging when library is loaded. Skip here.

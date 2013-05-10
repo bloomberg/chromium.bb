@@ -57,7 +57,7 @@ bool SendMouseClick(MouseButton type) {
 
 void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
   // On windows, posting UI events is synchronous so just post the closure.
-  MessageLoopForUI::current()->PostTask(FROM_HERE, closure);
+  base::MessageLoopForUI::current()->PostTask(FROM_HERE, closure);
 }
 
 }  // namespace ui_controls

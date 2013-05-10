@@ -53,11 +53,10 @@ void ClickOnView(const Browser* browser, ViewID vid) {
   DCHECK(window);
   GtkWidget* view = ViewIDUtil::GetWidget(GTK_WIDGET(window), vid);
   DCHECK(view);
-  MoveMouseToCenterAndPress(
-      view,
-      ui_controls::LEFT,
-      ui_controls::DOWN | ui_controls::UP,
-      MessageLoop::QuitClosure());
+  MoveMouseToCenterAndPress(view,
+                            ui_controls::LEFT,
+                            ui_controls::DOWN | ui_controls::UP,
+                            base::MessageLoop::QuitClosure());
   content::RunMessageLoop();
 }
 

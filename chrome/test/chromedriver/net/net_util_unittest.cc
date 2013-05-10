@@ -32,7 +32,7 @@ class FetchUrlTest : public testing::Test,
   FetchUrlTest()
       : io_thread_("io"),
         response_(kSendHello) {
-    base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     CHECK(io_thread_.StartWithOptions(options));
     context_getter_ = new URLRequestContextGetter(
         io_thread_.message_loop_proxy());
@@ -79,7 +79,7 @@ class FetchUrlTest : public testing::Test,
         break;
       case kClose:
         // net::HttpServer doesn't allow us to close connection during callback.
-        MessageLoop::current()->PostTask(
+        base::MessageLoop::current()->PostTask(
             FROM_HERE,
             base::Bind(&net::HttpServer::Close, server_, connection_id));
         break;

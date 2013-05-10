@@ -141,7 +141,7 @@ class ViewEventTestBase : public views::WidgetDelegate,
   // Thread for posting background MouseMoves.
   scoped_ptr<base::Thread> dnd_thread_;
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 
   content::TestBrowserThread ui_thread_;
 

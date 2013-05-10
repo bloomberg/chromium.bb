@@ -27,7 +27,7 @@ int ServiceProcessMain(const content::MainFunctionParams& parameters) {
   chrome_service_mac::RegisterServiceEventHandler();
 #endif
 
-  MessageLoopForUI main_message_loop;
+  base::MessageLoopForUI main_message_loop;
   main_message_loop.set_thread_name("MainThread");
   if (parameters.command_line.HasSwitch(switches::kWaitForDebugger)) {
     base::debug::WaitForDebugger(60, true);
@@ -47,7 +47,7 @@ int ServiceProcessMain(const content::MainFunctionParams& parameters) {
   if (service_process.Initialize(&main_message_loop,
                                  parameters.command_line,
                                  state.release())) {
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   } else {
     LOG(ERROR) << "Service process failed to initialize";
   }

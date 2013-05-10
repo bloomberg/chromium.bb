@@ -27,7 +27,7 @@ TestHttpServer::~TestHttpServer() {
 }
 
 bool TestHttpServer::Start() {
-  base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
   bool thread_started = thread_.StartWithOptions(options);
   EXPECT_TRUE(thread_started);
   if (!thread_started)
@@ -93,7 +93,7 @@ void TestHttpServer::OnWebSocketRequest(
       break;
     case kClose:
       // net::HttpServer doesn't allow us to close connection during callback.
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&net::HttpServer::Close, server_, connection_id));
       break;
@@ -113,7 +113,7 @@ void TestHttpServer::OnWebSocketMessage(int connection_id,
       break;
     case kCloseOnMessage:
       // net::HttpServer doesn't allow us to close connection during callback.
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&net::HttpServer::Close, server_, connection_id));
       break;

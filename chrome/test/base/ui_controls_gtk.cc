@@ -23,17 +23,17 @@ guint32 XTimeNow() {
   return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
 
-class EventWaiter : public MessageLoopForUI::Observer {
+class EventWaiter : public base::MessageLoopForUI::Observer {
  public:
   EventWaiter(const base::Closure& task, GdkEventType type, int count)
       : task_(task),
         type_(type),
         count_(count) {
-    MessageLoopForUI::current()->AddObserver(this);
+    base::MessageLoopForUI::current()->AddObserver(this);
   }
 
   virtual ~EventWaiter() {
-    MessageLoopForUI::current()->RemoveObserver(this);
+    base::MessageLoopForUI::current()->RemoveObserver(this);
   }
 
   // MessageLoop::Observer implementation:
@@ -45,7 +45,7 @@ class EventWaiter : public MessageLoopForUI::Observer {
       // NOTE: if processing a message results in running a nested message
       // loop, then DidProcessEvent isn't immediately sent. As such, we do
       // the processing in WillProcessEvent rather than DidProcessEvent.
-      MessageLoop::current()->PostTask(FROM_HERE, task_);
+      base::MessageLoop::current()->PostTask(FROM_HERE, task_);
       delete this;
     }
   }

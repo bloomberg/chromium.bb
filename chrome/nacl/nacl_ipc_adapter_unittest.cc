@@ -53,7 +53,7 @@ class NaClIPCAdapterTest : public testing::Test {
     return adapter_->Send(&msg);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   scoped_refptr<NaClIPCAdapter> adapter_;
 
