@@ -667,6 +667,8 @@ paladin = _config(
   upload_standalone_images=False,
 )
 
+# Incremental builders are intended to test the developer workflow.
+# For that reason, they don't uprev.
 incremental = _config(
   build_type=constants.INCREMENTAL_TYPE,
   uprev=False,
@@ -681,11 +683,13 @@ internal = _config(
   manifest_repo_url=constants.MANIFEST_INT_URL,
 )
 
-# This adds Chrome branding, and removes highdpi resources by default to save
-# space on the image.
-official = _config(
-  useflags=[constants.USE_CHROME_INTERNAL, constants.USE_CHROME_PDF,
-            '-highdpi'],
+# This adds Chrome branding.
+official_chrome = _config(
+  useflags=[constants.USE_CHROME_INTERNAL, constants.USE_CHROME_PDF],
+)
+
+# This sets chromeos_official.
+official = official_chrome.derive(
   chromeos_official=True,
 )
 
@@ -791,7 +795,6 @@ internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
 
 chrome_pfq = internal_chromium_pfq.derive(
   official,
-  useflags=official['useflags'] + ['highdpi'],
   important=True,
   overlays=constants.BOTH_OVERLAYS,
   description='Preflight Chrome build (internal)',
@@ -1026,13 +1029,13 @@ platform2_incremental.add_config('daisy-incremental-platform2',
 # Internal Builds
 #
 
-internal_pfq = internal.derive(pfq,
+internal_pfq = internal.derive(official_chrome, pfq,
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=constants.PRIVATE,
 )
 internal_pfq_branch = internal_pfq.derive(overlays=constants.BOTH_OVERLAYS,
                                           trybot_list=False, branch=True)
-internal_paladin = internal.derive(paladin,
+internal_paladin = internal.derive(official_chrome, paladin,
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=constants.PRIVATE,
   vm_tests=None,
@@ -1065,6 +1068,8 @@ internal_paladin.add_config('pre-cq-launcher',
   description='Launcher for Pre-CQ builders.',
 )
 
+# Internal incremental builders don't use official chrome because we want
+# to test the developer workflow.
 internal_incremental = internal.derive(
   incremental,
   overlays=constants.BOTH_OVERLAYS,
@@ -1228,6 +1233,7 @@ _toolchain_minor.add_config('internal-toolchain-minor', internal, official,
 
 _release = full.derive(official, internal,
   build_type=constants.CANARY_TYPE,
+  useflags=official['useflags'] + ['-highdpi'],
   build_tests=True,
   manifest_version=True,
   images=['base', 'test', 'factory_test', 'factory_install'],
@@ -1321,7 +1327,7 @@ release_pgo.add_group('lumpy-release-pgo',
 
 _release.add_config('butterfly-release',
   boards=['butterfly'],
-  useflags=official['useflags'] + ['oem_wallpaper'],
+  useflags=_release['useflags'] + ['oem_wallpaper'],
 )
 
 _release.add_config('falco-release',
@@ -1339,7 +1345,7 @@ _release.add_config('fox-wtm2-release',
 
 _release.add_config('link-release',
   boards=['link'],
-  useflags=official['useflags'] + ['highdpi'],
+  useflags=_release['useflags'] + ['highdpi'],
 )
 
 _release.add_config('lumpy-release',
