@@ -125,7 +125,6 @@ BluetoothNodeClient*
 }
 
 CrasAudioClient* MockDBusThreadManagerWithoutGMock::GetCrasAudioClient() {
-  NOTIMPLEMENTED();
   return NULL;
 }
 
