@@ -12,10 +12,6 @@
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
-namespace base {
-class SharedMemory;
-}
-
 namespace gpu {
 class SafeSharedMemoryPool;
 

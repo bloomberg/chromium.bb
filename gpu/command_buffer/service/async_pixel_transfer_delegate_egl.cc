@@ -11,7 +11,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/service/safe_shared_memory_pool.h"
@@ -23,9 +22,6 @@
 // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
 #include <sys/resource.h>
 #endif
-
-using base::SharedMemory;
-using base::SharedMemoryHandle;
 
 namespace gpu {
 
@@ -74,15 +70,6 @@ void DoFullTexSubImage2D(const AsyncTexImage2DParams& tex_params, void* data) {
       GL_TEXTURE_2D, tex_params.level,
       0, 0, tex_params.width, tex_params.height,
       tex_params.format, tex_params.type, data);
-}
-
-// Gets the address of the data from shared memory.
-void* GetAddress(SharedMemory* shared_memory, uint32 shm_data_offset) {
-  // Memory bounds have already been validated, so there
-  // are just DCHECKS here.
-  CHECK(shared_memory);
-  CHECK(shared_memory->memory());
-  return static_cast<int8*>(shared_memory->memory()) + shm_data_offset;
 }
 
 class TransferThread : public base::Thread {
@@ -603,8 +590,7 @@ void AsyncPixelTransferDelegateEGL::PerformAsyncTexImage2D(
   DCHECK_EQ(0, tex_params.level);
   DCHECK_EQ(EGL_NO_IMAGE_KHR, state->egl_image_);
 
-  void* data = GetAddress(safe_shared_memory->shared_memory(),
-                          mem_params.shm_data_offset);
+  void* data = GetAddress(safe_shared_memory, mem_params);
   {
     TRACE_EVENT0("gpu", "glTexImage2D no data");
     glGenTextures(1, &state->thread_texture_id_);
@@ -653,8 +639,7 @@ void AsyncPixelTransferDelegateEGL::PerformAsyncTexSubImage2D(
   DCHECK_NE(EGL_NO_IMAGE_KHR, state->egl_image_);
   DCHECK_EQ(0, tex_params.level);
 
-  void* data = GetAddress(safe_shared_memory->shared_memory(),
-                          mem_params.shm_data_offset);
+  void* data = GetAddress(safe_shared_memory, mem_params);
 
   base::TimeTicks begin_time;
   if (texture_upload_stats)
@@ -729,8 +714,7 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexImage2D(
   // On imagination we allocate synchronously all the time, even
   // if the dimensions support fast uploads. This is for part a.)
   // above, so allocations occur on a different thread/context as uploads.
-  void* data = GetAddress(mem_params.shared_memory,
-                          mem_params.shm_data_offset);
+  void* data = GetAddress(mem_params);
   SetGlParametersForEglImageTexture();
 
   {
@@ -785,8 +769,7 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexSubImage2D(
   DCHECK_EQ(state->define_params_.format, tex_params.format);
   DCHECK_EQ(state->define_params_.type, tex_params.type);
 
-  void* data = GetAddress(mem_params.shared_memory,
-                          mem_params.shm_data_offset);
+  void* data = GetAddress(mem_params);
   base::TimeTicks begin_time;
   if (texture_upload_stats_)
     begin_time = base::TimeTicks::HighResNow();

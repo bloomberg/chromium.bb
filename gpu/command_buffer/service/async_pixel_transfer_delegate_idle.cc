@@ -7,25 +7,12 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
-#include "base/memory/shared_memory.h"
 #include "gpu/command_buffer/service/safe_shared_memory_pool.h"
 #include "ui/gl/scoped_binders.h"
-
-using base::SharedMemory;
-using base::SharedMemoryHandle;
 
 namespace gpu {
 
 namespace {
-
-// Gets the address of the data from shared memory.
-void* GetAddress(SharedMemory* shared_memory, uint32 shm_data_offset) {
-  // Memory bounds have already been validated, so there
-  // are just DCHECKS here.
-  DCHECK(shared_memory);
-  DCHECK(shared_memory->memory());
-  return static_cast<int8*>(shared_memory->memory()) + shm_data_offset;
-}
 
 base::LazyInstance<SafeSharedMemoryPool> g_safe_shared_memory_pool =
     LAZY_INSTANCE_INITIALIZER;
@@ -254,8 +241,7 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D(
                "width", tex_params.width,
                "height", tex_params.height);
 
-  void* data = GetAddress(safe_shared_memory->shared_memory(),
-                          mem_params.shm_data_offset);
+  void* data = GetAddress(safe_shared_memory, mem_params);
 
   gfx::ScopedTextureBinder texture_binder(tex_params.target, texture_id);
 
@@ -286,8 +272,7 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D(
                "width", tex_params.width,
                "height", tex_params.height);
 
-  void* data = GetAddress(safe_shared_memory->shared_memory(),
-                          mem_params.shm_data_offset);
+  void* data = GetAddress(safe_shared_memory, mem_params);
 
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   gfx::ScopedTextureBinder texture_binder(tex_params.target, texture_id);

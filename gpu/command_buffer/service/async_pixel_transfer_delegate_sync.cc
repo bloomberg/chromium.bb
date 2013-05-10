@@ -4,27 +4,9 @@
 
 #include "gpu/command_buffer/service/async_pixel_transfer_delegate_sync.h"
 
-#include "base/memory/shared_memory.h"
-
-using base::SharedMemory;
-using base::SharedMemoryHandle;
-
 namespace gpu {
 
 namespace {
-
-// Gets the address of the data from shared memory.
-void* GetAddress(SharedMemory* shared_memory,
-                 uint32 shm_size,
-                 uint32 shm_data_offset,
-                 uint32 shm_data_size) {
-  // Memory bounds have already been validated, so there
-  // are just DCHECKS here.
-  DCHECK(shared_memory);
-  DCHECK(shared_memory->memory());
-  DCHECK_LE(shm_data_offset + shm_data_size, shm_size);
-  return static_cast<int8*>(shared_memory->memory()) + shm_data_offset;
-}
 
 class AsyncPixelTransferStateImpl : public AsyncPixelTransferState {
  public:
@@ -69,10 +51,7 @@ void AsyncPixelTransferDelegateSync::AsyncTexImage2D(
   // Save the define params to return later during deferred
   // binding of the transfer texture.
   DCHECK(transfer_state);
-  void* data = GetAddress(mem_params.shared_memory,
-                          mem_params.shm_size,
-                          mem_params.shm_data_offset,
-                          mem_params.shm_data_size);
+  void* data = GetAddress(mem_params);
   glTexImage2D(
       tex_params.target,
       tex_params.level,
@@ -91,10 +70,7 @@ void AsyncPixelTransferDelegateSync::AsyncTexSubImage2D(
     AsyncPixelTransferState* transfer_state,
     const AsyncTexSubImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params) {
-  void* data = GetAddress(mem_params.shared_memory,
-                          mem_params.shm_size,
-                          mem_params.shm_data_offset,
-                          mem_params.shm_data_size);
+  void* data = GetAddress(mem_params);
   DCHECK(transfer_state);
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   glTexSubImage2D(

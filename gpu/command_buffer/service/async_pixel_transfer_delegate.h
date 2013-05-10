@@ -19,6 +19,8 @@ class SharedMemory;
 
 namespace gpu {
 
+class ScopedSafeSharedMemory;
+
 struct AsyncTexImage2DParams {
   GLenum target;
   GLint level;
@@ -113,6 +115,13 @@ class GPU_EXPORT AsyncPixelTransferDelegate {
   // this to avoid blocking the caller thread inappropriately.
   virtual void ProcessMorePendingTransfers() = 0;
   virtual bool NeedsProcessMorePendingTransfers() = 0;
+
+  // Gets the address of the data from shared memory.
+  static void* GetAddress(const AsyncMemoryParams& mem_params);
+
+  // Sometimes the |safe_shared_memory| is duplicate to prevent use after free.
+  static void* GetAddress(ScopedSafeSharedMemory* safe_shared_memory,
+                          const AsyncMemoryParams& mem_params);
 
  protected:
   AsyncPixelTransferDelegate();
