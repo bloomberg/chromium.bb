@@ -20,6 +20,8 @@ include_rules = [
   "+chromeos",
   "+third_party/cros_system_api",
 
+  "-webkit/renderer",
+
   # DO NOT ADD ANY CHROME INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module
   # for more information.

@@ -27,7 +27,6 @@
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../ui/surface/surface.gyp:surface',
-        '../webkit/gpu/webkit_gpu.gyp:webkit_gpu',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:webkit_media',
         '../webkit/support/webkit_support.gyp:webkit_resources',

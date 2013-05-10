@@ -61,12 +61,7 @@ include_rules = [
   # a time.
   "+webkit/glue/glue_serialize.h",
   "+webkit/glue/image_decoder.h",
-  "+webkit/glue/image_resource_fetcher.h",
-  "+webkit/glue/resource_loader_bridge.h",
   "+webkit/glue/resource_type.h",
-  "+webkit/glue/web_intent_data.h",
-  "+webkit/glue/web_intent_reply_data.h",
-  "+webkit/glue/web_intent_service_data.h",
   "+webkit/glue/webcursor.h",
   "+webkit/glue/webdropdata.h",
   "+webkit/glue/webkit_glue.h",

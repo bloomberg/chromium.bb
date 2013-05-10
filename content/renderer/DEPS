@@ -7,6 +7,7 @@ include_rules = [
   "+third_party/mach_override",
   "+third_party/tcmalloc",
   "+v8/include",
+  "-webkit/browser",
 ]
 
 specific_include_rules = {
