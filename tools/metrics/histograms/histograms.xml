@@ -5472,6 +5472,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.LocalPredictorTimeUntilUsed" units="milliseconds">
+  <summary>
+    Time from when a prerendered page is started to when it is first used due to
+    user navigation. If the page is never used, it is not included in this
+    histogram.  This only refers to prerenders based on the local predictor.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.PerceivedPLT" units="milliseconds">
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
@@ -5617,6 +5625,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.PrerendersPerSessionCount">
+  <summary>
+    The number of sessions that have at least X successful prerenders.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.RendererIdleTime" units="milliseconds">
   <obsolete>
     deprecated Nov 16 2012
@@ -5678,6 +5692,26 @@ other types of suffix sets.
   <summary>
     For simulated local browsing prerendering, the estimated PLT of pages with
     prerendering enabled for pages that would be prerendered.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.TimeBetweenPrerenderRequests" units="milliseconds">
+  <summary>Time between subsequent prerender requests.</summary>
+</histogram>
+
+<histogram name="Prerender.TimeSinceLastRecentVisit" units="milliseconds">
+  <summary>
+    The time elapsed between the most recent visit to a URL and when an
+    attempted prerender of the same URL is cancelled with
+    FINAL_STATUS_RECENTLY_VISITED.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.TimeUntilUsed2" units="milliseconds">
+  <summary>
+    Time from when a prerendered page is started to when it is first used due to
+    user navigation. If the page is never used, it is not included in this
+    histogram.
   </summary>
 </histogram>
 
@@ -12105,6 +12139,193 @@ other types of suffix sets.
   <affected-histogram name="Prerender.RendererTimeUntilDisplay"/>
   <affected-histogram name="Prerender.SimulatedLocalBrowsingBaselinePLT"/>
   <affected-histogram name="Prerender.SimulatedLocalBrowsingPLT"/>
+</fieldtrial>
+
+<fieldtrial name="PrerenderSource" ordering="prefix">
+  <group name="" label="All prerenders."/>
+  <group name="exp1" label="Likelihood threshold experiment 1."/>
+  <group name="exp2" label="Likelihood threshold experiment 2."/>
+  <group name="exp3" label="Likelihood threshold experiment 3."/>
+  <group name="exp4" label="Likelihood threshold experiment 4."/>
+  <group name="exp5" label="Likelihood threshold experiment 5."/>
+  <group name="exp6" label="Likelihood threshold experiment 6."/>
+  <group name="exp7" label="Likelihood threshold experiment 7."/>
+  <group name="exp8" label="Likelihood threshold experiment 8."/>
+  <group name="exp9" label="Likelihood threshold experiment 9."/>
+  <group name="gws" label="GWS triggered prerender."/>
+  <group name="omnibox" label="Triggered from the omnibox."/>
+  <group name="wash" label="Multiple sources could have triggered."/>
+  <group name="web" label="Link triggered prerender."/>
+  <affected-histogram name="Prerender.FinalStatus"/>
+  <affected-histogram name="Prerender.FinalStatus_Prerender5minTTL"/>
+  <affected-histogram name="Prerender.FinalStatus_PrerenderControl"/>
+  <affected-histogram name="Prerender.FinalStatus_PrerenderEnabled"/>
+  <affected-histogram name="Prerender.FinalStatus_PrerenderMulti"/>
+  <affected-histogram name="Prerender.FinalStatus_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.FinalStatusMatchComplete"/>
+  <affected-histogram
+      name="Prerender.FinalStatusMatchComplete_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.FinalStatusMatchComplete_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.FinalStatusMatchComplete_PrerenderEnabled"/>
+  <affected-histogram name="Prerender.FinalStatusMatchComplete_PrerenderMulti"/>
+  <affected-histogram name="Prerender.FinalStatusMatchComplete_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.FractionPixelsFinalAtSwapin"/>
+  <affected-histogram
+      name="Prerender.FractionPixelsFinalAtSwapin_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.FractionPixelsFinalAtSwapin_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.FractionPixelsFinalAtSwapin_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.FractionPixelsFinalAtSwapin_PrerenderMulti"/>
+  <affected-histogram
+      name="Prerender.FractionPixelsFinalAtSwapin_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.LocalPredictorEvent"/>
+  <affected-histogram name="Prerender.LocalPredictorEvent_Prerender5minTTL"/>
+  <affected-histogram name="Prerender.LocalPredictorEvent_PrerenderControl"/>
+  <affected-histogram name="Prerender.LocalPredictorEvent_PrerenderEnabled"/>
+  <affected-histogram name="Prerender.LocalPredictorEvent_PrerenderMulti"/>
+  <affected-histogram name="Prerender.LocalPredictorEvent_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.LocalPredictorTimeUntilUsed"/>
+  <affected-histogram name="Prerender.PerceivedPLT"/>
+  <affected-histogram name="Prerender.PerceivedPLT_Prerender5minTTL"/>
+  <affected-histogram name="Prerender.PerceivedPLT_PrerenderControl"/>
+  <affected-histogram name="Prerender.PerceivedPLT_PrerenderEnabled"/>
+  <affected-histogram name="Prerender.PerceivedPLT_PrerenderMulti"/>
+  <affected-histogram name="Prerender.PerceivedPLT_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.PerceivedPLTFirstAfterMiss"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMiss_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMiss_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMiss_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMiss_PrerenderMulti"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMiss_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.PerceivedPLTFirstAfterMissAnyOnly"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissAnyOnly_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissAnyOnly_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissAnyOnly_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissAnyOnly_PrerenderMulti"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissAnyOnly_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.PerceivedPLTFirstAfterMissBoth"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissBoth_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissBoth_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissBoth_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissBoth_PrerenderMulti"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissBoth_PrerenderNoUse"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping_PrerenderMulti"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping_PrerenderNoUse"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly_PrerenderMulti"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.PerceivedPLTMatched"/>
+  <affected-histogram name="Prerender.PerceivedPLTMatched_Prerender5minTTL"/>
+  <affected-histogram name="Prerender.PerceivedPLTMatched_PrerenderControl"/>
+  <affected-histogram name="Prerender.PerceivedPLTMatched_PrerenderEnabled"/>
+  <affected-histogram name="Prerender.PerceivedPLTMatched_PrerenderMulti"/>
+  <affected-histogram name="Prerender.PerceivedPLTMatched_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.PerceivedPLTMatchedComplete"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTMatchedComplete_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTMatchedComplete_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTMatchedComplete_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTMatchedComplete_PrerenderMulti"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTMatchedComplete_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.PerceivedPLTWindowed"/>
+  <affected-histogram name="Prerender.PerceivedPLTWindowed_PrerenderEnabled"/>
+  <affected-histogram name="Prerender.PerceivedPLTWindowNotMatched"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTWindowNotMatched_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTWindowNotMatched_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTWindowNotMatched_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTWindowNotMatched_PrerenderMulti"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTWindowNotMatched_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.PercentLoadDoneAtSwapin"/>
+  <affected-histogram
+      name="Prerender.PercentLoadDoneAtSwapin_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.PercentLoadDoneAtSwapin_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.PercentLoadDoneAtSwapin_PrerenderEnabled"/>
+  <affected-histogram name="Prerender.PercentLoadDoneAtSwapin_PrerenderMulti"/>
+  <affected-histogram name="Prerender.PercentLoadDoneAtSwapin_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.PrerenderNotSwappedInPLT"/>
+  <affected-histogram
+      name="Prerender.PrerenderNotSwappedInPLT_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.PrerenderNotSwappedInPLT_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.PrerenderNotSwappedInPLT_PrerenderEnabled"/>
+  <affected-histogram name="Prerender.PrerenderNotSwappedInPLT_PrerenderMulti"/>
+  <affected-histogram name="Prerender.PrerenderNotSwappedInPLT_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.PrerendersPerSessionCount"/>
+  <affected-histogram name="Prerender.SimulatedLocalBrowsingBaselinePLT"/>
+  <affected-histogram
+      name="Prerender.SimulatedLocalBrowsingBaselinePLT_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.SimulatedLocalBrowsingBaselinePLT_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.SimulatedLocalBrowsingBaselinePLT_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.SimulatedLocalBrowsingBaselinePLT_PrerenderMulti"/>
+  <affected-histogram
+      name="Prerender.SimulatedLocalBrowsingBaselinePLT_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.SimulatedLocalBrowsingPLT"/>
+  <affected-histogram
+      name="Prerender.SimulatedLocalBrowsingPLT_Prerender5minTTL"/>
+  <affected-histogram
+      name="Prerender.SimulatedLocalBrowsingPLT_PrerenderControl"/>
+  <affected-histogram
+      name="Prerender.SimulatedLocalBrowsingPLT_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.SimulatedLocalBrowsingPLT_PrerenderMulti"/>
+  <affected-histogram
+      name="Prerender.SimulatedLocalBrowsingPLT_PrerenderNoUse"/>
+  <affected-histogram name="Prerender.TimeBetweenPrerenderRequests"/>
+  <affected-histogram name="Prerender.TimeSinceLastRecentVisit"/>
+  <affected-histogram name="Prerender.TimeUntilUsed2"/>
 </fieldtrial>
 
 <fieldtrial name="ProxyConnectionImpact">
