@@ -924,6 +924,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="LevelDBEnv.All.SafeThreadAccess" units="accesses">
+  <summary>
+    Linux and CrOS use unlocked_stdio(3). If it is used unsafely, record it
+    here. If there is no record of unsafety after chrome 29 has been in the
+    stable channel for a few weeks then revert this change.
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.IDB.IOError" enum="LevelDBIOErrorMethods">
   <summary>
     Methods where leveldb's Chromium environment has IO errors when being used

@@ -46,15 +46,15 @@ namespace {
     defined(OS_OPENBSD)
 // The following are glibc-specific
 
-size_t fread_unlocked(void *ptr, size_t size, size_t n, FILE *file) {
+size_t fread_wrapper(void *ptr, size_t size, size_t n, FILE *file) {
   return fread(ptr, size, n, file);
 }
 
-size_t fwrite_unlocked(const void *ptr, size_t size, size_t n, FILE *file) {
+size_t fwrite_wrapper(const void *ptr, size_t size, size_t n, FILE *file) {
   return fwrite(ptr, size, n, file);
 }
 
-int fflush_unlocked(FILE *file) {
+int fflush_wrapper(FILE *file) {
   return fflush(file);
 }
 
@@ -67,6 +67,42 @@ int fdatasync(int fildes) {
 #endif
 }
 #endif
+
+#else
+
+class TryToLockFILE {
+  // This class should be deleted if it doesn't turn up anything useful after
+  // going to stable (chrome 29).
+ public:
+  TryToLockFILE(FILE* file) : file_to_unlock_(NULL) {
+    if (ftrylockfile(file) == 0)
+      file_to_unlock_ = file;
+    else
+      UMA_HISTOGRAM_BOOLEAN("LevelDBEnv.All.SafeThreadAccess", false);
+  }
+  ~TryToLockFILE() {
+    if (file_to_unlock_)
+      funlockfile(file_to_unlock_);
+  }
+
+ private:
+  FILE* file_to_unlock_;
+};
+
+size_t fread_wrapper(void *ptr, size_t size, size_t n, FILE *file) {
+  TryToLockFILE lock(file);
+  return fread_unlocked(ptr, size, n, file);
+}
+
+size_t fwrite_wrapper(const void *ptr, size_t size, size_t n, FILE *file) {
+  TryToLockFILE lock(file);
+  return fwrite_unlocked(ptr, size, n, file);
+}
+
+int fflush_wrapper(FILE *file) {
+  TryToLockFILE lock(file);
+  return fflush_unlocked(file);
+}
 
 #endif
 
@@ -256,7 +292,7 @@ class ChromiumSequentialFile: public SequentialFile {
 
   virtual Status Read(size_t n, Slice* result, char* scratch) {
     Status s;
-    size_t r = fread_unlocked(scratch, 1, n, file_);
+    size_t r = fread_wrapper(scratch, 1, n, file_);
     *result = Slice(scratch, r);
     if (r < n) {
       if (feof(file_)) {
@@ -324,7 +360,7 @@ class ChromiumWritableFile : public WritableFile {
   }
 
   virtual Status Append(const Slice& data) {
-    size_t r = fwrite_unlocked(data.data(), 1, data.size(), file_);
+    size_t r = fwrite_wrapper(data.data(), 1, data.size(), file_);
     Status result;
     if (r != data.size()) {
       uma_logger_->RecordOSError(kWritableFileAppend, errno);
@@ -345,7 +381,7 @@ class ChromiumWritableFile : public WritableFile {
 
   virtual Status Flush() {
     Status result;
-    if (HANDLE_EINTR(fflush_unlocked(file_))) {
+    if (HANDLE_EINTR(fflush_wrapper(file_))) {
       int saved_errno = errno;
       result = Status::IOError(filename_, strerror(saved_errno));
       uma_logger_->RecordOSError(kWritableFileFlush, saved_errno);
@@ -358,7 +394,7 @@ class ChromiumWritableFile : public WritableFile {
     Status result;
     int error = 0;
 
-    if (HANDLE_EINTR(fflush_unlocked(file_)))
+    if (HANDLE_EINTR(fflush_wrapper(file_)))
       error = errno;
     // Sync even if fflush gave an error; perhaps the data actually got out,
     // even though something went wrong.
