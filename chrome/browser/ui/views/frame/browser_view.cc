@@ -923,9 +923,10 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   // laid out correctly for calculating the maximum arrow height below.
   {
     int top_arrow_height = 0;
-    // Hide the arrows on the Instant Extended NTP.
-    if (!chrome::IsInstantExtendedAPIEnabled() ||
-        !browser()->search_model()->mode().is_ntp()) {
+    // Hide the arrows in fullscreen and on the instant extended NTP.
+    if (IsToolbarVisible() &&
+        (!chrome::IsInstantExtendedAPIEnabled() ||
+         !browser()->search_model()->mode().is_ntp())) {
       const LocationIconView* location_icon_view =
           toolbar_->location_bar()->location_icon_view();
       // The +1 in the next line creates a 1-px gap between icon and arrow tip.
@@ -2320,10 +2321,13 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 #endif
   }
 
-  // Undo our anti-jankiness hacks and force the window to re-layout now that
-  // it's in its final position.
+  // Undo our anti-jankiness hacks and force a re-layout. We also need to
+  // recompute the height of the infobar top arrow because toggling in and out
+  // of fullscreen changes it. Calling ToolbarSizeChanged() will do both these
+  // things since it computes the arrow height directly and forces a layout
+  // indirectly via UpdateUIForContents().
   ignore_layout_ = false;
-  Layout();
+  ToolbarSizeChanged(false);
 }
 
 void BrowserView::LoadAccelerators() {
