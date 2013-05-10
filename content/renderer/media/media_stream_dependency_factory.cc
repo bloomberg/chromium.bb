@@ -460,9 +460,8 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     DCHECK(!audio_device_);
     audio_device_ = new WebRtcAudioDeviceImpl();
     scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
-        webrtc::CreatePeerConnectionFactory(worker_thread_,
-                                            signaling_thread_,
-                                            audio_device_));
+        webrtc::CreatePeerConnectionFactory(
+            worker_thread_, signaling_thread_, audio_device_, NULL, NULL));
     if (factory)
       pc_factory_ = factory;
     else
