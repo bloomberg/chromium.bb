@@ -51,6 +51,7 @@
 #include "core/platform/network/BlobData.h"
 #include "modules/websockets/CloseEvent.h"
 #include "modules/websockets/WebSocketChannel.h"
+#include "origin/KnownPorts.h"
 #include "origin/SecurityOrigin.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"

@@ -30,6 +30,7 @@
 #include "origin/SecurityOrigin.h"
 
 #include "origin/KURL.h"
+#include "origin/KnownPorts.h"
 #include "origin/SchemeRegistry.h"
 #include "origin/SecurityOriginCache.h"
 #include "origin/SecurityPolicy.h"

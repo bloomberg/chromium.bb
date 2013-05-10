@@ -26,14 +26,10 @@
 #ifndef KURL_h
 #define KURL_h
 
-#include "origin/KURLGooglePrivate.h"
+#include "origin/KURLPrivate.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
-
-#if USE(CF)
-typedef const struct __CFURL* CFURLRef;
-#endif
 
 namespace WTF{
 class TextEncoding;
@@ -152,8 +148,6 @@ public:
 
     friend bool equalIgnoringFragmentIdentifier(const KURL&, const KURL&);
 
-    friend bool protocolHostAndPortAreEqual(const KURL&, const KURL&);
-
     unsigned hostStart() const;
     unsigned hostEnd() const;
 
@@ -162,15 +156,6 @@ public:
     unsigned pathAfterLastSlash() const;
 
     operator const String&() const { return string(); }
-
-#if USE(CF)
-    KURL(CFURLRef);
-    CFURLRef createCFURL() const;
-#endif
-
-#ifdef __OBJC__
-    operator NSString*() const { return string(); }
-#endif
 
     // Getters for the parsed structure and its corresponding 8-bit string.
     const url_parse::Parsed& parsed() const { return m_url.m_parsed; }
@@ -189,8 +174,8 @@ private:
     void invalidate();
     static bool protocolIs(const String&, const char*);
 
-    friend class KURLGooglePrivate;
-    KURLGooglePrivate m_url;
+    friend class KURLPrivate;
+    KURLPrivate m_url;
 };
 
 bool operator==(const KURL&, const KURL&);
@@ -201,7 +186,6 @@ bool operator!=(const KURL&, const String&);
 bool operator!=(const String&, const KURL&);
 
 bool equalIgnoringFragmentIdentifier(const KURL&, const KURL&);
-bool protocolHostAndPortAreEqual(const KURL&, const KURL&);
 
 const KURL& blankURL();
 
@@ -213,9 +197,6 @@ const KURL& blankURL();
 bool protocolIs(const String& url, const char* protocol);
 bool protocolIsJavaScript(const String& url);
 
-bool isDefaultPortForProtocol(unsigned short port, const String& protocol);
-bool portAllowed(const KURL&); // Blacklist ports that should never be used for Web resources.
-
 bool isValidProtocol(const String&);
 
 // Unescapes the given string using URL escaping rules, given an optional
@@ -225,6 +206,9 @@ String decodeURLEscapeSequences(const String&);
 String decodeURLEscapeSequences(const String&, const WTF::TextEncoding&);
 
 String encodeWithURLEscapeSequences(const String&);
+
+// FIXME: This function should move to WTF.
+bool lowerCaseEqualsASCII(const char* begin, const char* end, const char* str);
 
 // Inlines.
 

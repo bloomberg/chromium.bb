@@ -3,9 +3,11 @@
     'origin_files': [
       'KURL.cpp',
       'KURL.h',
-      'KURLGoogle.cpp',
-      'KURLGooglePrivate.h',
+      'KURLPrivate.cpp',
+      'KURLPrivate.h',
       'KURLHash.h',
+      'KnownPorts.cpp',
+      'KnownPorts.h',
       'OriginAccessEntry.cpp',
       'OriginAccessEntry.h',
       'ReferrerPolicy.h',
