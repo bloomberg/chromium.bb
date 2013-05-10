@@ -16,8 +16,6 @@
 #include "base/strings/string_split.h"
 #include "base/synchronization/lock.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_bindings_skia_in_process.h"
 #include "ui/gl/gl_context.h"
@@ -115,54 +113,6 @@ WebGraphicsContext3DInProcessImpl::~WebGraphicsContext3DInProcessImpl() {
       delete ii->second;
   }
   AngleDestroyCompilers();
-}
-
-WebGraphicsContext3DInProcessImpl*
-WebGraphicsContext3DInProcessImpl::CreateForWebView(
-    WebGraphicsContext3D::Attributes attributes,
-    bool render_directly_to_web_view) {
-  if (!gfx::GLSurface::InitializeOneOff())
-    return NULL;
-
-  gfx::GLShareGroup* share_group = NULL;
-
-  if (attributes.shareResources) {
-    WebGraphicsContext3DInProcessImpl* context_impl =
-      g_all_shared_contexts.Pointer()->empty() ?
-        NULL : *g_all_shared_contexts.Pointer()->begin();
-    if (context_impl)
-        share_group = context_impl->gl_context_->share_group();
-  }
-
-  // This implementation always renders offscreen regardless of whether
-  // render_directly_to_web_view is true. Both DumpRenderTree and test_shell
-  // paint first to an intermediate offscreen buffer and from there to the
-  // window, and WebViewImpl::paint already correctly handles the case where the
-  // compositor is active but the output needs to go to a WebCanvas.
-  scoped_refptr<gfx::GLSurface> gl_surface =
-      gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
-
-  if (!gl_surface)
-    return NULL;
-
-  // TODO(kbr): This implementation doesn't yet support lost contexts
-  // and therefore can't yet properly support GPU switching.
-  gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
-
-  scoped_refptr<gfx::GLContext> gl_context = gfx::GLContext::CreateGLContext(
-      share_group,
-      gl_surface.get(),
-      gpu_preference);
-
-  if (!gl_context)
-    return NULL;
-
-  scoped_ptr<WebGraphicsContext3DInProcessImpl> context(
-      new WebGraphicsContext3DInProcessImpl(
-        gl_surface.get(), gl_context.get(), render_directly_to_web_view));
-  if (!context->Initialize(attributes))
-    return NULL;
-  return context.release();
 }
 
 WebGraphicsContext3DInProcessImpl*

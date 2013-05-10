@@ -61,9 +61,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessImpl :
                                     gfx::GLContext* context,
                                     bool render_directly_to_webview);
   virtual ~WebGraphicsContext3DInProcessImpl();
-  static WebGraphicsContext3DInProcessImpl* CreateForWebView(
-      WebGraphicsContext3D::Attributes attributes,
-      bool render_directly_to_webview);
   static WebGraphicsContext3DInProcessImpl* CreateForWindow(
       WebGraphicsContext3D::Attributes attributes,
       gfx::AcceleratedWidget window,

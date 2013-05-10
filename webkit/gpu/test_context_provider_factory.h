@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "webkit/gpu/webkit_gpu_export.h"
-#include "webkit/support/webkit_support.h"
 
 namespace cc {
 class ContextProvider;
