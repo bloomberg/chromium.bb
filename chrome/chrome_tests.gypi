@@ -789,6 +789,8 @@
         'test/chromedriver/chrome/chrome_finder_mac.mm',
         'test/chromedriver/chrome/chrome_impl.cc',
         'test/chromedriver/chrome/chrome_impl.h',
+        'test/chromedriver/chrome/console_logger.h',
+        'test/chromedriver/chrome/console_logger.cc',
         'test/chromedriver/chrome/devtools_client.cc',
         'test/chromedriver/chrome/devtools_client.h',
         'test/chromedriver/chrome/devtools_client_impl.cc',
@@ -1040,6 +1042,7 @@
       'sources': [
         'test/chromedriver/capabilities_unittest.cc',
         'test/chromedriver/chrome/chrome_finder_unittest.cc',
+        'test/chromedriver/chrome/console_logger_unittest.cc',
         'test/chromedriver/chrome/devtools_client_impl_unittest.cc',
         'test/chromedriver/chrome/devtools_http_client_unittest.cc',
         'test/chromedriver/chrome/dom_tracker_unittest.cc',

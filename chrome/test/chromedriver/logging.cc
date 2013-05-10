@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "chrome/test/chromedriver/capabilities.h"
+#include "chrome/test/chromedriver/chrome/console_logger.h"
 #include "chrome/test/chromedriver/chrome/performance_logger.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
@@ -98,9 +99,11 @@ scoped_ptr<base::ListValue> WebDriverLog::GetAndClearEntries() {
 Status CreateLogs(const Capabilities& capabilities,
                   ScopedVector<WebDriverLog>* out_devtools_logs,
                   ScopedVector<DevToolsEventListener>* out_listeners) {
+  ScopedVector<WebDriverLog> devtools_logs;
+  ScopedVector<DevToolsEventListener> listeners;
+  WebDriverLog::WebDriverLevel browser_log_level = WebDriverLog::kWdInfo;
+
   if (capabilities.logging_prefs) {
-    ScopedVector<WebDriverLog> devtools_logs;
-    ScopedVector<DevToolsEventListener> listeners;
     for (DictionaryValue::Iterator pref(*capabilities.logging_prefs);
          !pref.IsAtEnd(); pref.Advance()) {
       const std::string type = pref.key();
@@ -121,16 +124,24 @@ Status CreateLogs(const Capabilities& capabilities,
           devtools_logs.push_back(log);
           listeners.push_back(new PerformanceLogger(log));
         }
+      } else if ("browser" == type) {
+        browser_log_level = level;
       } else {
         // Driver "should" ignore unrecognized log types, per Selenium tests.
         // For example the Java client passes the "client" log type in the caps,
         // which the server should never provide.
         LOG(WARNING) << "Ignoring unrecognized log type: LoggingPrefs." << type;
       }
-      // TODO(klm): Implement and add here the console ("browser") log.
     }
-    out_devtools_logs->swap(devtools_logs);
-    out_listeners->swap(listeners);
   }
+  // Create "browser" log -- should always exist.
+  WebDriverLog* browser_log = new WebDriverLog("browser", browser_log_level);
+  devtools_logs.push_back(browser_log);
+  // If the level is OFF, don't even bother listening for DevTools events.
+  if (browser_log_level != WebDriverLog::kWdOff)
+    listeners.push_back(new ConsoleLogger(browser_log));
+
+  out_devtools_logs->swap(devtools_logs);
+  out_listeners->swap(listeners);
   return Status(kOk);
 }

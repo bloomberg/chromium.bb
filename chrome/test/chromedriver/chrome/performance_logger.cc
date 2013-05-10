@@ -13,8 +13,8 @@
 
 namespace {
 
-// DevTools event domains to enable and intercept.
-const char* kDomains[] = {"Network", "Page", "Timeline"};
+// DevTools event domain prefixes to intercept.
+const char* kDomains[] = {"Network.", "Page.", "Timeline."};
 
 const char* kDomainEnableCommands[] = {
     "Network.enable", "Page.enable", "Timeline.start"
@@ -36,10 +36,8 @@ PerformanceLogger::PerformanceLogger(Log* log)
 
 Status PerformanceLogger::OnConnected(DevToolsClient* client) {
   base::DictionaryValue params;  // All our enable commands have empty params.
-  scoped_ptr<base::DictionaryValue> result;
   for (size_t i_cmd = 0; i_cmd < arraysize(kDomainEnableCommands); ++i_cmd) {
-    Status status = client->SendCommandAndGetResult(
-        kDomainEnableCommands[i_cmd], params, &result);
+    Status status = client->SendCommand(kDomainEnableCommands[i_cmd], params);
     if (status.IsError())
       return status;
   }

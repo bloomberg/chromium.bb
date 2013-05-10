@@ -107,9 +107,29 @@ TEST(Logging, CreatePerformanceLog) {
   ScopedVector<WebDriverLog> logs;
   Status status = CreateLogs(capabilities, &logs, &listeners);
   ASSERT_TRUE(status.IsOk());
-  ASSERT_EQ(1u, logs.size());
-  ASSERT_EQ(1u, listeners.size());
+  ASSERT_EQ(2u, logs.size());
+  ASSERT_EQ(2u, listeners.size());
   ASSERT_STREQ("performance", logs[0]->GetType().c_str());
+  ASSERT_STREQ("browser", logs[1]->GetType().c_str());  // Always created.
+}
+
+TEST(Logging, CreateBrowserLogOff) {
+  Capabilities capabilities;
+  capabilities.logging_prefs.reset(new base::DictionaryValue());
+  capabilities.logging_prefs->SetString("browser", "OFF");
+
+  ScopedVector<DevToolsEventListener> listeners;
+  ScopedVector<WebDriverLog> logs;
+  Status status = CreateLogs(capabilities, &logs, &listeners);
+  ASSERT_TRUE(status.IsOk());
+  ASSERT_EQ(1u, logs.size());
+  ASSERT_EQ(0u, listeners.size());
+  ASSERT_STREQ("browser", logs[0]->GetType().c_str());
+
+  // Verify the created log is "OFF" -- drops all messages.
+  logs[0]->AddEntry(Log::kError, "drop even errors");
+  scoped_ptr<base::ListValue> entries(logs[0]->GetAndClearEntries());
+  ASSERT_EQ(0u, entries->GetSize());
 }
 
 TEST(Logging, IgnoreUnknownLogType) {
@@ -121,6 +141,26 @@ TEST(Logging, IgnoreUnknownLogType) {
   ScopedVector<WebDriverLog> logs;
   Status status = CreateLogs(capabilities, &logs, &listeners);
   EXPECT_TRUE(status.IsOk());
-  ASSERT_EQ(0u, logs.size());
-  ASSERT_EQ(0u, listeners.size());
+  ASSERT_EQ(1u, logs.size());
+  ASSERT_EQ(1u, listeners.size());
+  ASSERT_STREQ("browser", logs[0]->GetType().c_str());
+}
+
+TEST(Logging, BrowserLogCreatedWithoutLoggingPrefs) {
+  Capabilities capabilities;
+
+  ScopedVector<DevToolsEventListener> listeners;
+  ScopedVector<WebDriverLog> logs;
+  Status status = CreateLogs(capabilities, &logs, &listeners);
+  EXPECT_TRUE(status.IsOk());
+  ASSERT_EQ(1u, logs.size());
+  ASSERT_EQ(1u, listeners.size());
+  ASSERT_STREQ("browser", logs[0]->GetType().c_str());
+
+  // Verify the created "browser" log is "INFO" level.
+  logs[0]->AddEntry(Log::kLog, "info message");
+  logs[0]->AddEntry(Log::kDebug, "drop debug message");
+  scoped_ptr<base::ListValue> entries(logs[0]->GetAndClearEntries());
+  ASSERT_EQ(1u, entries->GetSize());
+  ValidateLogEntry(entries.get(), 0, "INFO", "info message");
 }
