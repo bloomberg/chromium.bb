@@ -140,6 +140,7 @@ class PanelGtk : public NativePanel,
                        GdkEvent*);
   CHROMEGTK_CALLBACK_0(PanelGtk, void, OnMainWindowDestroy);
   CHROMEGTK_CALLBACK_1(PanelGtk, gboolean, OnConfigure, GdkEventConfigure*);
+  CHROMEGTK_CALLBACK_1(PanelGtk, gboolean, OnWindowState, GdkEventWindowState*);
   // Callback for when the custom frame alignment needs to be redrawn.
   CHROMEGTK_CALLBACK_1(PanelGtk, gboolean, OnCustomFrameExpose,
                        GdkEventExpose*);
@@ -188,6 +189,11 @@ class PanelGtk : public NativePanel,
   // managers keep track of this state (_NET_ACTIVE_WINDOW), in which case
   // this will always be true.
   bool is_active_;
+
+  // True if the window manager thinks the window is minimized (iconified).
+  // Not all window managers support this, in which case this will always be
+  // false.
+  bool is_minimized_;
 
   // Top level window.
   GtkWindow* window_;

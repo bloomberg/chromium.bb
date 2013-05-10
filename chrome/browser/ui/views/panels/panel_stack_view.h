@@ -51,6 +51,7 @@ class PanelStackView : public NativePanelStackWindow,
   virtual void Minimize() OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;
   virtual void DrawSystemAttention(bool draw_attention) OVERRIDE;
+  virtual void OnPanelActivated(Panel* panel) OVERRIDE;
 
  private:
   typedef std::list<Panel*> Panels;

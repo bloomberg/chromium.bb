@@ -22,6 +22,8 @@
 #include "content/public/browser/notification_source.h"
 
 #if defined(TOOLKIT_GTK)
+#include "base/environment.h"
+#include "base/nix/xdg_util.h"
 #include "ui/base/x/x11_util.h"
 #endif
 
@@ -144,10 +146,21 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
 
 // static
 bool PanelManager::IsPanelStackingEnabled() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
   return true;
+}
+
+// static
+bool PanelManager::CanUseSystemMinimize() {
+#if defined(TOOLKIT_GTK)
+  static base::nix::DesktopEnvironment desktop_env =
+      base::nix::DESKTOP_ENVIRONMENT_OTHER;
+  if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_OTHER) {
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    desktop_env = base::nix::GetDesktopEnvironment(env.get());
+  }
+  return desktop_env != base::nix::DESKTOP_ENVIRONMENT_UNITY;
 #else
-  return false;
+  return true;
 #endif
 }
 
