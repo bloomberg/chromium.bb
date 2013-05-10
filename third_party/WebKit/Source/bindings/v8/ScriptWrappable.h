@@ -42,7 +42,7 @@ namespace WebCore {
 class ScriptWrappable : public MemoryReporterTag {
     friend class WeakHandleListener<ScriptWrappable>;
 public:
-    ScriptWrappable() : m_wrapperOrTypeInfo(0) { }
+    ScriptWrappable() : m_maskedStorage(0) { }
 
     // Wrappables need to be initialized with their most derrived type for which
     // bindings exist, in much the same way that certain other types need to be
@@ -61,20 +61,20 @@ public:
     {
         ASSERT(!containsWrapper());
         if (!*wrapper) {
-            m_wrapperOrTypeInfo = 0;
+            m_maskedStorage = 0;
             return;
         }
         v8::Persistent<v8::Object> persistent(isolate, wrapper);
         configuration.configureWrapper(persistent, isolate);
         WeakHandleListener<ScriptWrappable>::makeWeak(isolate, persistent, this);
-        m_wrapperOrTypeInfo = reinterpret_cast<uintptr_t>(*persistent) | 1;
+        m_maskedStorage = maskOrUnmaskValue(reinterpret_cast<uintptr_t>(*persistent));
         ASSERT(containsWrapper());
     }
 
     const WrapperTypeInfo* typeInfo()
     {
         if (containsTypeInfo())
-            return reinterpret_cast<const WrapperTypeInfo*>(m_wrapperOrTypeInfo);
+            return reinterpret_cast<const WrapperTypeInfo*>(m_maskedStorage);
 
         if (containsWrapper()) {
             v8::Persistent<v8::Object> unsafeWrapper;
@@ -87,14 +87,14 @@ public:
 
     void setTypeInfo(const WrapperTypeInfo* info)
     {
-        m_wrapperOrTypeInfo = reinterpret_cast<uintptr_t>(info);
+        m_maskedStorage = reinterpret_cast<uintptr_t>(info);
         ASSERT(containsTypeInfo());
     }
 
     void reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     {
         MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-        info.ignoreMember(m_wrapperOrTypeInfo);
+        info.ignoreMember(m_maskedStorage);
     }
 
     static bool wrapperCanBeStoredInObject(const void*) { return false; }
@@ -134,8 +134,8 @@ public:
 protected:
     ~ScriptWrappable()
     {
-        ASSERT(m_wrapperOrTypeInfo);  // Assert initialization via init() even if not subsequently wrapped.
-        m_wrapperOrTypeInfo = 0;      // Break UAF attempts to wrap.
+        ASSERT(m_maskedStorage);  // Assert initialization via init() even if not subsequently wrapped.
+        m_maskedStorage = 0;      // Break UAF attempts to wrap.
     }
 
 private:
@@ -145,7 +145,7 @@ private:
 
     UnsafePersistent<v8::Object> unsafePersistent() const
     {
-        v8::Object* object = containsWrapper() ? reinterpret_cast<v8::Object*>(m_wrapperOrTypeInfo & ~1) : 0;
+        v8::Object* object = containsWrapper() ? reinterpret_cast<v8::Object*>(maskOrUnmaskValue(m_maskedStorage)) : 0;
         return UnsafePersistent<v8::Object>(object);
     }
 
@@ -160,21 +160,34 @@ private:
         return object->unsafePersistent();
     }
 
-    inline bool containsWrapper() const { return (m_wrapperOrTypeInfo & 1) == 1; }
-    inline bool containsTypeInfo() const { return m_wrapperOrTypeInfo && (m_wrapperOrTypeInfo & 1) == 0; }
+    inline bool containsWrapper() const { return (m_maskedStorage & 1) == 1; }
+    inline bool containsTypeInfo() const { return m_maskedStorage && ((m_maskedStorage & 1) == 0); }
+
+    static inline uintptr_t maskOrUnmaskValue(uintptr_t value)
+    {
+        // Entropy via ASLR, bottom bit set to always toggle the bottom bit in the result. Since masking is only
+        // applied to wrappers, not wrapper type infos, and these are aligned poitners with zeros in the bottom
+        // bit(s), this automatically set the wrapper flag in the bottom bit upon encoding. Simiarlry,this
+        // automatically zeros out the bit upon decoding. Additionally, since setWrapper() now performs an explicit
+        // null test, and wrapper() requires the bottom bit to be set, there is no need to preserve null here.
+        const uintptr_t randomMask = ~((reinterpret_cast<uintptr_t>(&WebCoreMemoryTypes::DOM) >> 13)) | 1;
+        return value ^ randomMask;
+    }
 
     inline void disposeWrapper(v8::Persistent<v8::Value> value, v8::Isolate* isolate, const WrapperTypeInfo* info)
     {
         ASSERT(containsWrapper());
-        ASSERT(reinterpret_cast<uintptr_t>(*value) == (m_wrapperOrTypeInfo & ~1));
+        ASSERT(reinterpret_cast<uintptr_t>(*value) == maskOrUnmaskValue(m_maskedStorage));
         value.Dispose(isolate);
         setTypeInfo(info);
     }
 
     // If zero, then this contains nothing, otherwise:
-    //   If the bottom bit it set, then this contains a pointer to a wrapper object in the remainging bits.
+    //   If the bottom bit it set, then this contains a masked pointer to a wrapper object in the remainging bits.
     //   If the bottom bit is clear, then this contains a pointer to the wrapper type info in the remaining bits.
-    uintptr_t m_wrapperOrTypeInfo;
+    // Masking wrappers prevents attackers from overwriting this field with pointers to sprayed data.
+    // Pointers to (and inside) WrapperTypeInfo are already protected by ASLR.
+    uintptr_t m_maskedStorage;
 };
 
 template<>
