@@ -120,6 +120,8 @@ class HttpCache::Transaction : public HttpTransaction {
                    int buf_len,
                    const CompletionCallback& callback) OVERRIDE;
   virtual void StopCaching() OVERRIDE;
+  virtual bool GetFullRequestHeaders(
+      HttpRequestHeaders* headers) const OVERRIDE;
   virtual void DoneReading() OVERRIDE;
   virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE;
   virtual LoadState GetLoadState() const OVERRIDE;

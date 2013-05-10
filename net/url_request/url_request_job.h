@@ -105,6 +105,8 @@ class NET_EXPORT URLRequestJob
   // URLRequest::StopCaching().
   virtual void StopCaching();
 
+  virtual bool GetFullRequestHeaders(HttpRequestHeaders* headers) const;
+
   // Called to fetch the current load state for the job.
   virtual LoadState GetLoadState() const;
 

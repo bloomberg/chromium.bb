@@ -421,6 +421,21 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     return extra_request_headers_;
   }
 
+  // Gets the full request headers sent to the server.
+  //
+  // Return true and overwrites headers if it can get the request headers;
+  // otherwise, returns false and does not modify headers.  (Always returns
+  // false for request types that don't have headers, like file requests.)
+  //
+  // This is guaranteed to succeed if:
+  //
+  // 1. A redirect or auth callback is currently running.  Once it ends, the
+  //    headers may become unavailable as a new request with the new address
+  //    or credentials is made.
+  //
+  // 2. The OnResponseStarted callback is currently running or has run.
+  bool GetFullRequestHeaders(HttpRequestHeaders* headers) const;
+
   // Returns the current load state for the request. |param| is an optional
   // parameter describing details related to the load state. Not all load states
   // have a parameter.

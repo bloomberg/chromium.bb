@@ -450,6 +450,15 @@ void HttpCache::Transaction::StopCaching() {
   }
 }
 
+bool HttpCache::Transaction::GetFullRequestHeaders(
+    HttpRequestHeaders* headers) const {
+  if (network_trans_)
+    return network_trans_->GetFullRequestHeaders(headers);
+
+  // TODO(ttuttle): Read headers from cache.
+  return false;
+}
+
 void HttpCache::Transaction::DoneReading() {
   if (cache_ && entry_) {
     DCHECK(reading_);
