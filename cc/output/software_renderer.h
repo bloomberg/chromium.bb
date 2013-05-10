@@ -14,7 +14,9 @@ namespace cc {
 
 class OutputSurface;
 class SoftwareOutputDevice;
+class ContentDrawQuadBase;
 class DebugBorderDrawQuad;
+class PictureDrawQuad;
 class RendererClient;
 class RenderPassDrawQuad;
 class ResourceProvider;
@@ -74,6 +76,8 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 
   void DrawDebugBorderQuad(const DrawingFrame* frame,
                            const DebugBorderDrawQuad* quad);
+  void DrawPictureQuad(const DrawingFrame* frame,
+                       const PictureDrawQuad* quad);
   void DrawSolidColorQuad(const DrawingFrame* frame,
                           const SolidColorDrawQuad* quad);
   void DrawTextureQuad(const DrawingFrame* frame,

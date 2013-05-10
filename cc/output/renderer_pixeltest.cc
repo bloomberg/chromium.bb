@@ -729,7 +729,7 @@ TEST_F(GLRendererPixelTest, ForceAntiAliasingOff) {
       ExactPixelComparator(false)));
 }
 
-TEST_F(GLRendererPixelTest, PictureDrawQuadIdentityScale) {
+TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
   // TODO(enne): the renderer should figure this out on its own.
@@ -810,7 +810,7 @@ TEST_F(GLRendererPixelTest, PictureDrawQuadIdentityScale) {
       ExactPixelComparator(true)));
 }
 
-TEST_F(GLRendererPixelTest, PictureDrawQuadNonIdentityScale) {
+TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
   // TODO(enne): the renderer should figure this out on its own.
@@ -846,7 +846,7 @@ TEST_F(GLRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   green_quad1->SetNew(top_right_green_shared_quad_state.get(),
                       green_rect1,
                       gfx::Rect(),
-                      green_rect1,
+                      gfx::RectF(green_rect1.size()),
                       green_rect1.size(),
                       contents_swizzled,
                       green_rect1,
@@ -858,7 +858,7 @@ TEST_F(GLRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   green_quad2->SetNew(top_right_green_shared_quad_state.get(),
                       green_rect2,
                       gfx::Rect(),
-                      green_rect2,
+                      gfx::RectF(green_rect2.size()),
                       green_rect2.size(),
                       contents_swizzled,
                       green_rect2,

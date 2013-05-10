@@ -12,6 +12,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"
 #include "cc/quads/debug_border_draw_quad.h"
+#include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
@@ -71,8 +72,11 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
     output_surface_(output_surface),
     output_device_(output_surface->software_device()),
     current_canvas_(NULL) {
-  capabilities_.max_texture_size = resource_provider_->max_texture_size();
-  capabilities_.best_texture_format = resource_provider_->best_texture_format();
+  if (resource_provider_) {
+    capabilities_.max_texture_size = resource_provider_->max_texture_size();
+    capabilities_.best_texture_format =
+        resource_provider_->best_texture_format();
+  }
   capabilities_.using_set_visibility = true;
   // The updater can access bitmaps while the SoftwareRenderer is using them.
   capabilities_.allow_partial_texture_updates = true;
@@ -244,6 +248,9 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
     case DrawQuad::DEBUG_BORDER:
       DrawDebugBorderQuad(frame, DebugBorderDrawQuad::MaterialCast(quad));
       break;
+    case DrawQuad::PICTURE_CONTENT:
+      DrawPictureQuad(frame, PictureDrawQuad::MaterialCast(quad));
+      break;
     case DrawQuad::SOLID_COLOR:
       DrawSolidColorQuad(frame, SolidColorDrawQuad::MaterialCast(quad));
       break;
@@ -283,6 +290,38 @@ void SoftwareRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
                               4, transformed_vertices, current_paint_);
 }
 
+void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
+                                       const PictureDrawQuad* quad) {
+  SkMatrix content_matrix;
+  content_matrix.setRectToRect(
+      gfx::RectFToSkRect(quad->tex_coord_rect),
+      gfx::RectFToSkRect(QuadVertexRect()),
+      SkMatrix::kFill_ScaleToFit);
+  current_canvas_->concat(content_matrix);
+
+  if (quad->ShouldDrawWithBlending()) {
+    TRACE_EVENT0("cc", "SoftwareRenderer::DrawPictureQuad with blending");
+    SkBitmap temp_bitmap;
+    temp_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                          quad->texture_size.width(),
+                          quad->texture_size.height());
+    temp_bitmap.allocPixels();
+    SkDevice temp_device(temp_bitmap);
+    SkCanvas temp_canvas(&temp_device);
+
+    quad->picture_pile->Raster(
+        &temp_canvas, quad->content_rect, quad->contents_scale, NULL);
+
+    current_paint_.setFilterBitmap(true);
+    current_canvas_->drawBitmap(temp_bitmap, 0, 0, &current_paint_);
+  } else {
+    TRACE_EVENT0("cc",
+                 "SoftwareRenderer::DrawPictureQuad direct from PicturePile");
+    quad->picture_pile->Raster(
+        current_canvas_, quad->content_rect, quad->contents_scale, NULL);
+  }
+}
+
 void SoftwareRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
                                           const SolidColorDrawQuad* quad) {
   current_paint_.setColor(quad->color);
@@ -316,6 +355,7 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
 
 void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
                                     const TileDrawQuad* quad) {
+  DCHECK(!output_surface_->ForcedDrawToSoftwareDevice());
   DCHECK(IsSoftwareResource(quad->resource_id));
   ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
                                                 quad->resource_id);

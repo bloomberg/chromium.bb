@@ -598,6 +598,8 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     occlusion_tracker.EnterLayer(it, prevent_occlusion);
 
     AppendQuadsData append_quads_data(target_render_pass->id);
+    if (output_surface_->ForcedDrawToSoftwareDevice())
+      append_quads_data.allow_tile_draw_quads = false;
 
     if (it.represents_target_render_surface()) {
       if (it->HasRequestCopyCallback()) {
@@ -709,7 +711,8 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     DCHECK(!have_copy_request);
 
   RemoveRenderPasses(CullRenderPassesWithNoQuads(), frame);
-  renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);
+  if (!output_surface_->ForcedDrawToSoftwareDevice())
+    renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);
   RemoveRenderPasses(CullRenderPassesWithCachedTextures(renderer_.get()),
                      frame);
 
@@ -1112,7 +1115,13 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   if (active_tree_->hud_layer())
     active_tree_->hud_layer()->UpdateHudTexture(resource_provider_.get());
 
-  renderer_->DrawFrame(&frame->render_passes);
+  if (output_surface_->ForcedDrawToSoftwareDevice()) {
+    scoped_ptr<SoftwareRenderer> temp_software_renderer =
+        SoftwareRenderer::Create(this, output_surface_.get(), NULL);
+    temp_software_renderer->DrawFrame(&frame->render_passes);
+  } else {
+    renderer_->DrawFrame(&frame->render_passes);
+  }
   // The render passes should be consumed by the renderer.
   DCHECK(frame->render_passes.empty());
   frame->render_passes_by_id.clear();

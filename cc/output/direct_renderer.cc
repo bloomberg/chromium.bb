@@ -133,6 +133,9 @@ void DirectRenderer::SetEnlargePassTextureAmountForTesting(
 
 void DirectRenderer::DecideRenderPassAllocationsForFrame(
     const RenderPassList& render_passes_in_draw_order) {
+  if (!resource_provider_)
+    return;
+
   base::hash_map<RenderPass::Id, const RenderPass*> render_passes_in_frame;
   for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i)
     render_passes_in_frame.insert(std::pair<RenderPass::Id, const RenderPass*>(
@@ -322,6 +325,9 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
     SetDrawViewportSize(render_pass->output_rect.size());
     return true;
   }
+
+  if (!resource_provider_)
+    return false;
 
   CachedResource* texture = render_pass_textures_.get(render_pass->id);
   DCHECK(texture);

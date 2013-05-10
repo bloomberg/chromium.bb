@@ -82,11 +82,6 @@ void PicturePileImpl::Raster(
 
   DCHECK(contents_scale >= min_contents_scale_);
 
-#ifndef NDEBUG
-  // Any non-painted areas will be left in this color.
-  canvas->clear(DebugColors::NonPaintedFillColor());
-#endif  // NDEBUG
-
   canvas->save();
   canvas->translate(-canvas_rect.x(), -canvas_rect.y());
 

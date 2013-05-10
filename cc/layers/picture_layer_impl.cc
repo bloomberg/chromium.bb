@@ -99,6 +99,29 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
+  if (!append_quads_data->allow_tile_draw_quads) {
+    gfx::Rect geometry_rect = rect;
+    gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
+    gfx::Size texture_size = rect.size();
+    gfx::RectF texture_rect = gfx::RectF(texture_size);
+    gfx::Rect quad_content_rect = rect;
+    float contents_scale = contents_scale_x();
+
+    scoped_ptr<PictureDrawQuad> quad = PictureDrawQuad::Create();
+    quad->SetNew(shared_quad_state,
+                 geometry_rect,
+                 opaque_rect,
+                 texture_rect,
+                 texture_size,
+                 false,
+                 quad_content_rect,
+                 contents_scale,
+                 pile_);
+    if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
+      append_quads_data->num_missing_tiles++;
+    return;
+  }
+
   bool clipped = false;
   gfx::QuadF target_quad = MathUtil::MapQuad(
       draw_transform(),

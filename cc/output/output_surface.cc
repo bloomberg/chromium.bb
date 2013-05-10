@@ -68,6 +68,10 @@ OutputSurface::OutputSurface(
 OutputSurface::~OutputSurface() {
 }
 
+bool OutputSurface::ForcedDrawToSoftwareDevice() const {
+  return false;
+}
+
 bool OutputSurface::BindToClient(
     cc::OutputSurfaceClient* client) {
   DCHECK(client);

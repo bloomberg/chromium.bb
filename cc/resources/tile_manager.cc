@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "cc/debug/debug_colors.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/raster_worker_pool.h"
@@ -906,6 +907,11 @@ void TileManager::RunRasterTask(
   bitmap.setPixels(buffer);
   SkDevice device(bitmap);
   SkCanvas canvas(&device);
+
+#ifndef NDEBUG
+  // Any non-painted areas will be left in this color.
+  canvas.clear(DebugColors::NonPaintedFillColor());
+#endif  // NDEBUG
 
   if (stats_instrumentation->record_rendering_stats()) {
     PicturePileImpl::RasterStats raster_stats;

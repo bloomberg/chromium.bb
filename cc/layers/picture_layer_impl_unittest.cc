@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "cc/layers/append_quads_data.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_impl_proxy.h"
@@ -14,6 +15,7 @@
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/impl_side_painting_settings.h"
+#include "cc/test/mock_quad_culler.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -824,6 +826,35 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   Tile* tile = pending_layer_->tilings().tiling_at(0)->AllTilesForTesting()[0];
   EXPECT_GE(140, tile->content_rect().width());
   EXPECT_GE(140, tile->content_rect().height());
+}
+
+TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
+  MockQuadCuller quad_culler;
+
+  gfx::Size tile_size(400, 400);
+  gfx::Size layer_bounds(1300, 1900);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  SetupTrees(pending_pile, active_pile);
+
+  active_layer_->SetContentBounds(layer_bounds);
+  active_layer_->draw_properties().visible_content_rect =
+      gfx::Rect(layer_bounds);
+
+  gfx::Rect layer_invalidation(150, 200, 30, 180);
+  Region invalidation(layer_invalidation);
+  AddDefaultTilingsWithInvalidation(invalidation);
+
+  AppendQuadsData data;
+  data.allow_tile_draw_quads = false;
+  active_layer_->AppendQuads(&quad_culler, &data);
+
+  ASSERT_EQ(1U, quad_culler.quad_list().size());
+  EXPECT_EQ(DrawQuad::PICTURE_CONTENT, quad_culler.quad_list()[0]->material);
 }
 
 }  // namespace

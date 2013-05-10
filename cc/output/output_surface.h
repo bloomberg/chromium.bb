@@ -66,6 +66,11 @@ class CC_EXPORT OutputSurface {
     return software_device_.get();
   }
 
+  // In the case where both the context3d and software_device are present
+  // (namely Android WebView), this is called to determine whether the software
+  // device should be used on the current frame.
+  virtual bool ForcedDrawToSoftwareDevice() const;
+
   // Called by the compositor on the compositor thread. This is a place where
   // thread-specific data for the output surface can be initialized, since from
   // this point on the output surface will only be used on the compositor
