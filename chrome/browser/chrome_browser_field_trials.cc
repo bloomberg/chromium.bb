@@ -38,7 +38,6 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(PrefService* local_state) {
 
   // Field trials that are shared by all platforms.
   chrome_variations::SetupUniformityFieldTrials(install_time);
-  SetUpSimpleCacheFieldTrial();
   InstantiateDynamicTrials();
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -48,55 +47,6 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(PrefService* local_state) {
   chrome::SetupDesktopFieldTrials(
       parsed_command_line_, install_time, local_state);
 #endif
-}
-
-// Sets up the experiment. The actual cache backend choice is made in the net/
-// internals by looking at the experiment state.
-void ChromeBrowserFieldTrials::SetUpSimpleCacheFieldTrial() {
-  const std::string opt_value = parsed_command_line_.GetSwitchValueASCII(
-      switches::kUseSimpleCacheBackend);
-
-  const base::FieldTrial::Probability kDivisor = 100;
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial("SimpleCacheTrial", kDivisor,
-                                                 "ExperimentNo", 2013, 12, 31,
-                                                 NULL));
-  trial->UseOneTimeRandomization();
-
-  if (LowerCaseEqualsASCII(opt_value, "off")) {
-    trial->AppendGroup("ExplicitNo", kDivisor);
-    trial->group();
-    return;
-  }
-  if (LowerCaseEqualsASCII(opt_value, "on")) {
-    trial->AppendGroup("ExplicitYes", kDivisor);
-    trial->group();
-    return;
-  }
-
-#if defined(OS_ANDROID)
-  base::FieldTrial::Probability simple_cache_experiment_probability = 0;
-  base::FieldTrial::Probability simple_cache_experiment2_probability = 0;
-  base::FieldTrial::Probability simple_cache_control_probability = 0;
-
-  switch (chrome::VersionInfo::GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_DEV:
-      simple_cache_experiment_probability = 45;
-      simple_cache_control_probability = 45;
-      break;
-    case chrome::VersionInfo::CHANNEL_BETA:
-      simple_cache_experiment_probability = 80;
-      simple_cache_experiment2_probability = 10;
-      simple_cache_control_probability = 10;
-      break;
-    default:
-      break;
-  }
-  trial->AppendGroup("ExperimentYes", simple_cache_experiment_probability);
-  trial->AppendGroup("ExperimentYes2", simple_cache_experiment2_probability);
-  trial->AppendGroup("ExperimentControl", simple_cache_control_probability);
-#endif
-  trial->group();
 }
 
 void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {

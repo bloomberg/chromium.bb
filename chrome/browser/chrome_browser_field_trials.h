@@ -20,9 +20,6 @@ class ChromeBrowserFieldTrials {
   void SetupFieldTrials(PrefService* local_state);
 
  private:
-  // A field trial to check the simple cache performance.
-  void SetUpSimpleCacheFieldTrial();
-
   // Instantiates dynamic trials by querying their state, to ensure they get
   // reported as used.
   void InstantiateDynamicTrials();
