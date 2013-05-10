@@ -466,6 +466,12 @@ void BrowserViewRendererImpl::ScheduleComposite() {
 }
 
 skia::RefPtr<SkPicture> BrowserViewRendererImpl::GetLastCapturedPicture() {
+  // Use the latest available picture if the listener callback is enabled.
+  skia::RefPtr<SkPicture> picture =
+      RendererPictureMap::GetInstance()->GetRendererPicture(
+          web_contents_->GetRoutingID());
+  if (picture) return picture;
+
   // Get it synchronously.
   view_renderer_host_->CapturePictureSync();
   return RendererPictureMap::GetInstance()->GetRendererPicture(
@@ -474,6 +480,10 @@ skia::RefPtr<SkPicture> BrowserViewRendererImpl::GetLastCapturedPicture() {
 
 void BrowserViewRendererImpl::OnPictureUpdated(int process_id,
                                                int render_view_id) {
+  CHECK_EQ(web_contents_->GetRenderProcessHost()->GetID(), process_id);
+  if (render_view_id != web_contents_->GetRoutingID())
+    return;
+
   client_->OnNewPicture();
 
   // TODO(mkosiba): Remove when invalidation path is re-implemented.
