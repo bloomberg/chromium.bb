@@ -1574,9 +1574,6 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest,
   PanelManager::GetInstance()->CloseAll();
 }
 
-// TODO(jianli): to be enabled for other platforms when grouping and snapping
-// are supported.
-#if defined(OS_WIN) || defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromBottom) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DetachedPanelCollection* detached_collection =
@@ -3147,4 +3144,3 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapStackedPanelToScreenEdge) {
 
   panel_manager->CloseAll();
 }
-#endif

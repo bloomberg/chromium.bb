@@ -914,6 +914,11 @@ void PanelView::OnWidgetDestroying(views::Widget* widget) {
 
 void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
 #if defined(OS_WIN)
+  // WM_NCACTIVATED could be sent when an active window is being destroyed on
+  // Windows. We need to guard against this.
+  if (window_closed_)
+    return;
+
   // The panel window is in focus (actually accepting keystrokes) if it is
   // active and belongs to a foreground application.
   bool focused = active &&
