@@ -358,19 +358,6 @@ else
   fi
 fi
 
-# Detect the NDK system tag, i.e. the name used to identify the host.
-# out: NDK system tag (e.g. 'linux-x86_64').
-get_ndk_host_tag () {
-  if [ -z "$NDK_HOST_TAG" ]; then
-    case $(uname -s) in
-      Linux) NDK_HOST_TAG=linux-x86_64;;
-      Darwin) NDK_HOST_TAG=darwin-x86;;
-      *) panic "You can't run this script on this system: $uname -a";;
-    esac
-  fi
-  echo "$NDK_HOST_TAG"
-}
-
 # Convert an NDK architecture name into a GNU configure triplet.
 # $1: NDK architecture name (e.g. 'arm')
 # Out: Android GNU configure triplet (e.g. 'arm-linux-androideabi')
@@ -426,43 +413,11 @@ get_ndk_toolchain_prebuilt () {
   echo "$FILE"
 }
 
-# Find the path to an NDK's toolchain full prefix for a given architecture
-# $1: NDK install path
-# $2: NDK architecture name
-# Out: install path + binary prefix (e.g.
-#      ".../path/to/bin/arm-linux-androideabi-")
-get_ndk_toolchain_fullprefix () {
-  local NDK_DIR="$1"
-  local ARCH="$2"
-  local TARGET NAME HOST GCC CONFIG
-
-  # NOTE: This will need to be updated if the NDK changes the names or moves
-  #        the location of its prebuilt toolchains.
-  #
-  GCC=
-  HOST=$(get_ndk_host_tag)
-  CONFIG=$(get_arch_gnu_config $ARCH)
-  GCC=$(get_ndk_toolchain_prebuilt \
-        "$NDK_DIR" "$ARCH" "$HOST/bin/$CONFIG-gcc")
-  if [ ! -f "$GCC" -a "$ARCH" = "x86" ]; then
-    # Special case, the x86 toolchain used to be incorrectly
-    # named i686-android-linux-gcc!
-    GCC=$(get_ndk_toolchain_prebuilt \
-          "$NDK_DIR" "$ARCH" "$HOST/bin/i686-android-linux-gcc")
-  fi
-  if [ -z "$GCC" ]; then
-    panic "Cannot find Android NDK toolchain for '$ARCH' architecture. \
-Please verify your NDK installation!"
-  fi
-  echo "${GCC%%gcc}"
-}
-
 # $1: NDK install path
 # $2: target architecture.
 get_ndk_gdbserver () {
   local NDK_DIR="$1"
   local ARCH=$2
-  local HOST=$(get_ndk_host_tag)
   local BINARY
 
   # The location has moved after NDK r8
@@ -478,9 +433,6 @@ get_ndk_gdbserver () {
 # issues when both binaries do not speak the same wire protocol.
 #
 if [ -z "$TOOLCHAIN" ]; then
-  ANDROID_TOOLCHAIN=$(get_ndk_toolchain_fullprefix \
-                      "$ANDROID_NDK_ROOT" "$TARGET_ARCH")
-  ANDROID_TOOLCHAIN=$(dirname "$ANDROID_TOOLCHAIN")
   log "Auto-config: --toolchain=$ANDROID_TOOLCHAIN"
 else
   # Be flexible, allow one to specify either the install path or the bin
