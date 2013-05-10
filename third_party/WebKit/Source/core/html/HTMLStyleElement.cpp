@@ -34,7 +34,7 @@
 #include "core/dom/Event.h"
 #include "core/dom/EventSender.h"
 #include "core/dom/ScriptableDocumentParser.h"
-#include "core/dom/ShadowRoot.h"
+#include "core/dom/shadow/ShadowRoot.h"
 
 namespace WebCore {
 

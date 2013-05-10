@@ -25,15 +25,15 @@
  */
 
 #include "config.h"
-#include "core/dom/ShadowRoot.h"
+#include "core/dom/shadow/ShadowRoot.h"
 
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/ElementShadow.h"
-#include "core/dom/Text.h"
-#include "core/editing/markup.h"
-#include "core/html/shadow/ContentDistributor.h"
-#include "core/html/shadow/InsertionPoint.h"
 #include "RuntimeEnabledFeatures.h"
+#include "core/css/resolver/StyleResolver.h"
+#include "core/dom/Text.h"
+#include "core/dom/shadow/ContentDistributor.h"
+#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/InsertionPoint.h"
+#include "core/editing/markup.h"
 #include "core/platform/HistogramSupport.h"
 
 namespace WebCore {

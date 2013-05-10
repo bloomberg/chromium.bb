@@ -33,10 +33,10 @@
 #include "core/html/BaseMultipleFieldsDateAndTimeInputType.h"
 
 #include "CSSValueKeywords.h"
-#include "core/dom/ElementShadow.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/ShadowRoot.h"
+#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/DateTimeFieldsState.h"
 #include "core/html/FormController.h"
 #include "core/html/HTMLDataListElement.h"

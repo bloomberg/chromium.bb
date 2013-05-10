@@ -24,10 +24,10 @@
 
 #include "core/animation/Animation.h"
 #include "core/dom/DatasetDOMStringMap.h"
-#include "core/dom/ElementShadow.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/PseudoElement.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/html/ClassList.h"
 #include "core/html/ime/InputMethodContext.h"
 #include "core/rendering/style/StyleInheritedData.h"

@@ -34,9 +34,9 @@
 
 #include "CSSPropertyNames.h"
 #include "bindings/v8/ScriptController.h"
-#include "core/dom/ElementShadow.h"
 #include "core/dom/MouseEvent.h"
-#include "core/dom/ShadowRoot.h"
+#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"

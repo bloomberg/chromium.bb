@@ -33,7 +33,6 @@
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
-#include "core/html/shadow/InsertionPoint.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/Chrome.h"

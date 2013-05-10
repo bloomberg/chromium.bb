@@ -52,7 +52,7 @@
 #endif
 
 #if ENABLE(DATALIST_ELEMENT)
-#include "core/dom/ElementShadow.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLOptionElement.h"

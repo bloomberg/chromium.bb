@@ -28,7 +28,7 @@
 #include "core/html/BaseChooserOnlyDateAndTimeInputType.h"
 
 #include "bindings/v8/ScriptController.h"
-#include "core/dom/ShadowRoot.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/Chrome.h"

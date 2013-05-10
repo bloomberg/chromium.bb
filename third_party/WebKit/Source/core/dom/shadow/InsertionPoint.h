@@ -33,11 +33,11 @@
 
 #include "HTMLNames.h"
 #include "core/css/CSSSelectorList.h"
-#include "core/dom/ElementShadow.h"
-#include "core/dom/ShadowRoot.h"
+#include "core/dom/shadow/ContentDistributor.h"
+#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLElement.h"
-#include "core/html/shadow/ContentDistributor.h"
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

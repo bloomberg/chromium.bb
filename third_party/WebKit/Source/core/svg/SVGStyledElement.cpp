@@ -30,7 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/ShadowRoot.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/rendering/svg/RenderSVGResource.h"

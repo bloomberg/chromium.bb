@@ -33,7 +33,7 @@
 #include "WebElement.h"
 #include "core/dom/Element.h"
 #include "core/dom/NamedNodeMap.h"
-#include "core/dom/ShadowRoot.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderObject.h"
 #include <public/WebRect.h>

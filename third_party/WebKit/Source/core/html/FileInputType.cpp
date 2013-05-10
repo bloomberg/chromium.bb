@@ -24,9 +24,9 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
-#include "core/dom/ElementShadow.h"
 #include "core/dom/Event.h"
-#include "core/dom/ShadowRoot.h"
+#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/FormController.h"

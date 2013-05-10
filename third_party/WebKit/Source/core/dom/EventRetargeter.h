@@ -22,7 +22,7 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/EventContext.h"
-#include "core/dom/ShadowRoot.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

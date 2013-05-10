@@ -28,10 +28,10 @@
 #include "core/dom/Attr.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementRareData.h"
-#include "core/dom/ElementShadow.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/ShadowRoot.h"
+#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {

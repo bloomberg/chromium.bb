@@ -25,12 +25,12 @@
  */
 
 #include "config.h"
-#include "core/html/shadow/ContentDistributor.h"
+#include "core/dom/shadow/ContentDistributor.h"
 
-#include "core/dom/ElementShadow.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/html/shadow/ContentSelectorQuery.h"
+#include "core/dom/shadow/ContentSelectorQuery.h"
+#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/shadow/HTMLContentElement.h"
 #include "core/html/shadow/HTMLShadowElement.h"
 

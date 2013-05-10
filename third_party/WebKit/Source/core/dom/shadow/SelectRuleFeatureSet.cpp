@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/html/shadow/SelectRuleFeatureSet.h"
+#include "core/dom/shadow/SelectRuleFeatureSet.h"
 
 #include "core/css/CSSSelector.h"
 

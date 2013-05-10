@@ -28,8 +28,8 @@
 #define ComposedShadowTreeWalker_h
 
 #include "core/dom/NodeRenderingTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/html/shadow/InsertionPoint.h"
+#include "core/dom/shadow/InsertionPoint.h"
+#include "core/dom/shadow/ShadowRoot.h"
 
 namespace WebCore {
 

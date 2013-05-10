@@ -31,11 +31,11 @@
 #ifndef ContentDistributor_h
 #define ContentDistributor_h
 
-#include "core/html/shadow/SelectRuleFeatureSet.h"
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "core/dom/shadow/SelectRuleFeatureSet.h"
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -151,7 +151,7 @@ private:
 
     HashMap<const Node*, RefPtr<InsertionPoint> > m_nodeToInsertionPoint;
     SelectRuleFeatureSet m_selectFeatures;
-    bool m_needsSelectFeatureSet : 1;
+    unsigned m_needsSelectFeatureSet : 1;
     unsigned m_validity : 2;
 };
 

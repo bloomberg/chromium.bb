@@ -27,8 +27,8 @@
 #include "config.h"
 #include "core/dom/NodeRenderingTraversal.h"
 
-#include "core/dom/ComposedShadowTreeWalker.h"
 #include "core/dom/PseudoElement.h"
+#include "core/dom/shadow/ComposedShadowTreeWalker.h"
 
 namespace WebCore {
 
