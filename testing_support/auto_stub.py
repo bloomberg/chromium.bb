@@ -62,19 +62,19 @@ class SimpleMock(object):
     """
     self.calls = []
     self.unit_test = unit_test
-    self.assertEquals = unit_test.assertEquals
+    self.assertEqual = unit_test.assertEqual
 
   def pop_calls(self):
     """Returns the list of calls up to date.
 
-    Good to do self.assertEquals(expected, mock.pop_calls()).
+    Good to do self.assertEqual(expected, mock.pop_calls()).
     """
     calls = self.calls
     self.calls = []
     return calls
 
   def check_calls(self, expected):
-    self.assertEquals(expected, self.pop_calls())
+    self.assertEqual(expected, self.pop_calls())
 
   def _register_call(self, *args, **kwargs):
     """Registers the name of the caller function."""
