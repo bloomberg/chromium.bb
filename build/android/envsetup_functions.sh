@@ -35,7 +35,6 @@ common_vars_defines() {
       ;;
     "mips")
       toolchain_arch="mipsel-linux-android"
-      toolchain_dir="linux-x86"
       ;;
     *)
       echo "TARGET_ARCH: ${TARGET_ARCH} is not supported." >& 2

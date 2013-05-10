@@ -1225,7 +1225,7 @@
               'android_app_abi%': 'mips',
               'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-mips/gdbserver/gdbserver',
               'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-mips',
-              'android_toolchain%': '<(android_ndk_root)/toolchains/mipsel-linux-android-4.6/prebuilt/<(host_os)-x86/bin',
+              'android_toolchain%': '<(android_ndk_root)/toolchains/mipsel-linux-android-4.6/prebuilt/<(host_os)-<(android_host_arch)/bin',
             }],
           ],
         },
