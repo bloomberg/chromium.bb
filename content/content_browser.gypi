@@ -680,6 +680,7 @@
     'browser/renderer_host/database_message_filter.h',
     'browser/renderer_host/dip_util.cc',
     'browser/renderer_host/dip_util.h',
+    'browser/renderer_host/event_with_latency_info.h',
     'browser/renderer_host/file_utilities_message_filter.cc',
     'browser/renderer_host/file_utilities_message_filter.h',
     'browser/renderer_host/frame_tree_node.cc',

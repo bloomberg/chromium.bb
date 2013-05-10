@@ -701,6 +701,7 @@ void RenderWidget::OnViewContextSwapBuffersComplete() {
 }
 
 void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
+                                      const cc::LatencyInfo& latency_info,
                                       bool is_keyboard_shortcut) {
   TRACE_EVENT0("renderer", "RenderWidget::OnHandleInputEvent");
 
@@ -709,6 +710,9 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
     handling_input_event_ = false;
     return;
   }
+
+  if (compositor_)
+    compositor_->SetLatencyInfo(latency_info);
 
   base::TimeDelta now = base::TimeDelta::FromInternalValue(
       base::TimeTicks::Now().ToInternalValue());

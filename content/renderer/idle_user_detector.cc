@@ -26,6 +26,7 @@ bool IdleUserDetector::OnMessageReceived(const IPC::Message& message) {
 }
 
 void IdleUserDetector::OnHandleInputEvent(const WebKit::WebInputEvent* event,
+                                          const cc::LatencyInfo& latency_info,
                                           bool is_keyboard_shortcut) {
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
     RenderThreadImpl* render_thread = RenderThreadImpl::current();

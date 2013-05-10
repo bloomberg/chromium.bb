@@ -140,11 +140,11 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   WebGestureEvent GestureEventSecondFromLastQueueEvent() {
     return gesture_event_filter_->coalesced_gesture_events_.at(
-      GestureEventLastQueueEventSize() - 2);
+      GestureEventLastQueueEventSize() - 2).event;
   }
 
   WebGestureEvent GestureEventLastQueueEvent() {
-    return gesture_event_filter_->coalesced_gesture_events_.back();
+    return gesture_event_filter_->coalesced_gesture_events_.back().event;
   }
 
   unsigned GestureEventDebouncingQueueSize() {
@@ -152,7 +152,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   WebGestureEvent GestureEventQueueEventAt(int i) {
-    return gesture_event_filter_->coalesced_gesture_events_.at(i);
+    return gesture_event_filter_->coalesced_gesture_events_.at(i).event;
   }
 
   bool shouldDeferTapDownEvents() {

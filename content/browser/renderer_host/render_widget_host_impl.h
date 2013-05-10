@@ -23,6 +23,8 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
+#include "cc/debug/latency_info.h"
+#include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/smooth_scroll_gesture_controller.h"
 #include "content/common/view_message_enums.h"
 #include "content/port/common/input_event_ack_state.h"
@@ -259,10 +261,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void ForwardTouchEvent(const WebKit::WebTouchEvent& touch_event);
 
   // Forwards the given event immediately to the renderer.
-  void ForwardMouseEventImmediately(const WebKit::WebMouseEvent& mouse_event);
+  void ForwardMouseEventImmediately(
+      const MouseEventWithLatencyInfo& mouse_event);
   void ForwardTouchEventImmediately(const WebKit::WebTouchEvent& touch_event);
   void ForwardGestureEventImmediately(
-      const WebKit::WebGestureEvent& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event);
 
   void CancelUpdateTextDirection();
 
@@ -473,17 +476,35 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // other way around.
   bool should_auto_resize() { return should_auto_resize_; }
 
+  void FrameSwapped(const cc::LatencyInfo& latency_info);
+
+  // Returns the ID that uniquely describes this component to the latency
+  // subsystem.
+  int64 GetLatencyComponentId();
+
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 
   // Transmits the given input event. This is an internal helper for
   // |ForwardInputEvent()| and should not be used directly from elsewhere.
   void SendInputEvent(const WebKit::WebInputEvent& input_event,
-                      int event_size, bool is_keyboard_shortcut);
+                      int event_size, const cc::LatencyInfo& latency_info,
+                      bool is_keyboard_shortcut);
 
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(const WebKit::WebInputEvent& input_event,
-                         int event_size, bool is_keyboard_shortcut);
+                         int event_size, const cc::LatencyInfo& latency_info,
+                         bool is_keyboard_shortcut);
+
+  // Internal forwarding implementations that take a LatencyInfo.
+  virtual void ForwardMouseEventWithLatencyInfo(
+      const MouseEventWithLatencyInfo& mouse_event);
+  virtual void ForwardWheelEventWithLatencyInfo(
+      const WebKit::WebMouseWheelEvent& wheel_event,
+      const cc::LatencyInfo& latency_info);
+
+  // Create a LatencyInfo struct for a new input event that was just received.
+  cc::LatencyInfo NewInputLatencyInfo();
 
   // Called when we receive a notification indicating that the renderer
   // process has gone. This will reset our state so that our state will be
@@ -749,14 +770,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   // The next mouse move event to send (only non-null while mouse_move_pending_
   // is true).
-  scoped_ptr<WebKit::WebMouseEvent> next_mouse_move_;
+  scoped_ptr<MouseEventWithLatencyInfo> next_mouse_move_;
 
   // (Similar to |mouse_move_pending_|.) True if a mouse wheel event was sent
   // and we are waiting for a corresponding ack.
   bool mouse_wheel_pending_;
   WebKit::WebMouseWheelEvent current_wheel_event_;
 
-  typedef std::deque<WebKit::WebMouseWheelEvent> WheelEventQueue;
+  typedef std::deque<MouseWheelEventWithLatencyInfo> WheelEventQueue;
 
   // (Similar to |next_mouse_move_|.) The next mouse wheel events to send.
   // Unlike mouse moves, mouse wheel events received while one is pending are
@@ -882,6 +903,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   // List of callbacks for pending snapshot requests to the renderer.
   std::queue<base::Callback<void(bool, const SkBitmap&)> > pending_snapshots_;
+
+  int64 last_input_number_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
 };

@@ -347,6 +347,11 @@ void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   layer_tree_host_->SetNeedsRedrawRect(damage_rect);
 }
 
+void RenderWidgetCompositor::SetLatencyInfo(
+    const cc::LatencyInfo& latency_info) {
+  layer_tree_host_->SetLatencyInfo(latency_info);
+}
+
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
   scoped_ptr<cc::Thread> impl_thread;
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy =

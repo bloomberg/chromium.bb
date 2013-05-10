@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_RENDERER_HOST_TOUCHSCREEN_TAP_SUPPRESSION_CONTROLLER_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/renderer_host/gesture_event_filter.h"
 #include "content/browser/renderer_host/tap_suppression_controller_client.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 namespace content {
 
@@ -32,7 +32,7 @@ class TouchscreenTapSuppressionController
   // Should be called on arrival of GestureTapDown events. Returns true if the
   // caller should stop normal handling of the GestureTapDown. In this case, the
   // caller is responsible for saving the event for later use, if needed.
-  bool ShouldDeferGestureTapDown(const WebKit::WebGestureEvent& event);
+  bool ShouldDeferGestureTapDown(const GestureEventWithLatencyInfo& event);
 
   // Should be called on arrival of GestureTap events. Returns true if the
   // caller should stop normal handling of the GestureTap.
@@ -51,7 +51,7 @@ class TouchscreenTapSuppressionController
   virtual void ForwardStashedTapDownSkipDeferral() OVERRIDE;
 
   GestureEventFilter* gesture_event_filter_;
-  WebKit::WebGestureEvent stashed_tap_down_;
+  GestureEventWithLatencyInfo stashed_tap_down_;
 
   // The core controller of tap suppression.
   scoped_ptr<TapSuppressionController> controller_;

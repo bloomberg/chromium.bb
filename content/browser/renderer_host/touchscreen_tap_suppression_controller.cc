@@ -28,7 +28,7 @@ void TouchscreenTapSuppressionController::GestureFlingCancelAck(
 }
 
 bool TouchscreenTapSuppressionController::ShouldDeferGestureTapDown(
-    const WebKit::WebGestureEvent& event) {
+    const GestureEventWithLatencyInfo& event) {
   bool should_defer = controller_->ShouldDeferTapDown();
   if (should_defer)
     stashed_tap_down_ = event;

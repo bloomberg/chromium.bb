@@ -28,7 +28,7 @@ void TouchpadTapSuppressionController::GestureFlingCancelAck(bool processed) {
 }
 
 bool TouchpadTapSuppressionController::ShouldDeferMouseDown(
-    const WebKit::WebMouseEvent& event) {
+    const MouseEventWithLatencyInfo& event) {
   bool should_defer = controller_->ShouldDeferTapDown();
   if (should_defer)
     stashed_mouse_down_ = event;

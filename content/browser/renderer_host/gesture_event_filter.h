@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
+#include "content/browser/renderer_host/event_with_latency_info.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/transform.h"
 
@@ -46,8 +47,8 @@ class GestureEventFilter {
   ~GestureEventFilter();
 
   // Returns |true| if the caller should immediately forward the provided
-  // |WebGestureEvent| argument to the renderer.
-  bool ShouldForward(const WebKit::WebGestureEvent&);
+  // |GestureEventWithLatencyInfo| argument to the renderer.
+  bool ShouldForward(const GestureEventWithLatencyInfo&);
 
   // Indicates that the calling RenderWidgetHostImpl has received an
   // acknowledgement from the renderer with state |processed| and event |type|.
@@ -72,11 +73,11 @@ class GestureEventFilter {
 
   // Tries forwarding the event to the tap deferral sub-filter.
   void ForwardGestureEventForDeferral(
-      const WebKit::WebGestureEvent& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event);
 
   // Tries forwarding the event, skipping the tap deferral sub-filter.
   void ForwardGestureEventSkipDeferral(
-      const WebKit::WebGestureEvent& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event);
 
  private:
   friend class MockRenderWidgetHost;
@@ -96,7 +97,7 @@ class GestureEventFilter {
   // Returns |true| if the given GestureFlingCancel should be discarded
   // as unnecessary.
   bool ShouldDiscardFlingCancelEvent(
-    const WebKit::WebGestureEvent& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event);
 
   // Returns |true| if the only event in the queue is the current event and
   // hence that event should be handled now.
@@ -105,44 +106,45 @@ class GestureEventFilter {
   // Merge or append a GestureScrollUpdate or GesturePinchUpdate into
   // the coalescing queue.
   void MergeOrInsertScrollAndPinchEvent(
-       const WebKit::WebGestureEvent& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event);
 
   // Sub-filter for removing zero-velocity fling-starts from touchpad.
   bool ShouldForwardForZeroVelocityFlingStart(
-      const WebKit::WebGestureEvent& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event);
 
   // Sub-filter for removing bounces from in-progress scrolls.
   bool ShouldForwardForBounceReduction(
-      const WebKit::WebGestureEvent& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event);
 
   // Sub-filter for removing unnecessary GestureFlingCancels.
   bool ShouldForwardForGFCFiltering(
-      const WebKit::WebGestureEvent& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event);
 
   // Sub-filter for suppressing taps immediately after a GestureFlingCancel.
   bool ShouldForwardForTapSuppression(
-      const WebKit::WebGestureEvent& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event);
 
   // Sub-filter for deferring GestureTapDowns.
   bool ShouldForwardForTapDeferral(
-      const WebKit::WebGestureEvent& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event);
 
   // Puts the events in a queue to forward them one by one; i.e., forward them
   // whenever ACK for previous event is received. This queue also tries to
   // coalesce events as much as possible.
-  bool ShouldForwardForCoalescing(const WebKit::WebGestureEvent& gesture_event);
+  bool ShouldForwardForCoalescing(
+      const GestureEventWithLatencyInfo& gesture_event);
 
   // Whether the event_in_queue is GesturePinchUpdate or
   // GestureScrollUpdate and it has the same modifiers as the
   // new event.
-  bool ShouldTryMerging(const WebKit::WebGestureEvent& new_event,
-      const WebKit::WebGestureEvent& event_in_queue);
+  bool ShouldTryMerging(const GestureEventWithLatencyInfo& new_event,
+                        const GestureEventWithLatencyInfo& event_in_queue);
 
   // Returns the transform matrix corresponding to the gesture event.
   // Assumes the gesture event sent is either GestureScrollUpdate or
   // GesturePinchUpdate. Returns the identity matrix otherwise.
   gfx::Transform GetTransformForEvent(
-      const WebKit::WebGestureEvent& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event);
 
   // Only a RenderWidgetHostViewImpl can own an instance.
   RenderWidgetHostImpl* render_widget_host_;
@@ -179,13 +181,13 @@ class GestureEventFilter {
   scoped_ptr<TouchscreenTapSuppressionController>
       touchscreen_tap_suppression_controller_;
 
-  typedef std::deque<WebKit::WebGestureEvent> GestureEventQueue;
+  typedef std::deque<GestureEventWithLatencyInfo> GestureEventQueue;
 
   // Queue of coalesced gesture events not yet sent to the renderer.
   GestureEventQueue coalesced_gesture_events_;
 
   // Tap gesture event currently subject to deferral.
-  WebKit::WebGestureEvent deferred_tap_down_event_;
+  GestureEventWithLatencyInfo deferred_tap_down_event_;
 
   // Timer to release a previously deferred GestureTapDown event.
   base::OneShotTimer<GestureEventFilter> debounce_deferring_timer_;

@@ -75,15 +75,15 @@ GestureEventFilter::GestureEventFilter(RenderWidgetHostImpl* rwhv)
 GestureEventFilter::~GestureEventFilter() { }
 
 bool GestureEventFilter::ShouldDiscardFlingCancelEvent(
-    const WebKit::WebGestureEvent& gesture_event) {
+    const GestureEventWithLatencyInfo& gesture_event) {
   if (coalesced_gesture_events_.empty() && fling_in_progress_)
     return false;
   GestureEventQueue::reverse_iterator it =
       coalesced_gesture_events_.rbegin();
   while (it != coalesced_gesture_events_.rend()) {
-    if (it->type == WebInputEvent::GestureFlingStart)
+    if (it->event.type == WebInputEvent::GestureFlingStart)
       return false;
-    if (it->type == WebInputEvent::GestureFlingCancel)
+    if (it->event.type == WebInputEvent::GestureFlingCancel)
       return true;
     it++;
   }
@@ -91,10 +91,10 @@ bool GestureEventFilter::ShouldDiscardFlingCancelEvent(
 }
 
 bool GestureEventFilter::ShouldForwardForBounceReduction(
-    const WebGestureEvent& gesture_event) {
+    const GestureEventWithLatencyInfo& gesture_event) {
   if (debounce_interval_time_ms_ ==  0)
     return true;
-  switch (gesture_event.type) {
+  switch (gesture_event.event.type) {
     case WebInputEvent::GestureScrollUpdate:
       if (!scrolling_in_progress_) {
         debounce_deferring_timer_.Start(
@@ -127,7 +127,8 @@ bool GestureEventFilter::ShouldForwardForBounceReduction(
 }
 
 // NOTE: The filters are applied successively. This simplifies the change.
-bool GestureEventFilter::ShouldForward(const WebGestureEvent& gesture_event) {
+bool GestureEventFilter::ShouldForward(
+    const GestureEventWithLatencyInfo& gesture_event) {
   return ShouldForwardForZeroVelocityFlingStart(gesture_event) &&
       ShouldForwardForBounceReduction(gesture_event) &&
       ShouldForwardForGFCFiltering(gesture_event) &&
@@ -137,24 +138,24 @@ bool GestureEventFilter::ShouldForward(const WebGestureEvent& gesture_event) {
 }
 
 bool GestureEventFilter::ShouldForwardForZeroVelocityFlingStart(
-    const WebGestureEvent& gesture_event) {
-  return gesture_event.type != WebInputEvent::GestureFlingStart ||
-      gesture_event.sourceDevice != WebGestureEvent::Touchpad ||
-      gesture_event.data.flingStart.velocityX != 0 ||
-      gesture_event.data.flingStart.velocityY != 0;
+    const GestureEventWithLatencyInfo& gesture_event) {
+  return gesture_event.event.type != WebInputEvent::GestureFlingStart ||
+      gesture_event.event.sourceDevice != WebGestureEvent::Touchpad ||
+      gesture_event.event.data.flingStart.velocityX != 0 ||
+      gesture_event.event.data.flingStart.velocityY != 0;
 }
 
 bool GestureEventFilter::ShouldForwardForGFCFiltering(
-    const WebGestureEvent& gesture_event) {
-  return gesture_event.type != WebInputEvent::GestureFlingCancel ||
+    const GestureEventWithLatencyInfo& gesture_event) {
+  return gesture_event.event.type != WebInputEvent::GestureFlingCancel ||
       !ShouldDiscardFlingCancelEvent(gesture_event);
 }
 
 bool GestureEventFilter::ShouldForwardForTapSuppression(
-    const WebGestureEvent& gesture_event) {
-  switch (gesture_event.type) {
+    const GestureEventWithLatencyInfo& gesture_event) {
+  switch (gesture_event.event.type) {
     case WebInputEvent::GestureFlingCancel:
-      if (gesture_event.sourceDevice == WebGestureEvent::Touchscreen)
+      if (gesture_event.event.sourceDevice == WebGestureEvent::Touchscreen)
         touchscreen_tap_suppression_controller_->GestureFlingCancel();
       else
         touchpad_tap_suppression_controller_->GestureFlingCancel();
@@ -176,12 +177,12 @@ bool GestureEventFilter::ShouldForwardForTapSuppression(
 }
 
 bool GestureEventFilter::ShouldForwardForTapDeferral(
-    const WebGestureEvent& gesture_event) {
-  switch (gesture_event.type) {
+    const GestureEventWithLatencyInfo& gesture_event) {
+  switch (gesture_event.event.type) {
     case WebInputEvent::GestureTapDown:
       // GestureTapDown is always paired with either a Tap, or TapCancel, so it
       // should be impossible to have more than one outstanding at a time.
-      DCHECK_EQ(deferred_tap_down_event_.type, WebInputEvent::Undefined);
+      DCHECK_EQ(deferred_tap_down_event_.event.type, WebInputEvent::Undefined);
       deferred_tap_down_event_ = gesture_event;
       send_gtd_timer_.Start(
           FROM_HERE,
@@ -190,27 +191,27 @@ bool GestureEventFilter::ShouldForwardForTapDeferral(
           &GestureEventFilter::SendGestureTapDownNow);
       return false;
     case WebInputEvent::GestureTapCancel:
-      if (deferred_tap_down_event_.type == WebInputEvent::Undefined) {
+      if (deferred_tap_down_event_.event.type == WebInputEvent::Undefined) {
         // The TapDown has already been put in the queue, must send the
         // corresponding TapCancel as well.
         return true;
       }
       // Cancelling a deferred TapDown, just drop them on the floor.
       send_gtd_timer_.Stop();
-      deferred_tap_down_event_.type = WebInputEvent::Undefined;
+      deferred_tap_down_event_.event.type = WebInputEvent::Undefined;
       return false;
     case WebInputEvent::GestureTap:
       send_gtd_timer_.Stop();
-      if (deferred_tap_down_event_.type != WebInputEvent::Undefined) {
+      if (deferred_tap_down_event_.event.type != WebInputEvent::Undefined) {
         ForwardGestureEventSkipDeferral(deferred_tap_down_event_);
-        deferred_tap_down_event_.type = WebInputEvent::Undefined;
+        deferred_tap_down_event_.event.type = WebInputEvent::Undefined;
       }
       return true;
     case WebInputEvent::GestureFlingStart:
     case WebInputEvent::GestureScrollBegin:
     case WebInputEvent::GesturePinchBegin:
       send_gtd_timer_.Stop();
-      deferred_tap_down_event_.type = WebInputEvent::Undefined;
+      deferred_tap_down_event_.event.type = WebInputEvent::Undefined;
       return true;
     default:
       return true;
@@ -221,8 +222,8 @@ bool GestureEventFilter::ShouldForwardForTapDeferral(
 }
 
 bool GestureEventFilter::ShouldForwardForCoalescing(
-    const WebGestureEvent& gesture_event) {
-  switch (gesture_event.type) {
+    const GestureEventWithLatencyInfo& gesture_event) {
+  switch (gesture_event.event.type) {
     case WebInputEvent::GestureFlingCancel:
       fling_in_progress_ = false;
       break;
@@ -246,7 +247,7 @@ void GestureEventFilter::Reset() {
   ignore_next_ack_ = false;
   combined_scroll_pinch_ = gfx::Transform();
   coalesced_gesture_events_.clear();
-  deferred_tap_down_event_.type = WebInputEvent::Undefined;
+  deferred_tap_down_event_.event.type = WebInputEvent::Undefined;
   debouncing_deferral_queue_.clear();
   send_gtd_timer_.Stop();
   debounce_deferring_timer_.Stop();
@@ -258,9 +259,9 @@ void GestureEventFilter::ProcessGestureAck(bool processed, int type) {
     DLOG(ERROR) << "Received unexpected ACK for event type " << type;
     return;
   }
-  DCHECK_EQ(coalesced_gesture_events_.front().type, type);
+  DCHECK_EQ(coalesced_gesture_events_.front().event.type, type);
   if (type == WebInputEvent::GestureFlingCancel) {
-    if (coalesced_gesture_events_.front().sourceDevice ==
+    if (coalesced_gesture_events_.front().event.sourceDevice ==
         WebGestureEvent::Touchscreen)
       touchscreen_tap_suppression_controller_->GestureFlingCancelAck(processed);
     else
@@ -270,16 +271,18 @@ void GestureEventFilter::ProcessGestureAck(bool processed, int type) {
   if (ignore_next_ack_) {
     ignore_next_ack_ = false;
   } else if (!coalesced_gesture_events_.empty()) {
-    const WebGestureEvent& next_gesture_event =
+    const GestureEventWithLatencyInfo& next_gesture_event =
         coalesced_gesture_events_.front();
     render_widget_host_->ForwardGestureEventImmediately(next_gesture_event);
     // TODO(yusufo): Introduce GesturePanScroll so that these can be combined
     // into one gesture and kept inside the queue that way.
     if (coalesced_gesture_events_.size() > 1) {
-      const WebGestureEvent& second_gesture_event =
+      const GestureEventWithLatencyInfo& second_gesture_event =
           coalesced_gesture_events_[1];
-      if (next_gesture_event.type == WebInputEvent::GestureScrollUpdate &&
-          second_gesture_event.type == WebInputEvent::GesturePinchUpdate) {
+      if (next_gesture_event.event.type ==
+              WebInputEvent::GestureScrollUpdate &&
+          second_gesture_event.event.type ==
+              WebInputEvent::GesturePinchUpdate) {
         render_widget_host_->
             ForwardGestureEventImmediately(second_gesture_event);
         ignore_next_ack_ = true;
@@ -302,9 +305,9 @@ const WebKit::WebInputEvent&
 GestureEventFilter::GetGestureEventAwaitingAck() const {
   DCHECK(!coalesced_gesture_events_.empty());
   if (!ignore_next_ack_)
-    return coalesced_gesture_events_.front();
+    return coalesced_gesture_events_.front().event;
   else
-    return coalesced_gesture_events_.at(1);
+    return coalesced_gesture_events_.at(1).event;
 }
 
 void GestureEventFilter::FlingHasBeenHalted() {
@@ -316,13 +319,13 @@ bool GestureEventFilter::ShouldHandleEventNow() {
 }
 
 void GestureEventFilter::ForwardGestureEventForDeferral(
-    const WebGestureEvent& gesture_event) {
+    const GestureEventWithLatencyInfo& gesture_event) {
   if (ShouldForwardForTapDeferral(gesture_event))
     ForwardGestureEventSkipDeferral(gesture_event);
 }
 
 void GestureEventFilter::ForwardGestureEventSkipDeferral(
-    const WebGestureEvent& gesture_event) {
+    const GestureEventWithLatencyInfo& gesture_event) {
   if (ShouldForwardForCoalescing(gesture_event))
       render_widget_host_->ForwardGestureEventImmediately(gesture_event);
 }
@@ -331,9 +334,9 @@ void GestureEventFilter::SendGestureTapDownNow() {
   // We must not have already sent the deferred TapDown (if we did, we would
   // have stopped the timer, which prevents this task from running - even if
   // it's time had already elapsed).
-  DCHECK_EQ(deferred_tap_down_event_.type, WebInputEvent::GestureTapDown);
+  DCHECK_EQ(deferred_tap_down_event_.event.type, WebInputEvent::GestureTapDown);
   ForwardGestureEventSkipDeferral(deferred_tap_down_event_);
-  deferred_tap_down_event_.type = WebInputEvent::Undefined;
+  deferred_tap_down_event_.event.type = WebInputEvent::Undefined;
 }
 
 void GestureEventFilter::SendScrollEndingEventsNow() {
@@ -352,19 +355,20 @@ void GestureEventFilter::SendScrollEndingEventsNow() {
 }
 
 void GestureEventFilter::MergeOrInsertScrollAndPinchEvent(
-    const WebGestureEvent& gesture_event) {
+    const GestureEventWithLatencyInfo& gesture_event) {
   if (coalesced_gesture_events_.size() <= 1) {
     coalesced_gesture_events_.push_back(gesture_event);
     return;
   }
-  WebGestureEvent* last_event = &coalesced_gesture_events_.back();
-  if (gesture_event.type == WebInputEvent::GestureScrollUpdate &&
-      last_event->type == WebInputEvent::GestureScrollUpdate &&
-      last_event->modifiers == gesture_event.modifiers) {
-    last_event->data.scrollUpdate.deltaX +=
-        gesture_event.data.scrollUpdate.deltaX;
-    last_event->data.scrollUpdate.deltaY +=
-        gesture_event.data.scrollUpdate.deltaY;
+  GestureEventWithLatencyInfo* last_event = &coalesced_gesture_events_.back();
+  if (gesture_event.event.type == WebInputEvent::GestureScrollUpdate &&
+      last_event->event.type == WebInputEvent::GestureScrollUpdate &&
+      last_event->event.modifiers == gesture_event.event.modifiers) {
+    last_event->event.data.scrollUpdate.deltaX +=
+        gesture_event.event.data.scrollUpdate.deltaX;
+    last_event->event.data.scrollUpdate.deltaY +=
+        gesture_event.event.data.scrollUpdate.deltaY;
+    last_event->latency.MergeWith(gesture_event.latency);
     return;
   }
   if (coalesced_gesture_events_.size() == 2 ||
@@ -373,22 +377,28 @@ void GestureEventFilter::MergeOrInsertScrollAndPinchEvent(
     coalesced_gesture_events_.push_back(gesture_event);
     return;
   }
-  WebGestureEvent scroll_event;
-  WebGestureEvent pinch_event;
-  scroll_event.modifiers |= gesture_event.modifiers;
-  scroll_event.timeStampSeconds = gesture_event.timeStampSeconds;
+  GestureEventWithLatencyInfo scroll_event;
+  GestureEventWithLatencyInfo pinch_event;
+  scroll_event.event.modifiers |= gesture_event.event.modifiers;
+  scroll_event.event.timeStampSeconds = gesture_event.event.timeStampSeconds;
+  scroll_event.latency = gesture_event.latency;
+  scroll_event.latency.MergeWith(last_event->latency);
   pinch_event = scroll_event;
-  scroll_event.type = WebInputEvent::GestureScrollUpdate;
-  pinch_event.type = WebInputEvent::GesturePinchUpdate;
-  pinch_event.x = gesture_event.type == WebInputEvent::GesturePinchUpdate ?
-      gesture_event.x : last_event->x;
-  pinch_event.y = gesture_event.type == WebInputEvent::GesturePinchUpdate ?
-      gesture_event.y : last_event->y;
+  scroll_event.event.type = WebInputEvent::GestureScrollUpdate;
+  pinch_event.event.type = WebInputEvent::GesturePinchUpdate;
+  pinch_event.event.x = gesture_event.event.type ==
+      WebInputEvent::GesturePinchUpdate ?
+          gesture_event.event.x : last_event->event.x;
+  pinch_event.event.y = gesture_event.event.type ==
+      WebInputEvent::GesturePinchUpdate ?
+          gesture_event.event.y : last_event->event.y;
 
   combined_scroll_pinch_.ConcatTransform(GetTransformForEvent(gesture_event));
-  WebGestureEvent* second_last_event = &coalesced_gesture_events_
+  GestureEventWithLatencyInfo* second_last_event = &coalesced_gesture_events_
       [coalesced_gesture_events_.size() - 2];
   if (ShouldTryMerging(gesture_event, *second_last_event)) {
+    scroll_event.latency.MergeWith(second_last_event->latency);
+    pinch_event.latency.MergeWith(second_last_event->latency);
     coalesced_gesture_events_.pop_back();
   } else {
     DCHECK(combined_scroll_pinch_ == GetTransformForEvent(gesture_event));
@@ -397,39 +407,40 @@ void GestureEventFilter::MergeOrInsertScrollAndPinchEvent(
   }
   coalesced_gesture_events_.pop_back();
   float combined_scale = combined_scroll_pinch_.matrix().getDouble(0, 0);
-  scroll_event.data.scrollUpdate.deltaX =
-      (combined_scroll_pinch_.matrix().getDouble(0, 3) + pinch_event.x)
-          / combined_scale - pinch_event.x;
-  scroll_event.data.scrollUpdate.deltaY =
-      (combined_scroll_pinch_.matrix().getDouble(1, 3) + pinch_event.y)
-          / combined_scale - pinch_event.y;
+  scroll_event.event.data.scrollUpdate.deltaX =
+      (combined_scroll_pinch_.matrix().getDouble(0, 3) + pinch_event.event.x)
+          / combined_scale - pinch_event.event.x;
+  scroll_event.event.data.scrollUpdate.deltaY =
+      (combined_scroll_pinch_.matrix().getDouble(1, 3) + pinch_event.event.y)
+          / combined_scale - pinch_event.event.y;
   coalesced_gesture_events_.push_back(scroll_event);
-  pinch_event.data.pinchUpdate.scale = combined_scale;
+  pinch_event.event.data.pinchUpdate.scale = combined_scale;
   coalesced_gesture_events_.push_back(pinch_event);
 }
 
-bool GestureEventFilter::ShouldTryMerging(const WebGestureEvent& new_event,
-    const WebGestureEvent& event_in_queue) {
+bool GestureEventFilter::ShouldTryMerging(
+    const GestureEventWithLatencyInfo& new_event,
+    const GestureEventWithLatencyInfo& event_in_queue) {
   DLOG_IF(WARNING,
-          new_event.timeStampSeconds <
-          event_in_queue.timeStampSeconds)
+          new_event.event.timeStampSeconds <
+          event_in_queue.event.timeStampSeconds)
           << "Event time not monotonic?\n";
-  return (event_in_queue.type == WebInputEvent::GestureScrollUpdate ||
-      event_in_queue.type == WebInputEvent::GesturePinchUpdate) &&
-      event_in_queue.modifiers == new_event.modifiers;
+  return (event_in_queue.event.type == WebInputEvent::GestureScrollUpdate ||
+      event_in_queue.event.type == WebInputEvent::GesturePinchUpdate) &&
+      event_in_queue.event.modifiers == new_event.event.modifiers;
 }
 
 gfx::Transform GestureEventFilter::GetTransformForEvent(
-    const WebGestureEvent& gesture_event) {
+    const GestureEventWithLatencyInfo& gesture_event) {
   gfx::Transform gesture_transform = gfx::Transform();
-  if (gesture_event.type == WebInputEvent::GestureScrollUpdate) {
-    gesture_transform.Translate(gesture_event.data.scrollUpdate.deltaX,
-                                gesture_event.data.scrollUpdate.deltaY);
-  } else if (gesture_event.type == WebInputEvent::GesturePinchUpdate) {
-    float scale = gesture_event.data.pinchUpdate.scale;
-    gesture_transform.Translate(-gesture_event.x, -gesture_event.y);
+  if (gesture_event.event.type == WebInputEvent::GestureScrollUpdate) {
+    gesture_transform.Translate(gesture_event.event.data.scrollUpdate.deltaX,
+                                gesture_event.event.data.scrollUpdate.deltaY);
+  } else if (gesture_event.event.type == WebInputEvent::GesturePinchUpdate) {
+    float scale = gesture_event.event.data.pinchUpdate.scale;
+    gesture_transform.Translate(-gesture_event.event.x, -gesture_event.event.y);
     gesture_transform.Scale(scale,scale);
-    gesture_transform.Translate(gesture_event.x, gesture_event.y);
+    gesture_transform.Translate(gesture_event.event.x, gesture_event.event.y);
   }
   return gesture_transform;
 }

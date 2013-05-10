@@ -25,7 +25,8 @@ OverscrollController::~OverscrollController() {
 }
 
 bool OverscrollController::WillDispatchEvent(
-    const WebKit::WebInputEvent& event) {
+    const WebKit::WebInputEvent& event,
+    const cc::LatencyInfo& latency_info) {
   if (DispatchEventCompletesAction(event)) {
     CompleteAction();
 
@@ -39,7 +40,7 @@ bool OverscrollController::WillDispatchEvent(
       const WebKit::WebGestureEvent& gevent =
           static_cast<const WebKit::WebGestureEvent&>(event);
       return render_widget_host_->gesture_event_filter()->
-          ShouldForward(gevent);
+          ShouldForward(GestureEventWithLatencyInfo(gevent, latency_info));
     }
 
     return false;
@@ -54,7 +55,8 @@ bool OverscrollController::WillDispatchEvent(
     if (ShouldForwardToGestureFilter(event)) {
       const WebKit::WebGestureEvent& gevent =
           static_cast<const WebKit::WebGestureEvent&>(event);
-      return render_widget_host_->gesture_event_filter()->ShouldForward(gevent);
+      return render_widget_host_->gesture_event_filter()->ShouldForward(
+          GestureEventWithLatencyInfo(gevent, latency_info));
     }
 
     // Let the event be dispatched to the renderer.

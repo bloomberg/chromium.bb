@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_RENDERER_HOST_TOUCHPAD_TAP_SUPPRESSION_CONTROLLER_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/debug/latency_info.h"
+#include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/tap_suppression_controller_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
@@ -31,7 +33,7 @@ class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
   // Should be called on arrival of MouseDown events. Returns true if the caller
   // should stop normal handling of the MouseDown. In this case, the caller is
   // responsible for saving the event for later use, if needed.
-  bool ShouldDeferMouseDown(const WebKit::WebMouseEvent& event);
+  bool ShouldDeferMouseDown(const MouseEventWithLatencyInfo& event);
 
   // Should be called on arrival of MouseUp events. Returns true if the caller
   // should stop normal handling of the MouseUp.
@@ -48,7 +50,7 @@ class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
   virtual void ForwardStashedTapDownSkipDeferral() OVERRIDE;
 
   RenderWidgetHostImpl* render_widget_host_;
-  WebKit::WebMouseEvent stashed_mouse_down_;
+  MouseEventWithLatencyInfo stashed_mouse_down_;
 
   // The core controller of tap suppression.
   scoped_ptr<TapSuppressionController> controller_;

@@ -1070,19 +1070,21 @@ bool RenderWidgetHostViewGtk::CanCopyToVideoFrame() const {
 void RenderWidgetHostViewGtk::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
-   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-   ack_params.sync_point = 0;
-   RenderWidgetHostImpl::AcknowledgeBufferPresent(
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.sync_point = 0;
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(
       params.route_id, gpu_host_id, ack_params);
+  host_->FrameSwapped(params.latency_info);
 }
 
 void RenderWidgetHostViewGtk::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
     int gpu_host_id) {
-   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-   ack_params.sync_point = 0;
-   RenderWidgetHostImpl::AcknowledgeBufferPresent(
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.sync_point = 0;
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(
       params.route_id, gpu_host_id, ack_params);
+  host_->FrameSwapped(params.latency_info);
 }
 
 void RenderWidgetHostViewGtk::AcceleratedSurfaceSuspend() {

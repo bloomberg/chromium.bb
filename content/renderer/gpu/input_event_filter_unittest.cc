@@ -119,7 +119,8 @@ void AddEventsToFilter(IPC::ChannelProxy::MessageFilter* message_filter,
   std::vector<IPC::Message> messages;
   for (size_t i = 0; i < count; ++i) {
     messages.push_back(
-        InputMsg_HandleInputEvent(kTestRoutingID, &events[i], false));
+        InputMsg_HandleInputEvent(
+            kTestRoutingID, &events[i], cc::LatencyInfo(), false));
   }
 
   AddMessagesToFilter(message_filter, messages);
@@ -254,6 +255,7 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
   std::vector<IPC::Message> messages;
   messages.push_back(InputMsg_HandleInputEvent(kTestRoutingID,
                                               &mouse_down,
+                                              cc::LatencyInfo(),
                                               false));
   // Control where input events are delivered.
   messages.push_back(InputMsg_MouseCaptureLost(kTestRoutingID));
@@ -282,6 +284,7 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
 
   messages.push_back(InputMsg_HandleInputEvent(kTestRoutingID,
                                               &mouse_up,
+                                              cc::LatencyInfo(),
                                               false));
   AddMessagesToFilter(filter_, messages);
 

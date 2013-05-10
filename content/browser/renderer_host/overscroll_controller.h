@@ -9,6 +9,10 @@
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
+namespace cc {
+struct LatencyInfo;
+}
+
 namespace content {
 
 class MockRenderWidgetHost;
@@ -39,7 +43,8 @@ class OverscrollController {
   // RenderWidgetHostView so that the state of the overscroll gesture can be
   // updated properly.
   // Returns true if the event should be dispatched, false otherwise.
-  bool WillDispatchEvent(const WebKit::WebInputEvent& event);
+  bool WillDispatchEvent(const WebKit::WebInputEvent& event,
+                         const cc::LatencyInfo& latency_info);
 
   // This must be called when the ACK for any event comes in. This updates the
   // overscroll gesture status as appropriate.

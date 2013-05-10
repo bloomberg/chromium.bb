@@ -26,7 +26,7 @@ void TouchscreenTapSuppressionController::GestureFlingCancelAck(
 }
 
 bool TouchscreenTapSuppressionController::ShouldDeferGestureTapDown(
-    const WebKit::WebGestureEvent& /*event*/) {
+    const GestureEventWithLatencyInfo& /*event*/) {
   return false;
 }
 
