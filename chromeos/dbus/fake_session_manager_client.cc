@@ -12,7 +12,9 @@
 namespace chromeos {
 
 FakeSessionManagerClient::FakeSessionManagerClient()
-  : emit_login_prompt_ready_call_count_(0) {
+  : emit_login_prompt_ready_call_count_(0) ,
+    notify_lock_screen_shown_call_count_(0),
+    notify_lock_screen_dismissed_call_count_(0){
 }
 
 FakeSessionManagerClient::~FakeSessionManagerClient() {
@@ -57,12 +59,14 @@ void FakeSessionManagerClient::RequestLockScreen() {
 }
 
 void FakeSessionManagerClient::NotifyLockScreenShown() {
+  notify_lock_screen_shown_call_count_++;
 }
 
 void FakeSessionManagerClient::RequestUnlockScreen() {
 }
 
 void FakeSessionManagerClient::NotifyLockScreenDismissed() {
+  notify_lock_screen_dismissed_call_count_++;
 }
 
 void FakeSessionManagerClient::RetrieveDevicePolicy(

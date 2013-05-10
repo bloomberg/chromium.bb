@@ -72,6 +72,16 @@ class FakeSessionManagerClient : public chromeos::SessionManagerClient {
     return emit_login_prompt_ready_call_count_;
   }
 
+  // Returns how many times LockScreenShown() was called.
+  int notify_lock_screen_shown_call_count() {
+    return notify_lock_screen_shown_call_count_;
+  }
+
+  // Returns how many times LockScreenDismissed() was called.
+  int notify_lock_screen_dismissed_call_count() {
+    return notify_lock_screen_dismissed_call_count_;
+  }
+
  private:
   std::string device_policy_;
   std::string user_policy_;
@@ -79,6 +89,8 @@ class FakeSessionManagerClient : public chromeos::SessionManagerClient {
   ObserverList<Observer> observers_;
 
   int emit_login_prompt_ready_call_count_;
+  int notify_lock_screen_shown_call_count_;
+  int notify_lock_screen_dismissed_call_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSessionManagerClient);
 };
