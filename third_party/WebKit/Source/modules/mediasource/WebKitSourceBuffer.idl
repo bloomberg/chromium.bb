@@ -30,36 +30,19 @@
  
 [
     NoInterfaceObject,
-    EnabledAtRuntime=mediaSource,
-    ActiveDOMObject,
-    EventTarget,
-    Constructor,
-    CallWith=ScriptExecutionContext
-] interface MediaSource {
-    // All the source buffers created by this object.
-    readonly attribute SourceBufferList sourceBuffers;
+    EnabledAtRuntime=webKitMediaSource
+] interface WebKitSourceBuffer {
 
-    // Subset of sourceBuffers that provide data for the selected/enabled tracks.
-    readonly attribute SourceBufferList activeSourceBuffers;
+    // Returns the time ranges buffered.
+    [GetterRaisesException] readonly attribute TimeRanges buffered;
 
-    [SetterRaisesException] attribute double duration;
+    // Applies an offset to media segment timestamps.
+    [SetterRaisesException] attribute double timestampOffset;
 
-    [RaisesException] SourceBuffer addSourceBuffer(DOMString type);
-    [RaisesException] void removeSourceBuffer(SourceBuffer buffer);
+    // Append segment data.
+    [RaisesException] void append(Uint8Array data);
 
-    readonly attribute DOMString readyState;
-    
-    [RaisesException] void endOfStream([Default=NullString] optional DOMString error);
-
-    static boolean isTypeSupported (DOMString type);
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
+    // Abort the current segment append sequence.
+    [RaisesException] void abort();
 };
 

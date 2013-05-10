@@ -36,7 +36,7 @@
 namespace WebCore {
 
 class Blob;
-class MediaSource;
+class WebKitMediaSource;
 class MediaStream;
 class ScriptExecutionContext;
 
@@ -49,7 +49,7 @@ public:
 
     static String createObjectURL(ScriptExecutionContext*, Blob*);
     static void revokeObjectURL(ScriptExecutionContext*, const String&);
-    static String createObjectURL(ScriptExecutionContext*, MediaSource*);
+    static String createObjectURL(ScriptExecutionContext*, WebKitMediaSource*);
     static String createObjectURL(ScriptExecutionContext*, MediaStream*);
 };
 

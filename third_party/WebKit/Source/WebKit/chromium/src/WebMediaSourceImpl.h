@@ -32,20 +32,20 @@
 #define WebMediaSourceImpl_h
 
 #include "WebMediaSource.h"
-#include "modules/mediasource/MediaSource.h"
+#include "modules/mediasource/WebKitMediaSource.h"
 
 namespace WebKit {
 
 class WebMediaSourceImpl : public WebMediaSource {
 public:
-    WebMediaSourceImpl(PassRefPtr<WebCore::MediaSource>);
+    WebMediaSourceImpl(PassRefPtr<WebCore::WebKitMediaSource>);
     virtual ~WebMediaSourceImpl();
 
     // WebMediaSource methods.
     virtual void open(WebMediaSourceClient*);
 
 private:
-    RefPtr<WebCore::MediaSource> m_mediaSource;
+    RefPtr<WebCore::WebKitMediaSource> m_mediaSource;
 };
 
 }

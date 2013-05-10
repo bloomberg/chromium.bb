@@ -43,7 +43,7 @@ public:
     virtual ~MediaPlayerPrivateInterface() { }
 
     virtual void load(const String& url) = 0;
-    virtual void load(const String& url, PassRefPtr<MediaSource>) = 0;
+    virtual void load(const String& url, PassRefPtr<WebKitMediaSource>) = 0;
     virtual void cancelLoad() = 0;
 
     virtual void prepareToPlay() { }

@@ -157,7 +157,7 @@ public:
     unsigned webkitVideoDecodedByteCount() const;
 
 //  Media Source.
-    void setSourceState(const String&);
+    void closeMediaSource();
 
 #if ENABLE(ENCRYPTED_MEDIA)
     void webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionCode&);
@@ -565,7 +565,7 @@ private:
     // calling the media engine recursively.
     int m_processingMediaPlayerCallback;
 
-    RefPtr<MediaSource> m_mediaSource;
+    RefPtr<WebKitMediaSource> m_mediaSource;
 
     mutable double m_cachedTime;
     mutable double m_cachedTimeWallClockUpdateTime;

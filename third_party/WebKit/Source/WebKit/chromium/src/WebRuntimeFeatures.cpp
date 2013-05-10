@@ -339,12 +339,26 @@ bool WebRuntimeFeatures::isMediaPlayerEnabled()
 
 void WebRuntimeFeatures::enableMediaSource(bool enable)
 {
-    RuntimeEnabledFeatures::setMediaSourceEnabled(enable);
+    // FIXME: Change to setMediaSourceEnabled() once Chromium
+    // starts calling enableWebKitMediaSource().
+    RuntimeEnabledFeatures::setWebKitMediaSourceEnabled(enable);
 }
 
 bool WebRuntimeFeatures::isMediaSourceEnabled()
 {
-    return RuntimeEnabledFeatures::mediaSourceEnabled();
+    // FIXME: Change to mediaSourceEnabled() once Chromium
+    // starts calling isWebKitMediaSourceEnabled()
+    return RuntimeEnabledFeatures::webKitMediaSourceEnabled();
+}
+
+void WebRuntimeFeatures::enableWebKitMediaSource(bool enable)
+{
+    RuntimeEnabledFeatures::setWebKitMediaSourceEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isWebKitMediaSourceEnabled()
+{
+    return RuntimeEnabledFeatures::webKitMediaSourceEnabled();
 }
 
 void WebRuntimeFeatures::enableMediaStream(bool enable)

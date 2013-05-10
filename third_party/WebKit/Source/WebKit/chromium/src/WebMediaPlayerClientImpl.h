@@ -92,7 +92,7 @@ public:
 
     // MediaPlayerPrivateInterface methods:
     virtual void load(const WTF::String& url);
-    virtual void load(const WTF::String& url, PassRefPtr<WebCore::MediaSource>);
+    virtual void load(const WTF::String& url, PassRefPtr<WebCore::WebKitMediaSource>);
 
     virtual void cancelLoad();
     virtual WebKit::WebLayer* platformLayer() const;
@@ -236,7 +236,7 @@ private:
     AudioSourceProviderImpl m_audioSourceProvider;
 #endif
 
-    RefPtr<WebCore::MediaSource> m_mediaSource;
+    RefPtr<WebCore::WebKitMediaSource> m_mediaSource;
 };
 
 } // namespace WebKit

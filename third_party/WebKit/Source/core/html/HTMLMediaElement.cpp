@@ -85,8 +85,8 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
-#include "modules/mediasource/MediaSource.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
+#include "modules/mediasource/WebKitMediaSource.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "origin/SecurityOrigin.h"
 #include "origin/SecurityPolicy.h"
@@ -296,7 +296,7 @@ HTMLMediaElement::~HTMLMediaElement()
     if (m_mediaController)
         m_mediaController->removeMediaElement(this);
 
-    setSourceState(MediaSource::closedKeyword());
+    closeMediaSource();
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
     setMediaKeys(0);
@@ -642,7 +642,7 @@ void HTMLMediaElement::prepareForLoad()
     if (m_networkState == NETWORK_LOADING || m_networkState == NETWORK_IDLE)
         scheduleEvent(eventNames().abortEvent);
 
-    setSourceState(MediaSource::closedKeyword());
+    closeMediaSource();
 
     createMediaPlayer();
 
@@ -1353,7 +1353,7 @@ void HTMLMediaElement::noneSupported()
     // 7 - Queue a task to fire a simple event named error at the media element.
     scheduleEvent(eventNames().errorEvent);
 
-    setSourceState(MediaSource::closedKeyword());
+    closeMediaSource();
 
     // 8 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
     setShouldDelayLoadEvent(false);
@@ -1382,7 +1382,7 @@ void HTMLMediaElement::mediaEngineError(PassRefPtr<MediaError> err)
     // 3 - Queue a task to fire a simple event named error at the media element.
     scheduleEvent(eventNames().errorEvent);
 
-    setSourceState(MediaSource::closedKeyword());
+    closeMediaSource();
 
     // 4 - Set the element's networkState attribute to the NETWORK_EMPTY value and queue a
     // task to fire a simple event called emptied at the element.
@@ -1882,7 +1882,7 @@ void HTMLMediaElement::seek(double time, ExceptionCode& ec)
 
     // Always notify the media engine of a seek if the source is not closed. This ensures that the source is
     // always in a flushed state when the 'seeking' event fires.
-    if (m_mediaSource && m_mediaSource->readyState() != MediaSource::closedKeyword())
+    if (m_mediaSource && m_mediaSource->readyState() != WebKitMediaSource::closedKeyword())
         noSeekRequired = false;
 
     if (noSeekRequired) {
@@ -2245,14 +2245,13 @@ void HTMLMediaElement::pauseInternal()
     updatePlayState();
 }
 
-void HTMLMediaElement::setSourceState(const String& state)
+void HTMLMediaElement::closeMediaSource()
 {
     if (!m_mediaSource)
-         return;
+        return;
 
-    m_mediaSource->setReadyState(state);
-    if (state == MediaSource::closedKeyword())
-        m_mediaSource = 0;
+    m_mediaSource->setReadyState(WebKitMediaSource::closedKeyword());
+    m_mediaSource = 0;
 }
 
 #if ENABLE(ENCRYPTED_MEDIA)
@@ -3609,7 +3608,7 @@ void HTMLMediaElement::userCancelledLoad()
     // 3 - Queue a task to fire a simple event named error at the media element.
     scheduleEvent(eventNames().abortEvent);
 
-    setSourceState(MediaSource::closedKeyword());
+    closeMediaSource();
 
     // 4 - If the media element's readyState attribute has a value equal to HAVE_NOTHING, set the
     // element's networkState attribute to the NETWORK_EMPTY value and queue a task to fire a
@@ -3646,7 +3645,7 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
 
     removeAllInbandTracks();
 
-    setSourceState(MediaSource::closedKeyword());
+    closeMediaSource();
 
     m_player.clear();
     stopPeriodicTimers();
@@ -4010,7 +4009,7 @@ void HTMLMediaElement::createMediaPlayer()
 #endif
 
     if (m_mediaSource)
-        m_mediaSource->setReadyState(MediaSource::closedKeyword());
+        closeMediaSource();
 
     m_player = MediaPlayer::create(this);
 

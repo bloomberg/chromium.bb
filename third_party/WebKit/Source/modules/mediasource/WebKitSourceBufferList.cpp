@@ -29,40 +29,39 @@
  */
 
 #include "config.h"
-#include "modules/mediasource/SourceBufferList.h"
+#include "modules/mediasource/WebKitSourceBufferList.h"
 
 #include "core/dom/Event.h"
 #include "core/dom/GenericEventQueue.h"
-#include "modules/mediasource/SourceBuffer.h"
+#include "modules/mediasource/WebKitSourceBuffer.h"
 
 namespace WebCore {
 
-SourceBufferList::SourceBufferList(ScriptExecutionContext* context,
-                                   GenericEventQueue* asyncEventQueue)
+WebKitSourceBufferList::WebKitSourceBufferList(ScriptExecutionContext* context, GenericEventQueue* asyncEventQueue)
     : m_scriptExecutionContext(context)
     , m_asyncEventQueue(asyncEventQueue)
 {
 }
 
-unsigned long SourceBufferList::length() const
+unsigned long WebKitSourceBufferList::length() const
 {
     return m_list.size();
 }
 
-SourceBuffer* SourceBufferList::item(unsigned index) const
+WebKitSourceBuffer* WebKitSourceBufferList::item(unsigned index) const
 {
     if (index >= m_list.size())
         return 0;
     return m_list[index].get();
 }
 
-void SourceBufferList::add(PassRefPtr<SourceBuffer> buffer)
+void WebKitSourceBufferList::add(PassRefPtr<WebKitSourceBuffer> buffer)
 {
     m_list.append(buffer);
     createAndFireEvent(eventNames().webkitaddsourcebufferEvent);
 }
 
-bool SourceBufferList::remove(SourceBuffer* buffer)
+bool WebKitSourceBufferList::remove(WebKitSourceBuffer* buffer)
 {
     size_t index = m_list.find(buffer);
     if (index == notFound)
@@ -74,7 +73,7 @@ bool SourceBufferList::remove(SourceBuffer* buffer)
     return true;
 }
 
-void SourceBufferList::clear()
+void WebKitSourceBufferList::clear()
 {
     for (size_t i = 0; i < m_list.size(); ++i)
         m_list[i]->removedFromMediaSource();
@@ -82,7 +81,7 @@ void SourceBufferList::clear()
     createAndFireEvent(eventNames().webkitremovesourcebufferEvent);
 }
 
-void SourceBufferList::createAndFireEvent(const AtomicString& eventName)
+void WebKitSourceBufferList::createAndFireEvent(const AtomicString& eventName)
 {
     ASSERT(m_asyncEventQueue);
 
@@ -92,22 +91,22 @@ void SourceBufferList::createAndFireEvent(const AtomicString& eventName)
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
-const AtomicString& SourceBufferList::interfaceName() const
+const AtomicString& WebKitSourceBufferList::interfaceName() const
 {
-    return eventNames().interfaceForSourceBufferList;
+    return eventNames().interfaceForWebKitSourceBufferList;
 }
 
-ScriptExecutionContext* SourceBufferList::scriptExecutionContext() const
+ScriptExecutionContext* WebKitSourceBufferList::scriptExecutionContext() const
 {
     return m_scriptExecutionContext;
 }
 
-EventTargetData* SourceBufferList::eventTargetData()
+EventTargetData* WebKitSourceBufferList::eventTargetData()
 {
     return &m_eventTargetData;
 }
 
-EventTargetData* SourceBufferList::ensureEventTargetData()
+EventTargetData* WebKitSourceBufferList::ensureEventTargetData()
 {
     return &m_eventTargetData;
 }

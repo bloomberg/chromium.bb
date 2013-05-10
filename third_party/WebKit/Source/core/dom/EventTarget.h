@@ -55,7 +55,6 @@ namespace WebCore {
     class MIDIInput;
     class MIDIPort;
     class MediaController;
-    class MediaSource;
     class MediaStream;
     class MessagePort;
     class NamedFlow;
@@ -66,9 +65,10 @@ namespace WebCore {
     class ScriptProcessorNode;
     class SharedWorker;
     class SharedWorkerContext;
-    class SourceBufferList;
     class TextTrack;
     class TextTrackCue;
+    class WebKitMediaSource;
+    class WebKitSourceBufferList;
     class WebSocket;
     class Worker;
     class XMLHttpRequest;

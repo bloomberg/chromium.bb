@@ -39,15 +39,15 @@
 #include "core/loader/cache/MemoryCache.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
-#include "modules/mediasource/MediaSource.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
+#include "modules/mediasource/WebKitMediaSource.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "origin/SecurityOrigin.h"
 
 namespace WebCore {
 
-String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, MediaSource* source)
+String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, WebKitMediaSource* source)
 {
     // Since WebWorkers cannot obtain MediaSource objects, we should be on the main thread.
     ASSERT(isMainThread());

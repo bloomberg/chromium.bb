@@ -38,7 +38,7 @@
 namespace WebCore {
 
 class KURL;
-class MediaSource;
+class WebKitMediaSource;
 
 class MediaSourceRegistry {
 public:
@@ -46,13 +46,13 @@ public:
     static MediaSourceRegistry& registry();
 
     // Registers a blob URL referring to the specified media source.
-    void registerMediaSourceURL(const KURL&, PassRefPtr<MediaSource>);
+    void registerMediaSourceURL(const KURL&, PassRefPtr<WebKitMediaSource>);
     void unregisterMediaSourceURL(const KURL&);
 
-    MediaSource* lookupMediaSource(const String& url);
+    WebKitMediaSource* lookupMediaSource(const String& url);
 
 private:
-    HashMap<String, RefPtr<MediaSource> > m_mediaSources;
+    HashMap<String, RefPtr<WebKitMediaSource> > m_mediaSources;
 };
 
 } // namespace WebCore

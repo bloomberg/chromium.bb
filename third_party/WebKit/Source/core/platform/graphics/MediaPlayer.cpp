@@ -38,7 +38,7 @@
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/MediaPlayerPrivate.h"
-#include "modules/mediasource/MediaSource.h"
+#include "modules/mediasource/WebKitMediaSource.h"
 #include <wtf/text/CString.h>
 
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
@@ -56,7 +56,7 @@ public:
     NullMediaPlayerPrivate(MediaPlayer*) { }
 
     virtual void load(const String&) { }
-    virtual void load(const String&, PassRefPtr<MediaSource>) { }
+    virtual void load(const String&, PassRefPtr<WebKitMediaSource>) { }
     virtual void cancelLoad() { }
 
     virtual void prepareToPlay() { }
@@ -263,7 +263,7 @@ bool MediaPlayer::load(const KURL& url, const ContentType& contentType, const St
     return m_currentMediaEngine;
 }
 
-bool MediaPlayer::load(const KURL& url, PassRefPtr<MediaSource> mediaSource)
+bool MediaPlayer::load(const KURL& url, PassRefPtr<WebKitMediaSource> mediaSource)
 {
     m_mediaSource = mediaSource;
     m_contentMIMEType = "";

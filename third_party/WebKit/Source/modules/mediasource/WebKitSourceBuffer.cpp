@@ -29,21 +29,21 @@
  */
 
 #include "config.h"
-#include "modules/mediasource/SourceBuffer.h"
+#include "modules/mediasource/WebKitSourceBuffer.h"
 
 #include "core/html/TimeRanges.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
-#include "modules/mediasource/MediaSource.h"
+#include "modules/mediasource/WebKitMediaSource.h"
 #include "wtf/Uint8Array.h"
 
 namespace WebCore {
 
-PassRefPtr<SourceBuffer> SourceBuffer::create(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, PassRefPtr<MediaSource> source)
+PassRefPtr<WebKitSourceBuffer> WebKitSourceBuffer::create(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, PassRefPtr<WebKitMediaSource> source)
 {
-    return adoptRef(new SourceBuffer(sourceBufferPrivate, source));
+    return adoptRef(new WebKitSourceBuffer(sourceBufferPrivate, source));
 }
 
-SourceBuffer::SourceBuffer(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, PassRefPtr<MediaSource> source)
+WebKitSourceBuffer::WebKitSourceBuffer(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, PassRefPtr<WebKitMediaSource> source)
     : m_private(sourceBufferPrivate)
     , m_source(source)
     , m_timestampOffset(0)
@@ -52,11 +52,11 @@ SourceBuffer::SourceBuffer(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, 
     ASSERT(m_source);
 }
 
-SourceBuffer::~SourceBuffer()
+WebKitSourceBuffer::~WebKitSourceBuffer()
 {
 }
 
-PassRefPtr<TimeRanges> SourceBuffer::buffered(ExceptionCode& ec) const
+PassRefPtr<TimeRanges> WebKitSourceBuffer::buffered(ExceptionCode& ec) const
 {
     // Section 3.1 buffered attribute steps.
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
@@ -70,12 +70,12 @@ PassRefPtr<TimeRanges> SourceBuffer::buffered(ExceptionCode& ec) const
     return m_private->buffered();
 }
 
-double SourceBuffer::timestampOffset() const
+double WebKitSourceBuffer::timestampOffset() const
 {
     return m_timestampOffset;
 }
 
-void SourceBuffer::setTimestampOffset(double offset, ExceptionCode& ec)
+void WebKitSourceBuffer::setTimestampOffset(double offset, ExceptionCode& ec)
 {
     // Section 3.1 timestampOffset attribute setter steps.
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
@@ -86,11 +86,9 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionCode& ec)
     }
 
     // 4. If the readyState attribute of the parent media source is in the "ended" state then run the following steps:
-    if (isEnded()) {
-        // 4.1 Set the readyState attribute of the parent media source to "open"
-        // 4.2 Queue a task to fire a simple event named sourceopen at the parent media source.
-        m_source->setReadyState(MediaSource::openKeyword());
-    }
+    // 4.1 Set the readyState attribute of the parent media source to "open"
+    // 4.2 Queue a task to fire a simple event named sourceopen at the parent media source.
+    openIfInEndedState();
 
     // 5. If this object is waiting for the end of a media segment to be appended, then throw an INVALID_STATE_ERR
     // and abort these steps.
@@ -103,7 +101,7 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionCode& ec)
     m_timestampOffset = offset;
 }
 
-void SourceBuffer::append(PassRefPtr<Uint8Array> data, ExceptionCode& ec)
+void WebKitSourceBuffer::append(PassRefPtr<Uint8Array> data, ExceptionCode& ec)
 {
     // SourceBuffer.append() steps from October 1st version of the Media Source Extensions spec.
     // https://dvcs.w3.org/hg/html-media/raw-file/7bab66368f2c/media-source/media-source.html#dom-append
@@ -122,17 +120,15 @@ void SourceBuffer::append(PassRefPtr<Uint8Array> data, ExceptionCode& ec)
     }
 
     // 5. If the readyState attribute of media source is in the "ended" state then run the following steps:
-    if (isEnded()) {
-        // 5.1. Set the readyState attribute of media source to "open"
-        // 5.2. Queue a task to fire a simple event named sourceopen at media source.
-        m_source->setReadyState(MediaSource::openKeyword());
-    }
+    // 5.1. Set the readyState attribute of media source to "open"
+    // 5.2. Queue a task to fire a simple event named sourceopen at media source.
+    openIfInEndedState();
 
     // Steps 6 & beyond are handled by the private implementation.
     m_private->append(data->data(), data->length());
 }
 
-void SourceBuffer::abort(ExceptionCode& ec)
+void WebKitSourceBuffer::abort(ExceptionCode& ec)
 {
     // Section 3.2 abort() method steps.
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source
@@ -148,7 +144,7 @@ void SourceBuffer::abort(ExceptionCode& ec)
     m_private->abort();
 }
 
-void SourceBuffer::removedFromMediaSource()
+void WebKitSourceBuffer::removedFromMediaSource()
 {
     if (isRemoved())
         return;
@@ -157,21 +153,24 @@ void SourceBuffer::removedFromMediaSource()
     m_source.clear();
 }
 
-bool SourceBuffer::isRemoved() const
+bool WebKitSourceBuffer::isRemoved() const
 {
     return !m_source;
 }
 
-bool SourceBuffer::isOpen() const
+bool WebKitSourceBuffer::isOpen() const
 {
     ASSERT(m_source);
-    return m_source->readyState() == MediaSource::openKeyword();
+    return m_source->readyState() == WebKitMediaSource::openKeyword();
 }
 
-bool SourceBuffer::isEnded() const
+void WebKitSourceBuffer::openIfInEndedState()
 {
     ASSERT(m_source);
-    return m_source->readyState() == MediaSource::endedKeyword();
+    if (m_source->readyState() != WebKitMediaSource::endedKeyword())
+        return;
+
+    m_source->setReadyState(WebKitMediaSource::openKeyword());
 }
 
 } // namespace WebCore

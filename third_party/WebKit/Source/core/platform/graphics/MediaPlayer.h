@@ -56,7 +56,7 @@ class AudioSourceProvider;
 class Document;
 class GStreamerGWorld;
 class MediaPlayerPrivateInterface;
-class MediaSource;
+class WebKitMediaSource;
 class TextTrackRepresentation;
 
 // Structure that will hold every native
@@ -236,7 +236,7 @@ public:
     void setSize(const IntSize& size);
 
     bool load(const KURL&, const ContentType&, const String& keySystem);
-    bool load(const KURL&, PassRefPtr<MediaSource>);
+    bool load(const KURL&, PassRefPtr<WebKitMediaSource>);
     void cancelLoad();
 
     bool visible() const;
@@ -244,7 +244,7 @@ public:
 
     void prepareToPlay();
     void play();
-    void pause();    
+    void pause();
 
 #if ENABLE(ENCRYPTED_MEDIA)
     // Represents synchronous exceptions that can be thrown from the Encrypted Media methods.
@@ -271,7 +271,7 @@ public:
     double rate() const;
     void setRate(double);
 
-    bool preservesPitch() const;    
+    bool preservesPitch() const;
     void setPreservesPitch(bool);
 
     PassRefPtr<TimeRanges> buffered();
@@ -289,7 +289,7 @@ public:
     bool hasClosedCaptions() const;
     void setClosedCaptionsVisible(bool closedCaptionsVisible);
 
-    bool autoplay() const;    
+    bool autoplay() const;
     void setAutoplay(bool);
 
     void paint(GraphicsContext*, const IntRect&);
@@ -425,7 +425,7 @@ private:
     bool m_shouldPrepareToRender;
     bool m_contentMIMETypeWasInferredFromExtension;
 
-    RefPtr<MediaSource> m_mediaSource;
+    RefPtr<WebKitMediaSource> m_mediaSource;
 };
 
 typedef PassOwnPtr<MediaPlayerPrivateInterface> (*CreateMediaEnginePlayer)(MediaPlayer*);

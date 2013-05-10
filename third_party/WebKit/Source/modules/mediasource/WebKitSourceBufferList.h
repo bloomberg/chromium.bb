@@ -28,71 +28,57 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaSource_h
-#define MediaSource_h
+#ifndef WebKitSourceBufferList_h
+#define WebKitSourceBufferList_h
 
-#include "core/dom/ActiveDOMObject.h"
-#include "core/dom/GenericEventQueue.h"
-#include "core/platform/graphics/MediaSourcePrivate.h"
-#include "modules/mediasource/SourceBuffer.h"
-#include "modules/mediasource/SourceBufferList.h"
+#include "core/dom/EventTarget.h"
 #include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class MediaSource : public RefCounted<MediaSource>, public EventTarget, public ActiveDOMObject {
+class WebKitSourceBuffer;
+class GenericEventQueue;
+
+class WebKitSourceBufferList : public RefCounted<WebKitSourceBufferList>, public EventTarget {
 public:
-    static const String& openKeyword();
-    static const String& closedKeyword();
-    static const String& endedKeyword();
+    static PassRefPtr<WebKitSourceBufferList> create(ScriptExecutionContext* context, GenericEventQueue* asyncEventQueue)
+    {
+        return adoptRef(new WebKitSourceBufferList(context, asyncEventQueue));
+    }
+    virtual ~WebKitSourceBufferList() { }
 
-    static PassRefPtr<MediaSource> create(ScriptExecutionContext*);
-    virtual ~MediaSource() { }
+    unsigned long length() const;
+    WebKitSourceBuffer* item(unsigned index) const;
 
-    // MediaSource.idl methods
-    SourceBufferList* sourceBuffers();
-    SourceBufferList* activeSourceBuffers();
-    double duration() const;
-    void setDuration(double, ExceptionCode&);
-    SourceBuffer* addSourceBuffer(const String& type, ExceptionCode&);
-    void removeSourceBuffer(SourceBuffer*, ExceptionCode&);
-    const String& readyState() const;
-    void setReadyState(const String&);
-    void endOfStream(const String& error, ExceptionCode&);
-    static bool isTypeSupported(const String& type);
-
-    void setPrivateAndOpen(PassOwnPtr<MediaSourcePrivate>);
+    void add(PassRefPtr<WebKitSourceBuffer>);
+    bool remove(WebKitSourceBuffer*);
+    void clear();
 
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
-    // ActiveDOMObject interface
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void stop() OVERRIDE;
+    using RefCounted<WebKitSourceBufferList>::ref;
+    using RefCounted<WebKitSourceBufferList>::deref;
 
-    using RefCounted<MediaSource>::ref;
-    using RefCounted<MediaSource>::deref;
-
-private:
-    explicit MediaSource(ScriptExecutionContext*);
-
+protected:
     virtual EventTargetData* eventTargetData() OVERRIDE;
     virtual EventTargetData* ensureEventTargetData() OVERRIDE;
+
+private:
+    WebKitSourceBufferList(ScriptExecutionContext*, GenericEventQueue*);
+
+    void createAndFireEvent(const AtomicString&);
 
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
 
-    void scheduleEvent(const AtomicString& eventName);
-
     EventTargetData m_eventTargetData;
+    ScriptExecutionContext* m_scriptExecutionContext;
+    GenericEventQueue* m_asyncEventQueue;
 
-    String m_readyState;
-    OwnPtr<MediaSourcePrivate> m_private;
-
-    RefPtr<SourceBufferList> m_sourceBuffers;
-    RefPtr<SourceBufferList> m_activeSourceBuffers;
-    OwnPtr<GenericEventQueue> m_asyncEventQueue;
+    Vector<RefPtr<WebKitSourceBuffer> > m_list;
 };
 
 } // namespace WebCore

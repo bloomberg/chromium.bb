@@ -43,7 +43,6 @@ LangAttributeAwareFormControlUI
 LazyLayout
 LocalStorage status=stable
 Media custom
-MediaSource status=stable
 MediaStream status=stable
 Notifications status=stable
 PeerConnection depends_on=MediaStream, status=stable
@@ -62,3 +61,4 @@ WebAnimation
 WebAudio condition=WEB_AUDIO, status=stable
 WebMIDI status=test
 WebPInAcceptHeader
+WebKitMediaSource status=stable

@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SourceBuffer_h
-#define SourceBuffer_h
+#ifndef WebKitSourceBuffer_h
+#define WebKitSourceBuffer_h
 
 #include "core/dom/ExceptionCode.h"
 #include "wtf/PassRefPtr.h"
@@ -37,17 +37,17 @@
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-class MediaSource;
+class WebKitMediaSource;
 class SourceBufferPrivate;
 class TimeRanges;
 
-class SourceBuffer : public RefCounted<SourceBuffer> {
+class WebKitSourceBuffer : public RefCounted<WebKitSourceBuffer> {
 public:
-    static PassRefPtr<SourceBuffer> create(PassOwnPtr<SourceBufferPrivate>, PassRefPtr<MediaSource>);
+    static PassRefPtr<WebKitSourceBuffer> create(PassOwnPtr<SourceBufferPrivate>, PassRefPtr<WebKitMediaSource>);
 
-    virtual ~SourceBuffer();
+    virtual ~WebKitSourceBuffer();
 
-    // SourceBuffer.idl methods
+    // WebKitSourceBuffer.idl methods
     PassRefPtr<TimeRanges> buffered(ExceptionCode&) const;
     double timestampOffset() const;
     void setTimestampOffset(double, ExceptionCode&);
@@ -57,14 +57,14 @@ public:
     void removedFromMediaSource();
 
 private:
-    SourceBuffer(PassOwnPtr<SourceBufferPrivate>, PassRefPtr<MediaSource>);
+    WebKitSourceBuffer(PassOwnPtr<SourceBufferPrivate>, PassRefPtr<WebKitMediaSource>);
 
     bool isRemoved() const;
     bool isOpen() const;
-    bool isEnded() const;
+    void openIfInEndedState();
 
     OwnPtr<SourceBufferPrivate> m_private;
-    RefPtr<MediaSource> m_source;
+    RefPtr<WebKitMediaSource> m_source;
 
     double m_timestampOffset;
 };
