@@ -6,7 +6,7 @@
 
 """Convert Android xml resources to API 14 compatible.
 
-There are two reasons that we cannot just use API attributes,
+There are two reasons that we cannot just use API 17 attributes,
 so we are generating another set of resources by this script.
 
 1. paddingStart attribute can cause a crash on Galaxy Tab 2.
@@ -21,7 +21,7 @@ Please refer to http://crbug.com/235118 for the details.
 
 import optparse
 import os
-import re
+import shutil
 import sys
 import xml.dom.minidom as minidom
 
@@ -64,7 +64,8 @@ def IterateXmlElements(node):
       yield child_node_element
 
 
-def WarnDeprecatedAttribute(name, value, filename):
+def WarnIfDeprecatedAttribute(name, value, filename):
+  """print a warning message if the given attribute is deprecated."""
   if name in ATTRIBUTES_TO_MAP_REVERSED:
     print >> sys.stderr, ('warning: ' + filename + ' should use ' +
                           ATTRIBUTES_TO_MAP_REVERSED[name] +
@@ -75,45 +76,21 @@ def WarnDeprecatedAttribute(name, value, filename):
                           name)
 
 
-def GenerateV14StyleResource(input_filename, output_filename):
-  """Convert style resource to API 14 compatible style resource.
-
-  It's mostly a simple replacement, s/Start/Left s/End/Right,
-  on the attribute names specified by <item> element.
-  If input_filename does not contain style resources, do nothing.
-  """
-  dom = minidom.parse(input_filename)
-  style_elements = dom.getElementsByTagName('style')
-
-  if not style_elements:
-    return
-
-  for style_element in style_elements:
-    for item_element in style_element.getElementsByTagName('item'):
-      name = item_element.attributes['name'].value
-      value = item_element.childNodes[0].nodeValue
-      if name in ATTRIBUTES_TO_MAP:
-        item_element.attributes['name'].value = ATTRIBUTES_TO_MAP[name]
-      else:
-        WarnDeprecatedAttribute(name, value, input_filename)
-
-  build_utils.MakeDirectory(os.path.dirname(output_filename))
-  with open(output_filename, 'w') as f:
-    dom.writexml(f, '', '  ', '\n', encoding='utf-8')
-
-
-def GenerateV14LayoutResource(input_filename, output_filename):
+def GenerateV14LayoutResource(dom, filename):
   """Convert layout resource to API 14 compatible layout resource.
 
-  It's mostly a simple replacement, s/Start/Left s/End/Right,
-  on the attribute names.
+  Args:
+    dom: parsed minidom object to be modified.
+    filename: file name to display in case we print warnings.
+  Returns:
+    True if dom is modified, False otherwise.
   """
-  dom = minidom.parse(input_filename)
+  is_modified = False
 
   # Iterate all the elements' attributes to find attributes to convert.
   for element in IterateXmlElements(dom):
     for name, value in list(element.attributes.items()):
-      # Convert any other API 17 Start/End attributes to Left/Right attributes.
+      # Convert any API 17 Start/End attributes to Left/Right attributes.
       # For example, from paddingStart="10dp" to paddingLeft="10dp"
       # Note: gravity attributes are not necessary to convert because
       # start/end values are backward-compatible. Explained at
@@ -121,23 +98,77 @@ def GenerateV14LayoutResource(input_filename, output_filename):
       if name in ATTRIBUTES_TO_MAP:
         element.setAttribute(ATTRIBUTES_TO_MAP[name], value)
         del element.attributes[name]
+        is_modified = True
       else:
-        WarnDeprecatedAttribute(name, value, input_filename)
+        WarnIfDeprecatedAttribute(name, value, filename)
 
-  build_utils.MakeDirectory(os.path.dirname(output_filename))
-  with open(output_filename, 'w') as f:
-    dom.writexml(f, '', '  ', '\n', encoding='utf-8')
+  return is_modified
 
 
-def GenerateV14XmlResourcesInDir(input_dir, output_dir, only_styles=False):
+def GenerateV14StyleResource(dom, filename):
+  """Convert style resource to API 14 compatible style resource.
+
+  Args:
+    dom: parsed minidom object to be modified.
+    filename: file name to display in case we print warnings.
+  Returns:
+    True if dom is modified, False otherwise.
+  """
+  is_modified = False
+
+  for style_element in dom.getElementsByTagName('style'):
+    for item_element in style_element.getElementsByTagName('item'):
+      name = item_element.attributes['name'].value
+      value = item_element.childNodes[0].nodeValue
+      if name in ATTRIBUTES_TO_MAP:
+        item_element.attributes['name'].value = ATTRIBUTES_TO_MAP[name]
+        is_modified = True
+      else:
+        WarnIfDeprecatedAttribute(name, value, filename)
+
+  return is_modified
+
+
+def GenerateV14Resource(input_filename,
+                        output_v14_filename,
+                        output_v17_filename):
+  """Convert layout/style resource to API 14 compatible layout/style resource.
+
+  It's mostly a simple replacement, s/Start/Left s/End/Right,
+  on the attribute names.
+  If the generated resource is identical to the original resource,
+  don't do anything. If not, write the generated resource to
+  output_v14_filename, and copy the original resource to output_v17_filename.
+  """
+  dom = minidom.parse(input_filename)
+
+  root_node = IterateXmlElements(dom).next()
+  if root_node.nodeName == 'resources':
+    # Style resources are under 'values*/' directory.
+    is_modified = GenerateV14StyleResource(dom, input_filename)
+  else:
+    # Layout resources can be under 'layout*/' or 'xml*/' directory.
+    is_modified = GenerateV14LayoutResource(dom, input_filename)
+
+  if is_modified:
+    # Write the generated resource.
+    build_utils.MakeDirectory(os.path.dirname(output_v14_filename))
+    with open(output_v14_filename, 'w') as f:
+      dom.writexml(f, '', '  ', '\n', encoding='utf-8')
+
+    # Copy the original resource.
+    build_utils.MakeDirectory(os.path.dirname(output_v17_filename))
+    shutil.copy2(input_filename, output_v17_filename)
+
+
+def GenerateV14XmlResourcesInDir(input_dir, output_v14_dir, output_v17_dir):
   """Convert resources to API 14 compatible XML resources in the directory."""
   for input_filename in build_utils.FindInDirectory(input_dir, '*.xml'):
-    output_filename = os.path.join(output_dir,
-                               os.path.relpath(input_filename, input_dir))
-    if only_styles:
-      GenerateV14StyleResource(input_filename, output_filename)
-    else:
-      GenerateV14LayoutResource(input_filename, output_filename)
+    rel_filename = os.path.relpath(input_filename, input_dir)
+    output_v14_filename = os.path.join(output_v14_dir, rel_filename)
+    output_v17_filename = os.path.join(output_v17_dir, rel_filename)
+    GenerateV14Resource(input_filename, output_v14_filename,
+                        output_v17_filename)
 
 
 def ParseArgs():
@@ -149,10 +180,10 @@ def ParseArgs():
   parser = optparse.OptionParser()
   parser.add_option('--res-dir',
                     help='directory containing resources '
-                         'used to generate v14 resources')
-  parser.add_option('--res-v14-dir',
+                         'used to generate v14 compatible resources')
+  parser.add_option('--res-v14-compatibility-dir',
                     help='output directory into which '
-                         'v14 resources will be generated')
+                         'v14 compatible resources will be generated')
   parser.add_option('--stamp', help='File to touch on success')
 
   options, args = parser.parse_args()
@@ -161,7 +192,7 @@ def ParseArgs():
     parser.error('No positional arguments should be given.')
 
   # Check that required options have been provided.
-  required_options = ('res_dir', 'res_v14_dir')
+  required_options = ('res_dir', 'res_v14_compatibility_dir')
   build_utils.CheckOptions(options, parser, required=required_options)
   return options
 
@@ -169,8 +200,8 @@ def ParseArgs():
 def main(argv):
   options = ParseArgs()
 
-  build_utils.DeleteDirectory(options.res_v14_dir)
-  build_utils.MakeDirectory(options.res_v14_dir)
+  build_utils.DeleteDirectory(options.res_v14_compatibility_dir)
+  build_utils.MakeDirectory(options.res_v14_compatibility_dir)
 
   for name in os.listdir(options.res_dir):
     if not os.path.isdir(os.path.join(options.res_dir, name)):
@@ -184,17 +215,19 @@ def main(argv):
     if 'ldrtl' in qualifiers:
       continue
 
+    # We also need to copy the original v17 resource to *-v17 directory
+    # because the generated v14 resource will hide the original resource.
     input_dir = os.path.join(options.res_dir, name)
-    output_dir = os.path.join(options.res_v14_dir, name)
+    output_v14_dir = os.path.join(options.res_v14_compatibility_dir, name)
+    output_v17_dir = os.path.join(options.res_v14_compatibility_dir, name +
+                                                                     '-v17')
 
     # We only convert resources under layout*/, xml*/,
     # and style resources under values*/.
     # TODO(kkimlabs): don't process xml directly once all layouts have
     # been moved out of XML directory. see http://crbug.com/238458
-    if resource_type in ('layout', 'xml'):
-      GenerateV14XmlResourcesInDir(input_dir, output_dir)
-    elif resource_type in ('values'):
-      GenerateV14XmlResourcesInDir(input_dir, output_dir, only_styles=True)
+    if resource_type in ('layout', 'xml', 'values'):
+      GenerateV14XmlResourcesInDir(input_dir, output_v14_dir, output_v17_dir)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
