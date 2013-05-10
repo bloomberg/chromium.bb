@@ -48,6 +48,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
                     std::string* gl_renderer,
                     std::string* gl_version);
   void DisableHardwareAcceleration();
+  void EnableSoftwareCompositing();
 
   void Initialize();
 
@@ -208,6 +209,10 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 
   ListValue log_messages_;
+
+  // TODO(skaslev) Remove this after all legacy s/w rendering paths are removed.
+  // Then use_software_compositor_ will be implicitly always true.
+  bool use_software_compositor_;
 
   bool use_swiftshader_;
 

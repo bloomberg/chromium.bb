@@ -28,9 +28,6 @@ const char kDumpRenderTree[] = "dump-render-tree";
 // Enable accelerated 2D canvas.
 const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
 
-// Alias for kEnableSoftwareCompositingGLAdapter.
-const char kEnableSoftwareCompositing[] = "enable-software-compositing";
-
 // Disables the timeout for layout tests.
 const char kNoTimeout[] = "no-timeout";
 

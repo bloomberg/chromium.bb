@@ -579,12 +579,6 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   }
 #endif
 
-  if (command_line.HasSwitch(switches::kEnableSoftwareCompositingGLAdapter)) {
-      return scoped_ptr<cc::OutputSurface>(
-          new CompositorOutputSurface(routing_id(), NULL,
-              new CompositorSoftwareOutputDevice()));
-  }
-
   // Explicitly disable antialiasing for the compositor. As of the time of
   // this writing, the only platform that supported antialiasing for the
   // compositor was Mac OS X, because the on-screen OpenGL context creation
@@ -601,8 +595,18 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   attributes.noAutomaticFlushes = true;
   WebGraphicsContext3DCommandBufferImpl* context =
       CreateGraphicsContext3D(attributes);
-  if (!context)
-    return scoped_ptr<cc::OutputSurface>();
+
+  if (!context) {
+    if (command_line.HasSwitch(switches::kEnableSoftwareCompositing)) {
+      // If we failed to create context, return output surface set up for
+      // software compositing.
+      return scoped_ptr<cc::OutputSurface>(
+          new CompositorOutputSurface(routing_id(), NULL,
+              new CompositorSoftwareOutputDevice()));
+    } else {
+      return scoped_ptr<cc::OutputSurface>();
+    }
+  }
 
   bool composite_to_mailbox =
       command_line.HasSwitch(cc::switches::kCompositeToMailbox) &&
@@ -2337,6 +2341,10 @@ WebGraphicsContext3DCommandBufferImpl* RenderWidget::CreateGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
   if (!webwidget_)
     return NULL;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpu))
+    return NULL;
+
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
           surface_id(),

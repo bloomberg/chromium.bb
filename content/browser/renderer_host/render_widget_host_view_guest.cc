@@ -169,6 +169,17 @@ void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
 
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     scoped_ptr<cc::CompositorFrame> frame) {
+  // TODO(skaslev) Implement this path for software compositing.
+  // For now we immediately acknowledge software frames to avoid
+  // blocking the renderer and breaking unittests.
+  if (frame->software_frame_data) {
+    cc::CompositorFrameAck ack;
+    ack.last_dib_id = frame->software_frame_data->dib_id;
+    RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+        host_->GetRoutingID(), host_->GetProcess()->GetID(), ack);
+    return;
+  }
+
   guest_->clear_damage_buffer();
   guest_->SendMessageToEmbedder(
       new BrowserPluginMsg_CompositorFrameSwapped(

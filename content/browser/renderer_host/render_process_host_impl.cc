@@ -871,7 +871,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,
 #endif
-    switches::kEnableSoftwareCompositingGLAdapter,
+    switches::kEnableSoftwareCompositing,
     switches::kEnableStatsTable,
     switches::kEnableThreadedCompositing,
     switches::kEnableCompositingForFixedPosition,

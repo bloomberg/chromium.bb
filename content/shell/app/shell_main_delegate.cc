@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/layouttest_support.h"
@@ -116,8 +117,11 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(switches::kEnableCssShaders);
     command_line.AppendSwitchASCII(switches::kTouchEvents,
                                    switches::kTouchEventsEnabled);
+
+    // TODO(skaslev) Remove that after codereview.chromium.org/14615005/
+    // lands and rolls.
     if (command_line.HasSwitch(switches::kEnableSoftwareCompositing))
-      command_line.AppendSwitch(switches::kEnableSoftwareCompositingGLAdapter);
+      GpuDataManager::GetInstance()->DisableHardwareAcceleration();
 
     net::CookieMonster::EnableFileScheme();
     if (!WebKitTestPlatformInitialize()) {

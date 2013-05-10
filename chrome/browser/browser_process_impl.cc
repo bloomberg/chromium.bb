@@ -179,6 +179,8 @@ BrowserProcessImpl::BrowserProcessImpl(
   g_browser_process = this;
   platform_part_.reset(new BrowserProcessPlatformPart());
 
+  gpu_mode_manager_.reset(new GpuModeManager);
+
 #if defined(ENABLE_PRINTING)
   // Must be created after the NotificationService.
   print_job_manager_.reset(new printing::PrintJobManager);
@@ -524,9 +526,6 @@ GLStringManager* BrowserProcessImpl::gl_string_manager() {
 }
 
 GpuModeManager* BrowserProcessImpl::gpu_mode_manager() {
-  DCHECK(CalledOnValidThread());
-  if (!gpu_mode_manager_.get())
-    gpu_mode_manager_.reset(new GpuModeManager());
   return gpu_mode_manager_.get();
 }
 
