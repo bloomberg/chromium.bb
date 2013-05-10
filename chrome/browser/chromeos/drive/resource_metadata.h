@@ -144,6 +144,9 @@ class ResourceMetadata {
   // Must be called on the UI thread.
   void ResetOnUIThread(const FileOperationCallback& callback);
 
+  // Synchronous version of ResetOnUIThread.
+  FileError Reset();
+
   // Largest change timestamp that was the source of content for the current
   // state of the root directory.
   // Must be called on the UI thread.
@@ -151,11 +154,21 @@ class ResourceMetadata {
   void SetLargestChangestampOnUIThread(int64 value,
                                        const FileOperationCallback& callback);
 
+  // Synchronous version of GetLargestChangestampOnUIThread.
+  int64 GetLargestChangestamp();
+
+  // Synchronous version of SetLargestChangestampOnUIThread.
+  FileError SetLargestChangestamp(int64 value);
+
   // Adds |entry| to the metadata tree, based on its parent_resource_id.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void AddEntryOnUIThread(const ResourceEntry& entry,
                           const FileMoveCallback& callback);
+
+  // Synchronous version of AddEntryOnUIThread.
+  FileError AddEntry(const ResourceEntry& entry,
+                     base::FilePath* out_file_path);
 
   // Moves entry specified by |file_path| to the directory specified by
   // |directory_path| and calls the callback asynchronously. Removes the entry
@@ -178,6 +191,10 @@ class ResourceMetadata {
   void RemoveEntryOnUIThread(const std::string& resource_id,
                              const FileMoveCallback& callback);
 
+  // Synchronous version of RemoveEntryOnUIThread().
+  FileError RemoveEntry(const std::string& resource_id,
+                        base::FilePath* out_file_path);
+
   // Finds an entry (a file or a directory) by |resource_id|.
   // |callback| must not be null.
   // Must be called on the UI thread.
@@ -185,11 +202,20 @@ class ResourceMetadata {
       const std::string& resource_id,
       const GetEntryInfoWithFilePathCallback& callback);
 
+  // Synchronous version of GetEntryInfoByResourceIdOnUIThread().
+  FileError GetEntryInfoByResourceId(const std::string& resource_id,
+                                     base::FilePath* out_file_path,
+                                     ResourceEntry* out_entry);
+
   // Finds an entry (a file or a directory) by |file_path|.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void GetEntryInfoByPathOnUIThread(const base::FilePath& file_path,
                                     const GetEntryInfoCallback& callback);
+
+  // Synchronous version of GetEntryInfoByPathOnUIThread().
+  FileError GetEntryInfoByPath(const base::FilePath& file_path,
+                               ResourceEntry* out_entry);
 
   // Finds and reads a directory by |file_path|.
   // |callback| must not be null.
@@ -214,6 +240,11 @@ class ResourceMetadata {
   void RefreshEntryOnUIThread(const ResourceEntry& entry,
                               const GetEntryInfoWithFilePathCallback& callback);
 
+  // Synchronous version of RefreshEntryOnUIThread().
+  FileError RefreshEntry(const ResourceEntry& entry,
+                         base::FilePath* out_file_path,
+                         ResourceEntry* out_entry);
+
   // Removes all child files of the directory pointed by
   // |directory_fetch_info| and replaces them with
   // |entry_map|. The changestamp of the directory will be updated per
@@ -236,6 +267,10 @@ class ResourceMetadata {
       const std::string& resource_id,
       const GetChildDirectoriesCallback& changed_dirs_callback);
 
+  // Synchronous version of GetChildDirectoriesOnUIThread().
+  scoped_ptr<std::set<base::FilePath> > GetChildDirectories(
+      const std::string& resource_id);
+
   // Iterates over entries and runs |callback| for each entry.
   void IterateEntries(const IterateCallback& callback);
 
@@ -255,19 +290,6 @@ class ResourceMetadata {
   // Used to implement Destroy().
   void DestroyOnBlockingPool();
 
-  // Used to implement ResetOnUIThread().
-  FileError Reset();
-
-  // Used to implement GetLargestChangestampOnUIThread().
-  int64 GetLargestChangestamp();
-
-  // Used to implement SetLargestChangestampOnUIThread().
-  FileError SetLargestChangestamp(int64 value);
-
-  // Used to implement AddEntryOnUIThread().
-  FileError AddEntry(const ResourceEntry& entry,
-                     base::FilePath* out_file_path);
-
   // Used to implement MoveEntryToDirectoryOnUIThread().
   FileError MoveEntryToDirectory(const base::FilePath& file_path,
                                  const base::FilePath& directory_path,
@@ -278,36 +300,14 @@ class ResourceMetadata {
                         const std::string& new_name,
                         base::FilePath* out_file_path);
 
-  // Used to implement RemoveEntryOnUIThread().
-  FileError RemoveEntry(const std::string& resource_id,
-                        base::FilePath* out_file_path);
-
-  // Used to implement GetEntryInfoByResourceIdOnUIThread().
-  FileError GetEntryInfoByResourceId(const std::string& resource_id,
-                                     base::FilePath* out_file_path,
-                                     ResourceEntry* out_entry);
-
-  // Used to implement GetEntryInfoByPathOnUIThread().
-  FileError GetEntryInfoByPath(const base::FilePath& file_path,
-                               ResourceEntry* out_entry);
-
   // Used to implement ReadDirectoryByPathOnUIThread().
   FileError ReadDirectoryByPath(const base::FilePath& file_path,
                                 ResourceEntryVector* out_entries);
-
-  // Used to implement RefreshEntryOnUIThread().
-  FileError RefreshEntry(const ResourceEntry& entry,
-                         base::FilePath* out_file_path,
-                         ResourceEntry* out_entry);
 
   // Used to implement RefreshDirectoryOnUIThread().
   FileError RefreshDirectory(const DirectoryFetchInfo& directory_fetch_info,
                              const ResourceEntryMap& entry_map,
                              base::FilePath* out_file_path);
-
-  // Used to implement GetChildDirectoriesOnUIThread().
-  scoped_ptr<std::set<base::FilePath> > GetChildDirectories(
-      const std::string& resource_id);
 
   // Continues with GetEntryInfoPairByPathsOnUIThread after the first entry has
   // been asynchronously fetched. This fetches the second entry only if the
