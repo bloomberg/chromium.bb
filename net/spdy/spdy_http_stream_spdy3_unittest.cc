@@ -710,6 +710,8 @@ void GetECServerBoundCertAndProof(
 // a credential set.
 SpdyFrame* ConstructCredentialRequestFrame(size_t slot, const GURL& url,
                                            SpdyStreamId stream_id) {
+  SpdyTestUtil util(kProtoSPDY3);
+
   const SpdyHeaderInfo syn_headers = {
     SYN_STREAM,
     stream_id,
@@ -754,7 +756,7 @@ SpdyFrame* ConstructCredentialRequestFrame(size_t slot, const GURL& url,
     ":version",
     "HTTP/1.1"
   };
-  return ConstructSpdyFrame(
+  return util.ConstructSpdyFrame(
       syn_headers, NULL, 0, headers, arraysize(headers)/2);
 }
 

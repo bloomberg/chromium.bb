@@ -61,6 +61,8 @@ static SpdySessionDependencies* CreateSpdySessionDependencies(
 class SpdyNetworkTransactionSpdy3Test
     : public ::testing::TestWithParam<SpdyNetworkTransactionSpdy3TestTypes> {
  protected:
+  SpdyNetworkTransactionSpdy3Test() : spdy_util_(kProtoSPDY3) {
+  }
 
   virtual void SetUp() {
     google_get_request_initialized_ = false;
@@ -599,6 +601,8 @@ class SpdyNetworkTransactionSpdy3Test
     EXPECT_EQ(ERR_IO_PENDING, rv);
     callback.WaitForResult();
   }
+
+  SpdyTestUtil spdy_util_;
 
  private:
   scoped_ptr<UploadDataStream> upload_data_stream_;
@@ -1528,8 +1532,10 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, Put) {
     ":version", "HTTP/1.1",
     "content-length", "0"
   };
-  scoped_ptr<SpdyFrame> req(ConstructSpdyFrame(kSynStartHeader, NULL, 0,
-    kPutHeaders, arraysize(kPutHeaders) / 2));
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyFrame(
+      kSynStartHeader,
+      NULL, 0,
+      kPutHeaders, arraysize(kPutHeaders) / 2));
   MockWrite writes[] = {
     CreateMockWrite(*req)
   };
@@ -1553,8 +1559,10 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, Put) {
     ":version", "HTTP/1.1"
     "content-length", "1234"
   };
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyFrame(kSynReplyHeader,
-      NULL, 0, kStandardRespHeaders, arraysize(kStandardRespHeaders) / 2));
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyFrame(
+      kSynReplyHeader,
+      NULL, 0,
+      kStandardRespHeaders, arraysize(kStandardRespHeaders) / 2));
   MockRead reads[] = {
     CreateMockRead(*resp),
     CreateMockRead(*body),
@@ -1600,8 +1608,10 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, Head) {
     ":version", "HTTP/1.1",
     "content-length", "0"
   };
-  scoped_ptr<SpdyFrame> req(ConstructSpdyFrame(kSynStartHeader, NULL, 0,
-    kHeadHeaders, arraysize(kHeadHeaders) / 2));
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyFrame(
+      kSynStartHeader,
+      NULL, 0,
+      kHeadHeaders, arraysize(kHeadHeaders) / 2));
   MockWrite writes[] = {
     CreateMockWrite(*req)
   };
@@ -1625,8 +1635,10 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, Head) {
     ":version", "HTTP/1.1"
     "content-length", "1234"
   };
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyFrame(kSynReplyHeader,
-      NULL, 0, kStandardRespHeaders, arraysize(kStandardRespHeaders) / 2));
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyFrame(
+      kSynReplyHeader,
+      NULL, 0,
+      kStandardRespHeaders, arraysize(kStandardRespHeaders) / 2));
   MockRead reads[] = {
     CreateMockRead(*resp),
     CreateMockRead(*body),
@@ -2925,10 +2937,10 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, RedirectGetRequest) {
   };
 
   // Setup writes/reads to www.google.com
-  scoped_ptr<SpdyFrame> req(ConstructSpdyFrame(
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyFrame(
       kSynStartHeader, kExtraHeaders, arraysize(kExtraHeaders) / 2,
       kStandardGetHeaders, arraysize(kStandardGetHeaders) / 2));
-  scoped_ptr<SpdyFrame> req2(ConstructSpdyFrame(
+  scoped_ptr<SpdyFrame> req2(spdy_util_.ConstructSpdyFrame(
       kSynStartHeader, kExtraHeaders, arraysize(kExtraHeaders) / 2,
       kStandardGetHeaders2, arraysize(kStandardGetHeaders2) / 2));
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReplyRedirect(1));
@@ -3140,11 +3152,11 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, RedirectServerPush) {
 
   // Setup writes/reads to www.google.com
   scoped_ptr<SpdyFrame> req(
-      ConstructSpdyFrame(kSynStartHeader,
-                         kExtraHeaders,
-                         arraysize(kExtraHeaders) / 2,
-                         kStandardGetHeaders,
-                         arraysize(kStandardGetHeaders) / 2));
+      spdy_util_.ConstructSpdyFrame(kSynStartHeader,
+                                    kExtraHeaders,
+                                    arraysize(kExtraHeaders) / 2,
+                                    kStandardGetHeaders,
+                                    arraysize(kStandardGetHeaders) / 2));
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> rep(
       ConstructSpdyPush(NULL,
@@ -3184,11 +3196,11 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, RedirectServerPush) {
     "HTTP/1.1"
   };
   scoped_ptr<SpdyFrame> req2(
-      ConstructSpdyFrame(kSynStartHeader,
-                         kExtraHeaders,
-                         arraysize(kExtraHeaders) / 2,
-                         kStandardGetHeaders2,
-                         arraysize(kStandardGetHeaders2) / 2));
+      spdy_util_.ConstructSpdyFrame(kSynStartHeader,
+                                    kExtraHeaders,
+                                    arraysize(kExtraHeaders) / 2,
+                                    kStandardGetHeaders2,
+                                    arraysize(kStandardGetHeaders2) / 2));
   scoped_ptr<SpdyFrame> resp2(ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body2(ConstructSpdyBodyFrame(1, true));
   MockWrite writes2[] = {
@@ -4003,11 +4015,11 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, SynReplyHeadersVary) {
 
     // Construct the reply.
     scoped_ptr<SpdyFrame> frame_reply(
-      ConstructSpdyFrame(*test_cases[i].syn_reply,
-                         test_cases[i].extra_headers[1],
-                         test_cases[i].num_headers[1],
-                         NULL,
-                         0));
+        spdy_util_.ConstructSpdyFrame(*test_cases[i].syn_reply,
+                                      test_cases[i].extra_headers[1],
+                                      test_cases[i].num_headers[1],
+                                      NULL,
+                                      0));
 
     scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
     MockRead reads[] = {
@@ -4120,10 +4132,10 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, InvalidSynReply) {
     };
 
     scoped_ptr<SpdyFrame> resp(
-        ConstructSpdyFrame(kSynStartHeader,
-                           NULL, 0,
-                           test_cases[i].headers,
-                           test_cases[i].num_headers));
+        spdy_util_.ConstructSpdyFrame(kSynStartHeader,
+                                      NULL, 0,
+                                      test_cases[i].headers,
+                                      test_cases[i].num_headers));
     scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
     MockRead reads[] = {
       CreateMockRead(*resp),
@@ -4823,11 +4835,11 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, SettingsSaved) {
 
   // Construct the reply.
   scoped_ptr<SpdyFrame> reply(
-    ConstructSpdyFrame(kSynReplyInfo,
-                       kExtraHeaders,
-                       arraysize(kExtraHeaders) / 2,
-                       NULL,
-                       0));
+      spdy_util_.ConstructSpdyFrame(kSynReplyInfo,
+                                    kExtraHeaders,
+                                    arraysize(kExtraHeaders) / 2,
+                                    NULL,
+                                    0));
 
   const SpdySettingsIds kSampleId1 = SETTINGS_UPLOAD_BANDWIDTH;
   unsigned int kSampleValue1 = 0x0a0a0a0a;
@@ -4962,11 +4974,11 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, SettingsPlayback) {
 
   // Construct the reply.
   scoped_ptr<SpdyFrame> reply(
-    ConstructSpdyFrame(kSynReplyInfo,
-                       kExtraHeaders,
-                       arraysize(kExtraHeaders) / 2,
-                       NULL,
-                       0));
+      spdy_util_.ConstructSpdyFrame(kSynReplyInfo,
+                                    kExtraHeaders,
+                                    arraysize(kExtraHeaders) / 2,
+                                    NULL,
+                                    0));
 
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {

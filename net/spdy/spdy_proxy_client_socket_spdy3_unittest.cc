@@ -116,6 +116,7 @@ class SpdyProxyClientSocketSpdy3Test : public PlatformTest {
   CapturingBoundNetLog net_log_;
 
  private:
+  SpdyTestUtil spdy_util_;
   scoped_refptr<HttpNetworkSession> session_;
   scoped_refptr<IOBuffer> read_buf_;
   SpdySessionDependencies session_deps_;
@@ -138,6 +139,7 @@ class SpdyProxyClientSocketSpdy3Test : public PlatformTest {
 SpdyProxyClientSocketSpdy3Test::SpdyProxyClientSocketSpdy3Test()
     : sock_(NULL),
       data_(NULL),
+      spdy_util_(kProtoSPDY3),
       session_(NULL),
       read_buf_(NULL),
       session_deps_(kProtoSPDY3),
@@ -339,7 +341,7 @@ SpdyProxyClientSocketSpdy3Test::ConstructConnectRequestFrame() {
     "user-agent", kUserAgent,
     ":version", "HTTP/1.1",
   };
-  return ConstructSpdyFrame(
+  return spdy_util_.ConstructSpdyFrame(
       kSynStartHeader, NULL, 0, kConnectHeaders, arraysize(kConnectHeaders)/2);
 }
 
@@ -368,7 +370,7 @@ SpdyProxyClientSocketSpdy3Test::ConstructConnectAuthRequestFrame() {
     ":version", "HTTP/1.1",
     "proxy-authorization", "Basic Zm9vOmJhcg==",
   };
-  return ConstructSpdyFrame(
+  return spdy_util_.ConstructSpdyFrame(
       kSynStartHeader, NULL, 0, kConnectHeaders, arraysize(kConnectHeaders)/2);
 }
 

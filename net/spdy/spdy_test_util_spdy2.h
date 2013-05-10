@@ -24,21 +24,6 @@ namespace test_spdy2 {
 // Can't find a function you're looking for?  ttuttle is migrating functions
 // from here into methods in the SpdyTestUtil class in spdy_test_common.h.
 
-// Construct a SPDY frame.
-SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
-                              scoped_ptr<SpdyHeaderBlock> headers);
-
-// Construct a SPDY frame.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// |tail| is any (relatively constant) header-value pairs to add.
-// Returns a SpdyFrame.
-SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
-                              const char* const extra_headers[],
-                              int extra_header_count,
-                              const char* const tail[],
-                              int tail_header_count);
-
 // Construct a generic SpdyControlFrame.
 SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
                                      int extra_header_count,

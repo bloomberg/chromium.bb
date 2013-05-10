@@ -68,6 +68,7 @@ SpdyFrame* ConstructSpdyWebSocketHandshakeRequestFrame(
     int header_count,
     SpdyStreamId stream_id,
     RequestPriority request_priority) {
+  SpdyTestUtil util(kProtoSPDY3);
 
   // SPDY SYN_STREAM control frame header.
   const SpdyHeaderInfo kSynStreamHeader = {
@@ -85,7 +86,7 @@ SpdyFrame* ConstructSpdyWebSocketHandshakeRequestFrame(
   };
 
   // Construct SPDY SYN_STREAM control frame.
-  return ConstructSpdyFrame(
+  return util.ConstructSpdyFrame(
       kSynStreamHeader,
       kDefaultExtraHeaders,
       kDefaultExtraHeaderCount,
@@ -98,6 +99,7 @@ SpdyFrame* ConstructSpdyWebSocketHandshakeResponseFrame(
     int header_count,
     SpdyStreamId stream_id,
     RequestPriority request_priority) {
+  SpdyTestUtil util(kProtoSPDY3);
 
   // SPDY SYN_REPLY control frame header.
   const SpdyHeaderInfo kSynReplyHeader = {
@@ -115,7 +117,7 @@ SpdyFrame* ConstructSpdyWebSocketHandshakeResponseFrame(
   };
 
   // Construct SPDY SYN_REPLY control frame.
-  return ConstructSpdyFrame(
+  return util.ConstructSpdyFrame(
       kSynReplyHeader,
       kDefaultExtraHeaders,
       kDefaultExtraHeaderCount,
