@@ -781,6 +781,7 @@ internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
 
 chrome_pfq = internal_chromium_pfq.derive(
   official,
+  useflags=official['useflags'] + ['highdpi'],
   important=True,
   overlays=constants.BOTH_OVERLAYS,
   description='Preflight Chrome build (internal)',
