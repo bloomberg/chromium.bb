@@ -25,8 +25,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/mock_cryptohome_library.h"
-#include "chromeos/dbus/mock_cryptohome_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
@@ -323,12 +323,12 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   LoginFailure failure = LoginFailure(LoginFailure::OWNER_REQUIRED);
   ExpectLoginFailure(failure);
 
-  MockDBusThreadManager* mock_dbus_thread_manager = new MockDBusThreadManager;
-  EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())
-      .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
+  MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager =
+      new MockDBusThreadManagerWithoutGMock;
   DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
-  EXPECT_CALL(*mock_dbus_thread_manager->mock_cryptohome_client(), Unmount(_))
-      .WillOnce(DoAll(SetArgPointee<0>(true), Return(true)));
+  FakeCryptohomeClient* fake_cryptohome_client  =
+      mock_dbus_thread_manager->fake_cryptohome_client();
+  fake_cryptohome_client->set_unmount_result(true);
 
   CrosSettingsProvider* device_settings_provider;
   StubCrosSettingsProvider stub_settings_provider;

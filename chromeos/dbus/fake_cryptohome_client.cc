@@ -16,7 +16,7 @@ const char kStubSystemSalt[] = "stub_system_salt";
 
 }  // namespace
 
-FakeCryptohomeClient::FakeCryptohomeClient() {
+FakeCryptohomeClient::FakeCryptohomeClient() : unmount_result_(false) {
 }
 
 FakeCryptohomeClient::~FakeCryptohomeClient() {
@@ -27,7 +27,8 @@ void FakeCryptohomeClient::TpmIsBeingOwned(
 }
 
 bool FakeCryptohomeClient::Unmount(bool* success) {
-  return false;
+  *success = unmount_result_;
+  return true;
 }
 
 void FakeCryptohomeClient::AsyncCheckKey(const std::string& username,
