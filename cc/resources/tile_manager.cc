@@ -52,14 +52,14 @@ inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
   const float kPrepaintingWindowTimeSeconds = 1.0f;
   const float kBackflingGuardDistancePixels = 314.0f;
 
-  if (prio.time_to_visible_in_seconds == 0 ||
-      prio.distance_to_visible_in_pixels < kBackflingGuardDistancePixels)
+  if (prio.time_to_visible_in_seconds == 0)
     return NOW_BIN;
 
   if (prio.resolution == NON_IDEAL_RESOLUTION)
     return EVENTUALLY_BIN;
 
-  if (prio.time_to_visible_in_seconds < kPrepaintingWindowTimeSeconds)
+  if (prio.distance_to_visible_in_pixels < kBackflingGuardDistancePixels ||
+      prio.time_to_visible_in_seconds < kPrepaintingWindowTimeSeconds)
     return SOON_BIN;
 
   return EVENTUALLY_BIN;
