@@ -317,6 +317,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
     else
       HideOverlay();
     last_match_was_search_ = false;
+    last_suggestion_ = InstantSuggestion();
     return false;
   }
 
