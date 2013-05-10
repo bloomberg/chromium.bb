@@ -6803,16 +6803,16 @@ other types of suffix sets.
   <summary>For each index load, whether the index file was corrupt.</summary>
 </histogram>
 
-<histogram name="SimpleCache.IndexInitializationMethod"
-    enum="SimpleCacheIndexInitializationMethod">
-  <summary>The method used to initialize the simple cache index.</summary>
-</histogram>
-
 <histogram name="SimpleCache.IndexInitializationWaiters">
   <summary>
     At the time of index initialization, the number of enqueued jobs awaiting
     index initialization.
   </summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexInitializeMethod"
+    enum="SimpleCacheIndexInitializeMethod">
+  <summary>The method used to initialize the simple cache index.</summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexLoadTime" units="milliseconds">
@@ -10525,7 +10525,7 @@ other types of suffix sets.
   <int value="1" label="Failure"/>
 </enum>
 
-<enum name="SimpleCacheIndexInitializationMethod" type="int">
+<enum name="SimpleCacheIndexInitializeMethod" type="int">
   <int value="0" label="Directory Scan"/>
   <int value="1" label="Index File"/>
 </enum>
