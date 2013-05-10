@@ -38,13 +38,7 @@ class TabCaptureApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-// Flaky http://crbug.com/224249
-#if defined(OS_WIN)
-#define MAYBE_ApiTests DISABLED_ApiTests
-#else
-#define MAYBE_ApiTests ApiTests
-#endif
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
   extensions::FeatureSwitch::ScopedOverride tab_capture(
       extensions::FeatureSwitch::tab_capture(), true);
 
@@ -60,13 +54,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
                                   "api_tests.html")) << message_;
 }
 
-// Flaky http://crbug.com/224249
-#if defined(OS_WIN)
-#define MAYBE_ApiTestsAudio DISABLED_ApiTestsAudio
-#else
-#define MAYBE_ApiTestsAudio ApiTestsAudio
-#endif
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTestsAudio) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
   extensions::FeatureSwitch::ScopedOverride tab_capture(
       extensions::FeatureSwitch::tab_capture(), true);
 
