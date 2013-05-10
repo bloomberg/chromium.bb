@@ -428,7 +428,7 @@ void GestureInterpreter::SetHardwareProperties(
   }
   hwprops_ = hwprops;
   if (consumer_)
-    interpreter_->Initialize(&hwprops, NULL, mprops_.get(), consumer_.get());
+    interpreter_->Initialize(&hwprops_, NULL, mprops_.get(), consumer_.get());
 }
 
 void GestureInterpreter::TimerCallback(stime_t now, stime_t* timeout) {
