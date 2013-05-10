@@ -272,11 +272,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // on the renderer's main thread.
   scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
 
-  // Returns a MessageLoopProxy instance corresponding to the message loop
-  // of the thread on which media operations should be run. Must be called
-  // on the renderer's main thread.
-  scoped_refptr<base::MessageLoopProxy> GetMediaThreadMessageLoopProxy();
-
   // Causes the idle handler to skip sending idle notifications
   // on the two next scheduled calls, so idle notifications are
   // not sent for at least one notification delay.
@@ -446,9 +441,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   // May be null if overridden by ContentRendererClient.
   scoped_ptr<base::Thread> compositor_thread_;
-
-  // Thread for running multimedia operations (e.g., video decoding).
-  scoped_ptr<base::Thread> media_thread_;
 
   // Will point to appropriate MessageLoopProxy after initialization,
   // regardless of whether |compositor_thread_| is overriden.

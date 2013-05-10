@@ -2751,7 +2751,6 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   }
 
   webkit_media::WebMediaPlayerParams params(
-      RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
       sink, gpu_factories, new RenderMediaLog());
   WebMediaPlayer* media_player =
       GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(

@@ -8,10 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "media/filters/gpu_video_decoder.h"
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace media {
 class AudioRendererSink;
 class MediaLog;
@@ -23,18 +19,12 @@ namespace webkit_media {
 // to plumb arguments through various abstraction layers.
 class WebMediaPlayerParams {
  public:
-  // |message_loop_proxy| and |media_log| are the only required parameters;
-  // all others may be null.
+  // |media_log| is the only required parameter; all others may be null.
   WebMediaPlayerParams(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
       const scoped_refptr<media::AudioRendererSink>& audio_renderer_sink,
       const scoped_refptr<media::GpuVideoDecoder::Factories>& gpu_factories,
       const scoped_refptr<media::MediaLog>& media_log);
   ~WebMediaPlayerParams();
-
-  const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy() const {
-    return message_loop_proxy_;
-  }
 
   const scoped_refptr<media::AudioRendererSink>& audio_renderer_sink() const {
     return audio_renderer_sink_;
@@ -50,7 +40,6 @@ class WebMediaPlayerParams {
   }
 
  private:
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   scoped_refptr<media::AudioRendererSink> audio_renderer_sink_;
   scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories_;
   scoped_refptr<media::MediaLog> media_log_;

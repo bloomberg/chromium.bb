@@ -120,8 +120,4 @@ void DisableModalPopupMenus() {
 #endif
 }
 
-scoped_refptr<base::MessageLoopProxy> GetMediaThreadMessageLoopProxy() {
-  return RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy();
-}
-
 }  // namespace content

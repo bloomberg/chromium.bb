@@ -1303,16 +1303,6 @@ RenderThreadImpl::GetFileThreadMessageLoopProxy() {
   return file_thread_->message_loop_proxy();
 }
 
-scoped_refptr<base::MessageLoopProxy>
-RenderThreadImpl::GetMediaThreadMessageLoopProxy() {
-  DCHECK(message_loop() == MessageLoop::current());
-  if (!media_thread_) {
-    media_thread_.reset(new base::Thread("Media"));
-    media_thread_->Start();
-  }
-  return media_thread_->message_loop_proxy();
-}
-
 void RenderThreadImpl::SetFlingCurveParameters(
     const std::vector<float>& new_touchpad,
     const std::vector<float>& new_touchscreen) {

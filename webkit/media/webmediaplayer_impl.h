@@ -280,7 +280,7 @@ class WebMediaPlayerImpl
   const scoped_refptr<base::MessageLoopProxy> main_loop_;
 
   scoped_ptr<media::Pipeline> pipeline_;
-  scoped_refptr<base::MessageLoopProxy> media_loop_;
+  base::Thread media_thread_;
 
   // The currently selected key system. Empty string means that no key system
   // has been selected.

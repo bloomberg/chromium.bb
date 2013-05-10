@@ -128,7 +128,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       main_loop_(base::MessageLoopProxy::current()),
-      media_loop_(params.message_loop_proxy()),
+      media_thread_("MediaPipeline"),
       paused_(true),
       seeking_(false),
       playback_rate_(0.0f),
@@ -150,7 +150,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
-  pipeline_.reset(new media::Pipeline(media_loop_, media_log_));
+  CHECK(media_thread_.Start());
+  pipeline_.reset(new media::Pipeline(
+      media_thread_.message_loop_proxy(), media_log_));
 
   // Let V8 know we started new thread if we did not do it yet.
   // Made separate task to avoid deletion of player currently being created.
@@ -179,7 +181,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // Use the null sink if no sink was provided.
   audio_source_provider_ = new WebAudioSourceProviderImpl(
       params.audio_renderer_sink() ? params.audio_renderer_sink() :
-      new media::NullAudioSink(media_loop_));
+      new media::NullAudioSink(media_thread_.message_loop_proxy()));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -1070,7 +1072,7 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
     DCHECK(data_source_);
 
     demuxer_.reset(new media::FFmpegDemuxer(
-        media_loop_, data_source_.get(),
+        media_thread_.message_loop_proxy(), data_source_.get(),
         BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", "")));
   } else {
     DCHECK(!chunk_demuxer_);
@@ -1102,13 +1104,15 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
 
   // Create our audio decoders and renderer.
   ScopedVector<media::AudioDecoder> audio_decoders;
-  audio_decoders.push_back(new media::FFmpegAudioDecoder(media_loop_));
+  audio_decoders.push_back(new media::FFmpegAudioDecoder(
+      media_thread_.message_loop_proxy()));
   if (cmd_line->HasSwitch(switches::kEnableOpusPlayback)) {
-    audio_decoders.push_back(new media::OpusAudioDecoder(media_loop_));
+    audio_decoders.push_back(new media::OpusAudioDecoder(
+        media_thread_.message_loop_proxy()));
   }
 
   scoped_ptr<media::AudioRenderer> audio_renderer(
-      new media::AudioRendererImpl(media_loop_,
+      new media::AudioRendererImpl(media_thread_.message_loop_proxy(),
                                    audio_source_provider_,
                                    audio_decoders.Pass(),
                                    set_decryptor_ready_cb));
@@ -1119,7 +1123,7 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
 
   if (gpu_factories_) {
     video_decoders.push_back(new media::GpuVideoDecoder(
-        media_loop_, gpu_factories_));
+        media_thread_.message_loop_proxy(), gpu_factories_));
   }
 
   // TODO(phajdan.jr): Remove ifdefs when libvpx with vp9 support is released
@@ -1127,15 +1131,17 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
 #if !defined(MEDIA_DISABLE_LIBVPX)
   if (cmd_line->HasSwitch(switches::kEnableVp9Playback) ||
       cmd_line->HasSwitch(switches::kEnableVp8AlphaPlayback)) {
-    video_decoders.push_back(new media::VpxVideoDecoder(media_loop_));
+    video_decoders.push_back(new media::VpxVideoDecoder(
+        media_thread_.message_loop_proxy()));
   }
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
-  video_decoders.push_back(new media::FFmpegVideoDecoder(media_loop_));
+  video_decoders.push_back(new media::FFmpegVideoDecoder(
+      media_thread_.message_loop_proxy()));
 
   scoped_ptr<media::VideoRenderer> video_renderer(
       new media::VideoRendererBase(
-          media_loop_,
+          media_thread_.message_loop_proxy(),
           video_decoders.Pass(),
           set_decryptor_ready_cb,
           base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
@@ -1204,6 +1210,8 @@ void WebMediaPlayerImpl::Destroy() {
     v8::V8::AdjustAmountOfExternalAllocatedMemory(-kPlayerExtraMemory);
     incremented_externally_allocated_memory_ = false;
   }
+
+  media_thread_.Stop();
 
   // Release any final references now that everything has stopped.
   pipeline_.reset();
