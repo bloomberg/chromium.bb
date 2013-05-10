@@ -54,6 +54,7 @@ webkit.org/b/82954 svg/hixie/perf/007.xml [ Slow ]
 crbug.com/239465 [ Mac ] fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
 crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ Pass Crash Timeout ]
 crbug.com/239483 [ Release ] fast/events/resize-events.html [ Pass Timeout ]
+crbug.com/239794 [ Win Debug ] inspector/debugger/pause-in-internal-script.html [ Pass Timeout ]
 
 # These tests started being slow when we switched to DRT.
 webkit.org/b/90488 [ Debug ] inspector [ Slow ]
@@ -1618,7 +1619,7 @@ crbug.com/238363 [ Debug ] svg/W3C-SVG-1.1/animate-elem-33-t.svg [ Crash ]
 crbug.com/238363 [ Debug ] media/video-timeupdate-during-playback.html [ Crash ]
 crbug.com/238363 crbug.com/239472 [ Debug ] inspector/debugger/source-frame-count.html [ Crash Timeout ]
 crbug.com/238363 [ Debug ] fast/loader/javascript-url-in-embed.html [ Crash ]
-crbug.com/238363 [ Mac Debug ] inspector/debugger/pause-in-internal-script.html [ Pass Crash ]
+crbug.com/238363 crbug.com/239794 [ Mac Debug ] inspector/debugger/pause-in-internal-script.html [ Pass Crash Timeout ]
 crbug.com/238363 [ Debug ] svg/as-image/drag-svg-as-image.html [ Crash ]
 
 # Need rebaselines after landing fix for crbug.com/238644
