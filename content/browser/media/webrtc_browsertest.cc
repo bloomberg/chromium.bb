@@ -73,9 +73,17 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndClone) {
   ExpectTitle("OK");
 }
 
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux bot: http://crbug.com/238490
+#define MAYBE_CanSetupVideoCall DISABLED_CanSetupVideoCall
+#else
+#define MAYBE_CanSetupVideoCall CanSetupVideoCall
+#endif
+
 // These tests will make a complete PeerConnection-based call and verify that
 // video is playing for the call.
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CanSetupVideoCall) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanSetupVideoCall) {
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -143,9 +151,16 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataOnly) {
   ExpectTitle("OK");
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux bot: http://crbug.com/238490
+#define MAYBE_CallWithDataAndMedia DISABLED_CallWithDataAndMedia
+#else
+#define MAYBE_CallWithDataAndMedia CallWithDataAndMedia
+#endif
+
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and audio and video tracks.
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataAndMedia) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndMedia) {
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -164,6 +179,13 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   EXPECT_TRUE(ExecuteJavascript("callWithDataAndLaterAddMedia();"));
   ExpectTitle("OK");
 }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux bot: http://crbug.com/238490
+#define MAYBE_CallWithNewVideoMediaStream DISABLED_CallWithNewVideoMediaStream
+#else
+#define MAYBE_CallWithNewVideoMediaStream CallWithNewVideoMediaStream
+#endif
 
 // This test will make a PeerConnection-based call and send a new Video
 // MediaStream that has been created based on a MediaStream created with

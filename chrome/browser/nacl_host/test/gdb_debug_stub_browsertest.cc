@@ -66,15 +66,22 @@ void NaClGdbDebugStubTest::RunDebugStubTest(const std::string& nacl_module,
 // NaCl tests are disabled under ASAN because of qualification test.
 #if defined(ADDRESS_SANITIZER)
 # define MAYBE_Empty DISABLED_Empty
-# define MAYBE_Breakpoint DISABLED_Breakpoint
 #else
 # define MAYBE_Empty Empty
-# define MAYBE_Breakpoint Breakpoint
 #endif
 
 IN_PROC_BROWSER_TEST_F(NaClGdbDebugStubTest, MAYBE_Empty) {
   RunDebugStubTest("Empty", "continue");
 }
+
+#if defined(ADDRESS_SANITIZER)
+# define MAYBE_Breakpoint DISABLED_Breakpoint
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux: http://crbug.com/238469
+# define MAYBE_Breakpoint DISABLED_Breakpoint
+#else
+# define MAYBE_Breakpoint Breakpoint
+#endif
 
 IN_PROC_BROWSER_TEST_F(NaClGdbDebugStubTest, MAYBE_Breakpoint) {
   RunDebugStubTest("Empty", "breakpoint");

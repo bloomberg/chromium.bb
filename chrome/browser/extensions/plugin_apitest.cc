@@ -31,6 +31,9 @@ using extensions::Extension;
 // ExtensionBrowserTest.PluginLoadUnload started failing after the switch to
 // dynamic ASan runtime library on Mac. See http://crbug.com/234591.
 #define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux http://crbug.com/238460
+#define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
 #else
 #define MAYBE_PluginLoadUnload PluginLoadUnload
 #endif
@@ -110,6 +113,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 // ExtensionBrowserTest.PluginPrivate started failing after the switch to
 // dynamic ASan runtime library on Mac. See http://crbug.com/234591.
 #define MAYBE_PluginPrivate DISABLED_PluginPrivate
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux http://crbug.com/238467
+#define MAYBE_PluginPrivate DISABLED_PluginPrivate
 #else
 #define MAYBE_PluginPrivate PluginPrivate
 #endif
@@ -117,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
   if (!webkit::npapi::NPAPIPluginsSupported())
     return;
-  
+
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
                                                true);
 

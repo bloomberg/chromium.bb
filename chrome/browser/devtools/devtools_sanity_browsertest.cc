@@ -492,6 +492,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 #if defined(OS_WIN)
 // Timing out on windows tryservers: http://crbug.com/219515
 #define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on linux ARM bot: https://crbug/238453
+#define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
 #else
 #define MAYBE_TestPauseWhenScriptIsRunning TestPauseWhenScriptIsRunning
 #endif
