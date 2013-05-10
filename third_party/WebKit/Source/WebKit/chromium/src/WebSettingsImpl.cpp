@@ -34,9 +34,10 @@
 #include "core/page/Settings.h"
 #include "core/platform/graphics/FontRenderingMode.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
+#include "wtf/UnusedParam.h"
+
 #include <public/WebString.h>
 #include <public/WebURL.h>
-#include <wtf/UnusedParam.h>
 
 #if defined(OS_WIN)
 #include "core/rendering/RenderThemeChromiumWin.h"
@@ -103,7 +104,7 @@ void WebSettingsImpl::setDefaultFontSize(int size)
     m_settings->setDefaultFontSize(size);
 #if defined(OS_WIN)
     // RenderTheme is a singleton that needs to know the default font size to
-    // draw some form controls.  We let it know each time the size changes.
+    // draw some form controls. We let it know each time the size changes.
     WebCore::RenderThemeChromiumWin::setDefaultFontSize(size);
 #endif
 }
@@ -365,6 +366,11 @@ void WebSettingsImpl::setWebAudioEnabled(bool enabled)
 void WebSettingsImpl::setExperimentalWebGLEnabled(bool enabled)
 {
     m_settings->setWebGLEnabled(enabled);
+}
+
+void WebSettingsImpl::setExperimentalWebSocketEnabled(bool enabled)
+{
+    m_settings->setExperimentalWebSocketEnabled(enabled);
 }
 
 void WebSettingsImpl::setCSSStickyPositionEnabled(bool enabled)

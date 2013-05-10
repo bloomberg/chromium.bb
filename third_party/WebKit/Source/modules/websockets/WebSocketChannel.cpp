@@ -34,7 +34,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/Settings.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"
@@ -62,11 +62,13 @@ PassRefPtr<WebSocketChannel> WebSocketChannel::create(ScriptExecutionContext* co
         return WorkerThreadableWebSocketChannel::create(workerContext, client, mode);
     }
 
-    if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
+    Document* document = toDocument(context);
+    Settings* settings = document->settings();
+    if (settings && settings->experimentalWebSocketEnabled()) {
         // FIXME: Create and return an "experimental" WebSocketChannel instead of a MainThreadWebSocketChannel.
-        return MainThreadWebSocketChannel::create(toDocument(context), client);
+        return MainThreadWebSocketChannel::create(document, client);
     }
-    return MainThreadWebSocketChannel::create(toDocument(context), client);
+    return MainThreadWebSocketChannel::create(document, client);
 }
 
 } // namespace WebCore

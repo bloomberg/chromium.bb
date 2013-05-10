@@ -136,3 +136,5 @@ selectionIncludesAltImageText initial=false
 
 # This setting enables touch based text selection and editing.
 touchEditingEnabled initial=false
+
+experimentalWebSocketEnabled initial=false

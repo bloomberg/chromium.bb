@@ -27,6 +27,7 @@
 #include "config.h"
 #include "InternalSettings.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/CaptionUserPreferences.h"
@@ -34,7 +35,6 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/Language.h"
 #include "core/platform/Supplementable.h"
@@ -70,6 +70,7 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalCSSVariablesEnabled(settings->cssVariablesEnabled())
     , m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
     , m_originalExperimentalShadowDOMEnabled(RuntimeEnabledFeatures::experimentalShadowDOMEnabled())
+    , m_originalExperimentalWebSocketEnabled(settings->experimentalWebSocketEnabled())
     , m_originalStyleScoped(RuntimeEnabledFeatures::styleScopedEnabled())
     , m_originalEditingBehavior(settings->editingBehaviorType())
     , m_originalTextAutosizingEnabled(settings->textAutosizingEnabled())
@@ -94,6 +95,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setCSSVariablesEnabled(m_originalCSSVariablesEnabled);
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(m_originalAuthorShadowDOMForAnyElementEnabled);
     RuntimeEnabledFeatures::setExperimentalShadowDOMEnabled(m_originalExperimentalShadowDOMEnabled);
+    settings->setExperimentalWebSocketEnabled(m_originalExperimentalWebSocketEnabled);
     RuntimeEnabledFeatures::setStyleScopedEnabled(m_originalStyleScoped);
     settings->setEditingBehaviorType(m_originalEditingBehavior);
     settings->setTextAutosizingEnabled(m_originalTextAutosizingEnabled);
@@ -182,6 +184,11 @@ void InternalSettings::setAuthorShadowDOMForAnyElementEnabled(bool isEnabled)
 void InternalSettings::setExperimentalShadowDOMEnabled(bool isEnabled)
 {
     RuntimeEnabledFeatures::setExperimentalShadowDOMEnabled(isEnabled);
+}
+
+void InternalSettings::setExperimentalWebSocketEnabled(bool isEnabled)
+{
+    settings()->setExperimentalWebSocketEnabled(isEnabled);
 }
 
 void InternalSettings::setStyleScopedEnabled(bool enabled)

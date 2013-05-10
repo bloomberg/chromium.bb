@@ -32,7 +32,6 @@
 
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
@@ -107,7 +106,8 @@ void MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
     ASSERT(!m_suspended);
     m_handshake = adoptPtr(new WebSocketHandshake(url, protocol, m_document));
     m_handshake->reset();
-    if (RuntimeEnabledFeatures::experimentalWebSocketEnabled())
+    Settings* settings = m_document->settings();
+    if (settings && settings->experimentalWebSocketEnabled())
         m_handshake->addExtensionProcessor(m_perMessageDeflate.createExtensionProcessor());
     m_handshake->addExtensionProcessor(m_deflateFramer.createExtensionProcessor());
     if (m_identifier)

@@ -157,7 +157,7 @@ void WebPreferences::applyTo(WebView* webView)
     WebRuntimeFeatures::enableCSSExclusions(experimentalCSSExclusionsEnabled);
     settings->setExperimentalCSSGridLayoutEnabled(experimentalCSSGridLayoutEnabled);
     settings->setExperimentalCSSCustomFilterEnabled(cssCustomFilterEnabled);
-    WebRuntimeFeatures::enableExperimentalWebSocket(experimentalWebSocketEnabled);
+    settings->setExperimentalWebSocketEnabled(experimentalWebSocketEnabled);
     settings->setJavaEnabled(javaEnabled);
     settings->setJavaScriptCanAccessClipboard(javaScriptCanAccessClipboard);
     settings->setJavaScriptCanOpenWindowsAutomatically(javaScriptCanOpenWindowsAutomatically);

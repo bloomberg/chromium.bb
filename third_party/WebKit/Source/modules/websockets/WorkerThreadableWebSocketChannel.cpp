@@ -32,7 +32,6 @@
 
 #include "modules/websockets/WorkerThreadableWebSocketChannel.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
@@ -40,6 +39,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/page/Settings.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerRunLoop.h"
@@ -182,11 +182,13 @@ WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<ThreadableWebSocketChann
     , m_mainWebSocketChannel(0)
     , m_taskMode(taskMode)
 {
-    if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
+    Document* document = toDocument(context);
+    Settings* settings = document->settings();
+    if (settings && settings->experimentalWebSocketEnabled()) {
         // FIXME: Create an "experimental" WebSocketChannel instead of a MainThreadWebSocketChannel.
-        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(toDocument(context), this, sourceURL, lineNumber);
+        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(document, this, sourceURL, lineNumber);
     } else
-        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(toDocument(context), this, sourceURL, lineNumber);
+        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(document, this, sourceURL, lineNumber);
     ASSERT(isMainThread());
 }
 

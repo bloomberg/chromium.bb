@@ -30,9 +30,9 @@
 #include "InternalSettingsGenerated.h"
 #include "core/editing/EditingBehaviorTypes.h"
 #include "core/platform/graphics/IntSize.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -54,6 +54,7 @@ public:
         bool m_originalCSSVariablesEnabled;
         bool m_originalAuthorShadowDOMForAnyElementEnabled;
         bool m_originalExperimentalShadowDOMEnabled;
+        bool m_originalExperimentalWebSocketEnabled;
         bool m_originalStyleScoped;
         EditingBehaviorType m_originalEditingBehavior;
         bool m_originalTextAutosizingEnabled;
@@ -109,12 +110,13 @@ public:
     void setCSSVariablesEnabled(bool, ExceptionCode&);
 
     // FIXME: The following are RuntimeEnabledFeatures and likely
-    // cannot be changed after process start.  These setters should
+    // cannot be changed after process start. These setters should
     // be removed or moved onto internals.runtimeFlags:
     void setAuthorShadowDOMForAnyElementEnabled(bool);
     void setCSSExclusionsEnabled(bool);
     void setDialogElementEnabled(bool);
     void setExperimentalShadowDOMEnabled(bool);
+    void setExperimentalWebSocketEnabled(bool);
     void setLangAttributeAwareFormControlUIEnabled(bool);
     void setLazyLayoutEnabled(bool);
     void setStyleScopedEnabled(bool);

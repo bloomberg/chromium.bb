@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebRuntimeFeatures.h"
 
-#include "WebMediaPlayerClientImpl.h"
 #include "RuntimeEnabledFeatures.h"
+#include "WebMediaPlayerClientImpl.h"
 #include "modules/websockets/WebSocket.h"
 
 using namespace WebCore;
@@ -209,12 +209,13 @@ bool WebRuntimeFeatures::isExperimentalShadowDOMEnabled()
 
 void WebRuntimeFeatures::enableExperimentalWebSocket(bool enable)
 {
-    RuntimeEnabledFeatures::setExperimentalWebSocketEnabled(enable);
+    // Do nothing. This flag will be deleted.
 }
 
 bool WebRuntimeFeatures::isExperimentalWebSocketEnabled()
 {
-    return RuntimeEnabledFeatures::experimentalWebSocketEnabled();
+    // This flag will be deleted.
+    return false;
 }
 
 void WebRuntimeFeatures::enableFileSystem(bool enable)
