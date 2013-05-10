@@ -11,7 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
@@ -123,16 +125,25 @@ void DebugDaemonLogSource::OnGetUserLogFiles(
 }
 
 void DebugDaemonLogSource::ReadUserLogFiles(const KeyValueMap& user_log_files) {
-  for (KeyValueMap::const_iterator it = user_log_files.begin();
-       it != user_log_files.end();
-       ++it) {
-    std::string value;
-    bool read_success = file_util::ReadFileToString(
-        base::FilePath(it->second), &value);
-    if (read_success && !value.empty())
-      (*response_)[it->first] = value;
-    else
-      (*response_)[it->second] = kNotAvailable;
+  std::vector<Profile*> last_used = ProfileManager::GetLastOpenedProfiles();
+
+  for (size_t i = 0; i < last_used.size(); ++i) {
+    std::string profile_prefix = "Profile[" + base::UintToString(i) + "] ";
+    for (KeyValueMap::const_iterator it = user_log_files.begin();
+         it != user_log_files.end();
+         ++it) {
+      std::string key = it->first;
+      std::string value;
+      std::string filename = it->second;
+      base::FilePath profile_dir = last_used[i]->GetPath();
+      bool read_success = file_util::ReadFileToString(
+          profile_dir.Append(filename), &value);
+
+      if (read_success && !value.empty())
+        (*response_)[profile_prefix + key] = value;
+      else
+        (*response_)[profile_prefix + filename] = kNotAvailable;
+    }
   }
 }
 

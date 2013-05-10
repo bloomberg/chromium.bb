@@ -604,9 +604,11 @@ class DebugDaemonClientStubImpl : public DebugDaemonClient {
                                      base::Bind(callback, false, empty));
   }
   virtual void GetUserLogFiles(const GetLogsCallback& callback) OVERRIDE {
-    std::map<std::string, std::string> empty;
+    std::map<std::string, std::string> user_logs;
+    user_logs["preferences"] = "Preferences";
+    user_logs["invalid_file"] = "Invalid File";
     MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback, false, empty));
+                                     base::Bind(callback, true, user_logs));
   }
 
   virtual void TestICMP(const std::string& ip_address,
