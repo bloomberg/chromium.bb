@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_AUDIO_CRAS_AUDIO_HANDLER_H_
 #define CHROMEOS_AUDIO_CRAS_AUDIO_HANDLER_H_
 
+#include <queue>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -36,6 +38,10 @@ class AudioDevicesPrefHandler;
 class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
                                          public AudioPrefObserver {
  public:
+  typedef std::priority_queue<AudioDevice,
+                              std::vector<AudioDevice>,
+                              AudioDeviceCompare> AudioDevicePriorityQueue;
+
   class AudioObserver {
    public:
     // Called when output volume changed.
@@ -172,7 +178,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   // Sets up the audio device state based on audio policy and audio settings
   // saved in prefs.
-  void SetupAudioState();
+  void SetupAudioInputState();
+  void SetupAudioOutputState();
 
   // Applies the audio muting policies whenever the user logs in or policy
   // change notification is received.
@@ -187,6 +194,12 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Calling dbus to get nodes data.
   void GetNodes();
 
+  // Updates the current audio nodes list and switches the active device
+  // if needed.
+  void UpdateDevicesAndSwitchActive(const AudioNodeList& nodes);
+
+  void SwitchToDevice(const AudioDevice& device);
+
   // Handles dbus callback for GetNodes.
   void HandleGetNodes(const chromeos::AudioNodeList& node_list, bool success);
 
@@ -196,7 +209,10 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   // Audio data and state.
   AudioDeviceList audio_devices_;
-  VolumeState volume_state_;
+
+  AudioDevicePriorityQueue input_devices_pq_;
+  AudioDevicePriorityQueue output_devices_pq_;
+
   bool output_mute_on_;
   bool input_mute_on_;
   int output_volume_;

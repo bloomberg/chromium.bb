@@ -95,7 +95,6 @@
 #include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/audio_pref_handler.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/audio/cras_audio_switch_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_library.h"
@@ -489,11 +488,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
-  // TODO(rkc): Once the CrasAudioHandler is initialized by default, move
-  // the code from CrasAudioSwitchHandler into it and remove this line.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableChromeAudioSwitching))
-    CrasAudioSwitchHandler::Initialize();
   if (UseNewAudioHandler()) {
     CrasAudioHandler::Initialize(
         AudioDevicesPrefHandler::Create(g_browser_process->local_state()));
@@ -815,10 +809,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   } else {
     AudioHandler::Shutdown();
   }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableChromeAudioSwitching))
-    CrasAudioSwitchHandler::Shutdown();
 
   WebSocketProxyController::Shutdown();
 

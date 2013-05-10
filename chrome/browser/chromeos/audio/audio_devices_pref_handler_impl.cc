@@ -42,7 +42,7 @@ void AudioDevicesPrefHandlerImpl::SetVolumeGainValue(
 }
 
 bool AudioDevicesPrefHandlerImpl::GetMuteValue(uint64 device_id) {
-  UpdateDevicesVolumePref();
+  UpdateDevicesMutePref();
 
   std::string device_id_str = base::Uint64ToString(device_id);
   if (!device_mute_settings_->HasKey(device_id_str))
@@ -56,9 +56,9 @@ bool AudioDevicesPrefHandlerImpl::GetMuteValue(uint64 device_id) {
 
 void AudioDevicesPrefHandlerImpl::SetMuteValue(uint64 device_id,
                                                bool mute) {
-  device_mute_settings_->SetBoolean(base::Uint64ToString(device_id),
+  device_mute_settings_->SetInteger(base::Uint64ToString(device_id),
                                     mute ? kPrefMuteOn : kPrefMuteOff);
-  SaveDevicesVolumePref();
+  SaveDevicesMutePref();
 }
 
 
@@ -116,7 +116,7 @@ void AudioDevicesPrefHandlerImpl::SaveDevicesMutePref() {
   while (!it.IsAtEnd()) {
     int mute = kPrefMuteOff;
     it.value().GetAsInteger(&mute);
-    dict_update->Set(it.key(), new base::FundamentalValue(mute));
+    dict_update->SetInteger(it.key(), mute);
     it.Advance();
   }
 }
@@ -135,7 +135,7 @@ void AudioDevicesPrefHandlerImpl::SaveDevicesVolumePref() {
   while (!it.IsAtEnd()) {
     double volume = kDefaultVolumeGainPercent;
     it.value().GetAsDouble(&volume);
-    dict_update->Set(it.key(), new base::FundamentalValue(volume));
+    dict_update->SetDouble(it.key(), volume);
     it.Advance();
   }
 }
