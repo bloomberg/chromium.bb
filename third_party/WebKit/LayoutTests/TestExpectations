@@ -13,7 +13,7 @@ crbug.com/24182 [ Debug ] fast/frames/frameset-frameborder-boolean-values.html [
 crbug.com/24182 [ Debug ] fast/frames/valid.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/js/toString-and-valueOf-override.html [ Timeout ]
 crbug.com/24182 [ Debug ] fast/loader/javascript-url-iframe-crash.html [ Slow ]
-crbug.com/24182 [ Debug ] html5lib/webkit-resumer.html [ Slow ]
+crbug.com/24182 [ Debug ] html5lib/webkit-resumer.html [ Pass Timeout ]
 crbug.com/24182 [ Win Debug ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
 crbug.com/24182 http/tests/navigation/slowtimerredirect-basic.html [ Pass Timeout ]
 crbug.com/24182 [ Debug ] http/tests/security/xss-DENIED-iframe-src-alias.html [ Slow ]
