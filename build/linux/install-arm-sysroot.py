@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Script to install arm choot image for cross building of arm chrome on linux.
+# Script to install ARM root image for cross building of ARM chrome on linux.
 # This script can be run manually but is more often run as part of gclient
 # hooks. When run from hooks this script should be a no-op on non-linux
 # platforms.
@@ -24,6 +24,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 URL_PREFIX = 'https://commondatastorage.googleapis.com'
 URL_PATH = 'nativeclient-archive2/toolchain'
 REVISION = 10991
+TARBALL = 'naclsdk_linux_arm-trusted.tgz'
 
 
 def main(args):
@@ -39,8 +40,7 @@ def main(args):
 
   src_root = os.path.dirname(os.path.dirname(SCRIPT_DIR))
   sysroot = os.path.join(src_root, 'arm-sysroot')
-  url = "%s/%s/%s/naclsdk_linux_arm-trusted.tgz" % (URL_PREFIX,
-                                                    URL_PATH, REVISION)
+  url = "%s/%s/%s/%s" % (URL_PREFIX, URL_PATH, REVISION, TARBALL)
 
   stamp = os.path.join(sysroot, ".stamp")
   if os.path.exists(stamp):
@@ -53,7 +53,7 @@ def main(args):
   if os.path.isdir(sysroot):
     shutil.rmtree(sysroot)
   os.mkdir(sysroot)
-  tarball = os.path.join(sysroot, 'naclsdk_linux_arm-trusted.tgz')
+  tarball = os.path.join(sysroot, TARBALL)
   subprocess.check_call(['curl', '-L', url, '-o', tarball])
   subprocess.check_call(['tar', 'xf', tarball, '-C', sysroot])
   os.remove(tarball)

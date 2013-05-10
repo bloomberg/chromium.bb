@@ -640,10 +640,10 @@ hooks = [
     ],
   },
   {
-    # Download arm sysroot image to src/arm-sysroot. This image updates
+    # Downloads an ARM sysroot image to src/arm-sysroot. This image updates
     # at about the same rate that the chrome build deps change.
     # This script is a no-op except for linux users who have
-    # target_arch=arm in thier GYP_DEFINES.
+    # target_arch=arm in their GYP_DEFINES.
     "pattern": ".",
     "action": ["python", "src/build/linux/install-arm-sysroot.py",
                "--linux-only"],
