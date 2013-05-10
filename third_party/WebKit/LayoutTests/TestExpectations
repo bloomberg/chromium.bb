@@ -1627,6 +1627,7 @@ crbug.com/238363 [ Debug ] media/W3C/audio/networkState/networkState_initial.htm
 crbug.com/238363 [ Debug ] media/video-src-source.html [ Crash ]
 crbug.com/238363 [ Debug ] svg/W3C-SVG-1.1/animate-elem-03-t.svg [ Crash ]
 crbug.com/238363 [ Debug ] svg/W3C-SVG-1.1/animate-elem-11-t.svg [ Crash ]
+crbug.com/238363 [ Debug ] svg/W3C-SVG-1.1/animate-elem-19-t.svg [ Crash ]
 crbug.com/238363 [ Debug ] svg/W3C-SVG-1.1/animate-elem-33-t.svg [ Crash ]
 crbug.com/238363 [ Debug ] svg/W3C-SVG-1.1/animate-elem-37-t.svg [ Crash ]
 crbug.com/238363 [ Debug ] svg/W3C-SVG-1.1/animate-elem-40-t.svg [ Crash ]
