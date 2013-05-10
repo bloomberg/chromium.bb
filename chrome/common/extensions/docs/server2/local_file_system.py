@@ -45,7 +45,7 @@ def _ListDir(dir_name):
 def _CreateStatInfo(path):
   try:
     path_mtime = os.stat(path).st_mtime
-    if path.endswith('/'):
+    if os.path.isdir(path):
       child_versions = dict((_ConvertFromFilepath(filename),
                              os.stat(os.path.join(path, filename)).st_mtime)
           for filename in os.listdir(path))

@@ -24,6 +24,9 @@ from test_util import EnableLogging, DisableLogging
 # Arguments set up if __main__ specifies them.
 _EXPLICIT_TEST_FILES = None
 
+def _ToPosixPath(os_path):
+  return os_path.replace(os.sep, '/')
+
 def _GetPublicFiles():
   '''Gets all public files mapped to their contents.
   '''
@@ -31,10 +34,10 @@ def _GetPublicFiles():
   public_files = {}
   for path, dirs, files in os.walk(public_path, topdown=True):
     dirs[:] = [d for d in dirs if d != '.svn']
-    relative_path = path[len(public_path):]
+    relative_posix_path = _ToPosixPath(path[len(public_path):])
     for filename in files:
       with open(os.path.join(path, filename), 'r') as f:
-        public_files[os.path.join(relative_path, filename)] = f.read()
+        public_files['/'.join((relative_posix_path, filename))] = f.read()
   return public_files
 
 class IntegrationTest(unittest.TestCase):
@@ -63,7 +66,7 @@ class IntegrationTest(unittest.TestCase):
     print('Rendering %s public files...' % len(public_files.keys()))
     start_time = time.time()
     try:
-      for path, content in _GetPublicFiles().iteritems():
+      for path, content in public_files.iteritems():
         def check_result(response):
           self.assertEqual(200, response.status,
               'Got %s when rendering %s' % (response.status, path))
@@ -92,7 +95,7 @@ class IntegrationTest(unittest.TestCase):
       print('Rendering %s...' % filename)
       start_time = time.time()
       try:
-        response = LocalRenderer.Render(filename)
+        response = LocalRenderer.Render(_ToPosixPath(filename))
         self.assertEqual(200, response.status)
         self.assertTrue(response.content != '')
       finally:

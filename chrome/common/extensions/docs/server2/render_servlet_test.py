@@ -37,8 +37,9 @@ class RenderServletTest(unittest.TestCase):
     request = Request.ForTest('extensions/examples/%s' % sample_file)
     response = RenderServlet(request, _RenderServletDelegate()).Get()
     self.assertEqual(200, response.status)
-    self.assertEqual('application/javascript',
-                     response.headers.get('content-type'))
+    content_type = response.headers.get('content-type')
+    self.assertTrue(content_type == 'application/javascript' or
+                    content_type == 'application/x-javascript')
     self.assertEqual(ReadFile('docs/examples/%s' % sample_file),
                      response.content.ToString())
 

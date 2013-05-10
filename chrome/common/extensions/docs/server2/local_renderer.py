@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import sys
 
 from render_servlet import RenderServlet
@@ -17,6 +18,7 @@ class LocalRenderer(object):
   '''
   @staticmethod
   def Render(path):
+    assert not path.contains('\\')
     def render_path(path):
       return RenderServlet(Request(path, 'http://localhost', {}),
                            _LocalRenderServletDelegate(),
