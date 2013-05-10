@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -602,7 +602,9 @@ bool WebPluginImpl::IsValidUrl(const GURL& url, Referrer referrer_flag) {
     // scheme and url path.
     const char* url_to_check(url.spec().data());
     url_parse::Parsed parsed;
-    url_parse::ParseStandardURL(url_to_check, strlen(url_to_check), &parsed);
+    url_parse::ParseStandardURL(url_to_check,
+                                static_cast<int>(strlen(url_to_check)),
+                                &parsed);
     if (parsed.path.begin <= parsed.scheme.end())
       return true;
     std::string string_to_search;
@@ -1081,7 +1083,7 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
   // in which case we route the output to the plugin rather than routing it
   // to the plugin's frame.
   bool is_javascript_url = url_util::FindAndCompareScheme(
-      url, strlen(url), "javascript", NULL);
+      url, static_cast<int>(strlen(url)), "javascript", NULL);
   RoutingStatus routing_status = RouteToFrame(
       url, is_javascript_url, popups_allowed, method, target, buf, len,
       notify_id, referrer_flag);

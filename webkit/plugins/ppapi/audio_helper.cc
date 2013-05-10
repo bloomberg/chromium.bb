@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ int32_t AudioHelper::GetSharedMemoryImpl(int* shm_handle, uint32_t* shm_size) {
 #else
     #error "Platform not supported."
 #endif
-    *shm_size = shared_memory_size_for_create_callback_;
+    *shm_size = static_cast<uint32_t>(shared_memory_size_for_create_callback_);
     return PP_OK;
   }
   return PP_ERROR_FAILED;

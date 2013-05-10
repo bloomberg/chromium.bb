@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,8 @@ void PluginStream::WriteAsFile() {
 size_t PluginStream::WriteBytes(const char *buf, size_t length) {
   DWORD bytes;
 
-  if (!WriteFile(temp_file_handle_, buf, length, &bytes, 0))
+  if (!WriteFile(temp_file_handle_, buf, static_cast<uint32_t>(length),
+                 &bytes, 0))
     return 0U;
 
   return static_cast<size_t>(bytes);

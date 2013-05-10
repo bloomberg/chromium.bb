@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,7 @@ void WebPluginIMEWin::CompositionCompleted(const base::string16& text) {
   result_text_ = text;
 
   result_clauses_[0] = 0;
-  result_clauses_[1] = result_text_.length();
+  result_clauses_[1] = static_cast<uint32_t>(result_text_.length());
 
   cursor_position_ = result_clauses_[1];
   delta_start_ = result_clauses_[1];
@@ -221,7 +221,8 @@ LONG WINAPI WebPluginIMEWin::ImmGetCompositionStringW(HIMC context,
   switch (index) {
     case GCS_COMPSTR:
       src_data = instance->composition_text_.c_str();
-      src_size = instance->composition_text_.length() * sizeof(wchar_t);
+      src_size = static_cast<uint32_t>(instance->composition_text_.length())
+          * sizeof(wchar_t);
       break;
 
     case GCS_COMPATTR:
@@ -231,7 +232,8 @@ LONG WINAPI WebPluginIMEWin::ImmGetCompositionStringW(HIMC context,
 
     case GCS_COMPCLAUSE:
       src_data = &instance->composition_clauses_[0];
-      src_size = instance->composition_clauses_.size() * sizeof(uint32);
+      src_size = static_cast<uint32_t>(instance->composition_clauses_.size())
+          * sizeof(uint32);
       break;
 
     case GCS_CURSORPOS:
@@ -242,7 +244,8 @@ LONG WINAPI WebPluginIMEWin::ImmGetCompositionStringW(HIMC context,
 
     case GCS_RESULTSTR:
       src_data = instance->result_text_.c_str();
-      src_size = instance->result_text_.length() * sizeof(wchar_t);
+      src_size = static_cast<uint32_t>(instance->result_text_.length())
+          * sizeof(wchar_t);
       break;
 
     case GCS_RESULTCLAUSE:
