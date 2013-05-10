@@ -32,6 +32,7 @@
 #include "V8AudioBuffer.h"
 #include "V8OfflineAudioContext.h"
 #include "bindings/v8/V8Binding.h"
+#include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioContext.h"

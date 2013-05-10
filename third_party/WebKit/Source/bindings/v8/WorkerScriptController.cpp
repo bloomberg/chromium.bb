@@ -39,6 +39,7 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8Initializer.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/inspector/ScriptCallStack.h"

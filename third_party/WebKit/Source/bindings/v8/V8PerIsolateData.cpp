@@ -26,9 +26,13 @@
 #include "config.h"
 #include "bindings/v8/V8PerIsolateData.h"
 
+#include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/ScriptGCEvent.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "bindings/v8/V8ObjectConstructor.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/MemoryInstrumentationHashMap.h"
 #include "wtf/MemoryInstrumentationVector.h"
 

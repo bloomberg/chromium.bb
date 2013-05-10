@@ -36,6 +36,7 @@
 
 #include "V8ArrayBuffer.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 
 namespace WebCore {

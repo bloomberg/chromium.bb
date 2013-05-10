@@ -67,6 +67,7 @@
 #include "V8WebGLUniformLocation.h"
 #include "V8WebGLVertexArrayObjectOES.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/platform/NotImplemented.h"

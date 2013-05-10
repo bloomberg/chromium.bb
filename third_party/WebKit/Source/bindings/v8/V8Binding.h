@@ -32,27 +32,25 @@
 #ifndef V8Binding_h
 #define V8Binding_h
 
-#include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/V8BindingMacros.h"
-#include "bindings/v8/V8DOMConfiguration.h"
-#include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/V8HiddenPropertyName.h"
-#include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8PerIsolateData.h"
 #include "bindings/v8/V8StringResource.h"
 #include "bindings/v8/V8ThrowException.h"
 #include "bindings/v8/V8ValueCache.h"
-#include "core/dom/Document.h"
-#include "core/dom/NodeFilter.h"
-#include "wtf/Noncopyable.h"
+#include "wtf/MathExtras.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
 
 namespace WebCore {
 
     class DOMStringList;
+    class DOMWindow;
+    class Document;
+    class Frame;
+    class NodeFilter;
     class ScriptExecutionContext;
+    class XPathNSResolver;
 
     const int kMaxRecursionDepth = 22;
 

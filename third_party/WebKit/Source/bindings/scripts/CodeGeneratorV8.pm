@@ -1174,6 +1174,7 @@ sub GenerateDomainSafeFunctionGetter
     my $newTemplateParams = "${interfaceName}V8Internal::${funcName}MethodCallback, v8Undefined(), $signature";
 
     AddToImplIncludes("core/page/Frame.h");
+    AddToImplIncludes("bindings/v8/BindingSecurity.h");
     $implementation{nameSpaceInternal}->add(<<END);
 static v8::Handle<v8::Value> ${funcName}AttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
@@ -1218,6 +1219,7 @@ sub GenerateDomainSafeFunctionSetter
     my $interfaceName = shift;
     my $v8InterfaceName = "V8" . $interfaceName;
 
+    AddToImplIncludes("bindings/v8/BindingSecurity.h");
     $implementation{nameSpaceInternal}->add(<<END);
 static void ${interfaceName}DomainSafeFunctionSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
@@ -1442,6 +1444,7 @@ END
 
     # Generate security checks if necessary
     if ($attribute->signature->extendedAttributes->{"CheckSecurityForNode"}) {
+        AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . $attribute->signature->name . "()))\n        return v8::Handle<v8::Value>(v8Null(info.GetIsolate()));\n\n";
     }
 
@@ -1532,6 +1535,7 @@ END
         }
 
         AddIncludesForType($returnType);
+        AddToImplIncludes("bindings/v8/V8HiddenPropertyName.h");
         # Check for a wrapper in the wrapper cache. If there is one, we know that a hidden reference has already
         # been created. If we don't find a wrapper, we create both a wrapper and a hidden reference.
         $code .= "    RefPtr<$returnType> result = ${getterString};\n";
@@ -1691,6 +1695,7 @@ static void ${interfaceName}ReplaceableAttrSetter(v8::Local<v8::String> name, v8
 END
     if ($interface->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("core/page/Frame.h");
+        AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= <<END;
     ${interfaceName}* imp = V8${interfaceName}::toNative(info.Holder());
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
@@ -2224,6 +2229,7 @@ END
     if ($interface->extendedAttributes->{"CheckSecurity"} && !$function->signature->extendedAttributes->{"DoNotCheckSecurity"}) {
         # We have not find real use cases yet.
         AddToImplIncludes("core/page/Frame.h");
+        AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= <<END;
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return v8Undefined();
@@ -2249,6 +2255,7 @@ END
     }
 
     if ($function->signature->extendedAttributes->{"CheckSecurityForNode"}) {
+        AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . $function->signature->name . "(ec)))\n";
         $code .= "        return v8::Handle<v8::Value>(v8Null(args.GetIsolate()));\n";
 END
@@ -2873,6 +2880,7 @@ END
 
 sub GenerateConstructorHeader
 {
+    AddToImplIncludes("bindings/v8/V8ObjectConstructor.h");
     my $content = <<END;
     if (!args.IsConstructCall())
         return throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
@@ -3303,6 +3311,7 @@ sub GenerateImplementation
     AddToImplIncludes("bindings/v8/V8Binding.h");
     AddToImplIncludes("bindings/v8/V8DOMWrapper.h");
     AddToImplIncludes("core/dom/ContextFeatures.h");
+    AddToImplIncludes("core/dom/Document.h");
     AddToImplIncludes("RuntimeEnabledFeatures.h");
 
     AddExtraIncludesForType($interfaceName);
@@ -3543,6 +3552,7 @@ END
             push(@normalAttributes, $attribute);
         }
     }
+    AddToImplIncludes("bindings/v8/V8DOMConfiguration.h");
     $attributes = \@normalAttributes;
     # Put the attributes that disallow shadowing on the shadow object.
     if (@disallowsShadowing) {
@@ -4255,6 +4265,7 @@ sub GenerateSecurityCheckFunctions
     my $interfaceName = $interface->name;
     my $v8InterfaceName = "V8$interfaceName";
 
+    AddToImplIncludes("bindings/v8/BindingSecurity.h");
     $implementation{nameSpaceInternal}->add(<<END);
 bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
 {

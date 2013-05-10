@@ -33,6 +33,7 @@
 
 #include "V8HTMLCollection.h"
 #include "V8Node.h"
+#include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"

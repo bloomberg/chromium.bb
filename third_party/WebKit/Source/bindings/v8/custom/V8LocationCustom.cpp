@@ -32,6 +32,7 @@
 #include "V8Location.h"
 
 #include "V8DOMWindow.h"
+#include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8EventListener.h"
 #include "bindings/v8/V8Utilities.h"

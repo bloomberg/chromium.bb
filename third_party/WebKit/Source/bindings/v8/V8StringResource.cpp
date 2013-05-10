@@ -28,6 +28,7 @@
 
 #include "bindings/v8/V8Binding.h"
 #include "core/inspector/BindingVisitors.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 

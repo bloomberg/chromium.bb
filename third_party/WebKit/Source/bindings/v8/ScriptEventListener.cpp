@@ -35,6 +35,7 @@
 #include "bindings/v8/ScriptScope.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWindowShell.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/dom/EventListener.h"

@@ -30,6 +30,7 @@
 #include "V8MutationRecord.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "wtf/Assertions.h"
 

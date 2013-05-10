@@ -33,9 +33,11 @@
 
 #include "V8DOMWindow.h"
 #include "V8InjectedScriptHost.h"
+#include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/ScriptDebugServer.h"
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8RecursionScope.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/page/DOMWindow.h"

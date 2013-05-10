@@ -46,6 +46,7 @@
 #include "V8Uint8Array.h"
 #include "V8Uint8ClampedArray.h"
 #include "bindings/tests/results/V8Float64Array.h"
+#include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/ScriptDebugServer.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8AbstractEventListener.h"

@@ -34,6 +34,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8NPUtils.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "bindings/v8/npruntime_priv.h"

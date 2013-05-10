@@ -27,8 +27,11 @@
 #include "bindings/v8/V8ValueCache.h"
 
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationSequence.h"
+#include "wtf/text/StringHash.h"
 
 namespace WTF {
 

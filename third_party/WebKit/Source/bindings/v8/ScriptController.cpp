@@ -35,6 +35,7 @@
 #include "V8DOMWindow.h"
 #include "V8Event.h"
 #include "V8HTMLElement.h"
+#include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/NPObjectWrapper.h"
 #include "bindings/v8/NPV8Object.h"
 #include "bindings/v8/ScriptCallStackFactory.h"

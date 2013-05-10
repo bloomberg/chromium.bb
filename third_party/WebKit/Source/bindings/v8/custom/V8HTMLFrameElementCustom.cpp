@@ -32,6 +32,7 @@
 #include "V8HTMLFrameElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/html/HTMLFrameElement.h"
 

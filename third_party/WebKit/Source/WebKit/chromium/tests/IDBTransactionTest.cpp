@@ -37,6 +37,7 @@
 #include "WebFrameImpl.h"
 #include "WebView.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/dom/Document.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseBackendImpl.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"

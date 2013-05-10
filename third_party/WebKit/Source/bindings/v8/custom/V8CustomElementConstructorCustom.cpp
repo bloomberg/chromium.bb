@@ -35,6 +35,7 @@
 #include "V8Element.h"
 #include "bindings/v8/CustomElementHelpers.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/CustomElementConstructor.h"
 
 namespace WebCore {

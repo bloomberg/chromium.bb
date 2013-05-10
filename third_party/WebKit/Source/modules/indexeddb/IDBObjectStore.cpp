@@ -29,6 +29,7 @@
 #include "bindings/v8/IDBBindingUtilities.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/DOMStringList.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/SharedBuffer.h"
 #include "modules/indexeddb/IDBAny.h"

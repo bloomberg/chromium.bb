@@ -42,6 +42,7 @@
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Element.h"
+#include "core/dom/NodeFilter.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/BindingVisitors.h"

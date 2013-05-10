@@ -27,6 +27,7 @@
 
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8RecursionScope.h"
+#include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "core/platform/chromium/TraceEvent.h"
 

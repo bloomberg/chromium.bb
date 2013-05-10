@@ -29,6 +29,7 @@
 #include "core/dom/DOMStringList.h"
 #include "core/dom/EventQueue.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/platform/HistogramSupport.h"
