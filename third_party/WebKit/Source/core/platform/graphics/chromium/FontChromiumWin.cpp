@@ -67,7 +67,7 @@ void Font::drawGlyphs(GraphicsContext* graphicsContext,
     SkColor color = graphicsContext->effectiveFillColor();
     unsigned char alpha = SkColorGetA(color);
     // Skip 100% transparent text; no need to draw anything.
-    if (!alpha && graphicsContext->strokeStyleSkia() == NoStroke && !graphicsContext->hasShadow())
+    if (!alpha && graphicsContext->strokeStyle() == NoStroke && !graphicsContext->hasShadow())
         return;
 
     // We draw the glyphs in chunks to avoid having to do a heap allocation for
@@ -185,7 +185,7 @@ void Font::drawComplexText(GraphicsContext* graphicsContext,
     SkColor color = graphicsContext->effectiveFillColor();
     unsigned char alpha = SkColorGetA(color);
     // Skip 100% transparent text; no need to draw anything.
-    if (!alpha && graphicsContext->strokeStyleSkia() == NoStroke)
+    if (!alpha && graphicsContext->strokeStyle() == NoStroke)
         return;
 
     HDC hdc = 0;

@@ -30,73 +30,98 @@
 
 namespace WebCore {
 
-    enum CompositeOperator {
-        CompositeClear,
-        CompositeCopy,
-        CompositeSourceOver,
-        CompositeSourceIn,
-        CompositeSourceOut,
-        CompositeSourceAtop,
-        CompositeDestinationOver,
-        CompositeDestinationIn,
-        CompositeDestinationOut,
-        CompositeDestinationAtop,
-        CompositeXOR,
-        CompositePlusDarker,
-        CompositePlusLighter,
-        CompositeDifference
-    };
+enum StrokeStyle {
+    NoStroke,
+    SolidStroke,
+    DottedStroke,
+    DashedStroke,
+#if ENABLE(CSS3_TEXT)
+    DoubleStroke,
+    WavyStroke,
+#endif // CSS3_TEXT
+};
 
-    // keep it in sync with gMapBlendOpsToXfermodeModes array in SkiaUtils.h
-    enum BlendMode {
-        BlendModeNormal,
-        BlendModeMultiply,
-        BlendModeScreen,
-        BlendModeOverlay,
-        BlendModeDarken,
-        BlendModeLighten,
-        BlendModeColorDodge,
-        BlendModeColorBurn,
-        BlendModeHardLight,
-        BlendModeSoftLight,
-        BlendModeDifference,
-        BlendModeExclusion,
-        BlendModeHue,
-        BlendModeSaturation,
-        BlendModeColor,
-        BlendModeLuminosity
-    };
+enum InterpolationQuality {
+    InterpolationDefault,
+    InterpolationNone,
+    InterpolationLow,
+    InterpolationMedium,
+    InterpolationHigh
+};
 
-    enum GradientSpreadMethod {
-        SpreadMethodPad,
-        SpreadMethodReflect,
-        SpreadMethodRepeat
-    };
+enum CompositeOperator {
+    CompositeClear,
+    CompositeCopy,
+    CompositeSourceOver,
+    CompositeSourceIn,
+    CompositeSourceOut,
+    CompositeSourceAtop,
+    CompositeDestinationOver,
+    CompositeDestinationIn,
+    CompositeDestinationOut,
+    CompositeDestinationAtop,
+    CompositeXOR,
+    CompositePlusDarker,
+    CompositePlusLighter,
+    CompositeDifference
+};
 
-    enum LineCap { ButtCap, RoundCap, SquareCap };
+// keep it in sync with gMapBlendOpsToXfermodeModes array in SkiaUtils.h
+enum BlendMode {
+    BlendModeNormal,
+    BlendModeMultiply,
+    BlendModeScreen,
+    BlendModeOverlay,
+    BlendModeDarken,
+    BlendModeLighten,
+    BlendModeColorDodge,
+    BlendModeColorBurn,
+    BlendModeHardLight,
+    BlendModeSoftLight,
+    BlendModeDifference,
+    BlendModeExclusion,
+    BlendModeHue,
+    BlendModeSaturation,
+    BlendModeColor,
+    BlendModeLuminosity
+};
 
-    enum LineJoin { MiterJoin, RoundJoin, BevelJoin };
+enum GradientSpreadMethod {
+    SpreadMethodPad,
+    SpreadMethodReflect,
+    SpreadMethodRepeat
+};
 
-    enum HorizontalAlignment { AlignLeft, AlignRight, AlignHCenter };
+enum LineCap { ButtCap, RoundCap, SquareCap };
 
-    enum TextBaseline { AlphabeticTextBaseline, TopTextBaseline, MiddleTextBaseline, BottomTextBaseline, IdeographicTextBaseline, HangingTextBaseline };
-    
-    enum TextAlign { StartTextAlign, EndTextAlign, LeftTextAlign, CenterTextAlign, RightTextAlign };
+enum LineJoin { MiterJoin, RoundJoin, BevelJoin };
 
-    String compositeOperatorName(CompositeOperator, BlendMode);
-    bool parseCompositeAndBlendOperator(const String&, CompositeOperator&, BlendMode&);
+enum HorizontalAlignment { AlignLeft, AlignRight, AlignHCenter };
 
-    String lineCapName(LineCap);
-    bool parseLineCap(const String&, LineCap&);
+enum TextBaseline { AlphabeticTextBaseline, TopTextBaseline, MiddleTextBaseline, BottomTextBaseline, IdeographicTextBaseline, HangingTextBaseline };
 
-    String lineJoinName(LineJoin);
-    bool parseLineJoin(const String&, LineJoin&);
+enum TextAlign { StartTextAlign, EndTextAlign, LeftTextAlign, CenterTextAlign, RightTextAlign };
 
-    String textAlignName(TextAlign);
-    bool parseTextAlign(const String&, TextAlign&);
-    
-    String textBaselineName(TextBaseline);
-    bool parseTextBaseline(const String&, TextBaseline&);
+enum TextDrawingMode {
+    TextModeFill      = 1 << 0,
+    TextModeStroke    = 1 << 1,
+};
+typedef unsigned TextDrawingModeFlags;
+
+String compositeOperatorName(CompositeOperator, BlendMode);
+bool parseCompositeAndBlendOperator(const String&, CompositeOperator&, BlendMode&);
+
+String lineCapName(LineCap);
+bool parseLineCap(const String&, LineCap&);
+
+String lineJoinName(LineJoin);
+bool parseLineJoin(const String&, LineJoin&);
+
+String textAlignName(TextAlign);
+bool parseTextAlign(const String&, TextAlign&);
+
+String textBaselineName(TextBaseline);
+bool parseTextBaseline(const String&, TextBaseline&);
 
 } // namespace WebCore
 

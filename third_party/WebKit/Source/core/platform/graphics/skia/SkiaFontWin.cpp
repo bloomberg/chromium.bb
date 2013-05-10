@@ -120,7 +120,7 @@ static void paintSkiaText(GraphicsContext* context, HFONT hfont,
                           const GOFFSET* offsets,
                           const SkPoint* origin)
 {
-    TextDrawingModeFlags textMode = context->textDrawingModeSkia();
+    TextDrawingModeFlags textMode = context->textDrawingMode();
     // Ensure font load for printing, because PDF device needs it.
     if (context->isPrintingDevice())
         FontPlatformData::ensureFontLoaded(hfont);
@@ -140,8 +140,8 @@ static void paintSkiaText(GraphicsContext* context, HFONT hfont,
 
     // Stroking on top (if necessary).
     if ((textMode & TextModeStroke)
-        && context->strokeStyleSkia() != NoStroke
-        && context->strokeThicknessSkia() > 0) {
+        && context->strokeStyle() != NoStroke
+        && context->strokeThickness() > 0) {
 
         paint.reset();
         context->setupPaintForStroking(&paint, 0, 0);

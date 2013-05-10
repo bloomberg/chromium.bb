@@ -30,15 +30,11 @@
 
 #include "core/platform/chromium/TraceEvent.h"
 
-#include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/DashArray.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/Gradient.h"
-#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/GraphicsContextState.h"
 #include "core/platform/graphics/ImageOrientation.h"
-#include "core/platform/graphics/Path.h"
-#include "core/platform/graphics/Pattern.h"
 #include "core/platform/graphics/skia/OpaqueRegionSkia.h"
 
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -48,111 +44,14 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
-#include "third_party/skia/include/effects/SkDashPathEffect.h"
 
 #include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
 
-const int cMisspellingLineThickness = 3;
-const int cMisspellingLinePatternWidth = 4;
-const int cMisspellingLinePatternGapWidth = 1;
-
-class AffineTransform;
-class DrawingBuffer;
-class Generator;
 class ImageBuffer;
-class IntRect;
-class RoundedRect;
 class KURL;
-class GraphicsContext3D;
-class PlatformContextSkiaState;
-class TextRun;
-class TransformationMatrix;
-
-enum TextDrawingMode {
-    TextModeFill      = 1 << 0,
-    TextModeStroke    = 1 << 1,
-};
-typedef unsigned TextDrawingModeFlags;
-
-enum StrokeStyle {
-    NoStroke,
-    SolidStroke,
-    DottedStroke,
-    DashedStroke,
-#if ENABLE(CSS3_TEXT)
-    DoubleStroke,
-    WavyStroke,
-#endif // CSS3_TEXT
-};
-
-enum InterpolationQuality {
-    InterpolationDefault,
-    InterpolationNone,
-    InterpolationLow,
-    InterpolationMedium,
-    InterpolationHigh
-};
-
-enum CompositeOperator;
-
-struct GraphicsContextState {
-    GraphicsContextState()
-        : strokeThickness(0)
-        , shadowBlur(0)
-        , textDrawingMode(TextModeFill)
-        , strokeColor(Color::black)
-        , fillColor(Color::black)
-        , strokeStyle(SolidStroke)
-        , fillRule(RULE_NONZERO)
-        , strokeColorSpace(ColorSpaceDeviceRGB)
-        , fillColorSpace(ColorSpaceDeviceRGB)
-        , shadowColorSpace(ColorSpaceDeviceRGB)
-        , compositeOperator(CompositeSourceOver)
-        , blendMode(BlendModeNormal)
-        , shouldAntialias(true)
-        , shouldSmoothFonts(true)
-        , shouldSubpixelQuantizeFonts(true)
-        , paintingDisabled(false)
-        , shadowsIgnoreTransforms(false)
-    {
-    }
-
-    RefPtr<Gradient> strokeGradient;
-    RefPtr<Pattern> strokePattern;
-
-    RefPtr<Gradient> fillGradient;
-    RefPtr<Pattern> fillPattern;
-
-    FloatSize shadowOffset;
-
-    float strokeThickness;
-    float shadowBlur;
-
-    TextDrawingModeFlags textDrawingMode;
-
-    Color strokeColor;
-    Color fillColor;
-    Color shadowColor;
-
-    StrokeStyle strokeStyle;
-    WindRule fillRule;
-
-    ColorSpace strokeColorSpace;
-    ColorSpace fillColorSpace;
-    ColorSpace shadowColorSpace;
-
-    CompositeOperator compositeOperator;
-    BlendMode blendMode;
-
-    bool shouldAntialias : 1;
-    bool shouldSmoothFonts : 1;
-    bool shouldSubpixelQuantizeFonts : 1;
-    bool paintingDisabled : 1;
-    bool shadowsIgnoreTransforms : 1;
-};
 
 class GraphicsContext {
     WTF_MAKE_NONCOPYABLE(GraphicsContext); WTF_MAKE_FAST_ALLOCATED;
@@ -222,9 +121,6 @@ public:
 
     // Skia state methods.
     SkDrawLooper* drawLooper() const;
-    StrokeStyle strokeStyleSkia() const;
-    float strokeThicknessSkia() const;
-    TextDrawingModeFlags textDrawingModeSkia() const;
     SkColor effectiveFillColor() const;
     int getNormalizedAlpha() const;
     bool getClipBounds(SkRect* bounds) const { return m_canvas->getClipBounds(bounds); }
@@ -233,12 +129,17 @@ public:
 
     bool readPixels(SkBitmap* bitmap, int x, int y, SkCanvas::Config8888 config8888 = SkCanvas::kNative_Premul_Config8888)
     {
+        if (paintingDisabled())
+            return false;
+
         return m_canvas->readPixels(bitmap, x, y, config8888);
     }
 
-
     bool clipRect(const SkRect& rect, AntiAliasingMode aa = NotAntiAliased, SkRegion::Op op = SkRegion::kIntersect_Op)
     {
+        if (paintingDisabled())
+            return false;
+
         realizeSave(SkCanvas::kClip_SaveFlag);
 
         return m_canvas->clipRect(rect, op, aa == AntiAliased);
@@ -246,11 +147,13 @@ public:
 
     void setMatrix(const SkMatrix& matrix)
     {
+        if (paintingDisabled())
+            return;
+
         realizeSave(SkCanvas::kMatrix_SaveFlag);
 
         m_canvas->setMatrix(matrix);
     }
-
 
     void setShadowsIgnoreTransforms(bool);
     bool shadowsIgnoreTransforms() const;
@@ -401,7 +304,7 @@ public:
     };
     void drawLineForDocumentMarker(const FloatPoint&, float width, DocumentMarkerLineStyle);
 
-    bool paintingDisabled() const;
+    bool paintingDisabled() const { return m_state->m_paintingDisabled; }
     void setPaintingDisabled(bool);
 
     bool updatingControlTints() const;
@@ -416,9 +319,6 @@ public:
 
     bool hasShadow() const;
     void setShadow(const FloatSize&, float blur, const Color&, ColorSpace);
-    // Legacy shadow blur radius is used for canvas, and -webkit-box-shadow.
-    // It has different treatment of radii > 8px.
-    void setLegacyShadow(const FloatSize&, float blur, const Color&, ColorSpace);
 
     bool getShadow(FloatSize&, float&, Color&, ColorSpace&) const;
     void clearShadow();
@@ -526,6 +426,9 @@ private:
 
     bool clipPath(const SkPath& path, AntiAliasingMode aa = NotAntiAliased, SkRegion::Op op = SkRegion::kIntersect_Op)
     {
+        if (paintingDisabled())
+            return false;
+
         realizeSave(SkCanvas::kClip_SaveFlag);
 
         return m_canvas->clipPath(path, op, aa == AntiAliased);
@@ -533,6 +436,9 @@ private:
 
     bool clipRRect(const SkRRect& rect, AntiAliasingMode aa = NotAntiAliased, SkRegion::Op op = SkRegion::kIntersect_Op)
     {
+        if (paintingDisabled())
+            return false;
+
         realizeSave(SkCanvas::kClip_SaveFlag);
 
         return m_canvas->clipRRect(rect, op, aa == AntiAliased);
@@ -540,6 +446,9 @@ private:
 
     bool concat(const SkMatrix& matrix)
     {
+        if (paintingDisabled())
+            return false;
+
         realizeSave(SkCanvas::kMatrix_SaveFlag);
 
         return m_canvas->concat(matrix);
@@ -565,15 +474,11 @@ private:
     // null indicates painting is disabled. Never delete this object.
     SkCanvas* m_canvas;
 
-    // The two versions of state will be merged and rationalize in a follow on patch.
-    // FIXME: crbug.com/235470
-    // Pointer to the current drawing state. This is a cached value of
-    // mStateStack.back().
-    GraphicsContextState m_state;
-    PlatformContextSkiaState* m_skiaState;
+    // Pointer to the current drawing state. This is a cached value of m_stateStack.last().
+    GraphicsContextState* m_state;
     // States stack. Enables local drawing state change with save()/restore() calls.
-    Vector<GraphicsContextState> m_stack;
-    Vector<PlatformContextSkiaState> m_stateStack;
+    // Use OwnPtr to avoid copying the large state structure.
+    Vector<OwnPtr<GraphicsContextState> > m_stateStack;
 
     // Currently pending save flags.
     // FIXME: While defined as a bitmask of SkCanvas::SaveFlags, this is mostly used as a bool.
@@ -590,7 +495,7 @@ private:
     OpaqueRegionSkia m_opaqueRegion;
     bool m_trackOpaqueRegion;
 
-    // Are we on a high DPI display? If so, spelling and grammer markers are larger.
+    // Are we on a high DPI display? If so, spelling and grammar markers are larger.
     bool m_useHighResMarker;
     // FIXME: Make this go away: crbug.com/236892
     bool m_updatingControlTints;

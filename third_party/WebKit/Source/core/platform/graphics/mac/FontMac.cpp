@@ -142,7 +142,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         rotator.setRotate(90);
         rotator.mapPoints(pos, numGlyphs);
     }
-    TextDrawingModeFlags textMode = gc->textDrawingModeSkia();
+    TextDrawingModeFlags textMode = gc->textDrawingMode();
 
     // We draw text up to two times (once for fill, once for stroke).
     if (textMode & TextModeFill) {
@@ -156,8 +156,8 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     }
 
     if ((textMode & TextModeStroke)
-        && gc->strokeStyleSkia() != NoStroke
-        && gc->strokeThicknessSkia() > 0) {
+        && gc->strokeStyle() != NoStroke
+        && gc->strokeThickness() > 0) {
 
         SkPaint paint;
         gc->setupPaintForStroking(&paint, 0, 0);

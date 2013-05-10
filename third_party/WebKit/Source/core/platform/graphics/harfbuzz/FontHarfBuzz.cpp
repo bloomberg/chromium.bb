@@ -91,7 +91,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         y += SkFloatToScalar(adv[i].height());
     }
 
-    TextDrawingModeFlags textMode = gc->textDrawingModeSkia();
+    TextDrawingModeFlags textMode = gc->textDrawingMode();
 
     // We draw text up to two times (once for fill, once for stroke).
     if (textMode & TextModeFill) {
@@ -114,8 +114,8 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     }
 
     if ((textMode & TextModeStroke)
-        && gc->strokeStyleSkia() != NoStroke
-        && gc->strokeThicknessSkia() > 0) {
+        && gc->strokeStyle() != NoStroke
+        && gc->strokeThickness() > 0) {
 
         SkPaint paint;
         gc->setupPaintForStroking(&paint, 0, 0);
@@ -155,11 +155,11 @@ void Font::drawComplexText(GraphicsContext* gc, const TextRun& run,
     if (!run.length())
         return;
 
-    TextDrawingModeFlags textMode = gc->textDrawingModeSkia();
+    TextDrawingModeFlags textMode = gc->textDrawingMode();
     bool fill = textMode & TextModeFill;
     bool stroke = (textMode & TextModeStroke)
-        && gc->strokeStyleSkia() != NoStroke
-        && gc->strokeThicknessSkia() > 0;
+        && gc->strokeStyle() != NoStroke
+        && gc->strokeThickness() > 0;
 
     if (!fill && !stroke)
         return;

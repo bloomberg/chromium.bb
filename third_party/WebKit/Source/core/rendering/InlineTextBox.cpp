@@ -57,6 +57,8 @@ namespace WebCore {
 typedef WTF::HashMap<const InlineTextBox*, LayoutRect> InlineTextBoxOverflowMap;
 static InlineTextBoxOverflowMap* gTextBoxesWithOverflow;
 
+static const int misspellingLineThickness = 3;
+
 void InlineTextBox::destroy(RenderArena* arena)
 {
     if (!knownToHaveNoOverflow() && gTextBoxesWithOverflow)
@@ -1303,7 +1305,7 @@ void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const FloatPoint& b
     // or decrease the underline thickness.  The overlap is actually the most useful, and matches what AppKit does.
     // So, we generally place the underline at the bottom of the text, but in larger fonts that's not so good so
     // we pin to two pixels under the baseline.
-    int lineThickness = cMisspellingLineThickness;
+    int lineThickness = misspellingLineThickness;
     int baseline = renderer()->style(isFirstLineStyle())->fontMetrics().ascent();
     int descent = logicalHeight() - baseline;
     int underlineOffset;

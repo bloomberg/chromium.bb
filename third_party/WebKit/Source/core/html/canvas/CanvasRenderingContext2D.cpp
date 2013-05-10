@@ -1031,7 +1031,7 @@ void CanvasRenderingContext2D::clearRect(float x, float y, float width, float he
     if (shouldDrawShadows()) {
         context->save();
         saved = true;
-        context->setLegacyShadow(FloatSize(), 0, Color::transparent, ColorSpaceDeviceRGB);
+        context->clearShadow();
     }
     if (state().m_globalAlpha != 1) {
         if (!saved) {
@@ -1193,9 +1193,9 @@ void CanvasRenderingContext2D::applyShadow()
     if (shouldDrawShadows()) {
         float width = state().m_shadowOffset.width();
         float height = state().m_shadowOffset.height();
-        c->setLegacyShadow(FloatSize(width, -height), state().m_shadowBlur, state().m_shadowColor, ColorSpaceDeviceRGB);
+        c->setShadow(FloatSize(width, -height), state().m_shadowBlur, state().m_shadowColor, ColorSpaceDeviceRGB);
     } else
-        c->setLegacyShadow(FloatSize(), 0, Color::transparent, ColorSpaceDeviceRGB);
+        c->clearShadow();
 }
 
 bool CanvasRenderingContext2D::shouldDrawShadows() const
