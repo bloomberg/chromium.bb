@@ -15,11 +15,11 @@
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace google_apis {
 class AppList;
-}
+}  // namespace AppList
 
 namespace drive {
 
@@ -62,10 +62,6 @@ class DriveWebAppsRegistry {
   void GetWebAppsForFile(const base::FilePath& file,
                          const std::string& mime_type,
                          ScopedVector<DriveWebAppInfo>* apps);
-
-  // Updates this registry based on the |metadata| fetched from the server.
-  // This is deprecated.
-  void UpdateFromFeed(const google_apis::AccountMetadata& metadata);
 
   // Updates this registry based on the |applist| fetched from the server.
   void UpdateFromAppList(const google_apis::AppList& applist);

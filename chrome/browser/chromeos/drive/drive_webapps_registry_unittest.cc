@@ -73,56 +73,6 @@ class DriveWebAppsRegistryTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
 };
 
-TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
-  scoped_ptr<Value> document =
-      google_apis::test_util::LoadJSONFile(
-          "chromeos/gdata/account_metadata.json");
-  ASSERT_TRUE(document.get());
-  ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
-  DictionaryValue* entry_value;
-  ASSERT_TRUE(reinterpret_cast<DictionaryValue*>(document.get())->GetDictionary(
-      std::string("entry"), &entry_value));
-  ASSERT_TRUE(entry_value);
-
-  // Load feed.
-  scoped_ptr<google_apis::AccountMetadata> metadata(
-      google_apis::AccountMetadata::CreateFrom(*document));
-  ASSERT_TRUE(metadata.get());
-  scoped_ptr<DriveWebAppsRegistry> web_apps(new DriveWebAppsRegistry);
-  web_apps->UpdateFromFeed(*metadata.get());
-
-  // Find by extension 'ext_1'.
-  ScopedVector<DriveWebAppInfo> ext_1_results;
-  base::FilePath ext1_file(FILE_PATH_LITERAL("gdata/SampleFile.ext_1"));
-  web_apps->GetWebAppsForFile(ext1_file, std::string(), &ext_1_results);
-  ASSERT_EQ(1U, ext_1_results.size());
-  EXPECT_TRUE(VerifyApp1(ext_1_results, true));
-
-  // Find by extension 'ext_3'.
-  ScopedVector<DriveWebAppInfo> ext_3_results;
-  base::FilePath ext3_file(FILE_PATH_LITERAL("gdata/AnotherFile.ext_3"));
-  web_apps->GetWebAppsForFile(ext3_file, std::string(), &ext_3_results);
-  ASSERT_EQ(2U, ext_3_results.size());
-  EXPECT_TRUE(VerifyApp1(ext_3_results, false));
-  EXPECT_TRUE(VerifyApp2(ext_3_results, true));
-
-  // Find by mimetype 'ext_3'.
-  ScopedVector<DriveWebAppInfo> mime_results;
-  web_apps->GetWebAppsForFile(base::FilePath(), "application/test_type_2",
-                              &mime_results);
-  ASSERT_EQ(1U, mime_results.size());
-  EXPECT_TRUE(VerifyApp2(mime_results, true));
-
-  // Find by extension and mimetype.
-  ScopedVector<DriveWebAppInfo> mime_ext_results;
-  base::FilePath mime_file(FILE_PATH_LITERAL("gdata/MimeFile.ext_2"));
-  web_apps->GetWebAppsForFile(mime_file, "application/test_type_2",
-                              &mime_ext_results);
-  ASSERT_EQ(2U, mime_ext_results.size());
-  EXPECT_TRUE(VerifyApp1(mime_ext_results, true));
-  EXPECT_TRUE(VerifyApp2(mime_ext_results, true));
-}
-
 TEST_F(DriveWebAppsRegistryTest, LoadAndFindDriveWebApps) {
   scoped_ptr<Value> document =
       google_apis::test_util::LoadJSONFile("chromeos/drive/applist.json");
