@@ -35,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/suppress_js_modal_dialogs"
-            android:layout_gravity="left"
+            android:layout_gravity="start"
             />
 
     </LinearLayout>

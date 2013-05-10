@@ -27,7 +27,7 @@
                 android:id="@+id/cc_icon"
                 android:layout_width="@dimen/autofill_menu_icon_width"
                 android:layout_height="@dimen/autofill_menu_icon_height"
-                android:layout_marginLeft="5dp"/>
+                android:layout_marginStart="5dp"/>
             <TextView
                 android:id="@+id/adapter_item_line_1"
                 android:layout_width="wrap_content"
@@ -37,7 +37,7 @@
                 android:ellipsize="end"
                 android:singleLine="true"
                 android:scrollHorizontally="true"
-                android:layout_marginLeft="5dp"/>
+                android:layout_marginStart="5dp"/>
         </LinearLayout>
         <TextView
             android:id="@+id/adapter_item_line_2"
@@ -47,13 +47,13 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:scrollHorizontally="true"
-            android:layout_marginLeft="5dp"/>
+            android:layout_marginStart="5dp"/>
     </LinearLayout>
     <Button
         android:id="@+id/adapter_item_edit_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
+        android:layout_marginStart="5dp"
         android:textSize="12sp"
         android:textStyle="bold"
         android:focusable="false"

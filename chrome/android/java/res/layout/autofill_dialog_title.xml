@@ -12,7 +12,7 @@
             android:id="@+id/accounts_logo"
             android:layout_width="wrap_content"
             android:layout_height="32dp"
-            android:layout_gravity="left"
+            android:layout_gravity="start"
             android:layout_margin="@dimen/autofill_steady_margin"
             android:scaleType="centerInside"
             android:src="@drawable/wallet_logo"/>
@@ -20,7 +20,7 @@
             android:id="@+id/accounts_spinner"
             android:layout_width="232dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="right"
+            android:layout_gravity="end"
             android:layout_margin="@dimen/autofill_steady_margin"/>
     </FrameLayout>
 </merge>
