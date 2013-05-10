@@ -30,9 +30,6 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
   EXPECT_EQ("File 1.mp3",  entry.title());
   EXPECT_EQ("File 1.mp3",  entry.base_name());
   EXPECT_EQ("file:2_file_resource_id",  entry.resource_id());
-  EXPECT_EQ("https://file_content_url/",  entry.download_url());
-  EXPECT_EQ("https://file1_link_self/file:2_file_resource_id",
-            entry.edit_url());
   EXPECT_EQ(util::kDriveOtherDirSpecialResourceId,
             entry.parent_resource_id());
 
@@ -84,8 +81,6 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
             entry.file_specific_info().thumbnail_url());
   EXPECT_EQ("https://file_link_alternate/",
             entry.file_specific_info().alternate_url());
-  EXPECT_EQ("https://file_link_share/",
-            entry.file_specific_info().share_url());
 
   // Regular file specific fields.
   EXPECT_EQ(892721,  entry.file_info().size());
@@ -112,9 +107,6 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("Document 1.gdoc",  entry.base_name());  // The suffix added.
   EXPECT_EQ(".gdoc", entry.file_specific_info().document_extension());
   EXPECT_EQ("document:5_document_resource_id",  entry.resource_id());
-  EXPECT_EQ("https://3_document_content/",  entry.download_url());
-  EXPECT_EQ("https://3_document_self_link/document:5_document_resource_id",
-            entry.edit_url());
   EXPECT_EQ(util::kDriveOtherDirSpecialResourceId,
             entry.parent_resource_id());
 
@@ -172,8 +164,6 @@ TEST(ResourceEntryConversionTest,
             entry.file_specific_info().thumbnail_url());
   EXPECT_EQ("https://3_document_alternate_link/",
             entry.file_specific_info().alternate_url());
-  EXPECT_EQ("https://3_document_share_link/",
-            entry.file_specific_info().share_url());
 
   // The size should be 0 for a hosted document.
   EXPECT_EQ(0,  entry.file_info().size());
@@ -197,9 +187,6 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("Sub Directory Folder",  entry.title());
   EXPECT_EQ("Sub Directory Folder",  entry.base_name());
   EXPECT_EQ("folder:sub_dir_folder_resource_id",  entry.resource_id());
-  EXPECT_EQ("https://1_folder_content_url/",  entry.download_url());
-  EXPECT_EQ("https://dir2_sub_self_link/folder:sub_dir_folder_resource_id",
-            entry.edit_url());
   // The parent resource ID should be obtained as this is a sub directory
   // under a non-root directory.
   EXPECT_EQ("folder:1_folder_resource_id",  entry.parent_resource_id());
@@ -271,9 +258,6 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("Deleted document",  entry.title());
   EXPECT_EQ("Deleted document.gdoc",  entry.base_name());
   EXPECT_EQ("document:deleted_in_root_id",  entry.resource_id());
-  EXPECT_EQ("https://content_url/",  entry.download_url());
-  EXPECT_EQ("https://edit_url/document%3Adeleted_in_root_id",
-            entry.edit_url());
   EXPECT_EQ(util::kDriveOtherDirSpecialResourceId,
             entry.parent_resource_id());
 
@@ -331,8 +315,6 @@ TEST(ResourceEntryConversionTest,
             entry.file_specific_info().thumbnail_url());
   EXPECT_EQ("https://alternate/document%3Adeleted_in_root_id/edit",
             entry.file_specific_info().alternate_url());
-  EXPECT_EQ("",
-            entry.file_specific_info().share_url());
 
   // The size should be 0 for a hosted document.
   EXPECT_EQ(0,  entry.file_info().size());

@@ -40,11 +40,11 @@ const char kMimeTypeJson[] = "application/json";
 
 //================================ Helper functions ============================
 
-// Creates a temporary JSON file representing a document with |edit_url|
+// Creates a temporary JSON file representing a document with |alternate_url|
 // and |resource_id| under |document_dir| on blocking pool.
 FileError CreateDocumentJsonFileOnBlockingPool(
     const base::FilePath& document_dir,
-    const GURL& edit_url,
+    const GURL& alternate_url,
     const std::string& resource_id,
     base::FilePath* temp_file_path) {
   DCHECK(temp_file_path);
@@ -54,7 +54,7 @@ FileError CreateDocumentJsonFileOnBlockingPool(
   if (file_util::CreateTemporaryFileInDir(document_dir, temp_file_path)) {
     std::string document_content = base::StringPrintf(
         "{\"url\": \"%s\", \"resource_id\": \"%s\"}",
-        edit_url.spec().c_str(), resource_id.c_str());
+        alternate_url.spec().c_str(), resource_id.c_str());
     int document_size = static_cast<int>(document_content.size());
     if (file_util::WriteFile(*temp_file_path, document_content.data(),
                              document_size) == document_size) {
@@ -903,8 +903,7 @@ void FileSystem::GetResolvedFileByPathAfterGetFileFromCache(
   // instead. This logic is rather complicated but here's how this works:
   //
   // Retrieve fresh file metadata from server. We will extract file size and
-  // content url from there (we want to make sure used content url is not
-  // stale).
+  // download url from there. Note that the download url is transient.
   //
   // Check if we have enough space, based on the expected file size.
   // - if we don't have enough space, try to free up the disk space
@@ -938,7 +937,7 @@ void FileSystem::GetResolvedFileByPathAfterGetResourceEntry(
   // In both cases, we can use ResourceEntry::download_url().
   const GURL& download_url = entry->download_url();
 
-  // The content URL can be empty for non-downloadable files (such as files
+  // The download URL can be empty for non-downloadable files (such as files
   // shared from others with "prevent downloading by viewers" flag set.)
   if (download_url.is_empty()) {
     params->OnError(FILE_ERROR_ACCESS_DENIED);

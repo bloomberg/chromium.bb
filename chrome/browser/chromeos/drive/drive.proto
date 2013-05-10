@@ -43,9 +43,6 @@ message DriveFileSpecificInfo {
 
   // True if the file is a hosted document.
   optional bool is_hosted_document = 6;
-
-  // This URL points to a page containing Share UI for this document.
-  optional string share_url = 7;
 }
 
 message DriveDirectorySpecificInfo {
@@ -62,12 +59,6 @@ message ResourceEntry {
   optional string base_name = 2;
   optional string title = 3;
   optional string resource_id = 4;
-  optional string edit_url = 5;
-  // For a file, this is URL to download the file content. It is transient and
-  // can be stale. For a directory, this is URL to edit its contents on GData
-  // WAPI, or empty on Drive API v2. (Thus, this shouldn't be used for a
-  // directory.)
-  optional string download_url = 6;
   optional string parent_resource_id = 7;
   // This field is used for processing the feeds from the server. Deleted
   // entries won't be stored in the metadata storage.

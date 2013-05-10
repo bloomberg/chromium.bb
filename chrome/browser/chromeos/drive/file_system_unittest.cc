@@ -430,12 +430,11 @@ class DriveFileSystemTest : public testing::Test {
     DictionaryValue* dict_value = NULL;
     ASSERT_TRUE(value->GetAsDictionary(&dict_value));
 
-    std::string edit_url, resource_id;
-    EXPECT_TRUE(dict_value->GetString("url", &edit_url));
+    std::string alternate_url, resource_id;
+    EXPECT_TRUE(dict_value->GetString("url", &alternate_url));
     EXPECT_TRUE(dict_value->GetString("resource_id", &resource_id));
 
-    EXPECT_EQ(entry.file_specific_info().alternate_url(),
-              edit_url);
+    EXPECT_EQ(entry.file_specific_info().alternate_url(), alternate_url);
     EXPECT_EQ(entry.resource_id(), resource_id);
   }
 
@@ -1135,9 +1134,7 @@ TEST_F(DriveFileSystemTest, CopyFileToNonExistingDirectory) {
   scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry);
-  std::string src_file_path_resource_id =
-      src_entry->resource_id();
-  EXPECT_FALSE(src_entry->edit_url().empty());
+  std::string src_file_path_resource_id = src_entry->resource_id();
 
   EXPECT_FALSE(EntryExists(dest_parent_path));
 
@@ -1170,9 +1167,7 @@ TEST_F(DriveFileSystemTest, CopyFileToInvalidPath) {
   scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry);
-  std::string src_file_resource_id =
-      src_entry->resource_id();
-  EXPECT_FALSE(src_entry->edit_url().empty());
+  std::string src_file_resource_id = src_entry->resource_id();
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
   scoped_ptr<ResourceEntry> dest_entry = GetEntryInfoByPathSync(
@@ -1240,16 +1235,13 @@ TEST_F(DriveFileSystemTest, MoveFileFromRootToSubDirectory) {
   scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry);
-  std::string src_file_resource_id =
-      src_entry->resource_id();
-  EXPECT_FALSE(src_entry->edit_url().empty());
+  std::string src_file_resource_id = src_entry->resource_id();
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
   scoped_ptr<ResourceEntry> dest_parent_proto = GetEntryInfoByPathSync(
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto);
   ASSERT_TRUE(dest_parent_proto->file_info().is_directory());
-  EXPECT_FALSE(dest_parent_proto->download_url().empty());
 
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -1283,16 +1275,13 @@ TEST_F(DriveFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry);
-  std::string src_file_resource_id =
-      src_entry->resource_id();
-  EXPECT_FALSE(src_entry->edit_url().empty());
+  std::string src_file_resource_id = src_entry->resource_id();
 
   ASSERT_TRUE(EntryExists(src_parent_path));
   scoped_ptr<ResourceEntry> src_parent_proto = GetEntryInfoByPathSync(
       src_parent_path);
   ASSERT_TRUE(src_parent_proto);
   ASSERT_TRUE(src_parent_proto->file_info().is_directory());
-  EXPECT_FALSE(src_parent_proto->download_url().empty());
 
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -1334,23 +1323,19 @@ TEST_F(DriveFileSystemTest, MoveFileBetweenSubDirectories) {
   scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry);
-  std::string src_file_resource_id =
-      src_entry->resource_id();
-  EXPECT_FALSE(src_entry->edit_url().empty());
+  std::string src_file_resource_id = src_entry->resource_id();
 
   ASSERT_TRUE(EntryExists(src_parent_path));
   scoped_ptr<ResourceEntry> src_parent_proto = GetEntryInfoByPathSync(
       src_parent_path);
   ASSERT_TRUE(src_parent_proto);
   ASSERT_TRUE(src_parent_proto->file_info().is_directory());
-  EXPECT_FALSE(src_parent_proto->download_url().empty());
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
   scoped_ptr<ResourceEntry> dest_parent_proto = GetEntryInfoByPathSync(
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto);
   ASSERT_TRUE(dest_parent_proto->file_info().is_directory());
-  EXPECT_FALSE(dest_parent_proto->download_url().empty());
 
   EXPECT_FALSE(EntryExists(interim_file_path));
 
@@ -1409,9 +1394,7 @@ TEST_F(DriveFileSystemTest, MoveFileToNonExistingDirectory) {
   scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry);
-  std::string src_file_resource_id =
-      src_entry->resource_id();
-  EXPECT_FALSE(src_entry->edit_url().empty());
+  std::string src_file_resource_id = src_entry->resource_id();
 
   EXPECT_FALSE(EntryExists(dest_parent_path));
 
@@ -1442,9 +1425,7 @@ TEST_F(DriveFileSystemTest, MoveFileToInvalidPath) {
   scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry);
-  std::string src_file_resource_id =
-      src_entry->resource_id();
-  EXPECT_FALSE(src_entry->edit_url().empty());
+  std::string src_file_resource_id = src_entry->resource_id();
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
   scoped_ptr<ResourceEntry> dest_parent_proto = GetEntryInfoByPathSync(

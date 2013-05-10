@@ -383,6 +383,36 @@ void FakeFileSystem::GetFileContentByPathAfterGetEntryInfo(
     return;
   }
 
+  // Fetch the ResourceEntry for its |download_url|.
+  drive_service_->GetResourceEntry(
+      entry->resource_id(),
+      base::Bind(&FakeFileSystem::GetFileContentByPathAfterGetResourceEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 file_path,
+                 initialized_callback,
+                 get_content_callback,
+                 completion_callback));
+}
+
+void FakeFileSystem::GetFileContentByPathAfterGetResourceEntry(
+    const base::FilePath& file_path,
+    const GetFileContentInitializedCallback& initialized_callback,
+    const google_apis::GetContentCallback& get_content_callback,
+    const FileOperationCallback& completion_callback,
+    google_apis::GDataErrorCode gdata_error,
+    scoped_ptr<google_apis::ResourceEntry> gdata_entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  FileError error = util::GDataToFileError(gdata_error);
+  if (error != FILE_ERROR_OK) {
+    completion_callback.Run(error);
+    return;
+  }
+  DCHECK(gdata_entry);
+
+  scoped_ptr<ResourceEntry> entry(
+      new ResourceEntry(ConvertToResourceEntry(*gdata_entry)));
+
   base::FilePath cache_path =
       cache_dir_.path().AppendASCII(entry->resource_id());
   if (file_util::PathExists(cache_path)) {
@@ -393,14 +423,12 @@ void FakeFileSystem::GetFileContentByPathAfterGetEntryInfo(
     return;
   }
 
-  // Copy the URL here before passing |entry| to the callback.
-  const GURL download_url(entry->download_url());
   initialized_callback.Run(FILE_ERROR_OK, entry.Pass(), base::FilePath(),
                            base::Bind(&base::DoNothing));
   drive_service_->DownloadFile(
       file_path,
       cache_path,
-      download_url,
+      GURL(gdata_entry->download_url()),
       base::Bind(&FakeFileSystem::GetFileContentByPathAfterDownloadFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  completion_callback),

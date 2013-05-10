@@ -133,8 +133,6 @@ std::string FormatEntry(const base::FilePath& path,
   StringAppendF(&out, "%s\n", path.AsUTF8Unsafe().c_str());
   StringAppendF(&out, "  title: %s\n", entry.title().c_str());
   StringAppendF(&out, "  resource_id: %s\n", entry.resource_id().c_str());
-  StringAppendF(&out, "  edit_url: %s\n", entry.edit_url().c_str());
-  StringAppendF(&out, "  download_url: %s\n", entry.download_url().c_str());
   StringAppendF(&out, "  parent_resource_id: %s\n",
                 entry.parent_resource_id().c_str());
   StringAppendF(&out, "  shared_with_me: %s\n",

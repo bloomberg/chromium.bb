@@ -480,8 +480,9 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
   return true;
 }
 
-// Reads JSON from a Google Docs file and extracts a document url. When the file
-// is not in GDoc format, returns a file URL for |file_path| as fallback.
+// Reads JSON from a Google Docs file and extracts an alternate URL. When the
+// file is not in GDoc format, returns a file URL for |file_path| as fallback.
+// Note that an alternate url is a URL to open a hosted document.
 GURL ReadUrlFromGDocOnBlockingPool(const base::FilePath& file_path) {
   const int64 kMaxGDocSize = 4096;
   int64 file_size = 0;
@@ -501,14 +502,14 @@ GURL ReadUrlFromGDocOnBlockingPool(const base::FilePath& file_path) {
   }
 
   base::DictionaryValue* dictionary_value = NULL;
-  std::string edit_url_string;
+  std::string alternate_url_string;
   if (!root_value->GetAsDictionary(&dictionary_value) ||
-      !dictionary_value->GetString("url", &edit_url_string)) {
+      !dictionary_value->GetString("url", &alternate_url_string)) {
     DLOG(INFO) << "Non GDoc JSON in " << file_path.value();
     return net::FilePathToFileURL(file_path);
   }
 
-  return GURL(edit_url_string);
+  return GURL(alternate_url_string);
 }
 
 // Used to implement ViewItem().

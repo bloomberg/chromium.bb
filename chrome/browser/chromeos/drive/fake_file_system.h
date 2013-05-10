@@ -195,6 +195,13 @@ class FakeFileSystem : public FileSystemInterface {
       const FileOperationCallback& completion_callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
+  void GetFileContentByPathAfterGetResourceEntry(
+      const base::FilePath& file_path,
+      const GetFileContentInitializedCallback& initialized_callback,
+      const google_apis::GetContentCallback& get_content_callback,
+      const FileOperationCallback& completion_callback,
+      google_apis::GDataErrorCode gdata_error,
+      scoped_ptr<google_apis::ResourceEntry> gdata_entry);
   void GetFileContentByPathAfterDownloadFile(
       const FileOperationCallback& completion_callback,
       google_apis::GDataErrorCode gdata_error,

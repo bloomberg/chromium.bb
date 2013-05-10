@@ -93,13 +93,6 @@ void FileTaskExecutor::OnFileEntryFetched(
     return;
   }
 
-  // The edit URL can be empty for non-editable files (such as files shared with
-  // read-only privilege).
-  if (entry->edit_url().empty()) {
-    Done(false);
-    return;
-  }
-
   google_apis::DriveServiceInterface* drive_service =
       system_service->drive_service();
 
