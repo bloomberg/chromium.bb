@@ -1485,7 +1485,10 @@ int MockUDPClientSocket::GetPeerAddress(IPEndPoint* address) const {
 }
 
 int MockUDPClientSocket::GetLocalAddress(IPEndPoint* address) const {
-  NOTIMPLEMENTED();
+  IPAddressNumber ip;
+  bool rv = ParseIPLiteralToNumber("192.0.2.33", &ip);
+  CHECK(rv);
+  *address = IPEndPoint(ip, 123);
   return OK;
 }
 

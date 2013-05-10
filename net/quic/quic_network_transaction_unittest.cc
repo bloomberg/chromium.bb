@@ -5,6 +5,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
+#include "net/base/capturing_net_log.h"
+#include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
@@ -184,12 +187,13 @@ class QuicNetworkTransactionTest : public PlatformTest {
   // Returns a newly created packet to send kData on stream 1.
   QuicEncryptedPacket* ConstructDataPacket(
       QuicPacketSequenceNumber sequence_number,
+      QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       QuicStreamOffset offset,
       base::StringPiece data) {
     InitializeHeader(sequence_number, should_include_version);
-    QuicStreamFrame frame(3, fin, offset, data);
+    QuicStreamFrame frame(stream_id, fin, offset, data);
     return ConstructPacket(header_, QuicFrame(&frame)).release();
   }
 
@@ -257,8 +261,10 @@ TEST_F(QuicNetworkTransactionTest, ForceQuic) {
   request.url = GURL("http://www.google.com/");
   request.load_flags = 0;
 
+  QuicStreamId stream_id = 3;
   scoped_ptr<QuicEncryptedPacket> data(
-      ConstructDataPacket(1, true, true, 0, GetRequestString("GET", "/")));
+      ConstructDataPacket(1, stream_id, true, true, 0,
+                          GetRequestString("GET", "/")));
   scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0));
 
   MockWrite quic_writes[] = {
@@ -268,7 +274,7 @@ TEST_F(QuicNetworkTransactionTest, ForceQuic) {
 
   scoped_ptr<QuicEncryptedPacket> resp(
       ConstructDataPacket(
-          1, false, true, 0, GetResponseString("200 OK", "hello!")));
+          1, stream_id, false, true, 0, GetResponseString("200 OK", "hello!")));
   MockRead quic_reads[] = {
     MockRead(SYNCHRONOUS, resp->data(), resp->length()),
     MockRead(ASYNC, OK),  // EOF
@@ -297,7 +303,8 @@ TEST_F(QuicNetworkTransactionTest, ForceQuic) {
   scoped_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
 
-  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  CapturingBoundNetLog net_log;
+  int rv = trans->Start(&request, callback.callback(), net_log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -312,6 +319,40 @@ TEST_F(QuicNetworkTransactionTest, ForceQuic) {
   std::string response_data;
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello!", response_data);
+  // Check that the NetLog was filled reasonably.
+  net::CapturingNetLog::CapturedEntryList entries;
+  net_log.GetEntries(&entries);
+  EXPECT_LT(0u, entries.size());
+
+  // Check that we logged a QUIC_SESSION_PACKET_RECEIVED.
+  int pos = net::ExpectLogContainsSomewhere(
+      entries, 0,
+      net::NetLog::TYPE_QUIC_SESSION_PACKET_RECEIVED,
+      net::NetLog::PHASE_NONE);
+  EXPECT_LT(0, pos);
+
+  // ... and also a TYPE_QUIC_SESSION_PACKET_HEADER_RECEIVED.
+  pos = net::ExpectLogContainsSomewhere(
+      entries, 0,
+      net::NetLog::TYPE_QUIC_SESSION_PACKET_HEADER_RECEIVED,
+      net::NetLog::PHASE_NONE);
+  EXPECT_LT(0, pos);
+
+  std::string packet_sequence_number;
+  ASSERT_TRUE(entries[pos].GetStringValue(
+      "packet_sequence_number", &packet_sequence_number));
+  EXPECT_EQ("1", packet_sequence_number);
+
+  // ... and also a QUIC_SESSION_STREAM_FRAME_RECEIVED.
+  pos = net::ExpectLogContainsSomewhere(
+      entries, 0,
+      net::NetLog::TYPE_QUIC_SESSION_STREAM_FRAME_RECEIVED,
+      net::NetLog::PHASE_NONE);
+  EXPECT_LT(0, pos);
+
+  int log_stream_id;
+  ASSERT_TRUE(entries[pos].GetIntegerValue("stream_id", &log_stream_id));
+  EXPECT_EQ(stream_id, static_cast<QuicStreamId>(log_stream_id));
 }
 
 TEST_F(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
@@ -379,7 +420,7 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
 
 
   scoped_ptr<QuicEncryptedPacket> data(
-      ConstructDataPacket(1, true, true, 0, GetRequestString("GET", "/")));
+      ConstructDataPacket(1, 3, true, true, 0, GetRequestString("GET", "/")));
   scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0));
 
   MockWrite quic_writes[] = {
@@ -389,7 +430,7 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
 
   scoped_ptr<QuicEncryptedPacket> resp(
       ConstructDataPacket(
-          1, false, true, 0, GetResponseString("200 OK", "hello!")));
+          1, 3, false, true, 0, GetResponseString("200 OK", "hello!")));
   MockRead quic_reads[] = {
     MockRead(SYNCHRONOUS, resp->data(), resp->length()),
     MockRead(ASYNC, OK),  // EOF
@@ -521,7 +562,7 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTT) {
   request.load_flags = 0;
 
   scoped_ptr<QuicEncryptedPacket> data(
-      ConstructDataPacket(1, true, true, 0, GetRequestString("GET", "/")));
+      ConstructDataPacket(1, 3, true, true, 0, GetRequestString("GET", "/")));
   scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0));
 
   MockWrite quic_writes[] = {
@@ -531,7 +572,7 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTT) {
 
   scoped_ptr<QuicEncryptedPacket> resp(
       ConstructDataPacket(
-          1, false, true, 0, GetResponseString("200 OK", "hello!")));
+          1, 3, false, true, 0, GetResponseString("200 OK", "hello!")));
   MockRead quic_reads[] = {
     MockRead(SYNCHRONOUS, resp->data(), resp->length()),
     MockRead(ASYNC, OK),  // EOF
