@@ -1269,12 +1269,14 @@ llvm-configure() {
 }
 
 #+ llvm-configure-ninja - Configure with cmake for ninja build
-# Not used by default. Call manually.
+# Not used by default. Call manually. Pass build type (Release or Debug)
+# as an argument; The default is Release.
 llvm-configure-ninja() {
   StepBanner "LLVM" "Configure (Cmake-ninja)"
 
   local srcdir="${TC_SRC_LLVM}"
   local objdir="${TC_BUILD_LLVM}"
+  local buildtype="${1:-Release}"
 
   mkdir -p "${objdir}"
   spushd "${objdir}"
@@ -1284,7 +1286,7 @@ llvm-configure-ninja() {
   RunWithLog "llvm.configure.cmake" \
     env \
       cmake -G Ninja \
-      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_BUILD_TYPE=${buildtype} \
       -DCMAKE_INSTALL_PREFIX="${LLVM_INSTALL_DIR}" \
       -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib' \
       -DBUILD_SHARED_LIBS=ON \
