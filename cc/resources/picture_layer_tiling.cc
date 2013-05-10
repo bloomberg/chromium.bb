@@ -42,6 +42,12 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale));
   gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
 
+  DCHECK(!gfx::ToFlooredSize(
+      gfx::ScaleSize(layer_bounds, contents_scale)).IsEmpty()) <<
+      "Tiling created with scale too small as contents become empty. " <<
+      "Layer bounds: " << layer_bounds.ToString() <<
+      "Contents scale: " << contents_scale;
+
   tiling_data_.SetTotalSize(content_bounds);
   tiling_data_.SetMaxTextureSize(tile_size);
 }

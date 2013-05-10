@@ -46,18 +46,10 @@ void PicturePile::Update(
       -kPixelDistanceToRecord,
       -kPixelDistanceToRecord);
   for (Region::Iterator i(invalidation); i.has_rect(); i.next()) {
-    // Inflate all recordings from invalidations with a margin so that when
-    // scaled down to at least min_contents_scale, any final pixel touched by an
-    // invalidation can be fully rasterized by this picture.
-    gfx::Rect inflated_invalidation = i.rect();
-    inflated_invalidation.Inset(
-        -buffer_pixels(),
-        -buffer_pixels(),
-        -buffer_pixels(),
-        -buffer_pixels());
+    gfx::Rect invalidation = i.rect();
     // Split this inflated invalidation across tile boundaries and apply it
     // to all tiles that it touches.
-    for (TilingData::Iterator iter(&tiling_, inflated_invalidation);
+    for (TilingData::Iterator iter(&tiling_, invalidation);
          iter; ++iter) {
       gfx::Rect tile =
           tiling_.TileBoundsWithBorder(iter.index_x(), iter.index_y());
@@ -68,8 +60,7 @@ void PicturePile::Update(
         continue;
       }
 
-      gfx::Rect tile_invalidation =
-          gfx::IntersectRects(inflated_invalidation, tile);
+      gfx::Rect tile_invalidation = gfx::IntersectRects(invalidation, tile);
       if (tile_invalidation.IsEmpty())
         continue;
       PictureListMap::iterator find = picture_list_map_.find(iter.index());
@@ -77,8 +68,17 @@ void PicturePile::Update(
         continue;
       PictureList& pic_list = find->second;
       // Leave empty pic_lists empty in case there are multiple invalidations.
-      if (!pic_list.empty())
+      if (!pic_list.empty()) {
+        // Inflate all recordings from invalidations with a margin so that when
+        // scaled down to at least min_contents_scale, any final pixel touched
+        // by an invalidation can be fully rasterized by this picture.
+        tile_invalidation.Inset(-buffer_pixels(), -buffer_pixels());
+
+        DCHECK_GE(tile_invalidation.width(), buffer_pixels() * 2 + 1);
+        DCHECK_GE(tile_invalidation.height(), buffer_pixels() * 2 + 1);
+
         InvalidateRect(pic_list, tile_invalidation);
+      }
     }
   }
 

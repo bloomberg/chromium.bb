@@ -38,8 +38,10 @@ class CC_EXPORT PicturePile : public PicturePileBase {
     show_debug_picture_borders_ = show;
   }
 
- private:
+ protected:
   virtual ~PicturePile();
+
+ private:
   friend class PicturePileImpl;
 
   // Add an invalidation to this picture list.  If the list needs to be

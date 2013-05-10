@@ -146,7 +146,9 @@ void PicturePileImpl::Raster(
       // encompasses all invalidated pixels at any larger scale level.
       gfx::Rect content_clip = gfx::ToEnclosedRect(
           gfx::ScaleRect((*i)->LayerRect(), contents_scale));
-      DCHECK(!content_clip.IsEmpty());
+      DCHECK(!content_clip.IsEmpty()) <<
+          "Layer rect: " << (*i)->LayerRect().ToString() <<
+          "Contents scale: " << contents_scale;
       if (!unclipped.Intersects(content_clip))
         continue;
 
