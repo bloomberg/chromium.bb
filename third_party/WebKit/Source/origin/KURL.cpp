@@ -561,10 +561,11 @@ String encodeWithURLEscapeSequences(const String& notEncodedString)
         WTF::URLEncodedEntitiesForUnencodables);
 
     url_canon::RawCanonOutputT<char> buffer;
-    if (buffer.length() < utf8.length() * 3)
-        buffer.Resize(utf8.length() * 3);
+    int inputLength = utf8.length();
+    if (buffer.length() < inputLength * 3)
+        buffer.Resize(inputLength * 3);
 
-    url_util::EncodeURIComponent(utf8.data(), utf8.length(), &buffer);
+    url_util::EncodeURIComponent(utf8.data(), inputLength, &buffer);
     String escaped(buffer.data(), buffer.length());
     // Unescape '/'; it's safe and much prettier.
     escaped.replace("%2F", "/");
