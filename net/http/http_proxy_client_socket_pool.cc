@@ -68,7 +68,7 @@ HttpProxySocketParams::~HttpProxySocketParams() {}
 
 // HttpProxyConnectJobs will time out after this many seconds.  Note this is on
 // top of the timeout for the transport socket.
-#if defined(OS_ANDROID) && defined(SPDY_PROXY_AUTH_ORIGIN)
+#if (defined(OS_ANDROID) || defined(OS_IOS)) && defined(SPDY_PROXY_AUTH_ORIGIN)
 static const int kHttpProxyConnectJobTimeoutInSeconds = 10;
 #else
 static const int kHttpProxyConnectJobTimeoutInSeconds = 30;
@@ -366,7 +366,8 @@ HttpProxyConnectJobFactory::HttpProxyConnectJobFactory(
       net_log_(net_log) {
   base::TimeDelta max_pool_timeout = base::TimeDelta();
 
-#if !defined(OS_ANDROID) || !defined(SPDY_PROXY_AUTH_ORIGIN)
+#if (defined(OS_ANDROID) || defined(OS_IOS)) && defined(SPDY_PROXY_AUTH_ORIGIN)
+#else
   if (transport_pool_)
     max_pool_timeout = transport_pool_->ConnectionTimeout();
   if (ssl_pool_)
