@@ -40,7 +40,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/web_apps.h"
+#include "chrome/common/web_application_info.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"

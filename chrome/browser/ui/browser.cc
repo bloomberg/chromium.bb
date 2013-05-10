@@ -150,7 +150,6 @@
 #include "chrome/common/search_types.h"
 #include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/web_apps.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/download_item.h"

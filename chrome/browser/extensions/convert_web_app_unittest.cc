@@ -20,7 +20,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
-#include "chrome/common/web_apps.h"
+#include "chrome/common/web_application_info.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"

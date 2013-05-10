@@ -21,6 +21,7 @@
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/user_script_scheduler.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
+#include "chrome/renderer/web_apps.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "extensions/common/constants.h"
