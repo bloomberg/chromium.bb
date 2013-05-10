@@ -34,16 +34,6 @@ class ProfileResetterTest : public testing::Test {
   ProfileResetter resetter_;
 };
 
-TEST_F(ProfileResetterTest, ResettableFlagsSize) {
-  // Fail in case we need to adapt the typedef of
-  // ProfileResetter::ResettableFlags because the underlying type of
-  // ProfileResetter::Resettable has changed.
-  ASSERT_GE(ProfileResetter::ALL, 0);
-  EXPECT_GE((unsigned long)
-            std::numeric_limits<ProfileResetter::ResettableFlags>::max(),
-            (unsigned long) ProfileResetter::ALL);
-}
-
 TEST_F(ProfileResetterTest, ResetDefaultSearchEngine) {
   EXPECT_CALL(mock_object_, Callback());
   resetter_.Reset(

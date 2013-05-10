@@ -10,7 +10,7 @@
 ProfileResetter::ProfileResetter(Profile* profile)
     : profile_(profile),
       pending_reset_flags_(0) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 }
 
 ProfileResetter::~ProfileResetter() {}
@@ -18,7 +18,7 @@ ProfileResetter::~ProfileResetter() {}
 void ProfileResetter::Reset(ProfileResetter::ResettableFlags resettable_flags,
                             ExtensionHandling extension_handling,
                             const base::Closure& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 
   // We should never be called with unknown flags.
   CHECK_EQ(static_cast<ResettableFlags>(0), resettable_flags & ~ALL);
@@ -62,7 +62,7 @@ void ProfileResetter::Reset(ProfileResetter::ResettableFlags resettable_flags,
 }
 
 void ProfileResetter::MarkAsDone(Resettable resettable) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 
   // Check that we are never called twice or unexpectedly.
   CHECK(pending_reset_flags_ & resettable);
@@ -74,36 +74,36 @@ void ProfileResetter::MarkAsDone(Resettable resettable) {
 }
 
 void ProfileResetter::ResetDefaultSearchEngine() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  VLOG(1) << "ResetDefaultSearchEngine is not implemented, yet.";
+  DCHECK(CalledOnValidThread());
+  NOTIMPLEMENTED();
   // TODO(battre/vabr): Implement
   MarkAsDone(DEFAULT_SEARCH_ENGINE);
 }
 
 void ProfileResetter::ResetHomepage() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  VLOG(1) << "ResetHomepage is not implemented, yet.";
+  DCHECK(CalledOnValidThread());
+  NOTIMPLEMENTED();
   // TODO(battre/vabr): Implement
   MarkAsDone(HOMEPAGE);
 }
 
 void ProfileResetter::ResetContentSettings() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  VLOG(1) << "ResetContentSettings is not implemented, yet.";
+  DCHECK(CalledOnValidThread());
+  NOTIMPLEMENTED();
   // TODO(battre/vabr): Implement
   MarkAsDone(CONTENT_SETTINGS);
 }
 
 void ProfileResetter::ResetCookiesAndSiteData() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  VLOG(1) << "ResetCookiesAndSiteData is not implemented, yet.";
+  DCHECK(CalledOnValidThread());
+  NOTIMPLEMENTED();
   // TODO(battre/vabr): Implement
   MarkAsDone(COOKIES_AND_SITE_DATA);
 }
 
 void ProfileResetter::ResetExtensions(ExtensionHandling extension_handling) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  VLOG(1) << "ResetExtensions is not implemented, yet.";
+  DCHECK(CalledOnValidThread());
+  NOTIMPLEMENTED();
   // TODO(battre/vabr): Implement
   MarkAsDone(EXTENSIONS);
 }

@@ -5,15 +5,16 @@
 #ifndef CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_H_
 #define CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_H_
 
+#include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
+#include "base/threading/non_thread_safe.h"
 
 class Profile;
 
 // This class allows resetting certain aspects of a profile to default values.
 // It is used in case the profile has been damaged due to malware or bad user
 // settings.
-class ProfileResetter {
+class ProfileResetter : public base::NonThreadSafe {
  public:
   // Flags indicating what aspects of a profile shall be reset.
   enum Resettable {
@@ -36,6 +37,9 @@ class ProfileResetter {
 
   // Bit vector for Resettable enum.
   typedef uint32 ResettableFlags;
+
+  COMPILE_ASSERT(sizeof(ResettableFlags) == sizeof(Resettable),
+                 type_ResettableFlags_doesnt_match_Resettable);
 
   explicit ProfileResetter(Profile* profile);
   ~ProfileResetter();
