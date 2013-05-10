@@ -896,6 +896,11 @@ WebKit::WebGraphicsContext3D* RendererWebKitPlatformSupportImpl::
   return shared_offscreen_context_->Context3d();
 }
 
+WebKit::WebCompositorSupport*
+RendererWebKitPlatformSupportImpl::compositorSupport() {
+  return &compositor_support_;
+}
+
 //------------------------------------------------------------------------------
 
 GrContext* RendererWebKitPlatformSupportImpl::sharedOffscreenGrContext() {

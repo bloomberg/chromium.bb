@@ -9,7 +9,6 @@
 #include "base/test/test_suite.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
 namespace content {
 
@@ -30,13 +29,6 @@ class UnitTestTestSuite::UnitTestWebKitPlatformSupport
     static const unsigned char kEnabled = 0;
     return &kEnabled;
   }
-
-  virtual WebKit::WebCompositorSupport* compositorSupport() {
-    return &compositor_support_;
-  }
-
- private:
-  webkit::WebCompositorSupportImpl compositor_support_;
 };
 #endif  // !OS_IOS
 

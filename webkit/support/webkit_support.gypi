@@ -25,6 +25,7 @@
         '<(DEPTH)/ui/ui.gyp:shell_dialogs',
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_bindings',
+        '<(DEPTH)/webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(DEPTH)/webkit/gpu/webkit_gpu.gyp:webkit_gpu',
         'glue',
         'user_agent',

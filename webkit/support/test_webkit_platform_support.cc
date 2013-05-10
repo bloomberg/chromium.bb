@@ -410,6 +410,11 @@ bool TestWebKitPlatformSupport::isThreadedCompositingEnabled() {
   return threaded_compositing_enabled_;
 }
 
+WebKit::WebCompositorSupport*
+TestWebKitPlatformSupport::compositorSupport() {
+  return &compositor_support_;
+}
+
 double TestWebKitPlatformSupport::audioHardwareSampleRate() {
   return 44100.0;
 }

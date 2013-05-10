@@ -32,7 +32,6 @@ class MessageLoop;
 }
 
 namespace webkit {
-class WebCompositorSupportImpl;
 struct WebPluginInfo;
 }
 
@@ -129,7 +128,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual void callOnMainThread(void (*func)(void*), void* context);
   virtual WebKit::WebThread* createThread(const char* name);
   virtual WebKit::WebThread* currentThread();
-  virtual WebKit::WebCompositorSupport* compositorSupport();
   virtual WebKit::WebDiscardableMemory* allocateAndLockDiscardableMemory(
       size_t bytes);
 
@@ -171,10 +169,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
       const WebKit::WebFloatPoint& velocity,
       const WebKit::WebSize& cumulative_scroll) OVERRIDE;
 
-  webkit::WebCompositorSupportImpl* compositor_support_impl() const {
-    return compositor_support_.get();
-  }
-
 #if defined(OS_ANDROID)
   virtual webkit_media::WebAudioMediaCodecRunner
       GetWebAudioMediaCodecRunner();
@@ -194,7 +188,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   int shared_timer_suspended_;  // counter
   WebThemeEngineImpl theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
-  scoped_ptr<webkit::WebCompositorSupportImpl> compositor_support_;
   scoped_ptr<FlingCurveConfiguration> fling_curve_configuration_;
 };
 
