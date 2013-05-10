@@ -303,6 +303,8 @@
         'renderer/tts_dispatcher.h',
         'renderer/translate/translate_helper.cc',
         'renderer/translate/translate_helper.h',
+        'renderer/translate/translate_helper_metrics.cc',
+        'renderer/translate/translate_helper_metrics.h',
         'renderer/validation_message_agent.cc',
         'renderer/validation_message_agent.h',
         'renderer/web_apps.cc',
