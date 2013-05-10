@@ -94,7 +94,10 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
                << "Called when capturer is not started.";
     return;
   }
-  ASSERT(image_data != NULL);
+  if (!image_data) {
+    LOG(ERROR) << "PpFrameWriter::PutFrame - Called with NULL image_data.";
+    return;
+  }
   webkit::ppapi::ImageDataAutoMapper mapper(image_data);
   if (!mapper.is_valid()) {
     LOG(ERROR) << "PpFrameWriter::PutFrame - "
@@ -102,7 +105,11 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
     return;
   }
   const SkBitmap* bitmap = image_data->GetMappedBitmap();
-  ASSERT(bitmap != NULL);
+  if (!bitmap) {
+    LOG(ERROR) << "PpFrameWriter::PutFrame - "
+               << "The image_data's mapped bitmap is NULL.";
+    return;
+  }
 
   cricket::CapturedFrame frame;
   frame.elapsed_time = 0;
@@ -115,7 +122,6 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
     frame.fourcc = cricket::FOURCC_BGRA;
   } else {
     LOG(ERROR) << "PpFrameWriter::PutFrame - Got RGBA which is not supported.";
-    ASSERT(false);
     return;
   }
   frame.data_size = bitmap->getSize();
@@ -135,7 +141,7 @@ class PpFrameWriterProxy : public FrameWriterInterface {
                      PpFrameWriter* writer)
       : track_(track),
         writer_(writer) {
-    ASSERT(writer_ != NULL);
+    DCHECK(writer_ != NULL);
   }
 
   virtual ~PpFrameWriterProxy() {}
@@ -159,7 +165,7 @@ bool VideoDestinationHandler::Open(
     FrameWriterInterface** frame_writer) {
   if (!factory) {
     factory = RenderThreadImpl::current()->GetMediaStreamDependencyFactory();
-    ASSERT(factory != NULL);
+    DCHECK(factory != NULL);
   }
   WebKit::WebMediaStream stream;
   if (registry) {
@@ -184,12 +190,11 @@ bool VideoDestinationHandler::Open(
   // Gets a handler to the native video track, which owns the |writer|.
   MediaStreamExtraData* extra_data =
       static_cast<MediaStreamExtraData*>(stream.extraData());
-  DCHECK(extra_data);
   webrtc::MediaStreamInterface* native_stream = extra_data->stream();
   DCHECK(native_stream);
   VideoTrackVector video_tracks = native_stream->GetVideoTracks();
   // Currently one supports one video track per media stream.
-  ASSERT(video_tracks.size() == 1);
+  DCHECK(video_tracks.size() == 1);
 
   *frame_writer = new PpFrameWriterProxy(video_tracks[0].get(), writer);
   return true;
