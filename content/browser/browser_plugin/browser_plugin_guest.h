@@ -22,6 +22,7 @@
 #define CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_GUEST_H_
 
 #include <map>
+#include <queue>
 
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
@@ -427,6 +428,9 @@ class CONTENT_EXPORT BrowserPluginGuest
   void SetGeolocationPermission(
       GeolocationCallback callback, int bridge_id, bool allowed);
 
+  // Forwards all messages from the |pending_messages_| queue to the embedder.
+  void SendQueuedMessages();
+
   // Weak pointer used to ask GeolocationPermissionContext about geolocation
   // permission.
   base::WeakPtrFactory<BrowserPluginGuest> weak_ptr_factory_;
@@ -491,6 +495,10 @@ class CONTENT_EXPORT BrowserPluginGuest
   // This is used to determine whether or not to create a new RenderView when
   // this guest is attached.
   bool has_render_view_;
+
+  // This is a queue of messages that are destined to be sent to the embedder
+  // once the guest is attached to a particular embedder.
+  std::queue<IPC::Message*> pending_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };

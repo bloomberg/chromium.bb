@@ -434,6 +434,10 @@ void BrowserPluginGuest::Initialize(
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {
+  while (!pending_messages_.empty()) {
+    delete pending_messages_.front();
+    pending_messages_.pop();
+  }
 }
 
 // static
@@ -744,7 +748,12 @@ void BrowserPluginGuest::DidFailProvisionalLoad(
 
 void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
   if (!attached()) {
-    delete msg;
+    // Some pages such as data URLs, javascript URLs, and about:blank
+    // do not load external resources and so they load prior to attachment.
+    // As a result, we must save all these IPCs until attachment and then
+    // forward them so that the embedder gets a chance to see and process
+    // the load events.
+    pending_messages_.push(msg);
     return;
   }
   msg->set_routing_id(embedder_web_contents_->GetRoutingID());
@@ -834,6 +843,17 @@ void BrowserPluginGuest::SetGeolocationPermission(GeolocationCallback callback,
                                                   bool allowed) {
   callback.Run(allowed);
   CancelGeolocationRequest(bridge_id);
+}
+
+void BrowserPluginGuest::SendQueuedMessages() {
+  if (!attached())
+    return;
+
+  while (!pending_messages_.empty()) {
+    IPC::Message* message = pending_messages_.front();
+    pending_messages_.pop();
+    SendMessageToEmbedder(message);
+  }
 }
 
 void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
@@ -1039,6 +1059,8 @@ void BrowserPluginGuest::Attach(
   ack_params.name = name_;
   SendMessageToEmbedder(
       new BrowserPluginMsg_Attach_ACK(instance_id_, ack_params));
+
+  SendQueuedMessages();
 }
 
 void BrowserPluginGuest::OnCompositorFrameACK(

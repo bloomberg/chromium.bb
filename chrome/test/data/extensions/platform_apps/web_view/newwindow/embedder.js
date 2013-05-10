@@ -88,6 +88,21 @@ embedder.requestClose_ = function(webview, testName) {
 };
 
 /** @private */
+embedder.requestExecuteScript_ =
+    function(webview, script, expectedResult, testName) {
+  var onWebViewLoadStop = function(e) {
+    webview.executeScript(
+      {code: script},
+      function(results) {
+        chrome.test.assertEq(1, results.length);
+        chrome.test.assertEq(expectedResult, results[0]);
+        chrome.test.succeed();
+      });
+  };
+  webview.addEventListener('loadstop', onWebViewLoadStop);
+};
+
+/** @private */
 embedder.assertCorrectEvent_ = function(e, guestName) {
   chrome.test.assertEq('newwindow', e.type);
   chrome.test.assertTrue(!!e.targetUrl);
@@ -187,6 +202,34 @@ embedder.tests.testNewWindowClose = function testNewWindowClose() {
   embedder.setUpNewWindowRequest_(webview, 'guest.html', '', testName);
 };
 
+embedder.tests.testNewWindowExecuteScript =
+    function testNewWindowExecuteScript() {
+  var testName = 'testNewWindowExecuteScript';
+  var webview = embedder.setUpGuest_('foobar');
+
+  var onNewWindow = function(e) {
+    chrome.test.log('Embedder notified on newwindow');
+    embedder.assertCorrectEvent_(e, '');
+
+    var newwebview = document.createElement('webview');
+    document.querySelector('#webview-tag-container').appendChild(newwebview);
+    embedder.requestExecuteScript_(
+        newwebview,
+        'document.body.style.backgroundColor = "red";',
+        'red',
+        testName);
+    try {
+      e.window.attach(newwebview);
+    } catch (e) {
+      chrome.test.fail();
+    }
+  };
+  webview.addEventListener('newwindow', onNewWindow);
+
+  // Load a new window with the given name.
+  embedder.setUpNewWindowRequest_(webview, 'about:blank', '', testName);
+};
+
 onload = function() {
   chrome.test.getConfig(function(config) {
     embedder.setUp(config);
@@ -195,7 +238,8 @@ onload = function() {
       embedder.tests.testWebViewNameTakesPrecedence,
       embedder.tests.testNoName,
       embedder.tests.testNewWindowRedirect,
-      embedder.tests.testNewWindowClose
+      embedder.tests.testNewWindowClose,
+      embedder.tests.testNewWindowExecuteScript
     ]);
   });
 };
