@@ -50,6 +50,7 @@ namespace WebCore {
         FrameLoadTypeStandard,
         FrameLoadTypeBackForward,
         FrameLoadTypeReload,
+        FrameLoadTypeSame, // user loads same URL again (but not reload button)
         FrameLoadTypeRedirectWithLockedBackForwardList,
         FrameLoadTypeInitialInChildFrame,
         FrameLoadTypeReplace,

@@ -507,7 +507,7 @@ ResourceRequestCachePolicy CachedResourceLoader::resourceRequestCachePolicy(cons
             return ReturnCacheDataDontLoad;
         if (!m_documentLoader->overrideEncoding().isEmpty() || frameLoadType == FrameLoadTypeBackForward)
             return ReturnCacheDataElseLoad;
-        if (isReload || request.isConditional())
+        if (isReload || frameLoadType == FrameLoadTypeSame || request.isConditional())
             return ReloadIgnoringCacheData;
         return UseProtocolCachePolicy;
     }
