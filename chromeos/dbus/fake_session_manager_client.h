@@ -67,11 +67,18 @@ class FakeSessionManagerClient : public chromeos::SessionManagerClient {
   // Notify observers about a property change completion.
   void OnPropertyChangeComplete(bool success);
 
+  // Returns how many times EmitLoginPromptReady() is called.
+  int emit_login_prompt_ready_call_count() {
+    return emit_login_prompt_ready_call_count_;
+  }
+
  private:
   std::string device_policy_;
   std::string user_policy_;
   std::map<std::string, std::string> device_local_account_policy_;
   ObserverList<Observer> observers_;
+
+  int emit_login_prompt_ready_call_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSessionManagerClient);
 };

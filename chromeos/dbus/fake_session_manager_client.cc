@@ -11,7 +11,8 @@
 
 namespace chromeos {
 
-FakeSessionManagerClient::FakeSessionManagerClient() {
+FakeSessionManagerClient::FakeSessionManagerClient()
+  : emit_login_prompt_ready_call_count_(0) {
 }
 
 FakeSessionManagerClient::~FakeSessionManagerClient() {
@@ -30,6 +31,7 @@ bool FakeSessionManagerClient::HasObserver(Observer* observer) {
 }
 
 void FakeSessionManagerClient::EmitLoginPromptReady() {
+  emit_login_prompt_ready_call_count_++;
 }
 
 void FakeSessionManagerClient::EmitLoginPromptVisible() {
