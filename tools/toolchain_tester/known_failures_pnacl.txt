@@ -37,9 +37,6 @@ pr39228.c
 va-arg-pack-1.c
 # prefetch broken on ARM
 builtin-prefetch-2.c arm
-# This uses __builtin_return_address(1)
-# Segfaults because of an uninit frame pointer (must force fp on?).
-20010122-1.c
 # DCE not performed at -O0 (wontfix?)
 medce-1.c O0
 fp-cmp-7.c O0
@@ -181,3 +178,12 @@ vector-shift.c
 vector-shift2.c
 vector-subscript-2.c
 vector-subscript-3.c
+
+# These tests use llvm.{frame,return}address, which PNaCl's ABI checker rejects.
+# The test 20010122-1.c uses __builtin_return_address(1), and it segfaults
+# because of an uninit frame pointer (must force fp on?).
+20010122-1.c
+20030323-1.c
+20030811-1.c
+frame-address.c
+pr17377.c

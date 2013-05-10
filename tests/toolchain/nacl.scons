@@ -41,35 +41,50 @@ env.AddNodeToTestSuite(node,
                        'run_whole_archive_test')
 
 
-TESTS_TO_RUN = [
-     # (src, exit_status, golden_file, cond),
-     # The valus None for golden_file means no golden file, c.f.
-     #  SConstruct::CommandTest()
-     ('setlongjmp.c', '55', None, True),
-     ('intrinsics.cc', '55', None, True),
-     ('float2.c', '0', True, True),
-     ('frame_addresses.c', '0', None, True),
-     # NOTE: this test uses bitcode asm's
-     ('llvm_math_intrinsics.c', '0', True, env.Bit('bitcode')),
-     # NOTE: this test uses bitcode asm's
-     ('llvm_bitmanip_intrinsics.c', '0', True, env.Bit('bitcode')),
-     ('llvm_atomic_intrinsics.c', '55', None, True),
-]
+# Test various intrinsics.
+# Some of the intrinsic tests cover intrinsics that we do not want to
+# support. For example, llvm.frameaddress. If that is the case, we will
+# use the nonstable_env as our test_env in AddIntrinsicTest.
+if env.Bit('bitcode'):
+  nonstable_env = env.Clone()
+  nonstable_env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
+else:
+  nonstable_env = env
 
-for src, exit_status, golden_file, cond in TESTS_TO_RUN:
-  if not cond: continue
+
+def AddIntrinsicTest(test_env, src, exit_status, has_golden_file=False):
   name = src.split('.')[0]
-  if golden_file == True:
-    golden_file = env.File(name + '.stdout')
+  if has_golden_file:
+    golden_file = test_env.File(name + '.stdout')
+  else:
+    golden_file = None
 
-  nexe = env.ComponentProgram(name, src, EXTRA_LIBS=['${NONIRT_LIBS}'])
-  node = env.CommandSelLdrTestNacl(name + '.out',
-                                   nexe,
-                                   exit_status=exit_status,
-                                   stdout_golden=golden_file)
-  env.AddNodeToTestSuite(node,
-                         ['toolchain_tests','small_tests'],
-                         'run_' + name + '_test')
+  nexe = test_env.ComponentProgram(name, src, EXTRA_LIBS=['${NONIRT_LIBS}'])
+  node = test_env.CommandSelLdrTestNacl(name + '.out',
+                                        nexe,
+                                        exit_status=exit_status,
+                                        stdout_golden=golden_file)
+  test_env.AddNodeToTestSuite(node,
+                              ['toolchain_tests','small_tests'],
+                              'run_' + name + '_test')
+
+
+AddIntrinsicTest(env, 'setlongjmp.c', '55')
+AddIntrinsicTest(env, 'intrinsics.cc', '55'),
+AddIntrinsicTest(env, 'float2.c', '0', has_golden_file=True)
+# Consider llvm.frameaddress and llvm.returnaddress non-stable,
+# since we may want to hide return and stack addresses in the future.
+AddIntrinsicTest(nonstable_env, 'frame_addresses.c', '0'),
+AddIntrinsicTest(nonstable_env, 'return_address.c', '55')
+# TODO(jvoung): Revisit stability of llvm math, bitmanip, and atomic intrinsics.
+if env.Bit('bitcode'):
+  # These two tests redirect C function calls to llvm instrinsic functions,
+  # so they only work w/ PNaCl.
+  AddIntrinsicTest(nonstable_env, 'llvm_math_intrinsics.c', '0',
+                   has_golden_file=True)
+  AddIntrinsicTest(nonstable_env, 'llvm_bitmanip_intrinsics.c', '0',
+                   has_golden_file=True)
+AddIntrinsicTest(nonstable_env, 'llvm_atomic_intrinsics.c', '55')
 
 
 # initfini test
@@ -139,15 +154,6 @@ bias_env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
 if env.IsRunningUnderValgrind():
   Return()
 
-
-nexe = env.ComponentProgram('return_address', 'return_address.c',
-                            EXTRA_LIBS=['${NONIRT_LIBS}'])
-node = env.CommandSelLdrTestNacl('return_address.out',
-                                 nexe,
-                                 exit_status='55')
-env.AddNodeToTestSuite(node,
-                       ['toolchain_tests', 'small_tests'],
-                       'run_return_address_test')
 
 # NOTE: we assume that the incoming env contains '-O2', '-fomit-frame-pointer'
 def MakeEnv(use_opts, use_frames):
