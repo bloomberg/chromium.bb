@@ -45,11 +45,12 @@ TEST_F(DownloadUpdatesCommandTest, ExecuteNoStates) {
 
   mock_server()->ExpectGetUpdatesRequestTypes(
       GetRoutingInfoTypes(routing_info()));
-  command_.ExecuteImpl(
+  scoped_ptr<sessions::SyncSession> session(
       sessions::SyncSession::BuildForNudge(context(),
                                            delegate(),
                                            nudge_tracker.GetSourceInfo(),
                                            &nudge_tracker));
+  command_.ExecuteImpl(session.get());
 }
 
 TEST_F(DownloadUpdatesCommandTest, ExecuteWithStates) {
@@ -70,11 +71,12 @@ TEST_F(DownloadUpdatesCommandTest, ExecuteWithStates) {
       GetRoutingInfoTypes(routing_info()));
   mock_server()->ExpectGetUpdatesRequestStates(
       nudge_tracker.GetSourceInfo().types);
-  command_.ExecuteImpl(
+  scoped_ptr<sessions::SyncSession> session(
       sessions::SyncSession::BuildForNudge(context(),
                                            delegate(),
                                            nudge_tracker.GetSourceInfo(),
                                            &nudge_tracker));
+  command_.ExecuteImpl(session.get());
 }
 
 TEST_F(DownloadUpdatesCommandTest, VerifyAppendDebugInfo) {
