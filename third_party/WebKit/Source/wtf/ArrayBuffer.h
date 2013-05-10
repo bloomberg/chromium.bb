@@ -59,13 +59,10 @@ public:
     void removeView(ArrayBufferView*);
 
     bool transfer(ArrayBufferContents&, Vector<RefPtr<ArrayBufferView> >& neuteredViews);
-    bool isNeutered() { return !m_contents.m_data; }
+    bool isNeutered() { return !m_contents.data(); }
 
-    bool hasDeallocationObserver() { return m_contents.m_deallocationObserver; }
-    void setDeallocationObserver(ArrayBufferDeallocationObserver* deallocationObserver)
-    {
-        m_contents.m_deallocationObserver = deallocationObserver;
-    }
+    bool hasDeallocationObserver() { return m_contents.hasDeallocationObserver(); }
+    void setDeallocationObserver(ArrayBufferDeallocationObserver* observer) { m_contents.setDeallocationObserver(observer); }
 
     ~ArrayBuffer() { }
 
@@ -103,9 +100,8 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::create(ArrayBuffer* other)
 
 PassRefPtr<ArrayBuffer> ArrayBuffer::create(const void* source, unsigned byteLength)
 {
-    ArrayBufferContents contents;
-    ArrayBufferContents::tryAllocate(byteLength, 1, ArrayBufferContents::ZeroInitialize, contents);
-    if (!contents.m_data)
+    ArrayBufferContents contents(byteLength, 1, ArrayBufferContents::ZeroInitialize);
+    if (!contents.data())
         return 0;
     RefPtr<ArrayBuffer> buffer = adoptRef(new ArrayBuffer(contents));
     memcpy(buffer->data(), source, byteLength);
@@ -124,9 +120,8 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::createUninitialized(unsigned numElements, u
 
 PassRefPtr<ArrayBuffer> ArrayBuffer::create(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy policy)
 {
-    ArrayBufferContents contents;
-    ArrayBufferContents::tryAllocate(numElements, elementByteSize, policy, contents);
-    if (!contents.m_data)
+    ArrayBufferContents contents(numElements, elementByteSize, policy);
+    if (!contents.data())
         return 0;
     return adoptRef(new ArrayBuffer(contents));
 }
@@ -139,17 +134,17 @@ ArrayBuffer::ArrayBuffer(ArrayBufferContents& contents)
 
 void* ArrayBuffer::data()
 {
-    return m_contents.m_data;
+    return m_contents.data();
 }
 
 const void* ArrayBuffer::data() const
 {
-    return m_contents.m_data;
+    return m_contents.data();
 }
 
 unsigned ArrayBuffer::byteLength() const
 {
-    return m_contents.m_sizeInBytes;
+    return m_contents.sizeInBytes();
 }
 
 PassRefPtr<ArrayBuffer> ArrayBuffer::slice(int begin, int end) const

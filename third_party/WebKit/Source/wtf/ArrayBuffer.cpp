@@ -38,8 +38,8 @@ bool ArrayBuffer::transfer(ArrayBufferContents& result, Vector<RefPtr<ArrayBuffe
 {
     RefPtr<ArrayBuffer> keepAlive(this);
 
-    if (!m_contents.m_data) {
-        result.m_data = 0;
+    if (!m_contents.data()) {
+        result.clear();
         return false;
     }
 

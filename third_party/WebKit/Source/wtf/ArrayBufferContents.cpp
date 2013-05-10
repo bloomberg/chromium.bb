@@ -31,7 +31,15 @@
 
 namespace WTF {
 
-void ArrayBufferContents::tryAllocate(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy policy, ArrayBufferContents& result)
+ArrayBufferContents::ArrayBufferContents()
+    : m_data(0)
+    , m_sizeInBytes(0)
+    , m_deallocationObserver(0) { }
+
+ArrayBufferContents::ArrayBufferContents(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy policy)
+    : m_data(0)
+    , m_sizeInBytes(0)
+    , m_deallocationObserver(0)
 {
     // Do not allow 32-bit overflow of the total size.
     // FIXME: Why not? The tryFastCalloc function already checks its arguments,
@@ -40,30 +48,46 @@ void ArrayBufferContents::tryAllocate(unsigned numElements, unsigned elementByte
     if (numElements) {
         unsigned totalSize = numElements * elementByteSize;
         if (totalSize / numElements != elementByteSize) {
-            result.m_data = 0;
+            m_data = 0;
             return;
         }
     }
     bool allocationSucceeded = false;
     if (policy == ZeroInitialize)
-        allocationSucceeded = WTF::tryFastCalloc(numElements, elementByteSize).getValue(result.m_data);
+        allocationSucceeded = WTF::tryFastCalloc(numElements, elementByteSize).getValue(m_data);
     else {
         ASSERT(policy == DontInitialize);
-        allocationSucceeded = WTF::tryFastMalloc(numElements * elementByteSize).getValue(result.m_data);
+        allocationSucceeded = WTF::tryFastMalloc(numElements * elementByteSize).getValue(m_data);
     }
 
     if (allocationSucceeded) {
-        result.m_sizeInBytes = numElements * elementByteSize;
+        m_sizeInBytes = numElements * elementByteSize;
         return;
     }
-    result.m_data = 0;
+    m_data = 0;
 }
 
 ArrayBufferContents::~ArrayBufferContents()
 {
-    if (m_deallocationObserver)
-        m_deallocationObserver->ArrayBufferDeallocated(m_sizeInBytes);
     WTF::fastFree(m_data);
+    clear();
+}
+
+void ArrayBufferContents::clear()
+{
+    if (m_data && m_deallocationObserver)
+        m_deallocationObserver->ArrayBufferDeallocated(m_sizeInBytes);
+    m_data = 0;
+    m_sizeInBytes = 0;
+    m_deallocationObserver = 0;
+}
+
+void ArrayBufferContents::transfer(ArrayBufferContents& other)
+{
+    ASSERT(!other.m_data);
+    other.m_data = m_data;
+    other.m_sizeInBytes = m_sizeInBytes;
+    clear();
 }
 
 } // namespace WTF
