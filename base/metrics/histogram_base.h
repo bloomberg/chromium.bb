@@ -139,8 +139,10 @@ protected:
   virtual void GetParameters(DictionaryValue* params) const = 0;
 
   // Writes information about the current (non-empty) buckets and their sample
-  // counts to |buckets| and the total sample count to |count|.
+  // counts to |buckets|, the total sample count to |count| and the total sum
+  // to |sum|.
   virtual void GetCountAndBucketData(Count* count,
+                                     int64* sum,
                                      ListValue* buckets) const = 0;
 
   //// Produce actual graph (set of blank vs non blank char's) for a bucket.

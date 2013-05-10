@@ -109,8 +109,9 @@ int HistogramBase::FindCorruption(const HistogramSamples& samples) const {
 
 void HistogramBase::WriteJSON(std::string* output) const {
   Count count;
+  int64 sum;
   scoped_ptr<ListValue> buckets(new ListValue());
-  GetCountAndBucketData(&count, buckets.get());
+  GetCountAndBucketData(&count, &sum, buckets.get());
   scoped_ptr<DictionaryValue> parameters(new DictionaryValue());
   GetParameters(parameters.get());
 
@@ -118,6 +119,7 @@ void HistogramBase::WriteJSON(std::string* output) const {
   DictionaryValue root;
   root.SetString("name", histogram_name());
   root.SetInteger("count", count);
+  root.SetDouble("sum", sum);
   root.SetInteger("flags", flags());
   root.Set("params", parameters.release());
   root.Set("buckets", buckets.release());

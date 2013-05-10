@@ -487,9 +487,12 @@ void Histogram::GetParameters(DictionaryValue* params) const {
   params->SetInteger("bucket_count", static_cast<int>(bucket_count()));
 }
 
-void Histogram::GetCountAndBucketData(Count* count, ListValue* buckets) const {
+void Histogram::GetCountAndBucketData(Count* count,
+                                      int64* sum,
+                                      ListValue* buckets) const {
   scoped_ptr<SampleVector> snapshot = SnapshotSampleVector();
   *count = snapshot->TotalCount();
+  *sum = snapshot->sum();
   size_t index = 0;
   for (size_t i = 0; i < bucket_count(); ++i) {
     Sample count = snapshot->GetCountAtIndex(i);

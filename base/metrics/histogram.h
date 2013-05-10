@@ -515,6 +515,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
   virtual void GetParameters(DictionaryValue* params) const OVERRIDE;
 
   virtual void GetCountAndBucketData(Count* count,
+                                     int64* sum,
                                      ListValue* buckets) const OVERRIDE;
 
   // Does not own this object. Should get from StatisticsRecorder.

@@ -8,6 +8,12 @@ from telemetry.page import page_measurement
 
 # Test how long Chrome takes to load when warm.
 class PerfWarm(page_measurement.PageMeasurement):
+  HISTOGRAMS_TO_RECORD = {
+    'messageloop_start_time' :
+        'Startup.BrowserMessageLoopStartTimeFromMainEntry',
+    'window_display_time' : 'Startup.BrowserWindowDisplay',
+    'open_tabs_time' : 'Startup.BrowserOpenTabs'}
+
   def __init__(self):
     super(PerfWarm, self).__init__(needs_browser_restart_after_each_run=True,
                                    discard_first_result=True)
@@ -17,23 +23,19 @@ class PerfWarm(page_measurement.PageMeasurement):
     options.AppendExtraBrowserArg('--reduce-security-for-dom-automation-tests')
 
   def MeasurePage(self, page, tab, results):
-    result = tab.EvaluateJavaScript("""
-      domAutomationController.getBrowserHistogram(
-          "Startup.BrowserMessageLoopStartTimeFromMainEntry_Exact")
-      """)
-    result = json.loads(result)
-    startup_time_ms = 0
-    if 'params' in result:
-      startup_time_ms = result['params']['max']
-    else:
-      # Support old reference builds that don't contain the new
-      # Startup.BrowserMessageLoopStartTimeFromMainEntry_Exact histogram.
-      result = tab.EvaluateJavaScript("""
-        domAutomationController.getBrowserHistogram(
-            "Startup.BrowserMessageLoopStartTimeFromMainEntry")
-        """)
-      result = json.loads(result)
-      startup_time_ms = \
-          (result['buckets'][0]['high'] + result['buckets'][0]['low']) / 2
+    get_histogram_js = "domAutomationController.getBrowserHistogram(\"%s\")"
 
-    results.Add('startup_time', 'ms', startup_time_ms)
+    for display_name, histogram_name in self.HISTOGRAMS_TO_RECORD.iteritems():
+      result = tab.EvaluateJavaScript(get_histogram_js % histogram_name)
+      result = json.loads(result)
+      measured_time = 0
+
+      if 'sum' in result:
+        # For all the histograms logged here, there's a single entry so sum
+        # is the exact value for that entry.
+        measured_time = result['sum']
+      elif 'buckets' in result:
+        measured_time = \
+            (result['buckets'][0]['high'] + result['buckets'][0]['low']) / 2
+
+      results.Add(display_name, 'ms', measured_time)

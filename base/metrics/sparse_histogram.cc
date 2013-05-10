@@ -105,6 +105,7 @@ void SparseHistogram::GetParameters(DictionaryValue* params) const {
 }
 
 void SparseHistogram::GetCountAndBucketData(Count* count,
+                                            int64* sum,
                                             ListValue* buckets) const {
   // TODO(kaiwang): Implement. (See HistogramBase::WriteJSON.)
 }

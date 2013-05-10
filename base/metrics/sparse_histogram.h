@@ -88,6 +88,7 @@ class BASE_EXPORT_PRIVATE SparseHistogram : public HistogramBase {
 
   virtual void GetParameters(DictionaryValue* params) const OVERRIDE;
   virtual void GetCountAndBucketData(Count* count,
+                                     int64* sum,
                                      ListValue* buckets) const OVERRIDE;
 
   // Helpers for emitting Ascii graphic.  Each method appends data to output.
