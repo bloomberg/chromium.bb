@@ -48,7 +48,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
         int command_id,
         ui::Accelerator* accelerator) OVERRIDE { return false; }
 
-  virtual void ExecuteCommand(int command_id, int event_flags) {}
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {}
 };
 
 }  // namespace

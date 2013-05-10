@@ -93,7 +93,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
         devtools_callback_);
   }
 
-  ~DevtoolsNotificationBridge() {
+  virtual ~DevtoolsNotificationBridge() {
     content::DevToolsManager::GetInstance()->RemoveAgentStateCallback(
         devtools_callback_);
   }

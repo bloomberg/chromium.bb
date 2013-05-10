@@ -1557,7 +1557,7 @@
           ],
         },
         'conditions': [
-          ['OS=="linux"', {
+          ['OS=="linux" or OS=="mac"', {
             'clang_chrome_plugins_flags': [
               '<@(clang_chrome_plugins_flags)'
             ],
