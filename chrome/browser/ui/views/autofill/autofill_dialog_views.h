@@ -414,6 +414,7 @@ class AutofillDialogViews : public AutofillDialogView,
   class AutocheckoutProgressBar : public views::ProgressBar {
    public:
     AutocheckoutProgressBar();
+    virtual ~AutocheckoutProgressBar();
 
    private:
     // Overidden from View:

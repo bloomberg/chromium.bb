@@ -338,6 +338,15 @@ void DialogClientView::CreateFootnoteView() {
     AddChildView(footnote_view_);
 }
 
+void DialogClientView::ChildPreferredSizeChanged(View* child) {
+  if (child == footnote_view_ || child == extra_view_)
+    Layout();
+}
+
+void DialogClientView::ChildVisibilityChanged(View* child) {
+  ChildPreferredSizeChanged(child);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DialogClientView, private:
 

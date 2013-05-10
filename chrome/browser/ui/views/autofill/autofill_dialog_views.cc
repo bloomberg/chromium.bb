@@ -203,6 +203,22 @@ class ErrorBubbleContents : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ErrorBubbleContents);
 };
 
+// ButtonStripView wraps the Autocheckout progress bar and the "[X] Save details
+// in Chrome" checkbox and listens for visibility changes.
+class ButtonStripView : public views::View {
+ public:
+  ButtonStripView() {}
+  virtual ~ButtonStripView() {}
+
+ protected:
+  virtual void ChildVisibilityChanged(views::View* child) OVERRIDE {
+    PreferredSizeChanged();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ButtonStripView);
+};
+
 }  // namespace
 
 // AutofillDialogViews::SizeLimitedScrollView ----------------------------------
@@ -721,6 +737,7 @@ void AutofillDialogViews::SuggestionView::ShowTextfield(
 // AutofilDialogViews::AutocheckoutProgressBar ---------------------------------
 
 AutofillDialogViews::AutocheckoutProgressBar::AutocheckoutProgressBar() {}
+AutofillDialogViews::AutocheckoutProgressBar::~AutocheckoutProgressBar() {}
 
 gfx::Size AutofillDialogViews::AutocheckoutProgressBar::GetPreferredSize() {
   return gfx::Size(kAutocheckoutProgressBarWidth,
@@ -812,13 +829,10 @@ void AutofillDialogViews::UpdateAccountChooser() {
 
   // Update legal documents for the account.
   if (footnote_view_) {
-    string16 text = controller_->LegalDocumentsText();
-    if (text.empty()) {
-      footnote_view_->SetVisible(false);
-    } else {
-      footnote_view_->SetVisible(true);
-      legal_document_view_->SetText(text);
+    const string16 text = controller_->LegalDocumentsText();
+    legal_document_view_->SetText(text);
 
+    if (!text.empty()) {
       const std::vector<ui::Range>& link_ranges =
           controller_->LegalDocumentLinks();
       for (size_t i = 0; i < link_ranges.size(); ++i) {
@@ -828,6 +842,7 @@ void AutofillDialogViews::UpdateAccountChooser() {
       }
     }
 
+    footnote_view_->SetVisible(!text.empty());
     ContentsPreferredSizeChanged();
   }
 }
@@ -1193,7 +1208,7 @@ void AutofillDialogViews::StyledLabelLinkClicked(const ui::Range& range,
 }
 
 void AutofillDialogViews::InitChildViews() {
-  button_strip_extra_view_ = new views::View();
+  button_strip_extra_view_ = new ButtonStripView();
   button_strip_extra_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 

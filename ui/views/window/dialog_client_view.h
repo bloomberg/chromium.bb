@@ -80,6 +80,10 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Creates and adds the footnote view, if supplied by the delegate.
   void CreateFootnoteView();
 
+  // View implementation.
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual void ChildVisibilityChanged(View* child) OVERRIDE;
+
  private:
   bool has_dialog_buttons() const { return ok_button_ || cancel_button_; }
 
