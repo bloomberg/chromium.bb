@@ -11,6 +11,7 @@
 #include "cc/layers/video_layer.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/android/media_player_android.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
@@ -22,7 +23,6 @@
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #include "webkit/media/android/webmediaplayer_proxy_android.h"
-#include "webkit/media/media_switches.h"
 #include "webkit/media/webmediaplayer_util.h"
 
 #if defined(GOOGLE_TV)

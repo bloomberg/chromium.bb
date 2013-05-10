@@ -68,8 +68,6 @@
         'media_stream_audio_renderer.cc',
         'media_stream_audio_renderer.h',
         'media_stream_client.h',
-        'media_switches.cc',
-        'media_switches.h',
         'preload.h',
         'simple_video_frame_provider.cc',
         'simple_video_frame_provider.h',

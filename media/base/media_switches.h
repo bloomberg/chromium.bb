@@ -44,6 +44,10 @@ MEDIA_EXPORT extern const char kEnableEac3Playback[];
 MEDIA_EXPORT extern const char kWaveOutBuffers[];
 #endif
 
+#if defined(GOOGLE_TV)
+MEDIA_EXPORT extern const char kUseExternalVideoSurfaceThresholdInPixels[];
+#endif
+
 }  // namespace switches
 
 #endif  // MEDIA_BASE_MEDIA_SWITCHES_H_
