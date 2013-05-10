@@ -16,6 +16,14 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
+#ifdef WIN32
+#undef min
+#undef max
+
+// Allow 'this' in initializer list
+#pragma warning(disable : 4355)
+#endif
+
 class GamepadInstance : public pp::Instance {
  public:
   explicit GamepadInstance(PP_Instance instance);
