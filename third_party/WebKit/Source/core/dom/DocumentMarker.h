@@ -41,28 +41,7 @@ public:
     enum MarkerType {
         Spelling = 1 << 0,
         Grammar = 1 << 1,
-        TextMatch = 1 << 2,
-        // Text has been modified by spell correction, reversion of spell correction or other type of substitution. 
-        // On some platforms, this prevents the text from being autocorrected again. On post Snow Leopard Mac OS X, 
-        // if a Replacement marker contains non-empty description, a reversion UI will be shown.
-        Replacement = 1 << 3,
-        // Renderer needs to add underline indicating that the text has been modified by spell
-        // correction. Text with Replacement marker doesn't necessarily has CorrectionIndicator
-        // marker. For instance, after some text has been corrected, it will have both Replacement
-        // and CorrectionIndicator. However, if user further modifies such text, we would remove
-        // CorrectionIndicator marker, but retain Replacement marker.
-        CorrectionIndicator = 1 << 4,
-        // Correction suggestion has been offered, but got rejected by user.
-        RejectedCorrection = 1 << 5,
-        // Text has been modified by autocorrection. The description of this marker is the original text before autocorrection.
-        Autocorrected = 1 << 6,
-        // On some platforms, this prevents the text from being spellchecked again.
-        SpellCheckingExemption = 1 << 7,
-        // This marker indicates user has deleted an autocorrection starting at the end of the
-        // range that bears this marker. In some platforms, if the user later inserts the same original
-        // word again at this position, it will not be autocorrected again. The description of this
-        // marker is the original word before autocorrection was applied.
-        DeletedAutocorrection = 1 << 8,
+        TextMatch = 1 << 2
     };
 
     class MarkerTypes {
@@ -84,7 +63,7 @@ public:
     class AllMarkers : public MarkerTypes {
     public:
         AllMarkers()
-            : MarkerTypes(Spelling | Grammar | TextMatch | Replacement | CorrectionIndicator | RejectedCorrection | Autocorrected | SpellCheckingExemption | DeletedAutocorrection)
+            : MarkerTypes(Spelling | Grammar | TextMatch)
         {
         }
     };

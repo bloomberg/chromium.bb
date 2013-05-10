@@ -731,30 +731,6 @@ void DeleteSelectionCommand::clearTransientState()
     m_leadingWhitespace.clear();
     m_trailingWhitespace.clear();
 }
-    
-String DeleteSelectionCommand::originalStringForAutocorrectionAtBeginningOfSelection()
-{
-    if (!m_selectionToDelete.isRange())
-        return String();
-
-    VisiblePosition startOfSelection = m_selectionToDelete.start();
-    if (!isStartOfWord(startOfSelection))
-        return String();
-
-    VisiblePosition nextPosition = startOfSelection.next();
-    if (nextPosition.isNull())
-        return String();
-
-    RefPtr<Range> rangeOfFirstCharacter = Range::create(document(), startOfSelection.deepEquivalent(), nextPosition.deepEquivalent());
-    Vector<DocumentMarker*> markers = document()->markers()->markersInRange(rangeOfFirstCharacter.get(), DocumentMarker::Autocorrected);
-    for (size_t i = 0; i < markers.size(); ++i) {
-        const DocumentMarker* marker = markers[i];
-        int startOffset = marker->startOffset();
-        if (startOffset == startOfSelection.deepEquivalent().offsetInContainerNode())
-            return marker->description();
-    }
-    return String();
-}
 
 // This method removes div elements with no attributes that have only one child or no children at all.
 void DeleteSelectionCommand::removeRedundantBlocks()
@@ -783,8 +759,6 @@ void DeleteSelectionCommand::doApply()
 
     if (!m_selectionToDelete.isNonOrphanedRange())
         return;
-
-    String originalString = originalStringForAutocorrectionAtBeginningOfSelection();
 
     // save this to later make the selection with
     EAffinity affinity = m_selectionToDelete.affinity();

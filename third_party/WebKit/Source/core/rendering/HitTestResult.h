@@ -93,7 +93,6 @@ public:
     Frame* targetFrame() const;
     bool isSelected() const;
     String spellingToolTip(TextDirection&) const;
-    String replacedString() const;
     String title(TextDirection&) const;
     String innerTextIfTruncated(TextDirection&) const;
     String altDisplayString() const;

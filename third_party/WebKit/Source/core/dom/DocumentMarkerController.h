@@ -79,7 +79,6 @@ public:
     Vector<DocumentMarker> markersForNode(Node*);
     Vector<DocumentMarker*> markers();
     Vector<IntRect> renderedRectsForMarkers(DocumentMarker::MarkerType);
-    void clearDescriptionOnMarkersIntersectingRange(Range*, DocumentMarker::MarkerTypes);
 
 #ifndef NDEBUG
     void showMarkers() const;
