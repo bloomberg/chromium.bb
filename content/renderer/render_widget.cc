@@ -402,18 +402,16 @@ void RenderWidget::Resize(const gfx::Size& new_size,
     // ensures that we only resize as fast as we can paint.  We only need to
     // send an ACK if we are resized to a non-empty rect.
     webwidget_->resize(new_size);
-    if (!new_size.IsEmpty()) {
-      if (!is_accelerated_compositing_active_) {
-        // Resize should have caused an invalidation of the entire view.
-        DCHECK(paint_aggregator_.HasPendingUpdate());
-      }
-    }
+
+    // Resize should have caused an invalidation of the entire view.
+    DCHECK(new_size.IsEmpty() || is_accelerated_compositing_active_ ||
+           paint_aggregator_.HasPendingUpdate());
   } else if (!RenderThreadImpl::current()->short_circuit_size_updates()) {
     resize_ack = NO_RESIZE_ACK;
   }
 
   // Send the Resize_ACK flag once we paint again if requested.
-  if (resize_ack == SEND_RESIZE_ACK)
+  if (resize_ack == SEND_RESIZE_ACK && !new_size.IsEmpty())
     set_next_paint_is_resize_ack();
 
   if (fullscreen_change)
