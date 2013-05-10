@@ -1669,7 +1669,6 @@
         'renderer/spellchecker/spellcheck_unittest.cc',
         'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
         'renderer/translate/translate_helper_unittest.cc',
-        'renderer/translate/translate_helper_metrics_unittest.cc',
         'renderer/web_apps_unittest.cc',
         'service/cloud_print/cloud_print_helpers_unittest.cc',
         'service/cloud_print/cloud_print_token_store_unittest.cc',

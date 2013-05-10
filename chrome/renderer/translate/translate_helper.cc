@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/translate/translate_helper_metrics.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -318,37 +317,21 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
   ResetInvalidLanguageCode(&language);
   VLOG(9) << "Content-Language based language code: " << language;
 
-  TranslateHelperMetrics::ReportContentLanguage(code, language);
-
 #if defined(ENABLE_LANGUAGE_DETECTION)
   // If |language| is empty, just use CLD result even though it might be
   // chrome::kUnknownLanguageCode.
-  if (language.empty()) {
-    TranslateHelperMetrics::ReportLanguageVerification(
-        TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_ONLY);
+  if (language.empty())
     return cld_language;
-  }
 
-  if (cld_language == chrome::kUnknownLanguageCode) {
-    TranslateHelperMetrics::ReportLanguageVerification(
-        TranslateHelperMetrics::LANGUAGE_VERIFICATION_UNKNOWN);
-  } else if (language.size() >= 2 &&
-             cld_language.find(language.c_str(), 0, 2) != 0) {
-    TranslateHelperMetrics::ReportLanguageVerification(
-        TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISAGREE);
+  if (cld_language != chrome::kUnknownLanguageCode &&
+      cld_language.find(language.c_str(), 0, 2) != 0) {
     // Content-Language value might be wrong because CLD says that this page
     // is written in another language with confidence.
     // In this case, Chrome doesn't rely on any of the language codes, and
     // gives up suggesting a translation.
     VLOG(9) << "CLD disagreed with the Content-Language value with confidence.";
     return std::string(chrome::kUnknownLanguageCode);
-  } else {
-    TranslateHelperMetrics::ReportLanguageVerification(
-        TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_AGREE);
   }
-#else  // defined(ENABLE_LANGUAGE_DETECTION)
-  TranslateHelperMetrics::ReportLanguageVerification(
-      TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISABLED);
 #endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
   return language;
