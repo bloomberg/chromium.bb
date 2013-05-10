@@ -289,18 +289,27 @@ PassRefPtr<Element> Element::cloneElementWithoutAttributesAndChildren()
 PassRefPtr<Attr> Element::detachAttribute(size_t index)
 {
     ASSERT(elementData());
+    const Attribute* attribute = elementData()->attributeItem(index);
+    RefPtr<Attr> attrNode = attrIfExists(attribute->name());
+    if (attrNode)
+        detachAttrNodeAtIndex(attrNode.get(), index);
+    else {
+        attrNode = Attr::create(document(), attribute->name(), attribute->value());
+        removeAttributeInternal(index, NotInSynchronizationOfLazyAttribute);
+    }
+    return attrNode.release();
+}
+
+void Element::detachAttrNodeAtIndex(Attr* attr, size_t index)
+{
+    ASSERT(attr);
+    ASSERT(elementData());
 
     const Attribute* attribute = elementData()->attributeItem(index);
     ASSERT(attribute);
-
-    RefPtr<Attr> attrNode = attrIfExists(attribute->name());
-    if (attrNode)
-        detachAttrNodeFromElementWithValue(attrNode.get(), attribute->value());
-    else
-        attrNode = Attr::create(document(), attribute->name(), attribute->value());
-
+    ASSERT(attribute->name() == attr->qualifiedName());
+    detachAttrNodeFromElementWithValue(attr, attribute->value());
     removeAttributeInternal(index, NotInSynchronizationOfLazyAttribute);
-    return attrNode.release();
 }
 
 void Element::removeAttribute(const QualifiedName& name)
@@ -1800,13 +1809,15 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionCode& ec)
 
     synchronizeAttribute(attr->qualifiedName());
 
-    size_t index = elementData()->getAttributeItemIndex(attr->qualifiedName());
+    size_t index = elementData()->getAttrIndex(attr);
     if (index == notFound) {
         ec = NOT_FOUND_ERR;
         return 0;
     }
 
-    return detachAttribute(index);
+    RefPtr<Attr> guard(attr);
+    detachAttrNodeAtIndex(attr, index);
+    return guard.release();
 }
 
 bool Element::parseAttributeName(QualifiedName& out, const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionCode& ec)
@@ -3111,6 +3122,16 @@ void ElementData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     }
     for (unsigned i = 0, len = length(); i < len; i++)
         info.addMember(*attributeItem(i), "*attributeItem");
+}
+
+size_t ElementData::getAttrIndex(Attr* attr) const
+{
+    // This relies on the fact that Attr's QualifiedName == the Attribute's name.
+    for (unsigned i = 0; i < length(); ++i) {
+        if (attributeItem(i)->name() == attr->qualifiedName())
+            return i;
+    }
+    return notFound;
 }
 
 size_t ElementData::getAttributeItemIndexSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const
