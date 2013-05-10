@@ -2219,7 +2219,7 @@ TEST_F(DriveFileSystemTest, WebAppsRegistryIsLoaded) {
   EXPECT_TRUE(apps.empty());
 
   // Kicks loading of cached file system and query for server update. This
-  // will cause GetAccountMetadata() to be called, to check the server-side
+  // will cause GetAboutResource() to be called, to check the server-side
   // changestamp, and the webapps registry will be loaded at the same time.
   EXPECT_TRUE(ReadDirectoryByPathSync(util::GetDriveMyDriveRootPath()));
 

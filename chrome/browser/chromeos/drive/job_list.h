@@ -16,7 +16,6 @@ namespace drive {
 // Enum representing the type of job.
 enum JobType {
   TYPE_GET_ABOUT_RESOURCE,
-  TYPE_GET_ACCOUNT_METADATA,
   TYPE_GET_APP_LIST,
   TYPE_GET_ALL_RESOURCE_LIST,
   TYPE_GET_RESOURCE_LIST_IN_DIRECTORY,

@@ -196,21 +196,6 @@ TEST_F(JobSchedulerTest, GetAppList) {
   ASSERT_TRUE(app_list);
 }
 
-TEST_F(JobSchedulerTest, GetAccountMetadata) {
-  ConnectToWifi();
-
-  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::AccountMetadata> account_metadata;
-
-  scheduler_->GetAccountMetadata(
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &account_metadata));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-  ASSERT_TRUE(account_metadata);
-}
-
 TEST_F(JobSchedulerTest, GetAllResourceList) {
   ConnectToWifi();
 
@@ -522,17 +507,17 @@ TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {
       google_apis::GetContentCallback());
   // Metadata should still work
   google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::AccountMetadata> account_metadata;
+  scoped_ptr<google_apis::AboutResource> about_resource;
 
   // Try to get the metadata
-  scheduler_->GetAccountMetadata(
+  scheduler_->GetAboutResource(
       google_apis::test_util::CreateCopyResultCallback(
-          &metadata_error, &account_metadata));
+          &metadata_error, &about_resource));
   google_apis::test_util::RunBlockingPoolTask();
 
   // Check the metadata
   ASSERT_EQ(google_apis::HTTP_SUCCESS, metadata_error);
-  ASSERT_TRUE(account_metadata);
+  ASSERT_TRUE(about_resource);
 
   // Check the download
   EXPECT_EQ(google_apis::GDATA_OTHER_ERROR, download_error);
@@ -576,17 +561,17 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxDisabled) {
       google_apis::GetContentCallback());
   // Metadata should still work
   google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::AccountMetadata> account_metadata;
+  scoped_ptr<google_apis::AboutResource> about_resource;
 
   // Try to get the metadata
-  scheduler_->GetAccountMetadata(
+  scheduler_->GetAboutResource(
       google_apis::test_util::CreateCopyResultCallback(
-          &metadata_error, &account_metadata));
+          &metadata_error, &about_resource));
   google_apis::test_util::RunBlockingPoolTask();
 
   // Check the metadata
   ASSERT_EQ(google_apis::HTTP_SUCCESS, metadata_error);
-  ASSERT_TRUE(account_metadata);
+  ASSERT_TRUE(about_resource);
 
   // Check the download
   EXPECT_EQ(google_apis::GDATA_OTHER_ERROR, download_error);
@@ -630,17 +615,17 @@ TEST_F(JobSchedulerTest, DownloadFileCellularEnabled) {
       google_apis::GetContentCallback());
   // Metadata should still work
   google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::AccountMetadata> account_metadata;
+  scoped_ptr<google_apis::AboutResource> about_resource;
 
   // Try to get the metadata
-  scheduler_->GetAccountMetadata(
+  scheduler_->GetAboutResource(
       google_apis::test_util::CreateCopyResultCallback(
-          &metadata_error, &account_metadata));
+          &metadata_error, &about_resource));
   google_apis::test_util::RunBlockingPoolTask();
 
   // Check the metadata
   ASSERT_EQ(google_apis::HTTP_SUCCESS, metadata_error);
-  ASSERT_TRUE(account_metadata);
+  ASSERT_TRUE(about_resource);
 
   // Check the download
   EXPECT_EQ(google_apis::HTTP_SUCCESS, download_error);
@@ -676,17 +661,17 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxEnabled) {
       google_apis::GetContentCallback());
   // Metadata should still work
   google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::AccountMetadata> account_metadata;
+  scoped_ptr<google_apis::AboutResource> about_resource;
 
   // Try to get the metadata
-  scheduler_->GetAccountMetadata(
+  scheduler_->GetAboutResource(
       google_apis::test_util::CreateCopyResultCallback(
-          &metadata_error, &account_metadata));
+          &metadata_error, &about_resource));
   google_apis::test_util::RunBlockingPoolTask();
 
   // Check the metadata
   ASSERT_EQ(google_apis::HTTP_SUCCESS, metadata_error);
-  ASSERT_TRUE(account_metadata);
+  ASSERT_TRUE(about_resource);
 
   // Check the download
   EXPECT_EQ(google_apis::HTTP_SUCCESS, download_error);
@@ -710,7 +695,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<google_apis::ResourceEntry> entry;
-  scoped_ptr<google_apis::AccountMetadata> account_metadata;
+  scoped_ptr<google_apis::AboutResource> about_resource;
   base::FilePath path;
 
   std::set<JobType> expected_types;
@@ -721,10 +706,10 @@ TEST_F(JobSchedulerTest, JobInfo) {
       fake_drive_service_->GetRootResourceId(),
       "New Directory",
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  expected_types.insert(TYPE_GET_ACCOUNT_METADATA);
-  scheduler_->GetAccountMetadata(
+  expected_types.insert(TYPE_GET_ABOUT_RESOURCE);
+  scheduler_->GetAboutResource(
       google_apis::test_util::CreateCopyResultCallback(
-          &error, &account_metadata));
+          &error, &about_resource));
   expected_types.insert(TYPE_RENAME_RESOURCE);
   scheduler_->RenameResource(
       "file:2_file_resource_id",
@@ -742,11 +727,11 @@ TEST_F(JobSchedulerTest, JobInfo) {
   // The number of jobs queued so far.
   EXPECT_EQ(4U, scheduler_->GetJobInfoList().size());
   EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_ADD_NEW_DIRECTORY));
-  EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_GET_ACCOUNT_METADATA));
+  EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_GET_ABOUT_RESOURCE));
   EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_RENAME_RESOURCE));
   EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_DOWNLOAD_FILE));
   EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_ADD_NEW_DIRECTORY));
-  EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_GET_ACCOUNT_METADATA));
+  EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_GET_ABOUT_RESOURCE));
   EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_RENAME_RESOURCE));
   EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_DOWNLOAD_FILE));
 
@@ -788,7 +773,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
   EXPECT_EQ(TYPE_DOWNLOAD_FILE, jobs[0].job_type);
 
   EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_ADD_NEW_DIRECTORY));
-  EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_GET_ACCOUNT_METADATA));
+  EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_GET_ABOUT_RESOURCE));
   EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_RENAME_RESOURCE));
   EXPECT_TRUE(logger.Has(JobListLogger::UPDATED,
                          TYPE_ADD_RESOURCE_TO_DIRECTORY));
@@ -796,7 +781,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
   EXPECT_FALSE(logger.Has(JobListLogger::UPDATED, TYPE_DOWNLOAD_FILE));
 
   EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_ADD_NEW_DIRECTORY));
-  EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_GET_ACCOUNT_METADATA));
+  EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_GET_ABOUT_RESOURCE));
   EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_RENAME_RESOURCE));
   EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_ADD_RESOURCE_TO_DIRECTORY));
   EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_COPY_HOSTED_DOCUMENT));

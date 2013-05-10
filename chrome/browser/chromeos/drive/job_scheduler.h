@@ -39,11 +39,6 @@ class JobScheduler
   virtual void CancelJob(JobID job_id) OVERRIDE;
   virtual void CancelAllJobs() OVERRIDE;
 
-  // Adds a GetAccountMetadata operation to the queue.
-  // |callback| must not be null.
-  void GetAccountMetadata(
-      const google_apis::GetAccountMetadataCallback& callback);
-
   // Adds a GetAppList operation to the queue.
   // |callback| must not be null.
   void GetAppList(const google_apis::GetAppListCallback& callback);
@@ -249,11 +244,6 @@ class JobScheduler
     //   TYPE_ADD_NEW_DIRECTORY,
     google_apis::GetResourceEntryCallback get_resource_entry_callback;
 
-    // Callback for operations that take a GetAccountMetadataCallback.
-    // Used by:
-    //   TYPE_GET_ACCOUNT_METADATA,
-    google_apis::GetAccountMetadataCallback get_account_metadata_callback;
-
     // Callback for operations that take a GetAboutResourceCallback.
     // Used by:
     //   TYPE_GET_ABOUT_RESOURCE,
@@ -342,13 +332,6 @@ class JobScheduler
       const google_apis::GetAboutResourceCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::AboutResource> about_resource);
-
-  // Callback for job finishing with a GetAccountMetadataCallback.
-  void OnGetAccountMetadataJobDone(
-      JobID job_id,
-      const google_apis::GetAccountMetadataCallback& callback,
-      google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::AccountMetadata> account_metadata);
 
   // Callback for job finishing with a GetAppListCallback.
   void OnGetAppListJobDone(

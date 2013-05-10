@@ -116,17 +116,6 @@ void JobScheduler::CancelAllJobs() {
   drive_service_->CancelAll();
 }
 
-void JobScheduler::GetAccountMetadata(
-    const google_apis::GetAccountMetadataCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  scoped_ptr<JobEntry> new_job(new JobEntry(TYPE_GET_ACCOUNT_METADATA));
-  new_job->get_account_metadata_callback = callback;
-
-  StartNewJob(new_job.Pass());
-}
-
 void JobScheduler::GetAboutResource(
     const google_apis::GetAboutResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -476,15 +465,6 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id,
                      entry->get_about_resource_callback));
-    }
-    break;
-
-    case TYPE_GET_ACCOUNT_METADATA: {
-      drive_service_->GetAccountMetadata(
-          base::Bind(&JobScheduler::OnGetAccountMetadataJobDone,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     job_id,
-                     entry->get_account_metadata_callback));
     }
     break;
 
@@ -844,18 +824,6 @@ void JobScheduler::OnGetAboutResourceJobDone(
     callback.Run(error, about_resource.Pass());
 }
 
-void JobScheduler::OnGetAccountMetadataJobDone(
-    JobID job_id,
-    const google_apis::GetAccountMetadataCallback& callback,
-    google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::AccountMetadata> account_metadata) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (OnJobDone(job_id, util::GDataToFileError(error)))
-    callback.Run(error, account_metadata.Pass());
-}
-
 void JobScheduler::OnGetAppListJobDone(
     JobID job_id,
     const google_apis::GetAppListCallback& callback,
@@ -931,7 +899,6 @@ void JobScheduler::OnConnectionTypeChanged(
 JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
   switch (type) {
     case TYPE_GET_ABOUT_RESOURCE:
-    case TYPE_GET_ACCOUNT_METADATA:
     case TYPE_GET_APP_LIST:
     case TYPE_GET_ALL_RESOURCE_LIST:
     case TYPE_GET_RESOURCE_LIST_IN_DIRECTORY:

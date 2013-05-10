@@ -14,8 +14,6 @@ std::string JobTypeToString(JobType type) {
   switch (type){
     case TYPE_GET_ABOUT_RESOURCE:
       return "TYPE_GET_ABOUT_RESOURCE";
-    case TYPE_GET_ACCOUNT_METADATA:
-      return "TYPE_GET_ACCOUNT_METADATA";
     case TYPE_GET_APP_LIST:
       return "TYPE_GET_APP_LIST";
     case TYPE_GET_ALL_RESOURCE_LIST:
