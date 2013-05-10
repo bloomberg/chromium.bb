@@ -1021,8 +1021,6 @@ private:
     // Rectangle encompassing the scroll corner and resizer rect.
     IntRect scrollCornerAndResizerRect() const;
 
-    // NOTE: This should only be called by the overriden setScrollOffset from ScrollableArea.
-    void scrollTo(int, int);
     void updateCompositingLayersAfterScroll();
 
     IntSize scrollbarOffset(const Scrollbar*) const;

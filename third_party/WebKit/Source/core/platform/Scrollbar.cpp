@@ -295,11 +295,8 @@ void Scrollbar::moveThumb(int pos, bool draggingDocument)
             delta = pos - m_documentDragPos;
         m_draggingDocument = true;
         FloatPoint currentPosition = m_scrollableArea->scrollAnimator()->currentPosition();
-        int destinationPosition = (m_orientation == HorizontalScrollbar ? currentPosition.x() : currentPosition.y()) + delta;
-        if (delta > 0)
-            destinationPosition = min(destinationPosition + delta, maximum());
-        else if (delta < 0)
-            destinationPosition = max(destinationPosition + delta, 0);
+        float destinationPosition = (m_orientation == HorizontalScrollbar ? currentPosition.x() : currentPosition.y()) + delta;
+        destinationPosition = m_scrollableArea->clampScrollPosition(m_orientation, destinationPosition);
         m_scrollableArea->scrollToOffsetWithoutAnimation(m_orientation, destinationPosition);
         m_documentDragPos = pos;
         return;
@@ -314,14 +311,15 @@ void Scrollbar::moveThumb(int pos, bool draggingDocument)
     int thumbPos = theme()->thumbPosition(this);
     int thumbLen = theme()->thumbLength(this);
     int trackLen = theme()->trackLength(this);
-    int maxPos = trackLen - thumbLen;
     if (delta > 0)
-        delta = min(maxPos - thumbPos, delta);
+        delta = min(trackLen - thumbLen - thumbPos, delta);
     else if (delta < 0)
         delta = max(-thumbPos, delta);
     
+    float minPos = m_scrollableArea->minimumScrollPosition(m_orientation);
+    float maxPos = m_scrollableArea->maximumScrollPosition(m_orientation);
     if (delta) {
-        float newPosition = static_cast<float>(thumbPos + delta) * maximum() / (trackLen - thumbLen);
+        float newPosition = static_cast<float>(thumbPos + delta) * (maxPos - minPos) / (trackLen - thumbLen) + minPos;
         m_scrollableArea->scrollToOffsetWithoutAnimation(m_orientation, newPosition);
     }
 }
