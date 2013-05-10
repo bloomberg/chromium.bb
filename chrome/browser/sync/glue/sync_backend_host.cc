@@ -21,6 +21,7 @@
 #include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/invalidation/invalidator_storage.h"
 #include "chrome/browser/net/network_time_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
@@ -32,7 +33,6 @@
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
-#include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -350,7 +350,7 @@ SyncBackendHost::SyncBackendHost(
     const std::string& name,
     Profile* profile,
     const base::WeakPtr<SyncPrefs>& sync_prefs,
-    const base::WeakPtr<InvalidatorStorage>& invalidator_storage)
+    const base::WeakPtr<invalidation::InvalidatorStorage>& invalidator_storage)
     : weak_ptr_factory_(this),
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),

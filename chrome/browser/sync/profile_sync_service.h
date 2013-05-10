@@ -20,6 +20,8 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/invalidation/invalidation_frontend.h"
+#include "chrome/browser/invalidation/invalidator_storage.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
@@ -28,8 +30,6 @@
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/data_type_manager_observer.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/invalidation_frontend.h"
-#include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/profile_sync_service_base.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_prefs.h"
@@ -162,7 +162,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                            public syncer::UnrecoverableErrorHandler,
                            public content::NotificationObserver,
                            public ProfileKeyedService,
-                           public InvalidationFrontend {
+                           public invalidation::InvalidationFrontend {
  public:
   typedef browser_sync::SyncBackendHost::Status Status;
 
@@ -814,7 +814,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   browser_sync::SyncPrefs sync_prefs_;
 
   // TODO(tim): Move this to InvalidationService, once it exists. Bug 124137.
-  browser_sync::InvalidatorStorage invalidator_storage_;
+  invalidation::InvalidatorStorage invalidator_storage_;
 
   // TODO(ncarter): Put this in a profile, once there is UI for it.
   // This specifies where to find the sync server.

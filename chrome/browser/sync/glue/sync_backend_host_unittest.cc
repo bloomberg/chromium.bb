@@ -11,10 +11,10 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "chrome/browser/invalidation/invalidator_storage.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
-#include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
@@ -146,7 +146,7 @@ class SyncBackendHostTest : public testing::Test {
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
     sync_prefs_.reset(new SyncPrefs(profile_->GetPrefs()));
-    invalidator_storage_.reset(new InvalidatorStorage(
+    invalidator_storage_.reset(new invalidation::InvalidatorStorage(
         profile_->GetPrefs()));
     backend_.reset(new SyncBackendHost(
         profile_->GetDebugName(),
@@ -264,7 +264,7 @@ class SyncBackendHostTest : public testing::Test {
   syncer::TestUnrecoverableErrorHandler handler_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<SyncPrefs> sync_prefs_;
-  scoped_ptr<InvalidatorStorage> invalidator_storage_;
+  scoped_ptr<invalidation::InvalidatorStorage> invalidator_storage_;
   scoped_ptr<SyncBackendHost> backend_;
   FakeSyncManager* fake_manager_;
   FakeSyncManagerFactory fake_manager_factory_;

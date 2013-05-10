@@ -1,9 +1,8 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
 
-#include "chrome/browser/sync/invalidations/invalidator_storage.h"
+#include "chrome/browser/invalidation/invalidator_storage.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -18,8 +17,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncer::InvalidationStateMap;
-
-namespace browser_sync {
 
 namespace {
 
@@ -38,6 +35,8 @@ void GenerateAckHandlesTestHelper(syncer::AckHandleMap* output,
 }
 
 }  // namespace
+
+namespace invalidation {
 
 class InvalidatorStorageTest : public testing::Test {
  public:
@@ -504,4 +503,4 @@ TEST_F(InvalidatorStorageTest, GenerateAckHandlesAndAcknowledge) {
   EXPECT_EQ(state_map, storage.GetAllInvalidationStates());
 }
 
-}  // namespace browser_sync
+}  // namespace invalidation

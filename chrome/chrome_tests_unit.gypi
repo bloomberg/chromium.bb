@@ -888,6 +888,11 @@
         'browser/importer/safari_importer_unittest.mm',
         'browser/importer/toolbar_importer_unittest.cc',
         'browser/internal_auth_unittest.cc',
+        'browser/invalidation/invalidation_frontend_test_template.cc',
+        'browser/invalidation/invalidation_frontend_test_template.h',
+        'browser/invalidation/invalidation_service_android_unittest.cc',
+        'browser/invalidation/invalidator_storage_unittest.cc',
+        'browser/invalidation/ticl_invalidation_service_unittest.cc',
         'browser/language_usage_metrics_unittest.cc',
         'browser/mac/keystone_glue_unittest.mm',
         'browser/managed_mode/managed_mode_unittest.cc',
@@ -1182,7 +1187,6 @@
         'browser/sync/glue/typed_url_model_associator_unittest.cc',
         'browser/sync/glue/ui_data_type_controller_unittest.cc',
         'browser/sync/glue/ui_model_worker_unittest.cc',
-        'browser/sync/invalidations/invalidator_storage_unittest.cc',
         'browser/sync/profile_sync_components_factory_impl_unittest.cc',
         'browser/sync/profile_sync_components_factory_mock.cc',
         'browser/sync/profile_sync_components_factory_mock.h',
@@ -2300,6 +2304,9 @@
             # The autofill popup is implemented in mostly native code on
             # Android.
             'browser/ui/autofill/autofill_popup_controller_unittest.cc',
+
+            # Android uses a different invaliator.
+            'browser/invalidation/ticl_invalidation_service_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],

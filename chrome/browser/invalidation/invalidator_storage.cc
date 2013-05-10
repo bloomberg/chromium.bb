@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/invalidations/invalidator_storage.h"
+#include "chrome/browser/invalidation/invalidator_storage.h"
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -19,8 +19,6 @@
 #include "sync/internal_api/public/base/model_type.h"
 
 using syncer::InvalidationStateMap;
-
-namespace browser_sync {
 
 namespace {
 
@@ -93,6 +91,8 @@ DictionaryValue* ObjectIdAndStateToValue(
 }
 
 }  // namespace
+
+namespace invalidation {
 
 // static
 void InvalidatorStorage::RegisterUserPrefs(
@@ -345,4 +345,4 @@ void InvalidatorStorage::Acknowledge(const invalidation::ObjectId& id,
                      state_map_list);
 }
 
-}  // namespace browser_sync
+}  // namespace invalidation

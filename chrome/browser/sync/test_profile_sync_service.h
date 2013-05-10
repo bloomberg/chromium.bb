@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/invalidation/invalidator_storage.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
-#include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_prefs.h"
@@ -38,7 +38,8 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   SyncBackendHostForProfileSyncTest(
       Profile* profile,
       const base::WeakPtr<SyncPrefs>& sync_prefs,
-      const base::WeakPtr<InvalidatorStorage>& invalidator_storage,
+      const base::WeakPtr<invalidation::InvalidatorStorage>&
+          invalidator_storage,
       syncer::TestIdFactory& id_factory,
       base::Closure& callback,
       bool set_initial_sync_ended_on_init,

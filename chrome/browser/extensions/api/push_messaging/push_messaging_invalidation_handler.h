@@ -14,7 +14,9 @@
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h"
 #include "sync/notifier/invalidation_handler.h"
 
+namespace invalidation {
 class InvalidationFrontend;
+}
 
 namespace extensions {
 
@@ -30,7 +32,7 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
   // |extension_ids| is the set of extension IDs for which push messaging is
   // enabled.
   PushMessagingInvalidationHandler(
-      InvalidationFrontend* service,
+      invalidation::InvalidationFrontend* service,
       PushMessagingInvalidationHandlerDelegate* delegate);
   virtual ~PushMessagingInvalidationHandler();
 
@@ -54,7 +56,7 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
   void UpdateRegistrations();
 
   base::ThreadChecker thread_checker_;
-  InvalidationFrontend* const service_;
+  invalidation::InvalidationFrontend* const service_;
   std::set<std::string> registered_extensions_;
   syncer::ObjectIdSet suppressed_ids_;
   PushMessagingInvalidationHandlerDelegate* const delegate_;

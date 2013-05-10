@@ -36,7 +36,7 @@ namespace browser_sync {
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     Profile* profile,
     const base::WeakPtr<SyncPrefs>& sync_prefs,
-    const base::WeakPtr<InvalidatorStorage>& invalidator_storage,
+    const base::WeakPtr<invalidation::InvalidatorStorage>& invalidator_storage,
     syncer::TestIdFactory& id_factory,
     base::Closure& callback,
     bool set_initial_sync_ended_on_init,

@@ -44,11 +44,14 @@ namespace syncer {
 class SyncManagerFactory;
 }
 
+namespace invalidation {
+class InvalidatorStorage;
+}
+
 namespace browser_sync {
 
 class AndroidInvalidatorBridge;
 class ChangeProcessor;
-class InvalidatorStorage;
 class SyncBackendRegistrar;
 class SyncPrefs;
 class SyncedDeviceTracker;
@@ -163,7 +166,8 @@ class SyncBackendHost
       Profile* profile,
       const base::WeakPtr<SyncPrefs>& sync_prefs,
       // TODO(tim): Temporary, remove when bug 124137 finished.
-      const base::WeakPtr<InvalidatorStorage>& invalidator_storage);
+      const base::WeakPtr<invalidation::InvalidatorStorage>&
+          invalidator_storage);
 
   // For testing.
   // TODO(skrul): Extract an interface so this is not needed.

@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
-#include "chrome/browser/sync/invalidation_frontend.h"
+#include "chrome/browser/invalidation/invalidation_frontend.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "sync/internal_api/public/base/invalidation_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,7 +22,7 @@ namespace extensions {
 
 namespace {
 
-class MockInvalidationFrontend : public InvalidationFrontend {
+class MockInvalidationFrontend : public invalidation::InvalidationFrontend {
  public:
   MockInvalidationFrontend();
   ~MockInvalidationFrontend();

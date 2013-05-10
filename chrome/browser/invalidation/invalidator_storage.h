@@ -6,8 +6,8 @@
 // to use PrefService as persistence for invalidation state. It is not thread
 // safe, and lives on the UI thread.
 
-#ifndef CHROME_BROWSER_SYNC_INVALIDATIONS_INVALIDATOR_STORAGE_H_
-#define CHROME_BROWSER_SYNC_INVALIDATIONS_INVALIDATOR_STORAGE_H_
+#ifndef CHROME_BROWSER_INVALIDATION_INVALIDATOR_STORAGE_H_
+#define CHROME_BROWSER_INVALIDATION_INVALIDATOR_STORAGE_H_
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
@@ -16,6 +16,7 @@
 #include "sync/notifier/invalidation_state_tracker.h"
 
 class PrefService;
+class PrefRegistrySyncable;
 
 namespace base {
 class DictionaryValue;
@@ -26,13 +27,8 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace browser_sync {
+namespace invalidation {
 
-// TODO(tim): Bug 124137. We may want to move this outside of sync/ into a
-// browser/invalidations directory, or re-organize to have a browser
-// subdirectory that contains signin/ sync/ invalidations/ and other cloud
-// services.  For now this is still tied to sync while we refactor, so minimize
-// churn and keep it here.
 class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
                            public syncer::InvalidationStateTracker {
  public:
@@ -104,6 +100,6 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
   DISALLOW_COPY_AND_ASSIGN(InvalidatorStorage);
 };
 
-}  // namespace browser_sync
+}  // namespace invalidation
 
-#endif  // CHROME_BROWSER_SYNC_INVALIDATIONS_INVALIDATOR_STORAGE_H_
+#endif  // CHROME_BROWSER_INVALIDATION_INVALIDATOR_STORAGE_H_
