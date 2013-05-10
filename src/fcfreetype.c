@@ -1671,10 +1671,10 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	alen = (len + 63) & ~63;
 	fontdata = malloc (alen);
 	if (!fontdata)
-	    goto bail1;
+	    goto bail3;
 	err = FT_Load_Sfnt_Table (face, 0, 0, (FT_Byte *)fontdata, &len);
 	if (err != FT_Err_Ok)
-	    goto bail1;
+	    goto bail3;
 	memset (&fontdata[len], 0, alen - len);
 	hashstr = FcHashGetSHA256DigestFromMemory (fontdata, len);
     }
@@ -1687,12 +1687,14 @@ FcFreeTypeQueryFace (const FT_Face  face,
     }
     else
     {
-	goto bail1;
+	goto bail3;
     }
-    if (!hashstr)
-	goto bail1;
-    if (!FcPatternAddString (pat, FC_HASH, hashstr))
-	goto bail1;
+    if (hashstr)
+    {
+	if (!FcPatternAddString (pat, FC_HASH, hashstr))
+	    goto bail1;
+    }
+bail3:
 
     /*
      * Compute the unicode coverage for the font

@@ -191,15 +191,26 @@ FcCompareSize (FcValue *value1, FcValue *value2)
 static double
 FcCompareFilename (FcValue *v1, FcValue *v2)
 {
-	const FcChar8 *s1 = FcValueString (v1), *s2 = FcValueString (v2);
-	if (FcStrCmp (s1, s2) == 0)
-	    return 0.0;
-	else if (FcStrCmpIgnoreCase (s1, s2) == 0)
-	    return 1.0;
-	else if (FcStrGlobMatch (s1, s2))
-	    return 2.0;
-	else
-	    return 3.0;
+    const FcChar8 *s1 = FcValueString (v1), *s2 = FcValueString (v2);
+    if (FcStrCmp (s1, s2) == 0)
+	return 0.0;
+    else if (FcStrCmpIgnoreCase (s1, s2) == 0)
+	return 1.0;
+    else if (FcStrGlobMatch (s1, s2))
+	return 2.0;
+    else
+	return 3.0;
+}
+
+static double
+FcCompareHash (FcValue *v1, FcValue *v2)
+{
+    const FcChar8 *s1 = FcValueString (v1), *s2 = FcValueString (v2);
+
+    /* Do not match an empty string */
+    if (!s1 || !s2 || !s1[0] || !s2[0])
+	return 1.0;
+    return FcCompareString (v1, v2);
 }
 
 #define PRI_NULL(n)				\
@@ -215,6 +226,7 @@ FcCompareFilename (FcValue *v1, FcValue *v2)
 #define PRI_FcCompareCharSet(n)		PRI1(n)
 #define PRI_FcCompareLang(n)		PRI1(n)
 #define PRI_FcComparePostScript(n)	PRI1(n)
+#define PRI_FcCompareHash(n)		PRI1(n)
 
 #define FC_OBJECT(NAME, Type, Cmp)	PRI_##Cmp(NAME)
 
