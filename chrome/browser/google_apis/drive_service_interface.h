@@ -21,7 +21,6 @@ class IOBuffer;
 namespace google_apis {
 
 class AboutResource;
-class AccountMetadata;
 class AppList;
 class ResourceEntry;
 class ResourceList;
@@ -48,11 +47,6 @@ typedef base::Callback<void(GDataErrorCode error,
 typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<ResourceEntry> entry)>
     GetResourceEntryCallback;
-
-// Callback used for GetAccountMetadata().
-typedef base::Callback<void(GDataErrorCode error,
-                            scoped_ptr<AccountMetadata> account_metadata)>
-    GetAccountMetadataCallback;
 
 // Callback used for GetAboutResource().
 typedef base::Callback<void(GDataErrorCode error,
@@ -199,13 +193,6 @@ class DriveServiceInterface {
   // |callback| must not be null.
   virtual void GetResourceEntry(const std::string& resource_id,
                                 const GetResourceEntryCallback& callback) = 0;
-
-  // Gets the account metadata from the server using the default account
-  // metadata URL. Upon completion, invokes |callback| with results on the
-  // calling thread.
-  // |callback| must not be null.
-  virtual void GetAccountMetadata(
-      const GetAccountMetadataCallback& callback) = 0;
 
   // Gets the about resource information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.

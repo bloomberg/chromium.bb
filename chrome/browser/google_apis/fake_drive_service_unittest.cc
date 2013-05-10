@@ -610,39 +610,6 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetChangeList) {
   EXPECT_EQ(1, fake_service_.change_list_load_count());
 }
 
-TEST_F(FakeDriveServiceTest, GetAccountMetadata) {
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "chromeos/gdata/account_metadata.json"));
-
-  GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<AccountMetadata> account_metadata;
-  fake_service_.GetAccountMetadata(
-      test_util::CreateCopyResultCallback(&error, &account_metadata));
-  message_loop_.RunUntilIdle();
-
-  EXPECT_EQ(HTTP_SUCCESS, error);
-
-  ASSERT_TRUE(account_metadata);
-  // Do some sanity check.
-  EXPECT_EQ(2U, account_metadata->installed_apps().size());
-  EXPECT_EQ(1, fake_service_.account_metadata_load_count());
-}
-
-TEST_F(FakeDriveServiceTest, GetAccountMetadata_Offline) {
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "chromeos/gdata/account_metadata.json"));
-  fake_service_.set_offline(true);
-
-  GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<AccountMetadata> account_metadata;
-  fake_service_.GetAccountMetadata(
-      test_util::CreateCopyResultCallback(&error, &account_metadata));
-  message_loop_.RunUntilIdle();
-
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
-  EXPECT_FALSE(account_metadata);
-}
-
 TEST_F(FakeDriveServiceTest, GetAboutResource) {
   ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
       "chromeos/gdata/account_metadata.json"));

@@ -81,8 +81,6 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void GetResourceEntry(
       const std::string& resource_id,
       const GetResourceEntryCallback& callback) OVERRIDE;
-  virtual void GetAccountMetadata(
-      const GetAccountMetadataCallback& callback) OVERRIDE;
   virtual void GetAboutResource(
       const GetAboutResourceCallback& callback) OVERRIDE;
   virtual void GetAppList(const GetAppListCallback& callback) OVERRIDE;

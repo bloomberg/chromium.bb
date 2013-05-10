@@ -282,20 +282,6 @@ void GDataWapiService::GetResourceEntry(
           base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
-void GDataWapiService::GetAccountMetadata(
-    const GetAccountMetadataCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  runner_->StartOperationWithRetry(
-      new GetAccountMetadataOperation(
-          operation_registry(),
-          url_request_context_getter_,
-          url_generator_,
-          callback,
-          true));  // Include installed apps.
-}
-
 void GDataWapiService::GetAboutResource(
     const GetAboutResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

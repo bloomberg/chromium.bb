@@ -98,7 +98,6 @@ FakeDriveService::FakeDriveService()
       resource_list_load_count_(0),
       change_list_load_count_(0),
       directory_load_count_(0),
-      account_metadata_load_count_(0),
       about_resource_load_count_(0),
       offline_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -368,33 +367,6 @@ void FakeDriveService::GetResourceEntry(
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_NOT_FOUND, base::Passed(&null)));
-}
-
-void FakeDriveService::GetAccountMetadata(
-    const GetAccountMetadataCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (offline_) {
-    scoped_ptr<AccountMetadata> null;
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   GDATA_NO_CONNECTION,
-                   base::Passed(&null)));
-    return;
-  }
-
-  ++account_metadata_load_count_;
-  scoped_ptr<AccountMetadata> account_metadata =
-      AccountMetadata::CreateFrom(*account_metadata_value_);
-  // Overwrite the change stamp.
-  account_metadata->set_largest_changestamp(largest_changestamp_);
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback,
-                 HTTP_SUCCESS,
-                 base::Passed(&account_metadata)));
 }
 
 void FakeDriveService::GetAboutResource(

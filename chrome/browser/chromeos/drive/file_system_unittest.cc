@@ -117,7 +117,7 @@ class DriveFileSystemTest : public testing::Test {
   DriveFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         // |root_feed_changestamp_| should be set to the largest changestamp in
-        // account metadata feed. But we fake it by some non-zero positive
+        // about resource feed. But we fake it by some non-zero positive
         // increasing value.  See |LoadFeed()|.
         root_feed_changestamp_(1) {
   }
@@ -473,7 +473,7 @@ TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
   message_loop_.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
 
-  // Although GetEntryInfoByPath() was called twice, the account metadata
+  // Although GetEntryInfoByPath() was called twice, the resource list
   // should only be loaded once. In the past, there was a bug that caused
   // it to be loaded twice.
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
@@ -870,8 +870,8 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
 
   // Kicks loading of cached file system and query for server update.
   EXPECT_TRUE(ReadDirectoryByPathSync(util::GetDriveMyDriveRootPath()));
-  // Loading of account metadata should not happen as it's offline.
-  EXPECT_EQ(0, fake_drive_service_->account_metadata_load_count());
+  // Loading of about resource should not happen as it's offline.
+  EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
 
   // Tests that cached data can be loaded even if the server is not reachable.
   EXPECT_TRUE(EntryExists(base::FilePath(

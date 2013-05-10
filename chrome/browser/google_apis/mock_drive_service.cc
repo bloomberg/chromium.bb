@@ -25,8 +25,6 @@ namespace google_apis {
 MockDriveService::MockDriveService() {
   ON_CALL(*this, GetChangeList(_, _))
       .WillByDefault(Invoke(this, &MockDriveService::GetChangeListStub));
-  ON_CALL(*this, GetAccountMetadata(_))
-      .WillByDefault(Invoke(this, &MockDriveService::GetAccountMetadataStub));
   ON_CALL(*this, DeleteResource(_, _, _))
       .WillByDefault(Invoke(this, &MockDriveService::DeleteResourceStub));
   ON_CALL(*this, CopyHostedDocument(_, _, _))
@@ -45,8 +43,6 @@ MockDriveService::MockDriveService() {
       .WillByDefault(Invoke(this, &MockDriveService::DownloadFileStub));
 
   // Fill in the default values for mock data.
-  account_metadata_data_ =
-      test_util::LoadJSONFile("chromeos/gdata/account_metadata.json");
   directory_data_ =
       test_util::LoadJSONFile("chromeos/gdata/new_folder_entry.json");
 }
@@ -61,16 +57,6 @@ void MockDriveService::GetChangeListStub(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,
                  base::Passed(&resource_list)));
-}
-
-void MockDriveService::GetAccountMetadataStub(
-    const GetAccountMetadataCallback& callback) {
-  scoped_ptr<AccountMetadata> account_metadata =
-      AccountMetadata::CreateFrom(*account_metadata_data_);
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS,
-                 base::Passed(&account_metadata)));
 }
 
 void MockDriveService::DeleteResourceStub(

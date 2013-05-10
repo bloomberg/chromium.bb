@@ -55,8 +55,6 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_METHOD2(GetResourceEntry,
       void(const std::string& resource_id,
           const GetResourceEntryCallback& callback));
-  MOCK_METHOD1(GetAccountMetadata,
-      void(const GetAccountMetadataCallback& callback));
   MOCK_METHOD1(GetAboutResource,
       void(const GetAboutResourceCallback& callback));
   MOCK_METHOD1(GetAppList, void(const GetAppListCallback& callback));
@@ -144,10 +142,6 @@ class MockDriveService : public DriveServiceInterface {
   void GetChangeListStub(int64 start_changestamp,
                          const GetResourceListCallback& callback);
 
-  // Will call |callback| with HTTP_SUCCESS and a StringValue with the current
-  // value of |account_metadata_|.
-  void GetAccountMetadataStub(const GetAccountMetadataCallback& callback);
-
   // Will call |callback| with HTTP_SUCCESS.
   void DeleteResourceStub(const std::string& resource_id,
                           const std::string& etag,
@@ -192,9 +186,6 @@ class MockDriveService : public DriveServiceInterface {
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback,
       const ProgressCallback& progress_callback);
-
-  // Account meta data to be returned from GetAccountMetadata.
-  scoped_ptr<base::Value> account_metadata_data_;
 
   // JSON data to be returned from CreateDirectory.
   scoped_ptr<base::Value> directory_data_;

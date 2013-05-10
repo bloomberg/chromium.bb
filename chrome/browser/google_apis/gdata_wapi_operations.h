@@ -20,6 +20,7 @@ class URLRequestContextGetter;
 
 namespace google_apis {
 
+class AccountMetadata;
 class GDataWapiUrlGenerator;
 class ResourceEntry;
 
@@ -132,6 +133,11 @@ class GetResourceEntryOperation : public GetDataOperation {
 };
 
 //========================= GetAccountMetadataOperation ========================
+
+// Callback used for GetAccountMetadata().
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<AccountMetadata> account_metadata)>
+    GetAccountMetadataCallback;
 
 // This class performs the operation for fetching account metadata.
 class GetAccountMetadataOperation : public GetDataOperation {

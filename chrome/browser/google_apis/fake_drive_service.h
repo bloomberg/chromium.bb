@@ -61,12 +61,6 @@ class FakeDriveService : public DriveServiceInterface {
   // GetResourceListInDirectory().
   int directory_load_count() const { return directory_load_count_; }
 
-  // Returns the number of times the account metadata is successfully loaded
-  // by GetAccountMetadata().
-  int account_metadata_load_count() const {
-    return account_metadata_load_count_;
-  }
-
   // Returns the number of times the about resource is successfully loaded
   // by GetAboutResource().
   int about_resource_load_count() const {
@@ -117,8 +111,6 @@ class FakeDriveService : public DriveServiceInterface {
   virtual void GetResourceEntry(
       const std::string& resource_id,
       const GetResourceEntryCallback& callback) OVERRIDE;
-  virtual void GetAccountMetadata(
-      const GetAccountMetadataCallback& callback) OVERRIDE;
   virtual void GetAboutResource(
       const GetAboutResourceCallback& callback) OVERRIDE;
   virtual void GetAppList(const GetAppListCallback& callback) OVERRIDE;
@@ -258,7 +250,6 @@ class FakeDriveService : public DriveServiceInterface {
   int resource_list_load_count_;
   int change_list_load_count_;
   int directory_load_count_;
-  int account_metadata_load_count_;
   int about_resource_load_count_;
   bool offline_;
   base::FilePath last_cancelled_file_;
