@@ -56,7 +56,6 @@
 #include "core/page/Navigator.h"
 #include "core/page/PageConsole.h"
 #include "core/page/PageGroup.h"
-#include "core/page/PlugInClient.h"
 #include "core/page/PointerLockController.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
@@ -127,7 +126,6 @@ Page::Page(PageClients& pageClients)
     , m_backForwardController(BackForwardController::create(this, pageClients.backForwardClient))
     , m_theme(RenderTheme::themeForPage(this))
     , m_editorClient(pageClients.editorClient)
-    , m_plugInClient(pageClients.plugInClient)
     , m_validationMessageClient(0)
     , m_subframeCount(0)
     , m_openedByDOM(false)
@@ -177,9 +175,6 @@ Page::~Page()
         frame->willDetachPage();
         frame->detachFromPage();
     }
-
-    if (m_plugInClient)
-        m_plugInClient->pageDestroyed();
 
     m_inspectorController->inspectedPageDestroyed();
 
@@ -810,7 +805,6 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_relevantUnpaintedRegion, "relevantUnpaintedRegion");
 
     info.ignoreMember(m_editorClient);
-    info.ignoreMember(m_plugInClient);
     info.ignoreMember(m_validationMessageClient);
 }
 
@@ -826,7 +820,6 @@ Page::PageClients::PageClients()
     , editorClient(0)
     , dragClient(0)
     , inspectorClient(0)
-    , plugInClient(0)
 {
 }
 

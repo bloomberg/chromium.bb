@@ -64,7 +64,6 @@ class InspectorController;
 class Node;
 class PageConsole;
 class PageGroup;
-class PlugInClient;
 class PluginData;
 class PointerLockController;
 class ProgressTracker;
@@ -110,7 +109,6 @@ public:
         EditorClient* editorClient;
         DragClient* dragClient;
         InspectorClient* inspectorClient;
-        PlugInClient* plugInClient;
         BackForwardClient* backForwardClient;
     };
 
@@ -129,7 +127,6 @@ public:
     PluginData* pluginData() const;
 
     EditorClient* editorClient() const { return m_editorClient; }
-    PlugInClient* plugInClient() const { return m_plugInClient; }
 
     void setMainFrame(PassRefPtr<Frame>);
     Frame* mainFrame() const { return m_mainFrame.get(); }
@@ -286,7 +283,6 @@ private:
     RefPtr<RenderTheme> m_theme;
 
     EditorClient* m_editorClient;
-    PlugInClient* m_plugInClient;
     ValidationMessageClient* m_validationMessageClient;
 
     UseCounter m_UseCounter;
