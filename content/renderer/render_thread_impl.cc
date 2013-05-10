@@ -673,7 +673,7 @@ static void AdjustRuntimeFeaturesFromArgs(const CommandLine& command_line) {
 #endif
 
   if (command_line.HasSwitch(switches::kDisableFullScreen))
-    WebRuntimeFeatures::enableFullScreenAPI(false);
+    WebRuntimeFeatures::enableFullscreen(false);
 
   if (command_line.HasSwitch(switches::kDisableEncryptedMedia))
     WebRuntimeFeatures::enableEncryptedMedia(false);

@@ -53,6 +53,9 @@ WorkerThread::WorkerThread() {
   webkit_glue::EnableWebCoreLogChannels(
       command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
 
+  // TODO(eseidel): Workers should not have separate code for initializing
+  // WebRuntimeFeatures.  This should just call WRF::enableStableFeatures()
+  // and share CommandLine handling code with RenderThreadImpl.
   WebKit::WebRuntimeFeatures::enableDatabase(
       !command_line.HasSwitch(switches::kDisableDatabases));
 
@@ -68,7 +71,7 @@ WorkerThread::WorkerThread() {
   WebRuntimeFeatures::enableFileSystem(
       !command_line.HasSwitch(switches::kDisableFileSystem));
 
-  WebRuntimeFeatures::enableIndexedDatabase(true);
+  WebRuntimeFeatures::enableIndexedDB(true);
 }
 
 WorkerThread::~WorkerThread() {
