@@ -397,8 +397,7 @@ public:
     void drawLineForText(const FloatPoint&, float width, bool printing);
     enum DocumentMarkerLineStyle {
         DocumentMarkerSpellingLineStyle,
-        DocumentMarkerGrammarLineStyle,
-        DocumentMarkerAutocorrectionReplacementLineStyle,
+        DocumentMarkerGrammarLineStyle
     };
     void drawLineForDocumentMarker(const FloatPoint&, float width, DocumentMarkerLineStyle);
 
