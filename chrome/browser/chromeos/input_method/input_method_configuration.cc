@@ -42,6 +42,7 @@ void Initialize(
     // TODO(nona): Remove this condition when ibus-daemon is gone.
     //             (crbug.com/170671)
     IBusBridge::Initialize();
+    IBusDaemonController::GetInstance()->Start();
   }
 
   InputMethodManagerImpl* impl = new InputMethodManagerImpl(
