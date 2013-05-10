@@ -35,18 +35,13 @@
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "bindings/v8/WrapperTypeInfo.h"
-#include "core/dom/Node.h"
 #include <v8.h>
-#include "wtf/HashMap.h"
-#include "wtf/MainThread.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/ThreadSpecific.h"
-#include "wtf/Threading.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
+
+class Node;
 
 class DOMDataStore {
     WTF_MAKE_NONCOPYABLE(DOMDataStore);

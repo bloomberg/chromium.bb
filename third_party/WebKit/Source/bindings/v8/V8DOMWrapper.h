@@ -32,19 +32,13 @@
 #define V8DOMWrapper_h
 
 #include "bindings/v8/DOMDataStore.h"
-#include "bindings/v8/DOMWrapperWorld.h"
-#include "bindings/v8/V8DOMWindowShell.h"
-#include "bindings/v8/V8Utilities.h"
-#include "bindings/v8/WrapperTypeInfo.h"
-#include "bindings/v8/custom/V8CustomXPathNSResolver.h"
-#include "core/dom/Event.h"
-#include "core/dom/Node.h"
 #include <v8.h>
-#include "wtf/MainThread.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
+
+struct WrapperTypeInfo;
 
     class V8DOMWrapper {
     public:

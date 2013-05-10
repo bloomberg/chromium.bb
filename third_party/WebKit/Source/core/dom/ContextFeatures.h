@@ -28,7 +28,6 @@
 #define ContextFeatures_h
 
 #include "core/platform/RefCountedSupplement.h"
-#include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
 

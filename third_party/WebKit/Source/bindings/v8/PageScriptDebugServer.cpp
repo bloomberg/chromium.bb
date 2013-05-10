@@ -35,6 +35,7 @@
 #include "V8DOMWindow.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWindowShell.h"
 #include "bindings/v8/V8RecursionScope.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptDebugListener.h"
