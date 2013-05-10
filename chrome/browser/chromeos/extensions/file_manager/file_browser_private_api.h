@@ -165,44 +165,35 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  struct FileInfo {
-    GURL file_url;
-    base::FilePath file_path;
-    std::string mime_type;
-  };
+  struct FileInfo;
   typedef std::vector<FileInfo> FileInfoList;
 
-  // Typedef for holding a map from app_id to DriveWebAppInfo so
-  // we can look up information on the apps.
-  typedef std::map<std::string, drive::DriveWebAppInfo*> WebAppInfoMap;
+  // Holds fields to build a task result.
+  struct TaskInfo;
 
-  // Look up apps in the registry, and collect applications that match the file
-  // paths given. Returns the intersection of all available application ids in
-  // |available_apps| and a map of application ID to the Drive web application
-  // info collected in |app_info| so details can be collected later. The caller
-  // takes ownership of the pointers in |app_info|.
-  static void IntersectAvailableDriveTasks(
-      drive::DriveWebAppsRegistry* registry,
-      const FileInfoList& file_info_list,
-      WebAppInfoMap* app_info,
-      std::set<std::string>* available_apps);
+  // Map from a task id to TaskInfo.
+  typedef std::map<std::string, TaskInfo> TaskInfoMap;
 
-  // Takes a map of app_id to application information in |app_info|, and the set
-  // of |available_apps| and adds Drive tasks to the |result_list| for each of
-  // the |available_apps|.  If a default task is set in the result list,
-  // then |default_already_set| is set to true.
-  static void CreateDriveTasks(drive::DriveWebAppsRegistry* registry,
-                               const WebAppInfoMap& app_info,
-                               const std::set<std::string>& available_apps,
-                               const std::set<std::string>& default_apps,
-                               ListValue* result_list,
-                               bool* default_already_set);
+  // Looks up available apps for each file in |file_info_list| in the
+  // |registry|, and returns the intersection of all available apps as a
+  // map from task id to TaskInfo.
+  static void GetAvailableDriveTasks(drive::DriveWebAppsRegistry* registry,
+                                     const FileInfoList& file_info_list,
+                                     TaskInfoMap* task_info_map);
 
   // Looks in the preferences and finds any of the available apps that are
   // also listed as default apps for any of the files in the info list.
   void FindDefaultDriveTasks(const FileInfoList& file_info_list,
-                             const std::set<std::string>& available_apps,
-                             std::set<std::string>* default_apps);
+                             const TaskInfoMap& task_info_map,
+                             std::set<std::string>* default_tasks);
+
+  // Creates a list of each task in |task_info_map| and stores the result into
+  // |result_list|. If a default task is set in the result list,
+  // |default_already_set| is set to true.
+  static void CreateDriveTasks(const TaskInfoMap& task_info_map,
+                               const std::set<std::string>& default_tasks,
+                               ListValue* result_list,
+                               bool* default_already_set);
 
   // Find the list of drive apps that can be used with the given file types. If
   // a default task is set in the result list, then |default_already_set| is set

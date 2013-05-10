@@ -437,6 +437,14 @@ bool SetLastModifiedOnBlockingPool(const base::FilePath& local_path,
   return utime(local_path.value().c_str(), &times) == 0;
 }
 
+// Returns a task id for the web app with |app_id|.
+std::string MakeWebAppTaskId(const std::string& app_id) {
+  // TODO(gspencer): For now, the action id is always "open-with", but we
+  // could add any actions that the drive app supports.
+  return file_handler_util::MakeTaskID(
+      app_id, file_handler_util::kTaskDrive, "open-with");
+}
+
 }  // namespace
 
 class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
@@ -722,116 +730,110 @@ void RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
   Respond(true);
 }
 
+struct GetFileTasksFileBrowserFunction::FileInfo {
+  GURL file_url;
+  base::FilePath file_path;
+  std::string mime_type;
+};
+
+struct GetFileTasksFileBrowserFunction::TaskInfo {
+  TaskInfo(const string16& app_name, const GURL& icon_url)
+      : app_name(app_name), icon_url(icon_url) {
+  }
+
+  string16 app_name;
+  GURL icon_url;
+};
+
 // static
-void GetFileTasksFileBrowserFunction::IntersectAvailableDriveTasks(
+void GetFileTasksFileBrowserFunction::GetAvailableDriveTasks(
     drive::DriveWebAppsRegistry* registry,
     const FileInfoList& file_info_list,
-    WebAppInfoMap* app_info,
-    std::set<std::string>* available_tasks) {
-  for (FileInfoList::const_iterator file_iter = file_info_list.begin();
-       file_iter != file_info_list.end(); ++file_iter) {
-    if (file_iter->file_path.empty())
+    TaskInfoMap* task_info_map) {
+  DCHECK(registry);
+  DCHECK(task_info_map);
+  DCHECK(task_info_map->empty());
+
+  bool is_first = true;
+  for (size_t i = 0; i < file_info_list.size(); ++i) {
+    const FileInfo& file_info = file_info_list[i];
+    if (file_info.file_path.empty())
       continue;
-    ScopedVector<drive::DriveWebAppInfo> info;
-    registry->GetWebAppsForFile(file_iter->file_path,
-                                file_iter->mime_type, &info);
-    std::vector<drive::DriveWebAppInfo*> info_ptrs;
-    info.release(&info_ptrs);  // so they don't go away prematurely.
-    std::set<std::string> tasks_for_this_file;
-    for (std::vector<drive::DriveWebAppInfo*>::iterator
-         apps = info_ptrs.begin(); apps != info_ptrs.end(); ++apps) {
-      std::pair<WebAppInfoMap::iterator, bool> insert_result =
-          app_info->insert(std::make_pair((*apps)->app_id, *apps));
-      // TODO(gspencer): For now, the action id is always "open-with", but we
-      // could add any actions that the drive app supports.
-      std::string task_id = file_handler_util::MakeTaskID(
-          (*apps)->app_id, file_handler_util::kTaskDrive, "open-with");
-      tasks_for_this_file.insert(task_id);
-      // If we failed to insert a task_id because there was a duplicate, then we
-      // must delete it (since we own it).
-      if (!insert_result.second)
-        delete *apps;
-    }
-    if (file_iter == file_info_list.begin()) {
-      *available_tasks = tasks_for_this_file;
+
+    ScopedVector<drive::DriveWebAppInfo> app_info_list;
+    registry->GetWebAppsForFile(
+        file_info.file_path, file_info.mime_type, &app_info_list);
+
+    if (is_first) {
+      // For the first file, we store all the info.
+      for (size_t j = 0; j < app_info_list.size(); ++j) {
+        const drive::DriveWebAppInfo& app_info = *app_info_list[j];
+        GURL icon_url =
+            FindPreferredIcon(app_info.app_icons, kPreferredIconSize);
+        task_info_map->insert(std::pair<std::string, TaskInfo>(
+            MakeWebAppTaskId(app_info.app_id),
+            TaskInfo(app_info.app_name, icon_url)));
+      }
     } else {
-      std::set<std::string> intersection;
-      std::set_intersection(available_tasks->begin(),
-                            available_tasks->end(),
-                            tasks_for_this_file.begin(),
-                            tasks_for_this_file.end(),
-                            std::inserter(intersection,
-                                          intersection.begin()));
-      *available_tasks = intersection;
+      // For remaining files, take the intersection with the current result,
+      // based on the task id.
+      std::set<std::string> task_id_set;
+      for (size_t j = 0; j < app_info_list.size(); ++j) {
+        task_id_set.insert(MakeWebAppTaskId(app_info_list[j]->app_id));
+      }
+      for (TaskInfoMap::iterator iter = task_info_map->begin();
+           iter != task_info_map->end(); ) {
+        if (task_id_set.find(iter->first) == task_id_set.end()) {
+          task_info_map->erase(iter++);
+        } else {
+          ++iter;
+        }
+      }
     }
+
+    is_first = false;
   }
 }
 
 void GetFileTasksFileBrowserFunction::FindDefaultDriveTasks(
     const FileInfoList& file_info_list,
-    const std::set<std::string>& available_tasks,
+    const TaskInfoMap& task_info_map,
     std::set<std::string>* default_tasks) {
-  std::set<std::string> default_task_ids;
-  for (FileInfoList::const_iterator file_iter = file_info_list.begin();
-       file_iter != file_info_list.end(); ++file_iter) {
+  DCHECK(default_tasks);
+
+  for (size_t i = 0; i < file_info_list.size(); ++i) {
+    const FileInfo& file_info = file_info_list[i];
     std::string task_id = file_handler_util::GetDefaultTaskIdFromPrefs(
-        profile_, file_iter->mime_type, file_iter->file_path.Extension());
-    if (available_tasks.find(task_id) != available_tasks.end()) {
-      VLOG(1) << "Found default task for " << file_iter->file_path.value()
-              << ": " << task_id;
+        profile_, file_info.mime_type, file_info.file_path.Extension());
+    if (task_info_map.find(task_id) != task_info_map.end())
       default_tasks->insert(task_id);
-    } else {
-      if (VLOG_IS_ON(2)) {
-        VLOG(2) << "Didn't find default task " << task_id
-                << " in available tasks";
-        VLOG(2) << "Available Tasks:";
-        for (std::set<std::string>::iterator iter = available_tasks.begin();
-             iter != available_tasks.end(); ++iter) {
-          VLOG(2) << "  " << *iter;
-        }
-      }
-    }
   }
 }
 
 // static
 void GetFileTasksFileBrowserFunction::CreateDriveTasks(
-    drive::DriveWebAppsRegistry* registry,
-    const WebAppInfoMap& app_info,
-    const std::set<std::string>& available_tasks,
+    const TaskInfoMap& task_info_map,
     const std::set<std::string>& default_tasks,
     ListValue* result_list,
     bool* default_already_set) {
-  *default_already_set = false;
-  // OK, now we traverse the intersection of available applications for this
-  // list of files, adding a task for each one that is found.
-  for (std::set<std::string>::const_iterator app_iter = available_tasks.begin();
-       app_iter != available_tasks.end(); ++app_iter) {
-    std::string app_id;
-    std::string task_type;
-    bool result = file_handler_util::CrackTaskID(
-        *app_iter, &app_id, &task_type, NULL);
-    DCHECK(result) << "Unable to parse Drive task id: " << *app_iter;
-    DCHECK_EQ(task_type, file_handler_util::kTaskDrive);
+  DCHECK(result_list);
+  DCHECK(default_already_set);
 
-    WebAppInfoMap::const_iterator info_iter = app_info.find(app_id);
-    DCHECK(info_iter != app_info.end());
-    drive::DriveWebAppInfo* info = info_iter->second;
+  for (TaskInfoMap::const_iterator iter = task_info_map.begin();
+       iter != task_info_map.end(); ++iter) {
     DictionaryValue* task = new DictionaryValue;
+    task->SetString("taskId", iter->first);
+    task->SetString("title", iter->second.app_name);
 
-    task->SetString("taskId", *app_iter);
-    task->SetString("title", info->app_name);
+    const GURL& icon_url = iter->second.icon_url;
+    if (!icon_url.is_empty())
+      task->SetString("iconUrl", icon_url.spec());
 
-    GURL best_icon = FindPreferredIcon(info->app_icons,
-                                       kPreferredIconSize);
-    if (!best_icon.is_empty()) {
-      task->SetString("iconUrl", best_icon.spec());
-    }
     task->SetBoolean("driveApp", true);
 
     // Once we set a default app, we don't want to set any more.
     if (!(*default_already_set) &&
-        default_tasks.find(*app_iter) != default_tasks.end()) {
+        default_tasks.find(iter->first) != default_tasks.end()) {
       task->SetBoolean("isDefault", true);
       *default_already_set = true;
     } else {
@@ -849,6 +851,8 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
     const FileInfoList& file_info_list,
     ListValue* result_list,
     bool* default_already_set) {
+  DCHECK(result_list);
+  DCHECK(default_already_set);
 
   if (file_info_list.empty())
     return true;
@@ -862,23 +866,15 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
     return true;
 
   drive::DriveWebAppsRegistry* registry = system_service->webapps_registry();
+  DCHECK(registry);
 
-  // Map of app_id to DriveWebAppInfo so we can look up the apps we've found
-  // after taking the intersection of available apps.
-  std::map<std::string, drive::DriveWebAppInfo*> app_info;
-  // Set of application IDs. This will end up with the intersection of the
-  // application IDs that apply to the paths in |file_paths|.
-  std::set<std::string> available_tasks;
-
-  IntersectAvailableDriveTasks(registry, file_info_list,
-                               &app_info, &available_tasks);
+  // Map of task_id to TaskInfo of available tasks.
+  TaskInfoMap task_info_map;
+  GetAvailableDriveTasks(registry, file_info_list, &task_info_map);
   std::set<std::string> default_tasks;
-  FindDefaultDriveTasks(file_info_list, available_tasks, &default_tasks);
-  CreateDriveTasks(registry, app_info, available_tasks, default_tasks,
-                   result_list, default_already_set);
-
-  // We own the pointers in |app_info|, so we need to delete them.
-  STLDeleteContainerPairSecondPointers(app_info.begin(), app_info.end());
+  FindDefaultDriveTasks(file_info_list, task_info_map, &default_tasks);
+  CreateDriveTasks(
+      task_info_map, default_tasks, result_list, default_already_set);
   return true;
 }
 
