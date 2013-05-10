@@ -427,8 +427,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   // ChromeClient::tabsToLinks which is part of the glue code.
   web_view->setTabsToLinks(prefs.tabs_to_links);
 
-  settings->setInteractiveFormValidationEnabled(true);
-
   settings->setFullScreenEnabled(prefs.fullscreen_enabled);
   settings->setAllowDisplayOfInsecureContent(
       prefs.allow_displaying_insecure_content);
