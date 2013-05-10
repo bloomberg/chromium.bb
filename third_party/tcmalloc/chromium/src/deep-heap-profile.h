@@ -136,7 +136,7 @@ class DeepHeapProfile {
 
     bool AppendChar(char v);
     bool AppendString(const char* v, int d);
-    bool AppendInt(int v, int d);
+    bool AppendInt(int v, int d, bool leading_zero);
     bool AppendLong(long v, int d);
     bool AppendUnsignedLong(unsigned long v, int d);
     bool AppendInt64(int64 v, int d);

@@ -13,7 +13,11 @@
 #include <algorithm>
 #include <fcntl.h>
 #include <sys/stat.h>
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
 #include <sys/types.h>
+#include <time.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>  // for getpagesize and getpid
 #endif  // HAVE_UNISTD_H
@@ -31,6 +35,7 @@ static const uint64 MAX_ADDRESS = kuint64max;
 // Tag strings in heap profile dumps.
 static const char kProfileHeader[] = "heap profile: ";
 static const char kProfileVersion[] = "DUMP_DEEP_6";
+static const char kMetaInformationHeader[] = "META:\n";
 static const char kMMapListHeader[] = "MMAP_LIST:\n";
 static const char kGlobalStatsHeader[] = "GLOBAL_STATS:\n";
 static const char kStacktraceHeader[] = "STACKTRACES:\n";
@@ -234,6 +239,19 @@ int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
 #ifndef NDEBUG
   int64 starting_cycles = CycleClock::Now();
 #endif
+
+  // Get the time before starting snapshot.  gettimeofday() and localtime_r()
+  // acquire the timezone lock which may invoke malloc.
+  struct tm local_time;
+#ifdef HAVE_SYS_TIME_H
+  struct timeval time_value;
+  gettimeofday(&time_value, NULL);
+  localtime_r(&time_value.tv_sec, &local_time);
+#else
+  time_t time_value = time(NULL);
+  localtime_r(&time_value, &local_time);
+#endif
+
   ++dump_count_;
 
   // Re-open files in /proc/pid/ if the process is newly forked one.
@@ -260,6 +278,27 @@ int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
   buffer.AppendString(kProfileHeader, 0);
   buffer.AppendString(kProfileVersion, 0);
   buffer.AppendString("\n", 0);
+
+  // Fill buffer with meta information.
+  buffer.AppendString(kMetaInformationHeader, 0);
+
+  buffer.AppendString("Time: ", 0);
+  buffer.AppendInt(local_time.tm_year + 1900, 4, true);
+  buffer.AppendChar('/');
+  buffer.AppendInt(local_time.tm_mon + 1, 2, true);
+  buffer.AppendChar('/');
+  buffer.AppendInt(local_time.tm_mday, 2, true);
+  buffer.AppendChar(' ');
+  buffer.AppendInt(local_time.tm_hour, 2, true);
+  buffer.AppendChar(':');
+  buffer.AppendInt(local_time.tm_min, 2, true);
+  buffer.AppendChar(':');
+  buffer.AppendInt(local_time.tm_sec, 2, true);
+#ifdef HAVE_SYS_TIME_H
+  buffer.AppendChar('.');
+  buffer.AppendInt(static_cast<int>(time_value.tv_usec / 1000), 3, true);
+#endif
+  buffer.AppendChar('\n');
 
   // Fill buffer with the global stats.
   buffer.AppendString(kMMapListHeader, 0);
@@ -324,10 +363,12 @@ bool DeepHeapProfile::TextBuffer::AppendString(const char* s, int d) {
   return ForwardCursor(appended);
 }
 
-bool DeepHeapProfile::TextBuffer::AppendInt(int v, int d) {
+bool DeepHeapProfile::TextBuffer::AppendInt(int v, int d, bool leading_zero) {
   int appended;
   if (d == 0)
     appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%d", v);
+  else if (leading_zero)
+    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%0*d", d, v);
   else
     appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%*d", d, v);
   return ForwardCursor(appended);
@@ -381,16 +422,16 @@ void DeepHeapProfile::DeepBucket::UnparseForStats(TextBuffer* buffer) {
   buffer->AppendChar(' ');
   buffer->AppendInt64(committed_size, 10);
   buffer->AppendChar(' ');
-  buffer->AppendInt(bucket->allocs, 6);
+  buffer->AppendInt(bucket->allocs, 6, false);
   buffer->AppendChar(' ');
-  buffer->AppendInt(bucket->frees, 6);
+  buffer->AppendInt(bucket->frees, 6, false);
   buffer->AppendString(" @ ", 0);
-  buffer->AppendInt(id, 0);
+  buffer->AppendInt(id, 0, false);
   buffer->AppendString("\n", 0);
 }
 
 void DeepHeapProfile::DeepBucket::UnparseForBucketFile(TextBuffer* buffer) {
-  buffer->AppendInt(id, 0);
+  buffer->AppendInt(id, 0, false);
   buffer->AppendChar(' ');
   buffer->AppendString(is_mmap ? "mmap" : "malloc", 0);
 
@@ -751,9 +792,9 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
           mmap_dump_buffer->AppendString(kMapsRegionTypeDict[type], 0);
           mmap_dump_buffer->AppendString(" @ ", 0);
           if (deep_bucket != NULL) {
-            mmap_dump_buffer->AppendInt(deep_bucket->id, 0);
+            mmap_dump_buffer->AppendInt(deep_bucket->id, 0, false);
           } else {
-            mmap_dump_buffer->AppendInt(0, 0);
+            mmap_dump_buffer->AppendInt(0, 0, false);
           }
           mmap_dump_buffer->AppendString("\n", 0);
         }
