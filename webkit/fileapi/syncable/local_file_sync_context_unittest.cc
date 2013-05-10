@@ -332,14 +332,7 @@ TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
   file_system2.TearDown();
 }
 
-// LocalFileSyncContextTest.PrepareSyncWhileWriting is flaky on android.
-// http://crbug.com/239793
-#if define(OS_ANDROID)
-#define MAYBE_PrepareSyncWhileWriting DISABLED_PrepareSyncWhileWriting
-#else
-#define MAYBE_PrepareSyncWhileWriting PrepareSyncWhileWriting
-#endif
-TEST_F(LocalFileSyncContextTest, MAYBE_PrepareSyncWhileWriting) {
+TEST_F(LocalFileSyncContextTest, PrepareSyncWhileWriting) {
   CannedSyncableFileSystem file_system(GURL(kOrigin1), kServiceName,
                                        io_task_runner_, file_task_runner_);
   file_system.SetUp();
