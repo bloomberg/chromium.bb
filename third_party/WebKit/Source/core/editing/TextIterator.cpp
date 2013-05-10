@@ -1253,7 +1253,7 @@ bool SimplifiedBackwardsTextIterator::handleTextNode()
     m_textLength = m_positionEndOffset - m_positionStartOffset;
     m_textCharacters = text.characters() + (m_positionStartOffset - offsetInNode);
     ASSERT(m_textCharacters >= text.characters());
-    ASSERT(m_textCharacters + m_textLength <= text.characters() + static_cast<int>(text.length()));
+    RELEASE_ASSERT(m_textCharacters + m_textLength <= text.characters() + static_cast<int>(text.length()));
 
     m_lastCharacter = text[m_positionEndOffset - 1];
 
