@@ -24,32 +24,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ArrayBufferContents_h
-#define ArrayBufferContents_h
+#ifndef RawBuffer_h
+#define RawBuffer_h
 
 #include "wtf/ArrayBufferDeallocationObserver.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RawBuffer.h"
 
 namespace WTF {
 
-class ArrayBufferContents : public RawBuffer {
-    WTF_MAKE_NONCOPYABLE(ArrayBufferContents);
+class RawBuffer {
+    WTF_MAKE_NONCOPYABLE(RawBuffer);
 public:
-    ArrayBufferContents();
-    ArrayBufferContents(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy);
+    enum InitializationPolicy {
+        ZeroInitialize,
+        DontInitialize
+    };
 
-    ~ArrayBufferContents();
+    RawBuffer();
+    RawBuffer(unsigned numElements, unsigned elementByteSize, RawBuffer::InitializationPolicy);
 
+    ~RawBuffer();
+
+
+    void* data() const { return m_data; }
+    unsigned sizeInBytes() const { return m_sizeInBytes; }
+
+    void transfer(RawBuffer& other);
+
+protected:
     void clear();
 
-    bool hasDeallocationObserver() const { return !!m_deallocationObserver; }
-    void setDeallocationObserver(ArrayBufferDeallocationObserver* observer) { m_deallocationObserver = observer; }
-
 private:
-    ArrayBufferDeallocationObserver* m_deallocationObserver;
+    void* m_data;
+    unsigned m_sizeInBytes;
 };
 
 } // namespace WTF
 
-#endif // ArrayBufferContents_h
+#endif // RawBuffer_h

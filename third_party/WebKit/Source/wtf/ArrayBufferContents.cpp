@@ -32,62 +32,23 @@
 namespace WTF {
 
 ArrayBufferContents::ArrayBufferContents()
-    : m_data(0)
-    , m_sizeInBytes(0)
-    , m_deallocationObserver(0) { }
+    : m_deallocationObserver(0) { }
 
 ArrayBufferContents::ArrayBufferContents(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy policy)
-    : m_data(0)
-    , m_sizeInBytes(0)
-    , m_deallocationObserver(0)
-{
-    // Do not allow 32-bit overflow of the total size.
-    // FIXME: Why not? The tryFastCalloc function already checks its arguments,
-    // and will fail if there is any overflow, so why should we include a
-    // redudant unnecessarily restrictive check here?
-    if (numElements) {
-        unsigned totalSize = numElements * elementByteSize;
-        if (totalSize / numElements != elementByteSize) {
-            m_data = 0;
-            return;
-        }
-    }
-    bool allocationSucceeded = false;
-    if (policy == ZeroInitialize)
-        allocationSucceeded = WTF::tryFastCalloc(numElements, elementByteSize).getValue(m_data);
-    else {
-        ASSERT(policy == DontInitialize);
-        allocationSucceeded = WTF::tryFastMalloc(numElements * elementByteSize).getValue(m_data);
-    }
-
-    if (allocationSucceeded) {
-        m_sizeInBytes = numElements * elementByteSize;
-        return;
-    }
-    m_data = 0;
-}
+    : RawBuffer(numElements, elementByteSize, policy)
+    , m_deallocationObserver(0) { }
 
 ArrayBufferContents::~ArrayBufferContents()
 {
-    WTF::fastFree(m_data);
     clear();
 }
 
 void ArrayBufferContents::clear()
 {
-    if (m_data && m_deallocationObserver)
-        m_deallocationObserver->ArrayBufferDeallocated(m_sizeInBytes);
-    m_data = 0;
-    m_sizeInBytes = 0;
+    if (data() && m_deallocationObserver)
+        m_deallocationObserver->ArrayBufferDeallocated(sizeInBytes());
+    RawBuffer::clear();
     m_deallocationObserver = 0;
-}
-
-void ArrayBufferContents::transfer(ArrayBufferContents& other)
-{
-    ASSERT(!other.m_data);
-    other.m_data = m_data;
-    other.m_sizeInBytes = m_sizeInBytes;
-    clear();
 }
 
 } // namespace WTF

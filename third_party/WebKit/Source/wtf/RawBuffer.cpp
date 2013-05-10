@@ -24,32 +24,65 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ArrayBufferContents_h
-#define ArrayBufferContents_h
+#include "config.h"
+#include "wtf/RawBuffer.h"
 
 #include "wtf/ArrayBufferDeallocationObserver.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RawBuffer.h"
 
 namespace WTF {
 
-class ArrayBufferContents : public RawBuffer {
-    WTF_MAKE_NONCOPYABLE(ArrayBufferContents);
-public:
-    ArrayBufferContents();
-    ArrayBufferContents(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy);
+RawBuffer::RawBuffer()
+    : m_data(0)
+    , m_sizeInBytes(0) { }
 
-    ~ArrayBufferContents();
+RawBuffer::RawBuffer(unsigned numElements, unsigned elementByteSize, RawBuffer::InitializationPolicy policy)
+    : m_data(0)
+    , m_sizeInBytes(0)
+{
+    // Do not allow 32-bit overflow of the total size.
+    // FIXME: Why not? The tryFastCalloc function already checks its arguments,
+    // and will fail if there is any overflow, so why should we include a
+    // redudant unnecessarily restrictive check here?
+    if (numElements) {
+        unsigned totalSize = numElements * elementByteSize;
+        if (totalSize / numElements != elementByteSize) {
+            m_data = 0;
+            return;
+        }
+    }
+    bool allocationSucceeded = false;
+    if (policy == ZeroInitialize)
+        allocationSucceeded = WTF::tryFastCalloc(numElements, elementByteSize).getValue(m_data);
+    else {
+        ASSERT(policy == DontInitialize);
+        allocationSucceeded = WTF::tryFastMalloc(numElements * elementByteSize).getValue(m_data);
+    }
 
-    void clear();
+    if (allocationSucceeded) {
+        m_sizeInBytes = numElements * elementByteSize;
+        return;
+    }
+    m_data = 0;
+}
 
-    bool hasDeallocationObserver() const { return !!m_deallocationObserver; }
-    void setDeallocationObserver(ArrayBufferDeallocationObserver* observer) { m_deallocationObserver = observer; }
+RawBuffer::~RawBuffer()
+{
+    WTF::fastFree(m_data);
+    clear();
+}
 
-private:
-    ArrayBufferDeallocationObserver* m_deallocationObserver;
-};
+void RawBuffer::clear()
+{
+    m_data = 0;
+    m_sizeInBytes = 0;
+}
+
+void RawBuffer::transfer(RawBuffer& other)
+{
+    ASSERT(!other.m_data);
+    other.m_data = m_data;
+    other.m_sizeInBytes = m_sizeInBytes;
+    clear();
+}
 
 } // namespace WTF
-
-#endif // ArrayBufferContents_h
