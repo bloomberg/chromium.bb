@@ -185,9 +185,9 @@ void ShowExtensionInstallDialogImpl(
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  views::Widget::CreateWindowWithParent(
+  views::DialogDelegate::CreateDialogWidget(
       new ExtensionInstallDialogView(show_params.navigator, delegate, prompt),
-      show_params.parent_window)->Show();
+      NULL, show_params.parent_window)->Show();
 }
 
 }  // namespace
