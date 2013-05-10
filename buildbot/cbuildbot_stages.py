@@ -1010,7 +1010,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     if ManifestVersionedSyncStage.manifest_manager:
       ManifestVersionedSyncStage.manifest_manager.UploadStatus(
           success=self.success, message=self.message)
-      if not self.success:
+      if not self.success and self._build_config['important']:
         self._AbortCQHWTests()
 
       statuses = self._GetSlavesStatus()
