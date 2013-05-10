@@ -1777,6 +1777,12 @@
                 'chrome.gyp:chrome_nacl_win64',
               ],
             }],
+            ['OS=="linux"', {
+              'dependencies': [
+                '../native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
+                'nacl_helper',
+              ],
+            }],
             ['chromeos==0', {
               'sources!': [
                 'test/data/chromeos/oobe_webui_browsertest.js',

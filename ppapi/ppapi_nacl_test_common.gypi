@@ -1,10 +1,10 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 {
   'includes': [
-    '../../../../native_client/build/untrusted.gypi',
+    '../native_client/build/untrusted.gypi',
   ],
   'target_defaults': {
     # We need to override the variables in untrusted.gypi outside of a
@@ -16,9 +16,9 @@
     'variables': {
       'test_files': [],
       'generate_nmf%': 1,
-      'nacl_newlib_out_dir': '<(PRODUCT_DIR)/nacl_test_data/newlib',
-      'nacl_glibc_out_dir': '<(PRODUCT_DIR)/nacl_test_data/glibc',
-      'nacl_pnacl_newlib_out_dir': '<(PRODUCT_DIR)/nacl_test_data/pnacl',
+      'nacl_newlib_out_dir': '<(PRODUCT_DIR)/>(nexe_destination_dir)/newlib',
+      'nacl_glibc_out_dir': '<(PRODUCT_DIR)/>(nexe_destination_dir)/glibc',
+      'nacl_pnacl_newlib_out_dir': '<(PRODUCT_DIR)/>(nexe_destination_dir)/pnacl',
       'target_conditions': [
         ['nexe_target!=""', {
           # These variables are used for nexe building and for library building.

@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    'nacl_browser_test.gypi',
+    '../../../../ppapi/ppapi_nacl_test_common.gypi',
   ],
   'targets': [
     {
@@ -14,6 +14,7 @@
         'build_newlib': 1,
         'build_glibc': 1,
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
         'test_files': [
           # TODO(ncbray) move into chrome/test/data/nacl when all tests are
           # converted.
@@ -31,6 +32,7 @@
         'build_newlib': 1,
         'build_glibc': 1,
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
         'sources': [
           'simple.cc',
         ],
@@ -47,6 +49,7 @@
         'build_newlib': 1,
         'build_glibc': 1,
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
         'sources': [
           'exit_status/pm_exit_status_test.cc',
         ],
@@ -64,6 +67,7 @@
         'build_newlib': 1,
         'build_glibc': 1,
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
         'sources': [
           # TODO(ncbray) move these files once SCons no longer depends on them.
           '../../../../ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.cc',
@@ -85,6 +89,7 @@
         'build_newlib': 1,
         'build_glibc': 1,
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
         'link_flags': [
           '-lppapi',
           '-lppapi_test_lib',
@@ -113,6 +118,7 @@
       'variables': {
         'nexe_target': 'pnacl_error_handling',
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
         'sources': [
           'pnacl_error_handling/program_fragment.cc',
         ],
@@ -158,6 +164,7 @@
       'variables': {
         'nexe_target': 'pnacl_options',
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
         # No need to translate these AOT, when we just need the pexe.
         'enable_x86_32': 0,
         'enable_x86_64': 0,
@@ -189,6 +196,7 @@
         'enable_arm': 0,
         'nexe_target': 'pnacl_dyncode_syscall_disabled',
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
         'link_flags': [
           '-lppapi',
           '-lppapi_test_lib',
@@ -222,6 +230,7 @@
         'build_newlib': 1,
         'build_glibc': 1,
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
         'link_flags': [
           '-lppapi',
           '-lppapi_test_lib',
