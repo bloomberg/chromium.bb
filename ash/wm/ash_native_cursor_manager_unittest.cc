@@ -122,50 +122,6 @@ TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
   EXPECT_EQ(gfx::Display::ROTATE_270, test_api.GetDisplay().rotation());
 }
 
-// Disabled for Windows. See crbug.com/112222.
-// Disabled for ChromeOS. See crbug.com/237659
-// Verifies that RootWindow generates a mouse event located outside of a window
-// when mouse events are disabled.
-TEST_F(AshNativeCursorManagerTest, DISABLED_DisabledMouseEventsLocation) {
-  scoped_ptr<MouseEventLocationDelegate> delegate(
-      new MouseEventLocationDelegate());
-  const int kWindowWidth = 123;
-  const int kWindowHeight = 45;
-  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
-      delegate.get(), 1, bounds, Shell::GetInstance()->GetPrimaryRootWindow()));
-
-  CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
-  cursor_manager->EnableMouseEvents();
-  // Send a mouse event to window.
-  gfx::Point point(101, 201);
-  gfx::Point local_point;
-  ui::MouseEvent event(ui::ET_MOUSE_MOVED, point, point, 0);
-  aura::RootWindow* root_window = window->GetRootWindow();
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&event);
-
-  // Location was in window.
-  local_point = delegate->GetMouseEventLocationAndReset();
-  aura::Window::ConvertPointToTarget(window.get(), root_window, &local_point);
-  EXPECT_TRUE(window->bounds().Contains(local_point));
-
-  // Location is now out of window.
-  cursor_manager->DisableMouseEvents();
-  RunAllPendingInMessageLoop();
-  local_point = delegate->GetMouseEventLocationAndReset();
-  aura::Window::ConvertPointToTarget(window.get(), root_window, &local_point);
-  EXPECT_FALSE(window->bounds().Contains(local_point));
-  EXPECT_FALSE(window->bounds().Contains(
-      gfx::Screen::GetScreenFor(window.get())->GetCursorScreenPoint()));
-
-  // Location is back in window.
-  cursor_manager->EnableMouseEvents();
-  RunAllPendingInMessageLoop();
-  local_point = delegate->GetMouseEventLocationAndReset();
-  aura::Window::ConvertPointToTarget(window.get(), root_window, &local_point);
-  EXPECT_TRUE(window->bounds().Contains(local_point));
-}
-
 TEST_F(AshNativeCursorManagerTest, DisabledQueryMouseLocation) {
   aura::RootWindow* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
 #if defined(OS_WIN)
