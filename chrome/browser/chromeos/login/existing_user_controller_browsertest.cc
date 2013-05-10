@@ -43,7 +43,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_update_engine_client.h"
 #include "content/public/browser/notification_details.h"
@@ -152,21 +151,6 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    EXPECT_CALL(*mock_dbus_thread_manager(), GetSystemBus())
-        .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
-    EXPECT_CALL(*mock_dbus_thread_manager(), GetIBusInputContextClient())
-        .WillRepeatedly(
-            Return(reinterpret_cast<IBusInputContextClient*>(NULL)));
-    EXPECT_CALL(*mock_dbus_thread_manager()->mock_shill_manager_client(),
-                GetProperties(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(*mock_dbus_thread_manager()->mock_shill_manager_client(),
-                AddPropertyChangedObserver(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(*mock_dbus_thread_manager()->mock_shill_manager_client(),
-                RemovePropertyChangedObserver(_))
-        .Times(AnyNumber());
-
     SetUpSessionManager();
 
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();

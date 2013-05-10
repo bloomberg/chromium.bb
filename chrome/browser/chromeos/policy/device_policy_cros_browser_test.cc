@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chromeos/chromeos_paths.h"
-#include "chromeos/dbus/mock_dbus_thread_manager.h"
+#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/dbus/mock_image_burner_client.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,29 +26,16 @@ using ::testing::Return;
 namespace policy {
 
 DevicePolicyCrosBrowserTest::DevicePolicyCrosBrowserTest()
-    : mock_dbus_thread_manager_(new chromeos::MockDBusThreadManager) {
+    : mock_dbus_thread_manager_(
+        new chromeos::MockDBusThreadManagerWithoutGMock) {
 }
 
 DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() {
 }
 
 void DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture() {
-  EXPECT_CALL(*mock_dbus_thread_manager_, GetSessionManagerClient())
-      .WillRepeatedly(Return(&session_manager_client_));
-
-  SetMockDBusThreadManagerExpectations();
   chromeos::DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);
   CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-}
-
-void DevicePolicyCrosBrowserTest::SetMockDBusThreadManagerExpectations() {
-  // TODO(satorux): MockImageBurnerClient seems unnecessary. Remove it?
-  EXPECT_CALL(*mock_dbus_thread_manager_->mock_image_burner_client(),
-              ResetEventHandlers())
-      .Times(AnyNumber());
-  EXPECT_CALL(*mock_dbus_thread_manager_->mock_image_burner_client(),
-              SetEventHandlers(_, _))
-      .Times(AnyNumber());
 }
 
 void DevicePolicyCrosBrowserTest::InstallOwnerKey() {
@@ -77,8 +64,8 @@ void DevicePolicyCrosBrowserTest::RefreshDevicePolicy() {
       make_scoped_ptr<crypto::RSAPrivateKey>(NULL));
   device_policy_.set_new_signing_key(
       make_scoped_ptr<crypto::RSAPrivateKey>(NULL));
-  session_manager_client_.set_device_policy(device_policy_.GetBlob());
-  session_manager_client_.OnPropertyChangeComplete(true);
+  session_manager_client()->set_device_policy(device_policy_.GetBlob());
+  session_manager_client()->OnPropertyChangeComplete(true);
 }
 
 void DevicePolicyCrosBrowserTest::TearDownInProcessBrowserTestFixture() {

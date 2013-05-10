@@ -12,11 +12,8 @@
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace chromeos {
-class MockDBusThreadManager;
-}
 
 namespace policy {
 
@@ -38,25 +35,19 @@ class DevicePolicyCrosBrowserTest :
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 
-  chromeos::MockDBusThreadManager* mock_dbus_thread_manager() {
+  chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager() {
     return mock_dbus_thread_manager_;
   }
 
   chromeos::FakeSessionManagerClient* session_manager_client() {
-    return &session_manager_client_;
+    return mock_dbus_thread_manager_->fake_session_manager_client();
   }
 
   DevicePolicyBuilder* device_policy() { return &device_policy_; }
 
  private:
-  // Set additional expectations on |mock_dbus_thread_manager_| to suppress
-  // gmock warnings.
-  void SetMockDBusThreadManagerExpectations();
-
-  chromeos::MockDBusThreadManager* mock_dbus_thread_manager_;
-
-  // Mock out policy loads/stores from/to the device.
-  chromeos::FakeSessionManagerClient session_manager_client_;
+  // MockDBusThreadManagerWithoutGMock uses FakeSessionManagerClient.
+  chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
 
   // Carries Chrome OS device policies for tests.
   DevicePolicyBuilder device_policy_;
