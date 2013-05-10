@@ -1,0 +1,33 @@
+Each form control in this document exposes a validity attribute that returns a live instance of ValidityState.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+===> Tests for FIELDSET
+PASS "validity" in controls[i] is true
+PASS countAttr(controls[i].validity) is 10
+===> Tests for SELECT
+PASS "validity" in controls[i] is true
+PASS countAttr(controls[i].validity) is 10
+===> Tests for INPUT
+PASS "validity" in controls[i] is true
+PASS countAttr(controls[i].validity) is 10
+===> Tests for TEXTAREA
+PASS "validity" in controls[i] is true
+PASS countAttr(controls[i].validity) is 10
+===> Tests for BUTTON
+PASS "validity" in controls[i] is true
+PASS countAttr(controls[i].validity) is 10
+===> Tests for OUTPUT
+PASS "validity" in controls[i] is true
+PASS countAttr(controls[i].validity) is 10
+===> Tests for OBJECT
+PASS "validity" in controls[i] is true
+PASS countAttr(controls[i].validity) is 10
+===> Tests for KEYGEN
+PASS "validity" in controls[i] is true
+PASS countAttr(controls[i].validity) is 10
+PASS successfullyParsed is true
+
+TEST COMPLETE
+      
