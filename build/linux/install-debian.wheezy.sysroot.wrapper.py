@@ -11,7 +11,6 @@
 #
 # * branding=Chrome
 # * buildtype=Official
-# * target_arch=[matching_arch]
 #
 # and not:
 #
