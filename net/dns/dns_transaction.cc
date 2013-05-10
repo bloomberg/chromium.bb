@@ -651,8 +651,8 @@ class DnsTransactionImpl : public DnsTransaction,
 
     const DnsConfig& config = session_->config();
 
-    unsigned server_index = first_server_index_ +
-        (attempt_number % config.nameservers.size());
+    unsigned server_index =
+        (first_server_index_ + attempt_number) % config.nameservers.size();
 
     scoped_ptr<DnsSession::SocketLease> lease =
         session_->AllocateSocket(server_index, net_log_.source());

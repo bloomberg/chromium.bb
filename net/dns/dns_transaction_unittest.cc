@@ -645,6 +645,7 @@ TEST_F(DnsTransactionTest, ServerFallbackAndRotate) {
   AddAsyncQueryAndRcode(kT0HostName, kT0Qtype, dns_protocol::kRcodeNXDOMAIN);
   // Responses for second request.
   AddAsyncQueryAndRcode(kT1HostName, kT1Qtype, dns_protocol::kRcodeSERVFAIL);
+  AddAsyncQueryAndRcode(kT1HostName, kT1Qtype, dns_protocol::kRcodeSERVFAIL);
   AddAsyncQueryAndRcode(kT1HostName, kT1Qtype, dns_protocol::kRcodeNXDOMAIN);
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_NAME_NOT_RESOLVED);
@@ -655,7 +656,7 @@ TEST_F(DnsTransactionTest, ServerFallbackAndRotate) {
 
   unsigned kOrder[] = {
       0, 1, 2, 0, 1,    // The first transaction.
-      1, 2,             // The second transaction starts from the next server.
+      1, 2, 0,          // The second transaction starts from the next server.
   };
   CheckServerOrder(kOrder, arraysize(kOrder));
 }
