@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 
 class AppListControllerDelegate;
 class PrefRegistrySimple;
@@ -22,7 +23,7 @@ namespace gfx {
 class ImageSkia;
 }
 
-class AppListService {
+class AppListService : public ProfileInfoCacheObserver {
  public:
   // Get the AppListService for the current platform and desktop type.
   static AppListService* Get();
@@ -32,36 +33,50 @@ class AppListService {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  static void RecordAppListLaunch();
+  static void RecordAppListAppLaunch();
+  static void SendAppListStats();
+
   virtual base::FilePath GetAppListProfilePath(
-      const base::FilePath& user_data_dir) = 0;
+      const base::FilePath& user_data_dir);
 
   // Show the app list.
-  virtual void ShowAppList(Profile* requested_profile) = 0;
+  virtual void ShowAppList(Profile* profile);
 
   // Dismiss the app list.
-  virtual void DismissAppList() = 0;
+  virtual void DismissAppList();
 
-  virtual void SetAppListProfile(const base::FilePath& profile_file_path) = 0;
+  virtual void SetAppListProfile(const base::FilePath& profile_file_path);
 
   // Get the profile the app list is currently showing.
-  virtual Profile* GetCurrentAppListProfile() = 0;
+  virtual Profile* GetCurrentAppListProfile();
 
   // Returns true if the app list is visible.
-  virtual bool IsAppListVisible() const = 0;
+  virtual bool IsAppListVisible() const;
 
   // Enable the app list. What this does specifically will depend on the host
   // operating system and shell.
-  virtual void EnableAppList() = 0;
+  virtual void EnableAppList();
+
+  // ProfileInfoCacheObserver overrides:
+  virtual void OnProfileAdded(const base::FilePath& profilePath) OVERRIDE;
+  virtual void OnProfileWillBeRemoved(
+      const base::FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
+                                   const string16& profile_name) OVERRIDE;
+  virtual void OnProfileNameChanged(const base::FilePath& profile_path,
+                                    const string16& profile_name) OVERRIDE;
+  virtual void OnProfileAvatarChanged(
+      const base::FilePath& profile_path) OVERRIDE;
 
   // Exposed to allow testing of the controller delegate.
-  virtual AppListControllerDelegate* CreateControllerDelegate() = 0;
-
+  virtual AppListControllerDelegate* CreateControllerDelegate();
  protected:
   AppListService() {}
   virtual ~AppListService() {}
 
   // Do any once off initialization needed for the app list.
-  virtual void Init(Profile* initial_profile) = 0;
+  virtual void Init(Profile* initial_profile);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListService);

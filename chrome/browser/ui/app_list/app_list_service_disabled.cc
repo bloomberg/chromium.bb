@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/app_list/app_list_service_disabled.h"
+
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -20,40 +22,15 @@ class AppListServiceDisabled : public AppListService {
 
   AppListServiceDisabled() {}
 
-  // AppListService overrides:
-  virtual void Init(Profile* initial_profile) OVERRIDE {}
-
-  virtual base::FilePath GetAppListProfilePath(
-      const base::FilePath& user_data_dir) OVERRIDE {
-    return base::FilePath();
-  }
-
-  virtual void ShowAppList(Profile* profile) OVERRIDE {}
-  virtual void DismissAppList() OVERRIDE {}
-
-  virtual void SetAppListProfile(
-    const base::FilePath& profile_file_path) OVERRIDE {}
-
-  virtual Profile* GetCurrentAppListProfile() OVERRIDE { return NULL; }
-  virtual bool IsAppListVisible() const OVERRIDE { return false; }
-  virtual void EnableAppList() OVERRIDE {}
-
-  virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE {
-    return NULL;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(AppListServiceDisabled);
 };
 
 }  // namespace
 
-// static
-AppListService* AppListService::Get() {
+namespace chrome {
+
+AppListService* GetAppListServiceDisabled() {
   return AppListServiceDisabled::GetInstance();
 }
 
-// static
-void AppListService::InitAll(Profile* initial_profile) {}
-
-// static
-void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {}
+}  // namespace chrome

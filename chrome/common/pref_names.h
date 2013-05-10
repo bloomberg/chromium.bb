@@ -566,6 +566,7 @@ extern const char kRestartLastSessionOnShutdown[];
 extern const char kWasRestarted[];
 #if defined(OS_WIN)
 extern const char kRestartSwitchMode[];
+extern const char kRestartWithAppList[];
 #endif
 
 extern const char kNumKeywords[];
@@ -906,7 +907,6 @@ extern const char kRLZDisabled[];
 #endif
 
 extern const char kAppListProfile[];
-extern const char kRestartWithAppList[];
 
 extern const char kLastAppListLaunchPing[];
 extern const char kAppListLaunchCount[];

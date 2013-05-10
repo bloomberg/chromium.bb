@@ -48,6 +48,9 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, ShowAndDismiss) {
   ASSERT_FALSE(service->IsAppListVisible());
 }
 
+// TODO(tapted): Enable this when profile switching code has been moved up the
+// app list controller hierarchy.
+#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, SwitchAppListProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
@@ -94,4 +97,5 @@ IN_PROC_BROWSER_TEST_F(ShowAppListBrowserTest, ShowAppListFlag) {
   CreateBrowser(service->GetCurrentAppListProfile());
   service->DismissAppList();
 }
+#endif  // !defined(OS_MACOSX)
 #endif  // !defined(OS_CHROMEOS) && !defined(USE_AURA)

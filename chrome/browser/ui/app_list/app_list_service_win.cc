@@ -4,13 +4,7 @@
 
 #include "chrome/browser/ui/app_list/app_list_service_win.h"
 
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "grit/theme_resources.h"
-
-#if defined(USE_ASH)
-#include "chrome/browser/ui/app_list/app_list_service_ash.h"
-#include "chrome/browser/ui/host_desktop.h"
-#endif
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/installer/util/install_util.h"
@@ -28,21 +22,3 @@ int GetAppListIconResourceId() {
 }
 
 }  // namespace chrome
-
-// static
-AppListService* AppListService::Get() {
-#if defined(USE_ASH)
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
-    return chrome::GetAppListServiceAsh();
-#endif
-
-  return chrome::GetAppListServiceWin();
-}
-
-// static
-void AppListService::InitAll(Profile* initial_profile) {
-#if defined(USE_ASH)
-  chrome::GetAppListServiceAsh()->Init(initial_profile);
-#endif
-  chrome::GetAppListServiceWin()->Init(initial_profile);
-}
