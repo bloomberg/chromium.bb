@@ -86,10 +86,11 @@ TEST(LinuxPtraceDumperTest, ThreadList) {
   bool found = false;
   for (size_t i = 0; i < dumper.threads().size(); ++i) {
     if (dumper.threads()[i] == getpid()) {
+      ASSERT_FALSE(found);
       found = true;
-      break;
     }
   }
+  ASSERT_TRUE(found);
 }
 
 // Helper stack class to close a file descriptor and unmap
