@@ -35,7 +35,6 @@
 #include "InspectorFrontend.h"
 #include "core/dom/DeviceOrientationData.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/page/Frame.h"
 #include "modules/geolocation/GeolocationPosition.h"
 #include <wtf/HashMap.h>
 #include <wtf/RefCounted.h>
@@ -48,22 +47,18 @@ class CachedResource;
 class DOMWrapperWorld;
 class DocumentLoader;
 class Frame;
-class Frontend;
 class GraphicsContext;
 class InjectedScriptManager;
 class InspectorAgent;
-class InspectorArray;
 class InspectorClient;
-class InspectorObject;
 class InspectorOverlay;
-class InspectorState;
 class InstrumentingAgents;
+class IntSize;
 class KURL;
+class LayoutRect;
 class Page;
 class RenderObject;
-class RegularExpression;
 class SharedBuffer;
-class TextResourceDecoder;
 
 typedef String ErrorString;
 

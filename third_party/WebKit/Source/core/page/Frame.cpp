@@ -82,6 +82,7 @@
 #include "core/page/UserContentURLPattern.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/platform/DragImage.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"

@@ -32,9 +32,9 @@
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/AdjustViewSizeOrNot.h"
 #include "core/page/FrameTree.h"
-#include "core/platform/DragImage.h"
 #include "core/platform/ScrollTypes.h"
-#include "core/platform/graphics/IntRect.h"
+#include "core/platform/chromium/DragImageRef.h"
+#include "core/platform/graphics/IntSize.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
@@ -45,12 +45,14 @@ namespace WebCore {
     class Editor;
     class Element;
     class EventHandler;
+    class FloatSize;
     class FrameDestructionObserver;
     class FrameSelection;
     class FrameView;
     class HTMLTableCellElement;
-    class IntRect;
+    class IntPoint;
     class Node;
+    class Range;
     class RenderPart;
     class RenderView;
     class TreeScope;
