@@ -404,9 +404,9 @@ bool DeepHeapProfile::TextBuffer::AppendInt64(int64 v, int d) {
 bool DeepHeapProfile::TextBuffer::AppendPtr(uint64 v, int d) {
   int appended;
   if (d == 0)
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%"PRIxPTR, v);
+    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%"PRIx64, v);
   else
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%0*"PRIxPTR, d, v);
+    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%0*"PRIx64, d, v);
   return ForwardCursor(appended);
 }
 
