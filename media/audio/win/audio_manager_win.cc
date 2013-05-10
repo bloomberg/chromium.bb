@@ -314,12 +314,9 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
   }
 
   // TODO(crogers): support more than stereo input.
-  if (params.input_channels() == 2) {
-    if (WASAPIUnifiedStream::HasUnifiedDefaultIO()) {
-      DVLOG(1) << "WASAPIUnifiedStream is created.";
-      return new WASAPIUnifiedStream(this, params);
-    }
-    LOG(WARNING) << "Unified audio I/O is not supported.";
+  if (params.input_channels() > 0) {
+    DVLOG(1) << "WASAPIUnifiedStream is created.";
+    return new WASAPIUnifiedStream(this, params);
   }
 
   return new WASAPIAudioOutputStream(this, params, eConsole);
