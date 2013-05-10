@@ -36,11 +36,12 @@ FileTableColumnModel.prototype.__proto__ =
 FileTableColumnModel.prototype.normalizeWidths = function(contentWidth) {
   var fixedWidth = 0;
   var flexibleWidth = 0;
+  var fixedColumns = ['size', 'selection'];
 
   // Some columns have fixed width.
   for (var index = 0; index < this.size; index++) {
     var column = this.columns_[index];
-    if (column.id == 'selection')
+    if (fixedColumns.indexOf(column.id) > -1)
       fixedWidth += column.width;
     else
       flexibleWidth += column.width;
@@ -49,7 +50,7 @@ FileTableColumnModel.prototype.normalizeWidths = function(contentWidth) {
   var factor = Math.max(0, contentWidth - fixedWidth) / flexibleWidth;
   for (var index = 0; index < this.size; index++) {
     var column = this.columns_[index];
-    if (column.id == 'selection')
+    if (fixedColumns.indexOf(column.id) > -1)
       continue;
     // Limits the minimum width to 1px to avoid flexibleWidth=0.
     column.width = Math.max(1, column.width * factor);
@@ -86,7 +87,7 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
     new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
                                 fullPage ? 386 : 324),
     new cr.ui.table.TableColumn('size', str('SIZE_COLUMN_LABEL'),
-                                fullPage ? 100 : 92, true),
+                                60, true),
     new cr.ui.table.TableColumn('type', str('TYPE_COLUMN_LABEL'),
                                 fullPage ? 160 : 160),
     new cr.ui.table.TableColumn('modificationTime',

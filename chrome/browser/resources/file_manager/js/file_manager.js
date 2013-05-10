@@ -1030,7 +1030,7 @@ DialogType.isModal = function(type) {
 
     this.setListType(prefs.listType || FileManager.ListType.DETAIL);
 
-    if (prefs.columns) {
+    if (!util.platform.newUI() && prefs.columns) {
       var cm = this.table_.columnModel;
       for (var i = 0; i < cm.totalSize; i++) {
         if (prefs.columns[i] > 0)
@@ -1106,9 +1106,11 @@ DialogType.isModal = function(type) {
       sortDirection: sortStatus.direction,
       columns: []
     };
-    var cm = this.table_.columnModel;
-    for (var i = 0; i < cm.totalSize; i++) {
-      prefs.columns.push(cm.getWidth(i));
+    if (!util.platform.newUI()) {
+      var cm = this.table_.columnModel;
+      for (var i = 0; i < cm.totalSize; i++) {
+        prefs.columns.push(cm.getWidth(i));
+      }
     }
     if (DialogType.isModal(this.dialogType))
       prefs.listType = this.listType;
