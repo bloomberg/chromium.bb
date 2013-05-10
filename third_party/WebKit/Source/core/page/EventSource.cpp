@@ -131,6 +131,7 @@ void EventSource::connect()
     options.sendLoadCallbacks = SendCallbacks;
     options.sniffContent = DoNotSniffContent;
     options.allowCredentials = (origin->canRequest(m_url) || m_withCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
+    options.credentialsRequested = m_withCredentials ? ClientRequestedCredentials : ClientDidNotRequestCredentials;
     options.preflightPolicy = PreventPreflight;
     options.crossOriginRequestPolicy = UseAccessControl;
     options.dataBufferingPolicy = DoNotBufferData;
