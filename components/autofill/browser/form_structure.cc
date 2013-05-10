@@ -56,6 +56,8 @@ const char kXMLElementFieldAssignments[] = "fieldassignments";
 const char kXMLElementField[] = "field";
 const char kXMLElementFields[] = "fields";
 const char kXMLElementForm[] = "form";
+const char kBillingSection[] = "billing";
+const char kShippingSection[] = "shipping";
 
 // Helper for |EncodeUploadRequest()| that creates a bit field corresponding to
 // |available_field_types| and returns the hex representation as a string.
@@ -1114,7 +1116,11 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
     DCHECK_EQ(kDefaultSection, field->section());
     std::string section = field->section();
     if (!tokens.empty() &&
-        (tokens.back() == "shipping" || tokens.back() == "billing")) {
+        (tokens.back() == kShippingSection ||
+         tokens.back() == kBillingSection)) {
+      // Set Autofill field type to billing if section is billing.
+      if (tokens.back() == kBillingSection)
+        field_type = AutofillType::GetEquivalentBillingFieldType(field_type);
       section = "-" + tokens.back();
       tokens.pop_back();
     }

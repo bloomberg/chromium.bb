@@ -41,6 +41,11 @@ class AutofillType {
   // the returned field type as the first parameter).
   static AutofillFieldType GetEquivalentFieldType(AutofillFieldType field_type);
 
+  // Maps |field_type| to a field type from ADDRESS_BILLING FieldTypeGroup if
+  // field type is an Address type.
+  static AutofillFieldType GetEquivalentBillingFieldType(
+      AutofillFieldType field_type);
+
   // Utilities for serializing and deserializing an |AutofillFieldType|.
   static std::string FieldTypeToString(AutofillFieldType field_type);
   static AutofillFieldType StringToFieldType(const std::string& str);

@@ -85,32 +85,30 @@ const char kAddNewItemKey[] = "add-new-item";
 const char kManageItemsKey[] = "manage-items";
 const char kSameAsBillingKey[] = "same-as-billing";
 
-// Returns true if |input| should be shown when |field| has been requested.
+// Returns true if |input| should be shown when |field_type| has been requested.
 bool InputTypeMatchesFieldType(const DetailInput& input,
-                               const AutofillField& field) {
+                               AutofillFieldType field_type) {
   // If any credit card expiration info is asked for, show both month and year
   // inputs.
-  if (field.type() == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
-      field.type() == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
-      field.type() == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR ||
-      field.type() == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
-      field.type() == CREDIT_CARD_EXP_MONTH) {
+  if (field_type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
+      field_type == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
+      field_type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR ||
+      field_type == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
+      field_type == CREDIT_CARD_EXP_MONTH) {
     return input.type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
            input.type == CREDIT_CARD_EXP_MONTH;
   }
 
-  if (field.type() == CREDIT_CARD_TYPE)
+  if (field_type == CREDIT_CARD_TYPE)
     return input.type == CREDIT_CARD_NUMBER;
 
-  return input.type == field.type();
+  return input.type == field_type;
 }
 
 // Returns true if |input| should be used for a site-requested |field|.
 bool DetailInputMatchesField(const DetailInput& input,
                              const AutofillField& field) {
-  bool right_section = !input.section_suffix ||
-      EndsWith(field.section(), input.section_suffix, false);
-  return InputTypeMatchesFieldType(input, field) && right_section;
+  return InputTypeMatchesFieldType(input, field.type());
 }
 
 bool IsCreditCardType(AutofillFieldType type) {
@@ -122,15 +120,15 @@ bool IsCreditCardType(AutofillFieldType type) {
 // the billing address as the shipping address.
 bool DetailInputMatchesShippingField(const DetailInput& input,
                                      const AutofillField& field) {
-  if (input.section_suffix &&
-      std::string(input.section_suffix) == "billing") {
-    return InputTypeMatchesFieldType(input, field);
-  }
-
   if (field.type() == NAME_FULL)
     return input.type == CREDIT_CARD_NAME;
 
-  return DetailInputMatchesField(input, field);
+  // Equivalent billing field type is used to support UseBillingAsShipping
+  // usecase.
+  AutofillFieldType field_type =
+      AutofillType::GetEquivalentBillingFieldType(field.type());
+
+  return InputTypeMatchesFieldType(input, field_type);
 }
 
 // Constructs |inputs| from template data.
@@ -319,37 +317,33 @@ void AutofillDialogControllerImpl::Show() {
   };
 
   const DetailInput kBillingInputs[] = {
-    { 5, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
-      "billing" },
-    { 6, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
-      "billing" },
-    { 7, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
-      "billing" },
+    { 5, ADDRESS_BILLING_LINE1,
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1 },
+    { 6, ADDRESS_BILLING_LINE2,
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2 },
+    { 7, ADDRESS_BILLING_CITY,
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY },
     // TODO(estade): state placeholder should depend on locale.
-    { 8, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "billing" },
-    { 8, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
-      "billing", 0.5 },
+    { 8, ADDRESS_BILLING_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE },
+    { 8, ADDRESS_BILLING_ZIP,
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE, 0.5 },
     // TODO(estade): this should have a default based on the locale.
-    { 9, ADDRESS_HOME_COUNTRY, 0, "billing" },
+    { 9, ADDRESS_BILLING_COUNTRY, 0 },
+    // TODO(ramankk): Add billing specific phone number.
     { 10, PHONE_HOME_WHOLE_NUMBER,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER, "billing" },
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER },
   };
 
   const DetailInput kShippingInputs[] = {
-    { 11, NAME_FULL, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESSEE_NAME,
-      "shipping" },
-    { 12, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
-      "shipping" },
-    { 13, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
-      "shipping" },
-    { 14, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
-      "shipping" },
-    { 15, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "shipping" },
-    { 15, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
-      "shipping", 0.5 },
-    { 16, ADDRESS_HOME_COUNTRY, 0, "shipping" },
+    { 11, NAME_FULL, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESSEE_NAME },
+    { 12, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1 },
+    { 13, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2 },
+    { 14, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY },
+    { 15, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE },
+    { 15, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE, 0.5 },
+    { 16, ADDRESS_HOME_COUNTRY, 0 },
     { 17, PHONE_HOME_WHOLE_NUMBER,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER, "shipping" },
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER },
   };
 
   BuildInputs(kEmailInputs,
@@ -698,7 +692,7 @@ const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
 
 ui::ComboboxModel* AutofillDialogControllerImpl::ComboboxModelForAutofillType(
     AutofillFieldType type) {
-  switch (type) {
+  switch (AutofillType::GetEquivalentFieldType(type)) {
     case CREDIT_CARD_EXP_MONTH:
       return &cc_exp_month_combobox_model_;
 
@@ -1028,7 +1022,7 @@ gfx::Image AutofillDialogControllerImpl::IconForField(
 
 bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
                                                 const string16& value) const {
-  switch (type) {
+  switch (AutofillType::GetEquivalentFieldType(type)) {
     case EMAIL_ADDRESS:
       return IsValidEmailAddress(value);
 

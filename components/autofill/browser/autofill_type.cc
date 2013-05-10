@@ -124,6 +124,36 @@ AutofillFieldType AutofillType::GetEquivalentFieldType(
 }
 
 // static
+AutofillFieldType AutofillType::GetEquivalentBillingFieldType(
+    AutofillFieldType field_type) {
+  switch (field_type) {
+    case ADDRESS_HOME_LINE1:
+      return ADDRESS_BILLING_LINE1;
+
+    case ADDRESS_HOME_LINE2:
+      return ADDRESS_BILLING_LINE2;
+
+    case ADDRESS_HOME_APT_NUM:
+      return ADDRESS_BILLING_APT_NUM;
+
+    case ADDRESS_HOME_CITY:
+      return ADDRESS_BILLING_CITY;
+
+    case ADDRESS_HOME_STATE:
+      return ADDRESS_BILLING_STATE;
+
+    case ADDRESS_HOME_ZIP:
+      return ADDRESS_BILLING_ZIP;
+
+    case ADDRESS_HOME_COUNTRY:
+      return ADDRESS_BILLING_COUNTRY;
+
+    default:
+      return field_type;
+  }
+}
+
+// static
 std::string AutofillType::FieldTypeToString(AutofillFieldType type) {
   switch (type) {
     case NO_SERVER_DATA:

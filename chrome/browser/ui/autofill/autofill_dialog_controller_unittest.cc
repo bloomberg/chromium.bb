@@ -37,7 +37,8 @@ namespace autofill {
 namespace {
 
 const char kFakeEmail[] = "user@example.com";
-const char* kFieldsFromPage[] = { "email", "cc-number" };
+const char* kFieldsFromPage[] = { "email", "cc-number", "billing region",
+  "shipping region" };
 const char kSettingsOrigin[] = "Chrome settings";
 
 using content::BrowserThread;
@@ -439,6 +440,54 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
   EXPECT_EQ(kEmail2, inputs[0].initial_value);
+}
+
+// Test selecting a shipping address different from billing as address.
+TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
+  AutofillProfile full_profile(test::GetFullProfile());
+  AutofillProfile full_profile2(test::GetFullProfile2());
+  CreditCard credit_card;
+  test::SetCreditCardInfo(&credit_card, "Test User",
+                          "4234567890654321", // Visa
+                          "11", "2100");
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile2);
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
+  ui::MenuModel* shipping_model =
+      controller()->MenuModelForSection(SECTION_SHIPPING);
+  shipping_model->ActivatedAt(2);
+
+  controller()->OnAccept();
+  ASSERT_EQ(4U, form_structure()->field_count());
+  EXPECT_EQ("CA", UTF16ToUTF8(form_structure()->field(2)->value));
+  EXPECT_EQ("MI", UTF16ToUTF8(form_structure()->field(3)->value));
+  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(2)->type());
+  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(3)->type());
+}
+
+// Test selecting UseBillingForShipping.
+TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
+  AutofillProfile full_profile(test::GetFullProfile());
+  AutofillProfile full_profile2(test::GetFullProfile2());
+  CreditCard credit_card;
+  test::SetCreditCardInfo(&credit_card, "Test User",
+                          "4234567890654321", // Visa
+                          "11", "2100");
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile2);
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
+  ui::MenuModel* shipping_model =
+      controller()->MenuModelForSection(SECTION_SHIPPING);
+
+  // Test after setting use billing for shipping.
+  shipping_model->ActivatedAt(0);
+
+  controller()->OnAccept();
+  ASSERT_EQ(4U, form_structure()->field_count());
+  EXPECT_EQ("CA", UTF16ToUTF8(form_structure()->field(2)->value));
+  EXPECT_EQ("CA", UTF16ToUTF8(form_structure()->field(3)->value));
+  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(2)->type());
+  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(3)->type());
 }
 
 TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
@@ -954,6 +1003,19 @@ TEST_F(AutofillDialogControllerTest, HideWalletEmail) {
     }
   }
   ASSERT_LT(i, form_structure()->field_count());
+}
+
+// Test if autofill types of returned form structure are correct for billing
+// entries.
+TEST_F(AutofillDialogControllerTest, AutofillTypes) {
+  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+  controller()->OnAccept();
+  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+  ASSERT_EQ(4U, form_structure()->field_count());
+  EXPECT_EQ(EMAIL_ADDRESS, form_structure()->field(0)->type());
+  EXPECT_EQ(CREDIT_CARD_NUMBER, form_structure()->field(1)->type());
+  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(2)->type());
+  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(3)->type());
 }
 
 TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
