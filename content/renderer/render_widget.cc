@@ -112,6 +112,7 @@ const char* GetEventName(WebInputEvent::Type type) {
     CASE_TYPE(GestureFlingStart);
     CASE_TYPE(GestureFlingCancel);
     CASE_TYPE(GestureTap);
+    CASE_TYPE(GestureTapUnconfirmed);
     CASE_TYPE(GestureTapDown);
     CASE_TYPE(GestureTapCancel);
     CASE_TYPE(GestureDoubleTap);

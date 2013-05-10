@@ -1002,6 +1002,22 @@ void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
   SendGestureEvent(event);
 }
 
+void ContentViewCoreImpl::SingleTapUnconfirmed(JNIEnv* env, jobject obj,
+                                               jlong time_ms,
+                                               jfloat x, jfloat y) {
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GestureTapUnconfirmed, time_ms, x, y,
+      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+
+  event.data.tap.tapCount = 1;
+
+  const float touch_padding_dip = GetTouchPaddingDip();
+  event.data.tap.width = touch_padding_dip;
+  event.data.tap.height = touch_padding_dip;
+
+  SendGestureEvent(event);
+}
+
 void ContentViewCoreImpl::ShowPressState(JNIEnv* env, jobject obj,
                                          jlong time_ms,
                                          jfloat x, jfloat y) {

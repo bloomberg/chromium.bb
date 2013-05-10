@@ -1181,6 +1181,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 handleTapOrPress(timeMs, x, y, 0,
                         b.getBoolean(ContentViewGestureHandler.SHOW_PRESS, false));
                 return true;
+            case ContentViewGestureHandler.GESTURE_SINGLE_TAP_UNCONFIRMED:
+                nativeSingleTapUnconfirmed(mNativeContentViewCore, timeMs, x, y);
+                return true;
             case ContentViewGestureHandler.GESTURE_LONG_PRESS:
                 handleTapOrPress(timeMs, x, y, IS_LONG_PRESS, false);
                 return true;
@@ -2822,6 +2825,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     private native void nativeSingleTap(
             int nativeContentViewCoreImpl, long timeMs, float x, float y, boolean linkPreviewTap);
+
+    private native void nativeSingleTapUnconfirmed(
+            int nativeContentViewCoreImpl, long timeMs, float x, float y);
 
     private native void nativeShowPressState(
             int nativeContentViewCoreImpl, long timeMs, float x, float y);

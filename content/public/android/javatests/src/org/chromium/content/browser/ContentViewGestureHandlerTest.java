@@ -648,8 +648,12 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 downTime, eventTime + 5, MotionEvent.ACTION_UP,
                 FAKE_COORD_X, FAKE_COORD_Y, 0);
         mGestureHandler.onTouchEvent(event);
-        assertEquals("The first tap should not do anything",
-                1, mockDelegate.mGestureTypeList.size());
+        assertEquals("A GESTURE_SINGLE_TAP_UNCONFIRMED event should have been sent",
+                ContentViewGestureHandler.GESTURE_SINGLE_TAP_UNCONFIRMED,
+                mockDelegate.mMostRecentGestureEvent.mType);
+        assertEquals("showPressedState, unconfirmed single tap event" +
+                "should have been sent",
+                2, mockDelegate.mGestureTypeList.size());
 
         event = MotionEvent.obtain(
                 eventTime + 10, eventTime + 10, MotionEvent.ACTION_DOWN,
@@ -661,9 +665,9 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertTrue("A show press cancel event should have been sent",
                 mockDelegate.mGestureTypeList.contains(
                         ContentViewGestureHandler.GESTURE_SHOW_PRESS_CANCEL));
-        assertEquals("Only flingCancel, showPressedState," +
+        assertEquals("Only showPressedState, unconfirmed single tap, " +
                 "showPressCancel and doubleTap should have been sent",
-                3, mockDelegate.mGestureTypeList.size());
+                4, mockDelegate.mGestureTypeList.size());
     }
 
     /**
@@ -1063,5 +1067,38 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertEquals("Gesture should not be last for vsync",
                 false,
                 mockDelegate.mostRecentGestureEventForLastForVSync());
+    }
+
+    /**
+     * Verify that a DOWN followed shortly by an UP will trigger
+     * a GESTURE_SINGLE_TAP_UNCONFIRMED event immediately.
+     *
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testGestureEventsSingleTapUnconfirmed() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        GestureRecordingMotionEventDelegate mockDelegate =
+                new GestureRecordingMotionEventDelegate();
+        mGestureHandler = new ContentViewGestureHandler(
+                getInstrumentation().getTargetContext(), mockDelegate,
+                new MockZoomManager(getInstrumentation().getTargetContext(), null),
+                ContentViewCore.INPUT_EVENTS_DELIVERED_IMMEDIATELY);
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertNull(mockDelegate.getMostRecentGestureEvent());
+
+        event = motionEvent(MotionEvent.ACTION_UP, downTime, eventTime + 10);
+        assertFalse(mGestureHandler.onTouchEvent(event));
+        assertEquals("A GESTURE_SINGLE_TAP_UNCONFIRMED gesture should have been sent",
+                ContentViewGestureHandler.GESTURE_SINGLE_TAP_UNCONFIRMED,
+                        mockDelegate.mMostRecentGestureEvent.mType);
+
+        assertTrue("Should not have confirmed a single tap yet",
+                mMockListener.mLastSingleTap == null);
     }
 }

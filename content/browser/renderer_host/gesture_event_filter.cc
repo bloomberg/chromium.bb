@@ -167,6 +167,7 @@ bool GestureEventFilter::ShouldForwardForTapSuppression(
       return !touchscreen_tap_suppression_controller_->
           ShouldSuppressGestureTapCancel();
     case WebInputEvent::GestureTap:
+    case WebInputEvent::GestureTapUnconfirmed:
       return !touchscreen_tap_suppression_controller_->
           ShouldSuppressGestureTap();
     default:

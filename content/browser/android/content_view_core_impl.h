@@ -123,6 +123,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   void SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
                  jfloat x, jfloat y,
                  jboolean disambiguation_popup_tap);
+  void SingleTapUnconfirmed(JNIEnv* env, jobject obj, jlong time_ms,
+                            jfloat x, jfloat y);
   void ShowPressState(JNIEnv* env, jobject obj, jlong time_ms,
                       jfloat x, jfloat y);
   void ShowPressCancel(JNIEnv* env, jobject obj, jlong time_ms,

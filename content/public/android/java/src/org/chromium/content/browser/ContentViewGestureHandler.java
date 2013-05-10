@@ -133,17 +133,18 @@ class ContentViewGestureHandler implements LongPressDelegate {
     static final int GESTURE_DOUBLE_TAP = 1;
     static final int GESTURE_SINGLE_TAP_UP = 2;
     static final int GESTURE_SINGLE_TAP_CONFIRMED = 3;
-    static final int GESTURE_LONG_PRESS = 4;
-    static final int GESTURE_SCROLL_START = 5;
-    static final int GESTURE_SCROLL_BY = 6;
-    static final int GESTURE_SCROLL_END = 7;
-    static final int GESTURE_FLING_START = 8;
-    static final int GESTURE_FLING_CANCEL = 9;
-    static final int GESTURE_PINCH_BEGIN = 10;
-    static final int GESTURE_PINCH_BY = 11;
-    static final int GESTURE_PINCH_END = 12;
-    static final int GESTURE_SHOW_PRESS_CANCEL = 13;
-    static final int GESTURE_LONG_TAP = 14;
+    static final int GESTURE_SINGLE_TAP_UNCONFIRMED = 4;
+    static final int GESTURE_LONG_PRESS = 5;
+    static final int GESTURE_SCROLL_START = 6;
+    static final int GESTURE_SCROLL_BY = 7;
+    static final int GESTURE_SCROLL_END = 8;
+    static final int GESTURE_FLING_START = 9;
+    static final int GESTURE_FLING_CANCEL = 10;
+    static final int GESTURE_PINCH_BEGIN = 11;
+    static final int GESTURE_PINCH_BY = 12;
+    static final int GESTURE_PINCH_END = 13;
+    static final int GESTURE_SHOW_PRESS_CANCEL = 14;
+    static final int GESTURE_LONG_TAP = 15;
 
     // These have to be kept in sync with content/port/common/input_event_ack_state.h
     static final int INPUT_EVENT_ACK_STATE_UNKNOWN = 0;
@@ -373,6 +374,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
                                     mIgnoreSingleTap = true;
                                 }
                                 setClickXAndY((int) x, (int) y);
+                            } else {
+                                // Notify Blink about this tapUp event anyway,
+                                // when none of the above conditions applied.
+                                sendMotionEventAsGesture(GESTURE_SINGLE_TAP_UNCONFIRMED, e, null);
                             }
                         }
 
