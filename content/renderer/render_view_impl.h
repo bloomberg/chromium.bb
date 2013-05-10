@@ -446,6 +446,10 @@ class CONTENT_EXPORT RenderViewImpl
                                     const WebKit::WebString& default_value,
                                     WebKit::WebString* actual_value);
   virtual bool runModalBeforeUnloadDialog(WebKit::WebFrame* frame,
+                                          bool is_reload,
+                                          const WebKit::WebString& message);
+  // DEPRECATED
+  virtual bool runModalBeforeUnloadDialog(WebKit::WebFrame* frame,
                                           const WebKit::WebString& message);
   virtual void showContextMenu(WebKit::WebFrame* frame,
                                const WebKit::WebContextMenuData& data);

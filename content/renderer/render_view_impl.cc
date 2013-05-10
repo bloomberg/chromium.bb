@@ -2274,16 +2274,20 @@ bool RenderViewImpl::runModalPromptDialog(WebFrame* frame,
 
 bool RenderViewImpl::runModalBeforeUnloadDialog(
     WebFrame* frame, const WebString& message) {
+  bool is_reload = false;
+  WebDataSource* ds = frame->provisionalDataSource();
+  if (ds)
+    is_reload = (ds->navigationType() == WebKit::WebNavigationTypeReload);
+  return runModalBeforeUnloadDialog(frame, is_reload, message);
+}
+
+bool RenderViewImpl::runModalBeforeUnloadDialog(
+    WebFrame* frame, bool is_reload, const WebString& message) {
   // If we are swapping out, we have already run the beforeunload handler.
   // TODO(creis): Fix OnSwapOut to clear the frame without running beforeunload
   // at all, to avoid running it twice.
   if (is_swapped_out_)
     return true;
-
-  bool is_reload = false;
-  WebDataSource* ds = frame->provisionalDataSource();
-  if (ds)
-    is_reload = (ds->navigationType() == WebKit::WebNavigationTypeReload);
 
   bool success = false;
   // This is an ignored return value, but is included so we can accept the same
