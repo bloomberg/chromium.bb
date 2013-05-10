@@ -3045,6 +3045,8 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
     // The reference to the parent is a weak pointer and will become null if the
     // parent is later destroyed.
     TextureManager* parent_texture_manager = parent_->texture_manager();
+    glBindTexture(offscreen_saved_color_texture_info_->target(),
+                  offscreen_saved_color_texture_info_->service_id());
     parent_texture_manager->SetLevelInfo(
         offscreen_saved_color_texture_info_,
         GL_TEXTURE_2D,
@@ -3081,6 +3083,9 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
         offscreen_saved_color_texture_info_,
         GL_TEXTURE_WRAP_T,
         GL_CLAMP_TO_EDGE);
+    Texture* texture = GetTextureInfoForTarget(
+        offscreen_saved_color_texture_info_->target());
+    glBindTexture(texture->target(), texture->service_id());
   } else {
     offscreen_saved_color_texture_info_ = NULL;
   }
