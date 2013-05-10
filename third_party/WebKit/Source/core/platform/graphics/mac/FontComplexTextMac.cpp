@@ -92,21 +92,21 @@ float Font::getGlyphsAndAdvancesForComplexText(const TextRun& run, int from, int
     return initialAdvance;
 }
 
-void Font::drawComplexText(GraphicsContext* context, const TextRun& run, const FloatPoint& point, int from, int to) const
+void Font::drawComplexText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const FloatPoint& point) const
 {
     if (preferHarfBuzz(this)) {
         GlyphBuffer glyphBuffer;
-        HarfBuzzShaper shaper(this, run);
-        shaper.setDrawRange(from, to);
+        HarfBuzzShaper shaper(this, runInfo.run);
+        shaper.setDrawRange(runInfo.from, runInfo.to);
         if (shaper.shape(&glyphBuffer)) {
-            drawGlyphBuffer(context, run, glyphBuffer, point);
+            drawGlyphBuffer(context, runInfo, glyphBuffer, point);
             return;
         }
     }
     // This glyph buffer holds our glyphs + advances + font data for each glyph.
     GlyphBuffer glyphBuffer;
 
-    float startX = point.x() + getGlyphsAndAdvancesForComplexText(run, from, to, glyphBuffer);
+    float startX = point.x() + getGlyphsAndAdvancesForComplexText(runInfo.run, runInfo.from, runInfo.to, glyphBuffer);
 
     // We couldn't generate any glyphs for the run.  Give up.
     if (glyphBuffer.isEmpty())
@@ -114,18 +114,18 @@ void Font::drawComplexText(GraphicsContext* context, const TextRun& run, const F
 
     // Draw the glyph buffer now at the starting point returned in startX.
     FloatPoint startPoint(startX, point.y());
-    drawGlyphBuffer(context, run, glyphBuffer, startPoint);
+    drawGlyphBuffer(context, runInfo, glyphBuffer, startPoint);
 }
 
-void Font::drawEmphasisMarksForComplexText(GraphicsContext* context, const TextRun& run, const AtomicString& mark, const FloatPoint& point, int from, int to) const
+void Font::drawEmphasisMarksForComplexText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
 {
     GlyphBuffer glyphBuffer;
-    float initialAdvance = getGlyphsAndAdvancesForComplexText(run, from, to, glyphBuffer, ForTextEmphasis);
+    float initialAdvance = getGlyphsAndAdvancesForComplexText(runInfo.run, runInfo.from, runInfo.to, glyphBuffer, ForTextEmphasis);
 
     if (glyphBuffer.isEmpty())
         return;
 
-    drawEmphasisMarks(context, run, glyphBuffer, mark, FloatPoint(point.x() + initialAdvance, point.y()));
+    drawEmphasisMarks(context, runInfo, glyphBuffer, mark, FloatPoint(point.x() + initialAdvance, point.y()));
 }
 
 float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const

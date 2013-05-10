@@ -69,6 +69,7 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas)
     , m_transparencyCount(0)
 #endif
     , m_trackOpaqueRegion(false)
+    , m_trackTextRegion(false)
     , m_useHighResMarker(false)
     , m_updatingControlTints(false)
     , m_accelerated(false)
@@ -1100,27 +1101,30 @@ void GraphicsContext::drawRect(const IntRect& rect)
     }
 }
 
-void GraphicsContext::drawText(const Font& font, const TextRun& run, const FloatPoint& point, int from, int to)
+void GraphicsContext::drawText(const Font& font, const TextRunPaintInfo& runInfo, const FloatPoint& point)
 {
     if (paintingDisabled())
         return;
 
-    font.drawText(this, run, point, from, to);
+    font.drawText(this, runInfo, point);
 }
 
-void GraphicsContext::drawEmphasisMarks(const Font& font, const TextRun& run, const AtomicString& mark, const FloatPoint& point, int from, int to)
+void GraphicsContext::drawEmphasisMarks(const Font& font, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point)
 {
     if (paintingDisabled())
         return;
 
-    font.drawEmphasisMarks(this, run, mark, point, from, to);
+    font.drawEmphasisMarks(this, runInfo, mark, point);
 }
 
-void GraphicsContext::drawBidiText(const Font& font, const TextRun& run, const FloatPoint& point, Font::CustomFontNotReadyAction customFontNotReadyAction)
+void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& runInfo, const FloatPoint& point, Font::CustomFontNotReadyAction customFontNotReadyAction)
 {
     if (paintingDisabled())
         return;
 
+    // sub-run painting is not supported for Bidi text.
+    const TextRun& run = runInfo.run;
+    ASSERT((runInfo.from == 0) && (runInfo.to == run.length()));
     BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
     bidiResolver.setStatus(BidiStatus(run.direction(), run.directionalOverride()));
     bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
@@ -1140,7 +1144,9 @@ void GraphicsContext::drawBidiText(const Font& font, const TextRun& run, const F
         subrun.setDirection(isRTL ? RTL : LTR);
         subrun.setDirectionalOverride(bidiRun->dirOverride(false));
 
-        font.drawText(this, subrun, currPoint, 0, -1, customFontNotReadyAction);
+        TextRunPaintInfo subrunInfo(subrun);
+        subrunInfo.bounds = runInfo.bounds;
+        font.drawText(this, subrunInfo, currPoint, customFontNotReadyAction);
 
         bidiRun = bidiRun->next();
         // FIXME: Have Font::drawText return the width of what it drew so that we don't have to re-measure here.
@@ -1351,9 +1357,10 @@ void GraphicsContext::didDrawRect(const SkRect& rect, const SkPaint& paint, cons
 }
 
 void GraphicsContext::drawPosText(const void* text, size_t byteLength,
-    const SkPoint pos[], const SkPaint& paint)
+    const SkPoint pos[],  const SkRect& textRect, const SkPaint& paint)
 {
     m_canvas->drawPosText(text, byteLength, pos, paint);
+    didDrawTextInRect(textRect);
 
     // FIXME: compute bounds for positioned text.
     if (m_trackOpaqueRegion)
@@ -1361,9 +1368,10 @@ void GraphicsContext::drawPosText(const void* text, size_t byteLength,
 }
 
 void GraphicsContext::drawPosTextH(const void* text, size_t byteLength,
-    const SkScalar xpos[], SkScalar constY, const SkPaint& paint)
+    const SkScalar xpos[], SkScalar constY,  const SkRect& textRect, const SkPaint& paint)
 {
     m_canvas->drawPosTextH(text, byteLength, xpos, constY, paint);
+    didDrawTextInRect(textRect);
 
     // FIXME: compute bounds for positioned text.
     if (m_trackOpaqueRegion)
@@ -1371,9 +1379,10 @@ void GraphicsContext::drawPosTextH(const void* text, size_t byteLength,
 }
 
 void GraphicsContext::drawTextOnPath(const void* text, size_t byteLength,
-    const SkPath& path, const SkMatrix* matrix, const SkPaint& paint)
+    const SkPath& path,  const SkRect& textRect, const SkMatrix* matrix, const SkPaint& paint)
 {
     m_canvas->drawTextOnPath(text, byteLength, path, matrix, paint);
+    didDrawTextInRect(textRect);
 
     // FIXME: compute bounds for positioned text.
     if (m_trackOpaqueRegion)
@@ -2121,6 +2130,14 @@ void GraphicsContext::applyClipFromImage(const SkRect& rect, const SkBitmap& ima
     m_canvas->resetMatrix();
     m_canvas->drawBitmapRect(imageBuffer, 0, rect, &paint);
     m_canvas->restore();
+}
+
+void GraphicsContext::didDrawTextInRect(const SkRect& textRect)
+{
+    if (m_trackTextRegion) {
+        TRACE_EVENT0("skia", "PlatformContextSkia::trackTextRegion");
+        m_textRegion.join(textRect);
+    }
 }
 
 }

@@ -69,6 +69,7 @@ class KURL;
 class GraphicsContext3D;
 class PlatformContextSkiaState;
 class TextRun;
+struct TextRunPaintInfo;
 class TransformationMatrix;
 
 enum TextDrawingMode {
@@ -295,6 +296,11 @@ public:
     void setTrackOpaqueRegion(bool track) { m_trackOpaqueRegion = track; }
     const OpaqueRegionSkia& opaqueRegion() const { return m_opaqueRegion; }
 
+    // The text region is empty until tracking is turned on.
+    // It is never clerared by the context.
+    void setTrackTextRegion(bool track) { m_trackTextRegion = track; }
+    const SkRect& textRegion() const { return m_textRegion; }
+
     void setImageInterpolationQuality(InterpolationQuality);
     InterpolationQuality imageInterpolationQuality() const;
 
@@ -373,9 +379,9 @@ public:
     //        smaller rect than the one drawn to, due to its clipping logic.
     void didDrawRect(const SkRect&, const SkPaint&, const SkBitmap* = 0);
     void drawRect(const SkRect&, const SkPaint&);
-    void drawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkPaint&);
-    void drawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkPaint&);
-    void drawTextOnPath(const void* text, size_t byteLength, const SkPath&, const SkMatrix*, const SkPaint&);
+    void drawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkRect& textRect, const SkPaint&);
+    void drawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkRect& textRect, const SkPaint&);
+    void drawTextOnPath(const void* text, size_t byteLength, const SkPath&, const SkRect& textRect, const SkMatrix*, const SkPaint&);
 
     void clip(const IntRect&);
     void clip(const FloatRect&);
@@ -389,9 +395,9 @@ public:
     TextDrawingModeFlags textDrawingMode() const;
     void setTextDrawingMode(TextDrawingModeFlags);
 
-    void drawText(const Font&, const TextRun&, const FloatPoint&, int from = 0, int to = -1);
-    void drawEmphasisMarks(const Font&, const TextRun& , const AtomicString& mark, const FloatPoint&, int from = 0, int to = -1);
-    void drawBidiText(const Font&, const TextRun&, const FloatPoint&, Font::CustomFontNotReadyAction = Font::DoNotPaintIfFontNotReady);
+    void drawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);
+    void drawEmphasisMarks(const Font&, const TextRunPaintInfo&, const AtomicString& mark, const FloatPoint&);
+    void drawBidiText(const Font&, const TextRunPaintInfo&, const FloatPoint&, Font::CustomFontNotReadyAction = Font::DoNotPaintIfFontNotReady);
     void drawHighlightForText(const Font&, const TextRun&, const FloatPoint&, int h, const Color& backgroundColor, ColorSpace, int from = 0, int to = -1);
 
     void drawLineForText(const FloatPoint&, float width, bool printing);
@@ -563,6 +569,8 @@ private:
         }
     }
 
+    void didDrawTextInRect(const SkRect& textRect);
+
     // null indicates painting is disabled. Never delete this object.
     SkCanvas* m_canvas;
 
@@ -590,6 +598,10 @@ private:
     // Tracks the region painted opaque via the GraphicsContext.
     OpaqueRegionSkia m_opaqueRegion;
     bool m_trackOpaqueRegion;
+
+    // Tracks the region where text is painted via the GraphicsContext.
+    bool m_trackTextRegion;
+    SkRect m_textRegion;
 
     // Are we on a high DPI display? If so, spelling and grammer markers are larger.
     bool m_useHighResMarker;
