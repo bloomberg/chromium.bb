@@ -860,6 +860,8 @@ DialogType.isModal = function(type) {
 
     this.filePopup_ = null;
 
+    this.searchBoxWrapper_ =
+        this.dialogDom_.querySelector('.search-box-wrapper');
     this.searchBox_ = this.dialogDom_.querySelector('#search-box');
     this.searchBox_.addEventListener(
         'input', this.onSearchBoxUpdate_.bind(this));
@@ -1429,6 +1431,10 @@ DialogType.isModal = function(type) {
 
     if (!util.platform.newUI())
       this.breadcrumbs_.truncate();
+
+    // Hide the search box if there is not enough space.
+    if (util.platform.newUI())
+      this.searchBox_.hidden = this.searchBoxWrapper_.clientWidth < 100;
 
     this.searchBreadcrumbs_.truncate();
 
