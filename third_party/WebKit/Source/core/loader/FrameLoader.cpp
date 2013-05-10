@@ -1097,7 +1097,7 @@ void FrameLoader::loadURL(const ResourceRequest& request, const String& frameNam
     // Example of this case are sites that reload the same URL with a different cookie
     // driving the generated content, or a master frame with links that drive a target
     // frame, where the user has clicked on the same link repeatedly.
-    if (sameURL && newLoadType != FrameLoadTypeReload && newLoadType != FrameLoadTypeReloadFromOrigin)
+    if (sameURL && newLoadType != FrameLoadTypeReload && newLoadType != FrameLoadTypeReloadFromOrigin && request.httpMethod() != "POST")
         m_loadType = FrameLoadTypeSame;
 }
 
