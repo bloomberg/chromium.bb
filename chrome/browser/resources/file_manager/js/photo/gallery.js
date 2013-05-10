@@ -35,7 +35,9 @@ function unload(opt_exiting) { Gallery.instance.onUnload(opt_exiting) }
  * @param {Object} context Object containing the following:
  *     {function(string)} onNameChange Called every time a selected
  *         item name changes (on rename and on selection change).
- *     {function} onClose
+ *     {function(string)} onBack
+ *     {function()} onClose
+ *     {function()} onMaximize
  *     {MetadataCache} metadataCache
  *     {Array.<Object>} shareActions
  *     {string} readonlyDirName Directory name for readonly warning or null.
@@ -84,6 +86,8 @@ Gallery.open = function(context, urls, selectedUrls) {
 
 /**
  * Create a Gallery object in a tab.
+ * TODO(mtomasz): Remove it after dropping support for Files.app V1.
+ *
  * @param {string} path File system path to a selected file.
  * @param {Object} pageState Page state object.
  * @param {function=} opt_callback Called when gallery object is constructed.
@@ -108,7 +112,7 @@ Gallery.openStandalone = function(path, pageState, opt_callback) {
         });
   });
 
-  function scanDirectory(dirEntry) {
+  var scanDirectory = function(dirEntry) {
     currentDir = dirEntry;
     util.forEachDirEntry(currentDir, function(entry) {
       if (entry == null) {
@@ -120,13 +124,25 @@ Gallery.openStandalone = function(path, pageState, opt_callback) {
           selectedUrls = [url];
       }
     });
-  }
+  };
 
-  function onClose() {
+  var onBack = function() {
     // Exiting to the Files app seems arbitrary. Consider closing the tab.
     document.location = 'main.html?' +
         JSON.stringify({defaultPath: document.location.hash.substr(1)});
-  }
+  };
+
+  var onClose = function() {
+    window.close();
+  };
+
+  var onMaximize = function() {
+    var appWindow = chrome.app.window.current();
+    if (appWindow.isMaximized())
+      appWindow.restore();
+    else
+      appWindow.maximize();
+  };
 
   function open() {
     urls.sort();
@@ -138,7 +154,9 @@ Gallery.openStandalone = function(path, pageState, opt_callback) {
         saveDirEntry: null,
         metadataCache: MetadataCache.createFull(),
         pageState: pageState,
+        onBack: onBack,
         onClose: onClose,
+        onMaximize: onMaximize,
         displayStringFunction: strf
       };
       Gallery.open(context, urls, selectedUrls);
@@ -215,7 +233,7 @@ Gallery.prototype.onExternallyUnmounted_ = function(event) {
   if (!this.selectedItemFilesystemPath_)
     return;
   if (this.selectedItemFilesystemPath_.indexOf(event.mountPath) == 0)
-    this.onClose_();
+    this.onBack_();
 };
 
 /**
@@ -245,15 +263,27 @@ Gallery.prototype.initDom_ = function() {
   var content = util.createChild(this.container_, 'content');
   content.addEventListener('click', this.onContentClick_.bind(this));
 
-  var closeButton = util.createChild(this.container_, 'close tool dimmable');
-  util.createChild(closeButton);
-  closeButton.addEventListener('click', this.onClose_.bind(this));
-
   this.header_ = util.createChild(this.container_, 'header tool dimmable');
   this.toolbar_ = util.createChild(this.container_, 'toolbar tool dimmable');
 
-  this.filenameSpacer_ = util.createChild(this.toolbar_, 'filename-spacer');
+  var backButton = util.createChild(this.container_,
+                                    'back-button tool dimmable');
+  util.createChild(backButton);
+  backButton.addEventListener('click', this.onBack_.bind(this));
 
+  if (util.platform.newUI()) {
+    var maximizeButton = util.createChild(this.header_,
+                                          'maximize-button tool dimmable',
+                                          'button');
+    maximizeButton.addEventListener('click', this.onMaximize_.bind(this));
+
+    var closeButton = util.createChild(this.header_,
+                                       'close-button tool dimmable',
+                                       'button');
+    closeButton.addEventListener('click', this.onClose_.bind(this));
+  }
+
+  this.filenameSpacer_ = util.createChild(this.toolbar_, 'filename-spacer');
   this.filenameEdit_ = util.createChild(this.filenameSpacer_,
                                         'namebox', 'input');
 
@@ -393,23 +423,39 @@ Gallery.prototype.load = function(urls, selectedUrls) {
 };
 
 /**
- * Close the Gallery.
+ * Close the Gallery and go to Files.app.
  * @private
  */
-Gallery.prototype.close_ = function() {
+Gallery.prototype.back_ = function() {
   if (util.isFullScreen()) {
     util.toggleFullScreen(this.document_,
                           false);  // Leave the full screen mode.
   }
-  this.context_.onClose(this.getSelectedUrls());
+  this.context_.onBack(this.getSelectedUrls());
 };
 
 /**
- * Handle user's 'Close' action (Escape or a click on the X icon).
+ * Handle user's 'Back' action (Escape or a click on the X icon).
+ * @private
+ */
+Gallery.prototype.onBack_ = function() {
+  this.executeWhenReady(this.back_.bind(this));
+};
+
+/**
+ * Handle user's 'Close' action.
  * @private
  */
 Gallery.prototype.onClose_ = function() {
-  this.executeWhenReady(this.close_.bind(this));
+  this.executeWhenReady(this.context_.onClose);
+};
+
+/**
+ * Handle user's 'Maximize' action (Escape or a click on the X icon).
+ * @private
+ */
+Gallery.prototype.onMaximize_ = function() {
+  this.executeWhenReady(this.context_.onMaximize);
 };
 
 /**
@@ -653,7 +699,7 @@ Gallery.prototype.onKeyDown_ = function(event) {
     case 'U+001B':  // Escape
       // Swallow Esc if it closed the Share menu, otherwise close the Gallery.
       if (!wasSharing)
-        this.onClose_();
+        this.onBack_();
       break;
 
     case 'U+004D':  // 'm' switches between Slide and Mosaic mode.

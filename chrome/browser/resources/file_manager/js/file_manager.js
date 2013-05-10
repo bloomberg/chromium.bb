@@ -566,18 +566,10 @@ DialogType.isModal = function(type) {
 
     if (util.platform.newUI() && this.dialogType == DialogType.FULL_PAGE) {
       var maximizeButton = this.dialogDom_.querySelector('#maximize-button');
-      maximizeButton.addEventListener('click', function() {
-        var appWindow = chrome.app.window.current();
-        if (appWindow.isMaximized())
-          appWindow.restore();
-        else
-          appWindow.maximize();
-      });
+      maximizeButton.addEventListener('click', this.onMaximize.bind(this));
 
       var closeButton = this.dialogDom_.querySelector('#close-button');
-      closeButton.addEventListener('click', function() {
-        window.close();
-      });
+      closeButton.addEventListener('click', this.onClose.bind(this));
     }
 
     this.syncButton.checkable = true;
@@ -586,6 +578,18 @@ DialogType.isModal = function(type) {
       this.detailViewButton_.checkable = true;
       this.thumbnailViewButton_.checkable = true;
     }
+  };
+
+  FileManager.prototype.onMaximize = function() {
+    var appWindow = chrome.app.window.current();
+    if (appWindow.isMaximized())
+      appWindow.restore();
+    else
+      appWindow.maximize();
+  };
+
+  FileManager.prototype.onClose = function() {
+    window.close();
   };
 
   /**

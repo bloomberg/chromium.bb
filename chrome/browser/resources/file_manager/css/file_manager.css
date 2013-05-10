@@ -731,6 +731,7 @@ body[new-ui] .breadcrumb-path:not(.breadcrumb-last) {
 }
 
 body[new-ui] .dialog-header .buttonbar button {
+  -webkit-margin-start: 0;
   background-image: none;
   background-position: center;
   background-repeat: no-repeat;
@@ -2208,7 +2209,8 @@ body[new-ui] #iframe-drag-area {
   height: 45px;
   left: 64px;
   position: absolute;
-  right: 0;
+  right: 70px;
   top: 0;
+  width: auto;
   z-index: 101;
 }
