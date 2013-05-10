@@ -653,6 +653,8 @@ void WebKitTestRunner::CaptureDump() {
     }
   }
 
+  render_view()->GetWebView()->mainFrame()->stopLoading();
+
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&WebKitTestRunner::Send),
