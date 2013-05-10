@@ -769,7 +769,7 @@ bind_input_method(struct wl_client *client,
 
 	if (text_backend->input_method.client != client) {
 		wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "permission to bind desktop_shell denied");
+				       "permission to bind input_method denied");
 		wl_resource_destroy(resource);
 		return;
 	}
