@@ -66,6 +66,7 @@ webkit.org/b/90488 [ Win Mac Debug ] inspector/styles/styles-computed-trace.html
 
 # Chromium r163873 slowed down these tests
 webkit.org/b/100287 compositing/culling/filter-occlusion-blur-large.html [ Slow ]
+webkit.org/b/66989 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Slow ]
 
 # The test has been timing out since landed in r130587.
 webkit.org/b/98659 [ Debug ] fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
