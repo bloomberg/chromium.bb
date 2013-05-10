@@ -30,7 +30,7 @@ if cros_build_lib.IsInsideChroot():
 
 INCLUDE_PATTERNS_FILENAME = 'autotest-quickmerge-includepatterns'
 AUTOTEST_PROJECT_NAME = 'chromiumos/third_party/autotest'
-AUTOTEST_TESTS_EBUILD = 'chromeos-base/autotest-tests'
+AUTOTEST_EBUILD = 'chromeos-base/autotest'
 DOWNGRADE_EBUILDS = ['chromeos-base/autotest',
                      'chromeos-base/autotest-tests',
                      'chromeos-base/autotest-chrome',
@@ -333,7 +333,7 @@ def main(argv):
                                                 sysroot_autotest_path)
 
   if not args.pretend:
-    UpdatePackageContents(change_report, AUTOTEST_TESTS_EBUILD,
+    UpdatePackageContents(change_report, AUTOTEST_EBUILD,
                           sysroot_path)
     for ebuild in DOWNGRADE_EBUILDS:
       if not DowngradePackageVersion(sysroot_path, ebuild):
