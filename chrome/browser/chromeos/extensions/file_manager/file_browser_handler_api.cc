@@ -34,7 +34,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"

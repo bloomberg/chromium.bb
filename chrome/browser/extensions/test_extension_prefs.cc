@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/pref_value_store.h"
 #include "base/run_loop.h"

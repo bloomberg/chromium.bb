@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_GOOGLE_APIS_TASK_UTIL_H_
 
 #include "base/bind.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 
 namespace google_apis {
 

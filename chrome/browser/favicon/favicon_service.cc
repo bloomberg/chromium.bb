@@ -4,7 +4,7 @@
 
 #include "chrome/browser/favicon/favicon_service.h"
 
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_service.h"

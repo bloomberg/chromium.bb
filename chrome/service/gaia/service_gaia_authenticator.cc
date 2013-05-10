@@ -5,7 +5,7 @@
 #include "chrome/service/gaia/service_gaia_authenticator.h"
 
 #include "base/bind.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_process.h"
 #include "googleurl/src/gurl.h"
