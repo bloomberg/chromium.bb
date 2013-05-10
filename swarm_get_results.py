@@ -33,20 +33,27 @@ def get_test_keys(swarm_base_url, test_name, timeout):
   assert isinstance(timeout, float)
   key_data = urllib.urlencode([('name', test_name)])
   url = '%s/get_matching_test_cases?%s' % (swarm_base_url, key_data)
-  # TODO(maruel): It may return an empty set. It should query multiple times in
-  # that case.
-  response = run_isolated.url_open(url, retry_404=True, timeout=timeout)
-  if response is None:
-    raise Failure(
-        'Error: Unable to find any tests with the name, %s, on swarm server'
+
+  for i in range(run_isolated.URL_OPEN_MAX_ATTEMPTS):
+    response = run_isolated.url_open(url, retry_404=True, timeout=timeout)
+    if response is None:
+      raise Failure(
+          'Error: Unable to find any tests with the name, %s, on swarm server'
           % test_name)
-  result = response.read()
-  # TODO(maruel): Compare exact string.
-  if 'No matching' in result:
-    raise Failure(
-        'Error: Unable to find any tests with the name, %s, on swarm server'
-          % test_name)
-  return json.loads(result) or []
+
+    result = response.read()
+    # TODO(maruel): Compare exact string.
+    if 'No matching' in result:
+      logging.warning('Unable to find any tests with the name, %s, on swarm '
+                      'server' % test_name)
+      if i != run_isolated.URL_OPEN_MAX_ATTEMPTS:
+        run_isolated.HttpService.sleep_before_retry(i, None)
+      continue
+    return json.loads(result)
+
+  raise Failure(
+      'Error: Unable to find any tests with the name, %s, on swarm server'
+      % test_name)
 
 
 class Bit(object):

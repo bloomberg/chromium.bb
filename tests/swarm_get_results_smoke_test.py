@@ -13,10 +13,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class TestSwarm(unittest.TestCase):
-  # TODO(maruel): Reenable once the underlying issue, a race condition in
-  # /get_matching_test_cases, is resolved.
-  def disabled_test_example(self):
-    return
+  def test_example(self):
     # pylint: disable=W0101
     # A user should be able to trigger a swarm job and return results.
     cmd = [

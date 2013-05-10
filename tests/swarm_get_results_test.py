@@ -17,6 +17,7 @@ import auto_stub
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
+import run_isolated
 import swarm_get_results
 
 
@@ -170,21 +171,49 @@ class TestCase(auto_stub.TestCase):
 
 class TestGetTestKeys(TestCase):
   def test_no_keys(self):
-    self.requests = [
-      (
-        'http://host:9001/get_matching_test_cases?name=my_test',
-        {'retry_404': True, 'timeout': 0.0},
-        StringIO.StringIO('No matching Test Cases'),
-      ),
-    ]
+    old_sleep = swarm_get_results.time.sleep
+    swarm_get_results.time.sleep = lambda x: x
     try:
-      swarm_get_results.get_test_keys('http://host:9001', 'my_test', 0.)
-      self.fail()
-    except swarm_get_results.Failure as e:
-      msg = (
-          'Error: Unable to find any tests with the name, my_test, on swarm '
-          'server')
-      self.assertEqual(msg, e.args[0])
+      self.requests = [
+        (
+          'http://host:9001/get_matching_test_cases?name=my_test',
+          {'retry_404': True, 'timeout': 0.0},
+          StringIO.StringIO('No matching Test Cases'),
+        ) for _ in range(run_isolated.URL_OPEN_MAX_ATTEMPTS)
+      ]
+      try:
+        swarm_get_results.get_test_keys('http://host:9001', 'my_test', 0.)
+        self.fail()
+      except swarm_get_results.Failure as e:
+        msg = (
+            'Error: Unable to find any tests with the name, my_test, on swarm '
+            'server')
+        self.assertEqual(msg, e.args[0])
+    finally:
+      swarm_get_results.time.sleep = old_sleep
+
+  def test_no_keys_on_first_attempt(self):
+    old_sleep = swarm_get_results.time.sleep
+    swarm_get_results.time.sleep = lambda x: x
+    try:
+      keys = ['key_1', 'key_2']
+      self.requests = [
+        (
+          'http://host:9001/get_matching_test_cases?name=my_test',
+          {'retry_404': True, 'timeout': 0.0},
+          StringIO.StringIO('No matching Test Cases'),
+        ),
+        (
+          'http://host:9001/get_matching_test_cases?name=my_test',
+          {'retry_404': True, 'timeout': 0.0},
+          StringIO.StringIO(json.dumps(keys)),
+        ),
+      ]
+      actual = swarm_get_results.get_test_keys('http://host:9001', 'my_test',
+                                               0.)
+      self.assertEqual(keys, actual)
+    finally:
+      swarm_get_results.time.sleep = old_sleep
 
   def test_find_keys(self):
     keys = ['key_1', 'key_2']
