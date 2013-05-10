@@ -35,7 +35,6 @@
 #include <usp10.h>
 
 struct SkPoint;
-struct SkRect;
 
 namespace WebCore {
 
@@ -50,8 +49,7 @@ void paintSkiaText(GraphicsContext*,
                    const WORD* glyphs,
                    const int* advances,
                    const GOFFSET* offsets,
-                   const SkPoint& origin,
-                   const SkRect& textRect);
+                   const SkPoint* origin);
 
 // Note that the offsets parameter is optional. If not null it represents a
 // per glyph offset (such as returned by ScriptPlace Windows API function).
@@ -63,8 +61,7 @@ void paintSkiaText(GraphicsContext*,
                    const WORD* glyphs,
                    const int* advances,
                    const GOFFSET* offsets,
-                   const SkPoint& origin,
-                   const SkRect& textRect);
+                   const SkPoint* origin);
 
 }  // namespace WebCore
 

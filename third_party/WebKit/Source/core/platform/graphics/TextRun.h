@@ -24,7 +24,6 @@
 #ifndef TextRun_h
 #define TextRun_h
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/text/TextDirection.h"
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
@@ -32,6 +31,7 @@
 namespace WebCore {
 
 class FloatPoint;
+class FloatRect;
 class Font;
 class GraphicsContext;
 class GlyphBuffer;
@@ -256,20 +256,6 @@ inline void TextRun::setTabSize(bool allow, unsigned size)
     m_tabSize = size;
 }
 
-// Container for parameters needed to paint TextRun.
-struct TextRunPaintInfo {
-    explicit TextRunPaintInfo(const TextRun& r)
-        : run(r)
-        , from(0)
-        , to(r.length())
-    {
-    }
-
-    const TextRun& run;
-    int from;
-    int to;
-    FloatRect bounds;
-};
-
 }
+
 #endif

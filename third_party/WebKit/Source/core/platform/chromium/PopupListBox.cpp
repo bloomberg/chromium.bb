@@ -472,9 +472,7 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
 
     // Draw the item text.
     int textY = rowRect.y() + itemFont.fontMetrics().ascent() + (rowRect.height() - itemFont.fontMetrics().height()) / 2;
-    TextRunPaintInfo textRunPaintInfo(textRun);
-    textRunPaintInfo.bounds = rowRect;
-    gc->drawBidiText(itemFont, textRunPaintInfo, IntPoint(textX, textY));
+    gc->drawBidiText(itemFont, textRun, IntPoint(textX, textY));
 
     // We are using the left padding as the right padding includes room for the scroll-bar which
     // does not show in this case.
@@ -509,11 +507,9 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
         textX = max<int>(0, m_popupClient->clientPaddingLeft() - m_popupClient->clientInsetLeft());
     else
         textX = remainingWidth - itemFont.width(labelTextRun);
-    TextRunPaintInfo labelTextRunPaintInfo(labelTextRun);
-    labelTextRunPaintInfo.bounds = rowRect;
 
     gc->setFillColor(labelColor, ColorSpaceDeviceRGB);
-    gc->drawBidiText(itemFont, labelTextRunPaintInfo, IntPoint(textX, textY));
+    gc->drawBidiText(itemFont, labelTextRun, IntPoint(textX, textY));
 }
 
 Font PopupListBox::getRowFont(int rowIndex)

@@ -324,10 +324,8 @@ int UniscribeHelper::xToCharacter(int x) const
     return 0;
 }
 
-void UniscribeHelper::draw(GraphicsContext* graphicsContext, HDC dc,
-                           int x, int y,
-                           const FloatRect& textRect,
-                           int from, int to)
+void UniscribeHelper::draw(GraphicsContext* graphicsContext,
+                           HDC dc, int x, int y, int from, int to)
 {
     HGDIOBJ oldFont = 0;
     int curX = x;
@@ -428,8 +426,7 @@ void UniscribeHelper::draw(GraphicsContext* graphicsContext, HDC dc,
                               &shaping.m_glyphs[fromGlyph],
                               advances,
                               &shaping.m_offsets[fromGlyph],
-                              origin,
-                              textRect);
+                              &origin);
                 textOutOk = true;
 
                 if (!textOutOk && 0 == executions) {

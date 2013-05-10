@@ -434,9 +434,7 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, const LayoutPoint&
     }
 
     // Draw the item text
-    TextRunPaintInfo textRunPaintInfo(textRun);
-    textRunPaintInfo.bounds = r;
-    paintInfo.context->drawBidiText(itemFont, textRunPaintInfo, roundedIntPoint(r.location()));
+    paintInfo.context->drawBidiText(itemFont, textRun, roundedIntPoint(r.location()));
 }
 
 void RenderListBox::paintItemBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset, int listIndex)

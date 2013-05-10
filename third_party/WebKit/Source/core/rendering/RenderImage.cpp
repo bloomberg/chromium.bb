@@ -334,25 +334,22 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
 
             if (!m_altText.isEmpty()) {
                 String text = document()->displayStringModifiedByEncoding(m_altText);
+                context->setFillColor(style()->visitedDependentColor(CSSPropertyColor), style()->colorSpace());
                 const Font& font = style()->font();
                 const FontMetrics& fontMetrics = font.fontMetrics();
                 LayoutUnit ascent = fontMetrics.ascent();
-                LayoutPoint textRectOrigin = paintOffset;
-                textRectOrigin.move(leftBorder + leftPad + (paddingWidth / 2) - borderWidth, topBorder + topPad + (paddingHeight / 2) - borderWidth);
-                LayoutPoint textOrigin(textRectOrigin.x(), textRectOrigin.y() + ascent);
+                LayoutPoint altTextOffset = paintOffset;
+                altTextOffset.move(leftBorder + leftPad + (paddingWidth / 2) - borderWidth, topBorder + topPad + ascent + (paddingHeight / 2) - borderWidth);
 
                 // Only draw the alt text if it'll fit within the content box,
                 // and only if it fits above the error image.
                 TextRun textRun = RenderBlock::constructTextRun(this, font, text, style());
                 LayoutUnit textWidth = font.width(textRun);
-                TextRunPaintInfo textRunPaintInfo(textRun);
-                textRunPaintInfo.bounds = FloatRect(textRectOrigin, FloatSize(textWidth, fontMetrics.height()));
-                context->setFillColor(style()->visitedDependentColor(CSSPropertyColor), style()->colorSpace());
                 if (errorPictureDrawn) {
                     if (usableWidth >= textWidth && fontMetrics.height() <= imageOffset.height())
-                        context->drawText(font, textRunPaintInfo, textOrigin);
+                        context->drawText(font, textRun, altTextOffset);
                 } else if (usableWidth >= textWidth && usableHeight >= fontMetrics.height())
-                    context->drawText(font, textRunPaintInfo, textOrigin);
+                    context->drawText(font, textRun, altTextOffset);
             }
         }
     } else if (m_imageResource->hasImage() && cWidth > 0 && cHeight > 0) {

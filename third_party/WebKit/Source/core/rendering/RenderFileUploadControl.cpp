@@ -131,12 +131,11 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoin
         LayoutUnit buttonWidth = nodeWidth(button);
         LayoutUnit buttonAndIconWidth = buttonWidth + afterButtonSpacing
             + (input->icon() ? iconWidth + iconFilenameSpacing : 0);
-        float textWidth = font.width(textRun);
         LayoutUnit textX;
         if (style()->isLeftToRightDirection())
             textX = contentLeft + buttonAndIconWidth;
         else
-            textX = contentLeft + contentWidth() - buttonAndIconWidth - textWidth;
+            textX = contentLeft + contentWidth() - buttonAndIconWidth - font.width(textRun);
 
         LayoutUnit textY = 0;
         // We want to match the button's baseline
@@ -145,16 +144,11 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoin
             textY = paintOffset.y() + borderTop() + paddingTop() + buttonRenderer->baselinePosition(AlphabeticBaseline, true, HorizontalLine, PositionOnContainingLine);
         else
             textY = baselinePosition(AlphabeticBaseline, true, HorizontalLine, PositionOnContainingLine);
-        TextRunPaintInfo textRunPaintInfo(textRun);
-        textRunPaintInfo.bounds = FloatRect(textX,
-                                            textY - style()->fontMetrics().ascent(),
-                                            textWidth,
-                                            style()->fontMetrics().height());
 
         paintInfo.context->setFillColor(style()->visitedDependentColor(CSSPropertyColor), style()->colorSpace());
         
         // Draw the filename
-        paintInfo.context->drawBidiText(font, textRunPaintInfo, IntPoint(roundToInt(textX), roundToInt(textY)));
+        paintInfo.context->drawBidiText(font, textRun, IntPoint(roundToInt(textX), roundToInt(textY)));
         
         if (input->icon()) {
             // Determine where the icon should be placed

@@ -44,7 +44,6 @@ class UniscribeTest_TooBig_Test; // A gunit test for UniscribeHelper.
 
 namespace WebCore {
 
-class FloatRect;
 class FontFeatureSettings;
 class GraphicsContext;
 
@@ -197,10 +196,8 @@ public:
     // be pre-set.
     //
     // The y position is the upper left corner, NOT the baseline.
-    void draw(GraphicsContext* graphicsContext, HDC dc,
-              int x, int y,
-              const FloatRect& textRect,
-              int from, int to);
+    void draw(GraphicsContext* graphicsContext, HDC dc, int x, int y, int from,
+              int to);
 
     // Returns the first glyph assigned to the character at the given offset.
     // This function is used to retrieve glyph information when Uniscribe is

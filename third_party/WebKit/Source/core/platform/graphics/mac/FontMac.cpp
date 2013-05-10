@@ -88,7 +88,7 @@ static void setupPaint(SkPaint* paint, const SimpleFontData* fontData, const Fon
 // This issue is tracked in https://bugs.webkit.org/show_bug.cgi?id=62989
 void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
                       const GlyphBuffer& glyphBuffer,  int from, int numGlyphs,
-                      const FloatPoint& point, const FloatRect& textRect) const {
+                      const FloatPoint& point) const {
     COMPILE_ASSERT(sizeof(GlyphBufferGlyph) == sizeof(uint16_t), GlyphBufferGlyphSize_equals_uint16_t);
 
     bool shouldSmoothFonts = true;
@@ -152,7 +152,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         gc->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
-        gc->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, textRect, paint);
+        gc->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, paint);
     }
 
     if ((textMode & TextModeStroke)
@@ -171,7 +171,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
             paint.setLooper(0);
         }
 
-        gc->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, textRect, paint);
+        gc->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, paint);
     }
     if (font->platformData().orientation() == Vertical)
         gc->restore();

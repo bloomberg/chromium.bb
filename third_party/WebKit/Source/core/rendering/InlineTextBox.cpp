@@ -411,11 +411,8 @@ FloatSize InlineTextBox::applyShadowToGraphicsContext(GraphicsContext* context, 
     return extraOffset;
 }
 
-static void paintTextWithShadows(GraphicsContext* context, const Font& font, const TextRun& textRun,
-                                 const AtomicString& emphasisMark, int emphasisMarkOffset,
-                                 int startOffset, int endOffset, int truncationPoint,
-                                 const FloatPoint& textOrigin, const FloatRect& boxRect,
-                                 const ShadowData* shadow, bool stroked, bool horizontal)
+static void paintTextWithShadows(GraphicsContext* context, const Font& font, const TextRun& textRun, const AtomicString& emphasisMark, int emphasisMarkOffset, int startOffset, int endOffset, int truncationPoint, const FloatPoint& textOrigin,
+                                 const FloatRect& boxRect, const ShadowData* shadow, bool stroked, bool horizontal)
 {
     Color fillColor = context->fillColor();
     ColorSpace fillColorSpace = context->fillColorSpace();
@@ -423,8 +420,6 @@ static void paintTextWithShadows(GraphicsContext* context, const Font& font, con
     if (!opaque)
         context->setFillColor(Color::black, fillColorSpace);
 
-    TextRunPaintInfo textRunPaintInfo(textRun);
-    textRunPaintInfo.bounds = boxRect;
     do {
         IntSize extraOffset;
         if (shadow)
@@ -433,28 +428,22 @@ static void paintTextWithShadows(GraphicsContext* context, const Font& font, con
             context->setFillColor(fillColor, fillColorSpace);
 
         if (startOffset <= endOffset) {
-            textRunPaintInfo.from = startOffset;
-            textRunPaintInfo.to = endOffset;
             if (emphasisMark.isEmpty())
-                context->drawText(font, textRunPaintInfo, textOrigin + extraOffset);
+                context->drawText(font, textRun, textOrigin + extraOffset, startOffset, endOffset);
             else
-                context->drawEmphasisMarks(font, textRunPaintInfo, emphasisMark, textOrigin + extraOffset + IntSize(0, emphasisMarkOffset));
+                context->drawEmphasisMarks(font, textRun, emphasisMark, textOrigin + extraOffset + IntSize(0, emphasisMarkOffset), startOffset, endOffset);
         } else {
             if (endOffset > 0) {
-                textRunPaintInfo.from = 0;
-                textRunPaintInfo.to = endOffset;
                 if (emphasisMark.isEmpty())
-                    context->drawText(font, textRunPaintInfo, textOrigin + extraOffset);
+                    context->drawText(font, textRun, textOrigin + extraOffset,  0, endOffset);
                 else
-                    context->drawEmphasisMarks(font, textRunPaintInfo, emphasisMark, textOrigin + extraOffset + IntSize(0, emphasisMarkOffset));
+                    context->drawEmphasisMarks(font, textRun, emphasisMark, textOrigin + extraOffset + IntSize(0, emphasisMarkOffset),  0, endOffset);
             }
             if (startOffset < truncationPoint) {
-                textRunPaintInfo.from = startOffset;
-                textRunPaintInfo.to = truncationPoint;
                 if (emphasisMark.isEmpty())
-                    context->drawText(font, textRunPaintInfo, textOrigin + extraOffset);
+                    context->drawText(font, textRun, textOrigin + extraOffset, startOffset, truncationPoint);
                 else
-                    context->drawEmphasisMarks(font, textRunPaintInfo, emphasisMark, textOrigin + extraOffset + IntSize(0, emphasisMarkOffset));
+                    context->drawEmphasisMarks(font, textRun, emphasisMark, textOrigin + extraOffset + IntSize(0, emphasisMarkOffset),  startOffset, truncationPoint);
             }
         }
 
