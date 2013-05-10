@@ -1136,6 +1136,13 @@
             'android/java/src/org/chromium/base/SystemMessageHandler.java',
             'android/java/src/org/chromium/base/ThreadUtils.java',
           ],
+          'conditions': [
+            ['google_tv==1', {
+             'sources': [
+               'android/java/src/org/chromium/base/ContextTypes.java',
+             ],
+            }],
+          ],
           'variables': {
             'jni_gen_package': 'base',
           },

@@ -24,14 +24,13 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/webplugininfo.h"
 
+#if defined(GOOGLE_TV)
+#include "base/android/context_types.h"
+#endif
+
 // The URL for the "learn more" article about the PPAPI broker.
 const char kPpapiBrokerLearnMoreUrl[] =
     "https://support.google.com/chrome/?p=ib_pepper_broker";
-
-#if defined(OS_CHROMEOS)
-const char kNetflixPluginFileName[] = "libnetflixplugin2.so";
-const char kWidevinePluginFileName[] = "libwidevinecdmadapter.so";
-#endif
 
 using content::OpenURLParams;
 using content::Referrer;
@@ -57,9 +56,32 @@ void PepperBrokerInfoBarDelegate::Create(
 #if defined(OS_CHROMEOS)
   // On ChromeOS, we're ok with granting broker access to Netflix and Widevine
   // plugin, since it can only come installed with the OS.
+  const char kNetflixPluginFileName[] = "libnetflixplugin2.so";
+  const char kWidevinePluginFileName[] = "libwidevinecdmadapter.so";
   base::FilePath plugin_file_name = plugin_path.BaseName();
   if (plugin_file_name.value() == FILE_PATH_LITERAL(kNetflixPluginFileName) ||
       plugin_file_name.value() == FILE_PATH_LITERAL(kWidevinePluginFileName)) {
+    tab_content_settings->SetPepperBrokerAllowed(true);
+    callback.Run(true);
+    return;
+  }
+#endif
+
+#if defined(GOOGLE_TV)
+  // On GoogleTV, Netflix crypto plugin and DRM server adapter plugin can only
+  // come pre-installed with the OS, so we're willing to auto-grant access
+  // to them. PluginRootName should be matched with PEPPER_PLUGIN_ROOT
+  // in PepperPluginManager.java.
+  const char kPluginRootName[] = "/system/lib/pepperplugin";
+  const char kNetflixCryptoPluginFileName[] = "libnrddpicrypto.so";
+  const char kDrmServerAdapterPluginFileName[] = "libdrmserveradapter.so";
+  base::FilePath::StringType plugin_dir_name = plugin_path.DirName().value();
+  base::FilePath::StringType plugin_file_name = plugin_path.BaseName().value();
+  if (base::android::IsRunningInWebapp() &&
+      plugin_dir_name == FILE_PATH_LITERAL(kPluginRootName) &&
+      (plugin_file_name == FILE_PATH_LITERAL(kNetflixCryptoPluginFileName) ||
+       plugin_file_name ==
+          FILE_PATH_LITERAL(kDrmServerAdapterPluginFileName))) {
     tab_content_settings->SetPepperBrokerAllowed(true);
     callback.Run(true);
     return;

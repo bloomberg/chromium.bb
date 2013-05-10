@@ -589,6 +589,14 @@
           'win/wrapped_window_proc.cc',
           'win/wrapped_window_proc.h',
         ],
+        'conditions': [
+          ['google_tv==1', {
+           'sources': [
+             'android/context_types.cc',
+             'android/context_types.h',
+           ],
+          }],
+        ],
         'defines': [
           'BASE_IMPLEMENTATION',
         ],
