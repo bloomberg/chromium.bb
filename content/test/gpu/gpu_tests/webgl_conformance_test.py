@@ -52,7 +52,7 @@ class WebGLConformanceTest(page_test.PageTest):
     super(WebGLConformanceTest, self).__init__('ValidatePage')
 
   def CreatePageSet(self, options):
-    tests = WebGLConformanceTest._ParseTests('00_test_list.txt')
+    tests = WebGLConformanceTest._ParseTests('00_test_list.txt', '1.0.1')
 
     page_set_dict = {
       'description': 'Executes WebGL conformance tests',
@@ -103,6 +103,7 @@ class WebGLConformanceTest(page_test.PageTest):
         line_tokens = line.split(' ')
 
         i = 0
+        min_version = None
         while i < len(line_tokens):
           token = line_tokens[i]
           if token == '--min-version':
@@ -110,7 +111,7 @@ class WebGLConformanceTest(page_test.PageTest):
             min_version = line_tokens[i]
           i += 1
 
-        if version and version < min_version:
+        if version and min_version and version < min_version:
           continue
 
         test_name = line_tokens[-1]
