@@ -139,8 +139,8 @@ void LabelButton::SetStyle(ButtonStyle style) {
   style_ = style;
   set_border(new LabelButtonBorder(style));
   // Inset the button focus rect from the actual border; roughly match Windows.
-  if (style == STYLE_TEXTBUTTON || style == STYLE_NATIVE_TEXTBUTTON)
-    set_focus_border(FocusBorder::CreateDashedFocusBorder(3, 3, 3, 3));
+  set_focus_border(style == STYLE_BUTTON ?
+      NULL : FocusBorder::CreateDashedFocusBorder(3, 3, 3, 3));
   if (style == STYLE_BUTTON || style == STYLE_NATIVE_TEXTBUTTON) {
     label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     set_focusable(true);

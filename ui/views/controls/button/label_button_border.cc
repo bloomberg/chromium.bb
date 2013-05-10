@@ -98,30 +98,31 @@ void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
       static_cast<const LabelButton*>(&view);
   ui::NativeTheme::Part part = native_theme_delegate->GetThemePart();
   gfx::Rect rect(native_theme_delegate->GetThemePaintRect());
-  ui::NativeTheme::State state;
   ui::NativeTheme::ExtraParams extra;
   const ui::NativeTheme* theme = view.GetNativeTheme();
   const ui::Animation* animation = native_theme_delegate->GetThemeAnimation();
-  state = native_theme_delegate->GetThemeState(&extra);
-  int alpha = 0xff;
+  ui::NativeTheme::State state = native_theme_delegate->GetThemeState(&extra);
 
   if (animation && animation->is_animating()) {
-    // Paint the background state.
+    // Composite the background and foreground painters during state animations.
+    int alpha = animation->CurrentValueBetween(0, 0xff);
     state = native_theme_delegate->GetBackgroundThemeState(&extra);
+    canvas->SaveLayerAlpha(static_cast<uint8>(0xff - alpha));
     PaintHelper(this, canvas, theme, part, state, rect, extra);
-    // Composite the foreground state above the background state.
-    alpha = animation->CurrentValueBetween(0, alpha);
-    state = native_theme_delegate->GetForegroundThemeState(&extra);
-  }
-
-  if (state == ui::NativeTheme::kDisabled && style() == Button::STYLE_BUTTON)
-    alpha /= 2;
-
-  if (alpha != 0xff)
-    canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
-  PaintHelper(this, canvas, theme, part, state, rect, extra);
-  if (alpha != 0xff)
     canvas->Restore();
+
+    state = native_theme_delegate->GetForegroundThemeState(&extra);
+    canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
+    PaintHelper(this, canvas, theme, part, state, rect, extra);
+    canvas->Restore();
+  } else if (state == ui::NativeTheme::kDisabled &&
+             style() == Button::STYLE_BUTTON) {
+    canvas->SaveLayerAlpha(static_cast<uint8>(0xff / 2));
+    PaintHelper(this, canvas, theme, part, state, rect, extra);
+    canvas->Restore();
+  } else {
+    PaintHelper(this, canvas, theme, part, state, rect, extra);
+  }
 
   // Draw the Views focus border for the native theme style.
   if (style() == Button::STYLE_NATIVE_TEXTBUTTON &&
