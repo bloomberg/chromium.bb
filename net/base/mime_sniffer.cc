@@ -389,12 +389,14 @@ static bool SniffForOfficeDocs(const char* content,
 
   OfficeDocType type = DOC_TYPE_NONE;
   for (size_t i = 0; i < arraysize(kOfficeExtensionTypes); ++i) {
-    if (url.path().length() < kOfficeExtensionTypes[i].extension_len)
+    std::string url_path = url.path();
+
+    if (url_path.length() < kOfficeExtensionTypes[i].extension_len)
       continue;
 
     const char* extension =
-        &url.path()[url.path().length() -
-                    kOfficeExtensionTypes[i].extension_len];
+        &url_path[url_path.length() -
+                  kOfficeExtensionTypes[i].extension_len];
 
     if (0 == base::strncasecmp(extension, kOfficeExtensionTypes[i].extension,
                                kOfficeExtensionTypes[i].extension_len)) {
@@ -624,7 +626,7 @@ static bool IsUnknownMimeType(const std::string& mime_type) {
   return false;
 }
 
-// Returns true and sets result if the content appears to be a crx (chrome
+// Returns true and sets result if the content appears to be a crx (Chrome
 // extension) file.
 // Clears have_enough_content if more data could possibly change the result.
 static bool SniffCRX(const char* content,
@@ -775,7 +777,7 @@ bool SniffMimeType(const char* content, size_t content_size,
     return have_enough_content;
   }
 
-  // CRX files (chrome extensions) have a special sniffing algorithm. It is
+  // CRX files (Chrome extensions) have a special sniffing algorithm. It is
   // tighter than the others because we don't have to match legacy behavior.
   if (SniffCRX(content, content_size, url, type_hint,
                &have_enough_content, result))
@@ -783,7 +785,7 @@ bool SniffMimeType(const char* content, size_t content_size,
 
   // Check the file extension and magic numbers to see if this is an Office
   // document.  This needs to be checked before the general magic numbers
-  // because zip files and office documents (OOXML) have the same magic number.
+  // because zip files and Office documents (OOXML) have the same magic number.
   if (SniffForOfficeDocs(content, content_size, url,
                          &have_enough_content, result))
     return true;  // We've matched a magic number.  No more content needed.
