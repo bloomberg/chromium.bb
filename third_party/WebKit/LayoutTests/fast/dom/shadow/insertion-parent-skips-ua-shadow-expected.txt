@@ -1,0 +1,10 @@
+Tests that webkitInsertionParent does not leak nodes in user agent shadow DOM
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS e.webkitInsertionParent is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

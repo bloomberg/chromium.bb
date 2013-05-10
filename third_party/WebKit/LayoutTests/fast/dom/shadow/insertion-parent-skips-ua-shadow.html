@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../../js/resources/js-test-pre.js"></script>
+
+<details id="d"><div id="e"></div></details>
+
+<script>
+description('Tests that webkitInsertionParent does not leak nodes in user agent shadow DOM');
+
+jsTestIsAsync = true;
+
+function test() {
+    // Look through UA shadow root => no insertion point
+    e = document.querySelector('#e');
+    shouldBeNull('e.webkitInsertionParent');
+
+    e.parentNode.remove();
+
+    finishJSTest();
+}
+window.onload = test;
+
+successfullyParsed = true;
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
