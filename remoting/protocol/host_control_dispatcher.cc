@@ -39,6 +39,13 @@ void HostControlDispatcher::SetCapabilities(
   writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
+void HostControlDispatcher::SetPairingResponse(
+    const PairingResponse& pairing_response) {
+  ControlMessage message;
+  message.mutable_pairing_response()->CopyFrom(pairing_response);
+  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
+}
+
 void HostControlDispatcher::InjectClipboardEvent(const ClipboardEvent& event) {
   ControlMessage message;
   message.mutable_clipboard_event()->CopyFrom(event);
@@ -69,6 +76,8 @@ void HostControlDispatcher::OnMessageReceived(
     host_stub_->ControlAudio(message->audio_control());
   } else if (message->has_capabilities()) {
     host_stub_->SetCapabilities(message->capabilities());
+  } else if (message->has_pairing_request()) {
+    host_stub_->RequestPairing(message->pairing_request());
   } else {
     LOG(WARNING) << "Unknown control message received.";
   }

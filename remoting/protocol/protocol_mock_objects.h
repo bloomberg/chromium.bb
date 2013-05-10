@@ -107,6 +107,8 @@ class MockHostStub : public HostStub {
   MOCK_METHOD1(ControlVideo, void(const VideoControl& video_control));
   MOCK_METHOD1(ControlAudio, void(const AudioControl& audio_control));
   MOCK_METHOD1(SetCapabilities, void(const Capabilities& capabilities));
+  MOCK_METHOD1(RequestPairing,
+               void(const PairingRequest& pairing_request));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockHostStub);
@@ -119,6 +121,8 @@ class MockClientStub : public ClientStub {
 
   // ClientStub mock implementation.
   MOCK_METHOD1(SetCapabilities, void(const Capabilities& capabilities));
+  MOCK_METHOD1(SetPairingResponse,
+               void(const PairingResponse& pairing_response));
 
   // ClipboardStub mock implementation.
   MOCK_METHOD1(InjectClipboardEvent, void(const ClipboardEvent& event));

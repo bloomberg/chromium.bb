@@ -5,7 +5,6 @@
 #ifndef REMOTING_PROTOCOL_HOST_CONTROL_DISPATCHER_H_
 #define REMOTING_PROTOCOL_HOST_CONTROL_DISPATCHER_H_
 
-#include "base/memory/ref_counted.h"
 #include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/client_stub.h"
@@ -22,6 +21,7 @@ namespace protocol {
 
 class ControlMessage;
 class HostStub;
+class PairingResponse;
 class Session;
 
 // HostControlDispatcher dispatches incoming messages on the control
@@ -35,6 +35,8 @@ class HostControlDispatcher : public ChannelDispatcherBase,
 
   // ClientStub implementation.
   virtual void SetCapabilities(const Capabilities& capabilities) OVERRIDE;
+  virtual void SetPairingResponse(
+      const PairingResponse& pairing_response) OVERRIDE;
 
   // ClipboardStub implementation for sending clipboard data to client.
   virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;

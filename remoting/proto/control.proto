@@ -53,3 +53,16 @@ message Capabilities {
   // are separated by spaces).
   optional string capabilities = 1;
 }
+
+message PairingRequest {
+  // Human-readable name of the client.
+  optional string client_name = 1;
+}
+
+message PairingResponse {
+  // Unique identifier for this client.
+  optional string client_id = 1;
+
+  // Shared secret for this client.
+  optional string shared_secret = 2;
+}

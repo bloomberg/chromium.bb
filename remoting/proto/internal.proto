@@ -22,6 +22,8 @@ message ControlMessage {
   optional VideoControl video_control = 3;
   optional AudioControl audio_control = 5;
   optional Capabilities capabilities = 6;
+  optional PairingRequest pairing_request = 7;
+  optional PairingResponse pairing_response = 8;
 }
 
 // Defines an event message on the event channel.
