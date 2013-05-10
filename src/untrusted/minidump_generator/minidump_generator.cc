@@ -25,7 +25,6 @@
 extern char __executable_start[];  // Start of code segment
 extern char __etext[];  // End of code segment
 
-// @IGNORE_LINES_FOR_CODE_HYGIENE[1]
 #if defined(__GLIBC__)
 // Variable defined by ld.so, used as a workaround for
 // https://code.google.com/p/nativeclient/issues/detail?id=3431.
@@ -241,7 +240,6 @@ static MDMemoryDescriptor SnapshotMemory(MinidumpFileWriter *minidump_writer,
 }
 
 static bool GetStackEnd(void **stack_end) {
-  // @IGNORE_LINES_FOR_CODE_HYGIENE[1]
 #if defined(__GLIBC__)
   void *stack_base;
   size_t stack_size;

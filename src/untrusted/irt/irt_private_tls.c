@@ -31,7 +31,6 @@ int nacl_tls_init(void *thread_ptr) {
 }
 
 void *nacl_tls_get(void) {
-  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 #if defined(__i386__)
   /*
    * Calling second_tls_get() works on x86-32, but reading %gs:4 is a

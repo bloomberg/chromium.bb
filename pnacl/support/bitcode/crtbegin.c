@@ -31,7 +31,6 @@ void *__dso_handle = &__dso_handle;
 #endif
 
 #ifdef SHARED
-/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 extern void __cxa_finalize(void*) __attribute__ ((weak));
 #endif
 

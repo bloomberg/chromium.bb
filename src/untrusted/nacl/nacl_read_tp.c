@@ -20,7 +20,6 @@
  * NOTE: In the glibc build, this is defined in ld.so rather than here.
  */
 void *__nacl_read_tp(void) {
-  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 #if defined(__i386__)
   /*
    * Calling nacl_tls_get() works on x86-32, but reading %gs:0 is a

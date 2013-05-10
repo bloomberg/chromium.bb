@@ -43,7 +43,6 @@ struct object {
  * See: gcc/unwind-dw2-fde.c
  */
 
-/* @IGNORE_LINES_FOR_CODE_HYGIENE[2] */
 #ifdef LINKING_WITH_LIBGCC_EH
 extern void __register_frame_info(void *begin, struct object *ob);
 extern void __deregister_frame_info(const void *begin);
