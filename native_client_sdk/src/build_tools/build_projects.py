@@ -93,12 +93,12 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
     if clobber:
       buildbot_common.RemoveDir(dirpath)
     buildbot_common.MakeDir(dirpath)
-    depth = len(branch.split('/'))
     targets = [desc['NAME'] for desc in projects]
 
     # Generate master make for this branch of projects
-    generate_make.GenerateMasterMakefile(os.path.join(pepperdir, branch),
-                                         targets, depth)
+    generate_make.GenerateMasterMakefile(pepperdir,
+                                         os.path.join(pepperdir, branch),
+                                         targets)
 
     if branch.startswith('examples') and not landing_page:
       landing_page = LandingPage()
@@ -106,8 +106,8 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
     # Generate individual projects
     for desc in projects:
       srcroot = os.path.dirname(desc['FILEPATH'])
-      generate_make.ProcessProject(srcroot, pepperdir, desc, toolchains,
-                                   configs=configs,
+      generate_make.ProcessProject(pepperdir, srcroot, pepperdir, desc,
+                                   toolchains, configs=configs,
                                    first_toolchain=first_toolchain)
 
       if branch.startswith('examples'):
@@ -127,9 +127,9 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
   targets = ['api', 'demo', 'getting_started', 'tutorial']
   targets = [x for x in targets if 'examples/'+x in project_tree]
   branch_name = 'examples'
-  depth = len(branch_name.split('/'))
-  generate_make.GenerateMasterMakefile(os.path.join(pepperdir, branch_name),
-                                       targets, depth)
+  generate_make.GenerateMasterMakefile(pepperdir,
+                                       os.path.join(pepperdir, branch_name),
+                                       targets)
 
 
 def BuildProjectsBranch(pepperdir, platform, branch, deps=True, clean=False,

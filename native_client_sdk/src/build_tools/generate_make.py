@@ -161,7 +161,7 @@ def FindAndCopyFiles(src_files, root, search_dirs, dst_dir):
     buildbot_common.CopyFile(src_file, dst_file)
 
 
-def ProcessProject(srcroot, dstroot, desc, toolchains, configs=None,
+def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
                    first_toolchain=False):
   if not configs:
     configs = ['Debug', 'Release']
@@ -204,7 +204,6 @@ def ProcessProject(srcroot, dstroot, desc, toolchains, configs=None,
   RunTemplateFileIfChanged(template, make_path, template_dict)
 
   outdir = os.path.dirname(os.path.abspath(make_path))
-  pepperdir = os.path.dirname(os.path.dirname(outdir))
   AddMakeBat(pepperdir, outdir)
 
   if IsExample(desc):
@@ -215,23 +214,23 @@ def ProcessProject(srcroot, dstroot, desc, toolchains, configs=None,
   return (name, desc['DEST'])
 
 
-def GenerateMasterMakefile(out_path, targets, depth):
+def GenerateMasterMakefile(pepperdir, out_path, targets):
   """Generate a Master Makefile that builds all examples.
 
   Args:
+    pepperdir: NACL_SDK_ROOT
     out_path: Root for output such that out_path+NAME = full path
     targets: List of targets names
-    depth: How deep in from NACL_SDK_ROOT
   """
   in_path = os.path.join(SDK_EXAMPLE_DIR, 'Makefile')
   out_path = os.path.join(out_path, 'Makefile')
+  rel_path = os.path.relpath(pepperdir, out_path)
   template_dict = {
     'projects': targets,
-    'rel_sdk' : '/'.join(['..'] * depth)
+    'rel_sdk' : rel_path,
   }
   RunTemplateFileIfChanged(in_path, out_path, template_dict)
   outdir = os.path.dirname(os.path.abspath(out_path))
-  pepperdir = os.path.dirname(outdir)
   AddMakeBat(pepperdir, outdir)
 
 

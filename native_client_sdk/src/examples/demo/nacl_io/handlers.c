@@ -10,11 +10,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <sys/types.h>
 #include <sys/stat.h>
 
 #include "nacl_io_demo.h"
 
 #define MAX_OPEN_FILES 10
+
+#if defined(WIN32)
+#define stat _stat
+#endif
 
 /**
  * A mapping from int -> FILE*, so the JavaScript messages can refer to an open
@@ -353,6 +359,8 @@ int HandleStat(int num_params, char** params, char** output) {
   int file_index;
   const char* filename;
   const char* mode;
+  int result;
+  struct stat buf;
 
   if (num_params != 1) {
     *output = PrintfToNewString("Error: stat takes 1 parameter.");
@@ -361,9 +369,8 @@ int HandleStat(int num_params, char** params, char** output) {
 
   filename = params[0];
 
-  struct stat buf;
   memset(&buf, 0, sizeof(buf));
-  int result = stat(filename, &buf);
+  result = stat(filename, &buf);
   if (result == -1) {
     *output = PrintfToNewString("Error: stat returned error %d.", errno);
     return 2;
