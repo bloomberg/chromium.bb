@@ -10,7 +10,7 @@
           (bounds 200.00 200.00)
           (children 4
             (GraphicsLayer
-              (bounds 185.00 185.00)
+              (bounds 200.00 200.00)
               (children 1
                 (GraphicsLayer
                   (bounds 185.00 1200.00)
