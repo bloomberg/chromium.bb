@@ -508,11 +508,16 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndex::RestoreFromDisk(
 // static
 void SimpleIndex::WriteToDiskInternal(const base::FilePath& index_filename,
                                       scoped_ptr<Pickle> pickle,
-                                      const base::TimeTicks& start_time) {
+                                      const base::TimeTicks& start_time,
+                                      bool app_on_background) {
   SimpleIndexFile::WriteToDisk(index_filename, *pickle);
-  UMA_HISTOGRAM_TIMES("SimpleCache.IndexWriteToDiskTime",
-                      (base::TimeTicks::Now() - start_time));
-
+  if (app_on_background) {
+    UMA_HISTOGRAM_TIMES("SimpleCache.IndexWriteToDiskTime.Background",
+                        (base::TimeTicks::Now() - start_time));
+  } else {
+    UMA_HISTOGRAM_TIMES("SimpleCache.IndexWriteToDiskTime.Foreground",
+                        (base::TimeTicks::Now() - start_time));
+  }
 }
 
 void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
@@ -584,7 +589,17 @@ void SimpleIndex::WriteToDisk() {
   UMA_HISTOGRAM_CUSTOM_COUNTS("SimpleCache.IndexNumEntriesOnWrite",
                               entries_set_.size(), 0, 100000, 50);
   const base::TimeTicks start = base::TimeTicks::Now();
-  last_write_to_disk_ = base::Time::Now();
+  if (!last_write_to_disk_.is_null()) {
+    if (app_on_background_) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SimpleCache.IndexWriteInterval.Background",
+                                 start - last_write_to_disk_);
+    } else {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SimpleCache.IndexWriteInterval.Foreground",
+                                 start - last_write_to_disk_);
+    }
+  }
+  last_write_to_disk_ = start;
+
   SimpleIndexFile::IndexMetadata index_metadata(entries_set_.size(),
                                                 cache_size_);
   scoped_ptr<Pickle> pickle = SimpleIndexFile::Serialize(index_metadata,
@@ -593,7 +608,8 @@ void SimpleIndex::WriteToDisk() {
       &SimpleIndex::WriteToDiskInternal,
       index_filename_,
       base::Passed(&pickle),
-      start));
+      start,
+      app_on_background_));
 }
 
 }  // namespace disk_cache

@@ -6840,11 +6840,48 @@ other types of suffix sets.
   <summary>For each index load, whether the index file was stale.</summary>
 </histogram>
 
+<histogram name="SimpleCache.IndexWriteInterval.Background"
+    units="milliseconds">
+  <summary>
+    The interval between index saves, for apps in the background.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexWriteInterval.Foreground"
+    units="milliseconds">
+  <summary>
+    The interval between index saves, for apps in the foreground.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.IndexWriteToDiskTime" units="milliseconds">
+  <obsolete>
+    Deprecated 2013-05 in favour of
+    SimpleCache.SimpleIndexWriteToDiskTime.Background and
+    SimpleCache.SimpleIndexWriteToDiskTime.Foreground.
+  </obsolete>
   <summary>
     The amount of time spend writing the index file to disk, measured starting
     at the beginning of the write on the callback thread, and calculated using
     the completion time on the worker pool.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexWriteToDiskTime.Background"
+    units="milliseconds">
+  <summary>
+    The amount of time spend writing the index file to disk, for apps in the
+    background, measured starting at the beginning of the write on the callback
+    thread, and calculated using the completion time on the worker pool.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexWriteToDiskTime.Foreground"
+    units="milliseconds">
+  <summary>
+    The amount of time spend writing the index file to disk, for apps in the
+    foreground, measured starting at the beginning of the write on the callback
+    thread, and calculated using the completion time on the worker pool.
   </summary>
 </histogram>
 

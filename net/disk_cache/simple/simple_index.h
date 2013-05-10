@@ -153,7 +153,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   static void WriteToDiskInternal(const base::FilePath& index_filename,
                                   scoped_ptr<Pickle> pickle,
-                                  const base::TimeTicks& start_time);
+                                  const base::TimeTicks& start_time,
+                                  bool app_on_background);
 
   // Must run on IO Thread.
   void MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
@@ -191,7 +192,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // Timestamp of the last time we wrote the index to disk.
   // PostponeWritingToDisk() may give up postponing and allow the write if it
   // has been a while since last time we wrote.
-  base::Time last_write_to_disk_;
+  base::TimeTicks last_write_to_disk_;
   base::OneShotTimer<SimpleIndex> write_to_disk_timer_;
 
   typedef std::list<net::CompletionCallback> CallbackList;
