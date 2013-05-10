@@ -111,7 +111,7 @@ function initCurrentBuilderTestResults()
     console.log( 'Time to get test results by build: ' + (Date.now() - startTime));
 }
 
-function shouldShowWebKitRevisionsOnly()
+function shouldShowBlinkRevisionsOnly()
 {
     return isTipOfTreeWebKitBuilder();
 }
@@ -136,12 +136,12 @@ function updateTimelineForBuilder()
 
         graphData.push([buildDate, failureCount]);
 
-        if (!shouldShowWebKitRevisionsOnly() && (results[WEBKIT_REVISIONS_KEY][i] != results[WEBKIT_REVISIONS_KEY][i + 1])) {
+        if (!shouldShowBlinkRevisionsOnly() && (results[BLINK_REVISIONS_KEY][i] != results[BLINK_REVISIONS_KEY][i + 1])) {
             annotations.push({
                 series: FAILING_TESTS_DATASET_NAME,
                 x: buildDate,
                 shortText: 'R',
-                text: 'WebKit roll: r' + results[WEBKIT_REVISIONS_KEY][i + 1] + ' to ' + results[WEBKIT_REVISIONS_KEY][i]
+                text: 'Blink roll: r' + results[BLINK_REVISIONS_KEY][i + 1] + ' to ' + results[BLINK_REVISIONS_KEY][i]
             });
         }
     }
@@ -235,7 +235,7 @@ function updateBuildInspector(results, builder, dygraph, index)
     addRow('Build:', '<a href="' + buildUrl + '" target="_blank">' + buildNumber + '</a> (<a href="' + resultsUrl + '" target="_blank">results</a>)');
 
     // Revision link(s)
-    if (!shouldShowWebKitRevisionsOnly())
+    if (!shouldShowBlinkRevisionsOnly())
         addRow('Chromium change:', ui.html.chromiumRevisionLink(results, index));
     addRow('Blink change:', ui.html.blinkRevisionLink(results, index));
 

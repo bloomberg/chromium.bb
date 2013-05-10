@@ -41,6 +41,7 @@ import unittest
 JSON_RESULTS_TEMPLATE = (
     '{"Webkit":{'
     '"allFixableCount":[[TESTDATA_COUNT]],'
+    '"blinkRevision":[[TESTDATA_WEBKITREVISION]],'
     '"buildNumbers":[[TESTDATA_BUILDNUMBERS]],'
     '"chromeRevision":[[TESTDATA_CHROMEREVISION]],'
     '"deferredCounts":[[TESTDATA_COUNTS]],'
@@ -48,7 +49,6 @@ JSON_RESULTS_TEMPLATE = (
     '"fixableCounts":[[TESTDATA_COUNTS]],'
     '"secondsSinceEpoch":[[TESTDATA_TIMES]],'
     '"tests":{[TESTDATA_TESTS]},'
-    '"webkitRevision":[[TESTDATA_WEBKITREVISION]],'
     '"wontfixCounts":[[TESTDATA_COUNTS]]'
     '},'
     '"version":[VERSION]'

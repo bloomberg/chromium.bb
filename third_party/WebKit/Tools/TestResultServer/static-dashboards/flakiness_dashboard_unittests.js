@@ -456,7 +456,7 @@ test('htmlForSingleTestRow', 1, function() {
     BUILDER_TO_MASTER[builder] = CHROMIUM_WEBKIT_BUILDER_MASTER;
     var test = createResultsObjectForTest('foo/exists.html', builder);
     historyInstance.dashboardSpecificState.showCorrectExpectations = true;
-    g_resultsByBuilder[builder] = {buildNumbers: [2, 1], webkitRevision: [1234, 1233]};
+    g_resultsByBuilder[builder] = {buildNumbers: [2, 1], blinkRevision: [1234, 1233]};
     test.rawResults = [[1, 'F'], [2, 'I']];
     test.rawTimes = [[1, 0], [2, 5]];
     var expected = '<tr>' +

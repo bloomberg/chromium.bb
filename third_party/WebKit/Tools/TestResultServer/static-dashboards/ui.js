@@ -180,7 +180,7 @@ ui.html.chromiumRevisionLink = function(results, index)
 
 ui.html.blinkRevisionLink = function(results, index)
 {
-    return ui.html._revisionLink(WEBKIT_REVISIONS_KEY, results, index);
+    return ui.html._revisionLink(BLINK_REVISIONS_KEY, results, index);
 }
 
 

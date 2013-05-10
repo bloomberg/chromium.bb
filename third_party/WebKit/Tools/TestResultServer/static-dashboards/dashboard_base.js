@@ -66,8 +66,7 @@ var DEFERRED_DESCRIPTION = 'All deferred tests (DEFER)';
 var FIXABLE_COUNT_KEY = 'fixableCount';
 var ALL_FIXABLE_COUNT_KEY = 'allFixableCount';
 var CHROME_REVISIONS_KEY = 'chromeRevision';
-// FIXME: Rename to blink revision.
-var WEBKIT_REVISIONS_KEY = 'webkitRevision';
+var BLINK_REVISIONS_KEY = 'blinkRevision';
 var TIMESTAMPS_KEY = 'secondsSinceEpoch';
 var BUILD_NUMBERS_KEY = 'buildNumbers';
 var TESTS_KEY = 'tests';

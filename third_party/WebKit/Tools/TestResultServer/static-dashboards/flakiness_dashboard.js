@@ -2154,7 +2154,7 @@ function appendNonWebKitResults(container, url, itemClassName, opt_title)
 
 function buildInfoForRevision(builder, revision)
 {
-    var revisions = g_resultsByBuilder[builder].webkitRevision;
+    var revisions = g_resultsByBuilder[builder][BLINK_REVISION_KEY];
     var revisionStart = 0, revisionEnd = 0, buildNumber = 0;
     for (var i = 0; i < revisions.length; i++) {
         if (revision > revisions[i]) {

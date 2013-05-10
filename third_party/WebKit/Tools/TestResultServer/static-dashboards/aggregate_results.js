@@ -104,11 +104,11 @@ function rawValuesHTML(results, numColumns)
 
 function chartHTML(results, numColumns)
 {
-    var shouldShowWebKitRevisions = isTipOfTreeWebKitBuilder();
-    var revisionKey = shouldShowWebKitRevisions ? WEBKIT_REVISIONS_KEY : CHROME_REVISIONS_KEY;
+    var shouldShowBlinkRevisions = isTipOfTreeWebKitBuilder();
+    var revisionKey = shouldShowBlinkRevisions ? BLINK_REVISIONS_KEY : CHROME_REVISIONS_KEY;
     var startRevision = results[revisionKey][numColumns - 1];
     var endRevision = results[revisionKey][0];
-    var revisionLabel = shouldShowWebKitRevisions ? "WebKit Revision" : "Chromium Revision";
+    var revisionLabel = shouldShowBlinkRevisions ? "WebKit Revision" : "Chromium Revision";
 
     var fixable = results[FIXABLE_COUNT_KEY].slice(0, numColumns);
     var html = chart("Total failing", {"": fixable}, revisionLabel, startRevision, endRevision);
@@ -187,7 +187,7 @@ function chart(title, values, revisionLabel, startRevision, endRevision)
 
 function htmlForRevisionRows(results, numColumns)
 {
-    return htmlForTableRow('WebKit Revision', results[WEBKIT_REVISIONS_KEY].slice(0, numColumns)) +
+    return htmlForTableRow('WebKit Revision', results[BLINK_REVISIONS_KEY].slice(0, numColumns)) +
         htmlForTableRow('Chrome Revision', results[CHROME_REVISIONS_KEY].slice(0, numColumns));
 }
 
