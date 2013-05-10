@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -30,8 +29,7 @@ namespace apps {
 
 // Tracks what apps need to be restarted when the browser restarts.
 class AppRestoreService : public ProfileKeyedService,
-                          public content::NotificationObserver,
-                          public extensions::ShellWindowRegistry::Observer {
+                          public content::NotificationObserver {
  public:
   // Returns true if apps should be restored on the current platform, given
   // whether this new browser process launched due to a restart.
@@ -49,18 +47,8 @@ class AppRestoreService : public ProfileKeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // extensions::ShellWindowRegistry::Observer.
-  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;
-
-  // ProfileKeyedService.
-  virtual void Shutdown() OVERRIDE;
-
   void RecordAppStart(const std::string& extension_id);
   void RecordAppStop(const std::string& extension_id);
-  void RecordIfAppHasWindows(const std::string& id);
-
   void RestoreApp(
       const extensions::Extension* extension,
       const std::vector<SavedFileEntry>& file_entries);

@@ -274,7 +274,6 @@ class ShellWindow : public content::NotificationObserver,
 
   Profile* profile_;  // weak pointer - owned by ProfileManager.
   // weak pointer - owned by ExtensionService.
-  // This gets set to NULL when the extension is uninstalled.
   const extensions::Extension* extension_;
 
   // Identifier that is used when saving and restoring geometry for this

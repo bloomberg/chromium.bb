@@ -530,10 +530,8 @@ void ShellWindow::Observe(int type,
       const extensions::Extension* unloaded_extension =
           content::Details<extensions::UnloadedExtensionInfo>(
               details)->extension;
-      if (extension_ == unloaded_extension) {
+      if (extension_ == unloaded_extension)
         native_app_window_->Close();
-        extension_ = NULL;
-      }
       break;
     }
     case chrome::NOTIFICATION_APP_TERMINATING:
