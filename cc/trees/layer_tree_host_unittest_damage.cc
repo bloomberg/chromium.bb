@@ -31,7 +31,7 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
 
     // Most of the layer isn't visible.
     content_ = FakeContentLayer::Create(&client_);
-    content_->SetBounds(gfx::Size(100, 100));
+    content_->SetBounds(gfx::Size(2000, 100));
     root->AddChild(content_);
 
     layer_tree_host()->SetRootLayer(root);
@@ -86,7 +86,7 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
         break;
       case 3:
         // Cause non-visible damage.
-        content_->SetNeedsDisplayRect(gfx::Rect(90, 90, 10, 10));
+        content_->SetNeedsDisplayRect(gfx::Rect(1990, 1990, 10, 10));
         break;
     }
   }
@@ -229,9 +229,17 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
         child_damage_rect_ = gfx::RectF(10, 11, 12, 13);
         break;
       case 3:
-        // The update rect in the child should be damaged.
-        EXPECT_EQ(gfx::RectF(100+10, 100+11, 12, 13).ToString(),
-                  root_damage.ToString());
+        if (!delegating_renderer()) {
+          // The update rect in the child should be damaged.
+          EXPECT_EQ(gfx::RectF(100+10, 100+11, 12, 13).ToString(),
+                    root_damage.ToString());
+        } else {
+          // When using a delegating renderer, the entire child is considered
+          // damaged as we need to replace its resources with newly created
+          // ones.
+          EXPECT_EQ(gfx::RectF(child_->position(), child_->bounds()).ToString(),
+                    root_damage.ToString());
+        }
         EXPECT_FALSE(frame_data->has_no_damage);
 
         // If we damage part of the frame, but also damage the full

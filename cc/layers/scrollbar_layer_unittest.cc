@@ -328,13 +328,22 @@ class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
   gfx::Size bounds_;
 };
 
-TEST_F(ScrollbarLayerTestMaxTextureSize, RunTest) {
+TEST_F(ScrollbarLayerTestMaxTextureSize, DirectRenderer) {
   scoped_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   int max_size = 0;
   context->getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
   SetScrollbarBounds(gfx::Size(max_size + 100, max_size + 100));
-  RunTest(true);
+  RunTest(true, false);
+}
+
+TEST_F(ScrollbarLayerTestMaxTextureSize, DelegatingRenderer) {
+  scoped_ptr<TestWebGraphicsContext3D> context =
+      TestWebGraphicsContext3D::Create();
+  int max_size = 0;
+  context->getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
+  SetScrollbarBounds(gfx::Size(max_size + 100, max_size + 100));
+  RunTest(true, true);
 }
 
 class MockLayerTreeHost : public LayerTreeHost {

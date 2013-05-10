@@ -118,7 +118,7 @@ void LayerTreePixelTest::RunPixelTest(
   content_root_ = content_root;
   readback_target_ = NULL;
   ref_file_ = file_name;
-  RunTest(true);
+  RunTest(true, false);
 }
 
 void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
@@ -128,7 +128,7 @@ void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
   content_root_ = content_root;
   readback_target_ = target;
   ref_file_ = file_name;
-  RunTest(true);
+  RunTest(true, false);
 }
 
 void LayerTreePixelTest::SetupTree() {

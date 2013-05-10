@@ -165,18 +165,6 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
                                gfx::Vector2d());
 }
 
-void HeadsUpDisplayLayerImpl::DidDraw(ResourceProvider* resource_provider) {
-  LayerImpl::DidDraw(resource_provider);
-
-  if (!hud_resource_->id())
-    return;
-
-  // FIXME: the following assert will not be true when sending resources to a
-  // parent compositor. We will probably need to hold on to hud_resource_ for
-  // longer, and have several HUD textures in the pipeline.
-  DCHECK(!resource_provider->InUseByConsumer(hud_resource_->id()));
-}
-
 void HeadsUpDisplayLayerImpl::DidLoseOutputSurface() { hud_resource_.reset(); }
 
 bool HeadsUpDisplayLayerImpl::LayerIsAlwaysDamaged() const { return true; }

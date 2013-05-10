@@ -40,7 +40,6 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
   void UpdateHudTexture(ResourceProvider* resource_provider);
-  virtual void DidDraw(ResourceProvider* resource_provider) OVERRIDE;
 
   virtual void DidLoseOutputSurface() OVERRIDE;
 

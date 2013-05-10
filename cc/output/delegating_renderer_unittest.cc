@@ -18,13 +18,8 @@ class DelegatingRendererTest : public LayerTreeTest {
   virtual ~DelegatingRendererTest() {}
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
-    scoped_ptr<TestWebGraphicsContext3D> context3d =
-        TestWebGraphicsContext3D::Create(
-            WebKit::WebGraphicsContext3D::Attributes());
-    context3d_ = context3d.get();
     scoped_ptr<FakeOutputSurface> output_surface =
-        FakeOutputSurface::CreateDelegating3d(
-            context3d.PassAs<WebKit::WebGraphicsContext3D>());
+        FakeOutputSurface::CreateDelegating3d();
     output_surface_ = output_surface.get();
     return output_surface.PassAs<OutputSurface>();
   }
@@ -84,7 +79,7 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
   }
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(DelegatingRendererTestDraw);
+SINGLE_AND_MULTI_THREAD_DELEGATING_RENDERER_TEST_F(DelegatingRendererTestDraw);
 
 class DelegatingRendererTestResources : public DelegatingRendererTest {
  public:
@@ -143,6 +138,7 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
   }
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(DelegatingRendererTestResources);
+SINGLE_AND_MULTI_THREAD_DELEGATING_RENDERER_TEST_F(
+    DelegatingRendererTestResources);
 
 }  // namespace cc

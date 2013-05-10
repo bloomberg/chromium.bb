@@ -29,9 +29,9 @@ VideoResourceUpdater::VideoResourceUpdater(ResourceProvider* resource_provider)
 }
 
 VideoResourceUpdater::~VideoResourceUpdater() {
-  while (!recycled_resources_.empty()) {
-    resource_provider_->DeleteResource(recycled_resources_.back().resource_id);
-    recycled_resources_.pop_back();
+  while (!all_resources_.empty()) {
+    resource_provider_->DeleteResource(all_resources_.back());
+    all_resources_.pop_back();
   }
 }
 
@@ -176,6 +176,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           resource_provider_->CreateResource(output_plane_resource_size,
                                              output_resource_format,
                                              ResourceProvider::TextureUsageAny);
+      if (resource_id)
+        all_resources_.push_back(resource_id);
     }
 
     if (resource_id == 0) {
@@ -330,9 +332,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       resource_provider_->CreateResourceFromExternalTexture(
           video_frame->texture_target(),
           video_frame->texture_id());
+  if (external_resources.hardware_resource)
+    all_resources_.push_back(external_resources.hardware_resource);
 
   TextureMailbox::ReleaseCallback callback_to_return_resource =
       base::Bind(&ReturnTexture,
+                 AsWeakPtr(),
                  base::Unretained(resource_provider_),
                  external_resources.hardware_resource);
   external_resources.hardware_release_callback = callback_to_return_resource;
@@ -341,11 +346,21 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 
 // static
 void VideoResourceUpdater::ReturnTexture(
+    base::WeakPtr<VideoResourceUpdater> updater,
     ResourceProvider* resource_provider,
     unsigned resource_id,
     unsigned sync_point,
     bool lost_resource) {
+  if (!updater) {
+    // Resource was already deleted.
+    return;
+  }
+
   resource_provider->DeleteResource(resource_id);
+  std::vector<unsigned>& all_resources = updater->all_resources_;
+  all_resources.erase(std::remove(all_resources.begin(),
+                                  all_resources.end(),
+                                  resource_id));
 }
 
 // static
@@ -355,10 +370,15 @@ void VideoResourceUpdater::RecycleResource(
     RecycleResourceData data,
     unsigned sync_point,
     bool lost_resource) {
+  if (!updater) {
+    // Resource was already deleted.
+    return;
+  }
+
   WebKit::WebGraphicsContext3D* context =
       resource_provider->GraphicsContext3D();
   if (context && sync_point)
-      GLC(context, context->waitSyncPoint(sync_point));
+    GLC(context, context->waitSyncPoint(sync_point));
   if (context && !lost_resource) {
     ResourceProvider::ScopedWriteLockGL lock(resource_provider,
                                              data.resource_id);
@@ -368,8 +388,12 @@ void VideoResourceUpdater::RecycleResource(
     GLC(context, context->bindTexture(GL_TEXTURE_2D, 0));
   }
 
-  if (!updater || lost_resource) {
+  if (lost_resource) {
     resource_provider->DeleteResource(data.resource_id);
+    std::vector<unsigned>& all_resources = updater->all_resources_;
+    all_resources.erase(std::remove(all_resources.begin(),
+                                    all_resources.end(),
+                                    data.resource_id));
     return;
   }
 

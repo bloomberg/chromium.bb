@@ -402,7 +402,8 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
   scoped_refptr<TextureLayer> layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerImplWithMailboxThreadedCallback);
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    TextureLayerImplWithMailboxThreadedCallback);
 
 class TextureLayerImplWithMailboxTest : public TextureLayerTest {
  protected:
@@ -623,7 +624,9 @@ class TextureLayerClientTest
   unsigned expected_used_textures_on_commit_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerClientTest);
+// The TextureLayerClient does not use mailboxes, so can't use a delegating
+// renderer.
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(TextureLayerClientTest);
 
 }  // namespace
 }  // namespace cc

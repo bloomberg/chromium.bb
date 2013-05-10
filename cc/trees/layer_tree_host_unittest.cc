@@ -978,7 +978,7 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
     TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
         impl->output_surface()->context3d());
 
-    // Number of textures used for draw should always be one for each layer.
+    // We draw/ship one texture each frame for each layer.
     EXPECT_EQ(2u, context->NumUsedTextures());
     context->ResetUsedTextures();
   }
@@ -1205,7 +1205,9 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
   int num_commits_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestAtomicCommitWithPartialUpdate);
+// Partial updates are not possible with a delegating renderer.
+MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostTestAtomicCommitWithPartialUpdate);
 
 class LayerTreeHostTestFinishAllRendering : public LayerTreeHostTest {
  public:
@@ -1358,7 +1360,8 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
   scoped_refptr<FakeContentLayer> replica_layer2_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
+  // Surfaces don't exist with a delegated renderer.
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit);
 
 class EvictionTestLayer : public Layer {
@@ -1908,19 +1911,13 @@ class LayerTreeHostTestMaxPendingFrames : public LayerTreeHostTest {
  public:
   LayerTreeHostTestMaxPendingFrames() : LayerTreeHostTest() {}
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
-    if (delegating_renderer_)
-      return FakeOutputSurface::CreateDelegating3d().PassAs<OutputSurface>();
-    return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
-  }
-
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     DCHECK(host_impl->proxy()->HasImplThread());
 
     const ThreadProxy* proxy = static_cast<ThreadProxy*>(host_impl->proxy());
-    if (delegating_renderer_) {
+    if (delegating_renderer()) {
       EXPECT_EQ(1, proxy->MaxFramesPendingForTesting());
     } else {
       EXPECT_EQ(FrameRateController::DEFAULT_MAX_FRAMES_PENDING,
@@ -1930,19 +1927,14 @@ class LayerTreeHostTestMaxPendingFrames : public LayerTreeHostTest {
   }
 
   virtual void AfterTest() OVERRIDE {}
-
- protected:
-  bool delegating_renderer_;
 };
 
 TEST_F(LayerTreeHostTestMaxPendingFrames, DelegatingRenderer) {
-  delegating_renderer_ = true;
-  RunTest(true);
+  RunTest(true, true);
 }
 
 TEST_F(LayerTreeHostTestMaxPendingFrames, GLRenderer) {
-  delegating_renderer_ = false;
-  RunTest(true);
+  RunTest(true, false);
 }
 
 class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
@@ -2583,7 +2575,9 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
   gfx::Size io_surface_size_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestIOSurfaceDrawing);
+// TODO(danakj): IOSurface layer can not be transported. crbug.com/239335
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostTestIOSurfaceDrawing);
 
 class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
  protected:
@@ -2683,24 +2677,25 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
   scoped_refptr<FakeContentLayer> child;
 };
 
+// Readback can't be done with a delegating renderer.
 TEST_F(LayerTreeHostTestAsyncReadback, GLRenderer_RunSingleThread) {
   use_gl_renderer_ = true;
-  RunTest(false);
+  RunTest(false, false);
 }
 
 TEST_F(LayerTreeHostTestAsyncReadback, GLRenderer_RunMultiThread) {
   use_gl_renderer_ = true;
-  RunTest(true);
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostTestAsyncReadback, SoftwareRenderer_RunSingleThread) {
   use_gl_renderer_ = false;
-  RunTest(false);
+  RunTest(false, false);
 }
 
 TEST_F(LayerTreeHostTestAsyncReadback, SoftwareRenderer_RunMultiThread) {
   use_gl_renderer_ = false;
-  RunTest(true);
+  RunTest(true, false);
 }
 
 class LayerTreeHostTestAsyncReadbackLayerDestroyed : public LayerTreeHostTest {
@@ -2794,17 +2789,10 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestAsyncReadbackLayerDestroyed);
 
 class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestNumFramesPending()
-      : delegating_renderer_(false),
-        frame_(0) {}
-
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
-    if (delegating_renderer_)
-      return FakeOutputSurface::CreateDelegating3d().PassAs<OutputSurface>();
-    return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
+  virtual void BeginTest() OVERRIDE {
+    frame_ = 0;
+    PostSetNeedsCommitToMainThread();
   }
-
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   // Round 1: commit + draw
   // Round 2: commit only (no draw/swap)
@@ -2864,18 +2852,15 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
   virtual void AfterTest() OVERRIDE {}
 
  protected:
-  bool delegating_renderer_;
   int frame_;
 };
 
 TEST_F(LayerTreeHostTestNumFramesPending, DelegatingRenderer) {
-  delegating_renderer_ = true;
-  RunTest(true);
+  RunTest(true, true);
 }
 
 TEST_F(LayerTreeHostTestNumFramesPending, GLRenderer) {
-  delegating_renderer_ = false;
-  RunTest(true);
+  RunTest(true, false);
 }
 
 }  // namespace

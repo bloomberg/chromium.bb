@@ -539,7 +539,9 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestReturnUnusedResources);
+// Enable this for delegating renderer. crbug.com/239290
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostDelegatedTestReturnUnusedResources);
 
 class LayerTreeHostDelegatedTestReusedResources
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -598,7 +600,9 @@ class LayerTreeHostDelegatedTestReusedResources
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestReusedResources);
+// Enable this for delegating renderer. crbug.com/239290
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostDelegatedTestReusedResources);
 
 class LayerTreeHostDelegatedTestFrameBeforeAck
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -695,7 +699,9 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestFrameBeforeAck);
+// Enable this for delegating renderer. crbug.com/239290
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostDelegatedTestFrameBeforeAck);
 
 class LayerTreeHostDelegatedTestFrameBeforeTakeResources
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -799,7 +805,8 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
+// Enable this for delegating renderer. crbug.com/239290
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostDelegatedTestFrameBeforeTakeResources);
 
 class LayerTreeHostDelegatedTestBadFrame
@@ -942,7 +949,9 @@ class LayerTreeHostDelegatedTestBadFrame
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestBadFrame);
+// Enable this for delegating renderer. crbug.com/239290
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostDelegatedTestBadFrame);
 
 class LayerTreeHostDelegatedTestUnnamedResource
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {

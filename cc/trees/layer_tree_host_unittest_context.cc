@@ -13,6 +13,7 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/scrollbar_layer.h"
 #include "cc/layers/texture_layer.h"
+#include "cc/layers/texture_layer_impl.h"
 #include "cc/layers/video_layer.h"
 #include "cc/layers/video_layer_impl.h"
 #include "cc/test/fake_content_layer.h"
@@ -106,6 +107,10 @@ class LayerTreeHostContextTest : public LayerTreeTest {
       ExpectCreateToFail();
     }
 
+    if (delegating_renderer()) {
+      return FakeOutputSurface::CreateDelegating3d(
+          context3d.PassAs<WebGraphicsContext3D>()).PassAs<OutputSurface>();
+    }
     return FakeOutputSurface::Create3d(
         context3d.PassAs<WebGraphicsContext3D>()).PassAs<OutputSurface>();
   }
@@ -479,27 +484,40 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
 };
 
 TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       NoSurface_SingleThread) {
+       NoSurface_SingleThread_DirectRenderer) {
   use_surface_ = false;
-  RunTest(false);
+  RunTest(false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       NoSurface_MultiThread) {
+       NoSurface_SingleThread_DelegatingRenderer) {
   use_surface_ = false;
-  RunTest(true);
+  RunTest(false, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       WithSurface_SingleThread) {
-  use_surface_ = true;
-  RunTest(false);
+       NoSurface_MultiThread_DirectRenderer) {
+  use_surface_ = false;
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       WithSurface_MultiThread) {
+       NoSurface_MultiThread_DelegatingRenderer) {
+  use_surface_ = false;
+  RunTest(true, true);
+}
+
+// Surfaces don't exist with a delegating renderer.
+TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
+       WithSurface_SingleThread_DirectRenderer) {
   use_surface_ = true;
-  RunTest(true);
+  RunTest(false, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
+       WithSurface_MultiThread_DirectRenderer) {
+  use_surface_ = true;
+  RunTest(true, false);
 }
 
 class LayerTreeHostContextTestOffscreenContextFails
@@ -602,51 +620,99 @@ class LayerTreeHostContextTestLostContextFails
 };
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailReinitialize100_SingleThread) {
+       FailReinitialize100_SingleThread_DirectRenderer) {
   times_to_fail_reinitialize_ = 100;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 0;
-  RunTest(false);
+  RunTest(false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailReinitialize100_MultiThread) {
+       FailReinitialize100_SingleThread_DelegatingRenderer) {
   times_to_fail_reinitialize_ = 100;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 0;
-  RunTest(true);
+  RunTest(false, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailRecreate100_SingleThread) {
+       FailReinitialize100_MultiThread_DirectRenderer) {
+  times_to_fail_reinitialize_ = 100;
+  times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 0;
+  RunTest(true, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       FailReinitialize100_MultiThread_DelegatingRenderer) {
+  times_to_fail_reinitialize_ = 100;
+  times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 0;
+  RunTest(true, true);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       FailRecreate100_SingleThread_DirectRenderer) {
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 100;
   times_to_lose_on_recreate_ = 0;
-  RunTest(false);
+  RunTest(false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailRecreate100_MultiThread) {
+       FailRecreate100_SingleThread_DelegatingRenderer) {
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 100;
   times_to_lose_on_recreate_ = 0;
-  RunTest(true);
+  RunTest(false, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
-       LoseOnRecreate100_SingleThread) {
+       FailRecreate100_MultiThread_DirectRenderer) {
   times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 100;
-  RunTest(false);
+  times_to_fail_recreate_ = 100;
+  times_to_lose_on_recreate_ = 0;
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
-       LoseOnRecreate100_MultiThread) {
+       FailRecreate100_MultiThread_DelegatingRenderer) {
+  times_to_fail_reinitialize_ = 0;
+  times_to_fail_recreate_ = 100;
+  times_to_lose_on_recreate_ = 0;
+  RunTest(true, true);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       LoseOnRecreate100_SingleThread_DirectRenderer) {
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 100;
-  RunTest(true);
+  RunTest(false, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       LoseOnRecreate100_SingleThread_DelegatingRenderer) {
+  times_to_fail_reinitialize_ = 0;
+  times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 100;
+  RunTest(false, true);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       LoseOnRecreate100_MultiThread_DirectRenderer) {
+  times_to_fail_reinitialize_ = 0;
+  times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 100;
+  RunTest(true, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       LoseOnRecreate100_MultiThread_DelegatingRenderer) {
+  times_to_fail_reinitialize_ = 0;
+  times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 100;
+  RunTest(true, true);
 }
 
 class LayerTreeHostContextTestFinishAllRenderingAfterLoss
@@ -750,27 +816,51 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
 };
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseAfterEvict_SingleThread) {
+       LoseAfterEvict_SingleThread_DirectRenderer) {
   lose_after_evict_ = true;
-  RunTest(false);
+  RunTest(false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseAfterEvict_MultiThread) {
+       LoseAfterEvict_SingleThread_DelegatingRenderer) {
   lose_after_evict_ = true;
-  RunTest(true);
+  RunTest(false, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseBeforeEvict_SingleThread) {
-  lose_after_evict_ = false;
-  RunTest(false);
+       LoseAfterEvict_MultiThread_DirectRenderer) {
+  lose_after_evict_ = true;
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseBeforeEvict_MultiThread) {
+       LoseAfterEvict_MultiThread_DelegatingRenderer) {
+  lose_after_evict_ = true;
+  RunTest(true, true);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
+       LoseBeforeEvict_SingleThread_DirectRenderer) {
   lose_after_evict_ = false;
-  RunTest(true);
+  RunTest(false, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
+       LoseBeforeEvict_SingleThread_DelegatingRenderer) {
+  lose_after_evict_ = false;
+  RunTest(false, true);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
+       LoseBeforeEvict_MultiThread_DirectRenderer) {
+  lose_after_evict_ = false;
+  RunTest(true, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
+       LoseBeforeEvict_MultiThread_DelegatingRenderer) {
+  lose_after_evict_ = false;
+  RunTest(true, true);
 }
 
 class LayerTreeHostContextTestLostContextWhileUpdatingResources
@@ -941,7 +1031,6 @@ class LayerTreeHostContextTestDontUseLostResources
     scoped_refptr<TextureLayer> texture_ = TextureLayer::Create(NULL);
     texture_->SetBounds(gfx::Size(10, 10));
     texture_->SetAnchorPoint(gfx::PointF());
-    texture_->SetTextureId(TestWebGraphicsContext3D::kExternalTextureId);
     texture_->SetIsDrawable(true);
     root_->AddChild(texture_);
 
@@ -964,26 +1053,33 @@ class LayerTreeHostContextTestDontUseLostResources
     video_color_->SetIsDrawable(true);
     root_->AddChild(video_color_);
 
-    scoped_refptr<VideoLayer> video_hw_ = VideoLayer::Create(
-        &hw_frame_provider_);
-    video_hw_->SetBounds(gfx::Size(10, 10));
-    video_hw_->SetAnchorPoint(gfx::PointF());
-    video_hw_->SetIsDrawable(true);
-    root_->AddChild(video_hw_);
+    if (!delegating_renderer()) {
+      // TODO(danakj): Hardware video decode can not be transported.
+      // crbug.com/179729
+      scoped_refptr<VideoLayer> video_hw_ = VideoLayer::Create(
+          &hw_frame_provider_);
+      video_hw_->SetBounds(gfx::Size(10, 10));
+      video_hw_->SetAnchorPoint(gfx::PointF());
+      video_hw_->SetIsDrawable(true);
+      root_->AddChild(video_hw_);
 
-    scoped_refptr<VideoLayer> video_scaled_hw_ = VideoLayer::Create(
-        &scaled_hw_frame_provider_);
-    video_scaled_hw_->SetBounds(gfx::Size(10, 10));
-    video_scaled_hw_->SetAnchorPoint(gfx::PointF());
-    video_scaled_hw_->SetIsDrawable(true);
-    root_->AddChild(video_scaled_hw_);
+      scoped_refptr<VideoLayer> video_scaled_hw_ = VideoLayer::Create(
+          &scaled_hw_frame_provider_);
+      video_scaled_hw_->SetBounds(gfx::Size(10, 10));
+      video_scaled_hw_->SetAnchorPoint(gfx::PointF());
+      video_scaled_hw_->SetIsDrawable(true);
+      root_->AddChild(video_scaled_hw_);
+    }
 
-    scoped_refptr<IOSurfaceLayer> io_surface_ = IOSurfaceLayer::Create();
-    io_surface_->SetBounds(gfx::Size(10, 10));
-    io_surface_->SetAnchorPoint(gfx::PointF());
-    io_surface_->SetIsDrawable(true);
-    io_surface_->SetIOSurfaceProperties(1, gfx::Size(10, 10));
-    root_->AddChild(io_surface_);
+    if (!delegating_renderer()) {
+      // TODO(danakj): IOSurface layer can not be transported. crbug.com/239335
+      scoped_refptr<IOSurfaceLayer> io_surface_ = IOSurfaceLayer::Create();
+      io_surface_->SetBounds(gfx::Size(10, 10));
+      io_surface_->SetAnchorPoint(gfx::PointF());
+      io_surface_->SetIsDrawable(true);
+      io_surface_->SetIOSurfaceProperties(1, gfx::Size(10, 10));
+      root_->AddChild(io_surface_);
+    }
 
     // Enable the hud.
     LayerTreeDebugState debug_state;
@@ -1048,17 +1144,31 @@ class LayerTreeHostContextTestDontUseLostResources
       delegated_impl->SetFrameDataForRenderPasses(&pass_list);
       EXPECT_TRUE(pass_list.empty());
 
+      // Third child is the texture layer.
+      TextureLayerImpl* texture_impl =
+          static_cast<TextureLayerImpl*>(
+              host_impl->active_tree()->root_layer()->children()[2]);
+      texture_impl->set_texture_id(
+          resource_provider->GraphicsContext3D()->createTexture());
+
+      DCHECK(resource_provider->GraphicsContext3D());
+      ResourceProvider::ResourceId texture = resource_provider->CreateResource(
+          gfx::Size(4, 4),
+          resource_provider->default_resource_type(),
+          ResourceProvider::TextureUsageAny);
+      ResourceProvider::ScopedWriteLockGL lock(resource_provider, texture);
+
       color_video_frame_ = VideoFrame::CreateColorFrame(
           gfx::Size(4, 4), 0x80, 0x80, 0x80, base::TimeDelta());
       hw_video_frame_ = VideoFrame::WrapNativeTexture(
-          resource_provider->GraphicsContext3D()->createTexture(),
+          lock.texture_id(),
           GL_TEXTURE_2D,
           gfx::Size(4, 4), gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4),
           base::TimeDelta(),
           VideoFrame::ReadPixelsCB(),
           base::Closure());
       scaled_hw_video_frame_ = VideoFrame::WrapNativeTexture(
-          resource_provider->GraphicsContext3D()->createTexture(),
+          lock.texture_id(),
           GL_TEXTURE_2D,
           gfx::Size(4, 4), gfx::Rect(0, 0, 3, 2), gfx::Size(4, 4),
           base::TimeDelta(),
@@ -1207,8 +1317,9 @@ class LayerTreeHostContextTestCompositeAndReadbackBeforeOutputSurfaceInit
     times_output_surface_created_ = 0;
 
     char pixels[4];
-    EXPECT_TRUE(layer_tree_host()->CompositeAndReadback(
-          &pixels, gfx::Rect(1, 1)));
+    bool result = layer_tree_host()->CompositeAndReadback(
+        &pixels, gfx::Rect(1, 1));
+    EXPECT_EQ(!delegating_renderer(), result);
     EXPECT_EQ(1, times_output_surface_created_);
 
     PostSetNeedsCommitToMainThread();
@@ -1363,7 +1474,8 @@ class LayerTreeHostContextTestFailsToCreateSurface
   int failure_count_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestFailsToCreateSurface);
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostContextTestFailsToCreateSurface);
 
 // Not reusing LayerTreeTest because it expects creating LTH to always succeed.
 class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
@@ -1373,12 +1485,12 @@ class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
   LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface()
       : FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D) {}
 
-  // FakeLayerTreeHostClient
+  // FakeLayerTreeHostClient implementation.
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
     return scoped_ptr<OutputSurface>();
   }
 
-  void RunTest(bool threaded) {
+  void RunTest(bool threaded, bool delegating_renderer) {
     scoped_ptr<base::Thread> impl_thread;
     scoped_ptr<cc::Thread> impl_ccthread(NULL);
     if (threaded) {

@@ -103,7 +103,8 @@ class VideoResourceUpdater
                               RecycleResourceData data,
                               unsigned sync_point,
                               bool lost_resource);
-  static void ReturnTexture(ResourceProvider* resource_provider,
+  static void ReturnTexture(base::WeakPtr<VideoResourceUpdater> updater,
+                            ResourceProvider* resource_provider,
                             unsigned resource_id,
                             unsigned sync_point,
                             bool lost_resource);
@@ -111,6 +112,7 @@ class VideoResourceUpdater
   ResourceProvider* resource_provider_;
   scoped_ptr<media::SkCanvasVideoRenderer> video_renderer_;
 
+  std::vector<unsigned> all_resources_;
   std::vector<PlaneResource> recycled_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoResourceUpdater);
