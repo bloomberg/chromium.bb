@@ -904,6 +904,7 @@ void SpdySession::CloseCreatedStream(SpdyStream* stream, int status) {
 }
 
 void SpdySession::ResetStream(SpdyStreamId stream_id,
+                              RequestPriority priority,
                               SpdyRstStreamStatus status,
                               const std::string& description) {
   net_log().AddEvent(
@@ -914,15 +915,11 @@ void SpdySession::ResetStream(SpdyStreamId stream_id,
   scoped_ptr<SpdyFrame> rst_frame(
       buffered_spdy_framer_->CreateRstStream(stream_id, status));
 
-  // Default to lowest priority unless we know otherwise.
-  RequestPriority priority = IDLE;
-  if (IsStreamActive(stream_id)) {
-    scoped_refptr<SpdyStream> stream = active_streams_[stream_id];
-    priority = stream->priority();
-  }
   EnqueueSessionWrite(priority, RST_STREAM, rst_frame.Pass());
   RecordProtocolErrorHistogram(
       static_cast<SpdyProtocolErrorDetails>(status + STATUS_CODE_INVALID));
+  // Removes any pending writes for |stream_id| except for possibly an
+  // in-flight one.
   DeleteStream(stream_id, ERR_SPDY_PROTOCOL_ERROR);
 }
 
@@ -1493,8 +1490,11 @@ void SpdySession::OnError(SpdyFramer::SpdyError error_code) {
 
 void SpdySession::OnStreamError(SpdyStreamId stream_id,
                                 const std::string& description) {
-  if (IsStreamActive(stream_id))
-    ResetStream(stream_id, RST_STREAM_PROTOCOL_ERROR, description);
+  ActiveStreamMap::const_iterator it = active_streams_.find(stream_id);
+  if (it != active_streams_.end()) {
+    ResetStream(stream_id, it->second->priority(),
+                RST_STREAM_PROTOCOL_ERROR, description);
+  }
 }
 
 void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
@@ -1610,11 +1610,15 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
     return;
   }
 
+  RequestPriority request_priority =
+      ConvertSpdyPriorityToRequestPriority(priority, GetProtocolVersion());
+
   if (associated_stream_id == 0) {
     std::string description = base::StringPrintf(
         "Received invalid OnSyn associated stream id %d for stream %d",
         associated_stream_id, stream_id);
-    ResetStream(stream_id, RST_STREAM_REFUSED_STREAM, description);
+    ResetStream(stream_id, request_priority,
+                RST_STREAM_REFUSED_STREAM, description);
     return;
   }
 
@@ -1625,7 +1629,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   // Verify that the response had a URL for us.
   GURL gurl = GetUrlFromHeaderBlock(headers, GetProtocolVersion(), true);
   if (!gurl.is_valid()) {
-    ResetStream(stream_id, RST_STREAM_PROTOCOL_ERROR,
+    ResetStream(stream_id, request_priority, RST_STREAM_PROTOCOL_ERROR,
                 "Pushed stream url was invalid: " + gurl.spec());
     return;
   }
@@ -1633,7 +1637,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
 
   // Verify we have a valid stream association.
   if (!IsStreamActive(associated_stream_id)) {
-    ResetStream(stream_id, RST_STREAM_INVALID_STREAM,
+    ResetStream(stream_id, request_priority, RST_STREAM_INVALID_STREAM,
                 base::StringPrintf(
                     "Received OnSyn with inactive associated stream %d",
                     associated_stream_id));
@@ -1646,7 +1650,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   if (trusted_spdy_proxy_.Equals(host_port_pair())) {
     // Disallow pushing of HTTPS content.
     if (gurl.SchemeIs("https")) {
-      ResetStream(stream_id, RST_STREAM_REFUSED_STREAM,
+      ResetStream(stream_id, request_priority, RST_STREAM_REFUSED_STREAM,
                   base::StringPrintf(
                       "Rejected push of Cross Origin HTTPS content %d",
                       associated_stream_id));
@@ -1656,7 +1660,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
         active_streams_[associated_stream_id];
     GURL associated_url(associated_stream->GetUrl());
     if (associated_url.GetOrigin() != gurl.GetOrigin()) {
-      ResetStream(stream_id, RST_STREAM_REFUSED_STREAM,
+      ResetStream(stream_id, request_priority, RST_STREAM_REFUSED_STREAM,
                   base::StringPrintf(
                       "Rejected Cross Origin Push Stream %d",
                       associated_stream_id));
@@ -1667,13 +1671,11 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   // There should not be an existing pushed stream with the same path.
   PushedStreamMap::iterator it = unclaimed_pushed_streams_.find(url);
   if (it != unclaimed_pushed_streams_.end()) {
-    ResetStream(stream_id, RST_STREAM_PROTOCOL_ERROR,
+    ResetStream(stream_id, request_priority, RST_STREAM_PROTOCOL_ERROR,
                 "Received duplicate pushed stream with url: " + url);
     return;
   }
 
-  RequestPriority request_priority =
-      ConvertSpdyPriorityToRequestPriority(priority, GetProtocolVersion());
   scoped_refptr<SpdyStream> stream(
       new SpdyStream(this, gurl.PathForRequest(), request_priority,
                      stream_initial_send_window_size_,
@@ -1872,49 +1874,55 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
       base::Bind(&NetLogSpdyWindowUpdateFrameCallback,
                  stream_id, delta_window_size));
 
-  if (flow_control_state_ < FLOW_CONTROL_STREAM) {
-    LOG(WARNING) << "Received WINDOW_UPDATE for stream " << stream_id
-                 << " when flow control is not turned on";
-    return;
-  }
+  if (stream_id == kSessionFlowControlStreamId) {
+    // WINDOW_UPDATE for the session.
+    if (flow_control_state_ < FLOW_CONTROL_STREAM_AND_SESSION) {
+      LOG(WARNING) << "Received WINDOW_UPDATE for session when "
+                   << "session flow control is not turned on";
+      // TODO(akalin): Record an error and close the session.
+      return;
+    }
 
-  if ((stream_id == kSessionFlowControlStreamId) &&
-      flow_control_state_ < FLOW_CONTROL_STREAM_AND_SESSION) {
-    LOG(WARNING) << "Received WINDOW_UPDATE for session when "
-                 << "session flow control is not turned on";
-    return;
-  }
-
-  if ((stream_id != kSessionFlowControlStreamId) &&
-      !IsStreamActive(stream_id)) {
-    LOG(WARNING) << "Received WINDOW_UPDATE for invalid stream " << stream_id;
-    return;
-  }
-
-  if (delta_window_size < 1u) {
-    if (stream_id == kSessionFlowControlStreamId) {
+    if (delta_window_size < 1u) {
       RecordProtocolErrorHistogram(PROTOCOL_ERROR_INVALID_WINDOW_UPDATE_SIZE);
       CloseSessionOnError(
           ERR_SPDY_PROTOCOL_ERROR,
           true,
           "Received WINDOW_UPDATE with an invalid delta_window_size " +
-              base::UintToString(delta_window_size));
-    } else {
-      ResetStream(stream_id, RST_STREAM_FLOW_CONTROL_ERROR,
+          base::UintToString(delta_window_size));
+      return;
+    }
+
+    IncreaseSendWindowSize(static_cast<int32>(delta_window_size));
+  } else {
+    // WINDOW_UPDATE for a stream.
+    if (flow_control_state_ < FLOW_CONTROL_STREAM) {
+      // TODO(akalin): Record an error and close the session.
+      LOG(WARNING) << "Received WINDOW_UPDATE for stream " << stream_id
+                   << " when flow control is not turned on";
+      return;
+    }
+
+    ActiveStreamMap::const_iterator it = active_streams_.find(stream_id);
+
+    if (it == active_streams_.end()) {
+      // TODO(akalin): Record an error and close the session.
+      LOG(WARNING) << "Received WINDOW_UPDATE for invalid stream " << stream_id;
+      return;
+    }
+
+    if (delta_window_size < 1u) {
+      ResetStream(stream_id, it->second->priority(),
+                  RST_STREAM_FLOW_CONTROL_ERROR,
                   base::StringPrintf(
                       "Received WINDOW_UPDATE with an invalid "
                       "delta_window_size %ud", delta_window_size));
+      return;
     }
-    return;
-  }
 
-  if (stream_id == kSessionFlowControlStreamId) {
-    IncreaseSendWindowSize(static_cast<int32>(delta_window_size));
-  } else {
-    scoped_refptr<SpdyStream> stream = active_streams_[stream_id];
-    CHECK_EQ(stream->stream_id(), stream_id);
-    CHECK(!stream->cancelled());
-    stream->IncreaseSendWindowSize(static_cast<int32>(delta_window_size));
+    CHECK_EQ(it->second->stream_id(), stream_id);
+    CHECK(!it->second->cancelled());
+    it->second->IncreaseSendWindowSize(static_cast<int32>(delta_window_size));
   }
 }
 

@@ -288,10 +288,13 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Close a stream that has been created but is not yet active.
   void CloseCreatedStream(SpdyStream* stream, int status);
 
-  // Reset a stream by sending a RST_STREAM frame with given status code.
-  // Also closes the stream.  Was not piggybacked to CloseStream since not
-  // all of the calls to CloseStream necessitate sending a RST_STREAM.
+  // Reset a stream by sending a RST_STREAM frame with the given
+  // status code at the given priority, which should be the stream's
+  // priority.  Also closes the stream.  Was not piggybacked to
+  // CloseStream since not all of the calls to CloseStream necessitate
+  // sending a RST_STREAM.
   void ResetStream(SpdyStreamId stream_id,
+                   RequestPriority priority,
                    SpdyRstStreamStatus status,
                    const std::string& description);
 
