@@ -1254,6 +1254,8 @@ static GraphicsContext::DocumentMarkerLineStyle lineStyleForMarkerType(DocumentM
         return GraphicsContext::DocumentMarkerSpellingLineStyle;
     case DocumentMarker::Grammar:
         return GraphicsContext::DocumentMarkerGrammarLineStyle;
+    case DocumentMarker::CorrectionIndicator:
+        return GraphicsContext::DocumentMarkerAutocorrectionReplacementLineStyle;
     default:
         ASSERT_NOT_REACHED();
         return GraphicsContext::DocumentMarkerSpellingLineStyle;
@@ -1356,6 +1358,23 @@ void InlineTextBox::paintTextMatchMarker(GraphicsContext* pt, const FloatPoint& 
     }
 }
 
+void InlineTextBox::computeRectForReplacementMarker(DocumentMarker* marker, RenderStyle* style, const Font& font)
+{
+    // Replacement markers are not actually drawn, but their rects need to be computed for hit testing.
+    int top = selectionTop();
+    int h = selectionHeight();
+    
+    int sPos = max(marker->startOffset() - m_start, (unsigned)0);
+    int ePos = min(marker->endOffset() - m_start, (unsigned)m_len);
+    TextRun run = constructTextRun(style, font);
+    IntPoint startPoint = IntPoint(x(), top);
+    
+    // Compute and store the rect associated with this marker.
+    IntRect markerRect = enclosingIntRect(font.selectionRectForText(run, startPoint, h, sPos, ePos));
+    markerRect = renderer()->localToAbsoluteQuad(FloatRect(markerRect)).enclosingBoundingBox();
+    toRenderedDocumentMarker(marker)->setRenderedRect(markerRect);
+}
+    
 void InlineTextBox::paintDocumentMarkers(GraphicsContext* pt, const FloatPoint& boxOrigin, RenderStyle* style, const Font& font, bool background)
 {
     if (!renderer()->node())
@@ -1373,6 +1392,8 @@ void InlineTextBox::paintDocumentMarkers(GraphicsContext* pt, const FloatPoint& 
         switch (marker->type()) {
             case DocumentMarker::Grammar:
             case DocumentMarker::Spelling:
+            case DocumentMarker::CorrectionIndicator:
+            case DocumentMarker::Replacement:
                 if (background)
                     continue;
                 break;
@@ -1396,6 +1417,7 @@ void InlineTextBox::paintDocumentMarkers(GraphicsContext* pt, const FloatPoint& 
         // marker intersects this run.  Paint it.
         switch (marker->type()) {
             case DocumentMarker::Spelling:
+            case DocumentMarker::CorrectionIndicator:
                 paintDocumentMarker(pt, boxOrigin, marker, style, font, false);
                 break;
             case DocumentMarker::Grammar:
@@ -1403,6 +1425,9 @@ void InlineTextBox::paintDocumentMarkers(GraphicsContext* pt, const FloatPoint& 
                 break;
             case DocumentMarker::TextMatch:
                 paintTextMatchMarker(pt, boxOrigin, marker, style, font);
+                break;
+            case DocumentMarker::Replacement:
+                computeRectForReplacementMarker(marker, style, font);
                 break;
             default:
                 ASSERT_NOT_REACHED();

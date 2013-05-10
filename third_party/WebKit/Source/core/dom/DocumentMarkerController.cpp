@@ -649,6 +649,41 @@ bool DocumentMarkerController::hasMarkers(Range* range, DocumentMarker::MarkerTy
     return false;
 }
 
+void DocumentMarkerController::clearDescriptionOnMarkersIntersectingRange(Range* range, DocumentMarker::MarkerTypes markerTypes)
+{
+    if (!possiblyHasMarkers(markerTypes))
+        return;
+    ASSERT(!m_markers.isEmpty());
+
+    Node* startContainer = range->startContainer();
+    Node* endContainer = range->endContainer();
+
+    Node* pastLastNode = range->pastLastNode();
+    for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(node)) {
+        unsigned startOffset = node == startContainer ? range->startOffset() : 0;
+        unsigned endOffset = node == endContainer ? static_cast<unsigned>(range->endOffset()) : std::numeric_limits<unsigned>::max();
+        MarkerList* list = m_markers.get(node);
+        if (!list)
+            continue;
+
+        for (size_t i = 0; i < list->size(); ++i) {
+            DocumentMarker& marker = list->at(i);
+
+            // markers are returned in order, so stop if we are now past the specified range
+            if (marker.startOffset() >= endOffset)
+                break;
+
+            // skip marker that is wrong type or before target
+            if (marker.endOffset() <= startOffset || !markerTypes.contains(marker.type())) {
+                i++;
+                continue;
+            }
+
+            marker.clearDetails();
+        }
+    }
+}
+
 #ifndef NDEBUG
 void DocumentMarkerController::showMarkers() const
 {

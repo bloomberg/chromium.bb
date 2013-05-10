@@ -70,6 +70,9 @@ private:
     virtual void deleteTextFromNode(PassRefPtr<Text>, unsigned, unsigned);
     void removeRedundantBlocks();
 
+    // This function provides access to original string after the correction has been deleted.
+    String originalStringForAutocorrectionAtBeginningOfSelection();
+
     bool m_hasSelectionToDelete;
     bool m_smartDelete;
     bool m_mergeBlocksAfterDelete;

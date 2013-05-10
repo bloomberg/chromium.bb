@@ -170,6 +170,18 @@ static bool markerTypesFrom(const String& markerType, DocumentMarker::MarkerType
         result =  DocumentMarker::Grammar;
     else if (equalIgnoringCase(markerType, "TextMatch"))
         result =  DocumentMarker::TextMatch;
+    else if (equalIgnoringCase(markerType, "Replacement"))
+        result =  DocumentMarker::Replacement;
+    else if (equalIgnoringCase(markerType, "CorrectionIndicator"))
+        result =  DocumentMarker::CorrectionIndicator;
+    else if (equalIgnoringCase(markerType, "RejectedCorrection"))
+        result =  DocumentMarker::RejectedCorrection;
+    else if (equalIgnoringCase(markerType, "Autocorrected"))
+        result =  DocumentMarker::Autocorrected;
+    else if (equalIgnoringCase(markerType, "SpellCheckingExemption"))
+        result =  DocumentMarker::SpellCheckingExemption;
+    else if (equalIgnoringCase(markerType, "DeletedAutocorrection"))
+        result =  DocumentMarker::DeletedAutocorrection;
     else
         return false;
 
@@ -1340,6 +1352,14 @@ bool Internals::hasSpellingMarker(Document* document, int from, int length, Exce
         return 0;
 
     return document->frame()->editor()->selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
+}
+
+bool Internals::hasAutocorrectedMarker(Document* document, int from, int length, ExceptionCode&)
+{
+    if (!document || !document->frame())
+        return 0;
+
+    return document->frame()->editor()->selectionStartHasMarkerFor(DocumentMarker::Autocorrected, from, length);
 }
 
 void Internals::setContinuousSpellCheckingEnabled(bool enabled, ExceptionCode&)

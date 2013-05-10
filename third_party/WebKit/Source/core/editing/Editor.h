@@ -220,6 +220,7 @@ public:
     void toggleOverwriteModeEnabled() { m_overwriteModeEnabled = !m_overwriteModeEnabled; }
 
     void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask, Range* spellingRange, Range* grammarRange);
+    void changeBackToReplacedString(const String& replacedString);
 
     void advanceToNextMisspelling(bool startBeforeSelection = false);
     void showSpellingGuessPanel();

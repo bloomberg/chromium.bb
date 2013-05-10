@@ -187,6 +187,7 @@ public:
 
     bool hasSpellingMarker(Document*, int from, int length, ExceptionCode&);
     bool hasGrammarMarker(Document*, int from, int length, ExceptionCode&);
+    bool hasAutocorrectedMarker(Document*, int from, int length, ExceptionCode&);
     void setContinuousSpellCheckingEnabled(bool enabled, ExceptionCode&);
 
     bool isOverwriteModeEnabled(Document*, ExceptionCode&);

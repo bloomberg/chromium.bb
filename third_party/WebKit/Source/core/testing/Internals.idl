@@ -148,6 +148,7 @@
 
     [RaisesException] boolean hasSpellingMarker(Document document, long from, long length);
     [RaisesException] boolean hasGrammarMarker(Document document, long from, long length);
+    [RaisesException] boolean hasAutocorrectedMarker(Document document, long from, long length);
     [RaisesException] void setContinuousSpellCheckingEnabled(boolean enabled);
 
     [RaisesException] boolean isOverwriteModeEnabled(Document document);
