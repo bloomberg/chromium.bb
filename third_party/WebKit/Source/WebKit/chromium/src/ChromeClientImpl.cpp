@@ -574,10 +574,6 @@ void ChromeClientImpl::layoutUpdated(Frame* frame) const
     m_webView->layoutUpdated(WebFrameImpl::fromFrame(frame));
 }
 
-void ChromeClientImpl::scrollbarsModeDidChange() const
-{
-}
-
 void ChromeClientImpl::mouseDidMoveOverElement(
     const HitTestResult& result, unsigned modifierFlags)
 {

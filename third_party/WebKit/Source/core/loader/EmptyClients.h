@@ -139,7 +139,6 @@ public:
     virtual WebKit::WebScreenInfo screenInfo() const OVERRIDE { return WebKit::WebScreenInfo(); }
     virtual void contentsSizeChanged(Frame*, const IntSize&) const OVERRIDE { }
 
-    virtual void scrollbarsModeDidChange() const OVERRIDE { }
     virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned) OVERRIDE { }
 
     virtual void setToolTip(const String&, TextDirection) OVERRIDE { }

@@ -39,7 +39,6 @@ UserMediaController::UserMediaController(UserMediaClient* client)
 
 UserMediaController::~UserMediaController()
 {
-    m_client->pageDestroyed();
 }
 
 PassOwnPtr<UserMediaController> UserMediaController::create(UserMediaClient* client)

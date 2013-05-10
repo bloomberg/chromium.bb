@@ -121,11 +121,6 @@ void Chrome::layoutUpdated(Frame* frame) const
     m_client->layoutUpdated(frame);
 }
 
-void Chrome::scrollbarsModeDidChange() const
-{
-    m_client->scrollbarsModeDidChange();
-}
-
 void Chrome::setWindowRect(const FloatRect& rect) const
 {
     m_client->setWindowRect(rect);

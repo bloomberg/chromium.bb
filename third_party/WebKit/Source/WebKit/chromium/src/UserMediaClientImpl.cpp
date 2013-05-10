@@ -47,10 +47,6 @@ UserMediaClientImpl::UserMediaClientImpl(WebViewImpl* webView)
 {
 }
 
-void UserMediaClientImpl::pageDestroyed()
-{
-}
-
 void UserMediaClientImpl::requestUserMedia(PassRefPtr<UserMediaRequest> prpRequest, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
 {
     if (m_client) {

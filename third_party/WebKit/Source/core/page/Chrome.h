@@ -70,7 +70,6 @@ public:
     virtual IntPoint screenToRootView(const IntPoint&) const OVERRIDE;
     virtual IntRect rootViewToScreen(const IntRect&) const OVERRIDE;
     virtual WebKit::WebScreenInfo screenInfo() const OVERRIDE;
-    virtual void scrollbarsModeDidChange() const OVERRIDE;
     virtual void setCursor(const Cursor&) OVERRIDE;
     virtual void setCursorHiddenUntilMouseMoves(bool) OVERRIDE;
 

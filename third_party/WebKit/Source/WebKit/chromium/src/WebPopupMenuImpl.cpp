@@ -379,11 +379,6 @@ WebScreenInfo WebPopupMenuImpl::screenInfo() const
     return WebScreenInfo();
 }
 
-void WebPopupMenuImpl::scrollbarsModeDidChange() const
-{
-    // Nothing to be done since we have no concept of different scrollbar modes.
-}
-
 void WebPopupMenuImpl::setCursor(const WebCore::Cursor&)
 {
 }

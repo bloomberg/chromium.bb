@@ -60,9 +60,6 @@ public:
 
     virtual WebKit::WebScreenInfo screenInfo() const = 0;
 
-    // To notify WebKit of scrollbar mode changes.
-    virtual void scrollbarsModeDidChange() const = 0;
-
     // Request that the cursor change.
     virtual void setCursor(const Cursor&) = 0;
 
