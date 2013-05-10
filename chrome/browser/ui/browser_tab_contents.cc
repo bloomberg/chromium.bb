@@ -117,7 +117,8 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   AutofillManager::CreateForWebContentsAndDelegate(
       web_contents,
       TabAutofillManagerDelegate::FromWebContents(web_contents),
-      g_browser_process->GetApplicationLocale());
+      g_browser_process->GetApplicationLocale(),
+      AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableNativeAutofillUi)) {
     AutofillExternalDelegate::CreateForWebContentsAndManager(

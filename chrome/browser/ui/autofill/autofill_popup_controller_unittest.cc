@@ -155,7 +155,10 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     AutofillManager::CreateForWebContentsAndDelegate(
-        web_contents(), manager_delegate_.get(), "en-US");
+        web_contents(),
+        manager_delegate_.get(),
+        "en-US",
+        AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
     external_delegate_.reset(
         new NiceMock<MockAutofillExternalDelegate>(
             web_contents(), AutofillManager::FromWebContents(web_contents())));

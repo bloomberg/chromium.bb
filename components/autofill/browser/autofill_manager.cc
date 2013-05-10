@@ -175,12 +175,15 @@ void DeterminePossibleFieldTypesForUpload(
 void AutofillManager::CreateForWebContentsAndDelegate(
     content::WebContents* contents,
     autofill::AutofillManagerDelegate* delegate,
-    const std::string& app_locale) {
+    const std::string& app_locale,
+    AutofillDownloadManagerState enable_download_manager) {
   if (FromWebContents(contents))
     return;
 
-  contents->SetUserData(kAutofillManagerWebContentsUserDataKey,
-                        new AutofillManager(contents, delegate, app_locale));
+  contents->SetUserData(
+      kAutofillManagerWebContentsUserDataKey,
+      new AutofillManager(
+          contents, delegate, app_locale, enable_download_manager));
 
   // Trigger the lazy creation of AutocheckoutWhitelistManagerService, and
   // schedule a fetch of the Autocheckout whitelist file if it's not already
@@ -196,15 +199,15 @@ AutofillManager* AutofillManager::FromWebContents(
       contents->GetUserData(kAutofillManagerWebContentsUserDataKey));
 }
 
-AutofillManager::AutofillManager(content::WebContents* web_contents,
-                                 autofill::AutofillManagerDelegate* delegate,
-                                 const std::string& app_locale)
+AutofillManager::AutofillManager(
+    content::WebContents* web_contents,
+    autofill::AutofillManagerDelegate* delegate,
+    const std::string& app_locale,
+    AutofillDownloadManagerState enable_download_manager)
     : content::WebContentsObserver(web_contents),
       manager_delegate_(delegate),
       app_locale_(app_locale),
       personal_data_(delegate->GetPersonalDataManager()),
-      download_manager_(web_contents->GetBrowserContext(), this),
-      disable_download_manager_requests_(false),
       autocomplete_history_manager_(web_contents),
       autocheckout_manager_(this),
       metric_logger_(new AutofillMetrics),
@@ -217,6 +220,10 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       external_delegate_(NULL),
       test_delegate_(NULL),
       weak_ptr_factory_(this) {
+  if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
+    download_manager_.reset(
+        new AutofillDownloadManager(web_contents->GetBrowserContext(), this));
+  }
 }
 
 AutofillManager::~AutofillManager() {}
@@ -917,7 +924,7 @@ void AutofillManager::UploadFormDataAsyncCallback(
 }
 
 void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
-  if (disable_download_manager_requests_)
+  if (!download_manager_)
     return;
 
   // Check if the form is among the forms that were recently auto-filled.
@@ -934,7 +941,7 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
   FieldTypeSet non_empty_types;
   personal_data_->GetNonEmptyTypes(&non_empty_types);
 
-  download_manager_.StartUploadRequest(submitted_form, was_autofilled,
+  download_manager_->StartUploadRequest(submitted_form, was_autofilled,
                                        non_empty_types);
 }
 
@@ -960,8 +967,6 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       manager_delegate_(delegate),
       app_locale_("en-US"),
       personal_data_(personal_data),
-      download_manager_(web_contents->GetBrowserContext(), this),
-      disable_download_manager_requests_(true),
       autocomplete_history_manager_(web_contents),
       autocheckout_manager_(this),
       metric_logger_(new AutofillMetrics),
@@ -1210,9 +1215,9 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     // terminate Autocheckout and send Autocheckout status.
     autocheckout_manager_.OnLoadedPageMetaData(
         scoped_ptr<autofill::AutocheckoutPageMetaData>(NULL));
-  } else if (!disable_download_manager_requests_) {
+  } else if (download_manager_) {
     // Query the server if we have at least one of the forms were parsed.
-    download_manager_.StartQueryRequest(form_structures_.get(),
+    download_manager_->StartQueryRequest(form_structures_.get(),
                                         *metric_logger_);
   }
 

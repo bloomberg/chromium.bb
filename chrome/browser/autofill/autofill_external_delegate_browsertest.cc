@@ -62,7 +62,8 @@ class TestAutofillManager : public AutofillManager {
                       autofill::AutofillManagerDelegate* delegate)
       : AutofillManager(web_contents,
                         delegate,
-                        g_browser_process->GetApplicationLocale()) {}
+                        g_browser_process->GetApplicationLocale(),
+                        AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {}
   virtual ~TestAutofillManager() {}
 
  private:

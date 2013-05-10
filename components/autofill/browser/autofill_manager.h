@@ -59,6 +59,7 @@ class PrefRegistrySyncable;
 namespace autofill {
 
 class AutofillDataModel;
+class AutofillDownloadManager;
 class AutofillExternalDelegate;
 class AutofillField;
 class AutofillProfile;
@@ -78,10 +79,16 @@ class AutofillManager : public content::WebContentsObserver,
                         public AutofillDownloadManager::Observer,
                         public base::SupportsUserData::Data {
  public:
+  enum AutofillDownloadManagerState {
+    ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
+    DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
+  };
+
   static void CreateForWebContentsAndDelegate(
       content::WebContents* contents,
       autofill::AutofillManagerDelegate* delegate,
-      const std::string& app_locale);
+      const std::string& app_locale,
+      AutofillDownloadManagerState enable_download_manager);
   static AutofillManager* FromWebContents(content::WebContents* contents);
 
   // Registers our Enable/Disable Autofill pref.
@@ -141,7 +148,8 @@ class AutofillManager : public content::WebContentsObserver,
   // Only test code should subclass AutofillManager.
   AutofillManager(content::WebContents* web_contents,
                   autofill::AutofillManagerDelegate* delegate,
-                  const std::string& app_locale);
+                  const std::string& app_locale,
+                  AutofillDownloadManagerState enable_download_manager);
   virtual ~AutofillManager();
 
   // Test code should prefer to use this constructor.
@@ -348,14 +356,9 @@ class AutofillManager : public content::WebContentsObserver,
 
   std::list<std::string> autofilled_form_signatures_;
 
-  // Handles queries and uploads to Autofill servers.
-  AutofillDownloadManager download_manager_;
-
-  // Should be set to true in AutofillManagerTest and other tests, false in
-  // AutofillDownloadManagerTest and in non-test environment. Is false by
-  // default for the public constructor, and true by default for the test-only
-  // constructors.
-  bool disable_download_manager_requests_;
+  // Handles queries and uploads to Autofill servers. Will be NULL if
+  // the download manager functionality is disabled.
+  scoped_ptr<AutofillDownloadManager> download_manager_;
 
   // Handles single-field autocomplete form data.
   AutocompleteHistoryManager autocomplete_history_manager_;
