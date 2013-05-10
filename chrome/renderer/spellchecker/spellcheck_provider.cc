@@ -29,18 +29,6 @@ COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeSpelling) ==
                int(SpellCheckResult::SPELLING), mismatching_enums);
 COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeGrammar) ==
                int(SpellCheckResult::GRAMMAR), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeLink) ==
-               int(SpellCheckResult::LINK), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeQuote) ==
-               int(SpellCheckResult::QUOTE), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeDash) ==
-               int(SpellCheckResult::DASH), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeReplacement) ==
-               int(SpellCheckResult::REPLACEMENT), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeCorrection) ==
-               int(SpellCheckResult::CORRECTION), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeShowCorrectionPanel) ==
-               int(SpellCheckResult::SHOWCORRECTIONPANEL), mismatching_enums);
 
 SpellCheckProvider::SpellCheckProvider(
     content::RenderView* render_view,
