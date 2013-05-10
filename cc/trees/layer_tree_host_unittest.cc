@@ -2318,6 +2318,28 @@ class LayerTreeHostTestVSyncNotification : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestVSyncNotification);
 
+class LayerTreeHostTestVSyncNotificationShutdownWhileEnabled
+    : public LayerTreeHostTest {
+ public:
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->render_vsync_notification_enabled = true;
+    settings->synchronously_disable_vsync = true;
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    // The vsync notification is turned off now but will get enabled once we
+    // return. End test while it's enabled.
+    ImplThread()->PostTask(base::Bind(
+        &LayerTreeHostTestVSyncNotification::EndTest, base::Unretained(this)));
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestVSyncNotificationShutdownWhileEnabled);
+
 class LayerTreeHostTestInputDrivenRendering : public LayerTreeHostTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {

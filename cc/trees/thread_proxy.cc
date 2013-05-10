@@ -1218,8 +1218,8 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
       layer_tree_host_impl_->resource_provider());
   layer_tree_host_impl_->EnableVSyncNotification(false);
   input_handler_client_on_impl_thread_.reset();
-  layer_tree_host_impl_.reset();
   scheduler_on_impl_thread_.reset();
+  layer_tree_host_impl_.reset();
   weak_factory_on_impl_thread_.InvalidateWeakPtrs();
   vsync_client_ = NULL;
   completion->Signal();
