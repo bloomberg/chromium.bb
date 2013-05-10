@@ -1218,6 +1218,22 @@ class GLContext;
   file.write('};\n')
   file.write('\n')
 
+  # Write Driver struct.
+  file.write(
+"""struct GL_EXPORT Driver%(name)s {
+  void InitializeBindings();
+  void InitializeExtensionBindings(GLContext* context);
+  void InitializeDebugBindings();
+  void ClearBindings();
+  void UpdateDebugExtensionBindings();
+
+  Procs%(name)s fn;
+  Procs%(name)s debug_fn;
+  Extensions%(name)s ext;
+""" % {'name': set_name.upper()})
+  file.write('};\n')
+  file.write('\n')
+
   # Write Api class.
   file.write(
 """class GL_EXPORT %(name)sApi {
