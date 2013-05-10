@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -231,6 +232,9 @@ RenderProcessHost::RenderWidgetHostsIterator
 }
 
 bool MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
+  RenderWidgetHost* rwh = render_widget_hosts_.Lookup(msg.routing_id());
+  if (rwh)
+    return RenderWidgetHostImpl::From(rwh)->OnMessageReceived(msg);
   return false;
 }
 
