@@ -39,7 +39,7 @@ webkit.org/b/106606 [ Debug ] fast/canvas/webgl/context-release-upon-reload.html
 webkit.org/b/106606 [ Debug ] virtual/gpu/fast/canvas/webgl/context-release-upon-reload.html [ Pass Timeout ]
 webkit.org/b/109400 [ Win ] http/tests/css/css-image-loading.html [ Pass Timeout ]
 webkit.org/b/109400 [ Mac Win ] http/tests/css/shared-stylesheet-mutation-preconstruct.html [ Slow ]
-webkit.org/b/67121 [ Win Debug ] editing/selection/move-by-word-visually-multi-space.html [ Slow ]
+crbug.com/239871 [ Win Mac Debug ] editing/selection/move-by-word-visually-multi-space.html [ Slow ]
 crbug.com/24182 [ Mac Win Debug ] fast/frames/sandboxed-iframe-navigation-parent.html [ Slow ]
 webkit.org/b/82417 [ Linux ] fast/frames/set-unloaded-frame-location.html [ Slow ]
 webkit.org/b/84696 [ Release ] fast/workers/storage/interrupt-database.html [ Slow ]
