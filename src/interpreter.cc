@@ -97,7 +97,7 @@ void Interpreter::Initialize(const HardwareProperties* hwprops,
     metrics_ = own_metrics_.get();
   }
 
-  hwprops_ = *hwprops;
+  hwprops_ = hwprops;
   consumer_ = consumer;
   initialized_ = true;
 }

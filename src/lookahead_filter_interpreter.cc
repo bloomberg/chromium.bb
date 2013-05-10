@@ -112,7 +112,7 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
   // For semi-mt devices, drumrolls and quick moves are handled in
   // SemiMtCorrectingFilterInterpreter already. We need to bypass the detection
   // and tracking id reassignment here to make fast-scroll working correctly.
-  if (hwprops_.support_semi_mt)
+  if (hwprops_->support_semi_mt)
     return;
   if (queue_.size() < 2) {
     // Always reassign trackingID on the very first hwstate so that
@@ -529,7 +529,7 @@ void LookaheadFilterInterpreter::Initialize(
   queue_.DeleteAll();
   free_list_.DeleteAll();
   for (size_t i = 0; i < kMaxQNodes; ++i) {
-    QState* node = new QState(hwprops_.max_finger_cnt);
+    QState* node = new QState(hwprops_->max_finger_cnt);
     free_list_.PushBack(node);
   }
 }

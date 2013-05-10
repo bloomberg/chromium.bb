@@ -101,7 +101,7 @@ void IirFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
       float FingerState::*field = fields[f_idx];
       // Keep the current pressure reading, so we could make sure the pressure
       // values will be same if there is two fingers on a SemiMT device.
-      if (hwprops_.support_semi_mt &&
+      if (hwprops_ && hwprops_->support_semi_mt &&
           (field == &FingerState::pressure)) {
         hist->NextOut()->pressure = fs->pressure;
         continue;
