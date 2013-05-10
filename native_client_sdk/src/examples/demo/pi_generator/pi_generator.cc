@@ -17,6 +17,12 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
+#ifdef WIN32
+#undef PostMessage
+// Allow 'this' in initializer list
+#pragma warning(disable : 4355)
+#endif
+
 namespace {
 const int kPthreadMutexSuccess = 0;
 const char* const kPaintMethodId = "paint";

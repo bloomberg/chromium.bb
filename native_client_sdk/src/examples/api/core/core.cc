@@ -9,6 +9,12 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
+#ifdef WIN32
+#undef PostMessage
+// Allow 'this' in initializer list
+#pragma warning(disable : 4355)
+#endif
+
 /// The Instance class.  One of these exists for each instance of your NaCl
 /// module on the web page.  The browser will ask the Module object to create
 /// a new Instance for each occurrence of the <embed> tag that has these
