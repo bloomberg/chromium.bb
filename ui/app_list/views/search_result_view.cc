@@ -180,10 +180,10 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
 
   const bool selected = list_view_->IsResultViewSelected(this);
   const bool hover = state() == STATE_HOVERED || state() == STATE_PRESSED;
-  if (hover && selected)
-    canvas->FillRect(content_rect, kHoverAndPushedColor);
-  else if (selected || hover)
+  if (selected)
     canvas->FillRect(content_rect, kSelectedColor);
+  else if (hover)
+    canvas->FillRect(content_rect, kHighlightedColor);
   else
     canvas->FillRect(content_rect, kContentsBackgroundColor);
 

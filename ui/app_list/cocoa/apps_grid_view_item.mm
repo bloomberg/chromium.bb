@@ -113,7 +113,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   if (!selected_)
     return;
 
-  [gfx::SkColorToCalibratedNSColor(app_list::kHoverAndPushedColor) set];
+  [gfx::SkColorToCalibratedNSColor(app_list::kSelectedColor) set];
   NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
 }
 

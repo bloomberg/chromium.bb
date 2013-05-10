@@ -12,8 +12,8 @@
 namespace app_list {
 
 APP_LIST_EXPORT extern const SkColor kContentsBackgroundColor;
+APP_LIST_EXPORT extern const SkColor kHighlightedColor;
 APP_LIST_EXPORT extern const SkColor kSelectedColor;
-APP_LIST_EXPORT extern const SkColor kHoverAndPushedColor;
 
 APP_LIST_EXPORT extern const SkColor kPagerHoverColor;
 APP_LIST_EXPORT extern const SkColor kPagerNormalColor;

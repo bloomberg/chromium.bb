@@ -8,9 +8,9 @@ namespace app_list {
 
 const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF5, 0xF5, 0xF5);
 // 6% black over kContentsBackgroundColor
-const SkColor kSelectedColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
+const SkColor kHighlightedColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
 // 10% black over kContentsBackgroundColor
-const SkColor kHoverAndPushedColor = SkColorSetRGB(0xDC, 0xDC, 0xDC);
+const SkColor kSelectedColor = SkColorSetRGB(0xDC, 0xDC, 0xDC);
 
 const SkColor kPagerHoverColor = SkColorSetRGB(0xB4, 0xB4, 0xB4);
 const SkColor kPagerNormalColor = SkColorSetRGB(0xE2, 0xE2, 0xE2);
