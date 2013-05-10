@@ -1616,9 +1616,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.DNS_Resolution_And_TCP_Connection_Latency">
+  <obsolete>
+    Deprecated- see Net.DNS_Resolution_And_TCP_Connection_Latency2
+  </obsolete>
+</histogram>
+
 <histogram name="Net.Dns_Resolution_And_TCP_Connection_Latency">
   <obsolete>
-    Deprecated- see Net.Dns_Resolution_And_TCP_Connection_Latency2
+    Deprecated- see Net.DNS_Resolution_And_TCP_Connection_Latency2
   </obsolete>
 </histogram>
 
@@ -1630,12 +1636,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Net.Dns_Resolution_And_TCP_Connection_Latency2"
-    units="milliseconds">
-  <summary>
-    The time measured before starting DNS lookup until after the connection is
-    complete.
-  </summary>
+<histogram name="Net.Dns_Resolution_And_TCP_Connection_Latency2">
+  <obsolete>
+    Deprecated- see Net.DNS_Resolution_And_TCP_Connection_Latency2
+  </obsolete>
 </histogram>
 
 <histogram name="Net.DoubleGetExperiment_InitialResponseMethod"
