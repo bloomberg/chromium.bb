@@ -102,8 +102,6 @@ def retrieve_results(base_url, test_key, timeout, should_stop):
             'Received corrupted data for test_key %s. Retrying.', test_key)
       else:
         if data['output']:
-          # Ignore the result code.
-          run_isolated.url_open('%s/cleanup_results' % base_url, data=params)
           return data
     if should_stop.get():
       return {}

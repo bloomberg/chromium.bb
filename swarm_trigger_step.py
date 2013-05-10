@@ -215,7 +215,9 @@ def ProcessManifest(file_sha1, test_name, shards, test_filter, options):
     return 1
 
   # Send test requests off to swarm.
-  print 'Sending test requests to swarm'
+  print('Sending test requests to swarm.')
+  print('Server: %s' % options.swarm_url)
+  print('Job name: %s' % test_name)
   test_url = options.swarm_url.rstrip('/') + '/test'
   manifest_text = manifest.to_json()
   result = run_isolated.url_open(test_url, data={'request': manifest_text})

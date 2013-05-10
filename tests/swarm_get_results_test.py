@@ -236,11 +236,6 @@ class TestGetSwarmResults(TestCase):
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(0, SWARM_OUTPUT_SUCCESS, '0, 0'),
       ),
-      (
-        'http://host:9001/cleanup_results',
-        {'data': [('r', 'key1')]},
-        StringIO.StringIO(''),
-      ),
     ]
     expected = [gen_yielded_data(0, SWARM_OUTPUT_SUCCESS, '0, 0')]
     actual = get_swarm_results(['key1'])
@@ -253,11 +248,6 @@ class TestGetSwarmResults(TestCase):
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(0, SWARM_OUTPUT_FAILURE, '0, 1'),
       ),
-      (
-        'http://host:9001/cleanup_results',
-        {'data': [('r', 'key1')]},
-        StringIO.StringIO(''),
-      ),
     ]
     expected = [gen_yielded_data(0, SWARM_OUTPUT_FAILURE, '0, 1')]
     actual = get_swarm_results(['key1'])
@@ -269,11 +259,6 @@ class TestGetSwarmResults(TestCase):
         'http://host:9001/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(0, SWARM_OUTPUT_WITH_NO_TEST_OUTPUT, '0, 0'),
-      ),
-      (
-        'http://host:9001/cleanup_results',
-        {'data': [('r', 'key1')]},
-        StringIO.StringIO(''),
       ),
     ]
     expected = [gen_yielded_data(0, SWARM_OUTPUT_WITH_NO_TEST_OUTPUT, '0, 0')]
@@ -339,19 +324,9 @@ class TestGetSwarmResults(TestCase):
         generate_url_response(0, SWARM_OUTPUT_SUCCESS, '0, 0'),
       ),
       (
-        'http://host:9001/cleanup_results',
-        {'data': [('r', 'key1')]},
-        StringIO.StringIO(''),
-      ),
-      (
         'http://host:9001/get_result?r=key1-repeat',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(0, SWARM_OUTPUT_SUCCESS, '0, 0'),
-      ),
-      (
-        'http://host:9001/cleanup_results',
-        {'data': [('r', 'key1-repeat')]},
-        StringIO.StringIO(''),
       ),
     ]
     expected = [gen_yielded_data(0, SWARM_OUTPUT_SUCCESS, '0, 0')]
@@ -367,19 +342,9 @@ class TestGetSwarmResults(TestCase):
         generate_url_response(0, TEST_SHARD_OUTPUT_1, '0, 0'),
       ),
       (
-        'http://host:9001/cleanup_results',
-        {'data': [('r', 'key1')]},
-        StringIO.StringIO(''),
-      ),
-      (
         'http://host:9001/get_result?r=key1-repeat',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(0, TEST_SHARD_OUTPUT_1, '0, 0'),
-      ),
-      (
-        'http://host:9001/cleanup_results',
-        {'data': [('r', 'key1-repeat')]},
-        StringIO.StringIO(''),
       ),
       (
         'http://host:9001/get_result?r=key2',
@@ -387,19 +352,9 @@ class TestGetSwarmResults(TestCase):
         generate_url_response(1, TEST_SHARD_OUTPUT_2, '0, 0'),
       ),
       (
-        'http://host:9001/cleanup_results',
-        {'data': [('r', 'key2')]},
-        StringIO.StringIO(''),
-      ),
-      (
         'http://host:9001/get_result?r=key3',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(2, TEST_SHARD_OUTPUT_3, '0, 0'),
-      ),
-      (
-        'http://host:9001/cleanup_results',
-        {'data': [('r', 'key3')]},
-        StringIO.StringIO(''),
       ),
     ]
     expected = [
