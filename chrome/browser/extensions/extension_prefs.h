@@ -620,9 +620,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Migrates the disable reasons from a single enum to a bit mask.
   void MigrateDisableReasons(const ExtensionIdList& extension_ids);
 
-  // Clears the registered events for event pages.
-  void ClearRegisteredEvents();
-
   // Checks whether there is a state pref for the extension and if so, whether
   // it matches |check_state|.
   bool DoesExtensionHaveState(const std::string& id,

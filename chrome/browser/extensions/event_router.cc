@@ -65,7 +65,7 @@ void DispatchOnInstalledEvent(
                                                old_version, chrome_updated);
 }
 
-void DoNothing(extensions::ExtensionHost* host) {}
+void DoNothing(ExtensionHost* host) {}
 
 }  // namespace
 
@@ -118,7 +118,7 @@ void EventRouter::LogExtensionEventMessage(void* profile_id,
       if (!extension) {
         LOG(WARNING) << "Extension " << extension_id << " not found!";
       } else {
-        extensions::ActivityLog::GetInstance(profile)->LogEventAction(
+        ActivityLog::GetInstance(profile)->LogEventAction(
             extension, event_name, event_args.get(), std::string());
       }
     }
@@ -188,9 +188,8 @@ EventRouter::EventRouter(Profile* profile, ExtensionPrefs* extension_prefs)
 
   // NULL in unit_tests.
   if (extension_prefs) {
-    // Check if registered events are up-to-date. We need to do this before
-    // reading the registered events, because it deletes them if they're out of
-    // date.
+    // Check if registered events are up-to-date. We can only do this once
+    // per profile, since it updates internal state when called.
     dispatch_chrome_updated_event_ =
         !extension_prefs->CheckRegisteredEventsUpToDate();
   }
@@ -240,7 +239,7 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
   // TODO(felt): Experimentally determine if these are needed, or if they
   // can be permanently removed. Temporarily removing for now to reduce log
   // size while under investigation.
-  const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
+  const Extension* extension = ExtensionSystem::Get(profile_)->
       extension_service()->GetExtensionById(listener->extension_id,
                                             ExtensionService::INCLUDE_ENABLED);
   if (extension) {
@@ -272,7 +271,7 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
   // TODO(felt): Experimentally determine if these are needed, or if they
   // can be permanently removed. Temporarily removing for now to reduce log
   // size while under investigation.
-  const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
+  const Extension* extension = ExtensionSystem::Get(profile_)->
       extension_service()->GetExtensionById(listener->extension_id,
                                             ExtensionService::INCLUDE_ENABLED);
   if (extension) {
@@ -290,8 +289,7 @@ void EventRouter::AddLazyEventListener(const std::string& event_name,
   bool is_new = listeners_.AddListener(listener.Pass());
 
   if (is_new) {
-    ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
-        extension_service()->extension_prefs();
+    ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
     std::set<std::string> events = prefs->GetRegisteredEvents(extension_id);
     bool prefs_is_new = events.insert(event_name).second;
     if (prefs_is_new)
@@ -306,8 +304,7 @@ void EventRouter::RemoveLazyEventListener(const std::string& event_name,
   bool did_exist = listeners_.RemoveListener(&listener);
 
   if (did_exist) {
-    ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
-        extension_service()->extension_prefs();
+    ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
     std::set<std::string> events = prefs->GetRegisteredEvents(extension_id);
     bool prefs_did_exist = events.erase(event_name) > 0;
     DCHECK(prefs_did_exist);
@@ -330,8 +327,7 @@ void EventRouter::AddFilteredEventListener(const std::string& event_name,
         scoped_ptr<DictionaryValue>(filter.DeepCopy()))));
 
     if (added) {
-      ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
-          extension_service()->extension_prefs();
+      ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
       prefs->AddFilterToEvent(event_name, extension_id, &filter);
     }
   }
@@ -353,8 +349,7 @@ void EventRouter::RemoveFilteredEventListener(
     bool removed = listeners_.RemoveListener(&listener);
 
     if (removed) {
-      ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
-          extension_service()->extension_prefs();
+      ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
       prefs->RemoveFilterFromEvent(event_name, extension_id, &filter);
     }
   }
@@ -448,7 +443,7 @@ void EventRouter::DispatchLazyEvent(
     const linked_ptr<Event>& event,
     std::set<EventDispatchIdentifier>* already_dispatched) {
   ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
+      ExtensionSystem::Get(profile_)->extension_service();
   // Check both the original and the incognito profile to see if we
   // should load a lazy bg page to handle the event. The latter case
   // occurs in the case of split-mode extensions.
@@ -474,7 +469,7 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
                                          content::RenderProcessHost* process,
                                          const linked_ptr<Event>& event) {
   ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
+      ExtensionSystem::Get(profile_)->extension_service();
   const Extension* extension = service->extensions()->GetByID(extension_id);
 
   // The extension could have been removed, but we do not unregister it until
@@ -484,7 +479,7 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
 
   Profile* listener_profile = Profile::FromBrowserContext(
       process->GetBrowserContext());
-  ProcessMap* process_map = extensions::ExtensionSystem::Get(listener_profile)->
+  ProcessMap* process_map = ExtensionSystem::Get(listener_profile)->
       extension_service()->process_map();
   // If the event is privileged, only send to extension processes. Otherwise,
   // it's OK to send to normal renderers (e.g., for content scripts).
@@ -516,7 +511,7 @@ bool EventRouter::CanDispatchEventToProfile(Profile* profile,
   bool cross_incognito =
       event->restrict_to_profile && profile != event->restrict_to_profile;
   if (cross_incognito &&
-      !extensions::ExtensionSystem::Get(profile)->extension_service()->
+      !ExtensionSystem::Get(profile)->extension_service()->
           CanCrossIncognito(extension)) {
     return false;
   }
@@ -630,8 +625,7 @@ void EventRouter::Observe(int type,
       // Add all registered lazy listeners to our cache.
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
-          extension_service()->extension_prefs();
+      ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
       std::set<std::string> registered_events =
           prefs->GetRegisteredEvents(extension->id());
       listeners_.LoadUnfilteredLazyListeners(extension->id(),

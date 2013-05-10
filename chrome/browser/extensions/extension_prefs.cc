@@ -976,15 +976,6 @@ void ExtensionPrefs::MigrateDisableReasons(
   }
 }
 
-void ExtensionPrefs::ClearRegisteredEvents() {
-  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
-  if (!extensions)
-    return;
-
-  for (DictionaryValue::Iterator it(*extensions); !it.IsAtEnd(); it.Advance())
-    UpdateExtensionPref(it.key(), kRegisteredEvents, NULL);
-}
-
 PermissionSet* ExtensionPrefs::GetGrantedPermissions(
     const std::string& extension_id) {
   CHECK(Extension::IdIsValid(extension_id));
@@ -1056,10 +1047,8 @@ bool ExtensionPrefs::CheckRegisteredEventsUpToDate() {
   prefs_->SetString(kExtensionsLastChromeVersion, current_version);
 
   // If there was no version string in prefs, assume we're out of date.
-  if (!version.IsValid() || version.IsOlderThan(current_version)) {
-    ClearRegisteredEvents();
+  if (!version.IsValid() || version.IsOlderThan(current_version))
     return false;
-  }
 
   return true;
 }
