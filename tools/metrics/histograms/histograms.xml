@@ -10313,19 +10313,52 @@ other types of suffix sets.
 </enum>
 
 <enum name="PrerenderLocalPredictorEvents" type="int">
-  <int value="0" label="EVENT_CONSTRUCTED"/>
-  <int value="1" label="EVENT_INIT_SCHEDULED"/>
-  <int value="2" label="EVENT_INIT_STARTED"/>
-  <int value="3" label="EVENT_INIT_FAILED_NO_HISTORY"/>
-  <int value="4" label="EVENT_INIT_SUCCEEDED"/>
-  <int value="5" label="EVENT_ADD_VISIT"/>
-  <int value="6" label="EVENT_ADD_VISIT_INITIALIZED"/>
-  <int value="7" label="EVENT_ADD_VISIT_PRERENDER_IDENTIFIED"/>
-  <int value="8" label="EVENT_ADD_VISIT_RELEVANT_TRANSITION"/>
-  <int value="9" label="EVENT_ADD_VISIT_IDENTIFIED_PRERENDER_CANDIDATE"/>
-  <int value="10" label="EVENT_ADD_VISIT_PRERENDERING"/>
-  <int value="11" label="EVENT_GOT_PRERENDER_URL"/>
-  <int value="12" label="EVENT_ERROR_NO_PRERENDER_URL_FOR_PLT"/>
+  <int value="0" label="Constructed"/>
+  <int value="1" label="Init scheduled"/>
+  <int value="2" label="Init started"/>
+  <int value="3" label="Init failed: no history"/>
+  <int value="4" label="Init succeeded"/>
+  <int value="5" label="AddVisit"/>
+  <int value="6" label="AddVisit initialized"/>
+  <int value="7" label="AddVisit prerender identified"/>
+  <int value="8" label="AddVisit relevant transition"/>
+  <int value="9" label="AddVisit identified prerender candidate"/>
+  <int value="10" label="AddVisit prerendering"/>
+  <int value="11" label="Got prerender url"/>
+  <int value="12" label="Error: no prerender url for PLT"/>
+  <int value="13" label="AddVisit prerender rextended"/>
+  <int value="14" label="URL lookup result"/>
+  <int value="15" label="URL lookup result: root page"/>
+  <int value="16" label="URL lookup result: http"/>
+  <int value="17" label="URL lookup result: has query string"/>
+  <int value="18" label="URL lookup result: contains logout"/>
+  <int value="19" label="URL lookup result: contians login"/>
+  <int value="20" label="Start url lookup"/>
+  <int value="21" label="AddVisit not root page"/>
+  <int value="22" label="Whitelist error"/>
+  <int value="23" label="Whitelist ok"/>
+  <int value="24" label="URL lookup result: on whitelist"/>
+  <int value="25" label="URL lookup result: on whitelist root page"/>
+  <int value="26" label="URL lookup result: extended root page"/>
+  <int value="27" label="URL lookup result: root page http"/>
+  <int value="28" label="URL lookup failed"/>
+  <int value="29" label="URL lookup no source webcontents found"/>
+  <int value="30" label="URL lookup no logged in table found"/>
+  <int value="31" label="URL lookup issuing logged in lookup"/>
+  <int value="32" label="Continue prerender check started"/>
+  <int value="33" label="Continue prerender check no url"/>
+  <int value="34" label="Continue prerender check priority too low"/>
+  <int value="35" label="Continue prerender check urls identical but fragemet"/>
+  <int value="36" label="Continue prerender check https"/>
+  <int value="37" label="Continue prerender root page"/>
+  <int value="38" label="Continue prerender check logout url"/>
+  <int value="39" label="Continue prerender check login url"/>
+  <int value="40" label="Continue prerender not logged in"/>
+  <int value="41" label="Continue prerender fallthrough no prerender"/>
+  <int value="42" label="Continue prerender issuing prerender"/>
+  <int value="43" label="Issuing prerender"/>
+  <int value="44" label="No prerender candidates"/>
+  <int value="45" label="Got history issuing lookup"/>
 </enum>
 
 <enum name="ProtocolVersion" type="int">
