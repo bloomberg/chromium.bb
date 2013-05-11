@@ -114,14 +114,28 @@ struct MagicNumber {
   const char* magic;
   size_t magic_len;
   bool is_string;
+  const char* mask;  // if set, must have same length as |magic|
 };
 
 #define MAGIC_NUMBER(mime_type, magic) \
-  { (mime_type), (magic), sizeof(magic)-1, false },
+  { (mime_type), (magic), sizeof(magic)-1, false, NULL },
+
+template <int MagicSize, int MaskSize>
+class VerifySizes {
+  COMPILE_ASSERT(MagicSize == MaskSize, sizes_must_be_equal);
+ public:
+  enum { SIZES = MagicSize };
+};
+
+#define verified_sizeof(magic, mask) \
+VerifySizes<sizeof(magic), sizeof(mask)>::SIZES
+
+#define MAGIC_MASK(mime_type, magic, mask) \
+  { (mime_type), (magic), verified_sizeof(magic, mask)-1, false, (mask) },
 
 // Magic strings are case insensitive and must not include '\0' characters
 #define MAGIC_STRING(mime_type, magic) \
-  { (mime_type), (magic), sizeof(magic)-1, true },
+  { (mime_type), (magic), sizeof(magic)-1, true, NULL },
 
 static const MagicNumber kMagicNumbers[] = {
   // Source: HTML 5 specification
@@ -210,6 +224,24 @@ static const OfficeExtensionType kOfficeExtensionTypes[] = {
   OFFICE_EXTENSION(DOC_TYPE_POWERPOINT, ".pptx")
 };
 
+static const MagicNumber kExtraMagicNumbers[] = {
+  MAGIC_NUMBER("image/x-xbitmap", "#define")
+  MAGIC_NUMBER("image/x-icon", "\x00\x00\x01\x00")
+  MAGIC_NUMBER("image/svg+xml", "<?xml_version=")
+  MAGIC_NUMBER("audio/wav", "RIFF....WAVEfmt ")
+  MAGIC_NUMBER("video/avi", "RIFF....AVI LIST")
+  MAGIC_NUMBER("audio/ogg", "OggS")
+  MAGIC_MASK("video/mpeg", "\x00\x00\x01\xB0", "\xFF\xFF\xFF\xF0")
+  MAGIC_MASK("audio/mpeg", "\xFF\xE0", "\xFF\xE0")
+  MAGIC_NUMBER("video/3gpp", "....ftyp3g")
+  MAGIC_NUMBER("video/3gpp", "....ftypavcl")
+  MAGIC_NUMBER("video/mp4", "....ftyp")
+  MAGIC_NUMBER("video/quicktime", "MOVI")
+  MAGIC_NUMBER("application/x-shockwave-flash", "CWS")
+  MAGIC_NUMBER("application/x-shockwave-flash", "FWS")
+  MAGIC_NUMBER("video/x-flv", "FLV")
+};
+
 // Our HTML sniffer differs slightly from Mozilla.  For example, Mozilla will
 // decide that a document that begins "<!DOCTYPE SOAP-ENV:Envelope PUBLIC " is
 // HTML, but we will not.
@@ -264,7 +296,25 @@ static bool MagicCmp(const char* magic_entry, const char* content, size_t len) {
   return true;
 }
 
-static bool MatchMagicNumber(const char* content, size_t size,
+// Like MagicCmp() except that it ANDs each byte with a mask before
+// the comparison, because there are some bits we don't care about.
+static bool MagicMaskCmp(const char* magic_entry,
+                         const char* content,
+                         size_t len,
+                         const char* mask) {
+  while (len) {
+    if ((*magic_entry != '.') && (*magic_entry != (*mask & *content)))
+      return false;
+    ++magic_entry;
+    ++content;
+    ++mask;
+    --len;
+  }
+  return true;
+}
+
+static bool MatchMagicNumber(const char* content,
+                             size_t size,
                              const MagicNumber* magic_entry,
                              std::string* result) {
   const size_t len = magic_entry->magic_len;
@@ -287,8 +337,14 @@ static bool MatchMagicNumber(const char* content, size_t size,
       match = (base::strncasecmp(magic_entry->magic, content, len) == 0);
     }
   } else {
-    if (size >= len)
-      match = MagicCmp(magic_entry->magic, content, len);
+    if (size >= len) {
+      if (!magic_entry->mask) {
+        match = MagicCmp(magic_entry->magic, content, len);
+      } else {
+        match = MagicMaskCmp(magic_entry->magic, content, len,
+                             magic_entry->mask);
+      }
+    }
   }
 
   if (match) {
@@ -723,8 +779,10 @@ bool ShouldSniffMimeType(const GURL& url, const std::string& mime_type) {
   return false;
 }
 
-bool SniffMimeType(const char* content, size_t content_size,
-                   const GURL& url, const std::string& type_hint,
+bool SniffMimeType(const char* content,
+                   size_t content_size,
+                   const GURL& url,
+                   const std::string& type_hint,
                    std::string* result) {
   DCHECK_LT(content_size, 1000000U);  // sanity check
   DCHECK(content);
@@ -802,6 +860,18 @@ bool SniffMimeType(const char* content, size_t content_size,
     return true;  // We've matched a magic number.  No more content needed.
 
   return have_enough_content;
+}
+
+bool SniffMimeTypeFromLocalData(const char* content,
+                                size_t size,
+                                std::string* result) {
+  // First check the extra table.
+  if (CheckForMagicNumbers(content, size, kExtraMagicNumbers,
+                           arraysize(kExtraMagicNumbers), NULL, result))
+    return true;
+  // Finally check the original table.
+  return CheckForMagicNumbers(content, size, kMagicNumbers,
+                              arraysize(kMagicNumbers), NULL, result);
 }
 
 }  // namespace net

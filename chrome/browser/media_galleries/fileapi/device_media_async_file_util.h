@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/async_file_util.h"
 
 namespace base {
@@ -139,13 +140,22 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
 
   // Called when the snapshot file specified by the |platform_path| is
   // successfully created. |file_info| contains the device media file details
-  // for which the snapshot file is created. |callback| is invoked to complete
-  // the CreateSnapshotFile request.
+  // for which the snapshot file is created.
   void OnDidCreateSnapshotFile(
       const AsyncFileUtil::CreateSnapshotFileCallback& callback,
       base::SequencedTaskRunner* media_task_runner,
       const base::PlatformFileInfo& file_info,
       const base::FilePath& platform_path);
+
+  // Called after OnDidCreateSnapshotFile finishes media check.
+  // |callback| is invoked to complete the CreateSnapshotFile request.
+  // It is called with |*error| regardless of result.
+  void OnDidCheckMedia(
+      const AsyncFileUtil::CreateSnapshotFileCallback& callback,
+      base::SequencedTaskRunner* media_task_runner,
+      const base::PlatformFileInfo& file_info,
+      scoped_refptr<webkit_blob::ShareableFileReference> platform_file,
+      base::PlatformFileError* error);
 
   // Called when CreateSnapshotFile method call fails. |callback| is invoked to
   // notify the caller about the |error|.

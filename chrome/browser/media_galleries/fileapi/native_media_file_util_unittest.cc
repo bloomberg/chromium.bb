@@ -40,20 +40,28 @@ struct FilteringTestCase {
   const base::FilePath::CharType* path;
   bool is_directory;
   bool visible;
+  bool media_file;
+  const char* content;
 };
 
 const FilteringTestCase kFilteringTestCases[] = {
   // Directory should always be visible.
-  { FPL("hoge"), true, true },
-  { FPL("fuga.jpg"), true, true },
-  { FPL("piyo.txt"), true, true },
-  { FPL("moga.cod"), true, true },
+  { FPL("hoge"), true, true, false, NULL },
+  { FPL("fuga.jpg"), true, true, false, NULL },
+  { FPL("piyo.txt"), true, true, false, NULL },
+  { FPL("moga.cod"), true, true, false, NULL },
 
   // File should be visible if it's a supported media file.
-  { FPL("foo"), false, false },  // File without extension.
-  { FPL("bar.jpg"), false, true },  // Supported media file.
-  { FPL("baz.txt"), false, false },  // Non-media file.
-  { FPL("foobar.cod"), false, false },  // Unsupported media file.
+  // File without extension.
+  { FPL("foo"), false, false, false, "abc" },
+  // Supported media file.
+  { FPL("bar.jpg"), false, true, true, "\xFF\xD8\xFF" },
+  // Unsupported masquerading file.
+  { FPL("sna.jpg"), false, true, false, "abc" },
+  // Non-media file.
+  { FPL("baz.txt"), false, false, false, "abc" },
+  // Unsupported media file.
+  { FPL("foobar.cod"), false, false, false, "abc" },
 };
 
 void ExpectEqHelper(const std::string& test_name,
@@ -93,10 +101,9 @@ void PopulateDirectoryWithTestCases(const base::FilePath& dir,
     if (test_cases[i].is_directory) {
       ASSERT_TRUE(file_util::CreateDirectory(path));
     } else {
-      bool created = false;
-      ASSERT_EQ(base::PLATFORM_FILE_OK,
-                fileapi::NativeFileUtil::EnsureFileExists(path, &created));
-      ASSERT_TRUE(created);
+      ASSERT_TRUE(test_cases[i].content != NULL);
+      int len = strlen(test_cases[i].content);
+      ASSERT_EQ(len, file_util::WriteFile(path, test_cases[i].content, len));
     }
   }
 }
@@ -238,7 +245,7 @@ TEST_F(NativeMediaFileUtilTest, ReadDirectoryFiltering) {
       url, base::Bind(&DidReadDirectory, &content, &completed));
   MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(completed);
-  EXPECT_EQ(5u, content.size());
+  EXPECT_EQ(6u, content.size());
 
   for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
     base::FilePath::StringType name =
@@ -608,6 +615,38 @@ TEST_F(NativeMediaFileUtilTest, TouchFileFiltering) {
           url, time, time, base::Bind(&ExpectEqHelper, test_name, expectation));
       MessageLoop::current()->RunUntilIdle();
     }
+  }
+}
+
+void CreateSnapshotCallback(base::PlatformFileError* error,
+    base::PlatformFileError result, const base::PlatformFileInfo&,
+    const base::FilePath&,
+    const scoped_refptr<webkit_blob::ShareableFileReference>&) {
+  *error = result;
+}
+
+TEST_F(NativeMediaFileUtilTest, CreateSnapshot) {
+  PopulateDirectoryWithTestCases(root_path(),
+                                 kFilteringTestCases,
+                                 arraysize(kFilteringTestCases));
+  for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+    if (kFilteringTestCases[i].is_directory ||
+        !kFilteringTestCases[i].visible) {
+      continue;
+    }
+    FileSystemURL root_url = CreateURL(FPL(""));
+    FileSystemOperation* operation = NewOperation(root_url);
+    FileSystemURL url = CreateURL(kFilteringTestCases[i].path);
+    base::PlatformFileError expected_error, error;
+    if (kFilteringTestCases[i].media_file)
+      expected_error = base::PLATFORM_FILE_OK;
+    else
+      expected_error = base::PLATFORM_FILE_ERROR_SECURITY;
+    error = base::PLATFORM_FILE_ERROR_FAILED;
+    operation->CreateSnapshotFile(url,
+        base::Bind(CreateSnapshotCallback, &error));
+    MessageLoop::current()->RunUntilIdle();
+    ASSERT_EQ(expected_error, error);
   }
 }
 

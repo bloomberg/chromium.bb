@@ -55,6 +55,18 @@ class NativeMediaFileUtil : public fileapi::IsolatedFileUtil {
       const fileapi::FileSystemURL& url,
       base::PlatformFileInfo* file_info,
       base::FilePath* platform_path) OVERRIDE;
+  virtual webkit_blob::ScopedFile CreateSnapshotFile(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      base::PlatformFileError* error,
+      base::PlatformFileInfo* file_info,
+      base::FilePath* platform_path) OVERRIDE;
+
+  // Uses the MIME sniffer code, which actually looks into the file,
+  // to determine if it is really a media file (to avoid exposing
+  // non-media files with a media file extension.)
+  static void IsMediaFile(const base::FilePath& path,
+      base::PlatformFileError* error);
 
  private:
   // Like GetLocalFilePath(), but always take media_path_filter() into

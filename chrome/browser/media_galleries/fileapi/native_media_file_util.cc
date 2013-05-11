@@ -4,10 +4,16 @@
 
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 
+#include "base/memory/scoped_generic_obj.h"
+#include "base/string_util.h"
 #include "chrome/browser/media_galleries/fileapi/filtering_file_enumerator.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
+#include "googleurl/src/gurl.h"
+#include "net/base/mime_sniffer.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/native_file_util.h"
 
 using base::PlatformFile;
@@ -20,6 +26,24 @@ using fileapi::NativeFileUtil;
 namespace chrome {
 
 namespace {
+
+// Modelled after ScopedFILEClose.
+class ScopedPlatformFileClose {
+ public:
+  void operator()(base::PlatformFile file) const {
+    if (file != base::kInvalidPlatformFileValue)
+      base::ClosePlatformFile(file);
+  }
+};
+
+typedef ScopedGenericObj<base::PlatformFile,
+                         ScopedPlatformFileClose> ScopedPlatformFile;
+
+// Returns true if the current thread is capable of doing IO.
+bool IsOnTaskRunnerThread(fileapi::FileSystemOperationContext* context) {
+  return context->file_system_context()->task_runners()->
+      media_task_runner()->RunsTasksOnCurrentThread();
+}
 
 MediaPathFilter* GetMediaPathFilter(FileSystemOperationContext* context) {
   return context->GetUserValue<MediaPathFilter*>(
@@ -224,6 +248,62 @@ NativeMediaFileUtil::GetFilteredLocalFilePathForExistingFileOrDirectory(
 
   *local_file_path = file_path;
   return base::PLATFORM_FILE_OK;
+}
+
+webkit_blob::ScopedFile NativeMediaFileUtil::CreateSnapshotFile(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    base::PlatformFileError* error,
+    base::PlatformFileInfo* file_info,
+    base::FilePath* platform_path) {
+  DCHECK(IsOnTaskRunnerThread(context));
+  webkit_blob::ScopedFile file;
+  file = IsolatedFileUtil::CreateSnapshotFile(
+      context, url, error, file_info, platform_path);
+  if (*error != base::PLATFORM_FILE_OK)
+    return file.Pass();
+  IsMediaFile(*platform_path, error);
+  if (*error == base::PLATFORM_FILE_OK)
+    return file.Pass();
+  return webkit_blob::ScopedFile();
+}
+
+void NativeMediaFileUtil::IsMediaFile(
+    const base::FilePath& path,
+    base::PlatformFileError* error) {
+  base::PlatformFile file_handle;
+  bool created;
+  *error = NativeFileUtil::CreateOrOpen(path,
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, &file_handle,
+      &created);
+  if (*error != base::PLATFORM_FILE_OK)
+    return;
+  ScopedPlatformFile scoped_platform_file(file_handle);
+  char buffer[net::kMaxBytesToSniff];
+  int64 len;
+  // Read as much as IdentifyExtraMimeType() will bother looking at.
+  len = base::ReadPlatformFile(file_handle, 0, buffer, net::kMaxBytesToSniff);
+  if (len < 0) {
+    *error = base::PLATFORM_FILE_ERROR_FAILED;
+    return;
+  }
+  if (len == 0) {
+    *error = base::PLATFORM_FILE_ERROR_SECURITY;
+    return;
+  }
+  std::string mime_type;
+  if (!net::SniffMimeTypeFromLocalData(buffer, len, &mime_type)) {
+    *error = base::PLATFORM_FILE_ERROR_SECURITY;
+    return;
+  }
+  if (StartsWithASCII(mime_type, "image/", true) ||
+      StartsWithASCII(mime_type, "audio/", true) ||
+      StartsWithASCII(mime_type, "video/", true) ||
+      mime_type == "application/x-shockwave-flash") {
+    *error = base::PLATFORM_FILE_OK;
+  } else {
+    *error = base::PLATFORM_FILE_ERROR_SECURITY;
+  }
 }
 
 }  // namespace chrome
