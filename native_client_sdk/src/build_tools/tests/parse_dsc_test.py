@@ -31,19 +31,14 @@ BASIC_DESC = {
 }
 
 class TestValidateFormat(unittest.TestCase):
-  def _append_result(self, msg):
-    self.result += msg
-    return self.result
-
-  def _validate(self, src, msg):
-    format = parse_dsc.DSC_FORMAT
-    self.result = ''
-    result = parse_dsc.ValidateFormat(src, format,
-        lambda msg: self._append_result(msg))
-    if msg:
-      self.assertEqual(self.result, msg)
-    else:
-      self.assertEqual(result, True)
+  def _validate(self, src, expected_failure):
+    try:
+      parse_dsc.ValidateFormat(src, parse_dsc.DSC_FORMAT)
+    except parse_dsc.ValidationError as e:
+      if expected_failure:
+        self.assertEqual(str(e), expected_failure)
+        return
+      raise
 
   def testGoodDesc(self):
     testdesc = copy.deepcopy(BASIC_DESC)
@@ -88,11 +83,5 @@ class TestValidateFormat(unittest.TestCase):
 
 # TODO(noelallen):  Add test which generates a real make and runs it.
 
-def main():
-  suite = unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__])
-  result = unittest.TextTestRunner(verbosity=2).run(suite)
-
-  return int(not result.wasSuccessful())
-
 if __name__ == '__main__':
-  sys.exit(main())
+  unittest.main()
