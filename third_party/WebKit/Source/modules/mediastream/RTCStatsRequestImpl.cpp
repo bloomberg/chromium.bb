@@ -27,6 +27,7 @@
 #include "modules/mediastream/RTCStatsRequestImpl.h"
 
 #include "core/platform/mediastream/RTCStatsRequest.h"
+#include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/mediastream/RTCStatsCallback.h"
 #include "modules/mediastream/RTCStatsResponse.h"
 

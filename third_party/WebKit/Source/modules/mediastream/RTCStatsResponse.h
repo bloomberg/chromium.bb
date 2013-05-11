@@ -25,17 +25,11 @@
 #ifndef RTCStatsResponse_h
 #define RTCStatsResponse_h
 
-#include "core/dom/ActiveDOMObject.h"
-#include "core/dom/DOMError.h"
-#include "core/dom/DOMStringList.h"
-#include "core/dom/Event.h"
-#include "core/dom/EventListener.h"
-#include "core/dom/EventNames.h"
-#include "core/dom/EventTarget.h"
 #include "core/platform/mediastream/RTCStatsResponseBase.h"
-#include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/mediastream/RTCStatsReport.h"
 #include "wtf/HashMap.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -34,6 +34,7 @@
 
 namespace WebCore {
 
+class MediaStreamTrack;
 class RTCStatsCallback;
 
 class RTCStatsRequestImpl : public RTCStatsRequest, public ActiveDOMObject {
