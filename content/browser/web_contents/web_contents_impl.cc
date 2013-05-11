@@ -513,15 +513,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
   prefs.lazy_layout_enabled =
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
-
-  // TODO(abarth, eseidel): Enable threaded_html_parser by default on Android
-  // once crbug 230542 is resolved.
-#if defined(OS_ANDROID)
-  prefs.threaded_html_parser = false;
-#else
   prefs.threaded_html_parser =
       !command_line.HasSwitch(switches::kDisableThreadedHTMLParser);
-#endif
 
 #if defined(OS_ANDROID)
   prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(
