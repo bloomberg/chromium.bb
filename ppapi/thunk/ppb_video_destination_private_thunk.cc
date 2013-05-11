@@ -45,7 +45,7 @@ int32_t PutFrame(PP_Resource destination,
   EnterResource<PPB_VideoDestination_Private_API> enter(destination, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->PutFrame(*frame));
+  return enter.object()->PutFrame(*frame);
 }
 
 void Close(PP_Resource destination) {

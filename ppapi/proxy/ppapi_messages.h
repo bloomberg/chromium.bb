@@ -35,6 +35,7 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/ppb_audio_config.h"
+#include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/c/private/ppb_flash.h"
@@ -78,6 +79,7 @@ IPC_ENUM_TRAITS(PP_FileType)
 IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_Permission)
 IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_SettingType)
 IPC_ENUM_TRAITS(PP_FlashSetting)
+IPC_ENUM_TRAITS(PP_ImageDataFormat)
 IPC_ENUM_TRAITS(PP_InputEvent_MouseButton)
 IPC_ENUM_TRAITS(PP_InputEvent_Type)
 IPC_ENUM_TRAITS(PP_NetAddressFamily_Private)
@@ -116,6 +118,12 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(PP_Rect)
   IPC_STRUCT_TRAITS_MEMBER(point)
   IPC_STRUCT_TRAITS_MEMBER(size)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_ImageDataDesc)
+  IPC_STRUCT_TRAITS_MEMBER(format)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(stride)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_PictureBuffer_Dev)
@@ -1870,8 +1878,10 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_VideoSource_Open,
                      std::string /* stream_url */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoSource_OpenReply)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoSource_GetFrame)
-IPC_MESSAGE_CONTROL2(PpapiPluginMsg_VideoSource_GetFrameReply,
-                     ppapi::HostResource /* image_data */,
+IPC_MESSAGE_CONTROL4(PpapiPluginMsg_VideoSource_GetFrameReply,
+                     ppapi::HostResource /* resource_id */,
+                     PP_ImageDataDesc /* image_data_desc */,
+                     int /* fd */,
                      PP_TimeTicks /* timestamp */)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoSource_Close)
 

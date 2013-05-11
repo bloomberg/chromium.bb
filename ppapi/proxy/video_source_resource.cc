@@ -9,6 +9,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/pp_video_frame_private.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var.h"
@@ -83,9 +84,9 @@ void VideoSourceResource::Close() {
 }
 
 void VideoSourceResource::OnPluginMsgOpenComplete(
-    const ResourceMessageReplyParams& params) {
+    const ResourceMessageReplyParams& reply_params) {
   if (TrackedCallback::IsPending(open_callback_)) {
-    int32_t result = params.result();
+    int32_t result = reply_params.result();
     if (result == PP_OK)
       is_open_ = true;
     open_callback_->Run(result);
@@ -94,15 +95,31 @@ void VideoSourceResource::OnPluginMsgOpenComplete(
 
 void VideoSourceResource::OnPluginMsgGetFrameComplete(
     PP_VideoFrame_Private* frame,
-    const ResourceMessageReplyParams& params,
+    const ResourceMessageReplyParams& reply_params,
     const HostResource& image_data,
+    const PP_ImageDataDesc& image_desc,
+    int fd,
     PP_TimeTicks timestamp) {
   // The callback may have been aborted by Close().
   if (TrackedCallback::IsPending(get_frame_callback_)) {
-    int32_t result = params.result();
+    int32_t result = reply_params.result();
     if (result == PP_OK) {
       frame->timestamp = timestamp;
-      frame->image_data = image_data.host_resource();
+
+#if defined(OS_ANDROID)
+      frame->image_data = 0;
+#elif defined(OS_WIN) || defined(OS_MACOSX)
+      base::SharedMemoryHandle handle;
+      if (!reply_params.TakeSharedMemoryHandleAtIndex(0, &handle))
+        frame->image_data = 0;
+      frame->image_data =
+          (new ImageData(image_data, image_desc, handle))->GetReference();
+#elif defined(OS_LINUX)
+      frame->image_data =
+          (new ImageData(image_data, image_desc, fd))->GetReference();
+#else
+#error Not implemented.
+#endif
     }
     get_frame_callback_->Run(result);
   }

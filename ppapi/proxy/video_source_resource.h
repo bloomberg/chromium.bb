@@ -14,6 +14,7 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/thunk/ppb_video_source_private_api.h"
 
+struct PP_ImageDataDesc;
 struct PP_VideoFrame_Private;
 
 namespace ppapi {
@@ -45,11 +46,13 @@ class PPAPI_PROXY_EXPORT VideoSourceResource
 
  private:
   void OnPluginMsgOpenComplete(
-      const ResourceMessageReplyParams& params);
+      const ResourceMessageReplyParams& reply_params);
   void OnPluginMsgGetFrameComplete(
       PP_VideoFrame_Private* frame,
-      const ResourceMessageReplyParams& params,
+      const ResourceMessageReplyParams& reply_params,
       const HostResource& image_data,
+      const PP_ImageDataDesc& image_desc_data,
+      int fd,
       PP_TimeTicks timestamp);
 
   scoped_refptr<TrackedCallback> open_callback_;
