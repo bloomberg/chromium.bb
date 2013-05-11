@@ -1,0 +1,7 @@
+Description
+
+This tests validates that the (color-index) media query feature is supported.
+
+
+PASS ('color-index') sanity check 
+

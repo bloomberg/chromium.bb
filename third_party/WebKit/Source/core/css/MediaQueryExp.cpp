@@ -86,6 +86,9 @@ static inline bool featureWithPositiveInteger(const AtomicString& mediaFeature, 
     return mediaFeature == MediaFeatureNames::colorMediaFeature
         || mediaFeature == MediaFeatureNames::max_colorMediaFeature
         || mediaFeature == MediaFeatureNames::min_colorMediaFeature
+        || mediaFeature == MediaFeatureNames::colorIndexMediaFeature
+        || mediaFeature == MediaFeatureNames::maxColorIndexMediaFeature
+        || mediaFeature == MediaFeatureNames::minColorIndexMediaFeature
         || mediaFeature == MediaFeatureNames::min_monochromeMediaFeature
         || mediaFeature == MediaFeatureNames::max_monochromeMediaFeature;
 }
@@ -128,6 +131,7 @@ static inline bool featureWithoutValue(const AtomicString& mediaFeature)
     // Media features that are prefixed by min/max cannot be used without a value.
     return mediaFeature == MediaFeatureNames::monochromeMediaFeature
         || mediaFeature == MediaFeatureNames::colorMediaFeature
+        || mediaFeature == MediaFeatureNames::colorIndexMediaFeature
         || mediaFeature == MediaFeatureNames::gridMediaFeature
         || mediaFeature == MediaFeatureNames::heightMediaFeature
         || mediaFeature == MediaFeatureNames::widthMediaFeature
