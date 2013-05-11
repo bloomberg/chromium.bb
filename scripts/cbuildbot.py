@@ -667,8 +667,7 @@ def _RunBuildStagesWrapper(options, build_config):
   if build_config['sync_chrome'] is None:
     options.managed_chrome = (chrome_rev != constants.CHROME_REV_LOCAL and
         (not build_config['usepkg_build_packages'] or chrome_rev or
-         build_config['useflags'] or build_config['profile'] or
-         options.rietveld_patches))
+         build_config['profile'] or options.rietveld_patches))
   else:
     options.managed_chrome = build_config['sync_chrome']
 
