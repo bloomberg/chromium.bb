@@ -12186,9 +12186,12 @@ other types of suffix sets.
   <group name="exp8" label="Likelihood threshold experiment 8."/>
   <group name="exp9" label="Likelihood threshold experiment 9."/>
   <group name="gws" label="GWS triggered prerender."/>
+  <group name="localpredictor" label="Local predictor triggered prerender."/>
   <group name="omnibox" label="Triggered from the omnibox."/>
   <group name="wash" label="Multiple sources could have triggered."/>
   <group name="web" label="Link triggered prerender."/>
+  <group name="webcross" label="Link triggered prerender, cross domain."/>
+  <group name="websame" label="Link triggered prerender, same domain."/>
   <affected-histogram name="Prerender.FinalStatus"/>
   <affected-histogram name="Prerender.FinalStatus_Prerender5minTTL"/>
   <affected-histogram name="Prerender.FinalStatus_PrerenderControl"/>
