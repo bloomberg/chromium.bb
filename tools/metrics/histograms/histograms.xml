@@ -7095,6 +7095,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Translate.InitiationStatus" enum="TranslateInitiationStatus">
+  <summary>
+    The reason why Chrome decided to perform the next action (e.g., to show
+    infobar, to translate a page without any prompting, and so on) when Chrome
+    Translate is ready to translate a page.
+  </summary>
+</histogram>
+
 <histogram name="Translate.LanguageVerification"
     enum="TranslateLanguageVerification">
   <summary>
@@ -10944,6 +10952,19 @@ other types of suffix sets.
   <int value="0" label="No Content-Language"/>
   <int value="1" label="Valid Content-Language"/>
   <int value="2" label="Invalid Content-Language"/>
+</enum>
+
+<enum name="TranslateInitiationStatus" type="int">
+  <int value="0" label="Completely disabled by prefs"/>
+  <int value="1" label="Completely disabled by switch"/>
+  <int value="2" label="Disabled by user configuration"/>
+  <int value="3" label="Unsupported Language"/>
+  <int value="4" label="Unsupported URL"/>
+  <int value="5" label="Do nothing for similar languages"/>
+  <int value="6" label="Do nothing for accepted languages"/>
+  <int value="7" label="Auto translation by user configuration"/>
+  <int value="8" label="Auto translation by linked from a translated page"/>
+  <int value="9" label="Show infobar"/>
 </enum>
 
 <enum name="TranslateLanguageVerification" type="int">
