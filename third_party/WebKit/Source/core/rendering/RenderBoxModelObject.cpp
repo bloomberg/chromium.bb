@@ -2376,7 +2376,6 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             IntSize extraOffset(paintRect.pixelSnappedWidth() + max(0, shadowOffset.width()) + shadowBlur + 2 * shadowSpread + 1, 0);
             shadowOffset -= extraOffset;
             fillRect.move(extraOffset);
-
             context->setShadow(shadowOffset, shadowBlur, shadowColor, s->colorSpace());
 
             if (hasBorderRadius) {
@@ -2467,9 +2466,7 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             IntSize extraOffset(2 * paintRect.pixelSnappedWidth() + max(0, shadowOffset.width()) + shadowBlur - 2 * shadowSpread + 1, 0);
             context->translate(extraOffset.width(), extraOffset.height());
             shadowOffset -= extraOffset;
-
             context->setShadow(shadowOffset, shadowBlur, shadowColor, s->colorSpace());
-
             context->fillRectWithRoundedHole(outerRect, roundedHole, fillColor, s->colorSpace());
         }
     }

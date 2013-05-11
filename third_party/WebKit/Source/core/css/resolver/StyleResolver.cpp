@@ -2706,7 +2706,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             else if (state.style())
                 color = state.style()->color();
 
-            OwnPtr<ShadowData> shadowData = adoptPtr(new ShadowData(IntPoint(x, y), blur, spread, shadowStyle, id == CSSPropertyWebkitBoxShadow, color.isValid() ? color : Color::transparent));
+            OwnPtr<ShadowData> shadowData = adoptPtr(new ShadowData(IntPoint(x, y), blur, spread, shadowStyle, color.isValid() ? color : Color::transparent));
             if (id == CSSPropertyTextShadow)
                 state.style()->setTextShadow(shadowData.release(), i.index()); // add to the list if this is not the first entry
             else

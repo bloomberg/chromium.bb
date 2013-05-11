@@ -117,7 +117,6 @@ static inline PassOwnPtr<ShadowData> blendFunc(const AnimationBase* anim, const 
                                    blend(from->blur(), to->blur(), progress),
                                    blend(from->spread(), to->spread(), progress),
                                    blendFunc(anim, from->style(), to->style(), progress),
-                                   from->isWebkitBoxShadow(),
                                    blend(from->color(), to->color(), progress)));
 }
 
@@ -510,19 +509,16 @@ static inline size_t shadowListLength(const ShadowData* shadow)
 
 static inline const ShadowData* shadowForBlending(const ShadowData* srcShadow, const ShadowData* otherShadow)
 {
-    DEFINE_STATIC_LOCAL(ShadowData, defaultShadowData, (IntPoint(), 0, 0, Normal, false, Color::transparent));
-    DEFINE_STATIC_LOCAL(ShadowData, defaultInsetShadowData, (IntPoint(), 0, 0, Inset, false, Color::transparent));
-
-    DEFINE_STATIC_LOCAL(ShadowData, defaultWebKitBoxShadowData, (IntPoint(), 0, 0, Normal, true, Color::transparent));
-    DEFINE_STATIC_LOCAL(ShadowData, defaultInsetWebKitBoxShadowData, (IntPoint(), 0, 0, Inset, true, Color::transparent));
+    DEFINE_STATIC_LOCAL(ShadowData, defaultShadowData, (IntPoint(), 0, 0, Normal, Color::transparent));
+    DEFINE_STATIC_LOCAL(ShadowData, defaultInsetShadowData, (IntPoint(), 0, 0, Inset, Color::transparent));
 
     if (srcShadow)
         return srcShadow;
 
     if (otherShadow->style() == Inset)
-        return otherShadow->isWebkitBoxShadow() ? &defaultInsetWebKitBoxShadowData : &defaultInsetShadowData;
+        return &defaultInsetShadowData;
 
-    return otherShadow->isWebkitBoxShadow() ? &defaultWebKitBoxShadowData : &defaultShadowData;
+    return &defaultShadowData;
 }
 
 class PropertyWrapperShadow : public AnimationPropertyWrapperBase {

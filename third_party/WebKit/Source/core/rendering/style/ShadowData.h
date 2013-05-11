@@ -44,17 +44,15 @@ public:
         : m_blur(0)
         , m_spread(0)
         , m_style(Normal)
-        , m_isWebkitBoxShadow(false)
     {
     }
 
-    ShadowData(const IntPoint& location, int blur, int spread, ShadowStyle style, bool isWebkitBoxShadow, const Color& color)
+    ShadowData(const IntPoint& location, int blur, int spread, ShadowStyle style, const Color& color)
         : m_location(location)
         , m_blur(blur)
         , m_spread(spread)
         , m_color(color)
         , m_style(style)
-        , m_isWebkitBoxShadow(isWebkitBoxShadow)
     {
     }
 
@@ -73,7 +71,6 @@ public:
     int spread() const { return m_spread; }
     ShadowStyle style() const { return m_style; }
     const Color& color() const { return m_color; }
-    bool isWebkitBoxShadow() const { return m_isWebkitBoxShadow; }
 
     const ShadowData* next() const { return m_next.get(); }
     void setNext(PassOwnPtr<ShadowData> shadow) { m_next = shadow; }
@@ -87,7 +84,6 @@ private:
     int m_spread;
     Color m_color;
     ShadowStyle m_style;
-    bool m_isWebkitBoxShadow;
     OwnPtr<ShadowData> m_next;
 };
 

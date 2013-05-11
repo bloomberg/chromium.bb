@@ -576,7 +576,7 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
             ASSERT(!item->spread);
             ASSERT(!item->style);
 
-            OwnPtr<ShadowData> shadowData = adoptPtr(new ShadowData(location, blur, 0, Normal, false, color.isValid() ? color : Color::transparent));
+            OwnPtr<ShadowData> shadowData = adoptPtr(new ShadowData(location, blur, 0, Normal, color.isValid() ? color : Color::transparent));
             svgstyle->setShadow(shadowData.release());
             return;
         }
