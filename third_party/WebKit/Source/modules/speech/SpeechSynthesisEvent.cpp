@@ -49,6 +49,7 @@ SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type, unsigned lo
     , m_elapsedTime(elapsedTime)
     , m_name(name)
 {
+    ScriptWrappable::init(this);
 }
     
 } // namespace WebCore

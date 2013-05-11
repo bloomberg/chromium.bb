@@ -52,7 +52,7 @@ SeamlessIFrames status=experimental
 SessionStorage status=stable
 SharedWorker custom
 SpeechInput status=stable
-SpeechSynthesis
+SpeechSynthesis status=experimental
 StyleScoped status=experimental
 Touch status=stable
 VideoTrack status=stable
