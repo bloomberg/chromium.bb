@@ -93,8 +93,11 @@ inline ContainerNode* parent(const Node* node, ParentDetails* details)
 inline Node* nextSibling(const Node* node)
 {
     if (!node->needsShadowTreeWalker()) {
-        ASSERT(nextSiblingSlow(node) == node->nextSibling());
-        return node->nextSibling();
+        Node* next = node->nextSibling();
+        if (!next || !next->isInsertionPoint()) {
+            ASSERT(nextSiblingSlow(node) == next);
+            return next;
+        }
     }
 
     return nextSiblingSlow(node);
@@ -103,8 +106,11 @@ inline Node* nextSibling(const Node* node)
 inline Node* previousSibling(const Node* node)
 {
     if (!node->needsShadowTreeWalker()) {
-        ASSERT(previousSiblingSlow(node) == node->previousSibling());
-        return node->previousSibling();
+        Node* prev = node->previousSibling();
+        if (!prev || !prev->isInsertionPoint()) {
+            ASSERT(previousSiblingSlow(node) == prev);
+            return prev;
+        }
     }
 
     return previousSiblingSlow(node);
