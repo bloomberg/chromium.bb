@@ -11,7 +11,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//    * Neither the name of Google Inc. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -32,7 +32,10 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include <string>
+
 #include "common/scoped_ptr.h"
+#include "common/using_std_string.h"
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/minidump.h"
 #include "google_breakpad/processor/process_state.h"
@@ -309,7 +312,7 @@ static const MDRawSystemInfo* GetSystemInfo(Minidump *dump,
 // raw_info: pointer to source MDRawSystemInfo.
 // cpu_info: address of target string, cpu info text will be appended to it.
 static void GetARMCpuInfo(const MDRawSystemInfo* raw_info,
-                          std::string* cpu_info) {
+                          string* cpu_info) {
   assert(raw_info != NULL && cpu_info != NULL);
 
   // Write ARM architecture version.
