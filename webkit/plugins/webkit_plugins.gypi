@@ -29,10 +29,8 @@
         '../plugins/plugin_switches.h',
         '../plugins/npapi/plugin_utils.cc',
         '../plugins/npapi/plugin_utils.h',
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267 ],
-    },
+	  ],
+	},
 
     {
       'target_name': 'plugins',
@@ -215,8 +213,6 @@
         '../plugins/webview_plugin.cc',
         '../plugins/webview_plugin.h',
       ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267 ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
@@ -274,6 +270,6 @@
           ],
         }],
       ],
-    }
+	}
   ],
 }
