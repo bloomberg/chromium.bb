@@ -24,7 +24,6 @@
 
 // A linear convolution effect
 [
-    NoInterfaceObject,
     Conditional=WEB_AUDIO
 ] interface ConvolverNode : AudioNode {
     attribute AudioBuffer buffer;

@@ -24,7 +24,6 @@
 
 // A cached (non-streamed), memory-resident audio source
 [
-    NoInterfaceObject,
     Conditional=WEB_AUDIO
 ] interface AudioBufferSourceNode : AudioSourceNode {
     [CustomSetter, SetterRaisesException] attribute AudioBuffer buffer;

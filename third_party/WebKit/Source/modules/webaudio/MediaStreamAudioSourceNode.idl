@@ -23,7 +23,6 @@
  */
 
 [
-    NoInterfaceObject,
     Conditional=WEB_AUDIO
 ] interface MediaStreamAudioSourceNode : AudioSourceNode {
     readonly attribute MediaStream mediaStream;

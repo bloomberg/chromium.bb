@@ -4,15 +4,23 @@ This test documents the Constructor properties on the global window object.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+AnalyserNode
 Array
 ArrayBuffer
 ArrayBufferView
 Attr
 Audio
+AudioBuffer
+AudioBufferSourceNode
+AudioDestinationNode
+AudioListener
+AudioNode
+AudioParam
 AudioProcessingEvent
 AutocompleteErrorEvent
 BarProp
 BeforeLoadEvent
+BiquadFilterNode
 Blob
 Boolean
 CDATASection
@@ -33,6 +41,8 @@ CSSValueList
 CanvasGradient
 CanvasPattern
 CanvasRenderingContext2D
+ChannelMergerNode
+ChannelSplitterNode
 CharacterData
 ClientRect
 ClientRectList
@@ -40,6 +50,7 @@ Clipboard
 CloseEvent
 Comment
 CompositionEvent
+ConvolverNode
 Counter
 CustomEvent
 DOMException
@@ -51,10 +62,12 @@ DOMStringMap
 DOMTokenList
 DataView
 Date
+DelayNode
 DeviceOrientationEvent
 Document
 DocumentFragment
 DocumentType
+DynamicsCompressorNode
 Element
 Entity
 Error
@@ -72,6 +85,7 @@ Float64Array
 FocusEvent
 FormData
 Function
+GainNode
 HTMLAllCollection
 HTMLAnchorElement
 HTMLAppletElement
@@ -171,10 +185,13 @@ Location
 MIDIConnectionEvent
 MIDIMessageEvent
 MediaController
+MediaElementAudioSourceNode
 MediaError
 MediaKeyError
 MediaKeyEvent
 MediaList
+MediaStreamAudioDestinationNode
+MediaStreamAudioSourceNode
 MediaStreamEvent
 MessageChannel
 MessageEvent
@@ -196,6 +213,7 @@ Number
 Object
 OfflineAudioCompletionEvent
 Option
+OscillatorNode
 OverflowEvent
 PageTransitionEvent
 Path
@@ -363,6 +381,7 @@ SVGViewSpec
 SVGZoomAndPan
 SVGZoomEvent
 Screen
+ScriptProcessorNode
 SecurityPolicy
 SecurityPolicyViolationEvent
 Selection
@@ -394,6 +413,8 @@ Uint16Array
 Uint32Array
 Uint8Array
 Uint8ClampedArray
+WaveShaperNode
+WaveTable
 WebGLActiveInfo
 WebGLBuffer
 WebGLContextEvent

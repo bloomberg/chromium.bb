@@ -23,7 +23,6 @@
  */
 
 [
-    NoInterfaceObject,
     Conditional=WEB_AUDIO
 ] interface DynamicsCompressorNode : AudioNode {
     readonly attribute AudioParam threshold; // in Decibels
