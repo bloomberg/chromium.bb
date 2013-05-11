@@ -56,7 +56,7 @@ void DocumentTimeline::play(PassRefPtr<TimedItem> child)
         m_document->view()->scheduleAnimation();
 }
 
-TimedItem::ChildAnimationState DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
+void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
 {
     Vector<size_t> expiredIndices;
 
@@ -70,8 +70,6 @@ TimedItem::ChildAnimationState DocumentTimeline::serviceAnimations(double monoto
 
     if (m_document->view())
         m_document->view()->scheduleAnimation();
-
-    return AnimationInProgress;
 }
 
 } // namespace

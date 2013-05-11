@@ -41,11 +41,11 @@ class Document;
 class Element;
 
 // DocumentTimeline is constructed and owned by Document, and tied to its lifecycle.
-class DocumentTimeline FINAL : public TimedItem {
+class DocumentTimeline : public RefCounted<DocumentTimeline> {
 
 public:
     static PassRefPtr<DocumentTimeline> create(Document*);
-    virtual TimedItem::ChildAnimationState serviceAnimations(double) OVERRIDE FINAL;
+    void serviceAnimations(double);
     void play(PassRefPtr<TimedItem>);
 
 private:
