@@ -79,17 +79,4 @@ So in a way, this changes everything. Again.
 
 I'd like to greet my mom. World peas.
 
-GIT >> SVN
-VIM > VI >> EMACS
-
-zing!
-
-who?
-
-He blinked slowly, once.
-
-twice.
-
-thrice. His eyes were very dry.
-
-Then he realized... He was a cyclops.
+He blinked slowly, once, twice, thrice. The air was thick with cigarette smoke.
