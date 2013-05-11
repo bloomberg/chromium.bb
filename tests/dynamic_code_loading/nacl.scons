@@ -13,7 +13,9 @@ if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
 # assembler #defines __arm__ rather than __i386__ or __x86_64__ even
 # when we are targetting x86.
 # http://code.google.com/p/nativeclient/issues/detail?id=2368
-if env.Bit('bitcode') and not env.Bit('target_arm'):
+# TODO(dschuff): re-enable this test in a sensible way after we fully switch
+# to the new layout, or remove all the pnacl-specific stuff here.
+if env.Bit('bitcode'):
   Return()
 
 # These tests assume they can allocate address ranges from the dynamic

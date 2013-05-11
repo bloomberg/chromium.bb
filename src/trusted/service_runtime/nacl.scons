@@ -19,8 +19,10 @@ if env.IsRunningUnderValgrind():
 if env.Bit('nacl_glibc'):
   Return()
 
-# Pexes can't contain native code
-if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
+# TODO(dschuff): either re-enable this test after we have fully transitioned
+# to new-style layout and ironed out any potential gold issues, or remove
+# all pnacl-specific stuff below and in the asm files.
+if env.Bit('bitcode'):
   Return()
 
 # ----------------------------------------------------------
