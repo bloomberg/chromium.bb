@@ -1049,7 +1049,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
             }
             // See if two pointers are close together
             bool potential_two_finger_gesture =
-                TwoFingersGesturing(*fingers[0], *fingers[1]);
+                TwoFingersGesturing(*fingers[0], *fingers[1], false);
             if (!potential_two_finger_gesture) {
               current_gesture_type_ = kGestureTypeMove;
             } else {
@@ -1077,7 +1077,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
               std::sort(fingers, fingers + 3, compare);
               bool potential_two_finger_gesture =
                   FingerInDampenedZone(*fingers[2]) &&
-                  TwoFingersGesturing(*fingers[0], *fingers[1]);
+                  TwoFingersGesturing(*fingers[0], *fingers[1], false);
               if (potential_two_finger_gesture) {
                 current_gesture_type_ =
                     GetTwoFingerGestureType(*fingers[0], *fingers[1]);
@@ -1244,7 +1244,8 @@ bool ImmediateInterpreter::UpdatePinchState(
 
 bool ImmediateInterpreter::TwoFingersGesturing(
     const FingerState& finger1,
-    const FingerState& finger2) const {
+    const FingerState& finger2,
+    bool check_button_type) const {
   // Make sure distance between fingers isn't too great
   if (!metrics_->CloseEnoughToGesture(Vector2(finger1), Vector2(finger2)))
     return false;
@@ -1277,13 +1278,16 @@ bool ImmediateInterpreter::TwoFingersGesturing(
     return false;
 
   // If both fingers have a tendency of moving at the same direction, they
-  // are gesturing together.
-  unsigned and_flags = finger1.flags & finger2.flags;
-  if ((and_flags & GESTURES_FINGER_TREND_INC_X) ||
-      (and_flags & GESTURES_FINGER_TREND_DEC_X) ||
-      (and_flags & GESTURES_FINGER_TREND_INC_Y) ||
-      (and_flags & GESTURES_FINGER_TREND_DEC_Y))
-    return true;
+  // are gesturing together. This check is disabled if we are using the
+  // function to distinguish left/right clicks.
+  if (!check_button_type) {
+    unsigned and_flags = finger1.flags & finger2.flags;
+    if ((and_flags & GESTURES_FINGER_TREND_INC_X) ||
+        (and_flags & GESTURES_FINGER_TREND_DEC_X) ||
+        (and_flags & GESTURES_FINGER_TREND_INC_Y) ||
+        (and_flags & GESTURES_FINGER_TREND_DEC_Y))
+      return true;
+  }
 
   // Next, if fingers are vertically aligned and one is in the bottom zone,
   // consider that one a resting thumb (thus, do not scroll/right click)
@@ -1945,7 +1949,7 @@ int ImmediateInterpreter::EvaluateButtonType(
 
     // Close fingers -> same hand -> right click
     // Fingers apart -> second hand finger or thumb -> left click
-    if (TwoFingersGesturing(*fingers[0], *fingers[1]))
+    if (TwoFingersGesturing(*fingers[0], *fingers[1], true))
       return GESTURES_BUTTON_RIGHT;
     else
       return GESTURES_BUTTON_LEFT;

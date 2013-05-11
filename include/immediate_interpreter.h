@@ -341,9 +341,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
                                 const FingerMap& gs_fingers);
 
   // If the fingers are near each other in location and pressure and might
-  // to be part of a 2-finger action, returns true.
+  // to be part of a 2-finger action, returns true. The function can also
+  // be used to check whether the gesture is a left or a right button click
+  // with the parameter checking_button_type.
   bool TwoFingersGesturing(const FingerState& finger1,
-                           const FingerState& finger2) const;
+                           const FingerState& finger2,
+                           bool check_button_type) const;
 
   // Given that TwoFingersGesturing returns true for 2 fingers,
   // This will further look to see if it's really 2 finger scroll or not.
