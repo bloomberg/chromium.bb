@@ -53,13 +53,15 @@ var testCases = [
             function(helper) { helper.getDirectory('/a', '../../b/c', {create:true}); },
             function(helper) { helper.getDirectory('/a', '/a/../../d', {create:true}); },
             function(helper) { helper.getDirectory('/a', '/a/../../b/./c/../../../../../e', {create:true}); },
-            function(helper) { helper.getDirectory('/a', '/a/../.../g', {create:true}, FileError.NOT_FOUND_ERR); },
+            // TODO(jschuh): Re-enable after crbug.com/181617 is fixed.
+            //function(helper) { helper.getDirectory('/a', '/a/../.../g', {create:true}, FileError.NOT_FOUND_ERR); },
             function(helper) { helper.getFile('/a', './b.txt', {create:true}); },
             function(helper) { helper.getFile('/a', '../b.txt', {create:true}); },
             function(helper) { helper.getFile('/a', '../../b/c.txt', {create:true}); },
             function(helper) { helper.getFile('/a', '/a/../../d.txt', {create:true}); },
             function(helper) { helper.getFile('/a', '/a/../../b/./c/../../../../../e.txt', {create:true}); },
-            function(helper) { helper.getFile('/a', '/a/../.../g.txt', {create:true}, FileError.NOT_FOUND_ERR); },
+            // TODO(jschuh): Re-enable after crbug.com/181617 is fixed.
+            //function(helper) { helper.getFile('/a', '/a/../.../g.txt', {create:true}, FileError.NOT_FOUND_ERR); },
         ],
         postcondition: [
             {fullPath:'/a', isDirectory:true},
