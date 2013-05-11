@@ -186,14 +186,6 @@
       ],
     }, # target_name: All
     {
-      'target_name': 'all_webkit',
-      'type': 'none',
-      'dependencies': [
-        '../third_party/WebKit/public/all.gyp:all_blink',
-        '../content/content.gyp:content_shell',
-      ],
-    }, # target_name: all_webkit
-    {
       'target_name': 'All_syzygy',
       'type': 'none',
       'conditions': [
@@ -320,6 +312,14 @@
   'conditions': [
     ['OS!="ios"', {
       'targets': [
+        {
+          'target_name': 'all_webkit',
+          'type': 'none',
+          'dependencies': [
+            '../third_party/WebKit/public/all.gyp:all_blink',
+            '../content/content.gyp:content_shell',
+          ],
+        }, # target_name: all_webkit
         {
           'target_name': 'chromium_builder_nacl_win_integration',
           'type': 'none',
