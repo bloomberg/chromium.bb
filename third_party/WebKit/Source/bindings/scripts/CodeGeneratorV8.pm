@@ -3197,7 +3197,8 @@ sub GenerateImplementationIndexedProperty
 
     if ($indexedGetterfunction && !$hasCustomIndexedGetter) {
         my $returnType = $indexedGetterfunction->signature->type;
-        my $methodName = $indexedGetterfunction->signature->name || "anonymousIndexedGetter";
+        my $methodName = $indexedGetterfunction->signature->name;
+        $methodName ||= $indexedGetterfunction->signature->extendedAttributes->{"ImplementedAs"};
         AddToImplIncludes("bindings/v8/V8Collection.h");
         my $jsValue = "";
         my $nativeType = GetNativeType($returnType);

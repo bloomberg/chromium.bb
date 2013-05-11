@@ -33,7 +33,7 @@
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString name;
     readonly attribute CSSRuleList cssRules;
     
-    getter WebKitCSSKeyframeRule(unsigned long index);
+    [ImplementedAs=item] getter WebKitCSSKeyframeRule(unsigned long index);
     void insertRule([Default=Undefined] optional DOMString rule);
     void deleteRule([Default=Undefined] optional DOMString key);
     WebKitCSSKeyframeRule findRule([Default=Undefined] optional DOMString key);

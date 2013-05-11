@@ -4286,7 +4286,7 @@ v8::Handle<v8::Value> V8TestObj::indexedPropertyGetter(uint32_t index, const v8:
 {
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestObj* collection = toNative(info.Holder());
-    RefPtr<Node> element = collection->anonymousIndexedGetter(index);
+    RefPtr<Node> element = collection->item(index);
     if (!element)
         return v8Undefined();
     return toV8Fast(element.release(), info, collection);
