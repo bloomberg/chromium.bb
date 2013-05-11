@@ -99,6 +99,7 @@ module_LTLIBRARIES =				\
 	$(desktop_shell)			\
 	$(tablet_shell)				\
 	$(cms_static)				\
+	$(cms_colord)				\
 	$(x11_backend)				\
 	$(drm_backend)				\
 	$(wayland_backend)			\
@@ -265,6 +266,16 @@ cms_static_la_SOURCES =				\
 	cms-static.c				\
 	cms-helper.c				\
 	cms-helper.h
+if ENABLE_COLORD
+cms_colord = cms-colord.la
+cms_colord_la_LDFLAGS = -module -avoid-version
+cms_colord_la_LIBADD = $(COMPOSITOR_LIBS) $(COLORD_LIBS)
+cms_colord_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS) $(COLORD_CFLAGS)
+cms_colord_la_SOURCES =				\
+	cms-colord.c				\
+	cms-helper.c				\
+	cms-helper.h
+endif
 endif
 
 BUILT_SOURCES =					\

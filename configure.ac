@@ -280,6 +280,16 @@ AC_ARG_ENABLE(tablet-shell,
 AM_CONDITIONAL(ENABLE_TABLET_SHELL,
 	       test "x$enable_tablet_shell" = "xyes")
 
+# CMS modules
+AC_ARG_ENABLE(colord,
+              AS_HELP_STRING([--disable-colord],
+                             [do not build colord CMS support]),,
+	      enable_colord=yes)
+AM_CONDITIONAL(ENABLE_COLORD,
+	       test "x$enable_colord" = "xyes")
+if test x$enable_colord = xyes; then
+  PKG_CHECK_MODULES(COLORD, colord >= 0.1.8)
+fi
 
 AC_ARG_ENABLE(wcap-tools, [  --disable-wcap-tools],, enable_wcap_tools=yes)
 AM_CONDITIONAL(BUILD_WCAP_TOOLS, test x$enable_wcap_tools = xyes)
