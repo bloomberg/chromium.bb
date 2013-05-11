@@ -11,7 +11,7 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace components {
+namespace tracing {
 
 // This class sends and receives trace messages on child processes.
 class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
@@ -48,6 +48,6 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
   DISALLOW_COPY_AND_ASSIGN(ChildTraceMessageFilter);
 };
 
-} // namespace components
+}  // namespace tracing
 
 #endif  // COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_

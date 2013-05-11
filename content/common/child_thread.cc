@@ -122,7 +122,7 @@ void ChildThread::Init() {
 
   channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(sync_message_filter_.get());
-  channel_->AddFilter(new components::ChildTraceMessageFilter(
+  channel_->AddFilter(new tracing::ChildTraceMessageFilter(
       ChildProcess::current()->io_message_loop_proxy()));
 
 #if defined(OS_POSIX)

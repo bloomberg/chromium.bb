@@ -5,12 +5,12 @@
 #include "components/tracing/child_trace_message_filter.h"
 
 #include "base/debug/trace_event.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "components/tracing/tracing_messages.h"
 
 using base::debug::TraceLog;
 
-namespace components {
+namespace tracing {
 
 ChildTraceMessageFilter::ChildTraceMessageFilter(
     base::MessageLoopProxy* ipc_message_loop)
@@ -115,4 +115,4 @@ void ChildTraceMessageFilter::OnTraceNotification(int notification) {
   channel_->Send(new TracingHostMsg_TraceNotification(notification));
 }
 
-}  // namespace components
+}  // namespace tracing
