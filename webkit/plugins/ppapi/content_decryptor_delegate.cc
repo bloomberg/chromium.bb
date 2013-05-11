@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,16 +110,13 @@ static bool MakeEncryptedBlockInfo(
       !CopyStringToArray(decrypt_config->iv(), block_info->iv))
     return false;
 
-  block_info->key_id_size =
-      static_cast<uint32_t>(decrypt_config->key_id().size());
-  block_info->iv_size =
-      static_cast<uint32_t>(decrypt_config->iv().size());
+  block_info->key_id_size = decrypt_config->key_id().size();
+  block_info->iv_size = decrypt_config->iv().size();
 
   if (decrypt_config->subsamples().size() > arraysize(block_info->subsamples))
     return false;
 
-  block_info->num_subsamples =
-      static_cast<uint32_t>(decrypt_config->subsamples().size());
+  block_info->num_subsamples = decrypt_config->subsamples().size();
   for (uint32_t i = 0; i < block_info->num_subsamples; ++i) {
     block_info->subsamples[i].clear_bytes =
         decrypt_config->subsamples()[i].clear_bytes;
@@ -449,8 +446,7 @@ bool ContentDecryptorDelegate::InitializeAudioDecoder(
   scoped_refptr<PPB_Buffer_Impl> extra_data_resource;
   if (!MakeBufferResource(pp_instance_,
                           decoder_config.extra_data(),
-                          static_cast<uint32_t>(
-                              decoder_config.extra_data_size()),
+                          decoder_config.extra_data_size(),
                           &extra_data_resource)) {
     return false;
   }
@@ -484,8 +480,7 @@ bool ContentDecryptorDelegate::InitializeVideoDecoder(
   scoped_refptr<PPB_Buffer_Impl> extra_data_resource;
   if (!MakeBufferResource(pp_instance_,
                           decoder_config.extra_data(),
-                          static_cast<uint32_t>(
-                              decoder_config.extra_data_size()),
+                          decoder_config.extra_data_size(),
                           &extra_data_resource)) {
     return false;
   }

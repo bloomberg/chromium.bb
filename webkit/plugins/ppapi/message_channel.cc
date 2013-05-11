@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,7 @@ bool PPVarToV8Value(PP_Var var, v8::Handle<v8::Value>* result) {
       // TODO(dmichael): We should consider caching the V8 string in the host-
       // side StringVar, so that we only have to convert/copy once if a
       // string is sent more than once.
-      *result = v8::String::New(value.c_str(), static_cast<int>(value.size()));
+      *result = v8::String::New(value.c_str(), value.size());
       break;
     }
     case PP_VARTYPE_ARRAY_BUFFER: {

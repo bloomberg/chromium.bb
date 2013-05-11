@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -302,8 +302,7 @@ void TryCatch::SetException(const char* message) {
   if (!has_exception()) {
     has_exception_ = true;
     if (exception_) {
-      *exception_ = ::ppapi::StringVar::StringToPPVar(
-          message, static_cast<uint32_t>(strlen(message)));
+      *exception_ = ::ppapi::StringVar::StringToPPVar(message, strlen(message));
     }
   }
 }
