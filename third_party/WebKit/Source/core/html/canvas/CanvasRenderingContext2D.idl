@@ -65,7 +65,7 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
 
     void beginPath();
 
-    attribute DOMPath currentPath;
+    attribute Path currentPath;
 
     // FIXME: These methods should be shared with CanvasRenderingContext2D in the CanvasPathMethods interface.
     void closePath();

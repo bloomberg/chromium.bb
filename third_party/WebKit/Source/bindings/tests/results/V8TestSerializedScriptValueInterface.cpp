@@ -29,8 +29,10 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "core/dom/ContextFeatures.h"
+#include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "wtf/UnusedParam.h"
 

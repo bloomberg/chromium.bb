@@ -235,7 +235,7 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     [ImplementedAs=blueberry] attribute long strawberry;
 
     [StrictTypeChecking] attribute float strictFloat;
-    [StrictTypeChecking, RaisesException] bool strictFunction(DOMString str, float a, long b);
+    [StrictTypeChecking, RaisesException] boolean strictFunction(DOMString str, float a, long b);
 
     // ObjectiveC reserved words.
     readonly attribute long      description;

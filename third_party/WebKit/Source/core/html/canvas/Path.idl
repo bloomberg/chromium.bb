@@ -29,12 +29,12 @@
 [
     EnabledAtRuntime=canvasPath,
     Constructor,
-    Constructor(DOMPath path),
+    Constructor(Path path),
 #if defined(ENABLE_SVG) && ENABLE_SVG
     Constructor(DOMString text),
 #endif
-    InterfaceName=Path
-] interface DOMPath {
+    ImplementedAs=DOMPath
+] interface Path {
 
     // FIXME: These methods should be shared with CanvasRenderingContext2D in the CanvasPathMethods interface.
     void closePath();

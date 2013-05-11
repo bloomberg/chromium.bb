@@ -23,10 +23,13 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8Node.h"
+#include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "core/dom/ContextFeatures.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "wtf/UnusedParam.h"

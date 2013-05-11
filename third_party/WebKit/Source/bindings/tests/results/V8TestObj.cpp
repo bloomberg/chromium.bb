@@ -34,7 +34,7 @@
 #include "V8TestCallback.h"
 #include "V8TestNode.h"
 #include "V8TestSubObj.h"
-#include "V8bool.h"
+#include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptValue.h"
@@ -42,10 +42,14 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Collection.h"
 #include "bindings/v8/V8DOMActivityLogger.h"
+#include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8EventListenerList.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMStringList.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "core/page/PageConsole.h"
@@ -3597,10 +3601,10 @@ static v8::Handle<v8::Value> strictFunctionMethod(const v8::Arguments& args)
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, str, args[0]);
     V8TRYCATCH(float, a, static_cast<float>(args[1]->NumberValue()));
     V8TRYCATCH(int, b, toInt32(args[2]));
-    RefPtr<bool> result = imp->strictFunction(str, a, b, ec);
+    bool result = imp->strictFunction(str, a, b, ec);
     if (UNLIKELY(ec))
         goto fail;
-    return toV8(result.release(), args.Holder(), args.GetIsolate());
+    return v8Boolean(result, args.GetIsolate());
     }
     fail:
     return setDOMException(ec, args.GetIsolate());
@@ -4170,6 +4174,7 @@ static const V8DOMConfiguration::BatchedMethod V8TestObjMethods[] = {
     {"voidMethod", TestObjV8Internal::voidMethodMethodCallback, 0, 0},
     {"longMethod", TestObjV8Internal::longMethodMethodCallback, 0, 0},
     {"objMethod", TestObjV8Internal::objMethodMethodCallback, 0, 0},
+    {"methodWithSequenceArg", TestObjV8Internal::methodWithSequenceArgMethodCallback, 0, 1},
     {"methodReturningSequence", TestObjV8Internal::methodReturningSequenceMethodCallback, 0, 1},
     {"methodWithEnumArg", TestObjV8Internal::methodWithEnumArgMethodCallback, 0, 1},
     {"serializedValue", TestObjV8Internal::serializedValueMethodCallback, 0, 1},
@@ -4211,6 +4216,8 @@ static const V8DOMConfiguration::BatchedMethod V8TestObjMethods[] = {
 #endif
     {"overloadedMethod", TestObjV8Internal::overloadedMethodMethodCallback, 0, 2},
     {"classMethodWithClamp", TestObjV8Internal::classMethodWithClampMethodCallback, 0, 2},
+    {"methodWithUnsignedLongSequence", TestObjV8Internal::methodWithUnsignedLongSequenceMethodCallback, 0, 1},
+    {"stringArrayFunction", TestObjV8Internal::stringArrayFunctionMethodCallback, 0, 1},
     {"getSVGDocument", TestObjV8Internal::getSVGDocumentMethodCallback, 0, 0},
     {"mutablePointFunction", TestObjV8Internal::mutablePointFunctionMethodCallback, 0, 0},
     {"immutablePointFunction", TestObjV8Internal::immutablePointFunctionMethodCallback, 0, 0},
@@ -4331,12 +4338,6 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persi
     v8::Handle<v8::Signature> objMethodWithArgsSignature = v8::Signature::New(desc, objMethodWithArgsArgc, objMethodWithArgsArgv);
     proto->Set(v8::String::NewSymbol("objMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::objMethodWithArgsMethodCallback, v8Undefined(), objMethodWithArgsSignature, 3));
 
-    // Custom Signature 'methodWithSequenceArg'
-    const int methodWithSequenceArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> methodWithSequenceArgArgv[methodWithSequenceArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8sequence<ScriptProfile>::info, currentWorldType) };
-    v8::Handle<v8::Signature> methodWithSequenceArgSignature = v8::Signature::New(desc, methodWithSequenceArgArgc, methodWithSequenceArgArgv);
-    proto->Set(v8::String::NewSymbol("methodWithSequenceArg"), v8::FunctionTemplate::New(TestObjV8Internal::methodWithSequenceArgMethodCallback, v8Undefined(), methodWithSequenceArgSignature, 1));
-
     // Custom Signature 'methodThatRequiresAllArgsAndThrows'
     const int methodThatRequiresAllArgsAndThrowsArgc = 2;
     v8::Handle<v8::FunctionTemplate> methodThatRequiresAllArgsAndThrowsArgv[methodThatRequiresAllArgsAndThrowsArgc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObj::info, currentWorldType) };
@@ -4354,18 +4355,6 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persi
         proto->Set(v8::String::NewSymbol("enabledAtRuntimeMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethod1MethodCallback, v8Undefined(), defaultSignature, 1));
     if (RuntimeEnabledFeatures::featureNameEnabled())
         proto->Set(v8::String::NewSymbol("enabledAtRuntimeMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethod2MethodCallback, v8Undefined(), defaultSignature, 1));
-
-    // Custom Signature 'methodWithUnsignedLongSequence'
-    const int methodWithUnsignedLongSequenceArgc = 1;
-    v8::Handle<v8::FunctionTemplate> methodWithUnsignedLongSequenceArgv[methodWithUnsignedLongSequenceArgc] = { v8::Handle<v8::FunctionTemplate>() };
-    v8::Handle<v8::Signature> methodWithUnsignedLongSequenceSignature = v8::Signature::New(desc, methodWithUnsignedLongSequenceArgc, methodWithUnsignedLongSequenceArgv);
-    proto->Set(v8::String::NewSymbol("methodWithUnsignedLongSequence"), v8::FunctionTemplate::New(TestObjV8Internal::methodWithUnsignedLongSequenceMethodCallback, v8Undefined(), methodWithUnsignedLongSequenceSignature, 1));
-
-    // Custom Signature 'stringArrayFunction'
-    const int stringArrayFunctionArgc = 1;
-    v8::Handle<v8::FunctionTemplate> stringArrayFunctionArgv[stringArrayFunctionArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8DOMString[]::info, currentWorldType) };
-    v8::Handle<v8::Signature> stringArrayFunctionSignature = v8::Signature::New(desc, stringArrayFunctionArgc, stringArrayFunctionArgv);
-    proto->Set(v8::String::NewSymbol("stringArrayFunction"), v8::FunctionTemplate::New(TestObjV8Internal::stringArrayFunctionMethodCallback, v8Undefined(), stringArrayFunctionSignature, 1));
 
     // Custom Signature 'domStringListFunction'
     const int domStringListFunctionArgc = 1;

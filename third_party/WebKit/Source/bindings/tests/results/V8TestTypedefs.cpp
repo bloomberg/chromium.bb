@@ -31,9 +31,12 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMStringList.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
@@ -279,8 +282,6 @@ static v8::Handle<v8::Value> funcMethod(const v8::Arguments& args)
         imp->func();
         return v8Undefined();
     }
-    if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8long[]::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())))
-        return throwTypeError(0, args.GetIsolate());
     V8TRYCATCH(Vector<int>, x, toNativeArray<int>(args[0]));
     imp->func(x);
     return v8Undefined();
@@ -485,8 +486,12 @@ static const V8DOMConfiguration::BatchedAttribute V8TestTypedefsAttrs[] = {
 static const V8DOMConfiguration::BatchedMethod V8TestTypedefsMethods[] = {
     {"func", TestTypedefsV8Internal::funcMethodCallback, 0, 0},
     {"setShadow", TestTypedefsV8Internal::setShadowMethodCallback, 0, 3},
+    {"methodWithSequenceArg", TestTypedefsV8Internal::methodWithSequenceArgMethodCallback, 0, 1},
+    {"nullableArrayArg", TestTypedefsV8Internal::nullableArrayArgMethodCallback, 0, 1},
     {"funcWithClamp", TestTypedefsV8Internal::funcWithClampMethodCallback, 0, 1},
     {"immutablePointFunction", TestTypedefsV8Internal::immutablePointFunctionMethodCallback, 0, 0},
+    {"stringArrayFunction", TestTypedefsV8Internal::stringArrayFunctionMethodCallback, 0, 1},
+    {"stringArrayFunction2", TestTypedefsV8Internal::stringArrayFunction2MethodCallback, 0, 1},
     {"methodWithException", TestTypedefsV8Internal::methodWithExceptionMethodCallback, 0, 0},
 };
 
@@ -516,30 +521,6 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestTypedefsTemplate(v8::
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
-
-    // Custom Signature 'methodWithSequenceArg'
-    const int methodWithSequenceArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> methodWithSequenceArgArgv[methodWithSequenceArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8sequence<SerializedScriptValue>::info, currentWorldType) };
-    v8::Handle<v8::Signature> methodWithSequenceArgSignature = v8::Signature::New(desc, methodWithSequenceArgArgc, methodWithSequenceArgArgv);
-    proto->Set(v8::String::NewSymbol("methodWithSequenceArg"), v8::FunctionTemplate::New(TestTypedefsV8Internal::methodWithSequenceArgMethodCallback, v8Undefined(), methodWithSequenceArgSignature, 1));
-
-    // Custom Signature 'nullableArrayArg'
-    const int nullableArrayArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> nullableArrayArgArgv[nullableArrayArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8DOMString[]::info, currentWorldType) };
-    v8::Handle<v8::Signature> nullableArrayArgSignature = v8::Signature::New(desc, nullableArrayArgArgc, nullableArrayArgArgv);
-    proto->Set(v8::String::NewSymbol("nullableArrayArg"), v8::FunctionTemplate::New(TestTypedefsV8Internal::nullableArrayArgMethodCallback, v8Undefined(), nullableArrayArgSignature, 1));
-
-    // Custom Signature 'stringArrayFunction'
-    const int stringArrayFunctionArgc = 1;
-    v8::Handle<v8::FunctionTemplate> stringArrayFunctionArgv[stringArrayFunctionArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8DOMString[]::info, currentWorldType) };
-    v8::Handle<v8::Signature> stringArrayFunctionSignature = v8::Signature::New(desc, stringArrayFunctionArgc, stringArrayFunctionArgv);
-    proto->Set(v8::String::NewSymbol("stringArrayFunction"), v8::FunctionTemplate::New(TestTypedefsV8Internal::stringArrayFunctionMethodCallback, v8Undefined(), stringArrayFunctionSignature, 1));
-
-    // Custom Signature 'stringArrayFunction2'
-    const int stringArrayFunction2Argc = 1;
-    v8::Handle<v8::FunctionTemplate> stringArrayFunction2Argv[stringArrayFunction2Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8DOMString[]::info, currentWorldType) };
-    v8::Handle<v8::Signature> stringArrayFunction2Signature = v8::Signature::New(desc, stringArrayFunction2Argc, stringArrayFunction2Argv);
-    proto->Set(v8::String::NewSymbol("stringArrayFunction2"), v8::FunctionTemplate::New(TestTypedefsV8Internal::stringArrayFunction2MethodCallback, v8Undefined(), stringArrayFunction2Signature, 1));
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

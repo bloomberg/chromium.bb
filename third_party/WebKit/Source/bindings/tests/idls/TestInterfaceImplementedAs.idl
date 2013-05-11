@@ -1,0 +1,9 @@
+[
+    ImplementedAs=RealClass
+] interface TestInterfaceImplementedAs {
+    attribute DOMString a;
+    attribute TestInterfaceImplementedAs b;
+
+    DOMString func1(DOMString a);
+    DOMString funcTestInterfaceImplementedAsParam(TestInterfaceImplementedAs orange);
+};
