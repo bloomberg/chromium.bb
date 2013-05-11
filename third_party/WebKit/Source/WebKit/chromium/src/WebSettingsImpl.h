@@ -106,7 +106,6 @@ public:
     virtual void setHyperlinkAuditingEnabled(bool);
     virtual void setImagesEnabled(bool);
     virtual void setInitializeAtMinimumPageScale(bool);
-    virtual void setInteractiveFormValidationEnabled(bool);
     virtual void setJavaEnabled(bool);
     virtual void setJavaScriptCanAccessClipboard(bool);
     virtual void setJavaScriptCanOpenWindowsAutomatically(bool);
