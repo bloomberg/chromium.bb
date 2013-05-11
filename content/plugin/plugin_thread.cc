@@ -29,7 +29,6 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
 #include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 #if defined(TOOLKIT_GTK)
@@ -148,7 +147,7 @@ void PluginThread::Shutdown() {
   NPChannelBase::CleanupChannels();
   webkit::npapi::PluginLib::UnloadAllPlugins();
 
-  if (webkit::npapi::ShouldForcefullyTerminatePluginProcess())
+  if (webkit_glue::ShouldForcefullyTerminatePluginProcess())
     base::KillProcess(base::GetCurrentProcessHandle(), 0, /* wait= */ false);
 
   lazy_tls.Pointer()->Set(NULL);

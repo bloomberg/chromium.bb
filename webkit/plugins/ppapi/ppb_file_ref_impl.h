@@ -16,8 +16,8 @@
 #include "ppapi/shared_impl/ppb_file_ref_shared.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/var.h"
+#include "webkit/glue/webkit_glue_export.h"
 #include "webkit/plugins/ppapi/file_callbacks.h"
-#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {
 namespace ppapi {
@@ -26,7 +26,7 @@ using ::ppapi::StringVar;
 
 class PPB_FileSystem_Impl;
 
-class WEBKIT_PLUGINS_EXPORT PPB_FileRef_Impl
+class WEBKIT_GLUE_EXPORT PPB_FileRef_Impl
     : public ::ppapi::PPB_FileRef_Shared {
  public:
   PPB_FileRef_Impl(const ::ppapi::PPB_FileRef_CreateInfo& info,

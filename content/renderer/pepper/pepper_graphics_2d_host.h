@@ -37,8 +37,7 @@ class RendererPpapiHost;
 
 class CONTENT_EXPORT PepperGraphics2DHost
     : public ppapi::host::ResourceHost,
-      public NON_EXPORTED_BASE(
-          webkit::ppapi::PluginDelegate::PlatformGraphics2D),
+      public webkit::ppapi::PluginDelegate::PlatformGraphics2D,
       public base::SupportsWeakPtr<PepperGraphics2DHost> {
  public:
   static PepperGraphics2DHost* Create(RendererPpapiHost* host,

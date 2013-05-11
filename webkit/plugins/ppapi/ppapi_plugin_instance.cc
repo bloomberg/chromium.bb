@@ -1712,7 +1712,7 @@ void PluginInstance::UpdateLayer() {
   if (!container_)
     return;
 
-  bool want_layer = !!GetBackingTextureId();
+  bool want_layer = GetBackingTextureId();
 
   if (want_layer == !!texture_layer_.get() &&
       layer_bound_to_fullscreen_ == !!fullscreen_container_)

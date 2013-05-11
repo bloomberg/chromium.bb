@@ -13,9 +13,6 @@
 namespace webkit {
 namespace npapi {
 
-// Global variable used by the plugin quirk "die after unload".
-bool g_forcefully_terminate_plugin_process = false;
-
 void CreateVersionFromString(const base::string16& version_string,
                              Version* parsed_version) {
   // Remove spaces and ')' from the version string,
@@ -53,14 +50,6 @@ bool NPAPIPluginsSupported() {
 #else
   return false;
 #endif
-}
-
-void SetForcefullyTerminatePluginProcess(bool value) {
-  g_forcefully_terminate_plugin_process = value;
-}
-
-bool ShouldForcefullyTerminatePluginProcess() {
-  return g_forcefully_terminate_plugin_process;
 }
 
 }  // namespace npapi

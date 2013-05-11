@@ -16,7 +16,6 @@
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
 #include "webkit/plugins/npapi/plugin_stream_url.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 
 using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
@@ -64,7 +63,7 @@ bool WebPluginDelegateImpl::Initialize(
   }
 
   if (quirks_ & PLUGIN_QUIRK_DIE_AFTER_UNLOAD)
-    webkit::npapi::SetForcefullyTerminatePluginProcess(true);
+    webkit_glue::SetForcefullyTerminatePluginProcess(true);
 
   int argc = 0;
   scoped_ptr<char*[]> argn(new char*[arg_names.size()]);

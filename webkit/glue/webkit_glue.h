@@ -62,6 +62,14 @@ WEBKIT_GLUE_EXPORT void CheckForLeaks();
 WEBKIT_GLUE_EXPORT bool DecodeImage(const std::string& image_data,
                                     SkBitmap* image);
 
+// Tells the plugin thread to terminate the process forcefully instead of
+// exiting cleanly.
+void SetForcefullyTerminatePluginProcess(bool value);
+
+// Returns true if the plugin thread should terminate the process forcefully
+// instead of exiting cleanly.
+WEBKIT_GLUE_EXPORT bool ShouldForcefullyTerminatePluginProcess();
+
 // File info conversion
 WEBKIT_GLUE_EXPORT void PlatformFileInfoToWebFileInfo(
     const base::PlatformFileInfo& file_info,
