@@ -90,6 +90,7 @@ class VideoResourceUpdater
           sync_point(sync_point) {}
   };
 
+  void DeleteResource(unsigned resource_id);
   bool VerifyFrame(const scoped_refptr<media::VideoFrame>& video_frame);
 
   struct RecycleResourceData {
@@ -99,12 +100,10 @@ class VideoResourceUpdater
     gpu::Mailbox mailbox;
   };
   static void RecycleResource(base::WeakPtr<VideoResourceUpdater> updater,
-                              ResourceProvider* resource_provider,
                               RecycleResourceData data,
                               unsigned sync_point,
                               bool lost_resource);
   static void ReturnTexture(base::WeakPtr<VideoResourceUpdater> updater,
-                            ResourceProvider* resource_provider,
                             unsigned resource_id,
                             unsigned sync_point,
                             bool lost_resource);
