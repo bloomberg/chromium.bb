@@ -47,7 +47,7 @@ def memoize(default=None):
 
 @memoize()
 def IsWindows():
-  return sys.platform.startswith('win') or sys.platform == 'cygwin'
+  return sys.platform in ['win32', 'cygwin']
 
 
 @memoize()
@@ -57,7 +57,7 @@ def IsLinux():
 
 @memoize()
 def IsMac():
-  return sys.platform.startswith('darwin')
+  return sys.platform == 'darwin'
 
 
 @memoize()
@@ -123,7 +123,7 @@ def builder():
     elif IsWindows():
       return 'msvs'
     elif IsLinux():
-      return 'make'
+      return 'ninja'
     elif IsMac():
       return 'xcode'
     else:
@@ -167,9 +167,7 @@ def get_target_build_dir(build_tool, target, is_iphone=False):
   if build_tool == 'xcode':
     ret = os.path.join(SRC_DIR, 'xcodebuild',
         target + ('-iphoneos' if is_iphone else ''))
-  elif build_tool == 'make':
-    ret = os.path.join(SRC_DIR, 'out', target)
-  elif build_tool in ['ninja', 'ninja-ios']:
+  elif build_tool in ['make', 'ninja', 'ninja-ios']:  # TODO: Remove ninja-ios.
     ret = os.path.join(SRC_DIR, 'out', target)
   elif build_tool in ['msvs', 'vs', 'ib']:
     ret = os.path.join(SRC_DIR, 'build', target)
