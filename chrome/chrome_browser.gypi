@@ -54,6 +54,7 @@
         '../third_party/zlib/zlib.gyp:minizip',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/message_center/message_center.gyp:message_center',
         '../ui/ui.gyp:shell_dialogs',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
@@ -2983,18 +2984,6 @@
           'dependencies': [
             '../ui/app_list/app_list.gyp:app_list',
           ]
-        }],
-        ['enable_message_center==1', {
-          'dependencies': [
-            '../ui/message_center/message_center.gyp:message_center',
-          ],
-        }, {  # enable_message_center==0
-          'sources!': [
-            'browser/notifications/message_center_notification_manager.cc',
-            'browser/notifications/message_center_notification_manager.h',
-            'browser/notifications/message_center_settings_controller.cc',
-            'browser/notifications/message_center_settings_controller.h',
-          ],
         }],
         ['enable_managed_users!=1', {
           'sources/': [

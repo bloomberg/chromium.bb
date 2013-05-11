@@ -13,10 +13,8 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#if defined(ENABLE_MESSAGE_CENTER)
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_types.h"
-#endif // ENABLE_MESSAGE_CENTER
 
 using syncer::SyncData;
 using notifier::SyncedNotification;
@@ -28,19 +26,11 @@ namespace {
 const uint64 kFakeCreationTime = 42;
 const int kProtobufPriority = static_cast<int>(
     sync_pb::CoalescedSyncedNotification_Priority_LOW);
-#if defined (ENABLE_MESSAGE_CENTER)
 const int kNotificationPriority = static_cast<int>(
     message_center::LOW_PRIORITY);
-#else  // ENABLE_MESSAGE_CENTER
-const int kNotificationPriority = 1;
-#endif  // ENABLE_MESSAGE_CENTER
 
 bool UseRichNotifications() {
-#if defined(ENABLE_MESSAGE_CENTER)
   return message_center::IsRichNotificationEnabled();
-#else  // ENABLE_MESSAGE_CENTER
-  return false;
-#endif  // ENABLE_MESSAGE_CENTER
 }
 
 const char kTitle1[] = "New appointment at 2:15";
@@ -572,8 +562,6 @@ TEST_F(SyncedNotificationTest, ShowTest) {
   if (!UseRichNotifications())
     return;
 
-#if defined(ENABLE_MESSAGE_CENTER)
-
   StubNotificationUIManager notification_manager;
 
   // Call the method under test using the pre-populated data.
@@ -634,8 +622,6 @@ TEST_F(SyncedNotificationTest, ShowTest) {
   EXPECT_TRUE(expected_fields.Equals(actual_fields))
       << "Expected: " << expected_fields
       << ", but actual: " << *actual_fields;
-
-#endif  // ENABLE_MESSAGE_CENTER
 
 }
 

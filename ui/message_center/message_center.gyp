@@ -17,7 +17,6 @@
         '../../build/temp_gyp/googleurl.gyp:googleurl',
         '../../skia/skia.gyp:skia',
         '../base/strings/ui_strings.gyp:ui_strings',
-        '../compositor/compositor.gyp:compositor',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
       ],
@@ -31,6 +30,7 @@
         'cocoa/popup_collection.mm',
         'cocoa/popup_controller.h',
         'cocoa/popup_controller.mm',
+        'dummy_message_center.cc',
         'message_center.cc',
         'message_center.h',
         'message_center_constants.cc',
@@ -97,6 +97,21 @@
             '../../third_party/GTM',
           ],
         }],
+        ['OS!="ios"', {
+          'dependencies': [
+            '../compositor/compositor.gyp:compositor',
+          ],
+        }],
+        ['notifications==0', {  # Android and iOS.
+          'sources/': [
+            # Exclude everything except dummy impl.
+            ['exclude', '\\.(cc|mm)$'],
+            ['include', '^dummy_message_center\\.cc$'],
+            ['include', '^message_center_switches\\.cc$'],
+          ],
+        }, {  # notifications==1 
+          'sources!': [ 'dummy_message_center.cc' ],
+        }],
       ],
     },  # target_name: message_center
     {
@@ -140,6 +155,13 @@
             'views/bounded_label_unittest.cc',
             'views/message_center_view_unittest.cc',
             'views/message_popup_collection_unittest.cc',
+          ],
+        }],
+        ['notifications==0', {  # Android and iOS.
+          'sources/': [
+            # Exclude everything except main().
+            ['exclude', '\\.(cc|mm)$'],
+            ['include', '^test/run_all_unittests\\.cc$'],
           ],
         }],
       ],

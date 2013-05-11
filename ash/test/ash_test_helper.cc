@@ -14,11 +14,7 @@
 #include "ui/aura/env.h"
 #include "ui/base/ime/text_input_test_support.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
-
-
-#if defined(ENABLE_MESSAGE_CENTER)
 #include "ui/message_center/message_center.h"
-#endif
 
 namespace ash {
 namespace test {
@@ -45,11 +41,9 @@ void AshTestHelper::SetUp() {
   // Creates Shell and hook with Desktop.
   test_shell_delegate_ = new TestShellDelegate;
 
-#if defined(ENABLE_MESSAGE_CENTER)
   // Creates MessageCenter since g_browser_process is not created in AshTestBase
   // tests.
   message_center::MessageCenter::Initialize();
-#endif
   ash::Shell::CreateInstance(test_shell_delegate_);
   Shell* shell = Shell::GetInstance();
   test::DisplayManagerTestApi(shell->display_manager()).
@@ -62,10 +56,8 @@ void AshTestHelper::TearDown() {
   // Tear down the shell.
   Shell::DeleteInstance();
 
-#if defined(ENABLE_MESSAGE_CENTER)
   // Remove global message center state.
   message_center::MessageCenter::Shutdown();
-#endif
 
   aura::Env::DeleteInstance();
   ui::TextInputTestSupport::Shutdown();

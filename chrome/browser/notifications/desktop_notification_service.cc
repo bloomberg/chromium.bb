@@ -43,6 +43,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notifier_settings.h"
 #include "ui/webui/web_ui_util.h"
 
@@ -56,15 +57,6 @@ using WebKit::WebSecurityOrigin;
 const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
 
 namespace {
-
-bool UsesTextNotifications() {
-#if defined(USE_ASH)
-  return true;
-#else
-  return
-      g_browser_process->notification_ui_manager()->DelegatesToMessageCenter();
-#endif
-}
 
 void ToggleListPrefItem(PrefService* prefs, const char* key,
                         const std::string& item, bool flag) {
@@ -239,12 +231,10 @@ bool NotificationPermissionInfoBarDelegate::Cancel() {
 // static
 void DesktopNotificationService::RegisterUserPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-#if defined(OS_CHROMEOS) || defined(ENABLE_MESSAGE_CENTER)
   registry->RegisterListPref(prefs::kMessageCenterDisabledExtensionIds,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kMessageCenterDisabledSystemComponentIds,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#endif
 }
 
 // static
@@ -307,7 +297,7 @@ std::string DesktopNotificationService::AddNotification(
     const string16& replace_id,
     NotificationDelegate* delegate,
     Profile* profile) {
-  if (UsesTextNotifications()) {
+  if (message_center::IsRichNotificationEnabled()) {
     // For message center create a non-HTML notification with |icon_url|.
     Notification notification(origin_url, icon_url, title, message,
                               WebKit::WebTextDirectionDefault,
@@ -335,7 +325,7 @@ std::string DesktopNotificationService::AddIconNotification(
     NotificationDelegate* delegate,
     Profile* profile) {
 
-  if (UsesTextNotifications()) {
+  if (message_center::IsRichNotificationEnabled()) {
     // For message center create a non-HTML notification with |icon|.
     Notification notification(origin_url, icon, title, message,
                               WebKit::WebTextDirectionDefault,
@@ -362,7 +352,6 @@ DesktopNotificationService::DesktopNotificationService(
     NotificationUIManager* ui_manager)
     : profile_(profile),
       ui_manager_(ui_manager) {
-#if defined(ENABLE_MESSAGE_CENTER)
   OnDisabledExtensionIdsChanged();
   OnDisabledSystemComponentIdsChanged();
   disabled_extension_id_pref_.Init(
@@ -377,13 +366,9 @@ DesktopNotificationService::DesktopNotificationService(
       base::Bind(
           &DesktopNotificationService::OnDisabledSystemComponentIdsChanged,
           base::Unretained(this)));
-#endif
 }
 
 DesktopNotificationService::~DesktopNotificationService() {
-#if defined(ENABLE_MESSAGE_CENTER)
-  disabled_extension_id_pref_.Destroy();
-#endif
 }
 
 void DesktopNotificationService::GrantPermission(const GURL& origin) {
@@ -592,7 +577,6 @@ void DesktopNotificationService::OnDisabledExtensionIdsChanged() {
                           &disabled_extension_ids_);
 }
 
-#if defined(ENABLE_MESSAGE_CENTER)
 bool DesktopNotificationService::IsSystemComponentEnabled(
     message_center::Notifier::SystemComponentNotifierType type) {
   return disabled_system_component_ids_.find(message_center::ToString(type)) ==
@@ -616,7 +600,6 @@ void DesktopNotificationService::OnDisabledSystemComponentIdsChanged() {
                           prefs::kMessageCenterDisabledSystemComponentIds,
                           &disabled_system_component_ids_);
 }
-#endif
 
 WebKit::WebNotificationPresenter::Permission
     DesktopNotificationService::HasPermission(const GURL& origin) {
