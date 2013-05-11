@@ -25,6 +25,7 @@ class TtsPlatformImplChromeOs
       int utterance_id,
       const std::string& utterance,
       const std::string& lang,
+      const VoiceData& voice,
       const UtteranceContinuousParameters& params) OVERRIDE {
     return false;
   }
@@ -37,8 +38,7 @@ class TtsPlatformImplChromeOs
     return false;
   }
 
-  virtual bool SendsEvent(TtsEventType event_type) OVERRIDE {
-    return false;
+  virtual void GetVoices(std::vector<VoiceData>* out_voices) OVERRIDE {
   }
 
   // Get the single instance of this class.

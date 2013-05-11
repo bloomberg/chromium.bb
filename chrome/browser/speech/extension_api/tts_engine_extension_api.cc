@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
@@ -25,17 +26,6 @@ namespace tts_engine_events {
 const char kOnSpeak[] = "ttsEngine.onSpeak";
 const char kOnStop[] = "ttsEngine.onStop";
 };  // namespace tts_engine_events
-
-namespace {
-// Given a language/region code of the form 'fr-FR', returns just the basic
-// language portion, e.g. 'fr'.
-std::string TrimLanguageCode(std::string lang) {
-  if (lang.size() >= 5 && lang[2] == '-')
-    return lang.substr(0, 2);
-  else
-    return lang;
-}
-}
 
 void GetExtensionVoices(Profile* profile, std::vector<VoiceData>* out_voices) {
   ExtensionService* service = profile->GetExtensionService();
@@ -67,139 +57,40 @@ void GetExtensionVoices(Profile* profile, std::vector<VoiceData>* out_voices) {
       out_voices->push_back(VoiceData());
       VoiceData& result_voice = out_voices->back();
 
+      result_voice.native = false;
       result_voice.name = voice.voice_name;
       result_voice.lang = voice.lang;
-      result_voice.gender = voice.gender;
       result_voice.extension_id = extension->id();
+      if (voice.gender == constants::kGenderMale)
+        result_voice.gender = TTS_GENDER_MALE;
+      else if (voice.gender == constants::kGenderFemale)
+        result_voice.gender = TTS_GENDER_FEMALE;
+      else
+        result_voice.gender = TTS_GENDER_NONE;
 
       for (std::set<std::string>::const_iterator iter =
                voice.event_types.begin();
            iter != voice.event_types.end();
            ++iter) {
-        result_voice.events.push_back(*iter);
+        result_voice.events.insert(TtsEventTypeFromString(*iter));
       }
 
       // If the extension sends end events, the controller will handle
       // queueing and send interrupted and cancelled events.
       if (voice.event_types.find(constants::kEventTypeEnd) !=
           voice.event_types.end()) {
-        result_voice.events.push_back(constants::kEventTypeCancelled);
-        result_voice.events.push_back(constants::kEventTypeInterrupted);
+        result_voice.events.insert(TTS_EVENT_CANCELLED);
+        result_voice.events.insert(TTS_EVENT_INTERRUPTED);
       }
     }
   }
 }
 
-bool GetMatchingExtensionVoice(
-    Utterance* utterance,
-    const Extension** matching_extension,
-    size_t* voice_index) {
-  // This will only happen during unit testing. Otherwise, an utterance
-  // will always have an associated profile.
-  if (!utterance->profile())
-    return false;
-
-  ExtensionService* service = utterance->profile()->GetExtensionService();
-
-  // If speech is generated when Chrome OS first starts up, it's possible
-  // the extension service isn't even available.
-  if (!service)
-    return false;
-
-  extensions::EventRouter* event_router =
-      extensions::ExtensionSystem::Get(utterance->profile())->event_router();
-  DCHECK(event_router);
-
-  *matching_extension = NULL;
-  *voice_index = -1;
-  const ExtensionSet* extensions = service->extensions();
-  ExtensionSet::const_iterator iter;
-
-  // Make two passes: the first time, do strict language matching
-  // ('fr-FR' does not match 'fr-CA'). The second time, do prefix
-  // language matching ('fr-FR' matches 'fr' and 'fr-CA')
-  for (int pass = 0; pass < 2; ++pass) {
-    for (iter = extensions->begin(); iter != extensions->end(); ++iter) {
-      const Extension* extension = *iter;
-
-      if (!event_router->ExtensionHasEventListener(
-              extension->id(), tts_engine_events::kOnSpeak) ||
-          !event_router->ExtensionHasEventListener(
-              extension->id(), tts_engine_events::kOnStop)) {
-        continue;
-      }
-
-      if (!utterance->extension_id().empty() &&
-          utterance->extension_id() != extension->id()) {
-        continue;
-      }
-
-      const std::vector<extensions::TtsVoice>* tts_voices =
-          extensions::TtsVoice::GetTtsVoices(extension);
-      if (!tts_voices)
-        continue;
-
-      for (size_t i = 0; i < tts_voices->size(); ++i) {
-        const extensions::TtsVoice& voice = tts_voices->at(i);
-        if (!voice.voice_name.empty() &&
-            !utterance->voice_name().empty() &&
-            voice.voice_name != utterance->voice_name()) {
-          continue;
-        }
-        if (!voice.lang.empty() && !utterance->lang().empty()) {
-          std::string voice_lang = voice.lang;
-          std::string utterance_lang = utterance->lang();
-          if (pass == 1) {
-            voice_lang = TrimLanguageCode(voice_lang);
-            utterance_lang = TrimLanguageCode(utterance_lang);
-          }
-          if (voice_lang != utterance_lang)
-            continue;
-        }
-        if (!voice.gender.empty() &&
-            !utterance->gender().empty() &&
-            voice.gender != utterance->gender()) {
-          continue;
-        }
-        if (utterance->required_event_types().size() > 0) {
-          bool has_all_required_event_types = true;
-          for (std::set<std::string>::const_iterator iter =
-                   utterance->required_event_types().begin();
-               iter != utterance->required_event_types().end();
-               ++iter) {
-            if (voice.event_types.find(*iter) == voice.event_types.end()) {
-              has_all_required_event_types = false;
-              break;
-            }
-          }
-          if (!has_all_required_event_types)
-            continue;
-        }
-
-        *matching_extension = extension;
-        *voice_index = i;
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-void ExtensionTtsEngineSpeak(Utterance* utterance,
-                             const Extension* extension,
-                             size_t voice_index) {
+void ExtensionTtsEngineSpeak(Utterance* utterance, const VoiceData& voice) {
   // See if the engine supports the "end" event; if so, we can keep the
   // utterance around and track it. If not, we're finished with this
   // utterance now.
-  const std::vector<extensions::TtsVoice>* tts_voices =
-      extensions::TtsVoice::GetTtsVoices(extension);
-  std::set<std::string> event_types;
-  if (tts_voices)
-    event_types = tts_voices->at(voice_index).event_types;
-
-  bool sends_end_event =
-      (event_types.find(constants::kEventTypeEnd) != event_types.end());
+  bool sends_end_event = voice.events.find(TTS_EVENT_END) != voice.events.end();
 
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, Value::CreateStringValue(utterance->text()));

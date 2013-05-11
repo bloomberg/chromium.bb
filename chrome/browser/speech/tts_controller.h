@@ -34,6 +34,12 @@ enum TtsEventType {
   TTS_EVENT_ERROR
 };
 
+enum TtsGenderType {
+  TTS_GENDER_NONE,
+  TTS_GENDER_MALE,
+  TTS_GENDER_FEMALE
+};
+
 // Returns true if this event type is one that indicates an utterance
 // is finished and can be destroyed.
 bool IsFinalTtsEventType(TtsEventType event_type);
@@ -54,9 +60,14 @@ struct VoiceData {
 
   std::string name;
   std::string lang;
-  std::string gender;
+  TtsGenderType gender;
   std::string extension_id;
-  std::vector<std::string> events;
+  std::set<TtsEventType> events;
+
+  // If true, this is implemented by this platform's subclass of
+  // TtsPlatformImpl. If false, this is implemented by an extension.
+  bool native;
+  std::string native_voice_identifier;
 };
 
 // Class that wants to receive events on utterances.
@@ -116,10 +127,10 @@ class Utterance {
   }
   const std::string& lang() const { return lang_; }
 
-  void set_gender(const std::string& gender) {
+  void set_gender(TtsGenderType gender) {
     gender_ = gender;
   }
-  const std::string& gender() const { return gender_; }
+  TtsGenderType gender() const { return gender_; }
 
   void set_continuous_parameters(const UtteranceContinuousParameters& params) {
     continuous_parameters_ = params;
@@ -131,17 +142,17 @@ class Utterance {
   void set_can_enqueue(bool can_enqueue) { can_enqueue_ = can_enqueue; }
   bool can_enqueue() const { return can_enqueue_; }
 
-  void set_required_event_types(const std::set<std::string>& types) {
+  void set_required_event_types(const std::set<TtsEventType>& types) {
     required_event_types_ = types;
   }
-  const std::set<std::string>& required_event_types() const {
+  const std::set<TtsEventType>& required_event_types() const {
     return required_event_types_;
   }
 
-  void set_desired_event_types(const std::set<std::string>& types) {
+  void set_desired_event_types(const std::set<TtsEventType>& types) {
     desired_event_types_ = types;
   }
-  const std::set<std::string>& desired_event_types() const {
+  const std::set<TtsEventType>& desired_event_types() const {
     return desired_event_types_;
   }
 
@@ -202,11 +213,11 @@ class Utterance {
   // The parsed options.
   std::string voice_name_;
   std::string lang_;
-  std::string gender_;
+  TtsGenderType gender_;
   UtteranceContinuousParameters continuous_parameters_;
   bool can_enqueue_;
-  std::set<std::string> required_event_types_;
-  std::set<std::string> desired_event_types_;
+  std::set<TtsEventType> required_event_types_;
+  std::set<TtsEventType> desired_event_types_;
 
   // The index of the current char being spoken.
   int char_index_;
@@ -277,6 +288,11 @@ class TtsController {
 
   // Start speaking the next utterance in the queue.
   void SpeakNextUtterance();
+
+  // Given an utterance and a vector of voices, return the
+  // index of the voice that best matches the utterance.
+  int GetMatchingVoice(const Utterance* utterance,
+                       std::vector<VoiceData>& voices);
 
   friend struct DefaultSingletonTraits<TtsController>;
 

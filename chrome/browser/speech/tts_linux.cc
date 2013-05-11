@@ -27,10 +27,12 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
       int utterance_id,
       const std::string& utterance,
       const std::string& lang,
+      const VoiceData& voice,
       const UtteranceContinuousParameters& params) OVERRIDE;
   virtual bool StopSpeaking() OVERRIDE;
   virtual bool IsSpeaking() OVERRIDE;
-  virtual bool SendsEvent(TtsEventType event_type) OVERRIDE;
+  virtual void GetVoices(std::vector<VoiceData>* out_voices) OVERRIDE;
+
   void OnSpeechEvent(SPDNotificationType type);
 
   // Get the single instance of this class.
@@ -138,6 +140,7 @@ bool TtsPlatformImplLinux::Speak(
     int utterance_id,
     const std::string& utterance,
     const std::string& lang,
+    const VoiceData& voice,
     const UtteranceContinuousParameters& params) {
   if (!PlatformImplAvailable()) {
     error_ = kNotSupportedError;
@@ -180,11 +183,18 @@ bool TtsPlatformImplLinux::IsSpeaking() {
   return current_notification_ == SPD_EVENT_BEGIN;
 }
 
-bool TtsPlatformImplLinux::SendsEvent(TtsEventType event_type) {
-  return (event_type == TTS_EVENT_START ||
-          event_type == TTS_EVENT_END ||
-          event_type == TTS_EVENT_CANCELLED ||
-          event_type == TTS_EVENT_MARKER);
+void TtsPlatformImplLinux::GetVoices(
+    std::vector<VoiceData>* out_voices) {
+  // TODO: get all voices, not just default voice.
+  // http://crbug.com/88059
+  out_voices->push_back(VoiceData());
+  VoiceData& voice = out_voices->back();
+  voice.native = true;
+  voice.name = "native";
+  voice.events.insert(TTS_EVENT_START);
+  voice.events.insert(TTS_EVENT_END);
+  voice.events.insert(TTS_EVENT_CANCELLED);
+  voice.events.insert(TTS_EVENT_MARKER);
 }
 
 void TtsPlatformImplLinux::OnSpeechEvent(SPDNotificationType type) {

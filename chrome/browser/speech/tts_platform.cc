@@ -10,10 +10,6 @@ bool TtsPlatformImpl::LoadBuiltInTtsExtension(Profile* profile) {
   return false;
 }
 
-std::string TtsPlatformImpl::gender() {
-  return std::string();
-}
-
 std::string TtsPlatformImpl::error() {
   return error_;
 }

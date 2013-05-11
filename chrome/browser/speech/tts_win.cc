@@ -23,13 +23,14 @@ class TtsPlatformImplWin : public TtsPlatformImpl {
       int utterance_id,
       const std::string& utterance,
       const std::string& lang,
+      const VoiceData& voice,
       const UtteranceContinuousParameters& params);
 
   virtual bool StopSpeaking();
 
   virtual bool IsSpeaking();
 
-  virtual bool SendsEvent(TtsEventType event_type);
+  virtual void GetVoices(std::vector<VoiceData>* out_voices) OVERRIDE;
 
   // Get the single instance of this class.
   static TtsPlatformImplWin* GetInstance();
@@ -65,6 +66,7 @@ bool TtsPlatformImplWin::Speak(
     int utterance_id,
     const std::string& src_utterance,
     const std::string& lang,
+    const VoiceData& voice,
     const UtteranceContinuousParameters& params) {
   std::wstring prefix;
   std::wstring suffix;
@@ -141,12 +143,19 @@ bool TtsPlatformImplWin::IsSpeaking() {
   return false;
 }
 
-bool TtsPlatformImplWin::SendsEvent(TtsEventType event_type) {
-  return (event_type == TTS_EVENT_START ||
-          event_type == TTS_EVENT_END ||
-          event_type == TTS_EVENT_MARKER ||
-          event_type == TTS_EVENT_WORD ||
-          event_type == TTS_EVENT_SENTENCE);
+void TtsPlatformImplWin::GetVoices(
+    std::vector<VoiceData>* out_voices) {
+  // TODO: get all voices, not just default voice.
+  // http://crbug.com/88059
+  out_voices->push_back(VoiceData());
+  VoiceData& voice = out_voices->back();
+  voice.native = true;
+  voice.name = "native";
+  voice.events.insert(TTS_EVENT_START);
+  voice.events.insert(TTS_EVENT_END);
+  voice.events.insert(TTS_EVENT_MARKER);
+  voice.events.insert(TTS_EVENT_WORD);
+  voice.events.insert(TTS_EVENT_SENTENCE);
 }
 
 void TtsPlatformImplWin::OnSpeechEvent() {

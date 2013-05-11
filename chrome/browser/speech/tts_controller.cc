@@ -13,18 +13,24 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 
-namespace constants = tts_extension_api_constants;
-
 namespace {
 // A value to be used to indicate that there is no char index available.
 const int kInvalidCharIndex = -1;
-}  // namespace
 
+// Given a language/region code of the form 'fr-FR', returns just the basic
+// language portion, e.g. 'fr'.
+std::string TrimLanguageCode(std::string lang) {
+  if (lang.size() >= 5 && lang[2] == '-')
+    return lang.substr(0, 2);
+  else
+    return lang;
+}
+
+}  // namespace
 
 bool IsFinalTtsEventType(TtsEventType event_type) {
   return (event_type == TTS_EVENT_END ||
@@ -32,7 +38,6 @@ bool IsFinalTtsEventType(TtsEventType event_type) {
           event_type == TTS_EVENT_CANCELLED ||
           event_type == TTS_EVENT_ERROR);
 }
-
 
 //
 // UtteranceContinuousParameters
@@ -50,7 +55,9 @@ UtteranceContinuousParameters::UtteranceContinuousParameters()
 //
 
 
-VoiceData::VoiceData() {}
+VoiceData::VoiceData()
+    : gender(TTS_GENDER_NONE),
+      native(false) {}
 
 VoiceData::~VoiceData() {}
 
@@ -133,50 +140,59 @@ void TtsController::SpeakOrEnqueue(Utterance* utterance) {
 }
 
 void TtsController::SpeakNow(Utterance* utterance) {
-  const extensions::Extension* extension;
-  size_t voice_index;
-  if (GetMatchingExtensionVoice(utterance, &extension, &voice_index)) {
+  // Get all available voices and try to find a matching voice.
+  std::vector<VoiceData> voices;
+  GetVoices(utterance->profile(), &voices);
+  int index = GetMatchingVoice(utterance, voices);
+
+  // Select the matching voice, but if none was found, initialize an
+  // empty VoiceData with native = true, which will give the native
+  // speech synthesizer a chance to try to synthesize the utterance
+  // anyway.
+  VoiceData voice;
+  if (index >= 0 && index < static_cast<int>(voices.size()))
+    voice = voices[index];
+  else
+    voice.native = true;
+
+  if (!voice.native) {
+    DCHECK(!voice.extension_id.empty());
     current_utterance_ = utterance;
-    utterance->set_extension_id(extension->id());
-
-    ExtensionTtsEngineSpeak(utterance, extension, voice_index);
-
-    const std::vector<extensions::TtsVoice>* tts_voices =
-        extensions::TtsVoice::GetTtsVoices(extension);
-    std::set<std::string> event_types;
-    if (tts_voices)
-      event_types = tts_voices->at(voice_index).event_types;
+    utterance->set_extension_id(voice.extension_id);
+    ExtensionTtsEngineSpeak(utterance, voice);
     bool sends_end_event =
-        (event_types.find(constants::kEventTypeEnd) != event_types.end());
+        voice.events.find(TTS_EVENT_END) != voice.events.end();
     if (!sends_end_event) {
       utterance->Finish();
       delete utterance;
       current_utterance_ = NULL;
       SpeakNextUtterance();
     }
-    return;
-  }
+  } else {
+    GetPlatformImpl()->clear_error();
+    bool success = GetPlatformImpl()->Speak(
+        utterance->id(),
+        utterance->text(),
+        utterance->lang(),
+        voice,
+        utterance->continuous_parameters());
 
-  GetPlatformImpl()->clear_error();
-  bool success = GetPlatformImpl()->Speak(
-      utterance->id(),
-      utterance->text(),
-      utterance->lang(),
-      utterance->continuous_parameters());
+    // If the native voice wasn't able to process this speech, see if
+    // the browser has built-in TTS that isn't loaded yet.
+    if (!success &&
+        GetPlatformImpl()->LoadBuiltInTtsExtension(utterance->profile())) {
+      utterance_queue_.push(utterance);
+      return;
+    }
 
-  if (!success &&
-      GetPlatformImpl()->LoadBuiltInTtsExtension(utterance->profile())) {
-    utterance_queue_.push(utterance);
-    return;
+    if (!success) {
+      utterance->OnTtsEvent(TTS_EVENT_ERROR, kInvalidCharIndex,
+                            GetPlatformImpl()->error());
+      delete utterance;
+      return;
+    }
+    current_utterance_ = utterance;
   }
-
-  if (!success) {
-    utterance->OnTtsEvent(TTS_EVENT_ERROR, kInvalidCharIndex,
-                          GetPlatformImpl()->error());
-    delete utterance;
-    return;
-  }
-  current_utterance_ = utterance;
 }
 
 void TtsController::Stop() {
@@ -214,33 +230,12 @@ void TtsController::OnTtsEvent(int utterance_id,
 
 void TtsController::GetVoices(Profile* profile,
                               std::vector<VoiceData>* out_voices) {
+  if (profile)
+    GetExtensionVoices(profile, out_voices);
+
   TtsPlatformImpl* platform_impl = GetPlatformImpl();
-  if (platform_impl && platform_impl->PlatformImplAvailable()) {
-    out_voices->push_back(VoiceData());
-    VoiceData& voice = out_voices->back();
-    voice.name = constants::kNativeVoiceName;
-    voice.gender = platform_impl->gender();
-
-    // All platforms must send end events, and cancelled and interrupted
-    // events are generated from the controller.
-    DCHECK(platform_impl->SendsEvent(TTS_EVENT_END));
-    voice.events.push_back(constants::kEventTypeEnd);
-    voice.events.push_back(constants::kEventTypeCancelled);
-    voice.events.push_back(constants::kEventTypeInterrupted);
-
-    if (platform_impl->SendsEvent(TTS_EVENT_START))
-      voice.events.push_back(constants::kEventTypeStart);
-    if (platform_impl->SendsEvent(TTS_EVENT_WORD))
-      voice.events.push_back(constants::kEventTypeWord);
-    if (platform_impl->SendsEvent(TTS_EVENT_SENTENCE))
-      voice.events.push_back(constants::kEventTypeSentence);
-    if (platform_impl->SendsEvent(TTS_EVENT_MARKER))
-      voice.events.push_back(constants::kEventTypeMarker);
-    if (platform_impl->SendsEvent(TTS_EVENT_ERROR))
-      voice.events.push_back(constants::kEventTypeError);
-  }
-
-  GetExtensionVoices(profile, out_voices);
+  if (platform_impl && platform_impl->PlatformImplAvailable())
+    platform_impl->GetVoices(out_voices);
 }
 
 bool TtsController::IsSpeaking() {
@@ -299,3 +294,62 @@ TtsPlatformImpl* TtsController::GetPlatformImpl() {
     platform_impl_ = TtsPlatformImpl::GetInstance();
   return platform_impl_;
 }
+
+int TtsController::GetMatchingVoice(
+    const Utterance* utterance, std::vector<VoiceData>& voices) {
+  // Make two passes: the first time, do strict language matching
+  // ('fr-FR' does not match 'fr-CA'). The second time, do prefix
+  // language matching ('fr-FR' matches 'fr' and 'fr-CA')
+  for (int pass = 0; pass < 2; ++pass) {
+    for (size_t i = 0; i < voices.size(); ++i) {
+      const VoiceData& voice = voices[i];
+
+      if (!utterance->extension_id().empty() &&
+          utterance->extension_id() != voice.extension_id) {
+        continue;
+      }
+
+      if (!voice.name.empty() &&
+          !utterance->voice_name().empty() &&
+          voice.name != utterance->voice_name()) {
+        continue;
+      }
+      if (!voice.lang.empty() && !utterance->lang().empty()) {
+        std::string voice_lang = voice.lang;
+        std::string utterance_lang = utterance->lang();
+        if (pass == 1) {
+          voice_lang = TrimLanguageCode(voice_lang);
+          utterance_lang = TrimLanguageCode(utterance_lang);
+        }
+        if (voice_lang != utterance_lang) {
+          continue;
+        }
+      }
+      if (voice.gender != TTS_GENDER_NONE &&
+          utterance->gender() != TTS_GENDER_NONE &&
+          voice.gender != utterance->gender()) {
+        continue;
+      }
+
+      if (utterance->required_event_types().size() > 0) {
+        bool has_all_required_event_types = true;
+        for (std::set<TtsEventType>::const_iterator iter =
+                 utterance->required_event_types().begin();
+             iter != utterance->required_event_types().end();
+             ++iter) {
+          if (voice.events.find(*iter) == voice.events.end()) {
+            has_all_required_event_types = false;
+            break;
+          }
+        }
+        if (!has_all_required_event_types)
+          continue;
+      }
+
+      return static_cast<int>(i);
+    }
+  }
+
+  return -1;
+}
+

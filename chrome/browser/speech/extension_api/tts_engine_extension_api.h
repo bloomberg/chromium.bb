@@ -41,8 +41,7 @@ bool GetMatchingExtensionVoice(Utterance* utterance,
 // Speak the given utterance by sending an event to the given TTS engine
 // extension voice.
 void ExtensionTtsEngineSpeak(Utterance* utterance,
-                             const extensions::Extension* extension,
-                             size_t voice_index);
+                             const VoiceData& voice);
 
 // Stop speaking the given utterance by sending an event to the extension
 // associated with this utterance.

@@ -22,13 +22,13 @@ class DummyTtsPlatformImpl : public TtsPlatformImpl {
       int utterance_id,
       const std::string& utterance,
       const std::string& lang,
+      const VoiceData& voice,
       const UtteranceContinuousParameters& params) OVERRIDE {
     return true;
   }
   virtual bool IsSpeaking() OVERRIDE { return false; }
   virtual bool StopSpeaking() OVERRIDE { return true; }
-  virtual bool SendsEvent(TtsEventType event_type) OVERRIDE { return false; }
-  virtual std::string gender() OVERRIDE { return std::string(); }
+  virtual void GetVoices(std::vector<VoiceData>* out_voices) OVERRIDE {}
   virtual std::string error() OVERRIDE { return std::string(); }
   virtual void clear_error() OVERRIDE {}
   virtual void set_error(const std::string& error) OVERRIDE {}

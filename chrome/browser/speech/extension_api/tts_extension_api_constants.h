@@ -41,8 +41,6 @@ extern const char kEventTypeInterrupted[];
 extern const char kEventTypeCancelled[];
 extern const char kEventTypeError[];
 
-extern const char kNativeVoiceName[];
-
 extern const char kErrorUndeclaredEventType[];
 extern const char kErrorUtteranceTooLong[];
 extern const char kErrorInvalidLang[];

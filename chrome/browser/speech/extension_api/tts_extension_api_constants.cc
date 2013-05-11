@@ -36,8 +36,6 @@ const char kEventTypeInterrupted[] = "interrupted";
 const char kEventTypeCancelled[] = "cancelled";
 const char kEventTypeError[] = "error";
 
-const char kNativeVoiceName[] = "native";
-
 const char kErrorUndeclaredEventType[] =
     "Cannot send an event type that is not declared in the extension manifest.";
 const char kErrorUtteranceTooLong[] = "Utterance length is too long.";

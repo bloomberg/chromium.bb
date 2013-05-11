@@ -13,6 +13,9 @@
 
 class Profile;
 
+const char *TtsEventTypeToString(TtsEventType event_type);
+TtsEventType TtsEventTypeFromString(const std::string& str);
+
 namespace extensions {
 
 class TtsSpeakFunction

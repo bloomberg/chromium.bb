@@ -36,6 +36,7 @@ class TtsPlatformImpl {
       int utterance_id,
       const std::string& utterance,
       const std::string& lang,
+      const VoiceData& voice,
       const UtteranceContinuousParameters& params) = 0;
 
   // Stop speaking immediately and return true on success.
@@ -44,14 +45,9 @@ class TtsPlatformImpl {
   // Returns whether any speech is on going.
   virtual bool IsSpeaking() = 0;
 
-  // Return true if this platform implementation will fire the given event.
-  // All platform implementations must fire the TTS_EVENT_END event at a
-  // minimum.
-  virtual bool SendsEvent(TtsEventType event_type) = 0;
-
-  // Return the gender of the voice, should be either "male" or "female"
-  // if known, otherwise the empty string.
-  virtual std::string gender();
+  // Append information about voices provided by this platform implementation
+  // to |out_voices|.
+  virtual void GetVoices(std::vector<VoiceData>* out_voices) = 0;
 
   virtual std::string error();
   virtual void clear_error();
