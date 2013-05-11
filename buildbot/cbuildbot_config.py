@@ -309,7 +309,7 @@ _settings = dict(
 # vm_tests -- Run vm test type defined in constants.
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 
-  # A list of HWTestConfig objects to run.
+# A list of HWTestConfig objects to run.
   hw_tests=[],
 
 # upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
@@ -1146,7 +1146,7 @@ internal_arm_paladin.add_config('daisy-paladin',
 
 internal_arm_paladin.add_config('daisy_spring-paladin',
   boards=['daisy_spring'],
-  paladin_builder_name='daisy spring paladin',
+  paladin_builder_name='daisy_spring paladin',
 )
 
 internal_arm_paladin.add_config('peach_pit-paladin',
