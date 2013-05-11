@@ -3641,12 +3641,12 @@
             'platform/chromium/support/WrappedResourceResponse.h',
         ],
         'core_unittest_files': [
+            'animation/DocumentTimelineTest.cpp',
             'platform/DecimalTest.cpp',
             'platform/chromium/ClipboardChromiumTest.cpp',
             'platform/graphics/chromium/AnimationTranslationUtilTest.cpp',
             'platform/text/DateTimeFormatTest.cpp',
             'tests/CachedImageTest.cpp',
-            'tests/DocumentTimeline.cpp',
             'tests/HeapGraphSerializerTest.cpp',
             'tests/LayoutUnit.cpp',
             'tests/LinkRelAttribute.cpp',
