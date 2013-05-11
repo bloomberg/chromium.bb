@@ -185,10 +185,10 @@ test("commitDataListForRevisionRange", 6, function() {
 test("buildersInFlightForRevision", 3, function() {
     var unmock = model.state.resultsByBuilder;
     model.state.resultsByBuilder = {
-        'Mr. Beasley': {revision: '5'},
-        'Mr Dixon': {revision: '1'},
-        'Mr. Sabatini': {revision: '4'},
-        'Bob': {revision: '6'}
+        'Mr. Beasley': {blink_revision: '5'},
+        'Mr Dixon': {blink_revision: '1'},
+        'Mr. Sabatini': {blink_revision: '4'},
+        'Bob': {blink_revision: '6'}
     };
     deepEqual(model.buildersInFlightForRevision(1), {});
     deepEqual(model.buildersInFlightForRevision(3), {
@@ -217,9 +217,9 @@ test("latestRevisionWithNoBuildersInFlight", 1, function() {
     var unmock = model.state.resultsByBuilder;
     model.state.resultsByBuilder = {
         'Mr. Beasley': { },
-        'Mr Dixon': {revision: '2'},
-        'Mr. Sabatini': {revision: '4'},
-        'Bob': {revision: '6'}
+        'Mr Dixon': {blink_revision: '2'},
+        'Mr. Sabatini': {blink_revision: '4'},
+        'Bob': {blink_revision: '6'}
     };
     equals(model.latestRevisionWithNoBuildersInFlight(), 2);
     model.state.resultsByBuilder = unmock;

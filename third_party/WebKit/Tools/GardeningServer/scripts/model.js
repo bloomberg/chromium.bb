@@ -132,7 +132,7 @@ model.buildersInFlightForRevision = function(revision)
     var builders = {};
     Object.keys(model.state.resultsByBuilder).forEach(function(builderName) {
         var results = model.state.resultsByBuilder[builderName];
-        if (parseInt(results.revision) < revision)
+        if (parseInt(results.blink_revision) < revision)
             builders[builderName] = { actual: 'BUILDING' };
     });
     return builders;
@@ -148,9 +148,9 @@ model.latestRevisionWithNoBuildersInFlight = function()
     var revision = 0;
     Object.keys(model.state.resultsByBuilder).forEach(function(builderName) {
         var results = model.state.resultsByBuilder[builderName];
-        if (!results.revision)
+        if (!results.blink_revision)
             return;
-        var testedRevision = parseInt(results.revision);
+        var testedRevision = parseInt(results.blink_revision);
         revision = revision ? Math.min(revision, testedRevision) : testedRevision;
     });
     return revision;

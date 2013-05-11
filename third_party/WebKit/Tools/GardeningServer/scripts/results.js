@@ -197,9 +197,9 @@ function resultsDirectoryListingURL(platform, builderName)
     return layoutTestResultsURL(platform) + '/' + results.directoryForBuilder(builderName) + '/';
 }
 
-function resultsDirectoryURLForBuildNumber(platform, builderName, buildNumber, revision)
+function resultsDirectoryURLForBuildNumber(platform, builderName, buildNumber)
 {
-    return resultsDirectoryListingURL(platform, builderName) + config.kPlatforms[platform].resultsDirectoryForBuildNumber(buildNumber, revision) + '/';
+    return resultsDirectoryListingURL(platform, builderName) + buildNumber + '/';
 }
 
 function resultsSummaryURL(platform, builderName)
@@ -207,9 +207,9 @@ function resultsSummaryURL(platform, builderName)
     return resultsDirectoryURL(platform, builderName) + kResultsName;
 }
 
-function resultsSummaryURLForBuildNumber(platform, builderName, buildNumber, revision)
+function resultsSummaryURLForBuildNumber(platform, builderName, buildNumber)
 {
-    return resultsDirectoryURLForBuildNumber(platform, builderName, buildNumber, revision) + kResultsName;
+    return resultsDirectoryURLForBuildNumber(platform, builderName, buildNumber) + kResultsName;
 }
 
 var g_resultsCache = new base.AsynchronousCache(function (key, callback) {
@@ -330,18 +330,16 @@ results.collectUnexpectedResults = function(dictionaryOfResultNodes)
     return base.uniquifyArray(collectedResults);
 };
 
-// Callback data is [{ buildNumber:, revision:, url: }]
+// Callback data is [{ buildNumber:, url: }]
 function historicalResultsLocations(platform, builderName, callback)
 {
     var listingURL = resultsDirectoryListingURL(platform, builderName);
     net.get(listingURL, function(directoryListing) {
         var historicalResultsData = directoryListing.match(kBuildLinkRegexp).map(function(buildLink) {
             var buildNumber = parseInt(buildLink.match(kBuildNumberRegexp)[0]);
-            var revision = 0; // unused for Chromium.
             var resultsData = {
                 'buildNumber': buildNumber,
-                'revision': revision,
-                'url': resultsSummaryURLForBuildNumber(platform, builderName, buildNumber, revision)
+                'url': resultsSummaryURLForBuildNumber(platform, builderName, buildNumber)
             };
             return resultsData;
         }).reverse();
@@ -538,40 +536,6 @@ results.fetchResultsURLs = function(failureInfo, callback)
     });
 };
 
-results.fetchResultsForBuilder = function(builderName, callback)
-{
-    var resultsURL = resultsSummaryURL(config.currentPlatform, builderName);
-    net.jsonp(resultsURL, callback);
-};
-
-results.fetchResultsForBuildOnBuilder = function(builderName, buildNumber, revision, callback)
-{
-    var resultsURL = resultsSummaryURLForBuildNumber(config.currentPlatform, builderName, buildNumber, revision);
-    net.jsonp(resultsURL, callback);
-};
-
-// Look for the most recent completed build that has full results.
-results.fetchResultsForMostRecentCompletedBuildOnBuilder = function(builderName, callback)
-{
-    historicalResultsLocations(config.currentPlatform, builderName, function(buildLocations) {
-        var currentIndex = 0;
-        var resultsCallback = function(buildResults) {
-            if ($.isEmptyObject(buildResults)) {
-                ++currentIndex;
-                if (currentIndex >= buildLocations.length) {
-                    callback(null);
-                    return;
-                }
-
-                net.jsonp(buildLocations[currentIndex].url, resultsCallback);
-                return;
-            }
-            callback(buildResults);
-        };
-        net.jsonp(buildLocations[currentIndex].url, resultsCallback);
-    });
-};
-
 results.fetchResultsByBuilder = function(builderNameList, callback)
 {
     var resultsByBuilder = {};
@@ -579,7 +543,8 @@ results.fetchResultsByBuilder = function(builderNameList, callback)
         callback(resultsByBuilder);
     });
     $.each(builderNameList, function(index, builderName) {
-        results.fetchResultsForBuilder(builderName, function(resultsTree) {
+        var resultsURL = resultsSummaryURL(config.currentPlatform, builderName);
+        net.jsonp(resultsURL, function(resultsTree) {
             resultsByBuilder[builderName] = resultsTree;
             tracker.requestComplete();
         });

@@ -86,7 +86,7 @@ unittest.kExampleResultsJSON = {
     "num_flaky":1,
     "uses_expectations_file": true,
     "has_wdiff": true,
-    "revision": "90430"
+    "blink_revision": "90430"
 };
 
 test("ResultAnalyzer", 44, function() {
@@ -263,7 +263,7 @@ test("walkHistory", 6, function() {
                         }
                     },
                 },
-                "revision": "90430"
+                "blink_revision": "90430"
             },
             "11107":{
                 "tests": {
@@ -278,7 +278,7 @@ test("walkHistory", 6, function() {
                         }
                     },
                 },
-                "revision": "90429"
+                "blink_revision": "90429"
             },
             "11106":{
                 "tests": {
@@ -289,7 +289,7 @@ test("walkHistory", 6, function() {
                         }
                     },
                 },
-                "revision": "90426"
+                "blink_revision": "90426"
             },
             "11105":{
                 "tests": {
@@ -300,7 +300,7 @@ test("walkHistory", 6, function() {
                         },
                     },
                 },
-                "revision": "90424"
+                "blink_revision": "90424"
             },
         },
         "Another_Builder": {
@@ -313,12 +313,12 @@ test("walkHistory", 6, function() {
                         }
                     },
                 },
-                "revision": "90426"
+                "blink_revision": "90426"
             },
             "22201":{
                 "tests": {
                 },
-                "revision": "90425"
+                "blink_revision": "90425"
             },
         },
     };
@@ -372,12 +372,12 @@ test("walkHistory (no revision)", 3, function() {
                         }
                     },
                 },
-                "revision": ""
+                "blink_revision": ""
             },
             "11102":{
                 "tests": {
                 },
-                "revision": ""
+                "blink_revision": ""
             },
         },
     };

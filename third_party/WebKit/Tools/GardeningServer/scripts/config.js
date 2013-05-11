@@ -52,9 +52,6 @@ config.kPlatforms = {
         resultsDirectoryNameFromBuilderName: function(builderName) {
             return base.underscoredBuilderName(builderName);
         },
-        resultsDirectoryForBuildNumber: function(buildNumber, revision) {
-            return buildNumber;
-        },
         _builderApplies: function(builderName) {
             // FIXME: Should garden-o-matic show these?
             // WebKit Android and ASAN are red all the time.
@@ -71,42 +68,16 @@ config.currentPlatform = 'chromium';
 config.kBlinkSvnURL = 'svn://svn.chromium.org/blink/trunk';
 config.kBlinkRevisionURL = 'http://src.chromium.org/viewvc/blink';
 config.kSvnLogURL = 'http://build.chromium.org/cgi-bin/svn-log';
-config.kNumberOfRecentCommits = 50;
-
-config.kBugzillaURL = 'https://bugs.webkit.org';
-
-config.kRevisionAttr = 'data-revision';
-config.kTestNameAttr = 'data-test-name';
-config.kBuilderNameAttr = 'data-builder-name';
-config.kFailureCountAttr = 'data-failure-count';
-config.kFailureTypesAttr = 'data-failure-types';
-config.kInfobarTypeAttr = 'data-infobar-type';
 
 var kTenMinutesInMilliseconds = 10 * 60 * 1000;
 config.kUpdateFrequency = kTenMinutesInMilliseconds;
 config.kRelativeTimeUpdateFrequency = 1000 * 60;
 
-config.kExperimentalFeatures = window.location.search.search('enableExperiments=1') != -1;
-
-config.currentPlatform = base.getURLParameter('platform') || 'chromium';
-
-// FIXME: We should add a way to restrict the results to a subset of the builders
-// (or maybe just a single builder) in the UI as well as via an URL parameter.
-config.currentBuilder = base.getURLParameter('builder');
-
 config.currentBuilders = function() {
-    var current_builders = {};
-    if (config.currentBuilder) {
-        current_builders[config.currentBuilder] = config.kPlatforms[config.currentPlatform].builders[config.currentBuilder];
-        return current_builders;
-    } else {
-        return config.kPlatforms[config.currentPlatform].builders;
-    }
+    return config.kPlatforms[config.currentPlatform].builders;
 };
 
 config.builderApplies = function(builderName) {
-    if (config.currentBuilder)
-        return builderName == config.currentBuilder;
     return config.kPlatforms[config.currentPlatform]._builderApplies(builderName);
 };
 
