@@ -265,7 +265,7 @@ bool FEColorMatrix::applySkia()
 
     FilterEffect* in = inputEffect(0);
 
-    IntRect imageRect(IntPoint(), absolutePaintRect().size());
+    SkRect drawingRegion = drawingRegionOfInputImage(in->absolutePaintRect());
 
     SkAutoTUnref<SkColorFilter> filter(createColorFilter(m_type, m_values.data()));
 
@@ -277,7 +277,7 @@ bool FEColorMatrix::applySkia()
     SkPaint paint;
     paint.setColorFilter(filter);
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-    resultImage->context()->drawBitmap(nativeImage->bitmap(), 0, 0, &paint);
+    resultImage->context()->drawBitmap(nativeImage->bitmap(), drawingRegion.fLeft, drawingRegion.fTop, &paint);
     return true;
 }
 
