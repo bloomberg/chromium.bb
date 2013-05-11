@@ -367,8 +367,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
     if (is_inline_install()) {
       layout->StartRow(0, column_set_id);
-      layout->AddView(new views::Separator(), 3, 1, views::GridLayout::FILL,
-                      views::GridLayout::FILL);
+      layout->AddView(new views::Separator(views::Separator::HORIZONTAL),
+                      3, 1, views::GridLayout::FILL, views::GridLayout::FILL);
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     }
 

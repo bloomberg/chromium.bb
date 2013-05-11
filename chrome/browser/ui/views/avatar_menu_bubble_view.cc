@@ -670,7 +670,7 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kNewProfileManagement)) {
-    separator_ = new views::Separator();
+    separator_ = new views::Separator(views::Separator::HORIZONTAL);
     AddChildView(separator_);
     buttons_view_ = new ActionButtonView(this, browser_->profile());
     AddChildView(buttons_view_);
@@ -680,7 +680,7 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
     add_profile_link->set_listener(this);
     add_profile_link->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     add_profile_link->SetBackgroundColor(color());
-    separator_ = new views::Separator();
+    separator_ = new views::Separator(views::Separator::HORIZONTAL);
     AddChildView(separator_);
     buttons_view_ = add_profile_link;
     AddChildView(buttons_view_);

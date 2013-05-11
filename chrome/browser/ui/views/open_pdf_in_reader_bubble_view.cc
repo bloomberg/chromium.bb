@@ -53,7 +53,7 @@ void OpenPDFInReaderBubbleView::Init() {
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_set_id);
-  layout->AddView(new views::Separator, 1, 1,
+  layout->AddView(new views::Separator(views::Separator::HORIZONTAL), 1, 1,
                   GridLayout::FILL, GridLayout::FILL);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 

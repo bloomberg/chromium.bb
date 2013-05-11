@@ -153,7 +153,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
   strut->set_border(views::Border::CreateEmptyBorder(
       views::kRelatedControlVerticalSpacing, 0, 0, 0));
   scroll_container->AddChildView(strut);
-  views::Separator* separator = new views::Separator;
+  views::Separator* separator = new views::Separator(
+      views::Separator::HORIZONTAL);
   scroll_container->AddChildView(separator);
 
   // Unattached locations section.

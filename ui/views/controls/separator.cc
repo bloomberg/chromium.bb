@@ -18,7 +18,7 @@ const int kSeparatorHeight = 1;
 // Default color of the separator.
 const SkColor kDefaultColor = SkColorSetARGB(255, 233, 233, 233);
 
-Separator::Separator() {
+Separator::Separator(Orientation orientation) : orientation_(orientation) {
   set_focusable(false);
 }
 
@@ -29,7 +29,9 @@ Separator::~Separator() {
 // Separator, View overrides:
 
 gfx::Size Separator::GetPreferredSize() {
-  return gfx::Size(width(), kSeparatorHeight);
+  if (orientation_ == HORIZONTAL)
+    return gfx::Size(width(), kSeparatorHeight);
+  return gfx::Size(kSeparatorHeight, height());
 }
 
 void Separator::GetAccessibleState(ui::AccessibleViewState* state) {
