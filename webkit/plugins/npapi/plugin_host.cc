@@ -482,7 +482,7 @@ static NPError PostURLNotify(NPP id,
       return NPERR_FILE_NOT_FOUND;
 
     buf = post_file_contents.c_str();
-    len = static_cast<uint32_t>(post_file_contents.size());
+    len = post_file_contents.size();
   }
 
   // The post data sent by a plugin contains both headers
@@ -988,10 +988,9 @@ NPError NPN_GetValueForURL(NPP id,
 
   // Allocate this using the NPAPI allocator. The plugin will call
   // NPN_Free to free this.
-  *value = static_cast<char*>(
-      NPN_MemAlloc(static_cast<uint32_t>(result.length()) + 1));
+  *value = static_cast<char*>(NPN_MemAlloc(result.length() + 1));
   base::strlcpy(*value, result.c_str(), result.length() + 1);
-  *len = static_cast<uint32_t>(result.length());
+  *len = result.length();
 
   return NPERR_NO_ERROR;
 }
