@@ -204,34 +204,29 @@
     // shouldBeTrue("document.createEvent('WebGLContextEvent') instanceof window.Event");
     // shouldBeTrue("document.createEvent('WebGLContextEvent').constructor === window.WebGLContextEvent");
 
-    // #if ENABLE(TOUCH_EVENTS)
     // TouchEvent
-    // shouldBeTrue("document.createEvent('TouchEvent') instanceof window.TouchEvent");
-    // shouldBeTrue("document.createEvent('TouchEvent') instanceof window.Event");
-    // shouldBeTrue("document.createEvent('TouchEvent').constructor === window.TouchEvent");
+    shouldBeTrue("document.createEvent('TouchEvent') instanceof window.TouchEvent");
+    shouldBeTrue("document.createEvent('TouchEvent') instanceof window.Event");
+    shouldBeTrue("document.createEvent('TouchEvent').constructor === window.TouchEvent");
 
-    // #if ENABLE(DEVICE_ORIENTATION)
     // DeviceMotionEvent
     // shouldBeTrue("document.createEvent('DeviceMotionEvent') instanceof window.DeviceMotionEvent");
     // shouldBeTrue("document.createEvent('DeviceMotionEvent') instanceof window.Event");
     // shouldBeTrue("document.createEvent('DeviceMotionEvent').constructor === window.DeviceMotionEvent");
 
-    // #if ENABLE(DEVICE_ORIENTATION)
     // DeviceOrientationEvent
     // shouldBeTrue("document.createEvent('DeviceOrientationEvent') instanceof window.DeviceOrientationEvent");
     // shouldBeTrue("document.createEvent('DeviceOrientationEvent') instanceof window.Event");
     // shouldBeTrue("document.createEvent('DeviceOrientationEvent').constructor === window.DeviceOrientationEvent");
 
-    // #if ENABLE(ORIENTATION_EVENTS)
     // OrientationEvent (Event alternative)
     // shouldBeTrue("document.createEvent('OrientationEvent') instanceof window.Event");
     // shouldBeTrue("document.createEvent('OrientationEvent').constructor === window.Event");
 
-    // #if ENABLE(REQUEST_AUTOCOMPLETE)
     // AutocompleteErrorEvent
-    // shouldBeTrue("document.createEvent('AutocompleteErrorEvent') instanceof window.AutocompleteErrorEvent");
-    // shouldBeTrue("document.createEvent('AutocompleteErrorEvent') instanceof window.Event");
-    // shouldBeTrue("document.createEvent('AutocompleteErrorEvent').constructor === window.AutocompleteErrorEvent");
+    shouldBeTrue("document.createEvent('AutocompleteErrorEvent') instanceof window.AutocompleteErrorEvent");
+    shouldBeTrue("document.createEvent('AutocompleteErrorEvent') instanceof window.Event");
+    shouldBeTrue("document.createEvent('AutocompleteErrorEvent').constructor === window.AutocompleteErrorEvent");
 
     // We test both a hard coded set and the automated set below (using enumeration) to ensure that a constructor being removed
     // from the window is caught a regression.

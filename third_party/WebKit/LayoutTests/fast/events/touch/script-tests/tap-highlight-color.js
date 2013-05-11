@@ -49,5 +49,5 @@ if (window.eventSender && eventSender.clearTouchPoints) {
 
     touchTargets();
 } else {
-    debug("This test requires DumpRenderTree && WebKit built with ENABLE(TOUCH_EVENT).")
+    debug("This test requires DumpRenderTree.")
 }
