@@ -1,0 +1,52 @@
+<h1 id="icons">Manifest - Icons</h1>
+
+<p>
+One or more icons that represent the extension, app, or theme.
+You should always provide a 128x128 icon;
+it's used during installation and by the Chrome Web Store.
+Extensions should also provide a 48x48 icon,
+which is used in the extensions management page
+(chrome://extensions).
+You can also specify a 16x16 icon to be used as the favicon
+for an extension's pages.
+The 16x16 icon is also displayed in the experimental extension
+<a href="http://developer.chrome.com/extensions/experimental.infobars.html">infobar</a>
+feature.
+</p>
+
+<p>
+Icons should generally be in PNG format,
+because PNG has the best support for transparency.
+They can, however, be in any format supported by WebKit,
+including BMP, GIF, ICO, and JPEG.
+Here's an example of specifying the icons:
+</p>
+
+<pre class="prettyprint"><span class="str">"icons"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln"> </span><span class="str">"16"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"icon16.png"</span><span class="pun">,</span><span class="pln">
+           </span><span class="str">"48"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"icon48.png"</span><span class="pun">,</span><span class="pln">
+          </span><span class="str">"128"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"icon128.png"</span><span class="pln"> </span><span class="pun">},</span></pre>
+
+<p class="note">
+<b>Important:</b>
+Use only the documented icon sizes.
+<br><br>
+You might notice that Chrome sometimes resizes these icons down to smaller
+sizes. For example, the install dialog might shrink the 128-pixel
+icon down to 69 pixels.
+<br><br>
+However, the details of
+Chrome's UI may change between versions, and these changes assume that
+developers are using the documented sizes. If you use other sizes,
+your icon may look bad in future versions of the browser.
+</p>
+
+<p>
+If you upload your extension, app, or theme using the
+<a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>,
+you'll need to upload additional images,
+including at least one screenshot of your extension.
+For more information,
+see the
+<a href="http://code.google.com/chrome/webstore/">Chrome Web Store
+developer documentation</a>.
+</p>

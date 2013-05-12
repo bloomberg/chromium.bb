@@ -1,0 +1,17 @@
+<pre>
+{
+  <em>// Required</em>
+  {{+partials.manifest_properties properties:manifest_source.required}}
+
+  <em>// Recommended</em>
+  {{+partials.manifest_properties properties:manifest_source.recommended}}
+
+  {{?manifest_source.only_one}}
+  <em>// Pick one (or none)</em>
+  {{+partials.manifest_properties properties:manifest_source.only_one}}
+
+  {{/manifest_source.only_one}}
+  <em>// Optional</em>
+  {{+partials.manifest_properties properties:manifest_source.optional}}
+}
+</pre>

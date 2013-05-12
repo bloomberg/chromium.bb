@@ -9,7 +9,6 @@ import re
 
 from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
-import compiled_file_system as compiled_fs
 from third_party.handlebar import Handlebar
 
 # TODO(kalman): rename this HTMLDataSource or other, then have separate intro

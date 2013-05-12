@@ -4,15 +4,15 @@
     "items": [
       {
         "title": "What Are Packaged Apps?",
-        "fileName": "about_apps.html"
+        "url": "/apps/about_apps.html"
       },
       {
         "title": "Understand the Architecture",
-        "fileName": "app_architecture.html"
+        "url": "/apps/app_architecture.html"
       },
       {
         "title": "Create Your First App",
-        "fileName": "first_app.html"
+        "url": "/apps/first_app.html"
       }
     ]
   },
@@ -21,7 +21,7 @@
     "items": [
       {
         "title": "Before You Start",
-        "fileName": "develop_apps.html"
+        "url": "/apps/develop_apps.html"
       },
       {
         "title": "The Fundamentals",
@@ -29,19 +29,19 @@
         "items": [
           {
             "title": "Manage App Lifecycle",
-            "fileName": "app_lifecycle.html"
+            "url": "/apps/app_lifecycle.html"
           },
           {
             "title": "Manage Data",
-            "fileName": "app_storage.html"
+            "url": "/apps/app_storage.html"
           },
           {
             "title": "Offline First",
-            "fileName": "offline_apps.html"
+            "url": "/apps/offline_apps.html"
           },
           {
             "title": "Embed Content",
-            "fileName": "app_external.html"
+            "url": "/apps/app_external.html"
           }
         ]
       },
@@ -51,40 +51,40 @@
 	"items": [
 	  {
 	    "title": "About this Codelab",
-	    "fileName": "app_codelab.html"
+	    "url": "/apps/app_codelab.html"
 	  },
 	  {
 	    "title": "1 - Set Up Development Environment",
-	    "fileName": "app_codelab1_setup.html"
+	    "url": "/apps/app_codelab1_setup.html"
 	  },
 	  {
 	    "title": "2 -  Create Basic App",
-	    "fileName": "app_codelab2_basic.html"
+	    "url": "/apps/app_codelab2_basic.html"
 	  },
 	  {
 	    "title": "3 - Create MVC",
-	    "fileName": "app_codelab3_mvc.html"
+	    "url": "/apps/app_codelab3_mvc.html"
 	  },
 	  {
 	    "title": "4 - Save and Fetch Data",
-	    "fileName": "app_codelab5_data.html"
+	    "url": "/apps/app_codelab5_data.html"
 	  },
 	  {
 	    "title": "5 - Manage App Lifecycle",
-	    "fileName": "app_codelab6_lifecycle.html"
+	    "url": "/apps/app_codelab6_lifecycle.html"
 	  },
-	   
+
 	  {
-            "title": "6 - Access User's Data",
-	    "fileName": "app_codelab7_useridentification.html"
+      "title": "6 - Access User's Data",
+	    "url": "/apps/app_codelab7_useridentification.html"
 	  },
 	  {
 	    "title": "7 - Access Web Resources",
-	    "fileName": "app_codelab8_webresources.html"
+	    "url": "/apps/app_codelab8_webresources.html"
 	  },
 	  {
 	    "title": "8 - Publish App",
-	    "fileName": "app_codelab_10_publishing.html"
+	    "url": "/apps/app_codelab_10_publishing.html"
 	  }
 	]
       },
@@ -94,11 +94,11 @@
         "items": [
           {
             "title": "Identify User",
-            "fileName": "app_identity.html"
+            "url": "/apps/app_identity.html"
           },
           {
             "title": "Comply with CSP",
-            "fileName": "app_csp.html"
+            "url": "/apps/app_csp.html"
           }
         ]
       },
@@ -112,25 +112,25 @@
             "items": [
               {
                 "title": "About Cloud Messaging",
-                "fileName": "cloudMessaging.html"
+                "url": "/apps/cloudMessaging.html"
               },
               {
                 "title": "Client Reference",
-                "fileName": "pushMessaging.html"
+                "url": "/apps/pushMessaging.html"
               },
               {
                 "title": "Service Reference",
-                "fileName": "gcm_server.html"
+                "url": "/apps/gcm_server.html"
               },
               {
                 "title": "Terms of Service",
-                "fileName": "gcm_tos.html"
+                "url": "/apps/gcm_tos.html"
               }
             ]
           },
           {
             "title": "Desktop Notifications",
-            "fileName": "desktop_notifications.html"
+            "url": "/apps/desktop_notifications.html"
           }
         ]
       },
@@ -140,11 +140,11 @@
         "items": [
           {
             "title": "Network Communications",
-            "fileName": "app_network.html"
+            "url": "/apps/app_network.html"
           },
           {
             "title": "Access Hardware Devices",
-            "fileName": "app_hardware.html"
+            "url": "/apps/app_hardware.html"
           }
         ]
       },
@@ -154,15 +154,15 @@
         "items": [
 	  {
 	    "title": "About MVC Architecture",
-	    "fileName": "app_frameworks.html"
+	    "url": "/apps/app_frameworks.html"
 	  },
 	  {
             "title": "Build Apps with AngularJS",
-            "fileName": "angular_framework.html"
+            "url": "/apps/angular_framework.html"
           },
           {
             "title": "Build Apps with Sencha Ext JS",
-            "fileName": "sencha_framework.html"
+            "url": "/apps/sencha_framework.html"
           }
         ]
       }
@@ -173,7 +173,7 @@
     "items": [
       {
         "title": "Publish",
-        "fileName": "publish_app.html"
+        "url": "/apps/publish_app.html"
       }
     ]
   },
@@ -182,23 +182,23 @@
     "items": [
       {
         "title": "Manifest Files",
-        "fileName": "manifest.html"
+        "url": "/apps/manifest.html"
       },
       {
         "title": "Chrome JavaScript APIs",
-        "fileName": "api_index.html"
+        "url": "/apps/api_index.html"
       },
       {
         "title": "Webview Tag API",
-        "fileName": "webview_tag.html"
+        "url": "/apps/webview_tag.html"
       },
       {
         "title": "Supported Libraries",
-        "fileName": "api_other.html"
+        "url": "/apps/api_other.html"
       },
       {
         "title": "Disabled Web Features",
-        "fileName": "app_deprecated.html"
+        "url": "/apps/app_deprecated.html"
       }
     ]
   },
@@ -207,11 +207,11 @@
     "items": [
       {
         "title": "FAQ",
-        "fileName": "faq.html"
+        "url": "/apps/faq.html"
       },
       {
         "title": "Samples",
-        "fileName": "samples.html"
+        "url": "/apps/samples.html"
       }
     ]
   }

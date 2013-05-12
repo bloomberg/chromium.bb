@@ -1,0 +1,62 @@
+<h1 id="nacl_modules">Manifest - Nacl Modules</h1>
+
+<p>
+One or more mappings from MIME types to the Native Client module
+that handles each type.
+For example, the bold code in the following snippet
+registers a Native Client module as the content handler
+for the OpenOffice spreadsheet MIME type.
+</p>
+
+<pre class="prettyprint"><span class="pun">{</span><span class="pln">
+  </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"Native Client OpenOffice Spreadsheet Viewer"</span><span class="pun">,</span><span class="pln">
+  </span><span class="str">"version"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"0.1"</span><span class="pun">,</span><span class="pln">
+  </span><span class="str">"description"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"Open OpenOffice spreadsheets, right in your browser."</span><span class="pun">,</span><span class="pln">
+  </span><b><span class="str">"nacl_modules"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[{</span><span class="pln">
+    </span><span class="str">"path"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"OpenOfficeViewer.nmf"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"mime_type"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"application/vnd.oasis.opendocument.spreadsheet"</span><span class="pln">
+  </span><span class="pun">}]</span></b><span class="pln">
+</span><span class="pun">}</span></pre>
+
+<p>
+The value of "path" is the location of a Native Client manifest
+(a <code>.nmf</code> file)
+within the extension directory.
+For more information on Native Client and <code>.nmf</code> files, see the
+<a href="http://code.google.com/chrome/nativeclient/docs/technical_overview.html">Native Client Technical Overview</a>.
+</p>
+
+<p>
+Each MIME type can be associated with only one <code>.nmf</code> file,
+but a single <code>.nmf</code> file might handle multiple MIME types.
+The following example shows an extension
+with two <code>.nmf</code> files
+that handle three MIME types.
+</p>
+
+<pre class="prettyprint"><span class="pun">{</span><span class="pln">
+  </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"Spreadsheet Viewer"</span><span class="pun">,</span><span class="pln">
+  </span><span class="str">"version"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"0.1"</span><span class="pun">,</span><span class="pln">
+  </span><span class="str">"description"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"Open OpenOffice and Excel spreadsheets, right in your browser."</span><span class="pun">,</span><span class="pln">
+  </span><span class="str">"nacl_modules"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[{</span><span class="pln">
+    </span><span class="str">"path"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"OpenOfficeViewer.nmf"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"mime_type"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"application/vnd.oasis.opendocument.spreadsheet"</span><span class="pln">
+  </span><span class="pun">},</span><span class="pln">
+  </span><span class="pun">{</span><span class="pln">
+    </span><span class="str">"path"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"OpenOfficeViewer.nmf"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"mime_type"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"application/vnd.oasis.opendocument.spreadsheet-template"</span><span class="pln">
+  </span><span class="pun">},</span><span class="pln">
+  </span><span class="pun">{</span><span class="pln">
+    </span><span class="str">"path"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"ExcelViewer.nmf"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"mime_type"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"application/excel"</span><span class="pln">
+  </span><span class="pun">}]</span><span class="pln">
+</span><span class="pun">}</span></pre>
+
+<p class="note">
+<strong>Note:</strong>
+You can use Native Client modules in extensions
+without specifying "nacl_modules".
+Use "nacl_modules" only if you want the browser
+to use your Native Client module
+to display a particular type of content.
+</p>

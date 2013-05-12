@@ -1,0 +1,59 @@
+<h1 id="web_accessible_resources">Manifest - Web Accessible Resources</h1>
+
+<p>
+An array of strings specifying the paths (relative to the package root) of
+packaged resources that are expected to be usable in the context of a web page.
+For example, an extension that injects a content script with the intention of
+building up some custom interface for <code>example.com</code> would whitelist
+any resources that interface requires (images, icons, stylesheets, scripts,
+etc.) as follows:
+</p>
+
+<pre class="prettyprint"><span class="pun">{</span><span class="pln">
+  </span><span class="pun">...</span><span class="pln">
+  </span><span class="str">"web_accessible_resources"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[</span><span class="pln">
+    </span><span class="str">"images/my-awesome-image1.png"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"images/my-amazing-icon1.png"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"style/double-rainbow.css"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"script/double-rainbow.js"</span><span class="pln">
+  </span><span class="pun">],</span><span class="pln">
+  </span><span class="pun">...</span><span class="pln">
+</span><span class="pun">}</span></pre>
+
+<p>
+These resources would then be available in a webpage via the URL
+<code>chrome-extension://[PACKAGE ID]/[PATH]</code>, which can be generated with
+the <a href="http://developer.chrome.com/extensions/extension.html#method-getURL">extension.getURL</a> method. Whitelisted resources are served with appropriate
+<a href="http://www.w3.org/TR/cors/">CORS</a> headers, so they're available via
+mechanisms like XHR.
+</p>
+
+<p>
+Injected content scripts themselves do not need to be whitelisted.
+</p>
+
+<p>
+Prior to manifest version 2 all resources within an extension could be accessed
+from any page on the web. This allowed a malicious website to
+<a href="http://en.wikipedia.org/wiki/Device_fingerprint">fingerprint</a> the
+extensions that a user has installed or exploit vulnerabilities (for example
+<a href="http://en.wikipedia.org/wiki/Cross-site_scripting">XSS bugs</a>)within
+installed extensions. Limiting availability to only resources which are
+explicitly intended to be web accessible serves to both minimize the available
+attack surface and protect the privacy of users.
+</p>
+
+<h2 id="availability">Default Availability</h2>
+
+<p>
+Resources inside of packages using <a href="http://developer.chrome.com/extensions/manifest.html#manifest_version"><code>manifest_version</code></a>
+2 or above are <strong>blocked by default</strong>, and must be whitelisted
+for use via this property.
+</p>
+
+<p>
+Resources inside of packages using <code>manifest_version</code> 1 are available
+by default, but <em>if</em> you do set this property, then it will be treated as
+a complete list of all whitelisted resources. Resources not listed will be
+blocked.
+</p>

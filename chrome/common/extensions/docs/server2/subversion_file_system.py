@@ -2,15 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
-import re
 import posixpath
+from file_system import FileSystem, FileNotFoundError, StatInfo, ToUnicode
+from future import Future
 import xml.dom.minidom as xml
 from xml.parsers.expat import ExpatError
 
 from appengine_url_fetcher import AppEngineUrlFetcher
 from docs_server_utils import StringIdentity
-from file_system import FileSystem, FileNotFoundError, StatInfo, ToUnicode
 from future import Future
 import svn_constants
 import url_constants

@@ -1,0 +1,176 @@
+{
+  "required": [
+    {
+      "documentation": "manifest/name.html",
+      "example": "My Extension",
+      "name": "name"
+    },
+    {
+      "documentation": "manifest/app.html",
+      "example": {},
+      "name": "app"
+    },
+    {
+      "documentation": "manifest/version.html",
+      "example": "versionString",
+      "name": "version"
+    },
+    {
+      "documentation": "manifest/manifest_version.html",
+      "example": 2,
+      "name": "manifest_version"
+    }
+  ],
+  "recommended": [
+    {
+      "documentation": "manifest/description.html",
+      "example": "A plain text description",
+      "name": "description"
+    },
+    {
+      "documentation": "manifest/icons.html",
+      "example": {},
+      "name": "icons"
+    },
+    {
+      "documentation": "manifest/default_locale.html",
+      "example": "en",
+      "name": "default_locale"
+    }
+  ],
+  "only_one": [
+    {
+      "documentation": "browserAction.html",
+      "example": {},
+      "name": "browser_action"
+    },
+    {
+      "documentation": "pageAction.html",
+      "example": {},
+      "name": "page_action"
+    },
+    {
+      "documentation": "themes.html",
+      "example": {},
+      "name": "theme"
+    }
+  ],
+  "optional": [
+    {
+      "documentation": "event_pages.html",
+      "example": {
+        "persistent": false
+      },
+      "name": "background"
+    },
+    {
+      "documentation": "background_pages.html",
+      "example": {
+        "persistent": true
+      },
+      "name": "background.persistent"
+    },
+    {
+      "documentation": "override.html",
+      "example": {},
+      "name": "chrome_url_overrides"
+    },
+    {
+      "documentation": "content_scripts.html",
+      "example": {},
+      "name": "content_scripts"
+    },
+    {
+      "documentation": "contentSecurityPolicy.html",
+      "example": "policyString",
+      "name": "content_security_policy"
+    },
+    {
+      "documentation": "fileBrowserHandler.html",
+      "example": [],
+      "name": "file_browser_handlers"
+    },
+    {
+      "documentation": "manifest/file_handlers.html",
+      "example": {},
+      "name": "file_handlers"
+    },
+    {
+      "documentation": "manifest/homepage_url.html",
+      "example": "http://path/to/homepage",
+      "name": "homepage_url"
+    },
+    {
+      "documentation": "manifest/incognito.html",
+      "example": "spanning or split",
+      "name": "incognito"
+    },
+    {
+      "documentation": "manifest/key.html",
+      "example": "publicKey",
+      "name": "key"
+    },
+    {
+      "documentation": "manifest/minimum_chrome_version.html",
+      "example": "versionString",
+      "name": "minimum_chrome_version"
+    },
+    {
+      "documentation": "manifest/nacl_modules.html",
+      "example": [],
+      "name": "nacl_modules"
+    },
+    {
+      "documentation": "manifest/kiosk_enabled.html",
+      "example": true,
+      "name": "kiosk_enabled"
+    },
+    {
+      "documentation": "manifest/offline_enabled.html",
+      "example": true,
+      "name": "offline_enabled"
+    },
+    {
+      "documentation": "omnibox.html",
+      "example": {
+        "keyword": "aString"
+      },
+      "name": "omnibox"
+    },
+    {
+      "documentation": "options.html",
+      "example": "aFile.html",
+      "name": "options_page"
+    },
+    {
+      "documentation": "declare_permissions.html",
+      "example": [],
+      "name": "permissions"
+    },
+    {
+      "documentation": "npapi.html",
+      "example": [],
+      "name": "plugins"
+    },
+    {
+      "documentation": "manifest/requirements.html",
+      "example": {},
+      "name": "requirements"
+    },
+    {
+      "documentation": "autoupdate.html",
+      "example": "http://path/to/updateInfo.xml",
+      "name": "update_url"
+    },
+    {
+      "documentation": "manifest/web_accessible_resources.html",
+      "example": [],
+      "name": "web_accessible_resources"
+    },
+    {
+      "documentation": "manifest/sandbox.html",
+      "example": [],
+      "name": "sandbox"
+    }
+  ]
+}

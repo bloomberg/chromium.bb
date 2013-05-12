@@ -1,0 +1,42 @@
+<h1 id="file_handlers">Manifest - File Handlers</h1>
+
+<p>
+Used by <a href="../apps/app_lifecycle.html#eventpage">packaged apps</a>
+to specify what types of files the app can handle. An app can have multiple <code>file_handlers</code>, with each one having an identifier, a list of MIME types and/or a list of file extensions that can be handled, and
+a title. Here's an example of specifying file handlers:
+</p>
+
+<pre>
+"file_handlers": {
+  "text": {
+    "types": [
+      "text/*"
+    ],
+    "title": "Text editor"
+  },
+  "image": {
+    "types": [
+      "image/png",
+      "image/jpeg"
+    ],
+    "extensions": [
+      "tiff"
+    ]
+    "title": "Image editor"
+  },
+  "any": {
+    "extensions": [
+      "*"
+    ]
+    "title": "Any file type editor"
+  }
+}
+</pre>
+
+<p>
+To handle files, apps also need to declare the $ref:fileSystem
+permission. Apps can then be passed files in the $ref:app.runtime.onLaunched
+event - either from the system
+file manager (currently supported on ChromeOS only) or by providing
+a path on the <a href="../apps/first_app.html#open">command line</a>.
+</p>

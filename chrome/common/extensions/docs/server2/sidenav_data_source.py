@@ -4,10 +4,6 @@
 
 import copy
 import json
-import logging
-
-import compiled_file_system as compiled_fs
-from third_party.json_schema_compiler.model import UnixName
 
 class SidenavDataSource(object):
   """This class reads in and caches a JSON file representing the side navigation
@@ -57,7 +53,7 @@ class SidenavDataSource(object):
     return False
 
   def get(self, key):
-    sidenav = copy.deepcopy(self._cache.GetFromFile(
+    sidenav_items = copy.deepcopy(self._cache.GetFromFile(
         '%s/%s_sidenav.json' % (self._json_path, key)))
-    self._AddSelected(sidenav)
-    return sidenav
+    self._AddSelected(sidenav_items)
+    return sidenav_items
