@@ -5,11 +5,11 @@
       <div class="toggleIndicator level{{item.level}}{{?item.child_selected}} toggled{{/}}"></div>
     </a>
   {{:item.toggleable}}
-    {{?item.url}}
-      <a {{^item.selected}}href="{{item.url}}"{{/}} class="level{{item.level}} {{?item.selected}}selected{{/}}">{{item.title}}</a>
-    {{:item.url}}
+    {{?item.fileName}}
+      <a {{^item.selected}}href="{{item.fileName}}"{{/}} class="level{{item.level}} {{?item.selected}}selected{{/}}">{{item.title}}</a>
+    {{:item.fileName}}
       <span class="level{{item.level}}">{{item.title}}</span>
-    {{/item.url}}
+    {{/item.fileName}}
   {{/item.toggleable}}
   {{?item.items}}
     {{+partials.sidenav_items items:item.items parent:item}}

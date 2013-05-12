@@ -18,7 +18,7 @@ class LocalRenderer(object):
   '''
   @staticmethod
   def Render(path):
-    assert not '\\' in path
+    assert not path.contains('\\')
     def render_path(path):
       return RenderServlet(Request(path, 'http://localhost', {}),
                            _LocalRenderServletDelegate(),

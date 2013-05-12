@@ -3,9 +3,11 @@
 # found in the LICENSE file.
 
 import logging
+import os
 import traceback
 
 from branch_utility import BranchUtility
+import compiled_file_system as compiled_fs
 from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
 from third_party.handlebar import Handlebar
@@ -18,7 +20,6 @@ def _MakeChannelDict(channel_name):
     'channels': [{'name': name} for name in BranchUtility.GetAllChannelNames()],
     'current': channel_name
   }
-
   for channel in channel_dict['channels']:
     if channel['name'] == channel_name:
       channel['isCurrent'] = True
@@ -49,7 +50,6 @@ class TemplateDataSource(object):
                  sidenav_data_source_factory,
                  compiled_fs_factory,
                  ref_resolver_factory,
-                 manifest_data_source,
                  public_template_path,
                  private_template_path):
       self._branch_info = _MakeChannelDict(channel_name)
@@ -64,7 +64,6 @@ class TemplateDataSource(object):
       self._public_template_path = public_template_path
       self._private_template_path = private_template_path
       self._static_resources = '/%s/static' % channel_name
-      self._manifest_data_source = manifest_data_source
 
     def _CreateTemplate(self, template_name, text):
       return Handlebar(self._ref_resolver.ResolveAllLinks(text))
@@ -80,7 +79,6 @@ class TemplateDataSource(object):
           self._samples_data_source_factory.Create(request),
           self._sidenav_data_source_factory.Create(path),
           self._cache,
-          self._manifest_data_source,
           self._public_template_path,
           self._private_template_path,
           self._static_resources)
@@ -93,7 +91,6 @@ class TemplateDataSource(object):
                samples_data_source,
                sidenav_data_source,
                cache,
-               manifest_data_source,
                public_template_path,
                private_template_path,
                static_resources):
@@ -107,7 +104,6 @@ class TemplateDataSource(object):
     self._public_template_path = public_template_path
     self._private_template_path = private_template_path
     self._static_resources = static_resources
-    self._manifest_data_source = manifest_data_source
 
   def Render(self, template_name):
     """This method will render a template named |template_name|, fetching all
@@ -125,7 +121,6 @@ class TemplateDataSource(object):
       'intros': self._intro_data_source,
       'sidenavs': self._sidenav_data_source,
       'partials': self,
-      'manifest_source': self._manifest_data_source,
       'samples': self._samples_data_source,
       'static': self._static_resources,
       'app': 'app',
@@ -154,6 +149,6 @@ class TemplateDataSource(object):
     try:
       return self._cache.GetFromFile(
           '/'.join((base_path, FormatKey(template_name))))
-    except FileNotFoundError:
+    except FileNotFoundError as e:
       logging.warning(traceback.format_exc())
       return None

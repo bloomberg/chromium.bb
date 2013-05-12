@@ -11,7 +11,6 @@ import unittest
 from api_data_source import APIDataSource
 from compiled_file_system import CompiledFileSystem
 from local_file_system import LocalFileSystem
-from manifest_data_source import ManifestDataSource
 from object_store_creator import ObjectStoreCreator
 from reference_resolver import ReferenceResolver
 from template_data_source import TemplateDataSource
@@ -38,8 +37,6 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._fake_intro_data_source_factory = _FakeFactory()
     self._fake_samples_data_source_factory = _FakeFactory()
     self._fake_sidenav_data_source_factory = _FakeFactory()
-    self._manifest_data_source = ManifestDataSource(
-      _FakeFactory(), LocalFileSystem.Create(), '', '')
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
@@ -74,7 +71,6 @@ class TemplateDataSourceTest(unittest.TestCase):
         self._fake_sidenav_data_source_factory,
         compiled_fs_factory,
         reference_resolver_factory,
-        self._manifest_data_source,
         '.',
         '.'))
 

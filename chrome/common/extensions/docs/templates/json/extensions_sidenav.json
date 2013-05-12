@@ -1,19 +1,19 @@
 [
   {
     "title": "Getting Started",
-    "url": "/extensions/getstarted.html"
+    "fileName": "getstarted.html"
   },
   {
     "title": "Overview",
-    "url": "/extensions/overview.html"
+    "fileName": "overview.html"
   },
   {
     "title": "What's New?",
-    "url": "/extensions/whats_new.html"
+    "fileName": "whats_new.html"
   },
   {
     "title": "Developer's Guide",
-    "url": "/extensions/devguide.html",
+    "fileName": "devguide.html",
     "items": [
       {
         "title": "Browser UI",
@@ -21,31 +21,31 @@
         "items": [
           {
             "title": "Browser Actions",
-            "url": "/extensions/browserAction.html"
+            "fileName": "browserAction.html"
           },
           {
             "title": "Context Menus",
-            "url": "/extensions/contextMenus.html"
+            "fileName": "contextMenus.html"
           },
           {
             "title": "Desktop Notifications",
-            "url": "/extensions/desktop_notifications.html"
+            "fileName": "desktop_notifications.html"
           },
           {
             "title": "Omnibox",
-            "url": "/extensions/omnibox.html"
+            "fileName": "omnibox.html"
           },
           {
             "title": "Options Pages",
-            "url": "/extensions/options.html"
+            "fileName": "options.html"
           },
           {
             "title": "Override Pages",
-            "url": "/extensions/override.html"
+            "fileName": "override.html"
           },
           {
             "title": "Page Actions",
-            "url": "/extensions/pageAction.html"
+            "fileName": "pageAction.html"
           }
         ]
       },
@@ -55,35 +55,35 @@
         "items": [
           {
             "title": "Bookmarks",
-            "url": "/extensions/bookmarks.html"
+            "fileName": "bookmarks.html"
           },
           {
             "title": "Cookies",
-            "url": "/extensions/cookies.html"
+            "fileName": "cookies.html"
           },
           {
             "title": "Developer Tools",
-            "url": "/extensions/devtools.html"
+            "fileName": "devtools.html"
           },
           {
             "title": "Events",
-            "url": "/extensions/events.html"
+            "fileName": "events.html"
           },
           {
             "title": "History",
-            "url": "/extensions/history.html"
+            "fileName": "history.html"
           },
           {
             "title": "Management",
-            "url": "/extensions/management.html"
+            "fileName": "management.html"
           },
           {
             "title": "Tabs",
-            "url": "/extensions/tabs.html"
+            "fileName": "tabs.html"
           },
           {
             "title": "Windows",
-            "url": "/extensions/windows.html"
+            "fileName": "windows.html"
           }
         ]
       },
@@ -93,39 +93,39 @@
         "items": [
           {
             "title": "Accessibility",
-            "url": "/extensions/a11y.html"
+            "fileName": "a11y.html"
           },
           {
             "title": "Event Pages",
-            "url": "/extensions/event_pages.html"
+            "fileName": "event_pages.html"
           },
           {
             "title": "Content Security Policy",
-            "url": "/extensions/contentSecurityPolicy.html"
+            "fileName": "contentSecurityPolicy.html"
           },
           {
             "title": "Content Scripts",
-            "url": "/extensions/content_scripts.html"
+            "fileName": "content_scripts.html"
           },
           {
             "title": "Cross-Origin XHR",
-            "url": "/extensions/xhr.html"
+            "fileName": "xhr.html"
           },
           {
             "title": "Internationalization",
-            "url": "/extensions/i18n.html"
+            "fileName": "i18n.html"
           },
           {
             "title": "Message Passing",
-            "url": "/extensions/messaging.html"
+            "fileName": "messaging.html"
           },
           {
             "title": "Optional Permissions",
-            "url": "/extensions/permissions.html"
+            "fileName": "permissions.html"
           },
           {
             "title": "NPAPI Plugins",
-            "url": "/extensions/npapi.html"
+            "fileName": "npapi.html"
           }
         ]
       },
@@ -135,11 +135,11 @@
         "items": [
           {
             "title": "Hosting",
-            "url": "/extensions/hosting.html"
+            "fileName": "hosting.html"
           },
           {
             "title": "Other Deployment Options",
-            "url": "/extensions/external_extensions.html"
+            "fileName": "external_extensions.html"
           }
         ]
       }
@@ -147,23 +147,23 @@
   },
   {
     "title": "Tutorials",
-    "url": "/extensions/tutorials.html",
+    "fileName": "tutorials.html",
     "items": [
       {
         "title": "Manifest V2",
-        "url": "/extensions/tut_migration_to_manifest_v2.html"
+        "fileName": "tut_migration_to_manifest_v2.html"
       },
       {
         "title": "Debugging",
-        "url": "/extensions/tut_debugging.html"
+        "fileName": "tut_debugging.html"
       },
       {
         "title": "Google Analytics",
-        "url": "/extensions/tut_analytics.html"
+        "fileName": "tut_analytics.html"
       },
       {
         "title": "OAuth",
-        "url": "/extensions/tut_oauth.html"
+        "fileName": "tut_oauth.html"
       }
     ]
   },
@@ -176,25 +176,25 @@
         "items": [
           {
             "title": "Manifest Files",
-            "url": "/extensions/manifest.html"
+            "fileName": "manifest.html"
           },
           {
             "title": "Match Patterns",
-            "url": "/extensions/match_patterns.html"
+            "fileName": "match_patterns.html"
           }
         ]
       },
       {
         "title": "Permission Warnings",
-        "url": "/extensions/permission_warnings.html"
+        "fileName": "permission_warnings.html"
       },
       {
         "title": "chrome.* APIs",
-        "url": "/extensions/api_index.html"
+        "fileName": "api_index.html"
       },
       {
         "title": "Other APIs",
-        "url": "/extensions/api_other.html"
+        "fileName": "api_other.html"
       }
     ]
   },
@@ -203,19 +203,19 @@
     "items": [
       {
         "title": "FAQ",
-        "url": "/extensions/faq.html"
+        "fileName": "faq.html"
       },
       {
         "title": "Chrome Web Store",
-        "url": "http://code.google.com/chrome/webstore/docs/index.html"
+        "fileName": "http://code.google.com/chrome/webstore/docs/index.html"
       },
       {
         "title": "Hosted Apps",
-        "url": "http://code.google.com/chrome/apps/docs/developers_guide.html"
+        "fileName": "http://code.google.com/chrome/apps/docs/developers_guide.html"
       },
       {
         "title": "Themes",
-        "url": "/extensions/themes.html"
+        "fileName": "themes.html"
       }
     ]
   }

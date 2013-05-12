@@ -37,62 +37,25 @@ class SubversionFileSystemTest(unittest.TestCase):
         file_system.Read(['test1.txt', 'test2.txt', 'test3.txt']).Get())
 
   def testListDir(self):
-    expected = ['dir/'] + ['file%d.html' % i for i in range(7)]
+    expected = ['dir/']
+    for i in range(7):
+      expected.append('file%d.html' % i)
     file_system = self._CreateSubversionFileSystem()
     self.assertEqual(expected, sorted(file_system.ReadSingle('list/')))
-
-  def testListSubDir(self):
-    expected = ['empty.txt'] + ['file%d.html' % i for i in range(3)]
-    file_system = self._CreateSubversionFileSystem()
-    self.assertEqual(expected, sorted(file_system.ReadSingle('list/dir/')))
 
   def testDirStat(self):
     file_system = self._CreateSubversionFileSystem()
     stat_info =file_system.Stat('stat/')
     expected = StatInfo(
       '151113',
-      child_versions=json.loads(self._ReadLocalFile('stat_result.json')))
-    self.assertEqual(expected, stat_info)
+      child_versions=json.loads(self._ReadLocalFile('stat_result.json'))
+    )
+    self.assertEquals(expected, stat_info)
 
   def testFileStat(self):
     file_system = self._CreateSubversionFileSystem()
     stat_info = file_system.Stat('stat/extension_api.h')
-    self.assertEqual(StatInfo('146163'), stat_info)
-
-  def testRevisions(self):
-    # This is a super hacky test. Record the path that was fetched then exit the
-    # test. Compare.
-    class ValueErrorFetcher(object):
-      def __init__(self):
-        self.last_fetched = None
-
-      def FetchAsync(self, path):
-        self.last_fetched = path
-        raise ValueError()
-
-      def Fetch(self, path):
-        self.last_fetched = path
-        raise ValueError()
-
-    file_fetcher = ValueErrorFetcher()
-    stat_fetcher = ValueErrorFetcher()
-    svn_path = 'svn:'
-
-    svn_file_system = SubversionFileSystem(file_fetcher,
-                                           stat_fetcher,
-                                           svn_path,
-                                           revision=42)
-
-    self.assertRaises(ValueError, svn_file_system.ReadSingle, 'dir/file')
-    self.assertEqual('dir/file?p=42', file_fetcher.last_fetched)
-    # Stat() will always stat directories.
-    self.assertRaises(ValueError, svn_file_system.Stat, 'dir/file')
-    self.assertEqual('dir/?pathrev=42', stat_fetcher.last_fetched)
-
-    self.assertRaises(ValueError, svn_file_system.ReadSingle, 'dir/')
-    self.assertEqual('dir/?p=42', file_fetcher.last_fetched)
-    self.assertRaises(ValueError, svn_file_system.Stat, 'dir/')
-    self.assertEqual('dir/?pathrev=42', stat_fetcher.last_fetched)
+    self.assertEquals(StatInfo('146163'), stat_info)
 
   def testRevisions(self):
     # This is a super hacky test. Record the path that was fetched then exit the
