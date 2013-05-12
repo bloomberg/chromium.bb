@@ -663,15 +663,15 @@ webkit.org/b/85463 editing/inserting/typing-space-to-trigger-smart-link.html
 crbug.com/25977 [ Win ] http/tests/appcache/main-resource-hash.html [ Pass Timeout ]
 crbug.com/25977 [ Win ] http/tests/appcache/online-whitelist.html [ Pass Timeout ]
 
-webkit.org/b/104991 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-click-hyperlink.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
-webkit.org/b/104991 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-event-fired.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
-webkit.org/b/104991 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-nested-divs.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/104991 [ Linux ] platform/chromium-win/fast/events/panScroll-click-hyperlink.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/104991 [ Linux ] platform/chromium-win/fast/events/panScroll-event-fired.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/104991 [ Linux ] platform/chromium-win/fast/events/panScroll-nested-divs.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
-webkit.org/b/107205 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-click.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
-webkit.org/b/107205 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-drag.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
-webkit.org/b/107623 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-panIcon.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/107205 [ Linux ] platform/chromium-win/fast/events/panScroll-click.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/107205 [ Linux ] platform/chromium-win/fast/events/panScroll-drag.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+webkit.org/b/107623 [ Linux ] platform/chromium-win/fast/events/panScroll-panIcon.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
-crbug.com/224735 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-in-iframe.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+crbug.com/224735 [ Linux ] platform/chromium-win/fast/events/panScroll-in-iframe.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
 crbug.com/31623 [ Win ] http/tests/appcache/remove-cache.html [ Pass Timeout ]
 
