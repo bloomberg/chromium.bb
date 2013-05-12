@@ -79,7 +79,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
                             std::string* gl_renderer,
                             std::string* gl_version) OVERRIDE;
   virtual void DisableHardwareAcceleration() OVERRIDE;
-  virtual void EnableSoftwareCompositing() OVERRIDE;
 
   // This collects preliminary GPU info, load GpuBlacklist, and compute the
   // preliminary blacklisted features; it should only be called at browser

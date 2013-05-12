@@ -10,6 +10,8 @@ const char kDisableTestCompositor[] = "disable-test-compositor";
 
 const char kUIDisableThreadedCompositing[] = "ui-disable-threaded-compositing";
 
+const char kUIEnableSoftwareCompositing[] = "ui-enable-software-compositing";
+
 const char kUIEnableThreadedCompositing[] = "ui-enable-threaded-compositing";
 
 const char kUIMaxFramesPending[] = "ui-max-frames-pending";

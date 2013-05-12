@@ -94,9 +94,6 @@ class GpuDataManager {
   // Turn off all hardware acceleration.
   virtual void DisableHardwareAcceleration() = 0;
 
-  // Enable software compositing path.
-  virtual void EnableSoftwareCompositing() = 0;
-
  protected:
   virtual ~GpuDataManager() {}
 };

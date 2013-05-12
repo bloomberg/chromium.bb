@@ -112,11 +112,6 @@ void GpuDataManagerImpl::DisableHardwareAcceleration() {
   private_->DisableHardwareAcceleration();
 }
 
-void GpuDataManagerImpl::EnableSoftwareCompositing() {
-  base::AutoLock auto_lock(lock_);
-  private_->EnableSoftwareCompositing();
-}
-
 void GpuDataManagerImpl::Initialize() {
   base::AutoLock auto_lock(lock_);
   private_->Initialize();

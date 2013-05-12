@@ -747,7 +747,7 @@ void ImageTransportFactory::Initialize() {
   }
   if (ui::IsTestCompositorEnabled()) {
     g_factory = new NoTransportFactory(new ui::TestContextFactory);
-  } else if (command_line->HasSwitch(switches::kDisableGpu)) {
+  } else if (command_line->HasSwitch(switches::kUIEnableSoftwareCompositing)) {
     g_factory = new NoTransportFactory(new SoftwareContextFactory);
   } else {
     g_factory = new GpuProcessTransportFactory;

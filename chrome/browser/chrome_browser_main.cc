@@ -1314,6 +1314,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (g_browser_process->gl_string_manager())
     g_browser_process->gl_string_manager()->Initialize();
 
+  // Create an instance of GpuModeManager to watch gpu mode pref change.
+  g_browser_process->gpu_mode_manager();
+
 #if !defined(OS_ANDROID)
   // Show the First Run UI if this is the first time Chrome has been run on
   // this computer, or we're being compelled to do so by a command line flag.
