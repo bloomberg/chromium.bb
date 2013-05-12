@@ -55,13 +55,22 @@ crbug.com/42 [ Release ] origin [ Crash ]
         host.filesystem.write_text_file(self._absolute_path('origin', 'path', 'test.html'), """
 <script src="local_script.js">
 <script src="../../unmoved/remote_script.js">
+<script src='../../unmoved/remote_script_single_quotes.js'>
 <script href="../../unmoved/remote_script.js">
+<script href='../../unmoved/remote_script_single_quotes.js'>
+<script href="">
 """)
         host.filesystem.write_text_file(self._absolute_path('origin', 'path', 'test.css'), """
 url('../../unmoved/url_function.js')
+url("../../unmoved/url_function_double_quotes.js")
+url(../../unmoved/url_function_no_quotes.js)
+url('')
+url()
 """)
         host.filesystem.write_text_file(self._absolute_path('origin', 'path', 'test.js'), """
 importScripts('../../unmoved/import_scripts_function.js')
+importScripts("../../unmoved/import_scripts_function_double_quotes.js")
+importScripts('')
 """)
         host.filesystem.write_text_file(self._absolute_path('unmoved', 'test.html'), """
 <script src="local_script.js">
@@ -128,15 +137,28 @@ class LayoutTestsMoverTest(unittest.TestCase):
     def test_unmoved_reference_in_moved_file_is_updated(self):
         self._mover.move('origin/path', 'destination')
         self.assertTrue('src="../unmoved/remote_script.js"' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.html')))
-        self.assertTrue('href="../unmoved/remote_script.js"' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.html')))
 
-    def test_css_file_is_updated(self):
+    def test_references_in_html_file_are_updated(self):
+        self._mover.move('origin/path', 'destination')
+        self.assertTrue('src="../unmoved/remote_script.js"' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.html')))
+        self.assertTrue('src=\'../unmoved/remote_script_single_quotes.js\'' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.html')))
+        self.assertTrue('href="../unmoved/remote_script.js"' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.html')))
+        self.assertTrue('href=\'../unmoved/remote_script_single_quotes.js\'' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.html')))
+        self.assertTrue('href=""' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.html')))
+
+    def test_references_in_css_file_are_updated(self):
         self._mover.move('origin/path', 'destination')
         self.assertTrue('url(\'../unmoved/url_function.js\')' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.css')))
+        self.assertTrue('url("../unmoved/url_function_double_quotes.js")' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.css')))
+        self.assertTrue('url(../unmoved/url_function_no_quotes.js)' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.css')))
+        self.assertTrue('url(\'\')' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.css')))
+        self.assertTrue('url()' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.css')))
 
-    def test_javascript_file_is_updated(self):
+    def test_references_in_javascript_file_are_updated(self):
         self._mover.move('origin/path', 'destination')
         self.assertTrue('importScripts(\'../unmoved/import_scripts_function.js\')' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.js')))
+        self.assertTrue('importScripts("../unmoved/import_scripts_function_double_quotes.js")' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.js')))
+        self.assertTrue('importScripts(\'\')' in self._filesystem.read_text_file(self._port._absolute_path('destination', 'test.js')))
 
     def test_expectation_is_updated(self):
         self._mover.move('origin/path', 'destination')

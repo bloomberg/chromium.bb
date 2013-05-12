@@ -185,20 +185,20 @@ class LayoutTestsMover(object):
         """Attempts to find all references to other files in the supplied list of files. Returns a
         dictionary that maps from an absolute file path to an array of reference strings.
         """
-        reference_regex = re.compile(r'(?:src=|href=|importScripts\(|url\()(?:"([^"]*)"|\'([^\']*)\')')
+        reference_regex = re.compile(r'(?:(?:src=|href=|importScripts\(|url\()(?:"([^"]+)"|\'([^\']+)\')|url\(([^\)\'"]+)\))')
         references = {}
         for input_file in input_files:
             matches = reference_regex.findall(self._filesystem.read_binary_file(input_file))
             if matches:
-                references[input_file] = [(match[0] if match[0] else match[1]) for match in matches]
+                references[input_file] = [filter(None, match)[0] for match in matches]
         return references
 
     def _get_updated_reference(self, root, reference):
         """For a reference <reference> in a directory <root>, determines the updated reference.
         Returns the the updated reference, or None if no update is required.
         """
-        # If the reference is the empty string or an absolute path or url, it's safe.
-        if reference == '' or reference.startswith('/') or urlparse.urlparse(reference).scheme:
+        # If the reference is an absolute path or url, it's safe.
+        if reference.startswith('/') or urlparse.urlparse(reference).scheme:
             return None
 
         # Both the root path and the target of the reference my be subject to the move, so there are
@@ -241,11 +241,10 @@ class LayoutTestsMover(object):
 
     def _update_file(self, path, updates):
         contents = self._filesystem.read_binary_file(path)
-        # Note that this regex isn't quite as strict as that used to find the references, as it
-        # doesn't force the type of the opening and closing quotes to match. But this avoids the
-        # need for alternative match groups, which simplifies things.
+        # Note that this regex isn't quite as strict as that used to find the references, but this
+        # avoids the need for alternative match groups, which simplifies things.
         for target in updates.keys():
-            regex = re.compile(r'((?:src=|href=|importScripts\(|url\()["\'])%s(["\'])' % target)
+            regex = re.compile(r'((?:src=|href=|importScripts\(|url\()["\']?)%s(["\']?)' % target)
             contents = regex.sub(r'\1%s\2' % updates[target], contents)
         self._filesystem.write_binary_file(path, contents)
         self._scm.add(path)
