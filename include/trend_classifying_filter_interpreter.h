@@ -97,22 +97,59 @@ private:
     void Init();
     void Init(const FingerState& fs);
 
-    // The x, y and delta_x, delta_y values of one finger at a given timestamp
-    float x_, y_;
-    float dx_, dy_;
+    // Element struct for tracking one finger property (e.g. x, y, pressure).
+    struct KAxis {
+      KAxis(): val(0.0), sum(0), ties(0), score(0), var(0.0) {}
 
-    // Temp values to speed up the S and Var(S) computation. For more detail,
-    // please look at the comment for UpdateKTValuePair.
-    int x_sum_, x_ties_;
-    int y_sum_, y_ties_;
-    int dx_sum_, dx_ties_;
-    int dy_sum_, dy_ties_;
+      void Init() {
+        val = 0.0;
+        sum = 0, ties = 0;
+        score = 0;
+        var = 0.0;
+      }
 
-    // The S and Var(S) computed for this timestamp.
-    int x_score_, y_score_;
-    int dx_score_, dy_score_;
-    double x_var_, y_var_;
-    double dx_var_, dy_var_;
+      // The data value to track of the finger at a given timestamp
+      float val;
+
+      // Temp values to speed up the S and Var(S) computation. For more detail,
+      // please look at the comment for UpdateKTValuePair.
+      int sum, ties;
+
+      // The S and Var(S) computed for this timestamp
+      int score;
+      double var;
+    };
+    static const size_t n_axes_ = 6;
+    KAxis axes_[n_axes_];
+
+    KAxis* XAxis() { return &axes_[0]; }
+    KAxis* DxAxis() { return &axes_[1]; }
+    KAxis* YAxis() { return &axes_[2]; }
+    KAxis* DyAxis() { return &axes_[3]; }
+    KAxis* PressureAxis() { return &axes_[4]; }
+    KAxis* TouchMajorAxis() { return &axes_[5]; }
+
+    static bool IsDelta(int idx) { return (idx == 1 || idx == 3); }
+    static unsigned IncFlag(int idx) {
+      static const unsigned flags[n_axes_] = {
+          GESTURES_FINGER_TREND_INC_X,
+          GESTURES_FINGER_TREND_INC_X,
+          GESTURES_FINGER_TREND_INC_Y,
+          GESTURES_FINGER_TREND_INC_Y,
+          GESTURES_FINGER_TREND_INC_PRESSURE,
+          GESTURES_FINGER_TREND_INC_TOUCH_MAJOR };
+      return flags[idx];
+    }
+    static unsigned DecFlag(int idx) {
+      static const unsigned flags[n_axes_] = {
+          GESTURES_FINGER_TREND_DEC_X,
+          GESTURES_FINGER_TREND_DEC_X,
+          GESTURES_FINGER_TREND_DEC_Y,
+          GESTURES_FINGER_TREND_DEC_Y,
+          GESTURES_FINGER_TREND_DEC_PRESSURE,
+          GESTURES_FINGER_TREND_DEC_TOUCH_MAJOR };
+      return flags[idx];
+    }
 
     KState* next_;
     KState* prev_;
@@ -140,8 +177,7 @@ private:
   void AddNewStateToBuffer(FingerHistory* history, const FingerState& fs);
 
   // Assess statistical significance with a classic two-tail hypothesis test
-  TrendType RunKTTest(const int score, const double var,
-      const size_t n_samples);
+  TrendType RunKTTest(const KState::KAxis* current, const size_t n_samples);
 
   // Given a time-series (t1, d1), (t2, d2) .... (tn, dn), a naive
   // implementation to compute the Kendall's S-statistic as in (1) would take
@@ -167,16 +203,16 @@ private:
   // The sum_i and ties_i can be updated in O(1) time for each item, thus
   // reducing the total time complexity to compute S and Var(S) from O(n^2) to
   // O(n).
-  inline void UpdateKTValuePair(const float di, const float dj, int* sum_i,
-      int* ties_i, int* s_sum, int* t_n2_sum, int* t_n3_sum) {
-    if (di < dj)
-      (*sum_i)++;
-    else if (di > dj)
-      (*sum_i)--;
+  inline void UpdateKTValuePair(KState::KAxis* past, KState::KAxis* current,
+      int* t_n2_sum, int* t_n3_sum) {
+    if (past->val < current->val)
+      past->sum++;
+    else if (past->val > current->val)
+      past->sum--;
     else
-      (*ties_i)++;
-    (*s_sum) += (*sum_i), (*t_n2_sum) += (*ties_i);
-    (*t_n3_sum) += (((*ties_i) * ((*ties_i) - 1)) >> 1);
+      past->ties++;
+    current->score += past->sum, (*t_n2_sum) += past->ties;
+    (*t_n3_sum) += ((past->ties * (past->ties - 1)) >> 1);
   }
 
   // Compute the variance of the Kendall's S-statistic according to (2)

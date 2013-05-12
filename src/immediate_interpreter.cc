@@ -1032,7 +1032,12 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
       if (num_gesturing == 0) {
         current_gesture_type_ = kGestureTypeNull;
       } else if (num_gesturing == 1) {
-        current_gesture_type_ = kGestureTypeMove;
+        const FingerState* finger =
+            hwstate.GetFingerState(*gs_fingers.begin());
+        if (PalmIsArrivingOrDeparting(*finger))
+          current_gesture_type_ = kGestureTypeNull;
+        else
+          current_gesture_type_ = kGestureTypeMove;
       } else {
         if (changed_time_ > started_moving_time_ ||
             hwstate.timestamp - max(started_moving_time_, gs_changed_time_) <
@@ -1239,6 +1244,18 @@ bool ImmediateInterpreter::UpdatePinchState(
     }
   }
 
+  return false;
+}
+
+bool ImmediateInterpreter::PalmIsArrivingOrDeparting(
+    const FingerState& finger) const {
+  if (((finger.flags & GESTURES_FINGER_POSSIBLE_PALM) ||
+       (finger.flags & GESTURES_FINGER_PALM)) &&
+      ((finger.flags & GESTURES_FINGER_TREND_INC_TOUCH_MAJOR) ||
+       (finger.flags & GESTURES_FINGER_TREND_DEC_TOUCH_MAJOR)) &&
+      ((finger.flags & GESTURES_FINGER_TREND_INC_PRESSURE) ||
+       (finger.flags & GESTURES_FINGER_TREND_DEC_PRESSURE)))
+    return true;
   return false;
 }
 

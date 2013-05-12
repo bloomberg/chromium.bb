@@ -340,6 +340,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   void UpdateCurrentGestureType(const HardwareState& hwstate,
                                 const FingerMap& gs_fingers);
 
+  // If the finger is likely to be a palm and that its contact size/pressure
+  // is diminishing/increasing, we suppress the cursor movement. A real
+  // intentional 1f cursor move near the touchpad boundary usually has a
+  // stationary finger contact size/pressure.
+  bool PalmIsArrivingOrDeparting(const FingerState& finger) const;
+
   // If the fingers are near each other in location and pressure and might
   // to be part of a 2-finger action, returns true. The function can also
   // be used to check whether the gesture is a left or a right button click

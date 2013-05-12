@@ -87,35 +87,28 @@ void TrendClassifyingFilterInterpreter::AddNewStateToBuffer(
   if (history->size() == 1)
     return;
 
-  current->dx_ = current->x_ - previous_end->x_;
-  current->dy_ = current->y_ - previous_end->y_;
+  current->DxAxis()->val = current->XAxis()->val - previous_end->XAxis()->val;
+  current->DyAxis()->val = current->YAxis()->val - previous_end->YAxis()->val;
   // Update the nodes already in the buffer and compute the Kendall score/
   // variance along the way. Complexity is O(|buffer|) per finger.
-  int tie_n2[4] = { 0, 0, 0, 0 };
-  int tie_n3[4] = { 0, 0, 0, 0 };
-  for (KState* it = history->Begin(); it != history->Tail(); it = it->next_) {
-    UpdateKTValuePair(it->x_, current->x_, &it->x_sum_, &it->x_ties_,
-        &current->x_score_, &tie_n2[0], &tie_n3[0]);
-    UpdateKTValuePair(it->y_, current->y_, &it->y_sum_, &it->y_ties_,
-        &current->y_score_, &tie_n2[1], &tie_n3[1]);
-    if (it != history->Begin()) {
-      // Skip the first state since its dx/dy are undefined
-      UpdateKTValuePair(it->dx_, current->dx_, &it->dx_sum_, &it->dx_ties_,
-          &current->dx_score_, &tie_n2[2], &tie_n3[2]);
-      UpdateKTValuePair(it->dy_, current->dy_, &it->dy_sum_, &it->dy_ties_,
-          &current->dy_score_, &tie_n2[3], &tie_n3[3]);
-    }
-  }
+  int tie_n2[KState::n_axes_] = { 0, 0, 0, 0, 0, 0 };
+  int tie_n3[KState::n_axes_] = { 0, 0, 0, 0, 0, 0 };
+  for (KState* it = history->Begin(); it != history->Tail(); it = it->next_)
+    for (size_t i = 0; i < KState::n_axes_; i++)
+      if(it != history->Begin() || !KState::IsDelta(i)) {
+        UpdateKTValuePair(&it->axes_[i], &current->axes_[i],
+            &tie_n2[i], &tie_n3[i]);
+      }
   size_t n_samples = history->size();
-  current->x_var_ = ComputeKTVariance(tie_n2[0], tie_n3[0], n_samples);
-  current->y_var_ = ComputeKTVariance(tie_n2[1], tie_n3[1], n_samples);
-  current->dx_var_ = ComputeKTVariance(tie_n2[2], tie_n3[2], n_samples - 1);
-  current->dy_var_ = ComputeKTVariance(tie_n2[3], tie_n3[3], n_samples - 1);
+  for (size_t i = 0; i < KState::n_axes_; i++) {
+    current->axes_[i].var = ComputeKTVariance(tie_n2[i], tie_n3[i],
+        KState::IsDelta(i) ? n_samples - 1 : n_samples);
+  }
 }
 
 TrendClassifyingFilterInterpreter::TrendType
-TrendClassifyingFilterInterpreter::RunKTTest(const int score,
-    const double var, const size_t n_samples) {
+TrendClassifyingFilterInterpreter::RunKTTest(const KState::KAxis* current,
+    const size_t n_samples) {
   // Sample size is too small for a meaningful result
   if (n_samples < static_cast<size_t>(min_num_of_samples_.val_))
     return TREND_NONE;
@@ -123,15 +116,17 @@ TrendClassifyingFilterInterpreter::RunKTTest(const int score,
   // A zero score implies purely random behavior. Need to special-case it
   // because the test might be fooled with a zero variance (e.g. all
   // observations are tied).
-  if (!score)
+  if (!current->score)
     return TREND_NONE;
 
   // The test conduct the hypothesis test based on the fact that S/sqrt(Var(S))
   // approximately follows the normal distribution. To optimize for speed,
   // we reformulate the expression to drop the sqrt and division operations.
-  if (score * score < z_threshold_.val_ * z_threshold_.val_ * var)
+  if (current->score * current->score <
+      z_threshold_.val_ * z_threshold_.val_ * current->var) {
     return TREND_NONE;
-  return (score > 0) ? TREND_INCREASING : TREND_DECREASING;
+  }
+  return (current->score > 0) ? TREND_INCREASING : TREND_DECREASING;
 }
 
 void TrendClassifyingFilterInterpreter::UpdateFingerState(
@@ -164,44 +159,27 @@ void TrendClassifyingFilterInterpreter::UpdateFingerState(
     AddNewStateToBuffer(hp, fs[i]);
     KState* current = hp->Tail();
     size_t n_samples = hp->size();
-    TrendType x_result = RunKTTest(
-        current->x_score_, current->x_var_, n_samples);
-    TrendType y_result = RunKTTest(
-        current->y_score_, current->y_var_, n_samples);
-    InterpretTestResult(x_result, GESTURES_FINGER_TREND_INC_X,
-        GESTURES_FINGER_TREND_DEC_X, &(fs[i].flags));
-    InterpretTestResult(y_result, GESTURES_FINGER_TREND_INC_Y,
-        GESTURES_FINGER_TREND_DEC_Y, &(fs[i].flags));
-    if (second_order_enable_.val_) {
-      TrendType dx_result = RunKTTest(
-          current->dx_score_, current->dx_var_, n_samples - 1);
-      TrendType dy_result = RunKTTest(
-          current->dy_score_, current->dy_var_, n_samples - 1);
-      InterpretTestResult(dx_result, GESTURES_FINGER_TREND_INC_X,
-          GESTURES_FINGER_TREND_DEC_X, &(fs[i].flags));
-      InterpretTestResult(dy_result, GESTURES_FINGER_TREND_INC_Y,
-          GESTURES_FINGER_TREND_DEC_Y, &(fs[i].flags));
-    }
+    for (size_t idx = 0; idx < KState::n_axes_; idx++)
+      if (second_order_enable_.val_ || !KState::IsDelta(idx)) {
+        TrendType result = RunKTTest(&current->axes_[idx],
+            KState::IsDelta(idx) ? n_samples - 1 : n_samples);
+        InterpretTestResult(result, KState::IncFlag(idx),
+            KState::DecFlag(idx), &(fs[i].flags));
+      }
   }
 }
 
 void TrendClassifyingFilterInterpreter::KState::Init() {
-  x_ = 0.0, y_ = 0.0;
-  dx_ = 0.0, dy_ = 0.0;
-  x_sum_ = 0, x_ties_ = 0;
-  y_sum_ = 0, y_ties_ = 0;
-  dx_sum_ = 0, dx_ties_ = 0;
-  dy_sum_ = 0, dy_ties_ = 0;
-  x_score_ = 0, y_score_ = 0;
-  dx_score_ = 0, dy_score_ = 0;
-  x_var_ = 0.0, y_var_ = 0.0;
-  dx_var_ = 0.0, dy_var_ = 0.0;
+  for (size_t i = 0; i < KState::n_axes_; i++)
+    axes_[i].Init();
   next_ = NULL, prev_ = NULL;
 }
 
 void TrendClassifyingFilterInterpreter::KState::Init(const FingerState& fs) {
   Init();
-  x_ = fs.position_x, y_ = fs.position_y;
+  XAxis()->val = fs.position_x, YAxis()->val = fs.position_y;
+  PressureAxis()->val = fs.pressure;
+  TouchMajorAxis()->val = fs.touch_major;
 }
 
 }
