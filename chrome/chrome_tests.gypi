@@ -478,6 +478,11 @@
             'browser/ui/views/native_widget_win_interactive_uitest.cc',
           ],
         }],  # OS != "win"
+        ['enable_message_center==0', {
+          'sources!': [
+            'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
+          ],
+        }],  # enable_message_center
       ],  # conditions
     },
     {
@@ -2028,6 +2033,11 @@
         ['enable_app_list==0', {
           'sources/': [
             ['exclude', '^browser/ui/app_list/'],
+          ],
+        }],
+        ['enable_message_center==0', {
+          'sources!': [
+            'browser/notifications/message_center_notifications_browsertest.cc',
           ],
         }],
         ['enable_plugins==1', {

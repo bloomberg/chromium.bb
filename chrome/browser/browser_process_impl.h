@@ -87,7 +87,9 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual extensions::EventRouterForwarder*
         extension_event_router_forwarder() OVERRIDE;
   virtual NotificationUIManager* notification_ui_manager() OVERRIDE;
+#if defined(ENABLE_MESSAGE_CENTER)
   virtual message_center::MessageCenter* message_center() OVERRIDE;
+#endif
   virtual policy::BrowserPolicyConnector* browser_policy_connector() OVERRIDE;
   virtual policy::PolicyService* policy_service() OVERRIDE;
   virtual IconManager* icon_manager() OVERRIDE;

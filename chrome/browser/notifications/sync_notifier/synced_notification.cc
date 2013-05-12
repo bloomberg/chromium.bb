@@ -13,14 +13,20 @@
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_delegate.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
+#if defined(ENABLE_MESSAGE_CENTER)
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_types.h"
+#endif  // ENABLE_MESSAGE_CENTER
 
 namespace {
 const char kExtensionScheme[] = "chrome-extension://";
 
 bool UseRichNotifications() {
+#if defined(ENABLE_MESSAGE_CENTER)
   return message_center::IsRichNotificationEnabled();
+#else  // ENABLE_MESSAGE_CENTER
+  return false;
+#endif  // ENABLE_MESSAGE_CENTER
 }
 
 }  // namespace
@@ -84,6 +90,8 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
 
   // Some inputs and fields are only used if there is a notification center.
   if (UseRichNotifications()) {
+
+#if defined(ENABLE_MESSAGE_CENTER)
     double creation_time = static_cast<double>(GetCreationTime());
     int priority = GetPriority();
     int notification_count = GetNotificationCount();
@@ -154,6 +162,8 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
                                  delegate);
 
     notification_manager->Add(ui_notification, profile);
+#endif  // ENABLE_MESSAGE_CENTER
+
   } else {
 
     Notification ui_notification(GetOriginUrl(),
@@ -329,6 +339,7 @@ int SyncedNotification::GetPriority() const {
     return kUndefinedPriority;
   int protobuf_priority = specifics_.coalesced_notification().priority();
 
+#if defined(ENABLE_MESSAGE_CENTER)
   // Convert the prioroty to the scheme used by the notification center.
   if (protobuf_priority ==
       sync_pb::CoalescedSyncedNotification_Priority_LOW) {
@@ -347,6 +358,11 @@ int SyncedNotification::GetPriority() const {
            protobuf_priority);
     return kUndefinedPriority;
   }
+
+#else // ENABLE_MESSAGE_CENTER
+  return protobuf_priority;
+
+#endif // ENABLE_MESSAGE_CENTER
 }
 
 int SyncedNotification::GetNotificationCount() const {

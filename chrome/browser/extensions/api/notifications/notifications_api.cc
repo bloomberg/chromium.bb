@@ -21,7 +21,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "googleurl/src/gurl.h"
-#include "ui/message_center/message_center_util.h"
 
 namespace extensions {
 
@@ -142,35 +141,38 @@ NotificationsApiFunction::NotificationsApiFunction() {
 NotificationsApiFunction::~NotificationsApiFunction() {
 }
 
+// If older notification runtime is used, MessageCenter is not built.
+// Use simpler bridge then, ignoring all options.
+#if !defined (ENABLE_MESSAGE_CENTER)
 void NotificationsApiFunction::CreateNotification(
     const std::string& id,
     api::notifications::NotificationOptions* options) {
-  // If older notification runtime is used, use simpler bridge.
-  if (!message_center::IsRichNotificationEnabled()) {
-    message_center::NotificationType type =
-        MapApiTemplateTypeToType(options->type);
-    GURL icon_url(UTF8ToUTF16(options->icon_url));
-    string16 title(UTF8ToUTF16(options->title));
-    string16 message(UTF8ToUTF16(options->message));
+  message_center::NotificationType type =
+      MapApiTemplateTypeToType(options->type);
+  GURL icon_url(UTF8ToUTF16(options->icon_url));
+  string16 title(UTF8ToUTF16(options->title));
+  string16 message(UTF8ToUTF16(options->message));
 
-    // Ignore options if running on the old notification runtime.
-    scoped_ptr<DictionaryValue> optional_fields(new DictionaryValue());
+  // Ignore options if running on the old notification runtime.
+  scoped_ptr<DictionaryValue> optional_fields(new DictionaryValue());
 
-    NotificationsApiDelegate* api_delegate(new NotificationsApiDelegate(
-        this,
-        profile(),
-        extension_->id(),
-        id));  // ownership is passed to Notification
-    Notification notification(type, extension_->url(), icon_url, title, message,
-                              WebKit::WebTextDirectionDefault,
-                              UTF8ToUTF16(extension_->name()),
-                              UTF8ToUTF16(api_delegate->id()),
-                              optional_fields.get(), api_delegate);
+  NotificationsApiDelegate* api_delegate(new NotificationsApiDelegate(
+      this,
+      profile(),
+      extension_->id(),
+      id));  // ownership is passed to Notification
+  Notification notification(type, extension_->url(), icon_url, title, message,
+                            WebKit::WebTextDirectionDefault,
+                            UTF8ToUTF16(extension_->name()),
+                            UTF8ToUTF16(api_delegate->id()),
+                            optional_fields.get(), api_delegate);
 
-    g_browser_process->notification_ui_manager()->Add(notification, profile());
-    return;
-  }
-
+  g_browser_process->notification_ui_manager()->Add(notification, profile());
+}
+#else  // defined(ENABLE_MESSAGE_CENTER)
+void NotificationsApiFunction::CreateNotification(
+    const std::string& id,
+    api::notifications::NotificationOptions* options) {
   message_center::NotificationType type =
       MapApiTemplateTypeToType(options->type);
   GURL icon_url(UTF8ToUTF16(options->icon_url));
@@ -249,6 +251,7 @@ void NotificationsApiFunction::CreateNotification(
 
   g_browser_process->notification_ui_manager()->Add(notification, profile());
 }
+#endif  // !defined(ENABLE_MESSAGE_CENTER)
 
 bool NotificationsApiFunction::IsNotificationsApiEnabled() {
   DesktopNotificationService* service =

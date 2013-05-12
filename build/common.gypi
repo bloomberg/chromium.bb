@@ -155,6 +155,13 @@
             'enable_app_list%': 0,
           }],
 
+          # Enable Message Center only on ChromeOS, Windows, and Mac for now.
+          ['use_ash==1 or OS=="win" or OS=="mac"', {
+            'enable_message_center%': 1,
+          }, {
+            'enable_message_center%': 0,
+          }],
+
           ['use_aura==1 or (OS!="win" and OS!="mac" and OS!="ios" and OS!="android")', {
             'use_default_render_theme%': 1,
           }, {
@@ -187,6 +194,7 @@
       'android_webview_build%': '<(android_webview_build)',
       'google_tv%': '<(google_tv)',
       'enable_app_list%': '<(enable_app_list)',
+      'enable_message_center%': '<(enable_message_center)',
       'use_default_render_theme%': '<(use_default_render_theme)',
       'buildtype%': '<(buildtype)',
       'branding%': '<(branding)',
@@ -795,6 +803,7 @@
     'gyp_managed_install%': 0,
     'google_tv%': '<(google_tv)',
     'enable_app_list%': '<(enable_app_list)',
+    'enable_message_center%': '<(enable_message_center)',
     'use_default_render_theme%': '<(use_default_render_theme)',
     'enable_settings_app%': '<(enable_settings_app)',
     'use_official_google_api_keys%': '<(use_official_google_api_keys)',
@@ -2191,6 +2200,9 @@
       }],
       ['enable_app_list==1', {
         'defines': ['ENABLE_APP_LIST=1'],
+      }],
+      ['enable_message_center==1', {
+        'defines': ['ENABLE_MESSAGE_CENTER=1'],
       }],
       ['enable_settings_app==1', {
         'defines': ['ENABLE_SETTINGS_APP=1'],

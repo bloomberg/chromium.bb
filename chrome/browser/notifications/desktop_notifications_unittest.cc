@@ -15,7 +15,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/common/show_desktop_notification_params.h"
+
+#if defined(ENABLE_MESSAGE_CENTER)
 #include "ui/message_center/message_center.h"
+#endif
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
@@ -113,9 +116,11 @@ void DesktopNotificationsTest::SetUp() {
   WebKit::initialize(webkit_platform_support_.Get());
   ui::ScopedAnimationDurationScaleMode normal_duration_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+#if defined(ENABLE_MESSAGE_CENTER)
   // The message center is notmally initialized on |g_browser_process| which
   // is not created for these tests.
   message_center::MessageCenter::Initialize();
+#endif
   // MockBalloonCollection retrieves information about the screen on creation.
   // So it is necessary to make sure the desktop gets created first.
   ash::Shell::CreateInstance(new ash::test::TestShellDelegate);
@@ -138,9 +143,11 @@ void DesktopNotificationsTest::TearDown() {
 #if defined(USE_ASH)
   active_desktop_monitor_.reset();
   ash::Shell::DeleteInstance();
+#if defined(ENABLE_MESSAGE_CENTER)
   // The message center is notmally shutdown on |g_browser_process| which
   // is not created for these tests.
   message_center::MessageCenter::Shutdown();
+#endif
   aura::Env::DeleteInstance();
   WebKit::shutdown();
 #endif

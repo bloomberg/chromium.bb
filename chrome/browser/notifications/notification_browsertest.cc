@@ -7,7 +7,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -45,14 +44,25 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_observer.h"
-#include "ui/message_center/message_center_switches.h"
-#include "ui/message_center/message_center_util.h"
 
 // TODO(kbr): remove: http://crbug.com/222296
 #if defined(OS_MACOSX)
 #import "base/mac/mac_util.h"
+#endif
+
+#if defined(ENABLE_MESSAGE_CENTER)
+#include "base/command_line.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/message_center_switches.h"
+#endif
+
+// Mac implementation of message_center is incomplete. The code builds, but
+// the tests do not pass <http://crbug.com/179904>.
+#if defined(ENABLE_MESSAGE_CENTER) && !defined(OS_MACOSX)
+#define ENABLE_MESSAGE_CENTER_TESTING 1
+#else
+#define ENABLE_MESSAGE_CENTER_TESTING 0
 #endif
 
 namespace {
@@ -65,15 +75,9 @@ enum InfobarAction {
   DENY,
 };
 
-class NotificationChangeObserver {
-public:
-  virtual ~NotificationChangeObserver() {}
-  virtual bool Wait() = 0;
-};
-
+#if ENABLE_MESSAGE_CENTER_TESTING
 class MessageCenterChangeObserver
-    : public message_center::MessageCenterObserver,
-      public NotificationChangeObserver {
+    : public message_center::MessageCenterObserver {
  public:
   MessageCenterChangeObserver()
       : notification_received_(false) {
@@ -84,8 +88,7 @@ class MessageCenterChangeObserver
     message_center::MessageCenter::Get()->RemoveObserver(this);
   }
 
-  // NotificationChangeObserver:
-  virtual bool Wait() OVERRIDE {
+  bool Wait() {
     if (notification_received_)
       return true;
 
@@ -94,17 +97,15 @@ class MessageCenterChangeObserver
     return notification_received_;
   }
 
-  // message_center::MessageCenterObserver:
+  // overridden from message_center::MessageCenterObserver:
   virtual void OnNotificationAdded(
       const std::string& notification_id) OVERRIDE {
     OnMessageCenterChanged();
   }
-
   virtual void OnNotificationRemoved(const std::string& notification_id,
                                      bool by_user) OVERRIDE {
     OnMessageCenterChanged();
   }
-
   virtual void OnNotificationUpdated(
       const std::string& notification_id) OVERRIDE {
     OnMessageCenterChanged();
@@ -122,9 +123,11 @@ class MessageCenterChangeObserver
   DISALLOW_COPY_AND_ASSIGN(MessageCenterChangeObserver);
 };
 
-class NotificationBalloonChangeObserver
-    : public content::NotificationObserver,
-      public NotificationChangeObserver {
+typedef MessageCenterChangeObserver NotificationChangeObserver;
+
+#else
+
+class NotificationBalloonChangeObserver : public content::NotificationObserver {
  public:
   NotificationBalloonChangeObserver()
       : collection_(BalloonNotificationUIManager::GetInstanceForTesting()->
@@ -146,8 +149,7 @@ class NotificationBalloonChangeObserver
     collection_->set_on_collection_changed_callback(base::Closure());
   }
 
-  // NotificationChangeObserver:
-  virtual bool Wait() OVERRIDE {
+  bool Wait() {
     if (!Check()) {
       running_ = true;
       message_loop_runner_ = new content::MessageLoopRunner;
@@ -176,7 +178,7 @@ class NotificationBalloonChangeObserver
     Check();
   }
 
-  // content::NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
@@ -199,6 +201,10 @@ class NotificationBalloonChangeObserver
   DISALLOW_COPY_AND_ASSIGN(NotificationBalloonChangeObserver);
 };
 
+typedef NotificationBalloonChangeObserver NotificationChangeObserver;
+
+#endif  // ENABLE_MESSAGE_CENTER
+
 }  // namespace
 
 class NotificationsTest : public InProcessBrowserTest {
@@ -211,13 +217,15 @@ class NotificationsTest : public InProcessBrowserTest {
 
   int GetNotificationCount();
 
-  NotificationChangeObserver* CreateObserver();
-
   void CloseBrowserWindow(Browser* browser);
   void CrashTab(Browser* browser, int index);
+#if ENABLE_MESSAGE_CENTER_TESTING
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+#else
   const std::deque<Balloon*>& GetActiveBalloons();
   void CrashNotification(Balloon* balloon);
   bool CloseNotificationAndWait(const Notification& notification);
+#endif
 
   void SetDefaultPermissionSetting(ContentSetting setting);
   void DenyOrigin(const GURL& origin);
@@ -262,19 +270,12 @@ void NotificationsTest::SetUpInProcessBrowserTestFixture() {
 }
 
 int NotificationsTest::GetNotificationCount() {
-  if (message_center::IsRichNotificationEnabled()) {
-    return message_center::MessageCenter::Get()->NotificationCount();
-  } else {
-    return BalloonNotificationUIManager::GetInstanceForTesting()->
-           balloon_collection()->GetActiveBalloons().size();
-  }
-}
-
-NotificationChangeObserver* NotificationsTest::CreateObserver() {
-  if (message_center::IsRichNotificationEnabled())
-    return new MessageCenterChangeObserver();
-  else
-    return new NotificationBalloonChangeObserver();
+#if ENABLE_MESSAGE_CENTER_TESTING
+  return message_center::MessageCenter::Get()->NotificationCount();
+#else
+  return BalloonNotificationUIManager::GetInstanceForTesting()->
+      balloon_collection()->GetActiveBalloons().size();
+#endif  // ENABLE_MESSAGE_CENTER_TESTING
 }
 
 void NotificationsTest::CloseBrowserWindow(Browser* browser) {
@@ -289,6 +290,15 @@ void NotificationsTest::CrashTab(Browser* browser, int index) {
   content::CrashTab(browser->tab_strip_model()->GetWebContentsAt(index));
 }
 
+#if ENABLE_MESSAGE_CENTER_TESTING
+// Overriden from InProcessBrowserTest:
+void NotificationsTest::SetUpCommandLine(CommandLine* command_line) {
+  InProcessBrowserTest::SetUpCommandLine(command_line);
+  command_line->AppendSwitch(
+      message_center::switches::kEnableRichNotifications);
+}
+#else
+
 const std::deque<Balloon*>& NotificationsTest::GetActiveBalloons() {
   return BalloonNotificationUIManager::GetInstanceForTesting()->
       balloon_collection()->GetActiveBalloons();
@@ -300,13 +310,15 @@ void NotificationsTest::CrashNotification(Balloon* balloon) {
 
 bool NotificationsTest::CloseNotificationAndWait(
     const Notification& notification) {
-  scoped_ptr<NotificationChangeObserver> observer(CreateObserver());
+  NotificationChangeObserver observer;
   bool success = g_browser_process->notification_ui_manager()->
       CancelById(notification.notification_id());
   if (success)
-    return observer->Wait();
+    return observer.Wait();
   return false;
 }
+
+#endif  // !ENABLE_MESSAGE_CENTER_TESTING
 
 void NotificationsTest::SetDefaultPermissionSetting(ContentSetting setting) {
   DesktopNotificationService* service = GetDesktopNotificationService();
@@ -353,14 +365,14 @@ std::string NotificationsTest::CreateNotification(
       "createNotification('%s', '%s', '%s', '%s');",
       icon, title, body, replace_id);
 
-  scoped_ptr<NotificationChangeObserver> observer(CreateObserver());
+  NotificationChangeObserver observer;
   std::string result;
   bool success = content::ExecuteScriptAndExtractString(
       browser->tab_strip_model()->GetActiveWebContents(),
       script,
       &result);
   if (success && result != "-1" && wait_for_new_balloon)
-    success = observer->Wait();
+    success = observer.Wait();
   EXPECT_TRUE(success);
 
   return result;
@@ -398,7 +410,7 @@ bool NotificationsTest::CancelNotification(
       "cancelNotification('%s');",
       notification_id);
 
-  scoped_ptr<NotificationChangeObserver> observer(CreateObserver());
+  NotificationChangeObserver observer;
   std::string result;
   bool success = content::ExecuteScriptAndExtractString(
       browser->tab_strip_model()->GetActiveWebContents(),
@@ -406,7 +418,7 @@ bool NotificationsTest::CancelNotification(
       &result);
   if (!success || result != "1")
     return false;
-  return observer->Wait();
+  return observer.Wait();
 }
 
 bool NotificationsTest::PerformActionOnInfobar(
@@ -530,20 +542,20 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
 
   GURL EXPECTED_ICON_URL = test_server()->GetURL(kExpectedIconUrl);
   ASSERT_EQ(1, GetNotificationCount());
-  if (message_center::IsRichNotificationEnabled()) {
-    message_center::NotificationList::Notifications notifications =
-        message_center::MessageCenter::Get()->GetNotifications();
-    EXPECT_EQ(ASCIIToUTF16("My Title"), (*notifications.rbegin())->title());
-    EXPECT_EQ(ASCIIToUTF16("My Body"), (*notifications.rbegin())->message());
-  } else {
-    const std::deque<Balloon*>& balloons = GetActiveBalloons();
-    ASSERT_EQ(1U, balloons.size());
-    Balloon* balloon = balloons[0];
-    const Notification& notification = balloon->notification();
-    EXPECT_EQ(EXPECTED_ICON_URL, notification.icon_url());
-    EXPECT_EQ(ASCIIToUTF16("My Title"), notification.title());
-    EXPECT_EQ(ASCIIToUTF16("My Body"), notification.body());
-  }
+#if ENABLE_MESSAGE_CENTER_TESTING
+  message_center::NotificationList::Notifications notifications =
+      message_center::MessageCenter::Get()->GetNotifications();
+  EXPECT_EQ(ASCIIToUTF16("My Title"), (*notifications.rbegin())->title());
+  EXPECT_EQ(ASCIIToUTF16("My Body"), (*notifications.rbegin())->message());
+#else
+  const std::deque<Balloon*>& balloons = GetActiveBalloons();
+  ASSERT_EQ(1U, balloons.size());
+  Balloon* balloon = balloons[0];
+  const Notification& notification = balloon->notification();
+  EXPECT_EQ(EXPECTED_ICON_URL, notification.icon_url());
+  EXPECT_EQ(ASCIIToUTF16("My Title"), notification.title());
+  EXPECT_EQ(ASCIIToUTF16("My Body"), notification.body());
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseNotification) {
@@ -561,16 +573,16 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseNotification) {
   EXPECT_NE("-1", result);
   ASSERT_EQ(1, GetNotificationCount());
 
-  if (message_center::IsRichNotificationEnabled()) {
-    message_center::NotificationList::Notifications notifications =
-        message_center::MessageCenter::Get()->GetNotifications();
-    message_center::MessageCenter::Get()->RemoveNotification(
-        (*notifications.rbegin())->id(),
-        true);  // by_user
-  } else {
-    const std::deque<Balloon*>& balloons = GetActiveBalloons();
-    EXPECT_TRUE(CloseNotificationAndWait(balloons[0]->notification()));
-  }
+#if ENABLE_MESSAGE_CENTER_TESTING
+  message_center::NotificationList::Notifications notifications =
+      message_center::MessageCenter::Get()->GetNotifications();
+  message_center::MessageCenter::Get()->RemoveNotification(
+      (*notifications.rbegin())->id(),
+      true);  // by_user
+#else
+  const std::deque<Balloon*>& balloons = GetActiveBalloons();
+  EXPECT_TRUE(CloseNotificationAndWait(balloons[0]->notification()));
+#endif  // ENABLE_MESSAGE_CENTER_TESTING
 
   ASSERT_EQ(0, GetNotificationCount());
 }
@@ -753,16 +765,16 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {
   ASSERT_TRUE(CheckOriginInSetting(settings, test_page_url_.GetOrigin()));
 
   EXPECT_EQ(1, GetNotificationCount());
-  if (message_center::IsRichNotificationEnabled()) {
-    message_center::NotificationList::Notifications notifications =
-        message_center::MessageCenter::Get()->GetNotifications();
-    message_center::MessageCenter::Get()->RemoveNotification(
-        (*notifications.rbegin())->id(),
-        true);  // by_user
-  } else {
-    const std::deque<Balloon*>& balloons = GetActiveBalloons();
-    ASSERT_TRUE(CloseNotificationAndWait(balloons[0]->notification()));
-  }
+#if ENABLE_MESSAGE_CENTER_TESTING
+  message_center::NotificationList::Notifications notifications =
+      message_center::MessageCenter::Get()->GetNotifications();
+  message_center::MessageCenter::Get()->RemoveNotification(
+      (*notifications.rbegin())->id(),
+      true);  // by_user
+#else
+  const std::deque<Balloon*>& balloons = GetActiveBalloons();
+  ASSERT_TRUE(CloseNotificationAndWait(balloons[0]->notification()));
+#endif  // ENABLE_MESSAGE_CENTER_TESTING
   ASSERT_EQ(0, GetNotificationCount());
 }
 
@@ -824,11 +836,9 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest,
   CrashTab(browser(), 0);
 }
 
+// Notifications don't have their own process with the message center.
+#if !ENABLE_MESSAGE_CENTER_TESTING
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestKillNotificationProcess) {
-  // Notifications don't have their own process with the message center.
-  if (message_center::IsRichNotificationEnabled())
-    return;
-
 #if defined(OS_MACOSX)
   // TODO(kbr): re-enable: http://crbug.com/222296
   if (base::mac::IsOSMountainLionOrLater())
@@ -845,6 +855,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestKillNotificationProcess) {
   CrashNotification(balloons[0]);
   ASSERT_EQ(0, GetNotificationCount());
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestIncognitoNotification) {
 #if defined(OS_MACOSX)
@@ -947,20 +958,20 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
       browser(), false, "no_such_file.png", "Title2", "Body2", "chat");
   EXPECT_NE("-1", result);
 
-  if (message_center::IsRichNotificationEnabled()) {
-    ASSERT_EQ(1, GetNotificationCount());
-    message_center::NotificationList::Notifications notifications =
-        message_center::MessageCenter::Get()->GetNotifications();
-    EXPECT_EQ(ASCIIToUTF16("Title2"), (*notifications.rbegin())->title());
-    EXPECT_EQ(ASCIIToUTF16("Body2"), (*notifications.rbegin())->message());
-  } else {
-    const std::deque<Balloon*>& balloons = GetActiveBalloons();
-    ASSERT_EQ(1U, balloons.size());
-    Balloon* balloon = balloons[0];
-    const Notification& notification = balloon->notification();
-    GURL EXPECTED_ICON_URL = test_server()->GetURL(kExpectedIconUrl);
-    EXPECT_EQ(EXPECTED_ICON_URL, notification.icon_url());
-    EXPECT_EQ(ASCIIToUTF16("Title2"), notification.title());
-    EXPECT_EQ(ASCIIToUTF16("Body2"), notification.body());
-  }
+#if ENABLE_MESSAGE_CENTER_TESTING
+  ASSERT_EQ(1, GetNotificationCount());
+  message_center::NotificationList::Notifications notifications =
+      message_center::MessageCenter::Get()->GetNotifications();
+  EXPECT_EQ(ASCIIToUTF16("Title2"), (*notifications.rbegin())->title());
+  EXPECT_EQ(ASCIIToUTF16("Body2"), (*notifications.rbegin())->message());
+#else
+  const std::deque<Balloon*>& balloons = GetActiveBalloons();
+  ASSERT_EQ(1U, balloons.size());
+  Balloon* balloon = balloons[0];
+  const Notification& notification = balloon->notification();
+  GURL EXPECTED_ICON_URL = test_server()->GetURL(kExpectedIconUrl);
+  EXPECT_EQ(EXPECTED_ICON_URL, notification.icon_url());
+  EXPECT_EQ(ASCIIToUTF16("Title2"), notification.title());
+  EXPECT_EQ(ASCIIToUTF16("Body2"), notification.body());
+#endif
 }

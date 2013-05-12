@@ -13,7 +13,6 @@
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/message_center.h"
 
 #if !defined(OS_IOS)
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
@@ -36,6 +35,10 @@
 #else
 #include "chrome/browser/policy/policy_service_stub.h"
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
+#if defined(ENABLE_MESSAGE_CENTER)
+#include "ui/message_center/message_center.h"
+#endif
 
 // static
 TestingBrowserProcess* TestingBrowserProcess::GetGlobal() {
@@ -197,9 +200,11 @@ NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
 #endif
 }
 
+#if defined(ENABLE_MESSAGE_CENTER)
 message_center::MessageCenter* TestingBrowserProcess::message_center() {
   return message_center::MessageCenter::Get();
 }
+#endif
 
 IntranetRedirectDetector* TestingBrowserProcess::intranet_redirect_detector() {
   return NULL;

@@ -32,8 +32,11 @@
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/keyboard/keyboard_switches.h"
-#include "ui/message_center/message_center_switches.h"
 #include "ui/surface/surface_switches.h"
+
+#if defined(ENABLE_MESSAGE_CENTER)
+#include "ui/message_center/message_center_switches.h"
+#endif
 
 #if defined(USE_ASH)
 #include "ash/ash_switches.h"
@@ -1294,6 +1297,7 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTouchEditing,
                               switches::kDisableTouchEditing)
   },
+#if defined(ENABLE_MESSAGE_CENTER)
   {
     "enable-rich-notifications",
     IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_NAME,
@@ -1303,6 +1307,7 @@ const Experiment kExperiments[] = {
         message_center::switches::kEnableRichNotifications,
         message_center::switches::kDisableRichNotifications)
   },
+#endif
   {
     "enable-sync-synced-notifications",
     IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME,

@@ -16,8 +16,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/message_center/message_center.h"
+
+#if defined(ENABLE_MESSAGE_CENTER)
 #include "ui/message_center/message_center_switches.h"
-#include "ui/message_center/message_center_util.h"
+#endif
 
 class MessageCenterNotificationsTest : public InProcessBrowserTest {
  public:
@@ -96,36 +98,19 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, RetrieveBaseParts) {
   // Make sure comamnd-line switch has an effect.
-  EXPECT_EQ(NotificationUIManager::DelegatesToMessageCenter(),
-            message_center::IsRichNotificationEnabled());
+  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   EXPECT_TRUE(manager());
   EXPECT_TRUE(message_center());
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_BasicAddCancel BasicAddCancel
-#else
-#define MAYBE_BasicAddCancel DISABLED_BasicAddCancel
-#endif
-
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, MAYBE_BasicAddCancel) {
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
+IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicAddCancel) {
   manager()->Add(CreateTestNotification("hey"), profile());
   EXPECT_EQ(1u, message_center()->NotificationCount());
   manager()->CancelById("hey");
   EXPECT_EQ(0u, message_center()->NotificationCount());
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_BasicDelegate BasicDelegate
-#else
-#define MAYBE_BasicDelegate DISABLED_BasicDelegate
-#endif
-
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, MAYBE_BasicDelegate) {
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
+IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicDelegate) {
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("hey", &delegate), profile());
   // Verify that delegate accumulated correct log of events.
@@ -136,16 +121,7 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, MAYBE_BasicDelegate) {
   delegate->Release();
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_ButtonClickedDelegate ButtonClickedDelegate
-#else
-#define MAYBE_ButtonClickedDelegate DISABLED_ButtonClickedDelegate
-#endif
-
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
-                       MAYBE_ButtonClickedDelegate) {
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
+IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, ButtonClickedDelegate) {
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("n", &delegate), profile());
   message_center()->ClickOnNotificationButton("n", 1);

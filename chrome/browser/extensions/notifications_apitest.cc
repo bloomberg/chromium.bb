@@ -8,6 +8,9 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+
+#if defined(ENABLE_MESSAGE_CENTER)
+
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -15,10 +18,28 @@
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
 
-class NotificationIdleTest : public ExtensionApiTest {
+class RichWebkitNotificationTest : public ExtensionApiTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(
+        message_center::switches::kEnableRichNotifications);
+  }
+};
+
+class DisabledRichWebkitNotificationTest : public ExtensionApiTest {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(
+        message_center::switches::kDisableRichNotifications);
+  }
+};
+
+class NotificationIdleTest : public RichWebkitNotificationTest {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    RichWebkitNotificationTest::SetUpCommandLine(command_line);
 
     command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");
     command_line->AppendSwitchASCII(switches::kEventPageSuspendingTime, "1");
@@ -35,44 +56,51 @@ class NotificationIdleTest : public ExtensionApiTest {
   }
 };
 
+#endif
+
 // TODO(kbr): remove: http://crbug.com/222296
 #if defined(OS_MACOSX)
 #import "base/mac/mac_util.h"
 #endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsNoPermission) {
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+  // Notifications not supported on linux/views yet.
+#else
   ASSERT_TRUE(RunExtensionTest("notifications/has_not_permission")) << message_;
+#endif
 }
 
-// This test verifies that on RichNotification-enabled platforms HTML
-// notificaitons are disabled.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_NoHTMLNotifications NoHTMLNotifications
-#else
-#define MAYBE_NoHTMLNotifications DISABLED_NoHTMLNotifications
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_NoHTMLNotifications) {
-  ASSERT_TRUE(message_center::IsRichNotificationEnabled());
+#if defined(ENABLE_MESSAGE_CENTER)
+IN_PROC_BROWSER_TEST_F(RichWebkitNotificationTest, NoHTMLNotifications) {
   ASSERT_TRUE(RunExtensionTest("notifications/no_html")) << message_;
 }
 
-// This test verifies that on platforms other then RichNotification-enabled
-// HTML notificaitons are enabled.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_HasHTMLNotificationsAndManifestPermission \
-    DISABLED_HasHTMLNotificationsAndManifestPermission
-#else
-#define MAYBE_HasHTMLNotificationsAndManifestPermission \
-    HasHTMLNotificationsAndManifestPermission
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       MAYBE_HasHTMLNotificationsAndManifestPermission) {
+#if !defined(OS_CHROMEOS)
+// HTML notifications fail on ChromeOS whether or not rich notifications
+// are enabled.
+IN_PROC_BROWSER_TEST_F(DisabledRichWebkitNotificationTest,
+                       HasHTMLNotifications) {
   ASSERT_FALSE(message_center::IsRichNotificationEnabled());
   ASSERT_TRUE(RunExtensionTest("notifications/has_permission_manifest"))
       << message_;
 }
+#endif
+
+#elif !defined(OS_LINUX) || !defined(TOOLKIT_VIEWS)
+// Notifications not supported on linux/views yet.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       NotificationsHasPermissionManifest) {
+  ASSERT_TRUE(RunExtensionTest("notifications/has_permission_manifest"))
+      << message_;
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermission) {
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+  // Notifications not supported on linux/views yet.
+#else
+
 #if defined(OS_MACOSX)
   // TODO(kbr): re-enable: http://crbug.com/222296
   if (base::mac::IsOSMountainLionOrLater())
@@ -84,16 +112,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermission) {
           "chrome-extension://peoadpeiejnhkmpaakpnompolbglelel"));
   ASSERT_TRUE(RunExtensionTest("notifications/has_permission_prefs"))
       << message_;
+#endif
 }
 
-  // MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_NotificationsAllowUnload NotificationsAllowUnload
-#else
-#define MAYBE_NotificationsAllowUnload DISABLED_NotificationsAllowUnload
-#endif
-
-IN_PROC_BROWSER_TEST_F(NotificationIdleTest, MAYBE_NotificationsAllowUnload) {
+#if defined(ENABLE_MESSAGE_CENTER)
+IN_PROC_BROWSER_TEST_F(NotificationIdleTest, NotificationsAllowUnload) {
   const extensions::Extension* extension =
       LoadExtensionAndWait("notifications/api/unload");
   ASSERT_TRUE(extension) << message_;
@@ -103,3 +126,4 @@ IN_PROC_BROWSER_TEST_F(NotificationIdleTest, MAYBE_NotificationsAllowUnload) {
       extensions::ExtensionSystem::Get(profile())->process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
 }
+#endif
