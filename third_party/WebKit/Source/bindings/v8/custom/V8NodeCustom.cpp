@@ -43,6 +43,7 @@
 #include "V8Node.h"
 #include "V8Notation.h"
 #include "V8ProcessingInstruction.h"
+#include "V8ShadowRoot.h"
 #include "V8Text.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
@@ -149,6 +150,8 @@ v8::Handle<v8::Object> wrap(Node* impl, v8::Handle<v8::Object> creationContext, 
     case Node::DOCUMENT_TYPE_NODE:
         return wrap(static_cast<DocumentType*>(impl), creationContext, isolate);
     case Node::DOCUMENT_FRAGMENT_NODE:
+        if (impl->isShadowRoot())
+            return wrap(toShadowRoot(impl), creationContext, isolate);
         return wrap(static_cast<DocumentFragment*>(impl), creationContext, isolate);
     case Node::NOTATION_NODE:
         return wrap(static_cast<Notation*>(impl), creationContext, isolate);
