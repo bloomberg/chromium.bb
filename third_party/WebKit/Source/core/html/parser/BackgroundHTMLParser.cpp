@@ -145,7 +145,7 @@ void BackgroundHTMLParser::pumpTokenizer()
 
     while (true) {
         m_sourceTracker.start(m_input.current(), m_tokenizer.get(), *m_token);
-        if (!m_tokenizer->nextToken(m_input.current(), *m_token.get())) {
+        if (!m_tokenizer->nextToken(m_input.current(), *m_token)) {
             // We've reached the end of our current input.
             sendTokensToMainThread();
             break;

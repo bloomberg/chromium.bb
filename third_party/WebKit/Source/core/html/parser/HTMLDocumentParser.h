@@ -170,7 +170,7 @@ private:
     bool inPumpSession() const { return m_pumpSessionNestingLevel > 0; }
     bool shouldDelayEnd() const { return inPumpSession() || isWaitingForScripts() || isScheduledForResume() || isExecutingScript(); }
 
-    HTMLToken& token() { return *m_token.get(); }
+    HTMLToken& token() { return *m_token; }
 
     HTMLParserOptions m_options;
     HTMLInputStream m_input;
