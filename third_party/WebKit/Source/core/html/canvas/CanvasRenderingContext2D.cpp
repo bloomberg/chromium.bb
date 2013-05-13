@@ -1093,15 +1093,8 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
 {
     if (!validateRectForCanvas(x, y, width, height))
         return;
-    strokeRect(x, y, width, height, state().m_lineWidth);
-}
 
-void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float height, float lineWidth)
-{
-    if (!validateRectForCanvas(x, y, width, height))
-        return;
-
-    if (!(lineWidth >= 0))
+    if (!(state().m_lineWidth >= 0))
         return;
 
     GraphicsContext* c = drawingContext();
@@ -1118,9 +1111,9 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
     FloatRect rect(x, y, width, height);
 
     FloatRect boundingRect = rect;
-    boundingRect.inflate(lineWidth / 2);
+    boundingRect.inflate(state().m_lineWidth / 2);
 
-    c->strokeRect(rect, lineWidth);
+    c->strokeRect(rect, state().m_lineWidth);
     didDraw(boundingRect);
 }
 
