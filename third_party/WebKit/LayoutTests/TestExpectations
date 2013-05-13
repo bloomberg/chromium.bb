@@ -1443,7 +1443,6 @@ webkit.org/b/112219 fast/layers/no-clipping-overflow-hidden-added-after-transfor
 webkit.org/b/112219 fast/layers/no-clipping-overflow-hidden-hardware-acceleration.html [ ImageOnlyFailure Pass ]
 webkit.org/b/112219 fast/layers/no-clipping-overflow-hidden-added-after-transition.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/112598 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure Pass ]
 webkit.org/b/112601 http/tests/security/cross-frame-access-port-explicit-domain.html [ Failure Pass ]
 webkit.org/b/112621 [ Win Linux ] fast/forms/datalist/update-range-with-datalist.html [ ImageOnlyFailure Pass ]
 webkit.org/b/112629 http/tests/xmlhttprequest/send-array-buffer.html [ Failure Pass ]
@@ -1451,8 +1450,6 @@ webkit.org/b/112643 http/tests/history/redirect-js-location-0-seconds.html [ Fai
 webkit.org/b/112980 [ Win Mac ] fast/frames/seamless/seamless-form-post-override.html [ Failure Pass ]
 webkit.org/b/112980 [ Win Mac ] fast/frames/seamless/seamless-window-location-replace.html [ Failure Pass ]
 webkit.org/b/112980 [ Win Mac ] http/tests/navigation/lockedhistory-iframe.html [ Failure Pass ]
-webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/data-url-iframe-in-main-frame.html [ Failure Pass ]
-webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/insecure-image-in-main-frame-blocked.html [ Failure Pass ]
 webkit.org/b/112981 svg/batik/masking/maskRegions.svg [ Failure Pass ]
 webkit.org/b/112981 [ Win ] svg/batik/text/textProperties2.svg [ Failure Pass ]
 webkit.org/b/112984 [ Win ] fast/mediastream/RTCPeerConnection-statsSelector.html [ Failure Pass ]
@@ -1470,8 +1467,13 @@ webkit.org/b/113487 [ Debug ] plugins/npruntime/npruntime-calls-with-null-npp.ht
 
 webkit.org/b/113555 fast/forms/state-restore-per-form.html [ Pass Timeout ]
 
-crbug.com/229113 [ Win Mac ] http/tests/history/redirect-js-location-assign-0-seconds.html [ Pass Failure ]
-crbug.com/229698 http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html [ Pass Failure ]
+# These mixedContent tests are flakey. Some are more flakey than others.
+crbug.com/239811 http/tests/security/mixedContent/insecure-script-in-iframe.html [ Failure ]
+crbug.com/239811 crbug.com/229113 [ Win Mac ] http/tests/history/redirect-js-location-assign-0-seconds.html [ Pass Failure ]
+crbug.com/239811 crbug.com/239811 http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html [ Pass Failure ]
+crbug.com/239811 webkit.org/b/112598 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure Pass ]
+crbug.com/239811 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/data-url-iframe-in-main-frame.html [ Failure Pass ]
+crbug.com/239811 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/insecure-image-in-main-frame-blocked.html [ Failure Pass ]
 
 crbug.com/230554 [ Linux Debug ] plugins/drag-events.html [ Crash ]
 
