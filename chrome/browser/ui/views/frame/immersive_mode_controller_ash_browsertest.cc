@@ -29,6 +29,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "ui/aura/env.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/rect.h"
@@ -386,6 +387,36 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
   move.set_root_location(gfx::Point(150, 1));
   controller()->OnMouseEvent(&move);
   EXPECT_FALSE(top_edge_hover_timer_running());
+
+  // Once revealed, a move just a little below the top container doesn't end a
+  // reveal.
+  EXPECT_FALSE(controller()->IsRevealed());
+  controller()->StartRevealForTest(true);
+  gfx::Point just_below(0, browser_view()->top_container()->height() + 1);
+  views::View::ConvertPointToScreen(browser_view()->top_container(),
+                                    &just_below);
+  aura::Env::GetInstance()->set_last_mouse_location(just_below);
+  move.set_root_location(just_below);
+  controller()->OnMouseEvent(&move);
+  EXPECT_TRUE(controller()->IsRevealed());
+
+  // Once revealed, clicking just below the top container ends the reveal.
+  controller()->StartRevealForTest(true);
+  ui::MouseEvent click(
+      ui::ET_MOUSE_PRESSED, gfx::Point(), just_below, ui::EF_NONE);
+  aura::Env::GetInstance()->set_last_mouse_location(just_below);
+  controller()->OnMouseEvent(&click);
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // Moving a lot below the top container ends a reveal.
+  controller()->StartRevealForTest(true);
+  gfx::Point far_below(0, browser_view()->top_container()->height() + 50);
+  views::View::ConvertPointToScreen(browser_view()->top_container(),
+                                    &far_below);
+  aura::Env::GetInstance()->set_last_mouse_location(far_below);
+  move.set_root_location(far_below);
+  controller()->OnMouseEvent(&move);
+  EXPECT_FALSE(controller()->IsRevealed());
 }
 
 // Test behavior when the mouse becomes hovered without moving.

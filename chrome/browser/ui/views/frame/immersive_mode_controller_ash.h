@@ -137,7 +137,9 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Updates |mouse_revealed_lock_| based on the current mouse state and the
   // currently active widget.
   // |maybe_drag| is true if the user may be in the middle of a drag.
-  void UpdateMouseRevealedLock(bool maybe_drag);
+  // |event_type| is the type of event that triggered the update or
+  // ui::ET_UNKNOWN if the source event isn't known.
+  void UpdateMouseRevealedLock(bool maybe_drag, ui::EventType event_type);
 
   // Acquires the mouse revealed lock if it is not already held.
   void AcquireMouseRevealedLock();

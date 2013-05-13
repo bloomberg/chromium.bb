@@ -428,7 +428,7 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
 
     if (reveal_state_ == REVEALED) {
       // Reveal was unsuccessful. Reacquire the revealed locks if appropriate.
-      UpdateMouseRevealedLock(true);
+      UpdateMouseRevealedLock(true, ui::ET_UNKNOWN);
       UpdateFocusRevealedLock();
     }
     anchored_widget_manager_->OnImmersiveModeEnabled();
@@ -526,7 +526,7 @@ void ImmersiveModeControllerAsh::OnMouseEvent(ui::MouseEvent* event) {
   // screen for a while.
   UpdateTopEdgeHoverTimer(event);
 
-  UpdateMouseRevealedLock(false);
+  UpdateMouseRevealedLock(false, event->type());
   // Pass along event for further handling.
 }
 
@@ -579,7 +579,7 @@ void ImmersiveModeControllerAsh::OnWillChangeFocus(views::View* focused_before,
 
 void ImmersiveModeControllerAsh::OnDidChangeFocus(views::View* focused_before,
                                                   views::View* focused_now) {
-  UpdateMouseRevealedLock(true);
+  UpdateMouseRevealedLock(true, ui::ET_UNKNOWN);
   UpdateFocusRevealedLock();
 }
 
@@ -599,7 +599,7 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
   // |native_window_| is inactive.
   top_edge_hover_timer_.Stop();
 
-  UpdateMouseRevealedLock(true);
+  UpdateMouseRevealedLock(true, ui::ET_UNKNOWN);
   UpdateFocusRevealedLock();
 }
 
@@ -627,12 +627,12 @@ void ImmersiveModeControllerAsh::SetForceHideTabIndicatorsForTest(bool force) {
 void ImmersiveModeControllerAsh::StartRevealForTest(bool hovered) {
   MaybeStartReveal(ANIMATE_NO);
   MoveMouse(browser_view_->top_container(), hovered);
-  UpdateMouseRevealedLock(false);
+  UpdateMouseRevealedLock(false, ui::ET_UNKNOWN);
 }
 
 void ImmersiveModeControllerAsh::SetMouseHoveredForTest(bool hovered) {
   MoveMouse(browser_view_->top_container(), hovered);
-  UpdateMouseRevealedLock(false);
+  UpdateMouseRevealedLock(false, ui::ET_UNKNOWN);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -717,7 +717,9 @@ void ImmersiveModeControllerAsh::UpdateTopEdgeHoverTimer(
                  base::Unretained(this)));
 }
 
-void ImmersiveModeControllerAsh::UpdateMouseRevealedLock(bool maybe_drag) {
+void ImmersiveModeControllerAsh::UpdateMouseRevealedLock(
+    bool maybe_drag,
+    ui::EventType event_type) {
   if (!enabled_)
     return;
 
@@ -746,7 +748,15 @@ void ImmersiveModeControllerAsh::UpdateMouseRevealedLock(bool maybe_drag) {
   // coordinate conversion while |top_container|'s layer has an animating
   // transform and also works properly if |top_container| is not at 0, 0.
   views::View::ConvertPointFromScreen(top_container->parent(), &cursor_pos);
-  if (top_container->bounds().Contains(cursor_pos))
+  // Allow the cursor to move slightly below the top container's bottom edge
+  // before sliding closed. This helps when the user is attempting to click on
+  // the bookmark bar and overshoots slightly.
+  gfx::Rect hover_bounds = top_container->bounds();
+  if (event_type == ui::ET_MOUSE_MOVED) {
+    const int kBoundsOffsetY = 8;
+    hover_bounds.Inset(0, -kBoundsOffsetY);
+  }
+  if (hover_bounds.Contains(cursor_pos))
     AcquireMouseRevealedLock();
   else
     mouse_revealed_lock_.reset();
@@ -912,7 +922,7 @@ void ImmersiveModeControllerAsh::OnSlideOpenAnimationCompleted() {
 
   // The user may not have moved the mouse since the reveal was initiated.
   // Update the revealed lock to reflect the mouse's current state.
-  UpdateMouseRevealedLock(true);
+  UpdateMouseRevealedLock(true, ui::ET_UNKNOWN);
 }
 
 void ImmersiveModeControllerAsh::MaybeEndReveal(Animate animate) {
