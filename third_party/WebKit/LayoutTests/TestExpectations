@@ -1692,6 +1692,3 @@ crbug.com/239077 fast/canvas/webgl/index-validation-with-resized-buffer.html  [ 
 # Transient. PNGs need to be uploaded separately.
 crbug.com/232063 virtual/gpu/compositedscrolling/scrollbars/scrollbars-on-positioned-content.html [ ImageOnlyFailure ]
 crbug.com/232063 virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ ImageOnlyFailure ]
-
-# Started failing at blink r150162-150163, chrome r199604-199613
-crbug.com/240050 webexposed/global-constructors-listing.html [ Failure ]
