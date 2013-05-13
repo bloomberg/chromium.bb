@@ -33,6 +33,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/zip.h"
 
+using ::testing::Assign;
 using ::testing::ContainerEq;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
@@ -280,6 +281,12 @@ class DownloadProtectionServiceTest : public testing::Test {
     result_ = result;
     has_result_ = true;
     msg_loop_.Quit();
+  }
+
+  void SyncCheckDoneCallback(
+      DownloadProtectionService::DownloadCheckResult result) {
+    result_ = result;
+    has_result_ = true;
   }
 
   void SendURLFetchComplete(net::TestURLFetcher* fetcher) {
@@ -1000,6 +1007,47 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
   // The request should time out because the HTTP request hasn't returned
   // anything yet.
   msg_loop_.Run();
+  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+}
+
+TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
+  net::TestURLFetcherFactory factory;
+
+  std::vector<GURL> url_chain;
+  url_chain.push_back(GURL("http://www.evil.com/bla.exe"));
+  GURL referrer("http://www.google.com/");
+  base::FilePath tmp_path(FILE_PATH_LITERAL("a.tmp"));
+  base::FilePath final_path(FILE_PATH_LITERAL("a.exe"));
+  std::string hash = "hash";
+
+  content::MockDownloadItem item;
+  content::DownloadItem::Observer* observer = NULL;
+  EXPECT_CALL(item, AddObserver(_)).WillOnce(SaveArg<0>(&observer));
+  EXPECT_CALL(item, RemoveObserver(_)).WillOnce(Assign(
+      &observer, static_cast<content::DownloadItem::Observer*>(NULL)));
+  EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path));
+  EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(final_path));
+  EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
+  EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
+  EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
+  EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
+  EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(""));
+
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*signature_util_, CheckSignature(tmp_path, _));
+
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::SyncCheckDoneCallback,
+                 base::Unretained(this)));
+
+  ASSERT_TRUE(observer != NULL);
+  observer->OnDownloadDestroyed(&item);
+
+  EXPECT_TRUE(observer == NULL);
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 }
 
