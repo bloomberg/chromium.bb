@@ -1673,6 +1673,7 @@ crbug.com/239470 [ Mac ] fast/canvas/webgl [ Pass Missing ]
 # Some webgl tests are flaky crashing on windows.
 crbug.com/239839 [ Win ] fast/canvas/webgl/gl-vertex-attrib-zero-issues.html [ Pass Crash ]
 crbug.com/239839 [ Win ] fast/canvas/webgl/gl-uniformmatrix4fv.html [ Pass Crash ]
+crbug.com/239839 [ Win ] fast/canvas/webgl/gl-enum-tests.html [ Pass Crash ]
 
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/clip-text-in-hidpi.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/device-scale-factor-paint.html [ Pass Timeout ]
