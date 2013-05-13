@@ -10,6 +10,6 @@ handlers:
   upload: robots.txt
 - url: /favicon\.ico
   static_files: chrome-32.ico
-  upload: favicon.ico
+  upload: chrome-32.ico
 - url: /.*
   script: appengine_main.py
