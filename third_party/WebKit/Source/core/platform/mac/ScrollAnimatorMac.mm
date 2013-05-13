@@ -666,7 +666,7 @@ bool ScrollAnimatorMac::scroll(ScrollbarOrientation orientation, ScrollGranulari
         return ScrollAnimator::scroll(orientation, granularity, step, multiplier);
 
     float currentPos = orientation == HorizontalScrollbar ? m_currentPosX : m_currentPosY;
-    float newPos = std::max<float>(std::min<float>(currentPos + (step * multiplier), static_cast<float>(m_scrollableArea->scrollSize(orientation))), 0);
+    float newPos = std::max<float>(std::min<float>(currentPos + (step * multiplier), m_scrollableArea->maximumScrollPosition(orientation)), m_scrollableArea->minimumScrollPosition(orientation));
     if (currentPos == newPos)
         return false;
 
@@ -692,8 +692,11 @@ FloatPoint ScrollAnimatorMac::adjustScrollPositionIfNecessary(const FloatPoint& 
     if (!m_scrollableArea->constrainsScrollingToContentEdge())
         return position;
 
-    float newX = max<float>(min<float>(position.x(), m_scrollableArea->contentsSize().width() - m_scrollableArea->visibleWidth()), 0);
-    float newY = max<float>(min<float>(position.y(), m_scrollableArea->contentsSize().height() - m_scrollableArea->visibleHeight()), 0);
+    IntPoint minPos = m_scrollableArea->minimumScrollPosition();
+    IntPoint maxPos = m_scrollableArea->maximumScrollPosition();
+
+    float newX = max<float>(min<float>(position.x(), maxPos.x()), minPos.x());
+    float newY = max<float>(min<float>(position.y(), maxPos.y()), minPos.y());
 
     return FloatPoint(newX, newY);
 }

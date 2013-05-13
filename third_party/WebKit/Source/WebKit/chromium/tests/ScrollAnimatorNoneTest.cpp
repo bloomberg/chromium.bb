@@ -117,6 +117,8 @@ TEST(ScrollAnimatorEnabled, Enabled)
     MockScrollAnimatorNone scrollAnimatorNone(&scrollableArea);
 
     EXPECT_CALL(scrollableArea, scrollSize(_)).Times(AtLeast(1)).WillRepeatedly(Return(1000));
+    EXPECT_CALL(scrollableArea, minimumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint()));
+    EXPECT_CALL(scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
     EXPECT_CALL(scrollableArea, setScrollOffset(_)).Times(4);
 
     scrollAnimatorNone.scroll(HorizontalScrollbar, ScrollByLine, 100, 1);
@@ -149,7 +151,8 @@ TEST(ScrollAnimatorEnabled, Disabled)
     MockScrollableArea scrollableArea(false);
     MockScrollAnimatorNone scrollAnimatorNone(&scrollableArea);
 
-    EXPECT_CALL(scrollableArea, scrollSize(_)).Times(AtLeast(1)).WillRepeatedly(Return(1000));
+    EXPECT_CALL(scrollableArea, minimumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint()));
+    EXPECT_CALL(scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
     EXPECT_CALL(scrollableArea, setScrollOffset(_)).Times(4);
 
     scrollAnimatorNone.scroll(HorizontalScrollbar, ScrollByLine, 100, 1);
