@@ -175,11 +175,11 @@ private:
                 continue;
             }
             while (!node->nextSibling()) {
-                if (!node->parentNode())
+                if (!node->parentOrShadowHostNode())
                     break;
-                node = node->parentNode();
+                node = node->parentOrShadowHostNode();
             }
-            if (node->parentNode())
+            if (node->parentOrShadowHostNode())
                 node = node->nextSibling();
         } while (node != startNode);
 
