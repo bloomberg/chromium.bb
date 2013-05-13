@@ -146,11 +146,6 @@ const DialogClientView* DialogClientView::AsDialogClientView() const {
 
 void DialogClientView::OnWillChangeFocus(View* focused_before,
                                          View* focused_now) {
-  // New style dialogs do not move the default button with the focus.
-  // TODO(msw|wittman): Remove this functionality once the new style has landed.
-  if (DialogDelegate::UseNewStyle())
-    return;
-
   // Make the newly focused button default or restore the dialog's default.
   const int default_button = GetDialogDelegate()->GetDefaultDialogButton();
   LabelButton* new_default_button = NULL;
