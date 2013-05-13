@@ -1326,6 +1326,7 @@ bool cssErrorFilter(const CSSParserLocation& location, int errorType)
 namespace InstrumentationEvents {
 const char PaintLayer[] = "PaintLayer";
 const char RasterTask[] = "RasterTask";
+const char ImageDecodeTask[] = "ImageDecodeTask";
 const char Paint[] = "Paint";
 const char Layer[] = "Layer";
 const char BeginFrame[] = "BeginFrame";

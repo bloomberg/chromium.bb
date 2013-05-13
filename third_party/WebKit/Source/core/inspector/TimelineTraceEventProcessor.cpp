@@ -160,6 +160,8 @@ TimelineTraceEventProcessor::TimelineTraceEventProcessor(WeakPtr<InspectorTimeli
     registerHandler(InstrumentationEvents::PaintLayer, TracePhaseEnd, &TimelineTraceEventProcessor::onPaintLayerEnd);
     registerHandler(InstrumentationEvents::RasterTask, TracePhaseBegin, &TimelineTraceEventProcessor::onRasterTaskBegin);
     registerHandler(InstrumentationEvents::RasterTask, TracePhaseEnd, &TimelineTraceEventProcessor::onRasterTaskEnd);
+    registerHandler(InstrumentationEvents::ImageDecodeTask, TracePhaseBegin, &TimelineTraceEventProcessor::onImageDecodeTaskBegin);
+    registerHandler(InstrumentationEvents::ImageDecodeTask, TracePhaseEnd, &TimelineTraceEventProcessor::onImageDecodeTaskEnd);
     registerHandler(InstrumentationEvents::Layer, TracePhaseDeleteObject, &TimelineTraceEventProcessor::onLayerDeleted);
     registerHandler(InstrumentationEvents::Paint, TracePhaseInstant, &TimelineTraceEventProcessor::onPaint);
     registerHandler(PlatformInstrumentation::ImageDecodeEvent, TracePhaseBegin, &TimelineTraceEventProcessor::onImageDecodeBegin);
@@ -238,12 +240,9 @@ void TimelineTraceEventProcessor::onPaintLayerEnd(const TraceEvent&)
 
 void TimelineTraceEventProcessor::onRasterTaskBegin(const TraceEvent& event)
 {
-    unsigned long long layerId = event.asUInt(InstrumentationEventArguments::LayerId);
-    if (!m_knownLayers.contains(layerId))
-        return;
     TimelineThreadState& state = threadState(event.threadIdentifier());
-    ASSERT(!state.inRasterizeEvent);
-    state.inRasterizeEvent = true;
+    if (!maybeEnterLayerTask(event, state))
+        return;
     RefPtr<InspectorObject> record = createRecord(event, TimelineRecordType::Rasterize);
     state.recordStack.addScopedRecord(record.release());
 }
@@ -251,17 +250,42 @@ void TimelineTraceEventProcessor::onRasterTaskBegin(const TraceEvent& event)
 void TimelineTraceEventProcessor::onRasterTaskEnd(const TraceEvent& event)
 {
     TimelineThreadState& state = threadState(event.threadIdentifier());
-    if (!state.inRasterizeEvent)
+    if (!state.inKnownLayerTask)
         return;
     ASSERT(state.recordStack.isOpenRecordOfType(TimelineRecordType::Rasterize));
     state.recordStack.closeScopedRecord(m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp()));
-    state.inRasterizeEvent = false;
+    leaveLayerTask(state);
+}
+
+void TimelineTraceEventProcessor::onImageDecodeTaskBegin(const TraceEvent& event)
+{
+    maybeEnterLayerTask(event, threadState(event.threadIdentifier()));
+}
+
+void TimelineTraceEventProcessor::onImageDecodeTaskEnd(const TraceEvent& event)
+{
+    leaveLayerTask(threadState(event.threadIdentifier()));
+}
+
+bool TimelineTraceEventProcessor::maybeEnterLayerTask(const TraceEvent& event, TimelineThreadState& threadState)
+{
+    unsigned long long layerId = event.asUInt(InstrumentationEventArguments::LayerId);
+    if (!m_knownLayers.contains(layerId))
+        return false;
+    ASSERT(!threadState.inKnownLayerTask);
+    threadState.inKnownLayerTask = true;
+    return true;
+}
+
+void TimelineTraceEventProcessor::leaveLayerTask(TimelineThreadState& threadState)
+{
+    threadState.inKnownLayerTask = false;
 }
 
 void TimelineTraceEventProcessor::onImageDecodeBegin(const TraceEvent& event)
 {
     TimelineThreadState& state = threadState(event.threadIdentifier());
-    if (!state.inRasterizeEvent)
+    if (!state.inKnownLayerTask)
         return;
     state.recordStack.addScopedRecord(createRecord(event, TimelineRecordType::DecodeImage));
 }
@@ -269,7 +293,7 @@ void TimelineTraceEventProcessor::onImageDecodeBegin(const TraceEvent& event)
 void TimelineTraceEventProcessor::onImageDecodeEnd(const TraceEvent& event)
 {
     TimelineThreadState& state = threadState(event.threadIdentifier());
-    if (!state.inRasterizeEvent)
+    if (!state.inKnownLayerTask)
         return;
     ASSERT(state.recordStack.isOpenRecordOfType(TimelineRecordType::DecodeImage));
     state.recordStack.closeScopedRecord(m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp()));

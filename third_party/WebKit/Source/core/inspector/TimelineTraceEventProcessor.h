@@ -126,12 +126,12 @@ private:
 
         TimelineThreadState(WeakPtr<InspectorTimelineAgent> timelineAgent)
             : recordStack(timelineAgent)
-            , inRasterizeEvent(false)
+            , inKnownLayerTask(false)
         {
         }
 
         TimelineRecordStack recordStack;
-        bool inRasterizeEvent;
+        bool inKnownLayerTask;
     };
 
     class TraceEvent {
@@ -222,6 +222,8 @@ private:
             return it->value;
         return m_threadStates.add(thread, TimelineThreadState(m_timelineAgent)).iterator->value;
     }
+    bool maybeEnterLayerTask(const TraceEvent&, TimelineThreadState&);
+    void leaveLayerTask(TimelineThreadState&);
 
     void processBackgroundEvents();
     PassRefPtr<InspectorObject> createRecord(const TraceEvent&, const String& recordType, PassRefPtr<InspectorObject> data = 0);
@@ -233,6 +235,8 @@ private:
     void onPaintLayerEnd(const TraceEvent&);
     void onRasterTaskBegin(const TraceEvent&);
     void onRasterTaskEnd(const TraceEvent&);
+    void onImageDecodeTaskBegin(const TraceEvent&);
+    void onImageDecodeTaskEnd(const TraceEvent&);
     void onImageDecodeBegin(const TraceEvent&);
     void onImageDecodeEnd(const TraceEvent&);
     void onLayerDeleted(const TraceEvent&);
