@@ -11,6 +11,7 @@ from appengine_wrappers import (
     GetAppVersion, DeadlineExceededError, IsDevServer, logservice)
 from branch_utility import BranchUtility
 from caching_file_system import CachingFileSystem
+from compiled_file_system import CompiledFileSystem
 from empty_dir_file_system import EmptyDirFileSystem
 from github_file_system import GithubFileSystem
 from object_store_creator import ObjectStoreCreator
@@ -227,7 +228,13 @@ class CronServlet(Servlet):
         object_store_creator)
     app_samples_file_system = self._delegate.CreateAppSamplesFileSystem(
         object_store_creator)
+    compiled_host_fs_factory = CompiledFileSystem.Factory(
+        host_file_system,
+        object_store_creator)
     return ServerInstance(channel,
                           object_store_creator,
                           host_file_system,
-                          app_samples_file_system)
+                          app_samples_file_system,
+                          '/static' if channel == 'stable' else
+                              '/%s/static' % channel,
+                          compiled_host_fs_factory)

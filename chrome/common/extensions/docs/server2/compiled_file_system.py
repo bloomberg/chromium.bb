@@ -93,3 +93,17 @@ class CompiledFileSystem(object):
     cache_data = self._populate_function(path, self._RecursiveList(path))
     self._list_object_store.Set(path, _CacheEntry(cache_data, version))
     return cache_data
+
+  def StatFile(self, path):
+    cache_entry = self._file_object_store.Get(path).Get()
+    if cache_entry is not None:
+      return cache_entry.version
+    return self._file_system.Stat(path).version
+
+  def StatFileListing(self, path):
+    if not path.endswith('/'):
+      path += '/'
+    cache_entry = self._list_object_store.Get(path).Get()
+    if cache_entry is not None:
+      return cache_entry.version
+    return self._file_system.Stat(path).version

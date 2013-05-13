@@ -100,6 +100,11 @@ class Response(object):
   def SetStatus(self, status):
     self.status = status
 
+  def GetRedirect(self):
+    if self.headers.get('Location') is None:
+      return (None, None)
+    return (self.headers.get('Location'), self.status == 301)
+
   def __repr__(self):
     return 'Response(content=%s bytes, status=%s, headers=%s entries)' % (
         len(self.content), self.status, len(self.headers.keys()))

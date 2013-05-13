@@ -4,20 +4,19 @@
 
 from branch_utility import BranchUtility
 from cron_servlet import CronServlet
+from patch_servlet import PatchServlet
 from instance_servlet import InstanceServlet
 from servlet import Servlet, Request, Response
 
 _SERVLETS = {
   'cron': CronServlet,
+  'patch': PatchServlet,
 }
 _DEFAULT_SERVLET = InstanceServlet.GetConstructor()
 
 class Handler(Servlet):
   def Get(self):
     path = self._request.path
-
-    if path in ['favicon.ico', 'robots.txt']:
-      return Response.NotFound('')
 
     redirect = self._RedirectSpecialCases()
     if redirect is None:

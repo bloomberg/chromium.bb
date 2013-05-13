@@ -5,6 +5,7 @@
 from appengine_wrappers import IsDevServer
 from branch_utility import BranchUtility
 from caching_file_system import CachingFileSystem
+from compiled_file_system import CompiledFileSystem
 from empty_dir_file_system import EmptyDirFileSystem
 from github_file_system import GithubFileSystem
 from third_party.json_schema_compiler.memoize import memoize
@@ -43,10 +44,16 @@ class _OfflineRenderServletDelegate(RenderServlet.Delegate):
         object_store_creator)
     app_samples_file_system = self._delegate.CreateAppSamplesFileSystem(
         object_store_creator)
+    compiled_host_fs_factory = CompiledFileSystem.Factory(
+        host_file_system,
+        object_store_creator)
     return ServerInstance(channel,
                           object_store_creator,
                           host_file_system,
-                          app_samples_file_system)
+                          app_samples_file_system,
+                          '/static' if channel == 'stable' else
+                              '/%s/static' % channel,
+                          compiled_host_fs_factory)
 
 class InstanceServlet(object):
   '''Servlet for running on normal AppEngine instances.

@@ -107,9 +107,36 @@ class FakeGithubZip(_FakeFetcher):
     except IOError:
       return None
 
-class FakeIssuesFetcher(_FakeFetcher):
+class FakeRietveldAPI(_FakeFetcher):
+  def __init__(self, base_path):
+    _FakeFetcher.__init__(self, base_path)
+    self._base_pattern = re.compile(r'.*/(api/.*)')
+
   def fetch(self, url):
-    return 'Status,Summary,ID'
+    try:
+      return self._ReadFile(
+          os.path.join('server2',
+                       'test_data',
+                       'rietveld_patcher',
+                       self._base_pattern.match(url).group(1),
+                       'json'))
+    except IOError:
+      return None
+
+class FakeRietveldTarball(_FakeFetcher):
+  def __init__(self, base_path):
+    _FakeFetcher.__init__(self, base_path)
+    self._base_pattern = re.compile(r'.*/(tarball/\d+/\d+)')
+
+  def fetch(self, url):
+    try:
+      return self._ReadFile(
+          os.path.join('server2',
+                       'test_data',
+                       'rietveld_patcher',
+                       self._base_pattern.match(url).group(1) + '.tar.bz2'))
+    except IOError:
+      return None
 
 def ConfigureFakeFetchers():
   '''Configure the fake fetcher paths relative to the docs directory.
@@ -121,6 +148,7 @@ def ConfigureFakeFetchers():
     '%s/.*' % url_constants.VIEWVC_URL: FakeViewvcServer(docs),
     '%s/commits/.*' % url_constants.GITHUB_URL: FakeGithubStat(docs),
     '%s/zipball' % url_constants.GITHUB_URL: FakeGithubZip(docs),
-    re.escape(url_constants.OPEN_ISSUES_CSV_URL): FakeIssuesFetcher(docs),
-    re.escape(url_constants.CLOSED_ISSUES_CSV_URL): FakeIssuesFetcher(docs)
+    '%s/api/.*' % url_constants.CODEREVIEW_SERVER: FakeRietveldAPI(docs),
+    '%s/tarball/.*' % url_constants.CODEREVIEW_SERVER:
+        FakeRietveldTarball(docs),
   })

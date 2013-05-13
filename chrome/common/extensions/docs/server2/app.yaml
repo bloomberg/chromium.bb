@@ -1,9 +1,15 @@
 application: chrome-apps-doc
-version: 2-1-0
+version: 2-2-1
 runtime: python27
 api_version: 1
 threadsafe: false
 
 handlers:
+- url: /robots\.txt
+  static_files: robots.txt
+  upload: robots.txt
+- url: /favicon\.ico
+  static_files: favicon.ico
+  upload: favicon.ico
 - url: /.*
   script: appengine_main.py

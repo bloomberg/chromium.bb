@@ -72,7 +72,8 @@ class TemplateDataSourceTest(unittest.TestCase):
         compiled_fs_factory,
         reference_resolver_factory,
         '.',
-        '.'))
+        '.',
+        '/static'))
 
   def testSimple(self):
     self._base_path = os.path.join(self._base_path, 'simple')

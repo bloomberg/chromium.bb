@@ -39,7 +39,9 @@ class ServerInstance(object):
                channel,
                object_store_creator,
                host_file_system,
-               app_samples_file_system):
+               app_samples_file_system,
+               static_path,
+               compiled_fs_factory):
     self.channel = channel
 
     self.object_store_creator = object_store_creator
@@ -48,9 +50,7 @@ class ServerInstance(object):
 
     self.app_samples_file_system = app_samples_file_system
 
-    self.compiled_host_fs_factory = CompiledFileSystem.Factory(
-        host_file_system,
-        object_store_creator)
+    self.compiled_host_fs_factory = compiled_fs_factory
 
     self.api_list_data_source_factory = APIListDataSource.Factory(
         self.compiled_host_fs_factory,
@@ -107,7 +107,8 @@ class ServerInstance(object):
         self.compiled_host_fs_factory,
         self.ref_resolver_factory,
         svn_constants.PUBLIC_TEMPLATE_PATH,
-        svn_constants.PRIVATE_TEMPLATE_PATH)
+        svn_constants.PRIVATE_TEMPLATE_PATH,
+        static_path)
 
     self.example_zipper = ExampleZipper(
         self.compiled_host_fs_factory,
@@ -122,10 +123,14 @@ class ServerInstance(object):
 
   @staticmethod
   def ForTest(file_system):
+    object_store_creator = ObjectStoreCreator.ForTest()
     return ServerInstance('test',
-                          ObjectStoreCreator.ForTest(),
+                          object_store_creator,
                           file_system,
-                          EmptyDirFileSystem())
+                          EmptyDirFileSystem(),
+                          '/static',
+                          CompiledFileSystem.Factory(file_system,
+                                                     object_store_creator))
 
   @staticmethod
   def ForLocal():
@@ -133,8 +138,12 @@ class ServerInstance(object):
     object_store_creator = ObjectStoreCreator(channel,
                                               start_empty=False,
                                               store_type=TestObjectStore)
+    file_system = CachingFileSystem(LocalFileSystem.Create(),
+                                    object_store_creator)
     return ServerInstance(
         channel,
         object_store_creator,
-        CachingFileSystem(LocalFileSystem.Create(), object_store_creator),
-        EmptyDirFileSystem())
+        file_system,
+        EmptyDirFileSystem(),
+        '/static',
+        CompiledFileSystem.Factory(file_system, object_store_creator))
