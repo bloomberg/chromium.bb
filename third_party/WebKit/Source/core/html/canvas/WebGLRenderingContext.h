@@ -29,6 +29,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/WebGLGetInfo.h"
+#include "core/page/Page.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/ImageBuffer.h"
@@ -80,7 +81,7 @@ class WebGLVertexArrayObjectOES;
 
 typedef int ExceptionCode;
 
-class WebGLRenderingContext : public CanvasRenderingContext, public ActiveDOMObject {
+class WebGLRenderingContext : public CanvasRenderingContext, public ActiveDOMObject, private Page::MultisamplingChangedObserver {
 public:
     static PassOwnPtr<WebGLRenderingContext> create(HTMLCanvasElement*, WebGLContextAttributes*);
     virtual ~WebGLRenderingContext();
@@ -294,7 +295,10 @@ public:
         RealLostContext,
 
         // Lost context provoked by WEBKIT_lose_context.
-        SyntheticLostContext
+        SyntheticLostContext,
+
+        // A synthetic lost context that should attempt to recover automatically
+        AutoRecoverSyntheticLostContext
     };
     void forceLostContext(LostContextMode);
     void forceRestoreContext();
@@ -331,7 +335,7 @@ public:
     friend class WebGLRenderingContextErrorMessageCallback;
     friend class WebGLVertexArrayObjectOES;
 
-    WebGLRenderingContext(HTMLCanvasElement*, PassRefPtr<GraphicsContext3D>, GraphicsContext3D::Attributes);
+    WebGLRenderingContext(HTMLCanvasElement*, PassRefPtr<GraphicsContext3D>, GraphicsContext3D::Attributes, GraphicsContext3D::Attributes);
     void initializeNewContext();
     void setupFlags();
 
@@ -493,6 +497,7 @@ public:
     bool m_contextLost;
     LostContextMode m_contextLostMode;
     GraphicsContext3D::Attributes m_attributes;
+    GraphicsContext3D::Attributes m_requestedAttributes;
 
     bool m_layerCleared;
     GC3Dfloat m_clearColor[4];
@@ -768,6 +773,10 @@ public:
 
     void restoreCurrentFramebuffer();
     void restoreCurrentTexture2D();
+
+    virtual void multisamplingChanged(bool);
+    bool m_multisamplingAllowed;
+    bool m_multisamplingObserverRegistered;
 
     friend class WebGLStateRestorer;
     friend class WebGLRenderingContextEvictionManager;

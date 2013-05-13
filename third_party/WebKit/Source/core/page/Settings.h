@@ -156,6 +156,9 @@ public:
     void setTouchEventEmulationEnabled(bool enabled) { m_touchEventEmulationEnabled = enabled; }
     bool isTouchEventEmulationEnabled() const { return m_touchEventEmulationEnabled; }
 
+    void setOpenGLMultisamplingEnabled(bool flag);
+    bool openGLMultisamplingEnabled();
+
 private:
     explicit Settings(Page*);
 
@@ -190,6 +193,7 @@ private:
     bool m_dnsPrefetchingEnabled : 1;
 
     bool m_touchEventEmulationEnabled : 1;
+    bool m_openGLMultisamplingEnabled : 1;
 
     Timer<Settings> m_setImageLoadingSettingsTimer;
     void imageLoadingSettingsTimerFired(Timer<Settings>*);

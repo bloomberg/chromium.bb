@@ -450,6 +450,17 @@ namespace {
             break;
         }
     }
+
+    GraphicsContext3D::Attributes adjustAttributes(const GraphicsContext3D::Attributes& attributes, Settings* settings)
+    {
+        GraphicsContext3D::Attributes adjustedAttributes = attributes;
+        if (adjustedAttributes.antialias) {
+            if (settings && !settings->openGLMultisamplingEnabled())
+                adjustedAttributes.antialias = false;
+        }
+
+        return adjustedAttributes;
+    }
 } // namespace anonymous
 
 class WebGLRenderingContextLostCallback : public GraphicsContext3D::ContextLostCallback {
@@ -491,17 +502,13 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
         return nullptr;
     }
 
-    GraphicsContext3D::Attributes attributes = attrs ? attrs->attributes() : GraphicsContext3D::Attributes();
+    GraphicsContext3D::Attributes requestedAttributes = attrs ? attrs->attributes() : GraphicsContext3D::Attributes();
+    requestedAttributes.noExtensions = true;
+    requestedAttributes.shareResources = true;
+    requestedAttributes.preferDiscreteGPU = true;
+    requestedAttributes.topDocumentURL = document->topDocument()->url();
 
-    if (attributes.antialias) {
-        if (settings && !settings->openGLMultisamplingEnabled())
-            attributes.antialias = false;
-    }
-
-    attributes.noExtensions = true;
-    attributes.shareResources = true;
-    attributes.preferDiscreteGPU = true;
-    attributes.topDocumentURL = document->topDocument()->url();
+    GraphicsContext3D::Attributes attributes = adjustAttributes(requestedAttributes, settings);
 
     RefPtr<GraphicsContext3D> context(GraphicsContext3D::create(attributes));
 
@@ -514,7 +521,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
     if (extensions->supports("GL_EXT_debug_marker"))
         extensions->pushGroupMarkerEXT("WebGLRenderingContext");
 
-    OwnPtr<WebGLRenderingContext> renderingContext = adoptPtr(new WebGLRenderingContext(canvas, context, attributes));
+    OwnPtr<WebGLRenderingContext> renderingContext = adoptPtr(new WebGLRenderingContext(canvas, context, attributes, requestedAttributes));
     renderingContext->suspendIfNeeded();
 
     if (renderingContext->m_drawingBuffer->isZeroSized()) {
@@ -525,8 +532,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
     return renderingContext.release();
 }
 
-WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, PassRefPtr<GraphicsContext3D> context,
-                                             GraphicsContext3D::Attributes attributes)
+WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, PassRefPtr<GraphicsContext3D> context, GraphicsContext3D::Attributes attributes, GraphicsContext3D::Attributes requestedAttributes)
     : CanvasRenderingContext(passedCanvas)
     , ActiveDOMObject(passedCanvas->document())
     , m_context(context)
@@ -538,8 +544,11 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     , m_contextLost(false)
     , m_contextLostMode(SyntheticLostContext)
     , m_attributes(attributes)
+    , m_requestedAttributes(requestedAttributes)
     , m_synthesizedErrorsToConsole(true)
     , m_numGLErrorsToConsoleAllowed(maxGLErrorsAllowedToConsole)
+    , m_multisamplingAllowed(false)
+    , m_multisamplingObserverRegistered(false)
 {
     ASSERT(m_context);
     ScriptWrappable::init(this);
@@ -645,8 +654,15 @@ void WebGLRenderingContext::setupFlags()
     ASSERT(m_context);
 
     Page* p = canvas()->document()->page();
-    if (p)
+    if (p) {
         m_synthesizedErrorsToConsole = p->settings()->webGLErrorsToConsoleEnabled();
+
+        if (!m_multisamplingObserverRegistered && m_requestedAttributes.antialias) {
+            m_multisamplingAllowed = m_drawingBuffer->multisample();
+            p->addMultisamplingChangedObserver(this);
+            m_multisamplingObserverRegistered = true;
+        }
+    }
 
     m_isGLES2NPOTStrict = !m_context->getExtensions()->isEnabled("GL_OES_texture_npot");
     m_isDepthStencilSupported = m_context->getExtensions()->isEnabled("GL_OES_packed_depth_stencil");
@@ -690,6 +706,12 @@ WebGLRenderingContext::~WebGLRenderingContext()
     detachAndRemoveAllObjects();
     destroyGraphicsContext3D();
     m_contextGroup->removeContext(this);
+
+    if (m_multisamplingObserverRegistered) {
+        Page* page = canvas()->document()->page();
+        if (page)
+            page->removeMultisamplingChangedObserver(this);
+    }
 
     willDestroyContext(this);
 }
@@ -5239,7 +5261,7 @@ void WebGLRenderingContext::dispatchContextLostEvent(Timer<WebGLRenderingContext
     canvas()->dispatchEvent(event);
     m_restoreAllowed = event->defaultPrevented();
     deactivateContext(this, m_contextLostMode != RealLostContext && m_restoreAllowed);
-    if (m_contextLostMode == RealLostContext && m_restoreAllowed)
+    if ((m_contextLostMode == RealLostContext || m_contextLostMode == AutoRecoverSyntheticLostContext) && m_restoreAllowed)
         m_restoreTimer.startOneShot(0);
 }
 
@@ -5263,10 +5285,16 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
     if (!frame)
         return;
 
-    if (!frame->loader()->client()->allowWebGL(frame->settings() && frame->settings()->webGLEnabled()))
+    Settings* settings = frame->settings();
+
+    if (!frame->loader()->client()->allowWebGL(settings && settings->webGLEnabled()))
         return;
 
+    // Reset the context attributes back to the requested attributes and re-apply restrictions
+    m_attributes = adjustAttributes(m_requestedAttributes, settings);
+
     RefPtr<GraphicsContext3D> context(GraphicsContext3D::create(m_attributes));
+
     if (!context) {
         if (m_contextLostMode == RealLostContext)
             m_restoreTimer.startOneShot(secondsBetweenRestoreAttempts);
@@ -5454,6 +5482,14 @@ void WebGLRenderingContext::restoreCurrentTexture2D()
 {
     ExceptionCode ec;
     bindTexture(GraphicsContext3D::TEXTURE_2D, m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get(), ec);
+}
+
+void WebGLRenderingContext::multisamplingChanged(bool enabled)
+{
+    if (m_multisamplingAllowed != enabled) {
+        m_multisamplingAllowed = enabled;
+        forceLostContext(WebGLRenderingContext::AutoRecoverSyntheticLostContext);
+    }
 }
 
 } // namespace WebCore

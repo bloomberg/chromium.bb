@@ -251,6 +251,15 @@ public:
 
     double timerAlignmentInterval() const;
 
+    class MultisamplingChangedObserver {
+    public:
+        virtual void multisamplingChanged(bool) = 0;
+    };
+
+    void addMultisamplingChangedObserver(MultisamplingChangedObserver*);
+    void removeMultisamplingChangedObserver(MultisamplingChangedObserver*);
+    void multisamplingChanged();
+
 private:
     void initGroup();
 
@@ -329,6 +338,8 @@ private:
 #endif
 
     OwnPtr<PageConsole> m_console;
+
+    HashSet<MultisamplingChangedObserver*> m_multisamplingChangedObservers;
 };
 
 } // namespace WebCore

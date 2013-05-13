@@ -814,6 +814,23 @@ void Page::captionPreferencesChanged()
         frame->document()->captionPreferencesChanged();
 }
 
+void Page::addMultisamplingChangedObserver(MultisamplingChangedObserver* observer)
+{
+    m_multisamplingChangedObservers.add(observer);
+}
+
+void Page::removeMultisamplingChangedObserver(MultisamplingChangedObserver* observer)
+{
+    m_multisamplingChangedObservers.remove(observer);
+}
+
+void Page::multisamplingChanged()
+{
+    HashSet<MultisamplingChangedObserver*>::iterator stop = m_multisamplingChangedObservers.end();
+    for (HashSet<MultisamplingChangedObserver*>::iterator it = m_multisamplingChangedObservers.begin(); it != stop; ++it)
+        (*it)->multisamplingChanged(m_settings->openGLMultisamplingEnabled());
+}
+
 Page::PageClients::PageClients()
     : chromeClient(0)
     , contextMenuClient(0)

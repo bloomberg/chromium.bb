@@ -372,4 +372,18 @@ bool Settings::usesOverlayScrollbars()
     return gUsesOverlayScrollbars;
 }
 
+void Settings::setOpenGLMultisamplingEnabled(bool flag)
+{
+    if (m_openGLMultisamplingEnabled == flag)
+        return;
+
+    m_openGLMultisamplingEnabled = flag;
+    m_page->multisamplingChanged();
+}
+
+bool Settings::openGLMultisamplingEnabled()
+{
+    return m_openGLMultisamplingEnabled;
+}
+
 } // namespace WebCore
