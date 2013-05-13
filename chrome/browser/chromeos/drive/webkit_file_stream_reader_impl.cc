@@ -1,0 +1,156 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/drive/webkit_file_stream_reader_impl.h"
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
+#include "base/logging.h"
+#include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
+#include "content/public/browser/browser_thread.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
+
+using content::BrowserThread;
+
+namespace drive {
+namespace internal {
+
+WebkitFileStreamReaderImpl::WebkitFileStreamReaderImpl(
+    const DriveFileStreamReader::FileSystemGetter& file_system_getter,
+    base::SequencedTaskRunner* file_task_runner,
+    const base::FilePath& drive_file_path,
+    int64 offset,
+    const base::Time& expected_modification_time)
+    : stream_reader_(
+          new DriveFileStreamReader(file_system_getter, file_task_runner)),
+      drive_file_path_(drive_file_path),
+      offset_(offset),
+      expected_modification_time_(expected_modification_time),
+      file_size_(-1),
+      weak_ptr_factory_(this) {
+  DCHECK_GE(offset, 0);
+}
+
+WebkitFileStreamReaderImpl::~WebkitFileStreamReaderImpl() {
+}
+
+int WebkitFileStreamReaderImpl::Read(net::IOBuffer* buffer,
+                                     int buffer_length,
+                                     const net::CompletionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(stream_reader_);
+  DCHECK(buffer);
+  DCHECK(!callback.is_null());
+
+  if (stream_reader_->IsInitialized())
+    return stream_reader_->Read(buffer, buffer_length, callback);
+
+  stream_reader_->Initialize(
+      drive_file_path_,
+      offset_,
+      kuint64max,
+      base::Bind(&WebkitFileStreamReaderImpl::OnStreamReaderInitialized,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Bind(&WebkitFileStreamReaderImpl
+                                ::ReadAfterStreamReaderInitialized,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            make_scoped_refptr(buffer),
+                            buffer_length, callback)));
+  return net::ERR_IO_PENDING;
+}
+
+int64 WebkitFileStreamReaderImpl::GetLength(
+    const net::Int64CompletionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(stream_reader_);
+  DCHECK(!callback.is_null());
+
+  if (stream_reader_->IsInitialized()) {
+    // Returns file_size regardless of |offset_|.
+    return file_size_;
+  }
+
+  stream_reader_->Initialize(
+      drive_file_path_,
+      offset_,
+      kuint64max,
+      base::Bind(&WebkitFileStreamReaderImpl::OnStreamReaderInitialized,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Bind(&WebkitFileStreamReaderImpl
+                                ::GetLengthAfterStreamReaderInitialized,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            callback)));
+  return net::ERR_IO_PENDING;
+}
+
+void WebkitFileStreamReaderImpl::OnStreamReaderInitialized(
+    const net::CompletionCallback& callback,
+    int error,
+    scoped_ptr<ResourceEntry> entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(stream_reader_);
+  DCHECK(!callback.is_null());
+
+  if (error == net::OK) {
+    DCHECK(entry);
+
+    // Check last modification time.
+    if (!expected_modification_time_.is_null() &&
+        expected_modification_time_.ToInternalValue() !=
+        entry->file_info().last_modified()) {
+      error = net::ERR_UPLOAD_FILE_CHANGED;
+    }
+  }
+
+  if (error != net::OK) {
+    // Found an error. Close the |stream_reader_| and notify it to the caller.
+    stream_reader_.reset();
+    callback.Run(error);
+    return;
+  }
+
+  // Remember the size of the file.
+  file_size_ = entry->file_info().size();
+  callback.Run(net::OK);
+}
+
+void WebkitFileStreamReaderImpl::ReadAfterStreamReaderInitialized(
+    scoped_refptr<net::IOBuffer> buffer,
+    int buffer_length,
+    const net::CompletionCallback& callback,
+    int initialization_result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
+  if (initialization_result != net::OK) {
+    callback.Run(initialization_result);
+    return;
+  }
+
+  DCHECK(stream_reader_);
+  int result = stream_reader_->Read(buffer.get(), buffer_length, callback);
+  if (result != net::ERR_IO_PENDING)
+    callback.Run(result);
+}
+
+void WebkitFileStreamReaderImpl::GetLengthAfterStreamReaderInitialized(
+    const net::Int64CompletionCallback& callback,
+    int initialization_result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
+  if (initialization_result != net::OK) {
+    callback.Run(initialization_result);
+    return;
+  }
+
+  DCHECK_GE(file_size_, 0);
+  callback.Run(file_size_);
+}
+
+}  // namespace internal
+}  // namespace drive

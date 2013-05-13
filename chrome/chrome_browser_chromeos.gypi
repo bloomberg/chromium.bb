@@ -289,6 +289,8 @@
         'browser/chromeos/drive/stale_cache_files_remover.h',
         'browser/chromeos/drive/sync_client.cc',
         'browser/chromeos/drive/sync_client.h',
+        'browser/chromeos/drive/webkit_file_stream_reader_impl.cc',
+        'browser/chromeos/drive/webkit_file_stream_reader_impl.h',
         'browser/chromeos/enrollment_dialog_view.cc',
         'browser/chromeos/enrollment_dialog_view.h',
         'browser/chromeos/enterprise_extension_observer.cc',

@@ -597,6 +597,7 @@
         'browser/chromeos/drive/sync_client_unittest.cc',
         'browser/chromeos/drive/test_util.cc',
         'browser/chromeos/drive/test_util.h',
+        'browser/chromeos/drive/webkit_file_stream_reader_impl_unittest.cc',
         'browser/chromeos/extensions/default_app_order_unittest.cc',
         'browser/chromeos/extensions/file_manager/file_manager_manifest_unittest.cc',
         'browser/chromeos/extensions/file_manager/file_manager_notifications_unittest.cc',
