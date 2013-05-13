@@ -22,11 +22,6 @@
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_ASH)
-#include "ash/shell.h"
-#include "ui/aura/root_window.h"
-#endif
-
 using content::WebContents;
 
 ExtensionDialog::ExtensionDialog(extensions::ExtensionHost* host,
@@ -64,44 +59,10 @@ ExtensionDialog* ExtensionDialog::Show(
     return NULL;
   host->SetAssociatedWebContents(web_contents);
 
-  return ExtensionDialog::ShowInternal(url, base_window, host, width, height,
-                                       false, title, observer);
-}
-
-#if defined(USE_AURA)
-// static
-ExtensionDialog* ExtensionDialog::ShowFullscreen(
-    const GURL& url,
-    Profile* profile,
-    const string16& title,
-    ExtensionDialogObserver* observer) {
-  extensions::ExtensionHost* host = CreateExtensionHost(url, profile);
-  if (!host)
-    return NULL;
-
-  return ExtensionDialog::ShowInternal(url, NULL, host, 0, 0,
-                                       true, title, observer);
-}
-#endif
-
-// static
-ExtensionDialog* ExtensionDialog::ShowInternal(
-    const GURL& url,
-    BaseWindow* base_window,
-    extensions::ExtensionHost* host,
-    int width,
-    int height,
-    bool fullscreen,
-    const string16& title,
-    ExtensionDialogObserver* observer) {
-  CHECK(fullscreen || base_window);
+  CHECK(base_window);
   ExtensionDialog* dialog = new ExtensionDialog(host, observer);
   dialog->set_title(title);
-
-  if (fullscreen)
-    dialog->InitWindowFullscreen();
-  else
-    dialog->InitWindow(base_window, width, height);
+  dialog->InitWindow(base_window, width, height);
 
   // Show a white background while the extension loads.  This is prettier than
   // flashing a black unfilled window frame.
@@ -128,38 +89,11 @@ extensions::ExtensionHost* ExtensionDialog::CreateExtensionHost(
   return manager->CreateDialogHost(url);
 }
 
-#if defined(USE_ASH)
-void ExtensionDialog::InitWindowFullscreen() {
-  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
-  gfx::Rect screen_rect =
-      ash::Shell::GetScreen()->GetDisplayNearestWindow(root_window).bounds();
-
-  // We want to be the fullscreen topmost child of the root window.
-  window_ = new views::Widget;
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.delegate = this;
-  params.parent = root_window;
-  window_->Init(params);
-  window_->StackAtTop();
-  window_->SetBounds(screen_rect);
-  window_->Show();
-
-  // TODO(jamescook): Remove redundant call to Activate()?
-  window_->Activate();
-}
-#else
-void ExtensionDialog::InitWindowFullscreen() {
-  NOTIMPLEMENTED();
-}
-#endif
-
-
 void ExtensionDialog::InitWindow(BaseWindow* base_window,
                                  int width,
                                  int height) {
   gfx::NativeWindow parent = base_window->GetNativeWindow();
-  window_ = views::Widget::CreateWindowWithParent(this, parent);
+  window_ = views::DialogDelegate::CreateDialogWidget(this, NULL, parent);
 
   // Center the window over the browser.
   gfx::Point center = base_window->GetBounds().CenterPoint();
@@ -211,7 +145,12 @@ void ExtensionDialog::MaybeFocusRenderView() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// views::WidgetDelegate overrides.
+// views::DialogDelegate overrides.
+
+int ExtensionDialog::GetDialogButtons() const {
+  // The only user, SelectFileDialogExtension, provides its own buttons.
+  return ui::DIALOG_BUTTON_NONE;
+}
 
 bool ExtensionDialog::CanResize() const {
   // Can resize only if minimum contents size set.

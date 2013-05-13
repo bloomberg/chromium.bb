@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 
 class BaseWindow;
 class ExtensionDialogObserver;
@@ -27,7 +27,7 @@ class ExtensionHost;
 // Modal dialog containing contents provided by an extension.
 // Dialog is automatically centered in the owning window and has fixed size.
 // For example, used by the Chrome OS file browser.
-class ExtensionDialog : public views::WidgetDelegate,
+class ExtensionDialog : public views::DialogDelegate,
                         public content::NotificationObserver,
                         public base::RefCounted<ExtensionDialog> {
  public:
@@ -44,24 +44,6 @@ class ExtensionDialog : public views::WidgetDelegate,
                                int height,
                                const string16& title,
                                ExtensionDialogObserver* observer);
-
-#if defined(USE_AURA)
-  // Create and show a fullscreen dialog with |url|.
-  // |profile| is the profile that the extension is registered with.
-  // |web_contents| is the tab that spawned the dialog.
-  static ExtensionDialog* ShowFullscreen(const GURL& url,
-                                         Profile* profile,
-                                         const string16& title,
-                                         ExtensionDialogObserver* observer);
-#else
-  static ExtensionDialog* ShowFullscreen(const GURL& url,
-                                         Profile* profile,
-                                         const string16& title,
-                                         ExtensionDialogObserver* observer) {
-    NOTIMPLEMENTED();
-    return NULL;
-  }
-#endif
 
   // Notifies the dialog that the observer has been destroyed and should not
   // be sent notifications.
@@ -81,7 +63,8 @@ class ExtensionDialog : public views::WidgetDelegate,
 
   extensions::ExtensionHost* host() const { return extension_host_.get(); }
 
-  // views::WidgetDelegate overrides.
+  // views::DialogDelegate override.
+  virtual int GetDialogButtons() const OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
@@ -112,7 +95,6 @@ class ExtensionDialog : public views::WidgetDelegate,
                                        extensions::ExtensionHost* host,
                                        int width,
                                        int height,
-                                       bool fullscreen,
                                        const string16& title,
                                        ExtensionDialogObserver* observer);
 
@@ -120,7 +102,6 @@ class ExtensionDialog : public views::WidgetDelegate,
                                                         Profile* profile);
 
   void InitWindow(BaseWindow* base_window, int width, int height);
-  void InitWindowFullscreen();
 
   // Window that holds the extension host view.
   views::Widget* window_;
