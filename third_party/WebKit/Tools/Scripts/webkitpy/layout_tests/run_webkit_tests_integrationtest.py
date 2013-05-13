@@ -494,7 +494,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # Test that we update expectations in place. If the expectation
         # is missing, update the expected generic location.
         host = MockHost()
-        details, err, _ = logging_run(['--no-show-results',
+        details, err, _ = logging_run(['--no-show-results', '--retry-failures',
             'failures/expected/missing_image.html',
             'failures/unexpected/missing_text.html',
             'failures/unexpected/text-image-checksum.html'],
@@ -512,7 +512,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host = MockHost()
 
         """Both tests have failing checksum. We include only the first in pixel tests so only that should fail."""
-        args = ['--pixel-tests', '--pixel-test-directory', 'failures/unexpected/pixeldir',
+        args = ['--pixel-tests', '--retry-failures', '--pixel-test-directory', 'failures/unexpected/pixeldir',
                 'failures/unexpected/pixeldir/image_in_pixeldir.html',
                 'failures/unexpected/image_not_in_pixeldir.html']
         details, err, _ = logging_run(extra_args=args, host=host, tests_included=True)
@@ -642,9 +642,35 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         _, _, user = logging_run(['--results-directory=foo'], tests_included=True, host=host)
         self.assertEqual(user.opened_urls, [path.abspath_to_uri(host.platform, '/tmp/cwd/foo/results.html')])
 
+    def test_retrying_default_value(self):
+        host = MockHost()
+        details, err, _ = logging_run(['--debug-rwt-logging', 'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
+        self.assertEqual(details.exit_code, 1)
+        self.assertFalse('Retrying' in err.getvalue())
+
+        host = MockHost()
+        details, err, _ = logging_run(['--debug-rwt-logging', 'failures/unexpected'], tests_included=True, host=host)
+        self.assertEqual(details.exit_code, 12)
+        self.assertTrue('Retrying' in err.getvalue())
+
+    def test_retrying_default_value_test_list(self):
+        host = MockHost()
+        filename = '/tmp/foo.txt'
+        host.filesystem.write_text_file(filename, 'failures/unexpected/text-image-checksum.html\nfailures/unexpected/crash.html')
+        details, err, _ = logging_run(['--debug-rwt-logging', '--test-list=%s' % filename], tests_included=True, host=host)
+        self.assertEqual(details.exit_code, 2)
+        self.assertFalse('Retrying' in err.getvalue())
+
+        host = MockHost()
+        filename = '/tmp/foo.txt'
+        host.filesystem.write_text_file(filename, 'failures')
+        details, err, _ = logging_run(['--debug-rwt-logging', '--test-list=%s' % filename], tests_included=True, host=host)
+        self.assertEqual(details.exit_code, 12)
+        self.assertTrue('Retrying' in err.getvalue())
+
     def test_retrying_and_flaky_tests(self):
         host = MockHost()
-        details, err, _ = logging_run(['--debug-rwt-logging', 'failures/flaky'], tests_included=True, host=host)
+        details, err, _ = logging_run(['--debug-rwt-logging', '--retry-failures', 'failures/flaky'], tests_included=True, host=host)
         self.assertEqual(details.exit_code, 0)
         self.assertTrue('Retrying' in err.getvalue())
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/flaky/text-actual.txt'))
@@ -662,7 +688,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_retrying_force_pixel_tests(self):
         host = MockHost()
-        details, err, _ = logging_run(['--no-pixel-tests', 'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
+        details, err, _ = logging_run(['--no-pixel-tests', '--retry-failures', 'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
         self.assertEqual(details.exit_code, 1)
         self.assertTrue('Retrying' in err.getvalue())
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/unexpected/text-image-checksum-actual.txt'))
@@ -678,7 +704,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_retrying_uses_retries_directory(self):
         host = MockHost()
-        details, err, _ = logging_run(['--debug-rwt-logging', 'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
+        details, err, _ = logging_run(['--debug-rwt-logging', '--retry-failures', 'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
         self.assertEqual(details.exit_code, 1)
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/unexpected/text-image-checksum-actual.txt'))
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retries/failures/unexpected/text-image-checksum-actual.txt'))

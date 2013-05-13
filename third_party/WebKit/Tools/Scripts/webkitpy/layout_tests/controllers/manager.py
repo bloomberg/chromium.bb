@@ -191,6 +191,12 @@ class Manager(object):
         if not self._set_up_run(tests_to_run):
             return test_run_results.RunDetails(exit_code=-1)
 
+        # Don't retry failures if an explicit list of tests was passed in.
+        if self._options.retry_failures is None:
+            should_retry_failures = len(paths) < len(test_names)
+        else:
+            should_retry_failures = self._options.retry_failures
+
         start_time = time.time()
         enabled_pixel_tests_in_retry = False
         try:
@@ -198,7 +204,7 @@ class Manager(object):
                 int(self._options.child_processes), retrying=False)
 
             tests_to_retry = self._tests_to_retry(initial_results, include_crashes=self._port.should_retry_crashes())
-            if self._options.retry_failures and tests_to_retry and not initial_results.interrupted:
+            if should_retry_failures and tests_to_retry and not initial_results.interrupted:
                 enabled_pixel_tests_in_retry = self._force_pixel_tests_if_needed()
 
                 _log.info('')
