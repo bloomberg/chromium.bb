@@ -673,8 +673,11 @@ void InputMethodManagerImpl::OnConnected() {
           extra_input_method_instances_.begin();
        ite != extra_input_method_instances_.end();
        ite++) {
-    if (Contains(enabled_extension_imes_, ite->first))
+    if (Contains(enabled_extension_imes_, ite->first) ||
+        (component_extension_ime_manager_->IsInitialized() &&
+         component_extension_ime_manager_->IsWhitelisted(ite->first))) {
       ite->second->OnConnected();
+    }
   }
 
   const bool is_xkb_layout =
