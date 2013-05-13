@@ -709,6 +709,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
     }
     // Reenable clicking on other windows and status area.
     login_display_->SetUIEnabled(true);
+    login_display_->ClearAndEnablePassword();
     StartPublicSessionAutoLoginTimer();
   }
 

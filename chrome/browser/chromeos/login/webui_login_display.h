@@ -28,6 +28,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual ~WebUILoginDisplay();
 
   // LoginDisplay implementation:
+  virtual void ClearAndEnablePassword() OVERRIDE;
   virtual void Init(const UserList& users,
                     bool show_guest,
                     bool show_users,

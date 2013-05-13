@@ -48,6 +48,11 @@ WebUILoginDisplay::WebUILoginDisplay(LoginDisplay::Delegate* delegate)
       webui_handler_(NULL) {
 }
 
+void WebUILoginDisplay::ClearAndEnablePassword() {
+  if (webui_handler_)
+      webui_handler_->ClearAndEnablePassword();
+}
+
 void WebUILoginDisplay::Init(const UserList& users,
                              bool show_guest,
                              bool show_users,
@@ -104,17 +109,15 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
   // Allow this call only before user sign in or at lock screen.
   // If this call is made after new user signs in but login screen is still
   // around that would trigger a sign in extension refresh.
-  if (webui_handler_ && is_enabled &&
+  if (is_enabled &&
       (!UserManager::Get()->IsUserLoggedIn() ||
        ScreenLocker::default_screen_locker())) {
-    webui_handler_->ClearAndEnablePassword();
+    ClearAndEnablePassword();
   }
 
-  if (chromeos::LoginDisplayHostImpl::default_host()) {
-    chromeos::LoginDisplayHost* host =
-        chromeos::LoginDisplayHostImpl::default_host();
-    chromeos::WebUILoginView* login_view = host->GetWebUILoginView();
-    if (login_view)
+  if (chromeos::LoginDisplayHost* host =
+          chromeos::LoginDisplayHostImpl::default_host()) {
+    if (chromeos::WebUILoginView* login_view = host->GetWebUILoginView())
       login_view->SetUIEnabled(is_enabled);
   }
 }
