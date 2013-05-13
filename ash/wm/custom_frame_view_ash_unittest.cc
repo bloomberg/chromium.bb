@@ -68,7 +68,10 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
   // Overridden from views::TestViewsDelegate:
   virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
       views::Widget* widget) OVERRIDE {
-    return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget);
+    // Always test CustomFrameViewAsh, which may not be the ash::Shell default.
+    CustomFrameViewAsh* frame_view = new CustomFrameViewAsh;
+    frame_view->Init(widget);
+    return frame_view;
   }
   virtual bool UseTransparentWindows() const OVERRIDE {
     // Ash uses transparent window frames.
