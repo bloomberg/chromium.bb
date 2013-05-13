@@ -7,8 +7,7 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "media/video/capture/video_capture_device.h"
 
@@ -70,44 +69,6 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDevice);
 };
 
-// Filters a sequence of events to achieve a target frequency.
-class CONTENT_EXPORT SmoothEventSampler {
- public:
-  explicit SmoothEventSampler(base::TimeDelta capture_period,
-                              bool events_are_reliable,
-                              int redundant_capture_goal);
-
-  // Add a new event to the event history, and return whether it ought to be
-  // sampled based on the desired |capture_period|. The event is not recorded as
-  // a sample until RecordSample() is called.
-  bool AddEventAndConsiderSampling(base::Time event_time);
-
-  // Operates on the last event added by AddEventAndConsiderSampling(), marking
-  // it as sampled. After this point we are current in the stream of events, as
-  // we have sampled the most recent event.
-  void RecordSample();
-
-  // Returns true if, at time |event_time|, sampling should occur because too
-  // much time will have passed relative to the last event and/or sample.
-  bool IsOverdueForSamplingAt(base::Time event_time) const;
-
-  // Returns true if AddEventAndConsiderSampling() has been called since the
-  // last call to RecordSample().
-  bool HasUnrecordedEvent() const;
-
- private:
-  const bool events_are_reliable_;
-  const base::TimeDelta capture_period_;
-  const int redundant_capture_goal_;
-  const base::TimeDelta token_bucket_capacity_;
-
-  base::Time current_event_;
-  base::Time last_sample_;
-  int overdue_sample_count_;
-  base::TimeDelta token_bucket_;
-
-  DISALLOW_COPY_AND_ASSIGN(SmoothEventSampler);
-};
 
 }  // namespace content
 

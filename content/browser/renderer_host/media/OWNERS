@@ -11,8 +11,12 @@ xhwang@chromium.org
 xians@chromium.org
 
 # Tab capture OWNERS.
+per-file audio*=miu@chromium.org
 per-file web_contents*=hclam@chromium.org
 per-file web_contents*=justinlin@chromium.org
-per-file audio*=miu@chromium.org
 per-file web_contents*=miu@chromium.org
 per-file web_contents*=nick@chromium.org
+per-file video_capture_oracle*=hclam@chromium.org
+per-file video_capture_oracle*=justinlin@chromium.org
+per-file video_capture_oracle*=miu@chromium.org
+per-file video_capture_oracle*=nick@chromium.org
