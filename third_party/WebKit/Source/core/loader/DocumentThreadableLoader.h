@@ -95,7 +95,8 @@ namespace WebCore {
         void preflightFailure(unsigned long identifier, const String& url, const String& errorDescription);
 
         void loadRequest(const ResourceRequest&, SecurityCheckPolicy);
-        bool isAllowedRedirect(const KURL&);
+        bool isAllowedRedirect(const KURL&) const;
+        bool isAllowedByPolicy(const KURL&) const;
 
         SecurityOrigin* securityOrigin() const;
 

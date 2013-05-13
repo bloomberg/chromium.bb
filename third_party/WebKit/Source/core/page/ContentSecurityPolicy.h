@@ -136,6 +136,8 @@ public:
 
     bool experimentalFeaturesEnabled() const;
 
+    static bool shouldBypassMainWorld(ScriptExecutionContext*);
+
 private:
     explicit ContentSecurityPolicy(ScriptExecutionContext*);
 

@@ -28,6 +28,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
@@ -1880,6 +1881,16 @@ void ContentSecurityPolicy::reportBlockedScriptExecutionToInspector(const String
 bool ContentSecurityPolicy::experimentalFeaturesEnabled() const
 {
     return RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled();
+}
+
+bool ContentSecurityPolicy::shouldBypassMainWorld(ScriptExecutionContext* context)
+{
+    if (context && context->isDocument()) {
+        Document* document = toDocument(context);
+        if (document->frame())
+            return document->frame()->script()->shouldBypassMainWorldContentSecurityPolicy();
+    }
+    return false;
 }
 
 }

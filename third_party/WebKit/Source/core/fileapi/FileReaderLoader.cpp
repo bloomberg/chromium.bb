@@ -98,6 +98,8 @@ void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, Blo
     options.preflightPolicy = ConsiderPreflight;
     options.allowCredentials = AllowStoredCredentials;
     options.crossOriginRequestPolicy = DenyCrossOriginRequests;
+    // FIXME: Is there a directive to which this load should be subject?
+    options.contentSecurityPolicyEnforcement = DoNotEnforceContentSecurityPolicy;
 
     if (m_client)
         m_loader = ThreadableLoader::create(scriptExecutionContext, this, request, options);

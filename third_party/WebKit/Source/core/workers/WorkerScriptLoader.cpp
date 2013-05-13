@@ -71,6 +71,8 @@ void WorkerScriptLoader::loadSynchronously(ScriptExecutionContext* scriptExecuti
     options.allowCredentials = AllowStoredCredentials;
     options.crossOriginRequestPolicy = crossOriginRequestPolicy;
     options.sendLoadCallbacks = SendCallbacks;
+    // FIXME: Should we add EnforceScriptSrcDirective here?
+    options.contentSecurityPolicyEnforcement = DoNotEnforceContentSecurityPolicy;
 
     WorkerThreadableLoader::loadResourceSynchronously(static_cast<WorkerContext*>(scriptExecutionContext), *request, *this, options);
 }

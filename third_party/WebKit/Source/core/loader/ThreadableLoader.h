@@ -59,12 +59,22 @@ namespace WebCore {
         PreventPreflight
     };
 
+    enum ContentSecurityPolicyEnforcement {
+        EnforceConnectSrcDirective,
+        DoNotEnforceContentSecurityPolicy,
+    };
+
     struct ThreadableLoaderOptions : public ResourceLoaderOptions {
-        ThreadableLoaderOptions() : preflightPolicy(ConsiderPreflight), crossOriginRequestPolicy(DenyCrossOriginRequests) { }
+        ThreadableLoaderOptions()
+            : preflightPolicy(ConsiderPreflight)
+            , crossOriginRequestPolicy(DenyCrossOriginRequests)
+            , contentSecurityPolicyEnforcement(EnforceConnectSrcDirective) { }
+
         PreflightPolicy preflightPolicy; // If AccessControl is used, how to determine if a preflight is needed.
         CrossOriginRequestPolicy crossOriginRequestPolicy;
         RefPtr<SecurityOrigin> securityOrigin;
         AtomicString initiator;
+        ContentSecurityPolicyEnforcement contentSecurityPolicyEnforcement;
     };
 
     // Useful for doing loader operations from any thread (not threadsafe, 
