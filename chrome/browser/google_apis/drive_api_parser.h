@@ -453,6 +453,12 @@ class FileLabels {
 // https://developers.google.com/drive/v2/reference/files
 class FileResource {
  public:
+  // Link to open a file resource on a web app with |app_id|.
+  struct OpenWithLink {
+    std::string app_id;
+    GURL open_url;
+  };
+
   FileResource();
   ~FileResource();
 
@@ -541,6 +547,11 @@ class FileResource {
   // authentication.
   const GURL& web_content_link() const { return web_content_link_; }
 
+  // Returns the list of links to open the resource with a web app.
+  const std::vector<OpenWithLink>& open_with_links() const {
+    return open_with_links_;
+  }
+
   void set_file_id(const std::string& file_id) {
     file_id_ = file_id;
   }
@@ -625,6 +636,7 @@ class FileResource {
   ScopedVector<ParentReference> parents_;
   GURL thumbnail_link_;
   GURL web_content_link_;
+  std::vector<OpenWithLink> open_with_links_;
 
   DISALLOW_COPY_AND_ASSIGN(FileResource);
 };

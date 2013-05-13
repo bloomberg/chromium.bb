@@ -33,6 +33,34 @@ bool GetGURLFromString(const base::StringPiece& url_string, GURL* result) {
   return true;
 }
 
+// Converts |value| to |result|. The key of |value| is app_id, and its value
+// is URL to open the resource on the web app.
+bool GetOpenWithLinksFromDictionaryValue(
+    const base::Value* value,
+    std::vector<FileResource::OpenWithLink>* result) {
+  DCHECK(value);
+  DCHECK(result);
+
+  const base::DictionaryValue* dictionary_value;
+  if (!value->GetAsDictionary(&dictionary_value))
+    return false;
+
+  result->reserve(dictionary_value->size());
+  for (DictionaryValue::Iterator iter(*dictionary_value);
+       !iter.IsAtEnd(); iter.Advance()) {
+    std::string string_value;
+    if (!iter.value().GetAsString(&string_value))
+      return false;
+
+    FileResource::OpenWithLink open_with_link;
+    open_with_link.app_id = iter.key();
+    open_with_link.open_url = GURL(string_value);
+    result->push_back(open_with_link);
+  }
+
+  return true;
+}
+
 // Drive v2 API JSON names.
 
 // Definition order follows the order of documentation in
@@ -104,6 +132,7 @@ const char kEmbedLink[] = "embedLink";
 const char kParents[] = "parents";
 const char kThumbnailLink[] = "thumbnailLink";
 const char kWebContentLink[] = "webContentLink";
+const char kOpenWithLinks[] = "openWithLinks";
 const char kLabels[] = "labels";
 // These 5 flags are defined under |labels|.
 const char kLabelStarred[] = "starred";
@@ -570,6 +599,10 @@ void FileResource::RegisterJSONConverter(
   converter->RegisterCustomField<GURL>(kWebContentLink,
                                        &FileResource::web_content_link_,
                                        GetGURLFromString);
+  converter->RegisterCustomValueField<std::vector<OpenWithLink> >(
+      kOpenWithLinks,
+      &FileResource::open_with_links_,
+      GetOpenWithLinksFromDictionaryValue);
 }
 
 // static

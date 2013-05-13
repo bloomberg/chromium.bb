@@ -310,6 +310,10 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_EQ(GURL("https://docs.google.com/uc?"
                  "id=0B4v7G8yEYAWHUmRrU2lMS2hLABC&export=download"),
             file1.web_content_link());
+  ASSERT_EQ(1U, file1.open_with_links().size());
+  EXPECT_EQ("1234567890", file1.open_with_links()[0].app_id);
+  EXPECT_EQ(GURL("http://open_with_link/url"),
+            file1.open_with_links()[0].open_url);
 
   // Check file 2 (a Google Document)
   const FileResource& file2 = *filelist->items()[1];
@@ -337,6 +341,7 @@ TEST(DriveAPIParserTest, FileListParser) {
                  "id=1Pc8jzfU1ErbN_eucMMqdqzY3eBm0v8sxXm_1CtLxABC&"
                  "v=3&s=AMedNnoAAAAAUBJyB0g8HbxZaLRnlztxefZPS24LiXYZ&sz=s220"),
             file2.thumbnail_link());
+  EXPECT_EQ(0U, file2.open_with_links().size());
 
   // Check file 3 (a folder)
   const FileResource& file3 = *filelist->items()[2];
@@ -348,6 +353,7 @@ TEST(DriveAPIParserTest, FileListParser) {
   ASSERT_EQ(1U, file3.parents().size());
   EXPECT_EQ("0AIv7G8yEYAWHUk9ABC", file3.parents()[0]->file_id());
   EXPECT_TRUE(file3.parents()[0]->is_root());
+  EXPECT_EQ(0U, file3.open_with_links().size());
 }
 
 // Test change list parsing.

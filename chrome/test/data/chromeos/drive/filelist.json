@@ -14,6 +14,9 @@
    "alternateLink": "https://docs.google.com/file/d/0B4v7G8yEYAWHUmRrU2lMS2hLABC/edit",
    "title": "My first file data",
    "mimeType": "application/octet-stream",
+   "openWithLinks": {
+     "1234567890": "http://open_with_link/url"
+   },
    "labels": {
     "starred": false,
     "hidden": false,
