@@ -20,7 +20,7 @@ UI_EXPORT std::string GetDefaultLocale();
 UI_EXPORT string16 GetDisplayNameForLocale(const std::string& locale,
                                            const std::string& display_locale);
 
-bool RegisterLocalizationUtil(JNIEnv* env);
+UI_EXPORT bool RegisterLocalizationUtil(JNIEnv* env);
 
 }  // namespace l10n_util
 
