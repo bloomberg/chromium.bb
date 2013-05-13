@@ -80,10 +80,9 @@ SVGElement::~SVGElement()
         delete rareData;
 
         // The rare data cleanup may have caused other SVG nodes to be deleted,
-        // modifying the rare data map, so we must re-get the iterator here.
-        it = rareDataMap.find(this);
-        ASSERT(it != rareDataMap.end());
-        rareDataMap.remove(it);
+        // modifying the rare data map. Do not rely on the existing iterator.
+        ASSERT(rareDataMap.contains(this));
+        rareDataMap.remove(this);
     }
     ASSERT(document());
     document()->accessSVGExtensions()->rebuildAllElementReferencesForTarget(this);
