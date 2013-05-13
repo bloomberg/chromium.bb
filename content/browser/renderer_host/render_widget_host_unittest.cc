@@ -507,6 +507,10 @@ class TestView : public TestRenderWidgetHostView {
     acked_event_count_ = 0;
   }
 
+  const WebMouseWheelEvent& unhandled_wheel_event() const {
+    return unhandled_wheel_event_;
+  }
+
   // RenderWidgetHostView override.
   virtual gfx::Rect GetViewBounds() const OVERRIDE {
     return bounds_;
@@ -516,8 +520,12 @@ class TestView : public TestRenderWidgetHostView {
     acked_event_ = touch;
     ++acked_event_count_;
   }
+  virtual void UnhandledWheelEvent(const WebMouseWheelEvent& event) OVERRIDE {
+    unhandled_wheel_event_ = event;
+  }
 
  protected:
+  WebMouseWheelEvent unhandled_wheel_event_;
   WebTouchEvent acked_event_;
   int acked_event_count_;
   gfx::Rect bounds_;
@@ -3814,6 +3822,33 @@ TEST_F(RenderWidgetHostTest, OverscrollDirectionChange) {
   SimulateGestureScrollUpdateEvent(-20, 0, 0);
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
+}
+
+TEST_F(RenderWidgetHostTest, UnhandledWheelEvent) {
+  process_->sink().ClearMessages();
+
+  // Simulate wheel events.
+  SimulateWheelEvent(0, -5, 0, false);  // sent directly
+  SimulateWheelEvent(0, -10, 0, false);  // enqueued
+
+  // Check that only the first event was sent.
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+                  InputMsg_HandleInputEvent::ID));
+  process_->sink().ClearMessages();
+
+  // Indicate that the wheel event was unhandled.
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // Check that the second event was sent.
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+                  InputMsg_HandleInputEvent::ID));
+  process_->sink().ClearMessages();
+
+  // Check that the correct unhandled wheel event was received.
+  EXPECT_EQ(view_->unhandled_wheel_event().deltaY, -5);
 }
 
 }  // namespace content

@@ -198,7 +198,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   RenderWidgetHostViewCocoa* cocoa_view() const { return cocoa_view_; }
 
-  void SetDelegate(NSObject<RenderWidgetHostViewMacDelegate>* delegate);
+  CONTENT_EXPORT void SetDelegate(
+    NSObject<RenderWidgetHostViewMacDelegate>* delegate);
   void SetAllowOverlappingViews(bool overlapping);
 
   // RenderWidgetHostView implementation.

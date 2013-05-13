@@ -1949,6 +1949,12 @@ void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
   if (overscroll_controller_)
     overscroll_controller_->ReceivedEventACK(current_wheel_event_, processed);
 
+  // Process the unhandled wheel event here before calling
+  // ForwardWheelEventWithLatencyInfo() since it will mutate
+  // current_wheel_event_.
+  if (!processed && !is_hidden_ && view_)
+    view_->UnhandledWheelEvent(current_wheel_event_);
+
   // Now send the next (coalesced) mouse wheel event.
   if (!coalesced_mouse_wheel_events_.empty()) {
     MouseWheelEventWithLatencyInfo next_wheel_event =
@@ -1957,9 +1963,6 @@ void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
     ForwardWheelEventWithLatencyInfo(next_wheel_event.event,
                                      next_wheel_event.latency);
   }
-
-  if (!processed && !is_hidden_ && view_)
-    view_->UnhandledWheelEvent(current_wheel_event_);
 }
 
 void RenderWidgetHostImpl::ProcessGestureAck(bool processed, int type) {

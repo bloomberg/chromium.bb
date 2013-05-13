@@ -14,6 +14,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host_view_mac_delegate.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
@@ -48,6 +49,7 @@ typedef NSUInteger NSEventPhase;
 }
 
 - (NSEventPhase)phaseBegan;
+- (NSEventPhase)phaseChanged;
 - (NSEventPhase)phaseEnded;
 @end
 
@@ -56,8 +58,31 @@ typedef NSUInteger NSEventPhase;
 - (NSEventPhase)phaseBegan {
   return NSEventPhaseBegan;
 }
+- (NSEventPhase)phaseChanged {
+  return NSEventPhaseChanged;
+}
 - (NSEventPhase)phaseEnded {
   return NSEventPhaseEnded;
+}
+
+@end
+
+@interface MockRenderWidgetHostViewMacDelegate
+    : NSObject<RenderWidgetHostViewMacDelegate> {
+  BOOL unhandledWheelEventReceived_;
+}
+
+@property(nonatomic) BOOL unhandledWheelEventReceived;
+
+- (void)gotUnhandledWheelEvent;
+@end
+
+@implementation MockRenderWidgetHostViewMacDelegate
+
+@synthesize unhandledWheelEventReceived = unhandledWheelEventReceived_;
+
+- (void)gotUnhandledWheelEvent {
+  unhandledWheelEventReceived_ = true;
 }
 
 @end
@@ -127,9 +152,9 @@ gfx::Rect GetExpectedRect(const gfx::Point& origin,
 
 // Returns NSScrollWheel event that mocks -phase. |mockPhaseSelector| should
 // correspond to a method in |MockPhaseMethods| that returns the desired phase.
-NSEvent* MockScrollWheelEventWithPhase(SEL mockPhaseSelector) {
+NSEvent* MockScrollWheelEventWithPhase(SEL mockPhaseSelector, int32_t delta) {
   CGEventRef cg_event =
-      CGEventCreateScrollWheelEvent(NULL, kCGScrollEventUnitLine, 1, 0, 0);
+      CGEventCreateScrollWheelEvent(NULL, kCGScrollEventUnitLine, 1, delta, 0);
   NSEvent* event = [NSEvent eventWithCGEvent:cg_event];
   CFRelease(cg_event);
   method_setImplementation(
@@ -681,7 +706,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
       RenderWidgetHostView::CreateViewForWidget(host));
 
   // Send an initial wheel event with NSEventPhaseBegan to the view.
-  NSEvent* event1 = MockScrollWheelEventWithPhase(@selector(phaseBegan));
+  NSEvent* event1 = MockScrollWheelEventWithPhase(@selector(phaseBegan), 0);
   [view->cocoa_view() scrollWheel:event1];
   ASSERT_EQ(1U, process_host->sink().message_count());
 
@@ -692,10 +717,64 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
 
   // Post the NSEventPhaseEnded wheel event to NSApp and check whether the
   // render view receives it.
-  NSEvent* event2 = MockScrollWheelEventWithPhase(@selector(phaseEnded));
+  NSEvent* event2 = MockScrollWheelEventWithPhase(@selector(phaseEnded), 0);
   [NSApp postEvent:event2 atStart:NO];
   base::MessageLoop::current()->RunUntilIdle();
   ASSERT_EQ(2U, process_host->sink().message_count());
+
+  // Clean up.
+  host->Shutdown();
+}
+
+TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
+  // This tests Lion+ functionality, so don't run the test pre-Lion.
+  if (!base::mac::IsOSLionOrLater())
+    return;
+
+  // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
+  // the MockRenderProcessHost that is set up by the test harness which mocks
+  // out |OnMessageReceived()|.
+  TestBrowserContext browser_context;
+  MockRenderProcessHost* process_host =
+      new MockRenderProcessHost(&browser_context);
+  MockRenderWidgetHostDelegate delegate;
+  MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
+      &delegate, process_host, MSG_ROUTING_NONE);
+  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
+      RenderWidgetHostView::CreateViewForWidget(host));
+
+  // Add a delegate to the view.
+  scoped_nsobject<MockRenderWidgetHostViewMacDelegate> view_delegate(
+    [[MockRenderWidgetHostViewMacDelegate alloc] init]);
+  view->SetDelegate(view_delegate.get());
+
+  // Send an initial wheel event for scrolling by 3 lines.
+  NSEvent* event1 = MockScrollWheelEventWithPhase(@selector(phaseBegan), 3);
+  [view->cocoa_view() scrollWheel:event1];
+  ASSERT_EQ(1U, process_host->sink().message_count());
+  process_host->sink().ClearMessages();
+
+  // Indicate that the wheel event was unhandled.
+  scoped_ptr<IPC::Message> response1(new InputHostMsg_HandleInputEvent_ACK(0,
+      WebKit::WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
+  host->OnMessageReceived(*response1);
+
+  // Check that the view delegate got an unhandled wheel event.
+  ASSERT_EQ(YES, view_delegate.get().unhandledWheelEventReceived);
+  view_delegate.get().unhandledWheelEventReceived = NO;
+
+  // Send another wheel event, this time for scrolling by 0 lines (empty event).
+  NSEvent* event2 = MockScrollWheelEventWithPhase(@selector(phaseChanged), 0);
+  [view->cocoa_view() scrollWheel:event2];
+  ASSERT_EQ(1U, process_host->sink().message_count());
+
+  // Indicate that the wheel event was also unhandled.
+  scoped_ptr<IPC::Message> response2(new InputHostMsg_HandleInputEvent_ACK(0,
+      WebKit::WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
+  host->OnMessageReceived(*response2);
+
+  // Check that the view delegate ignored the empty unhandled wheel event.
+  ASSERT_EQ(NO, view_delegate.get().unhandledWheelEventReceived);
 
   // Clean up.
   host->Shutdown();

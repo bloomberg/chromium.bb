@@ -1423,7 +1423,10 @@ void RenderWidgetHostViewMac::UnlockMouse() {
 
 void RenderWidgetHostViewMac::UnhandledWheelEvent(
     const WebKit::WebMouseWheelEvent& event) {
-  [cocoa_view_ gotUnhandledWheelEvent];
+  // Only record a wheel event as unhandled if JavaScript handlers got a chance
+  // to see it (no-op wheel events are ignored by the event dispatcher)
+  if (event.deltaX || event.deltaY)
+    [cocoa_view_ gotUnhandledWheelEvent];
 }
 
 bool RenderWidgetHostViewMac::Send(IPC::Message* message) {
