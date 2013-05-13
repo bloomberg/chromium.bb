@@ -64,8 +64,6 @@ const int kPushedImages[] = IMAGE_GRID(IDR_TEXTBUTTON_PRESSED);
 const char TextButtonBase::kViewClassName[] = "views/TextButtonBase";
 // static
 const char TextButton::kViewClassName[] = "views/TextButton";
-// static
-const char NativeTextButton::kViewClassName[] = "views/NativeTextButton";
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -735,87 +733,6 @@ const gfx::ImageSkia& TextButton::GetImageToPaint() const {
       return icon_pushed_;
   }
   return icon_;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// NativeTextButton
-//
-////////////////////////////////////////////////////////////////////////////////
-
-NativeTextButton::NativeTextButton(ButtonListener* listener)
-    : TextButton(listener, string16()) {
-  Init();
-}
-
-NativeTextButton::NativeTextButton(ButtonListener* listener,
-                                   const string16& text)
-    : TextButton(listener, text) {
-  Init();
-}
-
-void NativeTextButton::Init() {
-  SetThemeSpecificState(GetNativeTheme());
-  set_border(new TextButtonNativeThemeBorder(this));
-#if !defined(OS_WIN)
-  // Paint nothing, focus will be indicated with a border highlight drawn by
-  // NativeThemeBase::PaintButton.
-  set_focus_border(NULL);
-#endif
-  set_ignore_minimum_size(false);
-  set_alignment(ALIGN_CENTER);
-  set_focusable(true);
-}
-
-gfx::Size NativeTextButton::GetMinimumSize() {
-  return GetPreferredSize();
-}
-
-const char* NativeTextButton::GetClassName() const {
-  return kViewClassName;
-}
-
-void NativeTextButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  TextButtonBase::OnNativeThemeChanged(theme);
-  SetThemeSpecificState(theme);
-}
-
-void NativeTextButton::SetThemeSpecificState(const ui::NativeTheme* theme) {
-#if defined(OS_WIN)
-  if (theme == ui::NativeThemeWin::instance()) {
-    if (use_enabled_color_from_theme())
-      set_color_enabled(skia::COLORREFToSkColor(GetSysColor(COLOR_BTNTEXT)));
-    if (use_disabled_color_from_theme())
-      set_color_disabled(skia::COLORREFToSkColor(GetSysColor(COLOR_GRAYTEXT)));
-    if (use_hover_color_from_theme())
-      set_color_hover(skia::COLORREFToSkColor(GetSysColor(COLOR_BTNTEXT)));
-    UpdateColor();
-    set_focus_border(FocusBorder::CreateDashedFocusBorder(kFocusRectInset,
-                                                          kFocusRectInset,
-                                                          kFocusRectInset,
-                                                          kFocusRectInset));
-  } else {
-    // Paint nothing, focus will be indicated with a border highlight drawn by
-    // NativeThemeBase::PaintButton.
-    set_focus_border(NULL);
-  }
-#endif
-}
-
-void NativeTextButton::GetExtraParams(
-    ui::NativeTheme::ExtraParams* params) const {
-  TextButton::GetExtraParams(params);
-  params->button.has_border = true;
-  // Windows may paint a dotted focus rect in
-  // NativeTextButton::OnPaintFocusBorder. To avoid getting two focus
-  // indications (A dotted rect and a highlighted border) only set |is_focused|
-  // when not using NativeThemeWin.
-#if defined(OS_WIN)
-  if (GetNativeTheme() == ui::NativeThemeWin::instance())
-    return;
-#endif
-  params->button.is_focused = HasFocus() &&
-      (focusable() || IsAccessibilityFocusable());
 }
 
 }  // namespace views

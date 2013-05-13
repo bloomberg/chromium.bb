@@ -400,40 +400,6 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   DISALLOW_COPY_AND_ASSIGN(TextButton);
 };
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// NativeTextButton
-//
-//  A TextButton that uses the NativeTheme border and sets some properties,
-//  like ignore-minimize-size and text alignment minimum size.
-//
-////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT NativeTextButton : public TextButton {
- public:
-  // The button's class name.
-  static const char kViewClassName[];
-
-  explicit NativeTextButton(ButtonListener* listener);
-  NativeTextButton(ButtonListener* listener, const string16& text);
-
-  // Overridden from TextButton:
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
-
- private:
-  void Init();
-
-  // Sets the necessary theme specific state from |theme|.
-  void SetThemeSpecificState(const ui::NativeTheme* theme);
-
-  // Overridden from TextButton:
-  virtual void GetExtraParams(
-      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeTextButton);
-};
-
 }  // namespace views
 
 #endif  // UI_VIEWS_CONTROLS_BUTTON_TEXT_BUTTON_H_
