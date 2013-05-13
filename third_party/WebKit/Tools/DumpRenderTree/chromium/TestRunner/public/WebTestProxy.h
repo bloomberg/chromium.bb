@@ -166,6 +166,7 @@ protected:
     bool isPointerLocked();
     void didFocus();
     void didBlur();
+    void setToolTipText(const WebKit::WebString&, WebKit::WebTextDirection);
 
     void willPerformClientRedirect(WebKit::WebFrame*, const WebKit::WebURL& from, const WebKit::WebURL& to, double interval, double fire_time);
     void didCancelClientRedirect(WebKit::WebFrame*);
@@ -428,6 +429,11 @@ public:
     {
         WebTestProxyBase::didBlur();
         Base::didBlur();
+    }
+    virtual void setToolTipText(const WebKit::WebString& text, WebKit::WebTextDirection hint)
+    {
+        WebTestProxyBase::setToolTipText(text, hint);
+        Base::setToolTipText(text, hint);
     }
 
     // WebFrameClient implementation.

@@ -294,6 +294,8 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindProperty("globalFlag", &m_globalFlag);
     bindProperty("titleTextDirection", &m_titleTextDirection);
     bindProperty("platformName", &m_platformName);
+    bindProperty("tooltipText", &m_tooltipText);
+
     // webHistoryItemCount is used by tests in LayoutTests\http\tests\history
     bindProperty("webHistoryItemCount", &m_webHistoryItemCount);
     bindProperty("interceptPostMessage", &m_interceptPostMessage);
@@ -414,6 +416,7 @@ void TestRunner::reset()
     m_webHistoryItemCount.set(0);
     m_interceptPostMessage.set(false);
     m_platformName.set("chromium");
+    m_tooltipText.set("");
 
     m_userStyleSheetLocation = WebURL();
 
@@ -708,6 +711,11 @@ void TestRunner::requestPointerUnlock()
 bool TestRunner::isPointerLocked()
 {
     return m_pointerLocked;
+}
+
+void TestRunner::setToolTipText(WebKit::WebString text)
+{
+    m_tooltipText.set(text.utf8());
 }
 
 void TestRunner::didAcquirePointerLockInternal()

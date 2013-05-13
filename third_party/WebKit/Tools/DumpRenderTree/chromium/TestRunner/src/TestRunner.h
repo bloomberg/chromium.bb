@@ -126,6 +126,7 @@ public:
     bool requestPointerLock();
     void requestPointerUnlock();
     bool isPointerLocked();
+    void setToolTipText(WebKit::WebString);
 
     // A single item in the work queue.
     class WorkItem {
@@ -566,6 +567,9 @@ private:
 
     // Bound variable to set whether postMessages should be intercepted or not
     CppVariant m_interceptPostMessage;
+
+    // Bound variable to store the last tooltip text
+    CppVariant m_tooltipText;
 
     // If true, the test_shell will write a descriptive line for each editing
     // command.
