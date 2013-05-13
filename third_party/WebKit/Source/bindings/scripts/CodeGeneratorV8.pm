@@ -2896,7 +2896,7 @@ v8::Persistent<v8::FunctionTemplate> ${v8ClassName}Constructor::GetTemplate(v8::
     result->SetClassName(v8::String::NewSymbol("${implClassName}"));
     result->Inherit(${v8ClassName}::GetTemplate(isolate, currentWorldType));
 
-    cachedTemplate = v8::Persistent<v8::FunctionTemplate>::New(isolate, result);
+    cachedTemplate.Reset(isolate, result);
     return cachedTemplate;
 }
 
@@ -4007,14 +4007,14 @@ v8::Persistent<v8::ObjectTemplate> V8DOMWindow::GetShadowObjectTemplate(v8::Isol
     if (currentWorldType == MainWorld) {
         static v8::Persistent<v8::ObjectTemplate> V8DOMWindowShadowObjectCacheForMainWorld;
         if (V8DOMWindowShadowObjectCacheForMainWorld.IsEmpty()) {
-            V8DOMWindowShadowObjectCacheForMainWorld = v8::Persistent<v8::ObjectTemplate>::New(isolate, v8::ObjectTemplate::New());
+            V8DOMWindowShadowObjectCacheForMainWorld.Reset(isolate, v8::ObjectTemplate::New());
             ConfigureShadowObjectTemplate(V8DOMWindowShadowObjectCacheForMainWorld, isolate, currentWorldType);
         }
         return V8DOMWindowShadowObjectCacheForMainWorld;
     } else {
         static v8::Persistent<v8::ObjectTemplate> V8DOMWindowShadowObjectCacheForNonMainWorld;
         if (V8DOMWindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
-            V8DOMWindowShadowObjectCacheForNonMainWorld = v8::Persistent<v8::ObjectTemplate>::New(isolate, v8::ObjectTemplate::New());
+            V8DOMWindowShadowObjectCacheForNonMainWorld.Reset(isolate, v8::ObjectTemplate::New());
             ConfigureShadowObjectTemplate(V8DOMWindowShadowObjectCacheForNonMainWorld, isolate, currentWorldType);
         }
         return V8DOMWindowShadowObjectCacheForNonMainWorld;

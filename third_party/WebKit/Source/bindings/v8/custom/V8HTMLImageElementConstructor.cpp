@@ -96,7 +96,7 @@ v8::Persistent<v8::FunctionTemplate> V8HTMLImageElementConstructor::GetTemplate(
     result->SetClassName(v8::String::NewSymbol("HTMLImageElement"));
     result->Inherit(V8HTMLImageElement::GetTemplate(isolate, worldType));
 
-    cachedTemplate = v8::Persistent<v8::FunctionTemplate>::New(isolate, result);
+    cachedTemplate.Reset(isolate, result);
     return cachedTemplate;
 }
 

@@ -59,7 +59,7 @@ v8::Local<v8::Object> V8HTMLDocument::wrapInShadowObject(v8::Local<v8::Object> w
     WrapperWorldType currentWorldType = worldType(isolate);
     v8::Persistent<v8::FunctionTemplate> shadowTemplate;
     if (!V8PerIsolateData::from(isolate)->hasPrivateTemplate(currentWorldType, &shadowTemplateUniqueKey)) {
-        shadowTemplate = v8::Persistent<v8::FunctionTemplate>::New(isolate, v8::FunctionTemplate::New());
+        shadowTemplate.Reset(isolate, v8::FunctionTemplate::New());
         if (shadowTemplate.IsEmpty())
             return v8::Local<v8::Object>();
         shadowTemplate->SetClassName(v8::String::NewSymbol("HTMLDocument"));

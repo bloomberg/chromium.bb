@@ -43,7 +43,7 @@ public:
     ScopedPersistent() { }
 
     explicit ScopedPersistent(v8::Handle<T> handle)
-        : m_handle(v8::Persistent<T>::New(v8::Isolate::GetCurrent(), handle))
+        : m_handle(v8::Isolate::GetCurrent(), handle)
     {
     }
 
@@ -60,7 +60,7 @@ public:
     void set(v8::Handle<T> handle)
     {
         clear();
-        m_handle = v8::Persistent<T>::New(v8::Isolate::GetCurrent(), handle);
+        m_handle.Reset(v8::Isolate::GetCurrent(), handle);
     }
 
     // Note: This is clear in the OwnPtr sense, not the v8::Handle sense.
