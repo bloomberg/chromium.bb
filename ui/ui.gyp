@@ -291,6 +291,7 @@
         'base/touch/touch_device.h',
         'base/touch/touch_device_android.cc',
         'base/touch/touch_device_aurax11.cc',
+        'base/touch/touch_device_ozone.cc',
         'base/touch/touch_device_win.cc',
         'base/touch/touch_editing_controller.cc',
         'base/touch/touch_editing_controller.h',
