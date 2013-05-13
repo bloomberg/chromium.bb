@@ -117,21 +117,17 @@ bool InputComponentsHandler::Parse(Extension* extension,
 
     // Get input_components[i].layouts.
     const ListValue* layouts_value = NULL;
-    if (!module_value->GetList(keys::kLayouts, &layouts_value)) {
-      *error = ASCIIToUTF16(
-          errors::kInvalidInputComponentLayouts);
-      return false;
-    }
-
-    for (size_t j = 0; j < layouts_value->GetSize(); ++j) {
-      std::string layout_name_str;
-      if (!layouts_value->GetString(j, &layout_name_str)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidInputComponentLayoutName,
-            base::IntToString(i), base::IntToString(j));
-        return false;
+    if (module_value->GetList(keys::kLayouts, &layouts_value)) {
+      for (size_t j = 0; j < layouts_value->GetSize(); ++j) {
+        std::string layout_name_str;
+        if (!layouts_value->GetString(j, &layout_name_str)) {
+          *error = ErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidInputComponentLayoutName,
+              base::IntToString(i), base::IntToString(j));
+          return false;
+        }
+        layouts.insert(layout_name_str);
       }
-      layouts.insert(layout_name_str);
     }
 
     if (module_value->HasKey(keys::kShortcutKey)) {

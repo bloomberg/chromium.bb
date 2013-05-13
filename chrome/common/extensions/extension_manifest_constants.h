@@ -262,7 +262,6 @@ namespace extension_manifest_errors {
   extern const char kInvalidInputComponents[];
   extern const char kInvalidInputComponentDescription[];
   extern const char kInvalidInputComponentLayoutName[];
-  extern const char kInvalidInputComponentLayouts[];
   extern const char kInvalidInputComponentName[];
   extern const char kInvalidInputComponentShortcutKey[];
   extern const char kInvalidInputComponentShortcutKeycode[];

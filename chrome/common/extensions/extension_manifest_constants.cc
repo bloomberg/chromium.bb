@@ -331,8 +331,6 @@ const char kInvalidInputComponentDescription[] =
     "Invalid value for 'input_components[*].description";
 const char kInvalidInputComponentLayoutName[] =
     "Invalid value for 'input_components[*].layouts[*]";
-const char kInvalidInputComponentLayouts[] =
-    "Invalid value for 'input_components[*].layouts";
 const char kInvalidInputComponentName[] =
     "Invalid value for 'input_components[*].name";
 const char kInvalidInputComponentShortcutKey[] =
