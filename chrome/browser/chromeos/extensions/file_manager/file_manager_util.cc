@@ -272,13 +272,15 @@ void OnCRXDownloadCallback(Browser* browser,
   InstallCRX(browser, file);
 }
 
+// TODO(mtomasz): Remove this when dropping support for the legacy Files.app.
 enum TAB_REUSE_MODE {
   REUSE_ANY_FILE_MANAGER,
   REUSE_SAME_PATH,
   REUSE_NEVER
 };
 
-bool FileManageTabExists(const base::FilePath& path, TAB_REUSE_MODE mode) {
+// TODO(mtomasz): Remove this when dropping support for the legacy Files.app.
+bool FileManagerTabExists(const base::FilePath& path, TAB_REUSE_MODE mode) {
   if (mode == REUSE_NEVER)
     return false;
 
@@ -287,6 +289,7 @@ bool FileManageTabExists(const base::FilePath& path, TAB_REUSE_MODE mode) {
   const GURL origin(chrome::kChromeUIFileManagerURL);
   const std::string ref = std::string("/") + path.value();
 
+  // Check browser windows.
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     Browser* browser = *it;
     TabStripModel* tab_strip = browser->tab_strip_model();
@@ -359,14 +362,12 @@ void ExecuteHandler(Profile* profile,
   executor->Execute(urls);
 }
 
+// The |mode| argument is only for legacy Files.app. Files.app V2 has the
+// reusing logic in background.js.
 void OpenFileBrowserImpl(const base::FilePath& path,
                          TAB_REUSE_MODE mode,
                          const std::string& action_id) {
   content::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
-
-  if (FileManageTabExists(path, mode))
-    return;
-
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
 
   if (IsFileManagerPackaged() && !path.value().empty()) {
@@ -379,6 +380,9 @@ void OpenFileBrowserImpl(const base::FilePath& path,
     ExecuteHandler(profile, kFileBrowserDomain, action_id, url);
     return;
   }
+
+  if (FileManagerTabExists(path, mode))
+    return;
 
   std::string url = chrome::kChromeUIFileManagerURL;
   if (action_id.size()) {

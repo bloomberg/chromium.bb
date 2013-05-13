@@ -23,6 +23,16 @@ function getContentWindows() {
 }
 
 /**
+ * Type of a Files.app's instance launch.
+ * @enum {number}
+ */
+var LaunchType = {
+  ALWAYS_CREATE: 0,
+  FOCUS_ANY_OR_CREATE: 1,
+  FOCUS_SAME_OR_CREATE: 2
+};
+
+/**
  * Wrapper for an app window.
  *
  * Expects the following from the app scripts:
@@ -252,9 +262,58 @@ function createFileManagerOptions() {
 /**
  * @param {Object=} opt_appState App state.
  * @param {number=} opt_id Window id.
+ * @param {LaunchType=} opt_type Launch type. Default: ALWAYS_CREATE.
  * @return {string} The window's App ID.
  */
-function launchFileManager(opt_appState, opt_id) {
+function launchFileManager(opt_appState, opt_id, opt_type) {
+  var type = opt_type || LaunchType.ALWAYS_CREATE;
+
+  // Check if there is already a window with the same path. If so, then
+  // reuse it instead of opening a new one.
+  if (type == LaunchType.FOCUS_SAME_OR_CREATE ||
+      type == LaunchType.FOCUS_ANY_OR_CREATE) {
+    if (opt_appState && opt_appState.defaultPath) {
+      for (var key in appWindows) {
+        var contentWindow = appWindows[key].contentWindow;
+        if (contentWindow.appState &&
+            opt_appState.defaultPath == contentWindow.appState.defaultPath) {
+          appWindows[key].focus();
+          return key;
+        }
+      }
+    }
+  }
+
+  // Focus any window if none is focused. Try restored first.
+  if (type == LaunchType.FOCUS_ANY_OR_CREATE) {
+    // If there is already a focused window, then finish.
+    for (var key in appWindows) {
+      // The isFocused() method should always be available, but in case
+      // Files.app's failed on some error, wrap it with try catch.
+      try {
+        if (appWindows[key].contentWindow.isFocused())
+          return key;
+      } catch (e) {
+        console.error(e.message);
+      }
+    }
+    // Try to focus the first non-minimized window.
+    for (var key in appWindows) {
+      if (!appWindows[key].isMinimized()) {
+        appWindows[key].focus();
+        return key;
+      }
+    }
+    // Restore and focus any window.
+    for (var key in appWindows) {
+      appWindows[key].focus();
+      return key;
+    }
+  }
+
+  // Create a new instance in case of ALWAYS_CREATE type, or as a fallback
+  // for other types.
+
   var id = opt_id || nextFileManagerWindowID;
   nextFileManagerWindowID = Math.max(nextFileManagerWindowID, id + 1);
   var appId = FILES_ID_PREFIX + id;
@@ -282,7 +341,7 @@ function reopenFileManagers() {
             var appState = JSON.parse(items[key]);
             launchFileManager(appState, id);
           } catch (e) {
-            console.error('Corrupt launch data for ' + id, value);
+            console.error('Corrupt launch data for ' + id);
           }
         }
       }
@@ -296,6 +355,7 @@ function reopenFileManagers() {
  */
 function executeFileBrowserTask(action, details) {
   var urls = details.entries.map(function(e) { return e.toURL() });
+
   switch (action) {
     case 'play':
       launchAudioPlayer({items: urls, position: 0});
@@ -307,12 +367,19 @@ function executeFileBrowserTask(action, details) {
 
     default:
       // Every other action opens a Files app window.
-      launchFileManager({
+      var appState = {
         params: {
           action: action
         },
-        defaultPath: details.entries[0].fullPath
-      });
+        defaultPath: details.entries[0].fullPath,
+      };
+      // For mounted devices just focus any Files.app window. The mounted
+      // volume will appear on the volume list.
+      var type = action == 'auto-open' ? LaunchType.FOCUS_ANY_OR_CREATE :
+          LaunchType.FOCUS_SAME_OR_CREATE;
+      launchFileManager(appState,
+                        undefined,  // App ID.
+                        type);
       break;
   }
 }

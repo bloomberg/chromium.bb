@@ -1233,6 +1233,28 @@ util.disableBrowserShortcutKeys = function(element) {
 };
 
 /**
+ * Adds an isFocused method to the current window object.
+ */
+util.addIsFocusedMethod = function() {
+  var focused = true;
+
+  window.addEventListener('focus', function() {
+    focused = true;
+  });
+
+  window.addEventListener('blur', function() {
+    focused = false;
+  });
+
+  /**
+   * @return {boolean} True if focused.
+   */
+  window.isFocused = function() {
+    return focused;
+  };
+};
+
+/**
  * Enables the new full screen mode handler. This works only for Apps v1.
  * TODO(mtomasz): Remove after porting to Apps v2.
  *
