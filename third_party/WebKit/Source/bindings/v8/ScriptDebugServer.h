@@ -98,7 +98,7 @@ public:
     virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage);
 
 protected:
-    ScriptDebugServer(v8::Isolate*);
+    explicit ScriptDebugServer(v8::Isolate*);
     virtual ~ScriptDebugServer();
     
     ScriptValue currentCallFrame();
