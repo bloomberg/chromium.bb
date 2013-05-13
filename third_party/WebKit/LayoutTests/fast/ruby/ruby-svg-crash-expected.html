@@ -24,3 +24,6 @@ if (window.testRunner) {
 
 setTimeout("runTest()", 10);
 </script>
+<!-- This is the same as the test because it only needs to test that it doesn't
+crash. And for some reason, dumpAsText() dumps different output with Release
+and Debug builds. So this test is a ref-test to work around that problem. -->

@@ -1509,8 +1509,6 @@ crbug.com/233700 [ Debug ] inspector/debugger/debugger-script-preprocessor.html 
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Pass Failure ]
 
-crbug.com/234555 [ Debug ] fast/ruby/ruby-svg-crash.html [ Failure ]
-
 crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 
 # These tests use paths and need a rebaseline after crbug.com/227397
