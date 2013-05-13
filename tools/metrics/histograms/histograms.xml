@@ -7079,6 +7079,25 @@ other types of suffix sets.
   <summary>Error codes returned by sqlite the web db.</summary>
 </histogram>
 
+<histogram name="Tab.RestoreResult" enum="BooleanSuccess">
+  <summary>
+    When the browser restores a tab, whether the load was successful. Loads can
+    fail for instance when there is no connectivity.
+  </summary>
+</histogram>
+
+<histogram name="Tab.RestoreTime" units="ms">
+  <summary>Load time for a successful tab restore.</summary>
+</histogram>
+
+<histogram name="Tab.RestoreUserPersistence" enum="TabRestoreUserAction">
+  <summary>
+    When the browser restores a tab, whether the user waits for completion of
+    the load or if the user gives up by switching to another tab or leaving
+    Chrome.
+  </summary>
+</histogram>
+
 <histogram name="Tab.SwitchedToForegroundAge" units="ms">
   <summary>Age (in ms) when the tab was switched to foreground.</summary>
 </histogram>
@@ -11184,6 +11203,12 @@ other types of suffix sets.
   <int value="1" label="Failure"/>
   <int value="2" label="Cancelled"/>
   <int value="3" label="Attempted"/>
+</enum>
+
+<enum name="TabRestoreUserAction" type="int">
+  <int value="0" label="Wait for completion"/>
+  <int value="1" label="Leave tab (close tab/switch tab/go to tab switcher)"/>
+  <int value="2" label="Leave Chrome"/>
 </enum>
 
 <enum name="TabSwitchedToForegroundLaunchedWithURL" type="int">
