@@ -1,0 +1,11 @@
+No assertion failures even if an DOM mutation event handler updates the new node created by Text::splitText.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS r.endContainer is target
+PASS r.endOffset is 2
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<body>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+<div id="parent1">text</div>
+<script>
+var parent = document.getElementById('parent1');
+var target = parent.firstChild;
+
+function handleInsertion() {
+    document.removeEventListener('DOMNodeInserted', handleInsertion);
+    target.nextSibling.remove();
+}
+
+document.addEventListener('DOMNodeInserted', handleInsertion, false);
+var r = new Range();
+window.getSelection().addRange(r);
+r.setStart(target, 0);
+r.setEnd(target, 4);
+target.splitText(2);
+description('No assertion failures even if an DOM mutation event handler updates the new node created by Text::splitText.');
+shouldBe('r.endContainer', 'target');
+shouldBe('r.endOffset', '2');
+parent.remove();
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>
+</body>
