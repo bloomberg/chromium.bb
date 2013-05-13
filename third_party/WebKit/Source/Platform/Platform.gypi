@@ -56,6 +56,7 @@
             'chromium/public/WebExternalTextureLayer.h',
             'chromium/public/WebExternalTextureLayerClient.h',
             'chromium/public/WebExternalTextureMailbox.h',
+            'chromium/public/WebFallbackThemeEngine.h',
             'chromium/public/WebFileError.h',
             'chromium/public/WebFileInfo.h',
             'chromium/public/WebFileSystem.h',

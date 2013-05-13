@@ -55,6 +55,7 @@ class WebClipboard;
 class WebCompositorSupport;
 class WebCookieJar;
 class WebDiscardableMemory;
+class WebFallbackThemeEngine;
 class WebFileSystem;
 class WebFileUtilities;
 class WebFlingAnimator;
@@ -116,6 +117,8 @@ public:
 
     // May return null on some platforms.
     virtual WebThemeEngine* themeEngine() { return 0; }
+
+    virtual WebFallbackThemeEngine* fallbackThemeEngine() { return 0; }
 
     // Must return non-null.
     virtual WebHyphenator* hyphenator() { return 0; }
