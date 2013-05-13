@@ -72,10 +72,17 @@
     setupDataChannel();
     gFirstConnection.createOffer(onOfferCreated);
 
-    navigator.webkitGetUserMedia({audio:true, video:true},
-      addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
-    waitForVideo('remote-view-1');
-    waitForVideo('remote-view-2');
+    // Set an event handler for when the data channel has been closed.
+    setAllEventsOccuredHandler(function() {
+      // When the video is flowing the test is done.
+      setAllEventsOccuredHandler(function() {
+        document.title = 'OK';
+      });
+      navigator.webkitGetUserMedia({audio:true, video:true},
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+      waitForVideo('remote-view-1');
+      waitForVideo('remote-view-2');
+    });
   }
 
   // Test that we can setup call and send DTMF.
