@@ -924,7 +924,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   {
     int top_arrow_height = 0;
     // Hide the arrows in fullscreen and on the instant extended NTP.
-    if (IsToolbarVisible() &&
+    if (!IsFullscreen() &&
         (!chrome::IsInstantExtendedAPIEnabled() ||
          !browser()->search_model()->mode().is_ntp())) {
       const LocationIconView* location_icon_view =
