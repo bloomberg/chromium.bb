@@ -56,6 +56,7 @@
 
 #include <wayland-server.h>
 #include "compositor.h"
+#include "subsurface-server-protocol.h"
 #include "../shared/os-compatibility.h"
 #include "git-version.h"
 #include "version.h"
