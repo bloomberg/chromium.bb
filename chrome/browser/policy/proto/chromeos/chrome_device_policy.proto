@@ -202,6 +202,9 @@ message AutoUpdateSettingsProto {
   // True if the device should reboot automatically when an update has been
   // applied and a reboot is required to complete the update process.
   optional bool reboot_after_update = 6;
+
+  // True if AU payloads can be downloaded via HTTP. False otherwise.
+  optional bool http_downloads_enabled = 7 [default = false];
 }
 
 message StartUpUrlsProto {
