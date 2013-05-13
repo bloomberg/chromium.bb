@@ -250,8 +250,8 @@ TEST_F(EPKPChallengeMachineKeyTest, Success) {
                   "google.com", "device_id", _, "challenge", _))
       .Times(1);
 
-  base::Value* value = utils::RunFunctionAndReturnSingleResult(
-      func_.get(), kArgs, browser(), utils::NONE);
+  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+      func_.get(), kArgs, browser(), utils::NONE));
 
   std::string response;
   value->GetAsString(&response);
@@ -406,8 +406,8 @@ TEST_F(EPKPChallengeUserKeyTest, Success) {
                                         "attest-ent-user", _))
       .Times(1);
 
-  base::Value* value = utils::RunFunctionAndReturnSingleResult(
-      func_.get(), kArgs, browser(), utils::NONE);
+  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+      func_.get(), kArgs, browser(), utils::NONE));
 
   std::string response;
   value->GetAsString(&response);
