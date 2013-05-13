@@ -132,7 +132,6 @@ SpdyStream::SpdyStream(SpdySession* session,
       response_(new SpdyHeaderBlock),
       io_state_(STATE_NONE),
       response_status_(OK),
-      cancelled_(false),
       has_upload_data_(false),
       net_log_(net_log),
       send_bytes_(0),
@@ -153,14 +152,16 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
   if (pushed_) {
     CHECK(response_received());
     MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&SpdyStream::PushedStreamReplayData, this));
+        FROM_HERE,
+        base::Bind(&SpdyStream::PushedStreamReplayData,
+                   weak_ptr_factory_.GetWeakPtr()));
   } else {
     continue_buffering_data_ = false;
   }
 }
 
 void SpdyStream::PushedStreamReplayData() {
-  if (cancelled_ || !delegate_)
+  if (!delegate_)
     return;
 
   continue_buffering_data_ = false;
@@ -211,7 +212,6 @@ scoped_ptr<SpdyFrame> SpdyStream::ProduceSynStreamFrame() {
 
 scoped_ptr<SpdyFrame> SpdyStream::ProduceHeaderFrame(
     scoped_ptr<SpdyHeaderBlock> header_block) {
-  CHECK(!cancelled());
   // We must need to write stream data.
   // Until the headers have been completely sent, we can not be sure
   // that our stream_id is correct.
@@ -226,9 +226,9 @@ scoped_ptr<SpdyFrame> SpdyStream::ProduceHeaderFrame(
 }
 
 void SpdyStream::DetachDelegate() {
+  DCHECK(!closed());
   delegate_ = NULL;
-  if (!closed())
-    Cancel();
+  Cancel();
 }
 
 const SpdyHeaderBlock& SpdyStream::spdy_headers() const {
@@ -438,7 +438,6 @@ int SpdyStream::OnResponseReceived(const SpdyHeaderBlock& response) {
     if (ContainsUpperAscii(it->first)) {
       session_->ResetStream(stream_id_, priority_, RST_STREAM_PROTOCOL_ERROR,
                             "Upper case characters in header: " + it->first);
-      response_status_ = ERR_SPDY_PROTOCOL_ERROR;
       return ERR_SPDY_PROTOCOL_ERROR;
     }
   }
@@ -474,7 +473,6 @@ int SpdyStream::OnHeaders(const SpdyHeaderBlock& headers) {
     if (ContainsUpperAscii(it->first)) {
       session_->ResetStream(stream_id_, priority_, RST_STREAM_PROTOCOL_ERROR,
                             "Upper case characters in header: " + it->first);
-      response_status_ = ERR_SPDY_PROTOCOL_ERROR;
       return ERR_SPDY_PROTOCOL_ERROR;
     }
 
@@ -561,7 +559,7 @@ void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
     NOTREACHED();
     return;
   }
-  if (cancelled() || closed())
+  if (closed())
     return;
   just_completed_frame_type_ = frame_type;
   just_completed_frame_size_ = frame_size;
@@ -588,22 +586,20 @@ void SpdyStream::OnClose(int status) {
 }
 
 void SpdyStream::Cancel() {
-  if (cancelled())
-    return;
-
-  cancelled_ = true;
-  if (session_->IsStreamActive(stream_id_))
+  if (stream_id_ != 0) {
     session_->ResetStream(stream_id_, priority_,
                           RST_STREAM_CANCEL, std::string());
-  else if (stream_id_ == 0)
-    session_->CloseCreatedStream(this, RST_STREAM_CANCEL);
+  } else {
+    session_->CloseCreatedStream(GetWeakPtr(), RST_STREAM_CANCEL);
+  }
 }
 
 void SpdyStream::Close() {
-  if (stream_id_ != 0)
+  if (stream_id_ != 0) {
     session_->CloseStream(stream_id_, OK);
-  else
-    session_->CloseCreatedStream(this, OK);
+  } else {
+    session_->CloseCreatedStream(GetWeakPtr(), OK);
+  }
 }
 
 int SpdyStream::SendRequest(bool has_upload_data) {
@@ -643,7 +639,6 @@ void SpdyStream::QueueStreamData(IOBuffer* data,
   // that our stream_id is correct.
   DCHECK_GT(io_state_, STATE_SEND_HEADERS_COMPLETE);
   CHECK_GT(stream_id_, 0u);
-  CHECK(!cancelled());
 
   scoped_ptr<SpdyBuffer> data_buffer(session_->CreateDataBuffer(
       stream_id_, data, length, flags));
@@ -696,6 +691,10 @@ void SpdyStream::PossiblyResumeIfSendStalled() {
     io_state_ = STATE_SEND_BODY;
     DoLoop(OK);
   }
+}
+
+base::WeakPtr<SpdyStream> SpdyStream::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 bool SpdyStream::HasUrl() const {
@@ -869,7 +868,6 @@ int SpdyStream::DoSendDomainBoundCertComplete() {
 }
 
 int SpdyStream::DoSendHeaders() {
-  CHECK(!cancelled_);
   io_state_ = STATE_SEND_HEADERS_COMPLETE;
 
   session_->EnqueueStreamWrite(

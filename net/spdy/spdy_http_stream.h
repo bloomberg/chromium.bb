@@ -38,7 +38,8 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // SpdyStream. In particular, this must be called instead of
   // InitializeStream() if a NULL SpdySession was passed into the
   // constructor.
-  void InitializeWithExistingStream(SpdyStream* spdy_stream);
+  void InitializeWithExistingStream(
+      const base::WeakPtr<SpdyStream>& spdy_stream);
 
   SpdyStream* stream() { return stream_.get(); }
 
@@ -116,7 +117,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   const scoped_refptr<SpdySession> spdy_session_;
   SpdyStreamRequest stream_request_;
-  scoped_refptr<SpdyStream> stream_;
+  base::WeakPtr<SpdyStream> stream_;
 
   bool stream_closed_;
 

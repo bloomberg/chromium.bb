@@ -16,7 +16,7 @@ namespace net {
 namespace test {
 
 ClosingDelegate::ClosingDelegate(
-    const scoped_refptr<SpdyStream>& stream) : stream_(stream) {}
+    const base::WeakPtr<SpdyStream>& stream) : stream_(stream) {}
 
 ClosingDelegate::~ClosingDelegate() {}
 
@@ -47,14 +47,15 @@ int ClosingDelegate::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
 void ClosingDelegate::OnDataSent(size_t bytes_sent) {}
 
 void ClosingDelegate::OnClose(int status) {
-  if (stream_)
-    stream_->Close();
-  stream_ = NULL;
+  DCHECK(stream_);
+  stream_->Close();
+  DCHECK(!stream_);
 }
 
 StreamDelegateBase::StreamDelegateBase(
-    const scoped_refptr<SpdyStream>& stream)
+    const base::WeakPtr<SpdyStream>& stream)
     : stream_(stream),
+      stream_id_(0),
       send_headers_completed_(false),
       headers_sent_(0),
       data_sent_(0) {
@@ -64,6 +65,8 @@ StreamDelegateBase::~StreamDelegateBase() {
 }
 
 SpdySendStatus StreamDelegateBase::OnSendHeadersComplete() {
+  stream_id_ = stream_->stream_id();
+  EXPECT_NE(stream_id_, 0u);
   send_headers_completed_ = true;
   return NO_MORE_DATA_TO_SEND;
 }
@@ -93,7 +96,8 @@ void StreamDelegateBase::OnDataSent(size_t bytes_sent) {
 void StreamDelegateBase::OnClose(int status) {
   if (!stream_)
     return;
-  stream_ = NULL;
+  stream_id_ = stream_->stream_id();
+  stream_.reset();
   callback_.callback().Run(status);
 }
 
@@ -120,8 +124,23 @@ std::string StreamDelegateBase::GetResponseHeaderValue(
   return (it == response_.end()) ? std::string() : it->second;
 }
 
+StreamDelegateDoNothing::StreamDelegateDoNothing(
+    const base::WeakPtr<SpdyStream>& stream)
+    : StreamDelegateBase(stream) {}
+
+StreamDelegateDoNothing::~StreamDelegateDoNothing() {
+}
+
+int StreamDelegateDoNothing::OnSendBody() {
+  return OK;
+}
+SpdySendStatus StreamDelegateDoNothing::OnSendBodyComplete(
+    size_t /*bytes_sent*/) {
+  return NO_MORE_DATA_TO_SEND;
+}
+
 StreamDelegateSendImmediate::StreamDelegateSendImmediate(
-    const scoped_refptr<SpdyStream>& stream,
+    const base::WeakPtr<SpdyStream>& stream,
     scoped_ptr<SpdyHeaderBlock> headers,
     base::StringPiece data)
     : StreamDelegateBase(stream),
@@ -158,7 +177,7 @@ int StreamDelegateSendImmediate::OnResponseReceived(
 }
 
 StreamDelegateWithBody::StreamDelegateWithBody(
-    const scoped_refptr<SpdyStream>& stream,
+    const base::WeakPtr<SpdyStream>& stream,
     base::StringPiece data)
     : StreamDelegateBase(stream),
       buf_(new DrainableIOBuffer(new StringIOBuffer(data.as_string()),

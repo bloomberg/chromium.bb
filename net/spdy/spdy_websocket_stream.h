@@ -95,7 +95,7 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
 
   base::WeakPtrFactory<SpdyWebSocketStream> weak_ptr_factory_;
   SpdyStreamRequest stream_request_;
-  scoped_refptr<SpdyStream> stream_;
+  base::WeakPtr<SpdyStream> stream_;
   scoped_refptr<SpdySession> spdy_session_;
   Delegate* delegate_;
 

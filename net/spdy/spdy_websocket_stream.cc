@@ -20,7 +20,6 @@ namespace net {
 SpdyWebSocketStream::SpdyWebSocketStream(
     SpdySession* spdy_session, Delegate* delegate)
     : weak_ptr_factory_(this),
-      stream_(NULL),
       spdy_session_(spdy_session),
       delegate_(delegate) {
   DCHECK(spdy_session_);
@@ -28,17 +27,8 @@ SpdyWebSocketStream::SpdyWebSocketStream(
 }
 
 SpdyWebSocketStream::~SpdyWebSocketStream() {
-  if (stream_) {
-    // If Close() has not already been called, DetachDelegate() will send a
-    // SPDY RST_STREAM. Deleting SpdyWebSocketStream is good enough to initiate
-    // graceful shutdown, so we call Close() to avoid sending a RST_STREAM.
-    // For safe, we should eliminate |delegate_| for OnClose() calback.
-    delegate_ = NULL;
-    stream_->Close();
-    // The call to Close() should call into OnClose(), which should
-    // set |stream_| to NULL.
-    DCHECK(!stream_.get());
-  }
+  delegate_ = NULL;
+  Close();
 }
 
 int SpdyWebSocketStream::InitializeStream(const GURL& url,
@@ -84,8 +74,10 @@ int SpdyWebSocketStream::SendData(const char* data, int length) {
 }
 
 void SpdyWebSocketStream::Close() {
-  if (stream_)
+  if (stream_) {
     stream_->Close();
+    DCHECK(!stream_);
+  }
 }
 
 SpdySendStatus SpdyWebSocketStream::OnSendHeadersComplete() {
@@ -128,7 +120,7 @@ void SpdyWebSocketStream::OnDataSent(size_t bytes_sent) {
 }
 
 void SpdyWebSocketStream::OnClose(int status) {
-  stream_ = NULL;
+  stream_.reset();
 
   // Destruction without Close() call OnClose() with delegate_ being NULL.
   if (!delegate_)

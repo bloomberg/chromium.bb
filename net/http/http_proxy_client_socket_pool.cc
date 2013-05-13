@@ -330,7 +330,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
     return result;
 
   next_state_ = STATE_HTTP_PROXY_CONNECT_COMPLETE;
-  scoped_refptr<SpdyStream> stream = spdy_stream_request_.ReleaseStream();
+  base::WeakPtr<SpdyStream> stream = spdy_stream_request_.ReleaseStream();
   DCHECK(stream);
   // |transport_socket_| will set itself as |stream|'s delegate.
   transport_socket_.reset(

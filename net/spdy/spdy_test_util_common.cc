@@ -276,7 +276,7 @@ bool GetSpdyPriority(int version,
   return true;
 }
 
-scoped_refptr<SpdyStream> CreateStreamSynchronously(
+base::WeakPtr<SpdyStream> CreateStreamSynchronously(
     const scoped_refptr<SpdySession>& session,
     const GURL& url,
     RequestPriority priority,
@@ -284,14 +284,11 @@ scoped_refptr<SpdyStream> CreateStreamSynchronously(
   SpdyStreamRequest stream_request;
   int rv = stream_request.StartRequest(session, url, priority, net_log,
                                        CompletionCallback());
-  return (rv == OK) ? stream_request.ReleaseStream() : NULL;
+  return
+      (rv == OK) ? stream_request.ReleaseStream() : base::WeakPtr<SpdyStream>();
 }
 
-StreamReleaserCallback::StreamReleaserCallback(
-    SpdySession* session,
-    SpdyStream* first_stream)
-    : session_(session),
-      first_stream_(first_stream) {}
+StreamReleaserCallback::StreamReleaserCallback() {}
 
 StreamReleaserCallback::~StreamReleaserCallback() {}
 
@@ -304,10 +301,6 @@ CompletionCallback StreamReleaserCallback::MakeCallback(
 
 void StreamReleaserCallback::OnComplete(
     SpdyStreamRequest* request, int result) {
-  session_->CloseSessionOnError(ERR_FAILED, false, "On complete.");
-  session_ = NULL;
-  first_stream_->Cancel();
-  first_stream_ = NULL;
   request->ReleaseStream()->Cancel();
   SetResult(result);
 }

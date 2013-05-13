@@ -122,7 +122,6 @@ class SpdyProxyClientSocketSpdy2Test : public PlatformTest {
   SpdySessionDependencies session_deps_;
   MockConnect connect_data_;
   scoped_refptr<SpdySession> spdy_session_;
-  scoped_refptr<SpdyStream> spdy_stream_;
   BufferedSpdyFramer framer_;
 
   std::string user_agent_;
@@ -145,7 +144,6 @@ SpdyProxyClientSocketSpdy2Test::SpdyProxyClientSocketSpdy2Test()
       session_deps_(kProtoSPDY2),
       connect_data_(SYNCHRONOUS, OK),
       spdy_session_(NULL),
-      spdy_stream_(NULL),
       framer_(2, false),
       user_agent_(kUserAgent),
       url_(kRequestUrl),
@@ -203,13 +201,14 @@ void SpdyProxyClientSocketSpdy2Test::Initialize(MockRead* reads,
   spdy_session_->InitializeWithSocket(connection.release(), false, OK);
 
   // Create the SPDY Stream.
-  spdy_stream_ =
-      CreateStreamSynchronously(spdy_session_, url_, LOWEST, net_log_.bound());
-  ASSERT_TRUE(spdy_stream_.get() != NULL);
+  base::WeakPtr<SpdyStream> spdy_stream(
+      CreateStreamSynchronously(
+          spdy_session_, url_, LOWEST, net_log_.bound()));
+  ASSERT_TRUE(spdy_stream.get() != NULL);
 
   // Create the SpdyProxyClientSocket.
   sock_.reset(
-      new SpdyProxyClientSocket(spdy_stream_, user_agent_,
+      new SpdyProxyClientSocket(spdy_stream, user_agent_,
                                 endpoint_host_port_pair_, url_,
                                 proxy_host_port_, net_log_.bound(),
                                 session_->http_auth_cache(),

@@ -42,7 +42,7 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   // CONNECT frame for |endpoint|.  After the SYN_REPLY is received,
   // any data read/written to the socket will be transferred in data
   // frames. This object will set itself as |spdy_stream|'s delegate.
-  SpdyProxyClientSocket(SpdyStream* spdy_stream,
+  SpdyProxyClientSocket(const base::WeakPtr<SpdyStream>& spdy_stream,
                         const std::string& user_agent,
                         const HostPortPair& endpoint,
                         const GURL& url,
@@ -132,7 +132,7 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   State next_state_;
 
   // Pointer to the SPDY Stream that this sits on top of.
-  scoped_refptr<SpdyStream> spdy_stream_;
+  base::WeakPtr<SpdyStream> spdy_stream_;
 
   // Stores the callback to the layer above, called on completing Read() or
   // Connect().

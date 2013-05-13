@@ -23,7 +23,7 @@
 namespace net {
 
 SpdyProxyClientSocket::SpdyProxyClientSocket(
-    SpdyStream* spdy_stream,
+    const base::WeakPtr<SpdyStream>& spdy_stream,
     const std::string& user_agent,
     const HostPortPair& endpoint,
     const GURL& url,
@@ -142,7 +142,7 @@ void SpdyProxyClientSocket::Disconnect() {
     // This will cause OnClose to be invoked, which takes care of
     // cleaning up all the internal state.
     spdy_stream_->Cancel();
-    DCHECK(!spdy_stream_.get());
+    DCHECK(!spdy_stream_);
   }
 }
 
@@ -432,8 +432,8 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
         // SpdyHttpStream so that any subsequent SpdyFrames are processed in
         // the context of the HttpStream, not the socket.
         DCHECK(spdy_stream_);
-        SpdyStream* stream = spdy_stream_;
-        spdy_stream_ = NULL;
+        base::WeakPtr<SpdyStream> stream = spdy_stream_;
+        spdy_stream_.reset();
         response_stream_.reset(new SpdyHttpStream(NULL, false));
         response_stream_->InitializeWithExistingStream(stream);
         next_state_ = STATE_DISCONNECTED;
@@ -546,9 +546,8 @@ void SpdyProxyClientSocket::OnDataSent(size_t bytes_sent)  {
 }
 
 void SpdyProxyClientSocket::OnClose(int status)  {
-  DCHECK(spdy_stream_);
   was_ever_used_ = spdy_stream_->WasEverUsed();
-  spdy_stream_ = NULL;
+  spdy_stream_.reset();
 
   bool connecting = next_state_ != STATE_DISCONNECTED &&
       next_state_ < STATE_OPEN;

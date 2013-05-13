@@ -142,16 +142,19 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   // caller. Must be called at most once after StartRequest() returns
   // OK or |callback| is called with OK. The caller must immediately
   // set a delegate for the returned stream (except for test code).
-  scoped_refptr<SpdyStream> ReleaseStream();
+  base::WeakPtr<SpdyStream> ReleaseStream();
 
  private:
   friend class SpdySession;
 
-  // Called by |session_| when the stream attempt is
-  // finished. |stream| is non-NULL exactly when |rv| is OK. Also
-  // called with a NULL stream and ERR_ABORTED if |session_| is
-  // destroyed while the stream attempt is still pending.
-  void OnRequestComplete(const scoped_refptr<SpdyStream>& stream, int rv);
+  // Called by |session_| when the stream attempt has finished
+  // successfully.
+  void OnRequestCompleteSuccess(base::WeakPtr<SpdyStream>* stream);
+
+  // Called by |session_| when the stream attempt has finished with an
+  // error. Also called with ERR_ABORTED if |session_| is destroyed
+  // while the stream attempt is still pending.
+  void OnRequestCompleteFailure(int rv);
 
   // Accessors called by |session_|.
   const GURL& url() const { return url_; }
@@ -161,7 +164,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   void Reset();
 
   scoped_refptr<SpdySession> session_;
-  scoped_refptr<SpdyStream> stream_;
+  base::WeakPtr<SpdyStream> stream_;
   GURL url_;
   RequestPriority priority_;
   BoundNetLog net_log_;
@@ -222,7 +225,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // ERR_IO_PENDING) otherwise.
   int GetPushStream(
       const GURL& url,
-      scoped_refptr<SpdyStream>* spdy_stream,
+      base::WeakPtr<SpdyStream>* spdy_stream,
       const BoundNetLog& stream_net_log);
 
   // Used by SpdySessionPool to initialize with a pre-existing SSL socket. For
@@ -282,17 +285,20 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
                                           int len,
                                           SpdyDataFlags flags);
 
-  // Close a stream.
+  // If there is an active stream with the given ID, close it. There
+  // must be no external references to that active stream.
   void CloseStream(SpdyStreamId stream_id, int status);
 
   // Close a stream that has been created but is not yet active.
-  void CloseCreatedStream(SpdyStream* stream, int status);
+  // There must be no external references to that active stream.
+  void CloseCreatedStream(const base::WeakPtr<SpdyStream>& stream, int status);
 
-  // Reset a stream by sending a RST_STREAM frame with the given
-  // status code at the given priority, which should be the stream's
-  // priority.  Also closes the stream.  Was not piggybacked to
-  // CloseStream since not all of the calls to CloseStream necessitate
-  // sending a RST_STREAM.
+  // If there is an active stream with the given ID, reset it by by
+  // sending a RST_STREAM frame with the given status code at the
+  // given priority, which should be the stream's priority, and
+  // deleting it.  There must be no external references to that active
+  // stream.  Was not piggybacked to CloseStream since not all of the
+  // calls to CloseStream necessitate sending a RST_STREAM.
   void ResetStream(SpdyStreamId stream_id,
                    RequestPriority priority,
                    SpdyRstStreamStatus status,
@@ -480,7 +486,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   typedef std::deque<SpdyStreamRequest*> PendingStreamRequestQueue;
   typedef std::set<SpdyStreamRequest*> PendingStreamRequestCompletionSet;
 
-  typedef std::map<int, scoped_refptr<SpdyStream> > ActiveStreamMap;
+  typedef std::map<SpdyStreamId, scoped_refptr<SpdyStream> > ActiveStreamMap;
   typedef std::map<std::string,
       std::pair<scoped_refptr<SpdyStream>, base::TimeTicks> > PushedStreamMap;
 
@@ -499,16 +505,16 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Called by SpdyStreamRequest to start a request to create a
   // stream. If OK is returned, then |stream| will be filled in with a
   // valid stream. If ERR_IO_PENDING is returned, then
-  // |request->OnRequestComplete()| will be called when the stream is
-  // created (unless it is cancelled). Otherwise, no stream is created
-  // and the error is returned.
+  // |request->OnRequestComplete{Success,Failure}()| will be called
+  // when the stream is created (unless it is cancelled). Otherwise,
+  // no stream is created and the error is returned.
   int TryCreateStream(SpdyStreamRequest* request,
-                      scoped_refptr<SpdyStream>* stream);
+                      base::WeakPtr<SpdyStream>* stream);
 
   // Actually create a stream into |stream|. Returns OK if successful;
   // otherwise, returns an error and |stream| is not filled.
   int CreateStream(const SpdyStreamRequest& request,
-                   scoped_refptr<SpdyStream>* stream);
+                   base::WeakPtr<SpdyStream>* stream);
 
   // Called by SpdyStreamRequest to remove |request| from the stream
   // creation queue.
@@ -594,7 +600,18 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   // Track active streams in the active stream list.
   void ActivateStream(SpdyStream* stream);
+
+  // If there is an active stream with the given ID, delete it. There
+  // must be no external references to that active stream. Also note
+  // that that active stream may hold the last reference to this
+  // object.
   void DeleteStream(SpdyStreamId id, int status);
+
+  // Remove all internal references to the stream pointed to by
+  // |last_ref|, which must be the last reference to that stream and
+  // is set to NULL. Also note that the given stream may hold the last
+  // reference to this object.
+  void DeleteStreamRefs(scoped_refptr<SpdyStream>* last_ref, int status);
 
   // Removes this session from the session pool.
   void RemoveFromPool();
@@ -602,12 +619,12 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Check if we have a pending pushed-stream for this url
   // Returns the stream if found (and returns it from the pending
   // list), returns NULL otherwise.
-  scoped_refptr<SpdyStream> GetActivePushStream(const std::string& url);
+  base::WeakPtr<SpdyStream> GetActivePushStream(const std::string& url);
 
   // Calls OnResponseReceived().
   // Returns true if successful.
   bool Respond(const SpdyHeaderBlock& headers,
-               const scoped_refptr<SpdyStream> stream);
+               const scoped_refptr<SpdyStream>& stream);
 
   void RecordPingRTTHistogram(base::TimeDelta duration);
   void RecordHistograms();

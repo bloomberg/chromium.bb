@@ -22,7 +22,7 @@ namespace test {
 // to make sure that such an action is harmless.
 class ClosingDelegate : public SpdyStream::Delegate {
  public:
-  explicit ClosingDelegate(const scoped_refptr<SpdyStream>& stream);
+  explicit ClosingDelegate(const base::WeakPtr<SpdyStream>& stream);
   virtual ~ClosingDelegate();
 
   // SpdyStream::Delegate implementation.
@@ -37,15 +37,18 @@ class ClosingDelegate : public SpdyStream::Delegate {
   virtual void OnDataSent(size_t bytes_sent) OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
 
+  // Returns whether or not the stream is closed.
+  bool StreamIsClosed() const { return !stream_; }
+
  private:
-  scoped_refptr<SpdyStream> stream_;
+  base::WeakPtr<SpdyStream> stream_;
 };
 
 // Base class with shared functionality for test delegate
 // implementations below.
 class StreamDelegateBase : public SpdyStream::Delegate {
  public:
-  explicit StreamDelegateBase(const scoped_refptr<SpdyStream>& stream);
+  explicit StreamDelegateBase(const base::WeakPtr<SpdyStream>& stream);
   virtual ~StreamDelegateBase();
 
   virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
@@ -67,16 +70,24 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   // a string.
   std::string TakeReceivedData();
 
+  // Returns whether or not the stream is closed.
+  bool StreamIsClosed() const { return !stream_; }
+
+  // Returns the stream's ID. If called when the stream is closed,
+  // returns the stream's ID when it was open.
+  SpdyStreamId stream_id() const { return stream_id_; }
+
   std::string GetResponseHeaderValue(const std::string& name) const;
   bool send_headers_completed() const { return send_headers_completed_; }
   int headers_sent() const { return headers_sent_; }
   int data_sent() const { return data_sent_; }
 
  protected:
-  const scoped_refptr<SpdyStream>& stream() { return stream_; }
+  const base::WeakPtr<SpdyStream>& stream() { return stream_; }
 
  private:
-  scoped_refptr<SpdyStream> stream_;
+  base::WeakPtr<SpdyStream> stream_;
+  SpdyStreamId stream_id_;
   TestCompletionCallback callback_;
   bool send_headers_completed_;
   SpdyHeaderBlock response_;
@@ -85,11 +96,22 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   int data_sent_;
 };
 
+// Test delegate that does nothing. Used to capture data about the
+// stream, e.g. its id when it was open.
+class StreamDelegateDoNothing : public StreamDelegateBase {
+ public:
+  StreamDelegateDoNothing(const base::WeakPtr<SpdyStream>& stream);
+  virtual ~StreamDelegateDoNothing();
+
+  virtual int OnSendBody() OVERRIDE;
+  virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
+};
+
 // Test delegate that sends data immediately in OnResponseReceived().
 class StreamDelegateSendImmediate : public StreamDelegateBase {
  public:
   // Both |headers| and |buf| can be NULL.
-  StreamDelegateSendImmediate(const scoped_refptr<SpdyStream>& stream,
+  StreamDelegateSendImmediate(const base::WeakPtr<SpdyStream>& stream,
                               scoped_ptr<SpdyHeaderBlock> headers,
                               base::StringPiece data);
   virtual ~StreamDelegateSendImmediate();
@@ -108,7 +130,7 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
 // Test delegate that sends body data.
 class StreamDelegateWithBody : public StreamDelegateBase {
  public:
-  StreamDelegateWithBody(const scoped_refptr<SpdyStream>& stream,
+  StreamDelegateWithBody(const base::WeakPtr<SpdyStream>& stream,
                          base::StringPiece data);
   virtual ~StreamDelegateWithBody();
 

@@ -113,12 +113,12 @@ TEST_F(SpdyStreamSpdy3Test, SendDataAfterOpen) {
 
   InitializeSpdySession(session, host_port_pair_);
 
-  scoped_refptr<SpdyStream> stream =
+  base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
 
   StreamDelegateSendImmediate delegate(
-      stream.get(), scoped_ptr<SpdyHeaderBlock>(), kPostBodyStringPiece);
+      stream, scoped_ptr<SpdyHeaderBlock>(), kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -183,7 +183,7 @@ TEST_F(SpdyStreamSpdy3Test, SendHeaderAndDataAfterOpen) {
   HostPortPair host_port_pair("server.example.com", 80);
   InitializeSpdySession(session, host_port_pair);
 
-  scoped_refptr<SpdyStream> stream =
+  base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, HIGHEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
   TestCompletionCallback callback;
@@ -193,7 +193,7 @@ TEST_F(SpdyStreamSpdy3Test, SendHeaderAndDataAfterOpen) {
   (*message_headers)[":fin"] = "1";
 
   StreamDelegateSendImmediate delegate(
-      stream.get(), message_headers.Pass(), base::StringPiece("hello!", 6));
+      stream, message_headers.Pass(), base::StringPiece("hello!", 6));
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -309,12 +309,12 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
 
   InitializeSpdySession(session, host_port_pair_);
 
-  scoped_refptr<SpdyStream> stream =
+  base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, log.bound());
   ASSERT_TRUE(stream.get() != NULL);
 
   StreamDelegateSendImmediate delegate(
-      stream.get(), scoped_ptr<SpdyHeaderBlock>(), kPostBodyStringPiece);
+      stream, scoped_ptr<SpdyHeaderBlock>(), kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -328,7 +328,7 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
-  const SpdyStreamId stream_id = stream->stream_id();
+  const SpdyStreamId stream_id = delegate.stream_id();
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
@@ -385,12 +385,12 @@ TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
 
   InitializeSpdySession(session, host_port_pair_);
 
-  scoped_refptr<SpdyStream> stream =
+  base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, log.bound());
   ASSERT_TRUE(stream.get() != NULL);
 
   StreamDelegateSendImmediate delegate(
-      stream.get(), scoped_ptr<SpdyHeaderBlock>(), kPostBodyStringPiece);
+      stream, scoped_ptr<SpdyHeaderBlock>(), kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -443,11 +443,11 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncrease) {
 
   InitializeSpdySession(session, host_port_pair_);
 
-  scoped_refptr<SpdyStream> stream =
+  base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
 
-  StreamDelegateWithBody delegate(stream.get(), kPostBodyStringPiece);
+  StreamDelegateWithBody delegate(stream, kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -527,11 +527,11 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjust) {
 
   InitializeSpdySession(session, host_port_pair_);
 
-  scoped_refptr<SpdyStream> stream =
+  base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
 
-  StreamDelegateWithBody delegate(stream.get(), kPostBodyStringPiece);
+  StreamDelegateWithBody delegate(stream, kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());

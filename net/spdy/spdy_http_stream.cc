@@ -43,15 +43,18 @@ SpdyHttpStream::SpdyHttpStream(SpdySession* spdy_session,
       more_read_data_pending_(false),
       direct_(direct) {}
 
-void SpdyHttpStream::InitializeWithExistingStream(SpdyStream* spdy_stream) {
+void SpdyHttpStream::InitializeWithExistingStream(
+    const base::WeakPtr<SpdyStream>& spdy_stream) {
   stream_ = spdy_stream;
   stream_->SetDelegate(this);
   response_headers_received_ = true;
 }
 
 SpdyHttpStream::~SpdyHttpStream() {
-  if (stream_)
+  if (stream_) {
     stream_->DetachDelegate();
+    DCHECK(!stream_);
+  }
 }
 
 int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
@@ -104,9 +107,6 @@ UploadProgress SpdyHttpStream::GetUploadProgress() const {
 
 int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
   CHECK(!callback.is_null());
-  if (stream_)
-    CHECK(!stream_->cancelled());
-
   if (stream_closed_)
     return closed_stream_status_;
 
@@ -241,7 +241,6 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   }
 
   CHECK(!callback.is_null());
-  CHECK(!stream_->cancelled());
   CHECK(response);
 
   // SendRequest can be called in two cases.
@@ -276,9 +275,10 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
 
 void SpdyHttpStream::Cancel() {
   callback_.Reset();
-  if (stream_)
+  if (stream_) {
     stream_->Cancel();
-  DCHECK(!stream_.get());
+    DCHECK(!stream_);
+  }
 }
 
 void SpdyHttpStream::OnStreamCreated(
@@ -451,7 +451,7 @@ void SpdyHttpStream::OnClose(int status) {
     closed_stream_status_ = status;
     closed_stream_id_ = stream_->stream_id();
   }
-  stream_ = NULL;
+  stream_.reset();
   bool invoked_callback = false;
   if (status == net::OK) {
     // We need to complete any pending buffered read now.
@@ -503,9 +503,6 @@ bool SpdyHttpStream::DoBufferedReadCallback() {
       stream_closed_ ? closed_stream_status_ : stream_->response_status();
   if (stream_status != OK)
     return false;
-
-  if (stream_)
-    DCHECK(!stream_->cancelled());
 
   // When more_read_data_pending_ is true, it means that more data has
   // arrived since we started waiting.  Wait a little longer and continue

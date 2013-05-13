@@ -119,8 +119,8 @@ class NET_EXPORT_PRIVATE SpdyStream
   void SetDelegate(Delegate* delegate);
   Delegate* GetDelegate() { return delegate_; }
 
-  // Detach delegate from the stream. It will cancel the stream if it was not
-  // cancelled yet.  It is safe to call multiple times.
+  // Detach the delegate from the stream, which must not yet be
+  // closed, and cancel it.
   void DetachDelegate();
 
   // Is this stream a pushed stream from the server.
@@ -264,10 +264,19 @@ class NET_EXPORT_PRIVATE SpdyStream
   // Called by the SpdySession to log stream related errors.
   void LogStreamError(int status, const std::string& description);
 
+  // If this stream is active, reset it, and close it otherwise. In
+  // either case the stream is deleted.
   void Cancel();
+
+  // Close this stream without sending a RST_STREAM and delete
+  // it.
   void Close();
-  bool cancelled() const { return cancelled_; }
+
+  // Returns whether or not this stream is closed. Note that the only
+  // time a stream is closed and not deleted is in its delegate's
+  // OnClose() method.
   bool closed() const { return io_state_ == STATE_DONE; }
+
   // TODO(satorux): This is only for testing. We should be able to remove
   // this once crbug.com/113107 is addressed.
   bool body_sent() const { return io_state_ > STATE_SEND_BODY_COMPLETE; }
@@ -301,6 +310,9 @@ class NET_EXPORT_PRIVATE SpdyStream
   // sending. Called by the session or by the stream itself. Must be
   // called only when the stream is still open.
   void PossiblyResumeIfSendStalled();
+
+  // Must be used only by the SpdySession.
+  base::WeakPtr<SpdyStream> GetWeakPtr();
 
   bool is_idle() const {
     return io_state_ == STATE_OPEN || io_state_ == STATE_DONE;
@@ -418,7 +430,6 @@ class NET_EXPORT_PRIVATE SpdyStream
   // Not valid until the stream is closed.
   int response_status_;
 
-  bool cancelled_;
   bool has_upload_data_;
 
   BoundNetLog net_log_;
