@@ -296,7 +296,7 @@
         'browser/gpu/gpu_control_list_string_info_unittest.cc',
         'browser/gpu/gpu_control_list_unittest.cc',
         'browser/gpu/gpu_control_list_version_info_unittest.cc',
-        'browser/gpu/gpu_data_manager_impl_private_unittest.cc',
+        'browser/gpu/gpu_data_manager_impl_unittest.cc',
         'browser/gpu/gpu_driver_bug_list_unittest.cc',
         'browser/gpu/gpu_switching_list_unittest.cc',
         'browser/gpu/gpu_util_unittest.cc',
