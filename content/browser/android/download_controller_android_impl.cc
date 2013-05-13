@@ -259,6 +259,13 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
   // is in the COMPLETE state. Only handle one.
   item->RemoveObserver(this);
 
+  ScopedJavaLocalRef<jobject> view_core = GetContentViewCoreFromWebContents(
+      item->GetWebContents());
+  if (view_core.is_null()) {
+    // We can get NULL WebContents from the DownloadItem.
+    return;
+  }
+
   // Call onHttpPostDownloadCompleted
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jurl =
@@ -269,13 +276,6 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       ConvertUTF8ToJavaString(env, item->GetMimeType());
   ScopedJavaLocalRef<jstring> jpath =
       ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value());
-
-  ScopedJavaLocalRef<jobject> view_core = GetContentViewCoreFromWebContents(
-      item->GetWebContents());
-  if (view_core.is_null()) {
-    // We can get NULL WebContents from the DownloadItem.
-    return;
-  }
 
   Java_DownloadController_onDownloadCompleted(env,
       GetJavaObject()->Controller(env).obj(), view_core.obj(), jurl.obj(),
@@ -307,15 +307,15 @@ ScopedJavaLocalRef<jobject> DownloadControllerAndroidImpl::GetContentView(
   WebContents* web_contents =
       render_view_host->GetDelegate()->GetAsWebContents();
 
-  if (!web_contents)
-    return ScopedJavaLocalRef<jobject>();
-
   return GetContentViewCoreFromWebContents(web_contents);
 }
 
 ScopedJavaLocalRef<jobject>
     DownloadControllerAndroidImpl::GetContentViewCoreFromWebContents(
     WebContents* web_contents) {
+  if (!web_contents)
+    return ScopedJavaLocalRef<jobject>();
+
   ContentViewCore* view_core = ContentViewCore::FromWebContents(web_contents);
   return view_core ? view_core->GetJavaObject() :
       ScopedJavaLocalRef<jobject>();
