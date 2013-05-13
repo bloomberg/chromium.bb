@@ -1046,6 +1046,10 @@ const char kOrganicInstall[]                = "organic";
 // Force use of QUIC for requests over the specified port.
 const char kOriginPortToForceQuicOn[]       = "origin-port-to-force-quic-on";
 
+// The time that a new chrome process which is delegating to an already running
+// chrome process started. (See ProcessSingleton for more details.)
+const char kOriginalProcessStartTime[]      = "original-process-start-time";
+
 // Packages an extension to a .crx installable file from a given directory.
 const char kPackExtension[]                 = "pack-extension";
 

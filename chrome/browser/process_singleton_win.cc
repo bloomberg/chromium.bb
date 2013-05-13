@@ -10,8 +10,11 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/process_info.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
 #include "base/win/registry.h"
@@ -328,6 +331,12 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   to_send.append(cur_dir.value());
   to_send.append(L"\0", 1);  // Null separator.
   to_send.append(::GetCommandLineW());
+  // Add the process start time as a flag.
+  to_send.append(L" --");
+  to_send.append(ASCIIToWide(switches::kOriginalProcessStartTime));
+  to_send.append(L"=");
+  to_send.append(base::Int64ToString16(
+      base::CurrentProcessInfo::CreationTime()->ToInternalValue()));
   to_send.append(L"\0", 1);  // Null separator.
 
   base::win::ScopedHandle process_handle;
