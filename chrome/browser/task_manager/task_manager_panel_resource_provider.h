@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_TAB_CONTENTS_RESOURCE_PROVIDER_H_
-#define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_TAB_CONTENTS_RESOURCE_PROVIDER_H_
+#ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_PANEL_RESOURCE_PROVIDER_H_
+#define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_PANEL_RESOURCE_PROVIDER_H_
 
 #include <map>
 
@@ -14,25 +14,21 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/image/image_skia.h"
 
-class Profile;
+class Panel;
 class TaskManager;
 
 namespace content {
 class WebContents;
-class NotificationSource;
-class NotificationDetails;
 }
 
-// Tracks a single tab contents, prerendered page, Instant page, or background
-// printing page.
-class TaskManagerTabContentsResource : public TaskManagerRendererResource {
- public:
-  explicit TaskManagerTabContentsResource(content::WebContents* web_contents);
-  virtual ~TaskManagerTabContentsResource();
+namespace extensions {
+class Extension;
+}
 
-  // Called when the underlying web_contents has been committed and is no
-  // longer an Instant overlay.
-  void InstantCommitted();
+class TaskManagerPanelResource : public TaskManagerRendererResource {
+ public:
+  explicit TaskManagerPanelResource(Panel* panel);
+  virtual ~TaskManagerPanelResource();
 
   // TaskManager::Resource methods:
   virtual Type GetType() const OVERRIDE;
@@ -43,25 +39,21 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
  private:
-  // Returns true if contains content rendered by an extension.
-  bool HostsExtension() const;
+  Panel* panel_;
+  // Determines prefix for title reflecting whether extensions are apps
+  // or in incognito mode.
+  int message_prefix_id_;
 
-  static gfx::ImageSkia* prerender_icon_;
-  content::WebContents* web_contents_;
-  Profile* profile_;
-  bool is_instant_overlay_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerPanelResource);
 };
 
-// Provides resources for tab contents, prerendered pages, Instant pages, and
-// background printing pages.
-class TaskManagerTabContentsResourceProvider
+class TaskManagerPanelResourceProvider
     : public TaskManager::ResourceProvider,
       public content::NotificationObserver {
  public:
-  explicit TaskManagerTabContentsResourceProvider(TaskManager* task_manager);
+  explicit TaskManagerPanelResourceProvider(TaskManager* task_manager);
 
+  // TaskManager::ResourceProvider methods:
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
                                              int routing_id) OVERRIDE;
@@ -74,13 +66,10 @@ class TaskManagerTabContentsResourceProvider
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  virtual ~TaskManagerTabContentsResourceProvider();
+  virtual ~TaskManagerPanelResourceProvider();
 
-  void Add(content::WebContents* web_contents);
-  void Remove(content::WebContents* web_contents);
-  void InstantCommitted(content::WebContents* web_contents);
-
-  void AddToTaskManager(content::WebContents* web_contents);
+  void Add(Panel* panel);
+  void Remove(Panel* panel);
 
   // Whether we are currently reporting to the task manager. Used to ignore
   // notifications sent after StopUpdating().
@@ -88,14 +77,14 @@ class TaskManagerTabContentsResourceProvider
 
   TaskManager* task_manager_;
 
-  // Maps the actual resources (the WebContentses) to the Task Manager
-  // resources.
-  std::map<content::WebContents*, TaskManagerTabContentsResource*> resources_;
+  // Maps the actual resources (the Panels) to the Task Manager resources.
+  typedef std::map<Panel*, TaskManagerPanelResource*> PanelResourceMap;
+  PanelResourceMap resources_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResourceProvider);
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerPanelResourceProvider);
 };
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_TAB_CONTENTS_RESOURCE_PROVIDER_H_
+#endif  // CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_PANEL_RESOURCE_PROVIDER_H_
