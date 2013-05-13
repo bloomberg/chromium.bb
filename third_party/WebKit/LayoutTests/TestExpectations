@@ -1239,8 +1239,10 @@ webkit.org/b/94017 [ Win ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailu
 
 webkit.org/b/95581 [ XP ] http/tests/misc/javascript-url-stop-loaders.html [ Pass Timeout ]
 
-webkit.org/b/110871 compositing/overlap-blending/ [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
-webkit.org/b/110871 virtual/softwarecompositing/overlap-blending/ [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
+crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
+crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
+crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 
 webkit.org/b/90488 [ Win ] http/tests/inspector/network-preflight-options.html [ Pass Timeout ]
 
