@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_ANDROID_MEDIA_CODEC_BRIDGE_H_
-#define MEDIA_BASE_ANDROID_MEDIA_CODEC_BRIDGE_H_
+#ifndef MEDIA_BASE_ANDROID_WEBAUDIO_MEDIA_CODEC_BRIDGE_H_
+#define MEDIA_BASE_ANDROID_WEBAUDIO_MEDIA_CODEC_BRIDGE_H_
 
 #include <jni.h>
 
@@ -70,4 +70,4 @@ class MEDIA_EXPORT WebAudioMediaCodecBridge {
 };
 
 }  // namespace media
-#endif  // MEDIA_BASE_ANDROID_MEDIA_CODEC_BRIDGE_H_
+#endif  // MEDIA_BASE_ANDROID_WEBAUDIO_MEDIA_CODEC_BRIDGE_H_
