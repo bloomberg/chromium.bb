@@ -918,6 +918,8 @@ WebKit::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
     shared_offscreen_context_ =
         RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
   }
+  if (!shared_offscreen_context_)
+    return NULL;
   return new webkit::gpu::WebGraphicsContext3DProviderImpl(
       shared_offscreen_context_);
 }
