@@ -92,6 +92,7 @@ class ChromeTests(object):
       "crypto": self.TestCrypto,        "crypto_unittests": self.TestCrypto,
       "device": self.TestDevice,        "device_unittests": self.TestDevice,
       "googleurl": self.TestGURL,       "googleurl_unittests": self.TestGURL,
+      "url": self.TestURL,              "url_unittests": self.TestURL,
       "ipc": self.TestIpc,              "ipc_tests": self.TestIpc,
       "layout": self.TestLayout,        "layout_tests": self.TestLayout,
       "media": self.TestMedia,          "media_unittests": self.TestMedia,
@@ -281,6 +282,9 @@ class ChromeTests(object):
 
   def TestGURL(self):
     return self.SimpleTest("chrome", "googleurl_unittests")
+
+  def TestURL(self):
+    return self.SimpleTest("chrome", "url_unittests")
 
   def TestIpc(self):
     return self.SimpleTest("ipc", "ipc_tests")
