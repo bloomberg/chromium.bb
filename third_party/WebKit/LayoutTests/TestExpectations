@@ -1313,9 +1313,9 @@ webkit.org/b/100806 [ Win7 ] fast/css/font-face-download-error.html [ Pass Failu
 # This test is consistently leaking state into the next test (object-src-url-allowed.html) after r133069.
 webkit.org/b/100955 http/tests/security/contentSecurityPolicy/object-src-none-blocked.html [ Skip ]
 
-webkit.org/b/101986 [ Linux Release ] compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
-webkit.org/b/101986 [ Win Debug ] compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
-webkit.org/b/101986 [ Linux Win Debug ] virtual/softwarecompositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
+crbug.com/240352 [ Linux Release ] compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
+crbug.com/240352 [ Win Debug ] compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
+crbug.com/240352 [ Linux Win Debug ] virtual/softwarecompositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
 
 webkit.org/b/102131 [ Win Linux ] fast/workers/worker-exception-during-navigation.html [ Pass Crash ]
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
