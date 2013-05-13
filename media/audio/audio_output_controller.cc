@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "build/build_config.h"
@@ -302,15 +303,36 @@ int AudioOutputController::OnMoreIOData(AudioBus* source,
 }
 
 void AudioOutputController::WaitTillDataReady() {
-  base::Time start = base::Time::Now();
+  // Most of the time the data is ready already.
+  if (sync_reader_->DataReady())
+    return;
+
+  base::TimeTicks start = base::TimeTicks::Now();
+#if defined(OS_WIN)
   // Wait for up to 683ms for DataReady().  683ms was chosen because it's larger
   // than the playback time of the WaveOut buffer size using the minimum
   // supported sample rate: 2048 / 3000 = ~683ms.
+  // TODO(davemoore): We think this can be reduced to 20ms based on
+  // http://crrev.com/180102 but will do that in separate cl for mergability.
   const base::TimeDelta kMaxWait = base::TimeDelta::FromMilliseconds(683);
-  while (!sync_reader_->DataReady() &&
-         ((base::Time::Now() - start) < kMaxWait)) {
-    base::PlatformThread::YieldCurrentThread();
-  }
+  const base::TimeDelta kSleep = base::TimeDelta::FromMilliseconds(0);
+#else
+  const base::TimeDelta kMaxWait = base::TimeDelta::FromMilliseconds(20);
+  // We want to sleep for a bit here, as otherwise a backgrounded renderer won't
+  // get enough cpu to send the data and the high priority thread in the browser
+  // will use up a core causing even more skips.
+  const base::TimeDelta kSleep = base::TimeDelta::FromMilliseconds(2);
+#endif
+  base::TimeDelta time_since_start;
+  do {
+    base::PlatformThread::Sleep(kSleep);
+    time_since_start = base::TimeTicks::Now() - start;
+  } while (!sync_reader_->DataReady() && (time_since_start < kMaxWait));
+  UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioOutputControllerDataNotReady",
+                             time_since_start,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromMilliseconds(1000),
+                             50);
 }
 
 void AudioOutputController::OnError(AudioOutputStream* stream) {
