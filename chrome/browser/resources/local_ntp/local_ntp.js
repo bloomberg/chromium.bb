@@ -266,7 +266,7 @@ var MOST_VISITED_THEME_TITLE_COLOR = 'ffffff';
  * @type {string}
  * @const
  */
-var MOST_VISITED_FONT_FAMILY = '';
+var MOST_VISITED_FONT_FAMILY = 'arial, sans-serif';
 
 
 /**

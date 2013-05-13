@@ -17,18 +17,18 @@
  */
 function parseQueryParams(location) {
   var params = Object.create(null);
-  var query = decodeURI(location.search.substring(1));
+  var query = location.search.substring(1);
   var vars = query.split('&');
   for (var i = 0; i < vars.length; i++) {
     var pair = vars[i].split('=');
-    var k = pair[0];
+    var k = decodeURIComponent(pair[0]);
     if (k in params) {
       // Duplicate parameters are not allowed to prevent attackers who can
       // append things to |location| from getting their parameter values to
       // override legitimate ones.
       return Object.create(null);
     } else {
-      params[k] = pair[1];
+      params[k] = decodeURIComponent(pair[1]);
     }
   }
   return params;
