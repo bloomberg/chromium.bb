@@ -450,6 +450,40 @@ class ResumeUploadOperationBase : public UploadRangeOperationBase {
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperationBase);
 };
 
+//======================== GetUploadStatusOperationBase ========================
+
+// This class performs the operation for getting the current upload status
+// of a file.
+// This operation calls OnRagneOperationComplete() with:
+// - HTTP_RESUME_INCOMPLETE and the range of previously uploaded data,
+//   if a file has been partially uploaded. |value| is not used.
+// - HTTP_SUCCESS or HTTP_CREATED (up to the upload mode) and |value|
+//   for the uploaded data, if a file has been completely uploaded.
+// See also UploadRangeOperationBase.
+class GetUploadStatusOperationBase : public UploadRangeOperationBase {
+ public:
+  // |content_length| is the whole data size to be uploaded.
+  // See also UploadRangeOperationBase's constructor comment for other
+  // parameters.
+  GetUploadStatusOperationBase(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      UploadMode upload_mode,
+      const base::FilePath& drive_file_path,
+      const GURL& upload_url,
+      int64 content_length);
+  virtual ~GetUploadStatusOperationBase();
+
+ protected:
+  // UrlFetchOperationBase overrides.
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+
+ private:
+  const int64 content_length_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetUploadStatusOperationBase);
+};
+
 //============================ DownloadFileOperation ===========================
 
 // Callback type for DownloadHostedDocument/DownloadFile

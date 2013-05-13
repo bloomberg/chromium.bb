@@ -727,30 +727,17 @@ GetUploadStatusOperation::GetUploadStatusOperation(
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length)
-  : UploadRangeOperationBase(registry,
-                             url_request_context_getter,
-                             upload_mode,
-                             drive_file_path,
-                             upload_url),
-    callback_(callback),
-    content_length_(content_length) {}
+  : GetUploadStatusOperationBase(registry,
+                                 url_request_context_getter,
+                                 upload_mode,
+                                 drive_file_path,
+                                 upload_url,
+                                 content_length),
+    callback_(callback) {
+  DCHECK(!callback.is_null());
+}
 
 GetUploadStatusOperation::~GetUploadStatusOperation() {}
-
-std::vector<std::string>
-GetUploadStatusOperation::GetExtraRequestHeaders() const {
-  // The header looks like
-  // Content-Range: bytes */<content_length>
-  // for example:
-  // Content-Range: bytes */13851821
-  DCHECK_GE(content_length_, 0);
-
-  std::vector<std::string> headers;
-  headers.push_back(
-      std::string(kUploadContentRange) + "*/" +
-      base::Int64ToString(content_length_));
-  return headers;
-}
 
 void GetUploadStatusOperation::OnRangeOperationComplete(
     const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
