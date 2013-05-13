@@ -52,11 +52,11 @@ bool g_is_skia_version_compatible = false;
 
 typedef base::Callback<bool(SkCanvas*)> RenderMethod;
 
-static bool RasterizeIntoBitmap(JNIEnv* env,
-                                const JavaRef<jobject>& jbitmap,
-                                int scroll_x,
-                                int scroll_y,
-                                const RenderMethod& renderer) {
+bool RasterizeIntoBitmap(JNIEnv* env,
+                         const JavaRef<jobject>& jbitmap,
+                         int scroll_x,
+                         int scroll_y,
+                         const RenderMethod& renderer) {
   DCHECK(jbitmap.obj());
 
   AndroidBitmapInfo bitmap_info;
@@ -92,6 +92,11 @@ static bool RasterizeIntoBitmap(JNIEnv* env,
   }
 
   return succeeded;
+}
+
+bool RenderPictureToCanvas(SkPicture* picture, SkCanvas* canvas) {
+  canvas->drawPicture(*picture);
+  return true;
 }
 
 const void* kUserDataKey = &kUserDataKey;
@@ -374,22 +379,31 @@ bool BrowserViewRendererImpl::DrawSW(jobject java_canvas,
 }
 
 ScopedJavaLocalRef<jobject> BrowserViewRendererImpl::CapturePicture() {
-  // TODO(joth): reimplement this in terms of a call to RenderPicture (vitual
-  // method) passing in a recordingt canvas, rather than using the picture map.
-  skia::RefPtr<SkPicture> picture = GetLastCapturedPicture();
-  if (!picture || !g_sw_draw_functions)
+  if (!g_sw_draw_functions)
     return ScopedJavaLocalRef<jobject>();
+
+  gfx::Size record_size = ToCeiledSize(content_size_css_);
 
   // Return empty Picture objects for empty SkPictures.
   JNIEnv* env = AttachCurrentThread();
-  if (picture->width() <= 0 || picture->height() <= 0) {
+  if (record_size.width() <= 0 || record_size.height() <= 0) {
     return java_helper_->RecordBitmapIntoPicture(
         env, ScopedJavaLocalRef<jobject>());
   }
 
+  skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
+  SkCanvas* rec_canvas = picture->beginRecording(record_size.width(),
+                                                 record_size.height(),
+                                                 0);
+  if (!RenderPicture(rec_canvas))
+    return ScopedJavaLocalRef<jobject>();
+  picture->endRecording();
+
   if (g_is_skia_version_compatible) {
+    // Add a reference that the create_picture() will take ownership of.
+    picture->ref();
     return ScopedJavaLocalRef<jobject>(env,
-        g_sw_draw_functions->create_picture(env, picture->clone()));
+        g_sw_draw_functions->create_picture(env, picture.get()));
   }
 
   // If Skia versions are not compatible, workaround it by rasterizing the
@@ -400,8 +414,8 @@ ScopedJavaLocalRef<jobject> BrowserViewRendererImpl::CapturePicture() {
     return ScopedJavaLocalRef<jobject>();
 
   if (!RasterizeIntoBitmap(env, jbitmap, 0, 0,
-      base::Bind(&BrowserViewRendererImpl::RenderPicture,
-                 base::Unretained(this)))) {
+      base::Bind(&RenderPictureToCanvas,
+                 base::Unretained(picture.get())))) {
     return ScopedJavaLocalRef<jobject>();
   }
 
