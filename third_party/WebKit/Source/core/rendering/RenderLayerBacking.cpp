@@ -676,26 +676,24 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
     if (m_scrollingLayer) {
         ASSERT(m_scrollingContentsLayer);
         RenderBox* renderBox = toRenderBox(renderer());
-        IntRect clientBox = enclosingIntRect(renderBox->clientBoxRect());
-        // FIXME: We should make RenderBox::clientBoxRect consider scrollbar placement.
-        if (style->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-            clientBox.move(renderBox->verticalScrollbarWidth(), 0);
+        IntRect paddingBox(renderBox->borderLeft(), renderBox->borderTop(), renderBox->width() - renderBox->borderLeft() - renderBox->borderRight(), renderBox->height() - renderBox->borderTop() - renderBox->borderBottom());
+        IntSize scrollOffset = m_owningLayer->adjustedScrollOffset();
 
-        IntSize adjustedScrollOffset = m_owningLayer->adjustedScrollOffset();
-        m_scrollingLayer->setPosition(FloatPoint(clientBox.location() - localCompositingBounds.location()));
-        m_scrollingLayer->setSize(clientBox.size());
-        m_scrollingContentsLayer->setPosition(FloatPoint(-adjustedScrollOffset.width(), -adjustedScrollOffset.height()));
+        m_scrollingLayer->setPosition(FloatPoint(paddingBox.location() - localCompositingBounds.location()));
+
+        m_scrollingLayer->setSize(paddingBox.size());
+        m_scrollingContentsLayer->setPosition(FloatPoint(-scrollOffset.width(), -scrollOffset.height()));
 
         IntSize oldScrollingLayerOffset = m_scrollingLayer->offsetFromRenderer();
-        m_scrollingLayer->setOffsetFromRenderer(-toIntSize(clientBox.location()));
+        m_scrollingLayer->setOffsetFromRenderer(-toIntSize(paddingBox.location()));
 
-        bool clientBoxOffsetChanged = oldScrollingLayerOffset != m_scrollingLayer->offsetFromRenderer();
+        bool paddingBoxOffsetChanged = oldScrollingLayerOffset != m_scrollingLayer->offsetFromRenderer();
 
         IntSize scrollSize(m_owningLayer->scrollWidth(), m_owningLayer->scrollHeight());
-        if (scrollSize != m_scrollingContentsLayer->size() || clientBoxOffsetChanged)
+        if (scrollSize != m_scrollingContentsLayer->size() || paddingBoxOffsetChanged)
             m_scrollingContentsLayer->setNeedsDisplay();
 
-        IntSize scrollingContentsOffset = toIntSize(clientBox.location() - adjustedScrollOffset);
+        IntSize scrollingContentsOffset = toIntSize(paddingBox.location() - scrollOffset);
         if (scrollingContentsOffset != m_scrollingContentsLayer->offsetFromRenderer() || scrollSize != m_scrollingContentsLayer->size())
             compositor()->scrollingLayerDidChange(m_owningLayer);
 

@@ -125,7 +125,7 @@ void GraphicsLayerChromium::notifyAnimationFinished(double)
 void GraphicsLayerChromium::didScroll()
 {
     if (m_scrollableArea)
-        m_scrollableArea->scrollToOffsetWithoutAnimation(m_scrollableArea->minimumScrollPosition() + toIntSize(m_layer->layer()->scrollPosition()));
+        m_scrollableArea->scrollToOffsetWithoutAnimation(IntPoint(m_layer->layer()->scrollPosition()));
 }
 
 void GraphicsLayerChromium::setAnimationDelegateForLayer(WebKit::WebLayer* layer)
