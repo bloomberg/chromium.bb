@@ -115,12 +115,23 @@ class TestPackageApk(TestPackage):
     logfile = android_commands.NewLineNormalizer(sys.stdout)
     return self._WatchTestOutput(self._WatchFifo(timeout=10, logfile=logfile))
 
+  def _NeedsInstall(self):
+    pm_path_output = self.adb.RunShellCommand(
+        'pm path ' + self._apk_package_name)
+    if not pm_path_output:
+      return True
+    # pm_path_output is of the form: "package:/path/to/foo.apk"
+    installed_apk_path = pm_path_output[0].split(':')[1]
+    return not self.adb.CheckMd5Sum(
+        self.test_suite_full, installed_apk_path, ignore_paths=True)
+
   def StripAndCopyExecutable(self):
     self.tool.CopyFiles()
-    # Always uninstall the previous one (by activity name); we don't
-    # know what was embedded in it.
-    self.adb.ManagedInstall(self.test_suite_full, False,
-                            package_name=self._apk_package_name)
+    if self._NeedsInstall():
+      # Always uninstall the previous one (by activity name); we don't
+      # know what was embedded in it.
+      self.adb.ManagedInstall(self.test_suite_full, False,
+                              package_name=self._apk_package_name)
 
   def _GetTestSuiteBaseName(self):
     """Returns the  base name of the test suite."""

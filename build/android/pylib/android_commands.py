@@ -672,7 +672,18 @@ class AndroidCommands(object):
     """
     self.RunShellCommand('input keyevent %d' % keycode)
 
-  def CheckMd5Sum(self, local_path, device_path):
+  def CheckMd5Sum(self, local_path, device_path, ignore_paths=False):
+    """Compares the md5sum of a local path against a device path.
+
+    Args:
+      local_path: Path (file or directory) on the host.
+      device_path: Path on the device.
+      ignore_paths: If False, both the md5sum and the relative paths/names of
+          files must match. If True, only the md5sum must match.
+
+    Returns:
+      True if the md5sums match.
+    """
     assert os.path.exists(local_path), 'Local path not found %s' % local_path
 
     if not self._md5sum_build_dir:
@@ -696,6 +707,10 @@ class AndroidCommands(object):
     md5sum_output = cmd_helper.GetCmdOutput(
         ['%s/md5sum_bin_host' % self._md5sum_build_dir, local_path])
     hashes_on_host = _ComputeFileListHash(md5sum_output.splitlines())
+
+    if ignore_paths:
+      hashes_on_device = [h.split()[0] for h in hashes_on_device]
+      hashes_on_host = [h.split()[0] for h in hashes_on_host]
 
     return hashes_on_device == hashes_on_host
 
