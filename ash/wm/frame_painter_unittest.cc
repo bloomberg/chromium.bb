@@ -646,39 +646,4 @@ TEST_F(FramePainterTest, GetHeaderOpacity) {
                                 NULL));
 }
 
-// Test the hit test function with windows which are "partially maximized".
-TEST_F(FramePainterTest, HitTestSpecialMaximizedModes) {
-  // Create a widget and a painter for it.
-  scoped_ptr<Widget> w1(CreateResizableWidget());
-  FramePainter p1;
-  ImageButton size1(NULL);
-  ImageButton close1(NULL);
-  p1.Init(w1.get(), NULL, &size1, &close1, FramePainter::SIZE_BUTTON_MAXIMIZES);
-  views::NonClientFrameView* frame = w1->non_client_view()->frame_view();
-  w1->Show();
-  gfx::Rect any_rect = gfx::Rect(0, 0, 100, 100);
-  gfx::Rect screen = Shell::GetScreen()->GetDisplayMatching(
-      any_rect).work_area();
-  w1->SetBounds(any_rect);
-  EXPECT_EQ(HTTOPLEFT, p1.NonClientHitTest(frame, gfx::Point(0, 15)));
-  w1->SetBounds(gfx::Rect(
-      screen.x(), screen.y(), screen.width() / 2, screen.height()));
-  // A hit without a set restore rect should produce a top left hit.
-  EXPECT_EQ(HTTOPLEFT, p1.NonClientHitTest(frame, gfx::Point(0, 15)));
-  ash::SetRestoreBoundsInScreen(w1->GetNativeWindow(), any_rect);
-  // A hit into the corner should produce nowhere - not left.
-  EXPECT_EQ(HTCAPTION, p1.NonClientHitTest(frame, gfx::Point(0, 15)));
-  // A hit into the middle upper area should generate right - not top&right.
-  EXPECT_EQ(HTRIGHT,
-            p1.NonClientHitTest(frame, gfx::Point(screen.width() / 2, 15)));
-  // A hit into the middle should generate right.
-  EXPECT_EQ(HTRIGHT,
-            p1.NonClientHitTest(frame, gfx::Point(screen.width() / 2,
-                                                  screen.height() / 2)));
-  // A hit into the middle lower area should generate right - not bottom&right.
-  EXPECT_EQ(HTRIGHT,
-            p1.NonClientHitTest(frame, gfx::Point(screen.width() / 2,
-                                                  screen.height() - 1)));
-}
-
 }  // namespace ash

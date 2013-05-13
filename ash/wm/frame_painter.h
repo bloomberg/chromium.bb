@@ -168,9 +168,6 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
                        int theme_frame_id,
                        const gfx::ImageSkia* theme_frame_overlay);
 
-  // Adjust frame operations for left / right maximized modes.
-  int AdjustFrameHitCodeForMaximizedModes(int hit_code);
-
   // Returns true if the user is cycling through workspaces.
   bool IsCyclingThroughWorkspaces() const;
 
