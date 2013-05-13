@@ -92,7 +92,8 @@ OutputConfigurator::OutputSnapshot::OutputSnapshot()
       height(0),
       is_internal(false),
       is_aspect_preserving_scaling(false),
-      touch_device_id(0) {}
+      touch_device_id(0),
+      index(0) {}
 
 OutputConfigurator::CoordinateTransformation::CoordinateTransformation()
   : x_scale(1.0),
@@ -353,7 +354,8 @@ bool OutputConfigurator::EnterState(
     const std::vector<OutputSnapshot>& outputs) {
   std::vector<bool> output_power;
   int num_on_outputs = GetOutputPower(outputs, power_state, &output_power);
-
+  VLOG(1) << "EnterState: output=" << output_state
+          << ", power=" << power_state;
   switch (output_state) {
     case STATE_HEADLESS:
       if (outputs.size() != 0) {
@@ -510,13 +512,7 @@ OutputState OutputConfigurator::GetOutputState(
       } else {
         // With either both outputs on or both outputs off, use one of the
         // dual modes.
-        std::vector<OutputInfo> output_infos;
-        for (size_t i = 0; i < outputs.size(); ++i) {
-          output_infos.push_back(OutputInfo());
-          output_infos[i].output = outputs[i].output;
-          output_infos[i].output_index = i;
-        }
-        return state_controller_->GetStateForOutputs(output_infos);
+        return state_controller_->GetStateForOutputs(outputs);
       }
     }
     default:

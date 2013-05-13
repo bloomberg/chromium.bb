@@ -29,7 +29,7 @@ class DisplayChangeObserverX11
 
   // chromeos::OutputConfigurator::StateController overrides:
   virtual chromeos::OutputState GetStateForOutputs(
-      const std::vector<chromeos::OutputInfo>& outputs) const OVERRIDE;
+      const chromeos::OutputSnapshotList& outputs) const OVERRIDE;
 
   // Overriden from chromeos::OutputConfigurator::Observer:
   virtual void OnDisplayModeChanged() OVERRIDE;

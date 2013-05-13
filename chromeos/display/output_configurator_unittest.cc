@@ -209,7 +209,7 @@ class TestStateController : public OutputConfigurator::StateController {
 
   // OutputConfigurator::StateController overrides:
   virtual OutputState GetStateForOutputs(
-      const std::vector<OutputInfo>& outputs) const OVERRIDE { return state_; }
+      const OutputSnapshotList& outputs) const OVERRIDE { return state_; }
 
  private:
   OutputState state_;

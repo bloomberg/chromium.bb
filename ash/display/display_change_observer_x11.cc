@@ -132,11 +132,11 @@ DisplayChangeObserverX11::~DisplayChangeObserverX11() {
 }
 
 chromeos::OutputState DisplayChangeObserverX11::GetStateForOutputs(
-    const std::vector<chromeos::OutputInfo>& outputs) const {
+    const chromeos::OutputSnapshotList& outputs) const {
   CHECK(outputs.size() == 2);
   DisplayIdPair pair = std::make_pair(
-      GetDisplayId(outputs[0].output, outputs[0].output_index),
-      GetDisplayId(outputs[1].output, outputs[1].output_index));
+      GetDisplayId(outputs[0].output, outputs[0].index),
+      GetDisplayId(outputs[1].output, outputs[1].index));
   DisplayLayout layout = Shell::GetInstance()->display_controller()->
       GetRegisteredDisplayLayout(pair);
   return layout.mirrored ?

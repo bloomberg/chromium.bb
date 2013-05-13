@@ -147,6 +147,7 @@ RealOutputConfiguratorDelegate::GetOutputs() {
       to_populate.is_aspect_preserving_scaling =
           IsOutputAspectPreservingScaling(this_id);
       to_populate.touch_device_id = None;
+      to_populate.index = i;
 
       VLOG(1) << "Found display #" << outputs.size()
               << " with output " << to_populate.output

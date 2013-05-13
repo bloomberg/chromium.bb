@@ -35,15 +35,6 @@ enum OutputState {
   STATE_DUAL_EXTENDED,
 };
 
-// Information that is necessary to construct display id
-// in |OutputConfigurator::Delegate|.
-// TODO(oshima): Move xrandr related functions to here
-// from ui/base/x and replace this with display id list.
-struct OutputInfo {
-  RROutput output;
-  int output_index;
-};
-
 // This class interacts directly with the underlying Xrandr API to manipulate
 // CTRCs and Outputs.
 class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
@@ -70,6 +61,10 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
 
     // XInput device ID or 0 if this output isn't a touchscreen.
     int touch_device_id;
+
+    // TODO(oshima): Move xrandr related functions to here
+    // from ui/base/x and replace this with display id.
+    int index;
   };
 
   struct CoordinateTransformation {
@@ -114,7 +109,7 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
 
     // Called when displays are detected.
     virtual OutputState GetStateForOutputs(
-        const std::vector<OutputInfo>& outputs) const = 0;
+        const std::vector<OutputSnapshot>& outputs) const = 0;
   };
 
   // Interface for classes that perform actions on behalf of OutputController.
@@ -353,6 +348,8 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
 
   DISALLOW_COPY_AND_ASSIGN(OutputConfigurator);
 };
+
+typedef std::vector<OutputConfigurator::OutputSnapshot> OutputSnapshotList;
 
 }  // namespace chromeos
 
