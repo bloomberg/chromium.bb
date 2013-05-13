@@ -1805,8 +1805,9 @@ ResourceDispatcherHostImpl::HttpAuthResourceTypeOf(net::URLRequest* request) {
   if (!request->first_party_for_cookies().is_valid())
     return HTTP_AUTH_RESOURCE_TOP;
 
-  if (net::RegistryControlledDomainService::SameDomainOrHost(
-          request->first_party_for_cookies(), request->url()))
+  if (net::registry_controlled_domains::SameDomainOrHost(
+          request->first_party_for_cookies(), request->url(),
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES))
     return HTTP_AUTH_RESOURCE_SAME_DOMAIN;
 
   if (allow_cross_origin_auth_prompt())

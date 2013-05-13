@@ -266,8 +266,10 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   // use the registry length later below.)
   const string16 host(text.substr(parts->host.begin, parts->host.len));
   const size_t registry_length =
-      net::RegistryControlledDomainService::GetRegistryLength(UTF16ToUTF8(host),
-                                                              false);
+      net::registry_controlled_domains::GetRegistryLength(
+          UTF16ToUTF8(host),
+          net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   if (registry_length == std::string::npos) {
     // Try to append the desired_tld.
     if (!desired_tld.empty()) {
@@ -275,8 +277,12 @@ AutocompleteInput::Type AutocompleteInput::Parse(
       if (host[host.length() - 1] != '.')
         host_with_tld += '.';
       host_with_tld += desired_tld;
-      if (net::RegistryControlledDomainService::GetRegistryLength(
-          UTF16ToUTF8(host_with_tld), false) != std::string::npos)
+      const size_t tld_length =
+          net::registry_controlled_domains::GetRegistryLength(
+              UTF16ToUTF8(host_with_tld),
+              net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+              net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+      if (tld_length != std::string::npos)
         return URL;  // Something like "99999999999" that looks like a bad IP
                      // address, but becomes valid on attaching a TLD.
     }

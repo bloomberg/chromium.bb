@@ -195,7 +195,10 @@ void AddDesiredTLD(const std::string& desired_tld, std::string* domain) {
   // users can input "mail.yahoo" and hit ctrl-enter to get
   // "www.mail.yahoo.com".
   const size_t registry_length =
-      net::RegistryControlledDomainService::GetRegistryLength(*domain, false);
+      net::registry_controlled_domains::GetRegistryLength(
+          *domain,
+          net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   if ((registry_length != 0) && (registry_length != std::string::npos))
     return;
 

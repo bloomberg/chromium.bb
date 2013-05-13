@@ -116,10 +116,10 @@ Perfect_Hash_Test2::FindDomain (register const char *str, register unsigned int 
 {
   static const struct DomainRule wordlist[] =
     {
-#line 15 "effective_tld_names_unittest2.gperf"
-      {"jp", 0},
 #line 16 "effective_tld_names_unittest2.gperf"
-      {"bar.jp", 0}
+      {"jp", 0, false},
+#line 17 "effective_tld_names_unittest2.gperf"
+      {"bar.jp", 0, false}
     };
 
   static const signed char lookup[] =
@@ -146,5 +146,5 @@ Perfect_Hash_Test2::FindDomain (register const char *str, register unsigned int 
     }
   return 0;
 }
-#line 17 "effective_tld_names_unittest2.gperf"
+#line 18 "effective_tld_names_unittest2.gperf"
 

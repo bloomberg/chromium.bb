@@ -528,7 +528,9 @@ void WebsiteSettings::PresentSiteData() {
   // Add first party cookie and site data counts.
   WebsiteSettingsUI::CookieInfo cookie_info;
   std::string cookie_source =
-      net::RegistryControlledDomainService::GetDomainAndRegistry(site_url_);
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          site_url_,
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   if (cookie_source.empty())
     cookie_source = site_url_.host();
   cookie_info.cookie_source = cookie_source;

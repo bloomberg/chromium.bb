@@ -159,8 +159,10 @@ BrowserObserver::BrowserObserver(ready_mode::Delegate* chrome_frame,
 }
 
 void BrowserObserver::OnNavigateTo(const std::wstring& url) {
-  if (!net::RegistryControlledDomainService::
-          SameDomainOrHost(GURL(url), rendered_url_)) {
+  if (!net::registry_controlled_domains::SameDomainOrHost(
+          GURL(url),
+          rendered_url_,
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)) {
     rendered_url_ = GURL();
     Hide();
   }

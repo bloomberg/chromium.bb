@@ -92,8 +92,9 @@ std::string StringAppendGoogleLocaleParam(const std::string& url) {
 
 GURL AppendGoogleTLDParam(Profile* profile, const GURL& url) {
   const std::string google_domain(
-      net::RegistryControlledDomainService::GetDomainAndRegistry(
-          GoogleURLTracker::GoogleURL(profile)));
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          GoogleURLTracker::GoogleURL(profile),
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
   const size_t first_dot = google_domain.find('.');
   if (first_dot == std::string::npos) {
     NOTREACHED();
@@ -177,8 +178,10 @@ bool IsGoogleDomainUrl(const std::string& url,
 
 bool IsGoogleHostname(const std::string& host,
                       SubdomainPermission subdomain_permission) {
-  size_t tld_length =
-      net::RegistryControlledDomainService::GetRegistryLength(host, false);
+  size_t tld_length = net::registry_controlled_domains::GetRegistryLength(
+      host,
+      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   if ((tld_length == 0) || (tld_length == std::string::npos))
     return false;
   std::string host_minus_tld(host, 0, host.length() - tld_length);

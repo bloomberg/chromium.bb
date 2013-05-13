@@ -18,6 +18,19 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 
+namespace {
+
+// Helper wrapper for net::registry_controlled_domains::SameDomainOrHost
+// which always excludes private registries.
+bool SamePublicDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
+  return net::registry_controlled_domains::SameDomainOrHost(
+      gurl1,
+      gurl2,
+      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+}
+
+}
+
 LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
     : appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
       cookies_(new CannedBrowsingDataCookieHelper(
@@ -82,15 +95,13 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
       std::string cookie_domain = cookie->Domain();
       if (cookie_domain[0] == '.')
         cookie_domain = cookie_domain.substr(1);
-      // The |domain_url| is only created in order to use the SameDomainOrHost
-      // method below. It does not matter which scheme is used as the scheme is
-      // ignored by the SameDomainOrHost method.
+      // The |domain_url| is only created in order to use the
+      // SamePublicDomainOrHost method below. It does not matter which scheme is
+      // used as the scheme is ignored by the SamePublicDomainOrHost method.
       GURL domain_url(std::string(chrome::kHttpScheme) +
                       content::kStandardSchemeSeparator + cookie_domain);
-      if (net::RegistryControlledDomainService::SameDomainOrHost(
-             origin, domain_url)) {
+      if (SamePublicDomainOrHost(origin, domain_url))
         ++count;
-      }
     }
   }
 
@@ -100,10 +111,8 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   for (std::set<GURL>::const_iterator it = local_storage_info.begin();
        it != local_storage_info.end();
        ++it) {
-    if (net::RegistryControlledDomainService::SameDomainOrHost(
-            origin, *it)) {
+    if (SamePublicDomainOrHost(origin, *it))
       ++count;
-    }
   }
 
   // Count session storages for the domain of the given |origin|.
@@ -111,10 +120,8 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   for (std::set<GURL>::const_iterator it = urls.begin();
        it != urls.end();
        ++it) {
-    if (net::RegistryControlledDomainService::SameDomainOrHost(
-            origin, *it)) {
+    if (SamePublicDomainOrHost(origin, *it))
       ++count;
-    }
   }
 
   // Count indexed dbs for the domain of the given |origin|.
@@ -125,10 +132,8 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
           indexed_db_info.begin();
       it != indexed_db_info.end();
       ++it) {
-    if (net::RegistryControlledDomainService::SameDomainOrHost(
-            origin, it->origin)) {
+    if (SamePublicDomainOrHost(origin, it->origin))
       ++count;
-    }
   }
 
   // Count filesystems for the domain of the given |origin|.
@@ -139,10 +144,8 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   for (FileSystemInfoList::const_iterator it = file_system_info.begin();
        it != file_system_info.end();
        ++it) {
-    if (net::RegistryControlledDomainService::SameDomainOrHost(
-        origin, it->origin)) {
+    if (SamePublicDomainOrHost(origin, it->origin))
       ++count;
-    }
   }
 
   // Count databases for the domain of the given |origin|.
@@ -153,10 +156,8 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
           database_list.begin();
       it != database_list.end();
       ++it) {
-    if (net::RegistryControlledDomainService::SameDomainOrHost(
-            origin, it->origin)) {
+    if (SamePublicDomainOrHost(origin, it->origin))
       ++count;
-    }
   }
 
   // Count the AppCache manifest files for the domain of the given |origin|.
@@ -171,10 +172,8 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
              info_vector.begin();
          info != info_vector.end();
          ++info) {
-       if (net::RegistryControlledDomainService::SameDomainOrHost(
-            origin, info->manifest_url)) {
+       if (SamePublicDomainOrHost(origin, info->manifest_url))
          ++count;
-       }
     }
   }
 

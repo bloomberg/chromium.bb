@@ -56,125 +56,20 @@
 #include "effective_tld_names.cc"
 
 namespace net {
+namespace registry_controlled_domains {
 
 namespace {
 
 const int kExceptionRule = 1;
 const int kWildcardRule = 2;
 
-}  // namespace
+const FindDomainPtr kDefaultFindDomainFunction = Perfect_Hash::FindDomain;
+FindDomainPtr g_find_domain_function = kDefaultFindDomainFunction;
 
-RegistryControlledDomainService::FindDomainPtr
-RegistryControlledDomainService::find_domain_function_ =
-    Perfect_Hash::FindDomain;
-
-// static
-std::string RegistryControlledDomainService::GetDomainAndRegistry(
-    const GURL& gurl) {
-  const url_parse::Component host =
-      gurl.parsed_for_possibly_invalid_spec().host;
-  if ((host.len <= 0) || gurl.HostIsIPAddress())
-    return std::string();
-  return GetDomainAndRegistryImpl(std::string(
-      gurl.possibly_invalid_spec().data() + host.begin, host.len));
-}
-
-// static
-std::string RegistryControlledDomainService::GetDomainAndRegistry(
-    const std::string& host) {
-  url_canon::CanonHostInfo host_info;
-  const std::string canon_host(CanonicalizeHost(host, &host_info));
-  if (canon_host.empty() || host_info.IsIPAddress())
-    return std::string();
-  return GetDomainAndRegistryImpl(canon_host);
-}
-
-// static
-bool RegistryControlledDomainService::SameDomainOrHost(const GURL& gurl1,
-                                                       const GURL& gurl2) {
-  // See if both URLs have a known domain + registry, and those values are the
-  // same.
-  const std::string domain1(GetDomainAndRegistry(gurl1));
-  const std::string domain2(GetDomainAndRegistry(gurl2));
-  if (!domain1.empty() || !domain2.empty())
-    return domain1 == domain2;
-
-  // No domains.  See if the hosts are identical.
-  const url_parse::Component host1 =
-      gurl1.parsed_for_possibly_invalid_spec().host;
-  const url_parse::Component host2 =
-      gurl2.parsed_for_possibly_invalid_spec().host;
-  if ((host1.len <= 0) || (host1.len != host2.len))
-    return false;
-  return !strncmp(gurl1.possibly_invalid_spec().data() + host1.begin,
-                  gurl2.possibly_invalid_spec().data() + host2.begin,
-                  host1.len);
-}
-
-// static
-size_t RegistryControlledDomainService::GetRegistryLength(
-    const GURL& gurl,
-    bool allow_unknown_registries) {
-  const url_parse::Component host =
-      gurl.parsed_for_possibly_invalid_spec().host;
-  if (host.len <= 0)
-    return std::string::npos;
-  if (gurl.HostIsIPAddress())
-    return 0;
-  return GetRegistryLengthImpl(
-      std::string(gurl.possibly_invalid_spec().data() + host.begin, host.len),
-      allow_unknown_registries);
-}
-
-// static
-size_t RegistryControlledDomainService::GetRegistryLength(
+size_t GetRegistryLengthImpl(
     const std::string& host,
-    bool allow_unknown_registries) {
-  url_canon::CanonHostInfo host_info;
-  const std::string canon_host(CanonicalizeHost(host, &host_info));
-  if (canon_host.empty())
-    return std::string::npos;
-  if (host_info.IsIPAddress())
-    return 0;
-  return GetRegistryLengthImpl(canon_host, allow_unknown_registries);
-}
-
-// static
-void RegistryControlledDomainService::UseFindDomainFunction(
-    FindDomainPtr function) {
-  find_domain_function_ = function ? function : Perfect_Hash::FindDomain;
-}
-
-// static
-std::string RegistryControlledDomainService::GetDomainAndRegistryImpl(
-    const std::string& host) {
-  DCHECK(!host.empty());
-
-  // Find the length of the registry for this host.
-  const size_t registry_length = GetRegistryLengthImpl(host, true);
-  if ((registry_length == std::string::npos) || (registry_length == 0))
-    return std::string();  // No registry.
-  // The "2" in this next line is 1 for the dot, plus a 1-char minimum preceding
-  // subcomponent length.
-  DCHECK(host.length() >= 2);
-  if (registry_length > (host.length() - 2)) {
-    NOTREACHED() <<
-        "Host does not have at least one subcomponent before registry!";
-    return std::string();
-  }
-
-  // Move past the dot preceding the registry, and search for the next previous
-  // dot.  Return the host from after that dot, or the whole host when there is
-  // no dot.
-  const size_t dot = host.rfind('.', host.length() - registry_length - 2);
-  if (dot == std::string::npos)
-    return host;
-  return host.substr(dot + 1);
-}
-
-size_t RegistryControlledDomainService::GetRegistryLengthImpl(
-    const std::string& host,
-    bool allow_unknown_registries) {
+    UnknownRegistryFilter unknown_filter,
+    PrivateRegistryFilter private_filter) {
   DCHECK(!host.empty());
 
   // Skip leading dots.
@@ -203,12 +98,15 @@ size_t RegistryControlledDomainService::GetRegistryLengthImpl(
   while (1) {
     const char* domain_str = host.data() + curr_start;
     int domain_length = host_check_len - curr_start;
-    const DomainRule* rule = find_domain_function_(domain_str, domain_length);
+    const DomainRule* rule = g_find_domain_function(domain_str, domain_length);
 
     // We need to compare the string after finding a match because the
     // no-collisions of perfect hashing only refers to items in the set.  Since
     // we're searching for arbitrary domains, there could be collisions.
+    // Furthermore, if the apparent match is a private registry and we're not
+    // including those, it can't be an actual match.
     if (rule &&
+        (private_filter == INCLUDE_PRIVATE_REGISTRIES || !rule->is_private) &&
         base::strncasecmp(domain_str, rule->name, domain_length) == 0) {
       // Exception rules override wildcard rules when the domain is an exact
       // match, but wildcards take precedence when there's a subdomain.
@@ -248,7 +146,115 @@ size_t RegistryControlledDomainService::GetRegistryLengthImpl(
   // No rule found in the registry.  curr_start now points to the first
   // character of the last subcomponent of the host, so if we allow unknown
   // registries, return the length of this subcomponent.
-  return allow_unknown_registries ? (host.length() - curr_start) : 0;
+  return unknown_filter == INCLUDE_UNKNOWN_REGISTRIES ?
+      (host.length() - curr_start) : 0;
 }
 
+std::string GetDomainAndRegistryImpl(
+    const std::string& host, PrivateRegistryFilter private_filter) {
+  DCHECK(!host.empty());
+
+  // Find the length of the registry for this host.
+  const size_t registry_length =
+      GetRegistryLengthImpl(host, INCLUDE_UNKNOWN_REGISTRIES, private_filter);
+  if ((registry_length == std::string::npos) || (registry_length == 0))
+    return std::string();  // No registry.
+  // The "2" in this next line is 1 for the dot, plus a 1-char minimum preceding
+  // subcomponent length.
+  DCHECK(host.length() >= 2);
+  if (registry_length > (host.length() - 2)) {
+    NOTREACHED() <<
+        "Host does not have at least one subcomponent before registry!";
+    return std::string();
+  }
+
+  // Move past the dot preceding the registry, and search for the next previous
+  // dot.  Return the host from after that dot, or the whole host when there is
+  // no dot.
+  const size_t dot = host.rfind('.', host.length() - registry_length - 2);
+  if (dot == std::string::npos)
+    return host;
+  return host.substr(dot + 1);
+}
+
+}  // namespace
+
+std::string GetDomainAndRegistry(
+    const GURL& gurl,
+    PrivateRegistryFilter filter) {
+  const url_parse::Component host =
+      gurl.parsed_for_possibly_invalid_spec().host;
+  if ((host.len <= 0) || gurl.HostIsIPAddress())
+    return std::string();
+  return GetDomainAndRegistryImpl(std::string(
+      gurl.possibly_invalid_spec().data() + host.begin, host.len), filter);
+}
+
+std::string GetDomainAndRegistry(
+    const std::string& host,
+    PrivateRegistryFilter filter) {
+  url_canon::CanonHostInfo host_info;
+  const std::string canon_host(CanonicalizeHost(host, &host_info));
+  if (canon_host.empty() || host_info.IsIPAddress())
+    return std::string();
+  return GetDomainAndRegistryImpl(canon_host, filter);
+}
+
+bool SameDomainOrHost(
+    const GURL& gurl1,
+    const GURL& gurl2,
+    PrivateRegistryFilter filter) {
+  // See if both URLs have a known domain + registry, and those values are the
+  // same.
+  const std::string domain1(GetDomainAndRegistry(gurl1, filter));
+  const std::string domain2(GetDomainAndRegistry(gurl2, filter));
+  if (!domain1.empty() || !domain2.empty())
+    return domain1 == domain2;
+
+  // No domains.  See if the hosts are identical.
+  const url_parse::Component host1 =
+      gurl1.parsed_for_possibly_invalid_spec().host;
+  const url_parse::Component host2 =
+      gurl2.parsed_for_possibly_invalid_spec().host;
+  if ((host1.len <= 0) || (host1.len != host2.len))
+    return false;
+  return !strncmp(gurl1.possibly_invalid_spec().data() + host1.begin,
+                  gurl2.possibly_invalid_spec().data() + host2.begin,
+                  host1.len);
+}
+
+size_t GetRegistryLength(
+    const GURL& gurl,
+    UnknownRegistryFilter unknown_filter,
+    PrivateRegistryFilter private_filter) {
+  const url_parse::Component host =
+      gurl.parsed_for_possibly_invalid_spec().host;
+  if (host.len <= 0)
+    return std::string::npos;
+  if (gurl.HostIsIPAddress())
+    return 0;
+  return GetRegistryLengthImpl(
+      std::string(gurl.possibly_invalid_spec().data() + host.begin, host.len),
+      unknown_filter,
+      private_filter);
+}
+
+size_t GetRegistryLength(
+    const std::string& host,
+    UnknownRegistryFilter unknown_filter,
+    PrivateRegistryFilter private_filter) {
+  url_canon::CanonHostInfo host_info;
+  const std::string canon_host(CanonicalizeHost(host, &host_info));
+  if (canon_host.empty())
+    return std::string::npos;
+  if (host_info.IsIPAddress())
+    return 0;
+  return GetRegistryLengthImpl(canon_host, unknown_filter, private_filter);
+}
+
+void SetFindDomainFunctionForTesting(FindDomainPtr function) {
+  g_find_domain_function = function ? function : kDefaultFindDomainFunction;
+}
+
+}  // namespace registry_controlled_domains
 }  // namespace net

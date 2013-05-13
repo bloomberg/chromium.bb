@@ -123,95 +123,115 @@ class GURL;
 struct DomainRule;
 
 namespace net {
+namespace registry_controlled_domains {
 
-class NET_EXPORT RegistryControlledDomainService {
- public:
-  // Returns the registered, organization-identifying host and all its registry
-  // information, but no subdomains, from the given GURL.  Returns an empty
-  // string if the GURL is invalid, has no host (e.g. a file: URL), has multiple
-  // trailing dots, is an IP address, has only one subcomponent (i.e. no dots
-  // other than leading/trailing ones), or is itself a recognized registry
-  // identifier.  If no matching rule is found in the effective-TLD data (or in
-  // the default data, if the resource failed to load), the last subcomponent of
-  // the host is assumed to be the registry.
-  //
-  // Examples:
-  //   http://www.google.com/file.html -> "google.com"  (com)
-  //   http://..google.com/file.html   -> "google.com"  (com)
-  //   http://google.com./file.html    -> "google.com." (com)
-  //   http://a.b.co.uk/file.html      -> "b.co.uk"     (co.uk)
-  //   file:///C:/bar.html             -> ""            (no host)
-  //   http://foo.com../file.html      -> ""            (multiple trailing dots)
-  //   http://192.168.0.1/file.html    -> ""            (IP address)
-  //   http://bar/file.html            -> ""            (no subcomponents)
-  //   http://co.uk/file.html          -> ""            (host is a registry)
-  //   http://foo.bar/file.html        -> "foo.bar"     (no rule; assume bar)
-  static std::string GetDomainAndRegistry(const GURL& gurl);
-
-  // Like the GURL version, but takes a host (which is canonicalized internally)
-  // instead of a full GURL.
-  static std::string GetDomainAndRegistry(const std::string& host);
-
-  // This convenience function returns true if the two GURLs both have hosts
-  // and one of the following is true:
-  // * They each have a known domain and registry, and it is the same for both
-  //   URLs.  Note that this means the trailing dot, if any, must match too.
-  // * They don't have known domains/registries, but the hosts are identical.
-  // Effectively, callers can use this function to check whether the input URLs
-  // represent hosts "on the same site".
-  static bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2);
-
-  // Finds the length in bytes of the registrar portion of the host in the
-  // given GURL.  Returns std::string::npos if the GURL is invalid or has no
-  // host (e.g. a file: URL).  Returns 0 if the GURL has multiple trailing dots,
-  // is an IP address, has no subcomponents, or is itself a recognized registry
-  // identifier.  If no matching rule is found in the effective-TLD data (or in
-  // the default data, if the resource failed to load), returns 0 if
-  // |allow_unknown_registries| is false, or the length of the last subcomponent
-  // if |allow_unknown_registries| is true.
-  //
-  // Examples:
-  //   http://www.google.com/file.html -> 3                 (com)
-  //   http://..google.com/file.html   -> 3                 (com)
-  //   http://google.com./file.html    -> 4                 (com)
-  //   http://a.b.co.uk/file.html      -> 5                 (co.uk)
-  //   file:///C:/bar.html             -> std::string::npos (no host)
-  //   http://foo.com../file.html      -> 0                 (multiple trailing
-  //                                                         dots)
-  //   http://192.168.0.1/file.html    -> 0                 (IP address)
-  //   http://bar/file.html            -> 0                 (no subcomponents)
-  //   http://co.uk/file.html          -> 0                 (host is a registry)
-  //   http://foo.bar/file.html        -> 0 or 3, depending (no rule; assume
-  //                                                         bar)
-  static size_t GetRegistryLength(const GURL& gurl,
-                                  bool allow_unknown_registries);
-
-  // Like the GURL version, but takes a host (which is canonicalized internally)
-  // instead of a full GURL.
-  static size_t GetRegistryLength(const std::string& host,
-                                  bool allow_unknown_registries);
-
- private:
-  friend class RegistryControlledDomainTest;
-
-  // Internal workings of the static public methods.  See above.
-  static std::string GetDomainAndRegistryImpl(const std::string& host);
-  static size_t GetRegistryLengthImpl(const std::string& host,
-                                      bool allow_unknown_registries);
-
-  typedef const struct DomainRule* (*FindDomainPtr)(const char *, unsigned int);
-
-  // Used for unit tests, so that a different perfect hash map from the full
-  // list is used. Set to NULL to use the Default function.
-  static void UseFindDomainFunction(FindDomainPtr function);
-
-  // Function that returns a DomainRule given a domain.
-  static FindDomainPtr find_domain_function_;
-
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(RegistryControlledDomainService);
+// This enum is a required parameter to all public methods declared for this
+// service. The Public Suffix List (http://publicsuffix.org/) this service
+// uses as a data source splits all effective-TLDs into two groups. The main
+// group describes registries that are acknowledged by ICANN. The second group
+// contains a list of private additions for domains that enable external users
+// to create subdomains, such as appspot.com.
+// The RegistryFilter enum lets you choose whether you want to include the
+// private additions in your lookup.
+// See this for example use cases:
+// https://wiki.mozilla.org/Public_Suffix_List/Use_Cases
+enum NET_EXPORT PrivateRegistryFilter {
+  EXCLUDE_PRIVATE_REGISTRIES = 0,
+  INCLUDE_PRIVATE_REGISTRIES
 };
 
+// This enum is a required parameter to the GetRegistryLength functions
+// declared for this service. Whenever there is no matching rule in the
+// effective-TLD data (or in the default data, if the resource failed to
+// load), the result will be dependent on which enum value was passed in.
+// If EXCLUDE_UNKNOWN_REGISTRIES was passed in, the resulting registry length
+// will be 0. If INCLUDE_UNKNOWN_REGISTRIES was passed in, the resulting
+// registry length will be the length of the last subcomponent (eg. 3 for
+// foobar.baz).
+enum NET_EXPORT UnknownRegistryFilter {
+  EXCLUDE_UNKNOWN_REGISTRIES = 0,
+  INCLUDE_UNKNOWN_REGISTRIES
+};
+
+// Returns the registered, organization-identifying host and all its registry
+// information, but no subdomains, from the given GURL.  Returns an empty
+// string if the GURL is invalid, has no host (e.g. a file: URL), has multiple
+// trailing dots, is an IP address, has only one subcomponent (i.e. no dots
+// other than leading/trailing ones), or is itself a recognized registry
+// identifier.  If no matching rule is found in the effective-TLD data (or in
+// the default data, if the resource failed to load), the last subcomponent of
+// the host is assumed to be the registry.
+//
+// Examples:
+//   http://www.google.com/file.html -> "google.com"  (com)
+//   http://..google.com/file.html   -> "google.com"  (com)
+//   http://google.com./file.html    -> "google.com." (com)
+//   http://a.b.co.uk/file.html      -> "b.co.uk"     (co.uk)
+//   file:///C:/bar.html             -> ""            (no host)
+//   http://foo.com../file.html      -> ""            (multiple trailing dots)
+//   http://192.168.0.1/file.html    -> ""            (IP address)
+//   http://bar/file.html            -> ""            (no subcomponents)
+//   http://co.uk/file.html          -> ""            (host is a registry)
+//   http://foo.bar/file.html        -> "foo.bar"     (no rule; assume bar)
+NET_EXPORT std::string GetDomainAndRegistry(const GURL& gurl,
+                                            PrivateRegistryFilter filter);
+
+// Like the GURL version, but takes a host (which is canonicalized internally)
+// instead of a full GURL.
+NET_EXPORT std::string GetDomainAndRegistry(const std::string& host,
+                                            PrivateRegistryFilter filter);
+
+// This convenience function returns true if the two GURLs both have hosts
+// and one of the following is true:
+// * They each have a known domain and registry, and it is the same for both
+//   URLs.  Note that this means the trailing dot, if any, must match too.
+// * They don't have known domains/registries, but the hosts are identical.
+// Effectively, callers can use this function to check whether the input URLs
+// represent hosts "on the same site".
+NET_EXPORT bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2,
+                                 PrivateRegistryFilter filter);
+
+// Finds the length in bytes of the registrar portion of the host in the
+// given GURL.  Returns std::string::npos if the GURL is invalid or has no
+// host (e.g. a file: URL).  Returns 0 if the GURL has multiple trailing dots,
+// is an IP address, has no subcomponents, or is itself a recognized registry
+// identifier.  The result is also dependent on the UnknownRegistryFilter.
+// If no matching rule is found in the effective-TLD data (or in
+// the default data, if the resource failed to load), returns 0 if
+// |unknown_filter| is EXCLUDE_UNKNOWN_REGISTRIES, or the length of the last
+// subcomponent if |unknown_filter| is INCLUDE_UNKNOWN_REGISTRIES.
+//
+// Examples:
+//   http://www.google.com/file.html -> 3                 (com)
+//   http://..google.com/file.html   -> 3                 (com)
+//   http://google.com./file.html    -> 4                 (com)
+//   http://a.b.co.uk/file.html      -> 5                 (co.uk)
+//   file:///C:/bar.html             -> std::string::npos (no host)
+//   http://foo.com../file.html      -> 0                 (multiple trailing
+//                                                         dots)
+//   http://192.168.0.1/file.html    -> 0                 (IP address)
+//   http://bar/file.html            -> 0                 (no subcomponents)
+//   http://co.uk/file.html          -> 0                 (host is a registry)
+//   http://foo.bar/file.html        -> 0 or 3, depending (no rule; assume
+//                                                         bar)
+NET_EXPORT size_t GetRegistryLength(const GURL& gurl,
+                                    UnknownRegistryFilter unknown_filter,
+                                    PrivateRegistryFilter private_filter);
+
+// Like the GURL version, but takes a host (which is canonicalized internally)
+// instead of a full GURL.
+NET_EXPORT size_t GetRegistryLength(const std::string& host,
+                                    UnknownRegistryFilter unknown_filter,
+                                    PrivateRegistryFilter private_filter);
+
+typedef const struct DomainRule* (*FindDomainPtr)(const char *, unsigned int);
+
+// Used for unit tests, so that a different perfect hash map from the full
+// list is used. Set to NULL to use the Default function.
+NET_EXPORT_PRIVATE void SetFindDomainFunctionForTesting(
+    FindDomainPtr fn);
+
+}  // namespace registry_controlled_domains
 }  // namespace net
 
 #endif  // NET_BASE_REGISTRY_CONTROLLED_DOMAINS_REGISTRY_CONTROLLED_DOMAIN_H_

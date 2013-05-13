@@ -413,7 +413,8 @@ ServerBoundCertService::~ServerBoundCertService() {
 //static
 std::string ServerBoundCertService::GetDomainForHost(const std::string& host) {
   std::string domain =
-      RegistryControlledDomainService::GetDomainAndRegistry(host);
+      registry_controlled_domains::GetDomainAndRegistry(
+          host, registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   if (domain.empty())
     return host;
   return domain;

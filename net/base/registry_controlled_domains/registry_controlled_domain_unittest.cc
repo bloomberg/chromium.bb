@@ -15,45 +15,55 @@
 #include "effective_tld_names_unittest2.cc"
 
 namespace net {
+namespace registry_controlled_domains {
 namespace {
 
 std::string GetDomainFromURL(const std::string& url) {
-  return RegistryControlledDomainService::GetDomainAndRegistry(GURL(url));
+  return GetDomainAndRegistry(GURL(url), EXCLUDE_PRIVATE_REGISTRIES);
 }
 
 std::string GetDomainFromHost(const std::string& host) {
-  return RegistryControlledDomainService::GetDomainAndRegistry(host);
+  return GetDomainAndRegistry(host, EXCLUDE_PRIVATE_REGISTRIES);
 }
 
-size_t GetRegistryLengthFromURL(const std::string& url,
-                                bool allow_unknown_registries) {
-  return RegistryControlledDomainService::GetRegistryLength(GURL(url),
-      allow_unknown_registries);
+size_t GetRegistryLengthFromURL(
+    const std::string& url,
+    UnknownRegistryFilter unknown_filter) {
+  return GetRegistryLength(GURL(url),
+                           unknown_filter,
+                           EXCLUDE_PRIVATE_REGISTRIES);
 }
 
-size_t GetRegistryLengthFromHost(const std::string& host,
-                                 bool allow_unknown_registries) {
-  return RegistryControlledDomainService::GetRegistryLength(host,
-      allow_unknown_registries);
+size_t GetRegistryLengthFromURLIncludingPrivate(
+    const std::string& url,
+    UnknownRegistryFilter unknown_filter) {
+  return GetRegistryLength(GURL(url),
+                           unknown_filter,
+                           INCLUDE_PRIVATE_REGISTRIES);
+}
+
+size_t GetRegistryLengthFromHost(
+    const std::string& host,
+    UnknownRegistryFilter unknown_filter) {
+  return GetRegistryLength(host, unknown_filter, EXCLUDE_PRIVATE_REGISTRIES);
 }
 
 bool CompareDomains(const std::string& url1, const std::string& url2) {
   GURL g1 = GURL(url1);
   GURL g2 = GURL(url2);
-  return RegistryControlledDomainService::SameDomainOrHost(g1, g2);
+  return SameDomainOrHost(g1, g2, EXCLUDE_PRIVATE_REGISTRIES);
 }
 
 }  // namespace
 
 class RegistryControlledDomainTest : public testing::Test {
  protected:
-  typedef RegistryControlledDomainService::FindDomainPtr FindDomainPtr;
   void UseDomainData(FindDomainPtr function) {
-    RegistryControlledDomainService::UseFindDomainFunction(function);
+    SetFindDomainFunctionForTesting(function);
   }
 
   virtual void TearDown() {
-    RegistryControlledDomainService::UseFindDomainFunction(NULL);
+    SetFindDomainFunctionForTesting(NULL);
   }
 };
 
@@ -120,71 +130,119 @@ TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
   UseDomainData(Perfect_Hash_Test1::FindDomain);
 
   // Test GURL version of GetRegistryLength().
-  EXPECT_EQ(2U, GetRegistryLengthFromURL("http://a.baz.jp/file.html", false));
-                                                                        // 1
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://a.baz.jp./file.html", false));
-                                                                        // 1
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://ac.jp", false));       // 2
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://a.bar.jp", false));    // 3
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://bar.jp", false));      // 3
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://baz.bar.jp", false));  // 3 4
-  EXPECT_EQ(12U, GetRegistryLengthFromURL("http://a.b.baz.bar.jp", false));
-                                                                        // 4
-  EXPECT_EQ(6U, GetRegistryLengthFromURL("http://baz.pref.bar.jp", false));
-                                                                        // 5
-  EXPECT_EQ(11U, GetRegistryLengthFromURL("http://a.b.bar.baz.com", false));
-                                                                        // 6
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://a.d.c", false));       // 7
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://.a.d.c", false));      // 7
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://..a.d.c", false));     // 7
-  EXPECT_EQ(1U, GetRegistryLengthFromURL("http://a.b.c", false));       // 7 8
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://baz.com", false));     // none
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://baz.com.", false));    // none
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://baz.com", true));      // none
-  EXPECT_EQ(4U, GetRegistryLengthFromURL("http://baz.com.", true));     // none
+  EXPECT_EQ(2U, GetRegistryLengthFromURL("http://a.baz.jp/file.html",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 1
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://a.baz.jp./file.html",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 1
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://ac.jp",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 2
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://a.bar.jp",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 3
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://bar.jp",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 3
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://baz.bar.jp",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 3 4
+  EXPECT_EQ(12U, GetRegistryLengthFromURL("http://a.b.baz.bar.jp",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 4
+  EXPECT_EQ(6U, GetRegistryLengthFromURL("http://baz.pref.bar.jp",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 5
+  EXPECT_EQ(11U, GetRegistryLengthFromURL("http://a.b.bar.baz.com",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 6
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://a.d.c",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 7
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://.a.d.c",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 7
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://..a.d.c",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 7
+  EXPECT_EQ(1U, GetRegistryLengthFromURL("http://a.b.c",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // 7 8
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://baz.com",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // none
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://baz.com.",
+                                         EXCLUDE_UNKNOWN_REGISTRIES)); // none
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://baz.com",
+                                         INCLUDE_UNKNOWN_REGISTRIES)); // none
+  EXPECT_EQ(4U, GetRegistryLengthFromURL("http://baz.com.",
+                                         INCLUDE_UNKNOWN_REGISTRIES)); // none
 
-  EXPECT_EQ(std::string::npos, GetRegistryLengthFromURL(std::string(), false));
-  EXPECT_EQ(std::string::npos, GetRegistryLengthFromURL("http://", false));
   EXPECT_EQ(std::string::npos,
-            GetRegistryLengthFromURL("file:///C:/file.html", false));
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://foo.com..", false));
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://...", false));
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://192.168.0.1", false));
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://localhost", false));
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://localhost", true));
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://localhost.", false));
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://localhost.", true));
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http:////Comment", false));
+      GetRegistryLengthFromURL(std::string(), EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(std::string::npos,
+      GetRegistryLengthFromURL("http://", EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(std::string::npos,
+      GetRegistryLengthFromURL("file:///C:/file.html",
+                               EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://foo.com..",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://...",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://192.168.0.1",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://localhost",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://localhost",
+                                         INCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://localhost.",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://localhost.",
+                                         INCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http:////Comment",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
 
   // Test std::string version of GetRegistryLength().  Uses the same
   // underpinnings as the GURL version, so this is really more of a check of
   // CanonicalizeHost().
-  EXPECT_EQ(2U, GetRegistryLengthFromHost("a.baz.jp", false));          // 1
-  EXPECT_EQ(3U, GetRegistryLengthFromHost("a.baz.jp.", false));         // 1
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("ac.jp", false));             // 2
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("a.bar.jp", false));          // 3
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("bar.jp", false));            // 3
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("baz.bar.jp", false));        // 3 4
-  EXPECT_EQ(12U, GetRegistryLengthFromHost("a.b.baz.bar.jp", false));   // 4
-  EXPECT_EQ(6U, GetRegistryLengthFromHost("baz.pref.bar.jp", false));   // 5
-  EXPECT_EQ(11U, GetRegistryLengthFromHost("a.b.bar.baz.com", false));  // 6
-  EXPECT_EQ(3U, GetRegistryLengthFromHost("a.d.c", false));             // 7
-  EXPECT_EQ(3U, GetRegistryLengthFromHost(".a.d.c", false));            // 7
-  EXPECT_EQ(3U, GetRegistryLengthFromHost("..a.d.c", false));           // 7
-  EXPECT_EQ(1U, GetRegistryLengthFromHost("a.b.c", false));             // 7 8
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("baz.com", false));           // none
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("baz.com.", false));          // none
-  EXPECT_EQ(3U, GetRegistryLengthFromHost("baz.com", true));            // none
-  EXPECT_EQ(4U, GetRegistryLengthFromHost("baz.com.", true));           // none
+  EXPECT_EQ(2U, GetRegistryLengthFromHost("a.baz.jp",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // 1
+  EXPECT_EQ(3U, GetRegistryLengthFromHost("a.baz.jp.",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // 1
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("ac.jp",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // 2
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("a.bar.jp",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // 3
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("bar.jp",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // 3
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("baz.bar.jp",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // 3 4
+  EXPECT_EQ(12U, GetRegistryLengthFromHost("a.b.baz.bar.jp",
+                                           EXCLUDE_UNKNOWN_REGISTRIES)); // 4
+  EXPECT_EQ(6U, GetRegistryLengthFromHost("baz.pref.bar.jp",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // 5
+  EXPECT_EQ(11U, GetRegistryLengthFromHost("a.b.bar.baz.com",
+                                           EXCLUDE_UNKNOWN_REGISTRIES)); // 6
+  EXPECT_EQ(3U, GetRegistryLengthFromHost("a.d.c",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // 7
+  EXPECT_EQ(3U, GetRegistryLengthFromHost(".a.d.c",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // 7
+  EXPECT_EQ(3U, GetRegistryLengthFromHost("..a.d.c",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // 7
+  EXPECT_EQ(1U, GetRegistryLengthFromHost("a.b.c",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // 7 8
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("baz.com",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // none
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("baz.com.",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));  // none
+  EXPECT_EQ(3U, GetRegistryLengthFromHost("baz.com",
+                                          INCLUDE_UNKNOWN_REGISTRIES));  // none
+  EXPECT_EQ(4U, GetRegistryLengthFromHost("baz.com.",
+                                          INCLUDE_UNKNOWN_REGISTRIES));  // none
 
-  EXPECT_EQ(std::string::npos, GetRegistryLengthFromHost(std::string(), false));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("foo.com..", false));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("..", false));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("192.168.0.1", false));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("localhost", false));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("localhost", true));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("localhost.", false));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost("localhost.", true));
+  EXPECT_EQ(std::string::npos,
+      GetRegistryLengthFromHost(std::string(), EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("foo.com..",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("..",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("192.168.0.1",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("localhost",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("localhost",
+                                          INCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("localhost.",
+                                          EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromHost("localhost.",
+                                          INCLUDE_UNKNOWN_REGISTRIES));
 }
 
 TEST_F(RegistryControlledDomainTest, TestSameDomainOrHost) {
@@ -218,13 +276,74 @@ TEST_F(RegistryControlledDomainTest, TestSameDomainOrHost) {
 
 TEST_F(RegistryControlledDomainTest, TestDefaultData) {
   // Note that no data is set: we're using the default rules.
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://google.com", false));
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://stanford.edu", false));
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://ustreas.gov", false));
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://icann.net", false));
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://ferretcentral.org", false));
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://nowhere.foo", false));
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://nowhere.foo", true));
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://google.com",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://stanford.edu",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://ustreas.gov",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://icann.net",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://ferretcentral.org",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://nowhere.foo",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://nowhere.foo",
+                                         INCLUDE_UNKNOWN_REGISTRIES));
 }
 
+TEST_F(RegistryControlledDomainTest, TestPrivateRegistryHandling) {
+  UseDomainData(Perfect_Hash_Test1::FindDomain);
+  // Testing the same dataset for INCLUDE_PRIVATE_REGISTRIES and
+  // EXCLUDE_PRIVATE_REGISTRIES arguments.
+  // For the domain data used for this test, the private registries are
+  // 'priv.no' and 'private'.
+
+  // Non-private registries.
+  EXPECT_EQ(2U, GetRegistryLengthFromURL("http://priv.no",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(2U, GetRegistryLengthFromURL("http://foo.priv.no",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(2U, GetRegistryLengthFromURL("http://foo.jp",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(2U, GetRegistryLengthFromURL("http://www.foo.jp",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://private",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://foo.private",
+                                         EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://private",
+                                         INCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(7U, GetRegistryLengthFromURL("http://foo.private",
+                                         INCLUDE_UNKNOWN_REGISTRIES));
+
+  // Private registries.
+  EXPECT_EQ(0U,
+      GetRegistryLengthFromURLIncludingPrivate("http://priv.no",
+                                               EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(7U,
+      GetRegistryLengthFromURLIncludingPrivate("http://foo.priv.no",
+                                               EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(2U,
+      GetRegistryLengthFromURLIncludingPrivate("http://foo.jp",
+                                               EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(2U,
+      GetRegistryLengthFromURLIncludingPrivate("http://www.foo.jp",
+                                               EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U,
+      GetRegistryLengthFromURLIncludingPrivate("http://private",
+                                               EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(7U,
+      GetRegistryLengthFromURLIncludingPrivate("http://foo.private",
+                                               EXCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(0U,
+      GetRegistryLengthFromURLIncludingPrivate("http://private",
+                                               INCLUDE_UNKNOWN_REGISTRIES));
+  EXPECT_EQ(7U,
+      GetRegistryLengthFromURLIncludingPrivate("http://foo.private",
+                                               INCLUDE_UNKNOWN_REGISTRIES));
+}
+
+
+}  // namespace registry_controlled_domains
 }  // namespace net
