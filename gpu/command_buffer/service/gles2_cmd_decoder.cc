@@ -8960,7 +8960,7 @@ error::Error GLES2DecoderImpl::HandleGetMultipleIntegervCHROMIUM(
     GLsizei num_written = 0;
     if (!state_.GetStateAsGLint(enums[ii], results, &num_written) &&
         !GetHelper(enums[ii], results, &num_written)) {
-      glGetIntegerv(enums[ii], results);
+      DoGetIntegerv(enums[ii], results);
     }
     results += num_written;
   }
