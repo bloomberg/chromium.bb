@@ -1,4 +1,4 @@
-# Copyright (C) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2013 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -10,9 +10,6 @@
 # copyright notice, this list of conditions and the following disclaimer
 # in the documentation and/or other materials provided with the
 # distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -26,18 +23,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
-import unittest2 as unittest
+server = "irc.freenode.net"
+port = 6667
+channel = "#blink"
+nickname = "blinkybot"
 
-
-class ThirdpartyTest(unittest.TestCase):
-    def test_imports(self):
-        # This method tests that we can actually import everything.
-        # unused-variable, import failures - pylint: disable-msg=W0612,E0611,F0401
-        import webkitpy.thirdparty.autoinstalled.coverage
-        import webkitpy.thirdparty.autoinstalled.irc.ircbot
-        import webkitpy.thirdparty.autoinstalled.irc.irclib
-        import webkitpy.thirdparty.autoinstalled.mechanize
-        import webkitpy.thirdparty.autoinstalled.pylint
-        import webkitpy.thirdparty.autoinstalled.webpagereplay
-        import webkitpy.thirdparty.autoinstalled.pep8
+update_wait_seconds = 10
+retry_attempts = 8

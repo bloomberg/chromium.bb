@@ -138,8 +138,8 @@ class Git(SCM, SVNRepository):
     def discard_local_commits(self):
         self._run_git(['reset', '--hard', self.remote_branch_ref()])
 
-    def local_commits(self):
-        return self._run_git(['log', '--pretty=oneline', 'HEAD...' + self.remote_branch_ref()]).splitlines()
+    def local_commits(self, ref='HEAD'):
+        return self._run_git(['log', '--pretty=oneline', ref + '...' + self.remote_branch_ref()]).splitlines()
 
     def rebase_in_progress(self):
         return self._filesystem.exists(self.absolute_path(self._filesystem.join('.git', 'rebase-apply')))
@@ -518,3 +518,43 @@ class Git(SCM, SVNRepository):
 
     def files_changed_summary_for_commit(self, commit_id):
         return self._run_git(['diff-tree', '--shortstat', '--no-renames', '--no-commit-id', commit_id])
+
+    # These methods are git specific and are meant to provide support for the Git oriented workflow
+    # that Blink is moving towards, hence there are no equivalent methods in the SVN class.
+
+    def pull(self):
+        self._run_git(['pull'])
+
+    def latest_git_commit(self):
+        return self._run_git(['log', '-1', '--format=%H']).strip()
+
+    def git_commits_since(self, commit):
+        return self._run_git(['log', commit + '..master', '--format=%H', '--reverse']).split()
+
+    def git_commit_detail(self, commit, format=None):
+        args = ['log', '-1', commit]
+        if format:
+            args.append('--format=' + format)
+        return self._run_git(args)
+
+    def _branch_tracking_remote_master(self):
+        origin_info = self._run_git(['remote', 'show', 'origin', '-n'])
+        match = re.search("^\s*(?P<branch_name>\S+)\s+merges with remote master$", origin_info, re.MULTILINE)
+        if not match:
+            raise ScriptError(message="Unable to find local branch tracking origin/master.")
+        branch = str(match.group("branch_name"))
+        return self._run_git(['rev-parse', '--symbolic-full-name', branch]).strip()
+
+    def is_cleanly_tracking_remote_master(self):
+        if self.has_working_directory_changes():
+            return False
+        if self._current_branch() != self._branch_tracking_remote_master():
+            return False
+        if len(self.local_commits(self._branch_tracking_remote_master())) > 0:
+            return False
+        return True
+
+    def ensure_cleanly_tracking_remote_master(self):
+        self.discard_working_directory_changes()
+        self._run_git(['checkout', '-q', self._branch_tracking_remote_master().replace('refs/heads/', '', 1)])
+        self.discard_local_commits()
