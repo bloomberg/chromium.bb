@@ -295,11 +295,14 @@ void PrintContext::outputLinkedDestinations(GraphicsContext& graphicsContext, No
 
     HashMap<String, Element*>::const_iterator end = m_linkedDestinations.end();
     for (HashMap<String, Element*>::const_iterator it = m_linkedDestinations.begin(); it != end; ++it) {
-        IntRect boundingBox = it->value->renderer()->absoluteBoundingBoxRect();
-        if (pageRect.intersects(boundingBox)) {
-            IntPoint point = boundingBox.minXMinYCorner();
-            point.clampNegativeToZero();
-            graphicsContext.addURLTargetAtPoint(it->key, point);
+        RenderObject* renderer = it->value->renderer();
+        if (renderer) {
+            IntRect boundingBox = renderer->absoluteBoundingBoxRect();
+            if (pageRect.intersects(boundingBox)) {
+                IntPoint point = boundingBox.minXMinYCorner();
+                point.clampNegativeToZero();
+                graphicsContext.addURLTargetAtPoint(it->key, point);
+            }
         }
     }
 }
