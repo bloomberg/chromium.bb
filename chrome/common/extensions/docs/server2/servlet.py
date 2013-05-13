@@ -11,8 +11,8 @@ class Request(object):
     self.headers = headers
 
   @staticmethod
-  def ForTest(path, url='http://localhost', headers=None):
-    return Request(path, url, headers or {})
+  def ForTest(path, host='http://developer.chrome.com', headers=None):
+    return Request(path, host, headers or {})
 
   def __repr__(self):
     return 'Request(path=%s, host=%s, headers=%s entries)' % (

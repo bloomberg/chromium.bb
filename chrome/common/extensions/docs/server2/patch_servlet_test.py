@@ -12,6 +12,9 @@ from patch_servlet import PatchServlet
 from render_servlet import RenderServlet
 from server_instance import ServerInstance
 from servlet import Request
+from test_util import DisableLogging
+
+_ALLOWED_HOST = 'https://chrome-apps-doc.appspot.com'
 
 class _RenderServletDelegate(RenderServlet.Delegate):
   def CreateServerInstanceForChannel(self, channel):
@@ -30,11 +33,12 @@ class PatchServletTest(unittest.TestCase):
 
   def _RenderWithPatch(self, path, issue):
     real_path = '%s/%s' % (issue, path)
-    return PatchServlet(Request.ForTest(real_path),
+    return PatchServlet(Request.ForTest(real_path, host=_ALLOWED_HOST),
                         _PatchServletDelegate()).Get()
 
   def _RenderWithoutPatch(self, path):
-    return RenderServlet(Request.ForTest(path), _RenderServletDelegate()).Get()
+    return RenderServlet(Request.ForTest(path, host=_ALLOWED_HOST),
+                         _RenderServletDelegate()).Get()
 
   def _RenderAndCheck(self, path, issue, expected_equal):
     patched_response = self._RenderWithPatch(path, issue)
@@ -58,6 +62,7 @@ class PatchServletTest(unittest.TestCase):
   def _RenderAndAssertNotEqual(self, path, issue):
     self._RenderAndCheck(path, issue, False)
 
+  @DisableLogging('warning')
   def _AssertNotFound(self, path, issue):
     self.assertEqual(self._RenderWithPatch(path, issue).status, 404,
         'Path %s with issue %s should have been removed.' % (path, issue))
@@ -94,6 +99,28 @@ class PatchServletTest(unittest.TestCase):
     self.assertEqual(self._RenderWithPatch('extensions/',
                                           issue).headers['Location'],
                      '/_patch/%s/extensions/index.html' % issue)
+
+  def testXssRedirect(self):
+    def is_redirect(from_host, from_path, to_url):
+      response = PatchServlet(Request.ForTest(from_path, host=from_host),
+                              _PatchServletDelegate()).Get()
+      redirect_url, _ = response.GetRedirect()
+      if redirect_url is None:
+        return (False, '%s/%s did not cause a redirect' % (
+            from_host, from_path))
+      if redirect_url != to_url:
+        return (False, '%s/%s redirected to %s not %s' % (
+            from_host, from_path, redirect_url, to_url))
+      return (True, '%s/%s redirected to %s' % (
+          from_host, from_path, redirect_url))
+    self.assertTrue(*is_redirect('http://developer.chrome.com', '12345',
+                                 '%s/_patch/12345' % _ALLOWED_HOST))
+    self.assertTrue(*is_redirect('http://developers.google.com', '12345',
+                                 '%s/_patch/12345' % _ALLOWED_HOST))
+    self.assertFalse(*is_redirect('http://chrome-apps-doc.appspot.com', '12345',
+                                  None))
+    self.assertFalse(*is_redirect('http://some-other-app.appspot.com', '12345',
+                                  None))
 
 if __name__ == '__main__':
   unittest.main()

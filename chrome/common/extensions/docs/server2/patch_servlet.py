@@ -2,7 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from fnmatch import fnmatch
+import logging
+from urlparse import urlparse
+
 from appengine_url_fetcher import AppEngineUrlFetcher
+from appengine_wrappers import IsDevServer
 from caching_file_system import CachingFileSystem
 from caching_rietveld_patcher import CachingRietveldPatcher
 from chained_compiled_file_system import ChainedCompiledFileSystem
@@ -64,6 +69,16 @@ class PatchServlet(Servlet):
     self._delegate = delegate or InstanceServlet.Delegate()
 
   def Get(self):
+    if (not IsDevServer() and
+        not fnmatch(urlparse(self._request.host).netloc, '*.appspot.com')):
+      # Only allow patches on appspot URLs; it doesn't matter if appspot.com is
+      # XSS'ed, but it matters for chrome.com.
+      redirect_host = 'https://chrome-apps-doc.appspot.com'
+      logging.info('Redirecting from XSS-able host %s to %s' % (
+          self._request.host, redirect_host))
+      return Response.Redirect(
+          '%s/_patch/%s' % (redirect_host, self._request.path))
+
     path_with_issue = self._request.path.lstrip('/')
     if '/' in path_with_issue:
       issue, real_path = path_with_issue.split('/', 1)
