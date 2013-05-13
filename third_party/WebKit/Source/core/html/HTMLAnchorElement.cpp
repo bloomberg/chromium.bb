@@ -65,13 +65,19 @@ public:
 private:
     PrefetchEventHandler();
 
+    void reset();
+
     void handleMouseOver(Event* event);
     void handleMouseOut(Event* event);
     void handleLeftMouseDown(Event* event);
+    void handleGestureTapUnconfirmed(Event*);
+    void handleGestureTapDown(Event*);
     void handleClick(Event* event);
 
     double m_mouseOverTimestamp;
     double m_mouseDownTimestamp;
+    double m_tapDownTimestamp;
+    bool m_hadTapUnconfirmed;
 };
 
 using namespace HTMLNames;
@@ -648,9 +654,16 @@ HTMLAnchorElement::PrefetchEventHandler* HTMLAnchorElement::prefetchEventHandler
 }
 
 HTMLAnchorElement::PrefetchEventHandler::PrefetchEventHandler()
-    : m_mouseOverTimestamp(0.0)
-    , m_mouseDownTimestamp(0.0)
 {
+    reset();
+}
+
+void HTMLAnchorElement::PrefetchEventHandler::reset()
+{
+    m_mouseOverTimestamp = 0;
+    m_mouseDownTimestamp = 0;
+    m_hadTapUnconfirmed = false;
+    m_tapDownTimestamp = 0;
 }
 
 void HTMLAnchorElement::PrefetchEventHandler::handleEvent(Event* event)
@@ -661,6 +674,10 @@ void HTMLAnchorElement::PrefetchEventHandler::handleEvent(Event* event)
         handleMouseOut(event);
     else if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && static_cast<MouseEvent*>(event)->button() == LeftButton)
         handleLeftMouseDown(event);
+    else if (event->type() == eventNames().gesturetapdownEvent)
+        handleGestureTapDown(event);
+    else if (event->type() == eventNames().gesturetapunconfirmedEvent)
+        handleGestureTapUnconfirmed(event);
     else if (isLinkClick(event))
         handleClick(event);
 }
@@ -691,6 +708,20 @@ void HTMLAnchorElement::PrefetchEventHandler::handleLeftMouseDown(Event* event)
     HistogramSupport::histogramEnumeration("MouseEventPrefetch.MouseDowns", 0, 2);
 }
 
+void HTMLAnchorElement::PrefetchEventHandler::handleGestureTapUnconfirmed(Event* event)
+{
+    m_hadTapUnconfirmed = true;
+
+    HistogramSupport::histogramEnumeration("MouseEventPrefetch.TapUnconfirmeds", 0, 2);
+}
+
+void HTMLAnchorElement::PrefetchEventHandler::handleGestureTapDown(Event* event)
+{
+    m_tapDownTimestamp = event->timeStamp();
+
+    HistogramSupport::histogramEnumeration("MouseEventPrefetch.TapDowns", 0, 2);
+}
+
 void HTMLAnchorElement::PrefetchEventHandler::handleClick(Event* event)
 {
     bool capturedMouseOver = (m_mouseOverTimestamp > 0.0);
@@ -709,8 +740,17 @@ void HTMLAnchorElement::PrefetchEventHandler::handleClick(Event* event)
         HistogramSupport::histogramCustomCounts("MouseEventPrefetch.MouseDownDuration_Click", mouseDownDuration * 1000, 0, 10000, 100);
     }
 
-    m_mouseOverTimestamp = 0;
-    m_mouseDownTimestamp = 0;
+    bool capturedTapDown = (m_tapDownTimestamp > 0.0);
+    if (capturedTapDown) {
+        double tapDownDuration = convertDOMTimeStampToSeconds(event->timeStamp() - m_tapDownTimestamp);
+
+        HistogramSupport::histogramCustomCounts("MouseEventPrefetch.TapDownDuration_Click", tapDownDuration * 1000, 0, 10000, 100);
+    }
+
+    int flags = (m_hadTapUnconfirmed ? 2 : 0) | (capturedTapDown ? 1 : 0);
+    HistogramSupport::histogramEnumeration("MouseEventPrefetch.PreTapEventsFollowedByClick", flags, 4);
+
+    reset();
 }
 
 }
