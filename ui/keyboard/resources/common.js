@@ -115,14 +115,30 @@ function transitionMode(transition) {
 }
 
 /**
- * Send the given key to chrome, via the experimental extension API.
- * @param {string} keyIdentifier The key to send.
+ * Send the given key to chrome but don't update the keyboard state.
  */
-function sendKey(keyIdentifier) {
+function sendKeyRaw(key) {
+  var keyIdentifier = key;
+
+  // Fix up some keys to their respective identifiers for convenience.
+  if (keyIdentifier == ' ') {
+    keyIdentifier = 'Spacebar';
+  }
+
   var keyEvent = {
     keyIdentifier: keyIdentifier
   };
   sendKeyEvent(keyEvent);
+}
+
+/**
+ * Send the given key to chrome, via the experimental extension API.
+ * Also updates the current keyboard state based on the current state and which
+ * character was sent.
+ * @param {string} keyIdentifier The key to send.
+ */
+function sendKey(keyIdentifier) {
+  sendKeyRaw(keyIdentifier);
 
   // Exit shift mode after pressing any key but space.
   if (currentMode == SHIFT_MODE && keyIdentifier != 'Spacebar') {
@@ -603,10 +619,10 @@ DotComKey.prototype = {
 
     setupKeyEventHandlers(this, this.modeElements_[mode],
         { 'up': function() {
-          sendKey('.');
-          sendKey('c');
-          sendKey('o');
-          sendKey('m');
+          sendKeyRaw('.');
+          sendKeyRaw('c');
+          sendKeyRaw('o');
+          sendKeyRaw('m');
         }});
 
     return this.modeElements_[mode];
@@ -691,10 +707,7 @@ MicKey.prototype = {
         this.finalResult_ = e.results[i][0].transcript;
     }
     for (var i = 0; i < this.finalResult_.length; i++) {
-      var keyEvent = {
-        keyIdentifier: this.finalResult_.charAt(i)
-      };
-      sendKeyEvent(keyEvent);
+      sendKeyRaw(this.finalResult_.charAt(i));
     }
   },
 
