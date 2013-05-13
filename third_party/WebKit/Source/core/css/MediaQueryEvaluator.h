@@ -28,7 +28,7 @@
 #ifndef MediaQueryEvaluator_h
 #define MediaQueryEvaluator_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 class Frame;
@@ -50,7 +50,7 @@ class StyleResolver;
  * of stylesheets to only those which are probable to match.
  */
 class MediaQueryEvaluator {
-     WTF_MAKE_NONCOPYABLE(MediaQueryEvaluator); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(MediaQueryEvaluator); WTF_MAKE_FAST_ALLOCATED;
 public:
     /** Creates evaluator which evaluates only simple media queries
      *  Evaluator returns true for "all", and returns value of \mediaFeatureResult
@@ -65,8 +65,7 @@ public:
     MediaQueryEvaluator(const String& acceptedMediaType, bool mediaFeatureResult = false);
     MediaQueryEvaluator(const char* acceptedMediaType, bool mediaFeatureResult = false);
 
-    /** Creates evaluator which evaluates full media queries
-     */
+    /** Creates evaluator which evaluates full media queries */
     MediaQueryEvaluator(const String& acceptedMediaType, Frame*, RenderStyle*);
 
     ~MediaQueryEvaluator();
@@ -82,7 +81,7 @@ public:
 
 private:
     String m_mediaType;
-    Frame* m_frame; // not owned
+    Frame* m_frame; // Not owned.
     RefPtr<RenderStyle> m_style;
     bool m_expResult;
 };

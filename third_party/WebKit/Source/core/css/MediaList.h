@@ -22,11 +22,11 @@
 #define MediaList_h
 
 #include "core/dom/ExceptionCode.h"
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -51,7 +51,7 @@ public:
         return adoptRef(new MediaQuerySet(mediaString, true));
     }
     ~MediaQuerySet();
-    
+
     bool parse(const String&);
     bool add(const String&);
     bool remove(const String&);
@@ -59,10 +59,10 @@ public:
     void addMediaQuery(PassOwnPtr<MediaQuery>);
 
     const Vector<OwnPtr<MediaQuery> >& queryVector() const { return m_queries; }
-    
+
     int lastLine() const { return m_lastLine; }
     void setLastLine(int lastLine) { m_lastLine = lastLine; }
-    
+
     String mediaText() const;
 
     PassRefPtr<MediaQuerySet> copy() const { return adoptRef(new MediaQuerySet(*this)); }
@@ -73,7 +73,7 @@ private:
     MediaQuerySet();
     MediaQuerySet(const String& mediaQuery, bool fallbackToDescription);
     MediaQuerySet(const MediaQuerySet&);
-    
+
     unsigned m_fallbackToDescriptor : 1; // true if failed media query parsing should fallback to media description parsing.
     signed m_lastLine : 31;
     Vector<OwnPtr<MediaQuery> > m_queries;

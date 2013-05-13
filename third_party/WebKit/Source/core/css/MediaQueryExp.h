@@ -31,9 +31,9 @@
 
 #include "core/css/CSSValue.h"
 #include "core/css/MediaFeatureNames.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 class CSSParserValueList;
@@ -57,16 +57,7 @@ public:
 
     bool isValid() const { return m_isValid; }
 
-    bool isViewportDependent() const { return m_mediaFeature == MediaFeatureNames::widthMediaFeature
-                                            || m_mediaFeature == MediaFeatureNames::heightMediaFeature
-                                            || m_mediaFeature == MediaFeatureNames::min_widthMediaFeature
-                                            || m_mediaFeature == MediaFeatureNames::min_heightMediaFeature
-                                            || m_mediaFeature == MediaFeatureNames::max_widthMediaFeature
-                                            || m_mediaFeature == MediaFeatureNames::max_heightMediaFeature
-                                            || m_mediaFeature == MediaFeatureNames::orientationMediaFeature
-                                            || m_mediaFeature == MediaFeatureNames::aspect_ratioMediaFeature
-                                            || m_mediaFeature == MediaFeatureNames::min_aspect_ratioMediaFeature
-                                            || m_mediaFeature == MediaFeatureNames::max_aspect_ratioMediaFeature;  }
+    bool isViewportDependent() const;
 
     String serialize() const;
 

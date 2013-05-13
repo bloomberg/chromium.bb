@@ -32,8 +32,8 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/page/Console.h"
 #include "core/page/DOMWindow.h"
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -64,7 +64,7 @@ namespace WebCore {
  * document.styleSheets[0].cssRules[0].media.mediaText = "screen and resolution > 40dpi" will
  * throw SYNTAX_ERR exception.
  */
-    
+
 MediaQuerySet::MediaQuerySet()
     : m_fallbackToDescriptor(false)
     , m_lastLine(0)
@@ -84,7 +84,7 @@ MediaQuerySet::MediaQuerySet(const String& mediaString, bool fallbackToDescripto
     // for both html and svg, even though svg:style doesn't use media descriptors
     // Currently the only places where parsing can fail are
     // creating <svg:style>, creating css media / import rules from js
-    
+
     // FIXME: This doesn't make much sense.
     if (!success)
         parse("invalid");
@@ -114,10 +114,7 @@ static String parseMediaDescriptor(const String& string)
     unsigned i = 0;
     for (; i < length; ++i) {
         unsigned short c = string[i];
-        if (! ((c >= 'a' && c <= 'z')
-               || (c >= 'A' && c <= 'Z')
-               || (c >= '1' && c <= '9')
-               || (c == '-')))
+        if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '1' && c <= '9') || (c == '-')))
             break;
     }
     return string.left(i);
@@ -126,7 +123,7 @@ static String parseMediaDescriptor(const String& string)
 bool MediaQuerySet::parse(const String& mediaString)
 {
     CSSParser parser(CSSStrictMode);
-    
+
     Vector<OwnPtr<MediaQuery> > result;
     Vector<String> list;
     mediaString.split(',', list);
@@ -187,7 +184,7 @@ bool MediaQuerySet::remove(const String& queryStringToRemove)
     }
     if (!parsedQuery)
         return false;
-    
+
     for (size_t i = 0; i < m_queries.size(); ++i) {
         MediaQuery* query = m_queries[i].get();
         if (*query == *parsedQuery) {
@@ -206,7 +203,7 @@ void MediaQuerySet::addMediaQuery(PassOwnPtr<MediaQuery> mediaQuery)
 String MediaQuerySet::mediaText() const
 {
     StringBuilder text;
-    
+
     bool first = true;
     for (size_t i = 0; i < m_queries.size(); ++i) {
         if (!first)
@@ -223,7 +220,7 @@ void MediaQuerySet::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     info.addMember(m_queries, "queries");
 }
-    
+
 MediaList::MediaList(MediaQuerySet* mediaQueries, CSSStyleSheet* parentSheet)
     : m_mediaQueries(mediaQueries)
     , m_parentStyleSheet(parentSheet)
@@ -328,6 +325,13 @@ static void addResolutionWarningMessageToConsole(Document* document, const Strin
     document->addConsoleMessage(CSSMessageSource, DebugMessageLevel, message);
 }
 
+static inline bool isResolutionMediaFeature(const AtomicString& mediaFeature)
+{
+    return mediaFeature == MediaFeatureNames::resolutionMediaFeature
+        || mediaFeature == MediaFeatureNames::maxResolutionMediaFeature
+        || mediaFeature == MediaFeatureNames::minResolutionMediaFeature;
+}
+
 void reportMediaQueryWarningIfNeeded(Document* document, const MediaQuerySet* mediaQuerySet)
 {
     if (!mediaQuerySet || !document)
@@ -341,18 +345,18 @@ void reportMediaQueryWarningIfNeeded(Document* document, const MediaQuerySet* me
 
     for (size_t i = 0; i < queryCount; ++i) {
         const MediaQuery* query = mediaQueries[i].get();
-        String mediaType = query->mediaType();
-        if (!query->ignored() && !equalIgnoringCase(mediaType, "print")) {
-            const Vector<OwnPtr<MediaQueryExp> >* exps = query->expressions();
-            for (size_t j = 0; j < exps->size(); ++j) {
-                const MediaQueryExp* exp = exps->at(j).get();
-                if (exp->mediaFeature() == MediaFeatureNames::resolutionMediaFeature || exp->mediaFeature() == MediaFeatureNames::max_resolutionMediaFeature || exp->mediaFeature() == MediaFeatureNames::min_resolutionMediaFeature) {
-                    CSSValue* cssValue =  exp->value();
-                    if (cssValue && cssValue->isPrimitiveValue()) {
-                        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(cssValue);
-                        if (primitiveValue->isDotsPerInch() || primitiveValue->isDotsPerCentimeter())
-                            addResolutionWarningMessageToConsole(document, mediaQuerySet->mediaText(), primitiveValue);
-                    }
+        if (query->ignored() || equalIgnoringCase(query->mediaType(), "print"))
+            continue;
+
+        const Vector<OwnPtr<MediaQueryExp> >* exps = query->expressions();
+        for (size_t j = 0; j < exps->size(); ++j) {
+            const MediaQueryExp* exp = exps->at(j).get();
+            if (isResolutionMediaFeature(exp->mediaFeature())) {
+                CSSValue* cssValue =  exp->value();
+                if (cssValue && cssValue->isPrimitiveValue()) {
+                    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(cssValue);
+                    if (primitiveValue->isDotsPerInch() || primitiveValue->isDotsPerCentimeter())
+                        addResolutionWarningMessageToConsole(document, mediaQuerySet->mediaText(), primitiveValue);
                 }
             }
         }

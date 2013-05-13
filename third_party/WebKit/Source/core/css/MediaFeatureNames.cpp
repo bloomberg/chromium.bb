@@ -25,7 +25,8 @@
 #endif
 
 #include "core/css/MediaFeatureNames.h"
-#include <wtf/StaticConstructors.h>
+
+#include "wtf/StaticConstructors.h"
 
 namespace WebCore {
 namespace MediaFeatureNames {
@@ -39,7 +40,7 @@ void init()
 {
     static bool initialized;
     if (!initialized) {
-       // Use placement new to initialize the globals.
+        // Use placement new to initialize the globals.
 
         AtomicString::init();
 #define INITIALIZE_GLOBAL(name, str) new (NotNull, (void*)&name##MediaFeature) AtomicString(str, AtomicString::ConstructFromLiteral);

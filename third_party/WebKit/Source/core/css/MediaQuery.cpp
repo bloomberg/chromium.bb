@@ -31,9 +31,9 @@
 
 #include "core/css/MediaQueryExp.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/NonCopyingSort.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/NonCopyingSort.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -147,4 +147,4 @@ void MediaQuery::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_serializationCache, "serializationCache");
 }
 
-} //namespace
+}

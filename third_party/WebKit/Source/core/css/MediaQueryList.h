@@ -20,9 +20,9 @@
 #ifndef MediaQueryList_h
 #define MediaQueryList_h
 
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

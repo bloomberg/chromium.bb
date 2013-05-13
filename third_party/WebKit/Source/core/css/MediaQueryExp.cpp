@@ -35,7 +35,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -45,7 +45,7 @@ static inline bool featureWithCSSValueID(const AtomicString& mediaFeature, const
         return false;
 
     return mediaFeature == MediaFeatureNames::orientationMediaFeature
-        || mediaFeature == MediaFeatureNames::view_modeMediaFeature
+        || mediaFeature == MediaFeatureNames::viewModeMediaFeature
         || mediaFeature == MediaFeatureNames::pointerMediaFeature;
 }
 
@@ -55,17 +55,17 @@ static inline bool featureWithValidPositiveLenghtOrNumber(const AtomicString& me
         return false;
 
     return mediaFeature == MediaFeatureNames::heightMediaFeature
-        || mediaFeature == MediaFeatureNames::max_heightMediaFeature
-        || mediaFeature == MediaFeatureNames::min_heightMediaFeature
+        || mediaFeature == MediaFeatureNames::maxHeightMediaFeature
+        || mediaFeature == MediaFeatureNames::minHeightMediaFeature
         || mediaFeature == MediaFeatureNames::widthMediaFeature
-        || mediaFeature == MediaFeatureNames::max_widthMediaFeature
-        || mediaFeature == MediaFeatureNames::min_widthMediaFeature
-        || mediaFeature == MediaFeatureNames::device_heightMediaFeature
-        || mediaFeature == MediaFeatureNames::max_device_heightMediaFeature
-        || mediaFeature == MediaFeatureNames::min_device_heightMediaFeature
-        || mediaFeature == MediaFeatureNames::device_widthMediaFeature
-        || mediaFeature == MediaFeatureNames::max_device_widthMediaFeature
-        || mediaFeature == MediaFeatureNames::min_device_widthMediaFeature;
+        || mediaFeature == MediaFeatureNames::maxWidthMediaFeature
+        || mediaFeature == MediaFeatureNames::minWidthMediaFeature
+        || mediaFeature == MediaFeatureNames::deviceHeightMediaFeature
+        || mediaFeature == MediaFeatureNames::maxDeviceHeightMediaFeature
+        || mediaFeature == MediaFeatureNames::minDeviceHeightMediaFeature
+        || mediaFeature == MediaFeatureNames::deviceWidthMediaFeature
+        || mediaFeature == MediaFeatureNames::maxDeviceWidthMediaFeature
+        || mediaFeature == MediaFeatureNames::minDeviceWidthMediaFeature;
 }
 
 static inline bool featureWithValidDensity(const AtomicString& mediaFeature, const CSSParserValue* value)
@@ -74,8 +74,8 @@ static inline bool featureWithValidDensity(const AtomicString& mediaFeature, con
         return false;
 
     return mediaFeature == MediaFeatureNames::resolutionMediaFeature
-        || mediaFeature == MediaFeatureNames::max_resolutionMediaFeature
-        || mediaFeature == MediaFeatureNames::min_resolutionMediaFeature;
+        || mediaFeature == MediaFeatureNames::maxResolutionMediaFeature
+        || mediaFeature == MediaFeatureNames::minResolutionMediaFeature;
 }
 
 static inline bool featureWithPositiveInteger(const AtomicString& mediaFeature, const CSSParserValue* value)
@@ -84,13 +84,13 @@ static inline bool featureWithPositiveInteger(const AtomicString& mediaFeature, 
         return false;
 
     return mediaFeature == MediaFeatureNames::colorMediaFeature
-        || mediaFeature == MediaFeatureNames::max_colorMediaFeature
-        || mediaFeature == MediaFeatureNames::min_colorMediaFeature
+        || mediaFeature == MediaFeatureNames::maxColorMediaFeature
+        || mediaFeature == MediaFeatureNames::minColorMediaFeature
         || mediaFeature == MediaFeatureNames::colorIndexMediaFeature
         || mediaFeature == MediaFeatureNames::maxColorIndexMediaFeature
         || mediaFeature == MediaFeatureNames::minColorIndexMediaFeature
-        || mediaFeature == MediaFeatureNames::min_monochromeMediaFeature
-        || mediaFeature == MediaFeatureNames::max_monochromeMediaFeature;
+        || mediaFeature == MediaFeatureNames::minMonochromeMediaFeature
+        || mediaFeature == MediaFeatureNames::maxMonochromeMediaFeature;
 }
 
 static inline bool featureWithPositiveNumber(const AtomicString& mediaFeature, const CSSParserValue* value)
@@ -98,8 +98,8 @@ static inline bool featureWithPositiveNumber(const AtomicString& mediaFeature, c
     if (value->unit != CSSPrimitiveValue::CSS_NUMBER || value->fValue < 0)
         return false;
 
-    return mediaFeature == MediaFeatureNames::transform_2dMediaFeature
-        || mediaFeature == MediaFeatureNames::transform_3dMediaFeature
+    return mediaFeature == MediaFeatureNames::transform2dMediaFeature
+        || mediaFeature == MediaFeatureNames::transform3dMediaFeature
         || mediaFeature == MediaFeatureNames::transitionMediaFeature
         || mediaFeature == MediaFeatureNames::animationMediaFeature
         || mediaFeature == MediaFeatureNames::devicePixelRatioMediaFeature
@@ -118,12 +118,12 @@ static inline bool featureWithZeroOrOne(const AtomicString& mediaFeature, const 
 
 static inline bool featureWithAspectRatio(const AtomicString& mediaFeature)
 {
-    return mediaFeature == MediaFeatureNames::aspect_ratioMediaFeature
-        || mediaFeature == MediaFeatureNames::device_aspect_ratioMediaFeature
-        || mediaFeature == MediaFeatureNames::min_aspect_ratioMediaFeature
-        || mediaFeature == MediaFeatureNames::max_aspect_ratioMediaFeature
-        || mediaFeature == MediaFeatureNames::min_device_aspect_ratioMediaFeature
-        || mediaFeature == MediaFeatureNames::max_device_aspect_ratioMediaFeature;
+    return mediaFeature == MediaFeatureNames::aspectRatioMediaFeature
+        || mediaFeature == MediaFeatureNames::deviceAspectRatioMediaFeature
+        || mediaFeature == MediaFeatureNames::minAspectRatioMediaFeature
+        || mediaFeature == MediaFeatureNames::maxAspectRatioMediaFeature
+        || mediaFeature == MediaFeatureNames::minDeviceAspectRatioMediaFeature
+        || mediaFeature == MediaFeatureNames::maxDeviceAspectRatioMediaFeature;
 }
 
 static inline bool featureWithoutValue(const AtomicString& mediaFeature)
@@ -135,20 +135,34 @@ static inline bool featureWithoutValue(const AtomicString& mediaFeature)
         || mediaFeature == MediaFeatureNames::gridMediaFeature
         || mediaFeature == MediaFeatureNames::heightMediaFeature
         || mediaFeature == MediaFeatureNames::widthMediaFeature
-        || mediaFeature == MediaFeatureNames::device_heightMediaFeature
-        || mediaFeature == MediaFeatureNames::device_widthMediaFeature
+        || mediaFeature == MediaFeatureNames::deviceHeightMediaFeature
+        || mediaFeature == MediaFeatureNames::deviceWidthMediaFeature
         || mediaFeature == MediaFeatureNames::orientationMediaFeature
-        || mediaFeature == MediaFeatureNames::aspect_ratioMediaFeature
-        || mediaFeature == MediaFeatureNames::device_aspect_ratioMediaFeature
+        || mediaFeature == MediaFeatureNames::aspectRatioMediaFeature
+        || mediaFeature == MediaFeatureNames::deviceAspectRatioMediaFeature
         || mediaFeature == MediaFeatureNames::hoverMediaFeature
-        || mediaFeature == MediaFeatureNames::transform_2dMediaFeature
-        || mediaFeature == MediaFeatureNames::transform_3dMediaFeature
+        || mediaFeature == MediaFeatureNames::transform2dMediaFeature
+        || mediaFeature == MediaFeatureNames::transform3dMediaFeature
         || mediaFeature == MediaFeatureNames::transitionMediaFeature
         || mediaFeature == MediaFeatureNames::animationMediaFeature
-        || mediaFeature == MediaFeatureNames::view_modeMediaFeature
+        || mediaFeature == MediaFeatureNames::viewModeMediaFeature
         || mediaFeature == MediaFeatureNames::pointerMediaFeature
         || mediaFeature == MediaFeatureNames::devicePixelRatioMediaFeature
         || mediaFeature == MediaFeatureNames::resolutionMediaFeature;
+}
+
+bool MediaQueryExp::isViewportDependent() const
+{
+    return m_mediaFeature == MediaFeatureNames::widthMediaFeature
+        || m_mediaFeature == MediaFeatureNames::heightMediaFeature
+        || m_mediaFeature == MediaFeatureNames::minWidthMediaFeature
+        || m_mediaFeature == MediaFeatureNames::minHeightMediaFeature
+        || m_mediaFeature == MediaFeatureNames::maxWidthMediaFeature
+        || m_mediaFeature == MediaFeatureNames::maxHeightMediaFeature
+        || m_mediaFeature == MediaFeatureNames::orientationMediaFeature
+        || m_mediaFeature == MediaFeatureNames::aspectRatioMediaFeature
+        || m_mediaFeature == MediaFeatureNames::minAspectRatioMediaFeature
+        || m_mediaFeature == MediaFeatureNames::maxAspectRatioMediaFeature;
 }
 
 inline MediaQueryExp::MediaQueryExp(const AtomicString& mediaFeature, CSSParserValueList* valueList)
