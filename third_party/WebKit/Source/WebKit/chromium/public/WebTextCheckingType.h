@@ -36,12 +36,6 @@ namespace WebKit {
 enum WebTextCheckingType {
     WebTextCheckingTypeSpelling = 1 << 1,
     WebTextCheckingTypeGrammar  = 1 << 2,
-    WebTextCheckingTypeLink = 1 << 5,
-    WebTextCheckingTypeQuote = 1 << 6,
-    WebTextCheckingTypeDash = 1 << 7,
-    WebTextCheckingTypeReplacement = 1 << 8,
-    WebTextCheckingTypeCorrection = 1 << 9,
-    WebTextCheckingTypeShowCorrectionPanel = 1 << 10
 };
 
 typedef unsigned WebTextCheckingTypeMask;

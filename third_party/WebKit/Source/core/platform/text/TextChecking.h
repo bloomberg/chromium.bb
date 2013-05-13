@@ -41,12 +41,6 @@ enum TextCheckingType {
     TextCheckingTypeNone        = 0,
     TextCheckingTypeSpelling    = 1 << 1,
     TextCheckingTypeGrammar     = 1 << 2,
-    TextCheckingTypeLink        = 1 << 5,
-    TextCheckingTypeQuote       = 1 << 6,
-    TextCheckingTypeDash        = 1 << 7,
-    TextCheckingTypeReplacement = 1 << 8,
-    TextCheckingTypeCorrection  = 1 << 9,
-    TextCheckingTypeShowCorrectionPanel = 1 << 10
 };
 
 typedef unsigned TextCheckingTypeMask;

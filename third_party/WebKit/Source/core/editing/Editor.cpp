@@ -1669,7 +1669,7 @@ void Editor::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart,
         if (isContinuousSpellCheckingEnabled())
             textCheckingOptions |= TextCheckingTypeSpelling;
 
-        if (!(textCheckingOptions & (TextCheckingTypeSpelling | TextCheckingTypeReplacement)))
+        if (!(textCheckingOptions & TextCheckingTypeSpelling))
             return;
 
         if (isGrammarCheckingEnabled())
@@ -1789,7 +1789,6 @@ void Editor::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textC
     ASSERT(unifiedTextCheckerEnabled());
 
     bool shouldMarkGrammar = textCheckingOptions & TextCheckingTypeGrammar;
-    bool shouldShowCorrectionPanel = textCheckingOptions & TextCheckingTypeShowCorrectionPanel;
 
     // This function is called with selections already expanded to word boundaries.
     if (!client() || !spellingRange || (shouldMarkGrammar && !grammarRange))
@@ -1809,7 +1808,7 @@ void Editor::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textC
         return;
     RefPtr<Range> paragraphRange = paragraphToCheck.paragraphRange();
 
-    bool asynchronous = m_frame && m_frame->settings() && m_frame->settings()->asynchronousSpellCheckingEnabled() && !shouldShowCorrectionPanel;
+    bool asynchronous = m_frame && m_frame->settings() && m_frame->settings()->asynchronousSpellCheckingEnabled();
 
     // In asynchronous mode, we intentionally check paragraph-wide sentence.
     RefPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessIncremental, asynchronous ? paragraphRange : rangeToCheck, paragraphRange);
@@ -1834,10 +1833,6 @@ void Editor::markAndReplaceFor(PassRefPtr<SpellCheckRequest> request, const Vect
 
     bool shouldMarkSpelling = textCheckingOptions & TextCheckingTypeSpelling;
     bool shouldMarkGrammar = textCheckingOptions & TextCheckingTypeGrammar;
-    bool shouldMarkLink = textCheckingOptions & TextCheckingTypeLink;
-    bool shouldPerformReplacement = textCheckingOptions & TextCheckingTypeReplacement;
-    bool shouldShowCorrectionPanel = textCheckingOptions & TextCheckingTypeShowCorrectionPanel;
-    bool shouldCheckForCorrection = shouldShowCorrectionPanel || (textCheckingOptions & TextCheckingTypeCorrection);
 
     // Expand the range to encompass entire paragraphs, since text checking needs that much context.
     int selectionOffset = 0;
@@ -1846,7 +1841,7 @@ void Editor::markAndReplaceFor(PassRefPtr<SpellCheckRequest> request, const Vect
     bool restoreSelectionAfterChange = false;
     bool adjustSelectionForParagraphBoundaries = false;
 
-    if (shouldPerformReplacement || shouldMarkSpelling || shouldCheckForCorrection) {
+    if (shouldMarkSpelling) {
         if (m_frame->selection()->selectionType() == VisibleSelection::CaretSelection) {
             // Attempt to save the caret position so we can restore it later if needed
             Position caretPosition = m_frame->selection()->end();
@@ -1859,16 +1854,10 @@ void Editor::markAndReplaceFor(PassRefPtr<SpellCheckRequest> request, const Vect
         }
     }
 
-    // If this checking is only for showing correction panel, we shouldn't bother to mark misspellings.
-    if (shouldShowCorrectionPanel)
-        shouldMarkSpelling = false;
-
-    int offsetDueToReplacement = 0;
-
     for (unsigned i = 0; i < results.size(); i++) {
-        int spellingRangeEndOffset = paragraph.checkingEnd() + offsetDueToReplacement;
+        int spellingRangeEndOffset = paragraph.checkingEnd();
         const TextCheckingResult* result = &results[i];
-        int resultLocation = result->location + offsetDueToReplacement;
+        int resultLocation = result->location;
         int resultLength = result->length;
         bool resultEndsAtAmbiguousBoundary = ambiguousBoundaryOffset >= 0 && resultLocation + resultLength == ambiguousBoundaryOffset;
 
@@ -1889,87 +1878,6 @@ void Editor::markAndReplaceFor(PassRefPtr<SpellCheckRequest> request, const Vect
                 if (paragraph.checkingRangeCovers(resultLocation + detail->location, detail->length)) {
                     RefPtr<Range> badGrammarRange = paragraph.subrange(resultLocation + detail->location, detail->length);
                     badGrammarRange->startContainer()->document()->markers()->addMarker(badGrammarRange.get(), DocumentMarker::Grammar, detail->userDescription, result->hash);
-                }
-            }
-        } else if (resultLocation + resultLength <= spellingRangeEndOffset && resultLocation + resultLength >= paragraph.checkingStart()
-                    && (result->type == TextCheckingTypeLink
-                    || result->type == TextCheckingTypeQuote
-                    || result->type == TextCheckingTypeDash
-                    || result->type == TextCheckingTypeReplacement
-                    || result->type == TextCheckingTypeCorrection)) {
-            // In this case the result range just has to touch the spelling range, so we can handle replacing non-word text such as punctuation.
-            ASSERT(resultLength > 0 && resultLocation >= 0);
-
-            if (shouldShowCorrectionPanel && (resultLocation + resultLength < spellingRangeEndOffset || result->type != TextCheckingTypeCorrection))
-                continue;
-
-            int replacementLength = result->replacement.length();
-
-            // Apply replacement if:
-            // 1. The replacement length is non-zero.
-            // 2. The result doesn't end at an ambiguous boundary.
-            //    (FIXME: this is required until 6853027 is fixed and text checking can do this for us
-            bool doReplacement = replacementLength > 0 && !resultEndsAtAmbiguousBoundary;
-            RefPtr<Range> rangeToReplace = paragraph.subrange(resultLocation, resultLength);
-            VisibleSelection selectionToReplace(rangeToReplace.get(), DOWNSTREAM);
-
-            // adding links should be done only immediately after they are typed
-            int resultEnd = resultLocation + resultLength;
-            if (result->type == TextCheckingTypeLink
-                && (selectionOffset > resultEnd + 1 || selectionOffset <= resultLocation))
-                continue;
-
-            if (!(shouldPerformReplacement || shouldCheckForCorrection || shouldMarkLink) || !doReplacement)
-                continue;
-
-            String replacedString = plainText(rangeToReplace.get());
-
-            if (shouldShowCorrectionPanel) {
-                ASSERT_NOT_REACHED();
-
-                // shouldShowCorrectionPanel can be true only when the panel is available.
-                if (resultLocation + resultLength == spellingRangeEndOffset) {
-                    // We only show the correction panel on the last word.
-                    break;
-                }
-                // If this function is called for showing correction panel, we ignore other correction or replacement.
-                continue;
-            }
-
-            if (selectionToReplace != m_frame->selection()->selection()) {
-                if (!m_frame->selection()->shouldChangeSelection(selectionToReplace))
-                    continue;
-            }
-
-            if (result->type == TextCheckingTypeLink) {
-                m_frame->selection()->setSelection(selectionToReplace);
-                selectionChanged = true;
-                restoreSelectionAfterChange = false;
-                if (canEditRichly())
-                    applyCommand(CreateLinkCommand::create(m_frame->document(), result->replacement));
-            } else if (canEdit() && shouldInsertText(result->replacement, rangeToReplace.get(), EditorInsertActionTyped)) {
-                Node* root = paragraph.paragraphRange()->startContainer();
-                while (ContainerNode* parent = root->parentNode())
-                    root = parent;
-
-                int paragraphStartIndex = TextIterator::rangeLength(Range::create(m_frame->document(), root, 0, paragraph.paragraphRange()->startContainer(), paragraph.paragraphRange()->startOffset()).get());
-                int paragraphLength = TextIterator::rangeLength(paragraph.paragraphRange().get());
-                applyCommand(SpellingCorrectionCommand::create(rangeToReplace, result->replacement));
-                // Recalculate newParagraphRange, since SpellingCorrectionCommand modifies the DOM, such that the original paragraph range is no longer valid. Radar: 10305315 Bugzilla: 89526
-                RefPtr<Range> newParagraphRange = TextIterator::rangeFromLocationAndLength(toContainerNode(root), paragraphStartIndex, paragraphLength + replacementLength - resultLength);
-                paragraph = TextCheckingParagraph(TextIterator::subrange(newParagraphRange.get(), resultLocation, replacementLength), newParagraphRange);
-                
-                if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache()) {
-                    if (Element* root = m_frame->selection()->selection().rootEditableElement())
-                        cache->postNotification(root, AXObjectCache::AXAutocorrectionOccured, true);
-                }
-
-                selectionChanged = true;
-                offsetDueToReplacement += replacementLength - resultLength;
-                if (resultLocation < selectionOffset) {
-                    selectionOffset += replacementLength - resultLength;
-                    if (ambiguousBoundaryOffset >= 0)
-                        ambiguousBoundaryOffset = selectionOffset - 1;
                 }
             }
         }
@@ -2568,18 +2476,12 @@ TextCheckingTypeMask Editor::resolveTextCheckingTypeMask(TextCheckingTypeMask te
 {
     bool shouldMarkSpelling = textCheckingOptions & TextCheckingTypeSpelling;
     bool shouldMarkGrammar = textCheckingOptions & TextCheckingTypeGrammar;
-    bool shouldShowCorrectionPanel = textCheckingOptions & TextCheckingTypeShowCorrectionPanel;
-    bool shouldCheckForCorrection = shouldShowCorrectionPanel || (textCheckingOptions & TextCheckingTypeCorrection);
 
     TextCheckingTypeMask checkingTypes = 0;
     if (shouldMarkSpelling)
         checkingTypes |= TextCheckingTypeSpelling;
     if (shouldMarkGrammar)
         checkingTypes |= TextCheckingTypeGrammar;
-    if (shouldCheckForCorrection)
-        checkingTypes |= TextCheckingTypeCorrection;
-    if (shouldShowCorrectionPanel)
-        checkingTypes |= TextCheckingTypeShowCorrectionPanel;
 
     return checkingTypes;
 }
