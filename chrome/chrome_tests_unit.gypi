@@ -1240,6 +1240,7 @@
         'browser/thumbnails/render_widget_snapshot_taker_unittest.cc',
         'browser/thumbnails/simple_thumbnail_crop_unittest.cc',
         'browser/thumbnails/thumbnail_service_unittest.cc',
+        'browser/translate/translate_manager_metrics_unittest.cc',
         'browser/translate/translate_manager_unittest.cc',
         'browser/ui/android/tab_model/tab_model_unittest.cc',
         'browser/ui/ash/event_rewriter_unittest.cc',

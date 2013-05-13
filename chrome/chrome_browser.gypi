@@ -2175,6 +2175,8 @@
         'browser/translate/translate_infobar_delegate.h',
         'browser/translate/translate_manager.cc',
         'browser/translate/translate_manager.h',
+        'browser/translate/translate_manager_metrics.cc',
+        'browser/translate/translate_manager_metrics.h',
         'browser/translate/translate_prefs.cc',
         'browser/translate/translate_prefs.h',
         'browser/translate/translate_tab_helper.cc',

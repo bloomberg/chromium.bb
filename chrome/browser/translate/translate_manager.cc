@@ -23,6 +23,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_manager_metrics.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -526,32 +527,59 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
-  if (!prefs->GetBoolean(prefs::kEnableTranslate))
-    return;
-
-  // Allow disabling of translate from the command line to assist with
-  // automated browser testing.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableTranslate))
-    return;
-
-  std::string target_lang = GetTargetLanguage(prefs);
-  std::string language_code = GetLanguageCode(page_lang);
-  // Nothing to do if either the language Chrome is in or the language of the
-  // page is not supported by the translation server.
-  if (target_lang.empty() || !IsSupportedLanguage(language_code)) {
+  if (!prefs->GetBoolean(prefs::kEnableTranslate)) {
+    TranslateManagerMetrics::ReportInitiationStatus(
+        TranslateManagerMetrics::INITIATION_STATUS_DISABLED_BY_PREFS);
     return;
   }
 
-  // We don't want to translate:
-  // - any Chrome specific page (New Tab Page, Download, History... pages).
-  // - similar languages (ex: en-US to en).
-  // - any user black-listed URLs or user selected language combination.
-  // - any language the user configured as accepted languages.
+  // Allow disabling of translate from the command line to assist with
+  // automated browser testing.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTranslate)) {
+    TranslateManagerMetrics::ReportInitiationStatus(
+        TranslateManagerMetrics::INITIATION_STATUS_DISABLED_BY_SWITCH);
+    return;
+  }
+
+  // Don't translate any Chrome specific page, e.g., New Tab Page, Download,
+  // History, and so on.
   GURL page_url = web_contents->GetURL();
-  if (!IsTranslatableURL(page_url) ||
-      language_code == target_lang ||
-      !TranslatePrefs::CanTranslate(prefs, language_code, page_url) ||
-      IsAcceptLanguage(web_contents, language_code)) {
+  if (!IsTranslatableURL(page_url)) {
+    TranslateManagerMetrics::ReportInitiationStatus(
+        TranslateManagerMetrics::INITIATION_STATUS_URL_IS_NOT_SUPPORTED);
+    return;
+  }
+
+  // Don't translate similar languages (ex: en-US to en).
+  std::string target_lang = GetTargetLanguage(prefs);
+  std::string language_code = GetLanguageCode(page_lang);
+  if (language_code == target_lang) {
+    TranslateManagerMetrics::ReportInitiationStatus(
+        TranslateManagerMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES);
+    return;
+  }
+
+  // Don't translate any language the user configured as accepted languages.
+  if (IsAcceptLanguage(web_contents, language_code)) {
+    TranslateManagerMetrics::ReportInitiationStatus(
+        TranslateManagerMetrics::INITIATION_STATUS_ACCEPT_LANGUAGES);
+    return;
+  }
+
+  // Nothing to do if either the language Chrome is in or the language of the
+  // page is not supported by the translation server.
+  if (target_lang.empty() || !IsSupportedLanguage(language_code)) {
+    TranslateManagerMetrics::ReportInitiationStatus(
+        TranslateManagerMetrics::INITIATION_STATUS_LANGUAGE_IS_NOT_SUPPORTED);
+    return;
+  }
+
+  // Don't translate any user black-listed URLs or user selected language
+  // combination.
+  if (!TranslatePrefs::CanTranslate(prefs, language_code, page_url)) {
+    TranslateManagerMetrics::ReportInitiationStatus(
+        TranslateManagerMetrics::INITIATION_STATUS_DISABLED_BY_CONFIG);
     return;
   }
 
@@ -567,6 +595,8 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
     // Also, GetLanguageCode will take care of removing country code if any.
     auto_target_lang = GetLanguageCode(auto_target_lang);
     if (IsSupportedLanguage(auto_target_lang)) {
+      TranslateManagerMetrics::ReportInitiationStatus(
+          TranslateManagerMetrics::INITIATION_STATUS_AUTO_BY_CONFIG);
       TranslatePage(web_contents, language_code, auto_target_lang);
       return;
     }
@@ -581,11 +611,15 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
       translate_tab_helper->language_state().AutoTranslateTo();
   if (!auto_translate_to.empty()) {
     // This page was navigated through a click from a translated page.
+    TranslateManagerMetrics::ReportInitiationStatus(
+        TranslateManagerMetrics::INITIATION_STATUS_AUTO_BY_LINK);
     TranslatePage(web_contents, language_code, auto_translate_to);
     return;
   }
 
   // Prompts the user if he/she wants the page translated.
+  TranslateManagerMetrics::ReportInitiationStatus(
+      TranslateManagerMetrics::INITIATION_STATUS_SHOW_INFOBAR);
   TranslateInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents), false,
       TranslateInfoBarDelegate::BEFORE_TRANSLATE, TranslateErrors::NONE,
