@@ -14,13 +14,6 @@
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification.h"
 
-namespace {
-
-// Compensates for padding already provided by UI elements involved.
-const int kTextTopPaddingAdjustment = -6;
-
-}  // namespace
-
 @interface MCNotificationController (Private)
 // Configures a NSBox to be borderless, titleless, and otherwise appearance-
 // free.
@@ -117,10 +110,8 @@ const int kTextTopPaddingAdjustment = -6;
 
   // In this basic notification UI, the message body is the bottom-most
   // vertical element. If it is out of the rootView's bounds, resize the view.
-  if (NSMinY(messageFrame) <
-          message_center::kTextTopPadding + kTextTopPaddingAdjustment) {
-    CGFloat delta = message_center::kTextTopPadding +
-                    kTextTopPaddingAdjustment - NSMinY(messageFrame);
+  if (NSMinY(messageFrame) < message_center::kTextTopPadding) {
+    CGFloat delta = message_center::kTextTopPadding - NSMinY(messageFrame);
     rootFrame.size.height += delta;
     titleFrame.origin.y += delta;
     messageFrame.origin.y += delta;
