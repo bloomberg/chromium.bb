@@ -29,7 +29,7 @@ class ResourceMetadataStorage {
  public:
   // This should be incremented when incompatibility change is made to DB
   // format.
-  static const int kDBVersion = 5;
+  static const int kDBVersion = 6;
 
   class Iterator {
    public:
