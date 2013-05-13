@@ -217,6 +217,7 @@ TranslatorPatterns = [
                        "env.append('LD_FLAGS', '--noirt')"),
   ( '--noirtshim',     "env.set('USE_IRT_SHIM', '0')"),
   ( '--newlib-shared-experiment',  "env.set('NEWLIB_SHARED_EXPERIMENT', '1')"),
+  ( '(--pnacl-nativeld=.+)', "env.append('LD_FLAGS', $0)"),
 
   # Allowing C++ exception handling causes a specific set of native objects to
   # get linked into the nexe.
