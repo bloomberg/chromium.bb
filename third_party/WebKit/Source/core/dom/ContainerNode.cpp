@@ -30,9 +30,11 @@
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MutationEvent.h"
+#include "core/dom/NodeRareData.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
+#include "core/html/HTMLCollection.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/Chrome.h"
@@ -822,6 +824,35 @@ void ContainerNode::setHovered(bool over)
         if (renderer() && renderer()->style()->hasAppearance())
             renderer()->theme()->stateChanged(renderer(), HoverState);
     }
+}
+
+PassRefPtr<HTMLCollection> ContainerNode::children()
+{
+    return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<HTMLCollection>(this, NodeChildren);
+}
+
+Element* ContainerNode::firstElementChild() const
+{
+    return ElementTraversal::firstWithin(this);
+}
+
+Element* ContainerNode::lastElementChild() const
+{
+    Node* n = lastChild();
+    while (n && !n->isElementNode())
+        n = n->previousSibling();
+    return toElement(n);
+}
+
+unsigned ContainerNode::childElementCount() const
+{
+    unsigned count = 0;
+    Node* n = firstChild();
+    while (n) {
+        count += n->isElementNode();
+        n = n->nextSibling();
+    }
+    return count;
 }
 
 unsigned ContainerNode::childNodeCount() const

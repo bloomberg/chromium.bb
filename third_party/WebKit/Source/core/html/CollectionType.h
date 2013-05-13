@@ -41,7 +41,7 @@ enum CollectionType {
     DocumentNamedItems,
 
     // Unnamed HTMLCollection types cached in elements.
-    NodeChildren, // first-level children (IE)
+    NodeChildren, // first-level children (ParentNode DOM interface)
     TableTBodies, // all <tbody> elements in this table
     TSectionRows, // all row elements in this table section
     TableRows,

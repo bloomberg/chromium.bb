@@ -50,7 +50,6 @@
                             [Default=Undefined] optional DOMString text);
 
     [EnabledAtRuntime=imeAPI] InputMethodContext getInputContext();
-    readonly attribute HTMLCollection children;
 
              [TreatNullAs=NullString, SetterRaisesException] attribute DOMString contentEditable;
     readonly attribute boolean isContentEditable;

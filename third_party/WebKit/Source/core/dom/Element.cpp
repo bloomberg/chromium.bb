@@ -2345,31 +2345,6 @@ RenderObject* Element::pseudoElementRenderer(PseudoId pseudoId) const
     return 0;
 }
 
-// ElementTraversal API
-Element* Element::firstElementChild() const
-{
-    return ElementTraversal::firstWithin(this);
-}
-
-Element* Element::lastElementChild() const
-{
-    Node* n = lastChild();
-    while (n && !n->isElementNode())
-        n = n->previousSibling();
-    return toElement(n);
-}
-
-unsigned Element::childElementCount() const
-{
-    unsigned count = 0;
-    Node* n = firstChild();
-    while (n) {
-        count += n->isElementNode();
-        n = n->nextSibling();
-    }
-    return count;
-}
-
 bool Element::matchesReadOnlyPseudoClass() const
 {
     return false;

@@ -25,5 +25,11 @@
     // NodeSelector - Selector API
     [RaisesException] Element querySelector(DOMString selectors);
     [RaisesException] NodeList querySelectorAll(DOMString selectors);
+
+    // ParentNode interface API
+    readonly attribute HTMLCollection children;
+    readonly attribute Element firstElementChild;
+    readonly attribute Element lastElementChild;
+    readonly attribute unsigned long childElementCount;
 };
 

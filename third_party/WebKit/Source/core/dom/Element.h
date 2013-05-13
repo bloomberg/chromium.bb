@@ -504,11 +504,6 @@ public:
     bool childNeedsShadowWalker() const;
     void didShadowTreeAwareChildrenChange();
 
-    // ElementTraversal API
-    Element* firstElementChild() const;
-    Element* lastElementChild() const;
-    unsigned childElementCount() const;
-
     virtual bool matchesReadOnlyPseudoClass() const;
     virtual bool matchesReadWritePseudoClass() const;
     bool webkitMatchesSelector(const String& selectors, ExceptionCode&);

@@ -41,8 +41,6 @@ class HTMLElement : public StyledElement {
 public:
     static PassRefPtr<HTMLElement> create(const QualifiedName& tagName, Document*);
 
-    PassRefPtr<HTMLCollection> children();
-
     virtual String title() const OVERRIDE FINAL;
 
     virtual short tabIndex() const;

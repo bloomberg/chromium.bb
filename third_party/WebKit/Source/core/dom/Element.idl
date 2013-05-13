@@ -101,7 +101,8 @@
     // WebKit extension, pending specification.
     [RaisesException] boolean webkitMatchesSelector([Default=Undefined] optional DOMString selectors);
 
-    // ElementTraversal API
+    // ParentNode interface API
+    [PerWorldBindings] readonly attribute HTMLCollection children;
     [PerWorldBindings] readonly attribute Element firstElementChild;
     [PerWorldBindings] readonly attribute Element lastElementChild;
     [PerWorldBindings] readonly attribute unsigned long childElementCount;

@@ -726,12 +726,6 @@ void HTMLElement::setTranslate(bool enable)
     setAttribute(translateAttr, enable ? "yes" : "no");
 }
 
-
-PassRefPtr<HTMLCollection> HTMLElement::children()
-{
-    return ensureCachedHTMLCollection(NodeChildren);
-}
-
 bool HTMLElement::rendererIsNeeded(const NodeRenderingContext& context)
 {
     if (hasLocalName(noscriptTag)) {

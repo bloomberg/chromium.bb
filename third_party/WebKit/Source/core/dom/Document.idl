@@ -288,5 +288,10 @@
     // Security Policy API: http://dvcs.w3.org/hg/content-security-policy/raw-file/tip/csp-specification.dev.html#script-interfaces
     [EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] readonly attribute DOMSecurityPolicy securityPolicy;
 
+    // ParentNode interface API
+    readonly attribute HTMLCollection children;
+    readonly attribute Element firstElementChild;
+    readonly attribute Element lastElementChild;
+    readonly attribute unsigned long childElementCount;
 };
 

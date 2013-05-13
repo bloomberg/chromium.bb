@@ -33,7 +33,8 @@
 namespace WebCore {
 
 class FloatPoint;
-    
+class HTMLCollection;
+
 typedef void (*NodeCallback)(Node*, unsigned);
 
 namespace Private { 
@@ -85,6 +86,12 @@ public:
     Node* firstChild() const { return m_firstChild; }
     Node* lastChild() const { return m_lastChild; }
     bool hasChildNodes() const { return m_firstChild; }
+
+    // ParentNode interface API
+    PassRefPtr<HTMLCollection> children();
+    Element* firstElementChild() const;
+    Element* lastElementChild() const;
+    unsigned childElementCount() const;
 
     unsigned childNodeCount() const;
     Node* childNode(unsigned index) const;
