@@ -178,7 +178,7 @@ bool ComponentExtensionIMEManagerImpl::ReadExtensionInfo(
       url_string);
   if (!url.is_valid())
     return false;
-  out->options_page_url = url.spec();
+  out->options_page_url = url;
   return true;
 }
 

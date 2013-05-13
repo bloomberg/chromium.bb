@@ -39,8 +39,8 @@ InputMethodWhitelist::GetSupportedInputMethods() const {
         "",
         layouts,
         kInputMethods[i].language_code,
-        ""));  // options page url, not available for non-extension input
-               // method.
+        GURL()));  // options page url, not available for non-extension input
+                   // method.
   }
   return input_methods.Pass();
 }

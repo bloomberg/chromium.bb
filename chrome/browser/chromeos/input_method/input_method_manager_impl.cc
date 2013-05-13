@@ -423,7 +423,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   // TODO(nona): Support options page for normal extension ime.
   //             crbug.com/156283.
   extra_input_methods_[id] =
-      InputMethodDescriptor(id, name, layouts, language, "");
+      InputMethodDescriptor(id, name, layouts, language, GURL());
   if (Contains(enabled_extension_imes_, id) &&
       !ComponentExtensionIMEManager::IsComponentExtensionIMEId(id)) {
     if (!Contains(active_input_method_ids_, id)) {

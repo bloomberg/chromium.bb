@@ -49,7 +49,7 @@ class CrosLanguageOptionsHandlerTest : public testing::Test {
                                  "",  // name
                                  layouts,
                                  language_code,
-                                 "");  // options page url
+                                 GURL());  // options page url
   }
 };
 

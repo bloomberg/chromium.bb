@@ -123,7 +123,7 @@ InputMethodDescriptor MockInputMethodManager::GetCurrentInputMethod() const {
                                  descriptor.name(),
                                  descriptor.keyboard_layouts(),
                                  descriptor.language_code(),
-                                 "");  // options page url.
+                                 GURL());  // options page url.
   }
   return descriptor;
 }

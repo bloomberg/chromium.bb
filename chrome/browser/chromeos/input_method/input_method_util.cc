@@ -656,7 +656,7 @@ InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
                                "",
                                layouts,
                                "en-US",
-                               "");  // options page, not available.
+                               GURL());  // options page, not available.
 }
 
 void InputMethodUtil::ReloadInternalMaps() {
