@@ -122,7 +122,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual void SetNotificationImage(const std::string& notification_id,
                                     const gfx::Image& image) = 0;
 
-  // Sets the image for the icon of the specific action button.
+  // Sets the image for the icon of the specific aaction button.
   virtual void SetNotificationButtonIcon(const std::string& notification_id,
                                          int button_index,
                                          const gfx::Image& image) = 0;

@@ -51,9 +51,10 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
 
   virtual void OnNotificationAdded(
       const std::string& notification_id) OVERRIDE {
-    for (const auto& notification : message_center_->GetPopupNotifications()) {
-      if (notification->id() == notification_id) {
-        [popup_collection_ addNotification:notification];
+    const auto& popups = message_center_->GetPopupNotifications();
+    for (auto it = popups.begin(); it != popups.end(); ++it) {
+      if ((*it)->id() == notification_id) {
+        [popup_collection_ addNotification:*it];
         return;
       }
     }

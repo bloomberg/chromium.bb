@@ -5,8 +5,6 @@
 #ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_OBSERVER_H_
 #define UI_MESSAGE_CENTER_MESSAGE_CENTER_OBSERVER_H_
 
-#include <string>
-
 #include "ui/message_center/message_center_export.h"
 
 namespace message_center {
