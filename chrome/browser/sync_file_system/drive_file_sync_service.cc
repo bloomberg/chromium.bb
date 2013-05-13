@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_task_manager.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
@@ -102,51 +102,22 @@ DriveMetadata::ResourceType SyncFileTypeToDriveMetadataResourceType(
   return DriveMetadata_ResourceType_RESOURCE_TYPE_FILE;
 }
 
+void SyncFileCallbackAdapter(
+    const SyncStatusCallback& status_callback,
+    const SyncFileCallback& callback,
+    SyncStatusCode status,
+    const FileSystemURL& url) {
+  status_callback.Run(status);
+  callback.Run(status, url);
+}
+
 }  // namespace
 
 const char DriveFileSyncService::kServiceName[] = "syncfs";
 ConflictResolutionPolicy DriveFileSyncService::kDefaultPolicy =
     CONFLICT_RESOLUTION_LAST_WRITE_WIN;
 
-class DriveFileSyncService::TaskToken {
- public:
-  explicit TaskToken(const base::WeakPtr<DriveFileSyncService>& sync_service)
-      : sync_service_(sync_service) {
-  }
-
-  void UpdateTask(const tracked_objects::Location& location) {
-    location_ = location;
-    DVLOG(2) << "Token updated: " << location_.ToString();
-  }
-
-  const tracked_objects::Location& location() const { return location_; }
-
-  ~TaskToken() {
-    // All task on DriveFileSyncService must hold TaskToken instance to ensure
-    // no other tasks are running. Also, as soon as a task finishes to work,
-    // it must return the token to DriveFileSyncService.
-    // Destroying a token with valid |sync_service_| indicates the token was
-    // dropped by a task without returning.
-    if (sync_service_) {
-      NOTREACHED() << "Unexpected TaskToken deletion from: "
-                   << location_.ToString();
-
-      // Reinitializes the token.
-      sync_service_->NotifyTaskDone(
-          SYNC_STATUS_OK,
-          make_scoped_ptr(new TaskToken(sync_service_->AsWeakPtr())));
-    }
-  }
-
- private:
-  base::WeakPtr<DriveFileSyncService> sync_service_;
-  tracked_objects::Location location_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskToken);
-};
-
 struct DriveFileSyncService::ProcessRemoteChangeParam {
-  scoped_ptr<TaskToken> token;
   RemoteChange remote_change;
   SyncFileCallback callback;
 
@@ -158,11 +129,9 @@ struct DriveFileSyncService::ProcessRemoteChangeParam {
   SyncAction sync_action;
   bool clear_local_changes;
 
-  ProcessRemoteChangeParam(scoped_ptr<TaskToken> token,
-                           const RemoteChange& remote_change,
+  ProcessRemoteChangeParam(const RemoteChange& remote_change,
                            const SyncFileCallback& callback)
-      : token(token.Pass()),
-        remote_change(remote_change),
+      : remote_change(remote_change),
         callback(callback),
         metadata_updated(false),
         sync_action(SYNC_ACTION_NONE),
@@ -171,7 +140,6 @@ struct DriveFileSyncService::ProcessRemoteChangeParam {
 };
 
 struct DriveFileSyncService::ApplyLocalChangeParam {
-  scoped_ptr<TaskToken> token;
   FileSystemURL url;
   FileChange local_change;
   base::FilePath local_path;
@@ -180,25 +148,18 @@ struct DriveFileSyncService::ApplyLocalChangeParam {
   bool has_drive_metadata;
   SyncStatusCallback callback;
 
-  ApplyLocalChangeParam(scoped_ptr<TaskToken> token,
-                        const FileSystemURL& url,
+  ApplyLocalChangeParam(const FileSystemURL& url,
                         const FileChange& local_change,
                         const base::FilePath& local_path,
                         const SyncFileMetadata& local_metadata,
                         const SyncStatusCallback& callback)
-      : token(token.Pass()),
-        url(url),
+      : url(url),
         local_change(local_change),
         local_path(local_path),
         local_metadata(local_metadata),
         has_drive_metadata(false),
         callback(callback) {}
 };
-
-void DriveFileSyncService::SetRemoteChangeProcessor(
-    RemoteChangeProcessor* processor) {
-  remote_change_processor_ = processor;
-}
 
 DriveFileSyncService::ChangeQueueItem::ChangeQueueItem()
     : changestamp(0),
@@ -263,13 +224,11 @@ bool DriveFileSyncService::RemoteChangeComparator::operator()(
   return false;
 }
 
+// DriveFileSyncService ------------------------------------------------------
+
 DriveFileSyncService::~DriveFileSyncService() {
-  // Invalidate WeakPtr instances here explicitly to notify TaskToken that we
-  // can safely discard the token.
-  weak_factory_.InvalidateWeakPtrs();
   if (sync_client_)
     sync_client_->RemoveObserver(this);
-  token_.reset();
 
   google_apis::DriveNotificationManager* drive_notification_manager =
       google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
@@ -280,7 +239,11 @@ DriveFileSyncService::~DriveFileSyncService() {
 scoped_ptr<DriveFileSyncService> DriveFileSyncService::Create(
     Profile* profile) {
   scoped_ptr<DriveFileSyncService> service(new DriveFileSyncService(profile));
-  service->Initialize();
+  scoped_ptr<DriveFileSyncTaskManager> task_manager(
+      new DriveFileSyncTaskManager(service->AsWeakPtr()));
+  SyncStatusCallback callback = base::Bind(
+      &DriveFileSyncTaskManager::Initialize, task_manager->AsWeakPtr());
+  service->Initialize(task_manager.Pass(), callback);
   return service.Pass();
 }
 
@@ -290,8 +253,13 @@ scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
     scoped_ptr<DriveFileSyncClientInterface> sync_client,
     scoped_ptr<DriveMetadataStore> metadata_store) {
   scoped_ptr<DriveFileSyncService> service(new DriveFileSyncService(profile));
+  scoped_ptr<DriveFileSyncTaskManager> task_manager(
+      new DriveFileSyncTaskManager(service->AsWeakPtr()));
+  SyncStatusCallback callback = base::Bind(
+      &DriveFileSyncTaskManager::Initialize, task_manager->AsWeakPtr());
   service->InitializeForTesting(
-      base_dir, sync_client.Pass(), metadata_store.Pass());
+      task_manager.Pass(), base_dir, sync_client.Pass(),
+      metadata_store.Pass(), callback);
   return service.Pass();
 }
 
@@ -313,174 +281,58 @@ void DriveFileSyncService::AddFileStatusObserver(
 void DriveFileSyncService::RegisterOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  DCHECK(origin.SchemeIs(extensions::kExtensionScheme));
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  if (!token) {
-    pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::RegisterOriginForTrackingChanges,
-        AsWeakPtr(), origin, callback));
-    return;
-  }
-
-  // We check state_ but not GetCurrentState() here as we want to accept the
-  // registration if the server is available but sync_enabled_==false case.
-  if (state_ == REMOTE_SERVICE_DISABLED) {
-    NotifyTaskDone(last_operation_status_, token.Pass());
-    callback.Run(last_operation_status_);
-    return;
-  }
-
-  DCHECK(!metadata_store_->IsOriginDisabled(origin));
-  if (!metadata_store_->GetResourceIdForOrigin(origin).empty()) {
-    NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
-    callback.Run(SYNC_STATUS_OK);
-    return;
-  }
-
-  EnsureOriginRootDirectory(
-      origin, base::Bind(&DriveFileSyncService::DidGetDriveDirectoryForOrigin,
-                         AsWeakPtr(), base::Passed(&token), origin, callback));
+  task_manager_->ScheduleTask(
+      base::Bind(&DriveFileSyncService::DoRegisterOriginForTrackingChanges,
+                 AsWeakPtr(), origin),
+      callback);
 }
 
 void DriveFileSyncService::UnregisterOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  if (!token) {
-    pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::UnregisterOriginForTrackingChanges,
-        AsWeakPtr(), origin, callback));
-    return;
-  }
-
-  RemoveRemoteChangesForOrigin(origin);
-  metadata_store_->RemoveOrigin(origin, base::Bind(
-      &DriveFileSyncService::DidChangeOriginOnMetadataStore,
-      AsWeakPtr(), base::Passed(&token), callback));
+  task_manager_->ScheduleTask(
+      base::Bind(&DriveFileSyncService::DoUnregisterOriginForTrackingChanges,
+                 AsWeakPtr(), origin),
+      callback);
 }
 
 void DriveFileSyncService::EnableOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  if (!token) {
-    pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::EnableOriginForTrackingChanges,
-        AsWeakPtr(), origin, callback));
-    return;
-  }
-
-  if (!metadata_store_->IsOriginDisabled(origin)) {
-    NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
-    callback.Run(SYNC_STATUS_OK);
-    return;
-  }
-
-  metadata_store_->EnableOrigin(origin, base::Bind(
-      &DriveFileSyncService::DidChangeOriginOnMetadataStore,
-      AsWeakPtr(), base::Passed(&token), callback));
-  pending_batch_sync_origins_.insert(origin);
+  task_manager_->ScheduleTask(
+      base::Bind(&DriveFileSyncService::DoEnableOriginForTrackingChanges,
+                 AsWeakPtr(), origin),
+      callback);
 }
 
 void DriveFileSyncService::DisableOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  if (!token) {
-    pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::DisableOriginForTrackingChanges,
-        AsWeakPtr(), origin, callback));
-    return;
-  }
-
-  if (!metadata_store_->IsBatchSyncOrigin(origin) &&
-      !metadata_store_->IsIncrementalSyncOrigin(origin)) {
-    NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
-    callback.Run(SYNC_STATUS_OK);
-    return;
-  }
-
-  RemoveRemoteChangesForOrigin(origin);
-  metadata_store_->DisableOrigin(origin, base::Bind(
-      &DriveFileSyncService::DidChangeOriginOnMetadataStore,
-      AsWeakPtr(), base::Passed(&token), callback));
+  task_manager_->ScheduleTask(
+      base::Bind(&DriveFileSyncService::DoDisableOriginForTrackingChanges,
+                 AsWeakPtr(), origin),
+      callback);
 }
 
 void DriveFileSyncService::UninstallOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  if (!token) {
-    pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::UninstallOrigin,
-        AsWeakPtr(), origin, callback));
-    return;
-  }
-
-  std::string resource_id = metadata_store_->GetResourceIdForOrigin(origin);
-
-  // An empty resource_id indicates either one of following two cases:
-  // 1) origin is not in metadata_store_ because the extension was never
-  //    run or it's not managed by this service, and thus no
-  //    origin directory on the remote drive was created.
-  // 2) origin or sync root folder is deleted on Drive.
-  if (resource_id.empty()) {
-    NotifyTaskDone(SYNC_STATUS_UNKNOWN_ORIGIN, token.Pass());
-    callback.Run(SYNC_STATUS_UNKNOWN_ORIGIN);
-    return;
-  }
-
-  // Convert origin's directory GURL to ResourceID and delete it. Expected MD5
-  // is empty to force delete (i.e. skip conflict resolution).
-  sync_client_->DeleteFile(
-      resource_id,
-      std::string(),
-      base::Bind(&DriveFileSyncService::DidUninstallOrigin,
-                 AsWeakPtr(), base::Passed(&token), origin, callback));
+  task_manager_->ScheduleTask(
+      base::Bind(&DriveFileSyncService::DoUninstallOrigin, AsWeakPtr(), origin),
+      callback);
 }
 
 void DriveFileSyncService::ProcessRemoteChange(
     const SyncFileCallback& callback) {
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  DCHECK(remote_change_processor_);
+  task_manager_->ScheduleTask(
+      base::Bind(&DriveFileSyncService::DoProcessRemoteChange, AsWeakPtr(),
+                 callback),
+      base::Bind(&EmptyStatusCallback));
+}
 
-  if (!token) {
-    pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::ProcessRemoteChange, AsWeakPtr(), callback));
-    return;
-  }
-
-  if (GetCurrentState() == REMOTE_SERVICE_DISABLED) {
-    NotifyTaskDone(last_operation_status_, token.Pass());
-    callback.Run(last_operation_status_, FileSystemURL());
-    return;
-  }
-
-  if (pending_changes_.empty()) {
-    NotifyTaskDone(SYNC_STATUS_NO_CHANGE_TO_SYNC, token.Pass());
-    callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC, FileSystemURL());
-    return;
-  }
-
-  const FileSystemURL& url = pending_changes_.begin()->url;
-  const GURL& origin = url.origin();
-  const base::FilePath::StringType& path =
-      fileapi::VirtualPath::GetNormalizedFilePath(url.path());
-  DCHECK(ContainsKey(origin_to_changes_map_, origin));
-  PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
-  DCHECK(ContainsKey(*path_to_change, path));
-  const RemoteChange& remote_change = (*path_to_change)[path];
-
-  DVLOG(1) << "ProcessRemoteChange for " << url.DebugString()
-           << " remote_change:" << remote_change.change.DebugString();
-
-  scoped_ptr<ProcessRemoteChangeParam> param(new ProcessRemoteChangeParam(
-      token.Pass(), remote_change, callback));
-  remote_change_processor_->PrepareForProcessRemoteChange(
-      remote_change.url,
-      kServiceName,
-      base::Bind(&DriveFileSyncService::DidPrepareForProcessRemoteChange,
-                 AsWeakPtr(), base::Passed(&param)));
+void DriveFileSyncService::SetRemoteChangeProcessor(
+    RemoteChangeProcessor* processor) {
+  remote_change_processor_ = processor;
 }
 
 LocalChangeProcessor* DriveFileSyncService::GetLocalChangeProcessor() {
@@ -516,9 +368,6 @@ void DriveFileSyncService::SetSyncEnabled(bool enabled) {
   if (old_state == GetCurrentState())
     return;
 
-  if (!enabled)
-    last_operation_status_ = SYNC_STATUS_SYNC_DISABLED;
-
   const char* status_message = enabled ? "Sync is enabled" : "Sync is disabled";
   FOR_EACH_OBSERVER(
       Observer, service_observers_,
@@ -542,49 +391,13 @@ void DriveFileSyncService::ApplyLocalChange(
     const SyncFileMetadata& local_file_metadata,
     const FileSystemURL& url,
     const SyncStatusCallback& callback) {
-  // TODO(nhiroki): support directory operations (http://crbug.com/161442).
-  DCHECK(IsSyncDirectoryOperationEnabled() ||
-         !local_file_change.IsDirectory());
-
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  if (!token) {
-    pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::ApplyLocalChange, AsWeakPtr(),
-        local_file_change, local_file_path, local_file_metadata,
-        url, callback));
-    return;
-  }
-
-  if (!metadata_store_->IsIncrementalSyncOrigin(url.origin()) &&
-      !metadata_store_->IsBatchSyncOrigin(url.origin())) {
-    // We may get called by LocalFileSyncService to sync local changes
-    // for the origins that are disabled.
-    DVLOG(1) << "Got request for stray origin: " << url.origin().spec();
-    FinalizeLocalSync(token.Pass(), callback, SYNC_STATUS_UNKNOWN_ORIGIN);
-    return;
-  }
-
-  if (GetCurrentState() == REMOTE_SERVICE_DISABLED) {
-    FinalizeLocalSync(token.Pass(), callback, last_operation_status_);
-    return;
-  }
-
-  DriveMetadata metadata;
-  const bool has_metadata =
-      (metadata_store_->ReadEntry(url, &metadata) == SYNC_STATUS_OK);
-
-  scoped_ptr<ApplyLocalChangeParam> param(new ApplyLocalChangeParam(
-      token.Pass(), url,
-      local_file_change, local_file_path, local_file_metadata, callback));
-  param->has_drive_metadata = has_metadata;
-  param->drive_metadata = metadata;
-  if (!has_metadata)
-    param->drive_metadata.set_md5_checksum(std::string());
-
-  EnsureOriginRootDirectory(
-      url.origin(),
-      base::Bind(&DriveFileSyncService::ApplyLocalChangeInternal,
-                 AsWeakPtr(), base::Passed(&param)));
+  task_manager_->ScheduleTask(
+      base::Bind(&DriveFileSyncService::DoApplyLocalChange, AsWeakPtr(),
+                 local_file_change,
+                 local_file_path,
+                 local_file_metadata,
+                 url),
+      callback);
 }
 
 void DriveFileSyncService::OnAuthenticated() {
@@ -611,25 +424,25 @@ void DriveFileSyncService::OnNetworkConnected() {
 
 DriveFileSyncService::DriveFileSyncService(Profile* profile)
     : profile_(profile),
-      last_operation_status_(SYNC_STATUS_OK),
-      last_gdata_error_(google_apis::HTTP_SUCCESS),
       state_(REMOTE_SERVICE_OK),
       sync_enabled_(true),
       largest_fetched_changestamp_(0),
       may_have_unfetched_changes_(false),
       remote_change_processor_(NULL),
-      conflict_resolution_(kDefaultPolicy),
-      weak_factory_(this) {
+      conflict_resolution_(kDefaultPolicy) {
 }
 
-void DriveFileSyncService::Initialize() {
+void DriveFileSyncService::Initialize(
+    scoped_ptr<DriveFileSyncTaskManager> task_manager,
+    const SyncStatusCallback& callback) {
   DCHECK(profile_);
   DCHECK(!metadata_store_);
+  DCHECK(!task_manager_);
+
+  task_manager_ = task_manager.Pass();
 
   temporary_file_dir_ =
       profile_->GetPath().Append(GetSyncFileSystemDir()).Append(kTempDirName);
-
-  token_.reset(new TaskToken(AsWeakPtr()));
 
   sync_client_.reset(new DriveFileSyncClient(profile_));
   sync_client_->AddObserver(this);
@@ -641,19 +454,20 @@ void DriveFileSyncService::Initialize() {
 
   metadata_store_->Initialize(
       base::Bind(&DriveFileSyncService::DidInitializeMetadataStore,
-                 AsWeakPtr(),
-                 base::Passed(GetToken(FROM_HERE))));
+                 AsWeakPtr(), callback));
 }
 
 void DriveFileSyncService::InitializeForTesting(
+    scoped_ptr<DriveFileSyncTaskManager> task_manager,
     const base::FilePath& base_dir,
     scoped_ptr<DriveFileSyncClientInterface> sync_client,
-    scoped_ptr<DriveMetadataStore> metadata_store) {
+    scoped_ptr<DriveMetadataStore> metadata_store,
+    const SyncStatusCallback& callback) {
   DCHECK(!metadata_store_);
+  DCHECK(!task_manager_);
 
+  task_manager_ = task_manager.Pass();
   temporary_file_dir_ = base_dir.Append(kTempDirName);
-
-  token_.reset(new TaskToken(AsWeakPtr()));
 
   sync_client_ = sync_client.Pass();
   metadata_store_ = metadata_store.Pass();
@@ -661,17 +475,15 @@ void DriveFileSyncService::InitializeForTesting(
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&DriveFileSyncService::DidInitializeMetadataStore,
-                 AsWeakPtr(),
-                 base::Passed(GetToken(FROM_HERE)),
-                 SYNC_STATUS_OK, false));
+                 AsWeakPtr(), callback, SYNC_STATUS_OK, false));
 }
 
 void DriveFileSyncService::DidInitializeMetadataStore(
-    scoped_ptr<TaskToken> token,
+    const SyncStatusCallback& callback,
     SyncStatusCode status,
     bool created) {
   if (status != SYNC_STATUS_OK) {
-    NotifyTaskDone(status, token.Pass());
+    callback.Run(status);
     return;
   }
 
@@ -709,7 +521,7 @@ void DriveFileSyncService::DidInitializeMetadataStore(
   if (!sync_root_resource_id().empty())
     sync_client_->EnsureSyncRootIsNotInMyDrive(sync_root_resource_id());
 
-  NotifyTaskDone(status, token.Pass());
+  callback.Run(status);
   may_have_unfetched_changes_ = true;
 
   google_apis::DriveNotificationManager* drive_notification_manager =
@@ -718,53 +530,14 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     drive_notification_manager->AddObserver(this);
 }
 
-scoped_ptr<DriveFileSyncService::TaskToken> DriveFileSyncService::GetToken(
-    const tracked_objects::Location& from_here) {
-  if (!token_)
-    return scoped_ptr<TaskToken>();
-  TRACE_EVENT_ASYNC_BEGIN1("Sync FileSystem", "GetToken", this,
-                           "where", from_here.ToString());
-  token_->UpdateTask(from_here);
-  return token_.Pass();
-}
-
-void DriveFileSyncService::NotifyTaskDone(SyncStatusCode status,
-                                          scoped_ptr<TaskToken> token) {
-  DCHECK(token);
-  last_operation_status_ = status;
-  token_ = token.Pass();
-  TRACE_EVENT_ASYNC_END0("Sync FileSystem", "GetToken", this);
-
-  DVLOG(3) << "NotifyTaskDone: "
-            << "finished with status=" << status
-            << " (" << SyncStatusCodeToString(status) << ")"
-            << " " << token_->location().ToString();
-
-  UpdateServiceStateFromLastOperationStatus();
-
-  if (!pending_tasks_.empty()) {
-    base::Closure closure = pending_tasks_.front();
-    pending_tasks_.pop_front();
-    closure.Run();
-    return;
-  }
-
-  if (GetCurrentState() == REMOTE_SERVICE_DISABLED)
-    return;
-
-  MaybeStartFetchChanges();
-
-  // Notify observer of the update of |pending_changes_|.
-  FOR_EACH_OBSERVER(Observer, service_observers_,
-                    OnRemoteChangeQueueUpdated(pending_changes_.size()));
-}
-
-void DriveFileSyncService::UpdateServiceStateFromLastOperationStatus() {
-  switch (last_operation_status_) {
+void DriveFileSyncService::UpdateServiceStateFromLastOperationStatus(
+    SyncStatusCode sync_status,
+    google_apis::GDataErrorCode gdata_error) {
+  switch (sync_status) {
     case SYNC_STATUS_OK:
       // If the last Drive-related operation was successful we can
       // change the service state to OK.
-      if (GDataErrorCodeToSyncStatusCode(last_gdata_error_) == SYNC_STATUS_OK)
+      if (GDataErrorCodeToSyncStatusCode(gdata_error) == SYNC_STATUS_OK)
         UpdateServiceState(REMOTE_SERVICE_OK, std::string());
       break;
 
@@ -811,8 +584,156 @@ void DriveFileSyncService::UpdateServiceState(RemoteServiceState state,
   }
 }
 
-base::WeakPtr<DriveFileSyncService> DriveFileSyncService::AsWeakPtr() {
-  return weak_factory_.GetWeakPtr();
+void DriveFileSyncService::DoRegisterOriginForTrackingChanges(
+    const GURL& origin,
+    const SyncStatusCallback& callback) {
+  DCHECK(origin.SchemeIs(extensions::kExtensionScheme));
+
+  DCHECK(!metadata_store_->IsOriginDisabled(origin));
+  if (!metadata_store_->GetResourceIdForOrigin(origin).empty()) {
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
+  EnsureOriginRootDirectory(
+      origin, base::Bind(&DriveFileSyncService::DidGetDriveDirectoryForOrigin,
+                         AsWeakPtr(), origin, callback));
+}
+
+void DriveFileSyncService::DoUnregisterOriginForTrackingChanges(
+    const GURL& origin,
+    const SyncStatusCallback& callback) {
+  RemoveRemoteChangesForOrigin(origin);
+  metadata_store_->RemoveOrigin(origin, callback);
+}
+
+void DriveFileSyncService::DoEnableOriginForTrackingChanges(
+    const GURL& origin,
+    const SyncStatusCallback& callback) {
+  if (!metadata_store_->IsOriginDisabled(origin)) {
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
+  metadata_store_->EnableOrigin(origin, callback);
+  pending_batch_sync_origins_.insert(origin);
+}
+
+void DriveFileSyncService::DoDisableOriginForTrackingChanges(
+    const GURL& origin,
+    const SyncStatusCallback& callback) {
+  if (!metadata_store_->IsBatchSyncOrigin(origin) &&
+      !metadata_store_->IsIncrementalSyncOrigin(origin)) {
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
+  RemoveRemoteChangesForOrigin(origin);
+  metadata_store_->DisableOrigin(origin, callback);
+}
+
+void DriveFileSyncService::DoUninstallOrigin(
+    const GURL& origin,
+    const SyncStatusCallback& callback) {
+  std::string resource_id = metadata_store_->GetResourceIdForOrigin(origin);
+
+  // An empty resource_id indicates either one of following two cases:
+  // 1) origin is not in metadata_store_ because the extension was never
+  //    run or it's not managed by this service, and thus no
+  //    origin directory on the remote drive was created.
+  // 2) origin or sync root folder is deleted on Drive.
+  if (resource_id.empty()) {
+    callback.Run(SYNC_STATUS_UNKNOWN_ORIGIN);
+    return;
+  }
+
+  // Convert origin's directory GURL to ResourceID and delete it. Expected MD5
+  // is empty to force delete (i.e. skip conflict resolution).
+  sync_client_->DeleteFile(
+      resource_id,
+      std::string(),
+      base::Bind(&DriveFileSyncService::DidUninstallOrigin,
+                 AsWeakPtr(), origin, callback));
+}
+
+void DriveFileSyncService::DoProcessRemoteChange(
+    const SyncFileCallback& sync_callback,
+    const SyncStatusCallback& completion_callback) {
+  DCHECK(remote_change_processor_);
+
+  SyncFileCallback callback =
+      base::Bind(&SyncFileCallbackAdapter, completion_callback, sync_callback);
+
+  if (pending_changes_.empty()) {
+    callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC, FileSystemURL());
+    return;
+  }
+
+  if (GetCurrentState() == REMOTE_SERVICE_DISABLED) {
+    callback.Run(SYNC_STATUS_SYNC_DISABLED, FileSystemURL());
+    return;
+  }
+
+  const FileSystemURL& url = pending_changes_.begin()->url;
+  const GURL& origin = url.origin();
+  const base::FilePath::StringType& path =
+      fileapi::VirtualPath::GetNormalizedFilePath(url.path());
+  DCHECK(ContainsKey(origin_to_changes_map_, origin));
+  PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
+  DCHECK(ContainsKey(*path_to_change, path));
+  const RemoteChange& remote_change = (*path_to_change)[path];
+
+  DVLOG(1) << "ProcessRemoteChange for " << url.DebugString()
+           << " remote_change:" << remote_change.change.DebugString();
+
+  scoped_ptr<ProcessRemoteChangeParam> param(new ProcessRemoteChangeParam(
+      remote_change, callback));
+  remote_change_processor_->PrepareForProcessRemoteChange(
+      remote_change.url,
+      kServiceName,
+      base::Bind(&DriveFileSyncService::DidPrepareForProcessRemoteChange,
+                 AsWeakPtr(), base::Passed(&param)));
+}
+
+void DriveFileSyncService::DoApplyLocalChange(
+    const FileChange& local_file_change,
+    const base::FilePath& local_file_path,
+    const SyncFileMetadata& local_file_metadata,
+    const FileSystemURL& url,
+    const SyncStatusCallback& callback) {
+  // TODO(nhiroki): support directory operations (http://crbug.com/161442).
+  DCHECK(IsSyncDirectoryOperationEnabled() ||
+         !local_file_change.IsDirectory());
+
+  if (GetCurrentState() == REMOTE_SERVICE_DISABLED) {
+    callback.Run(SYNC_STATUS_SYNC_DISABLED);
+    return;
+  }
+
+  if (!metadata_store_->IsIncrementalSyncOrigin(url.origin()) &&
+      !metadata_store_->IsBatchSyncOrigin(url.origin())) {
+    // We may get called by LocalFileSyncService to sync local changes
+    // for the origins that are disabled.
+    DVLOG(1) << "Got request for stray origin: " << url.origin().spec();
+    callback.Run(SYNC_STATUS_UNKNOWN_ORIGIN);
+    return;
+  }
+
+  DriveMetadata metadata;
+  const bool has_metadata =
+      (metadata_store_->ReadEntry(url, &metadata) == SYNC_STATUS_OK);
+
+  scoped_ptr<ApplyLocalChangeParam> param(new ApplyLocalChangeParam(
+      url, local_file_change, local_file_path, local_file_metadata, callback));
+  param->has_drive_metadata = has_metadata;
+  param->drive_metadata = metadata;
+  if (!has_metadata)
+    param->drive_metadata.set_md5_checksum(std::string());
+
+  EnsureOriginRootDirectory(
+      url.origin(),
+      base::Bind(&DriveFileSyncService::ApplyLocalChangeInternal,
+                 AsWeakPtr(), base::Passed(&param)));
 }
 
 void DriveFileSyncService::UpdateRegisteredOrigins() {
@@ -846,25 +767,32 @@ void DriveFileSyncService::UpdateRegisteredOrigins() {
   }
 }
 
-void DriveFileSyncService::StartBatchSyncForOrigin(
-    const GURL& origin,
-    const std::string& resource_id) {
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  DCHECK(token);
+void DriveFileSyncService::StartBatchSync(
+    const SyncStatusCallback& callback) {
   DCHECK(GetCurrentState() == REMOTE_SERVICE_OK || may_have_unfetched_changes_);
+
+  if (pending_batch_sync_origins_.empty()) {
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
+  GURL origin = *pending_batch_sync_origins_.begin();
+  pending_batch_sync_origins_.erase(pending_batch_sync_origins_.begin());
+  std::string resource_id = metadata_store_->GetResourceIdForOrigin(origin);
+  DCHECK(!resource_id.empty());
+
   DCHECK(!metadata_store_->IsOriginDisabled(origin));
 
   DVLOG(1) << "Start batch sync for:" << origin.spec();
 
   sync_client_->GetLargestChangeStamp(
       base::Bind(&DriveFileSyncService::DidGetLargestChangeStampForBatchSync,
-                 AsWeakPtr(), base::Passed(&token), origin, resource_id));
+                 AsWeakPtr(), callback, origin, resource_id));
 
   may_have_unfetched_changes_ = false;
 }
 
 void DriveFileSyncService::DidGetDriveDirectoryForOrigin(
-    scoped_ptr<TaskToken> token,
     const GURL& origin,
     const SyncStatusCallback& callback,
     SyncStatusCode status,
@@ -876,12 +804,11 @@ void DriveFileSyncService::DidGetDriveDirectoryForOrigin(
     EnsureOriginRootDirectory(
         origin, base::Bind(
             &DriveFileSyncService::DidGetDriveDirectoryForOrigin,
-            AsWeakPtr(), base::Passed(&token), origin, callback));
+            AsWeakPtr(), origin, callback));
     return;
   }
 
   if (status != SYNC_STATUS_OK) {
-    NotifyTaskDone(status, token.Pass());
     callback.Run(status);
     return;
   }
@@ -892,31 +819,33 @@ void DriveFileSyncService::DidGetDriveDirectoryForOrigin(
     pending_batch_sync_origins_.insert(origin);
   }
 
-  NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
   callback.Run(SYNC_STATUS_OK);
 }
 
 void DriveFileSyncService::DidUninstallOrigin(
-    scoped_ptr<TaskToken> token,
     const GURL& origin,
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error) {
-  NotifyTaskDone(GDataErrorCodeToSyncStatusCodeWrapper(error), token.Pass());
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCodeWrapper(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
 
   // Origin directory has been removed so it's now safe to remove the origin
   // from the metadata store.
-  UnregisterOriginForTrackingChanges(origin, callback);
+  DoUnregisterOriginForTrackingChanges(origin, callback);
 }
 
 void DriveFileSyncService::DidGetLargestChangeStampForBatchSync(
-    scoped_ptr<TaskToken> token,
+    const SyncStatusCallback& callback,
     const GURL& origin,
     const std::string& resource_id,
     google_apis::GDataErrorCode error,
     int64 largest_changestamp) {
   if (error != google_apis::HTTP_SUCCESS) {
     pending_batch_sync_origins_.insert(origin);
-    NotifyTaskDone(GDataErrorCodeToSyncStatusCodeWrapper(error), token.Pass());
+    callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error));
     return;
   }
 
@@ -927,23 +856,22 @@ void DriveFileSyncService::DidGetLargestChangeStampForBatchSync(
         base::Bind(&EmptyStatusCallback));
   }
 
-  DCHECK(token);
   sync_client_->ListFiles(
       resource_id,
       base::Bind(
           &DriveFileSyncService::DidGetDirectoryContentForBatchSync,
-          AsWeakPtr(), base::Passed(&token), origin, largest_changestamp));
+          AsWeakPtr(), callback, origin, largest_changestamp));
 }
 
 void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
-    scoped_ptr<TaskToken> token,
+    const SyncStatusCallback& callback,
     const GURL& origin,
     int64 largest_changestamp,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> feed) {
   if (error != google_apis::HTTP_SUCCESS) {
     pending_batch_sync_origins_.insert(origin);
-    NotifyTaskDone(GDataErrorCodeToSyncStatusCodeWrapper(error), token.Pass());
+    callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error));
     return;
   }
 
@@ -960,7 +888,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
         next_feed_url,
         base::Bind(
             &DriveFileSyncService::DidGetDirectoryContentForBatchSync,
-            AsWeakPtr(), base::Passed(&token), origin, largest_changestamp));
+            AsWeakPtr(), callback, origin, largest_changestamp));
     return;
   }
 
@@ -971,16 +899,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
   }
 
   may_have_unfetched_changes_ = true;
-  MaybeStartFetchChanges();
-  NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
-}
-
-void DriveFileSyncService::DidChangeOriginOnMetadataStore(
-    scoped_ptr<TaskToken> token,
-    const SyncStatusCallback& callback,
-    SyncStatusCode status) {
-  NotifyTaskDone(status, token.Pass());
-  callback.Run(status);
+  callback.Run(SYNC_STATUS_OK);
 }
 
 void DriveFileSyncService::ApplyLocalChangeInternal(
@@ -988,7 +907,7 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
     SyncStatusCode status,
     const std::string& origin_resource_id) {
   if (status != SYNC_STATUS_OK) {
-    FinalizeLocalSync(param->token.Pass(), param->callback, status);
+    param->callback.Run(status);
     return;
   }
 
@@ -1060,7 +979,7 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
                      AsWeakPtr(), base::Passed(&param)));
       return;
     case LOCAL_SYNC_OPERATION_NONE:
-      FinalizeLocalSync(param->token.Pass(), callback, SYNC_STATUS_OK);
+      callback.Run(SYNC_STATUS_OK);
       return;
     case LOCAL_SYNC_OPERATION_CONFLICT:
       HandleConflictForLocalSync(param.Pass());
@@ -1088,12 +1007,12 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
                      google_apis::HTTP_SUCCESS));
       return;
     case LOCAL_SYNC_OPERATION_FAIL: {
-      FinalizeLocalSync(param->token.Pass(), callback, SYNC_STATUS_FAILED);
+      callback.Run(SYNC_STATUS_FAILED);
       return;
     }
   }
   NOTREACHED();
-  FinalizeLocalSync(param->token.Pass(), callback, SYNC_STATUS_FAILED);
+  callback.Run(SYNC_STATUS_FAILED);
 }
 
 void DriveFileSyncService::DidDeleteForResolveToLocalForLocalSync(
@@ -1105,8 +1024,7 @@ void DriveFileSyncService::DidDeleteForResolveToLocalForLocalSync(
   if (error != google_apis::HTTP_SUCCESS &&
       error != google_apis::HTTP_NOT_FOUND) {
     RemoveRemoteChange(param->url);
-    SyncStatusCode status = GDataErrorCodeToSyncStatusCodeWrapper(error);
-    FinalizeLocalSync(param->token.Pass(), param->callback, status);
+    param->callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error));
     return;
   }
 
@@ -1138,15 +1056,17 @@ void DriveFileSyncService::DidApplyLocalChange(
     RemoveRemoteChange(param->url);
     status = GDataErrorCodeToSyncStatusCodeWrapper(error);
   }
-  FinalizeLocalSync(param->token.Pass(), param->callback, status);
+  param->callback.Run(status);
 }
 
 void DriveFileSyncService::DidResolveConflictToRemoteChange(
     scoped_ptr<ApplyLocalChangeParam> param,
     SyncStatusCode status) {
   DCHECK(param->has_drive_metadata);
-  if (status != SYNC_STATUS_OK)
-    FinalizeLocalSync(param->token.Pass(), param->callback, status);
+  if (status != SYNC_STATUS_OK) {
+    param->callback.Run(status);
+    return;
+  }
 
   SyncFileType file_type = SYNC_FILE_TYPE_FILE;
   if (param->drive_metadata.type() == DriveMetadata::RESOURCE_TYPE_FOLDER)
@@ -1154,15 +1074,7 @@ void DriveFileSyncService::DidResolveConflictToRemoteChange(
   AppendFetchChange(param->url.origin(), param->url.path(),
                     param->drive_metadata.resource_id(),
                     file_type);
-  FinalizeLocalSync(param->token.Pass(), param->callback, status);
-}
-
-void DriveFileSyncService::FinalizeLocalSync(
-    scoped_ptr<TaskToken> token,
-    const SyncStatusCallback& callback,
-    SyncStatusCode status) {
-  NotifyTaskDone(status, token.Pass());
-  callback.Run(status);
+  param->callback.Run(status);
 }
 
 void DriveFileSyncService::DidUploadNewFileForLocalSync(
@@ -1208,8 +1120,7 @@ void DriveFileSyncService::DidUploadNewFileForLocalSync(
       return;
 
     default:
-      FinalizeLocalSync(param->token.Pass(), param->callback,
-                        GDataErrorCodeToSyncStatusCodeWrapper(error));
+      param->callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error));
   }
 }
 
@@ -1245,8 +1156,7 @@ void DriveFileSyncService::DidCreateDirectoryForLocalSync(
       // Fall-through
 
     default:
-      FinalizeLocalSync(param->token.Pass(), param->callback,
-                        GDataErrorCodeToSyncStatusCodeWrapper(error));
+      param->callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error));
   }
 }
 
@@ -1299,7 +1209,7 @@ void DriveFileSyncService::DidUploadExistingFileForLocalSync(
       const SyncStatusCode status =
           GDataErrorCodeToSyncStatusCodeWrapper(error);
       DCHECK_NE(SYNC_STATUS_OK, status);
-      FinalizeLocalSync(param->token.Pass(), param->callback, status);
+      param->callback.Run(status);
       return;
     }
   }
@@ -1338,7 +1248,7 @@ void DriveFileSyncService::DidDeleteFileForLocalSync(
       const SyncStatusCode status =
           GDataErrorCodeToSyncStatusCodeWrapper(error);
       DCHECK_NE(SYNC_STATUS_OK, status);
-      FinalizeLocalSync(param->token.Pass(), param->callback, status);
+      param->callback.Run(status);
       return;
     }
   }
@@ -1368,7 +1278,7 @@ void DriveFileSyncService::ResolveConflictForLocalSync(
   DriveMetadata& drive_metadata = param->drive_metadata;
   SyncFileMetadata& local_metadata = param->local_metadata;
   if (status != SYNC_STATUS_OK) {
-    FinalizeLocalSync(param->token.Pass(), param->callback, status);
+    param->callback.Run(status);
     return;
   }
 
@@ -1383,8 +1293,7 @@ void DriveFileSyncService::ResolveConflictForLocalSync(
   if (conflict_resolution_ == CONFLICT_RESOLUTION_MANUAL) {
     if (drive_metadata.conflicted()) {
       // It's already conflicting; no need to update metadata.
-      FinalizeLocalSync(param->token.Pass(),
-                        param->callback, SYNC_STATUS_FAILED);
+      param->callback.Run(SYNC_STATUS_FAILED);
       return;
     }
     MarkConflict(url, &drive_metadata,
@@ -1451,16 +1360,13 @@ void DriveFileSyncService::StartOverLocalSync(
     SyncStatusCode status) {
   DCHECK(param);
   if (status != SYNC_STATUS_OK) {
-    FinalizeLocalSync(param->token.Pass(), param->callback, status);
+    param->callback.Run(status);
     return;
   }
   RemoveRemoteChange(param->url);
-  pending_tasks_.push_front(base::Bind(
-      &DriveFileSyncService::ApplyLocalChange,
-      AsWeakPtr(),
+  DoApplyLocalChange(
       param->local_change, param->local_path, param->local_metadata,
-      param->url, param->callback));
-  NotifyTaskDone(status, param->token.Pass());
+      param->url, param->callback);
 }
 
 void DriveFileSyncService::DidPrepareForProcessRemoteChange(
@@ -1776,14 +1682,13 @@ void DriveFileSyncService::FinalizeRemoteSync(
     return;
   }
 
-  NotifyTaskDone(status, param->token.Pass());
+  param->callback.Run(status, param->remote_change.url);
   if (status == SYNC_STATUS_OK && param->sync_action != SYNC_ACTION_NONE) {
     NotifyObserversFileStatusChanged(param->remote_change.url,
                                      SYNC_FILE_STATUS_SYNCED,
                                      param->sync_action,
                                      SYNC_DIRECTION_REMOTE_TO_LOCAL);
   }
-  param->callback.Run(status, param->remote_change.url);
 }
 
 void DriveFileSyncService::HandleConflictForRemoteSync(
@@ -2121,7 +2026,7 @@ void DriveFileSyncService::DidGetRemoteFileMetadataForRemoteUpdatedTime(
 
 SyncStatusCode DriveFileSyncService::GDataErrorCodeToSyncStatusCodeWrapper(
     google_apis::GDataErrorCode error) {
-  last_gdata_error_ = error;
+  task_manager_->NotifyLastDriveError(error);
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK && !sync_client_->IsAuthenticated())
     return SYNC_STATUS_AUTHENTICATION_FAILED;
@@ -2129,30 +2034,23 @@ SyncStatusCode DriveFileSyncService::GDataErrorCodeToSyncStatusCodeWrapper(
 }
 
 void DriveFileSyncService::MaybeStartFetchChanges() {
-  if (!token_ || GetCurrentState() == REMOTE_SERVICE_DISABLED) {
-    // If another task is already running or the service is disabled
-    // just return here.
-    // Note that token_ should be already non-null if this is called
-    // from NotifyTaskDone().
+  if (GetCurrentState() == REMOTE_SERVICE_DISABLED)
     return;
-  }
 
   // If we have pending_batch_sync_origins, try starting the batch sync.
   if (!pending_batch_sync_origins_.empty()) {
-    if (GetCurrentState() == REMOTE_SERVICE_OK ||
-        may_have_unfetched_changes_) {
-      GURL origin = *pending_batch_sync_origins_.begin();
-      pending_batch_sync_origins_.erase(pending_batch_sync_origins_.begin());
-      std::string resource_id = metadata_store_->GetResourceIdForOrigin(origin);
-      DCHECK(!resource_id.empty());
-      StartBatchSyncForOrigin(origin, resource_id);
+    if (GetCurrentState() == REMOTE_SERVICE_OK || may_have_unfetched_changes_) {
+      task_manager_->ScheduleTaskIfIdle(
+          base::Bind(&DriveFileSyncService::StartBatchSync, AsWeakPtr()));
     }
     return;
   }
 
   if (may_have_unfetched_changes_ &&
       !metadata_store_->incremental_sync_origins().empty()) {
-    FetchChangesForIncrementalSync();
+    task_manager_->ScheduleTaskIfIdle(
+        base::Bind(&DriveFileSyncService::FetchChangesForIncrementalSync,
+                   AsWeakPtr()));
   }
 }
 
@@ -2162,9 +2060,25 @@ void DriveFileSyncService::OnNotificationReceived() {
   MaybeStartFetchChanges();
 }
 
-void DriveFileSyncService::FetchChangesForIncrementalSync() {
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  DCHECK(token);
+void DriveFileSyncService::MaybeScheduleNextTask() {
+  if (GetCurrentState() == REMOTE_SERVICE_DISABLED)
+    return;
+
+  // Notify observer of the update of |pending_changes_|.
+  FOR_EACH_OBSERVER(Observer, service_observers_,
+                    OnRemoteChangeQueueUpdated(pending_changes_.size()));
+
+  MaybeStartFetchChanges();
+}
+
+void DriveFileSyncService::NotifyLastOperationStatus(
+    SyncStatusCode sync_status,
+    google_apis::GDataErrorCode gdata_error) {
+  UpdateServiceStateFromLastOperationStatus(sync_status, gdata_error);
+}
+
+void DriveFileSyncService::FetchChangesForIncrementalSync(
+    const SyncStatusCallback& callback) {
   DCHECK(may_have_unfetched_changes_);
   DCHECK(pending_batch_sync_origins_.empty());
   DCHECK(!metadata_store_->incremental_sync_origins().empty());
@@ -2175,18 +2089,18 @@ void DriveFileSyncService::FetchChangesForIncrementalSync() {
   sync_client_->ListChanges(
       largest_fetched_changestamp_ + 1,
       base::Bind(&DriveFileSyncService::DidFetchChangesForIncrementalSync,
-                 AsWeakPtr(), base::Passed(&token), false));
+                 AsWeakPtr(), callback, false));
 
   may_have_unfetched_changes_ = false;
 }
 
 void DriveFileSyncService::DidFetchChangesForIncrementalSync(
-    scoped_ptr<TaskToken> token,
+    const SyncStatusCallback& callback,
     bool has_new_changes,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> changes) {
   if (error != google_apis::HTTP_SUCCESS) {
-    NotifyTaskDone(GDataErrorCodeToSyncStatusCodeWrapper(error), token.Pass());
+    callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error));
     return;
   }
 
@@ -2245,7 +2159,7 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
   if (!changes->entries().empty())
     largest_fetched_changestamp_ = changes->entries().back()->changestamp();
 
-  NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
+  callback.Run(SYNC_STATUS_OK);
 }
 
 bool DriveFileSyncService::GetOriginForEntry(

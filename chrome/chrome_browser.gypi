@@ -2081,6 +2081,8 @@
         'browser/sync_file_system/drive_file_sync_client_interface.h',
         'browser/sync_file_system/drive_file_sync_service.cc',
         'browser/sync_file_system/drive_file_sync_service.h',
+        'browser/sync_file_system/drive_file_sync_task_manager.cc',
+        'browser/sync_file_system/drive_file_sync_task_manager.h',
         'browser/sync_file_system/drive_file_sync_util.cc',
         'browser/sync_file_system/drive_file_sync_util.h',
         'browser/sync_file_system/drive_metadata_store.cc',
