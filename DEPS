@@ -291,7 +291,7 @@ deps = {
     (Var("googlecode_url") % "libyuv") + "/trunk@682",
 
   "src/third_party/smhasher/src":
-    (Var("googlecode_url") % "smhasher") + "/trunk@148",
+    (Var("googlecode_url") % "smhasher") + "/trunk@149",
 
   "src/third_party/libphonenumber/src/phonenumbers":
      (Var("googlecode_url") % "libphonenumber") +
