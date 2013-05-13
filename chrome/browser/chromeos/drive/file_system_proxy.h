@@ -203,6 +203,9 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       base::PlatformFile* platform_file,
       base::PlatformFileError* truncate_result);
 
+  // Returns |file_system_| on UI thread.
+  FileSystemInterface* GetFileSystemOnUIThread();
+
   FileSystemInterface* file_system_;
 };
 

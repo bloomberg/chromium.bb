@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/webkit_file_stream_reader_impl.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -715,10 +716,19 @@ FileSystemProxy::CreateFileStreamReader(
     const fileapi::FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time) {
-  // TODO(hidehiko): Implement the FileStreamReader for drive files.
-  // crbug.com/127129
-  NOTIMPLEMENTED();
-  return scoped_ptr<webkit_blob::FileStreamReader>();
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  base::FilePath drive_file_path;
+  if (!ValidateUrl(url, &drive_file_path))
+    return scoped_ptr<webkit_blob::FileStreamReader>();
+
+  return scoped_ptr<webkit_blob::FileStreamReader>(
+      new internal::WebkitFileStreamReaderImpl(
+          base::Bind(&FileSystemProxy::GetFileSystemOnUIThread, this),
+          file_task_runner,
+          drive_file_path,
+          offset,
+          expected_modification_time));
 }
 
 FileSystemProxy::~FileSystemProxy() {
@@ -846,6 +856,11 @@ void FileSystemProxy::CloseWritableSnapshotFile(
                  google_apis::CreateRelayCallback(
                      base::Bind(&EmitDebugLogForCloseFile,
                                 virtual_path))));
+}
+
+FileSystemInterface* FileSystemProxy::GetFileSystemOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return file_system_;
 }
 
 }  // namespace drive
