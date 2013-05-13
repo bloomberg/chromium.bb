@@ -44,7 +44,6 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
@@ -278,11 +277,6 @@ void TestingProfile::CreateTempProfileDir() {
 }
 
 void TestingProfile::Init() {
-  // Normally this would happen during browser startup, but for tests
-  // we need to trigger creation of Profile-related services.
-  ChromeBrowserMainExtraPartsProfiles::
-      EnsureProfileKeyedServiceFactoriesBuilt();
-
   if (prefs_.get())
     components::UserPrefs::Set(this, prefs_.get());
   else

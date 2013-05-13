@@ -12,11 +12,8 @@
 #include <set>
 #endif
 
+class Profile;
 class ProfileKeyedBaseFactory;
-
-namespace content {
-class BrowserContext;
-}
 
 // A singleton that listens for profile destruction notifications and
 // rebroadcasts them to each ProfileKeyedBaseFactory in a safe order based
@@ -37,8 +34,7 @@ class ProfileDependencyManager {
   // done at this time. (If you want your ProfileKeyedService to be started
   // with the Profile, override ProfileKeyedBaseFactory::
   // ServiceIsCreatedWithProfile() to return true.)
-  void CreateProfileServices(content::BrowserContext* profile,
-                             bool is_testing_profile);
+  void CreateProfileServices(Profile* profile, bool is_testing_profile);
 
   // Called by each Profile to alert us that we should destroy services
   // associated with it.
@@ -50,13 +46,13 @@ class ProfileDependencyManager {
   // - Because this class is a singleton and Singletons can't rely on
   //   NotificationService in unit tests because NotificationService is
   //   replaced in many tests.
-  void DestroyProfileServices(content::BrowserContext* profile);
+  void DestroyProfileServices(Profile* profile);
 
 #ifndef NDEBUG
   // Debugging assertion called as part of GetServiceForProfile in debug
   // mode. This will NOTREACHED() whenever the user is trying to access a stale
   // Profile*.
-  void AssertProfileWasntDestroyed(content::BrowserContext* profile);
+  void AssertProfileWasntDestroyed(Profile* profile);
 #endif
 
   static ProfileDependencyManager* GetInstance();
@@ -68,9 +64,16 @@ class ProfileDependencyManager {
   ProfileDependencyManager();
   virtual ~ProfileDependencyManager();
 
+  // Ensures that all the factories have been created before building the
+  // dependency graph.
+  void AssertFactoriesBuilt();
+
 #ifndef NDEBUG
-  void DumpProfileDependencies(content::BrowserContext* profile);
+  void DumpProfileDependencies(Profile* profile);
 #endif
+
+  // Whether AssertFactoriesBuilt has been done.
+  bool built_factories_;
 
   DependencyGraph dependency_graph_;
 
@@ -79,7 +82,7 @@ class ProfileDependencyManager {
   // phase. These pointers are most likely invalid, but we keep track of their
   // locations in memory so we can nicely assert if we're asked to do anything
   // with them.
-  std::set<content::BrowserContext*> dead_profile_pointers_;
+  std::set<Profile*> dead_profile_pointers_;
 #endif
 };
 

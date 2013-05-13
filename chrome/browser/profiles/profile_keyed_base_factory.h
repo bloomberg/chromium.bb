@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/dependency_node.h"
 
 class PrefService;
+class Profile;
 class ProfileDependencyManager;
 
 namespace content {

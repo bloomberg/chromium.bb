@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class SpellcheckService;
-class Profile;
 
 // Entry into the SpellCheck system.
 //

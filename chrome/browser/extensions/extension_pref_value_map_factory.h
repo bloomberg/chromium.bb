@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class ExtensionPrefValueMap;
-class Profile;
 
 class ExtensionPrefValueMapFactory : public ProfileKeyedServiceFactory {
  public:

@@ -17,7 +17,6 @@
 #include "content/public/browser/speech_recognition_preferences.h"
 
 class PrefService;
-class Profile;
 
 namespace base {
 class ListValue;

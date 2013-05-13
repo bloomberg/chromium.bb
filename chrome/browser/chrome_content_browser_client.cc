@@ -58,7 +58,6 @@
 #include "chrome/browser/prerender/prerender_message_filter.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/printing_message_filter.h"
-#include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -543,8 +542,6 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   NOTREACHED();
   main_parts = new ChromeBrowserMainParts(parameters);
 #endif
-
-  chrome::AddProfilesExtraParts(main_parts);
 
   // Construct additional browser parts. Stages are called in the order in
   // which they are added.

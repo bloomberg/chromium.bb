@@ -9,8 +9,6 @@
 
 template<typename Type> struct DefaultSingletonTraits;
 
-class Profile;
-
 namespace apps {
 
 class ShortcutManager;

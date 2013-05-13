@@ -1546,8 +1546,6 @@
         'browser/profiles/avatar_menu_model_observer.h',
         'browser/profiles/bookmark_model_loaded_observer.cc',
         'browser/profiles/bookmark_model_loaded_observer.h',
-        'browser/profiles/chrome_browser_main_extra_parts_profiles.cc',
-        'browser/profiles/chrome_browser_main_extra_parts_profiles.h',
         'browser/profiles/chrome_version_service.cc',
         'browser/profiles/chrome_version_service.h',
         'browser/profiles/dependency_graph.cc',

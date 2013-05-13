@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class NTPResourceCache;
-class Profile;
 
 // Singleton that owns NTPResourceCaches used by the apps launcher page and
 // associates them with Profiles. Listens for the Profile's destruction
