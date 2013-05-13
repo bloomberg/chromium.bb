@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+<style>
+  ::-webkit-distributed(h1) { 
+    border: 1px solid currentcolor;
+  }
+  h1 {
+    color: red;
+  }
+</style>
+
+<template>
+  <content select="#second"></content>
+</template>
+
+<script>
+function runTest() {
+  var host = document.querySelector('#shadowhost');
+  var shadow = host.webkitCreateShadowRoot();
+  shadow.innerHTML = document.querySelector('template').innerHTML;
+}
+</script>
+</head>
+<body onload="runTest()">
+<div id='shadowhost'>
+  <h1 id='first'>First element</h1>
+  <h1 id='second'>I should be red without a border</h1>
+</div>
+</body>
+</html>
