@@ -39,13 +39,14 @@
 #include "core/platform/graphics/transforms/TransformOperations.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
 
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+
 #include <public/WebContentLayer.h>
 #include <public/WebImageLayer.h>
 #include <public/WebLayer.h>
 #include <public/WebSolidColorLayer.h>
-
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
 enum LayerTreeAsTextBehaviorFlags {
     LayerTreeAsTextBehaviorNormal = 0,
@@ -226,10 +227,10 @@ public:
 
     // Layer name. Only used to identify layers in debug output
     const String& name() const { return m_name; }
-    virtual void setName(const String& name) { m_name = name; }
+    void setName(const String&);
 
     // Layer ID from platform-specific layer. Only used to identify layers in the compositor for debugging purposes.
-    virtual int debugID() const { return DebugIDNoPlatformLayer; }
+    int debugID() const;
 
     GraphicsLayer* parent() const { return m_parent; };
     void setParent(GraphicsLayer*); // Internal use only.
@@ -239,23 +240,23 @@ public:
     
     const Vector<GraphicsLayer*>& children() const { return m_children; }
     // Returns true if the child list changed.
-    virtual bool setChildren(const Vector<GraphicsLayer*>&);
+    bool setChildren(const Vector<GraphicsLayer*>&);
 
     // Add child layers. If the child is already parented, it will be removed from its old parent.
-    virtual void addChild(GraphicsLayer*);
-    virtual void addChildAtIndex(GraphicsLayer*, int index);
-    virtual void addChildAbove(GraphicsLayer* layer, GraphicsLayer* sibling);
-    virtual void addChildBelow(GraphicsLayer* layer, GraphicsLayer* sibling);
-    virtual bool replaceChild(GraphicsLayer* oldChild, GraphicsLayer* newChild);
+    void addChild(GraphicsLayer*);
+    void addChildAtIndex(GraphicsLayer*, int index);
+    void addChildAbove(GraphicsLayer*, GraphicsLayer* sibling);
+    void addChildBelow(GraphicsLayer*, GraphicsLayer* sibling);
+    bool replaceChild(GraphicsLayer* oldChild, GraphicsLayer* newChild);
 
     void removeAllChildren();
-    virtual void removeFromParent();
+    void removeFromParent();
 
     GraphicsLayer* maskLayer() const { return m_maskLayer; }
-    virtual void setMaskLayer(GraphicsLayer* layer) { m_maskLayer = layer; }
+    void setMaskLayer(GraphicsLayer*);
     
     // The given layer will replicate this layer and its children; the replica renders behind this layer.
-    virtual void setReplicatedByLayer(GraphicsLayer*);
+    void setReplicatedByLayer(GraphicsLayer*);
     // Whether this layer is being replicated by another layer.
     bool isReplicated() const { return m_replicaLayer; }
     // The layer that replicates this layer (if any).
@@ -275,154 +276,155 @@ public:
 
     // The position of the layer (the location of its top-left corner in its parent)
     const FloatPoint& position() const { return m_position; }
-    virtual void setPosition(const FloatPoint& p) { m_position = p; }
+    void setPosition(const FloatPoint&);
 
     // Anchor point: (0, 0) is top left, (1, 1) is bottom right. The anchor point
     // affects the origin of the transforms.
     const FloatPoint3D& anchorPoint() const { return m_anchorPoint; }
-    virtual void setAnchorPoint(const FloatPoint3D& p) { m_anchorPoint = p; }
+    void setAnchorPoint(const FloatPoint3D&);
 
     // The size of the layer.
     const FloatSize& size() const { return m_size; }
-    virtual void setSize(const FloatSize& size) { m_size = size; }
+    void setSize(const FloatSize&);
 
     // The boundOrigin affects the offset at which content is rendered, and sublayers are positioned.
     const FloatPoint& boundsOrigin() const { return m_boundsOrigin; }
-    virtual void setBoundsOrigin(const FloatPoint& origin) { m_boundsOrigin = origin; }
+    void setBoundsOrigin(const FloatPoint& origin) { m_boundsOrigin = origin; }
 
     const TransformationMatrix& transform() const { return m_transform; }
-    virtual void setTransform(const TransformationMatrix& t) { m_transform = t; }
+    void setTransform(const TransformationMatrix&);
 
     const TransformationMatrix& childrenTransform() const { return m_childrenTransform; }
-    virtual void setChildrenTransform(const TransformationMatrix& t) { m_childrenTransform = t; }
+    void setChildrenTransform(const TransformationMatrix&);
 
     bool preserves3D() const { return m_preserves3D; }
-    virtual void setPreserves3D(bool b) { m_preserves3D = b; }
+    void setPreserves3D(bool);
     
     bool masksToBounds() const { return m_masksToBounds; }
-    virtual void setMasksToBounds(bool b) { m_masksToBounds = b; }
-    
+    void setMasksToBounds(bool);
+
     bool drawsContent() const { return m_drawsContent; }
-    virtual void setDrawsContent(bool b) { m_drawsContent = b; }
+    void setDrawsContent(bool);
 
     bool contentsAreVisible() const { return m_contentsVisible; }
-    virtual void setContentsVisible(bool b) { m_contentsVisible = b; }
+    void setContentsVisible(bool);
 
     // For special cases, e.g. drawing missing tiles on Android.
     // The compositor should never paint this color in normal cases because the RenderLayer
     // will paint background by itself.
     const Color& backgroundColor() const { return m_backgroundColor; }
-    virtual void setBackgroundColor(const Color&);
+    void setBackgroundColor(const Color&);
 
     // opaque means that we know the layer contents have no alpha
     bool contentsOpaque() const { return m_contentsOpaque; }
-    virtual void setContentsOpaque(bool b) { m_contentsOpaque = b; }
+    void setContentsOpaque(bool);
 
     bool backfaceVisibility() const { return m_backfaceVisibility; }
-    virtual void setBackfaceVisibility(bool b) { m_backfaceVisibility = b; }
+    void setBackfaceVisibility(bool visible);
 
     float opacity() const { return m_opacity; }
-    virtual void setOpacity(float opacity) { m_opacity = opacity; }
+    void setOpacity(float);
 
     const FilterOperations& filters() const { return m_filters; }
     
     // Returns true if filter can be rendered by the compositor
-    virtual bool setFilters(const FilterOperations& filters) { m_filters = filters; return true; }
+    bool setFilters(const FilterOperations&);
+    void setBackgroundFilters(const FilterOperations&);
 
     // Some GraphicsLayers paint only the foreground or the background content
     GraphicsLayerPaintingPhase paintingPhase() const { return m_paintingPhase; }
     void setPaintingPhase(GraphicsLayerPaintingPhase phase) { m_paintingPhase = phase; }
 
-    virtual void setNeedsDisplay() = 0;
+    void setNeedsDisplay();
     // mark the given rect (in layer coords) as needing dispay. Never goes deep.
-    virtual void setNeedsDisplayInRect(const FloatRect&) = 0;
+    void setNeedsDisplayInRect(const FloatRect&);
 
-    virtual void setContentsNeedsDisplay() { };
+    void setContentsNeedsDisplay();
 
     // Set that the position/size of the contents (image or video).
     IntRect contentsRect() const { return m_contentsRect; }
-    virtual void setContentsRect(const IntRect& r) { m_contentsRect = r; }
-    
+    void setContentsRect(const IntRect&);
+
     // Transitions are identified by a special animation name that cannot clash with a keyframe identifier.
     static String animationNameForTransition(AnimatedPropertyID);
     
     // Return true if the animation is handled by the compositing system. If this returns
     // false, the animation will be run by AnimationController.
     // These methods handle both transitions and keyframe animations.
-    virtual bool addAnimation(const KeyframeValueList&, const IntSize& /*boxSize*/, const CSSAnimationData*, const String& /*animationName*/, double /*timeOffset*/)  { return false; }
-    virtual void pauseAnimation(const String& /*animationName*/, double /*timeOffset*/) { }
-    virtual void removeAnimation(const String& /*animationName*/) { }
+    bool addAnimation(const KeyframeValueList&, const IntSize& /*boxSize*/, const CSSAnimationData*, const String& /*animationName*/, double /*timeOffset*/);
+    void pauseAnimation(const String& /*animationName*/, double /*timeOffset*/);
+    void removeAnimation(const String& /*animationName*/);
 
-    virtual void suspendAnimations(double time);
-    virtual void resumeAnimations();
+    void suspendAnimations(double time);
+    void resumeAnimations();
     
     // Layer contents
-    virtual void setContentsToImage(Image*) { }
-    virtual bool shouldDirectlyCompositeImage(Image*) const { return true; }
-    virtual void setContentsToMedia(PlatformLayer*) { } // video or plug-in
+    void setContentsToImage(Image*);
+    bool shouldDirectlyCompositeImage(Image*) const { return true; }
+    void setContentsToMedia(PlatformLayer*); // video or plug-in
     // Pass an invalid color to remove the contents layer.
-    virtual void setContentsToSolidColor(const Color&) { }
-    virtual void setContentsToCanvas(PlatformLayer*) { }
+    void setContentsToSolidColor(const Color&) { }
+    void setContentsToCanvas(PlatformLayer*);
     // FIXME: webkit.org/b/109658
     // Should unify setContentsToMedia and setContentsToCanvas
-    virtual void setContentsToPlatformLayer(PlatformLayer* layer) { setContentsToMedia(layer); }
-    virtual bool hasContentsLayer() const { return false; }
+    void setContentsToPlatformLayer(PlatformLayer* layer) { setContentsToMedia(layer); }
+    bool hasContentsLayer() const { return m_contentsLayer; }
 
     // Callback from the underlying graphics system to draw layer contents.
     void paintGraphicsLayerContents(GraphicsContext&, const IntRect& clip);
     // Callback from the underlying graphics system when the layer has been displayed
-    virtual void layerDidDisplay(PlatformLayer*) { }
+    void layerDidDisplay(PlatformLayer*) { }
     
     // For hosting this GraphicsLayer in a native layer hierarchy.
-    virtual PlatformLayer* platformLayer() const { return 0; }
-    
+    PlatformLayer* platformLayer() const;
+
     enum CompositingCoordinatesOrientation { CompositingCoordinatesTopDown, CompositingCoordinatesBottomUp };
 
     // Flippedness of the contents of this layer. Does not affect sublayer geometry.
-    virtual void setContentsOrientation(CompositingCoordinatesOrientation orientation) { m_contentsOrientation = orientation; }
+    void setContentsOrientation(CompositingCoordinatesOrientation orientation) { m_contentsOrientation = orientation; }
     CompositingCoordinatesOrientation contentsOrientation() const { return m_contentsOrientation; }
 
     void dumpLayer(TextStream&, int indent = 0, LayerTreeAsTextBehavior = LayerTreeAsTextBehaviorNormal) const;
 
-    virtual void setShowDebugBorder(bool show) { m_showDebugBorder = show; }
+    void setShowDebugBorder(bool show) { m_showDebugBorder = show; }
     bool isShowingDebugBorder() const { return m_showDebugBorder; }
 
-    virtual void setShowRepaintCounter(bool show) { m_showRepaintCounter = show; }
+    void setShowRepaintCounter(bool show) { m_showRepaintCounter = show; }
     bool isShowingRepaintCounter() const { return m_showRepaintCounter; }
 
     // FIXME: this is really a paint count.
     int repaintCount() const { return m_repaintCount; }
     int incrementRepaintCount() { return ++m_repaintCount; }
 
-    virtual void setDebugBackgroundColor(const Color&) { }
-    virtual void setDebugBorder(const Color&, float /*borderWidth*/) { }
+    void setDebugBackgroundColor(const Color&) { }
+    void setDebugBorder(const Color&, float /*borderWidth*/) { }
 
     // z-position is the z-equivalent of position(). It's only used for debugging purposes.
-    virtual float zPosition() const { return m_zPosition; }
-    virtual void setZPosition(float);
+    float zPosition() const { return m_zPosition; }
+    void setZPosition(float);
 
-    virtual void distributeOpacity(float);
-    virtual float accumulatedOpacity() const;
+    void distributeOpacity(float);
+    float accumulatedOpacity() const;
 
-    virtual void setMaintainsPixelAlignment(bool maintainsAlignment) { m_maintainsPixelAlignment = maintainsAlignment; }
-    virtual bool maintainsPixelAlignment() const { return m_maintainsPixelAlignment; }
+    void setMaintainsPixelAlignment(bool maintainsAlignment) { m_maintainsPixelAlignment = maintainsAlignment; }
+    bool maintainsPixelAlignment() const { return m_maintainsPixelAlignment; }
     
     float pageScaleFactor() const { return m_client ? m_client->pageScaleFactor() : 1; }
     float deviceScaleFactor() const { return m_client ? m_client->deviceScaleFactor() : 1; }
 
-    virtual void deviceOrPageScaleFactorChanged() { }
+    void deviceOrPageScaleFactorChanged() { }
     void noteDeviceOrPageScaleFactorChangedIncludingDescendants();
 
     // If the exposed rect of this layer changes, returns true if this or descendant layers need a flush,
     // for example to allocate new tiles.
-    virtual bool visibleRectChangeRequiresFlush(const FloatRect& /* clipRect */) const { return false; }
+    bool visibleRectChangeRequiresFlush(const FloatRect& /* clipRect */) const { return false; }
 
     // Return a string with a human readable form of the layer tree, If debug is true
     // pointers for the layers and timing data will be included in the returned string.
     String layerTreeAsText(LayerTreeAsTextBehavior = LayerTreeAsTextBehaviorNormal) const;
 
     // Return an estimate of the backing store memory cost (in bytes). May be incorrect for tiled layers.
-    virtual double backingStoreMemoryEstimate() const;
+    double backingStoreMemoryEstimate() const;
 
     void resetTrackedRepaints();
     void addRepaintRect(const FloatRect&);
@@ -432,16 +434,28 @@ public:
         return false;
     }
 
+    void setLinkHighlight(LinkHighlightClient*);
+    // Exposed for tests
+    LinkHighlightClient* linkHighlight() { return m_linkHighlight; }
+
+    void setScrollableArea(ScrollableArea* scrollableArea) { m_scrollableArea = scrollableArea; }
+    ScrollableArea* scrollableArea() const { return m_scrollableArea; }
+
+    WebKit::WebContentLayer* contentLayer() const { return m_layer.get(); }
+
+    // Exposed for tests. FIXME - name is too similar to contentLayer(), very error prone.
+    WebKit::WebLayer* contentsLayer() const { return m_contentsLayer; }
+
     void updateDebugIndicators();
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
+    void reportMemoryUsage(MemoryObjectInfo*) const;
 
     static void registerContentsLayer(WebKit::WebLayer*);
     static void unregisterContentsLayer(WebKit::WebLayer*);
 
 protected:
     // Should be called from derived class destructors. Should call willBeDestroyed() on super.
-    virtual void willBeDestroyed();
+    void willBeDestroyed();
 
     // This method is used by platform GraphicsLayer classes to clear the filters
     // when compositing is not done in hardware. It is not virtual, so the caller
@@ -458,20 +472,18 @@ protected:
     // rotations of >= 180 degrees
     static int validateTransformOperations(const KeyframeValueList&, bool& hasBigRotation);
 
-    virtual void setOpacityInternal(float) { }
-
     // The layer being replicated.
     GraphicsLayer* replicatedLayer() const { return m_replicatedLayer; }
-    virtual void setReplicatedLayer(GraphicsLayer* layer) { m_replicatedLayer = layer; }
+    void setReplicatedLayer(GraphicsLayer* layer) { m_replicatedLayer = layer; }
 
     GraphicsLayer(GraphicsLayerClient*);
 
     static void writeIndent(TextStream&, int indent);
 
     void dumpProperties(TextStream&, int indent, LayerTreeAsTextBehavior) const;
-    virtual void dumpAdditionalProperties(TextStream&, int /*indent*/, LayerTreeAsTextBehavior) const { }
+    void dumpAdditionalProperties(TextStream&, int /*indent*/, LayerTreeAsTextBehavior) const { }
 
-    virtual void getDebugBorderInfo(Color&, float& width) const;
+    void getDebugBorderInfo(Color&, float& width) const;
 
     // Helper functions used by settors to keep layer's the state consistent.
     void updateNames();

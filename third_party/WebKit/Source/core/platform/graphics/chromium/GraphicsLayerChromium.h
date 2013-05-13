@@ -56,74 +56,6 @@ public:
     GraphicsLayerChromium(GraphicsLayerClient*);
     virtual ~GraphicsLayerChromium();
 
-    virtual void willBeDestroyed() OVERRIDE;
-
-    virtual void setName(const String&);
-    virtual int debugID() const;
-
-    virtual bool setChildren(const Vector<GraphicsLayer*>&);
-    virtual void addChild(GraphicsLayer*);
-    virtual void addChildAtIndex(GraphicsLayer*, int index);
-    virtual void addChildAbove(GraphicsLayer*, GraphicsLayer* sibling);
-    virtual void addChildBelow(GraphicsLayer*, GraphicsLayer* sibling);
-    virtual bool replaceChild(GraphicsLayer* oldChild, GraphicsLayer* newChild);
-
-    virtual void removeFromParent();
-
-    virtual void setPosition(const FloatPoint&);
-    virtual void setAnchorPoint(const FloatPoint3D&);
-    virtual void setSize(const FloatSize&);
-
-    virtual void setTransform(const TransformationMatrix&);
-
-    virtual void setChildrenTransform(const TransformationMatrix&);
-
-    virtual void setPreserves3D(bool);
-    virtual void setMasksToBounds(bool);
-    virtual void setDrawsContent(bool);
-    virtual void setContentsVisible(bool);
-    virtual void setMaskLayer(GraphicsLayer*);
-
-    virtual void setBackgroundColor(const Color&);
-
-    virtual void setContentsOpaque(bool);
-    virtual void setBackfaceVisibility(bool);
-
-    virtual void setReplicatedByLayer(GraphicsLayer*);
-
-    virtual void setOpacity(float);
-
-    // Returns true if filter can be rendered by the compositor
-    virtual bool setFilters(const FilterOperations&);
-    void setBackgroundFilters(const FilterOperations&);
-
-    virtual void setNeedsDisplay();
-    virtual void setNeedsDisplayInRect(const FloatRect&);
-    virtual void setContentsNeedsDisplay();
-
-    virtual void setContentsRect(const IntRect&);
-
-    virtual void setContentsToImage(Image*) OVERRIDE;
-    virtual void setContentsToMedia(PlatformLayer*) OVERRIDE;
-    virtual void setContentsToCanvas(PlatformLayer*) OVERRIDE;
-    virtual void setContentsToSolidColor(const Color&) OVERRIDE;
-    virtual bool hasContentsLayer() const { return m_contentsLayer; }
-
-    virtual bool addAnimation(const KeyframeValueList&, const IntSize& boxSize, const CSSAnimationData*, const String&, double timeOffset);
-    virtual void pauseAnimation(const String& animationName, double timeOffset);
-    virtual void removeAnimation(const String& animationName);
-    virtual void suspendAnimations(double wallClockTime);
-    virtual void resumeAnimations();
-
-    void setLinkHighlight(LinkHighlightClient*);
-    // Next function for testing purposes.
-    LinkHighlightClient* linkHighlight() { return m_linkHighlight; }
-
-    virtual WebKit::WebLayer* platformLayer() const;
-
-    void setScrollableArea(ScrollableArea* scrollableArea) { m_scrollableArea = scrollableArea; }
-    ScrollableArea* scrollableArea() const { return m_scrollableArea; }
-
     // GraphicsContextPainter implementation.
     virtual void paint(GraphicsContext&, const IntRect& clip) OVERRIDE;
 
@@ -133,13 +65,6 @@ public:
 
     // WebLayerScrollClient implementation.
     virtual void didScroll() OVERRIDE;
-
-    WebKit::WebContentLayer* contentLayer() const { return m_layer.get(); }
-
-    // Exposed for tests.
-    WebKit::WebLayer* contentsLayer() const { return m_contentsLayer; }
-
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
     virtual void setAnimationDelegateForLayer(WebKit::WebLayer*) OVERRIDE;
 };

@@ -27,33 +27,52 @@
 
 #include "core/platform/graphics/GraphicsLayer.h"
 
+#include "SkImageFilter.h"
+#include "SkMatrix44.h"
 #include "core/platform/PlatformMemoryInstrumentation.h"
+#include "core/platform/ScrollableArea.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/LayoutRect.h"
+#include "core/platform/graphics/chromium/AnimationTranslationUtil.h"
 #include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/platform/graphics/transforms/RotateTransformOperation.h"
 #include "core/platform/text/TextStream.h"
 
+#include "wtf/CurrentTime.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/StringExtras.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
+
 #include <public/Platform.h>
+#include <public/WebAnimation.h>
 #include <public/WebCompositorSupport.h>
+#include <public/WebFilterOperation.h>
+#include <public/WebFilterOperations.h>
 #include <public/WebFloatPoint.h>
 #include <public/WebFloatRect.h>
+#include <public/WebPoint.h>
 #include <public/WebSize.h>
-
-#include <wtf/HashMap.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
 
 #ifndef NDEBUG
 #include <stdio.h>
 #endif
 
-using WebKit::WebLayer;
 using WebKit::Platform;
+using WebKit::WebAnimation;
+using WebKit::WebFilterOperation;
+using WebKit::WebFilterOperations;
+using WebKit::WebLayer;
+using WebKit::WebPoint;
 
 namespace WebCore {
 
@@ -126,6 +145,11 @@ GraphicsLayer::~GraphicsLayer()
 
 void GraphicsLayer::willBeDestroyed()
 {
+    if (m_linkHighlight) {
+        m_linkHighlight->clearCurrentGraphicsLayer();
+        m_linkHighlight = 0;
+    }
+
 #ifndef NDEBUG
     if (m_client)
         m_client->verifyNotPainting();
@@ -159,16 +183,25 @@ bool GraphicsLayer::hasAncestor(GraphicsLayer* ancestor) const
 
 bool GraphicsLayer::setChildren(const Vector<GraphicsLayer*>& newChildren)
 {
+    // FIXME: change m_inSetChildren mechanism to addChildInternal()
+    m_inSetChildren = true;
+
     // If the contents of the arrays are the same, nothing to do.
-    if (newChildren == m_children)
+    if (newChildren == m_children) {
+        m_inSetChildren = false;
         return false;
+    }
 
     removeAllChildren();
-    
+
     size_t listSize = newChildren.size();
     for (size_t i = 0; i < listSize; ++i)
         addChild(newChildren[i]);
-    
+
+    updateChildList();
+
+    m_inSetChildren = false;
+
     return true;
 }
 
@@ -181,6 +214,9 @@ void GraphicsLayer::addChild(GraphicsLayer* childLayer)
 
     childLayer->setParent(this);
     m_children.append(childLayer);
+
+    if (!m_inSetChildren)
+        updateChildList();
 }
 
 void GraphicsLayer::addChildAtIndex(GraphicsLayer* childLayer, int index)
@@ -192,6 +228,8 @@ void GraphicsLayer::addChildAtIndex(GraphicsLayer* childLayer, int index)
 
     childLayer->setParent(this);
     m_children.insert(index, childLayer);
+
+    updateChildList();
 }
 
 void GraphicsLayer::addChildBelow(GraphicsLayer* childLayer, GraphicsLayer* sibling)
@@ -212,6 +250,8 @@ void GraphicsLayer::addChildBelow(GraphicsLayer* childLayer, GraphicsLayer* sibl
 
     if (!found)
         m_children.append(childLayer);
+
+    updateChildList();
 }
 
 void GraphicsLayer::addChildAbove(GraphicsLayer* childLayer, GraphicsLayer* sibling)
@@ -232,6 +272,8 @@ void GraphicsLayer::addChildAbove(GraphicsLayer* childLayer, GraphicsLayer* sibl
 
     if (!found)
         m_children.append(childLayer);
+
+    updateChildList();
 }
 
 bool GraphicsLayer::replaceChild(GraphicsLayer* oldChild, GraphicsLayer* newChild)
@@ -245,13 +287,17 @@ bool GraphicsLayer::replaceChild(GraphicsLayer* oldChild, GraphicsLayer* newChil
             break;
         }
     }
+
     if (found) {
         oldChild->setParent(0);
 
         newChild->removeFromParent();
         newChild->setParent(this);
+
+        updateChildList();
         return true;
     }
+
     return false;
 }
 
@@ -277,6 +323,8 @@ void GraphicsLayer::removeFromParent()
 
         setParent(0);
     }
+
+    platformLayer()->removeFromParent();
 }
 
 void GraphicsLayer::noteDeviceOrPageScaleFactorChangedIncludingDescendants()
@@ -297,16 +345,19 @@ void GraphicsLayer::noteDeviceOrPageScaleFactorChangedIncludingDescendants()
 
 void GraphicsLayer::setReplicatedByLayer(GraphicsLayer* layer)
 {
-    if (m_replicaLayer == layer)
-        return;
+    // FIXME: this could probably be a full early exit.
+    if (m_replicaLayer != layer) {
+        if (m_replicaLayer)
+            m_replicaLayer->setReplicatedLayer(0);
 
-    if (m_replicaLayer)
-        m_replicaLayer->setReplicatedLayer(0);
+        if (layer)
+            layer->setReplicatedLayer(this);
 
-    if (layer)
-        layer->setReplicatedLayer(this);
+        m_replicaLayer = layer;
+    }
 
-    m_replicaLayer = layer;
+    WebLayer* webReplicaLayer = layer ? layer->platformLayer() : 0;
+    platformLayer()->setReplicaLayer(webReplicaLayer);
 }
 
 void GraphicsLayer::setOffsetFromRenderer(const IntSize& offset, ShouldSetNeedsDisplay shouldSetNeedsDisplay)
@@ -319,11 +370,6 @@ void GraphicsLayer::setOffsetFromRenderer(const IntSize& offset, ShouldSetNeedsD
     // If the compositing layer offset changes, we need to repaint.
     if (shouldSetNeedsDisplay == SetNeedsDisplay)
         setNeedsDisplay();
-}
-
-void GraphicsLayer::setBackgroundColor(const Color& color)
-{
-    m_backgroundColor = color;
 }
 
 void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const IntRect& clip)
@@ -347,14 +393,6 @@ String GraphicsLayer::animationNameForTransition(AnimatedPropertyID property)
     id.appendNumber(static_cast<int>(property));
     id.append('-');
     return id.toString();
-}
-
-void GraphicsLayer::suspendAnimations(double)
-{
-}
-
-void GraphicsLayer::resumeAnimations()
-{
 }
 
 void GraphicsLayer::getDebugBorderInfo(Color& color, float& width) const
@@ -406,8 +444,6 @@ void GraphicsLayer::distributeOpacity(float accumulatedOpacity)
     // Incoming accumulatedOpacity is the contribution from our parent(s). We mutiply this by our own
     // opacity to get the total contribution
     accumulatedOpacity *= m_opacity;
-    
-    setOpacityInternal(accumulatedOpacity);
     
     if (preserves3D()) {
         size_t numChildren = children().size();
@@ -1026,6 +1062,396 @@ void GraphicsLayer::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_replicatedLayer, "replicatedLayer");
     info.ignoreMember(m_client);
     info.addMember(m_name, "name");
+    info.addMember(m_nameBase, "nameBase");
+    info.addMember(m_layer, "layer");
+    info.addMember(m_transformLayer, "transformLayer");
+    info.addMember(m_imageLayer, "imageLayer");
+    info.addMember(m_contentsLayer, "contentsLayer");
+    info.addMember(m_linkHighlight, "linkHighlight");
+    info.addMember(m_opaqueRectTrackingContentLayerDelegate, "opaqueRectTrackingContentLayerDelegate");
+    info.addMember(m_animationIdMap, "animationIdMap");
+    info.addMember(m_scrollableArea, "scrollableArea");
+}
+
+void GraphicsLayer::setName(const String& name)
+{
+    m_nameBase = name;
+    m_name = String::format("GraphicsLayer(%p) ", this) + name;
+    updateNames();
+}
+
+int GraphicsLayer::debugID() const
+{
+    // FIXME: change this to assert m_layer always exists, and remove enum.
+    return m_layer ? m_layer->layer()->id() : DebugIDNoCompositedLayer;
+}
+
+void GraphicsLayer::setPosition(const FloatPoint& point)
+{
+    m_position = point;
+    updateLayerPosition();
+}
+
+void GraphicsLayer::setAnchorPoint(const FloatPoint3D& point)
+{
+    m_anchorPoint = point;
+    updateAnchorPoint();
+}
+
+void GraphicsLayer::setSize(const FloatSize& size)
+{
+    // We are receiving negative sizes here that cause assertions to fail in the compositor. Clamp them to 0 to
+    // avoid those assertions.
+    // FIXME: This should be an ASSERT instead, as negative sizes should not exist in WebCore.
+    FloatSize clampedSize = size;
+    if (clampedSize.width() < 0 || clampedSize.height() < 0)
+        clampedSize = FloatSize();
+
+    if (clampedSize == m_size)
+        return;
+
+    m_size = clampedSize;
+    updateLayerSize();
+}
+
+void GraphicsLayer::setTransform(const TransformationMatrix& transform)
+{
+    m_transform = transform;
+    updateTransform();
+}
+
+void GraphicsLayer::setChildrenTransform(const TransformationMatrix& transform)
+{
+    m_childrenTransform = transform;
+    updateChildrenTransform();
+}
+
+void GraphicsLayer::setPreserves3D(bool preserves3D)
+{
+    if (preserves3D == m_preserves3D)
+        return;
+
+    m_preserves3D = preserves3D;
+    updateLayerPreserves3D();
+}
+
+void GraphicsLayer::setMasksToBounds(bool masksToBounds)
+{
+    m_masksToBounds = masksToBounds;
+    updateMasksToBounds();
+}
+
+void GraphicsLayer::setDrawsContent(bool drawsContent)
+{
+    // Note carefully this early-exit is only correct because we also properly call
+    // WebLayer::setDrawsContent whenever m_contentsLayer is set to a new layer in setupContentsLayer().
+    if (drawsContent == m_drawsContent)
+        return;
+
+    m_drawsContent = drawsContent;
+    updateLayerIsDrawable();
+}
+
+void GraphicsLayer::setContentsVisible(bool contentsVisible)
+{
+    // Note carefully this early-exit is only correct because we also properly call
+    // WebLayer::setDrawsContent whenever m_contentsLayer is set to a new layer in setupContentsLayer().
+    if (contentsVisible == m_contentsVisible)
+        return;
+
+    m_contentsVisible = contentsVisible;
+    updateLayerIsDrawable();
+}
+
+void GraphicsLayer::setBackgroundColor(const Color& color)
+{
+    if (color == m_backgroundColor)
+        return;
+
+    m_backgroundColor = color;
+    updateLayerBackgroundColor();
+}
+
+void GraphicsLayer::setContentsOpaque(bool opaque)
+{
+    m_contentsOpaque = opaque;
+    m_layer->layer()->setOpaque(m_contentsOpaque);
+    m_opaqueRectTrackingContentLayerDelegate->setOpaque(m_contentsOpaque);
+}
+
+void GraphicsLayer::setMaskLayer(GraphicsLayer* maskLayer)
+{
+    if (maskLayer == m_maskLayer)
+        return;
+
+    m_maskLayer = maskLayer;
+    WebLayer* maskWebLayer = m_maskLayer ? m_maskLayer->platformLayer() : 0;
+    m_layer->layer()->setMaskLayer(maskWebLayer);
+}
+
+void GraphicsLayer::setBackfaceVisibility(bool visible)
+{
+    m_backfaceVisibility = visible;
+    m_layer->setDoubleSided(m_backfaceVisibility);
+}
+
+void GraphicsLayer::setOpacity(float opacity)
+{
+    float clampedOpacity = std::max(std::min(opacity, 1.0f), 0.0f);
+    m_opacity = clampedOpacity;
+    platformLayer()->setOpacity(opacity);
+}
+
+void GraphicsLayer::setContentsNeedsDisplay()
+{
+    if (WebLayer* contentsLayer = contentsLayerIfRegistered()) {
+        contentsLayer->invalidate();
+        addRepaintRect(contentsRect());
+    }
+}
+
+void GraphicsLayer::setNeedsDisplay()
+{
+    if (drawsContent()) {
+        m_layer->layer()->invalidate();
+        addRepaintRect(FloatRect(FloatPoint(), m_size));
+        if (m_linkHighlight)
+            m_linkHighlight->invalidate();
+    }
+}
+
+void GraphicsLayer::setNeedsDisplayInRect(const FloatRect& rect)
+{
+    if (drawsContent()) {
+        m_layer->layer()->invalidateRect(rect);
+        addRepaintRect(rect);
+        if (m_linkHighlight)
+            m_linkHighlight->invalidate();
+    }
+}
+
+void GraphicsLayer::setContentsRect(const IntRect& rect)
+{
+    if (rect == m_contentsRect)
+        return;
+
+    m_contentsRect = rect;
+    updateContentsRect();
+}
+
+void GraphicsLayer::setContentsToImage(Image* image)
+{
+    bool childrenChanged = false;
+    RefPtr<NativeImageSkia> nativeImage = image ? image->nativeImageForCurrentFrame() : 0;
+    if (nativeImage) {
+        if (m_contentsLayerPurpose != ContentsLayerForImage) {
+            m_imageLayer = adoptPtr(Platform::current()->compositorSupport()->createImageLayer());
+            registerContentsLayer(m_imageLayer->layer());
+
+            setupContentsLayer(m_imageLayer->layer());
+            m_contentsLayerPurpose = ContentsLayerForImage;
+            childrenChanged = true;
+        }
+        m_imageLayer->setBitmap(nativeImage->bitmap());
+        m_imageLayer->layer()->setOpaque(image->currentFrameKnownToBeOpaque());
+        updateContentsRect();
+    } else {
+        if (m_imageLayer) {
+            childrenChanged = true;
+
+            unregisterContentsLayer(m_imageLayer->layer());
+            m_imageLayer.clear();
+        }
+        // The old contents layer will be removed via updateChildList.
+        m_contentsLayer = 0;
+    }
+
+    if (childrenChanged)
+        updateChildList();
+}
+
+void GraphicsLayer::setContentsToCanvas(PlatformLayer* layer)
+{
+    setContentsTo(ContentsLayerForCanvas, layer);
+}
+
+void GraphicsLayer::setContentsToMedia(PlatformLayer* layer)
+{
+    setContentsTo(ContentsLayerForVideo, layer);
+}
+
+bool GraphicsLayer::addAnimation(const KeyframeValueList& values, const IntSize& boxSize, const CSSAnimationData* animation, const String& animationName, double timeOffset)
+{
+    setAnimationDelegateForLayer(platformLayer());
+
+    int animationId = 0;
+
+    if (m_animationIdMap.contains(animationName))
+        animationId = m_animationIdMap.get(animationName);
+
+    OwnPtr<WebAnimation> toAdd(createWebAnimation(values, animation, animationId, timeOffset, boxSize));
+
+    if (toAdd) {
+        animationId = toAdd->id();
+        m_animationIdMap.set(animationName, animationId);
+
+        // Remove any existing animations with the same animation id and target property.
+        platformLayer()->removeAnimation(animationId, toAdd->targetProperty());
+        return platformLayer()->addAnimation(toAdd.get());
+    }
+
+    return false;
+}
+
+void GraphicsLayer::pauseAnimation(const String& animationName, double timeOffset)
+{
+    if (m_animationIdMap.contains(animationName))
+        platformLayer()->pauseAnimation(m_animationIdMap.get(animationName), timeOffset);
+}
+
+void GraphicsLayer::removeAnimation(const String& animationName)
+{
+    if (m_animationIdMap.contains(animationName))
+        platformLayer()->removeAnimation(m_animationIdMap.get(animationName));
+}
+
+void GraphicsLayer::suspendAnimations(double wallClockTime)
+{
+    // |wallClockTime| is in the wrong time base. Need to convert here.
+    // FIXME: find a more reliable way to do this.
+    double monotonicTime = wallClockTime + monotonicallyIncreasingTime() - currentTime();
+    platformLayer()->suspendAnimations(monotonicTime);
+}
+
+void GraphicsLayer::resumeAnimations()
+{
+    platformLayer()->resumeAnimations(monotonicallyIncreasingTime());
+}
+
+PlatformLayer* GraphicsLayer::platformLayer() const
+{
+    return m_transformLayer ? m_transformLayer.get() : m_layer->layer();
+}
+
+static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperations& filters, WebFilterOperations& webFilters)
+{
+    for (size_t i = 0; i < filters.size(); ++i) {
+        const FilterOperation& op = *filters.at(i);
+        switch (op.getOperationType()) {
+        case FilterOperation::REFERENCE:
+            return false; // Not supported.
+        case FilterOperation::GRAYSCALE:
+        case FilterOperation::SEPIA:
+        case FilterOperation::SATURATE:
+        case FilterOperation::HUE_ROTATE: {
+            float amount = static_cast<const BasicColorMatrixFilterOperation*>(&op)->amount();
+            switch (op.getOperationType()) {
+            case FilterOperation::GRAYSCALE:
+                webFilters.append(WebFilterOperation::createGrayscaleFilter(amount));
+                break;
+            case FilterOperation::SEPIA:
+                webFilters.append(WebFilterOperation::createSepiaFilter(amount));
+                break;
+            case FilterOperation::SATURATE:
+                webFilters.append(WebFilterOperation::createSaturateFilter(amount));
+                break;
+            case FilterOperation::HUE_ROTATE:
+                webFilters.append(WebFilterOperation::createHueRotateFilter(amount));
+                break;
+            default:
+                ASSERT_NOT_REACHED();
+            }
+            break;
+        }
+        case FilterOperation::INVERT:
+        case FilterOperation::OPACITY:
+        case FilterOperation::BRIGHTNESS:
+        case FilterOperation::CONTRAST: {
+            float amount = static_cast<const BasicComponentTransferFilterOperation*>(&op)->amount();
+            switch (op.getOperationType()) {
+            case FilterOperation::INVERT:
+                webFilters.append(WebFilterOperation::createInvertFilter(amount));
+                break;
+            case FilterOperation::OPACITY:
+                webFilters.append(WebFilterOperation::createOpacityFilter(amount));
+                break;
+            case FilterOperation::BRIGHTNESS:
+                webFilters.append(WebFilterOperation::createBrightnessFilter(amount));
+                break;
+            case FilterOperation::CONTRAST:
+                webFilters.append(WebFilterOperation::createContrastFilter(amount));
+                break;
+            default:
+                ASSERT_NOT_REACHED();
+            }
+            break;
+        }
+        case FilterOperation::BLUR: {
+            float pixelRadius = static_cast<const BlurFilterOperation*>(&op)->stdDeviation().getFloatValue();
+            webFilters.append(WebFilterOperation::createBlurFilter(pixelRadius));
+            break;
+        }
+        case FilterOperation::DROP_SHADOW: {
+            const DropShadowFilterOperation& dropShadowOp = *static_cast<const DropShadowFilterOperation*>(&op);
+            webFilters.append(WebFilterOperation::createDropShadowFilter(WebPoint(dropShadowOp.x(), dropShadowOp.y()), dropShadowOp.stdDeviation(), dropShadowOp.color().rgb()));
+            break;
+        }
+        case FilterOperation::CUSTOM:
+        case FilterOperation::VALIDATED_CUSTOM:
+            return false; // Not supported.
+        case FilterOperation::PASSTHROUGH:
+        case FilterOperation::NONE:
+            break;
+        }
+    }
+    return true;
+}
+
+bool GraphicsLayer::setFilters(const FilterOperations& filters)
+{
+    // FIXME: For now, we only use SkImageFilters if there is a reference
+    // filter in the chain. Once all issues have been ironed out, we should
+    // switch all filtering over to this path, and remove setFilters() and
+    // WebFilterOperations altogether.
+    if (filters.hasReferenceFilter()) {
+        if (filters.hasCustomFilter()) {
+            // Make sure the filters are removed from the platform layer, as they are
+            // going to fallback to software mode.
+            m_layer->layer()->setFilter(0);
+            m_filters = FilterOperations();
+            return false;
+        }
+        SkiaImageFilterBuilder builder;
+        SkAutoTUnref<SkImageFilter> imageFilter(builder.build(filters));
+        m_layer->layer()->setFilter(imageFilter);
+    } else {
+        WebFilterOperations webFilters;
+        if (!copyWebCoreFilterOperationsToWebFilterOperations(filters, webFilters)) {
+            // Make sure the filters are removed from the platform layer, as they are
+            // going to fallback to software mode.
+            m_layer->layer()->setFilters(WebFilterOperations());
+            m_filters = FilterOperations();
+            return false;
+        }
+        m_layer->layer()->setFilters(webFilters);
+    }
+
+    m_filters = filters;
+    return true;
+}
+
+void GraphicsLayer::setBackgroundFilters(const FilterOperations& filters)
+{
+    WebFilterOperations webFilters;
+    if (!copyWebCoreFilterOperationsToWebFilterOperations(filters, webFilters))
+        return;
+    m_layer->layer()->setBackgroundFilters(webFilters);
+}
+
+void GraphicsLayer::setLinkHighlight(LinkHighlightClient* linkHighlight)
+{
+    m_linkHighlight = linkHighlight;
+    updateChildList();
 }
 
 } // namespace WebCore
