@@ -8,12 +8,12 @@
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 namespace {
 
-class AppListServiceAsh : public AppListService {
+class AppListServiceAsh : public AppListServiceImpl {
  public:
   static AppListServiceAsh* GetInstance() {
     return Singleton<AppListServiceAsh,
@@ -31,6 +31,7 @@ class AppListServiceAsh : public AppListService {
   virtual void ShowAppList(Profile* default_profile) OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
+  virtual void EnableAppList() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceAsh);
 };
@@ -57,6 +58,8 @@ void AppListServiceAsh::DismissAppList() {
     ash::Shell::GetInstance()->ToggleAppList(NULL);
 }
 
+void AppListServiceAsh::EnableAppList() {}
+
 }  // namespace
 
 namespace chrome {
@@ -66,3 +69,18 @@ AppListService* GetAppListServiceAsh() {
 }
 
 }  // namespace chrome
+
+// Windows Ash additionally supports a native UI. See app_list_service_win.cc.
+#if !defined(OS_WIN)
+
+// static
+AppListService* AppListService::Get() {
+  return chrome::GetAppListServiceAsh();
+}
+
+// static
+void AppListService::InitAll(Profile* initial_profile) {
+  Get()->Init(initial_profile);
+}
+
+#endif  // !defined(OS_WIN)

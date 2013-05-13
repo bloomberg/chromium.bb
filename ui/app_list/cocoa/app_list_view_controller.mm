@@ -67,8 +67,11 @@ const CGFloat kMaxSegmentWidth = 80;
 }
 
 - (void)dealloc {
+  // Ensure that setDelegate(NULL) has been called before destruction, because
+  // dealloc can be called at odd times, and Objective C destruction order does
+  // not properly tear down these dependencies.
+  DCHECK(delegate_ == NULL);
   [appsGridController_ setPaginationObserver:nil];
-  [appsGridController_ setDelegate:NULL];
   [super dealloc];
 }
 
