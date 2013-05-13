@@ -606,6 +606,14 @@ void WebDevToolsAgentImpl::setTraceEventCallback(TraceEventCallback callback)
     m_client->setTraceEventCallback(callback);
 }
 
+void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
+{
+    WebKeyboardEvent webEvent = WebKeyboardEventBuilder(event);
+    if (!webEvent.keyIdentifier[0] && webEvent.type != WebInputEvent::Char)
+        webEvent.setKeyIdentifierFromWindowsKeyCode();
+    m_webViewImpl->handleInputEvent(webEvent);
+}
+
 void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
 {
     inspectorController()->dispatchMessageFromFrontend(message);

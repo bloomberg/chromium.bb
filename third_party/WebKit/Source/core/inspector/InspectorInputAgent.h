@@ -39,6 +39,7 @@
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
+class InspectorClient;
 class InspectorState;
 class Page;
 
@@ -47,9 +48,9 @@ typedef String ErrorString;
 class InspectorInputAgent : public InspectorBaseAgent<InspectorInputAgent>, public InspectorBackendDispatcher::InputCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorInputAgent);
 public:
-    static PassOwnPtr<InspectorInputAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState, Page* page)
+    static PassOwnPtr<InspectorInputAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState, Page* page, InspectorClient* client)
     {
-        return adoptPtr(new InspectorInputAgent(instrumentingAgents, inspectorState, page));
+        return adoptPtr(new InspectorInputAgent(instrumentingAgents, inspectorState, page, client));
     }
 
     ~InspectorInputAgent();
@@ -59,9 +60,10 @@ public:
     virtual void dispatchMouseEvent(ErrorString*, const String& type, int x, int y, const int* modifiers, const double* timestamp, const String* button, const int* clickCount);
 
 private:
-    InspectorInputAgent(InstrumentingAgents*, InspectorCompositeState*, Page*);
+    InspectorInputAgent(InstrumentingAgents*, InspectorCompositeState*, Page*, InspectorClient*);
 
     Page* m_page;
+    InspectorClient* m_client;
 };
 
 

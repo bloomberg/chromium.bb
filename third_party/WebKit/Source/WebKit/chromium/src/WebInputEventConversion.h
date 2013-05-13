@@ -111,12 +111,15 @@ public:
     WebMouseWheelEventBuilder(const WebCore::Widget*, const WebCore::RenderObject*, const WebCore::WheelEvent&);
 };
 
-// Converts a WebCore::KeyboardEvent to a corresponding WebKeyboardEvent.
-// NOTE: This is only implemented for keydown and keyup.  If the event mapping
-// fails, the event type will be set to Undefined.
+// Converts a WebCore::KeyboardEvent or WebCore::PlatformKeyboardEvent to a
+// corresponding WebKeyboardEvent.
+// NOTE: For WebCore::KeyboardEvent, this is only implemented for keydown,
+// keyup, and keypress. If the event mapping fails, the event type will be set
+// to Undefined.
 class WebKeyboardEventBuilder : public WebKeyboardEvent {
 public:
     WebKeyboardEventBuilder(const WebCore::KeyboardEvent&);
+    WebKeyboardEventBuilder(const WebCore::PlatformKeyboardEvent&);
 };
 
 // Converts a WebCore::TouchEvent to a corresponding WebTouchEvent.

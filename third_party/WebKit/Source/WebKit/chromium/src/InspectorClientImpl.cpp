@@ -159,6 +159,12 @@ void InspectorClientImpl::dumpUncountedAllocatedObjects(const HashMap<const void
         agent->dumpUncountedAllocatedObjects(map);
 }
 
+void InspectorClientImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        agent->dispatchKeyEvent(event);
+}
+
 void InspectorClientImpl::setTraceEventCallback(TraceEventCallback callback)
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())

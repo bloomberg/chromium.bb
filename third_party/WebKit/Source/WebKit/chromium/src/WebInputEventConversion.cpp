@@ -579,6 +579,55 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
     memcpy(keyIdentifier, event.keyIdentifier().ascii().data(), event.keyIdentifier().length());
 }
 
+WebInputEvent::Type toWebKeyboardEventType(PlatformEvent::Type type)
+{
+    switch (type) {
+    case PlatformEvent::KeyUp:
+        return WebInputEvent::KeyUp;
+    case PlatformEvent::KeyDown:
+        return WebInputEvent::KeyDown;
+    case PlatformEvent::RawKeyDown:
+        return WebInputEvent::RawKeyDown;
+    case PlatformEvent::Char:
+        return WebInputEvent::Char;
+    default:
+        return WebInputEvent::Undefined;
+    }
+}
+
+int toWebKeyboardEventModifiers(int modifiers)
+{
+    int newModifiers = 0;
+    if (modifiers & PlatformEvent::ShiftKey)
+        newModifiers |= WebInputEvent::ShiftKey;
+    if (modifiers & PlatformEvent::CtrlKey)
+        newModifiers |= WebInputEvent::ControlKey;
+    if (modifiers & PlatformEvent::AltKey)
+        newModifiers |= WebInputEvent::AltKey;
+    if (modifiers & PlatformEvent::MetaKey)
+        newModifiers |= WebInputEvent::MetaKey;
+    return newModifiers;
+}
+
+WebKeyboardEventBuilder::WebKeyboardEventBuilder(const WebCore::PlatformKeyboardEvent& event)
+{
+    type = toWebKeyboardEventType(event.type());
+    modifiers = toWebKeyboardEventModifiers(event.modifiers());
+    if (event.isAutoRepeat())
+        modifiers |= WebInputEvent::IsAutoRepeat;
+    if (event.isKeypad())
+        modifiers |= WebInputEvent::IsKeyPad;
+    isSystemKey = event.isSystemKey();
+    nativeKeyCode = event.nativeVirtualKeyCode();
+
+    windowsKeyCode = windowsKeyCodeWithoutLocation(event.windowsVirtualKeyCode());
+    modifiers |= locationModifiersFromWindowsKeyCode(event.windowsVirtualKeyCode());
+
+    memcpy(text, event.text().characters(), std::min(static_cast<unsigned>(textLengthCap), event.text().length()));
+    memcpy(unmodifiedText, event.unmodifiedText().characters(), std::min(static_cast<unsigned>(textLengthCap), event.unmodifiedText().length()));
+    memcpy(keyIdentifier, event.keyIdentifier().ascii().data(), std::min(static_cast<unsigned>(keyIdentifierLengthCap), event.keyIdentifier().length()));
+}
+
 static void addTouchPoints(const Widget* widget, const AtomicString& touchType, TouchList* touches, WebTouchPoint* touchPoints, unsigned* touchPointsLength, const WebCore::RenderObject* renderObject)
 {
     unsigned numberOfTouches = std::min(touches->length(), static_cast<unsigned>(WebTouchEvent::touchesLengthCap));

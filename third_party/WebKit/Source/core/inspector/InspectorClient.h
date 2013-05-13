@@ -38,6 +38,7 @@ class InspectorController;
 class InspectorFrontendChannel;
 class Frame;
 class Page;
+class PlatformKeyboardEvent;
 
 class InspectorClient : public InspectorStateClient {
 public:
@@ -68,6 +69,8 @@ public:
 
     virtual void getAllocatedObjects(HashSet<const void*>&) { }
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&) { }
+
+    virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) { }
 
     static bool doDispatchMessageOnFrontendPage(Page* frontendPage, const String& message);
 
