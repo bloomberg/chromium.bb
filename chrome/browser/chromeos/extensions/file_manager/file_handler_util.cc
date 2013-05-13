@@ -512,12 +512,6 @@ class ExtensionTaskExecutor : public FileTaskExecutor {
 
   typedef std::vector<FileDefinition> FileDefinitionList;
   class ExecuteTasksFileSystemCallbackDispatcher;
-  void RequestFileEntryOnFileThread(
-      scoped_refptr<fileapi::FileSystemContext> file_system_context_handler,
-      const GURL& handler_base_url,
-      const scoped_refptr<const extensions::Extension>& handler,
-      int handler_pid,
-      const std::vector<FileSystemURL>& file_urls);
 
   void ExecuteDoneOnUIThread(bool success);
   void ExecuteFileActionsOnUIThread(const std::string& file_system_name,
@@ -788,7 +782,7 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
     return true;
   }
 
-  ExtensionTaskExecutor* executor_;
+  scoped_refptr<ExtensionTaskExecutor> executor_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_handler_;
   scoped_refptr<const Extension> handler_extension_;
   int handler_pid_;
@@ -843,36 +837,21 @@ bool ExtensionTaskExecutor::ExecuteAndNotify(
       BrowserContext::GetStoragePartitionForSite(profile(), site)->
       GetFileSystemContext();
 
+  GURL origin_url =
+      Extension::GetBaseURLFromExtensionId(extension->id()).GetOrigin();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &ExtensionTaskExecutor::RequestFileEntryOnFileThread,
-          this,
-          file_system_context_handler,
-          Extension::GetBaseURLFromExtensionId(extension->id()),
-          extension,
-          extension_pid,
-          file_urls));
+      base::Bind(&fileapi::FileSystemContext::OpenFileSystem,
+                 file_system_context_handler,
+                 origin_url, fileapi::kFileSystemTypeExternal, false, // create
+                 ExecuteTasksFileSystemCallbackDispatcher::CreateCallback(
+                     this,
+                     file_system_context_handler,
+                     extension,
+                     extension_pid,
+                     action_id_,
+                     file_urls)));
   return true;
-}
-
-void ExtensionTaskExecutor::RequestFileEntryOnFileThread(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context_handler,
-    const GURL& handler_base_url,
-    const scoped_refptr<const Extension>& handler,
-    int handler_pid,
-    const std::vector<FileSystemURL>& file_urls) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  GURL origin_url = handler_base_url.GetOrigin();
-  file_system_context_handler->OpenFileSystem(
-      origin_url, fileapi::kFileSystemTypeExternal, false, // create
-      ExecuteTasksFileSystemCallbackDispatcher::CreateCallback(
-          this,
-          file_system_context_handler,
-          handler,
-          handler_pid,
-          action_id_,
-          file_urls));
 }
 
 void ExtensionTaskExecutor::ExecuteDoneOnUIThread(bool success) {
