@@ -249,8 +249,6 @@
         '../plugins/webkit_plugins_export.h',
         '../plugins/webplugininfo.cc',
         '../plugins/webplugininfo.h',
-        '../plugins/webview_plugin.cc',
-        '../plugins/webview_plugin.h',
         'alt_error_page_resource_fetcher.cc',
         'alt_error_page_resource_fetcher.h',
         'cpp_bound_class.cc',

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/webview_plugin.h"
+#include "chrome/renderer/plugins/webview_plugin.h"
 
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -39,8 +39,6 @@ using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using WebKit::WebVector;
 using WebKit::WebView;
-
-namespace webkit {
 
 WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate)
     : delegate_(delegate),
@@ -92,7 +90,7 @@ void WebViewPlugin::RestoreTitleText() {
     container_->element().setAttribute("title", old_title_);
 }
 
-WebKit::WebPluginContainer* WebViewPlugin::container() const {
+WebPluginContainer* WebViewPlugin::container() const {
   return container_;
 }
 
@@ -195,7 +193,7 @@ bool WebViewPlugin::acceptsLoadDrops() {
   return false;
 }
 
-void WebViewPlugin::setToolTipText(const WebKit::WebString& text,
+void WebViewPlugin::setToolTipText(const WebString& text,
                                    WebKit::WebTextDirection hint) {
   if (container_)
     container_->element().setAttribute("title", text);
@@ -245,5 +243,3 @@ void WebViewPlugin::didReceiveResponse(WebFrame* frame,
                                        const WebURLResponse& response) {
   WebFrameClient::didReceiveResponse(frame, identifier, response);
 }
-
-}  // namespace webkit

@@ -5,13 +5,13 @@
 #ifndef CHROME_RENDERER_PLUGINS_PLUGIN_PLACEHOLDER_H_
 #define CHROME_RENDERER_PLUGINS_PLUGIN_PLACEHOLDER_H_
 
+#include "chrome/renderer/plugins/webview_plugin.h"
 #include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/glue/cpp_bound_class.h"
 #include "webkit/plugins/webplugininfo.h"
-#include "webkit/plugins/webview_plugin.h"
 
 struct ChromeViewHostMsg_GetPluginInfo_Status;
 
@@ -24,7 +24,7 @@ struct WebPluginInfo;
 class PluginPlaceholder : public content::RenderViewObserver,
                           public content::RenderProcessObserver,
                           public webkit_glue::CppBoundClass,
-                          public webkit::WebViewPlugin::Delegate,
+                          public WebViewPlugin::Delegate,
                           public content::ContextMenuClient {
  public:
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
@@ -59,7 +59,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
        const WebKit::WebPluginParams& params);
 #endif
 
-  webkit::WebViewPlugin* plugin() { return plugin_; }
+  WebViewPlugin* plugin() { return plugin_; }
 
   void set_blocked_for_prerendering(bool blocked_for_prerendering) {
     is_blocked_for_prerendering_ = blocked_for_prerendering;
@@ -158,7 +158,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
 
   WebKit::WebFrame* frame_;
   WebKit::WebPluginParams plugin_params_;
-  webkit::WebViewPlugin* plugin_;
+  WebViewPlugin* plugin_;
 
   webkit::WebPluginInfo plugin_info_;
 

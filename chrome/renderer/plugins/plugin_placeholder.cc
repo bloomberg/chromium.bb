@@ -41,7 +41,6 @@
 #include "ui/webui/jstemplate_builder.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/webview_plugin.h"
 
 #if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
 #include "webkit/plugins/plugin_constants.h"
@@ -65,7 +64,6 @@ using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
 using WebKit::WebVector;
-using webkit::WebViewPlugin;
 using webkit_glue::CppArgumentList;
 using webkit_glue::CppVariant;
 

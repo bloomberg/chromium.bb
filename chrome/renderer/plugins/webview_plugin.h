@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_WEBVIEW_PLUGIN_H_
-#define WEBKIT_PLUGINS_WEBVIEW_PLUGIN_H_
+#ifndef CHROME_RENDERER_PLUGINS_WEBVIEW_PLUGIN_H_
+#define CHROME_RENDERER_PLUGINS_WEBVIEW_PLUGIN_H_
 
 #include <list>
 
@@ -15,15 +15,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
-#include "webkit/plugins/webkit_plugins_export.h"
 
 struct WebPreferences;
 
 namespace WebKit {
 class WebMouseEvent;
 }
-
-namespace webkit {
 
 // This class implements the WebPlugin interface by forwarding drawing and
 // handling input events to a WebView.
@@ -32,8 +29,9 @@ namespace webkit {
 // call web_view->mainFrame()->loadHTMLString() with the HTML data and a fake
 // chrome:// URL as origin.
 
-class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
-                     public WebKit::WebFrameClient {
+class WebViewPlugin : public WebKit::WebPlugin,
+                      public WebKit::WebViewClient,
+                      public WebKit::WebFrameClient {
  public:
   class Delegate {
    public:
@@ -55,7 +53,7 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   // Convenience method to set up a new WebViewPlugin using |preferences|
   // and displaying |html_data|. |url| should be a (fake) chrome:// URL; it is
   // only used for navigation and never actually resolved.
-  WEBKIT_PLUGINS_EXPORT static WebViewPlugin* Create(
+  static WebViewPlugin* Create(
       Delegate* delegate,
       const WebPreferences& preferences,
       const std::string& html_data,
@@ -66,9 +64,9 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   // When loading a plug-in document (i.e. a full page plug-in not embedded in
   // another page), we save all data that has been received, and replay it with
   // this method on the actual plug-in.
-  WEBKIT_PLUGINS_EXPORT void ReplayReceivedData(WebKit::WebPlugin* plugin);
+  void ReplayReceivedData(WebKit::WebPlugin* plugin);
 
-  WEBKIT_PLUGINS_EXPORT void RestoreTitleText();
+  void RestoreTitleText();
 
   // WebPlugin methods:
   virtual WebKit::WebPluginContainer* container() const;
@@ -157,6 +155,4 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   WebKit::WebString old_title_;
 };
 
-}  // namespace webkit
-
-#endif  // WEBKIT_PLUGINS_WEBVIEW_PLUGIN_H_
+#endif  // CHROME_RENDERER_PLUGINS_WEBVIEW_PLUGIN_H_
