@@ -51,6 +51,9 @@ class LauncherViewTestAPI {
   // Runs message loop and waits until all add/remove animations are done.
   void RunMessageLoopUntilAnimationsDone();
 
+  // An accessor for |launcher_view|.
+  internal::LauncherView* launcher_view() { return launcher_view_; }
+
  private:
   internal::LauncherView* launcher_view_;
 

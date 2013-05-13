@@ -45,6 +45,12 @@ const int kPageFlipDelayInMs = 1000;
 // How many pages on either side of the selected one we prerender.
 const int kPrerenderPages = 1;
 
+// The drag and drop proxy should get scaled by this factor.
+const float kDragAndDropProxyScale = 1.5f;
+
+// For testing we remember the last created grid view.
+app_list::AppsGridView* last_created_grid_view_for_test = NULL;
+
 // RowMoveAnimationDelegate is used when moving an item into a different row.
 // Before running the animation, the item's layer is re-created and kept in
 // the original position, then the item is moved to just before its target
@@ -115,6 +121,7 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
       page_flip_target_(-1),
       page_flip_delay_in_ms_(kPageFlipDelayInMs),
       bounds_animator_(this) {
+  last_created_grid_view_for_test = this;
   pagination_model_->AddObserver(this);
   AddChildView(page_switcher_view_);
 }
@@ -188,6 +195,21 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
     return;
 
   drag_view_ = view;
+
+  // When a drag and drop host is given, the item can be dragged out of the app
+  // list window. In that case a proxy widget needs to be used.
+  // Note: This code has very likely to be changed for Windows (non metro mode)
+  // when a |drag_and_drop_host_| gets implemented.
+  if (drag_and_drop_host_) {
+    // We have to hide the original item since the drag and drop host will do
+    // the OS dependent code to "lift off the dragged item".
+    // Note that we cannot use SetVisible since it would remove the mouse input.
+    drag_view_->SetSize(gfx::Size());
+    drag_and_drop_host_->CreateDragIconProxy(event.root_location(),
+                                             view->model()->icon(),
+                                             drag_view_,
+                                             kDragAndDropProxyScale);
+  }
   drag_start_ = event.location();
 }
 
@@ -204,13 +226,14 @@ void AppsGridView::UpdateDrag(AppListItemView* view,
   if (drag_pointer_ != pointer)
     return;
 
+  ExtractDragLocation(event, &last_drag_point_);
+  const Index last_drop_target = drop_target_;
+  CalculateDropTarget(last_drag_point_, false);
+
   // If a drag and drop host is provided, see if the drag operation needs to be
   // forwarded.
   DispatchDragEventToDragAndDropHost(event);
-  ExtractDragLocation(event, &last_drag_point_);
 
-  const Index last_drop_target = drop_target_;
-  CalculateDropTarget(last_drag_point_, false);
   MaybeStartPageFlipTimer(last_drag_point_);
 
   gfx::Point page_switcher_point(last_drag_point_);
@@ -220,6 +243,12 @@ void AppsGridView::UpdateDrag(AppListItemView* view,
 
   if (last_drop_target != drop_target_)
     AnimateToIdealBounds();
+
+  if (drag_and_drop_host_) {
+    drag_and_drop_host_->UpdateDragIconProxy(event.root_location());
+    return;
+  }
+
   drag_view_->SetPosition(
       gfx::PointAtOffsetFromOrigin(last_drag_point_ - drag_start_));
 }
@@ -232,6 +261,16 @@ void AppsGridView::EndDrag(bool cancel) {
     CalculateDropTarget(last_drag_point_, true);
     if (IsValidIndex(drop_target_))
       MoveItemInModel(drag_view_, drop_target_);
+  }
+
+  // In case we had a drag and drop proxy icon, we delete it and make the real
+  // item visible again.
+  if (drag_and_drop_host_) {
+    drag_and_drop_host_->DestroyDragIconProxy();
+    // To avoid an incorrect animation on re-group, |drag_view_| gets positioned
+    // at its last known drag location.
+    drag_view_->SetPosition(
+        gfx::PointAtOffsetFromOrigin(last_drag_point_ - drag_start_));
   }
 
   drag_pointer_ = NONE;
@@ -351,6 +390,11 @@ void AppsGridView::ViewHierarchyChanged(
 
     bounds_animator_.StopAnimatingView(details.child);
   }
+}
+
+// static
+AppsGridView* AppsGridView::GetLastGridViewForTest() {
+  return last_created_grid_view_for_test;
 }
 
 void AppsGridView::Update() {

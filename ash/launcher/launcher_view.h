@@ -39,6 +39,7 @@ class LauncherModel;
 
 namespace internal {
 
+class DragImageView;
 class LauncherButton;
 class LauncherTooltipManager;
 class ShelfLayoutManager;
@@ -100,11 +101,24 @@ class ASH_EXPORT LauncherView : public views::View,
   virtual View* GetFocusTraversableParentView() OVERRIDE;
 
   // Overridden from app_list::ApplicationDragAndDropHost:
+  virtual void CreateDragIconProxy(
+      const gfx::Point& location_in_screen_coordinates,
+      const gfx::ImageSkia& icon,
+      views::View* replaced_view,
+      float scale_factor) OVERRIDE;
+  virtual void UpdateDragIconProxy(
+      const gfx::Point& location_in_screen_coordinates) OVERRIDE;
+  virtual void DestroyDragIconProxy() OVERRIDE;
   virtual bool StartDrag(
       const std::string& app_id,
       const gfx::Point& location_in_screen_coordinates) OVERRIDE;
   virtual bool Drag(const gfx::Point& location_in_screen_coordinates) OVERRIDE;
   virtual void EndDrag(bool cancel) OVERRIDE;
+
+  // Return the view model for test purposes.
+  const views::ViewModel* const view_model_for_test() const {
+    return view_model_.get();
+  }
 
  private:
   friend class ash::test::LauncherViewTestAPI;
@@ -339,6 +353,19 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // The application ID of the application which we drag and drop.
   std::string drag_and_drop_app_id_;
+
+  // The original launcher item's size before the dragging operation.
+  gfx::Size pre_drag_and_drop_size_;
+
+  // The image proxy for drag operations when a drag and drop host exists and
+  // the item can be dragged outside the app grid.
+  scoped_ptr<ash::internal::DragImageView> drag_image_;
+
+  // The cursor offset to the middle of the dragged item.
+  gfx::Vector2d drag_image_offset_;
+
+  // The view which gets replaced by our drag icon proxy.
+  views::View* drag_replaced_view_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

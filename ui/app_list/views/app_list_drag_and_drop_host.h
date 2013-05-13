@@ -17,6 +17,23 @@ namespace app_list {
 // shortcuts onto another host (the launcher).
 class ApplicationDragAndDropHost {
  public:
+  // Create an OS dependent drag proxy icon which can escape the given view.
+  // The proxy should get created using the |icon| with a magnification of
+  // |scale_factor| at a center location of |location_in_screen_coordinates.
+  // Use |replaced_view| to find the screen which is used.
+  virtual void CreateDragIconProxy(
+      const gfx::Point& location_in_screen_coordinates,
+      const gfx::ImageSkia& icon,
+      views::View* replaced_view,
+      float scale_factor) = 0;
+
+  // Update the screen location of the Drag icon proxy.
+  virtual void UpdateDragIconProxy(
+      const gfx::Point& location_in_screen_coordinates) = 0;
+
+  // Remove the OS dependent drag proxy from the screen.
+  virtual void DestroyDragIconProxy() = 0;
+
   // A drag operation could get started. The recipient has to return true if
   // he wants to take it - e.g. |location_in_screen_poordinates| is over a
   // target area. The passed |app_id| identifies the application which should
@@ -28,6 +45,7 @@ class ApplicationDragAndDropHost {
   // dispatches the mouse coordinate change accordingly. When the function
   // returns false it requests that the operation be aborted since the event
   // location is out of bounds.
+  // Note that this function does not update the drag proxy's screen position.
   virtual bool Drag(const gfx::Point& location_in_screen_coordinates) = 0;
 
   // Once |StartDrag| returned true, this function is guaranteed to be called

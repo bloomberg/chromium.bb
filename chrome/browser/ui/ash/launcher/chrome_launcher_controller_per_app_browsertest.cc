@@ -4,10 +4,14 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
+#include "ash/ash_switches.h"
+#include "ash/display/display_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_util.h"
+#include "ash/launcher/launcher_view.h"
 #include "ash/shell.h"
+#include "ash/test/launcher_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_util.h"
 #include "base/utf_string_conversions.h"
@@ -21,6 +25,7 @@
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -40,6 +45,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/views/apps_grid_view.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
 
@@ -177,6 +184,13 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
   }
 
   virtual ~LauncherPerAppAppBrowserTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // TODO(skuhne): Remove this function when the drag and drop logic flag gets
+    // removed.
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(ash::switches::kAshDragAndDropAppListToLauncher);
+  }
 
   virtual void RunTestOnMainThreadLoop() OVERRIDE {
     launcher_ = ash::Launcher::ForPrimaryDisplay();
@@ -1334,4 +1348,108 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
   // After activation our browser should be active again.
   launcher_->ActivateLauncherItem(1);
   EXPECT_EQ(window1, ash::wm::GetActiveWindow());
+}
+
+// Do various drag and drop interaction tests between the application list and
+// the launcher.
+IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, DragAndDrop) {
+  // Get a number of interfaces we need.
+  aura::test::EventGenerator generator(
+      ash::Shell::GetPrimaryRootWindow(), gfx::Point());
+  ash::test::LauncherViewTestAPI test(launcher_->GetLauncherViewForTest());
+  AppListService* service = AppListService::Get();
+
+  // There should be two items in our launcher by this time.
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_FALSE(service->IsAppListVisible());
+
+  // Open the app list menu and check that the drag and drop host was set.
+  gfx::Rect app_list_bounds =
+      test.launcher_view()->GetAppListButtonView()->GetBoundsInScreen();
+  generator.MoveMouseTo(app_list_bounds.CenterPoint().x(),
+                        app_list_bounds.CenterPoint().y());
+  MessageLoop::current()->RunUntilIdle();
+  generator.ClickLeftButton();
+
+  EXPECT_TRUE(service->IsAppListVisible());
+  app_list::AppsGridView* grid_view =
+      app_list::AppsGridView::GetLastGridViewForTest();
+  ASSERT_TRUE(grid_view);
+  ASSERT_TRUE(grid_view->has_drag_and_drop_host_for_test());
+
+  // There should be 2 items in our application list.
+  const views::ViewModel* vm_grid = grid_view->view_model_for_test();
+  EXPECT_EQ(2, vm_grid->view_size());
+
+  // Test #1: Drag an app list which does not exist yet item into the
+  // launcher. Keeping it dragged, see that a new item gets created. Continuing
+  // to drag it out should remove it again.
+
+  // Get over item #1 of the application list and press the mouse button.
+  views::View* item1 = vm_grid->view_at(1);
+  gfx::Rect bounds_grid_1 = item1->GetBoundsInScreen();
+  generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
+                        bounds_grid_1.CenterPoint().y());
+  MessageLoop::current()->RunUntilIdle();
+  generator.PressLeftButton();
+
+  EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
+
+  // Drag the item into the launcher and check that a new item gets created.
+  const views::ViewModel* vm_launcher =
+      test.launcher_view()->view_model_for_test();
+  views::View* launcher1 = vm_launcher->view_at(1);
+  gfx::Rect bounds_launcher_1 = launcher1->GetBoundsInScreen();
+  generator.MoveMouseTo(bounds_launcher_1.CenterPoint().x(),
+                        bounds_launcher_1.CenterPoint().y());
+  MessageLoop::current()->RunUntilIdle();
+
+  // Check that a new item got created.
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_TRUE(grid_view->forward_events_to_drag_and_drop_host_for_test());
+
+  // Move it somewhere else and check that it disappears again.
+  generator.MoveMouseTo(0, 0);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
+
+  // Dropping it outside of the launcher should keep the launcher as it
+  // originally was.
+  generator.ReleaseLeftButton();
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2, model_->item_count());
+  // There are a few animations which need finishing before we can continue.
+  test.RunMessageLoopUntilAnimationsDone();
+
+  // Test #2: Check that the unknown item dropped into the launcher will
+  // create a new item.
+  generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
+                        bounds_grid_1.CenterPoint().y());
+  generator.PressLeftButton();
+  generator.MoveMouseTo(bounds_launcher_1.CenterPoint().x(),
+                        bounds_launcher_1.CenterPoint().y());
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_TRUE(grid_view->forward_events_to_drag_and_drop_host_for_test());
+  generator.ReleaseLeftButton();
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
+  EXPECT_EQ(3, model_->item_count());  // It should be still there.
+  test.RunMessageLoopUntilAnimationsDone();
+
+  // Test #3: Check that the now known item dropped into the launcher will
+  // not create a new item.
+  generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
+                        bounds_grid_1.CenterPoint().y());
+  generator.PressLeftButton();
+  generator.MoveMouseTo(bounds_launcher_1.CenterPoint().x(),
+                        bounds_launcher_1.CenterPoint().y());
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(3, model_->item_count());  // No new item got added.
+  EXPECT_TRUE(grid_view->forward_events_to_drag_and_drop_host_for_test());
+  generator.ReleaseLeftButton();
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
+  EXPECT_EQ(3, model_->item_count());  // And it remains that way.
 }

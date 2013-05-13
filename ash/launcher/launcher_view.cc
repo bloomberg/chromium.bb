@@ -8,6 +8,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
+#include "ash/drag_drop/drag_image_view.h"
 #include "ash/launcher/app_list_button.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_delegate.h"
@@ -26,6 +27,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
+#include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -303,6 +306,17 @@ void ReflectItemStatus(const ash::LauncherItem& item,
   }
 }
 
+// Get the event location in screen coordinates.
+gfx::Point GetPositionInScreen(const gfx::Point& root_location,
+                               views::View* view) {
+  gfx::Point root_location_in_screen = root_location;
+  aura::RootWindow* root_window =
+      view->GetWidget()->GetNativeWindow()->GetRootWindow();
+  aura::client::GetScreenPositionClient(root_window->GetRootWindow())->
+        ConvertPointToScreen(root_window, &root_location_in_screen);
+  return root_location_in_screen;
+}
+
 }  // namespace
 
 // AnimationDelegate used when deleting an item. This steadily decreased the
@@ -526,6 +540,38 @@ View* LauncherView::GetFocusTraversableParentView() {
   return this;
 }
 
+void LauncherView::CreateDragIconProxy(
+    const gfx::Point& location_in_screen_coordinates,
+    const gfx::ImageSkia& icon,
+    views::View* replaced_view,
+    float scale_factor) {
+  drag_replaced_view_ = replaced_view;
+  drag_image_.reset(new ash::internal::DragImageView(
+      drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow()));
+  drag_image_->SetImage(icon);
+  gfx::Size size = drag_image_->GetPreferredSize();
+  size.set_width(size.width() * scale_factor);
+  size.set_height(size.height() * scale_factor);
+  drag_image_offset_ = gfx::Vector2d(size.width() / 2, size.height() / 2);
+  gfx::Rect drag_image_bounds(
+      GetPositionInScreen(location_in_screen_coordinates,
+                          drag_replaced_view_) - drag_image_offset_, size);
+  drag_image_->SetBoundsInScreen(drag_image_bounds);
+  drag_image_->SetWidgetVisible(true);
+}
+
+void LauncherView::UpdateDragIconProxy(
+    const gfx::Point& location_in_screen_coordinates) {
+  drag_image_->SetScreenPosition(
+      GetPositionInScreen(location_in_screen_coordinates,
+                          drag_replaced_view_) - drag_image_offset_);
+}
+
+void LauncherView::DestroyDragIconProxy() {
+  drag_image_.reset();
+  drag_image_offset_ = gfx::Vector2d(0, 0);
+}
+
 bool LauncherView::StartDrag(const std::string& app_id,
                              const gfx::Point& location_in_screen_coordinates) {
   // Bail if an operation is already going on - or the cursor is not inside.
@@ -554,8 +600,12 @@ bool LauncherView::StartDrag(const std::string& app_id,
       model_->ItemIndexByID(drag_and_drop_launcher_id_));
   DCHECK(drag_and_drop_view);
 
-  // Since there is already an icon presented, we hide this one for now.
-  drag_and_drop_view->SetVisible(false);
+  // Since there is already an icon presented by the caller, we hide this item
+  // for now. That has to be done by reducing the size since the visibility will
+  // change once a regrouping animation is performed.
+  pre_drag_and_drop_size_ = drag_and_drop_view->size();
+  drag_and_drop_view->SetSize(gfx::Size());
+
   // First we have to center the mouse cursor over the item.
   gfx::Point pt = drag_and_drop_view->GetBoundsInScreen().CenterPoint();
   views::View::ConvertPointFromScreen(drag_and_drop_view, &pt);
@@ -594,11 +644,11 @@ void LauncherView::EndDrag(bool cancel) {
   PointerReleasedOnButton(
       drag_and_drop_view, LauncherButtonHost::DRAG_AND_DROP, cancel);
 
+  // Either destroy the temporarily created item - or - make the item visible.
   if (drag_and_drop_item_created_ && cancel)
     delegate_->UnpinAppsWithID(drag_and_drop_app_id_);
-
-  if (drag_and_drop_view)
-    drag_and_drop_view->SetVisible(true);
+  else if (drag_and_drop_view)
+    drag_and_drop_view->SetSize(pre_drag_and_drop_size_);
 
   drag_and_drop_launcher_id_ = 0;
 }
@@ -1437,7 +1487,6 @@ void LauncherView::ButtonPressed(views::Button* sender,
         Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());
         // By setting us as DnD recipient, the app list knows that we can
         // handle items.
-        // TODO(skuhne): Invert the flag
         if (CommandLine::ForCurrentProcess()->HasSwitch(
                 ash::switches::kAshDragAndDropAppListToLauncher))
           Shell::GetInstance()->SetDragAndDropHostOfCurrentAppList(this);

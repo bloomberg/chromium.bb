@@ -20,6 +20,7 @@
 
 namespace views {
 class ButtonListener;
+class DragImageView;
 }
 
 namespace app_list {
@@ -92,6 +93,20 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
+
+  // Get the last grid view which was created.
+  static AppsGridView* GetLastGridViewForTest();
+
+  // Return the view model for test purposes.
+  const views::ViewModel* view_model_for_test() const { return &view_model_; }
+
+  // For test: Return if the drag and drop handler was set.
+  bool has_drag_and_drop_host_for_test() { return NULL != drag_and_drop_host_; }
+
+  // For test: Return if the drag and drop operation gets dispatched.
+  bool forward_events_to_drag_and_drop_host_for_test() {
+    return forward_events_to_drag_and_drop_host_;
+  }
 
  private:
   friend class app_list::test::AppsGridViewTestApi;
