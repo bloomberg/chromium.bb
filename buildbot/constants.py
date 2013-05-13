@@ -122,7 +122,7 @@ USE_PGO_GENERATE = 'pgo_generate'
 USE_PGO_USE = 'pgo_use'
 
 # PGO-specific constants.
-PGO_GENERATE_DISK_LAYOUT = '2gb-rootfs'
+PGO_GENERATE_DISK_LAYOUT = '4gb-rootfs'
 PGO_USE_TIMEOUT = 180 * 60
 
 # Builds and validates _alpha ebuilds.  These builds sync to the latest
