@@ -1062,10 +1062,11 @@ DialogType.isModal = function(type) {
   FileManager.prototype.initSidebar_ = function() {
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
     DirectoryTree.decorate(this.directoryTree_, this.directoryModel_);
-    this.directoryTree_.addEventListener('content-updated', function() {
-      this.updateMiddleBarVisibility_(true);
-    }.bind(this));
     if (util.platform.newUI()) {
+      this.directoryTree_.addEventListener('content-updated', function() {
+        this.updateMiddleBarVisibility_(true);
+      }.bind(this));
+
       this.volumeList_ = this.dialogDom_.querySelector('#volume-list');
       VolumeList.decorate(this.volumeList_, this.directoryModel_);
     }
@@ -1428,11 +1429,12 @@ DialogType.isModal = function(type) {
           this.table_.normalizeColumns();
       }
       this.table_.redraw();
-      this.volumeList_.redraw();
     }
 
     if (!util.platform.newUI())
       this.breadcrumbs_.truncate();
+    else
+      this.volumeList_.redraw();
 
     // Hide the search box if there is not enough space.
     if (util.platform.newUI())
@@ -2547,7 +2549,8 @@ DialogType.isModal = function(type) {
       }
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
-      this.updateMiddleBarVisibility_();
+      if (util.platform.newUI())
+        this.updateMiddleBarVisibility_();
       this.scanCompletedTimer_ = null;
     }.bind(this), 50);
   };
@@ -2580,7 +2583,8 @@ DialogType.isModal = function(type) {
       this.hideSpinnerLater_();
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
-      this.updateMiddleBarVisibility_();
+      if (util.platform.newUI())
+        this.updateMiddleBarVisibility_();
       this.scanUpdatedTimer_ = null;
     }.bind(this), 200);
   };
@@ -2609,7 +2613,8 @@ DialogType.isModal = function(type) {
       this.scanInProgress_ = false;
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
-      this.updateMiddleBarVisibility_();
+      if (util.platform.newUI())
+        this.updateMiddleBarVisibility_();
     }
   };
 
