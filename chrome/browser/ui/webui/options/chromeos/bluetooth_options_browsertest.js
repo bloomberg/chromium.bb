@@ -294,4 +294,102 @@ TEST_F('BluetoothWebUITest','testConnectionState', function() {
                                          fakeDevice.name));
 });
 
+TEST_F('BluetoothWebUITest','testMaliciousInput', function() {
+  assertEquals(this.browsePreload, document.location.href);
+
+  var unpairedDeviceList = $('bluetooth-unpaired-devices-list');
+  var pairDeviceDialog = $('bluetooth-pairing');
+
+  var maliciousStrings = [
+      '<SCRIPT>alert(1)</SCRIPT>',
+      '>\'>\\"><SCRIPT>alert(1)</SCRIPT>',
+      '<IMG SRC=\\"javascript:alert(1)\\">',
+      '<A HREF=\\"data:text/html;base64,' +
+          'PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pgo=\\">...</A>',
+      '<div>',
+      '<textarea>',
+      '<style>',
+      '[0xC0][0xBC]SCRIPT[0xC0][0xBE]alert(1)[0xC0][0xBC]/SCRIPT[0xC0][0xBE]',
+      '+ADw-SCRIPT+AD4-alert(1)+ADw-/SCRIPT+AD4-',
+      '&#<script>alert(1)</script>;',
+      '<!-- Hello -- world > <SCRIPT>alert(1)</SCRIPT> -->',
+      '<!<!-- Hello world > <SCRIPT>alert(1)</SCRIPT> -->',
+      '\x3CSCRIPT\x3Ealert(1)\x3C/SCRIPT\x3E',
+      '<IMG SRC=\\"j[0x00]avascript:alert(1)\\">',
+      '<BASE HREF=\\"javascript:1;/**/\\"><IMG SRC=\\"alert(1)\\">',
+      'javascript:alert(1);',
+      ' xss_injection=\\"\\" ',
+      '\\" xss_injection=\\"',
+      '\' xss_injection=\'',
+      '<!--',
+      '\'',
+      '\\"'
+    ];
+
+  var pairingStates = [
+      {pairing: 'bluetoothStartConnecting'},
+      {pairing: 'bluetoothEnterPinCode'},
+      {pairing: 'bluetoothEnterPasskey'},
+      {pairing: 'bluetoothRemotePinCode', pincode: '123456'},
+      {pairing: 'bluetoothRemotePasskey', passkey: '123456'},
+      {pairing: 'bluetoothConfirmPasskey', passkey: '123456'}
+  ];
+
+  var fakeDevice = {
+    address: '11:22:33:44:55:66',
+    connectable: true,
+    connected: false,
+    name: 'fake',
+    paired: false
+  };
+
+  options.BrowserOptions.addBluetoothDevice(fakeDevice);
+
+  var nodeCount = function(node) {
+    if (node.getAttribute)
+      assertFalse(!!node.getAttribute('xss_injection'));
+    var length = node.childNodes.length;
+    var tally = length;
+    for (var i = 0; i < length; i++) {
+      tally += nodeCount(node.childNodes[i]);
+    }
+    return tally;
+  };
+
+  var unpairedDeviceListSize = nodeCount(unpairedDeviceList);
+
+  // Ensure that updating the device with a malicious name does not corrupt the
+  // structure of the document.
+  for (var i = 0; i < maliciousStrings.length; i++) {
+    fakeDevice.name = maliciousStrings[i];
+    options.BrowserOptions.addBluetoothDevice(fakeDevice);
+    assertEquals(unpairedDeviceListSize, nodeCount(unpairedDeviceList));
+    var element = this.getElementForDevice(unpairedDeviceList,
+                                           fakeDevice.name);
+    assertTrue(!!element);
+    var label = element.querySelector('.bluetooth-device-label');
+    assertTrue(!!label);
+    assertEquals(maliciousStrings[i], label.textContent);
+
+    // Test all configurations of the pairing dialog.
+    for (var j = 0; j < pairingStates.length; j++) {
+      // Determine the expected node count using a good configuration.
+      var state = pairingStates[j];
+      for (var key in state) {
+        fakeDevice[key] = state[key];
+      }
+      fakeDevice.name = 'fake';
+      options.BrowserOptions.addBluetoothDevice(fakeDevice);
+      var pairDeviceDialogSize = nodeCount(pairDeviceDialog);
+      // Ensure that a malicious string does not modify the DOM structure.
+      fakeDevice.name = maliciousStrings[i];
+      options.BrowserOptions.addBluetoothDevice(fakeDevice);
+      assertEquals(pairDeviceDialogSize, nodeCount(pairDeviceDialog));
+      for (var key in state) {
+        delete fakeDevice[key];
+      }
+    }
+  }
+});
+
 GEN('#endif');
