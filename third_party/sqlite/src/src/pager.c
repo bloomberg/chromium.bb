@@ -5209,7 +5209,7 @@ static int pager_open_journal(Pager *pPager){
         ** implementations. */
         if( rc==SQLITE_OK && pPager->zFilename!=NULL
          && strlen(pPager->zFilename)>0
-         && memcmp(pVfs->zName, "unix", 4)==0
+         && strncmp(pVfs->zName, "unix", 4)==0
          && ( pVfs->zName[4]=='-' || pVfs->zName[4]=='\0' ) ){
           CFURLRef database = create_cfurl_from_cstring(pPager->zFilename);
           if( CSBackupIsItemExcluded(database, NULL) ){
