@@ -273,10 +273,11 @@
         </div>
         <div class=dialog-body>
           <div class="main-panel">
-            <div class="dialog-middlebar-contents">
+            <!-- The middle bar and spilitter are hidden by default, and will be shown by script if necessary. -->
+            <div class="dialog-middlebar-contents" hidden>
               <tree id="directory-tree" tabindex="8"></tree>
             </div>
-            <div class="splitter" id="middlebar-splitter"></div>
+            <div class="splitter" id="middlebar-splitter" hidden></div>
             <div class=filelist-panel>
               <div class="drive-welcome header"></div>
               <div class="volume-warning" id="volume-space-warning" hidden></div>
