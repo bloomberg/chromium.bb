@@ -8,6 +8,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,6 +59,10 @@ void ManagedModePolicyProvider::InitDefaults() {
   dict->SetInteger(policy::key::kContentPackDefaultFilteringBehavior,
                    ManagedModeURLFilter::ALLOW);
   dict->SetBoolean(policy::key::kForceSafeSearch, true);
+  dict->SetBoolean(policy::key::kSigninAllowed, false);
+  dict->SetBoolean(policy::key::kAllowDeletingBrowserHistory, false);
+  dict->SetInteger(policy::key::kIncognitoModeAvailability,
+                   IncognitoModePrefs::DISABLED);
 
   store_->SetValue(kPolicies, dict);
   UpdatePolicyFromCache();
