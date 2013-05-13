@@ -188,7 +188,7 @@
             ],
           },
         }],
-        ['OS == "mac"', {
+        ['OS == "mac" or (OS == "ios" and _toolset == "host")', {
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
@@ -204,7 +204,7 @@
             '../third_party/mach_override/mach_override.gyp:mach_override',
           ],
         }],
-        ['OS == "ios"', {
+        ['OS == "ios" and _toolset != "host"', {
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
@@ -674,7 +674,7 @@
             'debug/stack_trace_unittest.cc',
           ],
         }],
-        ['OS == "ios"', {
+        ['OS == "ios" and _toolset != "host"', {
           'sources/': [
             # Only test the iOS-meaningful portion of process_utils.
             ['exclude', '^process_util_unittest'],
@@ -788,7 +788,7 @@
         }],
       ],  # conditions
       'target_conditions': [
-        ['OS == "ios"', {
+        ['OS == "ios" and _toolset != "host"', {
           'sources/': [
             # Pull in specific Mac files for iOS (which have been filtered out
             # by file name rules).

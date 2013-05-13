@@ -6,7 +6,7 @@
   'targets': [
   ],
   'conditions': [
-    ['OS=="mac"', {
+    ['OS=="mac" or (OS=="ios" and "<(GENERATOR)"=="ninja")', {
       'targets' : [
         {
           'target_name' : 'mach_override',

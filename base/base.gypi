@@ -672,7 +672,7 @@
               ['include', '^worker_pool_linux\\.cc$'],
             ],
           }],
-          ['OS == "ios"', {
+          ['OS == "ios" and _toolset != "host"', {
             'sources/': [
               # Pull in specific Mac files for iOS (which have been filtered out
               # by file name rules).
@@ -700,6 +700,15 @@
             'sources!': [
               'message_pump_libevent.cc'
             ],
+          }],
+          ['OS == "ios" and _toolset == "host"', {
+            'sources/': [
+              # Copied filename_rules to switch from iOS to Mac inclusions.
+              ['include', '_(cocoa|mac)(_unittest)?\\.(h|cc|mm?)$'],
+              ['include', '(^|/)(cocoa|mac)/'],
+              ['exclude', '_ios(_unittest)?\\.(h|cc|mm?)$'],
+              ['exclude', '(^|/)ios/'],
+            ]
           }],
           ['OS != "mac" or >(nacl_untrusted_build)==1', {
               'sources!': [

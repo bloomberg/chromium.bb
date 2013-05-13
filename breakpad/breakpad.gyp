@@ -105,7 +105,106 @@
         },
       ],
     }],
-    [ 'OS=="mac"', {
+    ['OS=="mac" or (OS=="ios" and "<(GENERATOR)"=="ninja")', {
+      'target_defaults': {
+        'include_dirs': [
+          'src',
+        ],
+        'configurations': {
+          'Debug_Base': {
+            'defines': [
+              # This is needed for GTMLogger to work correctly.
+              'DEBUG',
+            ],
+          },
+        },
+      },
+      'targets': [
+        {
+          'target_name': 'dump_syms',
+          'type': 'executable',
+          'toolsets': ['host'],
+          'include_dirs': [
+            'src/common/mac',
+          ],
+          'sources': [
+            'src/common/dwarf/bytereader.cc',
+            'src/common/dwarf_cfi_to_module.cc',
+            'src/common/dwarf_cu_to_module.cc',
+            'src/common/dwarf/dwarf2diehandler.cc',
+            'src/common/dwarf/dwarf2reader.cc',
+            'src/common/dwarf_line_to_module.cc',
+            'src/common/language.cc',
+            'src/common/mac/arch_utilities.cc',
+            'src/common/mac/arch_utilities.h',
+            'src/common/mac/dump_syms.mm',
+            'src/common/mac/file_id.cc',
+            'src/common/mac/macho_id.cc',
+            'src/common/mac/macho_reader.cc',
+            'src/common/mac/macho_utilities.cc',
+            'src/common/mac/macho_walker.cc',
+            'src/common/md5.cc',
+            'src/common/module.cc',
+            'src/common/stabs_reader.cc',
+            'src/common/stabs_to_module.cc',
+            'src/tools/mac/dump_syms/dump_syms_tool.mm',
+          ],
+          'defines': [
+            # For src/common/stabs_reader.h.
+            'HAVE_MACH_O_NLIST_H',
+          ],
+          'xcode_settings': {
+            # Like ld, dump_syms needs to operate on enough data that it may
+            # actually need to be able to address more than 4GB. Use x86_64.
+            # Don't worry! An x86_64 dump_syms is perfectly able to dump
+            # 32-bit files.
+            'ARCHS': [
+              'x86_64',
+            ],
+
+            # The DWARF utilities require -funsigned-char.
+            'GCC_CHAR_IS_UNSIGNED_CHAR': 'YES',
+
+            # dwarf2reader.cc uses dynamic_cast.
+            'GCC_ENABLE_CPP_RTTI': 'YES',
+          },
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+            ],
+          },
+          'configurations': {
+            'Release_Base': {
+              'xcode_settings': {
+                # dump_syms crashes when built at -O1, -O2, and -O3.  It does
+                # not crash at -Os.  To play it safe, dump_syms is always built
+                # at -O0 until this can be sorted out.
+                # http://code.google.com/p/google-breakpad/issues/detail?id=329
+                'GCC_OPTIMIZATION_LEVEL': '0',  # -O0
+               },
+             },
+          },
+        },
+        {
+          'target_name': 'symupload',
+          'type': 'executable',
+          'toolsets': ['host'],
+          'include_dirs': [
+            'src/common/mac',
+          ],
+          'sources': [
+            'src/common/mac/HTTPMultipartUpload.m',
+            'src/tools/mac/symupload/symupload.m',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+            ],
+          }
+        },
+      ],
+    }],
+    ['OS=="mac"', {
       'target_defaults': {
         'include_dirs': [
           'src',
@@ -200,86 +299,6 @@
               '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
               '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
               '$(SDKROOT)/System/Library/Frameworks/SystemConfiguration.framework',
-            ],
-          }
-        },
-        {
-          'target_name': 'dump_syms',
-          'type': 'executable',
-          'include_dirs': [
-            'src/common/mac',
-          ],
-          'sources': [
-            'src/common/dwarf/bytereader.cc',
-            'src/common/dwarf_cfi_to_module.cc',
-            'src/common/dwarf_cu_to_module.cc',
-            'src/common/dwarf/dwarf2diehandler.cc',
-            'src/common/dwarf/dwarf2reader.cc',
-            'src/common/dwarf_line_to_module.cc',
-            'src/common/language.cc',
-            'src/common/mac/arch_utilities.cc',
-            'src/common/mac/arch_utilities.h',
-            'src/common/mac/dump_syms.mm',
-            'src/common/mac/file_id.cc',
-            'src/common/mac/macho_id.cc',
-            'src/common/mac/macho_reader.cc',
-            'src/common/mac/macho_utilities.cc',
-            'src/common/mac/macho_walker.cc',
-            'src/common/md5.cc',
-            'src/common/module.cc',
-            'src/common/stabs_reader.cc',
-            'src/common/stabs_to_module.cc',
-            'src/tools/mac/dump_syms/dump_syms_tool.mm',
-          ],
-          'defines': [
-            # For src/common/stabs_reader.h.
-            'HAVE_MACH_O_NLIST_H',
-          ],
-          'xcode_settings': {
-            # Like ld, dump_syms needs to operate on enough data that it may
-            # actually need to be able to address more than 4GB. Use x86_64.
-            # Don't worry! An x86_64 dump_syms is perfectly able to dump
-            # 32-bit files.
-            'ARCHS': [
-              'x86_64',
-            ],
-
-            # The DWARF utilities require -funsigned-char.
-            'GCC_CHAR_IS_UNSIGNED_CHAR': 'YES',
-
-            # dwarf2reader.cc uses dynamic_cast.
-            'GCC_ENABLE_CPP_RTTI': 'YES',
-          },
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
-            ],
-          },
-          'configurations': {
-            'Release_Base': {
-              'xcode_settings': {
-                # dump_syms crashes when built at -O1, -O2, and -O3.  It does
-                # not crash at -Os.  To play it safe, dump_syms is always built
-                # at -O0 until this can be sorted out.
-                # http://code.google.com/p/google-breakpad/issues/detail?id=329
-                'GCC_OPTIMIZATION_LEVEL': '0',  # -O0
-               },
-             },
-          },
-        },
-        {
-          'target_name': 'symupload',
-          'type': 'executable',
-          'include_dirs': [
-            'src/common/mac',
-          ],
-          'sources': [
-            'src/common/mac/HTTPMultipartUpload.m',
-            'src/tools/mac/symupload/symupload.m',
-          ],
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
             ],
           }
         },
@@ -668,7 +687,82 @@
         },
       ],
     }],
-    [ 'OS=="ios"', {
+    ['OS=="ios"', {
+      'targets': [
+        {
+          'target_name': 'breakpad_client',
+          'type': 'static_library',
+          'sources': [
+            'src/client/ios/Breakpad.h',
+            'src/client/ios/Breakpad.mm',
+            'src/client/ios/BreakpadController.h',
+            'src/client/ios/BreakpadController.mm',
+            'src/client/ios/handler/ios_exception_minidump_generator.mm',
+            'src/client/ios/handler/ios_exception_minidump_generator.h',
+            'src/client/mac/crash_generation/ConfigFile.h',
+            'src/client/mac/crash_generation/ConfigFile.mm',
+            'src/client/mac/handler/breakpad_nlist_64.cc',
+            'src/client/mac/handler/breakpad_nlist_64.h',
+            'src/client/mac/handler/dynamic_images.cc',
+            'src/client/mac/handler/dynamic_images.h',
+            'src/client/mac/handler/protected_memory_allocator.cc',
+            'src/client/mac/handler/protected_memory_allocator.h',
+            'src/client/mac/handler/exception_handler.cc',
+            'src/client/mac/handler/exception_handler.h',
+            'src/client/mac/handler/minidump_generator.cc',
+            'src/client/mac/handler/minidump_generator.h',
+            'src/client/mac/sender/uploader.h',
+            'src/client/mac/sender/uploader.mm',
+            'src/client/minidump_file_writer.cc',
+            'src/client/minidump_file_writer.h',
+            'src/client/minidump_file_writer-inl.h',
+            'src/common/convert_UTF.c',
+            'src/common/convert_UTF.h',
+            'src/common/mac/file_id.cc',
+            'src/common/mac/file_id.h',
+            'src/common/mac/HTTPMultipartUpload.m',
+            'src/common/mac/macho_id.cc',
+            'src/common/mac/macho_id.h',
+            'src/common/mac/macho_utilities.cc',
+            'src/common/mac/macho_utilities.h',
+            'src/common/mac/macho_walker.cc',
+            'src/common/mac/macho_walker.h',
+            'src/common/mac/string_utilities.cc',
+            'src/common/mac/string_utilities.h',
+            'src/common/md5.cc',
+            'src/common/md5.h',
+            'src/common/simple_string_dictionary.cc',
+            'src/common/simple_string_dictionary.h',
+            'src/common/string_conversion.cc',
+            'src/common/string_conversion.h',
+            'src/google_breakpad/common/minidump_format.h',
+          ],
+          'include_dirs': [
+            'src',
+            'src/client/mac/Framework',
+            'src/common/mac',
+            # For GTMLogger.
+            '<(DEPTH)/third_party/GTM',
+            '<(DEPTH)/third_party/GTM/Foundation',
+          ],
+          'link_settings': {
+            # Build the version of GTMLogger.m in third_party rather than the
+            # one in src/common/mac because the former catches all exceptions
+            # whereas the latter lets them propagate, which can cause odd
+            # crashes.
+            'sources': [
+              '<(DEPTH)/third_party/GTM/Foundation/GTMLogger.h',
+              '<(DEPTH)/third_party/GTM/Foundation/GTMLogger.m',
+            ],
+            'include_dirs': [
+              '<(DEPTH)/third_party/GTM',
+              '<(DEPTH)/third_party/GTM/Foundation',
+            ],
+          },
+        }
+      ]
+    }],
+    ['OS=="ios" and "<(GENERATOR)"!="ninja"', {
       'variables': {
         'ninja_output_dir': 'ninja-breakpad',
         'ninja_product_dir':
@@ -757,78 +851,7 @@
           'dependencies': [
             'breakpad_utilities',
           ],
-        },
-        {
-          'target_name': 'breakpad_client',
-          'type': 'static_library',
-          'sources': [
-            'src/client/ios/Breakpad.h',
-            'src/client/ios/Breakpad.mm',
-            'src/client/ios/BreakpadController.h',
-            'src/client/ios/BreakpadController.mm',
-            'src/client/ios/handler/ios_exception_minidump_generator.mm',
-            'src/client/ios/handler/ios_exception_minidump_generator.h',
-            'src/client/mac/crash_generation/ConfigFile.h',
-            'src/client/mac/crash_generation/ConfigFile.mm',
-            'src/client/mac/handler/breakpad_nlist_64.cc',
-            'src/client/mac/handler/breakpad_nlist_64.h',
-            'src/client/mac/handler/dynamic_images.cc',
-            'src/client/mac/handler/dynamic_images.h',
-            'src/client/mac/handler/protected_memory_allocator.cc',
-            'src/client/mac/handler/protected_memory_allocator.h',
-            'src/client/mac/handler/exception_handler.cc',
-            'src/client/mac/handler/exception_handler.h',
-            'src/client/mac/handler/minidump_generator.cc',
-            'src/client/mac/handler/minidump_generator.h',
-            'src/client/mac/sender/uploader.h',
-            'src/client/mac/sender/uploader.mm',
-            'src/client/minidump_file_writer.cc',
-            'src/client/minidump_file_writer.h',
-            'src/client/minidump_file_writer-inl.h',
-            'src/common/convert_UTF.c',
-            'src/common/convert_UTF.h',
-            'src/common/mac/file_id.cc',
-            'src/common/mac/file_id.h',
-            'src/common/mac/HTTPMultipartUpload.m',
-            'src/common/mac/macho_id.cc',
-            'src/common/mac/macho_id.h',
-            'src/common/mac/macho_utilities.cc',
-            'src/common/mac/macho_utilities.h',
-            'src/common/mac/macho_walker.cc',
-            'src/common/mac/macho_walker.h',
-            'src/common/mac/string_utilities.cc',
-            'src/common/mac/string_utilities.h',
-            'src/common/md5.cc',
-            'src/common/md5.h',
-            'src/common/simple_string_dictionary.cc',
-            'src/common/simple_string_dictionary.h',
-            'src/common/string_conversion.cc',
-            'src/common/string_conversion.h',
-            'src/google_breakpad/common/minidump_format.h',
-          ],
-          'include_dirs': [
-            'src',
-            'src/client/mac/Framework',
-            'src/common/mac',
-            # For GTMLogger.
-            '<(DEPTH)/third_party/GTM',
-            '<(DEPTH)/third_party/GTM/Foundation',
-          ],
-          'link_settings': {
-            # Build the version of GTMLogger.m in third_party rather than the
-            # one in src/common/mac because the former catches all exceptions
-            # whereas the latter lets them propagate, which can cause odd
-            # crashes.
-            'sources': [
-              '<(DEPTH)/third_party/GTM/Foundation/GTMLogger.h',
-              '<(DEPTH)/third_party/GTM/Foundation/GTMLogger.m',
-            ],
-            'include_dirs': [
-              '<(DEPTH)/third_party/GTM',
-              '<(DEPTH)/third_party/GTM/Foundation',
-            ],
-          },
-        },
+        }
       ],
     }],
   ],

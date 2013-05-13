@@ -65,7 +65,7 @@
         }],
         ['OS == "ios"', {
           'dependencies' : [
-            '<(DEPTH)/testing/iossim/iossim.gyp:iossim',
+            '<(DEPTH)/testing/iossim/iossim.gyp:iossim#host',
           ],
           'direct_dependent_settings': {
             'target_conditions': [

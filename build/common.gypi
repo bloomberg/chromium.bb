@@ -1317,6 +1317,10 @@
         'android_webview_build%': '<(android_webview_build)',
       }],  # OS=="android"
       ['OS=="mac"', {
+        # Enable clang on mac by default!
+        'clang%': 1,
+      }],  # OS=="mac"
+      ['OS=="mac" or OS=="ios"', {
         'variables': {
           # Mac OS X SDK and deployment target support.  The SDK identifies
           # the version of the system headers that will be used, and
@@ -1349,9 +1353,6 @@
         'mac_sdk_path': '<(mac_sdk_path)',
         'mac_deployment_target': '<(mac_deployment_target)',
 
-        # Enable clang on mac by default!
-        'clang%': 1,
-
         # Compile in Breakpad support by default so that it can be
         # tested, even if it is not enabled by default at runtime.
         'mac_breakpad_compiled_in%': 1,
@@ -1382,7 +1383,7 @@
             'mac_keystone%': 0,
           }],
         ],
-      }],  # OS=="mac"
+      }],  # OS=="mac" or OS=="ios"
       ['OS=="win"', {
         'conditions': [
           ['component=="shared_library"', {
@@ -3085,14 +3086,14 @@
             # libstdc++ in C++11 mode. So no C++11 mode for Android yet.
             # Doesn't work with asan for some reason either: crbug.com/233464
             'cflags': [
-              # Especially needed for gtest macros using enum values from Mac	
-              # system headers.	
-              # TODO(pkasting): In C++11 this is legal, so this should be	
-              # removed when we change to that.  (This is also why we don't	
-              # bother fixing all these cases today.)	
-              '-Wno-unnamed-type-template-args',	
-              # This (rightfully) complains about 'override', which we use	
-              # heavily.	
+              # Especially needed for gtest macros using enum values from Mac
+              # system headers.
+              # TODO(pkasting): In C++11 this is legal, so this should be
+              # removed when we change to that.  (This is also why we don't
+              # bother fixing all these cases today.)
+              '-Wno-unnamed-type-template-args',
+              # This (rightfully) complains about 'override', which we use
+              # heavily.
               '-Wno-c++11-extensions',
             ],
           }],
@@ -4031,6 +4032,20 @@
           ],
         },
         'target_conditions': [
+          ['_toolset=="host"', {
+            'xcode_settings': {
+              'SDKROOT': 'macosx<(mac_sdk)',  # -isysroot
+              'MACOSX_DEPLOYMENT_TARGET': '<(mac_deployment_target)',
+            },
+          }],
+          ['_toolset=="target"', {
+            'xcode_settings': {
+              # This section should be for overriding host settings. But,
+              # since we can't negate the iphone deployment target above, we
+              # instead set it here for target only.
+              'IPHONEOS_DEPLOYMENT_TARGET': '<(ios_deployment_target)',
+            },
+          }],
           ['_type=="executable"', {
             'configurations': {
               'Release_Base': {
@@ -4434,7 +4449,6 @@
         'ARCHS': '$(ARCHS_UNIVERSAL_IPHONE_OS)',
         # Just build armv7, until armv7s is correctly tested.
         'VALID_ARCHS': 'armv7 i386',
-        'IPHONEOS_DEPLOYMENT_TARGET': '<(ios_deployment_target)',
         # Target both iPhone and iPad.
         'TARGETED_DEVICE_FAMILY': '1,2',
       }],

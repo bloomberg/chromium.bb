@@ -28,7 +28,7 @@
             ],
           },
         }],
-        ['OS=="ios"', {
+        ['OS=="ios" and "<(GENERATOR)"!="ninja"', {
           'variables': {
             'ninja_output_dir': 'ninja-protoc',
             'ninja_product_dir':
@@ -205,7 +205,7 @@
         {
           'target_name': 'protoc',
           'conditions': [
-            ['OS!="ios"', {
+            ['OS!="ios" or "<(GENERATOR)"=="ninja"', {
               'type': 'executable',
               'toolsets': ['host'],
               'sources': [
@@ -273,7 +273,7 @@
                 '<(config_h_dir)',
                 'src/src',
               ],
-            }, {  # else, OS=="ios"
+            }, {  # else, OS=="ios" and "<(GENERATOR)"!="ninja"
               'type': 'none',
               'dependencies': [
                 'compile_protoc',
