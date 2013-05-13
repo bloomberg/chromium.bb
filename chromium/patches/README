@@ -31,6 +31,12 @@ uninitcond_dct_token_vp3_dequant.patch
   fix differently.
   See https://ffmpeg.org/trac/ffmpeg/attachment/ticket/2527
 
+unblock_windows_build.patch
+  wolenetz: MSVC fails to detect that abort() in av_assert0(0) occurs in
+  all code paths in lavc/utils.c avcodec_default_reget_buffer().  This patch
+  includes an explicit return AVERROR_BUG after the assert to unblock
+  the build when MSVC is configured to treat all warnings as errors.
+
 ugly/
 01_enable_checked_bitstream.patch
   dalecurtis: Removes "#define UNCHECKED_BITSTREAM_READER 1" from all codecs
