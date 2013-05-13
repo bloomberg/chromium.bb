@@ -287,11 +287,9 @@
       'filepath': 'content/common/sandbox.*linux.cc',
     },
     'managed_users': {
-      'filepath': 'chrome/browser/managed_mode'\
-                  '|chrome/browser/extensions/api/managed_mode'\
-                  '|chrome/browser/resources/options/manage'\
-                  '|chrome/browser/ui/webui/options/manage',
-        },
+      'filepath': 'chrome/browser/.*managed_mode'\
+                  '|chrome/browser/.*managed_user',
+    },
     'mac': {
       'filepath': 'cocoa|\.mm$|(_mac|_posix)\.(cc|h)$',
     },
