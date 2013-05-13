@@ -39,6 +39,7 @@ public class ImeTest extends ContentShellTestBase {
             "<body><form action=\"about:blank\">" +
             "<input id=\"input_text\" type=\"text\" />" +
             "<input id=\"input_radio\" type=\"radio\" />" +
+            "<br/><textarea id=\"textarea\" rows=\"4\" cols=\"20\"></textarea>" +
             "</form></body></html>");
 
     private TestAdapterInputConnection mConnection;
@@ -237,6 +238,17 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testFinishComposingText() throws Throwable {
+        // Focus the textarea. We need to do the following steps because we are focusing using JS.
+        DOMUtils.focusNode(this, mContentView, mCallbackContainer, "input_radio");
+        assertWaitForKeyboardStatus(false);
+        DOMUtils.focusNode(this, mContentView, mCallbackContainer, "textarea");
+        assertWaitForKeyboardStatus(false);
+        performShowImeIfNeeded();
+        assertWaitForKeyboardStatus(true);
+
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+
         mConnection.commitText("hllo", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hllo", 4, 4, -1, -1);
 
@@ -251,8 +263,11 @@ public class ImeTest extends ContentShellTestBase {
 
         mConnection.finishComposingText();
         // finishComposingText() is a two step IME event.
-        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 5, "hllo ", 4, 4, -1, -1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 5, "hllo ", 1, 1, 0, 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 6, "hllo ", 1, 1, -1, -1);
+
+        mConnection.commitText("\n", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 7, "h\nllo ", 2, 2, -1, -1);
     }
 
     private void performShowImeIfNeeded() {
@@ -445,11 +460,11 @@ public class ImeTest extends ContentShellTestBase {
 
         public void assertEqualState(String text, int selectionStart, int selectionEnd,
                 int compositionStart, int compositionEnd) {
-            assertEquals("Text did not match", mText, text);
-            assertEquals("Selection start did not match", mSelectionStart, selectionStart);
-            assertEquals("Selection end did not match", mSelectionEnd, selectionEnd);
-            assertEquals("Composition start did not match", mCompositionStart, compositionStart);
-            assertEquals("Composition end did not match", mCompositionEnd, compositionEnd);
+            assertEquals("Text did not match", text, mText);
+            assertEquals("Selection start did not match", selectionStart, mSelectionStart);
+            assertEquals("Selection end did not match", selectionEnd, mSelectionEnd);
+            assertEquals("Composition start did not match", compositionStart, mCompositionStart);
+            assertEquals("Composition end did not match", compositionEnd, mCompositionEnd);
         }
     }
 }

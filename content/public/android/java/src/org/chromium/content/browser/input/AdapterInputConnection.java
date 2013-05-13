@@ -351,13 +351,19 @@ public class AdapterInputConnection extends BaseInputConnection {
         if (getComposingSpanStart(editable) == getComposingSpanEnd(editable)) {
             return true;
         }
+
+        // TODO(aurimas): remove this workaround of changing composition before confirmComposition
+        //                Blink should support keeping the cursor (http://crbug.com/239923)
+        int selectionStart = Selection.getSelectionStart(editable);
+        int compositionStart = getComposingSpanStart(editable);
         super.finishComposingText();
 
         beginBatchEdit();
-        int selectionStart = Selection.getSelectionStart(editable);
-        int selectionEnd = Selection.getSelectionEnd(editable);
+        if (compositionStart != -1 && compositionStart < selectionStart
+                && !mImeAdapter.setComposingRegion(compositionStart, selectionStart)) {
+            return false;
+        }
         if (!mImeAdapter.checkCompositionQueueAndCallNative("", 0, true)) return false;
-        if (!mImeAdapter.setEditableSelectionOffsets(selectionStart, selectionEnd)) return false;
         endBatchEdit();
         return true;
     }
