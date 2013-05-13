@@ -36,20 +36,8 @@
 #include "core/fileapi/File.h"
 #include "core/fileapi/ThreadableBlobRegistry.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/platform/HistogramSupport.h"
 
 namespace WebCore {
-
-namespace {
-
-// Used in histograms to see when we can actually deprecate the prefixed slice.
-enum SliceHistogramEnum {
-    SliceWithoutPrefix,
-    SliceWithPrefix,
-    SliceHistogramEnumMax,
-};
-
-} // namespace
 
 Blob::Blob()
     : m_size(0)
