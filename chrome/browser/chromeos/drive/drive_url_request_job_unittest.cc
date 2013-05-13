@@ -359,4 +359,46 @@ TEST_F(DriveURLRequestJobTest, Cancel) {
   EXPECT_EQ(net::URLRequestStatus::CANCELED, request.status().status());
 }
 
+TEST_F(DriveURLRequestJobTest, RangeHeader) {
+  const GURL kTestUrl("drive:drive/root/File 1.txt");
+  const base::FilePath kTestFilePath("drive/root/File 1.txt");
+
+  net::URLRequest request(
+      kTestUrl, test_delegate_.get(),
+      url_request_context_.get(), test_network_delegate_.get());
+
+  // Set range header.
+  request.SetExtraRequestHeaderByName(
+      "Range", "bytes=3-5", false /* overwrite */);
+  request.Start();
+
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
+
+  // Reading file must be done after |request| runs, otherwise
+  // it'll create a local cache file, and we cannot test correctly.
+  std::string expected_data;
+  ASSERT_TRUE(ReadDriveFileSync(kTestFilePath, &expected_data));
+  EXPECT_EQ(expected_data.substr(3, 3), test_delegate_->data_received());
+}
+
+TEST_F(DriveURLRequestJobTest, WrongRangeHeader) {
+  const GURL kTestUrl("drive:drive/root/File 1.txt");
+
+  net::URLRequest request(
+      kTestUrl, test_delegate_.get(),
+      url_request_context_.get(), test_network_delegate_.get());
+
+  // Set range header.
+  request.SetExtraRequestHeaderByName(
+      "Range", "Wrong Range Header Value", false /* overwrite */);
+  request.Start();
+
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
+  EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, request.status().error());
+}
+
 }  // namespace drive

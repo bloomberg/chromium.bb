@@ -16,7 +16,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
@@ -55,6 +57,24 @@ DriveURLRequestJob::DriveURLRequestJob(
       weak_ptr_factory_(this) {
 }
 
+void DriveURLRequestJob::SetExtraRequestHeaders(
+    const net::HttpRequestHeaders& headers) {
+  std::string range_header;
+  if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
+    // Note: We only support single range requests.
+    std::vector<net::HttpByteRange> ranges;
+    if (net::HttpUtil::ParseRangeHeader(range_header, &ranges) &&
+        ranges.size() == 1) {
+      byte_range_ = ranges[0];
+    } else {
+      // Failed to parse Range: header, so notify the error.
+      NotifyDone(
+          net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+    }
+  }
+}
+
 void DriveURLRequestJob::Start() {
   DVLOG(1) << "Starting request";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -82,7 +102,7 @@ void DriveURLRequestJob::Start() {
       new DriveFileStreamReader(file_system_getter_, file_task_runner_));
   stream_reader_->Initialize(
       drive_file_path,
-      net::HttpByteRange(),
+      byte_range_,
       base::Bind(&DriveURLRequestJob::OnDriveFileStreamReaderInitialized,
                  weak_ptr_factory_.GetWeakPtr()));
 }
