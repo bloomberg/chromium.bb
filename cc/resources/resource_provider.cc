@@ -4,7 +4,8 @@
 
 #include "cc/resources/resource_provider.h"
 
-#include <limits.h>
+#include <algorithm>
+#include <limits>
 
 #include "base/debug/alias.h"
 #include "base/hash_tables.h"
@@ -925,7 +926,8 @@ void ResourceProvider::ReleasePixelBuffer(ResourceId id) {
   DCHECK(!resource->exported);
 
   if (resource->gl_id) {
-    DCHECK(resource->gl_pixel_buffer_id);
+    if (!resource->gl_pixel_buffer_id)
+      return;
     WebGraphicsContext3D* context3d = output_surface_->context3d();
     DCHECK(context3d);
     context3d->bindBuffer(
@@ -1026,20 +1028,18 @@ void ResourceProvider::SetPixelsFromBuffer(ResourceId id) {
                              GL_UNSIGNED_BYTE,
                              NULL);
     context3d->bindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, 0);
+    context3d->deleteBuffer(resource->gl_pixel_buffer_id);
+    resource->gl_pixel_buffer_id = 0;
   }
 
   if (resource->pixels) {
     DCHECK(resource->pixel_buffer);
     DCHECK(resource->format == GL_RGBA);
-    SkBitmap src;
-    src.setConfig(SkBitmap::kARGB_8888_Config,
-                  resource->size.width(),
-                  resource->size.height());
-    src.setPixels(resource->pixel_buffer);
 
     ScopedWriteLockSoftware lock(this, id);
-    SkCanvas* dest = lock.sk_canvas();
-    dest->writePixels(src, 0, 0);
+    std::swap(resource->pixels, resource->pixel_buffer);
+    delete[] resource->pixel_buffer;
+    resource->pixel_buffer = NULL;
   }
 }
 
