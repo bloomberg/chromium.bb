@@ -13,6 +13,7 @@ where options are
 
 --config <config>
 --append <tag>=<value>
+--append_file=<filename>
 --verbose
 --show_console
 --exclude=<filename>
@@ -52,6 +53,10 @@ TMP_PREFIX = '/tmp/tc_test_'
 SHOW_CONSOLE = 1
 # append these settings to config
 APPEND = []
+# append these settings to config, for a given test (specified by APPEND_FILES)
+APPEND_PER_TEST = {}
+# Files listing the APPEND_PER_TEST entries.
+APPEND_FILES = []
 # exclude these tests
 EXCLUDE = {}
 # check whether excludes are still necessary
@@ -134,6 +139,7 @@ def MakeExecutableCustom(config, test, extra):
   # success
   return ''
 
+
 def ParseExcludeFiles(config_attributes):
   ''' Parse the files containing tests to exclude (i.e. expected fails).
   Each line may contain a comma-separated list of attributes restricting
@@ -164,6 +170,31 @@ def ParseExcludeFiles(config_attributes):
     f.close()
     Print('Size of excludes now: %d' % len(EXCLUDE))
 
+
+def ParseAppendFiles():
+  """Parse the file contain a list of test + CFLAGS to append for that test."""
+  for append_file in APPEND_FILES:
+    f = open(append_file)
+    for line in f:
+      line = line.strip()
+      if not line: continue
+      if line.startswith('#'): continue
+      tokens = line.split(',')
+      test = tokens[0]
+      to_append = {}
+      for t in tokens[1:]:
+        tag, value = t.split(':')
+        if tag in to_append:
+          to_append[tag] = to_append[tag] + ' ' + value
+        else:
+          to_append[tag] = value
+      if test in APPEND_PER_TEST:
+        raise Exception('Duplicate append/flags for test %s (old %s, new %s)' %
+                        (test, APPEND_PER_TEST[test], to_append))
+      APPEND_PER_TEST[test] = to_append
+    f.close()
+
+
 def ParseCommandLineArgs(argv):
   """Process command line options and return the unprocessed left overs."""
   global VERBOSE, COMPILE_MODE, RUN_MODE, TMP_PREFIX
@@ -173,6 +204,7 @@ def ParseCommandLineArgs(argv):
                                ['verbose',
                                 'show_console',
                                 'append=',
+                                'append_file=',
                                 'config=',
                                 'exclude=',
                                 'check_excludes',
@@ -199,6 +231,8 @@ def ParseCommandLineArgs(argv):
     elif o == 'append':
       tag, value = a.split(":", 1)
       APPEND.append((tag, value))
+    elif o == 'append_file':
+      APPEND_FILES.append(a)
     elif o == 'config':
       CFG = a
     elif o == 'concurrency':
@@ -212,8 +246,11 @@ def ParseCommandLineArgs(argv):
 
 def RunTest(args):
   num, total, config, test, extra_flags = args
-  Print('Running %d/%d: %s' %
-        (num + 1, total, os.path.basename(test)))
+  base_test_name = os.path.basename(test)
+  extra_flags = extra_flags.copy()
+  toolchain_config.AppendDictionary(extra_flags,
+                                    APPEND_PER_TEST.get(base_test_name, {}))
+  Print('Running %d/%d: %s' % (num + 1, total, base_test_name))
   try:
     result = MakeExecutableCustom(config, test, extra_flags)
   except KeyboardInterrupt:
@@ -225,11 +262,12 @@ def RunTest(args):
     # TODO(dschuff): deflake qemu or switch to hardware
     # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2197
     # try it again, and only fail on consecutive failures
-    Print('Retrying ' + os.path.basename(test))
+    Print('Retrying ' + base_test_name)
     result = MakeExecutableCustom(config, test, extra_flags)
   if result:
     Print('[  FAILED  ] %s: %s' % (result, test))
     ERRORS.put((result, test))
+
 
 def RunSuite(config, files, extra_flags, errors):
   """Run a collection of benchmarks."""
@@ -269,6 +307,7 @@ def main(argv):
   ParseExcludeFiles(config.GetAttributes())
   for tag, value in APPEND:
     config.Append(tag, value)
+  ParseAppendFiles()
   config.SanityCheck()
   Print('TMP_PREFIX: %s' % TMP_PREFIX)
 

@@ -10,6 +10,13 @@ import sys
 
 TOOLCHAIN_CONFIGS = {}
 
+def AppendDictionary(d1, d2):
+  for tag, value in d2.iteritems():
+    if tag in d1:
+      d1[tag] = d1[tag] + ' ' + value
+    else:
+      d1[tag] = value
+
 
 class ToolchainConfig(object):
   def __init__(self, desc, commands, tools_needed, is_flaky=False,
@@ -36,9 +43,8 @@ class ToolchainConfig(object):
 
   def GetCommands(self, extra):
     for tag, val in self._commands:
-      d = {}
-      d.update(self._extra)
-      d.update(extra)
+      d = self._extra.copy()
+      AppendDictionary(d, extra)
       yield tag, val % d
 
   def GetPhases(self):

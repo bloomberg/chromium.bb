@@ -84,6 +84,8 @@ def standard_tests(context, config, exclude, extra_args):
              '--exclude=tools/toolchain_tester/known_failures_base.txt',
              '--config=' + config,
              '--append=CFLAGS:-std=gnu89']
+  if 'pnacl' in config:
+    command.append('--append_file=tools/toolchain_tester/extra_flags_pnacl.txt')
   command.extend(extra_args)
   command.extend(glob.glob(os.path.join(TEST_PATH_C, '*c')))
   command.extend(glob.glob(os.path.join(TEST_PATH_C, 'ieee', '*c')))
@@ -102,6 +104,7 @@ def eh_tests(context, config, exclude, extra_args):
   if 'pnacl' in config:
     command.append('--append=CFLAGS:--pnacl-allow-exceptions')
     command.append('--append=TRANSLATE_FLAGS:--pnacl-allow-exceptions')
+    command.append('--append_file=tools/toolchain_tester/extra_flags_pnacl.txt')
   command.extend(extra_args)
   command.extend(glob.glob(os.path.join(TEST_PATH_CPP, 'eh', '*.C')))
   print command
