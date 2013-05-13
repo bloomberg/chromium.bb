@@ -5,6 +5,7 @@
 #include "base/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/stringprintf.h"
+#include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/backend_impl.h"
 #include "net/disk_cache/cache_util.h"
@@ -23,7 +24,7 @@ namespace {
 class CacheCreator {
  public:
   CacheCreator(const base::FilePath& path, bool force, int max_bytes,
-               net::CacheType type, uint32 flags,
+               net::CacheType type, net::BackendType backend_type, uint32 flags,
                base::MessageLoopProxy* thread, net::NetLog* net_log,
                disk_cache::Backend** backend,
                const net::CompletionCallback& callback);
@@ -43,6 +44,7 @@ class CacheCreator {
   bool retry_;
   int max_bytes_;
   net::CacheType type_;
+  net::BackendType backend_type_;
   uint32 flags_;
   scoped_refptr<base::MessageLoopProxy> thread_;
   disk_cache::Backend** backend_;
@@ -55,7 +57,7 @@ class CacheCreator {
 
 CacheCreator::CacheCreator(
     const base::FilePath& path, bool force, int max_bytes,
-    net::CacheType type, uint32 flags,
+    net::CacheType type, net::BackendType backend_type, uint32 flags,
     base::MessageLoopProxy* thread, net::NetLog* net_log,
     disk_cache::Backend** backend,
     const net::CompletionCallback& callback)
@@ -64,37 +66,32 @@ CacheCreator::CacheCreator(
       retry_(false),
       max_bytes_(max_bytes),
       type_(type),
+      backend_type_(backend_type),
       flags_(flags),
       thread_(thread),
       backend_(backend),
       callback_(callback),
       created_cache_(NULL),
       net_log_(net_log) {
-  }
+}
 
 CacheCreator::~CacheCreator() {
 }
 
 int CacheCreator::Run() {
-  // TODO(pasko): The two caches should never coexist on disk. Each individual
-  // cache backend should fail to initialize if it observes the index that does
-  // not belong to it.
-  const std::string experiment_name =
-      base::FieldTrialList::FindFullName("SimpleCacheTrial");
-  if (experiment_name == "ExplicitYes" || experiment_name == "ExperimentYes" ||
-      experiment_name == "ExperimentYes2") {
-    // TODO(gavinp,pasko): While simple backend development proceeds, we're only
-    // testing it against net::DISK_CACHE. Turn it on for more cache types as
-    // appropriate.
-    if (type_ == net::DISK_CACHE) {
-      disk_cache::SimpleBackendImpl* simple_cache =
-          new disk_cache::SimpleBackendImpl(path_, max_bytes_, type_, thread_,
-                                            net_log_);
-      created_cache_ = simple_cache;
-      return simple_cache->Init(
-          base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
-    }
+  // TODO(gavinp,pasko): While simple backend development proceeds, we're only
+  // testing it against net::DISK_CACHE. Turn it on for more cache types as
+  // appropriate.
+  if (backend_type_ == net::CACHE_BACKEND_SIMPLE && type_ == net::DISK_CACHE) {
+    disk_cache::SimpleBackendImpl* simple_cache =
+        new disk_cache::SimpleBackendImpl(path_, max_bytes_, type_, thread_,
+                                          net_log_);
+    created_cache_ = simple_cache;
+    return simple_cache->Init(
+        base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
   }
+  DCHECK(backend_type_ == net::CACHE_BACKEND_BLOCKFILE ||
+         backend_type_ == net::CACHE_BACKEND_DEFAULT);
   disk_cache::BackendImpl* new_cache =
       new disk_cache::BackendImpl(path_, thread_, net_log_);
   created_cache_ = new_cache;
@@ -148,7 +145,9 @@ void CacheCreator::OnIOComplete(int result) {
 
 namespace disk_cache {
 
-int CreateCacheBackend(net::CacheType type, const base::FilePath& path,
+int CreateCacheBackend(net::CacheType type,
+                       net::BackendType backend_type,
+                       const base::FilePath& path,
                        int max_bytes,
                        bool force, base::MessageLoopProxy* thread,
                        net::NetLog* net_log, Backend** backend,
@@ -159,7 +158,8 @@ int CreateCacheBackend(net::CacheType type, const base::FilePath& path,
     return *backend ? net::OK : net::ERR_FAILED;
   }
   DCHECK(thread);
-  CacheCreator* creator = new CacheCreator(path, force, max_bytes, type, kNone,
+  CacheCreator* creator = new CacheCreator(path, force, max_bytes, type,
+                                           backend_type, kNone,
                                            thread, net_log, backend, callback);
   return creator->Run();
 }

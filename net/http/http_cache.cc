@@ -27,6 +27,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/worker_pool.h"
+#include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -52,10 +53,12 @@ void DeletePath(base::FilePath path) {
 namespace net {
 
 HttpCache::DefaultBackend::DefaultBackend(CacheType type,
+                                          BackendType backend_type,
                                           const base::FilePath& path,
                                           int max_bytes,
                                           base::MessageLoopProxy* thread)
     : type_(type),
+      backend_type_(backend_type),
       path_(path),
       max_bytes_(max_bytes),
       thread_(thread) {
@@ -65,15 +68,17 @@ HttpCache::DefaultBackend::~DefaultBackend() {}
 
 // static
 HttpCache::BackendFactory* HttpCache::DefaultBackend::InMemory(int max_bytes) {
-  return new DefaultBackend(MEMORY_CACHE, base::FilePath(), max_bytes, NULL);
+  return new DefaultBackend(MEMORY_CACHE, net::CACHE_BACKEND_DEFAULT,
+                            base::FilePath(), max_bytes, NULL);
 }
 
 int HttpCache::DefaultBackend::CreateBackend(
     NetLog* net_log, disk_cache::Backend** backend,
     const CompletionCallback& callback) {
   DCHECK_GE(max_bytes_, 0);
-  return disk_cache::CreateCacheBackend(type_, path_, max_bytes_, true,
-                                        thread_, net_log, backend, callback);
+  return disk_cache::CreateCacheBackend(type_, backend_type_, path_, max_bytes_,
+                                        true, thread_, net_log, backend,
+                                        callback);
 }
 
 //-----------------------------------------------------------------------------

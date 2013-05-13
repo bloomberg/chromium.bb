@@ -48,6 +48,7 @@ class Backend;
 // The pointer to receive the |backend| must remain valid until the operation
 // completes (the callback is notified).
 NET_EXPORT int CreateCacheBackend(net::CacheType type,
+                                  net::BackendType backend_type,
                                   const base::FilePath& path,
                                   int max_bytes, bool force,
                                   base::MessageLoopProxy* thread,

@@ -7,6 +7,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
@@ -518,6 +519,7 @@ void ShaderDiskCache::Init() {
 
   int rv = disk_cache::CreateCacheBackend(
       net::SHADER_CACHE,
+      net::CACHE_BACKEND_BLOCKFILE,
       cache_path_.Append(kGpuCachePath),
       max_cache_size_,
       true,

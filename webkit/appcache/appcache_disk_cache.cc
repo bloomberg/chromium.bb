@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 
 namespace appcache {
@@ -271,8 +272,8 @@ int AppCacheDiskCache::Init(net::CacheType cache_type,
   create_backend_callback_ = new CreateBackendCallbackShim(this);
 
   int rv = disk_cache::CreateCacheBackend(
-      cache_type, cache_directory, cache_size, force, cache_thread, NULL,
-      &(create_backend_callback_->backend_ptr_),
+      cache_type, net::CACHE_BACKEND_DEFAULT, cache_directory, cache_size,
+      force, cache_thread, NULL, &(create_backend_callback_->backend_ptr_),
       base::Bind(&CreateBackendCallbackShim::Callback,
                  create_backend_callback_));
   if (rv == net::ERR_IO_PENDING)

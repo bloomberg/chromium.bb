@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread.h"
+#include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
@@ -124,7 +125,7 @@ int SimpleCacheDumper::DoCreateCache() {
   DCHECK(!cache_);
   state_ = STATE_CREATE_CACHE_COMPLETE;
   return disk_cache::CreateCacheBackend(
-      DISK_CACHE, input_path_, 0, false,
+      DISK_CACHE, CACHE_BACKEND_DEFAULT, input_path_, 0, false,
       cache_thread_->message_loop_proxy(),
       NULL, &cache_, io_callback_);
 }

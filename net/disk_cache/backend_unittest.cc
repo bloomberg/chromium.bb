@@ -10,6 +10,7 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -237,8 +238,9 @@ TEST_F(DiskCacheTest, CreateBackend) {
     cache = NULL;
 
     // Now test the public API.
-    int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, cache_path_, 0,
-                                            false,
+    int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
+                                            net::CACHE_BACKEND_DEFAULT,
+                                            cache_path_, 0, false,
                                             cache_thread.message_loop_proxy(),
                                             NULL, &cache, cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
@@ -246,7 +248,9 @@ TEST_F(DiskCacheTest, CreateBackend) {
     delete cache;
     cache = NULL;
 
-    rv = disk_cache::CreateCacheBackend(net::MEMORY_CACHE, base::FilePath(), 0,
+    rv = disk_cache::CreateCacheBackend(net::MEMORY_CACHE,
+                                        net::CACHE_BACKEND_DEFAULT,
+                                        base::FilePath(), 0,
                                         false, NULL, NULL, &cache,
                                         cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
@@ -472,7 +476,7 @@ TEST_F(DiskCacheTest, TruncatedIndex) {
 
   disk_cache::Backend* backend = NULL;
   int rv = disk_cache::CreateCacheBackend(
-      net::DISK_CACHE, cache_path_, 0, false,
+      net::DISK_CACHE, net::CACHE_BACKEND_BLOCKFILE, cache_path_, 0, false,
       cache_thread.message_loop_proxy(), NULL, &backend, cb.callback());
   ASSERT_NE(net::OK, cb.GetResult(rv));
 
@@ -1688,7 +1692,9 @@ TEST_F(DiskCacheBackendTest, DeleteOld) {
   net::TestCompletionCallback cb;
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
   base::FilePath path(cache_path_);
-  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, path, 0, true,
+  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
+                                          net::CACHE_BACKEND_BLOCKFILE, path,
+                                          0, true,
                                           cache_thread.message_loop_proxy(),
                                           NULL, &cache_, cb.callback());
   path.clear();  // Make sure path was captured by the previous call.
@@ -2573,11 +2579,11 @@ TEST_F(DiskCacheTest, MultipleInstances) {
   disk_cache::Backend* cache[kNumberOfCaches];
 
   int rv = disk_cache::CreateCacheBackend(
-      net::DISK_CACHE, store1.path(), 0, false,
+      net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, store1.path(), 0, false,
       cache_thread.message_loop_proxy(), NULL, &cache[0], cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
   rv = disk_cache::CreateCacheBackend(
-      net::MEDIA_CACHE, store2.path(), 0, false,
+      net::MEDIA_CACHE, net::CACHE_BACKEND_DEFAULT, store2.path(), 0, false,
       cache_thread.message_loop_proxy(), NULL, &cache[1], cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
 

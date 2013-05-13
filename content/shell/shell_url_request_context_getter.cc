@@ -15,6 +15,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/shell_network_delegate.h"
+#include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
@@ -125,6 +126,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     net::HttpCache::DefaultBackend* main_backend =
         new net::HttpCache::DefaultBackend(
             net::DISK_CACHE,
+            net::CACHE_BACKEND_DEFAULT,
             cache_path,
             0,
             BrowserThread::GetMessageLoopProxyForThread(

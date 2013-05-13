@@ -16,6 +16,13 @@ enum CacheType {
   SHADER_CACHE  // Backing store for the GL shader cache.
 };
 
+// The types of disk cache backend, only used at backend instantiation.
+enum BackendType {
+  CACHE_BACKEND_DEFAULT,
+  CACHE_BACKEND_BLOCKFILE,  // The |BackendImpl|.
+  CACHE_BACKEND_SIMPLE  // The |SimpleBackendImpl|.
+};
+
 }  // namespace disk_cache
 
 #endif  // NET_BASE_CACHE_TYPE_H_

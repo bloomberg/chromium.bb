@@ -14,6 +14,7 @@
 #include "base/threading/thread.h"
 #include "base/win/scoped_handle.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -318,7 +319,9 @@ bool MasterSM::DoInit() {
 
   disk_cache::Backend* cache;
   net::TestCompletionCallback cb;
-  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, path_, 0, false,
+  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
+                                          net::CACHE_BACKEND_DEFAULT, path_, 0,
+                                          false,
                                           cache_thread_.message_loop_proxy(),
                                           NULL, &cache, cb.callback());
   if (cb.GetResult(rv) != net::OK) {
@@ -589,7 +592,9 @@ SlaveSM::SlaveSM(const base::FilePath& path, HANDLE channel)
     : BaseSM(channel), iterator_(NULL) {
   disk_cache::Backend* cache;
   net::TestCompletionCallback cb;
-  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, path, 0, false,
+  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
+                                          net::CACHE_BACKEND_BLOCKFILE, path, 0,
+                                          false,
                                           cache_thread_.message_loop_proxy(),
                                           NULL, &cache, cb.callback());
   if (cb.GetResult(rv) != net::OK) {

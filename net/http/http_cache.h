@@ -99,7 +99,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
     // |path| is the destination for any files used by the backend, and
     // |cache_thread| is the thread where disk operations should take place. If
     // |max_bytes| is  zero, a default value will be calculated automatically.
-    DefaultBackend(CacheType type, const base::FilePath& path, int max_bytes,
+    DefaultBackend(CacheType type, BackendType backend_type,
+                   const base::FilePath& path, int max_bytes,
                    base::MessageLoopProxy* thread);
     virtual ~DefaultBackend();
 
@@ -113,6 +114,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
 
    private:
     CacheType type_;
+    BackendType backend_type_;
     const base::FilePath path_;
     int max_bytes_;
     scoped_refptr<base::MessageLoopProxy> thread_;

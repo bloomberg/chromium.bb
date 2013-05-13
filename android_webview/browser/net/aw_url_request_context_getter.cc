@@ -16,6 +16,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/cache_type.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_cache.h"
 #include "net/proxy/proxy_service.h"
@@ -69,6 +70,7 @@ void AwURLRequestContextGetter::Init() {
       network_session_params,
       new net::HttpCache::DefaultBackend(
           net::DISK_CACHE,
+          net::CACHE_BACKEND_DEFAULT,
           browser_context_->GetPath().Append(FILE_PATH_LITERAL("Cache")),
           10 * 1024 * 1024,  // 10M
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));

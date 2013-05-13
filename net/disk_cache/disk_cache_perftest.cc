@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/test/test_file_util.h"
 #include "base/timer.h"
+#include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -166,7 +167,7 @@ TEST_F(DiskCacheTest, CacheBackendPerformance) {
   net::TestCompletionCallback cb;
   disk_cache::Backend* cache;
   int rv = disk_cache::CreateCacheBackend(
-      net::DISK_CACHE, cache_path_, 0, false,
+      net::DISK_CACHE, net::CACHE_BACKEND_BLOCKFILE, cache_path_, 0, false,
       cache_thread.message_loop_proxy(), NULL, &cache, cb.callback());
 
   ASSERT_EQ(net::OK, cb.GetResult(rv));
@@ -194,7 +195,8 @@ TEST_F(DiskCacheTest, CacheBackendPerformance) {
               cache_path_.AppendASCII("data_3")));
 
   rv = disk_cache::CreateCacheBackend(
-      net::DISK_CACHE, cache_path_, 0, false, cache_thread.message_loop_proxy(),
+      net::DISK_CACHE, net::CACHE_BACKEND_BLOCKFILE, cache_path_, 0, false,
+      cache_thread.message_loop_proxy(),
       NULL, &cache, cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
 

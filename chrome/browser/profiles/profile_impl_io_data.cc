@@ -8,10 +8,12 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -35,12 +37,36 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/common/constants.h"
+#include "net/base/cache_type.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 #include "net/ssl/server_bound_cert_service.h"
 #include "net/url_request/protocol_intercept_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "webkit/quota/special_storage_policy.h"
+
+namespace {
+
+net::BackendType ChooseCacheBackendType() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kUseSimpleCacheBackend)) {
+    const std::string opt_value =
+        command_line.GetSwitchValueASCII(switches::kUseSimpleCacheBackend);
+    if (LowerCaseEqualsASCII(opt_value, "off"))
+      return net::CACHE_BACKEND_BLOCKFILE;
+    if (opt_value == "" || LowerCaseEqualsASCII(opt_value, "on"))
+      return net::CACHE_BACKEND_SIMPLE;
+  }
+  const std::string experiment_name =
+      base::FieldTrialList::FindFullName("SimpleCacheTrial");
+  if (experiment_name == "ExperimentYes" ||
+      experiment_name == "ExperimentYes2") {
+    return net::CACHE_BACKEND_SIMPLE;
+  }
+  return net::CACHE_BACKEND_BLOCKFILE;
+}
+
+}  // namespace
 
 using content::BrowserThread;
 
@@ -382,6 +408,7 @@ void ProfileImplIOData::InitializeInternal(
   net::HttpCache::DefaultBackend* main_backend =
       new net::HttpCache::DefaultBackend(
           net::DISK_CACHE,
+          ChooseCacheBackendType(),
           lazy_params_->cache_path,
           lazy_params_->cache_max_size,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
@@ -500,6 +527,7 @@ ProfileImplIOData::InitializeAppRequestContext(
   } else {
     app_backend = new net::HttpCache::DefaultBackend(
         net::DISK_CACHE,
+        ChooseCacheBackendType(),
         cache_path,
         app_cache_max_size_,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
@@ -590,6 +618,7 @@ ProfileImplIOData::InitializeMediaRequestContext(
   net::HttpCache::BackendFactory* media_backend =
       new net::HttpCache::DefaultBackend(
           net::MEDIA_CACHE,
+          ChooseCacheBackendType(),
           cache_path,
           cache_max_size,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));

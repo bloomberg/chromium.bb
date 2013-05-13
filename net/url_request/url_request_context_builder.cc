@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
 #include "net/cert/cert_verifier.h"
@@ -275,6 +276,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
       context->StartCacheThread();
       http_cache_backend =
           new HttpCache::DefaultBackend(DISK_CACHE,
+                                        net::CACHE_BACKEND_DEFAULT,
                                         http_cache_params_.path,
                                         http_cache_params_.max_size,
                                         context->cache_message_loop_proxy());
