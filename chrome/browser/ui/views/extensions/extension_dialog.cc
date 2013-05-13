@@ -52,9 +52,14 @@ ExtensionDialog* ExtensionDialog::Show(
     WebContents* web_contents,
     int width,
     int height,
+    int min_width,
+    int min_height,
     const string16& title,
     ExtensionDialogObserver* observer) {
   extensions::ExtensionHost* host = CreateExtensionHost(url, profile);
+  // Preferred size must be set before views::Widget::CreateWindowWithParent
+  // is called because CreateWindowWithParent refers the result of CanResize().
+  host->view()->SetPreferredSize(gfx::Size(min_width, min_height));
   if (!host)
     return NULL;
   host->SetAssociatedWebContents(web_contents);

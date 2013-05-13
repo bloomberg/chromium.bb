@@ -353,6 +353,8 @@ void SelectFileDialogExtension::SelectFileImpl(
   ExtensionDialog* dialog = ExtensionDialog::Show(file_browser_url,
       base_window, profile_, web_contents,
       kFileManagerWidth, kFileManagerHeight,
+      kFileManagerMinimumWidth,
+      kFileManagerMinimumHeight,
 #if defined(USE_AURA)
       file_manager_util::GetTitleFromType(type),
 #else
@@ -364,9 +366,6 @@ void SelectFileDialogExtension::SelectFileImpl(
     LOG(ERROR) << "Unable to create extension dialog";
     return;
   }
-
-  dialog->SetMinimumContentsSize(kFileManagerMinimumWidth,
-                                 kFileManagerMinimumHeight);
 
   // Connect our listener to FileDialogFunction's per-tab callbacks.
   AddPending(tab_id);

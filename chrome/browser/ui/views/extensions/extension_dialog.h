@@ -42,6 +42,8 @@ class ExtensionDialog : public views::DialogDelegate,
                                content::WebContents* web_contents,
                                int width,
                                int height,
+                               int min_width,
+                               int min_height,
                                const string16& title,
                                ExtensionDialogObserver* observer);
 
