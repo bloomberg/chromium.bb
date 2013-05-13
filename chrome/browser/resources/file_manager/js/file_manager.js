@@ -2209,8 +2209,10 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.updateSearchBoxOnDirChange_ = function() {
-    if (!this.searchBox_.disabled)
+    if (!this.searchBox_.disabled) {
       this.searchBox_.value = '';
+      this.updateSearchBoxClass_();
+    }
   };
 
   /**
@@ -3285,6 +3287,7 @@ DialogType.isModal = function(type) {
   FileManager.prototype.onSearchBoxUpdate_ = function(event) {
     var searchString = this.searchBox_.value;
 
+    this.updateSearchBoxClass_();
     if (this.isOnDrive()) {
       // When the search text is changed, finishes the search and showes back
       // the last directory by passing an empty string to
@@ -3300,6 +3303,16 @@ DialogType.isModal = function(type) {
     }
 
     this.search_(searchString);
+  };
+
+  /**
+   * Updates search box's CSS classes.
+   * These classes are refered from CSS.
+   *
+   * @private
+   */
+  FileManager.prototype.updateSearchBoxClass_ = function() {
+    this.searchBox_.classList.toggle('has-text', !!this.searchBox_.value);
   };
 
   /**
