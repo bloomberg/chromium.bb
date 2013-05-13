@@ -117,14 +117,18 @@ bool VarTracker::ReleaseVar(int32 var_id) {
   info.ref_count--;
 
   if (info.ref_count == 0) {
-    if (info.var->GetType() == PP_VARTYPE_OBJECT) {
+    // Hold a reference to the Var until it is erased so that we don't re-enter
+    // live_vars_.erase() during deletion.
+    // TODO(raymes): Make deletion of Vars iterative instead of recursive.
+    scoped_refptr<Var> var(info.var);
+    if (var->GetType() == PP_VARTYPE_OBJECT) {
       // Objects have special requirements and may not necessarily be released
       // when the refcount goes to 0.
       ObjectGettingZeroRef(found);
     } else {
       // All other var types can just be released.
       DCHECK(info.track_with_no_reference_count == 0);
-      info.var->ResetVarID();
+      var->ResetVarID();
       live_vars_.erase(found);
     }
   }
@@ -145,8 +149,11 @@ int32 VarTracker::AddVarInternal(Var* var, AddVarRefMode mode) {
     return 0;
 
   int32 new_id = MakeTypedId(++last_var_id_, PP_ID_TYPE_VAR);
-  live_vars_.insert(std::make_pair(new_id,
-      VarInfo(var, mode == ADD_VAR_TAKE_ONE_REFERENCE ? 1 : 0)));
+  std::pair<VarMap::iterator, bool> was_inserted =
+      live_vars_.insert(std::make_pair(new_id,
+          VarInfo(var, mode == ADD_VAR_TAKE_ONE_REFERENCE ? 1 : 0)));
+  // We should never insert an ID that already exists.
+  DCHECK(was_inserted.second);
 
   return new_id;
 }
