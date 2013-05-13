@@ -46,9 +46,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/mock_cryptohome_library.h"
-#include "chromeos/dbus/mock_cryptohome_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager.h"
-#include "chromeos/dbus/mock_session_manager_client.h"
+#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "chromeos/login/login_state.h"
@@ -138,14 +136,6 @@ void BlockLoop(base::WaitableEvent* completion, base::Callback<bool()> work) {
   MessageLoop::current()->QuitNow();
 }
 
-ACTION_P(MockSessionManagerClientRetrievePolicyCallback, policy) {
-  arg0.Run(*policy);
-}
-
-ACTION_P(MockSessionManagerClientStorePolicyCallback, success) {
-  arg1.Run(success);
-}
-
 void CopyLockResult(base::RunLoop* loop,
                     policy::EnterpriseInstallAttributes::LockResult* out,
                     policy::EnterpriseInstallAttributes::LockResult result) {
@@ -178,7 +168,6 @@ class LoginUtilsTest : public testing::Test,
         mock_async_method_caller_(NULL),
         connector_(NULL),
         cryptohome_(NULL),
-        cryptohome_client_(NULL),
         prepared_profile_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
@@ -232,21 +221,6 @@ class LoginUtilsTest : public testing::Test,
     disks::DiskMountManager::InitializeForTesting(&mock_disk_mount_manager_);
     mock_disk_mount_manager_.SetupDefaultReplies();
 
-    // Likewise, SessionManagerClient should also be initialized before
-    // io_thread_state_.
-    MockSessionManagerClient* session_managed_client =
-        mock_dbus_thread_manager_.mock_session_manager_client();
-    EXPECT_CALL(*session_managed_client, RetrieveDevicePolicy(_))
-        .WillRepeatedly(
-            MockSessionManagerClientRetrievePolicyCallback(&device_policy_));
-    EXPECT_CALL(*session_managed_client, RetrieveUserPolicy(_))
-        .WillRepeatedly(
-            MockSessionManagerClientRetrievePolicyCallback(&user_policy_));
-    EXPECT_CALL(*session_managed_client, StoreUserPolicy(_, _))
-        .WillRepeatedly(
-            DoAll(SaveArg<0>(&user_policy_),
-                  MockSessionManagerClientStorePolicyCallback(true)));
-
     mock_async_method_caller_ = new cryptohome::MockAsyncMethodCaller;
     cryptohome::AsyncMethodCaller::InitializeForTesting(
         mock_async_method_caller_);
@@ -290,9 +264,6 @@ class LoginUtilsTest : public testing::Test,
         .WillRepeatedly(DoAll(SetArgPointee<1>(kDeviceId),
                               Return(true)));
     CryptohomeLibrary::SetForTest(cryptohome_.get());
-
-    cryptohome_client_ = mock_dbus_thread_manager_.mock_cryptohome_client();
-    EXPECT_CALL(*cryptohome_client_, IsMounted(_));
 
     test_device_settings_service_.reset(new ScopedTestDeviceSettingsService);
     test_cros_settings_.reset(new ScopedTestCrosSettings);
@@ -438,9 +409,6 @@ class LoginUtilsTest : public testing::Test,
     DeviceSettingsService::Get()->SetSessionManager(
         &device_settings_test_helper, new MockOwnerKeyUtil());
 
-    MockSessionManagerClient* session_manager_client =
-        mock_dbus_thread_manager_.mock_session_manager_client();
-    EXPECT_CALL(*session_manager_client, StartSession(_));
     EXPECT_CALL(*cryptohome_, GetSystemSalt())
         .WillRepeatedly(Return(std::string("stub_system_salt")));
     EXPECT_CALL(*mock_async_method_caller_, AsyncMount(_, _, _, _))
@@ -538,7 +506,7 @@ class LoginUtilsTest : public testing::Test,
   scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<IOThread> io_thread_state_;
 
-  MockDBusThreadManager mock_dbus_thread_manager_;
+  MockDBusThreadManagerWithoutGMock mock_dbus_thread_manager_;
   input_method::MockInputMethodManager* mock_input_method_manager_;
   disks::MockDiskMountManager mock_disk_mount_manager_;
   net::TestURLFetcherFactory test_url_fetcher_factory_;
@@ -548,7 +516,6 @@ class LoginUtilsTest : public testing::Test,
 
   policy::BrowserPolicyConnector* connector_;
   scoped_ptr<MockCryptohomeLibrary> cryptohome_;
-  MockCryptohomeClient* cryptohome_client_;
 
   // Initialized after |mock_dbus_thread_manager_| and |cryptohome_| are set up.
   scoped_ptr<ScopedTestDeviceSettingsService> test_device_settings_service_;
@@ -593,9 +560,6 @@ TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
   EXPECT_FALSE(prepared_profile_);
-
-  EXPECT_CALL(*cryptohome_client_,
-              InstallAttributesIsReady(_)).Times(AnyNumber());
 
   // Enroll the device.
   EnrollDevice(kUsername);
