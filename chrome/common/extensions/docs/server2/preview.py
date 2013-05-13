@@ -91,9 +91,9 @@ if __name__ == '__main__':
     if opts.time:
       print('Took %s seconds' % (time.time() - start_time))
     else:
-      # Static paths will show up as /stable/static/foo but this only makes
+      # Static paths will show up as /trunk/static/foo but this only makes
       # sense from a webserver.
-      print(content.replace('/stable/static', 'static'))
+      print(response.content.ToString().replace('/trunk/', ''))
     exit()
 
   print('Starting previewserver on port %s' % opts.port)
