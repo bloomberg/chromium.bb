@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_split.h"
 #include "base/time.h"
@@ -880,7 +881,8 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
 
 bool GetFileTasksFileBrowserFunction::FindAppTasks(
     const std::vector<base::FilePath>& file_paths,
-    ListValue* result_list) {
+    ListValue* result_list,
+    bool* default_already_set) {
   DCHECK(!file_paths.empty());
   ExtensionService* service = profile_->GetExtensionService();
   if (!service)
@@ -888,6 +890,12 @@ bool GetFileTasksFileBrowserFunction::FindAppTasks(
 
   PathAndMimeTypeSet files;
   GetMimeTypesForFileURLs(file_paths, &files);
+  std::set<std::string> default_tasks;
+  for (PathAndMimeTypeSet::iterator it = files.begin(); it != files.end();
+       ++it) {
+    default_tasks.insert(file_handler_util::GetDefaultTaskIdFromPrefs(
+        profile_, it->second, it->first.Extension()));
+  }
 
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
@@ -914,7 +922,12 @@ bool GetFileTasksFileBrowserFunction::FindAppTasks(
           file_handler_util::kTaskApp, (*i)->id);
       task->SetString("taskId", task_id);
       task->SetString("title", (*i)->title);
-      task->SetBoolean("isDefault", false);
+      if (!(*default_already_set) && ContainsKey(default_tasks, task_id)) {
+        task->SetBoolean("isDefault", true);
+        *default_already_set = true;
+      } else {
+        task->SetBoolean("isDefault", false);
+      }
 
       GURL best_icon =
           ExtensionIconSource::GetIconURL(extension,
@@ -997,6 +1010,13 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   if (!FindDriveAppTasks(info_list, result_list, &default_already_set))
     return false;
 
+  // Take the union of platform app file handlers, and all previous Drive
+  // and extension tasks. As above, we know there aren't duplicates because
+  // they're entirely different kinds of
+  // tasks.
+  if (!FindAppTasks(file_paths, result_list, &default_already_set))
+    return false;
+
   // Take the union of Drive and extension tasks: Because any Drive tasks we
   // found must apply to all of the files (intersection), and because the same
   // is true of the extensions, we simply take the union of two lists by adding
@@ -1045,13 +1065,6 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
 
     result_list->Append(task);
   }
-
-  // Take the union of platform app file handlers, and all previous Drive
-  // and extension tasks. As above, we know there aren't duplicates because
-  // they're entirely different kinds of
-  // tasks.
-  if (!FindAppTasks(file_paths, result_list))
-    return false;
 
   if (VLOG_IS_ON(1)) {
     std::string result_json;

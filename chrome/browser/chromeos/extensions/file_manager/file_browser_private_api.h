@@ -203,9 +203,11 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
                          bool* default_already_set);
 
   // Find the list of app file handlers that can be used with the given file
-  // types, appending them to the |result_list|.
+  // types, appending them to the |result_list|. If a default task is set in the
+  // result list, then |default_already_set| is set to true.
   bool FindAppTasks(const std::vector<base::FilePath>& file_paths,
-                    ListValue* result_list);
+                    ListValue* result_list,
+                    bool* default_already_set);
 };
 
 // Implements the chrome.fileBrowserPrivate.executeTask method.
