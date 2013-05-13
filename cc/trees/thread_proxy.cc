@@ -736,7 +736,7 @@ void ThreadProxy::BeginFrame(
   // point of view, but asynchronously performed on the impl thread,
   // coordinated by the Scheduler.
   {
-    TRACE_EVENT0("cc", "commit");
+    TRACE_EVENT0("cc", "ThreadProxy::BeginFrame::commit");
 
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
 
@@ -947,16 +947,6 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   layer_tree_host_impl_->DidDrawAllLayers(frame);
 
   layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
-
-  // Check for tree activation.
-  if (completion_event_for_commit_held_on_tree_activation_ &&
-      !layer_tree_host_impl_->pending_tree()) {
-    TRACE_EVENT_INSTANT0("cc", "ReleaseCommitbyActivation",
-                         TRACE_EVENT_SCOPE_THREAD);
-    DCHECK(layer_tree_host_impl_->settings().impl_side_painting);
-    completion_event_for_commit_held_on_tree_activation_->Signal();
-    completion_event_for_commit_held_on_tree_activation_ = NULL;
-  }
 
   // Check for a pending CompositeAndReadback.
   if (readback_request_on_impl_thread_) {
@@ -1383,6 +1373,20 @@ void ThreadProxy::DidReceiveLastInputEventForVSync(
   if (render_vsync_notification_enabled_) {
     TRACE_EVENT0("cc", "ThreadProxy::DidReceiveLastInputEventForVSync");
     DidVSync(frame_time);
+  }
+}
+
+void ThreadProxy::DidActivatePendingTree() {
+  DCHECK(IsImplThread());
+  TRACE_EVENT0("cc", "ThreadProxy::DidActivatePendingTreeOnImplThread");
+
+  if (completion_event_for_commit_held_on_tree_activation_ &&
+      !layer_tree_host_impl_->pending_tree()) {
+    TRACE_EVENT_INSTANT0("cc", "ReleaseCommitbyActivation",
+                         TRACE_EVENT_SCOPE_THREAD);
+    DCHECK(layer_tree_host_impl_->settings().impl_side_painting);
+    completion_event_for_commit_held_on_tree_activation_->Signal();
+    completion_event_for_commit_held_on_tree_activation_ = NULL;
   }
 }
 

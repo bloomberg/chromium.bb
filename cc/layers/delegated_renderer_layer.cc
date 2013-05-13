@@ -107,4 +107,12 @@ void DelegatedRendererLayer::TakeUnusedResourcesForChildCompositor(
   array->swap(unused_resources_for_child_compositor_);
 }
 
+bool DelegatedRendererLayer::BlocksPendingCommit() const {
+  // The active frame needs to be replaced and resources returned before the
+  // commit is called complete. This is true even whenever there may be
+  // resources to return, regardless of if the layer will draw in its new
+  // state.
+  return true;
+}
+
 }  // namespace cc

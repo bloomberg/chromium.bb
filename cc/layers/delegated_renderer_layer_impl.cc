@@ -23,7 +23,9 @@ namespace cc {
 DelegatedRendererLayerImpl::DelegatedRendererLayerImpl(
     LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
-      child_id_(0) {
+      have_render_passes_to_push_(false),
+      child_id_(0),
+      own_child_id_(false) {
 }
 
 DelegatedRendererLayerImpl::~DelegatedRendererLayerImpl() {
@@ -59,6 +61,33 @@ static ResourceProvider::ResourceId ResourceRemapHelper(
   ResourceProvider::ResourceId remapped_id = it->second;
   remapped_resources->insert(remapped_id);
   return remapped_id;
+}
+
+void DelegatedRendererLayerImpl::PushPropertiesTo(LayerImpl* layer) {
+  LayerImpl::PushPropertiesTo(layer);
+
+  DelegatedRendererLayerImpl* delegated_layer =
+      static_cast<DelegatedRendererLayerImpl*>(layer);
+
+  // If we have a new child_id to give to the active layer, it should
+  // have already deleted its old child_id.
+  DCHECK(delegated_layer->child_id_ == 0 ||
+         delegated_layer->child_id_ == child_id_);
+  delegated_layer->child_id_ = child_id_;
+  delegated_layer->own_child_id_ = true;
+  own_child_id_ = false;
+
+  delegated_layer->SetDisplaySize(display_size_);
+  if (have_render_passes_to_push_) {
+    // This passes ownership of the render passes to the active tree.
+    delegated_layer->SetRenderPasses(&render_passes_in_draw_order_);
+    DCHECK(render_passes_in_draw_order_.empty());
+    have_render_passes_to_push_ = false;
+  }
+
+  // This is just a copy for testing since we keep the data on the pending layer
+  // for returning resources to the child for now.
+  delegated_layer->resources_ = resources_;
 }
 
 void DelegatedRendererLayerImpl::SetFrameData(
@@ -110,6 +139,7 @@ void DelegatedRendererLayerImpl::SetFrameData(
       // passes from the frame_data.
       SetRenderPasses(&frame_data->render_pass_list);
       resources_.swap(used_resources);
+      have_render_passes_to_push_ = true;
     }
   }
 
@@ -154,6 +184,9 @@ void DelegatedRendererLayerImpl::SetRenderPasses(
 
   if (!render_passes_in_draw_order_.empty())
     render_passes_in_draw_order_.back()->damage_rect.Union(old_root_damage);
+
+  // Give back an empty array instead of nulls.
+  render_passes_in_draw_order->clear();
 }
 
 void DelegatedRendererLayerImpl::ClearRenderPasses() {
@@ -421,14 +454,18 @@ void DelegatedRendererLayerImpl::CreateChildIdIfNeeded() {
 
   ResourceProvider* resource_provider = layer_tree_impl()->resource_provider();
   child_id_ = resource_provider->CreateChild();
+  own_child_id_ = true;
 }
 
 void DelegatedRendererLayerImpl::ClearChildId() {
   if (!child_id_)
     return;
 
-  ResourceProvider* resource_provider = layer_tree_impl()->resource_provider();
-  resource_provider->DestroyChild(child_id_);
+  if (own_child_id_) {
+    ResourceProvider* provider = layer_tree_impl()->resource_provider();
+    provider->DestroyChild(child_id_);
+  }
+
   child_id_ = 0;
 }
 

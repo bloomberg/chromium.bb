@@ -486,38 +486,56 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
 TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
        NoSurface_SingleThread_DirectRenderer) {
   use_surface_ = false;
-  RunTest(false, false);
+  RunTest(false, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
        NoSurface_SingleThread_DelegatingRenderer) {
   use_surface_ = false;
-  RunTest(false, true);
+  RunTest(false, true, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       NoSurface_MultiThread_DirectRenderer) {
+       NoSurface_MultiThread_DirectRenderer_MainThreadPaint) {
   use_surface_ = false;
-  RunTest(true, false);
+  RunTest(true, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       NoSurface_MultiThread_DelegatingRenderer) {
+       NoSurface_MultiThread_DirectRenderer_ImplSidePaint) {
   use_surface_ = false;
-  RunTest(true, true);
+  RunTest(true, false, true);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
+       NoSurface_MultiThread_DelegatingRenderer_MainThreadPaint) {
+  use_surface_ = false;
+  RunTest(true, true, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
+       NoSurface_MultiThread_DelegatingRenderer_ImplSidePaint) {
+  use_surface_ = false;
+  RunTest(true, true, true);
 }
 
 // Surfaces don't exist with a delegating renderer.
 TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
        WithSurface_SingleThread_DirectRenderer) {
   use_surface_ = true;
-  RunTest(false, false);
+  RunTest(false, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       WithSurface_MultiThread_DirectRenderer) {
+       WithSurface_MultiThread_DirectRenderer_MainThreadPaint) {
   use_surface_ = true;
-  RunTest(true, false);
+  RunTest(true, false, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
+       WithSurface_MultiThread_DirectRenderer_ImplSidePaint) {
+  use_surface_ = true;
+  RunTest(true, false, true);
 }
 
 class LayerTreeHostContextTestOffscreenContextFails
@@ -624,7 +642,7 @@ TEST_F(LayerTreeHostContextTestLostContextFails,
   times_to_fail_reinitialize_ = 100;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 0;
-  RunTest(false, false);
+  RunTest(false, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
@@ -632,23 +650,39 @@ TEST_F(LayerTreeHostContextTestLostContextFails,
   times_to_fail_reinitialize_ = 100;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 0;
-  RunTest(false, true);
+  RunTest(false, true, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailReinitialize100_MultiThread_DirectRenderer) {
+       FailReinitialize100_MultiThread_DirectRenderer_MainThreadPaint) {
   times_to_fail_reinitialize_ = 100;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 0;
-  RunTest(true, false);
+  RunTest(true, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailReinitialize100_MultiThread_DelegatingRenderer) {
+       FailReinitialize100_MultiThread_DirectRenderer_ImplSidePaint) {
   times_to_fail_reinitialize_ = 100;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 0;
-  RunTest(true, true);
+  RunTest(true, false, true);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       FailReinitialize100_MultiThread_DelegatingRenderer_MainThreadPaint) {
+  times_to_fail_reinitialize_ = 100;
+  times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 0;
+  RunTest(true, true, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       FailReinitialize100_MultiThread_DelegatingRenderer_ImplSidePaint) {
+  times_to_fail_reinitialize_ = 100;
+  times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 0;
+  RunTest(true, true, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
@@ -656,7 +690,7 @@ TEST_F(LayerTreeHostContextTestLostContextFails,
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 100;
   times_to_lose_on_recreate_ = 0;
-  RunTest(false, false);
+  RunTest(false, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
@@ -664,23 +698,39 @@ TEST_F(LayerTreeHostContextTestLostContextFails,
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 100;
   times_to_lose_on_recreate_ = 0;
-  RunTest(false, true);
+  RunTest(false, true, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailRecreate100_MultiThread_DirectRenderer) {
+       FailRecreate100_MultiThread_DirectRenderer_MainThreadPaint) {
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 100;
   times_to_lose_on_recreate_ = 0;
-  RunTest(true, false);
+  RunTest(true, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailRecreate100_MultiThread_DelegatingRenderer) {
+       FailRecreate100_MultiThread_DirectRenderer_ImplSidePaint) {
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 100;
   times_to_lose_on_recreate_ = 0;
-  RunTest(true, true);
+  RunTest(true, false, true);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       FailRecreate100_MultiThread_DelegatingRenderer_MainThreadPaint) {
+  times_to_fail_reinitialize_ = 0;
+  times_to_fail_recreate_ = 100;
+  times_to_lose_on_recreate_ = 0;
+  RunTest(true, true, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       FailRecreate100_MultiThread_DelegatingRenderer_ImplSidePaint) {
+  times_to_fail_reinitialize_ = 0;
+  times_to_fail_recreate_ = 100;
+  times_to_lose_on_recreate_ = 0;
+  RunTest(true, true, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
@@ -688,7 +738,7 @@ TEST_F(LayerTreeHostContextTestLostContextFails,
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 100;
-  RunTest(false, false);
+  RunTest(false, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
@@ -696,23 +746,39 @@ TEST_F(LayerTreeHostContextTestLostContextFails,
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 100;
-  RunTest(false, true);
+  RunTest(false, true, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
-       LoseOnRecreate100_MultiThread_DirectRenderer) {
+       LoseOnRecreate100_MultiThread_DirectRenderer_MainThreadPaint) {
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 100;
-  RunTest(true, false);
+  RunTest(true, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
-       LoseOnRecreate100_MultiThread_DelegatingRenderer) {
+       LoseOnRecreate100_MultiThread_DirectRenderer_ImplSidePaint) {
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 100;
-  RunTest(true, true);
+  RunTest(true, false, true);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       LoseOnRecreate100_MultiThread_DelegatingRenderer_MainThreadPaint) {
+  times_to_fail_reinitialize_ = 0;
+  times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 100;
+  RunTest(true, true, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       LoseOnRecreate100_MultiThread_DelegatingRenderer_ImplSidePaint) {
+  times_to_fail_reinitialize_ = 0;
+  times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 100;
+  RunTest(true, true, true);
 }
 
 class LayerTreeHostContextTestFinishAllRenderingAfterLoss
@@ -818,49 +884,73 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_SingleThread_DirectRenderer) {
   lose_after_evict_ = true;
-  RunTest(false, false);
+  RunTest(false, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_SingleThread_DelegatingRenderer) {
   lose_after_evict_ = true;
-  RunTest(false, true);
+  RunTest(false, true, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseAfterEvict_MultiThread_DirectRenderer) {
+       LoseAfterEvict_MultiThread_DirectRenderer_MainThreadPaint) {
   lose_after_evict_ = true;
-  RunTest(true, false);
+  RunTest(true, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseAfterEvict_MultiThread_DelegatingRenderer) {
+       LoseAfterEvict_MultiThread_DirectRenderer_ImplSidePaint) {
   lose_after_evict_ = true;
-  RunTest(true, true);
+  RunTest(true, false, true);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
+       LoseAfterEvict_MultiThread_DelegatingRenderer_MainThreadPaint) {
+  lose_after_evict_ = true;
+  RunTest(true, true, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
+       LoseAfterEvict_MultiThread_DelegatingRenderer_ImplSidePaint) {
+  lose_after_evict_ = true;
+  RunTest(true, true, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_SingleThread_DirectRenderer) {
   lose_after_evict_ = false;
-  RunTest(false, false);
+  RunTest(false, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_SingleThread_DelegatingRenderer) {
   lose_after_evict_ = false;
-  RunTest(false, true);
+  RunTest(false, true, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseBeforeEvict_MultiThread_DirectRenderer) {
+       LoseBeforeEvict_MultiThread_DirectRenderer_MainThreadPaint) {
   lose_after_evict_ = false;
-  RunTest(true, false);
+  RunTest(true, false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseBeforeEvict_MultiThread_DelegatingRenderer) {
+       LoseBeforeEvict_MultiThread_DirectRenderer_ImplSidePaint) {
   lose_after_evict_ = false;
-  RunTest(true, true);
+  RunTest(true, false, true);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
+       LoseBeforeEvict_MultiThread_DelegatingRenderer_MainThreadPaint) {
+  lose_after_evict_ = false;
+  RunTest(true, true, false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
+       LoseBeforeEvict_MultiThread_DelegatingRenderer_ImplSidePaint) {
+  lose_after_evict_ = false;
+  RunTest(true, true, true);
 }
 
 class LayerTreeHostContextTestLostContextWhileUpdatingResources
@@ -946,8 +1036,8 @@ class LayerTreeHostContextTestLayersNotified
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    LayerTreeHostContextTest::CommitCompleteOnThread(host_impl);
+  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    LayerTreeHostContextTest::TreeActivatedOnThread(host_impl);
 
     FakeContentLayerImpl* root = static_cast<FakeContentLayerImpl*>(
         host_impl->active_tree()->root_layer());
@@ -1490,7 +1580,9 @@ class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
     return scoped_ptr<OutputSurface>();
   }
 
-  void RunTest(bool threaded, bool delegating_renderer) {
+  void RunTest(bool threaded,
+               bool delegating_renderer,
+               bool impl_side_painting) {
     scoped_ptr<base::Thread> impl_thread;
     scoped_ptr<cc::Thread> impl_ccthread(NULL);
     if (threaded) {
@@ -1501,6 +1593,7 @@ class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
     }
 
     LayerTreeSettings settings;
+    settings.impl_side_painting = impl_side_painting;
     scoped_ptr<LayerTreeHost> layer_tree_host =
         LayerTreeHost::Create(this, settings, impl_ccthread.Pass());
     EXPECT_FALSE(layer_tree_host);

@@ -119,7 +119,7 @@ class LayerTreeHostTestSetNeedsCommit1 : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit1);
 
-// A setNeedsCommit should lead to 1 commit. Issuing a second commit after that
+// A SetNeedsCommit should lead to 1 commit. Issuing a second commit after that
 // first committed frame draws should lead to another commit.
 class LayerTreeHostTestSetNeedsCommit2 : public LayerTreeHostTest {
  public:
@@ -133,10 +133,16 @@ class LayerTreeHostTestSetNeedsCommit2 : public LayerTreeHostTest {
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     ++num_commits_;
-    if (impl->active_tree()->source_frame_number() == 0)
-      PostSetNeedsCommitToMainThread();
-    else if (impl->active_tree()->source_frame_number() == 1)
-      EndTest();
+    switch (num_commits_) {
+      case 1:
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 
   virtual void AfterTest() OVERRIDE {
@@ -607,7 +613,7 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void TreeActivatedOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     EXPECT_EQ(gfx::Size(20, 20), impl->device_viewport_size());
     EXPECT_EQ(SK_ColorGRAY, impl->active_tree()->background_color());
     EXPECT_EQ(5.f, impl->active_tree()->page_scale_factor());
@@ -626,36 +632,62 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
  public:
   LayerTreeHostTestStartPageScaleAnimation() {}
 
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeHostTest::SetupTree();
+
+    scroll_layer_ = FakeContentLayer::Create(&client_);
+    scroll_layer_->SetScrollable(true);
+    scroll_layer_->SetScrollOffset(gfx::Vector2d());
+    layer_tree_host()->root_layer()->AddChild(scroll_layer_);
+  }
+
   virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->root_layer()->SetScrollable(true);
-    layer_tree_host()->root_layer()->SetScrollOffset(gfx::Vector2d());
-    layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
-    layer_tree_host()->StartPageScaleAnimation(
-        gfx::Vector2d(), false, 1.25f, base::TimeDelta());
     PostSetNeedsCommitToMainThread();
-    PostSetNeedsRedrawToMainThread();
   }
 
   virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta, float scale)
       OVERRIDE {
-    gfx::Vector2d offset = layer_tree_host()->root_layer()->scroll_offset();
-    layer_tree_host()->root_layer()->SetScrollOffset(offset + scroll_delta);
+    gfx::Vector2d offset = scroll_layer_->scroll_offset();
+    scroll_layer_->SetScrollOffset(offset + scroll_delta);
     layer_tree_host()->SetPageScaleFactorAndLimits(scale, 0.5f, 2.f);
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void TreeActivatedOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     impl->ProcessScrollDeltas();
     // We get one commit before the first draw, and the animation doesn't happen
     // until the second draw.
-    if (impl->active_tree()->source_frame_number() == 1) {
-      EXPECT_EQ(1.25f, impl->active_tree()->page_scale_factor());
-      EndTest();
-    } else {
-      PostSetNeedsRedrawToMainThread();
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_EQ(1.f, impl->active_tree()->page_scale_factor());
+        // We'll start an animation when we get back to the main thread.
+        break;
+      case 1:
+        EXPECT_EQ(1.f, impl->active_tree()->page_scale_factor());
+        PostSetNeedsRedrawToMainThread();
+        break;
+      case 2:
+        EXPECT_EQ(1.25f, impl->active_tree()->page_scale_factor());
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    switch (layer_tree_host()->commit_number()) {
+      case 1:
+        layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
+        layer_tree_host()->StartPageScaleAnimation(
+            gfx::Vector2d(), false, 1.25f, base::TimeDelta());
+        break;
     }
   }
 
   virtual void AfterTest() OVERRIDE {}
+
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> scroll_layer_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestStartPageScaleAnimation);
@@ -824,7 +856,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void TreeActivatedOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     // Should only do one commit.
     EXPECT_EQ(0, impl->active_tree()->source_frame_number());
     // Device scale factor should come over to impl.
@@ -929,7 +961,7 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void TreeActivatedOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
 
     TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
@@ -1025,6 +1057,8 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     settings->max_partial_texture_updates = 1;
     // Linear fade animator prevents scrollbars from drawing immediately.
     settings->use_linear_fade_scrollbar_animator = false;
+    // No partial updates when impl side painting is enabled.
+    settings->impl_side_painting = false;
   }
 
   virtual void SetupTree() OVERRIDE {
@@ -1930,11 +1964,11 @@ class LayerTreeHostTestMaxPendingFrames : public LayerTreeHostTest {
 };
 
 TEST_F(LayerTreeHostTestMaxPendingFrames, DelegatingRenderer) {
-  RunTest(true, true);
+  RunTest(true, true, true);
 }
 
 TEST_F(LayerTreeHostTestMaxPendingFrames, GLRenderer) {
-  RunTest(true, false);
+  RunTest(true, false, true);
 }
 
 class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
@@ -1969,7 +2003,7 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
     EndTest();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     ++num_commits_;
     switch (num_commits_) {
       case 1:
@@ -2702,22 +2736,36 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
 // Readback can't be done with a delegating renderer.
 TEST_F(LayerTreeHostTestAsyncReadback, GLRenderer_RunSingleThread) {
   use_gl_renderer_ = true;
-  RunTest(false, false);
+  RunTest(false, false, false);
 }
 
-TEST_F(LayerTreeHostTestAsyncReadback, GLRenderer_RunMultiThread) {
+TEST_F(LayerTreeHostTestAsyncReadback,
+       GLRenderer_RunMultiThread_MainThreadPainting) {
   use_gl_renderer_ = true;
-  RunTest(true, false);
+  RunTest(true, false, false);
+}
+
+TEST_F(LayerTreeHostTestAsyncReadback,
+       GLRenderer_RunMultiThread_ImplSidePainting) {
+  use_gl_renderer_ = true;
+  RunTest(true, false, true);
 }
 
 TEST_F(LayerTreeHostTestAsyncReadback, SoftwareRenderer_RunSingleThread) {
   use_gl_renderer_ = false;
-  RunTest(false, false);
+  RunTest(false, false, false);
 }
 
-TEST_F(LayerTreeHostTestAsyncReadback, SoftwareRenderer_RunMultiThread) {
+TEST_F(LayerTreeHostTestAsyncReadback,
+       SoftwareRenderer_RunMultiThread_MainThreadPainting) {
   use_gl_renderer_ = false;
-  RunTest(true, false);
+  RunTest(true, false, false);
+}
+
+TEST_F(LayerTreeHostTestAsyncReadback,
+       SoftwareRenderer_RunMultiThread_ImplSidePainting) {
+  use_gl_renderer_ = false;
+  RunTest(true, false, true);
 }
 
 class LayerTreeHostTestAsyncReadbackLayerDestroyed : public LayerTreeHostTest {
@@ -2878,11 +2926,11 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
 };
 
 TEST_F(LayerTreeHostTestNumFramesPending, DelegatingRenderer) {
-  RunTest(true, true);
+  RunTest(true, true, true);
 }
 
 TEST_F(LayerTreeHostTestNumFramesPending, GLRenderer) {
-  RunTest(true, false);
+  RunTest(true, false, true);
 }
 
 }  // namespace

@@ -39,6 +39,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
       OVERRIDE {}
   virtual void DidReceiveLastInputEventForVSync(base::TimeTicks frame_time)
       OVERRIDE {}
+  virtual void DidActivatePendingTree() OVERRIDE {}
 };
 
 }  // namespace cc

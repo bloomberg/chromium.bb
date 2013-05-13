@@ -938,6 +938,28 @@ TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost) {
   state.DidLeaveVSync();
 }
 
+TEST(SchedulerStateMachineTest, DontDrawBeforeCommitAfterLostOutputSurface) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.DidCreateAndInitializeOutputSurface();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+
+  state.SetNeedsRedraw(true);
+
+  // Cause a lost output surface, and restore it.
+  state.DidLoseOutputSurface();
+  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+            state.NextAction());
+  state.UpdateState(state.NextAction());
+  state.DidCreateAndInitializeOutputSurface();
+
+  EXPECT_FALSE(state.RedrawPending());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+}
+
 TEST(SchedulerStateMachineTest, TestBeginFrameWhenInvisibleAndForceCommit) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);

@@ -13,11 +13,17 @@ FakeContentLayerImpl::FakeContentLayerImpl(LayerTreeImpl* tree_impl, int id)
 
 FakeContentLayerImpl::~FakeContentLayerImpl() {}
 
+scoped_ptr<LayerImpl> FakeContentLayerImpl::CreateLayerImpl(
+    LayerTreeImpl* tree_impl) {
+  return FakeContentLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
+}
+
 bool FakeContentLayerImpl::HaveResourceForTileAt(int i, int j) {
   return HasResourceIdForTileAt(i, j);
 }
 
 void FakeContentLayerImpl::DidLoseOutputSurface() {
+  TiledLayerImpl::DidLoseOutputSurface();
   ++lost_output_surface_count_;
 }
 

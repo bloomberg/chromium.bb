@@ -131,7 +131,7 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
 // Simulates a tab switcher scene with two stacks of 10 tabs each.
 TEST_F(LayerTreeHostPerfTestJsonReader, TenTenSingleThread) {
   ReadTestFile("10_10_layer_tree");
-  RunTest(false, false);
+  RunTest(false, false, false);
 }
 
 // Simulates a tab switcher scene with two stacks of 10 tabs each.
@@ -139,7 +139,7 @@ TEST_F(LayerTreeHostPerfTestJsonReader,
        TenTenSingleThread_FullDamageEachFrame) {
   full_damage_each_frame_ = true;
   ReadTestFile("10_10_layer_tree");
-  RunTest(false, false);
+  RunTest(false, false, false);
 }
 
 // Simulates main-thread scrolling on each frame.
@@ -166,18 +166,13 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
 
 TEST_F(ScrollingLayerTreePerfTest, LongScrollablePage) {
   ReadTestFile("long_scrollable_page");
-  RunTest(false, false);
+  RunTest(false, false, false);
 }
 
-// Simulates impl-side painting.
 class ImplSidePaintingPerfTest : public LayerTreeHostPerfTestJsonReader {
- public:
-  ImplSidePaintingPerfTest()
-      : LayerTreeHostPerfTestJsonReader() {}
-
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->impl_side_painting = true;
-  }
+ protected:
+  // Run test with impl-side painting.
+  void RunTestWithImplSidePainting() { RunTest(true, false, true); }
 };
 
 // Simulates a page with several large, transformed and animated layers.
@@ -185,7 +180,7 @@ TEST_F(ImplSidePaintingPerfTest, HeavyPage) {
   animation_driven_drawing_ = true;
   measure_commit_cost_ = true;
   ReadTestFile("heavy_layer_tree");
-  RunTest(true, false);
+  RunTestWithImplSidePainting();
 }
 
 }  // namespace

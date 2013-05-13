@@ -429,7 +429,11 @@ void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
   if (did_create_and_initialize_first_output_surface_) {
     // TODO(boliu): See if we can remove this when impl-side painting is always
     // on. Does anything on the main thread need to update after recreate?
-    SetNeedsCommit();
+    needs_commit_ = true;
+    // If anything has requested a redraw, we don't want to actually draw
+    // when the output surface is restored until things have a chance to
+    // sort themselves out with a commit.
+    needs_redraw_ = false;
   }
   did_create_and_initialize_first_output_surface_ = true;
 }

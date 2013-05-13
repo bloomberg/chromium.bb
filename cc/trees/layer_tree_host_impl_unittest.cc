@@ -131,6 +131,7 @@ class LayerTreeHostImplTest : public testing::Test,
       OVERRIDE {}
   virtual void DidReceiveLastInputEventForVSync(base::TimeTicks frame_time)
       OVERRIDE {}
+  virtual void DidActivatePendingTree() OVERRIDE {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;

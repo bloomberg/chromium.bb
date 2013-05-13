@@ -75,6 +75,7 @@ class LayerTreeHostImplClient {
   virtual void RenewTreePriority() = 0;
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay) = 0;
   virtual void DidReceiveLastInputEventForVSync(base::TimeTicks frame_time) = 0;
+  virtual void DidActivatePendingTree() = 0;
 
  protected:
   virtual ~LayerTreeHostImplClient() {}

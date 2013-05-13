@@ -298,6 +298,7 @@ LayerTreeTest::LayerTreeTest()
       schedule_when_set_visible_true_(false),
       started_(false),
       ended_(false),
+      delegating_renderer_(false),
       timeout_seconds_(0),
       impl_thread_(NULL),
       weak_factory_(this) {
@@ -535,7 +536,9 @@ void LayerTreeTest::DispatchComposite() {
   layer_tree_host_->Composite(now);
 }
 
-void LayerTreeTest::RunTest(bool threaded, bool delegating_renderer) {
+void LayerTreeTest::RunTest(bool threaded,
+                            bool delegating_renderer,
+                            bool impl_side_painting) {
   if (threaded) {
     impl_thread_.reset(new base::Thread("Compositor"));
     ASSERT_TRUE(impl_thread_->Start());
@@ -547,6 +550,11 @@ void LayerTreeTest::RunTest(bool threaded, bool delegating_renderer) {
 
   // Spend less time waiting for vsync because the output is mocked out.
   settings_.refresh_rate = 200.0;
+  if (impl_side_painting) {
+    DCHECK(threaded) <<
+        "Don't run single thread + impl side painting, it doesn't exist.";
+    settings_.impl_side_painting = true;
+  }
   InitializeSettings(&settings_);
 
   main_ccthread_->PostTask(

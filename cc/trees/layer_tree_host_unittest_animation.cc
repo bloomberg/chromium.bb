@@ -462,7 +462,7 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
     PostAddAnimationToMainThread(update_check_layer_.get());
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerAnimationController* controller_impl =
         host_impl->active_tree()->root_layer()->layer_animation_controller();
     Animation* animation_impl =
@@ -731,6 +731,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
   }
 
   virtual void BeginTest() OVERRIDE {
+    prevented_draw_ = 0;
     added_animations_ = 0;
     started_times_ = 0;
     finished_times_ = 0;
@@ -750,7 +751,10 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
                                      bool result) OVERRIDE {
     if (added_animations_ < 2)
       return result;
+    if (TestEnded())
+      return result;
     // Act like there is checkerboard when the second animation wants to draw.
+    ++prevented_draw_;
     return false;
   }
 
@@ -766,12 +770,12 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
         AddAnimatedTransformToLayer(content_, 0.1, 5, 5);
         added_animations_++;
         break;
-      case 3:
-        break;
     }
   }
 
   virtual void notifyAnimationStarted(double wall_clock_time) OVERRIDE {
+    if (TestEnded())
+      return;
     started_times_++;
   }
 
@@ -784,6 +788,8 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
   }
 
   virtual void AfterTest() OVERRIDE {
+    // Make sure we tried to draw the second animation but failed.
+    EXPECT_LT(0, prevented_draw_);
     // The first animation should be started, but the second should not because
     // of checkerboard.
     EXPECT_EQ(1, started_times_);
@@ -791,6 +797,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     EXPECT_EQ(1, finished_times_);
   }
 
+  int prevented_draw_;
   int added_animations_;
   int started_times_;
   int finished_times_;

@@ -21,8 +21,6 @@ RenderPass::RenderPass()
 RenderPass::~RenderPass() {}
 
 scoped_ptr<RenderPass> RenderPass::Copy(Id new_id) const {
-  DCHECK(new_id != id);
-
   scoped_ptr<RenderPass> copy_pass(Create());
   copy_pass->SetAll(new_id,
                     output_rect,

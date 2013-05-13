@@ -36,6 +36,8 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   // compositor to the given array, so they can be given back to the child.
   void TakeUnusedResourcesForChildCompositor(TransferableResourceArray* array);
 
+  virtual bool BlocksPendingCommit() const OVERRIDE;
+
  protected:
   explicit DelegatedRendererLayer(DelegatedRendererLayerClient* client);
   virtual ~DelegatedRendererLayer();

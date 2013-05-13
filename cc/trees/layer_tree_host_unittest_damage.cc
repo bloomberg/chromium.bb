@@ -147,6 +147,9 @@ class LayerTreeHostDamageTestNoDamageReadbackDoesDraw
         break;
       }
       case 2:
+        // CompositeAndReadback causes a follow-up commit.
+        break;
+      case 3:
         NOTREACHED();
         break;
     }
@@ -229,14 +232,16 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
         child_damage_rect_ = gfx::RectF(10, 11, 12, 13);
         break;
       case 3:
-        if (!delegating_renderer()) {
+        if (!delegating_renderer() &&
+            !host_impl->settings().impl_side_painting) {
           // The update rect in the child should be damaged.
+          // TODO(danakj): Remove this when impl side painting is always on.
           EXPECT_EQ(gfx::RectF(100+10, 100+11, 12, 13).ToString(),
                     root_damage.ToString());
         } else {
-          // When using a delegating renderer, the entire child is considered
-          // damaged as we need to replace its resources with newly created
-          // ones.
+          // When using a delegating renderer, or using impl side painting, the
+          // entire child is considered damaged as we need to replace its
+          // resources with newly created ones.
           EXPECT_EQ(gfx::RectF(child_->position(), child_->bounds()).ToString(),
                     root_damage.ToString());
         }

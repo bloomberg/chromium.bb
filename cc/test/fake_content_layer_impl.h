@@ -18,6 +18,9 @@ class FakeContentLayerImpl : public TiledLayerImpl {
   }
   virtual ~FakeContentLayerImpl();
 
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
+
   bool HaveResourceForTileAt(int i, int j);
 
   size_t lost_output_surface_count() const {

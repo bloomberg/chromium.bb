@@ -87,6 +87,7 @@ class ThreadProxy : public Proxy,
       OVERRIDE;
   virtual void DidReceiveLastInputEventForVSync(
       base::TimeTicks frame_time) OVERRIDE;
+  virtual void DidActivatePendingTree() OVERRIDE;
 
   // SchedulerClient implementation
   virtual void ScheduledActionBeginFrame() OVERRIDE;

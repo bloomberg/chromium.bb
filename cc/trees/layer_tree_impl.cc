@@ -315,6 +315,10 @@ static void ClearRenderSurfacesOnLayerImplRecursive(LayerImpl* current) {
 }
 
 void LayerTreeImpl::ClearRenderSurfaces() {
+  if (root_layer() == NULL) {
+    DCHECK(render_surface_layer_list_.empty());
+    return;
+  }
   ClearRenderSurfacesOnLayerImplRecursive(root_layer());
   render_surface_layer_list_.clear();
   set_needs_update_draw_properties();
@@ -366,8 +370,12 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
 
 void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pending_tree) {
   int id = currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0;
-  pending_tree->SetCurrentlyScrollingLayer(
-      LayerTreeHostCommon::FindLayerInSubtree(pending_tree->root_layer(), id));
+  LayerImpl* pending_scrolling_layer_twin = NULL;
+  if (pending_tree->root_layer()) {
+    pending_scrolling_layer_twin =
+        LayerTreeHostCommon::FindLayerInSubtree(pending_tree->root_layer(), id);
+  }
+  pending_tree->SetCurrentlyScrollingLayer(pending_scrolling_layer_twin);
 }
 
 static void DidBecomeActiveRecursive(LayerImpl* layer) {

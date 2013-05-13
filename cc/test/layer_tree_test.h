@@ -135,7 +135,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchComposite();
   void DispatchDidAddAnimation();
 
-  virtual void RunTest(bool threaded, bool delegating_renderer);
+  virtual void RunTest(bool threaded,
+                       bool delegating_renderer,
+                       bool impl_side_painting);
 
   Thread* ImplThread() { return proxy() ? proxy()->ImplThread() : NULL; }
   Proxy* proxy() const {
@@ -182,13 +184,13 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
 #define SINGLE_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME)   \
   TEST_F(TEST_FIXTURE_NAME, RunSingleThread_DirectRenderer) {     \
-    RunTest(false, false);                                        \
+    RunTest(false, false, false);                                 \
   }                                                               \
   class SingleThreadDirectNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 #define SINGLE_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   TEST_F(TEST_FIXTURE_NAME, RunSingleThread_DelegatingRenderer) {   \
-    RunTest(false, true);                                           \
+    RunTest(false, true, false);                                    \
   }                                                                 \
   class SingleThreadDelegatingNeedsSemicolon##TEST_FIXTURE_NAME {}
 
@@ -196,16 +198,24 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   SINGLE_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME);        \
   SINGLE_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME)
 
-#define MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME)   \
-  TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DirectRenderer) {     \
-    RunTest(true, false);                                         \
-  }                                                               \
+#define MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME)               \
+  TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DirectRenderer_MainThreadPaint) { \
+    RunTest(true, false, false);                                             \
+  }                                                                          \
+  TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DirectRenderer_ImplSidePaint) {   \
+    RunTest(true, false, true);                                              \
+  }                                                                          \
   class MultiThreadDirectNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 #define MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
-  TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DelegatingRenderer) {   \
-    RunTest(true, true);                                            \
-  }                                                                 \
+  TEST_F(TEST_FIXTURE_NAME,                                        \
+         RunMultiThread_DelegatingRenderer_MainThreadPaint) {      \
+    RunTest(true, true, false);                                    \
+  }                                                                \
+  TEST_F(TEST_FIXTURE_NAME,                                        \
+         RunMultiThread_DelegatingRenderer_ImplSidePaint) {        \
+    RunTest(true, true, true);                                     \
+  }                                                                \
   class MultiThreadDelegatingNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 #define MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)                   \

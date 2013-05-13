@@ -334,7 +334,7 @@ class LayerTreeHostScrollTestCaseWithChild
     }
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void TreeActivatedOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     LayerImpl* root_impl = impl->active_tree()->root_layer();
     LayerImpl* root_scroll_layer_impl = root_impl->children()[0];
     LayerImpl* child_layer_impl = root_scroll_layer_impl->children()[0];
@@ -451,87 +451,108 @@ class LayerTreeHostScrollTestCaseWithChild
 };
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor1_ScrollChild_DirectRenderer) {
+       DeviceScaleFactor1_ScrollChild_DirectRenderer_MainThreadPaint) {
   device_scale_factor_ = 1.f;
   scroll_child_layer_ = true;
-  RunTest(true, false);
+  RunTest(true, false, false);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor1_ScrollChild_DelegatingRenderer) {
+       DeviceScaleFactor1_ScrollChild_DirectRenderer_ImplSidePaint) {
   device_scale_factor_ = 1.f;
   scroll_child_layer_ = true;
-  RunTest(true, true);
+  RunTest(true, false, true);
+}
+
+TEST_F(LayerTreeHostScrollTestCaseWithChild,
+       DeviceScaleFactor1_ScrollChild_DelegatingRenderer_MainThreadPaint) {
+  device_scale_factor_ = 1.f;
+  scroll_child_layer_ = true;
+  RunTest(true, true, false);
+}
+
+TEST_F(LayerTreeHostScrollTestCaseWithChild,
+       DeviceScaleFactor1_ScrollChild_DelegatingRenderer_ImplSidePaint) {
+  device_scale_factor_ = 1.f;
+  scroll_child_layer_ = true;
+  RunTest(true, true, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor15_ScrollChild_DirectRenderer) {
   device_scale_factor_ = 1.5f;
   scroll_child_layer_ = true;
-  RunTest(true, false);
+  RunTest(true, false, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor15_ScrollChild_DelegatingRenderer) {
   device_scale_factor_ = 1.5f;
   scroll_child_layer_ = true;
-  RunTest(true, true);
+  RunTest(true, true, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor2_ScrollChild_DirectRenderer) {
   device_scale_factor_ = 2.f;
   scroll_child_layer_ = true;
-  RunTest(true, false);
+  RunTest(true, false, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor2_ScrollChild_DelegatingRenderer) {
   device_scale_factor_ = 2.f;
   scroll_child_layer_ = true;
-  RunTest(true, true);
+  RunTest(true, true, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor1_ScrollRootScrollLayer_DirectRenderer) {
   device_scale_factor_ = 1.f;
   scroll_child_layer_ = false;
-  RunTest(true, false);
+  RunTest(true, false, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor1_ScrollRootScrollLayer_DelegatingRenderer) {
   device_scale_factor_ = 1.f;
   scroll_child_layer_ = false;
-  RunTest(true, true);
+  RunTest(true, true, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor15_ScrollRootScrollLayer_DirectRenderer) {
   device_scale_factor_ = 1.5f;
   scroll_child_layer_ = false;
-  RunTest(true, false);
+  RunTest(true, false, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor15_ScrollRootScrollLayer_DelegatingRenderer) {
   device_scale_factor_ = 1.5f;
   scroll_child_layer_ = false;
-  RunTest(true, true);
+  RunTest(true, true, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor2_ScrollRootScrollLayer_DirectRenderer) {
+       DeviceScaleFactor2_ScrollRootScrollLayer_DirectRenderer_MainSidePaint) {
   device_scale_factor_ = 2.f;
   scroll_child_layer_ = false;
-  RunTest(true, false);
+  RunTest(true, false, false);
+}
+
+TEST_F(LayerTreeHostScrollTestCaseWithChild,
+       DeviceScaleFactor2_ScrollRootScrollLayer_DirectRenderer_ImplSidePaint) {
+  device_scale_factor_ = 2.f;
+  scroll_child_layer_ = false;
+  RunTest(true, false, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor2_ScrollRootScrollLayer_DelegatingRenderer) {
   device_scale_factor_ = 2.f;
   scroll_child_layer_ = false;
-  RunTest(true, true);
+  RunTest(true, true, true);
 }
 
 class ImplSidePaintingScrollTest : public LayerTreeHostScrollTest {

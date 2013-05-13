@@ -1334,6 +1334,8 @@ void LayerTreeHostImpl::ActivatePendingTree() {
         stats.total_paint_time + stats.total_record_time +
             stats.total_rasterize_time_for_now_bins_on_pending_tree);
   }
+
+  client_->DidActivatePendingTree();
 }
 
 void LayerTreeHostImpl::SetVisible(bool visible) {
