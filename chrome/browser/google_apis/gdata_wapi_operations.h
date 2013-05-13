@@ -12,7 +12,6 @@
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
-#include "net/base/io_buffer.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -483,7 +482,7 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
       int64 end_position,
       int64 content_length,
       const std::string& content_type,
-      const scoped_refptr<net::IOBuffer>& buf);
+      const base::FilePath& local_file_path);
   virtual ~ResumeUploadOperation();
 
  protected:

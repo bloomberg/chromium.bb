@@ -1502,7 +1502,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
       base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       upload_location,
       0, 13, 15, "test/foo",
-      scoped_refptr<net::IOBuffer>(),
+      base::FilePath(),
       test_util::CreateCopyResultCallback(&response, &entry),
       ProgressCallback());
   message_loop_.RunUntilIdle();
@@ -1535,7 +1535,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
       base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       GURL("https://foo.com/"),
       0, 13, 15, "test/foo",
-      scoped_refptr<net::IOBuffer>(),
+      base::FilePath(),
       test_util::CreateCopyResultCallback(&response, &entry),
       ProgressCallback());
   message_loop_.RunUntilIdle();
@@ -1569,7 +1569,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
       base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
       upload_location,
       0, 13, 15, "text/plain",
-      scoped_refptr<net::IOBuffer>(),
+      base::FilePath(),
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
@@ -1588,7 +1588,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
       base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
       upload_location,
       13, 15, 15, "text/plain",
-      scoped_refptr<net::IOBuffer>(),
+      base::FilePath(),
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
@@ -1632,7 +1632,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
       base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       upload_location,
       0, 13, 15, "test/foo",
-      scoped_refptr<net::IOBuffer>(),
+      base::FilePath(),
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
@@ -1651,7 +1651,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
       base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       upload_location,
       13, 15, 15, "test/foo",
-      scoped_refptr<net::IOBuffer>(),
+      base::FilePath(),
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));

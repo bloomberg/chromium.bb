@@ -11,7 +11,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_response_headers.h"
@@ -176,16 +175,29 @@ void UrlFetchOperationBase::Start(const std::string& access_token,
   if (GetContentData(&upload_content_type, &upload_content)) {
     url_fetcher_->SetUploadData(upload_content_type, upload_content);
   } else {
-    // Even if there is no content data, UrlFetcher requires to set empty
-    // upload data string for POST, PUT and PATCH methods, explicitly.
-    // It is because that most requests of those methods have non-empty
-    // body, and UrlFetcher checks whether it is actually not forgotten.
-    if (request_type == URLFetcher::POST ||
-        request_type == URLFetcher::PUT ||
-        request_type == URLFetcher::PATCH) {
-      // Set empty upload content-type and upload content, so that
-      // the request will have no "Content-type: " header and no content.
-      url_fetcher_->SetUploadData(std::string(), std::string());
+    base::FilePath local_file_path;
+    int64 range_offset = 0;
+    int64 range_length = 0;
+    if (GetContentFile(&local_file_path, &range_offset, &range_length,
+                       &upload_content_type)) {
+      url_fetcher_->SetUploadFilePath(
+          upload_content_type,
+          local_file_path,
+          range_offset,
+          range_length,
+          BrowserThread::GetBlockingPool());
+    } else {
+      // Even if there is no content data, UrlFetcher requires to set empty
+      // upload data string for POST, PUT and PATCH methods, explicitly.
+      // It is because that most requests of those methods have non-empty
+      // body, and UrlFetcher checks whether it is actually not forgotten.
+      if (request_type == URLFetcher::POST ||
+          request_type == URLFetcher::PUT ||
+          request_type == URLFetcher::PATCH) {
+        // Set empty upload content-type and upload content, so that
+        // the request will have no "Content-type: " header and no content.
+        url_fetcher_->SetUploadData(std::string(), std::string());
+      }
     }
   }
 
@@ -206,6 +218,13 @@ std::vector<std::string> UrlFetchOperationBase::GetExtraRequestHeaders() const {
 
 bool UrlFetchOperationBase::GetContentData(std::string* upload_content_type,
                                            std::string* upload_content) {
+  return false;
+}
+
+bool UrlFetchOperationBase::GetContentFile(base::FilePath* local_file_path,
+                                           int64* range_offset,
+                                           int64* range_length,
+                                           std::string* upload_content_type) {
   return false;
 }
 
@@ -588,7 +607,7 @@ ResumeUploadOperationBase::ResumeUploadOperationBase(
     int64 end_position,
     int64 content_length,
     const std::string& content_type,
-    const scoped_refptr<net::IOBuffer>& buf)
+    const base::FilePath& local_file_path)
     : UploadRangeOperationBase(registry,
                                url_request_context_getter,
                                upload_mode,
@@ -598,7 +617,7 @@ ResumeUploadOperationBase::ResumeUploadOperationBase(
       end_position_(end_position),
       content_length_(content_length),
       content_type_(content_type),
-      buf_(buf) {
+      local_file_path_(local_file_path) {
   DCHECK_LE(start_position_, end_position_);
 }
 
@@ -631,11 +650,20 @@ ResumeUploadOperationBase::GetExtraRequestHeaders() const {
   return headers;
 }
 
-bool ResumeUploadOperationBase::GetContentData(
-    std::string* upload_content_type,
-    std::string* upload_content) {
+bool ResumeUploadOperationBase::GetContentFile(
+    base::FilePath* local_file_path,
+    int64* range_offset,
+    int64* range_length,
+    std::string* upload_content_type) {
+  if (start_position_ == end_position_) {
+    // No content data.
+    return false;
+  }
+
+  *local_file_path = local_file_path_;
+  *range_offset = start_position_;
+  *range_length = end_position_ - start_position_;
   *upload_content_type = content_type_;
-  *upload_content = std::string(buf_->data(), end_position_ - start_position_);
   return true;
 }
 

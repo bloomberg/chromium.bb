@@ -129,7 +129,7 @@ void DummyDriveService::ResumeUpload(
     int64 end_position,
     int64 content_length,
     const std::string& content_type,
-    const scoped_refptr<net::IOBuffer>& buf,
+    const base::FilePath& local_file_path,
     const UploadRangeCallback& callback,
     const ProgressCallback& progress_callback) {}
 

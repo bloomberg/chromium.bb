@@ -24,7 +24,6 @@ class Value;
 }  // namespace base
 
 namespace net {
-class IOBuffer;
 class URLRequestContextGetter;
 }  // namespace net
 
@@ -123,8 +122,19 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   // Used by a derived class to add any content data to the request.
   // Returns true if |upload_content_type| and |upload_content| are updated
   // with the content type and data for the request.
+  // Note that this and GetContentFile() cannot be used together.
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content);
+
+  // Used by a derived class to add content data which is the whole file or
+  // a part of the file at |local_file_path|.
+  // Returns true if all the arguments are updated for the content being
+  // uploaded.
+  // Note that this and GetContentData() cannot be used together.
+  virtual bool GetContentFile(base::FilePath* local_file_path,
+                              int64* range_offset,
+                              int64* range_length,
+                              std::string* upload_content_type);
 
   // Invoked by OnURLFetchComplete when the operation completes without an
   // authentication error. Must be implemented by a derived class.
@@ -419,13 +429,15 @@ class ResumeUploadOperationBase : public UploadRangeOperationBase {
       int64 end_position,
       int64 content_length,
       const std::string& content_type,
-      const scoped_refptr<net::IOBuffer>& buf);
+      const base::FilePath& local_file_path);
   virtual ~ResumeUploadOperationBase();
 
   // UrlFetchOperationBase overrides.
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
-  virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
+  virtual bool GetContentFile(base::FilePath* local_file_path,
+                              int64* range_offset,
+                              int64* range_length,
+                              std::string* upload_content_type) OVERRIDE;
 
  private:
   // The parameters for the request. See ResumeUploadParams for the details.
@@ -433,7 +445,7 @@ class ResumeUploadOperationBase : public UploadRangeOperationBase {
   const int64 end_position_;
   const int64 content_length_;
   const std::string content_type_;
-  const scoped_refptr<net::IOBuffer> buf_;
+  const base::FilePath local_file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperationBase);
 };

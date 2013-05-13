@@ -541,7 +541,7 @@ ResumeUploadOperation::ResumeUploadOperation(
     int64 end_position,
     int64 content_length,
     const std::string& content_type,
-    const scoped_refptr<net::IOBuffer>& buf,
+    const base::FilePath& local_file_path,
     const UploadRangeCallback& callback,
     const ProgressCallback& progress_callback)
     : ResumeUploadOperationBase(registry,
@@ -553,7 +553,7 @@ ResumeUploadOperation::ResumeUploadOperation(
                                 end_position,
                                 content_length,
                                 content_type,
-                                buf),
+                                local_file_path),
       callback_(callback),
       progress_callback_(progress_callback) {
   DCHECK(!callback_.is_null());

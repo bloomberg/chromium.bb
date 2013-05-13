@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -59,6 +61,8 @@ class DriveApiOperationsTest : public testing::Test {
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::IO));
 
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
     test_server_.RegisterRequestHandler(
         base::Bind(&DriveApiOperationsTest::HandleChildrenDeleteRequest,
@@ -99,6 +103,7 @@ class DriveApiOperationsTest : public testing::Test {
   OperationRegistry operation_registry_;
   scoped_ptr<DriveApiUrlGenerator> url_generator_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  base::ScopedTempDir temp_dir_;
 
   // This is a path to the file which contains expected response from
   // the server. See also HandleDataFileRequest below.
@@ -670,6 +675,9 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
 
   const char kTestContentType[] = "text/plain";
   const std::string kTestContent(100, 'a');
+  const base::FilePath kTestFilePath =
+      temp_dir_.path().AppendASCII("upload_file.txt");
+  ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_url;
@@ -712,8 +720,6 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
             http_request_.content);
 
   // 2) Upload the content to the upload URL.
-  scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kTestContent);
-
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
@@ -728,7 +734,7 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
           kTestContent.size(),  // end_position (exclusive)
           kTestContent.size(),  // content_length,
           kTestContentType,
-          buffer,
+          kTestFilePath,
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&response, &new_entry)),
@@ -764,6 +770,9 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
 
   const char kTestContentType[] = "text/plain";
   const char kTestContent[] = "";
+  const base::FilePath kTestFilePath =
+      temp_dir_.path().AppendASCII("empty_file.txt");
+  ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_url;
@@ -805,8 +814,6 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
             http_request_.content);
 
   // 2) Upload the content to the upload URL.
-  scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kTestContent);
-
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
@@ -821,7 +828,7 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
           0,  // end_position (exclusive)
           0,  // content_length,
           kTestContentType,
-          buffer,
+          kTestFilePath,
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&response, &new_entry)),
@@ -855,6 +862,9 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
   const char kTestContentType[] = "text/plain";
   const size_t kNumChunkBytes = 10;  // Num bytes in a chunk.
   const std::string kTestContent(100, 'a');
+  const base::FilePath kTestFilePath =
+      temp_dir_.path().AppendASCII("upload_file.txt");
+  ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_url;
@@ -903,7 +913,6 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
         start_position,
         std::min(kNumChunkBytes, kTestContent.size() - start_position));
     const size_t end_position = start_position + payload.size();
-    scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(payload);
 
     UploadRangeResponse response;
     scoped_ptr<FileResource> new_entry;
@@ -919,7 +928,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
             end_position,
             kTestContent.size(),  // content_length,
             kTestContentType,
-            buffer,
+            kTestFilePath,
             CreateComposedCallback(
                 base::Bind(&test_util::RunAndQuit),
                 test_util::CreateCopyResultCallback(&response, &new_entry)),
@@ -966,6 +975,9 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
 
   const char kTestContentType[] = "text/plain";
   const std::string kTestContent(100, 'a');
+  const base::FilePath kTestFilePath =
+      temp_dir_.path().AppendASCII("upload_file.txt");
+  ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_url;
@@ -1002,8 +1014,6 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
   EXPECT_TRUE(http_request_.content.empty());
 
   // 2) Upload the content to the upload URL.
-  scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kTestContent);
-
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
@@ -1018,7 +1028,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
           kTestContent.size(),  // end_position (exclusive)
           kTestContent.size(),  // content_length,
           kTestContentType,
-          buffer,
+          kTestFilePath,
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&response, &new_entry)),
@@ -1054,6 +1064,9 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
 
   const char kTestContentType[] = "text/plain";
   const std::string kTestContent(100, 'a');
+  const base::FilePath kTestFilePath =
+      temp_dir_.path().AppendASCII("upload_file.txt");
+  ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_url;
@@ -1090,8 +1103,6 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
   EXPECT_TRUE(http_request_.content.empty());
 
   // 2) Upload the content to the upload URL.
-  scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kTestContent);
-
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
@@ -1106,7 +1117,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
           kTestContent.size(),  // end_position (exclusive)
           kTestContent.size(),  // content_length,
           kTestContentType,
-          buffer,
+          kTestFilePath,
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&response, &new_entry)),

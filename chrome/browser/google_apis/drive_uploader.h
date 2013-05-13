@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -122,13 +121,10 @@ class DriveUploader : public DriveUploaderInterface {
   void StartUploadFile(
       scoped_ptr<UploadFileInfo> upload_file_info,
       const StartInitiateUploadCallback& start_initiate_upload_callback);
-
-  // net::FileStream::Open completion callback. The result of the file open
-  // operation is passed as |result|, and the size is stored in |file_size|.
-  void OpenCompletionCallback(
+  void StartUploadFileAfterGetFileSize(
       scoped_ptr<UploadFileInfo> upload_file_info,
       const StartInitiateUploadCallback& start_initiate_upload_callback,
-      int64 file_size);
+      bool get_file_size_result);
 
   // Starts to initate the new file uploading.
   // Upon completion, OnUploadLocationReceived should be called.
@@ -152,15 +148,6 @@ class DriveUploader : public DriveUploaderInterface {
   // Uploads the next chunk of data from the file.
   void UploadNextChunk(scoped_ptr<UploadFileInfo> upload_file_info);
 
-  // net::FileStream::Read completion callback.
-  void ReadCompletionCallback(scoped_ptr<UploadFileInfo> upload_file_info,
-                              int bytes_to_read,
-                              int bytes_read);
-
-  // Calls DriveService's ResumeUpload with the current upload info.
-  void ResumeUpload(scoped_ptr<UploadFileInfo> upload_file_info,
-                    int bytes_to_send);
-
   // DriveService callback for ResumeUpload.
   void OnUploadRangeResponseReceived(
       scoped_ptr<UploadFileInfo> upload_file_info,
@@ -181,13 +168,9 @@ class DriveUploader : public DriveUploaderInterface {
   // DriveUploader instance.
   DriveServiceInterface* drive_service_;
 
-  // TaskRunner for opening, reading, and closing files.
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<DriveUploader> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(DriveUploader);
 };
 

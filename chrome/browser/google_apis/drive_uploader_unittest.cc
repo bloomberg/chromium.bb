@@ -19,7 +19,6 @@
 #include "chrome/browser/google_apis/dummy_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/test/test_browser_thread.h"
-#include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
@@ -42,9 +41,11 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
  public:
   // Sets up an expected upload content. InitiateUpload and ResumeUpload will
   // verify that the specified data is correctly uploaded.
-  explicit MockDriveServiceWithUploadExpectation(
-      const std::string& expected_upload_content)
-     : expected_upload_content_(expected_upload_content),
+  MockDriveServiceWithUploadExpectation(
+      const base::FilePath& expected_upload_file,
+      int64 expected_content_length)
+     : expected_upload_file_(expected_upload_file),
+       expected_content_length_(expected_content_length),
        received_bytes_(0),
        resume_upload_call_count_(0) {}
 
@@ -64,8 +65,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       const InitiateUploadCallback& callback) OVERRIDE {
     EXPECT_EQ(kTestDocumentTitle, title);
     EXPECT_EQ(kTestMimeType, content_type);
-    const int64 expected_size = expected_upload_content_.size();
-    EXPECT_EQ(expected_size, content_length);
+    EXPECT_EQ(expected_content_length_, content_length);
     EXPECT_EQ(kTestInitiateUploadParentResourceId, parent_resource_id);
 
     // Calls back the upload URL for subsequent ResumeUpload operations.
@@ -82,8 +82,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       const std::string& etag,
       const InitiateUploadCallback& callback) OVERRIDE {
     EXPECT_EQ(kTestMimeType, content_type);
-    const int64 expected_size = expected_upload_content_.size();
-    EXPECT_EQ(expected_size, content_length);
+    EXPECT_EQ(expected_content_length_, content_length);
     EXPECT_EQ(kTestInitiateUploadResourceId, resource_id);
 
     if (!etag.empty() && etag != kTestETag) {
@@ -107,31 +106,23 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       int64 end_position,
       int64 content_length,
       const std::string& content_type,
-      const scoped_refptr<net::IOBuffer>& buf,
+      const base::FilePath& local_file_path,
       const UploadRangeCallback& callback,
       const ProgressCallback& progress_callback) OVERRIDE {
-    const int64 expected_size = expected_upload_content_.size();
-
     // The upload range should start from the current first unreceived byte.
     EXPECT_EQ(received_bytes_, start_position);
+    EXPECT_EQ(expected_upload_file_, local_file_path);
 
     // The upload data must be split into 512KB chunks.
     const int64 expected_chunk_end =
-        std::min(received_bytes_ + kUploadChunkSize, expected_size);
+        std::min(received_bytes_ + kUploadChunkSize, expected_content_length_);
     EXPECT_EQ(expected_chunk_end, end_position);
-
-    const int64 expected_chunk_size = expected_chunk_end - received_bytes_;
-    const std::string expected_chunk_data(
-        expected_upload_content_.substr(received_bytes_,
-                                        expected_chunk_size));
-    std::string uploading_data(buf->data(), buf->data() + expected_chunk_size);
-    EXPECT_EQ(expected_chunk_data, uploading_data);
 
     // The upload URL returned by InitiateUpload() must be used.
     EXPECT_EQ(GURL(kTestUploadURL), upload_url);
 
     // Other parameters should be the exact values passed to DriveUploader.
-    EXPECT_EQ(expected_size, content_length);
+    EXPECT_EQ(expected_content_length_, content_length);
     EXPECT_EQ(kTestMimeType, content_type);
 
     // Update the internal status of the current upload session.
@@ -142,9 +133,9 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     if (!progress_callback.is_null()) {
       // For the testing purpose, it always notifies the progress at the end of
       // each chunk uploading.
+      int64 chunk_size = end_position - start_position;
       MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(progress_callback, expected_chunk_size,
-                     expected_chunk_size));
+          base::Bind(progress_callback, chunk_size, chunk_size));
     }
 
     // Callback with response.
@@ -166,7 +157,8 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
         base::Bind(callback, response, base::Passed(&entry)));
   }
 
-  std::string expected_upload_content_;
+  const base::FilePath expected_upload_file_;
+  const int64 expected_content_length_;
   int64 received_bytes_;
   int64 resume_upload_call_count_;
 };
@@ -205,7 +197,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       int64 end_position,
       int64 content_length,
       const std::string& content_type,
-      const scoped_refptr<net::IOBuffer>& buf,
+      const base::FilePath& local_file_path,
       const UploadRangeCallback& callback,
       const ProgressCallback& progress_callback) OVERRIDE {
     NOTREACHED();
@@ -246,7 +238,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       int64 end_position,
       int64 content_length,
       const std::string& content_type,
-      const scoped_refptr<net::IOBuffer>& buf,
+      const base::FilePath& local_file_path,
       const UploadRangeCallback& callback,
       const ProgressCallback& progress_callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
@@ -289,7 +281,7 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
   base::FilePath file_path;
   scoped_ptr<ResourceEntry> resource_entry;
 
-  MockDriveServiceWithUploadExpectation mock_service(data);
+  MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service);
   std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
@@ -326,7 +318,7 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
   base::FilePath file_path;
   scoped_ptr<ResourceEntry> resource_entry;
 
-  MockDriveServiceWithUploadExpectation mock_service(data);
+  MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service);
   std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
@@ -365,7 +357,7 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
   base::FilePath file_path;
   scoped_ptr<ResourceEntry> resource_entry;
 
-  MockDriveServiceWithUploadExpectation mock_service(data);
+  MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service);
   std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
@@ -409,7 +401,7 @@ TEST_F(DriveUploaderTest, UploadNew1234KB) {
   base::FilePath file_path;
   scoped_ptr<ResourceEntry> resource_entry;
 
-  MockDriveServiceWithUploadExpectation mock_service(data);
+  MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service);
   uploader.UploadNewFile(
       kTestInitiateUploadParentResourceId,
@@ -470,7 +462,7 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
   base::FilePath file_path;
   scoped_ptr<ResourceEntry> resource_entry;
 
-  MockDriveServiceWithUploadExpectation mock_service(data);
+  MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
@@ -498,7 +490,7 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
   base::FilePath file_path;
   scoped_ptr<ResourceEntry> resource_entry;
 
-  MockDriveServiceWithUploadExpectation mock_service(data);
+  MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,

@@ -11,7 +11,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
-#include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -112,7 +111,7 @@ class MockDriveService : public DriveServiceInterface {
           int64 end_position,
           int64 content_length,
           const std::string& content_type,
-          const scoped_refptr<net::IOBuffer>& buf,
+          const base::FilePath& local_file_path,
           const UploadRangeCallback& callback,
           const ProgressCallback& progress_callback));
   MOCK_METHOD5(GetUploadStatus,
