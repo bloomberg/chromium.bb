@@ -420,15 +420,14 @@
               '../css/make-css-file-arrays.pl',
               '../scripts/preprocessor.pm',
             ],
-            # The .css files are in the same order as ../DerivedSources.make.
             'stylesheets': [
               '../css/html.css',
               '../css/quirks.css',
               '../css/view-source.css',
-              '../css/themeChromium.css', # Chromium only.
-              '../css/themeChromiumAndroid.css', # Chromium only.
-              '../css/themeChromiumLinux.css', # Chromium only.
-              '../css/themeChromiumSkia.css',  # Chromium only.
+              '../css/themeChromium.css',
+              '../css/themeChromiumAndroid.css',
+              '../css/themeChromiumLinux.css',
+              '../css/themeChromiumSkia.css',
               '../css/themeWin.css',
               '../css/themeWinQuirks.css',
               '../css/svg.css',
@@ -437,7 +436,6 @@
               '../css/mediaControlsChromium.css',
               '../css/mediaControlsChromiumAndroid.css',
               '../css/fullscreen.css',
-              # Skip fullscreenQuickTime.
             ],
           },
           'inputs': [
