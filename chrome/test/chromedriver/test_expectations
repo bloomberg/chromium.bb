@@ -14,37 +14,38 @@ _REVISION_NEGATIVE_FILTER = {}
 _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'AlertsTest.*',
     'AuthenticatedPageLoadingTest.*',
-    'AvailableLogsTest.browserLogShouldBeEnabledByDefault',
-    'AvailableLogsTest.clientLogShouldBeEnabledByDefault',
     'AvailableLogsTest.driverLogShouldBeEnabledByDefault',
-    'AvailableLogsTest.profilerLogShouldBeDisabledByDefault',
-    'AvailableLogsTest.shouldBeAbleToEnableProfilerLog',
     'BasicMouseInterfaceTest.testContextClick',
     'BasicMouseInterfaceTest.testMousePositionIsNotPreservedInActionsChain',
     'BasicMouseInterfaceTest.testMovingIntoAnImageEnclosedInALink',
     'BasicMouseInterfaceTest.testMovingMouseBackAndForthPastViewPort',
     'BasicMouseInterfaceTest.testMovingMousePastViewPort',
     'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
+    # https://code.google.com/p/selenium/source/diff?spec=svn5e856ea3d0ee07db00aa41293f68ce2566c16888&r=a823e0a2ead8b5430a9a92a14452d0d47cb05f61&format=side&path=/java/client/test/org/openqa/selenium/ClickScrollingTest.java&old_path=/java/client/test/org/openqa/selenium/ClickScrollingTest.java&old=ee8ae7d15794146d24a744ec96d1192ff851f0fc
+    'ClickScrollingTest.testShouldBeAbleToClickOnAnElementHiddenByDoubleOverflow',
     'ClickScrollingTest.testShouldNotBeAbleToClickElementThatIsOutOfViewInANonScrollableFrame',
     'ClickScrollingTest.testShouldNotScrollIfAlreadyScrolledAndElementIsInView',
     'ClickTest.testCanClickAnImageMapArea',
+    # https://code.google.com/p/selenium/source/diff?spec=svn5e856ea3d0ee07db00aa41293f68ce2566c16888&r=9ec284bff77c06198af6097ca6703a48e1b0736b&format=side&path=/java/client/test/org/openqa/selenium/ClickTest.java&old_path=/java/client/test/org/openqa/selenium/ClickTest.java&old=5a0284c1a625ed8507f6d98857958e286a449bb7
+    'ClickTest.testShouldBeAbleToClickOnAnElementInFrameGreaterThanTwoViewports',
     'CombinedInputActionsTest.testClickingOnFormElements',
     'CoordinatesTest.testShouldScrollPageAndGetCoordinatesOfAnElementThatIsOutOfViewPort',
     'CorrectEventFiringTest.testShouldFireEventsInTheRightOrder',
     'CorrectEventFiringTest.testShouldFireFocusEventWhenClicking',
     'DragAndDropTest.testDragTooFar',
     'ExecutingAsyncJavascriptTest.includesAlertTextInUnhandledAlertException',
+    # https://code.google.com/p/selenium/source/diff?spec=svn5e856ea3d0ee07db00aa41293f68ce2566c16888&r=0e6a710cceed3037e8e44ae81579cf3ceca33fb6&format=side&path=/java/client/test/org/openqa/selenium/ExecutingAsyncJavascriptTest.java&old_path=/java/client/test/org/openqa/selenium/ExecutingAsyncJavascriptTest.java&old=ee8ae7d15794146d24a744ec96d1192ff851f0fc
+    'ExecutingAsyncJavascriptTest.shouldCatchErrorsWithMessageAndStacktraceWhenExecutingInitialScript',
     'ExecutingAsyncJavascriptTest.throwsIfAlertHappensDuringScript',
     'ExecutingAsyncJavascriptTest.throwsIfAlertHappensDuringScriptWhichTimesOut',
     'ExecutingAsyncJavascriptTest.throwsIfScriptTriggersAlert',
     'ExecutingAsyncJavascriptTest.throwsIfScriptTriggersAlertWhichTimesOut',
     'ExecutingJavascriptTest.testShouldThrowExceptionIfExecutingOnNoPage',
+    # https://code.google.com/p/selenium/source/diff?spec=svn5e856ea3d0ee07db00aa41293f68ce2566c16888&r=0e6a710cceed3037e8e44ae81579cf3ceca33fb6&format=side&path=/java/client/test/org/openqa/selenium/ExecutingJavascriptTest.java&old_path=/java/client/test/org/openqa/selenium/ExecutingJavascriptTest.java&old=bf0d4b7d040315e9311efaa3a91a2a59777608da
+    'ExecutingJavascriptTest.testShouldThrowAnExceptionWithMessageAndStacktraceWhenTheJavascriptIsBad',
     'FormHandlingTest.handleFormWithJavascriptAction',
     'FormHandlingTest.testShouldNotBeAbleToSubmitAFormThatDoesNotExist',
     'FrameSwitchingTest.testShouldNotBeAbleToDoAnythingTheFrameIsDeletedFromUnderUs',
-    'GetLogsTest.differentLogsShouldNotContainTheSameLogEntries',
-    'GetLogsTest.logBufferShouldBeResetAfterEachGetLogCall',
-    'GetLogsTest.turningOffLogShouldMeanNoLogMessages',
     'I18nTest.testShouldBeAbleToActivateIMEEngine',
     # Broken because AddWebStorage.java is broken.
     'LocalStorageTest.*',
@@ -53,7 +54,7 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'PageLoadingTest.shouldBeAbleToDisableAcceptOfInsecureSslCertsWithRequiredCapability',
     'PageLoadingTest.testShouldNotWaitIndefinitelyIfAnExternalResourceFailsToLoad',
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToLoad',
-    # PerformanceLoggingTest is for firefox only.
+    # PerformanceLoggingTest is for firefox only; "performance" log deprecated.
     'PerformanceLoggingTest.*',
     'ProxySettingTest.canConfigureProxyWithRequiredCapability',
     'ProxySettingTest.requiredProxyCapabilityShouldHavePriority',
@@ -62,6 +63,15 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     # Broken because AddWebStorage.java is broken.
     'SessionStorageTest.*',
     'SqlDatabaseTest.*',
+    # https://code.google.com/p/selenium/source/diff?spec=svn6bbba240f54370803189ce28149072c59f5d5312&r=6bbba240f54370803189ce28149072c59f5d5312&format=side&path=/java/client/test/org/openqa/selenium/SvgDocumentTest.java
+    'SvgDocumentTest.testClickOnSvgElement',
+    # https://code.google.com/p/selenium/source/diff?spec=svn5e856ea3d0ee07db00aa41293f68ce2566c16888&r=859a1df06d56b4f2ba247f1dadbfceac8066efcb&format=side&path=/java/client/test/org/openqa/selenium/TakesScreenshotTest.java&old_path=/java/client/test/org/openqa/selenium/TakesScreenshotTest.java&old=cfea793d0410db2100a40daf88483b83d58af435
+    'TakesScreenshotTest.testShouldCaptureScreenshot',
+    'TakesScreenshotTest.testShouldCaptureScreenshotWithLongX',
+    'TakesScreenshotTest.testShouldCaptureScreenshotWithLongY',
+    'TakesScreenshotTest.testShouldCaptureScreenshotWithTooLong',
+    'TakesScreenshotTest.testShouldCaptureScreenshotWithTooLongX',
+    'TakesScreenshotTest.testShouldCaptureScreenshotWithTooLongY',
     'TextHandlingTest.testShouldNotReturnLtrMarks',
     'TextPagesTest.testShouldBeAbleToLoadASimplePageOfText',
     'TextPagesTest.testShouldThrowExceptionWhenAddingCookieToAPageThatIsNotHtml',
@@ -70,6 +80,9 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'TypingTest.testShouldNotTypeIntoElementsThatPreventKeyDownEvents',
     'TypingTest.testTypingIntoAnIFrameWithContentEditableOrDesignModeSet',
     'UnexpectedAlertBehaviorTest.*',
+    # https://code.google.com/p/selenium/source/diff?spec=svn5e856ea3d0ee07db00aa41293f68ce2566c16888&r=e923c1389b85331d2c98aaeb6bbca88bc57821cd&format=side&path=/java/client/test/org/openqa/selenium/VisibilityTest.java&old_path=/java/client/test/org/openqa/selenium/VisibilityTest.java&old=ee8ae7d15794146d24a744ec96d1192ff851f0fc
+    'VisibilityTest.testElementHiddenByOverflowXIsNotVisible',
+    'VisibilityTest.testElementHiddenByOverflowYIsNotVisible',
     'VisibilityTest.tooSmallAWindowWithOverflowHiddenIsNotAProblem',
     'WindowTest.*',
 ]
