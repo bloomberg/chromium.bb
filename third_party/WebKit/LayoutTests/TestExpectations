@@ -1001,8 +1001,9 @@ webkit.org/b/75111 fast/workers/storage/use-same-database-in-page-and-workers.ht
 # Crashes due to an OOM error on V8.
 crbug.com/108832 fast/js/array-splice.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 
-webkit.org/b/75786 compositing/tiled-layers-hidpi.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
-webkit.org/b/75786 virtual/softwarecompositing/tiled-layers-hidpi.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
+# Text failures that look like they can be rebaselined away.
+crbug.com/240353 compositing/tiled-layers-hidpi.html [ Failure ]
+crbug.com/240353 virtual/softwarecompositing/tiled-layers-hidpi.html [ Failure ]
 
 webkit.org/b/48454 compositing/tiling/huge-layer-img.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
 webkit.org/b/48454 virtual/softwarecompositing/tiling/huge-layer-img.html [ Failure ImageOnlyFailure Pass Crash Timeout Missing ]
