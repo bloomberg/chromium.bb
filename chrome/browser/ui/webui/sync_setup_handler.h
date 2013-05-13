@@ -133,6 +133,12 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
 #if !defined(OS_CHROMEOS)
   void HandleSubmitAuth(const base::ListValue* args);
 
+  // Returns true if the given login data is valid, false otherwise. If the
+  // login data is not valid then on return |error_message| will be set to  a
+  // localized error message. Note, |error_message| must not be NULL.
+  bool IsLoginAuthDataValid(const std::string& username,
+                            string16* error_message);
+
   // Initiates a login via the signin manager.
   void TryLogin(const std::string& username,
                 const std::string& password,
@@ -190,12 +196,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // When using web-flow, closes the Gaia page used to collection user
   // credentials.
   void CloseGaiaSigninPage();
-
-  // Returns true if the given login data is valid, false otherwise. If the
-  // login data is not valid then on return |error_message| will be set to  a
-  // localized error message. Note, |error_message| must not be NULL.
-  bool IsLoginAuthDataValid(const std::string& username,
-                            string16* error_message);
 
   // The SigninTracker object used to determine when the user has fully signed
   // in (this requires waiting for various services to initialize and tracking

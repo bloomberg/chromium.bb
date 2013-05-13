@@ -282,8 +282,12 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
       harness_.profile->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
 }
 
+// Certain ProfileSyncService tests don't apply to Chrome OS, for example
+// things that deal with concepts like "signing out" and policy.
+#if !defined (OS_CHROMEOS)
+
 TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
-  SigninManagerBase* signin =
+  SigninManager* signin =
       SigninManagerFactory::GetForProfile(harness_.profile.get());
   signin->SetAuthenticatedUsername("test@test.com");
   ProfileSyncComponentsFactoryMock* factory =
@@ -309,6 +313,8 @@ TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
   signin->SignOut();
   EXPECT_FALSE(harness_.service->sync_initialized());
 }
+
+#endif  // !defined(OS_CHROMEOS)
 
 TEST_F(ProfileSyncServiceTest, JsControllerHandlersBasic) {
   harness_.StartSyncService();

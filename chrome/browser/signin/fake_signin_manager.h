@@ -13,12 +13,13 @@
 class Profile;
 class ProfileKeyedService;
 
+// Overrides InitTokenService to do-nothing in tests.
 class FakeSigninManagerBase : public SigninManagerBase {
  public:
-  explicit FakeSigninManagerBase(Profile* profile);
+  explicit FakeSigninManagerBase();
   virtual ~FakeSigninManagerBase();
 
-  virtual void SignOut() OVERRIDE;
+  virtual void InitTokenService() OVERRIDE;
 
   // Helper function to be used with ProfileKeyedService::SetTestingFactory().
   static ProfileKeyedService* Build(content::BrowserContext* profile);

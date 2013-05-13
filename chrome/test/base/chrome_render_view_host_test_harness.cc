@@ -39,9 +39,13 @@ static ProfileKeyedService* BuildSigninManagerFake(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
 #if defined (OS_CHROMEOS)
-  return new FakeSigninManagerBase(profile);
+  SigninManagerBase* signin = new SigninManagerBase();
+  signin->Initialize(profile);
+  return signin;
 #else
-  return new FakeSigninManager(profile);
+  FakeSigninManager* manager = new FakeSigninManager(profile);
+  manager->Initialize(profile);
+  return manager;
 #endif
 }
 

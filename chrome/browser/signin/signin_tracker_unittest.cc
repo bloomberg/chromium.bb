@@ -60,7 +60,7 @@ class SigninTrackerTest : public testing::Test {
  public:
   SigninTrackerTest() {}
   virtual void SetUp() OVERRIDE {
-    profile_.reset(ProfileSyncServiceMock::MakeSignedInTestingProfile());
+    profile_.reset(new TestingProfile());
     mock_token_service_ = static_cast<MockTokenService*>(
         TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildMockTokenService));
@@ -73,7 +73,7 @@ class SigninTrackerTest : public testing::Test {
     mock_signin_manager_ = static_cast<FakeSigninManagerBase*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), FakeSigninManagerBase::Build));
-
+    mock_signin_manager_->Initialize(profile_.get());
     // Make gmock not spam the output with information about these uninteresting
     // calls.
     EXPECT_CALL(*mock_pss_, AddObserver(_)).Times(AnyNumber());
@@ -359,7 +359,6 @@ TEST_F(SigninTrackerTest, SigninFailedGoogleServiceAuthError) {
   tracker_.reset(new SigninTracker(profile_.get(), &observer_,
                                    SigninTracker::SERVICES_INITIALIZING));
 }
-
 
 TEST_F(SigninTrackerTest, SigninFailedWhenInitializing) {
   tracker_.reset();

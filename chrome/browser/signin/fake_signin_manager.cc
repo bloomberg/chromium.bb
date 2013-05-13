@@ -15,36 +15,19 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 
-FakeSigninManagerBase::FakeSigninManagerBase(Profile* profile) {
-  profile_ = profile;
-  signin_global_error_.reset(new SigninGlobalError(this, profile));
-  GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
-      signin_global_error_.get());
-  signin_allowed_.Init(prefs::kSigninAllowed, profile_->GetPrefs(),
-      base::Bind(&SigninManagerBase::OnSigninAllowedPrefChanged,
-      base::Unretained(this)));
+FakeSigninManagerBase::FakeSigninManagerBase() {
 }
 
 FakeSigninManagerBase::~FakeSigninManagerBase() {
-  if (signin_global_error_.get()) {
-    GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
-        signin_global_error_.get());
-    signin_global_error_.reset();
-  }
 }
 
-void FakeSigninManagerBase::SignOut() {
-  authenticated_username_.clear();
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-      content::Source<Profile>(profile_),
-      content::NotificationService::NoDetails());
+void FakeSigninManagerBase::InitTokenService() {
 }
 
 // static
 ProfileKeyedService* FakeSigninManagerBase::Build(
     content::BrowserContext* profile) {
-  return new FakeSigninManagerBase(static_cast<Profile*>(profile));
+  return new FakeSigninManagerBase();
 }
 
 #if !defined (OS_CHROMEOS)
@@ -52,7 +35,6 @@ ProfileKeyedService* FakeSigninManagerBase::Build(
 FakeSigninManager::FakeSigninManager(Profile* profile)
     : SigninManager(scoped_ptr<SigninManagerDelegate>(
         new ChromeSigninManagerDelegate(profile))) {
-  Initialize(profile);
 }
 
 FakeSigninManager::~FakeSigninManager() {

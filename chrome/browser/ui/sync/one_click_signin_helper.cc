@@ -681,7 +681,7 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
   // the request means can offer is true.
   const std::string& pending_email = io_data->reverse_autologin_pending_email();
   if (!pending_email.empty()) {
-    if (!SigninManager::IsAllowedUsername(pending_email,
+    if (!SigninManager::IsUsernameAllowedByPolicy(pending_email,
             io_data->google_services_username_pattern()->GetValue())) {
       return DONT_OFFER;
     }

@@ -7,12 +7,14 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
@@ -45,7 +47,9 @@ class UserCloudPolicyStoreTest : public testing::Test {
     SigninManager* signin = static_cast<SigninManager*>(
       SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
           profile_.get(), FakeSigninManager::Build));
-    signin->SetAuthenticatedUsername(PolicyBuilder::kFakeUsername);
+    profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                    PolicyBuilder::kFakeUsername);
+    signin->Initialize(profile_.get());
     store_.reset(new UserCloudPolicyStore(profile_.get(), policy_file()));
     store_->AddObserver(&observer_);
 

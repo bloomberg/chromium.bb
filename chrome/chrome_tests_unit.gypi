@@ -1099,7 +1099,6 @@
         'browser/signin/profile_oauth2_token_service_unittest.cc',
         'browser/signin/signin_global_error_unittest.cc',
         'browser/signin/signin_manager_unittest.cc',
-        'browser/signin/signin_manager_base_unittest.cc',
         'browser/signin/signin_names_io_thread_unittest.cc',
         'browser/signin/signin_tracker_unittest.cc',
         'browser/signin/token_service_unittest.cc',

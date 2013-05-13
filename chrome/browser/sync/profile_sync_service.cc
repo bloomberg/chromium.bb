@@ -1085,9 +1085,18 @@ void ProfileSyncService::OnStopSyncingPermanently() {
   UpdateAuthErrorState(AuthError(AuthError::SERVICE_UNAVAILABLE));
   sync_prefs_.SetStartSuppressed(true);
   DisableForUser();
-  // If signout is allowed, signout the user on a dashboard clear.
+
+  // Signout doesn't exist as a concept on Chrome OS. It currently does
+  // on other auto-start platforms (like Android, though we should probably
+  // use SigninManagerBase there as well), but we don't want to sign the
+  // user out on auto-start platforms if sync was disabled.
+  // TODO(tim): Platform specific refactoring here is bug 237866.
+#if !defined(OS_CHROMEOS)
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
+
   if (!auto_start_enabled_)  // Skip signout on ChromeOS/Android.
-    signin_->SignOut();
+    signin->SignOut();
+#endif
 }
 
 void ProfileSyncService::OnPassphraseRequired(

@@ -614,3 +614,48 @@ TEST_F(SigninManagerTest, TestIsWebBasedSigninFlowURL) {
            "continue=https%3A%2F%2Fwww.google.com%2Fintl%2Fen-US%2Fchrome"
            "%2Fblank.html%3Fsource%3D3%26nonadv%3D1&service=chromiumsync")));
 }
+
+TEST_F(SigninManagerTest, Prohibited) {
+  g_browser_process->local_state()->SetString(
+      prefs::kGoogleServicesUsernamePattern, ".*@google.com");
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->IsAllowedUsername("test@google.com"));
+  EXPECT_TRUE(manager_->IsAllowedUsername("happy@google.com"));
+  EXPECT_FALSE(manager_->IsAllowedUsername("test@invalid.com"));
+  EXPECT_FALSE(manager_->IsAllowedUsername("test@notgoogle.com"));
+  EXPECT_FALSE(manager_->IsAllowedUsername(std::string()));
+}
+
+TEST_F(SigninManagerTest, TestAlternateWildcard) {
+  // Test to make sure we accept "*@google.com" as a pattern (treat it as if
+  // the admin entered ".*@google.com").
+  g_browser_process->local_state()->SetString(
+      prefs::kGoogleServicesUsernamePattern, "*@google.com");
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->IsAllowedUsername("test@google.com"));
+  EXPECT_TRUE(manager_->IsAllowedUsername("happy@google.com"));
+  EXPECT_FALSE(manager_->IsAllowedUsername("test@invalid.com"));
+  EXPECT_FALSE(manager_->IsAllowedUsername("test@notgoogle.com"));
+  EXPECT_FALSE(manager_->IsAllowedUsername(std::string()));
+}
+
+TEST_F(SigninManagerTest, ProhibitedAtStartup) {
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                  "monkey@invalid.com");
+  g_browser_process->local_state()->SetString(
+      prefs::kGoogleServicesUsernamePattern, ".*@google.com");
+  manager_->Initialize(profile_.get());
+  // Currently signed in user is prohibited by policy, so should be signed out.
+  EXPECT_EQ("", manager_->GetAuthenticatedUsername());
+}
+
+TEST_F(SigninManagerTest, ProhibitedAfterStartup) {
+  std::string user("monkey@invalid.com");
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, user);
+  manager_->Initialize(profile_.get());
+  EXPECT_EQ(user, manager_->GetAuthenticatedUsername());
+  // Update the profile - user should be signed out.
+  g_browser_process->local_state()->SetString(
+      prefs::kGoogleServicesUsernamePattern, ".*@google.com");
+  EXPECT_EQ("", manager_->GetAuthenticatedUsername());
+}

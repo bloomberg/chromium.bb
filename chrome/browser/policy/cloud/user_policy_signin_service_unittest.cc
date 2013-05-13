@@ -65,6 +65,7 @@ class SigninManagerFake : public FakeSigninManager {
  public:
   explicit SigninManagerFake(Profile* profile)
       : FakeSigninManager(profile) {
+    Initialize(profile);
   }
 
   void ForceSignOut() {

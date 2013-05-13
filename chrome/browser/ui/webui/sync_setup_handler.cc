@@ -1090,8 +1090,9 @@ void SyncSetupHandler::HandleStartSignin(const ListValue* args) {
 void SyncSetupHandler::HandleStopSyncing(const ListValue* args) {
   if (GetSyncService())
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
-
+#if !defined(OS_CHROMEOS)
   SigninManagerFactory::GetForProfile(GetProfile())->SignOut();
+#endif
 }
 
 void SyncSetupHandler::HandleCloseTimeout(const ListValue* args) {
@@ -1128,6 +1129,9 @@ void SyncSetupHandler::CloseSyncSetup() {
     // and shut down sync.
     if (!sync_service->HasSyncSetupCompleted()) {
       DVLOG(1) << "Signin aborted by user action";
+      // We can get here on Chrome OS (e.g dashboard clear), but "do nothing"
+      // is the correct behavior.
+#if !defined(OS_CHROMEOS)
       if (signin_tracker_.get() || sync_service->FirstSetupInProgress()) {
         // User was still in the process of signing in, so sign him out again.
         // This makes sure that the user isn't left signed in but with sync
@@ -1146,6 +1150,7 @@ void SyncSetupHandler::CloseSyncSetup() {
         // right thing for the one-click case.
         SigninManagerFactory::GetForProfile(GetProfile())->SignOut();
       }
+#endif
       sync_service->DisableForUser();
       browser_sync::SyncPrefs sync_prefs(GetProfile()->GetPrefs());
       sync_prefs.SetStartSuppressed(true);
@@ -1310,6 +1315,8 @@ void SyncSetupHandler::CloseGaiaSigninPage() {
   }
 }
 
+#if !defined(OS_CHROMEOS)
+// Used by HandleSubmitAuth.
 bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,
                                             string16* error_message) {
   if (username.empty())
@@ -1346,3 +1353,5 @@ bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,
 
   return true;
 }
+
+#endif  // !defined(OS_CHROMEOS)

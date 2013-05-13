@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/signin_global_error.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/signin/fake_auth_status_provider.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +26,9 @@ class SigninGlobalErrorTest : public testing::Test {
     SigninManagerBase* manager = static_cast<SigninManagerBase*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), FakeSigninManagerBase::Build));
-    manager->SetAuthenticatedUsername("testuser@test.com");
+    profile_->GetPrefs()->SetString(
+          prefs::kGoogleServicesUsername, "testuser@test.com");
+    manager->Initialize(profile_.get());
     global_error_ = manager->signin_global_error();
   }
 

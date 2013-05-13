@@ -25,6 +25,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -320,18 +322,6 @@ class TestingSyncSetupHandler : public SyncSetupHandler {
   DISALLOW_COPY_AND_ASSIGN(TestingSyncSetupHandler);
 };
 
-class SigninManagerBaseMock : public FakeSigninManagerBase {
- public:
-  explicit SigninManagerBaseMock(Profile* profile)
-      : FakeSigninManagerBase(profile) {}
-  MOCK_CONST_METHOD1(IsAllowedUsername, bool(const std::string& username));
-};
-
-static ProfileKeyedService* BuildSigninManagerBaseMock(
-    content::BrowserContext* profile) {
-  return new SigninManagerBaseMock(static_cast<Profile*>(profile));
-}
-
 // The boolean parameter indicates whether the test is run with ClientOAuth
 // or not.  The test parameter is a bool: whether or not to test with/
 // /ClientLogin enabled or not.
@@ -365,9 +355,15 @@ class SyncSetupHandlerTest : public testing::TestWithParam<bool> {
         Return(base::Time()));
     ON_CALL(*mock_pss_, GetExplicitPassphraseTime()).WillByDefault(
         Return(base::Time()));
+#if defined(OS_CHROMEOS)
     mock_signin_ = static_cast<SigninManagerBase*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), BuildSigninManagerBaseMock));
+            profile_.get(), FakeSigninManagerBase::Build));
+#else
+    mock_signin_ = static_cast<SigninManagerBase*>(
+        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile_.get(), FakeSigninManager::Build));
+#endif
     handler_.reset(new TestingSyncSetupHandler(&web_ui_, profile_.get()));
   }
 
@@ -384,7 +380,11 @@ class SyncSetupHandlerTest : public testing::TestWithParam<bool> {
   void SetupInitializedProfileSyncService() {
     // An initialized ProfileSyncService will have already completed sync setup
     // and will have an initialized sync backend.
-    mock_signin_->SetAuthenticatedUsername(kTestUser);
+    if (!mock_signin_->IsInitialized()) {
+      profile_->GetPrefs()->SetString(
+          prefs::kGoogleServicesUsername, kTestUser);
+      mock_signin_->Initialize(profile_.get());
+    }
     EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
@@ -497,7 +497,8 @@ TEST_P(SyncSetupHandlerTest, ShowSyncSetupWhenNotSignedIn) {
 TEST_P(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
-  mock_signin_->SetAuthenticatedUsername(kTestUser);
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
+  mock_signin_->Initialize(profile_.get());
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -539,7 +540,8 @@ TEST_P(SyncSetupHandlerTest,
        DisplayConfigureWithBackendDisabledAndSigninSuccess) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
-  mock_signin_->SetAuthenticatedUsername(kTestUser);
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
+  mock_signin_->Initialize(profile_.get());
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -596,7 +598,8 @@ TEST_P(SyncSetupHandlerTest,
        DisplayConfigureWithBackendDisabledAndCancelAfterSigninSuccess) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
-  mock_signin_->SetAuthenticatedUsername(kTestUser);
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
+  mock_signin_->Initialize(profile_.get());
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -626,7 +629,8 @@ TEST_P(SyncSetupHandlerTest,
        DisplayConfigureWithBackendDisabledAndSigninFalied) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
-  mock_signin_->SetAuthenticatedUsername(kTestUser);
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
+  mock_signin_->Initialize(profile_.get());
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -652,36 +656,14 @@ TEST_P(SyncSetupHandlerTest,
 
 #if !defined(OS_CHROMEOS)
 
-namespace {
-class SigninManagerMock : public FakeSigninManager {
- public:
-  explicit SigninManagerMock(Profile* profile) : FakeSigninManager(profile) {
-  }
-
-  virtual void StartSignIn(const std::string& username,
-                           const std::string& password,
-                           const std::string& login_token,
-                           const std::string& login_captcha) OVERRIDE {
-    SetAuthenticatedUsername(username);
-  }
-
-  MOCK_CONST_METHOD1(IsAllowedUsername, bool(const std::string& username));
-};
-}
-
-static ProfileKeyedService* BuildSigninManagerMock(
-    content::BrowserContext* profile) {
-  return new SigninManagerMock(static_cast<Profile*>(profile));
-}
-
 class SyncSetupHandlerNonCrosTest : public SyncSetupHandlerTest {
  public:
   SyncSetupHandlerNonCrosTest() {}
   virtual void SetUp() OVERRIDE {
     SyncSetupHandlerTest::SetUp();
-    mock_signin_ = static_cast<SigninManagerMock*>(
+    mock_signin_ = static_cast<SigninManagerBase*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), BuildSigninManagerMock));
+            profile_.get(), FakeSigninManager::Build));
   }
 };
 
@@ -795,7 +777,8 @@ TEST_P(SyncSetupHandlerNonCrosTest, UnrecoverableErrorInitializingSync) {
     GoogleServiceAuthError none(GoogleServiceAuthError::NONE);
     EXPECT_CALL(*mock_pss_, HasUnrecoverableError())
         .WillRepeatedly(Return(true));
-    mock_signin_->SignOut();
+    // On non-Cros platforms, we use SigninManager.
+    static_cast<SigninManager*>(mock_signin_)->SignOut();
     handler_->SigninFailed(none);
     ASSERT_EQ(3U, web_ui_.call_data().size());
     // Validate the second JS call (the first call was already tested by
@@ -845,7 +828,8 @@ TEST_P(SyncSetupHandlerNonCrosTest, GaiaErrorInitializingSync) {
         GoogleServiceAuthError::SERVICE_UNAVAILABLE);
     EXPECT_CALL(*mock_pss_, HasUnrecoverableError())
         .WillRepeatedly(Return(false));
-    mock_signin_->SignOut();
+    // On non-Cros platforms, we use SigninManager.
+    static_cast<SigninManager*>(mock_signin_)->SignOut();
     handler_->SigninFailed(unavailable);
     ASSERT_EQ(3U, web_ui_.call_data().size());
     // Validate the second JS call (the first call was already tested by
@@ -874,10 +858,10 @@ TEST_P(SyncSetupHandlerNonCrosTest, GaiaErrorInitializingSync) {
 // Tests that trying to log in with an invalid username results in an error
 // displayed to the user.
 TEST_P(SyncSetupHandlerNonCrosTest, SubmitAuthWithInvalidUsername) {
-  SigninManagerMock* mock_signin =
-      static_cast<SigninManagerMock*>(mock_signin_);
-  EXPECT_CALL(*mock_signin, IsAllowedUsername(_)).
-      WillRepeatedly(Return(false));
+  ScopedTestingLocalState local_state(
+      TestingBrowserProcess::GetGlobal());
+  local_state.Get()->SetString(
+      prefs::kGoogleServicesUsernamePattern, ".*@valid.com");
 
   // Generate a blob of json that matches what would be submitted by the login
   // javascript code.
