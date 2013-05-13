@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/mman.h>
 #include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -656,7 +657,6 @@ bool IsNetworkSocketInformation(int sysno) {
 bool IsAllowedAddressSpaceAccess(int sysno) {
   switch (sysno) {
     case __NR_brk:
-    case __NR_madvise:
     case __NR_mlock:
 #if defined(__i386__) || defined(__x86_64__)
     case __NR_mmap:   // TODO(jln): to restrict flags.
@@ -1245,6 +1245,14 @@ ErrorCode BaselinePolicy(Sandbox *sandbox, int sysno) {
                          sandbox->Trap(CrashSIGSYS_Handler, NULL));
   }
 #endif
+  if (sysno == __NR_madvise) {
+    // Only allow MADV_DONTNEED (aka MADV_FREE).
+    return sandbox->Cond(2, ErrorCode::TP_32BIT,
+                         ErrorCode::OP_EQUAL, MADV_DONTNEED,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+                         ErrorCode(EPERM));
+  }
+
   if (IsBaselinePolicyAllowed(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
