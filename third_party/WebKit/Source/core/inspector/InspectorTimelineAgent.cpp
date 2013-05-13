@@ -36,6 +36,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorCounters.h"
+#include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorMemoryAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
@@ -122,6 +123,10 @@ const char DecodeImage[] = "DecodeImage";
 const char Rasterize[] = "Rasterize";
 }
 
+namespace {
+const char BackendNodeIdGroup[] = "timeline";
+}
+
 static Frame* frameForScriptExecutionContext(ScriptExecutionContext* context)
 {
     Frame* frame = 0;
@@ -173,7 +178,6 @@ void InspectorTimelineAgent::didGC(double startTime, double endTime, size_t coll
 
 InspectorTimelineAgent::~InspectorTimelineAgent()
 {
-    clearFrontend();
 }
 
 void InspectorTimelineAgent::setFrontend(InspectorFrontend* frontend)
@@ -185,6 +189,7 @@ void InspectorTimelineAgent::clearFrontend()
 {
     ErrorString error;
     stop(&error);
+    releaseNodeIds();
     m_frontend = 0;
 }
 
@@ -204,6 +209,7 @@ void InspectorTimelineAgent::start(ErrorString*, const int* maxCallStackDepth, c
     if (!m_frontend)
         return;
 
+    releaseNodeIds();
     if (maxCallStackDepth && *maxCallStackDepth >= 0)
         m_maxCallStackDepth = *maxCallStackDepth;
     else
@@ -319,7 +325,7 @@ void InspectorTimelineAgent::didLayout(RenderObject* root)
     Vector<FloatQuad> quads;
     root->absoluteQuads(quads);
     if (quads.size() >= 1)
-        TimelineRecordFactory::appendLayoutRoot(entry.data.get(), quads[0]);
+        TimelineRecordFactory::appendLayoutRoot(entry.data.get(), quads[0], idForNode(root->generatingNode()));
     else
         ASSERT_NOT_REACHED();
     didCompleteCurrentRecord(TimelineRecordType::Layout);
@@ -711,10 +717,11 @@ void InspectorTimelineAgent::didCompleteCurrentRecord(const String& type)
     }
 }
 
-InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorMemoryAgent* memoryAgent, InspectorCompositeState* state, InspectorType type, InspectorClient* client)
+InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorMemoryAgent* memoryAgent, InspectorDOMAgent* domAgent, InspectorCompositeState* state, InspectorType type, InspectorClient* client)
     : InspectorBaseAgent<InspectorTimelineAgent>("Timeline", instrumentingAgents, state)
     , m_pageAgent(pageAgent)
     , m_memoryAgent(memoryAgent)
+    , m_domAgent(domAgent)
     , m_frontend(0)
     , m_id(1)
     , m_maxCallStackDepth(5)
@@ -784,6 +791,18 @@ void InspectorTimelineAgent::localToPageQuad(const RenderObject& renderer, const
     quad->setP2(view->contentsToRootView(roundedIntPoint(absolute.p2())));
     quad->setP3(view->contentsToRootView(roundedIntPoint(absolute.p3())));
     quad->setP4(view->contentsToRootView(roundedIntPoint(absolute.p4())));
+}
+
+int InspectorTimelineAgent::idForNode(Node* node)
+{
+    return m_domAgent && node ? m_domAgent->backendNodeIdForNode(node, BackendNodeIdGroup) : 0;
+}
+
+void InspectorTimelineAgent::releaseNodeIds()
+{
+    ErrorString unused;
+    if (m_domAgent)
+        m_domAgent->releaseBackendNodeIds(&unused, BackendNodeIdGroup);
 }
 
 double InspectorTimelineAgent::timestamp()

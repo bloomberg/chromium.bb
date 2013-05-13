@@ -241,9 +241,11 @@ PassRefPtr<InspectorObject> TimelineRecordFactory::createPaintData(const FloatQu
     return data.release();
 }
 
-void TimelineRecordFactory::appendLayoutRoot(InspectorObject* data, const FloatQuad& quad)
+void TimelineRecordFactory::appendLayoutRoot(InspectorObject* data, const FloatQuad& quad, int rootNodeId)
 {
     data->setArray("root", createQuad(quad));
+    if (rootNodeId)
+        data->setNumber("rootNode", rootNodeId);
 }
 
 void TimelineRecordFactory::appendStyleRecalcDetails(InspectorObject* data, unsigned elementCount)
