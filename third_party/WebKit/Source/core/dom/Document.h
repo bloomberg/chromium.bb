@@ -189,7 +189,7 @@ enum NodeListInvalidationType {
 };
 const int numNodeListInvalidationTypes = InvalidateOnAnyAttrChange + 1;
 
-typedef HashCountedSet<RefPtr<Node> > TouchEventTargetSet;
+typedef HashCountedSet<Node*> TouchEventTargetSet;
 
 enum DocumentClass {
     DefaultDocumentClass = 0,
