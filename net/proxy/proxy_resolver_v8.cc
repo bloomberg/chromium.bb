@@ -404,8 +404,7 @@ class ProxyResolverV8::Context {
     v8::Locker locked(isolate_);
     v8::HandleScope scope;
 
-    v8_this_ = v8::Persistent<v8::External>::New(isolate_,
-                                                 v8::External::New(this));
+    v8_this_.Reset(isolate_, v8::External::New(this));
     v8::Local<v8::ObjectTemplate> global_template = v8::ObjectTemplate::New();
 
     // Attach the javascript bindings.
@@ -445,7 +444,7 @@ class ProxyResolverV8::Context {
     global_template->Set(ASCIILiteralToV8String("isInNetEx"),
                          is_in_net_ex_template);
 
-    v8_context_ = v8::Persistent<v8::Context>::New(
+    v8_context_.Reset(
         isolate_, v8::Context::New(isolate_, NULL, global_template));
 
     v8::Context::Scope ctx(v8_context_);

@@ -27,8 +27,7 @@ class ScopedPersistent {
   }
 
   void reset(v8::Handle<T> handle) {
-    reset();
-    handle_ = v8::Persistent<T>::New(GetIsolate(handle), handle);
+    handle_.Reset(GetIsolate(handle), handle);
   }
 
   void reset() {
