@@ -57,6 +57,12 @@ ASH_EXPORT extern const char kForceAshToDesktop[];
 #endif
 ASH_EXPORT extern const char kForcedMaximizeMode[];
 
+// Returns true if new audio handler should be used.
+ASH_EXPORT bool UseNewAudioHandler();
+
+// Returns true if we should show the audio device switching UI.
+ASH_EXPORT bool ShowAudioDeviceMenu();
+
 }  // namespace switches
 }  // namespace ash
 

@@ -118,11 +118,6 @@ const int kSessionLengthLimitMinMs = 30 * 1000;  // 30 seconds.
 // The maximum session length limit that can be set.
 const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 
-bool UseNewAudioHandler() {
-  return !CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshDisableNewAudioHandler);
-}
-
 ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network) {
   ash::NetworkIconInfo info;
   info.name = network->type() == TYPE_ETHERNET ?
@@ -304,7 +299,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void Initialize() OVERRIDE {
-    if (!UseNewAudioHandler()) {
+    if (!ash::switches::UseNewAudioHandler()) {
       AudioHandler::GetInstance()->AddVolumeObserver(this);
     }
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
@@ -367,7 +362,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual ~SystemTrayDelegate() {
-    if (!UseNewAudioHandler() && AudioHandler::GetInstance()) {
+    if (!ash::switches::UseNewAudioHandler() && AudioHandler::GetInstance()) {
       AudioHandler::GetInstance()->RemoveVolumeObserver(this);
     }
 

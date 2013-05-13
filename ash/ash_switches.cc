@@ -4,6 +4,8 @@
 
 #include "ash/ash_switches.h"
 
+#include "base/command_line.h"
+
 namespace ash {
 namespace switches {
 
@@ -148,5 +150,17 @@ const char kAshDragAndDropAppListToLauncher[] =
 // Enables a mode which enforces all browser & application windows to be created
 // in maximized mode.
 const char kForcedMaximizeMode[] = "forced-maximize-mode";
+
+bool UseNewAudioHandler() {
+  return !CommandLine::ForCurrentProcess()->
+      HasSwitch(ash::switches::kAshDisableNewAudioHandler);
+}
+
+bool ShowAudioDeviceMenu() {
+  return ash::switches::UseNewAudioHandler() &&
+      CommandLine::ForCurrentProcess()->
+          HasSwitch(ash::switches::kAshEnableAudioDeviceMenu);
+}
+
 }  // namespace switches
 }  // namespace ash

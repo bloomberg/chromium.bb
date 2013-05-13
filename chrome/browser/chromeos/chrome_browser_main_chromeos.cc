@@ -276,11 +276,6 @@ void RunAutoLaunchKioskApp() {
       EmitLoginPromptVisible();
 }
 
-bool UseNewAudioHandler() {
-  return !CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshDisableNewAudioHandler);
-}
-
 }  // namespace
 
 namespace internal {
@@ -488,7 +483,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
-  if (UseNewAudioHandler()) {
+  if (ash::switches::UseNewAudioHandler()) {
     CrasAudioHandler::Initialize(
         AudioDevicesPrefHandler::Create(g_browser_process->local_state()));
   } else {
@@ -804,7 +799,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // even if Initialize() wasn't called.
   SystemKeyEventListener::Shutdown();
   imageburner::BurnManager::Shutdown();
-  if (UseNewAudioHandler()) {
+  if (ash::switches::UseNewAudioHandler()) {
     CrasAudioHandler::Shutdown();
   } else {
     AudioHandler::Shutdown();

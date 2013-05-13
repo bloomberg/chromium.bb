@@ -33,7 +33,6 @@ class VolumeController : public ash::VolumeControlDelegate,
   virtual void OnOutputMuteChanged() OVERRIDE;
 
  private:
-  bool UseNewAudioHandler() const;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeController);
 };

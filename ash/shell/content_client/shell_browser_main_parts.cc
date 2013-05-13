@@ -4,6 +4,7 @@
 
 #include "ash/shell/content_client/shell_browser_main_parts.h"
 
+#include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/shell/shell_delegate_impl.h"
@@ -40,6 +41,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
@@ -48,6 +50,7 @@ namespace shell {
 void InitWindowTypeLauncher();
 
 namespace {
+
 class ShellViewsDelegate : public views::TestViewsDelegate {
  public:
   ShellViewsDelegate() {}
@@ -114,6 +117,15 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // g_browser_process.
   message_center::MessageCenter::Initialize();
 #endif
+
+#if defined(OS_CHROMEOS)
+  if (ash::switches::UseNewAudioHandler()) {
+    // Create CrasAudioHandler for testing since g_browser_process
+    // is absent.
+    chromeos::CrasAudioHandler::InitializeForTesting();
+  }
+#endif
+
   ash::Shell::CreateInstance(delegate_);
   ash::Shell::GetInstance()->set_browser_context(browser_context_.get());
 
@@ -147,6 +159,12 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   // g_browser_process.
   message_center::MessageCenter::Shutdown();
 #endif
+
+#if defined(OS_CHROMEOS)
+  if (ash::switches::UseNewAudioHandler())
+    chromeos::CrasAudioHandler::Shutdown();
+#endif
+
   aura::Env::DeleteInstance();
 
   // The keyboard may have created a WebContents. The WebContents is destroyed
