@@ -27,6 +27,7 @@
 #ifndef WorkerLocation_h
 #define WorkerLocation_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/KURL.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -35,33 +36,36 @@
 
 namespace WebCore {
 
-    class WorkerLocation : public RefCounted<WorkerLocation> {
-    public:
-        static PassRefPtr<WorkerLocation> create(const KURL& url)
-        {
-            return adoptRef(new WorkerLocation(url));
-        }
+class WorkerLocation : public RefCounted<WorkerLocation>, public ScriptWrappable {
+public:
+    static PassRefPtr<WorkerLocation> create(const KURL& url)
+    {
+        return adoptRef(new WorkerLocation(url));
+    }
 
-        const KURL& url() const { return m_url; }
+    const KURL& url() const { return m_url; }
 
-        String href() const;
+    String href() const;
 
-        // URI decomposition attributes
-        String protocol() const;
-        String host() const;
-        String hostname() const;
-        String port() const;
-        String pathname() const;
-        String search() const;
-        String hash() const;
+    // URI decomposition attributes
+    String protocol() const;
+    String host() const;
+    String hostname() const;
+    String port() const;
+    String pathname() const;
+    String search() const;
+    String hash() const;
 
-        String toString() const { return href(); }
+    String toString() const { return href(); }
 
-    private:
-        explicit WorkerLocation(const KURL& url) : m_url(url) { }
+private:
+    explicit WorkerLocation(const KURL& url) : m_url(url)
+    {
+        ScriptWrappable::init(this);
+    }
 
-        KURL m_url;
-    };
+    KURL m_url;
+};
 
 } // namespace WebCore
 

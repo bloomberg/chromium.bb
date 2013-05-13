@@ -48,6 +48,7 @@ namespace WebCore {
 inline SharedWorker::SharedWorker(ScriptExecutionContext* context)
     : AbstractWorker(context)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, const String& url, const String& name, ExceptionCode& ec)

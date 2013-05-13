@@ -49,6 +49,7 @@ PassRefPtr<DedicatedWorkerContext> DedicatedWorkerContext::create(const KURL& ur
 DedicatedWorkerContext::DedicatedWorkerContext(const KURL& url, const String& userAgent, PassOwnPtr<GroupSettings> settings, DedicatedWorkerThread* thread, PassRefPtr<SecurityOrigin> topOrigin)
     : WorkerContext(url, userAgent, settings, thread, topOrigin)
 {
+    ScriptWrappable::init(this);
 }
 
 DedicatedWorkerContext::~DedicatedWorkerContext()

@@ -60,6 +60,7 @@ SharedWorkerContext::SharedWorkerContext(const String& name, const KURL& url, co
     : WorkerContext(url, userAgent, settings, thread, 0)
     , m_name(name)
 {
+    ScriptWrappable::init(this);
 }
 
 SharedWorkerContext::~SharedWorkerContext()

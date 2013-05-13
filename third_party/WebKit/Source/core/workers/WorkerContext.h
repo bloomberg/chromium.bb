@@ -27,6 +27,7 @@
 #ifndef WorkerContext_h
 #define WorkerContext_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
@@ -53,7 +54,7 @@ namespace WebCore {
     class WorkerNavigator;
     class WorkerThread;
 
-    class WorkerContext : public RefCounted<WorkerContext>, public ScriptExecutionContext, public EventTarget {
+    class WorkerContext : public RefCounted<WorkerContext>, public ScriptWrappable, public ScriptExecutionContext, public EventTarget {
     public:
         virtual ~WorkerContext();
 
