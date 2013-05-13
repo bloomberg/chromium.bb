@@ -3766,11 +3766,6 @@ void HTMLMediaElement::willStopBeingFullscreenElement()
         mediaControls()->exitedFullscreen();
 }
 
-PlatformMedia HTMLMediaElement::platformMedia() const
-{
-    return m_player ? m_player->platformMedia() : NoPlatformMedia;
-}
-
 PlatformLayer* HTMLMediaElement::platformLayer() const
 {
     return m_player ? m_player->platformLayer() : 0;

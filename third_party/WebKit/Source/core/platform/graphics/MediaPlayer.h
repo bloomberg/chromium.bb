@@ -43,64 +43,24 @@
 #include "core/platform/graphics/PlatformTextTrackMenu.h"
 #endif
 
-OBJC_CLASS AVPlayer;
-OBJC_CLASS QTMovie;
-
-class AVCFPlayer;
-class QTMovieGWorld;
-class QTMovieVisualContext;
-
 namespace WebCore {
 
 class AudioSourceProvider;
-class Document;
-class GStreamerGWorld;
-class MediaPlayerPrivateInterface;
-class WebKitMediaSource;
-class TextTrackRepresentation;
-
-// Structure that will hold every native
-// types supported by the current media player.
-// We have to do that has multiple media players
-// backend can live at runtime.
-struct PlatformMedia {
-    enum {
-        None,
-        QTMovieType,
-        QTMovieGWorldType,
-        QTMovieVisualContextType,
-        GStreamerGWorldType,
-        ChromiumMediaPlayerType,
-        QtMediaPlayerType,
-        AVFoundationMediaPlayerType,
-        AVFoundationCFMediaPlayerType
-    } type;
-
-    union {
-        QTMovie* qtMovie;
-        QTMovieGWorld* qtMovieGWorld;
-        QTMovieVisualContext* qtMovieVisualContext;
-        GStreamerGWorld* gstreamerGWorld;
-        MediaPlayerPrivateInterface* chromiumMediaPlayer;
-        MediaPlayerPrivateInterface* qtMediaPlayer;
-        AVPlayer* avfMediaPlayer;
-        AVCFPlayer* avcfMediaPlayer;
-    } media;
-};
-
-extern const PlatformMedia NoPlatformMedia;
-
 class CachedResourceLoader;
 class ContentType;
+class Document;
 class FrameView;
 class GraphicsContext;
 class GraphicsContext3D;
+class HostWindow;
 class IntRect;
 class IntSize;
 class MediaPlayer;
-struct MediaPlayerFactory;
+class MediaPlayerPrivateInterface;
+class TextTrackRepresentation;
 class TimeRanges;
-class HostWindow;
+class WebKitMediaSource;
+struct MediaPlayerFactory;
 
 class MediaPlayerClient {
 public:
@@ -221,7 +181,6 @@ public:
     bool supportsFullscreen() const;
     bool supportsSave() const;
     bool supportsScanning() const;
-    PlatformMedia platformMedia() const;
     PlatformLayer* platformLayer() const;
 
     IntSize naturalSize();

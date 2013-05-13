@@ -47,8 +47,6 @@
 
 namespace WebCore {
 
-const PlatformMedia NoPlatformMedia = { PlatformMedia::None, {0} };
-
 // a null player to make MediaPlayer logic simpler
 
 class NullMediaPlayerPrivate : public MediaPlayerPrivateInterface {
@@ -63,7 +61,6 @@ public:
     virtual void play() { }
     virtual void pause() { }    
 
-    virtual PlatformMedia platformMedia() const { return NoPlatformMedia; }
     virtual PlatformLayer* platformLayer() const { return 0; }
 
     virtual IntSize naturalSize() const { return IntSize(0, 0); }
@@ -445,11 +442,6 @@ bool MediaPlayer::inMediaDocument()
     Document* document = frame ? frame->document() : 0;
 
     return document && document->isMediaDocument();
-}
-
-PlatformMedia MediaPlayer::platformMedia() const
-{
-    return m_private->platformMedia();
 }
 
 PlatformLayer* MediaPlayer::platformLayer() const

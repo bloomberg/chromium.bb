@@ -47,7 +47,6 @@ public:
     virtual void cancelLoad() = 0;
 
     virtual void prepareToPlay() { }
-    virtual PlatformMedia platformMedia() const { return NoPlatformMedia; }
     virtual PlatformLayer* platformLayer() const { return 0; }
 
     virtual void play() = 0;

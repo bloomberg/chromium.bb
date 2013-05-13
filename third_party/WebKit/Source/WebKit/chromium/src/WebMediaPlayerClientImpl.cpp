@@ -374,14 +374,6 @@ WebLayer* WebMediaPlayerClientImpl::platformLayer() const
     return m_videoLayer;
 }
 
-PlatformMedia WebMediaPlayerClientImpl::platformMedia() const
-{
-    PlatformMedia pm;
-    pm.type = PlatformMedia::ChromiumMediaPlayerType;
-    pm.media.chromiumMediaPlayer = const_cast<WebMediaPlayerClientImpl*>(this);
-    return pm;
-}
-
 void WebMediaPlayerClientImpl::play()
 {
     if (m_webMediaPlayer)

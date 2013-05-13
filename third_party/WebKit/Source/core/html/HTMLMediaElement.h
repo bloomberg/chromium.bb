@@ -87,7 +87,6 @@ public:
     virtual bool supportsSave() const;
     virtual bool supportsScanning() const;
     
-    PlatformMedia platformMedia() const;
     PlatformLayer* platformLayer() const;
 
     enum DelayedActionType {

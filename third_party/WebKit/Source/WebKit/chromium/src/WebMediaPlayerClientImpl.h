@@ -96,7 +96,6 @@ public:
 
     virtual void cancelLoad();
     virtual WebKit::WebLayer* platformLayer() const;
-    virtual WebCore::PlatformMedia platformMedia() const;
     virtual void play();
     virtual void pause();
     virtual void prepareToPlay();
