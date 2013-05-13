@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/search_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -46,22 +47,25 @@ void DriveOperations::Init(
                                    metadata,
                                    observer));
   create_file_operation_.reset(
-      new file_system::CreateFileOperation(job_scheduler,
-                                           file_system,
-                                           metadata,
-                                           blocking_task_runner));
-  move_operation_.reset(new file_system::MoveOperation(job_scheduler,
-                                                       metadata,
-                                                       observer));
-  remove_operation_.reset(new file_system::RemoveOperation(job_scheduler,
-                                                           cache,
-                                                           metadata,
-                                                           observer));
-  update_operation_.reset(new file_system::UpdateOperation(cache,
-                                                           metadata,
-                                                           job_scheduler,
-                                                           blocking_task_runner,
-                                                           observer));
+      new CreateFileOperation(job_scheduler,
+                              file_system,
+                              metadata,
+                              blocking_task_runner));
+  move_operation_.reset(new MoveOperation(job_scheduler,
+                                          metadata,
+                                          observer));
+  remove_operation_.reset(new RemoveOperation(job_scheduler,
+                                              cache,
+                                              metadata,
+                                              observer));
+  update_operation_.reset(new UpdateOperation(cache,
+                                              metadata,
+                                              job_scheduler,
+                                              blocking_task_runner,
+                                              observer));
+  search_operation_.reset(new SearchOperation(blocking_task_runner,
+                                              job_scheduler,
+                                              metadata));
 }
 
 void DriveOperations::InitForTesting(CopyOperation* copy_operation,
@@ -156,6 +160,15 @@ void DriveOperations::UpdateFileByResourceId(
   DCHECK(!callback.is_null());
 
   update_operation_->UpdateFileByResourceId(resource_id, context, callback);
+}
+
+void DriveOperations::Search(const std::string& search_query,
+                             const GURL& next_feed,
+                             const SearchOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  search_operation_->Search(search_query, next_feed, callback);
 }
 
 }  // namespace file_system

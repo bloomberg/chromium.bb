@@ -32,6 +32,22 @@ class MoveOperation;
 class OperationObserver;
 class RemoveOperation;
 class UpdateOperation;
+class SearchOperation;
+
+// Callback for DriveOperations::Search.
+// On success, |error| is FILE_ERROR_OK, and remaining arguments are valid to
+// use. if |is_update_needed| is true, some mismatch is found between
+// the result from the server and local metadata, so the caller should update
+// the resource metadata.
+// |next_feed| is the URL to fetch the remaining result from the server. Maybe
+// empty if there is no more results.
+// On error, |error| is set to other than FILE_ERROR_OK, and the caller
+// shouldn't use remaining arguments.
+typedef base::Callback<void(FileError error,
+                            bool is_update_needed,
+                            const GURL& next_feed,
+                            scoped_ptr<std::vector<SearchResultInfo> > result)>
+    SearchOperationCallback;
 
 // Passes notifications from Drive operations back to the file system.
 class DriveOperations {
@@ -103,6 +119,12 @@ class DriveOperations {
                               DriveClientContext context,
                               const FileOperationCallback& callback);
 
+  // Wrapper function for search_operation_.
+  // |callback| must not be null.
+  void Search(const std::string& search_query,
+              const GURL& next_feed,
+              const SearchOperationCallback& callback);
+
  private:
   scoped_ptr<CopyOperation> copy_operation_;
   scoped_ptr<CreateDirectoryOperation> create_directory_operation_;
@@ -110,6 +132,7 @@ class DriveOperations {
   scoped_ptr<MoveOperation> move_operation_;
   scoped_ptr<RemoveOperation> remove_operation_;
   scoped_ptr<UpdateOperation> update_operation_;
+  scoped_ptr<SearchOperation> search_operation_;
 };
 
 }  // namespace file_system

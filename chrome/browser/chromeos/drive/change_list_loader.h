@@ -91,15 +91,6 @@ class ChangeListLoader {
   void LoadDirectoryFromServer(const std::string& directory_resource_id,
                                const FileOperationCallback& callback);
 
-  // Starts retrieving search results for |search_query| from the server.
-  // If |next_feed| is set, this is the feed url that will be fetched.
-  // If |next_feed| is an empty string, the default URL is used.
-  // Upon completion, |callback| is invoked.
-  // |callback| must not be null.
-  void SearchFromServer(const std::string& search_query,
-                        const GURL& next_feed,
-                        const LoadFeedListCallback& callback);
-
   // TODO(satorux): Make this private. crbug.com/232208
   // Updates whole directory structure feeds collected in |feed_list|.
   // Record file statistics as UMA histograms.
@@ -261,13 +252,6 @@ class ChangeListLoader {
   // Drive webapps registry.
   void OnGetAppList(google_apis::GDataErrorCode status,
                     scoped_ptr<google_apis::AppList> app_list);
-
-  // Part of SearchFromServer().
-  // Processes the ResourceList received from server and passes to |callback|.
-  void SearchFromServerAfterGetResourceList(
-      const LoadFeedListCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceList> resource_list);
 
   // Part of UpdateFromFeed().
   // Callback for ChangeListProcessor::ApplyFeeds.

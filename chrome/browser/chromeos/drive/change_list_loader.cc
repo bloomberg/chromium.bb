@@ -101,27 +101,6 @@ void ChangeListLoader::LoadDirectoryFromServer(
           callback));
 }
 
-void ChangeListLoader::SearchFromServer(
-    const std::string& search_query,
-    const GURL& next_feed,
-    const LoadFeedListCallback& callback) {
-  DCHECK(!callback.is_null());
-
-  if (next_feed.is_empty()) {
-    // This is first request for the |search_query|.
-    scheduler_->Search(
-        search_query,
-        base::Bind(&ChangeListLoader::SearchFromServerAfterGetResourceList,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
-  } else {
-    // There is the remaining result so fetch it.
-    scheduler_->ContinueGetResourceList(
-        next_feed,
-        base::Bind(&ChangeListLoader::SearchFromServerAfterGetResourceList,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
-  }
-}
-
 void ChangeListLoader::UpdateFromFeed(
     scoped_ptr<google_apis::AboutResource> about_resource,
     ScopedVector<ChangeList> change_lists,
@@ -705,26 +684,6 @@ void ChangeListLoader::OnGetAppList(google_apis::GDataErrorCode status,
 
   if (app_list.get())
     webapps_registry_->UpdateFromAppList(*app_list);
-}
-
-void ChangeListLoader::SearchFromServerAfterGetResourceList(
-    const LoadFeedListCallback& callback,
-    google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::ResourceList> resource_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  FileError error = util::GDataToFileError(status);
-  if (error != FILE_ERROR_OK) {
-    callback.Run(ScopedVector<ChangeList>(), error);
-    return;
-  }
-
-  DCHECK(resource_list);
-
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList(*resource_list));
-  callback.Run(change_lists.Pass(), FILE_ERROR_OK);
 }
 
 void ChangeListLoader::NotifyDirectoryChangedAfterApplyFeed(

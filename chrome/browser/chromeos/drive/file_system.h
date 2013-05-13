@@ -188,25 +188,12 @@ class FileSystem : public FileSystemInterface,
   // Called on preference change.
   void OnDisableDriveHostedFilesChanged();
 
-  // Callback passed to ChangeListLoader from |Search| method.
-  // |callback| is that should be run with data received. It must not be null.
-  // |change_lists| is the document feed for content search.
-  // |error| is the error code returned by ChangeListLoader.
+  // Part of Search(). Called after DriveOperations::Search is completed.
   void OnSearch(const SearchCallback& callback,
-                ScopedVector<ChangeList> change_lists,
-                FileError error);
-
-  // Callback for ResourceMetadata::RefreshEntry, from OnSearch.
-  // Adds |drive_file_path| to |results|. When |entry| is not present in
-  // the local file system snapshot, it is not added to |results|. Instead,
-  // CheckForUpdates is called. Runs |callback| with |results| if
-  // |should_run_callback| is true.
-  void AddToSearchResults(std::vector<SearchResultInfo>* results,
-                          bool should_run_callback,
-                          const base::Closure& callback,
-                          FileError error,
-                          const base::FilePath& drive_file_path,
-                          scoped_ptr<ResourceEntry> entry);
+                FileError error,
+                bool is_update_needed,
+                const GURL& next_feed,
+                scoped_ptr<std::vector<SearchResultInfo> > result);
 
   // Part of CreateDirectory(). Called after ChangeListLoader::LoadIfNeeded()
   // is called and made sure that the resource metadata is loaded.
