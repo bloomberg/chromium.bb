@@ -364,7 +364,7 @@ TEST_F(AutofillDialogControllerTest, ValidityCheck) {
         controller()->RequestedFieldsForSection(section);
     for (DetailInputs::const_iterator iter = shipping_inputs.begin();
          iter != shipping_inputs.end(); ++iter) {
-      controller()->InputIsValid(iter->type, string16());
+      controller()->InputValidityMessage(iter->type, string16());
     }
   }
 }

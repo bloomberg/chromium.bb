@@ -382,15 +382,11 @@ ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::ValidateField(
     jstring value) {
   string16 field_value = base::android::ConvertJavaStringToUTF16(env, value);
   AutofillFieldType field_type = static_cast<AutofillFieldType>(type);
-  if (controller_->InputIsValid(field_type, field_value)) {
-    return ScopedJavaLocalRef<jstring>();
-  } else {
-    // TODO(aurimas) Start using real error strings.
-    string16 error = ASCIIToUTF16("Error");
-    ScopedJavaLocalRef<jstring> error_text =
-        base::android::ConvertUTF16ToJavaString(env, error);
-    return error_text;
-  }
+  string16 error_message =
+      controller_->InputValidityMessage(field_type, field_value);
+  ScopedJavaLocalRef<jstring> error_text =
+      base::android::ConvertUTF16ToJavaString(env, error_message);
+  return error_text;
 }
 
 void AutofillDialogViewAndroid::ValidateSection(JNIEnv* env,

@@ -129,9 +129,12 @@ class AutofillDialogController {
   virtual gfx::Image IconForField(AutofillFieldType type,
                                   const string16& user_input) const = 0;
 
-  // Decides whether input of |value| is valid for a field of type |type|.
-  virtual bool InputIsValid(AutofillFieldType type,
-                            const string16& value) const = 0;
+  // Decides whether input of |value| is valid for a field of type |type|. If
+  // valid, the returned string will be empty. Otherwise it will contain an
+  // error message.
+  virtual string16 InputValidityMessage(AutofillFieldType type,
+                                        const string16& value) const = 0;
+
 
   // Decides whether the combination of all |inputs| is valid, returns a
   // map of field types to error strings.

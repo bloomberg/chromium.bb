@@ -98,9 +98,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     AutofillDialogControllerImpl::ViewClosed();
   }
 
-  virtual bool InputIsValid(AutofillFieldType type,
-                            const string16& value) const OVERRIDE {
-    return true;
+  virtual string16 InputValidityMessage(
+      AutofillFieldType type,
+      const string16& value) const OVERRIDE {
+    return string16();
   }
 
   virtual ValidityData InputsAreValid(

@@ -136,8 +136,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void EditCancelledForSection(DialogSection section) OVERRIDE;
   virtual gfx::Image IconForField(AutofillFieldType type,
                                   const string16& user_input) const OVERRIDE;
-  virtual bool InputIsValid(AutofillFieldType type,
-                            const string16& value) const OVERRIDE;
+  virtual string16 InputValidityMessage(AutofillFieldType type,
+                                        const string16& value) const OVERRIDE;
   virtual ValidityData InputsAreValid(
       const DetailOutputMap& inputs,
       ValidationType validation_type) const OVERRIDE;
@@ -389,6 +389,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Whether the user has chosen to enter all new data in at least one section.
   bool IsManuallyEditingAnySection() const;
+
+  // Returns true if the |value| is a valid string for the given autofill field
+  // type.
+  bool InputIsValid(AutofillFieldType type, const string16& value) const;
 
   // Whether all of the input fields currently showing in the dialog have valid
   // contents.

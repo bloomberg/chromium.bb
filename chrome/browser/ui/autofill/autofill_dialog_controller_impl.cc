@@ -1028,45 +1028,18 @@ gfx::Image AutofillDialogControllerImpl::IconForField(
   return gfx::Image();
 }
 
-bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
-                                                const string16& value) const {
-  switch (AutofillType::GetEquivalentFieldType(type)) {
-    case EMAIL_ADDRESS:
-      return IsValidEmailAddress(value);
+// TODO(estade): Replace all the error messages here with more helpful and
+// translateable ones. TODO(groby): Also add tests.
+string16 AutofillDialogControllerImpl::InputValidityMessage(
+    AutofillFieldType type,
+    const string16& value) const {
+  if (InputIsValid(type, value))
+    return string16();
 
-    case CREDIT_CARD_NUMBER:
-      return autofill::IsValidCreditCardNumber(value);
-    case CREDIT_CARD_NAME:
-      break;
-    case CREDIT_CARD_EXP_MONTH:
-    case CREDIT_CARD_EXP_4_DIGIT_YEAR:
-      break;
-    case CREDIT_CARD_VERIFICATION_CODE:
-      return autofill::IsValidCreditCardSecurityCode(value);
+  if (value.empty())
+    return ASCIIToUTF16("You forgot one");
 
-    case ADDRESS_HOME_LINE1:
-      break;
-    case ADDRESS_HOME_LINE2:
-      return true;  // Line 2 is optional - always valid.
-    case ADDRESS_HOME_CITY:
-    case ADDRESS_HOME_STATE:
-    case ADDRESS_HOME_ZIP:
-    case ADDRESS_HOME_COUNTRY:
-      break;
-
-    case NAME_FULL:  // Used for shipping.
-      break;
-
-    case PHONE_HOME_WHOLE_NUMBER:  // Used in billing section.
-      // TODO(dbeam): validate with libphonenumber.
-      break;
-
-    default:
-      NOTREACHED();  // Trying to validate unknown field.
-      break;
-  }
-
-  return !value.empty();
+  return ASCIIToUTF16("Are you sure this is right?");
 }
 
 // TODO(estade): Replace all the error messages here with more helpful and
@@ -1082,13 +1055,11 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
       continue;
 
     const AutofillFieldType type = iter->first->type;
-    if (!InputIsValid(type, iter->second)) {
-      invalid_messages[type] = iter->second.empty() ?
-          ASCIIToUTF16("You forgot one") :
-          ASCIIToUTF16("Are you sure this is right?");
-    } else {
+    string16 message = InputValidityMessage(type, iter->second);
+    if (!message.empty())
+      invalid_messages[type] = message;
+    else
       field_values[type] = iter->second;
-    }
   }
 
   // Validate the date formed by month and year field. (Autofill dialog is
@@ -2122,6 +2093,47 @@ bool AutofillDialogControllerImpl::IsManuallyEditingAnySection() const {
       return true;
   }
   return false;
+}
+
+bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
+                                                const string16& value) const {
+  switch (AutofillType::GetEquivalentFieldType(type)) {
+    case EMAIL_ADDRESS:
+      return IsValidEmailAddress(value);
+
+    case CREDIT_CARD_NUMBER:
+      return autofill::IsValidCreditCardNumber(value);
+    case CREDIT_CARD_NAME:
+      break;
+    case CREDIT_CARD_EXP_MONTH:
+    case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+      break;
+    case CREDIT_CARD_VERIFICATION_CODE:
+      return autofill::IsValidCreditCardSecurityCode(value);
+
+    case ADDRESS_HOME_LINE1:
+      break;
+    case ADDRESS_HOME_LINE2:
+      return true;  // Line 2 is optional - always valid.
+    case ADDRESS_HOME_CITY:
+    case ADDRESS_HOME_STATE:
+    case ADDRESS_HOME_ZIP:
+    case ADDRESS_HOME_COUNTRY:
+      break;
+
+    case NAME_FULL:  // Used for shipping.
+      break;
+
+    case PHONE_HOME_WHOLE_NUMBER:  // Used in billing section.
+      // TODO(dbeam): validate with libphonenumber.
+      break;
+
+    default:
+      NOTREACHED();  // Trying to validate unknown field.
+      break;
+  }
+
+  return !value.empty();
 }
 
 bool AutofillDialogControllerImpl::AllSectionsAreValid() const {

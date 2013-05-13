@@ -125,9 +125,10 @@ gfx::Image MockAutofillDialogController::IconForField(
    return gfx::Image();
 }
 
-bool MockAutofillDialogController::InputIsValid(AutofillFieldType type,
-                                                const string16& value) const {
-  return false;
+string16 MockAutofillDialogController::InputValidityMessage(
+    AutofillFieldType type,
+    const string16& value) const {
+  return string16();
 }
 
 ValidityData MockAutofillDialogController::InputsAreValid(
