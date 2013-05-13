@@ -535,7 +535,8 @@
         'packaging_files_rpm': [
           'installer/linux/internal/rpm/build.sh',
           'installer/linux/internal/rpm/chrome.spec.template',
-          'installer/linux/internal/rpm/expected_deps',
+          'installer/linux/internal/rpm/expected_deps_i686',
+          'installer/linux/internal/rpm/expected_deps_x86_64',
         ],
         'packaging_files_binaries': [
           # TODO(mmoss) Any convenient way to get all the relevant build
