@@ -450,7 +450,7 @@
     }],
     ['use_x11 == 1', {
       'include_dirs': [
-        '<(DEPTH)/third_party/angle/include',
+        '<(DEPTH)/third_party/khronos',
       ],
       'link_settings': {
         'libraries': [
@@ -501,7 +501,7 @@
         'common/gpu/media/omx_video_decode_accelerator.h',
       ],
       'include_dirs': [
-        '<(DEPTH)/third_party/angle/include',
+        '<(DEPTH)/third_party/khronos',
         '<(DEPTH)/third_party/openmax/il',
       ],
       'link_settings': {
@@ -554,7 +554,7 @@
         'common/gpu/media/dxva_video_decode_accelerator.h',
       ],
       'include_dirs': [
-        '<(DEPTH)/third_party/angle/include',
+        '<(DEPTH)/third_party/khronos',
       ],
     }],
     ['OS=="win" and directxsdk_exists=="True"', {

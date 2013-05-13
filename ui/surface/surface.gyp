@@ -11,7 +11,7 @@
     'conditions': [
       ['use_x11 == 1', {
         'include_dirs': [
-          '<(DEPTH)/third_party/angle/include',
+          '<(DEPTH)/third_party/khronos',
         ],
       }],
       # TODO(ncarter): Does hlsl compilation belong in a shared location?

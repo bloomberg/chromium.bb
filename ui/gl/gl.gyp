@@ -188,8 +188,8 @@
             '<(gl_binding_output_dir)/gl_bindings_autogen_egl.h',
           ],
           'include_dirs': [
-            '<(DEPTH)/third_party/angle/include',
-          ],
+            '<(DEPTH)/third_party/khronos',
+        ],
         }],
         ['use_x11 == 1', {
           'sources': [

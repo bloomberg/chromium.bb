@@ -31,7 +31,7 @@
   'conditions': [
     ['OS=="win"', {
       'include_dirs': [
-        '<(DEPTH)/third_party/angle/include',
+        '<(DEPTH)/third_party/khronos',
         '<(DEPTH)/third_party/angle/src',
         '<(DEPTH)/third_party/wtl/include',
       ],

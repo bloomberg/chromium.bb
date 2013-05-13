@@ -130,7 +130,7 @@
     }],
     ['ui_compositor_image_transport==1', {
       'include_dirs': [
-        '../third_party/angle/include',
+        '../third_party/khronos',
       ],
     }],
     ['OS in ("win", "android") or (OS == "linux" and use_x11 == 1)', {

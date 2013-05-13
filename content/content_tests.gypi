@@ -971,7 +971,7 @@
               '../ui/ui.gyp:ui',
             ],
             'include_dirs': [
-              '<(DEPTH)/third_party/angle/include',
+              '<(DEPTH)/third_party/khronos',
             ],
             'sources': [
               'common/gpu/media/rendering_helper.h',

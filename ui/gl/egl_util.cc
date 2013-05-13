@@ -7,7 +7,7 @@
 #if defined(OS_ANDROID)
 #include <EGL/egl.h>
 #else
-#include "third_party/angle/include/EGL/egl.h"
+#include "third_party/khronos/EGL/egl.h"
 #endif
 
 // This needs to be after the EGL includes
