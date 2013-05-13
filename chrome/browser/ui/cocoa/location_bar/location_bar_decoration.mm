@@ -71,7 +71,7 @@ NSMenu* LocationBarDecoration::GetMenu() {
 
 NSFont* LocationBarDecoration::GetFont() const {
   if (chrome::IsInstantExtendedAPIEnabled())
-    return [NSFont fontWithName:@"Helvetica" size:15];
+    return [NSFont fontWithName:@"Helvetica Neue" size:15];
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetFont(ResourceBundle::BaseFont).GetNativeFont();
 }

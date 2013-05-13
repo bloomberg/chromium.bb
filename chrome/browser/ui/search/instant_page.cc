@@ -55,7 +55,7 @@ void InstantPage::SetOmniboxBounds(const gfx::Rect& bounds) {
 void InstantPage::InitializeFonts() {
 #if defined(OS_MACOSX)
   // This value should be kept in sync with OmniboxViewMac::GetFieldFont.
-  const gfx::Font omnibox_font("arial", 16);
+  const gfx::Font omnibox_font("Helvetica Neue", 16);
 #else
   const gfx::Font& omnibox_font =
       ui::ResourceBundle::GetSharedInstance().GetFont(
