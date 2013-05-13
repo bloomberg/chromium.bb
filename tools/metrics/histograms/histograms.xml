@@ -625,10 +625,45 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.AutoEnrollmentExtraTime" units="milliseconds">
+  <summary>
+    Time since the user logged in until the auto-enrollment protocol completed.
+    0 is sampled when the protocol is done by the time the user logs in.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.AutoEnrollmentProtocolTime" units="milliseconds">
+  <summary>Total duration time of the auto-enrollment protocol.</summary>
+</histogram>
+
+<histogram name="Enterprise.DMToken" enum="EnterpriseDMTokenType">
+  <summary>
+    Events related to fetching, saving and loading DM server tokens. These are
+    used to retrieve cloud policies.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Enrollment" enum="EnterpriseEnrollmentType">
+  <summary>
+    Events related to device enrollment on new installs of ChromeOS devices.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.ONC.PolicyValidation" enum="BooleanSuccess">
+  <summary>Result of the OpenNetworkConfiguration policy validation.</summary>
+</histogram>
+
 <histogram name="Enterprise.Policies" enum="EnterprisePolicies">
   <summary>
     A set of enterprise policy rules that are in use. This is recorded every 24
     hours and at startup, if the last recording was earlier than a day before.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Policy" enum="EnterprisePolicyType">
+  <summary>
+    Events related to fetching, saving and loading user policies, and also
+    device policies on ChromeOS.
   </summary>
 </histogram>
 
@@ -8093,6 +8128,114 @@ other types of suffix sets.
   <int value="4" label="TTLS"/>
 </enum>
 
+<enum name="EnterpriseDMTokenType" type="int">
+  <summary>
+    Result of DMToken operations as defined in
+    chrome/browser/policy/enterprise_metrics.h.
+  </summary>
+  <int value="0" label="Load Succeeded">
+    A cached token was successfully loaded from disk.
+  </int>
+  <int value="1" label="Load Failed">
+    Reading a cached token from disk failed.
+  </int>
+  <int value="2" label="Fetch Requested">
+    A token fetch request was sent to the DM server.
+  </int>
+  <int value="3" label="Fetch Request Failed">
+    The request was invalid, or the HTTP request failed.
+  </int>
+  <int value="4" label="Fetch Server Failed">
+    Error HTTP status received, or the DM server failed in another way.
+  </int>
+  <int value="5" label="Fetch Response Received">
+    A response to the fetch request was received.
+  </int>
+  <int value="6" label="Fetch Bad Response">
+    The response received was invalid. This happens when some expected data was
+    not present in the response.
+  </int>
+  <int value="7" label="Fetch Management Not Supported">
+    DM server reported that management is not supported.
+  </int>
+  <int value="8" label="Fetch Device Not Found">
+    DM server reported that the given device ID was not found.
+  </int>
+  <int value="9" label="Fetch OK">DM token successfully retrieved.</int>
+  <int value="10" label="Store Succeeded">
+    Successfully cached a token to disk.
+  </int>
+  <int value="11" label="Store Failed">Caching a token to disk failed.</int>
+  <int value="12" label="Device ID Conflict">The Device-ID is not unique.</int>
+  <int value="13" label="Invalid Serial">
+    Serial number rejected by DMServer.
+  </int>
+  <int value="14" label="Missing Licenses">
+    No more licenses available for that domain.
+  </int>
+</enum>
+
+<enum name="EnterpriseEnrollmentType" type="int">
+  <summary>
+    Result of device enrollment as defined in
+    chrome/browser/policy/enterprise_metrics.h.
+  </summary>
+  <int value="0" label="Cancelled">
+    The enrollment screen was closed without completing the enrollment process.
+  </int>
+  <int value="1" label="Started">
+    The user submitted credentials and started the enrollment process.
+  </int>
+  <int value="2" label="Network Failed">
+    Enrollment failed due to a network error.
+  </int>
+  <int value="3" label="Login Failed">
+    Enrollment failed because logging in to Gaia failed.
+  </int>
+  <int value="4" label="Not Supported">
+    Enrollment failed because it is not supported for the account used.
+  </int>
+  <int value="5" label="Policy Failed">
+    Enrollment failed because it failed to apply device policy.
+  </int>
+  <int value="6" label="Other Failed">
+    Enrollment failed due to an unexpected error. This currently happens when
+    the Gaia auth token is not issued for the DM service, the device cloud
+    policy subsystem isn't initialized, or when fetching Gaia tokens fails for
+    an unknown reason.
+  </int>
+  <int value="7" label="OK">Enrollment was successful.</int>
+  <int value="8" label="Invalid Serial">
+    Serial number doesn't belong to account domain.
+  </int>
+  <int value="9" label="Auto-enrollment Started">
+    Auto-enrollment started automatically after sign-in.
+  </int>
+  <int value="10" label="Auto-enrollment Failed">Auto-enrollment failed.</int>
+  <int value="11" label="Auto-enrollment Retried">
+    Auto-enrollment started again after a failure.
+  </int>
+  <int value="12" label="Auto-enrollment Cancelled">
+    User opted-out of auto-enrollment.
+  </int>
+  <int value="13" label="Auto-enrollment OK">Auto-enrollment OK.</int>
+  <int value="14" label="Invalid enrollment mode">
+    The enrollment mode has not been sent down or is unknown to the client.
+  </int>
+  <int value="15" label="Auto-enrollment not supported">
+    The enrollment mode can not be set through auto-enrollment.
+  </int>
+  <int value="16" label="Install attributes timeout">
+    Install attributes failed to initialize in time.
+  </int>
+  <int value="17" label="Wrong user name">
+    Re-enrollment attempted with an account from a different domain.
+  </int>
+  <int value="18" label="Missing licenses">
+    No licenses left for that domain.
+  </int>
+</enum>
+
 <enum name="EnterprisePolicies" type="int">
 <!-- Generated from ../../../chrome/app/policy/policy_templates.json -->
 
@@ -8327,6 +8470,69 @@ other types of suffix sets.
       label="Set the restriction on the fetching of the Variations seed"/>
   <int value="197" label="Idle warning delay when running on AC power"/>
   <int value="198" label="Idle warning delay when running on battery power"/>
+</enum>
+
+<enum name="EnterprisePolicyType" type="int">
+  <summary>
+    Result of Policy operations as defined in
+    chrome/browser/policy/enterprise_metrics.h.
+  </summary>
+  <int value="0" label="Load Succeeded">
+    A cached policy was successfully loaded from disk.
+  </int>
+  <int value="1" label="Load Failed">
+    Reading a cached policy from disk failed.
+  </int>
+  <int value="2" label="Fetch Requested">
+    A policy fetch request was sent to the DM server.
+  </int>
+  <int value="3" label="Fetch Request Failed">
+    The request was invalid, or the HTTP request failed.
+  </int>
+  <int value="4" label="Fetch Server Failed">
+    Error HTTP status received, or the DM server failed in another way.
+  </int>
+  <int value="5" label="Fetch Not Found">
+    Policy not found for the given user or device.
+  </int>
+  <int value="6" label="Fetch Invalid Token">
+    DM server didn't accept the token used in the request.
+  </int>
+  <int value="7" label="Fetch Response Received">
+    A response to the policy fetch request was received.
+  </int>
+  <int value="8" label="Fetch Bad Response">
+    The policy response message didn't contain a policy, or other data was
+    missing.
+  </int>
+  <int value="9" label="Fetch Invalid Policy">Failed to decode the policy.</int>
+  <int value="10" label="Fetch Bad Signature">
+    The device policy was rejected because its signature was invalid.
+  </int>
+  <int value="11" label="Fetch Timestamp In Future">
+    Rejected policy because its timestamp is in the future.
+  </int>
+  <int value="12" label="Fetch Non Enterprise Device">
+    Device policy rejected because the device is not managed.
+  </int>
+  <int value="13" label="Fetch User Mismatch">
+    The policy was provided for a username that is different from the device
+    owner, and the policy was rejected.
+  </int>
+  <int value="14" label="Fetch Other Failed">
+    The policy was rejected for another reason. Currently this can happen only
+    for device policies, when the SignedSettings fail to store or retrieve a
+    stored policy.
+  </int>
+  <int value="15" label="Fetch OK">The fetched policy was accepted.</int>
+  <int value="16" label="Fetch Not Modified">
+    The policy just fetched didn't have any changes compared to the cached
+    policy.
+  </int>
+  <int value="17" label="Store Succeeded">
+    Successfully cached a policy to disk.
+  </int>
+  <int value="18" label="Store Failed">Caching a policy to disk failed.</int>
 </enum>
 
 <enum name="ErrorCodesGetAdaptersAddresses" type="int">
