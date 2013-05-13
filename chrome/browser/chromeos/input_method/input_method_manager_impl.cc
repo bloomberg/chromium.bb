@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine_ibus.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
@@ -274,18 +275,21 @@ void InputMethodManagerImpl::ChangeInputMethod(
   ChangeInputMethodInternal(input_method_id, false);
 }
 
-void InputMethodManagerImpl::ChangeInputMethodInternal(
+bool InputMethodManagerImpl::ChangeInputMethodInternal(
     const std::string& input_method_id,
     bool show_message) {
   if (state_ == STATE_TERMINATING)
-    return;
+    return false;
 
-  if (!component_extension_ime_manager_->IsInitialized()) {
+  if (!component_extension_ime_manager_->IsInitialized() ||
+      (!InputMethodUtil::IsKeyboardLayout(input_method_id) &&
+       !IsIBusConnectionAlive())) {
     // We can't change input method before the initialization of component
-    // extension ime manager. ChangeInputMethod will be called with
-    // |pending_input_method_| when the initialization is done.
+    // extension ime manager or before connection to ibus-daemon is not
+    // established. ChangeInputMethod will be called with
+    // |pending_input_method_| when the both initialization is done.
     pending_input_method_ = input_method_id;
-    return;
+    return false;
   }
 
   std::string input_method_id_to_switch = input_method_id;
@@ -304,6 +308,8 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
 
   IBusInputContextClient* input_context =
       chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
+  const std::string current_input_method_id = current_input_method_.id();
+  IBusClient* client = DBusThreadManager::Get()->GetIBusClient();
   if (InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
     FOR_EACH_OBSERVER(InputMethodManager::Observer,
                       observers_,
@@ -312,24 +318,47 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
     // We should notify IME switching to ibus-daemon, otherwise
     // IBusPreeditFocusMode does not work. To achieve it, change engine to
     // itself if the next engine is XKB layout.
-    const std::string current_input_method_id = current_input_method_.id();
     if (current_input_method_id.empty() ||
         InputMethodUtil::IsKeyboardLayout(current_input_method_id)) {
-      if (DBusThreadManager::Get() &&
-          DBusThreadManager::Get()->GetIBusInputContextClient())
-        DBusThreadManager::Get()->GetIBusInputContextClient()->Reset();
+      if (input_context)
+        input_context->Reset();
     } else {
-      ibus_controller_->ChangeInputMethod(current_input_method_id);
+      if (client)
+        client->SetGlobalEngine(current_input_method_id,
+                                base::Bind(&base::DoNothing));
     }
     if (input_context)
       input_context->SetIsXKBLayout(true);
   } else {
-    ibus_controller_->ChangeInputMethod(input_method_id_to_switch);
+    DCHECK(client);
+    client->SetGlobalEngine(input_method_id_to_switch,
+                            base::Bind(&base::DoNothing));
     if (input_context)
       input_context->SetIsXKBLayout(false);
   }
 
-  if (current_input_method_.id() != input_method_id_to_switch) {
+  if (current_input_method_id != input_method_id_to_switch) {
+    // Clear input method properties unconditionally if
+    // |input_method_id_to_switch| is not equal to |current_input_method_id|.
+    //
+    // When switching to another input method and no text area is focused,
+    // RegisterProperties signal for the new input method will NOT be sent
+    // until a text area is focused. Therefore, we have to clear the old input
+    // method properties here to keep the input method switcher status
+    // consistent.
+    //
+    // When |input_method_id_to_switch| and |current_input_method_id| are the
+    // same, the properties shouldn't be cleared. If we do that, something
+    // wrong happens in step #4 below:
+    // 1. Enable "xkb:us::eng" and "mozc". Switch to "mozc".
+    // 2. Focus Omnibox. IME properties for mozc are sent to Chrome.
+    // 3. Switch to "xkb:us::eng". No function in this file is called.
+    // 4. Switch back to "mozc". ChangeInputMethod("mozc") is called, but it's
+    //    basically NOP since ibus-daemon's current IME is already "mozc".
+    //    IME properties are not sent to Chrome for the same reason.
+    // TODO(nona): Revisit above comment once ibus-daemon is gone.
+    ibus_controller_->ClearProperties();
+
     const InputMethodDescriptor* descriptor = NULL;
     if (!extension_ime_util::IsExtensionIME(input_method_id_to_switch)) {
       descriptor =
@@ -357,6 +386,7 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
   FOR_EACH_OBSERVER(InputMethodManager::Observer,
                     observers_,
                     InputMethodChanged(this, show_message));
+  return true;
 }
 
 void InputMethodManagerImpl::OnComponentExtensionInitialized(
@@ -369,8 +399,8 @@ void InputMethodManagerImpl::OnComponentExtensionInitialized(
   LoadNecessaryComponentExtensions();
 
   if (!pending_input_method_.empty()) {
-    ChangeInputMethod(pending_input_method_);
-    pending_input_method_.clear();
+    if (ChangeInputMethodInternal(pending_input_method_, false))
+      pending_input_method_.clear();
   }
 
 }
@@ -680,12 +710,10 @@ void InputMethodManagerImpl::OnConnected() {
     }
   }
 
-  const bool is_xkb_layout =
-      InputMethodUtil::IsKeyboardLayout(current_input_method_.id());
-  IBusInputContextClient* input_context =
-      chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
-  DCHECK(input_context);
-  input_context->SetIsXKBLayout(is_xkb_layout);
+  if (!pending_input_method_.empty()) {
+    if (ChangeInputMethodInternal(pending_input_method_, false))
+      pending_input_method_.clear();
+  }
 }
 
 void InputMethodManagerImpl::OnDisconnected() {
@@ -824,6 +852,10 @@ void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
     candidate_window_controller_->AddObserver(this);
   else
     DVLOG(1) << "Failed to initialize the candidate window controller";
+}
+
+bool InputMethodManagerImpl::IsIBusConnectionAlive() {
+  return DBusThreadManager::Get() && DBusThreadManager::Get()->GetIBusClient();
 }
 
 }  // namespace input_method

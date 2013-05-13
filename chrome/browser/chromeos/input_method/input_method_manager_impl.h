@@ -133,6 +133,9 @@ class InputMethodManagerImpl : public InputMethodManager,
   // that only contains an input method ID of a keyboard layout.
   bool ContainOnlyKeyboardLayout(const std::vector<std::string>& value);
 
+  // Returns true if the connection to ibus-daemon is established.
+  bool IsIBusConnectionAlive();
+
   // Creates and initializes |candidate_window_controller_| if it hasn't been
   // done.
   void MaybeInitializeCandidateWindowController();
@@ -144,7 +147,9 @@ class InputMethodManagerImpl : public InputMethodManager,
       const std::vector<std::string>& input_method_ids,
       const std::string& current_input_method_id);
 
-  void ChangeInputMethodInternal(const std::string& input_method_id,
+  // Change system input method.
+  // Returns true if the system input method is changed.
+  bool ChangeInputMethodInternal(const std::string& input_method_id,
                                  bool show_message);
 
   // Called when the ComponentExtensionIMEManagerDelegate is initialized.

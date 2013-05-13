@@ -67,11 +67,21 @@ class MockIBusClient : public IBusClient {
     return register_component_call_count_;
   }
 
+  int set_global_engine_call_count() const {
+    return set_global_engine_call_count_;
+  }
+
+  const std::string& latest_global_engine_name() const {
+    return latest_global_engine_name_;
+  }
+
  private:
   CreateInputContextHandler create_input_context_handler_;
   RegisterComponentHandler register_component_handler_;
   int create_input_context_call_count_;
   int register_component_call_count_;
+  int set_global_engine_call_count_;
+  std::string latest_global_engine_name_;
 
   DISALLOW_COPY_AND_ASSIGN(MockIBusClient);
 };

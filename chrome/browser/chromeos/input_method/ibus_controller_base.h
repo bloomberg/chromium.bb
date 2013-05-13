@@ -32,6 +32,7 @@ class IBusControllerBase : public IBusController {
       const std::string& config_name,
       const InputMethodConfigValue& value) OVERRIDE;
   virtual const InputMethodPropertyList& GetCurrentProperties() const OVERRIDE;
+  virtual void ClearProperties() OVERRIDE;
 
   // Gets the current input method configuration.
   bool GetInputMethodConfigForTesting(const std::string& section,

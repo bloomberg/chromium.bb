@@ -14,18 +14,15 @@ struct InputMethodConfigValue;
 struct InputMethodProperty;
 
 // Mock IBusController implementation.
+// TODO(nona): Remove this class and use MockIBus stuff instead.
 class MockIBusController : public IBusControllerBase {
  public:
   MockIBusController();
   virtual ~MockIBusController();
 
   // IBusController overrides:
-  virtual bool ChangeInputMethod(const std::string& id) OVERRIDE;
   virtual bool ActivateInputMethodProperty(const std::string& key) OVERRIDE;
 
-  int change_input_method_count_;
-  std::string change_input_method_id_;
-  bool change_input_method_return_;
   int activate_input_method_property_count_;
   std::string activate_input_method_property_key_;
   bool activate_input_method_property_return_;

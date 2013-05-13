@@ -54,6 +54,10 @@ bool IBusControllerBase::GetInputMethodConfigForTesting(
   return true;
 }
 
+void IBusControllerBase::ClearProperties() {
+  current_property_list_.clear();
+}
+
 void IBusControllerBase::NotifyPropertyChangedForTesting() {
   FOR_EACH_OBSERVER(Observer, observers_, PropertyChanged());
 }

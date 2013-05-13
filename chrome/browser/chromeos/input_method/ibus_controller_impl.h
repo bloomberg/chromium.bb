@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/input_method/ibus_controller_base.h"
 #include "chromeos/dbus/ibus/ibus_panel_service.h"
 #include "chromeos/ime/ibus_daemon_controller.h"
-#include "chromeos/ime/input_method_whitelist.h"
 
 namespace ui {
 class InputMethodIBus;
@@ -27,6 +26,8 @@ struct InputMethodProperty;
 typedef std::vector<InputMethodProperty> InputMethodPropertyList;
 
 // The IBusController implementation.
+// TODO(nona): Merge to IBusControllerBase, there is no longer reason to split
+//             this class into Impl and Base.
 class IBusControllerImpl : public IBusControllerBase,
                            public IBusPanelPropertyHandlerInterface,
                            public IBusDaemonController::Observer {
@@ -35,7 +36,6 @@ class IBusControllerImpl : public IBusControllerBase,
   virtual ~IBusControllerImpl();
 
   // IBusController overrides:
-  virtual bool ChangeInputMethod(const std::string& id) OVERRIDE;
   virtual bool ActivateInputMethodProperty(const std::string& key) OVERRIDE;
 
   // Calls <anonymous_namespace>::FindAndUpdateProperty. This method is just for
@@ -62,21 +62,11 @@ class IBusControllerImpl : public IBusControllerBase,
   // Checks if |ibus_| and |ibus_config_| connections are alive.
   bool IBusConnectionsAreAlive();
 
-  // Just calls ibus_bus_set_global_engine_async() with the |id|.
-  void SendChangeInputMethodRequest(const std::string& id);
-
   // Called when the IBusConfigClient is initialized.
   void OnIBusConfigClientInitialized();
 
   // Current input context path.
   std::string current_input_context_path_;
-
-  // The input method ID which is currently selected. The ID is sent to the
-  // daemon when |ibus_| and |ibus_config_| connections are both established.
-  std::string current_input_method_id_;
-
-  // An object which knows all valid input methods and layout IDs.
-  InputMethodWhitelist whitelist_;
 
   // IBusControllerImpl should be used only on UI thread.
   base::ThreadChecker thread_checker_;

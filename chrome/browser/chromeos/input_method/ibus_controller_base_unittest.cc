@@ -25,9 +25,7 @@ class TestIBusController : public IBusControllerBase {
   }
 
   // IBusController overrides:
-  virtual bool ChangeInputMethod(const std::string& id) OVERRIDE {
-    return true;
-  }
+  virtual void ClearProperties() OVERRIDE {}
   virtual bool ActivateInputMethodProperty(const std::string& key) OVERRIDE {
     return true;
   }

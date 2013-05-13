@@ -8,7 +8,8 @@ namespace chromeos {
 
 MockIBusClient::MockIBusClient()
     : create_input_context_call_count_(0),
-      register_component_call_count_(0) {
+      register_component_call_count_(0),
+      set_global_engine_call_count_(0) {
 }
 
 MockIBusClient::~MockIBusClient() {}
@@ -33,6 +34,8 @@ void MockIBusClient::RegisterComponent(
 
 void MockIBusClient::SetGlobalEngine(const std::string& engine_name,
                                      const ErrorCallback& error_callback) {
+  ++set_global_engine_call_count_;
+  latest_global_engine_name_ = engine_name;
 }
 
 void MockIBusClient::Exit(ExitOption option,

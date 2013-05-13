@@ -18,6 +18,8 @@ typedef std::vector<InputMethodProperty> InputMethodPropertyList;
 
 // IBusController is used to interact with the system input method framework
 // (which is currently IBus).
+// TODO(nona): Split this class into IBusPropertyHandler and IBusConfigHandler.
+//             Note: IBusConfig will be deprecated once ibus-daemon is gone.
 class IBusController {
  public:
   class Observer {
@@ -35,6 +37,8 @@ class IBusController {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
+  virtual void ClearProperties() = 0;
+
   // Sets a configuration of an input method engine. Returns true if the
   // configuration is successfully set. For example, when you set
   // "engine/Mozc/history_learning_level", |section| should be "engine/Mozc",
@@ -42,10 +46,6 @@ class IBusController {
   virtual bool SetInputMethodConfig(const std::string& section,
                                     const std::string& config_name,
                                     const InputMethodConfigValue& value) = 0;
-
-  // Changes the current input method engine to |id|. Returns true on success.
-  // Example IDs: "mozc", "m17n:ar:kbd".
-  virtual bool ChangeInputMethod(const std::string& id) = 0;
 
   // Activates the input method property specified by the |key|. Returns true on
   // success.

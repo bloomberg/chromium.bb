@@ -111,9 +111,12 @@ class InputMethodManagerImplTest :  public testing::Test {
     ext2.engines.push_back(ext2_engine1);
 
     ime_list_.push_back(ext2);
+
+    mock_ibus_daemon_controller_->EmulateConnect();
   }
 
   virtual void TearDown() OVERRIDE {
+    mock_ibus_daemon_controller_->EmulateDisconnect();
     delegate_ = NULL;
     controller_ = NULL;
     candidate_window_controller_ = NULL;
@@ -1139,12 +1142,12 @@ TEST_F(InputMethodManagerImplTest, TestReset) {
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(1, mock_ibus_input_context_client_->reset_call_count());
   manager_->ChangeInputMethod(nacl_mozc_us_id);
-  EXPECT_EQ(1, controller_->change_input_method_count_);
-  EXPECT_EQ(nacl_mozc_us_id, controller_->change_input_method_id_);
+  EXPECT_EQ(1, mock_ibus_client_->set_global_engine_call_count());
+  EXPECT_EQ(nacl_mozc_us_id, mock_ibus_client_->latest_global_engine_name());
   EXPECT_EQ(1, mock_ibus_input_context_client_->reset_call_count());
   manager_->ChangeInputMethod("xkb:us::eng");
-  EXPECT_EQ(2, controller_->change_input_method_count_);
-  EXPECT_EQ(nacl_mozc_us_id, controller_->change_input_method_id_);
+  EXPECT_EQ(2, mock_ibus_client_->set_global_engine_call_count());
+  EXPECT_EQ(nacl_mozc_us_id, mock_ibus_client_->latest_global_engine_name());
   EXPECT_EQ(1, mock_ibus_input_context_client_->reset_call_count());
 }
 
@@ -1156,11 +1159,11 @@ TEST_F(InputMethodManagerImplTest,
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
   manager_->ChangeInputMethod(nacl_mozc_us_id);
-  EXPECT_EQ(0, controller_->change_input_method_count_);
 
+  InitIBusBus();
   InitComponentExtension();
-  EXPECT_EQ(1, controller_->change_input_method_count_);
-  EXPECT_EQ(nacl_mozc_us_id, controller_->change_input_method_id_);
+  EXPECT_EQ(1, mock_ibus_client_->set_global_engine_call_count());
+  EXPECT_EQ(nacl_mozc_us_id, mock_ibus_client_->latest_global_engine_name());
 }
 
 TEST_F(InputMethodManagerImplTest,
@@ -1172,14 +1175,12 @@ TEST_F(InputMethodManagerImplTest,
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   manager_->ChangeInputMethod(nacl_mozc_us_id);
-  EXPECT_EQ(0, controller_->change_input_method_count_);
   manager_->ChangeInputMethod("m17n:kn:itrans");
-  EXPECT_EQ(0, controller_->change_input_method_count_);
 
   InitComponentExtension();
   InitIBusBus();
-  EXPECT_EQ(1, controller_->change_input_method_count_);
-  EXPECT_EQ("m17n:kn:itrans", controller_->change_input_method_id_);
+  EXPECT_EQ(1, mock_ibus_client_->set_global_engine_call_count());
+  EXPECT_EQ("m17n:kn:itrans", mock_ibus_client_->latest_global_engine_name());
 }
 
 TEST_F(InputMethodManagerImplTest,
@@ -1194,12 +1195,11 @@ TEST_F(InputMethodManagerImplTest,
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
   manager_->ChangeInputMethod(ext_id);
-  EXPECT_EQ(0, controller_->change_input_method_count_);
 
   InitComponentExtension();
   InitIBusBus();
-  EXPECT_EQ(1, controller_->change_input_method_count_);
-  EXPECT_EQ(ext_id, controller_->change_input_method_id_);
+  EXPECT_EQ(1, mock_ibus_client_->set_global_engine_call_count());
+  EXPECT_EQ(ext_id, mock_ibus_client_->latest_global_engine_name());
 }
 
 TEST_F(InputMethodManagerImplTest,
@@ -1219,14 +1219,12 @@ TEST_F(InputMethodManagerImplTest,
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   manager_->ChangeInputMethod(ext_id1);
-  EXPECT_EQ(0, controller_->change_input_method_count_);
   manager_->ChangeInputMethod(ext_id2);
-  EXPECT_EQ(0, controller_->change_input_method_count_);
 
   InitComponentExtension();
   InitIBusBus();
-  EXPECT_EQ(1, controller_->change_input_method_count_);
-  EXPECT_EQ(ext_id2, controller_->change_input_method_id_);
+  EXPECT_EQ(1, mock_ibus_client_->set_global_engine_call_count());
+  EXPECT_EQ(ext_id2, mock_ibus_client_->latest_global_engine_name());
 }
 
 TEST_F(InputMethodManagerImplTest,
@@ -1242,8 +1240,8 @@ TEST_F(InputMethodManagerImplTest,
   ids.push_back(ext_id);
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
-  EXPECT_EQ(1, controller_->change_input_method_count_);
-  EXPECT_EQ(ext_id, controller_->change_input_method_id_);
+  EXPECT_EQ(1, mock_ibus_client_->set_global_engine_call_count());
+  EXPECT_EQ(ext_id, mock_ibus_client_->latest_global_engine_name());
 }
 
 TEST_F(InputMethodManagerImplTest,
@@ -1264,11 +1262,11 @@ TEST_F(InputMethodManagerImplTest,
   ids.push_back(ext_id2);
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
-  EXPECT_EQ(1, controller_->change_input_method_count_);
-  EXPECT_EQ(ext_id1, controller_->change_input_method_id_);
+  EXPECT_EQ(1, mock_ibus_client_->set_global_engine_call_count());
+  EXPECT_EQ(ext_id1, mock_ibus_client_->latest_global_engine_name());
   manager_->ChangeInputMethod(ext_id2);
-  EXPECT_EQ(2, controller_->change_input_method_count_);
-  EXPECT_EQ(ext_id2, controller_->change_input_method_id_);
+  EXPECT_EQ(2, mock_ibus_client_->set_global_engine_call_count());
+  EXPECT_EQ(ext_id2, mock_ibus_client_->latest_global_engine_name());
 }
 
 TEST_F(InputMethodManagerImplTest,

@@ -11,28 +11,13 @@ namespace chromeos {
 namespace input_method {
 
 MockIBusController::MockIBusController()
-    : change_input_method_count_(0),
-      change_input_method_return_(true),
-      activate_input_method_property_count_(0),
+    : activate_input_method_property_count_(0),
       activate_input_method_property_return_(true),
       set_input_method_config_internal_count_(0),
       set_input_method_config_internal_return_(true) {
 }
 
 MockIBusController::~MockIBusController() {
-}
-
-bool MockIBusController::ChangeInputMethod(const std::string& id) {
-  ++change_input_method_count_;
-
-  // Emulate IBusController's behavior.
-  if (id != change_input_method_id_) {
-    current_property_list_.clear();
-    NotifyPropertyChangedForTesting();
-  }
-  change_input_method_id_ = id;
-
-  return change_input_method_return_;
 }
 
 bool MockIBusController::ActivateInputMethodProperty(const std::string& key) {
