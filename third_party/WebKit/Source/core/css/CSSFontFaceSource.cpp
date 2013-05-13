@@ -31,9 +31,11 @@
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedResourceLoader.h"
+#include "core/platform/HistogramSupport.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "wtf/CurrentTime.h"
 
 #if ENABLE(SVG_FONTS)
 #include "SVGNames.h"
@@ -91,6 +93,7 @@ void CSSFontFaceSource::fontLoaded(CachedFont*)
     pruneTable();
     if (m_face)
         m_face->fontLoaded(this);
+    m_histograms.recordRemoteFont(m_font.get());
 }
 
 PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription& fontDescription, bool syntheticBold, bool syntheticItalic, CSSFontSelector* fontSelector)
@@ -106,7 +109,9 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
     ) {
         // We're local. Just return a SimpleFontData from the normal cache.
         // We don't want to check alternate font family names here, so pass true as the checkingAlternateName parameter.
-        return fontCache()->getCachedFontData(fontDescription, m_string, true);
+        RefPtr<SimpleFontData> fontData = fontCache()->getCachedFontData(fontDescription, m_string, true);
+        m_histograms.recordLocalFont(fontData);
+        return fontData;
     }
 
     // See if we have a mapping in our FontData cache.
@@ -178,6 +183,8 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
         // and the loader may invoke arbitrary delegate or event handler code.
         fontSelector->beginLoadingFontSoon(m_font.get());
 
+        m_histograms.loadStarted();
+
         // This temporary font is not retained and should not be returned.
         FontCachePurgePreventer fontCachePurgePreventer;
         SimpleFontData* temporaryFont = fontCache()->getNonRetainedLastResortFallbackFont(fontDescription);
@@ -220,6 +227,46 @@ bool CSSFontFaceSource::ensureFontData()
         return m_font->ensureSVGFontData();
 #endif
     return m_font->ensureCustomFontData();
+}
+
+void CSSFontFaceSource::FontLoadHistograms::loadStarted()
+{
+    if (!m_loadStartTime)
+        m_loadStartTime = currentTimeMS();
+}
+
+void CSSFontFaceSource::FontLoadHistograms::recordLocalFont(bool loadSuccess)
+{
+    if (!m_loadStartTime) {
+        HistogramSupport::histogramEnumeration("WebFont.LocalFontUsed", loadSuccess ? 1 : 0, 2);
+        m_loadStartTime = -1; // Do not count this font again.
+    }
+}
+
+void CSSFontFaceSource::FontLoadHistograms::recordRemoteFont(const CachedFont* font)
+{
+    if (m_loadStartTime > 0 && font && !font->isLoading()) {
+        int duration = static_cast<int>(currentTimeMS() - m_loadStartTime);
+        HistogramSupport::histogramCustomCounts(histogramName(font), duration, 0, 10000, 50);
+        m_loadStartTime = -1;
+    }
+}
+
+const char* CSSFontFaceSource::FontLoadHistograms::histogramName(const CachedFont* font)
+{
+    if (font->errorOccurred())
+        return "WebFont.LoadTime.LoadError";
+
+    unsigned size = font->encodedSize();
+    if (size < 10 * 1024)
+        return "WebFont.LoadTime.Under10KB";
+    if (size < 50 * 1024)
+        return "WebFont.LoadTime.10KBTo50KB";
+    if (size < 100 * 1024)
+        return "WebFont.LoadTime.50KBTo100KB";
+    if (size < 1024 * 1024)
+        return "WebFont.LoadTime.100KBTo1MB";
+    return "WebFont.LoadTime.Over1MB";
 }
 
 }

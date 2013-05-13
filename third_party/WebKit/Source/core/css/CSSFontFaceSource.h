@@ -74,12 +74,24 @@ public:
     bool ensureFontData();
 
 private:
+    class FontLoadHistograms {
+    public:
+        FontLoadHistograms() : m_loadStartTime(0) { }
+        void loadStarted();
+        void recordLocalFont(bool loadSuccess);
+        void recordRemoteFont(const CachedFont*);
+    private:
+        const char* histogramName(const CachedFont*);
+        double m_loadStartTime;
+    };
+
     void startLoadingTimerFired(Timer<CSSFontFaceSource>*);
 
     AtomicString m_string; // URI for remote, built-in font name for local.
     CachedResourceHandle<CachedFont> m_font; // For remote fonts, a pointer to our cached resource.
     CSSFontFace* m_face; // Our owning font face.
     HashMap<unsigned, RefPtr<SimpleFontData> > m_fontDataTable; // The hash key is composed of size synthetic styles.
+    FontLoadHistograms m_histograms;
 
 #if ENABLE(SVG_FONTS)
     RefPtr<SVGFontFaceElement> m_svgFontFaceElement;
