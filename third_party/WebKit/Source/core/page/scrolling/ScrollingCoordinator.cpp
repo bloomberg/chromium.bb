@@ -437,7 +437,7 @@ static void accumulateDocumentEventTargetRects(Vector<IntRect>& rects, const Doc
 
     const TouchEventTargetSet* targets = document->touchEventTargets();
     for (TouchEventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
-        const Node* touchTarget = iter->key;
+        const Node* touchTarget = (iter->key).get();
         if (!touchTarget->inDocument())
             continue;
 
