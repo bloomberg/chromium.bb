@@ -265,10 +265,7 @@ bool SiteInstance::IsSameWebSite(BrowserContext* browser_context,
   if (url1.scheme() != url2.scheme())
     return false;
 
-  return net::registry_controlled_domains::SameDomainOrHost(
-      url1,
-      url2,
-      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  return net::RegistryControlledDomainService::SameDomainOrHost(url1, url2);
 }
 
 /*static*/
@@ -301,9 +298,7 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
 
     // If this URL has a registered domain, we only want to remember that part.
     std::string domain =
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            url,
-            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+        net::RegistryControlledDomainService::GetDomainAndRegistry(url);
     if (!domain.empty()) {
       GURL::Replacements rep;
       rep.SetHostStr(domain);

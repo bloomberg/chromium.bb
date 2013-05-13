@@ -795,12 +795,8 @@ bool HistoryURLProvider::CanFindIntranetURL(
     return false;
   const std::string host(UTF16ToUTF8(
       input.text().substr(input.parts().host.begin, input.parts().host.len)));
-  const size_t registry_length =
-      net::registry_controlled_domains::GetRegistryLength(
-          host,
-          net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  return registry_length == 0 && db->IsTypedHost(host);
+  return (net::RegistryControlledDomainService::GetRegistryLength(host,
+      false) == 0) && db->IsTypedHost(host);
 }
 
 bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(

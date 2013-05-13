@@ -120,10 +120,8 @@ void IntranetRedirectDetector::OnURLFetchComplete(
       resulting_origins_.push_back(origin);
       return;
     }
-    if (net::registry_controlled_domains::SameDomainOrHost(
-        resulting_origins_.front(),
-        origin,
-        net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)) {
+    if (net::RegistryControlledDomainService::SameDomainOrHost(
+        resulting_origins_.front(), origin)) {
       redirect_origin_ = origin;
       if (!fetchers_.empty()) {
         // Cancel remaining fetch, we don't need it.
@@ -137,12 +135,8 @@ void IntranetRedirectDetector::OnURLFetchComplete(
       return;
     }
     DCHECK(resulting_origins_.size() == 2);
-    const bool same_domain_or_host =
-        net::registry_controlled_domains::SameDomainOrHost(
-            resulting_origins_.back(),
-            origin,
-            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-    redirect_origin_ = same_domain_or_host ? origin : GURL();
+    redirect_origin_ = net::RegistryControlledDomainService::SameDomainOrHost(
+        resulting_origins_.back(), origin) ? origin : GURL();
   }
 
   g_browser_process->local_state()->SetString(

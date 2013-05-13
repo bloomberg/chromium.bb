@@ -265,12 +265,8 @@ void HistoryQuickProvider::DoAutocomplete() {
              !autocomplete_input_.parts().ref.is_nonempty()) {
           // Not visited, but we've seen the host before.
           will_have_url_what_you_typed_match_first = true;
-          const size_t registry_length =
-              net::registry_controlled_domains::GetRegistryLength(
-                  host,
-                  net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-                  net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-          if (registry_length == 0) {
+          if (net::RegistryControlledDomainService::GetRegistryLength(
+              host, false) == 0) {
             // Known intranet hosts get one score.
             url_what_you_typed_match_score =
                 HistoryURLProvider::kScoreForUnvisitedIntranetResult;

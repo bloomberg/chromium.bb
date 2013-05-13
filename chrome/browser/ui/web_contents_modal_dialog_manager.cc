@@ -133,9 +133,8 @@ void WebContentsModalDialogManager::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   // Close constrained windows if necessary.
-  if (!net::registry_controlled_domains::SameDomainOrHost(
-          details.previous_url, details.entry->GetURL(),
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES))
+  if (!net::RegistryControlledDomainService::SameDomainOrHost(
+          details.previous_url, details.entry->GetURL()))
     CloseAllDialogs();
 }
 

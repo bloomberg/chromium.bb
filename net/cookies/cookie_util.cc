@@ -24,10 +24,8 @@ bool DomainIsHostOnly(const std::string& domain_string) {
 
 std::string GetEffectiveDomain(const std::string& scheme,
                                const std::string& host) {
-  if (scheme == "http" || scheme == "https") {
-    return registry_controlled_domains::GetDomainAndRegistry(
-        host, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  }
+  if (scheme == "http" || scheme == "https")
+    return RegistryControlledDomainService::GetDomainAndRegistry(host);
 
   if (!DomainIsHostOnly(host))
     return host.substr(1);

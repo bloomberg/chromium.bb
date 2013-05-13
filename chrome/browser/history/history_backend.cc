@@ -499,12 +499,8 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
         origin_url.SchemeIs(chrome::kHttpsScheme) ||
         origin_url.SchemeIs(chrome::kFtpScheme)) {
       std::string host(origin_url.host());
-      size_t registry_length =
-          net::registry_controlled_domains::GetRegistryLength(
-              host,
-              net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-              net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-      if (registry_length == 0 && !db_->IsTypedHost(host)) {
+      if ((net::RegistryControlledDomainService::GetRegistryLength(
+          host, false) == 0) && !db_->IsTypedHost(host)) {
         stripped_transition = content::PAGE_TRANSITION_TYPED;
         request_transition =
             content::PageTransitionFromInt(

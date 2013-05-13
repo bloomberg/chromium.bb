@@ -386,9 +386,8 @@ void PhishingDOMFeatureExtractor::ResetFrameData() {
   cur_frame_data_.reset(new FrameData());
   cur_frame_data_->elements = cur_document_.all();
   cur_frame_data_->domain =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          cur_document_.url(),
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+      net::RegistryControlledDomainService::GetDomainAndRegistry(
+          cur_document_.url());
 }
 
 WebKit::WebDocument PhishingDOMFeatureExtractor::GetNextDocument() {
@@ -423,8 +422,8 @@ bool PhishingDOMFeatureExtractor::IsExternalDomain(const GURL& url,
   if (url.HostIsIPAddress()) {
     domain->assign(url.host());
   } else {
-    domain->assign(net::registry_controlled_domains::GetDomainAndRegistry(
-        url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
+    domain->assign(net::RegistryControlledDomainService::GetDomainAndRegistry(
+        url));
   }
 
   return !domain->empty() && *domain != cur_frame_data_->domain;

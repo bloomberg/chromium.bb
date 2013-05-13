@@ -40,9 +40,7 @@ string LoggedInPredictorTable::GetKey(const GURL& url) {
 // static
 string LoggedInPredictorTable::GetKeyFromDomain(const std::string& domain) {
   string effective_domain(
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          domain,
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
+      net::RegistryControlledDomainService::GetDomainAndRegistry(domain));
   if (effective_domain.empty())
     effective_domain = domain;
 

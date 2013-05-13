@@ -133,17 +133,10 @@ void AlternateNavURLFetcher::SetStatusFromURLFetch(
     // target address exists as long as we're not redirected to a common
     // location every time, lest we annoy the user with infobars on everything
     // they type.  See comments on IntranetRedirectDetector.
-    if (status.status() == net::URLRequestStatus::CANCELED &&
-        (response_code / 100) == 3) {
-      const bool same_domain_or_host =
-          net::registry_controlled_domains::SameDomainOrHost(
-              url,
-              IntranetRedirectDetector::RedirectOrigin(),
-              net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-      state_ = same_domain_or_host ? FAILED : SUCCEEDED;
-    } else {
-      state_ = FAILED;
-    }
+    state_ = ((status.status() == net::URLRequestStatus::CANCELED) &&
+      ((response_code / 100) == 3) &&
+      !net::RegistryControlledDomainService::SameDomainOrHost(url,
+          IntranetRedirectDetector::RedirectOrigin())) ? SUCCEEDED : FAILED;
   }
 }
 

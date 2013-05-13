@@ -1316,6 +1316,7 @@
               '../third_party/nss/nss.gyp:nspr',
               '../third_party/nss/nss.gyp:nss',
               'third_party/nss/ssl.gyp:libssl',
+              'tld_cleanup',
             ],
             # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
             'msvs_disabled_warnings': [4267, ],
@@ -1783,7 +1784,6 @@
         'tools/dump_cache/url_utilities.h',
         'tools/dump_cache/url_utilities.cc',
         'tools/dump_cache/url_utilities_unittest.cc',
-        'tools/tld_cleanup/tld_cleanup_util_unittest.cc',
         'udp/udp_socket_unittest.cc',
         'url_request/url_fetcher_impl_unittest.cc',
         'url_request/url_request_context_builder_unittest.cc',
@@ -2092,7 +2092,6 @@
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
-        '../net/tools/tld_cleanup/tld_cleanup.gyp:tld_cleanup_util',
         '../testing/gtest.gyp:gtest',
         'net',
       ],
@@ -2481,7 +2480,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
-            '../net/tools/tld_cleanup/tld_cleanup.gyp:tld_cleanup_util',
+            '../build/temp_gyp/googleurl.gyp:googleurl',
           ],
           'sources': [
             'tools/tld_cleanup/tld_cleanup.cc',

@@ -641,9 +641,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   while (smt.Step()) {
     std::string domain = smt.ColumnString(0);
     std::string key =
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            domain,
-            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+      net::RegistryControlledDomainService::GetDomainAndRegistry(domain);
 
     std::map<std::string, std::set<std::string> >::iterator it =
       keys_to_load_.find(key);
