@@ -1183,11 +1183,9 @@ void CanvasRenderingContext2D::applyShadow()
     if (!c)
         return;
 
-    if (shouldDrawShadows()) {
-        float width = state().m_shadowOffset.width();
-        float height = state().m_shadowOffset.height();
-        c->setShadow(FloatSize(width, -height), state().m_shadowBlur, state().m_shadowColor, ColorSpaceDeviceRGB);
-    } else
+    if (shouldDrawShadows())
+        c->setShadow(state().m_shadowOffset, state().m_shadowBlur, state().m_shadowColor, ColorSpaceDeviceRGB);
+    else
         c->clearShadow();
 }
 

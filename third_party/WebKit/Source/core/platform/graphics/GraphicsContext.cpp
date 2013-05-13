@@ -201,19 +201,8 @@ void GraphicsContext::setShadow(const FloatSize& size, float blur, const Color& 
 
     uint32_t mfFlags = SkBlurMaskFilter::kHighQuality_BlurFlag;
 
-    if (m_state->m_shadowsIgnoreTransforms)  {
-        // Currently only the GraphicsContext associated with the
-        // CanvasRenderingContext for HTMLCanvasElement have shadows ignore
-        // Transforms. So with this flag set, we know this state is associated
-        // with a CanvasRenderingContext.
+    if (m_state->m_shadowsIgnoreTransforms)
         mfFlags |= SkBlurMaskFilter::kIgnoreTransform_BlurFlag;
-
-        // CG uses natural orientation for Y axis, but the HTML5 canvas spec
-        // does not.
-        // So we now flip the height since it was flipped in
-        // CanvasRenderingContext in order to work with CG.
-        height = -height;
-    }
 
     SkColor c;
     if (color.isValid())
