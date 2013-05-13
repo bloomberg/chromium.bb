@@ -361,7 +361,7 @@ AutofillDialogViews::AccountChooser::AccountChooser(
     : image_(new views::ImageView()),
       label_(new views::Label()),
       arrow_(new views::ImageView()),
-      link_(new views::Link(controller->SignInLinkText())),
+      link_(new views::Link()),
       controller_(controller) {
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
@@ -380,21 +380,21 @@ AutofillDialogViews::AccountChooser::AccountChooser(
 AutofillDialogViews::AccountChooser::~AccountChooser() {}
 
 void AutofillDialogViews::AccountChooser::Update() {
-  image_->SetImage(controller_->AccountChooserImage().AsImageSkia());
+  gfx::Image icon = controller_->AccountChooserImage();
+  image_->SetImage(icon.AsImageSkia());
+  // Hack around http://crbug.com/239932
+  image_->SetVisible(!icon.IsEmpty());
   label_->SetText(controller_->AccountChooserText());
 
   bool show_link = !controller_->MenuModelForAccountChooser();
   label_->SetVisible(!show_link);
   arrow_->SetVisible(!show_link);
+  link_->SetText(controller_->SignInLinkText());
   link_->SetVisible(show_link);
 
   menu_runner_.reset();
 
   PreferredSizeChanged();
-}
-
-void AutofillDialogViews::AccountChooser::SetSignInLinkEnabled(bool enabled) {
-  link_->SetEnabled(enabled);
 }
 
 bool AutofillDialogViews::AccountChooser::OnMousePressed(
@@ -426,7 +426,7 @@ void AutofillDialogViews::AccountChooser::OnMouseReleased(
 
 void AutofillDialogViews::AccountChooser::LinkClicked(views::Link* source,
                                                       int event_flags) {
-  controller_->StartSignInFlow();
+  controller_->SignInLinkClicked();
 }
 
 // AutofillDialogViews::NotificationArea ---------------------------------------
@@ -761,8 +761,6 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       contents_(NULL),
       notification_area_(NULL),
       account_chooser_(NULL),
-      sign_in_container_(NULL),
-      cancel_sign_in_(NULL),
       sign_in_webview_(NULL),
       main_container_(NULL),
       scrollable_area_(NULL),
@@ -928,21 +926,19 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
   // TODO(abodenha) We should be able to use the WebContents of the WebView
   // to navigate instead of LoadInitialURL.  Figure out why it doesn't work.
 
-  account_chooser_->SetSignInLinkEnabled(false);
   sign_in_webview_->LoadInitialURL(wallet::GetSignInUrl());
   // TODO(abodenha) Resize the dialog to avoid the need for a scroll bar on
   // sign in. See http://crbug.com/169286
   sign_in_webview_->SetPreferredSize(contents_->GetPreferredSize());
   main_container_->SetVisible(false);
-  sign_in_container_->SetVisible(true);
+  sign_in_webview_->SetVisible(true);
   UpdateButtonStrip();
   ContentsPreferredSizeChanged();
   return &sign_in_webview_->web_contents()->GetController();
 }
 
 void AutofillDialogViews::HideSignIn() {
-  account_chooser_->SetSignInLinkEnabled(true);
-  sign_in_container_->SetVisible(false);
+  sign_in_webview_->SetVisible(false);
   main_container_->SetVisible(true);
   UpdateButtonStrip();
   ContentsPreferredSizeChanged();
@@ -1042,7 +1038,7 @@ views::View* AutofillDialogViews::GetContentsView() {
 }
 
 int AutofillDialogViews::GetDialogButtons() const {
-  if (sign_in_container_->visible())
+  if (sign_in_webview_->visible())
     return ui::DIALOG_BUTTON_NONE;
 
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
@@ -1109,41 +1105,37 @@ views::NonClientFrameView* AutofillDialogViews::CreateNonClientFrameView(
 
 void AutofillDialogViews::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
-  if (sender == cancel_sign_in_) {
-    controller_->EndSignInFlow();
-  } else {
-    // TODO(estade): Should the menu be shown on mouse down?
-    DetailsGroup* group = NULL;
-    for (DetailGroupMap::iterator iter = detail_groups_.begin();
-         iter != detail_groups_.end(); ++iter) {
-      if (sender == iter->second.suggested_button) {
-        group = &iter->second;
-        break;
-      }
+  // TODO(estade): Should the menu be shown on mouse down?
+  DetailsGroup* group = NULL;
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    if (sender == iter->second.suggested_button) {
+      group = &iter->second;
+      break;
     }
-    DCHECK(group);
-
-    if (!group->suggested_button->visible())
-      return;
-
-    menu_runner_.reset(new views::MenuRunner(
-                           controller_->MenuModelForSection(group->section)));
-
-    group->container->SetActive(true);
-    views::Button::ButtonState state = group->suggested_button->state();
-    group->suggested_button->SetState(views::Button::STATE_PRESSED);
-    // Ignore the result since we don't need to handle a deleted menu specially.
-    gfx::Rect bounds = group->suggested_button->GetBoundsInScreen();
-    bounds.Inset(group->suggested_button->GetInsets());
-    ignore_result(
-        menu_runner_->RunMenuAt(sender->GetWidget(),
-                                NULL,
-                                bounds,
-                                views::MenuItemView::TOPRIGHT,
-                                0));
-    group->container->SetActive(false);
-    group->suggested_button->SetState(state);
   }
+  DCHECK(group);
+
+  if (!group->suggested_button->visible())
+    return;
+
+  menu_runner_.reset(new views::MenuRunner(
+                         controller_->MenuModelForSection(group->section)));
+
+  group->container->SetActive(true);
+  views::Button::ButtonState state = group->suggested_button->state();
+  group->suggested_button->SetState(views::Button::STATE_PRESSED);
+  // Ignore the result since we don't need to handle a deleted menu specially.
+  gfx::Rect bounds = group->suggested_button->GetBoundsInScreen();
+  bounds.Inset(group->suggested_button->GetInsets());
+  ignore_result(
+      menu_runner_->RunMenuAt(sender->GetWidget(),
+                              NULL,
+                              bounds,
+                              views::MenuItemView::TOPRIGHT,
+                              0));
+  group->container->SetActive(false);
+  group->suggested_button->SetState(state);
 }
 
 void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
@@ -1236,20 +1228,9 @@ void AutofillDialogViews::InitChildViews() {
   contents_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
   contents_->AddChildView(CreateMainContainer());
-  contents_->AddChildView(CreateSignInContainer());
-}
-
-views::View* AutofillDialogViews::CreateSignInContainer() {
-  sign_in_container_ = new views::View();
-  sign_in_container_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-  sign_in_container_->SetVisible(false);
   sign_in_webview_ = new views::WebView(controller_->profile());
-  cancel_sign_in_ = new views::LabelButton(this,
-                                           controller_->CancelSignInText());
-  sign_in_container_->AddChildView(cancel_sign_in_);
-  sign_in_container_->AddChildView(sign_in_webview_);
-  return sign_in_container_;
+  sign_in_webview_->SetVisible(false);
+  contents_->AddChildView(sign_in_webview_);
 }
 
 views::View* AutofillDialogViews::CreateMainContainer() {

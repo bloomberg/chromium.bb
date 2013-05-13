@@ -33,10 +33,6 @@ string16 MockAutofillDialogController::ConfirmButtonText() const {
   return string16();
 }
 
-string16 MockAutofillDialogController::CancelSignInText() const {
-  return string16();
-}
-
 string16 MockAutofillDialogController::SaveLocallyText() const {
   return string16();
 }
@@ -164,9 +160,7 @@ std::vector<DialogNotification>
   return std::vector<DialogNotification>();
 }
 
-void MockAutofillDialogController::StartSignInFlow() {}
-
-void MockAutofillDialogController::EndSignInFlow() {}
+void MockAutofillDialogController::SignInLinkClicked() {}
 
 void MockAutofillDialogController::NotificationCheckboxStateChanged(
     DialogNotification::Type type,

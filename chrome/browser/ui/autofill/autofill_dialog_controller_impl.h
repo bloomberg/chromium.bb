@@ -108,7 +108,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual string16 CancelButtonText() const OVERRIDE;
   virtual string16 ConfirmButtonText() const OVERRIDE;
   virtual string16 SaveLocallyText() const OVERRIDE;
-  virtual string16 CancelSignInText() const OVERRIDE;
   virtual string16 ProgressBarText() const OVERRIDE;
   virtual string16 LegalDocumentsText() OVERRIDE;
   virtual DialogSignedInState SignedInState() const OVERRIDE;
@@ -152,8 +151,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void FocusMoved() OVERRIDE;
   virtual void ViewClosed() OVERRIDE;
   virtual std::vector<DialogNotification> CurrentNotifications() const OVERRIDE;
-  virtual void StartSignInFlow() OVERRIDE;
-  virtual void EndSignInFlow() OVERRIDE;
+  virtual void SignInLinkClicked() OVERRIDE;
   virtual void NotificationCheckboxStateChanged(DialogNotification::Type type,
                                                 bool checked) OVERRIDE;
   virtual void LegalDocumentLinkClicked(const ui::Range& range) OVERRIDE;
@@ -290,6 +288,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Starts fetching the wallet items from Online Wallet.
   void GetWalletItems();
+
+  // Stop showing sign in flow.
+  void HideSignIn();
 
   // Handles the SignedInState() on Wallet or sign-in state update.
   // Triggers the user name fetch and the passive/automatic sign-in.
@@ -544,7 +545,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   scoped_ptr<AutofillDialogView> view_;
 
   // A NotificationRegistrar for tracking the completion of sign-in.
-  content::NotificationRegistrar registrar_;
+  content::NotificationRegistrar signin_registrar_;
 
   base::WeakPtrFactory<AutofillDialogControllerImpl> weak_ptr_factory_;
 

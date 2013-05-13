@@ -432,11 +432,6 @@ string16 AutofillDialogControllerImpl::ConfirmButtonText() const {
       IDS_AUTOFILL_DIALOG_VERIFY_BUTTON : IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON);
 }
 
-string16 AutofillDialogControllerImpl::CancelSignInText() const {
-  // TODO(abodenha): real strings and l10n.
-  return ASCIIToUTF16("Don't sign in.");
-}
-
 string16 AutofillDialogControllerImpl::SaveLocallyText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX);
 }
@@ -488,7 +483,9 @@ string16 AutofillDialogControllerImpl::AccountChooserText() const {
 }
 
 string16 AutofillDialogControllerImpl::SignInLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SIGN_IN);
+  return l10n_util::GetStringUTF16(
+      signin_registrar_.IsEmpty() ? IDS_AUTOFILL_DIALOG_SIGN_IN :
+                                    IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET);
 }
 
 bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
@@ -548,6 +545,12 @@ bool AutofillDialogControllerImpl::IsSubmitPausedOn(
 
 void AutofillDialogControllerImpl::GetWalletItems() {
   GetWalletClient()->GetWalletItems(source_url_);
+}
+
+void AutofillDialogControllerImpl::HideSignIn() {
+  signin_registrar_.RemoveAll();
+  view_->HideSignIn();
+  view_->UpdateAccountChooser();
 }
 
 void AutofillDialogControllerImpl::SignedInStateUpdated() {
@@ -745,8 +748,12 @@ ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
 
 gfx::Image AutofillDialogControllerImpl::AccountChooserImage() {
   if (!MenuModelForAccountChooser()) {
-    return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_WALLET_ICON);
+    if (signin_registrar_.IsEmpty()) {
+      return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_WALLET_ICON);
+    }
+
+    return gfx::Image();
   }
 
   gfx::Image icon;
@@ -1280,21 +1287,21 @@ std::vector<DialogNotification>
   return notifications;
 }
 
-void AutofillDialogControllerImpl::StartSignInFlow() {
-  DCHECK(!IsPayingWithWallet());
-  DCHECK(registrar_.IsEmpty());
+void AutofillDialogControllerImpl::SignInLinkClicked() {
+  if (signin_registrar_.IsEmpty()) {
+    // Start sign in.
+    DCHECK(!IsPayingWithWallet());
 
-  content::Source<content::NavigationController> source(view_->ShowSignIn());
-  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
+    content::Source<content::NavigationController> source(view_->ShowSignIn());
+    signin_registrar_.Add(
+        this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
+    view_->UpdateAccountChooser();
 
-  GetMetricLogger().LogDialogUiEvent(
-      dialog_type_, AutofillMetrics::DIALOG_UI_SIGNIN_SHOWN);
-}
-
-void AutofillDialogControllerImpl::EndSignInFlow() {
-  DCHECK(!registrar_.IsEmpty());
-  registrar_.RemoveAll();
-  view_->HideSignIn();
+    GetMetricLogger().LogDialogUiEvent(
+        dialog_type_, AutofillMetrics::DIALOG_UI_SIGNIN_SHOWN);
+  } else {
+    HideSignIn();
+  }
 }
 
 void AutofillDialogControllerImpl::NotificationCheckboxStateChanged(
@@ -1422,7 +1429,7 @@ void AutofillDialogControllerImpl::Observe(
   content::LoadCommittedDetails* load_details =
       content::Details<content::LoadCommittedDetails>(details).ptr();
   if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
-    EndSignInFlow();
+    HideSignIn();
     account_chooser_model_.SelectActiveWalletAccount();
     GetWalletItems();
   }

@@ -92,7 +92,7 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 }
 
 - (void)linkClicked:(id)sender {
-  controller_->StartSignInFlow();
+  controller_->SignInLinkClicked();
 }
 
 - (void)update {

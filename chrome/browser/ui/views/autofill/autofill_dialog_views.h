@@ -233,9 +233,6 @@ class AutofillDialogViews : public AutofillDialogView,
     // Updates the view based on the state that |controller_| reports.
     void Update();
 
-    // Sets the state of the sign in link.
-    void SetSignInLinkEnabled(bool enabled);
-
     // views::View implementation.
     virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
     virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
@@ -433,9 +430,6 @@ class AutofillDialogViews : public AutofillDialogView,
   // Creates and returns a view that holds the requesting host and intro text.
   views::View* CreateNotificationArea();
 
-  // Creates and returns a view that holds a sign in page and related controls.
-  views::View* CreateSignInContainer();
-
   // Creates and returns a view that holds the main controls of this dialog.
   views::View* CreateMainContainer();
 
@@ -528,13 +522,6 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // The view that allows the user to toggle the data source.
   AccountChooser* account_chooser_;
-
-  // View to host the signin dialog and related controls.
-  views::View* sign_in_container_;
-
-  // LabelButton displayed during sign-in. Clicking cancels sign-in and returns
-  // to the main flow.
-  views::LabelButton* cancel_sign_in_;
 
   // A WebView to that navigates to a Google sign-in page to allow the user to
   // sign-in.
