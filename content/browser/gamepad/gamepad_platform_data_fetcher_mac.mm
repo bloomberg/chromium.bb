@@ -217,7 +217,7 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
       associated_[slot].mapper ? "STANDARD GAMEPAD " : "",
       vendor_int,
       product_int];
-  NSData* as16 = [ident dataUsingEncoding:NSUTF16StringEncoding];
+  NSData* as16 = [ident dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
 
   const size_t kOutputLengthBytes = sizeof(data_.items[slot].id);
   memset(&data_.items[slot].id, 0, kOutputLengthBytes);
