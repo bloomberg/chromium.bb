@@ -37,7 +37,7 @@ const char kInitialBindingsHaveBeenAssigned[] = "initial_keybindings_set";
 std::string GetPlatformKeybindingKeyForAccelerator(
     const ui::Accelerator& accelerator) {
   return extensions::Command::CommandPlatform() + ":" +
-         UTF16ToUTF8(accelerator.GetShortcutText());
+         extensions::Command::AcceleratorToString(accelerator);
 }
 
 void SetInitialBindingsHaveBeenAssigned(

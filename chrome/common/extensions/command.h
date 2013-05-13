@@ -36,6 +36,10 @@ class Command {
   // a generic ui::Accelerator object will be returns (with key_code Unknown).
   static ui::Accelerator StringToAccelerator(const std::string& accelerator);
 
+  // Returns the string representation of an accelerator without localizing the
+  // shortcut text (like accelerator::GetShortcutText() does).
+  static std::string AcceleratorToString(const ui::Accelerator& accelerator);
+
   // Parse the command.
   bool Parse(const base::DictionaryValue* command,
              const std::string& command_name,

@@ -13,6 +13,20 @@ cr.define('options', function() {
    */
   var ExtensionCommandList = cr.ui.define('div');
 
+  /** @const */ var keyComma = 188;
+  /** @const */ var keyDel = 46;
+  /** @const */ var keyDown = 40;
+  /** @const */ var keyEnd = 35;
+  /** @const */ var keyHome = 36;
+  /** @const */ var keyIns = 45;
+  /** @const */ var keyLeft = 37;
+  /** @const */ var keyPageDown = 34;
+  /** @const */ var keyPageUp = 33;
+  /** @const */ var keyPeriod = 190;
+  /** @const */ var keyRight = 39;
+  /** @const */ var keyTab = 9;
+  /** @const */ var keyUp = 38;
+
   /**
    * Returns whether the passed in |keyCode| is a valid extension command
    * char or not. This is restricted to A-Z and 0-9 (ignoring modifiers) at
@@ -21,7 +35,20 @@ cr.define('options', function() {
    * @return {boolean} Returns whether the char is valid.
    */
   function validChar(keyCode) {
-    return (keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0)) ||
+    return keyCode == keyComma ||
+           keyCode == keyDel ||
+           keyCode == keyDown ||
+           keyCode == keyEnd ||
+           keyCode == keyHome ||
+           keyCode == keyIns ||
+           keyCode == keyLeft ||
+           keyCode == keyPageDown ||
+           keyCode == keyPageUp ||
+           keyCode == keyPeriod ||
+           keyCode == keyRight ||
+           keyCode == keyTab ||
+           keyCode == keyUp ||
+           (keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0)) ||
            (keyCode >= '0'.charCodeAt(0) && keyCode <= '9'.charCodeAt(0));
   }
 
@@ -41,8 +68,44 @@ cr.define('options', function() {
       output += 'Alt+';
     if (event.shiftKey)
       output += 'Shift+';
-    if (validChar(event.keyCode))
-      output += String.fromCharCode('A'.charCodeAt(0) + event.keyCode - 65);
+
+    var keyCode = event.keyCode;
+    if (validChar(keyCode)) {
+      if ((keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0)) ||
+          (keyCode >= '0'.charCodeAt(0) && keyCode <= '9'.charCodeAt(0))) {
+        output += String.fromCharCode('A'.charCodeAt(0) + keyCode - 65);
+      } else {
+        switch (keyCode) {
+          case keyComma:
+            output += 'Comma'; break;
+          case keyDel:
+            output += 'Delete'; break;
+          case keyDown:
+            output += 'Down'; break;
+          case keyEnd:
+            output += 'End'; break;
+          case keyHome:
+            output += 'Home'; break;
+          case keyIns:
+            output += 'Insert'; break;
+          case keyLeft:
+            output += 'Left'; break;
+          case keyPageDown:
+            output += 'PageDown'; break;
+          case keyPageUp:
+            output += 'PageUp'; break;
+          case keyPeriod:
+            output += 'Period'; break;
+          case keyRight:
+            output += 'Right'; break;
+          case keyTab:
+            output += 'Tab'; break;
+          case keyUp:
+            output += 'Up'; break;
+        }
+      }
+    }
+
     return output;
   }
 

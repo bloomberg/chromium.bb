@@ -359,6 +359,12 @@ need to be translated for each locale.-->
       <message name="IDS_APP_RIGHT_ARROW_KEY" desc="Right arrow key">
         Right Arrow
       </message>
+      <message name="IDS_APP_UP_ARROW_KEY" desc="Up arrow key">
+        Up Arrow
+      </message>
+      <message name="IDS_APP_DOWN_ARROW_KEY" desc="Down arrow key">
+        Down Arrow
+      </message>
       <message name="IDS_APP_ENTER_KEY" desc="Enter key">
         Enter
       </message>
@@ -370,6 +376,12 @@ need to be translated for each locale.-->
       </message>
       <message name="IDS_APP_BACKSPACE_KEY" desc="Backspace key">
         Backspace
+      </message>
+      <message name="IDS_APP_COMMA_KEY" desc="Comma key">
+        Comma
+      </message>
+      <message name="IDS_APP_PERIOD_KEY" desc="Period key">
+        Period
       </message>
 
       <!-- Shortcut Modifiers -->

@@ -31,6 +31,18 @@ TEST(CommandTest, ExtensionCommandParsing) {
   const ui::Accelerator alt_shift_f =
       ui::Accelerator(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN);
   const ui::Accelerator ctrl_1 = ui::Accelerator(ui::VKEY_1, ctrl);
+  const ui::Accelerator ctrl_comma = ui::Accelerator(ui::VKEY_OEM_COMMA, ctrl);
+  const ui::Accelerator ctrl_dot = ui::Accelerator(ui::VKEY_OEM_PERIOD, ctrl);
+  const ui::Accelerator ctrl_left = ui::Accelerator(ui::VKEY_LEFT, ctrl);
+  const ui::Accelerator ctrl_right = ui::Accelerator(ui::VKEY_RIGHT, ctrl);
+  const ui::Accelerator ctrl_up = ui::Accelerator(ui::VKEY_UP, ctrl);
+  const ui::Accelerator ctrl_down = ui::Accelerator(ui::VKEY_DOWN, ctrl);
+  const ui::Accelerator ctrl_ins = ui::Accelerator(ui::VKEY_INSERT, ctrl);
+  const ui::Accelerator ctrl_del = ui::Accelerator(ui::VKEY_DELETE, ctrl);
+  const ui::Accelerator ctrl_home = ui::Accelerator(ui::VKEY_HOME, ctrl);
+  const ui::Accelerator ctrl_end = ui::Accelerator(ui::VKEY_END, ctrl);
+  const ui::Accelerator ctrl_pgup = ui::Accelerator(ui::VKEY_PRIOR, ctrl);
+  const ui::Accelerator ctrl_pgdwn = ui::Accelerator(ui::VKEY_NEXT, ctrl);
 
   const struct {
     bool expected_result;
@@ -75,6 +87,19 @@ TEST(CommandTest, ExtensionCommandParsing) {
     // Skipping description is OK for browser- and pageActions.
     { true, ctrl_f, "_execute_browser_action", "Ctrl+F", "" },
     { true, ctrl_f, "_execute_page_action",    "Ctrl+F", "" },
+    // Home, End, Arrow keys, etc.
+    { true, ctrl_comma, "_execute_browser_action", "Ctrl+Comma", "" },
+    { true, ctrl_dot, "_execute_browser_action", "Ctrl+Period", "" },
+    { true, ctrl_left, "_execute_browser_action", "Ctrl+Left", "" },
+    { true, ctrl_right, "_execute_browser_action", "Ctrl+Right", "" },
+    { true, ctrl_up, "_execute_browser_action", "Ctrl+Up", "" },
+    { true, ctrl_down, "_execute_browser_action", "Ctrl+Down", "" },
+    { true, ctrl_ins, "_execute_browser_action", "Ctrl+Insert", "" },
+    { true, ctrl_del, "_execute_browser_action", "Ctrl+Delete", "" },
+    { true, ctrl_home, "_execute_browser_action", "Ctrl+Home", "" },
+    { true, ctrl_end, "_execute_browser_action", "Ctrl+End", "" },
+    { true, ctrl_pgup, "_execute_browser_action", "Ctrl+PageUp", "" },
+    { true, ctrl_pgdwn, "_execute_browser_action", "Ctrl+PageDown", "" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {

@@ -20,6 +20,7 @@ namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 
 using extensions::ErrorUtils;
+using extensions::Command;
 
 namespace {
 
@@ -27,7 +28,6 @@ static const char kMissing[] = "Missing";
 
 static const char kCommandKeyNotSupported[] =
     "Command key is not supported. Note: Ctrl means Command on Mac";
-
 
 ui::Accelerator ParseImpl(const std::string& accelerator,
                           const std::string& platform_key,
@@ -60,17 +60,17 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
   int modifiers = ui::EF_NONE;
   ui::KeyboardCode key = ui::VKEY_UNKNOWN;
   for (size_t i = 0; i < tokens.size(); i++) {
-    if (tokens[i] == "Ctrl") {
+    if (tokens[i] == values::kKeyCtrl) {
       modifiers |= ui::EF_CONTROL_DOWN;
-    } else if (tokens[i] == "Command") {
-      if (platform_key == "mac") {
+    } else if (tokens[i] == values::kKeyCommand) {
+      if (platform_key == values::kKeybindingPlatformMac) {
         // Either the developer specified Command+foo in the manifest for Mac or
         // they specified Ctrl and it got normalized to Command (to get Ctrl on
         // Mac the developer has to specify MacCtrl). Therefore we treat this
         // as Command.
         modifiers |= ui::EF_COMMAND_DOWN;
 #if defined(OS_MACOSX)
-      } else if (platform_key == "default") {
+      } else if (platform_key == values::kKeybindingPlatformDefault) {
         // If we see "Command+foo" in the Default section it can mean two
         // things, depending on the platform:
         // The developer specified "Ctrl+foo" for Default and it got normalized
@@ -82,19 +82,61 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
         key = ui::VKEY_UNKNOWN;
         break;
       }
-    } else if (tokens[i] == "Alt") {
+    } else if (tokens[i] == values::kKeyAlt) {
       modifiers |= ui::EF_ALT_DOWN;
-    } else if (tokens[i] == "Shift") {
+    } else if (tokens[i] == values::kKeyShift) {
       modifiers |= ui::EF_SHIFT_DOWN;
-    } else if (tokens[i].size() == 1) {
+    } else if (tokens[i].size() == 1 ||  // A-Z, 0-9.
+               tokens[i] == values::kKeyComma ||
+               tokens[i] == values::kKeyPeriod ||
+               tokens[i] == values::kKeyUp ||
+               tokens[i] == values::kKeyDown ||
+               tokens[i] == values::kKeyLeft ||
+               tokens[i] == values::kKeyRight ||
+               tokens[i] == values::kKeyIns ||
+               tokens[i] == values::kKeyDel ||
+               tokens[i] == values::kKeyHome ||
+               tokens[i] == values::kKeyEnd ||
+               tokens[i] == values::kKeyPgUp ||
+               tokens[i] == values::kKeyPgDwn ||
+               tokens[i] == values::kKeyTab) {
       if (key != ui::VKEY_UNKNOWN) {
         // Multiple key assignments.
         key = ui::VKEY_UNKNOWN;
         break;
       }
-      if (tokens[i][0] >= 'A' && tokens[i][0] <= 'Z') {
+
+      if (tokens[i] == values::kKeyComma) {
+        key = ui::VKEY_OEM_COMMA;
+      } else if (tokens[i] == values::kKeyPeriod) {
+        key = ui::VKEY_OEM_PERIOD;
+      } else if (tokens[i] == values::kKeyUp) {
+        key = ui::VKEY_UP;
+      } else if (tokens[i] == values::kKeyDown) {
+        key = ui::VKEY_DOWN;
+      } else if (tokens[i] == values::kKeyLeft) {
+        key = ui::VKEY_LEFT;
+      } else if (tokens[i] == values::kKeyRight) {
+        key = ui::VKEY_RIGHT;
+      } else if (tokens[i] == values::kKeyIns) {
+        key = ui::VKEY_INSERT;
+      } else if (tokens[i] == values::kKeyDel) {
+        key = ui::VKEY_DELETE;
+      } else if (tokens[i] == values::kKeyHome) {
+        key = ui::VKEY_HOME;
+      } else if (tokens[i] == values::kKeyEnd) {
+        key = ui::VKEY_END;
+      } else if (tokens[i] == values::kKeyPgUp) {
+        key = ui::VKEY_PRIOR;
+      } else if (tokens[i] == values::kKeyPgDwn) {
+        key = ui::VKEY_NEXT;
+      } else if (tokens[i] == values::kKeyTab) {
+        key = ui::VKEY_TAB;
+      } else if (tokens[i].size() == 1 &&
+                 tokens[i][0] >= 'A' && tokens[i][0] <= 'Z') {
         key = static_cast<ui::KeyboardCode>(ui::VKEY_A + (tokens[i][0] - 'A'));
-      } else if (tokens[i][0] >= '0' && tokens[i][0] <= '9') {
+      } else if (tokens[i].size() == 1 &&
+                 tokens[i][0] >= '0' && tokens[i][0] <= '9') {
         key = static_cast<ui::KeyboardCode>(ui::VKEY_0 + (tokens[i][0] - '0'));
       } else {
         key = ui::VKEY_UNKNOWN;
@@ -138,9 +180,9 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
 std::string NormalizeShortcutSuggestion(const std::string& suggestion,
                                         const std::string& platform) {
   bool normalize = false;
-  if (platform == "mac") {
+  if (platform == values::kKeybindingPlatformMac) {
     normalize = true;
-  } else if (platform == "default") {
+  } else if (platform == values::kKeybindingPlatformDefault) {
 #if defined(OS_MACOSX)
     normalize = true;
 #endif
@@ -153,10 +195,10 @@ std::string NormalizeShortcutSuggestion(const std::string& suggestion,
   std::vector<std::string> tokens;
   base::SplitString(suggestion, '+', &tokens);
   for (size_t i = 0; i < tokens.size(); i++) {
-    if (tokens[i] == "Ctrl")
-      tokens[i] = "Command";
-    else if (tokens[i] == "MacCtrl")
-      tokens[i] = "Ctrl";
+    if (tokens[i] == values::kKeyCtrl)
+      tokens[i] = values::kKeyCommand;
+    else if (tokens[i] == values::kKeyMacCtrl)
+      tokens[i] = values::kKeyCtrl;
   }
   return JoinString(tokens, '+');
 }
@@ -200,6 +242,82 @@ ui::Accelerator Command::StringToAccelerator(const std::string& accelerator) {
   ui::Accelerator parsed =
       ParseImpl(accelerator, Command::CommandPlatform(), 0, &error);
   return parsed;
+}
+
+// static
+std::string Command::AcceleratorToString(const ui::Accelerator& accelerator) {
+  std::string shortcut;
+
+  // Ctrl and Alt are mutually exclusive.
+  if (accelerator.IsCtrlDown())
+    shortcut += values::kKeyCtrl;
+  else if (accelerator.IsAltDown())
+    shortcut += values::kKeyAlt;
+  if (!shortcut.empty())
+    shortcut += values::kKeySeparator;
+
+  if (accelerator.IsCmdDown()) {
+    shortcut += values::kKeyCommand;
+    shortcut += values::kKeySeparator;
+  }
+
+  if (accelerator.IsShiftDown()) {
+    shortcut += values::kKeyShift;
+    shortcut += values::kKeySeparator;
+  }
+
+  if (accelerator.key_code() >= ui::VKEY_0 &&
+      accelerator.key_code() <= ui::VKEY_9) {
+    shortcut += '0' + (accelerator.key_code() - ui::VKEY_0);
+  } else if (accelerator.key_code() >= ui::VKEY_A &&
+           accelerator.key_code() <= ui::VKEY_Z) {
+    shortcut += 'A' + (accelerator.key_code() - ui::VKEY_A);
+  } else {
+    switch (accelerator.key_code()) {
+      case ui::VKEY_OEM_COMMA:
+        shortcut += values::kKeyComma;
+        break;
+      case ui::VKEY_OEM_PERIOD:
+        shortcut += values::kKeyPeriod;
+        break;
+      case ui::VKEY_UP:
+        shortcut += values::kKeyUp;
+        break;
+      case ui::VKEY_DOWN:
+        shortcut += values::kKeyDown;
+        break;
+      case ui::VKEY_LEFT:
+        shortcut += values::kKeyLeft;
+        break;
+      case ui::VKEY_RIGHT:
+        shortcut += values::kKeyRight;
+        break;
+      case ui::VKEY_INSERT:
+        shortcut += values::kKeyIns;
+        break;
+      case ui::VKEY_DELETE:
+        shortcut += values::kKeyDel;
+        break;
+      case ui::VKEY_HOME:
+        shortcut += values::kKeyHome;
+        break;
+      case ui::VKEY_END:
+        shortcut += values::kKeyEnd;
+        break;
+      case ui::VKEY_PRIOR:
+        shortcut += values::kKeyPgUp;
+        break;
+      case ui::VKEY_NEXT:
+        shortcut += values::kKeyPgDwn;
+        break;
+      case ui::VKEY_TAB:
+        shortcut += values::kKeyTab;
+        break;
+      default:
+        return "";
+    }
+  }
+  return shortcut;
 }
 
 bool Command::Parse(const DictionaryValue* command,
@@ -253,9 +371,9 @@ bool Command::Parse(const DictionaryValue* command,
     if (command->GetString(keys::kSuggestedKey, &suggested_key_string) &&
         !suggested_key_string.empty()) {
       // If only a single string is provided, it must be default for all.
-      suggestions["default"] = suggested_key_string;
+      suggestions[values::kKeybindingPlatformDefault] = suggested_key_string;
     } else {
-      suggestions["default"] = "";
+      suggestions[values::kKeybindingPlatformDefault] = "";
     }
   }
 
@@ -266,7 +384,7 @@ bool Command::Parse(const DictionaryValue* command,
     // specified Command in the Default section, which will work on Mac after
     // normalization but only fail on other platforms when they try it out on
     // other platforms, which is not what we want.
-    if (iter->first == "default" &&
+    if (iter->first == values::kKeybindingPlatformDefault &&
         iter->second.find("Command+") != std::string::npos) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidKeyBinding,

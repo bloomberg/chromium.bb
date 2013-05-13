@@ -28,14 +28,22 @@ You must set manifest_version to (at least) 2 to use this API.
 <h2 id="usage">Usage</h2>
 <p>The commands API allows you to define specific commands, and bind them to a
 default key combination. Each command your extension accepts must be listed in
-the manifest as an attribute of the 'commands' manifest key. Note: Combinations
-that involve Ctrl+Alt are not permitted in order to avoid conflicts with the
-AltGr key. Also note that on Mac 'Ctrl' is automatically converted to 'Command'.
-If you want 'Ctrl' instead, please specify 'MacCtrl'.</p>
+the manifest as an attribute of the 'commands' manifest key. An extension can
+have many commands but only 4 suggested keys can be specified. The user can
+manually add more shortcuts from the chrome://extensions page.</p>
 
-<p>An extension can have many commands but only 4 suggested keys can be
-specified. The user can manually add more shortcuts from the chrome://extensions
-page.</p>
+<p>Supported keys: A-Z, 0-9, Comma, Period, Home, End, PageUp, PageDown, Insert,
+Delete, Tab and the arrow keys (Up, Down, Left, Right).</p>
+
+<p>Note: All key combinations must include either Ctrl* or Alt. Combinations
+that involve Ctrl+Alt are not permitted in order to avoid conflicts with the
+AltGr key. Shift can be used in addition to Alt or Ctrl, but is not required.<p>
+
+<p>* Also note that on Mac 'Ctrl' is automatically converted to 'Command'. If
+you want 'Ctrl' instead, please specify 'MacCtrl'.</p>
+
+<p>Certain Chrome shortcuts (e.g. window management) always take priority over
+Extension Command shortcuts and can not be overwritten.</p>
 
 <pre>{
   "name": "My extension",
