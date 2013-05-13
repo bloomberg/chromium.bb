@@ -26,9 +26,13 @@ EXTRA_ENV = {
   # the INPUTS file coming from the llc translation step
   'LLC_TRANSLATED_FILE' : '',
 
-  'STDLIB': '1',
+  # Capture some metadata passed from pnacl-translate over to here.
+  'SONAME' : '',
 
-  'LINKER': 'old', # Use the old (hg) gold by default for now.
+  'STDLIB': '1',
+  'SHARED': '0',
+  'STATIC': '0',
+  'RELOCATABLE': '0',
 
   # These are used only for the static cases
   # For the shared/dynamic case it does not really make sense
@@ -40,36 +44,49 @@ EXTRA_ENV = {
   # Determine if we should build nexes compatible with the IRT.
   'USE_IRT' : '1',
 
-  # NOTE: -Tdata is used as a hack in old gold to influence the placement
-  # of the ro segment.
-  'LD_FLAGS_old': '--rosegment --native-client ' +
+  # We consider 4 different gold modes.
+  # NOTE: "shared" implies PIC
+  #       "dynamic" should probbably imply nonPIC to avoid
+  #                 tls related instruction rewrites by the linker
+  # NOTE: gold does not use a linker script so you have to disable
+  #       them besides setting 'USE_GOLD' to '0'.
+  # NOTE: -Tdata is used to influence the placement of the ro segment
+  #       gold has been adjusted accordingly
+  'LD_FLAGS_static': '--rosegment --native-client ' +
+                     '--keep-headers-out-of-load-segment ' +
+                     '${USE_IRT ? -Tdata=${BASE_RODATA}} -Ttext=${BASE_TEXT}',
+
+  'LD_FLAGS_shared': '--rosegment --bsssegment --native-client ' +
+                     '--keep-headers-out-of-load-segment ' +
+                     '-Tdata=0x10000000',
+
+  'LD_FLAGS_dynamic': '--rosegment  --bsssegment --native-client ' +
                       '--keep-headers-out-of-load-segment ' +
-                      '${USE_IRT ? -Tdata=${BASE_RODATA}} -Ttext=${BASE_TEXT}',
-  # Upstream gold has the segment gap built in, but we can disable it once
-  # Roland's change gets pulled into our repo.
-  # TODO(dschuff): Check that a conservative value of 32 is ok for ARM, or
-  # conditionalize.
-  # '${!USE_IRT ? --rosegment-gap=32} ',
-  'LD_FLAGS_new': ''
+                      '-Tdata=0x11000000 -Ttext=0x1000000',
 
   # --eh-frame-hdr asks the linker to generate an .eh_frame_hdr section,
   # which is a presorted list of registered frames. This section is
   # used by libgcc_eh/libgcc_s to avoid doing the sort during runtime.
   # http://www.airs.com/blog/archives/462
   #
-  'LD_FLAGS'    : '${LD_FLAGS_%LINKER%} ' +
+  'LD_FLAGS'    : '${LD_FLAGS_%EMITMODE%} ' +
                   '-nostdlib ' +
                   # Only relvevant for ARM where it suppresses a warning.
                   # Ignored for other archs.
                   '--no-fix-cortex-a8 ' +
                   '-m ${LD_EMUL} ' +
                   '--eh-frame-hdr ' +
-                  '-static',
+                  '${#SONAME ? -soname=${SONAME}} ' +
+                  '${STATIC ? -static} ${SHARED ? -shared} ${RELOCATABLE ? -r}',
 
   # This may contain the metadata file, which is passed to LD with --metadata.
   # It must be passed at the end of the link line.
   'METADATA_FILE': '',
   'NEEDED_LIBRARIES': '',
+
+  'EMITMODE'         : '${RELOCATABLE ? relocatable : ' +
+                       '${STATIC ? static : ' +
+                       '${SHARED ? shared : dynamic}}}',
 
   'LD_EMUL'        : '${LD_EMUL_%ARCH%}',
   'LD_EMUL_ARM'    : 'armelf_nacl',
@@ -88,22 +105,26 @@ EXTRA_ENV = {
   'LIBS_MIPS32'      : '${BASE_LIB_NATIVE}mips32',
 
   # Note: this is only used in the unsandboxed case
-  'RUN_LD' : '${LD_%LINKER%} ${LD_FLAGS} ${inputs} -o ${output}'
+  'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o ${output}' +
+             '${#METADATA_FILE ? --metadata ${METADATA_FILE}}',
 }
 
 def PassThrough(*args):
   env.append('LD_FLAGS', *args)
 
 LDPatterns = [
-  ( '--pnacl-nativeld=(.+)', "env.set('LINKER', $0)"),
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
 
   ( ('(--add-extra-dt-needed=.*)'), "env.append('NEEDED_LIBRARIES', $0)"),
+  ( ('--metadata', '(.+)'),         "env.set('METADATA_FILE', $0)"),
   ( '--noirt',                      "env.set('USE_IRT', '0')"),
 
+  ( '-shared',         "env.set('SHARED', '1')"),
   ( '-static',         "env.set('STATIC', '1')"),
   ( '-nostdlib',       "env.set('STDLIB', '0')"),
+  ( '-r',              "env.set('RELOCATABLE', '1')"),
+  ( '-relocatable',    "env.set('RELOCATABLE', '1')"),
 
   ( '-L(.+)',
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
@@ -113,7 +134,6 @@ LDPatterns = [
   # This is not quite right but it is the intention of the tests
   # using the flags which want to control the placement of the
   # "rx" and "r" segments
-  # TODO(dschuff): clean this up when we go down to 1 linker
   ( ('-Ttext','(.*)'),                  "env.set('BASE_TEXT', $0)"),
   ( ('-Ttext=(.*)'),                    "env.set('BASE_TEXT', $0)"),
   ( ('--section-start','.text=(.*)'),   "env.set('BASE_TEXT', $0)"),
@@ -121,6 +141,8 @@ LDPatterns = [
 
   ( ('(-e)','(.*)'),              PassThrough),
   ( '(--entry=.*)',               PassThrough),
+  ( '-?-soname=(.*)',             "env.set('SONAME', $0)"),
+  ( ('(-?-soname)', '(.*)'),      "env.set('SONAME', $1)"),
   ( '(-M)',                       PassThrough),
   ( '(-t)',                       PassThrough),
   ( ('-y','(.*)'),                PassThrough),
@@ -185,8 +207,10 @@ def main(argv):
   env.set('inputs', *inputs)
   env.set('output', output)
 
+  if GetArch(required=True) == 'X8664':
+    env.append('LD_FLAGS', '--metadata-is64')
+
   if env.getbool('SANDBOXED'):
-    env.set('LINKER', 'old')
     RunLDSandboxed()
   else:
     Run('${RUN_LD}')
@@ -255,9 +279,13 @@ def MakeSelUniversalScriptForLD(ld_flags,
   if use_default:
     # We don't have the bitcode file here anymore, so we assume that
     # pnacl-translate passed along the relevant information via commandline.
-    soname = ''
-    needed = ''
-    is_shared_library = 0
+    soname = env.getone('SONAME')
+    needed = env.get('NEEDED_LIBRARIES')
+    emit_mode = env.getone('EMITMODE')
+    if emit_mode == 'shared':
+      is_shared_library = 1
+    else:
+      is_shared_library = 0
 
     script.append('readonly_file objfile %s' % main_input)
     script.append(('rpc RunWithDefaultCommandLine ' +
@@ -277,6 +305,12 @@ def MakeSelUniversalScriptForLD(ld_flags,
     for f in files:
       basename = pathtools.basename(f)
       command_line = command_line + basename + kTerminator
+
+    # Add the metadata file
+    metadata_file = env.getone('METADATA_FILE')
+    if metadata_file:
+      command_line = command_line + '--metadata' + kTerminator
+      command_line = command_line + metadata_file + kTerminator
 
     command_line_escaped = command_line.replace(kTerminator, '\\x00')
     # Assume that the commandline captures all necessary metadata for now.
