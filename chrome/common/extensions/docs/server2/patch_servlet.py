@@ -52,7 +52,7 @@ class _PatchServletDelegate(RenderServlet.Delegate):
                           object_store_creator,
                           patched_file_system,
                           self._delegate.CreateAppSamplesFileSystem(
-                              object_store_creator),
+                              base_object_store_creator),
                           '/_patch/%s/static' % self._issue,
                           compiled_fs_factory)
 
