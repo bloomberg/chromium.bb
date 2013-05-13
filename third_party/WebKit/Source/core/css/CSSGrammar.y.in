@@ -1807,6 +1807,9 @@ calc_func_paren_expr:
         } else
             $$ = 0;
     }
+    | '(' maybe_space expr_recovery closing_parenthesis {
+        YYERROR;
+    }
   ;
 
 calc_func_expr:
