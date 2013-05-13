@@ -408,7 +408,6 @@
                 'src/WebCompositorInputHandlerImpl.cpp',
                 'src/WebCompositorInputHandlerImpl.h',
                 'src/WebCrossOriginPreflightResultCache.cpp',
-                'src/WebCursorInfo.cpp',
                 'src/WebDOMActivityLogger.cpp',
                 'src/WebDOMCustomEvent.cpp',
                 'src/WebDOMEvent.cpp',

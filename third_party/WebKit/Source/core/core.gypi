@@ -3597,6 +3597,7 @@
             'platform/chromium/support/WebActiveGestureAnimation.h',
             'platform/chromium/support/WebAudioBus.cpp',
             'platform/chromium/support/WebCString.cpp',
+            'platform/chromium/support/WebCursorInfo.cpp',
             'platform/chromium/support/WebData.cpp',
             'platform/chromium/support/WebFilterOperation.cpp',
             'platform/chromium/support/WebFilterOperations.cpp',
