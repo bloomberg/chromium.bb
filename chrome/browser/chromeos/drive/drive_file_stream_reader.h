@@ -21,6 +21,7 @@ class SequencedTaskRunner;
 }  // namespace base
 
 namespace net {
+class HttpByteRange;
 class IOBuffer;
 }  // namespace net
 
@@ -156,8 +157,7 @@ class DriveFileStreamReader {
   // Initializes the stream for the |drive_file_path|.
   // |callback| must not be null.
   void Initialize(const base::FilePath& drive_file_path,
-                  uint64 range_offset,
-                  uint64 range_length,
+                  const net::HttpByteRange& byte_range,
                   const InitializeCompletionCallback& callback);
 
   // Reads the data into |buffer| at most |buffer_length|, and returns
@@ -172,13 +172,10 @@ class DriveFileStreamReader {
            const net::CompletionCallback& callback);
 
  private:
-  // The range of the data to be read.
-  struct Range;
-
   // Part of Initialize. Called after GetFileContentByPath's initialization
   // is done.
   void InitializeAfterGetFileContentByPathInitialized(
-      const Range& range,
+      const net::HttpByteRange& in_byte_range,
       const InitializeCompletionCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry,
@@ -187,7 +184,7 @@ class DriveFileStreamReader {
 
   // Part of Initialize. Called when the local file open process is done.
   void InitializeAfterLocalFileOpen(
-      uint64 length,
+      int64 length,
       const InitializeCompletionCallback& callback,
       scoped_ptr<ResourceEntry> entry,
       scoped_ptr<util::LocalFileReader> file_reader,

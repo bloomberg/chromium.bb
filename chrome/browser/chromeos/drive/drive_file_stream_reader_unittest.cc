@@ -25,6 +25,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/http/http_byte_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -373,7 +374,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   scoped_ptr<ResourceEntry> entry;
   reader->Initialize(
       kDriveFile,
-      0, kuint64max,
+      net::HttpByteRange(),
       google_apis::CreateComposedCallback(
           base::Bind(&google_apis::test_util::RunAndQuit),
                      google_apis::test_util::CreateCopyResultCallback(
@@ -400,7 +401,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   entry.reset();
   reader->Initialize(
       kDriveFile,
-      0, kuint64max,
+      net::HttpByteRange(),
       google_apis::CreateComposedCallback(
           base::Bind(&google_apis::test_util::RunAndQuit),
                      google_apis::test_util::CreateCopyResultCallback(
@@ -423,8 +424,8 @@ TEST_F(DriveFileStreamReaderTest, Read) {
 
 TEST_F(DriveFileStreamReaderTest, ReadRange) {
   // In this test case, we just confirm that the part of file is read.
-  const uint64 kRangeOffset = 3;
-  const uint64 kRangeLength = 4;
+  const int64 kRangeOffset = 3;
+  const int64 kRangeLength = 4;
 
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
@@ -437,10 +438,13 @@ TEST_F(DriveFileStreamReaderTest, ReadRange) {
 
   int error = net::ERR_FAILED;
   scoped_ptr<ResourceEntry> entry;
+  net::HttpByteRange byte_range;
+  byte_range.set_first_byte_position(kRangeOffset);
+  // Last byte position is inclusive.
+  byte_range.set_last_byte_position(kRangeOffset + kRangeLength - 1);
   reader->Initialize(
       kDriveFile,
-      kRangeOffset,
-      kRangeLength,
+      byte_range,
       google_apis::CreateComposedCallback(
           base::Bind(&google_apis::test_util::RunAndQuit),
                      google_apis::test_util::CreateCopyResultCallback(
@@ -455,7 +459,7 @@ TEST_F(DriveFileStreamReaderTest, ReadRange) {
   ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &first_content));
 
   // The length should be equal to range length.
-  EXPECT_EQ(kRangeLength, first_content.size());
+  EXPECT_EQ(kRangeLength, static_cast<int64>(first_content.size()));
 
   // Create second instance and initialize it.
   // In this case, the file should be cached one.
@@ -468,8 +472,7 @@ TEST_F(DriveFileStreamReaderTest, ReadRange) {
   entry.reset();
   reader->Initialize(
       kDriveFile,
-      kRangeOffset,
-      kRangeLength,
+      byte_range,
       google_apis::CreateComposedCallback(
           base::Bind(&google_apis::test_util::RunAndQuit),
                      google_apis::test_util::CreateCopyResultCallback(
@@ -485,6 +488,37 @@ TEST_F(DriveFileStreamReaderTest, ReadRange) {
 
   // The same content is expected.
   EXPECT_EQ(first_content, second_content);
+}
+
+TEST_F(DriveFileStreamReaderTest, OutOfRangeError) {
+  const int64 kRangeOffset = 1000000;  // Out of range.
+  const int64 kRangeLength = 4;
+
+  const base::FilePath kDriveFile =
+      util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
+  // Create the reader, and initialize it.
+  // In this case, the file is not yet locally cached.
+  scoped_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
+      GetFileSystemGetter(),
+      worker_thread_->message_loop_proxy()));
+  EXPECT_FALSE(reader->IsInitialized());
+
+  int error = net::ERR_FAILED;
+  scoped_ptr<ResourceEntry> entry;
+  net::HttpByteRange byte_range;
+  byte_range.set_first_byte_position(kRangeOffset);
+  // Last byte position is inclusive.
+  byte_range.set_last_byte_position(kRangeOffset + kRangeLength - 1);
+  reader->Initialize(
+      kDriveFile,
+      byte_range,
+      google_apis::CreateComposedCallback(
+          base::Bind(&google_apis::test_util::RunAndQuit),
+                     google_apis::test_util::CreateCopyResultCallback(
+                         &error, &entry)));
+  message_loop_.Run();
+  EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, error);
+  EXPECT_FALSE(entry);
 }
 
 }  // namespace drive

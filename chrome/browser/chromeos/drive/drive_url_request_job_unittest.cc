@@ -21,6 +21,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/test_completion_callback.h"
+#include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -182,7 +183,7 @@ class DriveURLRequestJobTest : public testing::Test {
     scoped_ptr<ResourceEntry> entry;
     reader->Initialize(
         file_path,
-        0, kuint64max,
+        net::HttpByteRange(),
         google_apis::CreateComposedCallback(
             base::Bind(&google_apis::test_util::RunAndQuit),
             google_apis::test_util::CreateCopyResultCallback(

@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_byte_range.h"
 
 using content::BrowserThread;
 
@@ -49,10 +50,11 @@ int WebkitFileStreamReaderImpl::Read(net::IOBuffer* buffer,
   if (stream_reader_->IsInitialized())
     return stream_reader_->Read(buffer, buffer_length, callback);
 
+  net::HttpByteRange byte_range;
+  byte_range.set_first_byte_position(offset_);
   stream_reader_->Initialize(
       drive_file_path_,
-      offset_,
-      kuint64max,
+      byte_range,
       base::Bind(&WebkitFileStreamReaderImpl::OnStreamReaderInitialized,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Bind(&WebkitFileStreamReaderImpl
@@ -74,10 +76,11 @@ int64 WebkitFileStreamReaderImpl::GetLength(
     return file_size_;
   }
 
+  net::HttpByteRange byte_range;
+  byte_range.set_first_byte_position(offset_);
   stream_reader_->Initialize(
       drive_file_path_,
-      offset_,
-      kuint64max,
+      byte_range,
       base::Bind(&WebkitFileStreamReaderImpl::OnStreamReaderInitialized,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Bind(&WebkitFileStreamReaderImpl

@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_byte_range.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
@@ -81,7 +82,7 @@ void DriveURLRequestJob::Start() {
       new DriveFileStreamReader(file_system_getter_, file_task_runner_));
   stream_reader_->Initialize(
       drive_file_path,
-      0, kuint64max,
+      net::HttpByteRange(),
       base::Bind(&DriveURLRequestJob::OnDriveFileStreamReaderInitialized,
                  weak_ptr_factory_.GetWeakPtr()));
 }
