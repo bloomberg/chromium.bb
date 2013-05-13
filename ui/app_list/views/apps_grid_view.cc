@@ -342,12 +342,13 @@ bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
     handled = selected_view_->OnKeyPressed(event);
 
   if (!handled) {
+    const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
     switch (event.key_code()) {
       case ui::VKEY_LEFT:
-        MoveSelected(0, -1);
+        MoveSelected(0, -forward_dir);
         return true;
       case ui::VKEY_RIGHT:
-        MoveSelected(0, 1);
+        MoveSelected(0, forward_dir);
         return true;
       case ui::VKEY_UP:
         MoveSelected(0, -cols_);
