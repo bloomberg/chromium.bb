@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
@@ -301,8 +300,8 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
 #if defined(ENABLE_LANGUAGE_DETECTION)
   base::TimeTicks begin_time = base::TimeTicks::Now();
   std::string cld_language = DetermineTextLanguage(contents);
-  UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
-                             base::TimeTicks::Now() - begin_time);
+  TranslateHelperMetrics::ReportLanguageDetectionTime(begin_time,
+                                                      base::TimeTicks::Now());
   ConvertLanguageCodeSynonym(&cld_language);
   VLOG(9) << "CLD determined language code: " << cld_language;
 #endif  // defined(ENABLE_LANGUAGE_DETECTION)
@@ -470,11 +469,8 @@ void TranslateHelper::CheckTranslateStatus() {
     translation_pending_ = false;
 
     // Check JavaScript performance counters for UMA reports.
-    double time_to_translate =
-        ExecuteScriptAndGetDoubleResult("cr.googleTranslate.translationTime");
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Translate.TimeToTranslate",
-        base::TimeDelta::FromMicroseconds(time_to_translate * 1000.0));
+    TranslateHelperMetrics::ReportTimeToTranslate(
+        ExecuteScriptAndGetDoubleResult("cr.googleTranslate.translationTime"));
 
     // Notify the browser we are done.
     render_view()->Send(new ChromeViewHostMsg_PageTranslated(
@@ -514,16 +510,10 @@ void TranslateHelper::TranslatePageImpl(int count) {
 
   // The library is loaded, and ready for translation now.
   // Check JavaScript performance counters for UMA reports.
-  double time_to_load =
-      ExecuteScriptAndGetDoubleResult("cr.googleTranslate.loadTime");
-  double time_to_be_ready =
-      ExecuteScriptAndGetDoubleResult("cr.googleTranslate.readyTime");
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "Translate.TimeToLoad",
-      base::TimeDelta::FromMicroseconds(time_to_load * 1000.0));
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "Translate.TimeToBeReady",
-      base::TimeDelta::FromMicroseconds(time_to_be_ready * 1000.0));
+  TranslateHelperMetrics::ReportTimeToBeReady(
+      ExecuteScriptAndGetDoubleResult("cr.googleTranslate.readyTime"));
+  TranslateHelperMetrics::ReportTimeToLoad(
+      ExecuteScriptAndGetDoubleResult("cr.googleTranslate.loadTime"));
 
   if (!StartTranslation()) {
     NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);

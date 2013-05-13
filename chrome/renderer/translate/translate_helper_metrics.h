@@ -7,7 +7,22 @@
 
 #include <string>
 
+#include "base/time.h"
+
 namespace TranslateHelperMetrics {
+
+// An indexing type to query each UMA entry name via GetMetricsName() function.
+// Note: The implementation of GetMetricsName() should be updated when a new
+// entry is added here.
+enum MetricsNameIndex {
+  UMA_LANGUAGE_DETECTION,
+  UMA_CONTENT_LANGUAGE,
+  UMA_LANGUAGE_VERIFICATION,
+  UMA_TIME_TO_BE_READY,
+  UMA_TIME_TO_LOAD,
+  UMA_TIME_TO_TRANSLATE,
+  UMA_MAX,
+};
 
 // A page may provide a Content-Language HTTP header or a META tag.
 // TranslateHelper checks if a server provides a valid Content-Language.
@@ -38,6 +53,25 @@ void ReportContentLanguage(const std::string& provided_code,
 
 // Called when CLD verifies Content-Language header.
 void ReportLanguageVerification(LanguageVerificationType type);
+
+// Called when the Translate Element library is ready.
+void ReportTimeToBeReady(double time_in_msec);
+
+// Called when the Translate Element library is loaded.
+void ReportTimeToLoad(double time_in_msec);
+
+// Called when a page translation is finished.
+void ReportTimeToTranslate(double time_in_msec);
+
+#if defined(ENABLE_LANGUAGE_DETECTION)
+
+// Called when CLD detects page language.
+void ReportLanguageDetectionTime(base::TimeTicks begin, base::TimeTicks end);
+
+#endif  // defined(ENABLE_LANGUAGE_DETECTION)
+
+// Gets UMA name for an entry specified by |index|.
+const char* GetMetricsName(MetricsNameIndex index);
 
 }  // namespace TranslateHelperMetrics
 

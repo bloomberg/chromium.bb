@@ -14,12 +14,11 @@
 
 using base::HistogramBase;
 using base::HistogramSamples;
+using base::SampleCountIterator;
 using base::StatisticsRecorder;
+using base::TimeTicks;
 
 namespace {
-
-const char kTranslateContentLanguage[] = "Translate.ContentLanguage";
-const char kTranslateLanguageVerification[] = "Translate.LanguageVerification";
 
 class MetricsRecorder {
  public:
@@ -37,7 +36,8 @@ class MetricsRecorder {
   void CheckContentLanguage(int expected_not_provided,
                             int expected_valid,
                             int expected_invalid) {
-    ASSERT_EQ(kTranslateContentLanguage, key_);
+    ASSERT_EQ(TranslateHelperMetrics::GetMetricsName(
+        TranslateHelperMetrics::UMA_CONTENT_LANGUAGE), key_);
 
     Snapshot();
 
@@ -57,7 +57,8 @@ class MetricsRecorder {
                                  int expected_unknown,
                                  int expected_cld_agree,
                                  int expected_cld_disagree) {
-    ASSERT_EQ(kTranslateLanguageVerification, key_);
+    ASSERT_EQ(TranslateHelperMetrics::GetMetricsName(
+        TranslateHelperMetrics::UMA_LANGUAGE_VERIFICATION), key_);
 
     Snapshot();
 
@@ -78,6 +79,27 @@ class MetricsRecorder {
         GetCount(TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISAGREE));
   }
 
+  void CheckTotalCount(int count) {
+    Snapshot();
+    EXPECT_EQ(count, GetTotalCount());
+  }
+
+  void CheckValueInLogs(double value) {
+    Snapshot();
+    ASSERT_TRUE(samples_.get());
+    for (scoped_ptr<SampleCountIterator> i = samples_->Iterator();
+         !i->Done();
+         i->Next()) {
+      HistogramBase::Sample min;
+      HistogramBase::Sample max;
+      HistogramBase::Count count;
+      i->Get(&min, &max, &count);
+      if (min <= value && value <= max && count >= 1)
+        return;
+    }
+    EXPECT_FALSE(true);
+  }
+
  private:
   void Snapshot() {
     HistogramBase* histogram = StatisticsRecorder::FindHistogram(key_);
@@ -95,6 +117,15 @@ class MetricsRecorder {
     return count - base_samples_->GetCount(value);
   }
 
+  HistogramBase::Count GetTotalCount() {
+    if (!samples_.get())
+      return 0;
+    HistogramBase::Count count = samples_->TotalCount();
+    if (!base_samples_.get())
+      return count;
+    return count - base_samples_->TotalCount();
+  }
+
   std::string key_;
   scoped_ptr<HistogramSamples> base_samples_;
   scoped_ptr<HistogramSamples> samples_;
@@ -105,7 +136,8 @@ class MetricsRecorder {
 }  // namespace
 
 TEST(TranslateHelperMetricsTest, ReportContentLanguage) {
-  MetricsRecorder recorder(kTranslateContentLanguage);
+  MetricsRecorder recorder(TranslateHelperMetrics::GetMetricsName(
+      TranslateHelperMetrics::UMA_CONTENT_LANGUAGE));
 
   recorder.CheckContentLanguage(0, 0, 0);
   TranslateHelperMetrics::ReportContentLanguage(std::string(), std::string());
@@ -117,7 +149,8 @@ TEST(TranslateHelperMetricsTest, ReportContentLanguage) {
 }
 
 TEST(TranslateHelperMetricsTest, ReportLanguageVerification) {
-  MetricsRecorder recorder(kTranslateLanguageVerification);
+  MetricsRecorder recorder(TranslateHelperMetrics::GetMetricsName(
+      TranslateHelperMetrics::UMA_LANGUAGE_VERIFICATION));
 
   recorder.CheckLanguageVerification(0, 0, 0, 0, 0);
   TranslateHelperMetrics::ReportLanguageVerification(
@@ -136,3 +169,45 @@ TEST(TranslateHelperMetricsTest, ReportLanguageVerification) {
       TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISAGREE);
   recorder.CheckLanguageVerification(1, 1, 1, 1, 1);
 }
+
+TEST(TranslateHelperMetricsTest, ReportTimeToBeReady) {
+  MetricsRecorder recorder(TranslateHelperMetrics::GetMetricsName(
+      TranslateHelperMetrics::UMA_TIME_TO_BE_READY));
+  recorder.CheckTotalCount(0);
+  TranslateHelperMetrics::ReportTimeToBeReady(3.14);
+  recorder.CheckValueInLogs(3.14);
+  recorder.CheckTotalCount(1);
+}
+
+TEST(TranslateHelperMetricsTest, ReportTimeToLoad) {
+  MetricsRecorder recorder(TranslateHelperMetrics::GetMetricsName(
+      TranslateHelperMetrics::UMA_TIME_TO_LOAD));
+  recorder.CheckTotalCount(0);
+  TranslateHelperMetrics::ReportTimeToLoad(573.0);
+  recorder.CheckValueInLogs(573.0);
+  recorder.CheckTotalCount(1);
+}
+
+TEST(TranslateHelperMetricsTest, ReportTimeToTranslate) {
+  MetricsRecorder recorder(TranslateHelperMetrics::GetMetricsName(
+      TranslateHelperMetrics::UMA_TIME_TO_TRANSLATE));
+  recorder.CheckTotalCount(0);
+  TranslateHelperMetrics::ReportTimeToTranslate(4649.0);
+  recorder.CheckValueInLogs(4649.0);
+  recorder.CheckTotalCount(1);
+}
+
+#if defined(ENABLE_LANGUAGE_DETECTION)
+
+TEST(TranslateHelperMetricsTest, ReportLanguageDetectionTime) {
+  MetricsRecorder recorder(TranslateHelperMetrics::GetMetricsName(
+      TranslateHelperMetrics::UMA_LANGUAGE_DETECTION));
+  recorder.CheckTotalCount(0);
+  TimeTicks begin = TimeTicks::Now();
+  TimeTicks end = begin + base::TimeDelta::FromMicroseconds(9009.0);
+  TranslateHelperMetrics::ReportLanguageDetectionTime(begin, end);
+  recorder.CheckValueInLogs(9.009);
+  recorder.CheckTotalCount(1);
+}
+
+#endif  // defined(ENABLE_LANGUAGE_DETECTION)
