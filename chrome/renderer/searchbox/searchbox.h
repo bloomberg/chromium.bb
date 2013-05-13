@@ -51,7 +51,8 @@ class SearchBox : public content::RenderViewObserver,
   // Sends ChromeViewHostMsg_SearchBoxNavigate to the browser.
   void NavigateToURL(const GURL& url,
                      content::PageTransition transition,
-                     WindowOpenDisposition disposition);
+                     WindowOpenDisposition disposition,
+                     bool is_search_type);
 
   // Shows any attached bars.
   void ShowBars();

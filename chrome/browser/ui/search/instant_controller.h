@@ -298,7 +298,8 @@ class InstantController : public InstantPage::Delegate,
       const content::WebContents* contents,
       const GURL& url,
       content::PageTransition transition,
-      WindowOpenDisposition disposition) OVERRIDE;
+      WindowOpenDisposition disposition,
+      bool is_search_type) OVERRIDE;
   virtual void InstantPageLoadFailed(content::WebContents* contents) OVERRIDE;
 
   // Invoked by the InstantLoader when the Instant page wants to delete a

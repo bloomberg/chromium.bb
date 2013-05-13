@@ -691,11 +691,12 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
                     int /* page_id */,
                     bool /* result */)
 
-IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_SearchBoxNavigate,
+IPC_MESSAGE_ROUTED5(ChromeViewHostMsg_SearchBoxNavigate,
                     int /* page_id */,
                     GURL /* destination */,
                     content::PageTransition /* transition */,
-                    WindowOpenDisposition /* disposition */)
+                    WindowOpenDisposition /* disposition */,
+                    bool /* is_search_type */)
 
 // Sent by the Instant overlay asking to show itself with the given height.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ShowInstantOverlay,

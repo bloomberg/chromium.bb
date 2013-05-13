@@ -1370,7 +1370,8 @@ void InstantController::FocusOmnibox(const content::WebContents* contents,
 void InstantController::NavigateToURL(const content::WebContents* contents,
                                       const GURL& url,
                                       content::PageTransition transition,
-                                      WindowOpenDisposition disposition) {
+                                      WindowOpenDisposition disposition,
+                                      bool is_search_type) {
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
       "NavigateToURL: url='%s'", url.spec().c_str()));
 
@@ -1386,8 +1387,9 @@ void InstantController::NavigateToURL(const content::WebContents* contents,
     content::RecordAction(
         content::UserMetricsAction("InstantExtended.MostVisitedClicked"));
   } else {
-    // Exclude navigation by Most Visited click.
-    RecordNavigationHistogram(UsingLocalPage(), true, true);
+    // Exclude navigation by Most Visited click and searches.
+    if (!is_search_type)
+      RecordNavigationHistogram(UsingLocalPage(), true, true);
   }
   browser_->OpenURL(url, transition, disposition);
 }

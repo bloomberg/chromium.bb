@@ -966,12 +966,14 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateSearchBox(
 
   GURL destination_url;
   content::PageTransition transition = content::PAGE_TRANSITION_TYPED;
+  bool is_search_type = false;
   if (args[0]->IsNumber()) {
     InstantAutocompleteResult result;
     if (SearchBox::Get(render_view)->GetAutocompleteResultWithID(
             args[0]->IntegerValue(), &result)) {
       destination_url = GURL(result.destination_url);
       transition = result.transition;
+      is_search_type = !result.search_query.empty();
     }
   } else {
     // Resolve the URL.
@@ -988,7 +990,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateSearchBox(
     if (args[1]->Uint32Value() == 2)
       disposition = NEW_BACKGROUND_TAB;
     SearchBox::Get(render_view)->NavigateToURL(
-        destination_url, transition, disposition);
+        destination_url, transition, disposition, is_search_type);
   }
 
   return v8::Undefined();
@@ -1023,7 +1025,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateNewTabPage(
     if (args[1]->Uint32Value() == 2)
       disposition = NEW_BACKGROUND_TAB;
     SearchBox::Get(render_view)->NavigateToURL(
-        destination_url, transition, disposition);
+        destination_url, transition, disposition, false);
   }
   return v8::Undefined();
 }

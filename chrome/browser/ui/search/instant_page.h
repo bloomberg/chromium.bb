@@ -80,7 +80,8 @@ class InstantPage : public content::WebContentsObserver {
     virtual void NavigateToURL(const content::WebContents* contents,
                                const GURL& url,
                                content::PageTransition transition,
-                               WindowOpenDisposition disposition) = 0;
+                               WindowOpenDisposition disposition,
+                               bool is_search_type) = 0;
 
     // Called when the SearchBox wants to delete a Most Visited item.
     virtual void DeleteMostVisitedItem(
@@ -250,7 +251,8 @@ class InstantPage : public content::WebContentsObserver {
   void OnSearchBoxNavigate(int page_id,
                            const GURL& url,
                            content::PageTransition transition,
-                           WindowOpenDisposition disposition);
+                           WindowOpenDisposition disposition,
+                           bool is_search_type);
   void OnDeleteMostVisitedItem(InstantRestrictedID most_visited_item_id);
   void OnUndoMostVisitedDeletion(InstantRestrictedID most_visited_item_id);
   void OnUndoAllMostVisitedDeletions();

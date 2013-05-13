@@ -117,10 +117,11 @@ void SearchBox::StopCapturingKeyStrokes() {
 
 void SearchBox::NavigateToURL(const GURL& url,
                               content::PageTransition transition,
-                              WindowOpenDisposition disposition) {
+                              WindowOpenDisposition disposition,
+                              bool is_search_type) {
   render_view()->Send(new ChromeViewHostMsg_SearchBoxNavigate(
       render_view()->GetRoutingID(), render_view()->GetPageId(),
-      url, transition, disposition));
+      url, transition, disposition, is_search_type));
 }
 
 void SearchBox::DeleteMostVisitedItem(

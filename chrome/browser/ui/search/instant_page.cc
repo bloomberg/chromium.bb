@@ -276,11 +276,13 @@ void InstantPage::OnFocusOmnibox(int page_id, OmniboxFocusState state) {
 void InstantPage::OnSearchBoxNavigate(int page_id,
                                       const GURL& url,
                                       content::PageTransition transition,
-                                      WindowOpenDisposition disposition) {
+                                      WindowOpenDisposition disposition,
+                                      bool is_search_type) {
   if (contents()->IsActiveEntry(page_id)) {
     OnInstantSupportDetermined(page_id, true);
     if (ShouldProcessNavigateToURL())
-      delegate_->NavigateToURL(contents(), url, transition, disposition);
+      delegate_->NavigateToURL(
+          contents(), url, transition, disposition, is_search_type);
   }
 }
 

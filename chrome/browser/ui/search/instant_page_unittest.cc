@@ -42,11 +42,12 @@ class FakePageDelegate : public InstantPage::Delegate {
   MOCK_METHOD2(FocusOmnibox,
                void(const content::WebContents* contents,
                     OmniboxFocusState state));
-  MOCK_METHOD4(NavigateToURL,
+  MOCK_METHOD5(NavigateToURL,
                void(const content::WebContents* contents,
                     const GURL& url,
                     content::PageTransition transition,
-                    WindowOpenDisposition disposition));
+                    WindowOpenDisposition disposition,
+                    bool is_search_type));
   MOCK_METHOD1(DeleteMostVisitedItem,
                void(InstantRestrictedID most_visited_item_id));
   MOCK_METHOD1(UndoMostVisitedDeletion,
