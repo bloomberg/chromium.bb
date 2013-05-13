@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/time.h"
@@ -164,18 +165,18 @@ class TimeFormatter {
     const std::vector<icu::PluralFormat*>& formatter(FormatType format_type) {
       switch (format_type) {
         case FORMAT_SHORT:
-          return short_formatter_;
+          return short_formatter_.get();
         case FORMAT_REMAINING:
-          return time_left_formatter_;
+          return time_left_formatter_.get();
         case FORMAT_REMAINING_LONG:
-          return time_left_long_formatter_;
+          return time_left_long_formatter_.get();
         case FORMAT_DURATION_LONG:
-          return time_duration_long_formatter_;
+          return time_duration_long_formatter_.get();
         case FORMAT_ELAPSED:
-          return time_elapsed_formatter_;
+          return time_elapsed_formatter_.get();
         default:
           NOTREACHED();
-          return short_formatter_;
+          return short_formatter_.get();
       }
     }
   private:
@@ -220,26 +221,16 @@ class TimeFormatter {
       BuildFormats(FORMAT_ELAPSED, &time_elapsed_formatter_);
     }
     ~TimeFormatter() {
-      STLDeleteContainerPointers(short_formatter_.begin(),
-                                 short_formatter_.end());
-      STLDeleteContainerPointers(time_left_formatter_.begin(),
-                                 time_left_formatter_.end());
-      STLDeleteContainerPointers(time_left_long_formatter_.begin(),
-                                 time_left_long_formatter_.end());
-      STLDeleteContainerPointers(time_duration_long_formatter_.begin(),
-                                 time_duration_long_formatter_.end());
-      STLDeleteContainerPointers(time_elapsed_formatter_.begin(),
-                                 time_elapsed_formatter_.end());
     }
     friend struct base::DefaultLazyInstanceTraits<TimeFormatter>;
 
-    std::vector<icu::PluralFormat*> short_formatter_;
-    std::vector<icu::PluralFormat*> time_left_formatter_;
-    std::vector<icu::PluralFormat*> time_left_long_formatter_;
-    std::vector<icu::PluralFormat*> time_duration_long_formatter_;
-    std::vector<icu::PluralFormat*> time_elapsed_formatter_;
+    ScopedVector<icu::PluralFormat> short_formatter_;
+    ScopedVector<icu::PluralFormat> time_left_formatter_;
+    ScopedVector<icu::PluralFormat> time_left_long_formatter_;
+    ScopedVector<icu::PluralFormat> time_duration_long_formatter_;
+    ScopedVector<icu::PluralFormat> time_elapsed_formatter_;
     static void BuildFormats(FormatType format_type,
-                             std::vector<icu::PluralFormat*>* time_formats);
+                             ScopedVector<icu::PluralFormat>* time_formats);
     static icu::PluralFormat* createFallbackFormat(
         const icu::PluralRules& rules, int index, FormatType format_type);
 
@@ -250,7 +241,7 @@ static base::LazyInstance<TimeFormatter> g_time_formatter =
     LAZY_INSTANCE_INITIALIZER;
 
 void TimeFormatter::BuildFormats(
-    FormatType format_type, std::vector<icu::PluralFormat*>* time_formats) {
+    FormatType format_type, ScopedVector<icu::PluralFormat>* time_formats) {
   const icu::UnicodeString kKeywords[] = {
     UNICODE_STRING_SIMPLE("other"), UNICODE_STRING_SIMPLE("one"),
     UNICODE_STRING_SIMPLE("zero"), UNICODE_STRING_SIMPLE("two"),
