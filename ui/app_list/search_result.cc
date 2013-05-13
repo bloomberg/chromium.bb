@@ -49,4 +49,8 @@ void SearchResult::RemoveObserver(SearchResultObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+ui::MenuModel* SearchResult::GetContextMenuModel() {
+  return NULL;
+}
+
 }  // namespace app_list

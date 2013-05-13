@@ -55,6 +55,9 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   const std::string& extension_id() const { return extension_id_; }
 
+  // Overridden from ChromeAppListItem:
+  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
+
  private:
   // Gets extension associated with this model. Returns NULL if extension
   // no longer exists.
@@ -98,7 +101,6 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   // Overridden from ChromeAppListItem:
   virtual void Activate(int event_flags) OVERRIDE;
-  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
 
   Profile* profile_;
   const std::string extension_id_;

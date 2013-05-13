@@ -13,6 +13,8 @@
 #include "ui/gfx/render_text.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_runner.h"
 
 namespace {
 
@@ -95,6 +97,7 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
       delegate_(delegate),
       icon_(new IconView) {
   AddChildView(icon_);
+  set_context_menu_controller(this);
 }
 
 SearchResultView::~SearchResultView() {
@@ -290,6 +293,20 @@ void SearchResultView::OnActionIconsChanged() {
       button->SetTooltipText(icon.tooltip_text);
     }
   }
+}
+
+void SearchResultView::ShowContextMenuForView(views::View* source,
+                                              const gfx::Point& point) {
+  ui::MenuModel* menu_model = result_->GetContextMenuModel();
+  if (!menu_model)
+    return;
+
+  context_menu_runner_.reset(new views::MenuRunner(menu_model));
+  if (context_menu_runner_->RunMenuAt(
+          GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
+          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 }  // namespace app_list

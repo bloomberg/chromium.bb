@@ -20,6 +20,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/apps_model_builder.h"
+#include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -161,7 +163,11 @@ class SearchBuilderResult : public app_list::SearchResult {
 class ExtensionAppResult : public SearchBuilderResult,
                            public extensions::IconImage::Observer {
  public:
-  ExtensionAppResult() {}
+  explicit ExtensionAppResult(
+      AppsModelBuilder* builder,
+      const std::string& extension_id)
+      : builder_(builder),
+        extension_id_(extension_id) {}
   virtual ~ExtensionAppResult() {}
 
  protected:
@@ -172,6 +178,11 @@ class ExtensionAppResult : public SearchBuilderResult,
       LoadExtensionIcon(extension);
     else
       SearchBuilderResult::UpdateIcon();
+  }
+
+  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE {
+    ExtensionAppItem* item = builder_->GetApp(extension_id_);
+    return item ? item->GetContextMenuModel() : NULL;
   }
 
  private:
@@ -196,6 +207,9 @@ class ExtensionAppResult : public SearchBuilderResult,
   }
 
   scoped_ptr<extensions::IconImage> icon_;
+
+  AppsModelBuilder* builder_;
+  const std::string& extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppResult);
 };
@@ -304,10 +318,12 @@ SearchBuilder::SearchBuilder(
     Profile* profile,
     app_list::SearchBoxModel* search_box,
     app_list::AppListModel::SearchResults* results,
+    AppsModelBuilder* apps_model_builder,
     AppListControllerDelegate* list_controller)
     : profile_(profile),
       search_box_(search_box),
       results_(results),
+      apps_model_builder_(apps_model_builder),
       list_controller_(list_controller) {
   search_box_->SetHintText(
       l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
@@ -436,7 +452,9 @@ void SearchBuilder::PopulateFromACResult(const AutocompleteResult& ac_result) {
     SearchBuilderResult* result = NULL;
     switch (it->type) {
       case AutocompleteMatch::EXTENSION_APP:
-        result = new ExtensionAppResult();
+        result = new ExtensionAppResult(
+            apps_model_builder_,
+            GetExtensionByURL(profile_, it->destination_url)->id());
         break;
 #if defined(OS_CHROMEOS)
       case AutocompleteMatch::CONTACT:

@@ -15,6 +15,10 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/image/image_skia.h"
 
+namespace ui {
+class MenuModel;
+}
+
 namespace app_list {
 
 class SearchResultObserver;
@@ -87,6 +91,10 @@ class APP_LIST_EXPORT SearchResult {
 
   void AddObserver(SearchResultObserver* observer);
   void RemoveObserver(SearchResultObserver* observer);
+
+  // Returns the context menu model for this item.
+  // Note the returned menu model is owned by this item.
+  virtual ui::MenuModel* GetContextMenuModel();
 
  private:
   gfx::ImageSkia icon_;

@@ -265,7 +265,7 @@ ExtensionAppItem* AppsModelBuilder::GetApp(
   if (extension_id.empty())
     return NULL;
 
-  int index = FindApp(highlight_app_id_);
+  int index = FindApp(extension_id);
   if (index == -1)
     return NULL;
   return GetAppAt(index);

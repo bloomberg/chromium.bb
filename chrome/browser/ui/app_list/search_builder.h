@@ -17,6 +17,7 @@ class SearchResult;
 }
 
 class AppListControllerDelegate;
+class AppsModelBuilder;
 class AutocompleteController;
 class AutocompleteResult;
 class Profile;
@@ -27,6 +28,7 @@ class SearchBuilder : public AutocompleteControllerDelegate {
   SearchBuilder(Profile* profile,
                 app_list::SearchBoxModel* search_box,
                 app_list::AppListModel::SearchResults* results,
+                AppsModelBuilder* apps_model_builder,
                 AppListControllerDelegate* list_controller);
   virtual ~SearchBuilder();
 
@@ -58,6 +60,9 @@ class SearchBuilder : public AutocompleteControllerDelegate {
   // The omnibox AutocompleteController that collects/sorts/dup-
   // eliminates the results as they come in.
   scoped_ptr<AutocompleteController> controller_;
+
+  // Provides access to ExtensionAppItems.
+  AppsModelBuilder* apps_model_builder_;
 
   // The controller of the app list. Owned by the app list delegate.
   AppListControllerDelegate* list_controller_;

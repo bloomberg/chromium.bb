@@ -38,6 +38,9 @@ class AppsModelBuilder : public ui::ListModelObserver,
   // Populates the model.
   void Build();
 
+  // Returns app instance with id |extension_id|.
+  ExtensionAppItem* GetApp(const std::string& extension_id);
+
  private:
   typedef std::vector<ExtensionAppItem*> Apps;
 
@@ -91,9 +94,6 @@ class AppsModelBuilder : public ui::ListModelObserver,
 
   // Returns app instance at given |index|.
   ExtensionAppItem* GetAppAt(size_t index);
-
-  // Returns app instance with id |extension_id|.
-  ExtensionAppItem* GetApp(const std::string& extension_id);
 
   // ui::ListModelObserver overrides:
   virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;

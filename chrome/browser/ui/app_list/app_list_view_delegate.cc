@@ -40,6 +40,7 @@ void AppListViewDelegate::SetModel(app_list::AppListModel* model) {
     search_builder_.reset(new SearchBuilder(profile_,
                                             model->search_box(),
                                             model->results(),
+                                            apps_builder_.get(),
                                             controller_.get()));
 
     signin_delegate_.reset(new ChromeSigninDelegate(profile_));
