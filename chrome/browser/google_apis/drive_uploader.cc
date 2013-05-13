@@ -59,19 +59,12 @@ struct DriveUploader::UploadFileInfo {
         completion_callback(callback),
         progress_callback(progress_callback),
         content_length(0),
-        next_send_position(0),
         power_save_blocker(content::PowerSaveBlocker::Create(
             content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
             "Upload in progress")) {
   }
 
   ~UploadFileInfo() {
-  }
-
-  // Bytes left to upload.
-  int64 SizeRemaining()  const {
-    DCHECK(content_length >= next_send_position);
-    return content_length - next_send_position;
   }
 
   // Useful for printf debugging.
@@ -107,9 +100,6 @@ struct DriveUploader::UploadFileInfo {
 
   // Header content-Length.
   int64 content_length;
-
-  // The start position of the contents to be sent as the next upload chunk.
-  int64 next_send_position;
 
   // Blocks system suspend while upload is in progress.
   scoped_ptr<content::PowerSaveBlocker> power_save_blocker;
@@ -279,20 +269,21 @@ void DriveUploader::OnUploadLocationReceived(
       FROM_HERE,
       base::Bind(&DriveUploader::UploadNextChunk,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&upload_file_info)));
+                 base::Passed(&upload_file_info),
+                 0));  // Upload from the beginning of the file.
 }
 
 void DriveUploader::UploadNextChunk(
-    scoped_ptr<UploadFileInfo> upload_file_info) {
+    scoped_ptr<UploadFileInfo> upload_file_info,
+    int64 start_position) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(upload_file_info);
+  DCHECK_GE(start_position, 0);
+  DCHECK_LE(start_position, upload_file_info->content_length);
 
   // Determine number of bytes to read for this upload iteration.
-  const int num_upload_bytes = std::min(upload_file_info->SizeRemaining(),
-                                        kUploadChunkSize);
-
-  int64 start_position = upload_file_info->next_send_position;
-  upload_file_info->next_send_position += num_upload_bytes;
-  int64 end_position = upload_file_info->next_send_position;
+  int64 end_position = std::min(start_position + kUploadChunkSize,
+                                upload_file_info->content_length);
 
   UploadFileInfo* info_ptr = upload_file_info.get();
   drive_service_->ResumeUpload(
@@ -347,22 +338,18 @@ void DriveUploader::OnUploadRangeResponseReceived(
     return;
   }
 
-  // If code is 308 (RESUME_INCOMPLETE) and range_received is what has been
-  // previously uploaded (i.e. = upload_file_info->end_position), proceed to
-  // upload the next chunk.
+  // If code is 308 (RESUME_INCOMPLETE) and |range_received| starts with 0
+  // (meaning that the data is uploaded from the beginning of the file),
+  // proceed to upload the next chunk.
   if (response.code != HTTP_RESUME_INCOMPLETE ||
-      response.start_position_received != 0 ||
-      response.end_position_received != upload_file_info->next_send_position) {
-    // TODO(achuith): Handle error cases, e.g.
-    // - when previously uploaded data wasn't received by Google Docs server,
-    //   i.e. when end_position_received < upload_file_info->end_position
-    LOG(ERROR) << "UploadNextChunk http code=" << response.code
+      response.start_position_received != 0) {
+    LOG(ERROR)
+        << "UploadNextChunk http code=" << response.code
         << ", start_position_received=" << response.start_position_received
-        << ", end_position_received=" << response.end_position_received
-        << ", expected end range=" << upload_file_info->next_send_position;
-    UploadFailed(upload_file_info.Pass(),
-                 response.code == HTTP_FORBIDDEN ?
-                     GDATA_NO_SPACE : response.code);
+        << ", end_position_received=" << response.end_position_received;
+    UploadFailed(
+        upload_file_info.Pass(),
+        response.code == HTTP_FORBIDDEN ? GDATA_NO_SPACE : response.code);
     return;
   }
 
@@ -370,7 +357,8 @@ void DriveUploader::OnUploadRangeResponseReceived(
            << "-" << response.end_position_received
            << " for [" << upload_file_info->drive_path.value() << "]";
 
-  // Continue uploading.
+  // Continue uploading the remaining chunk. The start position of the
+  // remaining data is |response.end_position_received|.
   // PostTask is necessary because we have to finish previous ResumeUpload's
   // callback before calling ResumeUpload again, due to the implementation of
   // OperationRegistry. (http://crbug.com/134814)
@@ -378,7 +366,8 @@ void DriveUploader::OnUploadRangeResponseReceived(
       FROM_HERE,
       base::Bind(&DriveUploader::UploadNextChunk,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&upload_file_info)));
+                 base::Passed(&upload_file_info),
+                 response.end_position_received));
 }
 
 void DriveUploader::OnUploadProgress(const ProgressCallback& callback,

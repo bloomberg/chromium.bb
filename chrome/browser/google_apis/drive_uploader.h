@@ -146,7 +146,8 @@ class DriveUploader : public DriveUploaderInterface {
                                 const GURL& upload_location);
 
   // Uploads the next chunk of data from the file.
-  void UploadNextChunk(scoped_ptr<UploadFileInfo> upload_file_info);
+  void UploadNextChunk(scoped_ptr<UploadFileInfo> upload_file_info,
+                       int64 start_position);
 
   // DriveService callback for ResumeUpload.
   void OnUploadRangeResponseReceived(
