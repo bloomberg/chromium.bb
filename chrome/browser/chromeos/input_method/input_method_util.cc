@@ -86,6 +86,19 @@ const struct {
 const size_t kMappingImeIdToMediumLenNameResourceIdLen =
     ARRAYSIZE_UNSAFE(kMappingImeIdToMediumLenNameResourceId);
 
+// Due to asynchronous initialization of component extension manager,
+// GetFirstLogingInputMethodIds may miss component extension IMEs. To enable
+// component extension IME as the first loging input method, we have to prepare
+// component extension IME IDs.
+const struct {
+  const char* locale;
+  const char* layout;
+  const char* input_method_id;
+} kDefaultInputMethodRecommendation[] = {
+  { "ja", "us", "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us" },
+  { "ja", "jp", "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp" },
+};
+
 }  // namespace
 
 namespace chromeos {
@@ -536,6 +549,18 @@ void InputMethodUtil::GetFirstLoginInputMethodIds(
 
   // First, add the current keyboard layout (one used on the login screen).
   out_input_method_ids->push_back(current_input_method.id());
+
+  const std::string current_layout
+      = current_input_method.GetPreferredKeyboardLayout();
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDefaultInputMethodRecommendation);
+       ++i) {
+    if (kDefaultInputMethodRecommendation[i].locale == language_code &&
+        kDefaultInputMethodRecommendation[i].layout == current_layout) {
+      out_input_method_ids->push_back(
+          kDefaultInputMethodRecommendation[i].input_method_id);
+      return;
+    }
+  }
 
   // Second, find the most popular input method associated with the
   // current UI language. The input method IDs returned from
