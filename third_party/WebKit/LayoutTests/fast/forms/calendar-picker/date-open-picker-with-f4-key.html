@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../../../../fast/js/resources/js-test-pre.js"></script>
+<script src="../../js/resources/js-test-pre.js"></script>
 <script src="resources/calendar-picker-common.js"></script>
 </head>
 <body>
 <p id="description"></p>
 <div id="console"></div>
-<input type=month id=test>
+<input type=date id=test>
 <script>
 if (window.internals)
     internals.setEnableMockPagePopup(true);
@@ -27,6 +27,6 @@ function sendKey(input, keyName, ctrlKey, altKey) {
     input.dispatchEvent(event);
 }
 </script>
-<script src="../../../../../fast/js/resources/js-test-post.js"></script>
+<script src="../../js/resources/js-test-post.js"></script>
 </body>
 </html>

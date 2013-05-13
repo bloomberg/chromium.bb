@@ -32,10 +32,9 @@ function testIt() {
     if (!window.eventSender)
         return;
 
-    // Start pan scroll by click
+    // Start pan scroll by drag
     eventSender.mouseMoveTo(scrollable.offsetLeft + 5, scrollable.offsetTop + 5);
     eventSender.mouseDown(MIDDLE_BUTTON);
-    eventSender.mouseUp(MIDDLE_BUTTON);
     eventSender.mouseMoveTo(scrollable.offsetLeft + 5, scrollable.offsetTop + PAN_SCROLL_RADIUS + 6);
 
     var retryCount = 0;
@@ -46,7 +45,6 @@ function testIt() {
         if (scrollable.scrollTop > 0) {
             testPassed('scrollable.scrollTop > 0');
             // Stop spring loaded pan scroll
-            eventSender.mouseDown(MIDDLE_BUTTON);
             eventSender.mouseUp(MIDDLE_BUTTON);
             retryCount = 0;
             window.setTimeout(checkStopped, 50);
@@ -113,11 +111,11 @@ Scrollable
 </div>
 </div>
 <div id="console"></div>
-<script src="../../../../fast/js/resources/js-test-pre.js"></script>
+<script src="../js/resources/js-test-pre.js"></script>
 <script>
-description('Check pan scroll by click mouse');
+description('Check pan scroll by drag mouse');
 setUpTest();
 </script>
-<script src="../../../../fast/js/resources/js-test-post.js"></script>
+<script src="../js/resources/js-test-post.js"></script>
 </body>
 </html>
