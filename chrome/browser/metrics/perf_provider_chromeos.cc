@@ -36,6 +36,28 @@ const unsigned kPerfCommandIntervalDefaultSeconds = 23093;
 // Default time in seconds perf is run for.
 const unsigned kPerfCommandDurationDefaultSeconds = 2;
 
+// Enumeration representing success and various failure modes for collecting and
+// sending perf data.
+enum GetPerfDataOutcome {
+  SUCCESS,
+  NOT_READY_TO_UPLOAD,
+  NOT_READY_TO_COLLECT,
+  INCOGNITO_ACTIVE,
+  INCOGNITO_LAUNCHED,
+  PROTOBUF_NOT_PARSED,
+  NUM_OUTCOMES
+};
+
+// Name of the histogram that represents the success and various failure modes
+// for collecting and sending perf data.
+const char kGetPerfDataOutcomeHistogram[] = "UMA.Perf.GetData";
+
+void AddToPerfHistogram(GetPerfDataOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(kGetPerfDataOutcomeHistogram,
+                            outcome,
+                            NUM_OUTCOMES);
+}
+
 } // namespace
 
 
@@ -80,11 +102,15 @@ PerfProvider::~PerfProvider() {}
 
 bool PerfProvider::GetPerfData(PerfDataProto* perf_data_proto) {
   DCHECK(CalledOnValidThread());
-  if (state_ != READY_TO_UPLOAD)
+  if (state_ != READY_TO_UPLOAD) {
+    AddToPerfHistogram(NOT_READY_TO_UPLOAD);
     return false;
+  }
 
   *perf_data_proto = perf_data_proto_;
   state_ = READY_TO_COLLECT;
+
+  AddToPerfHistogram(SUCCESS);
   return true;
 }
 
@@ -102,13 +128,17 @@ void PerfProvider::ScheduleCollection() {
 
 void PerfProvider::CollectIfNecessary() {
   DCHECK(CalledOnValidThread());
-  if (state_ != READY_TO_COLLECT)
+  if (state_ != READY_TO_COLLECT) {
+    AddToPerfHistogram(NOT_READY_TO_COLLECT);
     return;
+  }
 
   // For privacy reasons, Chrome should only collect perf data if there is no
   // incognito session active (or gets spawned during the collection).
-  if (BrowserList::IsOffTheRecordSessionActive())
+  if (BrowserList::IsOffTheRecordSessionActive()) {
+    AddToPerfHistogram(INCOGNITO_ACTIVE);
     return;
+  }
 
   scoped_ptr<WindowedIncognitoObserver> incognito_observer(
       new WindowedIncognitoObserver);
@@ -131,10 +161,13 @@ void PerfProvider::ParseProtoIfValid(
     const std::vector<uint8>& data) {
   DCHECK(CalledOnValidThread());
 
-  if (incognito_observer->incognito_launched())
+  if (incognito_observer->incognito_launched()) {
+    AddToPerfHistogram(INCOGNITO_LAUNCHED);
     return;
+  }
 
   if (!perf_data_proto_.ParseFromArray(data.data(), data.size())) {
+    AddToPerfHistogram(PROTOBUF_NOT_PARSED);
     perf_data_proto_.Clear();
     return;
   }
