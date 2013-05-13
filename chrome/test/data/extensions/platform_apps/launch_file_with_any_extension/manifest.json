@@ -13,5 +13,8 @@
     "background": {
       "scripts": ["test.js"]
     }
-  }
+  },
+  "permissions": [
+    "fileSystem"
+  ]
 }

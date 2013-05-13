@@ -10,6 +10,8 @@ chrome.app.runtime.onLaunched.addListener(function (launchData) {
       chrome.test.assertEq(launchData.id, "text",
           "launchData.id incorrect");
       chrome.test.assertEq(launchData.items.length, 1);
+      chrome.test.assertTrue(
+          chrome.fileSystem.getEntryId(launchData.items[0].entry) != null);
 
       launchData.items[0].entry.file(function(file) {
         var reader = new FileReader();

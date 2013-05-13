@@ -84,14 +84,15 @@ void AppEventRouter::DispatchOnRestartedEvent(
 void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
     Profile* profile, const Extension* extension,
     const std::string& handler_id, const std::string& mime_type,
-    const std::string& file_system_id, const std::string& base_name) {
+    const extensions::app_file_handler_util::GrantedFileEntry& file_entry) {
   scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* launch_data = new DictionaryValue();
   launch_data->SetString("id", handler_id);
   DictionaryValue* launch_item = new DictionaryValue;
-  launch_item->SetString("fileSystemId", file_system_id);
-  launch_item->SetString("baseName", base_name);
+  launch_item->SetString("fileSystemId", file_entry.filesystem_id);
+  launch_item->SetString("baseName", file_entry.registered_name);
   launch_item->SetString("mimeType", mime_type);
+  launch_item->SetString("entryId", file_entry.id);
   ListValue* items = new ListValue;
   items->Append(launch_item);
   launch_data->Set("items", items);

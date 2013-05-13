@@ -25,13 +25,11 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/isolated_context.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
@@ -257,31 +255,14 @@ class PlatformAppPathLauncher
       return;
     }
 
-    content::ChildProcessSecurityPolicy* policy =
-        content::ChildProcessSecurityPolicy::GetInstance();
-    int renderer_id = host->render_process_host()->GetID();
-
-    // Granting read file permission to allow reading file content.
-    // If the renderer already has permission to read these paths, it is not
-    // regranted, as this would overwrite any other permissions which the
-    // renderer may already have.
-    if (!policy->CanReadFile(renderer_id, file_path_))
-      policy->GrantReadFile(renderer_id, file_path_);
-
-    std::string registered_name;
-    fileapi::IsolatedContext* isolated_context =
-        fileapi::IsolatedContext::GetInstance();
-    DCHECK(isolated_context);
-    std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
-        fileapi::kFileSystemTypeNativeForPlatformApp, file_path_,
-        &registered_name);
-    // Granting read file system permission as well to allow file-system
-    // read operations.
-    policy->GrantReadFileSystem(renderer_id, filesystem_id);
-
+    GrantedFileEntry file_entry = CreateFileEntry(
+        profile_,
+        extension_->id(),
+        host->render_process_host()->GetID(),
+        file_path_,
+        false);
     AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
-        profile_, extension_, handler_id_, mime_type, filesystem_id,
-        registered_name);
+        profile_, extension_, handler_id_, mime_type, file_entry);
   }
 
   // The profile the app should be run in.

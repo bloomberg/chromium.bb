@@ -12,6 +12,8 @@ chrome.app.runtime.onLaunched.addListener(function (launchData) {
       chrome.test.assertEq(launchData.items.length, 1);
       chrome.test.assertEq(launchData.items[0].type,
           "application/octet-stream");
+      chrome.test.assertTrue(
+          chrome.fileSystem.getEntryId(launchData.items[0].entry) != null);
 
       launchData.items[0].entry.file(function(file) {
         var reader = new FileReader();

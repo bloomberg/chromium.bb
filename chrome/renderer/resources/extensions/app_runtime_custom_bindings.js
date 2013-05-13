@@ -74,6 +74,7 @@ chromeHidden.Event.registerArgumentMassager('app.runtime.onLaunched',
     forEach(launchData.items, function(i, item) {
       var fs = GetIsolatedFileSystem(item.fileSystemId);
       fs.root.getFile(item.baseName, {}, function(fileEntry) {
+        entryIdManager.registerEntry(item.entryId, fileEntry);
         itemLoaded(null, { entry: fileEntry, type: item.mimeType });
       }, function(fileError) {
         itemLoaded(fileError);
