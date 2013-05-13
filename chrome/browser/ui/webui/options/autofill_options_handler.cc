@@ -26,6 +26,7 @@
 #include "components/autofill/browser/phone_number_i18n.h"
 #include "components/autofill/common/autofill_constants.h"
 #include "content/public/browser/web_ui.h"
+#include "grit/component_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"

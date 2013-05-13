@@ -877,9 +877,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
 	Link my Chromium data to this account
       </message>
 
-      <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
-        Chromium Autofill settings
-      </message>
       <message name="IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX" desc="Checkbox that controls whether info the user types into the autofill dialog is saved by chrome.">
         Save details in Chromium
       </message>

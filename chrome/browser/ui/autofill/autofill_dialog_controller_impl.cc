@@ -56,6 +56,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
+#include "grit/component_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/webkit_resources.h"

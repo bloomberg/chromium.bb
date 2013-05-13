@@ -11,7 +11,7 @@
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/credit_card.h"
 #include "googleurl/src/gurl.h"
-#include "grit/generated_resources.h"
+#include "grit/component_resources.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
