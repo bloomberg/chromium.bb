@@ -172,119 +172,15 @@ class JobScheduler
     // Context of the job.
     DriveClientContext context;
 
-    // Resource ID to use for the operation.
-    // Used by:
-    //   TYPE_GET_RESOURCE_ENTRY
-    //   TYPE_DELETE_RESOURCE
-    //   TYPE_RENAME_RESOURCE
-    //   TYPE_ADD_RESOURCE_TO_DIRECTORY
-    //   TYPE_UPLOAD_EXISTING_FILE
-    std::string resource_id;
-
-    // URL to access the contents of the operation's target.
-    // Used by:
-    //   TYPE_DOWNLOAD_FILE
-    GURL download_url;
-
-    // Online and cache path of the operation's target.
-    // Used by:
-    //   TYPE_DOWNLOAD_FILE
-    //   TYPE_UPLOAD_NEW_FILE
-    //   TYPE_UPLOAD_EXISTING_FILE
-    base::FilePath drive_file_path;
-    base::FilePath local_file_path;
-
-    // Parameter to get change list.
-    // Used by:
-    //   TYPE_GET_CHANGE_LIST
-    int64 start_changestamp;
-
-    // Parameter to get a resource list in a particular directory.
-    // Used by:
-    //   TYPE_GET_RESOURCE_LIST_IN_DIRECTORY
-    std::string directory_resource_id;
-
-    // Parameter to search the resource list
-    // Used by:
-    //   TYPE_SEARCH
-    std::string search_query;
-
-    // Parameter to get remaining results of an operation via
-    // GetResourceListCallback.
-    // Used by:
-    //   TYPE_CONTINUE_GET_RESOURCE_LIST
-    GURL feed_url;
-
-    // Parameter for copy or rename.
-    // Used by:
-    //   TYPE_COPY_HOSTED_DOCUMENT
-    //   TYPE_RENAME_RESOURCE
-    std::string new_name;
-
-    // Parameters for AddNewDirectory
-    // Used by:
-    //   TYPE_ADD_NEW_DIRECTORY
-    //   TYPE_ADD_RESOURCE_TO_DIRECTORY
-    //   TYPE_REMOVE_RESOURCE_FROM_DIRECTORY
-    std::string parent_resource_id;
-    std::string directory_name;
-
-    // Callback for operations that take a GetResourceListCallback.
-    // Used by:
-    //   TYPE_GET_ALL_RESOURCE_LIST
-    //   TYPE_GET_RESOURCE_LIST_IN_DIRECTORY
-    //   TYPE_SEARCH
-    //   TYPE_CONTINUE_GET_RESOURCE_LIST
-    google_apis::GetResourceListCallback get_resource_list_callback;
-
-    // Callback for operations that take a GetResourceEntryCallback.
-    // Used by:
-    //   TYPE_GET_RESOURCE_ENTRY,
-    //   TYPE_COPY_HOSTED_DOCUMENT,
-    //   TYPE_ADD_NEW_DIRECTORY,
-    google_apis::GetResourceEntryCallback get_resource_entry_callback;
-
-    // Callback for operations that take a GetAboutResourceCallback.
-    // Used by:
-    //   TYPE_GET_ABOUT_RESOURCE,
-    google_apis::GetAboutResourceCallback get_about_resource_callback;
-
-    // Callback for operations that take a GetAppListCallback.
-    // Used by:
-    //   TYPE_GET_APP_LIST,
-    google_apis::GetAppListCallback get_app_list_callback;
-
-    // Callback for operations that take a EntryActionCallback.
-    // Used by:
-    //   TYPE_DELETE_RESOURCE,
-    //   TYPE_RENAME_RESOURCE,
-    //   TYPE_ADD_RESOURCE_TO_DIRECTORY,
-    //   TYPE_REMOVE_RESOURCE_FROM_DIRECTORY,
-    google_apis::EntryActionCallback entry_action_callback;
-
-    // Callback for operations that take a DownloadActionCallback
-    // Used by:
-    //   TYPE_DOWNLOAD_FILE
-    google_apis::DownloadActionCallback download_action_callback;
-
-    // Callback for result of GetContent.
-    // Used by:
-    //   TYPE_DOWNLOAD_FILE
-    google_apis::GetContentCallback get_content_callback;
-
-    // Parameters for UploadNewFile and UploadExistingFile
-    // Used by:
-    //   TYPE_UPLOAD_NEW_FILE
-    //   TYPE_UPLOAD_EXISTING_FILE
-    std::string content_type;
-    std::string etag;
-    std::string title;
-    google_apis::UploadCompletionCallback upload_completion_callback;
+    base::Closure task;
   };
 
+  // Creates a new job and add it to the job map.
+  JobEntry* CreateNewJob(JobType type);
+
   // Adds the specified job to the queue and starts the job loop for the queue
-  // if needed. Returns the job ID for the new job.
-  JobID StartNewJob(scoped_ptr<JobEntry> job);
+  // if needed.
+  void StartJob(JobEntry* job);
 
   // Adds the specified job to the queue.
   void QueueJob(JobID job_id);
