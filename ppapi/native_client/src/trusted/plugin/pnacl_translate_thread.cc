@@ -19,7 +19,6 @@ PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
                                                done_(false),
                                                time_stats_(),
                                                manifest_(NULL),
-                                               ld_manifest_(NULL),
                                                obj_file_(NULL),
                                                nexe_file_(NULL),
                                                coordinator_error_info_(NULL),
@@ -34,7 +33,6 @@ PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
 void PnaclTranslateThread::RunTranslate(
     const pp::CompletionCallback& finish_callback,
     const Manifest* manifest,
-    const Manifest* ld_manifest,
     TempFile* obj_file,
     TempFile* nexe_file,
     ErrorInfo* error_info,
@@ -44,7 +42,6 @@ void PnaclTranslateThread::RunTranslate(
     Plugin* plugin) {
   PLUGIN_PRINTF(("PnaclStreamingTranslateThread::RunTranslate)\n"));
   manifest_ = manifest;
-  ld_manifest_ = ld_manifest;
   obj_file_ = obj_file;
   nexe_file_ = nexe_file;
   coordinator_error_info_ = error_info;
@@ -281,7 +278,7 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
     nacl::MutexLocker ml(&subprocess_mu_);
     int64_t ld_start_time = NaClGetTimeOfDayMicroseconds();
     ld_subprocess_.reset(
-      StartSubprocess(PnaclUrls::GetLdUrl(), ld_manifest_, &error_info));
+      StartSubprocess(PnaclUrls::GetLdUrl(), manifest_, &error_info));
     if (ld_subprocess_ == NULL) {
       TranslateFailed(ERROR_PNACL_LD_SETUP,
                       "Link process could not be created: " +

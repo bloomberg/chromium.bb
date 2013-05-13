@@ -49,7 +49,6 @@ class PnaclTranslateThread {
   // as it is passed in with PutBytes.
   void RunTranslate(const pp::CompletionCallback& finish_callback,
                     const Manifest* manifest,
-                    const Manifest* ld_manifest,
                     TempFile* obj_file,
                     TempFile* nexe_file,
                     ErrorInfo* error_info,
@@ -121,7 +120,6 @@ class PnaclTranslateThread {
 
   // Data about the translation files, owned by the coordinator
   const Manifest* manifest_;
-  const Manifest* ld_manifest_;
   TempFile* obj_file_;
   TempFile* nexe_file_;
   ErrorInfo* coordinator_error_info_;

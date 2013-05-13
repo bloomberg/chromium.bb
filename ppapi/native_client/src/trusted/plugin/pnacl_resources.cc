@@ -16,36 +16,30 @@
 
 namespace plugin {
 
-static const char kExtensionOrigin[] =
-    "chrome-extension://gcodniebolpnpaiggndmcmmfpldlknih/";
-static const char kPnaclComponentID[] =
+static const char kPnaclComponentScheme[] =
     "pnacl-component://";
 const char PnaclUrls::kLlcUrl[] = "llc.nexe";
 const char PnaclUrls::kLdUrl[] = "ld.nexe";
 
-bool PnaclUrls::UsePnaclExtension(const Plugin* plugin) {
-  // TODO(jvoung): remove extension stuff if we aren't using it.
-  return false;
+nacl::string PnaclUrls::GetBaseUrl() {
+  return nacl::string(kPnaclComponentScheme) + GetSandboxISA() + "/";
 }
 
-nacl::string PnaclUrls::GetBaseUrl(bool use_extension) {
-  if (use_extension) {
-    return nacl::string(kExtensionOrigin) + GetSandboxISA() + "/";
-  } else {
-    return nacl::string(kPnaclComponentID) + GetSandboxISA() + "/";
-  }
-}
-
+// Determine if a URL is for a pnacl-component file, or if it is some other
+// type of URL (e.g., http://, https://, chrome-extension://).
+// The URL could be one of the other variants for shared libraries
+// served from the web.
 bool PnaclUrls::IsPnaclComponent(const nacl::string& full_url) {
-  return full_url.find(kPnaclComponentID, 0) == 0;
+  return full_url.find(kPnaclComponentScheme, 0) == 0;
 }
 
 // Convert a URL to a filename accepted by GetReadonlyPnaclFd.
 // Must be kept in sync with chrome/browser/nacl_host/nacl_file_host.
 nacl::string PnaclUrls::PnaclComponentURLToFilename(
     const nacl::string& full_url) {
-  // strip componentID.
-  nacl::string r = full_url.substr(nacl::string(kPnaclComponentID).length());
+  // strip component scheme.
+  nacl::string r = full_url.substr(
+      nacl::string(kPnaclComponentScheme).length());
 
   // Use white-listed-chars.
   size_t replace_pos;
@@ -102,96 +96,39 @@ void PnaclResources::StartLoad() {
   PLUGIN_PRINTF(("PnaclResources::StartLoad\n"));
 
   CHECK(resource_urls_.size() > 0);
-  if (PnaclUrls::UsePnaclExtension(plugin_)) {
-    PLUGIN_PRINTF(("PnaclResources::StartLoad -- PNaCl chrome extension.\n"));
-    // Do a URL fetch.
-    // Create a counter (barrier) callback to track when all of the resources
-    // are loaded.
-    uint32_t resource_count = static_cast<uint32_t>(resource_urls_.size());
-    delayed_callback_.reset(
-        new DelayedCallback(all_loaded_callback_, resource_count));
-
-    // Schedule the downloads.
-    for (size_t i = 0; i < resource_urls_.size(); ++i) {
-      nacl::string full_url;
-      ErrorInfo error_info;
-      if (!manifest_->ResolveURL(resource_urls_[i], &full_url, &error_info)) {
-        coordinator_->ReportNonPpapiError(
-            ERROR_PNACL_RESOURCE_FETCH,
-            nacl::string("failed to resolve ") +
-            resource_urls_[i] + ": " +
-            error_info.message() + ".");
-        break;
-      }
-      pp::CompletionCallback ready_callback =
-          callback_factory_.NewCallback(
-              &PnaclResources::ResourceReady,
-              resource_urls_[i],
-              full_url);
-      if (!plugin_->StreamAsFile(full_url,
-                                 ready_callback.pp_completion_callback())) {
-        coordinator_->ReportNonPpapiError(
-            ERROR_PNACL_RESOURCE_FETCH,
-            nacl::string("failed to download ") +
-            resource_urls_[i] + ".");
-        break;
-      }
+  PLUGIN_PRINTF(("PnaclResources::StartLoad -- local install of PNaCl.\n"));
+  // Do a blocking load of each of the resources.
+  int32_t result = PP_OK;
+  for (size_t i = 0; i < resource_urls_.size(); ++i) {
+    const nacl::string& url = resource_urls_[i];
+    nacl::string full_url;
+    ErrorInfo error_info;
+    if (!manifest_->ResolveURL(resource_urls_[i], &full_url, &error_info)) {
+      coordinator_->ReportNonPpapiError(
+          ERROR_PNACL_RESOURCE_FETCH,
+          nacl::string("failed to resolve ") +
+          url + ": " +
+          error_info.message() + ".");
+      break;
     }
-  } else {
-    PLUGIN_PRINTF(("PnaclResources::StartLoad -- local install of PNaCl.\n"));
-    // Do a blocking load of each of the resources.
-    int32_t result = PP_OK;
-    for (size_t i = 0; i < resource_urls_.size(); ++i) {
-      const nacl::string& url = resource_urls_[i];
-      nacl::string full_url;
-      ErrorInfo error_info;
-      if (!manifest_->ResolveURL(resource_urls_[i], &full_url, &error_info)) {
-        coordinator_->ReportNonPpapiError(
-            ERROR_PNACL_RESOURCE_FETCH,
-            nacl::string("failed to resolve ") +
-            url + ": " +
-            error_info.message() + ".");
-        break;
-      }
-      nacl::string filename = PnaclUrls::PnaclComponentURLToFilename(full_url);
+    nacl::string filename = PnaclUrls::PnaclComponentURLToFilename(full_url);
 
-      int32_t fd = PnaclResources::GetPnaclFD(plugin_, filename.c_str());
-      if (fd < 0) {
-        coordinator_->ReportNonPpapiError(
-            ERROR_PNACL_RESOURCE_FETCH,
-            nacl::string("PnaclLocalResources::StartLoad failed for: ") +
-            filename);
-        result = PP_ERROR_FILENOTFOUND;
-        break;
-      } else {
-        resource_wrappers_[url] =
-            plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY);
-      }
+    int32_t fd = PnaclResources::GetPnaclFD(plugin_, filename.c_str());
+    if (fd < 0) {
+      coordinator_->ReportNonPpapiError(
+          ERROR_PNACL_RESOURCE_FETCH,
+          nacl::string("PnaclLocalResources::StartLoad failed for: ") +
+          filename + " (PNaCl not installed?  Check chrome://nacl)");
+      result = PP_ERROR_FILENOTFOUND;
+      break;
+    } else {
+      resource_wrappers_[url] =
+          plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY);
     }
-    // We're done!  Queue the callback.
-    pp::Core* core = pp::Module::Get()->core();
-    core->CallOnMainThread(0, all_loaded_callback_, result);
   }
-}
-
-void PnaclResources::ResourceReady(int32_t pp_error,
-                                   const nacl::string& url,
-                                   const nacl::string& full_url) {
-  PLUGIN_PRINTF(("PnaclResources::ResourceReady (pp_error=%"
-                 NACL_PRId32", url=%s)\n", pp_error, url.c_str()));
-  // pp_error is checked by GetLoadedFileDesc.
-  int32_t fd = coordinator_->GetLoadedFileDesc(pp_error,
-                                               full_url,
-                                               "resource " + url);
-  if (fd < 0) {
-    coordinator_->ReportPpapiError(ERROR_PNACL_RESOURCE_FETCH,
-                                   pp_error,
-                                   "PnaclResources::ResourceReady failed.");
-  } else {
-    resource_wrappers_[url] =
-        plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY);
-    delayed_callback_->RunIfTime();
-  }
+  // We're done!  Queue the callback.
+  pp::Core* core = pp::Module::Get()->core();
+  core->CallOnMainThread(0, all_loaded_callback_, result);
 }
 
 }  // namespace plugin
