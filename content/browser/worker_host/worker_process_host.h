@@ -158,9 +158,6 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
   // Terminates the given worker, i.e. based on a UI action.
   CONTENT_EXPORT void TerminateWorker(int worker_route_id);
 
-  // Callers can reduce the WorkerProcess' priority.
-  void SetBackgrounded(bool backgrounded);
-
   CONTENT_EXPORT const ChildProcessData& GetData();
 
   typedef std::list<WorkerInstance> Instances;
@@ -169,8 +166,6 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
   ResourceContext* resource_context() const {
     return resource_context_;
   }
-
-  bool process_launched() const;
 
  protected:
   friend class WorkerServiceImpl;
@@ -226,7 +221,6 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
   scoped_refptr<WorkerMessageFilter> worker_message_filter_;
 
   scoped_ptr<BrowserChildProcessHostImpl> process_;
-  bool process_launched_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessHost);
 };

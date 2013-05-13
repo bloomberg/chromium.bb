@@ -10,20 +10,12 @@
 #include "base/logging.h"
 #include "base/threading/thread.h"
 #include "content/browser/devtools/worker_devtools_manager.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -32,186 +24,6 @@ namespace content {
 
 const int WorkerServiceImpl::kMaxWorkersWhenSeparate = 64;
 const int WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate = 16;
-
-class WorkerPrioritySetter
-    : public NotificationObserver,
-      public base::RefCountedThreadSafe<WorkerPrioritySetter,
-                                        BrowserThread::DeleteOnUIThread> {
- public:
-  WorkerPrioritySetter();
-
-  // Invoked by WorkerServiceImpl when a worker process is created.
-  void NotifyWorkerProcessCreated();
-
- private:
-  friend class base::RefCountedThreadSafe<WorkerPrioritySetter>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-  friend class base::DeleteHelper<WorkerPrioritySetter>;
-  virtual ~WorkerPrioritySetter();
-
-  // Posts a task to perform a worker priority update.
-  void PostTaskToGatherAndUpdateWorkerPriorities();
-
-  // Gathers up a list of the visible tabs and then updates priorities for
-  // all the shared workers.
-  void GatherVisibleIDsAndUpdateWorkerPriorities();
-
-  // Registers as an observer to receive notifications about
-  // widgets being shown.
-  void RegisterObserver();
-
-  // Sets priorities for shared workers given a set of visible tabs (as a
-  // std::set of std::pair<render_process, render_view> ids.
-  void UpdateWorkerPrioritiesFromVisibleSet(
-      const std::set<std::pair<int, int> >* visible);
-
-  // Called to refresh worker priorities when focus changes between tabs.
-  void OnRenderWidgetVisibilityChanged(std::pair<int, int>);
-
-  // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
-
-  NotificationRegistrar registrar_;
-};
-
-WorkerPrioritySetter::WorkerPrioritySetter() {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&WorkerPrioritySetter::RegisterObserver, this));
-}
-
-WorkerPrioritySetter::~WorkerPrioritySetter() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
-void WorkerPrioritySetter::NotifyWorkerProcessCreated() {
-  PostTaskToGatherAndUpdateWorkerPriorities();
-}
-
-void WorkerPrioritySetter::PostTaskToGatherAndUpdateWorkerPriorities() {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &WorkerPrioritySetter::GatherVisibleIDsAndUpdateWorkerPriorities,
-          this));
-}
-
-void WorkerPrioritySetter::GatherVisibleIDsAndUpdateWorkerPriorities() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::set<std::pair<int, int> >* visible_renderer_ids =
-      new std::set<std::pair<int, int> >();
-
-  // Gather up all the visible renderer process/view pairs
-  for (RenderProcessHost::iterator it =
-       RenderProcessHost::AllHostsIterator();
-       !it.IsAtEnd(); it.Advance()) {
-    RenderProcessHost* render_process_host = it.GetCurrentValue();
-    if (render_process_host->VisibleWidgetCount()) {
-      for (RenderProcessHost::RenderWidgetHostsIterator rit =
-           render_process_host->GetRenderWidgetHostsIterator(); !rit.IsAtEnd();
-           rit.Advance()) {
-        RenderWidgetHost* render_widget =
-            render_process_host->GetRenderWidgetHostByID(rit.GetCurrentKey());
-        if (render_widget) {
-          RenderWidgetHostView* render_view = render_widget->GetView();
-          if (render_view && render_view->IsShowing()) {
-            visible_renderer_ids->insert(
-                std::pair<int, int>(render_process_host->GetID(),
-                                    render_widget->GetRoutingID()));
-          }
-        }
-      }
-    }
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&WorkerPrioritySetter::UpdateWorkerPrioritiesFromVisibleSet,
-                 this, base::Owned(visible_renderer_ids)));
-}
-
-void WorkerPrioritySetter::UpdateWorkerPrioritiesFromVisibleSet(
-    const std::set<std::pair<int, int> >* visible_renderer_ids) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
-    if (!iter->process_launched())
-      continue;
-    bool throttle = true;
-
-    for (WorkerProcessHost::Instances::const_iterator instance =
-        iter->instances().begin(); instance != iter->instances().end();
-        ++instance) {
-
-      // This code assumes one worker per process
-      WorkerProcessHost::Instances::const_iterator first_instance =
-          iter->instances().begin();
-      if (first_instance == iter->instances().end())
-        continue;
-
-      WorkerDocumentSet::DocumentInfoSet::const_iterator info =
-          first_instance->worker_document_set()->documents().begin();
-
-      for (; info != first_instance->worker_document_set()->documents().end();
-          ++info) {
-        std::pair<int, int> id(
-            info->render_process_id(), info->render_view_id());
-        if (visible_renderer_ids->find(id) != visible_renderer_ids->end()) {
-          throttle = false;
-          break;
-        }
-      }
-
-      if (!throttle ) {
-        break;
-      }
-    }
-
-    iter->SetBackgrounded(throttle);
-  }
-}
-
-void WorkerPrioritySetter::OnRenderWidgetVisibilityChanged(
-    std::pair<int, int> id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  std::set<std::pair<int, int> > visible_renderer_ids;
-
-  visible_renderer_ids.insert(id);
-
-  UpdateWorkerPrioritiesFromVisibleSet(&visible_renderer_ids);
-}
-
-void WorkerPrioritySetter::RegisterObserver() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  registrar_.Add(this, NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-                 NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 NotificationService::AllBrowserContextsAndSources());
-}
-
-void WorkerPrioritySetter::Observe(int type,
-    const NotificationSource& source, const NotificationDetails& details) {
-  if (type == NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED) {
-    bool visible = *Details<bool>(details).ptr();
-
-    if (visible) {
-      int render_widget_id =
-          Source<RenderWidgetHost>(source).ptr()->GetRoutingID();
-      int render_process_pid =
-          Source<RenderWidgetHost>(source).ptr()->GetProcess()->GetID();
-
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(&WorkerPrioritySetter::OnRenderWidgetVisibilityChanged,
-              this, std::pair<int, int>(render_process_pid, render_widget_id)));
-    }
-  }
-  else if (type == NOTIFICATION_RENDERER_PROCESS_CREATED) {
-    PostTaskToGatherAndUpdateWorkerPriorities();
-  }
-}
 
 WorkerService* WorkerService::GetInstance() {
   return WorkerServiceImpl::GetInstance();
@@ -222,9 +34,7 @@ WorkerServiceImpl* WorkerServiceImpl::GetInstance() {
   return Singleton<WorkerServiceImpl>::get();
 }
 
-WorkerServiceImpl::WorkerServiceImpl()
-    : priority_setter_(new WorkerPrioritySetter()),
-      next_worker_route_id_(0) {
+WorkerServiceImpl::WorkerServiceImpl() : next_worker_route_id_(0) {
 }
 
 WorkerServiceImpl::~WorkerServiceImpl() {
@@ -645,10 +455,6 @@ void WorkerServiceImpl::NotifyWorkerDestroyed(
       process, worker_route_id);
   FOR_EACH_OBSERVER(WorkerServiceObserver, observers_,
                     WorkerDestroyed(process->GetData().id, worker_route_id));
-}
-
-void WorkerServiceImpl::NotifyWorkerProcessCreated() {
-  priority_setter_->NotifyWorkerProcessCreated();
 }
 
 WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindSharedWorkerInstance(
