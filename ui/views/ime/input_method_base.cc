@@ -86,7 +86,11 @@ bool InputMethodBase::GetCaretBoundsInWidget(gfx::Rect* rect) const {
   if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
     return false;
 
-  *rect = GetFocusedView()->ConvertRectToWidget(client->GetCaretBounds());
+  gfx::Rect caret_bounds = client->GetCaretBounds();
+  gfx::Point caret_origin = caret_bounds.origin();
+  View::ConvertPointFromScreen(GetFocusedView(), &caret_origin);
+  caret_bounds.set_origin(caret_origin);
+  *rect = GetFocusedView()->ConvertRectToWidget(caret_bounds);
 
   // Convert coordinates if the focused view is inside a child Widget.
   if (GetFocusedView()->GetWidget() != widget_)
