@@ -92,13 +92,10 @@ void HTMLDialogElement::positionAndReattach()
     // FIXME: Figure out what to do in vertical writing mode.
     FrameView* frameView = document()->view();
     int scrollTop = frameView->scrollOffset().height();
-    FloatPoint absolutePoint(0, scrollTop);
     int visibleHeight = frameView->visibleContentRect(ScrollableArea::IncludeScrollbars).height();
+    m_top = scrollTop;
     if (box->height() < visibleHeight)
-        absolutePoint.move(0, (visibleHeight - box->height()) / 2);
-    FloatPoint localPoint = box->containingBlock()->absoluteToLocal(absolutePoint);
-
-    m_top = localPoint.y();
+        m_top += (visibleHeight - box->height()) / 2;
     m_topIsValid = true;
 
     // FIXME: It's inefficient to reattach here. We could do better by mutating style directly and forcing another layout.
@@ -132,6 +129,13 @@ bool HTMLDialogElement::isPresentationAttribute(const QualifiedName& name) const
         return true;
 
     return HTMLElement::isPresentationAttribute(name);
+}
+
+bool HTMLDialogElement::shouldBeReparentedUnderRenderView(const RenderStyle* style) const
+{
+    if (style && style->position() == AbsolutePosition)
+        return true;
+    return Element::shouldBeReparentedUnderRenderView(style);
 }
 
 } // namespace WebCore

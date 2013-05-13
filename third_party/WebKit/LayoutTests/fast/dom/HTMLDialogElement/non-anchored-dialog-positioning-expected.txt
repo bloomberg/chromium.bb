@@ -1,4 +1,4 @@
-Tests default positioning of non-anchored dialogs.
+Tests positioning of non-anchored dialogs.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -42,22 +42,22 @@ Dialog should not be centered if show() was called when an ancestor had display 
 PASS dialog.getBoundingClientRect().top is expectedTop
 
 Test that setting 'top' on dialog results in the same position as for a plain, absolutely positioned span.
-PASS dialog.offsetTop is plainSpan.offsetTop
-PASS dialog.offsetTop is plainSpan.offsetTop
+PASS dialog.getBoundingClientRect().top is expectedTop
+PASS dialog.getBoundingClientRect().top is expectedTop
 
 Test that setting 'bottom' on dialog results in the same position as for a plain, absolutely positioned span.
-PASS dialog.offsetBottom is plainSpan.offsetBottom
-PASS dialog.offsetBottom is plainSpan.offsetBottom
+PASS dialog.getBoundingClientRect().bottom is plainSpan.getBoundingClientRect().bottom
+PASS dialog.getBoundingClientRect().bottom is plainSpan.getBoundingClientRect().bottom
 
 Test that fixed positioning for dialog has same behavior as for a plain span.
-PASS dialog.offsetTop is plainSpan.offsetTop
-PASS dialog.offsetTop is plainSpan.offsetTop
+PASS dialog.getBoundingClientRect().top is plainSpan.getBoundingClientRect().top
+PASS dialog.getBoundingClientRect().top is plainSpan.getBoundingClientRect().top
 
 Test that static position for a non-modal dialog has the same behavior as for a plain span.
-PASS dialog.offsetTop is expectedTop
+PASS dialog.getBoundingClientRect().top is expectedTop
 
 Test that relative position for a non-modal dialog has the same behavior as for a plain span.
-PASS dialog.offsetTop is expectedTop
+PASS dialog.getBoundingClientRect().top is expectedTop
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.pseudodialog {
+    position: absolute;
+    left: 0; right: 0;
+    margin: auto;
+    border: solid;
+    padding: 1em;
+    background: white;
+    color: black;
+}
+</style>
+</head>
+<body style="height: 10000px; width: 10000px">
+<p style="position: fixed">
+This tests that a top layer element's containing block is the initial containing
+block.  The dialog is positioned at (1200, 1200) and the window is scrolled to
+(1000, 1000) so the dialog should be positioned at (200, 200) relative to the
+viewport.
+</p>
+<div class="pseudodialog" style="top: 1200px; left: 1200px; right: auto; height: 250px; width: 50%; background-color: yellow">
+    This dialog should be onscreen with a width of 50% of the viewport. It is the child of an narrow element
+    positioned off screen, but its containing block is the initial containing block, so its
+    position and percent lengths are relative to that.
+</div>
+<script>
+window.scroll(1000, 1000);
+</script>
+</body>
+</html>

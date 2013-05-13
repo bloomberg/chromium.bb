@@ -46,6 +46,7 @@ private:
 
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
+    virtual bool shouldBeReparentedUnderRenderView(const RenderStyle*) const OVERRIDE;
     void positionAndReattach();
 
     bool m_topIsValid;

@@ -79,7 +79,7 @@ static bool isRendererReparented(const RenderObject* renderer)
         return false;
     if (renderer->style() && !renderer->style()->flowThread().isEmpty())
         return true;
-    if (toElement(renderer->node())->isInTopLayer())
+    if (toElement(renderer->node())->shouldBeReparentedUnderRenderView(renderer->style()))
         return true;
     return false;
 }
@@ -90,7 +90,16 @@ RenderObject* NodeRenderingContext::nextRenderer() const
         return renderer->nextSibling();
 
     Element* element = m_node->isElementNode() ? toElement(m_node) : 0;
-    if (element && element->isInTopLayer()) {
+    if (element && element->shouldBeReparentedUnderRenderView(m_style.get())) {
+        // FIXME: Reparented renderers not in the top layer should probably be
+        // ordered in DOM tree order. We don't have a good way to do that yet,
+        // since NodeRenderingTraversal isn't aware of reparenting. It's safe to
+        // just append for now; it doesn't disrupt the top layer rendering as
+        // the layer collection in RenderLayer only requires that top layer
+        // renderers are orderered correctly relative to each other.
+        if (!element->isInTopLayer())
+            return 0;
+
         const Vector<RefPtr<Element> >& topLayerElements = element->document()->topLayerElements();
         size_t position = topLayerElements.find(element);
         ASSERT(position != notFound);
@@ -123,10 +132,10 @@ RenderObject* NodeRenderingContext::previousRenderer() const
     if (RenderObject* renderer = m_node->renderer())
         return renderer->previousSibling();
 
-    // FIXME: This doesn't work correctly for things in the top layer that are
+    // FIXME: This doesn't work correctly for reparented elements that are
     // display: none. We'd need to duplicate the logic in nextRenderer, but since
     // nothing needs that yet just assert.
-    ASSERT(!m_node->isElementNode() || !toElement(m_node)->isInTopLayer());
+    ASSERT(!m_node->isElementNode() || !toElement(m_node)->shouldBeReparentedUnderRenderView(m_style.get()));
 
     if (m_parentFlowRenderer)
         return m_parentFlowRenderer->previousRendererForNode(m_node);
@@ -147,8 +156,8 @@ RenderObject* NodeRenderingContext::parentRenderer() const
     if (RenderObject* renderer = m_node->renderer())
         return renderer->parent();
 
-    if (m_node->isElementNode() && toElement(m_node)->isInTopLayer()) {
-        // The parent renderer of top layer elements is the RenderView, but only
+    if (m_node->isElementNode() && toElement(m_node)->shouldBeReparentedUnderRenderView(m_style.get())) {
+        // The parent renderer of reparented elements is the RenderView, but only
         // if the normal parent would have had a renderer.
         // FIXME: This behavior isn't quite right as the spec for top layer
         // only talks about display: none ancestors so putting a <dialog> inside

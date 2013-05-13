@@ -554,6 +554,7 @@ public:
     virtual bool isDisabledFormControl() const;
 
     bool isInert() const;
+    virtual bool shouldBeReparentedUnderRenderView(const RenderStyle*) const { return isInTopLayer(); }
 
 #if ENABLE(SVG)
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
