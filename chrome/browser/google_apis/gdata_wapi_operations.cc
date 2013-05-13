@@ -144,12 +144,14 @@ void ParseOpenLinkAndRun(const std::string& app_id,
   GURL open_link;
   for (size_t i = 0; i < resource_links.size(); ++i) {
     const Link& link = *resource_links[i];
-    if (link.type() == google_apis::Link::LINK_OPEN_WITH &&
-        link.app_id() == app_id) {
+    if (link.type() == Link::LINK_OPEN_WITH && link.app_id() == app_id) {
       open_link = link.href();
       break;
     }
   }
+
+  if (open_link.is_empty())
+    error = GDATA_OTHER_ERROR;
 
   callback.Run(error, open_link);
 }

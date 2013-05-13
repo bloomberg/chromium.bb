@@ -17,7 +17,6 @@
 #include "chrome/browser/google_apis/drive_api_operations.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
-#include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/operation_runner.h"
 #include "chrome/browser/google_apis/time_util.h"
@@ -189,6 +188,31 @@ void ParseResourceEntryForUploadRangeAndRun(
   callback.Run(response, entry.Pass());
 }
 
+void ExtractOpenUrlAndRun(const std::string& app_id,
+                          const AuthorizeAppCallback& callback,
+                          GDataErrorCode error,
+                          scoped_ptr<FileResource> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (!value) {
+    callback.Run(error, GURL());
+    return;
+  }
+
+  const std::vector<FileResource::OpenWithLink>& open_with_links =
+      value->open_with_links();
+  for (size_t i = 0; i < open_with_links.size(); ++i) {
+    if (open_with_links[i].app_id == app_id) {
+      callback.Run(HTTP_SUCCESS, open_with_links[i].open_url);
+      return;
+    }
+  }
+
+  // Not found.
+  callback.Run(GDATA_OTHER_ERROR, GURL());
+}
+
 // The resource ID for the root directory for Drive API is defined in the spec:
 // https://developers.google.com/drive/folder
 const char kDriveApiRootDirectoryResourceId[] = "root";
@@ -198,13 +222,11 @@ const char kDriveApiRootDirectoryResourceId[] = "root";
 DriveAPIService::DriveAPIService(
     net::URLRequestContextGetter* url_request_context_getter,
     const GURL& base_url,
-    const GURL& wapi_base_url,
     const std::string& custom_user_agent)
     : url_request_context_getter_(url_request_context_getter),
       profile_(NULL),
       runner_(NULL),
       url_generator_(base_url),
-      wapi_url_generator_(wapi_base_url),
       custom_user_agent_(custom_user_agent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -636,19 +658,12 @@ void DriveAPIService::AuthorizeApp(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // Unfortunately, there is no support of authorizing
-  // third party application on Drive API v2.
-  // As a temporary work around, we'll use the GData WAPI's api here.
-  // TODO(hidehiko): Get rid of this hack, and use the Drive API when it is
-  // supported.
-  runner_->StartOperationWithRetry(
-      new AuthorizeAppOperation(
-          operation_registry(),
-          url_request_context_getter_,
-          wapi_url_generator_,
-          callback,
-          resource_id,
-          app_id));
+  runner_->StartOperationWithRetry(new GetFileOperation(
+      operation_registry(),
+      url_request_context_getter_,
+      url_generator_,
+      resource_id,
+      base::Bind(&ExtractOpenUrlAndRun, app_id, callback)));
 }
 
 bool DriveAPIService::HasAccessToken() const {

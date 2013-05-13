@@ -739,13 +739,15 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)),
       "file:2_file_resource_id",
-      "APP_ID");
+      "the_app_id");
 
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(GURL("https://entry1_open_with_link/"), result_data);
+
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full/file%3A2_file_resource_id"
             "?v=3&alt=json&showroot=true",
@@ -757,7 +759,43 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
   EXPECT_EQ("<?xml version=\"1.0\"?>\n"
             "<entry xmlns=\"http://www.w3.org/2005/Atom\" "
             "xmlns:docs=\"http://schemas.google.com/docs/2007\">\n"
-            " <docs:authorizedApp>APP_ID</docs:authorizedApp>\n"
+            " <docs:authorizedApp>the_app_id</docs:authorizedApp>\n"
+            "</entry>\n",
+            http_request_.content);
+}
+
+TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_NotFound) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  GURL result_data;
+
+  // Authorize an app with APP_ID to access to a document.
+  AuthorizeAppOperation* operation = new AuthorizeAppOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      *url_generator_,
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)),
+      "file:2_file_resource_id",
+      "unauthorized_app_id");
+
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(GDATA_OTHER_ERROR, result_code);
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ("/feeds/default/private/full/file%3A2_file_resource_id"
+            "?v=3&alt=json&showroot=true",
+            http_request_.relative_url);
+  EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
+  EXPECT_EQ("*", http_request_.headers["If-Match"]);
+
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("<?xml version=\"1.0\"?>\n"
+            "<entry xmlns=\"http://www.w3.org/2005/Atom\" "
+            "xmlns:docs=\"http://schemas.google.com/docs/2007\">\n"
+            " <docs:authorizedApp>unauthorized_app_id</docs:authorizedApp>\n"
             "</entry>\n",
             http_request_.content);
 }
