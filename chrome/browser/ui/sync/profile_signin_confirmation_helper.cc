@@ -22,6 +22,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 
+// TODO(dconnelly): change VLOG to DVLOG (crbug.com/240195)
+
 namespace {
 
 const int kHistoryEntriesBeforeNewProfilePrompt = 10;
@@ -37,8 +39,11 @@ class HasTypedURLsTask : public history::HistoryDBTask {
                              history::HistoryDatabase* db) OVERRIDE {
     history::URLRows rows;
     backend->GetAllTypedURLs(&rows);
-    if (!rows.empty())
+    if (!rows.empty()) {
+      VLOG(1) << "ProfileSigninConfirmationHelper: profile contains "
+              << rows.size() << " typed URLs";
       has_typed_urls_ = true;
+    }
     return true;
   }
 
@@ -54,7 +59,10 @@ class HasTypedURLsTask : public history::HistoryDBTask {
 
 bool HasBookmarks(Profile* profile) {
   BookmarkModel* bookmarks = BookmarkModelFactory::GetForProfile(profile);
-  return bookmarks && bookmarks->HasBookmarks();
+  bool has_bookmarks = bookmarks && bookmarks->HasBookmarks();
+  if (has_bookmarks)
+    VLOG(1) << "ProfileSigninConfirmationHelper: profile contains bookmarks";
+  return has_bookmarks;
 }
 
 bool HasSyncedExtensions(Profile* profile) {
@@ -69,6 +77,8 @@ bool HasSyncedExtensions(Profile* profile) {
       // consider it when determining if the profile is dirty.
       if ((*iter)->IsSyncable() &&
           (*iter)->id() != extension_misc::kWebStoreAppId) {
+        VLOG(1) << "ProfileSigninConfirmationHelper: "
+                << "profile contains a synced extension: " << (*iter)->id();
         return true;
       }
     }
@@ -133,7 +143,12 @@ void ProfileSigninConfirmationHelper::OnHistoryQueryResults(
     history::QueryResults* results) {
   history::QueryResults owned_results;
   results->Swap(&owned_results);
-  ReturnResult(owned_results.size() >= max_entries);
+  bool too_much_history = owned_results.size() >= max_entries;
+  if (too_much_history) {
+    VLOG(1) << "ProfileSigninConfirmationHelper: profile contains "
+            << owned_results.size() << " history entries";
+  }
+  ReturnResult(too_much_history);
 }
 
 void ProfileSigninConfirmationHelper::CheckHasHistory(int max_entries) {
@@ -186,7 +201,10 @@ void ProfileSigninConfirmationHelper::ReturnResult(bool result) {
 namespace ui {
 
 bool HasBeenShutdown(Profile* profile) {
-  return !profile->IsNewProfile();
+  bool has_been_shutdown = !profile->IsNewProfile();
+  if (has_been_shutdown)
+    VLOG(1) << "ProfileSigninConfirmationHelper: profile is not new";
+  return has_been_shutdown;
 }
 
 void CheckShouldPromptForNewProfile(
