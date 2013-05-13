@@ -31,9 +31,12 @@
         ],
       },
       'xcode_settings': {
+        'OTHER_CFLAGS': [
+          '-fobjc-abi-version=2',
+        ],
         'INFOPLIST_FILE': 'TestApp/TestApp-Info.plist',
-        'SDKROOT': 'iphonesimulator6.1',  # -isysroot
-        'IPHONEOS_DEPLOYMENT_TARGET': '5.0',
+        'SDKROOT': 'iphonesimulator',  # -isysroot
+        'IPHONEOS_DEPLOYMENT_TARGET': '4.2',
         'CONFIGURATION_BUILD_DIR':'build/Default',
       },
     },
