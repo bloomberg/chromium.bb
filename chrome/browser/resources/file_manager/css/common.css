@@ -292,14 +292,14 @@ body[new-ui] menu.chrome-menu {
   padding: 5px 0;
 }
 
-menu.chrome-menu[hidden] {
+body menu.chrome-menu[hidden] {
   display: block;
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
 }
 
-menu.chrome-menu.hide-delayed[hidden] {
+body menu.chrome-menu.hide-delayed[hidden] {
   -webkit-transition-delay: 120ms;
   -webkit-transition-property: opacity, visibility;
 }

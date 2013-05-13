@@ -332,6 +332,7 @@ body[new-ui] #volume-list:focus > [anchor] {
 
 body[new-ui] #volume-list li.root-item {
   -webkit-box-align: center;
+  border-radius: 0;
   display: -webkit-box;
   line-height: 22px;  /* To accomodate for icons. */
   padding-left: 11px;
@@ -782,7 +783,7 @@ body[new-ui] .dialog-header button:not(:hover):not(focus) {
 }
 
 #search-box[hidden] {
-  display: none;  // Required, since overriden by #search-box.
+  display: none;  /* Required, since overriden by #search-box. */
 }
 
 body[new-ui] #search-box {

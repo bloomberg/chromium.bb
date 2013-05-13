@@ -85,13 +85,16 @@
 .drive-welcome.header .drive-welcome-wrapper {
   -webkit-box-orient: horizontal;
   background-size: 308px 100px;
-  border-top: 1px solid #d4d4d4;
   bottom: 0;
   display: -webkit-box;
   left: 0;
   position: absolute;
   right: 0;
   top: 0;
+}
+
+body:not([new-ui]) .drive-welcome.header .drive-welcome-wrapper {
+  border-top: 1px solid #d4d4d4;
 }
 
 .drive-welcome.header .drive-welcome-icon {
