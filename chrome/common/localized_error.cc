@@ -64,7 +64,10 @@ struct LocalizedErrorMap {
   int error_code;
   unsigned int title_resource_id;
   unsigned int heading_resource_id;
+  // Detailed summary used when the error is in the main frame.
   unsigned int summary_resource_id;
+  // Short one sentence description shown on mouse over when the error is in
+  // a frame.
   unsigned int details_resource_id;
   int suggestions;  // Bitmap of SUGGEST_* values.
 };

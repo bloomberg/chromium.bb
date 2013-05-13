@@ -86,7 +86,7 @@ a {
   margin-top: 15px;
 }
 
-#details, #sub-frame-error-details {
+#sub-frame-error-details {
   color: #8F8F8F;
 <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
   /* Not done on mobile for performance reasons. */
@@ -94,43 +94,71 @@ a {
 </if>
 }
 
-#details {
-  margin: 20px;
-}
-
-/**
- * This is used inside strings from generated_resources.grd as a jscontent
- * name and then set as a class name by Javascript.
- * TODO(mmenke):  This is a little weird.  Fix it.
- */
-.failedUrl {
+[jscontent=failedUrl] {
   overflow-wrap: break-word;
 }
 
 button {
-  background-image: linear-gradient(#f6f6f6 5%, #efefef 50%, #ddd);
-  border: 1px solid #d1d1d3;
-  border-bottom: 1px solid #c1c1c3;
-  color: #666;
-  font-weight: bold;
-  margin: 0 5px;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+  background-image: linear-gradient(#ededed, #ededed 38%, #dedede);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  color: #444;
+  margin: 0px 5px;
+  min-height: 29px;
+  min-width: 65px;
+  text-shadow: 0 1px 0 rgb(240, 240, 240);
   -webkit-user-select: none;
   padding: 8px 13px;
 <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
   /* Not done on mobile for performance reasons. */
   border-radius: 2px;
-  box-shadow: inset 0 1px 0 #fff;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.75);
+</if>
+}
+
+button:hover {
+  background-image: linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  color: #000;
+<if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.95);
+</if>
+}
+
+button:active {
+  background-image: linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7));
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  color: #444;
+<if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
+  box-shadow: none;
 </if>
 }
 
 #reload-button {
-  background-image: linear-gradient(#5499f4 5%, #5294f2 50%, #4b85f1);
-  border: 1px solid #5187df;
-  border-bottom: 1px solid #3870cf;
-  box-shadow: inset 0 1px 0 #5fa8f7;
+  background-image: linear-gradient(#5d9aff, #5d9aff 38%, #5891f0);
+  border: 1px solid rgba(45, 102, 195, 1);
   color: #fff;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+<if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+</if>
+}
+
+#reload-button:hover {
+  background-image: linear-gradient(#659efd, #659efd 38%, #6097f1);
+  border: 1px solid rgba(45, 102, 195, 1);
+  color: #fff;
+<if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+</if>
+}
+
+#reload-button:active {
+  background-image: linear-gradient(#6095ed, #6095ed 38%, #6095ed);
+  border: 1px solid rgba(38, 84, 160, 1);
+  color: #fff;
+<if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.1);
+</if>
 }
 
 .hidden {
@@ -150,11 +178,13 @@ button {
   color: #777;
 }
 
+.error-code {
+  color: #A0A0A0;
+  margin-top: 15px;
+}
+
 /* Increase line height at higher resolutions. */
 @media (min-width: 641px) and (min-height: 641px) {
-  #details {
-    line-height: 18px;
-  }
   #help-box-inner {
     line-height: 18px;
   }
@@ -174,14 +204,14 @@ button {
   #help-box-inner {
     padding: 20px;
   }
-  #main-frame-details {
-    margin: 15px;
-  }
   .suggestions {
     margin-top: 10px;
   }
   .suggestion-header {
     margin-bottom: 0px;
+  }
+  .error-code {
+    margin-top: 10px;
   }
 }
 
@@ -229,24 +259,6 @@ html[subframe] body {
 </head>
 
 <script>
-/**
- * Sets the classes of elements to match their jscontent values.
- * Elements without jscontent values are ignored.
- *
- * This allows styles to be applied to nested elements from
- * within GRD files.  To work on these elements, this must be
- * called after jscontent substitution.
- */
-function setJsContentElementClasses() {
-  var elements = document.querySelectorAll('[jscontent]');
-  for (var i = 0; i < elements.length; ++i) {
-    elements[i].className = elements[i].getAttribute('jscontent');
-  }
-}
-
-document.addEventListener('DOMContentLoaded',
-                          setJsContentElementClasses,
-                          false);
 
 function toggleHelpBox() {
   var helpBoxOuter = document.getElementById('help-box-outer');
@@ -291,14 +303,10 @@ if (window.top.location != window.location)
       <div class="suggestion-header" jsvalues=".innerHTML:header"></div>
       <div class="suggestion-body" jsvalues=".innerHTML:body"></div>
     </div>
+    <div class="error-code" jscontent="errorCode"></div>
    </div>
   </div>
  </div>
- <div id="details">
-  <div jsdisplay="errorDetails" jscontent="errorDetails"></div>
-  <div jscontent="errorCode"></div>
- </div>
-</div>
 <div id="sub-frame-error">
   <!-- Show details when hovering over the icon, in case the details are
        hidden because they're too large. -->
