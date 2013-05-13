@@ -1328,10 +1328,11 @@ webkit.org/b/85522 http/tests/security/sandboxed-iframe-form-top.html [ Skip ]
 
 webkit.org/b/102724 svg/carto.net/colourpicker.svg [ ImageOnlyFailure Pass ]
 
-crbug.com/b/237003 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_dynamic_insertion.html [ Pass Failure Timeout ]
-crbug.com/b/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_initiator_types.html [ Pass Failure Timeout ]
-crbug.com/b/237003 [ Mac Linux ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure ]
-crbug.com/b/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure Timeout ]
+crbug.com/237003 [ Win Mac Debug ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_iframe_self_navigation.html [ Pass Failure ]
+crbug.com/237003 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_dynamic_insertion.html [ Pass Failure Timeout ]
+crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_initiator_types.html [ Pass Failure Timeout ]
+crbug.com/237003 [ Mac Linux ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure ]
+crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure Timeout ]
 
 webkit.org/b/103148 [ Lion ] fast/frames/iframe-scaling-with-scroll.html [ Pass ImageOnlyFailure ]
 webkit.org/b/103148 [ Lion ] fast/frames/iframe-scrolling-attribute.html [ Pass ImageOnlyFailure ]
