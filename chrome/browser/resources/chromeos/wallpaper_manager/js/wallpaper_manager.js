@@ -172,7 +172,7 @@ function WallpaperManager(dialogDom) {
    */
   WallpaperManager.prototype.onLoadManifestSuccess_ = function(manifest) {
     this.manifest_ = manifest;
-    WallpaperUtil.saveToLocalStorage(Constants.AccessManifestKey, manifest);
+    WallpaperUtil.saveToStorage(Constants.AccessManifestKey, manifest, false);
     this.initDom_();
   };
 
@@ -197,9 +197,8 @@ function WallpaperManager(dialogDom) {
   WallpaperManager.prototype.toggleSurpriseMe_ = function() {
     var checkbox = $('surprise-me').querySelector('#checkbox');
     var shouldEnable = !checkbox.classList.contains('checked');
-    WallpaperUtil.saveToLocalStorage(Constants.AccessSurpriseMeEnabledKey,
-                                     shouldEnable,
-                                     function() {
+    WallpaperUtil.saveToStorage(Constants.AccessSurpriseMeEnabledKey,
+                                shouldEnable, false, function() {
       if (chrome.runtime.lastError == null) {
           if (shouldEnable) {
             checkbox.classList.add('checked');
@@ -491,6 +490,8 @@ function WallpaperManager(dialogDom) {
           if (exists) {
             self.currentWallpaper_ = wallpaperURL;
             self.wallpaperGrid_.activeItem = selectedItem;
+            WallpaperUtil.saveWallpaperInfo(wallpaperURL, selectedItem.layout,
+                                            selectedItem.source);
             return;
           }
 
@@ -507,6 +508,8 @@ function WallpaperManager(dialogDom) {
                 wallpaperURL,
                 self.onFinished_.bind(self, selectedGridItem, selectedItem));
             self.currentWallpaper_ = wallpaperURL;
+            WallpaperUtil.saveWallpaperInfo(wallpaperURL, selectedItem.layout,
+                                            selectedItem.source);
             self.wallpaperRequest_ = null;
           };
           var onFailure = function() {
@@ -729,8 +732,8 @@ function WallpaperManager(dialogDom) {
                 self.wallpaperGrid_.selectedItem = wallpaperInfo;
                 self.wallpaperGrid_.activeItem = wallpaperInfo;
                 self.currentWallpaper_ = fileName;
-                WallpaperUtil.saveToLocalStorage(self.currentWallpaper_,
-                                                 layout);
+                WallpaperUtil.saveToStorage(self.currentWallpaper_, layout,
+                                            false);
               };
 
               fileWriter.onerror = errorHandler;
@@ -825,6 +828,10 @@ function WallpaperManager(dialogDom) {
         failure();
       } else {
         success(opt_thumbnail);
+        // Custom wallpapers are not synced yet. If login on a different
+        // computer after set a custom wallpaper, wallpaper wont change by sync.
+        WallpaperUtil.saveWallpaperInfo(fileName, layout,
+                                        Constants.WallpaperSourceEnum.Custom);
       }
     };
 
@@ -867,7 +874,7 @@ function WallpaperManager(dialogDom) {
         self.removeCustomWallpaper(fileName);
         $('set-wallpaper-layout').disabled = true;
       } else {
-        WallpaperUtil.saveToLocalStorage(self.currentWallpaper_, layout);
+        WallpaperUtil.saveToStorage(self.currentWallpaper_, layout, false);
       }
     });
   };

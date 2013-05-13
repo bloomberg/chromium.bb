@@ -8,12 +8,37 @@ var WallpaperUtil = {};
  * Saves value to local storage that associates with key.
  * @param {string} key The key that associates with value.
  * @param {string} value The value to save to local storage.
+ * @param {boolen} sync True if the value is saved to sync storage.
  * @param {function=} opt_callback The callback on success, or on failure.
  */
-WallpaperUtil.saveToLocalStorage = function(key, value, opt_callback) {
+WallpaperUtil.saveToStorage = function(key, value, sync, opt_callback) {
   var items = {};
   items[key] = value;
-  Constants.WallpaperLocalStorage.set(items, opt_callback);
+  if (sync)
+    Constants.WallpaperSyncStorage.set(items, opt_callback);
+  else
+    Constants.WallpaperLocalStorage.set(items, opt_callback);
+};
+
+/**
+ * Saves user's wallpaper infomation to local and sync storage. Note that local
+ * value should be saved first.
+ * @param {string} url The url address of wallpaper. For custom wallpaper, it is
+ *     the file name.
+ * @param {string} layout The wallpaper layout.
+ * @param {string} source The wallpaper source.
+ */
+WallpaperUtil.saveWallpaperInfo = function(url, layout, source) {
+  var wallpaperInfo = {
+      url: url,
+      layout: layout,
+      source: source
+  };
+  WallpaperUtil.saveToStorage(Constants.AccessLocalWallpaperInfoKey,
+                              wallpaperInfo, false, function() {
+    WallpaperUtil.saveToStorage(Constants.AccessSyncWallpaperInfoKey,
+                                wallpaperInfo, true);
+  });
 };
 
 /**
@@ -68,6 +93,8 @@ WallpaperUtil.setOnlineWallpaper = function(url, layout, onSuccess, onFailure) {
       if (xhr.response != null) {
         chrome.wallpaperPrivate.setWallpaper(xhr.response, layout, url,
                                              onSuccess);
+        self.saveWallpaperInfo(url, layout,
+                               Constants.WallpaperSourceEnum.Online);
       } else {
         onFailure();
       }

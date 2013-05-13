@@ -10,9 +10,19 @@
   AccessRssKey: 'wallpaper-picker-surprise-rss-key',
 
   /**
-   * Key to access wallpaper manifest in chrome.local.storage.
+   * Key to access wallpaper manifest in chrome.storage.local.
    */
   AccessManifestKey: 'wallpaper-picker-manifest-key',
+
+  /**
+   * Key to access user wallpaper info in chrome.storage.local.
+   */
+  AccessLocalWallpaperInfoKey: 'wallpaper-local-info-key',
+
+  /**
+   * Key to access user wallpaper info in chrome.storage.sync.
+   */
+  AccessSyncWallpaperInfoKey: 'wallpaper-sync-info-key',
 
   /**
    * Key to access last changed date of a surprise wallpaper.
@@ -54,5 +64,10 @@
   /**
    * Local storage.
    */
-  WallpaperLocalStorage: chrome.storage.local
+  WallpaperLocalStorage: chrome.storage.local,
+
+  /**
+   * Sync storage.
+   */
+  WallpaperSyncStorage: chrome.storage.sync
 };

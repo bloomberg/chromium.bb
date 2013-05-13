@@ -36,8 +36,8 @@ SurpriseWallpaper.prototype.tryChangeWallpaper = function() {
   // Try to fetch newest rss as document from server first. If any error occurs,
   // proceed with local copy of rss.
   WallpaperUtil.fetchURL(Constants.WallpaperRssURL, 'document', function(xhr) {
-    WallpaperUtil.saveToLocalStorage(Constants.AccessRssKey,
-        new XMLSerializer().serializeToString(xhr.responseXML));
+    WallpaperUtil.saveToStorage(Constants.AccessRssKey,
+        new XMLSerializer().serializeToString(xhr.responseXML), false);
     self.updateSurpriseWallpaper(xhr.responseXML);
   }, onFailure);
 };
@@ -139,8 +139,10 @@ SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
       var wallpaper = manifest.wallpaper_list[index];
       var wallpaperURL = wallpaper.base_url + Constants.HighResolutionSuffix;
       var onSuccess = function() {
-        WallpaperUtil.saveToLocalStorage(
-            Constants.AccessLastSurpriseWallpaperChangedDate, dateString);
+        WallpaperUtil.saveToStorage(
+            Constants.AccessLastSurpriseWallpaperChangedDate,
+            dateString,
+            false);
       }
       WallpaperUtil.setOnlineWallpaper(wallpaperURL, wallpaper.default_layout,
           onSuccess, self.retryLater_.bind(self));
@@ -180,8 +182,8 @@ SurpriseWallpaper.prototype.setWallpaperFromRssItem_ = function(item,
 SurpriseWallpaper.prototype.disable = function() {
   chrome.alarms.clearAll();
   // Makes last changed date invalid.
-  WallpaperUtil.saveToLocalStorage(
-      Constants.AccessLastSurpriseWallpaperChangedDate, '');
+  WallpaperUtil.saveToStorage(Constants.AccessLastSurpriseWallpaperChangedDate,
+                              '', false);
 };
 
 /**
@@ -236,6 +238,32 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
     } else {
       SurpriseWallpaper.getInstance().disable();
     }
+  }
+
+  if (changes[Constants.AccessSyncWallpaperInfoKey]) {
+    var newValue = changes[Constants.AccessSyncWallpaperInfoKey].newValue;
+    Constants.WallpaperLocalStorage.get(Constants.AccessLocalWallpaperInfoKey,
+                                        function(items) {
+      // Normally, the wallpaper info saved in local storage and sync storage
+      // are the same. If the synced value changed by sync service, they may
+      // different. In that case, change wallpaper to the one saved in sync
+      // storage and update the local value.
+      var localValue = items[Constants.AccessLocalWallpaperInfoKey];
+      if (localValue == undefined ||
+          localValue.url != newValue.url ||
+          localValue.layout != newValue.layout ||
+          localValue.source != newValue.source) {
+        if (newValue.source == Constants.WallpaperSourceEnum.Online) {
+          // TODO(bshe): Consider schedule an alarm to set online wallpaper
+          // later when failed. Note that we need to cancel the retry if user
+          // set another wallpaper before retry alarm invoked.
+          WallpaperUtil.setOnlineWallpaper(newValue.url, newValue.layout,
+            function() {}, function() {});
+        }
+        WallpaperUtil.saveToStorage(Constants.AccessLocalWallpaperInfoKey,
+                                    newValue, false);
+      }
+    });
   }
 });
 
