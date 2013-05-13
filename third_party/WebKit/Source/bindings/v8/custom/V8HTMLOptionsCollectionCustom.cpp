@@ -134,17 +134,6 @@ void V8HTMLOptionsCollection::lengthAttrSetterCustom(v8::Local<v8::String> name,
     setDOMException(ec, info.GetIsolate());
 }
 
-v8::Handle<v8::Value> V8HTMLOptionsCollection::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
-{
-    HTMLOptionsCollection* collection = V8HTMLOptionsCollection::toNative(info.Holder());
-
-    RefPtr<Node> result = collection->item(index);
-    if (!result)
-        return v8Undefined();
-
-    return toV8Fast(result.release(), info, collection);
-}
-
 v8::Handle<v8::Value> V8HTMLOptionsCollection::indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     HTMLOptionsCollection* collection = V8HTMLOptionsCollection::toNative(info.Holder());
