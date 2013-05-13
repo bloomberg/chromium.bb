@@ -174,10 +174,10 @@ class ProfileLaunchObserver : public content::NotificationObserver {
         BrowserThread::UI, FROM_HERE,
         base::Bind(&ProfileLaunchObserver::ActivateProfile,
                    base::Unretained(this)));
-    // Stop reacting to new windows being opened to avoid posting more than
-    // once before ActivateProfile gets called and set |profile_to_activate_|
-    // to NULL.
+    // Avoid posting more than once before ActivateProfile gets called.
     registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+                      content::NotificationService::AllSources());
+    registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                       content::NotificationService::AllSources());
   }
 
