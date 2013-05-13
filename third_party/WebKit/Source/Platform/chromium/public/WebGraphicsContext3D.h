@@ -497,12 +497,12 @@ public:
     // FIXME: Make implementations of this class override this method instead and then remove onCreateGrGLInterface().
     virtual GrGLInterface* createGrGLInterface() { return onCreateGrGLInterface(); }
 
-    // GL_CHROMIUM_gpu_memory_buffer
-    virtual WGC3Duint createImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height) { return 0; }
+    // GL_CHROMIUM_map_image
+    virtual WGC3Duint createImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat) { return 0; }
     virtual void destroyImageCHROMIUM(WGC3Duint imageId) { }
     virtual void getImageParameterivCHROMIUM(WGC3Duint imageId, WGC3Denum pname, WGC3Dint* params) { }
     virtual void* mapImageCHROMIUM(WGC3Duint imageId, WGC3Denum access) { return 0; }
-    virtual WGC3Dboolean unmapImageCHROMIUM(WGC3Duint imageId) { return false; }
+    virtual void unmapImageCHROMIUM(WGC3Duint imageId) { }
 
 protected:
     virtual GrGLInterface* onCreateGrGLInterface() { return 0; }
