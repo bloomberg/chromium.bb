@@ -54,8 +54,13 @@ Editing docs
 
   3. Check your work at http://localhost:8000/(apps|extensions)/<doc_name>
 
-  4. Send a CL and commit files as with any other Chrome change. The live
-     server will update within 5-10 minutes.
+  4. Upload patch and offer reviewers a preview link at a URL with your patch
+     number and files, similar to:
+     https://chrome-apps-doc.appspot.com/_patch/12345678/apps/index.html
+     https://chrome-apps-doc.appspot.com/_patch/12345678/extensions/index.html
+
+  5. Commit files as with any other Chrome change. The live server will update
+     within 5-10 minutes.
 
 
 -----------------------
