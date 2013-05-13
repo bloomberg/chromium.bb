@@ -257,6 +257,8 @@ const char kChromeUIWrenchMenu[] = "wrench-menu";
 
 const char kEULAPathFormat[] = "/usr/share/chromeos-assets/eula/%s/eula.html";
 const char kOemEulaURLPath[] = "oem";
+const char kOnlineEulaURLPath[] =
+    "https://www.google.com/intl/%s/chrome/eula_text.html";
 #endif
 
 #if defined(USE_ASH)

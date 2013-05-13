@@ -249,6 +249,7 @@ extern const char kChromeUIWrenchMenu[];
 
 extern const char kEULAPathFormat[];
 extern const char kOemEulaURLPath[];
+extern const char kOnlineEulaURLPath[];
 #endif
 
 #if defined(USE_ASH)
