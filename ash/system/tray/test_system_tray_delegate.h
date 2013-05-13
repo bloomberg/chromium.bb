@@ -59,7 +59,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShutDown() OVERRIDE;
   virtual void SignOut() OVERRIDE;
   virtual void RequestLockScreen() OVERRIDE;
-  virtual void RequestRestart() OVERRIDE;
+  virtual void RequestRestartForUpdate() OVERRIDE;
   virtual void GetAvailableBluetoothDevices(BluetoothDeviceList* list) OVERRIDE;
   virtual void BluetoothStartDiscovering() OVERRIDE;
   virtual void BluetoothStopDiscovering() OVERRIDE;

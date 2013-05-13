@@ -649,8 +649,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
   }
 
-  virtual void RequestRestart() OVERRIDE {
-    DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+  virtual void RequestRestartForUpdate() OVERRIDE {
+    // We expect that UpdateEngine is in "Reboot for update" state now.
+    chrome::NotifyAndTerminate(true /* fast path */);
   }
 
   virtual void GetAvailableBluetoothDevices(

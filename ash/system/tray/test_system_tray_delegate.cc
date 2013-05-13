@@ -199,7 +199,7 @@ void TestSystemTrayDelegate::SignOut() {
 void TestSystemTrayDelegate::RequestLockScreen() {
 }
 
-void TestSystemTrayDelegate::RequestRestart() {
+void TestSystemTrayDelegate::RequestRestartForUpdate() {
 }
 
 void TestSystemTrayDelegate::GetAvailableBluetoothDevices(
