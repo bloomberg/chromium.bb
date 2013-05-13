@@ -170,8 +170,8 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   // point it is.
   void CloseOperationComplete();
 
-  // Called after a SimpleSynchronousEntry has completed an asynchronous IO
-  // operation, such as ReadData() or WriteData(). Calls |completion_callback|.
+  // Internal utility method used by other completion methods. Calls
+  // |completion_callback| after updating state and dooming on errors.
   void EntryOperationComplete(
       int stream_index,
       const CompletionCallback& completion_callback,
@@ -183,6 +183,12 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
       int offset,
       const CompletionCallback& completion_callback,
       scoped_ptr<uint32> read_crc32,
+      scoped_ptr<int> result);
+
+  // Called after an asynchronous write completes.
+  void WriteOperationComplete(
+      int stream_index,
+      const CompletionCallback& completion_callback,
       scoped_ptr<int> result);
 
   // Called after validating the checksums on an entry. Passes through the

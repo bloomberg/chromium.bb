@@ -27,6 +27,37 @@
 
 namespace {
 
+// Used in histograms, please only add entries at the end.
+enum ReadResult {
+  READ_RESULT_SUCCESS = 0,
+  READ_RESULT_INVALID_ARGUMENT = 1,
+  READ_RESULT_NONBLOCK_EMPTY_RETURN = 2,
+  READ_RESULT_BAD_STATE = 3,
+  READ_RESULT_FAST_EMPTY_RETURN = 4,
+  READ_RESULT_SYNC_READ_FAILURE = 5,
+  READ_RESULT_SYNC_CHECKSUM_FAILURE = 6,
+  READ_RESULT_MAX = 7,
+};
+
+// Used in histograms, please only add entries at the end.
+enum WriteResult {
+  WRITE_RESULT_SUCCESS = 0,
+  WRITE_RESULT_INVALID_ARGUMENT = 1,
+  WRITE_RESULT_OVER_MAX_SIZE = 2,
+  WRITE_RESULT_BAD_STATE = 3,
+  WRITE_RESULT_SYNC_WRITE_FAILURE = 4,
+  WRITE_RESULT_MAX = 5,
+};
+
+void RecordReadResult(ReadResult result) {
+  UMA_HISTOGRAM_ENUMERATION("SimpleCache.ReadResult", result, READ_RESULT_MAX);
+};
+
+void RecordWriteResult(WriteResult result) {
+  UMA_HISTOGRAM_ENUMERATION("SimpleCache.WriteResult",
+                            result, WRITE_RESULT_MAX);
+};
+
 // Short trampoline to take an owned input parameter and call a net completion
 // callback with its value.
 void CallCompletionCallback(const net::CompletionCallback& callback,
@@ -204,10 +235,14 @@ int SimpleEntryImpl::ReadData(int stream_index,
                               int buf_len,
                               const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  if (stream_index < 0 || stream_index >= kSimpleEntryFileCount || buf_len < 0)
+  if (stream_index < 0 || stream_index >= kSimpleEntryFileCount ||
+      buf_len < 0) {
+    RecordReadResult(READ_RESULT_INVALID_ARGUMENT);
     return net::ERR_INVALID_ARGUMENT;
+  }
   if (pending_operations_.empty() && (offset >= data_size_[stream_index] ||
                                       offset < 0 || !buf_len)) {
+    RecordReadResult(READ_RESULT_NONBLOCK_EMPTY_RETURN);
     return 0;
   }
 
@@ -234,10 +269,13 @@ int SimpleEntryImpl::WriteData(int stream_index,
   DCHECK(io_thread_checker_.CalledOnValidThread());
   if (stream_index < 0 || stream_index >= kSimpleEntryFileCount || offset < 0 ||
       buf_len < 0) {
+    RecordWriteResult(WRITE_RESULT_INVALID_ARGUMENT);
     return net::ERR_INVALID_ARGUMENT;
   }
-  if (backend_ && offset + buf_len > backend_->GetMaxFileSize())
+  if (backend_ && offset + buf_len > backend_->GetMaxFileSize()) {
+    RecordWriteResult(WRITE_RESULT_OVER_MAX_SIZE);
     return net::ERR_FAILED;
+  }
 
   int ret_value = net::ERR_FAILED;
   if (state_ == STATE_READY && pending_operations_.size() == 0) {
@@ -474,6 +512,7 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
 
   if (state_ == STATE_FAILURE || state_ == STATE_UNINITIALIZED) {
     if (!callback.is_null()) {
+      RecordReadResult(READ_RESULT_BAD_STATE);
       MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
           callback, net::ERR_FAILED));
     }
@@ -481,6 +520,7 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
   }
   DCHECK_EQ(STATE_READY, state_);
   if (offset >= data_size_[stream_index] || offset < 0 || !buf_len) {
+    RecordReadResult(READ_RESULT_FAST_EMPTY_RETURN);
     // If there is nothing to read, we bail out before setting state_ to
     // STATE_IO_PENDING.
     if (!callback.is_null())
@@ -515,6 +555,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   DCHECK(io_thread_checker_.CalledOnValidThread());
   ScopedOperationRunner operation_runner(this);
   if (state_ == STATE_FAILURE || state_ == STATE_UNINITIALIZED) {
+    RecordWriteResult(WRITE_RESULT_BAD_STATE);
     if (!callback.is_null()) {
       // We need to posttask so that we don't go in a loop when we call the
       // callback directly.
@@ -562,7 +603,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
                             base::Unretained(synchronous_entry_),
                             stream_index, offset, make_scoped_refptr(buf),
                             buf_len, truncate, result.get());
-  Closure reply = base::Bind(&SimpleEntryImpl::EntryOperationComplete, this,
+  Closure reply = base::Bind(&SimpleEntryImpl::WriteOperationComplete, this,
                              stream_index, callback, base::Passed(&result));
   WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
 }
@@ -674,6 +715,21 @@ void SimpleEntryImpl::ReadOperationComplete(
       return;
     }
   }
+  if (*result >= 0)
+    RecordReadResult(READ_RESULT_SUCCESS);
+  else
+    RecordReadResult(READ_RESULT_SYNC_READ_FAILURE);
+  EntryOperationComplete(stream_index, completion_callback, result.Pass());
+}
+
+void SimpleEntryImpl::WriteOperationComplete(
+    int stream_index,
+    const CompletionCallback& completion_callback,
+    scoped_ptr<int> result) {
+  if (*result >= 0)
+    RecordWriteResult(WRITE_RESULT_SUCCESS);
+  else
+    RecordWriteResult(WRITE_RESULT_SYNC_WRITE_FAILURE);
   EntryOperationComplete(stream_index, completion_callback, result.Pass());
 }
 
@@ -686,8 +742,15 @@ void SimpleEntryImpl::ChecksumOperationComplete(
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_IO_PENDING, state_);
   DCHECK(result);
-  if (*result == net::OK)
+  if (*result == net::OK) {
     *result = orig_result;
+    if (orig_result >= 0)
+      RecordReadResult(READ_RESULT_SUCCESS);
+    else
+      RecordReadResult(READ_RESULT_SYNC_READ_FAILURE);
+  } else {
+    RecordReadResult(READ_RESULT_SYNC_CHECKSUM_FAILURE);
+  }
   EntryOperationComplete(stream_index, completion_callback, result.Pass());
 }
 

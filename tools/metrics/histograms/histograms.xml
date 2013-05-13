@@ -6930,6 +6930,31 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.ReadResult" enum="SimpleCacheReadResult">
+  <summary>The outcome of Entry::ReadData in the simple cache.</summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncCheckEOFHasCrc" enum="BooleanHasCrc">
+  <summary>
+    For each EOFRecord found with a valid magic number, indicates if the record
+    also contains a CRC.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncCheckEOFResult"
+    enum="SimpleCacheSyncCheckEOFResult">
+  <summary>
+    The result, at the synchronous layer, of checking the EOF record of a cache
+    entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncCloseResult" enum="SimpleCacheSyncCloseResult">
+  <summary>
+    The result, at the synchronous layer, of closing a cache entry.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.SyncCreatePlatformFileError"
     enum="PlatformFileError">
   <summary>
@@ -6939,7 +6964,10 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncCreateResult"
     enum="SimpleCacheSyncCreateResult">
-  <summary>The result of attempting to create a new cache entry.</summary>
+  <summary>
+    The result, at the synchronous layer, of attempting to create a new cache
+    entry.
+  </summary>
 </histogram>
 
 <histogram name="SimpleCache.SyncOpenPlatformFileError"
@@ -6950,7 +6978,20 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.SyncOpenResult" enum="SimpleCacheSyncOpenResult">
-  <summary>The result of attempting to create a new cache entry.</summary>
+  <summary>
+    The result, at the synchronous layer, of attempting to open a new cache
+    entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncWriteResult" enum="SimpleCacheSyncWriteResult">
+  <summary>
+    The result, at the synchronous layer, of writing to a cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.WriteResult" enum="SimpleCacheWriteResult">
+  <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
 <histogram name="Sqlite.AppCache.Error" enum="SqliteErrorCode">
@@ -7739,6 +7780,11 @@ other types of suffix sets.
 <enum name="BooleanExpired" type="int">
   <int value="0" label="Unexpired"/>
   <int value="1" label="Expired"/>
+</enum>
+
+<enum name="BooleanHasCrc" type="int">
+  <int value="0" label="No CRC"/>
+  <int value="1" label="Has CRC"/>
 </enum>
 
 <enum name="BooleanHit" type="int">
@@ -10657,6 +10703,28 @@ other types of suffix sets.
   <int value="2" label="Miss"/>
 </enum>
 
+<enum name="SimpleCacheReadResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Invalid Argument"/>
+  <int value="2" label="Nonblocking Empty Return"/>
+  <int value="3" label="Invalid State"/>
+  <int value="4" label="Fast Empty Return"/>
+  <int value="5" label="Synchronous Read Failure"/>
+  <int value="6" label="Synchronous Checksum Failure"/>
+</enum>
+
+<enum name="SimpleCacheSyncCheckEOFResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Read Failure"/>
+  <int value="2" label="Magic Number Mismatch"/>
+  <int value="3" label="CRC Mismatch"/>
+</enum>
+
+<enum name="SimpleCacheSyncCloseResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Write Failure"/>
+</enum>
+
 <enum name="SimpleCacheSyncCreateResult" type="int">
   <int value="0" label="Success"/>
   <int value="1" label="Platform File Error"/>
@@ -10673,6 +10741,21 @@ other types of suffix sets.
   <int value="5" label="Can't Read Key"/>
   <int value="6" label="Key Mismatch"/>
   <int value="7" label="Hash Mismatch"/>
+</enum>
+
+<enum name="SimpleCacheSyncWriteResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Pretruncate Failure"/>
+  <int value="2" label="Write Failure"/>
+  <int value="3" label="Truncate Failure"/>
+</enum>
+
+<enum name="SimpleCacheWriteResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Invalid Argument"/>
+  <int value="2" label="Over Max Size"/>
+  <int value="3" label="Bad State"/>
+  <int value="4" label="Synchronous Write Failure"/>
 </enum>
 
 <enum name="SocketStreamConnectionType" type="int">

@@ -63,6 +63,30 @@ enum CreateEntryResult {
   CREATE_ENTRY_MAX = 4,
 };
 
+// Used in histograms, please only add entries at the end.
+enum WriteResult {
+  WRITE_RESULT_SUCCESS = 0,
+  WRITE_RESULT_PRETRUNCATE_FAILURE,
+  WRITE_RESULT_WRITE_FAILURE,
+  WRITE_RESULT_TRUNCATE_FAILURE,
+  WRITE_RESULT_MAX,
+};
+
+// Used in histograms, please only add entries at the end.
+enum CheckEOFResult {
+  CHECK_EOF_RESULT_SUCCESS,
+  CHECK_EOF_RESULT_READ_FAILURE,
+  CHECK_EOF_RESULT_MAGIC_NUMBER_MISMATCH,
+  CHECK_EOF_RESULT_CRC_MISMATCH,
+  CHECK_EOF_RESULT_MAX,
+};
+
+// Used in histograms, please only add entries at the end.
+enum CloseResult {
+  CLOSE_RESULT_SUCCESS,
+  CLOSE_RESULT_WRITE_FAILURE,
+};
+
 void RecordSyncOpenResult(OpenEntryResult result) {
   DCHECK_GT(OPEN_ENTRY_MAX, result);
   UMA_HISTOGRAM_ENUMERATION(
@@ -75,7 +99,22 @@ void RecordSyncCreateResult(CreateEntryResult result) {
       "SimpleCache.SyncCreateResult", result, CREATE_ENTRY_MAX);
 }
 
+void RecordWriteResult(WriteResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "SimpleCache.SyncWriteResult", result, WRITE_RESULT_MAX);
 }
+
+void RecordCheckEOFResult(CheckEOFResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "SimpleCache.SyncCheckEOFResult", result, CHECK_EOF_RESULT_MAX);
+}
+
+void RecordCloseResult(CloseResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "SimpleCache.SyncCloseResult", result, WRITE_RESULT_MAX);
+}
+
+}  // namespace
 
 namespace disk_cache {
 
@@ -218,6 +257,7 @@ void SimpleSynchronousEntry::WriteData(
     const int64 file_eof_offset =
         GetFileOffsetFromKeyAndDataOffset(key_, data_size_[index]);
     if (!TruncatePlatformFile(files_[index], file_eof_offset)) {
+      RecordWriteResult(WRITE_RESULT_PRETRUNCATE_FAILURE);
       Doom();
       *out_result = net::ERR_FAILED;
       return;
@@ -227,6 +267,7 @@ void SimpleSynchronousEntry::WriteData(
   if (buf_len > 0) {
     if (WritePlatformFile(files_[index], file_offset, buf->data(), buf_len) !=
         buf_len) {
+      RecordWriteResult(WRITE_RESULT_WRITE_FAILURE);
       Doom();
       *out_result = net::ERR_FAILED;
       return;
@@ -236,6 +277,7 @@ void SimpleSynchronousEntry::WriteData(
     data_size_[index] = std::max(data_size_[index], offset + buf_len);
   } else {
     if (!TruncatePlatformFile(files_[index], file_offset + buf_len)) {
+      RecordWriteResult(WRITE_RESULT_TRUNCATE_FAILURE);
       Doom();
       *out_result = net::ERR_FAILED;
       return;
@@ -243,6 +285,7 @@ void SimpleSynchronousEntry::WriteData(
     data_size_[index] = offset + buf_len;
   }
 
+  RecordWriteResult(WRITE_RESULT_SUCCESS);
   last_used_ = last_modified_ = Time::Now();
   *out_result = buf_len;
 }
@@ -259,26 +302,32 @@ void SimpleSynchronousEntry::CheckEOFRecord(
   if (ReadPlatformFile(files_[index], file_offset,
                        reinterpret_cast<char*>(&eof_record),
                        sizeof(eof_record)) != sizeof(eof_record)) {
+    RecordCheckEOFResult(CHECK_EOF_RESULT_READ_FAILURE);
     Doom();
     *out_result = net::ERR_FAILED;
     return;
   }
 
   if (eof_record.final_magic_number != kSimpleFinalMagicNumber) {
+    RecordCheckEOFResult(CHECK_EOF_RESULT_MAGIC_NUMBER_MISMATCH);
     DLOG(INFO) << "eof record had bad magic number.";
     Doom();
     *out_result = net::ERR_FAILED;
     return;
   }
 
-  if ((eof_record.flags & SimpleFileEOF::FLAG_HAS_CRC32) &&
-      eof_record.data_crc32 != expected_crc32) {
+  const bool has_crc = (eof_record.flags & SimpleFileEOF::FLAG_HAS_CRC32) ==
+                       SimpleFileEOF::FLAG_HAS_CRC32;
+  UMA_HISTOGRAM_BOOLEAN("SimpleCache.SyncCheckEOFHasCrc", has_crc);
+  if (has_crc && eof_record.data_crc32 != expected_crc32) {
+    RecordCheckEOFResult(CHECK_EOF_RESULT_CRC_MISMATCH);
     DLOG(INFO) << "eof record had bad crc.";
     Doom();
     *out_result = net::ERR_FAILED;
     return;
   }
 
+  RecordCheckEOFResult(CHECK_EOF_RESULT_SUCCESS);
   *out_result = net::OK;
 }
 
@@ -297,6 +346,7 @@ void SimpleSynchronousEntry::Close(
     if (WritePlatformFile(files_[it->index], file_offset,
                           reinterpret_cast<const char*>(&eof_record),
                           sizeof(eof_record)) != sizeof(eof_record)) {
+      RecordCloseResult(CLOSE_RESULT_WRITE_FAILURE);
       DLOG(INFO) << "Could not write eof record.";
       Doom();
       break;
@@ -307,6 +357,7 @@ void SimpleSynchronousEntry::Close(
     bool did_close_file = ClosePlatformFile(files_[i]);
     CHECK(did_close_file);
   }
+  RecordCloseResult(CLOSE_RESULT_SUCCESS);
   have_open_files_ = false;
   delete this;
 }
