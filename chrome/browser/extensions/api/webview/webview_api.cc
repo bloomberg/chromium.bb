@@ -4,73 +4,67 @@
 
 #include "chrome/browser/extensions/api/webview/webview_api.h"
 
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/common/extensions/api/webview.h"
 #include "content/public/browser/render_view_host.h"
-#include "ui/gfx/image/image_skia.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/common/error_utils.h"
 
 using extensions::api::tabs::InjectDetails;
-using namespace extensions::api::webview;
 
-WebviewExecuteScriptFunction::WebviewExecuteScriptFunction() {
+WebviewExecuteCodeFunction::WebviewExecuteCodeFunction()
+    : process_id_(0),
+      route_id_(MSG_ROUTING_NONE) {
 }
 
-WebviewExecuteScriptFunction::~WebviewExecuteScriptFunction() {
+WebviewExecuteCodeFunction::~WebviewExecuteCodeFunction() {
 }
 
-bool WebviewExecuteScriptFunction::RunImpl() {
-  scoped_ptr<ExecuteScript::Params> params(
-      extensions::api::webview::ExecuteScript::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+bool WebviewExecuteCodeFunction::Init() {
+  if (details_.get())
+    return true;
 
+  if (!args_->GetInteger(0, &process_id_))
+    return false;
+
+  if (!args_->GetInteger(1, &route_id_) || route_id_ == MSG_ROUTING_NONE)
+    return false;
+
+  DictionaryValue* details_value = NULL;
+  if (!args_->GetDictionary(2, &details_value))
+    return false;
+  scoped_ptr<InjectDetails> details(new InjectDetails());
+  if (!InjectDetails::Populate(*details_value, details.get()))
+    return false;
+
+  details_ = details.Pass();
+  return true;
+}
+
+bool WebviewExecuteCodeFunction::ShouldInsertCSS() const {
+  return false;
+}
+
+bool WebviewExecuteCodeFunction::CanExecuteScriptOnPage() {
+  return true;
+}
+
+extensions::ScriptExecutor* WebviewExecuteCodeFunction::GetScriptExecutor() {
   content::RenderViewHost* guest_rvh =
-      content::RenderViewHost::FromID(params->process_id, params->route_id);
+      content::RenderViewHost::FromID(process_id_, route_id_);
   // If we haven't loaded a guest yet, then this will be NULL.
   if (!guest_rvh)
-    return false;
-  content::WebContents* guest_web_contents =
+    return NULL;
+
+  content::WebContents* contents =
       content::WebContents::FromRenderViewHost(guest_rvh);
-  CHECK(guest_web_contents);
+  if (!contents)
+    return NULL;
 
-  ObserverList<extensions::TabHelper::ScriptExecutionObserver>
-      script_observers;
-  scoped_ptr<extensions::ScriptExecutor> script_executor(
-      new extensions::ScriptExecutor(guest_web_contents, &script_observers));
+  return extensions::TabHelper::FromWebContents(contents)->script_executor();
+}
 
-  extensions::ScriptExecutor::FrameScope frame_scope =
-      params->details.all_frames.get() && *params->details.all_frames ?
-          extensions::ScriptExecutor::ALL_FRAMES :
-          extensions::ScriptExecutor::TOP_FRAME;
-
-  extensions::UserScript::RunLocation run_at =
-      extensions::UserScript::UNDEFINED;
-  switch (params->details.run_at) {
-    case InjectDetails::RUN_AT_NONE:
-    case InjectDetails::RUN_AT_DOCUMENT_IDLE:
-      run_at = extensions::UserScript::DOCUMENT_IDLE;
-      break;
-    case InjectDetails::RUN_AT_DOCUMENT_START:
-      run_at = extensions::UserScript::DOCUMENT_START;
-      break;
-    case InjectDetails::RUN_AT_DOCUMENT_END:
-      run_at = extensions::UserScript::DOCUMENT_END;
-      break;
-  }
-  CHECK_NE(extensions::UserScript::UNDEFINED, run_at);
-
-  script_executor->ExecuteScript(
-      GetExtension()->id(),
-      extensions::ScriptExecutor::JAVASCRIPT,
-      *params->details.code.get(),
-      frame_scope,
-      run_at,
-      extensions::ScriptExecutor::ISOLATED_WORLD,
-      true /* is_web_view */,
-      base::Bind(
-          &WebviewExecuteScriptFunction::OnExecuteCodeFinished,
-          this));
-
-  // Balanced in OnExecuteCodeFinished.
-  AddRef();
+bool WebviewExecuteCodeFunction::IsWebView() const {
   return true;
 }
 
@@ -79,12 +73,14 @@ void WebviewExecuteScriptFunction::OnExecuteCodeFinished(
     int32 on_page_id,
     const GURL& on_url,
     const ListValue& result) {
-  if (error.empty()) {
+  if (error.empty())
     SetResult(result.DeepCopy());
-  } else {
-    SetError(error);
-  }
-  SendResponse(error.empty());
-  Release();  // Added in RunImpl().
+  WebviewExecuteCodeFunction::OnExecuteCodeFinished(error, on_page_id, on_url,
+                                                    result);
+}
+
+
+bool WebviewInsertCSSFunction::ShouldInsertCSS() const {
+  return true;
 }
 

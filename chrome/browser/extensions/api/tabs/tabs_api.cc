@@ -1959,18 +1959,7 @@ bool ExecuteCodeInTabFunction::HasPermission() {
   return ExtensionFunction::HasPermission();
 }
 
-bool ExecuteCodeInTabFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(Init());
-
-  if (!details_->code.get() && !details_->file.get()) {
-    error_ = keys::kNoCodeOrFileToExecuteError;
-    return false;
-  }
-  if (details_->code.get() && details_->file.get()) {
-    error_ = keys::kMoreThanOneValuesError;
-    return false;
-  }
-
+bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
   content::WebContents* contents = NULL;
 
   // If |tab_id| is specified, look for the tab. Otherwise default to selected
@@ -1982,9 +1971,10 @@ bool ExecuteCodeInTabFunction::RunImpl() {
     return false;
   }
 
+  CHECK(contents);
+
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
-  CHECK(contents);
   if (!GetExtension()->CanExecuteScriptOnPage(contents->GetURL(),
                                               contents->GetURL(),
                                               execute_tab_id_,
@@ -1993,32 +1983,29 @@ bool ExecuteCodeInTabFunction::RunImpl() {
     return false;
   }
 
-  if (details_->code.get())
-    return Execute(*details_->code);
-
-  CHECK(details_->file.get());
-  resource_ = GetExtension()->GetResource(*details_->file);
-
-  if (resource_.extension_root().empty() || resource_.relative_path().empty()) {
-    error_ = keys::kNoCodeOrFileToExecuteError;
-    return false;
-  }
-
-  scoped_refptr<FileReader> file_reader(new FileReader(
-      resource_, base::Bind(&ExecuteCodeInTabFunction::DidLoadFile, this)));
-  file_reader->Start();
-
   return true;
 }
 
-void ExecuteCodeInTabFunction::OnExecuteCodeFinished(const std::string& error,
-                                                     int32 on_page_id,
-                                                     const GURL& on_url,
-                                                     const ListValue& result) {
-  if (!error.empty())
-    SetError(error);
+ScriptExecutor* ExecuteCodeInTabFunction::GetScriptExecutor() {
+  Browser* browser = NULL;
+  content::WebContents* contents = NULL;
 
-  SendResponse(error.empty());
+  bool success = GetTabById(
+      execute_tab_id_, profile(), include_incognito(), &browser, NULL,
+      &contents, NULL, &error_) && contents && browser;
+
+  if (!success)
+    return NULL;
+
+  return TabHelper::FromWebContents(contents)->script_executor();
+}
+
+bool ExecuteCodeInTabFunction::IsWebView() const {
+  return false;
+}
+
+bool TabsExecuteScriptFunction::ShouldInsertCSS() const {
+  return false;
 }
 
 void TabsExecuteScriptFunction::OnExecuteCodeFinished(const std::string& error,
@@ -2048,6 +2035,8 @@ bool ExecuteCodeInTabFunction::Init() {
   if (!InjectDetails::Populate(*details_value, details.get()))
     return false;
 
+  details_ = details.Pass();
+
   // If the tab ID wasn't given then it needs to be converted to the
   // currently active tab's ID.
   if (tab_id == -1) {
@@ -2060,124 +2049,10 @@ bool ExecuteCodeInTabFunction::Init() {
   }
 
   execute_tab_id_ = tab_id;
-  details_ = details.Pass();
   return true;
 }
 
-void ExecuteCodeInTabFunction::DidLoadFile(bool success,
-                                           const std::string& data) {
-  std::string function_name = name();
-  const Extension* extension = GetExtension();
-
-  // Check if the file is CSS and needs localization.
-  if (success &&
-      function_name == TabsInsertCSSFunction::function_name() &&
-      extension != NULL &&
-      data.find(MessageBundle::kMessageBegin) != std::string::npos) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ExecuteCodeInTabFunction::LocalizeCSS, this,
-                   data,
-                   extension->id(),
-                   extension->path(),
-                   LocaleInfo::GetDefaultLocale(extension)));
-  } else {
-    DidLoadAndLocalizeFile(success, data);
-  }
-}
-
-void ExecuteCodeInTabFunction::LocalizeCSS(
-    const std::string& data,
-    const std::string& extension_id,
-    const base::FilePath& extension_path,
-    const std::string& extension_default_locale) {
-  scoped_ptr<SubstitutionMap> localization_messages(
-      extension_file_util::LoadMessageBundleSubstitutionMap(
-          extension_path, extension_id, extension_default_locale));
-
-  // We need to do message replacement on the data, so it has to be mutable.
-  std::string css_data = data;
-  std::string error;
-  MessageBundle::ReplaceMessagesWithExternalDictionary(*localization_messages,
-                                                       &css_data,
-                                                       &error);
-
-  // Call back DidLoadAndLocalizeFile on the UI thread. The success parameter
-  // is always true, because if loading had failed, we wouldn't have had
-  // anything to localize.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExecuteCodeInTabFunction::DidLoadAndLocalizeFile, this,
-                 true, css_data));
-}
-
-void ExecuteCodeInTabFunction::DidLoadAndLocalizeFile(bool success,
-                                                      const std::string& data) {
-  if (success) {
-    if (!Execute(data))
-      SendResponse(false);
-  } else {
-    // TODO(viettrungluu): bug: there's no particular reason the path should be
-    // UTF-8, in which case this may fail.
-    error_ = ErrorUtils::FormatErrorMessage(keys::kLoadFileError,
-        resource_.relative_path().AsUTF8Unsafe());
-    SendResponse(false);
-  }
-}
-
-bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
-  content::WebContents* contents = NULL;
-  Browser* browser = NULL;
-
-  bool success = GetTabById(
-      execute_tab_id_, profile(), include_incognito(), &browser, NULL,
-      &contents, NULL, &error_) && contents && browser;
-
-  if (!success)
-    return false;
-
-  const Extension* extension = GetExtension();
-  if (!extension)
-    return false;
-
-  ScriptExecutor::ScriptType script_type = ScriptExecutor::JAVASCRIPT;
-  std::string function_name = name();
-  if (function_name == TabsInsertCSSFunction::function_name()) {
-    script_type = ScriptExecutor::CSS;
-  } else if (function_name != TabsExecuteScriptFunction::function_name()) {
-    NOTREACHED();
-  }
-
-  ScriptExecutor::FrameScope frame_scope =
-      details_->all_frames.get() && *details_->all_frames ?
-          ScriptExecutor::ALL_FRAMES :
-          ScriptExecutor::TOP_FRAME;
-
-  UserScript::RunLocation run_at = UserScript::UNDEFINED;
-  switch (details_->run_at) {
-    case InjectDetails::RUN_AT_NONE:
-    case InjectDetails::RUN_AT_DOCUMENT_IDLE:
-      run_at = UserScript::DOCUMENT_IDLE;
-      break;
-    case InjectDetails::RUN_AT_DOCUMENT_START:
-      run_at = UserScript::DOCUMENT_START;
-      break;
-    case InjectDetails::RUN_AT_DOCUMENT_END:
-      run_at = UserScript::DOCUMENT_END;
-      break;
-  }
-  CHECK_NE(UserScript::UNDEFINED, run_at);
-
-  TabHelper::FromWebContents(contents)->
-      script_executor()->ExecuteScript(
-          extension->id(),
-          script_type,
-          code_string,
-          frame_scope,
-          run_at,
-          ScriptExecutor::ISOLATED_WORLD,
-          false /* is_web_view */,
-          base::Bind(&ExecuteCodeInTabFunction::OnExecuteCodeFinished, this));
+bool TabsInsertCSSFunction::ShouldInsertCSS() const {
   return true;
 }
 

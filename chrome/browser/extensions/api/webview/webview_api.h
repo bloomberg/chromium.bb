@@ -5,27 +5,50 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEBVIEW_WEBVIEW_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEBVIEW_WEBVIEW_API_H_
 
-#include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/extensions/script_executor.h"
+#include "chrome/browser/extensions/api/execute_code_function.h"
 
-class WebviewExecuteScriptFunction : public AsyncExtensionFunction {
+class WebviewExecuteCodeFunction : public extensions::ExecuteCodeFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("webview.executeScript", WEBVIEW_EXECUTESCRIPT)
-
-  WebviewExecuteScriptFunction();
+  WebviewExecuteCodeFunction();
 
  protected:
-  virtual ~WebviewExecuteScriptFunction();
+  virtual ~WebviewExecuteCodeFunction();
 
-  // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
+  // Initialize |details_| if it hasn't already been.
+  virtual bool Init() OVERRIDE;
+  virtual bool ShouldInsertCSS() const OVERRIDE;
+  virtual bool CanExecuteScriptOnPage() OVERRIDE;
+  virtual extensions::ScriptExecutor* GetScriptExecutor() OVERRIDE;
+  virtual bool IsWebView() const OVERRIDE;
 
  private:
+  // Contains extension resource built from path of file which is
+  // specified in JSON arguments.
+  extensions::ExtensionResource resource_;
 
-  void OnExecuteCodeFinished(const std::string& error,
-                             int32 on_page_id,
-                             const GURL& on_url,
-                             const ListValue& result);
+  int process_id_;
 
+  int route_id_;
+};
+
+class WebviewExecuteScriptFunction : public WebviewExecuteCodeFunction {
+ protected:
+  virtual ~WebviewExecuteScriptFunction() {}
+
+  virtual void OnExecuteCodeFinished(const std::string& error,
+                                     int32 on_page_id,
+                                     const GURL& on_url,
+                                     const ListValue& result) OVERRIDE;
+
+  DECLARE_EXTENSION_FUNCTION("webview.executeScript", WEBVIEW_EXECUTESCRIPT)
+};
+
+class WebviewInsertCSSFunction : public WebviewExecuteCodeFunction {
+ protected:
+  virtual ~WebviewInsertCSSFunction() {}
+
+  virtual bool ShouldInsertCSS() const OVERRIDE;
+
+  DECLARE_EXTENSION_FUNCTION("webview.insertCSS", WEBVIEW_INSERTCSS)
 };
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEBVIEW_WEBVIEW_API_H_

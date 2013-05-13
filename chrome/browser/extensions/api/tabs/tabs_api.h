@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/extensions/api/execute_code_function.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/extensions/user_script.h"
@@ -223,7 +224,7 @@ class TabsCaptureVisibleTabFunction : public AsyncExtensionFunction {
 };
 
 // Implement API call tabs.executeScript and tabs.insertCSS.
-class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
+class ExecuteCodeInTabFunction : public ExecuteCodeFunction {
  public:
   ExecuteCodeInTabFunction();
 
@@ -232,50 +233,23 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
 
   // ExtensionFunction:
   virtual bool HasPermission() OVERRIDE;
-  virtual bool RunImpl() OVERRIDE;
 
-  // Message handler.
-  virtual void OnExecuteCodeFinished(const std::string& error,
-                                     int32 on_page_id,
-                                     const GURL& on_url,
-                                     const ListValue& script_result);
-
- private:
   // Initialize the |execute_tab_id_| and |details_| if they haven't already
   // been. Returns whether initialization was successful.
-  bool Init();
+  virtual bool Init() OVERRIDE;
+  virtual bool CanExecuteScriptOnPage() OVERRIDE;
+  virtual ScriptExecutor* GetScriptExecutor() OVERRIDE;
+  virtual bool IsWebView() const OVERRIDE;
 
-  // Called when contents from the file whose path is specified in JSON
-  // arguments has been loaded.
-  void DidLoadFile(bool success, const std::string& data);
-
-  // Runs on FILE thread. Loads message bundles for the extension and
-  // localizes the CSS data. Calls back DidLoadAndLocalizeFile on the UI thread.
-  void LocalizeCSS(
-      const std::string& data,
-      const std::string& extension_id,
-      const base::FilePath& extension_path,
-      const std::string& extension_default_locale);
-
-  // Called when contents from the loaded file have been localized.
-  void DidLoadAndLocalizeFile(bool success, const std::string& data);
-
-  // Run in UI thread.  Code string contains the code to be executed. Returns
-  // true on success. If true is returned, this does an AddRef.
-  bool Execute(const std::string& code_string);
-
+ private:
   // Id of tab which executes code.
   int execute_tab_id_;
-
-  // The injection details.
-  scoped_ptr<api::tabs::InjectDetails> details_;
-
-  // Contains extension resource built from path of file which is
-  // specified in JSON arguments.
-  ExtensionResource resource_;
 };
 
 class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {
+ protected:
+  virtual bool ShouldInsertCSS() const OVERRIDE;
+
  private:
   virtual ~TabsExecuteScriptFunction() {}
 
@@ -290,6 +264,8 @@ class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {
 class TabsInsertCSSFunction : public ExecuteCodeInTabFunction {
  private:
   virtual ~TabsInsertCSSFunction() {}
+
+  virtual bool ShouldInsertCSS() const OVERRIDE;
 
   DECLARE_EXTENSION_FUNCTION("tabs.insertCSS", TABS_INSERTCSS)
 };
