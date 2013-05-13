@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
+class Browser;
 class GURL;
 class ProfileIOData;
 
@@ -190,7 +191,7 @@ class OneClickSigninHelper
 
   void RedirectToNtpOrAppsPage();
   void RedirectToSignin();
-  void ShowSigninErrorBubble(const std::string& error);
+  void ShowSigninErrorBubble(Browser* browser, const std::string& error);
 
   // Clear all data member of the helper, except for the error.
   void CleanTransientState();

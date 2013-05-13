@@ -891,12 +891,9 @@ void OneClickSigninHelper::RemoveCurrentHistoryItem(
   new CurrentHistoryCleaner(web_contents);  // will self-destruct when finished
 }
 
-void OneClickSigninHelper::ShowSigninErrorBubble(const std::string& error) {
+void OneClickSigninHelper::ShowSigninErrorBubble(Browser* browser,
+                                                 const std::string& error) {
   DCHECK(!error.empty());
-  content::WebContents* contents = web_contents();
-  Profile* profile =
-      Profile::FromBrowserContext(contents->GetBrowserContext());
-  Browser* browser = chrome::FindBrowserWithWebContents(contents);
 
   browser->window()->ShowOneClickSigninBubble(
       BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
@@ -905,11 +902,7 @@ void OneClickSigninHelper::ShowSigninErrorBubble(const std::string& error) {
       // This callback is never invoked.
       // TODO(rogerta): Separate out the bubble API so we don't have to pass
       // ignored |email| and |callback| params.
-      base::Bind(&StartSync,
-                 StartSyncArgs(profile, browser, AUTO_ACCEPT_ACCEPTED,
-                               session_index_, email_, password_,
-                               false, untrusted_confirmation_required_,
-                               source_)));
+      BrowserWindow::StartSyncCallback());
 }
 
 void OneClickSigninHelper::RedirectToNtpOrAppsPage() {
@@ -1034,9 +1027,14 @@ void OneClickSigninHelper::DidStopLoading(
   if (!error_message_.empty() && auto_accept_ == AUTO_ACCEPT_EXPLICIT) {
     VLOG(1) << "OneClickSigninHelper::DidStopLoading: error=" << error_message_;
     RemoveCurrentHistoryItem(contents);
+    // After we redirect to NTP, our browser pointer gets corrupted because the
+    // WebContents have changed, so grab the browser pointer
+    // before the navigation.
+    Browser* browser = chrome::FindBrowserWithWebContents(contents);
+
     // Redirect to the landing page and display an error popup.
     RedirectToNtpOrAppsPage();
-    ShowSigninErrorBubble(error_message_);
+    ShowSigninErrorBubble(browser, error_message_);
     CleanTransientState();
     return;
   }
