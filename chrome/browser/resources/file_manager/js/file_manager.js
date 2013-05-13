@@ -769,7 +769,10 @@ DialogType.isModal = function(type) {
          dom.querySelector('#search-breadcrumbs'), this.metadataCache_);
     this.searchBreadcrumbs_.addEventListener(
          'pathclick', this.onBreadcrumbClick_.bind(this));
-    this.searchBreadcrumbs_.setHideLast(true);
+    if (!util.platform.newUI())
+      this.searchBreadcrumbs_.setHideLast(true);
+    else
+      this.searchBreadcrumbs_.setHideLast(false);
 
     var fullPage = this.dialogType == DialogType.FULL_PAGE;
     FileTable.decorate(this.table_, this.metadataCache_, fullPage);
@@ -2045,6 +2048,17 @@ DialogType.isModal = function(type) {
   FileManager.prototype.getCurrentDirectoryURL = function() {
     return this.directoryModel_ &&
         this.directoryModel_.getCurrentDirectoryURL();
+  };
+
+  /**
+   * Return DirectoryEntry of the current directory or null.
+   * @return {DirectoryEntry} DirectoryEntry of the current directory. Returns
+   *     null if the directory model is not ready or the current directory is
+   *     not set.
+   */
+  FileManager.prototype.getCurrentDirectoryEntry = function() {
+    return this.directoryModel_ &&
+        this.directoryModel_.getCurrentDirEntry();
   };
 
   FileManager.prototype.deleteSelection = function() {

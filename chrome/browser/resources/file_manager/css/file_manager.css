@@ -715,16 +715,26 @@ body[new-ui] .breadcrumb-path:not(.breadcrumb-last) {
   -webkit-app-region: no-drag;
 }
 
-#search-breadcrumbs .breadcrumb-path {
+body:not([new-ui]) #search-breadcrumbs .breadcrumb-path {
   color: #888;
 }
 
-#search-breadcrumbs .breadcrumb-path:hover {
+body[new-ui] #search-breadcrumbs .breadcrumb-path {
+  color: #969696;
+}
+
+body[new-ui] #search-breadcrumbs .breadcrumb-path:hover,
+body:not([new-ui]) #search-breadcrumbs .breadcrumb-path:hover {
   color: #666;
 }
 
 /* The final breadcrumb, representing the current directory. */
-.breadcrumb-last {
+body[new-ui] #search-breadcrumbs .breadcrumb-path.breadcrumb-last {
+  color: #141414;
+  cursor: default;
+}
+
+body:not([new-ui]) .breadcrumb-last {
   color: black;
   cursor: default;
 }
