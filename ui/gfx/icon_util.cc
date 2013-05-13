@@ -5,6 +5,7 @@
 #include "ui/gfx/icon_util.h"
 
 #include "base/file_util.h"
+#include "base/files/important_file_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/resource_util.h"
@@ -470,13 +471,6 @@ bool IconUtil::CreateIconFileFromImageFamily(
   // Including PNG image, if any.
   size_t image_count = bitmap_count + (png_bytes.get() ? 1 : 0);
 
-  // Now that basic checks are done, we can create the file.
-  base::win::ScopedHandle icon_file(::CreateFile(icon_path.value().c_str(),
-       GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL));
-
-  if (!icon_file.IsValid())
-    return false;
-
   // Computing the total size of the buffer we need in order to store the
   // images in the desired icon format.
   size_t buffer_size = ComputeIconFileBufferSize(bitmaps);
@@ -521,22 +515,8 @@ bool IconUtil::CreateIconFileFromImageFamily(
 
   DCHECK_EQ(offset, buffer_size);
 
-  // Finally, write the data to the file.
-  DWORD bytes_written;
-  bool delete_file = false;
-  if (!WriteFile(icon_file.Get(), &buffer[0], buffer_size, &bytes_written,
-                 NULL) ||
-      bytes_written != buffer_size) {
-    delete_file = true;
-  }
-
-  ::CloseHandle(icon_file.Take());
-  if (delete_file) {
-    bool success = file_util::Delete(icon_path, false);
-    DCHECK(success);
-  }
-
-  return !delete_file;
+  std::string data(buffer.begin(), buffer.end());
+  return base::ImportantFileWriter::WriteFileAtomically(icon_path, data);
 }
 
 bool IconUtil::PixelsHaveAlpha(const uint32* pixels, size_t num_pixels) {
