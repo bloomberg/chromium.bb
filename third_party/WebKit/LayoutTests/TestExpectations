@@ -1243,6 +1243,7 @@ crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ Ima
 crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
+crbug.com/240374 virtual/softwarecompositing/overlap-blending/preserves3d-opacity.html [ ImageOnlyFailure ]
 
 webkit.org/b/90488 [ Win ] http/tests/inspector/network-preflight-options.html [ Pass Timeout ]
 
