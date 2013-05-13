@@ -238,7 +238,8 @@ private:
 
     Node* nodeForPath(const String& path);
 
-    void discardBindings();
+    void discardBackendBindings();
+    void discardFrontendBindings();
 
     void innerHighlightQuad(PassOwnPtr<FloatQuad>, const RefPtr<InspectorObject>* color, const RefPtr<InspectorObject>* outlineColor);
 

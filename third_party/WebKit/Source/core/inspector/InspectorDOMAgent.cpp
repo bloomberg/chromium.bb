@@ -316,12 +316,8 @@ Vector<Document*> InspectorDOMAgent::documents()
 
 void InspectorDOMAgent::reset()
 {
-    if (m_history)
-        m_history->reset();
-    m_searchResults.clear();
-    discardBindings();
-    if (m_revalidateStyleAttrTask)
-        m_revalidateStyleAttrTask->reset();
+    discardFrontendBindings();
+    discardBackendBindings();
     m_document = 0;
 }
 
@@ -476,10 +472,7 @@ void InspectorDOMAgent::getDocument(ErrorString* errorString, RefPtr<TypeBuilder
         return;
     }
 
-    // Reset backend state.
-    RefPtr<Document> doc = m_document;
-    reset();
-    m_document = doc;
+    discardFrontendBindings();
 
     root = buildObjectForNode(m_document.get(), 2, &m_documentNodeToIdMap);
 }
@@ -511,12 +504,21 @@ void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId, int depth)
     m_frontend->setChildNodes(nodeId, children.release());
 }
 
-void InspectorDOMAgent::discardBindings()
+void InspectorDOMAgent::discardFrontendBindings()
 {
+    if (m_history)
+        m_history->reset();
+    m_searchResults.clear();
     m_documentNodeToIdMap.clear();
     m_idToNode.clear();
     releaseDanglingNodes();
     m_childrenRequested.clear();
+    if (m_revalidateStyleAttrTask)
+        m_revalidateStyleAttrTask->reset();
+}
+
+void InspectorDOMAgent::discardBackendBindings()
+{
     m_backendIdToNode.clear();
     m_nodeGroupToBackendIdMap.clear();
 }
@@ -1581,7 +1583,7 @@ bool InspectorDOMAgent::isWhitespace(Node* node)
 void InspectorDOMAgent::mainFrameDOMContentLoaded()
 {
     // Re-push document once it is loaded.
-    discardBindings();
+    discardFrontendBindings();
     if (m_state->getBoolean(DOMAgentState::documentRequested))
         m_frontend->documentUpdated();
 }
