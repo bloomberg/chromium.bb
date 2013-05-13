@@ -48,7 +48,7 @@
 #include "core/xml/XSLTExtensions.h"
 #include "core/xml/XSLTUnicodeSort.h"
 #include "core/xml/parser/XMLDocumentParser.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

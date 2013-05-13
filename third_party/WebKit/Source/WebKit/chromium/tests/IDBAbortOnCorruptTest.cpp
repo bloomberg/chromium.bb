@@ -35,7 +35,7 @@
 #include "modules/indexeddb/IDBFactoryBackendImpl.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IndexedDB.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 using namespace WebCore;
 

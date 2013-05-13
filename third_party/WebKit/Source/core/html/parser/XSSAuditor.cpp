@@ -50,7 +50,7 @@
 #include "core/platform/KURL.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/text/DecodeEscapeSequences.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
 #include "wtf/text/CString.h"

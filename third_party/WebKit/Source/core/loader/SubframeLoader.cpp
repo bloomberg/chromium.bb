@@ -52,8 +52,8 @@
 #include "core/plugins/PluginData.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderView.h"
-#include "origin/SecurityOrigin.h"
-#include "origin/SecurityPolicy.h"
+#include "weborigin/SecurityOrigin.h"
+#include "weborigin/SecurityPolicy.h"
 
 namespace WebCore {
     

@@ -34,7 +34,7 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/Supplementable.h"
 #include "modules/filesystem/DOMFileSystem.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {

@@ -40,7 +40,7 @@
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/text/QuotedPrintable.h"
-#include "origin/SchemeRegistry.h"
+#include "weborigin/SchemeRegistry.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/DateMath.h"
 #include "wtf/GregorianDateTime.h"

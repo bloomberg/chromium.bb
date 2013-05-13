@@ -60,7 +60,7 @@
 #include "modules/filesystem/LocalFileSystem.h"
 #include "modules/filesystem/Metadata.h"
 #include "modules/filesystem/MetadataCallback.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/TextEncoding.h"

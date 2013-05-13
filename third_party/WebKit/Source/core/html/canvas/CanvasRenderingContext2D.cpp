@@ -67,7 +67,7 @@
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 #include "core/rendering/RenderLayer.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 #include <wtf/CheckedArithmetic.h>
 #include <wtf/MathExtras.h>

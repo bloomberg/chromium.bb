@@ -98,7 +98,7 @@
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/RenderView.h"
 #include "core/workers/WorkerThread.h"
-#include "origin/SchemeRegistry.h"
+#include "weborigin/SchemeRegistry.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
 

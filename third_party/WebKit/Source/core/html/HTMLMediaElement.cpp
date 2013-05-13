@@ -88,8 +88,8 @@
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "modules/mediasource/WebKitMediaSource.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
-#include "origin/SecurityOrigin.h"
-#include "origin/SecurityPolicy.h"
+#include "weborigin/SecurityOrigin.h"
+#include "weborigin/SecurityPolicy.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/html/HTMLTrackElement.h"

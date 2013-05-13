@@ -51,7 +51,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/network/ResourceRequest.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 using namespace std;
 

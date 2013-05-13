@@ -29,7 +29,7 @@
 #ifndef SecurityPolicy_h
 #define SecurityPolicy_h
 
-#include "origin/ReferrerPolicy.h"
+#include "weborigin/ReferrerPolicy.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

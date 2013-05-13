@@ -58,8 +58,8 @@
 #include "core/page/Performance.h"
 #include "core/page/Settings.h"
 #include "core/platform/Logging.h"
-#include "origin/SecurityOrigin.h"
-#include "origin/SecurityPolicy.h"
+#include "weborigin/SecurityOrigin.h"
+#include "weborigin/SecurityPolicy.h"
 
 #include "core/loader/cache/CachedTextTrack.h"
 

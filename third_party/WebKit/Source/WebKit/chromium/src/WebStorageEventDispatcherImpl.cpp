@@ -36,7 +36,7 @@
 #include "StorageAreaProxy.h"
 #include "WebViewImpl.h"
 #include "core/platform/KURL.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebKit {
 

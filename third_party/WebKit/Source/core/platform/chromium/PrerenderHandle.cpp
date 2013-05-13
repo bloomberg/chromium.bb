@@ -36,7 +36,7 @@
 #include <wtf/text/WTFString.h>
 #include "core/platform/KURL.h"
 #include "core/platform/chromium/Prerender.h"
-#include "origin/ReferrerPolicy.h"
+#include "weborigin/ReferrerPolicy.h"
 
 namespace WebCore {
 

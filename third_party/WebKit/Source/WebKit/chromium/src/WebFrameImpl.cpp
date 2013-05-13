@@ -189,8 +189,8 @@
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemType.h"
-#include "origin/SchemeRegistry.h"
-#include "origin/SecurityPolicy.h"
+#include "weborigin/SchemeRegistry.h"
+#include "weborigin/SecurityPolicy.h"
 
 using namespace WebCore;
 

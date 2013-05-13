@@ -35,7 +35,7 @@
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "bindings/v8/WrapperTypeInfo.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #include <v8.h>
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"

@@ -48,7 +48,7 @@
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
 #include "modules/webdatabase/Database.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/Vector.h>

@@ -43,7 +43,7 @@
 #include "core/platform/Logging.h"
 #include "core/platform/network/HTTPHeaderMap.h"
 #include "core/platform/network/HTTPParsers.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MD5.h"
 #include "wtf/SHA1.h"

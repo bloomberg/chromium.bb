@@ -73,7 +73,7 @@
 #include "core/rendering/RenderWidget.h"
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
-#include "origin/SchemeRegistry.h"
+#include "weborigin/SchemeRegistry.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"

@@ -46,7 +46,7 @@
 #include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 #include "core/html/track/TextTrackCue.h"
 

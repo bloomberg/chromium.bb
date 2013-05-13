@@ -75,7 +75,7 @@
 #include "core/rendering/RenderFileUploadControl.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderView.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 #if OS(WINDOWS)
 #include <windows.h>

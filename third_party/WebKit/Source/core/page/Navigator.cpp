@@ -39,7 +39,7 @@
 #include "core/plugins/PluginData.h"
 #include "core/storage/StorageNamespace.h"
 #include "modules/geolocation/Geolocation.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

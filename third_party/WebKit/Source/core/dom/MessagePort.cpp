@@ -36,7 +36,7 @@
 #include "core/page/DOMWindow.h"
 #include "core/platform/Timer.h"
 #include "core/workers/WorkerContext.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

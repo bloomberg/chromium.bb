@@ -40,7 +40,7 @@
 #include "wtf/text/WTFString.h"
 
 #if !LOG_DISABLED || !ERROR_DISABLED
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #endif
 
 namespace WebCore {

@@ -35,7 +35,7 @@
 #include <wtf/text/WTFString.h>
 #include "core/platform/KURL.h"
 #include "core/platform/UUID.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

@@ -26,7 +26,7 @@
 #define Cache_h
 
 #include "core/loader/cache/CachedResource.h"
-#include "origin/SecurityOriginHash.h"
+#include "weborigin/SecurityOriginHash.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>

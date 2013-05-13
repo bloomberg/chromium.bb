@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "origin/KURL.h"
+#include "weborigin/KURL.h"
 
 #include "wtf/MemoryInstrumentation.h"
 #include "wtf/MemoryInstrumentationString.h"

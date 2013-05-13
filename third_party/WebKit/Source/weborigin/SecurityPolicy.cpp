@@ -27,15 +27,15 @@
  */
 
 #include "config.h"
-#include "origin/SecurityPolicy.h"
+#include "weborigin/SecurityPolicy.h"
 
 #include <wtf/MainThread.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringHash.h>
-#include "origin/KURL.h"
-#include "origin/OriginAccessEntry.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/KURL.h"
+#include "weborigin/OriginAccessEntry.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

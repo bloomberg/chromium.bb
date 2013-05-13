@@ -26,7 +26,7 @@
 #ifndef KURLHash_h
 #define KURLHash_h
 
-#include "origin/KURL.h"
+#include "weborigin/KURL.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 

@@ -35,7 +35,7 @@
 #include <public/WebURL.h>
 #include <wtf/PassRefPtr.h>
 #include "core/platform/KURL.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 using namespace WebCore;
 

@@ -104,8 +104,8 @@
 #include "core/storage/StorageNamespace.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/notifications/DOMWindowNotifications.h"
-#include "origin/SecurityOrigin.h"
-#include "origin/SecurityPolicy.h"
+#include "weborigin/SecurityOrigin.h"
+#include "weborigin/SecurityPolicy.h"
 
 using std::min;
 using std::max;

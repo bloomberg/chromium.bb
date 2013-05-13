@@ -31,7 +31,7 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

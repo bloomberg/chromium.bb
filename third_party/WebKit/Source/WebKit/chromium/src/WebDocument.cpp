@@ -57,7 +57,7 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/rendering/RenderObject.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 using namespace WebCore;
 

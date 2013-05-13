@@ -28,10 +28,10 @@
 #include "core/dom/EventNames.h"
 #include "core/dom/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "origin/SecurityOrigin.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "core/xml/XMLHttpRequestProgressEventThrottle.h"
+#include "weborigin/SecurityOrigin.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/text/AtomicStringHash.h>
 #include <wtf/text/StringBuilder.h>

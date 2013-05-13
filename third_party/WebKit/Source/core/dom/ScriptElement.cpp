@@ -52,7 +52,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"

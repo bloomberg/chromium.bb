@@ -42,7 +42,7 @@
 #include "modules/webdatabase/SQLException.h"
 #include "modules/webdatabase/SQLTransactionSync.h"
 #include "modules/webdatabase/SQLTransactionSyncCallback.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/CString.h"

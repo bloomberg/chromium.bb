@@ -30,10 +30,10 @@
 {
   'includes': [
     '../WebKit/chromium/WinPrecompile.gypi',
-    'origin.gypi',
+    'weborigin.gypi',
   ],
   'targets': [{
-    'target_name': 'origin',
+    'target_name': 'weborigin',
     'type': 'static_library',
     'dependencies': [
       '../config.gyp:config',
@@ -41,7 +41,7 @@
       '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
     ],
     'sources': [
-      '<@(origin_files)',
+      '<@(weborigin_files)',
     ],
     # Disable c4267 warnings until we fix size_t to int truncations.
     'msvs_disabled_warnings': [ 4267, 4334, ]

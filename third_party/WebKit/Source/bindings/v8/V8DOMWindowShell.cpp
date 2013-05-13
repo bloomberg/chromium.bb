@@ -60,7 +60,7 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/HistogramSupport.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnArrayPtr.h"
 #include "wtf/StringExtras.h"

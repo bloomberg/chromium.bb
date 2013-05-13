@@ -67,7 +67,7 @@
 #include "core/xml/XMLErrors.h"
 #include "core/xml/XMLTreeViewer.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"

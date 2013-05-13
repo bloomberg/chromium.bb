@@ -193,9 +193,9 @@
 #include "core/xml/XSLTProcessor.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "modules/geolocation/GeolocationController.h"
-#include "origin/SchemeRegistry.h"
-#include "origin/SecurityOrigin.h"
-#include "origin/SecurityPolicy.h"
+#include "weborigin/SchemeRegistry.h"
+#include "weborigin/SecurityOrigin.h"
+#include "weborigin/SecurityPolicy.h"
 
 #if ENABLE(SVG)
 #include "SVGElementFactory.h"

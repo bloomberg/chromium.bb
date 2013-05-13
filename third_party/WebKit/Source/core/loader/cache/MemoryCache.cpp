@@ -45,8 +45,8 @@
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
-#include "origin/SecurityOrigin.h"
-#include "origin/SecurityOriginHash.h"
+#include "weborigin/SecurityOrigin.h"
+#include "weborigin/SecurityOriginHash.h"
 
 using namespace std;
 

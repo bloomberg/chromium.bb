@@ -32,7 +32,7 @@
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/platform/KURL.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

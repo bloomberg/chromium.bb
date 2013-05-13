@@ -37,7 +37,7 @@
 #include "WebViewImpl.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

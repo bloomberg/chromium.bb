@@ -46,8 +46,8 @@
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderImage.h"
-#include "origin/SchemeRegistry.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SchemeRegistry.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

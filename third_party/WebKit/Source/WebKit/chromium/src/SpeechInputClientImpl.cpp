@@ -38,7 +38,7 @@
 #include "WebSpeechInputController.h"
 #include "WebViewClient.h"
 #include "core/page/SpeechInputListener.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 #if ENABLE(INPUT_SPEECH)
 

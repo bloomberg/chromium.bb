@@ -39,7 +39,7 @@
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/MetadataCallback.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

@@ -28,7 +28,7 @@
 #include <webkit/support/webkit_support.h>
 #include "core/platform/leveldb/LevelDBDatabase.h"
 #include "modules/indexeddb/IDBBackingStore.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 using namespace WebCore;
 

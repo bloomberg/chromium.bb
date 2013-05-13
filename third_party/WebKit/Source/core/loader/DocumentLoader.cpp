@@ -63,8 +63,8 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/Logging.h"
-#include "origin/SchemeRegistry.h"
-#include "origin/SecurityPolicy.h"
+#include "weborigin/SchemeRegistry.h"
+#include "weborigin/SecurityPolicy.h"
 
 namespace WebCore {
 

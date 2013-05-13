@@ -58,7 +58,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/ContextMenuItem.h"
 #include "core/platform/Pasteboard.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 using namespace WebCore;
 

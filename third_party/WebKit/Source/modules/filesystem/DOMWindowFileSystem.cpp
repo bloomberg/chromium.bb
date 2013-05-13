@@ -37,7 +37,7 @@
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/FileSystemType.h"
 #include "modules/filesystem/LocalFileSystem.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

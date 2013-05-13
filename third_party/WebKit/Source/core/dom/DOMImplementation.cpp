@@ -51,7 +51,7 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/plugins/PluginData.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"

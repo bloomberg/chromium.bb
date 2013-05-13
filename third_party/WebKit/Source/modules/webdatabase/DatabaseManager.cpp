@@ -42,7 +42,7 @@
 #include "modules/webdatabase/DatabaseServer.h"
 #include "modules/webdatabase/DatabaseSync.h"
 #include "modules/webdatabase/DatabaseTask.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

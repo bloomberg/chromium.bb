@@ -34,7 +34,7 @@
 
 #include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

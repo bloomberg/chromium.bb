@@ -38,7 +38,7 @@
 #include "core/page/Frame.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderVideo.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGImage.h"

@@ -49,8 +49,8 @@
 #include "core/page/Frame.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
-#include "origin/SchemeRegistry.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SchemeRegistry.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/Assertions.h"
 #include "wtf/UnusedParam.h"
 

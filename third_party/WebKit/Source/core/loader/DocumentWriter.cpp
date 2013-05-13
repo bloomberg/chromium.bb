@@ -44,7 +44,7 @@
 #include "core/page/FrameView.h"
 #include "core/page/Settings.h"
 #include "core/platform/text/SegmentedString.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

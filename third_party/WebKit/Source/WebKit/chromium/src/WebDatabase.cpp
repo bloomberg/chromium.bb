@@ -38,7 +38,7 @@
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/chromium/QuotaTracker.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 using namespace WebCore;
 

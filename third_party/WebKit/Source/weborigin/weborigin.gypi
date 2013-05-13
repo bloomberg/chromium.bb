@@ -1,6 +1,6 @@
 {
   'variables': {
-    'origin_files': [
+    'weborigin_files': [
       'KURL.cpp',
       'KURL.h',
       'KURLPrivate.cpp',

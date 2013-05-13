@@ -29,8 +29,8 @@
 
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/GroupSettings.h"
-#include "origin/SecurityOrigin.h"
 #include "core/workers/WorkerRunLoop.h"
+#include "weborigin/SecurityOrigin.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>

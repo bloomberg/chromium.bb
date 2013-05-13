@@ -38,7 +38,7 @@
 #include "core/dom/Document.h"
 #include "core/workers/WorkerContext.h"
 #include "modules/notifications/NotificationClient.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

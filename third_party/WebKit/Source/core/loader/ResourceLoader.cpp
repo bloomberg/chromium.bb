@@ -43,7 +43,7 @@
 #include "core/platform/Logging.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceHandle.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

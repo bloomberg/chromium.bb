@@ -38,7 +38,7 @@
 #include "core/page/PageGroup.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageEvent.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 #include <public/WebStorageArea.h>
 #include <public/WebString.h>

@@ -38,7 +38,7 @@
 #include "wtf/text/WTFString.h"
 
 #ifndef NDEBUG
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #endif
 
 namespace WebCore {

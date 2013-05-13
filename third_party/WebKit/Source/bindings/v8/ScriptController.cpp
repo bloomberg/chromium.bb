@@ -74,7 +74,7 @@
 #include "core/platform/Widget.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/plugins/PluginView.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/StringExtras.h"

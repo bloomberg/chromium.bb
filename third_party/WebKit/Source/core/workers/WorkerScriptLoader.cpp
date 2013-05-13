@@ -36,7 +36,7 @@
 #include "core/platform/network/ResourceResponse.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerScriptLoaderClient.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>

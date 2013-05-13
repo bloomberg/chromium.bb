@@ -125,7 +125,7 @@
 #include "core/rendering/style/StylePendingImage.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFontFaceElement.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/MemoryInstrumentationHashMap.h"
 #include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/MemoryInstrumentationVector.h"

@@ -38,8 +38,8 @@
 #include "core/loader/PrerendererClient.h"
 #include "core/page/Frame.h"
 #include "core/platform/PrerenderHandle.h"
-#include "origin/ReferrerPolicy.h"
-#include "origin/SecurityPolicy.h"
+#include "weborigin/ReferrerPolicy.h"
+#include "weborigin/SecurityPolicy.h"
 
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/PassOwnPtr.h>

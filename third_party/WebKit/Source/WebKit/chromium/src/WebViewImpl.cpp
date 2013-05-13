@@ -158,9 +158,9 @@
 #include "core/rendering/RenderWidget.h"
 #include "modules/battery/BatteryController.h"
 #include "modules/geolocation/GeolocationController.h"
-#include "origin/SchemeRegistry.h"
-#include "origin/SecurityOrigin.h"
-#include "origin/SecurityPolicy.h"
+#include "weborigin/SchemeRegistry.h"
+#include "weborigin/SecurityOrigin.h"
+#include "weborigin/SecurityPolicy.h"
 #include "painting/ContinuousPainter.h"
 
 #if ENABLE(DEFAULT_RENDER_THEME)

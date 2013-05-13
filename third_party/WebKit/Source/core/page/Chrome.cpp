@@ -52,7 +52,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/storage/StorageNamespace.h"
 #include "modules/geolocation/Geolocation.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "core/platform/ColorChooser.h"

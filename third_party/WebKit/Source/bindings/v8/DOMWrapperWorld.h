@@ -33,7 +33,7 @@
 
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/V8PerContextData.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #include <v8.h>
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

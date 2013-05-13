@@ -77,7 +77,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderWidget.h"
 #include "modules/geolocation/Geolocation.h"
-#include "origin/SecurityOrigin.h"
+#include "weborigin/SecurityOrigin.h"
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "WebColorChooser.h"
 #endif
