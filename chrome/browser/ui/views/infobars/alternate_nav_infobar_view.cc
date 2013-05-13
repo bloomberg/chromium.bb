@@ -51,10 +51,9 @@ void AlternateNavInfoBarView::Layout() {
       std::min(label_2_size.width(), available_width), label_2_size.height());
 }
 
-void AlternateNavInfoBarView::ViewHierarchyChanged(bool is_add,
-                                                   View* parent,
-                                                   View* child) {
-  if (is_add && (child == this) && (label_1_ == NULL)) {
+void AlternateNavInfoBarView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && (details.child == this) && (label_1_ == NULL)) {
     AlternateNavInfoBarDelegate* delegate = GetDelegate();
     size_t offset;
     string16 message_text = delegate->GetMessageTextWithOffset(&offset);
@@ -71,7 +70,7 @@ void AlternateNavInfoBarView::ViewHierarchyChanged(bool is_add,
 
   // This must happen after adding all other children so InfoBarView can ensure
   // the close button is the last child.
-  InfoBarView::ViewHierarchyChanged(is_add, parent, child);
+  InfoBarView::ViewHierarchyChanged(details);
 }
 
 void AlternateNavInfoBarView::LinkClicked(views::Link* source,

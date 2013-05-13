@@ -115,10 +115,9 @@ class ExamplesWindowContents : public WidgetDelegateView,
   }
 
   // Overridden from View:
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE {
-    if (is_add && child == this)
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE {
+    if (details.is_add && details.child == this)
       InitExamplesWindow();
   }
 

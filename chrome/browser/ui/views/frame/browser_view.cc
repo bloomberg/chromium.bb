@@ -1837,10 +1837,9 @@ void BrowserView::PaintChildren(gfx::Canvas* canvas) {
   infobar_container_->Paint(canvas);
 }
 
-void BrowserView::ViewHierarchyChanged(bool is_add,
-                                       views::View* parent,
-                                       views::View* child) {
-  if (!initialized_ && is_add && child == this && GetWidget()) {
+void BrowserView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (!initialized_ && details.is_add && details.child == this && GetWidget()) {
     InitViews();
     initialized_ = true;
   }

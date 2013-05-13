@@ -268,8 +268,8 @@ class VIEWS_EXPORT Textfield : public View {
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
 
  protected:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent,
-                                    View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
   // The object that actually implements the native text field.

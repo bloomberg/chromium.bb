@@ -39,9 +39,8 @@ class OakWindow : public views::WidgetDelegateView,
  private:
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   // Overridden from views::TreeViewController:

@@ -115,11 +115,10 @@ void ExtensionViewViews::ResizeDueToAutoResize(const gfx::Size& new_size) {
     SetPreferredSize(new_size);
 }
 
-void ExtensionViewViews::ViewHierarchyChanged(bool is_add,
-                                              views::View* parent,
-                                              views::View* child) {
-  NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
-  if (is_add && GetWidget() && !initialized_)
+void ExtensionViewViews::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  NativeViewHost::ViewHierarchyChanged(details);
+  if (details.is_add && GetWidget() && !initialized_)
     CreateWidgetHostView();
 }
 

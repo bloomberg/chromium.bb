@@ -597,21 +597,22 @@ void RootView::ReorderChildLayers(ui::Layer* parent_layer) {
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, protected:
 
-void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  widget_->ViewHierarchyChanged(is_add, parent, child);
+void RootView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  widget_->ViewHierarchyChanged(details);
 
-  if (!is_add) {
-    if (!explicit_mouse_handler_ && mouse_pressed_handler_ == child)
+  if (!details.is_add) {
+    if (!explicit_mouse_handler_ && mouse_pressed_handler_ == details.child)
       mouse_pressed_handler_ = NULL;
-    if (mouse_move_handler_ == child)
+    if (mouse_move_handler_ == details.child)
       mouse_move_handler_ = NULL;
-    if (touch_pressed_handler_ == child)
+    if (touch_pressed_handler_ == details.child)
       touch_pressed_handler_ = NULL;
-    if (gesture_handler_ == child)
+    if (gesture_handler_ == details.child)
       gesture_handler_ = NULL;
-    if (scroll_gesture_handler_ == child)
+    if (scroll_gesture_handler_ == details.child)
       scroll_gesture_handler_ = NULL;
-    if (event_dispatch_target_ == child)
+    if (event_dispatch_target_ == details.child)
       event_dispatch_target_ = NULL;
   }
 }

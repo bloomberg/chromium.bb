@@ -265,11 +265,10 @@ bool DialogClientView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
-void DialogClientView::ViewHierarchyChanged(bool is_add,
-                                            View* parent,
-                                            View* child) {
-  ClientView::ViewHierarchyChanged(is_add, parent, child);
-  if (is_add && child == this) {
+void DialogClientView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  ClientView::ViewHierarchyChanged(details);
+  if (details.is_add && details.child == this) {
     focus_manager_ = GetFocusManager();
     if (focus_manager_)
       GetFocusManager()->AddFocusChangeListener(this);

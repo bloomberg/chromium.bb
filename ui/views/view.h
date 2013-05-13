@@ -106,6 +106,38 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
  public:
   typedef std::vector<View*> Views;
 
+  struct ViewHierarchyChangedDetails {
+    ViewHierarchyChangedDetails()
+        : is_add(false),
+          parent(NULL),
+          child(NULL),
+          move_view(NULL) {}
+
+    ViewHierarchyChangedDetails(bool is_add,
+                                View* parent,
+                                View* child,
+                                View* move_view)
+        : is_add(is_add),
+          parent(parent),
+          child(child),
+          move_view(move_view) {}
+
+    bool is_add;
+    // New parent if |is_add| is true, old parent if |is_add| is false.
+    View* parent;
+    // The view being added or removed.
+    View* child;
+    // If this is a move (reparent), meaning AddChildViewAt() is invoked with an
+    // existing parent, then a notification for the remove is sent first,
+    // followed by one for the add.  This case can be distinguished by a
+    // non-NULL |move_view|.
+    // For the remove part of move, |move_view| is the new parent of the View
+    // being removed.
+    // For the add part of move, |move_view| is the old parent of the View being
+    // added.
+    View* move_view;
+  };
+
   // Creation and lifetime -----------------------------------------------------
 
   View();
@@ -986,10 +1018,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Default implementation does nothing. Override to perform operations
   // required when a view is added or removed from a view hierarchy
   //
-  // parent is the new or old parent. Child is the view being added or
-  // removed.
-  //
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+  // Refer to comments in struct |ViewHierarchyChangedDetails| for |details|.
+  virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details);
 
   // When SetVisible() changes the visibility of a view, this method is
   // invoked for that view as well as all the children recursively.
@@ -1194,17 +1224,23 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the next and previous focusable views of views pointing to this view are
   // updated.  If |update_tool_tip| is true, the tooltip is updated.  If
   // |delete_removed_view| is true, the view is also deleted (if it is parent
-  // owned).
+  // owned).  If |new_parent| is not NULL, the remove is the result of
+  // AddChildView() to a new parent.  For this case, |new_parent| is the View
+  // that |view| is going to be added to after the remove completes.
   void DoRemoveChildView(View* view,
                          bool update_focus_cycle,
                          bool update_tool_tip,
-                         bool delete_removed_view);
+                         bool delete_removed_view,
+                         View* new_parent);
 
-  // Call ViewHierarchyChanged for all child views on all parents
-  void PropagateRemoveNotifications(View* parent);
+  // Call ViewHierarchyChanged() for all child views and all parents.
+  // |old_parent| is the original parent of the View that was removed.
+  // If |new_parent| is not NULL, the View that was removed will be reparented
+  // to |new_parent| after the remove operation.
+  void PropagateRemoveNotifications(View* old_parent, View* new_parent);
 
-  // Call ViewHierarchyChanged for all children
-  void PropagateAddNotifications(View* parent, View* child);
+  // Call ViewHierarchyChanged() for all children.
+  void PropagateAddNotifications(const ViewHierarchyChangedDetails& details);
 
   // Propagates NativeViewHierarchyChanged() notification through all the
   // children.
@@ -1215,9 +1251,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Takes care of registering/unregistering accelerators if
   // |register_accelerators| true and calls ViewHierarchyChanged().
   void ViewHierarchyChangedImpl(bool register_accelerators,
-                                bool is_add,
-                                View* parent,
-                                View* child);
+                                const ViewHierarchyChangedDetails& details);
 
   // Invokes OnNativeThemeChanged() on this and all descendants.
   void PropagateNativeThemeChanged(const ui::NativeTheme* theme);

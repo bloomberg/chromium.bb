@@ -557,8 +557,9 @@ void Textfield::OnEnabledChanged() {
     native_wrapper_->UpdateEnabled();
 }
 
-void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  if (is_add && !native_wrapper_ && GetWidget() && !initialized_) {
+void Textfield::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && !native_wrapper_ && GetWidget() && !initialized_) {
     initialized_ = true;
 
     // The native wrapper's lifetime will be managed by the view hierarchy after

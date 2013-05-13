@@ -326,8 +326,9 @@ void TabbedPane::Layout() {
     contents_->child_at(i)->SetSize(contents_->size());
 }
 
-void TabbedPane::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  if (is_add) {
+void TabbedPane::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add) {
     // Support navigating tabs by Ctrl+Tab and Ctrl+Shift+Tab.
     AddAccelerator(ui::Accelerator(ui::VKEY_TAB,
                                    ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));

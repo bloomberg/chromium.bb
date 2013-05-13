@@ -2481,51 +2481,53 @@ class ObserverView : public View {
 
   void ResetTestState();
 
-  bool child_added() const { return child_added_; }
-  bool child_removed() const { return child_removed_; }
-  const View* parent_view() const { return parent_view_; }
-  const View* child_view() const { return child_view_; }
+  bool has_add_details() const { return has_add_details_; }
+  bool has_remove_details() const { return has_remove_details_; }
+
+  const ViewHierarchyChangedDetails& add_details() const {
+    return add_details_;
+  }
+
+  const ViewHierarchyChangedDetails& remove_details() const {
+    return remove_details_;
+  }
 
  private:
   // View:
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
 
-  bool child_added_;
-  bool child_removed_;
-  View* parent_view_;
-  View* child_view_;
+  bool has_add_details_;
+  bool has_remove_details_;
+  ViewHierarchyChangedDetails add_details_;
+  ViewHierarchyChangedDetails remove_details_;
 
   DISALLOW_COPY_AND_ASSIGN(ObserverView);
 };
 
 ObserverView::ObserverView()
-    : child_added_(false),
-      child_removed_(false),
-      parent_view_(NULL),
-      child_view_(NULL) {
+    : has_add_details_(false),
+      has_remove_details_(false) {
 }
 
 ObserverView::~ObserverView() {}
 
 void ObserverView::ResetTestState() {
-  child_added_ = false;
-  child_removed_ = false;
-  parent_view_ = NULL;
-  child_view_ = NULL;
+  has_add_details_ = false;
+  has_remove_details_ = false;
+  add_details_ = ViewHierarchyChangedDetails();
+  remove_details_ = ViewHierarchyChangedDetails();
 }
 
-void ObserverView::ViewHierarchyChanged(bool is_add,
-                                        View* parent,
-                                        View* child) {
-  if (is_add)
-    child_added_ = true;
-  else
-    child_removed_ = true;
-
-  parent_view_ = parent;
-  child_view_ = child;
+void ObserverView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add) {
+    has_add_details_ = true;
+    add_details_ = details;
+  } else {
+    has_remove_details_ = true;
+    remove_details_ = details;
+  }
 }
 
 // Verifies that the ViewHierarchyChanged() notification is sent correctly when
@@ -2535,6 +2537,7 @@ void ObserverView::ViewHierarchyChanged(bool is_add,
 // v1
 // +-- v2
 //     +-- v3
+//     +-- v4 (starts here, then get reparented to v1)
 TEST_F(ViewTest, ViewHierarchyChanged) {
   ObserverView v1;
 
@@ -2546,15 +2549,17 @@ TEST_F(ViewTest, ViewHierarchyChanged) {
 
   // Make sure both |v2| and |v3| receive the ViewHierarchyChanged()
   // notification.
-  EXPECT_TRUE(v2->child_added());
-  EXPECT_FALSE(v2->child_removed());
-  EXPECT_EQ(v2.get(), v2->parent_view());
-  EXPECT_EQ(v3, v2->child_view());
+  EXPECT_TRUE(v2->has_add_details());
+  EXPECT_FALSE(v2->has_remove_details());
+  EXPECT_EQ(v2.get(), v2->add_details().parent);
+  EXPECT_EQ(v3, v2->add_details().child);
+  EXPECT_EQ(NULL, v2->add_details().move_view);
 
-  EXPECT_TRUE(v3->child_added());
-  EXPECT_FALSE(v3->child_removed());
-  EXPECT_EQ(v2.get(), v3->parent_view());
-  EXPECT_EQ(v3, v3->child_view());
+  EXPECT_TRUE(v3->has_add_details());
+  EXPECT_FALSE(v3->has_remove_details());
+  EXPECT_EQ(v2.get(), v3->add_details().parent);
+  EXPECT_EQ(v3, v3->add_details().child);
+  EXPECT_EQ(NULL, v3->add_details().move_view);
 
   // Reset everything to the initial state.
   v2->ResetTestState();
@@ -2565,20 +2570,23 @@ TEST_F(ViewTest, ViewHierarchyChanged) {
 
   // Verifies that |v2| is the child view *added* and the parent view is |v1|.
   // Make sure all the views (v1, v2, v3) received _that_ information.
-  EXPECT_TRUE(v1.child_added());
-  EXPECT_FALSE(v1.child_removed());
-  EXPECT_EQ(&v1, v1.parent_view());
-  EXPECT_EQ(v2.get(), v1.child_view());
+  EXPECT_TRUE(v1.has_add_details());
+  EXPECT_FALSE(v1.has_remove_details());
+  EXPECT_EQ(&v1, v1.add_details().parent);
+  EXPECT_EQ(v2.get(), v1.add_details().child);
+  EXPECT_EQ(NULL, v1.add_details().move_view);
 
-  EXPECT_TRUE(v2->child_added());
-  EXPECT_FALSE(v2->child_removed());
-  EXPECT_EQ(&v1, v2->parent_view());
-  EXPECT_EQ(v2.get(), v2->child_view());
+  EXPECT_TRUE(v2->has_add_details());
+  EXPECT_FALSE(v2->has_remove_details());
+  EXPECT_EQ(&v1, v2->add_details().parent);
+  EXPECT_EQ(v2.get(), v2->add_details().child);
+  EXPECT_EQ(NULL, v2->add_details().move_view);
 
-  EXPECT_TRUE(v3->child_added());
-  EXPECT_FALSE(v3->child_removed());
-  EXPECT_EQ(&v1, v3->parent_view());
-  EXPECT_EQ(v2.get(), v3->child_view());
+  EXPECT_TRUE(v3->has_add_details());
+  EXPECT_FALSE(v3->has_remove_details());
+  EXPECT_EQ(&v1, v3->add_details().parent);
+  EXPECT_EQ(v2.get(), v3->add_details().child);
+  EXPECT_EQ(NULL, v3->add_details().move_view);
 
   // Reset everything to the initial state.
   v1.ResetTestState();
@@ -2590,20 +2598,70 @@ TEST_F(ViewTest, ViewHierarchyChanged) {
 
   // Verifies that |v2| is the child view *removed* and the parent view is |v1|.
   // Make sure all the views (v1, v2, v3) received _that_ information.
-  EXPECT_FALSE(v1.child_added());
-  EXPECT_TRUE(v1.child_removed());
-  EXPECT_EQ(&v1, v1.parent_view());
-  EXPECT_EQ(v2.get(), v1.child_view());
+  EXPECT_FALSE(v1.has_add_details());
+  EXPECT_TRUE(v1.has_remove_details());
+  EXPECT_EQ(&v1, v1.remove_details().parent);
+  EXPECT_EQ(v2.get(), v1.remove_details().child);
+  EXPECT_EQ(NULL, v1.remove_details().move_view);
 
-  EXPECT_FALSE(v2->child_added());
-  EXPECT_TRUE(v2->child_removed());
-  EXPECT_EQ(&v1, v2->parent_view());
-  EXPECT_EQ(v2.get(), v2->child_view());
+  EXPECT_FALSE(v2->has_add_details());
+  EXPECT_TRUE(v2->has_remove_details());
+  EXPECT_EQ(&v1, v2->remove_details().parent);
+  EXPECT_EQ(v2.get(), v2->remove_details().child);
+  EXPECT_EQ(NULL, v2->remove_details().move_view);
 
-  EXPECT_FALSE(v3->child_added());
-  EXPECT_TRUE(v3->child_removed());
-  EXPECT_EQ(&v1, v3->parent_view());
-  EXPECT_EQ(v3, v3->child_view());
+  EXPECT_FALSE(v3->has_add_details());
+  EXPECT_TRUE(v3->has_remove_details());
+  EXPECT_EQ(&v1, v3->remove_details().parent);
+  EXPECT_EQ(v3, v3->remove_details().child);
+  EXPECT_EQ(NULL, v3->remove_details().move_view);
+
+  // Verifies notifications when reparenting a view.
+  ObserverView* v4 = new ObserverView();
+  // Add |v4| to |v2|.
+  v2->AddChildView(v4);
+
+  // Reset everything to the initial state.
+  v1.ResetTestState();
+  v2->ResetTestState();
+  v3->ResetTestState();
+  v4->ResetTestState();
+
+  // Reparent |v4| to |v1|.
+  v1.AddChildView(v4);
+
+  // Verifies that all views receive the correct information for all the child,
+  // parent and move views.
+
+  // |v1| is the new parent, |v4| is the child for add, |v2| is the old parent.
+  EXPECT_TRUE(v1.has_add_details());
+  EXPECT_FALSE(v1.has_remove_details());
+  EXPECT_EQ(&v1, v1.add_details().parent);
+  EXPECT_EQ(v4, v1.add_details().child);
+  EXPECT_EQ(v2.get(), v1.add_details().move_view);
+
+  // |v2| is the old parent, |v4| is the child for remove, |v1| is the new
+  // parent.
+  EXPECT_FALSE(v2->has_add_details());
+  EXPECT_TRUE(v2->has_remove_details());
+  EXPECT_EQ(v2.get(), v2->remove_details().parent);
+  EXPECT_EQ(v4, v2->remove_details().child);
+  EXPECT_EQ(&v1, v2->remove_details().move_view);
+
+  // |v3| is not impacted by this operation, and hence receives no notification.
+  EXPECT_FALSE(v3->has_add_details());
+  EXPECT_FALSE(v3->has_remove_details());
+
+  // |v4| is the reparented child, so it receives notifications for the remove
+  // and then the add.  |v2| is its old parent, |v1| is its new parent.
+  EXPECT_TRUE(v4->has_remove_details());
+  EXPECT_TRUE(v4->has_add_details());
+  EXPECT_EQ(v2.get(), v4->remove_details().parent);
+  EXPECT_EQ(&v1, v4->add_details().parent);
+  EXPECT_EQ(v4, v4->add_details().child);
+  EXPECT_EQ(v4, v4->remove_details().child);
+  EXPECT_EQ(&v1, v4->remove_details().move_view);
+  EXPECT_EQ(v2.get(), v4->add_details().move_view);
 }
 
 // Verifies if the child views added under the root are all deleted when calling

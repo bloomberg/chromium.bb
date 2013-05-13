@@ -113,11 +113,10 @@ void ExtensionInfoBar::Layout() {
       height() - arrow_height() - 1);
 }
 
-void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
-                                            views::View* parent,
-                                            views::View* child) {
-  if (!is_add || (child != this) || (infobar_icon_ != NULL)) {
-    InfoBarView::ViewHierarchyChanged(is_add, parent, child);
+void ExtensionInfoBar::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (!details.is_add || (details.child != this) || (infobar_icon_ != NULL)) {
+    InfoBarView::ViewHierarchyChanged(details);
     return;
   }
 
@@ -140,7 +139,7 @@ void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
 
   // This must happen after adding all other children so InfoBarView can ensure
   // the close button is the last child.
-  InfoBarView::ViewHierarchyChanged(is_add, parent, child);
+  InfoBarView::ViewHierarchyChanged(details);
 
   // This must happen after adding all children because it can trigger layout,
   // which assumes that particular children (e.g. the close button) have already

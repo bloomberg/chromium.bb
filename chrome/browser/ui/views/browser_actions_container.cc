@@ -552,14 +552,13 @@ void BrowserActionsContainer::OnThemeChanged() {
   LoadImages();
 }
 
-void BrowserActionsContainer::ViewHierarchyChanged(bool is_add,
-                                                   views::View* parent,
-                                                   views::View* child) {
+void BrowserActionsContainer::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
   // No extensions (e.g., incognito).
   if (!model_)
     return;
 
-  if (is_add && child == this) {
+  if (details.is_add && details.child == this) {
     // Initial toolbar button creation and placement in the widget hierarchy.
     // We do this here instead of in the constructor because AddBrowserAction
     // calls Layout on the Toolbar, which needs this object to be constructed

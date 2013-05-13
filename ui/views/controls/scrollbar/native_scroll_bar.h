@@ -42,9 +42,8 @@ class VIEWS_EXPORT NativeScrollBar : public ScrollBar {
   // Overridden from View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
   // Overrideen from View for keyboard UI purpose.

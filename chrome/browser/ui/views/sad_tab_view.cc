@@ -119,10 +119,9 @@ void SadTabView::Layout() {
   View::Layout();
 }
 
-void SadTabView::ViewHierarchyChanged(bool is_add,
-                                      views::View* parent,
-                                      views::View* child) {
-  if (child != this || !is_add)
+void SadTabView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.child != this || !details.is_add)
     return;
 
   views::GridLayout* layout = new views::GridLayout(this);

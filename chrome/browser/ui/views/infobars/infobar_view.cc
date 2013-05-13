@@ -211,10 +211,11 @@ void InfoBarView::Layout() {
       button_size.width(), button_size.height());
 }
 
-void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  View::ViewHierarchyChanged(is_add, parent, child);
+void InfoBarView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  View::ViewHierarchyChanged(details);
 
-  if (is_add && (child == this) && (close_button_ == NULL)) {
+  if (details.is_add && (details.child == this) && (close_button_ == NULL)) {
     gfx::Image* image = delegate()->GetIcon();
     if (image) {
       icon_ = new views::ImageView;
@@ -234,8 +235,8 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button_->set_focusable(true);
     AddChildView(close_button_);
-  } else if ((close_button_ != NULL) && (parent == this) &&
-      (child != close_button_) && (close_button_->parent() == this) &&
+  } else if ((close_button_ != NULL) && (details.parent == this) &&
+      (details.child != close_button_) && (close_button_->parent() == this) &&
       (child_at(child_count() - 1) != close_button_)) {
     // For accessibility, ensure the close button is the last child view.
     RemoveChildView(close_button_);

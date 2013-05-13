@@ -181,9 +181,8 @@ class BrowserActionButton : public views::MenuButton,
 
  protected:
   // Overridden from views::View:
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
 
  private:
   virtual ~BrowserActionButton();

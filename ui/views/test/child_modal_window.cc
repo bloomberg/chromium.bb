@@ -186,10 +186,9 @@ void ChildModalParent::Layout() {
   host_->SetBounds(x(), running_y, width(), height() - running_y);
 }
 
-void ChildModalParent::ViewHierarchyChanged(bool is_add,
-                                            View* parent,
-                                            View* child) {
-  if (is_add && child == this) {
+void ChildModalParent::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this) {
     host_->Attach(modal_parent_);
     GetWidget()->GetNativeView()->SetName("Parent");
   }

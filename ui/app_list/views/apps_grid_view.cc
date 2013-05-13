@@ -340,17 +340,16 @@ bool AppsGridView::OnKeyReleased(const ui::KeyEvent& event) {
   return handled;
 }
 
-void AppsGridView::ViewHierarchyChanged(bool is_add,
-                                        views::View* parent,
-                                        views::View* child) {
-  if (!is_add && parent == this) {
-    if (selected_view_ == child)
+void AppsGridView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (!details.is_add && details.parent == this) {
+    if (selected_view_ == details.child)
       selected_view_ = NULL;
 
-    if (drag_view_ == child)
+    if (drag_view_ == details.child)
       EndDrag(true);
 
-    bounds_animator_.StopAnimatingView(child);
+    bounds_animator_.StopAnimatingView(details.child);
   }
 }
 

@@ -39,9 +39,8 @@ class NativeControlWin : public ChildWindowMessageProcessor,
   virtual void OnEnabledChanged() OVERRIDE;
 
  protected:
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
 

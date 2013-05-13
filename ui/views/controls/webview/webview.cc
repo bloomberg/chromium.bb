@@ -100,8 +100,9 @@ void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   wcv_holder_->SetSize(bounds().size());
 }
 
-void WebView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  if (is_add)
+void WebView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add)
     AttachWebContents();
 }
 

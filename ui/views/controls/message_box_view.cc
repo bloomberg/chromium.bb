@@ -119,10 +119,9 @@ void MessageBoxView::GetAccessibleState(ui::AccessibleViewState* state) {
 ///////////////////////////////////////////////////////////////////////////////
 // MessageBoxView, View overrides:
 
-void MessageBoxView::ViewHierarchyChanged(bool is_add,
-                                          View* parent,
-                                          View* child) {
-  if (child == this && is_add) {
+void MessageBoxView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.child == this && details.is_add) {
     if (prompt_field_)
       prompt_field_->SelectAll(true);
 

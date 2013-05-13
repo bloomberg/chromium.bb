@@ -83,9 +83,8 @@ class VIEWS_EXPORT MessageBoxView : public View {
 
  protected:
   // View:
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
   // Handles Ctrl-C and writes the message in the system clipboard.
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 

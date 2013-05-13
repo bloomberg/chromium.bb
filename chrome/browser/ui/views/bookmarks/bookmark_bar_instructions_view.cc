@@ -91,10 +91,9 @@ void BookmarkBarInstructionsView::OnThemeChanged() {
   UpdateColors();
 }
 
-void BookmarkBarInstructionsView::ViewHierarchyChanged(bool is_add,
-                                                       views::View* parent,
-                                                       views::View* child) {
-  if (!updated_colors_ && is_add && GetWidget())
+void BookmarkBarInstructionsView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (!updated_colors_ && details.is_add && GetWidget())
     UpdateColors();
 }
 

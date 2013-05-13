@@ -85,10 +85,9 @@ bool WebDialogView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
-void WebDialogView::ViewHierarchyChanged(bool is_add,
-                                         views::View* parent,
-                                         views::View* child) {
-  if (is_add && GetWidget())
+void WebDialogView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && GetWidget())
     InitDialog();
 }
 

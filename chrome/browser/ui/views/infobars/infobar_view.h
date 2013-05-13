@@ -68,9 +68,8 @@ class InfoBarView : public InfoBar,
 
   // views::View:
   virtual void Layout() OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
 
   // views::ButtonListener:
   // NOTE: This must not be called if we're unowned.  (Subclasses should ignore

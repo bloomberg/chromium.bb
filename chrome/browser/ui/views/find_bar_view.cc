@@ -343,8 +343,9 @@ void FindBarView::Layout() {
                                    find_previous_button_->height());
 }
 
-void FindBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  if (is_add && child == this) {
+void FindBarView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this) {
     find_text_->SetHorizontalMargins(3, 3);  // Left and Right margins.
     find_text_->SetVerticalMargins(0, 0);  // Top and bottom margins.
     find_text_->RemoveBorder();  // We draw our own border (a background image).

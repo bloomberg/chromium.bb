@@ -632,10 +632,9 @@ void NativeAppWindowViews::Layout() {
   OnViewWasResized();
 }
 
-void NativeAppWindowViews::ViewHierarchyChanged(bool is_add,
-                                                views::View* parent,
-                                                views::View* child) {
-  if (is_add && child == this) {
+void NativeAppWindowViews::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this) {
     web_view_ = new views::WebView(NULL);
     AddChildView(web_view_);
     web_view_->SetWebContents(web_contents());

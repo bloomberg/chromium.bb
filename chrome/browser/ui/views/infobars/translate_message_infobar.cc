@@ -35,10 +35,9 @@ void TranslateMessageInfoBar::Layout() {
   }
 }
 
-void TranslateMessageInfoBar::ViewHierarchyChanged(bool is_add,
-                                                   View* parent,
-                                                   View* child) {
-  if (is_add && (child == this) && (label_ == NULL)) {
+void TranslateMessageInfoBar::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && (details.child == this) && (label_ == NULL)) {
     TranslateInfoBarDelegate* delegate = GetDelegate();
     label_ = CreateLabel(delegate->GetMessageInfoBarText());
     AddChildView(label_);
@@ -52,7 +51,7 @@ void TranslateMessageInfoBar::ViewHierarchyChanged(bool is_add,
 
   // This must happen after adding all other children so InfoBarView can ensure
   // the close button is the last child.
-  TranslateInfoBarBase::ViewHierarchyChanged(is_add, parent, child);
+  TranslateInfoBarBase::ViewHierarchyChanged(details);
 }
 
 void TranslateMessageInfoBar::ButtonPressed(views::Button* sender,

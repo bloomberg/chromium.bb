@@ -75,11 +75,10 @@ void AfterTranslateInfoBar::Layout() {
       OffsetY(options_size), options_size.width(), options_size.height());
 }
 
-void AfterTranslateInfoBar::ViewHierarchyChanged(bool is_add,
-                                                 View* parent,
-                                                 View* child) {
-  if (!is_add || (child != this) || (label_1_ != NULL)) {
-    TranslateInfoBarBase::ViewHierarchyChanged(is_add, parent, child);
+void AfterTranslateInfoBar::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (!details.is_add || (details.child != this) || (label_1_ != NULL)) {
+    TranslateInfoBarBase::ViewHierarchyChanged(details);
     return;
   }
 
@@ -121,7 +120,7 @@ void AfterTranslateInfoBar::ViewHierarchyChanged(bool is_add,
 
   // This must happen after adding all other children so InfoBarView can ensure
   // the close button is the last child.
-  TranslateInfoBarBase::ViewHierarchyChanged(is_add, parent, child);
+  TranslateInfoBarBase::ViewHierarchyChanged(details);
 
   // These must happen after adding all children because they trigger layout,
   // which assumes that particular children (e.g. the close button) have already

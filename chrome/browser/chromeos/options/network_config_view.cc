@@ -234,10 +234,10 @@ gfx::Size NetworkConfigView::GetPreferredSize() {
 }
 
 void NetworkConfigView::ViewHierarchyChanged(
-    bool is_add, views::View* parent, views::View* child) {
+    const ViewHierarchyChangedDetails& details) {
   // Can't init before we're inserted into a Container, because we require
   // a HWND to parent native child controls to.
-  if (is_add && child == this) {
+  if (details.is_add && details.child == this) {
     AddChildView(child_config_view_);
   }
 }

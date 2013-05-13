@@ -49,10 +49,10 @@ TranslateInfoBarBase::TranslateInfoBarBase(InfoBarService* owner,
 TranslateInfoBarBase::~TranslateInfoBarBase() {
 }
 
-void TranslateInfoBarBase::ViewHierarchyChanged(bool is_add,
-                                                View* parent,
-                                                View* child) {
-  if (is_add && (child == this) && (background_color_animation_ == NULL)) {
+void TranslateInfoBarBase::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && (details.child == this) &&
+      (background_color_animation_ == NULL)) {
     background_color_animation_.reset(new ui::SlideAnimation(this));
     background_color_animation_->SetTweenType(ui::Tween::LINEAR);
     background_color_animation_->SetSlideDuration(500);
@@ -69,7 +69,7 @@ void TranslateInfoBarBase::ViewHierarchyChanged(bool is_add,
 
   // This must happen after adding all other children so InfoBarView can ensure
   // the close button is the last child.
-  InfoBarView::ViewHierarchyChanged(is_add, parent, child);
+  InfoBarView::ViewHierarchyChanged(details);
 }
 
 TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() {

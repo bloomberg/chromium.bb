@@ -44,9 +44,8 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
     // Overridden from views::View.
     virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
     virtual void ChildVisibilityChanged(View* child) OVERRIDE;
-    virtual void ViewHierarchyChanged(bool is_add,
-                                      View* parent,
-                                      View* child) OVERRIDE;
+    virtual void ViewHierarchyChanged(
+        const ViewHierarchyChangedDetails& details) OVERRIDE;
 
    private:
     void UpdateLayout();

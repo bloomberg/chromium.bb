@@ -212,8 +212,8 @@ class TaskManagerView : public views::ButtonListener,
   // views::View:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
-                                    views::View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -468,27 +468,26 @@ void TaskManagerView::UpdateStatsCounters() {
   }
 }
 
-void TaskManagerView::ViewHierarchyChanged(bool is_add,
-                                           views::View* parent,
-                                           views::View* child) {
+void TaskManagerView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
   // Since we want the Kill button and the Memory Details link to show up in
   // the same visual row as the close button, which is provided by the
   // framework, we must add the buttons to the non-client view, which is the
   // parent of this view. Similarly, when we're removed from the view
   // hierarchy, we must take care to clean up those items as well.
-  if (child == this) {
-    if (is_add) {
-      parent->AddChildView(about_memory_link_);
+  if (details.child == this) {
+    if (details.is_add) {
+      details.parent->AddChildView(about_memory_link_);
       if (purge_memory_button_)
-        parent->AddChildView(purge_memory_button_);
-      parent->AddChildView(kill_button_);
+        details.parent->AddChildView(purge_memory_button_);
+      details.parent->AddChildView(kill_button_);
       tab_table_parent_ = tab_table_->CreateParentIfNecessary();
       AddChildView(tab_table_parent_);
     } else {
-      parent->RemoveChildView(kill_button_);
+      details.parent->RemoveChildView(kill_button_);
       if (purge_memory_button_)
-        parent->RemoveChildView(purge_memory_button_);
-      parent->RemoveChildView(about_memory_link_);
+        details.parent->RemoveChildView(purge_memory_button_);
+      details.parent->RemoveChildView(about_memory_link_);
     }
   }
 }

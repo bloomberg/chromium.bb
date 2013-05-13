@@ -39,9 +39,8 @@ class ChildModalParent : public WidgetDelegateView,
   virtual bool CanResize() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
 
   // Overridden from ButtonListener:
   virtual void ButtonPressed(Button* sender,

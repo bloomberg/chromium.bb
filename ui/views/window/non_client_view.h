@@ -219,9 +219,8 @@ class VIEWS_EXPORT NonClientView : public View {
 
  protected:
   // NonClientView, View overrides:
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
 
  private:
   // A ClientView object or subclass, responsible for sizing the contents view

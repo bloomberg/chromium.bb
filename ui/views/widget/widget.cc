@@ -418,15 +418,16 @@ bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   return false;
 }
 
-void Widget::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  if (!is_add) {
-    if (child == dragged_view_)
+void Widget::ViewHierarchyChanged(
+    const View::ViewHierarchyChangedDetails& details) {
+  if (!details.is_add) {
+    if (details.child == dragged_view_)
       dragged_view_ = NULL;
     FocusManager* focus_manager = GetFocusManager();
     if (focus_manager)
-      focus_manager->ViewRemoved(child);
-    ViewStorage::GetInstance()->ViewRemoved(child);
-    native_widget_->ViewRemoved(child);
+      focus_manager->ViewRemoved(details.child);
+    ViewStorage::GetInstance()->ViewRemoved(details.child);
+    native_widget_->ViewRemoved(details.child);
   }
 }
 

@@ -34,7 +34,7 @@ class CriticalNotificationBubbleView : public views::BubbleDelegateView,
   // views::View overrides:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void ViewHierarchyChanged(
-      bool is_add, View* parent, View* child) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
 
  protected:
   // views::BubbleDelegateView overrides:

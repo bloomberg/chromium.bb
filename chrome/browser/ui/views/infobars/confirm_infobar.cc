@@ -62,10 +62,9 @@ void ConfirmInfoBar::Layout() {
   }
 }
 
-void ConfirmInfoBar::ViewHierarchyChanged(bool is_add,
-                                          View* parent,
-                                          View* child) {
-  if (is_add && child == this && (label_ == NULL)) {
+void ConfirmInfoBar::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this && (label_ == NULL)) {
     ConfirmInfoBarDelegate* delegate = GetDelegate();
     label_ = CreateLabel(delegate->GetMessageText());
     AddChildView(label_);
@@ -93,7 +92,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(bool is_add,
 
   // This must happen after adding all other children so InfoBarView can ensure
   // the close button is the last child.
-  InfoBarView::ViewHierarchyChanged(is_add, parent, child);
+  InfoBarView::ViewHierarchyChanged(details);
 }
 
 void ConfirmInfoBar::ButtonPressed(views::Button* sender,

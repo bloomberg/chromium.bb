@@ -18,11 +18,10 @@ class BalloonViewHostView : public views::NativeViewHost {
         initialized_(false) {
   }
 
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE {
-    NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
-    if (is_add && GetWidget() && !initialized_) {
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE {
+    NativeViewHost::ViewHierarchyChanged(details);
+    if (details.is_add && GetWidget() && !initialized_) {
       initialized_ = true;
       host_->Init(GetWidget()->GetNativeView());
     }

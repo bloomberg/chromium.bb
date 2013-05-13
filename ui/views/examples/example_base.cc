@@ -29,13 +29,12 @@ class ContainerView : public View {
 
  private:
   // Overridden from View:
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE {
-    View::ViewHierarchyChanged(is_add, parent, child);
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE {
+    View::ViewHierarchyChanged(details);
     // We're not using child == this because a Widget may not be
     // available when this is added to the hierarchy.
-    if (is_add && GetWidget() && !example_view_created_) {
+    if (details.is_add && GetWidget() && !example_view_created_) {
       example_view_created_ = true;
       example_base_->CreateExampleView(this);
     }

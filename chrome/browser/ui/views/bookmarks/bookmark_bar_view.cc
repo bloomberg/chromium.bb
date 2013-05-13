@@ -721,10 +721,9 @@ void BookmarkBarView::Layout() {
   LayoutItems(false);
 }
 
-void BookmarkBarView::ViewHierarchyChanged(bool is_add,
-                                           View* parent,
-                                           View* child) {
-  if (is_add && child == this) {
+void BookmarkBarView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this) {
     // We may get inserted into a hierarchy with a profile - this typically
     // occurs when the bar's contents get populated fast enough that the
     // buttons are created before the bar is attached to a frame.

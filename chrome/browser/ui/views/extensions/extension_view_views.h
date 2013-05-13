@@ -61,9 +61,8 @@ class ExtensionViewViews : public views::NativeViewHost {
   // Overridden from views::NativeViewHost:
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
   virtual void SetVisible(bool is_visible) OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
 
  private:
   // Overridden from views::View.

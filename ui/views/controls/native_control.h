@@ -32,7 +32,8 @@ class VIEWS_EXPORT NativeControl : public View {
   NativeControl();
   virtual ~NativeControl();
 
-  virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual void Layout();
 
   // Overridden to properly set the native control state.

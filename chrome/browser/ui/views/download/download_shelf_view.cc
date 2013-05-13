@@ -303,12 +303,11 @@ void DownloadShelfView::Layout() {
   }
 }
 
-void DownloadShelfView::ViewHierarchyChanged(bool is_add,
-                                             View* parent,
-                                             View* child) {
-  View::ViewHierarchyChanged(is_add, parent, child);
+void DownloadShelfView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  View::ViewHierarchyChanged(details);
 
-  if (is_add && (child == this)) {
+  if (details.is_add && (details.child == this)) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     arrow_image_ = new views::ImageView();
     arrow_image_->SetImage(rb.GetImageSkiaNamed(IDR_DOWNLOADS_FAVICON));

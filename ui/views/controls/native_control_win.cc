@@ -65,14 +65,14 @@ void NativeControlWin::OnEnabledChanged() {
     EnableWindow(native_view(), enabled());
 }
 
-void NativeControlWin::ViewHierarchyChanged(bool is_add, View* parent,
-                                            View* child) {
+void NativeControlWin::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
   // Call the base class to hide the view if we're being removed.
-  NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
+  NativeViewHost::ViewHierarchyChanged(details);
 
   // Create the HWND when we're added to a valid Widget. Many controls need a
   // parent HWND to function properly.
-  if (is_add && GetWidget() && !native_view())
+  if (details.is_add && GetWidget() && !native_view())
     CreateNativeControl();
 }
 

@@ -141,8 +141,8 @@ void CriticalNotificationBubbleView::GetAccessibleState(
 }
 
 void CriticalNotificationBubbleView::ViewHierarchyChanged(
-    bool is_add, View* parent, View* child) {
-  if (is_add && child == this)
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this)
     NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
 }
 

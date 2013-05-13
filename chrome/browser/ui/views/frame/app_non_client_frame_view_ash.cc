@@ -87,9 +87,9 @@ class AppNonClientFrameViewAsh::ControlView
         restore_button_->width() - kButtonOverlap, 0));
   }
 
-  virtual void ViewHierarchyChanged(bool is_add, View* parent,
-                                    View* child) OVERRIDE {
-    if (is_add && child == this) {
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE {
+    if (details.is_add && details.child == this) {
       SetButtonImages(restore_button_,
                       IDR_AURA_WINDOW_FULLSCREEN_RESTORE,
                       IDR_AURA_WINDOW_FULLSCREEN_RESTORE_H,

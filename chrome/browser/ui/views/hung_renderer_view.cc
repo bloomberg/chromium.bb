@@ -350,10 +350,9 @@ void HungRendererDialogView::TabDestroyed() {
 ///////////////////////////////////////////////////////////////////////////////
 // HungRendererDialogView, views::View overrides:
 
-void HungRendererDialogView::ViewHierarchyChanged(bool is_add,
-                                                  views::View* parent,
-                                                  views::View* child) {
-  if (!initialized_ && is_add && child == this && GetWidget())
+void HungRendererDialogView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (!initialized_ && details.is_add && details.child == this && GetWidget())
     Init();
 }
 

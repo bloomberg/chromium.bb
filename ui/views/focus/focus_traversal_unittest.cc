@@ -147,17 +147,16 @@ class BorderView : public NativeViewHost {
     return static_cast<internal::RootView*>(widget_->GetRootView());
   }
 
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    View *parent,
-                                    View *child) OVERRIDE {
-    NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE {
+    NativeViewHost::ViewHierarchyChanged(details);
 
-    if (child == this && is_add) {
+    if (details.child == this && details.is_add) {
       if (!widget_) {
         widget_ = new Widget;
         Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
 #if defined(OS_WIN) || defined(USE_AURA)
-        params.parent = parent->GetWidget()->GetNativeView();
+        params.parent = details.parent->GetWidget()->GetNativeView();
 #else
         NOTREACHED();
 #endif

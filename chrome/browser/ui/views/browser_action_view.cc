@@ -148,14 +148,14 @@ void BrowserActionButton::Destroy() {
 }
 
 void BrowserActionButton::ViewHierarchyChanged(
-    bool is_add, View* parent, View* child) {
-
-  if (is_add && !called_registered_extension_command_ && GetFocusManager()) {
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && !called_registered_extension_command_ &&
+      GetFocusManager()) {
     MaybeRegisterExtensionCommand();
     called_registered_extension_command_ = true;
   }
 
-  MenuButton::ViewHierarchyChanged(is_add, parent, child);
+  MenuButton::ViewHierarchyChanged(details);
 }
 
 bool BrowserActionButton::CanHandleAccelerators() const {

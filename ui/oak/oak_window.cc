@@ -79,10 +79,9 @@ void OakWindow::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(separator_rect_, kBorderColor);
 }
 
-void OakWindow::ViewHierarchyChanged(bool is_add,
-                                     views::View* parent,
-                                     views::View* child) {
-  if (is_add && child == this)
+void OakWindow::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this)
     Init();
 }
 

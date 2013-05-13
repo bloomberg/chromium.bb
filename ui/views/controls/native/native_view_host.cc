@@ -146,13 +146,26 @@ void NativeViewHost::OnVisibleBoundsChanged() {
   Layout();
 }
 
-void NativeViewHost::ViewHierarchyChanged(bool is_add, View* parent,
-                                          View* child) {
-  if (is_add && GetWidget()) {
+void NativeViewHost::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  views::Widget* this_widget = GetWidget();
+
+  // A non-NULL |details.move_view| indicates a move operation i.e. |this| is
+  // is being reparented.  If the previous and new parents belong to the same
+  // widget, don't remove |this| from the widget.  This saves resources from
+  // removing from widget and immediately followed by adding to widget; in
+  // particular, there wouldn't be spurious webkitvisibilitychange events for
+  // web contents of |WebView|.
+  if (details.move_view && this_widget &&
+      details.move_view->GetWidget() == this_widget) {
+    return;
+  }
+
+  if (details.is_add && this_widget) {
     if (!native_wrapper_.get())
       native_wrapper_.reset(NativeViewHostWrapper::CreateWrapper(this));
     native_wrapper_->AddedToWidget();
-  } else if (!is_add) {
+  } else if (!details.is_add) {
     native_wrapper_->RemovedFromWidget();
   }
 }

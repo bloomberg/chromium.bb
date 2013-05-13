@@ -406,13 +406,13 @@ void TrayBubbleView::ChildPreferredSizeChanged(View* child) {
   SizeToContents();
 }
 
-void TrayBubbleView::ViewHierarchyChanged(bool is_add,
-                                          View* parent,
-                                          View* child) {
-  if (get_use_acceleration_when_possible() && is_add && child == this) {
-    parent->SetPaintToLayer(true);
-    parent->SetFillsBoundsOpaquely(true);
-    parent->layer()->SetMasksToBounds(true);
+void TrayBubbleView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (get_use_acceleration_when_possible() && details.is_add &&
+      details.child == this) {
+    details.parent->SetPaintToLayer(true);
+    details.parent->SetFillsBoundsOpaquely(true);
+    details.parent->layer()->SetMasksToBounds(true);
   }
 }
 

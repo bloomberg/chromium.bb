@@ -128,10 +128,9 @@ void TrayBackgroundView::TrayContainer::ChildVisibilityChanged(View* child) {
   PreferredSizeChanged();
 }
 
-void TrayBackgroundView::TrayContainer::ViewHierarchyChanged(bool is_add,
-                                                             View* parent,
-                                                             View* child) {
-  if (parent == this)
+void TrayBackgroundView::TrayContainer::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.parent == this)
     PreferredSizeChanged();
 }
 
