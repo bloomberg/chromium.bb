@@ -18,7 +18,7 @@
 HOST_CC?=gcc
 HOST_CXX?=g++
 HOST_LINK?=g++
-HOST_LIB?=ar r
+HOST_LIB?=ar
 HOST_STRIP?=strip
 
 ifeq (,$(findstring gcc,$(shell $(WHICH) gcc)))
@@ -41,13 +41,13 @@ LINUX_CCFLAGS=-fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NA
 define C_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1))
 $(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC,$$@,$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS))
+	$(call LOG,CC  ,$$@,$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS))
 endef
 
 define CXX_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1))
 $(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX,$$@,$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS))
+	$(call LOG,CXX ,$$@,$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS))
 endef
 
 
@@ -90,7 +90,7 @@ $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(OSNAME)_host/$(CONFIG)/lib$(1).a
 all: $(LIBDIR)/$(OSNAME)_host/$(CONFIG)/lib$(1).a
 $(LIBDIR)/$(OSNAME)_host/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src)))
 	$(MKDIR) -p $$(dir $$@)
-	$(call LOG,LIB,$$@,$(HOST_LIB) $$@ $$^)
+	$(call LOG,LIB,$$@,$(HOST_LIB) -cr $$@ $$^)
 endef
 
 

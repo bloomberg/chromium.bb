@@ -75,6 +75,11 @@ def main(args):
   parser.add_option('--experimental', help='build experimental tests',
                     action='store_true')
 
+  if 'NACL_SDK_ROOT' in os.environ:
+    # We don't want the currently configured NACL_SDK_ROOT to have any effect
+    # of the build.
+    del os.environ['NACL_SDK_ROOT']
+
   options, args = parser.parse_args(args[1:])
 
   platform = getos.GetPlatform()

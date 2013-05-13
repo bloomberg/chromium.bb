@@ -465,19 +465,6 @@ def GypNinjaBuild_NaCl(platform, rel_out_dir):
           os.path.join(SRC_DIR, out_dir, 'Release', dst))
 
 
-def GypNinjaBuild_Chrome(arch, rel_out_dir):
-  gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
-
-  out_dir = MakeNinjaRelPath(rel_out_dir)
-  gyp_file = os.path.join(SRC_DIR, 'ppapi', 'ppapi_untrusted.gyp')
-  targets = ['ppapi_cpp_lib', 'ppapi_gles2_lib']
-  GypNinjaBuild(arch, gyp_py, gyp_file, targets, out_dir)
-
-  gyp_file = os.path.join(SRC_DIR, 'ppapi', 'native_client',
-                          'native_client.gyp')
-  GypNinjaBuild(arch, gyp_py, gyp_file, 'ppapi_lib', out_dir)
-
-
 def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
   # TODO(binji): This will build the pnacl_irt_shim twice; once as part of the
   # Chromium build, and once here. When we move more of the SDK build process
@@ -535,13 +522,6 @@ def BuildStepBuildToolchains(pepperdir, platform, toolchains):
   newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
   glibcdir = os.path.join(pepperdir, 'toolchain', tcname + '_glibc')
   pnacldir = os.path.join(pepperdir, 'toolchain', tcname + '_pnacl')
-
-  # Run scons TC build steps
-  if set(toolchains) & set(['glibc', 'newlib']):
-    GypNinjaBuild_Chrome('ia32', 'gypbuild')
-
-  if 'arm' in toolchains:
-    GypNinjaBuild_Chrome('arm', 'gypbuild-arm')
 
   GypNinjaInstall(pepperdir, platform, toolchains)
 

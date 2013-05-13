@@ -23,7 +23,8 @@ DSC_FORMAT = {
         # lib = library target
         # so = shared object target, automatically added to NMF
         # so-standalone =  shared object target, not put into NMF
-        'TYPE': (str, ['main', 'lib', 'so', 'so-standalone'], True),
+        'TYPE': (str, ['main', 'lib', 'static-lib', 'so', 'so-standalone'],
+                 True),
         'SOURCES': (list, '', True),
         'CCFLAGS': (list, '', False),
         'CXXFLAGS': (list, '', False),

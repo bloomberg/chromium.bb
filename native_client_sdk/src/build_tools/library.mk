@@ -61,3 +61,18 @@ $(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src),{{flags}})))
 # Use the lib macro for this target on the list of sources.
 #
 $(eval $(call LIB_RULE,{{name}},$(SOURCES)))
+
+[[if target['TYPE'] != 'static-lib':]]
+ifeq ($(TOOLCHAIN),glibc)
+#
+# When building with GLIBC, also build a shared object version of the
+# library.
+#
+$(eval $(call SO_RULE,{{name}},$(SOURCES)))
+endif
+[[]]
+
+#
+# Install the resulting libraries in the SDK library directory.
+#
+all: install

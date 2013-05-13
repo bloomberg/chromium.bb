@@ -25,6 +25,3 @@
   'TITLE': 'Hello World GLES 2.0 using ppapi_instance3d',
   'GROUP': 'API'
 }
-
-
-

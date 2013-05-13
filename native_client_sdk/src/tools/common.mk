@@ -145,6 +145,15 @@ endif
 # the 'all' target.  Here we leave it blank to be first, but define it later
 #
 all:
+.PHONY: all
+
+
+#
+# The install target is used to install built libraries to thier final destination.
+# By default this is the NaCl SDK 'lib' folder.
+#
+install:
+.PHONY: install
 
 
 #
@@ -212,7 +221,7 @@ clean:
 #
 define DEPEND_RULE
 ifndef $(IGNORE_DEPS)
-.PHONY : rebuild_$(1)
+.PHONY: rebuild_$(1)
 
 rebuild_$(1) :| $(STAMPDIR)/dir.stamp
 ifeq (,$(2))
@@ -226,7 +235,7 @@ $(STAMPDIR)/$(1).stamp : rebuild_$(1)
 
 else
 
-.PHONY : $(STAMPDIR)/$(1).stamp
+.PHONY: $(STAMPDIR)/$(1).stamp
 $(STAMPDIR)/$(1).stamp :
 	@echo Ignore $(1)
 endif

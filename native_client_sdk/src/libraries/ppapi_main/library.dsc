@@ -2,8 +2,8 @@
   'TOOLS': ['newlib', 'glibc', 'pnacl'],
   'TARGETS': [
     {
-      'NAME' : 'ppapi_main',
-      'TYPE' : 'lib',
+      'NAME': 'ppapi_main',
+      'TYPE': 'static-lib',
       'SOURCES' : [
         "ppapi_instance.cc",
         "ppapi_instance2d.cc",

@@ -8,19 +8,17 @@
       'LIBS': ['nacl_io', 'dl', 'ppapi_cpp', 'ppapi', 'pthread']
     },
     {
-      'NAME' : 'libeightball',
+      'NAME' : 'eightball',
       'TYPE' : 'so',
       'SOURCES' : ['eightball.cc', 'eightball.h'],
-      'CXXFLAGS': ['-fPIC'],
       'LIBS' : ['ppapi_cpp', 'ppapi', 'pthread']
     },
     {
-      'NAME' : 'libreverse',
+      'NAME' : 'reverse',
       # This .so file is manually loaded by dlopen; we don't want to include it
       # in the .nmf, or it will be automatically loaded on startup.
       'TYPE' : 'so-standalone',
       'SOURCES' : ['reverse.cc', 'reverse.h'],
-      'CXXFLAGS': ['-fPIC'],
       'LIBS' : ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
