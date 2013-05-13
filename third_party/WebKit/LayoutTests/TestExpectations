@@ -1634,6 +1634,7 @@ crbug.com/238363 compositing/overflow/overflow-hidden-canvas-layer.html [ Crash 
 crbug.com/238363 fast/dom/node-move-to-new-document-crash-main.html [ Crash ]
 crbug.com/238363 fast/history/saves-state-after-fragment-nav.html [ Crash ]
 crbug.com/238363 fast/speech/change-focus.html [ Crash ]
+crbug.com/238363 inspector/debugger/file-system-project-mapping.html [ Crash ]
 crbug.com/238363 inspector/timeline/timeline-load.html [ Crash ]
 crbug.com/238363 virtual/softwarecompositing/overflow/overflow-hidden-canvas-layer.html [ Crash ]
 crbug.com/238363 [ Debug ] compositing/geometry/clipping-foreground.html [ Crash ]
