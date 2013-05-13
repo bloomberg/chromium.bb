@@ -14,20 +14,17 @@
 #include "ash/system/tray/tray_constants.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/utf_string_conversions.h"
+#include "chromeos/display/output_configurator.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/env.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-
-#if defined(USE_X11)
-#include "chromeos/display/output_configurator.h"
-#include "ui/base/x/x11_util.h"
-#endif
 
 namespace ash {
 namespace internal {
@@ -57,9 +54,6 @@ class DisplayView : public ash::internal::ActionableView {
   virtual ~DisplayView() {}
 
   void Update() {
-#if !defined(USE_X11)
-     SetVisible(false);
-#else
     chromeos::OutputState state =
         base::chromeos::IsRunningOnChromeOS() ?
         Shell::GetInstance()->output_configurator()->output_state() :
@@ -82,7 +76,6 @@ class DisplayView : public ash::internal::ActionableView {
         return;
     }
     NOTREACHED() << "Unhandled state " << state;
-#endif
   }
 
   chromeos::OutputState InferOutputState() const {
@@ -141,16 +134,12 @@ TrayDisplay::TrayDisplay(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       default_(NULL) {
   Shell::GetScreen()->AddObserver(this);
-#if defined(USE_X11)
   Shell::GetInstance()->output_configurator()->AddObserver(this);
-#endif
 }
 
 TrayDisplay::~TrayDisplay() {
   Shell::GetScreen()->RemoveObserver(this);
-#if defined(USE_X11)
   Shell::GetInstance()->output_configurator()->RemoveObserver(this);
-#endif
 }
 
 views::View* TrayDisplay::CreateDefaultView(user::LoginStatus status) {
