@@ -123,7 +123,9 @@
             '../ui/ui.gyp:ui',
             '../webkit/support/webkit_support.gyp:webkit_resources',
 
-            'component_resources.gyp:component_resources',
+            # For grip/generated_resources.h and grit/chromium_strings.h
+            # TODO(kaiwang): Remove this dependency on chrome.
+            '../chrome/chrome_resources.gyp:chrome_strings',
           ],
           'sources': [
             'autofill/browser/address.cc',
@@ -269,7 +271,9 @@
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
 
-            'component_resources.gyp:component_resources',
+            # For grip/generated_resources.h and grit/chromium_strings.h
+            # TODO(kaiwang): Remove this dependency on chrome.
+            '../chrome/chrome_resources.gyp:chrome_strings',
           ],
           'sources': [
             'autofill/renderer/autofill_agent.cc',

@@ -19,7 +19,7 @@
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/phone_number.h"
-#include "grit/component_resources.h"
+#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace autofill {

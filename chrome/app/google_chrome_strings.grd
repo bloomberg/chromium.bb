@@ -801,6 +801,9 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
 	Link my Chrome data to this account
       </message>
 
+      <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
+        Chrome Autofill settings
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX" desc="Checkbox that controls whether info the user types into the autofill dialog is saved by chrome.">
         Save details in Chrome
       </message>
