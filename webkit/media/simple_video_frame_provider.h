@@ -17,6 +17,9 @@ namespace webkit_media {
 
 // A simple implementation of VideoFrameProvider generates raw frames and
 // passes them to webmediaplayer.
+// Since non-black pixel values are required in the layout test, e.g.,
+// media/video-capture-canvas.html, this class should generate frame with
+// only non-black pixels.
 class SimpleVideoFrameProvider : public VideoFrameProvider {
  public:
   SimpleVideoFrameProvider(
