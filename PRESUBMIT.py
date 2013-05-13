@@ -686,6 +686,77 @@ def _CheckNoAbbreviationInPngFileName(input_api, output_api):
   return results
 
 
+def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
+  """When a dependency prefixed with + is added to a DEPS file, we
+  want to make sure that the change is reviewed by an OWNER of the
+  target file or directory, to avoid layering violations from being
+  introduced. This check verifies that this happens.
+  """
+  changed_lines = set()
+  for f in input_api.AffectedFiles():
+    filename = input_api.os_path.basename(f.LocalPath())
+    if filename == 'DEPS':
+      changed_lines |= set(line.strip()
+                           for line_num, line
+                           in f.ChangedContents())
+  if not changed_lines:
+    return []
+
+  virtual_depended_on_files = set()
+  # This pattern grabs the path without basename in the first
+  # parentheses, and the basename (if present) in the second. It
+  # relies on the simple heuristic that if there is a basename it will
+  # be a header file ending in ".h".
+  pattern = input_api.re.compile(
+      r"""['"]\+([^'"]+?)(/[a-zA-Z0-9_]+\.h)?['"].*""")
+  for changed_line in changed_lines:
+    m = pattern.match(changed_line)
+    if m:
+      virtual_depended_on_files.add('%s/DEPS' % m.group(1))
+
+  if not virtual_depended_on_files:
+    return []
+
+  if input_api.is_committing:
+    if input_api.tbr:
+      return [output_api.PresubmitNotifyResult(
+          '--tbr was specified, skipping OWNERS check for DEPS additions')]
+    if not input_api.change.issue:
+      return [output_api.PresubmitError(
+          "DEPS approval by OWNERS check failed: this change has "
+          "no Rietveld issue number, so we can't check it for approvals.")]
+    output = output_api.PresubmitError
+  else:
+    output = output_api.PresubmitNotifyResult
+
+  owners_db = input_api.owners_db
+  owner_email, reviewers = input_api.canned_checks._RietveldOwnerAndReviewers(
+      input_api,
+      owners_db.email_regexp,
+      approval_needed=input_api.is_committing)
+
+  owner_email = owner_email or input_api.change.author_email
+
+  reviewers_plus_owner = set([owner_email]).union(reviewers)
+  missing_files = owners_db.files_not_covered_by(virtual_depended_on_files,
+                                                 reviewers_plus_owner)
+  unapproved_dependencies = ["'+%s'," % path[:-len('/DEPS')]
+                             for path in missing_files]
+
+  if unapproved_dependencies:
+    output_list = [
+      output('Missing LGTM from OWNERS of directories added to DEPS:\n    %s' %
+             '\n    '.join(sorted(unapproved_dependencies)))]
+    if not input_api.is_committing:
+      suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
+      output_list.append(output(
+          'Suggested missing target path OWNERS:\n    %s' %
+          '\n    '.join(suggested_owners or [])))
+    return output_list
+
+  return []
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -710,6 +781,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api))
   results.extend(_CheckNoAbbreviationInPngFileName(input_api, output_api))
   results.extend(_CheckForInvalidOSMacros(input_api, output_api))
+  results.extend(_CheckAddedDepsHaveTargetApprovals(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
