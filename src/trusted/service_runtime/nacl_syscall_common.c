@@ -1518,6 +1518,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
        */
       uintptr_t image_sys_addr;
       NaClValidationStatus validator_status = NaClValidationFailed;
+      struct NaClValidationMetadata metadata;
       int sys_ret;  /* syscall return convention */
       int ret;
 
@@ -1554,17 +1555,8 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
         goto cleanup;
       }
 
-      /*
-       * TODO(bsy): when ncbray provides validation cache metadata
-       * interface, plumb this through here. We need to extract the
-       * descriptor metadata as a bag of bits via NACL_VTBL(NaClDesc,
-       * ndp)->GetMetadata(...), possibly deserialize its contents
-       * using a validation cache provided function into a struct
-       * NaClValidationMetadata object, and pass it through here, as
-       * well as destroying the metadata object etc.
-       */
-
       /* Ask validator / validation cache */
+      MetadataFromNaClDescCtor(&metadata, ndp);
       validator_status = NACL_FI("MMAP_FORCE_MMAP_VALIDATION_FAIL",
                                  (*nap->validator->
                                   Validate)(usraddr,
@@ -1573,11 +1565,12 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
                                             0,  /* stubout_mode: no */
                                             1,  /* readonly_text: yes */
                                             nap->cpu_features,
-                                            NULL,  /* metadata */
+                                            &metadata,
                                             nap->validation_cache),
                                  NaClValidationFailed);
       NaClLog(3, "NaClSysMmap: prot_exec, validator_status %d\n",
               validator_status);
+      MetadataDtor(&metadata);
 
       if (NaClValidationSucceeded == validator_status) {
         /*

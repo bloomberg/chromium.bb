@@ -12,11 +12,15 @@
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/reverse_service/manifest_rpc.h"
 #include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 #include "native_client/src/trusted/service_runtime/nacl_secure_service.h"
+#include "native_client/src/trusted/validator/rich_file_info.h"
+#include "native_client/src/trusted/validator/validation_cache.h"
 
 static void NaClManifestWaitForChannel_yield_mu(
     struct NaClManifestProxyConnection *self) {
@@ -108,6 +112,7 @@ static void NaClManifestNameServiceLookupRpc(
   uint32_t                            cookie_size = sizeof cookie;
   int                                 status;
   struct NaClDesc                     *desc;
+  uint64_t                            nonce;
   NaClSrpcError                       srpc_error;
 
   NaClLog(4, "NaClManifestNameServiceLookupRpc\n");
@@ -129,6 +134,7 @@ static void NaClManifestNameServiceLookupRpc(
                                  flags,
                                  &status,
                                  &desc,
+                                 &nonce,
                                  &cookie_size,
                                  cookie))) {
     NaClLog(LOG_ERROR,
@@ -138,9 +144,44 @@ static void NaClManifestNameServiceLookupRpc(
             srpc_error);
     rpc->result = srpc_error;
   } else {
+    struct NaClManifestProxy *proxy =
+        (struct NaClManifestProxy *) proxy_conn->base.server;
+    struct NaClValidationCache *validation_cache = proxy->nap->validation_cache;
+    int32_t new_fd;
+    char *file_path;
+    uint32_t file_path_length;
+
     NaClLog(4,
             "NaClManifestNameServiceLookupRpc: got cookie %.*s\n",
             cookie_size, cookie);
+
+    if (nonce != 0 && validation_cache->ResolveFileNonce != NULL &&
+        validation_cache->ResolveFileNonce(validation_cache->handle, nonce,
+                                           &new_fd, &file_path,
+                                           &file_path_length)) {
+      struct RichFileInfo info;
+      uint32_t flags;
+      /*
+       * We don't entirely trust the render process, so swap the handle with one
+       * from the browser process that should be equivalent.
+       */
+      NaClDescUnref(desc);
+      desc = NaClDescIoDescFromHandleAllocCtor((NaClHandle) new_fd,
+                                               NACL_ABI_O_RDONLY);
+
+      /* Mark the desc as OK for mmaping. */
+      flags = NaClDescGetFlags(desc);
+      NaClDescSetFlags(desc, flags | NACL_DESC_FLAGS_MMAP_EXEC_OK);
+
+      /* Provide metadata for validation. */
+      RichFileInfoCtor(&info);
+      info.known_file = 1;
+      info.file_path = file_path; /* Takes ownership. */
+      info.file_path_length = file_path_length;
+      SetFileOriginInfo(desc, &info);
+      RichFileInfoDtor(&info);
+    }
+
     out_args[0]->u.ival = status;
     out_args[1]->u.hval = desc;
     rpc->result = NACL_SRPC_RESULT_OK;

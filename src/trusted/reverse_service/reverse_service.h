@@ -22,6 +22,8 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 
+struct NaClFileInfo;
+
 namespace nacl {
 
 // The CreateProcessFunctorInterface allows delivery of results to an
@@ -76,7 +78,13 @@ class ReverseInterface : public RefCountBase {
   // Since shutdown/surfaway is the only admissible error, we use bool
   // as the return type.
   virtual bool EnumerateManifestKeys(std::set<nacl::string>* keys) = 0;
-  virtual bool OpenManifestEntry(nacl::string url_key, int32_t* out_desc) = 0;
+
+  // An adapter to prevent this interface change from breaking the DEPS roll.
+  // TODO(ncbray) remove
+  virtual bool OpenManifestEntry(nacl::string url_key, int32_t* out_desc);
+  // TODO(ncbray) convert to a pure virtual.
+  virtual bool OpenManifestEntry(nacl::string url_key,
+                                 struct NaClFileInfo* info);
   virtual bool CloseManifestEntry(int32_t desc) = 0;
   virtual void ReportCrash() = 0;
 

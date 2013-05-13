@@ -25,6 +25,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 
+#include "native_client/src/trusted/reverse_service/nacl_file_info.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
 namespace {
@@ -99,14 +100,14 @@ size_t EnumerateManifestKeys(NaClReverseInterface* self,
 
 int OpenManifestEntry(NaClReverseInterface* self,
                       char const* url_key,
-                      int32_t* out_desc) {
+                      struct NaClFileInfo* info) {
   ReverseInterfaceWrapper* wrapper =
       reinterpret_cast<ReverseInterfaceWrapper*>(self);
   if (NULL == wrapper->iface) {
     NaClLog(1, "OpenManifestEntry, no reverse_interface.\n");
     return 0;
   }
-  return wrapper->iface->OpenManifestEntry(nacl::string(url_key), out_desc);
+  return wrapper->iface->OpenManifestEntry(nacl::string(url_key), info);
 }
 
 int CloseManifestEntry(NaClReverseInterface* self,
@@ -281,6 +282,21 @@ int ReverseInterfaceWrapperCtor(ReverseInterfaceWrapper* self,
 }  // namespace
 
 namespace nacl {
+
+// TODO(ncbray) remove
+bool ReverseInterface::OpenManifestEntry(nacl::string url_key,
+                                         int32_t* out_desc) {
+  UNREFERENCED_PARAMETER(url_key);
+  *out_desc = -1;
+  return false;
+}
+
+// TODO(ncbray) convert to a pure virtual.
+bool ReverseInterface::OpenManifestEntry(nacl::string url_key,
+                                         struct NaClFileInfo* info) {
+  info->nonce = 0;
+  return OpenManifestEntry(url_key, &info->desc);
+}
 
 ReverseService::ReverseService(DescWrapper* conn_cap,
                                ReverseInterface* rif)

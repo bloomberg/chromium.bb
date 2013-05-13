@@ -25,6 +25,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 
 #include "native_client/src/trusted/reverse_service/manifest_rpc.h"
+#include "native_client/src/trusted/reverse_service/nacl_file_info.h"
 #include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
@@ -355,34 +356,41 @@ static void NaClReverseServiceManifestLookupRpc(
     (struct NaClReverseService *) rpc->channel->server_instance_data;
   char                      *url_key = in_args[0]->arrays.str;
   int                       flags = in_args[0]->u.ival;
-  int32_t                   desc = -1;
+  struct NaClFileInfo       info;
   struct NaClHostDesc       *host_desc;
   struct NaClDescIoDesc     *io_desc = NULL;
+  struct NaClDesc           *nacl_desc = NULL;
+
+  memset(&info, 0, sizeof(info));
 
   NaClLog(4, "Entered ManifestLookupRpc: 0x%08"NACL_PRIxPTR", %s, %d\n",
           (uintptr_t) nrsp, url_key, flags);
 
   NaClLog(4, "ManifestLookupRpc: invoking OpenManifestEntry\n");
   if (!(*NACL_VTBL(NaClReverseInterface, nrsp->iface)->
-        OpenManifestEntry)(nrsp->iface, url_key, &desc)
-      || -1 == desc) {
+        OpenManifestEntry)(nrsp->iface, url_key, &info)
+      || -1 == info.desc) {
     NaClLog(1, "ManifestLookupRpc: OpenManifestEntry failed.\n");
     out_args[0]->u.ival = NACL_ABI_ENOENT; /* failed */
     out_args[1]->u.hval = (struct NaClDesc *) NaClDescInvalidMake();
-    out_args[2]->u.count = 0;
+    out_args[2]->u.lval = 0;
+    out_args[3]->u.count = 0;
     goto done;
   }
   NaClLog(4, "ManifestLookupRpc: OpenManifestEntry returned desc %d.\n",
-          desc);
+          info.desc);
   host_desc = (struct NaClHostDesc *) malloc(sizeof *host_desc);
   CHECK(host_desc != NULL);
-  CHECK(NaClHostDescPosixTake(host_desc, desc, NACL_ABI_O_RDONLY) == 0);
+  CHECK(NaClHostDescPosixTake(host_desc, info.desc, NACL_ABI_O_RDONLY) == 0);
   io_desc = NaClDescIoDescMake(host_desc);
   CHECK(io_desc != NULL);
+  nacl_desc = (struct NaClDesc *) io_desc;
+
   out_args[0]->u.ival = 0;  /* OK */
-  out_args[1]->u.hval = (struct NaClDesc *) io_desc;
-  out_args[2]->u.count = 10;
-  strncpy(out_args[2]->arrays.carr, "123456789", 10);
+  out_args[1]->u.hval = nacl_desc;
+  out_args[2]->u.lval = (int64_t) info.nonce;
+  out_args[3]->u.count = 10;
+  strncpy(out_args[3]->arrays.carr, "123456789", 10);
   /*
    * TODO(phosek): the array should be an object reference (issue 3035).
    */
@@ -733,11 +741,11 @@ size_t NaClReverseInterfaceEnumerateManifestKeys(
 int NaClReverseInterfaceOpenManifestEntry(
     struct NaClReverseInterface   *self,
     char const                    *url_key,
-    int32_t                       *out_desc) {
+    struct NaClFileInfo           *info) {
   NaClLog(3,
           ("NaClReverseInterfaceOpenManifestEntry(0x%08"NACL_PRIxPTR", %s"
            ", 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) self, url_key, (uintptr_t) out_desc);
+          (uintptr_t) self, url_key, (uintptr_t) info);
   return 0;
 }
 

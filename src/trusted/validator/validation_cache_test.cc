@@ -17,6 +17,7 @@
 #include "native_client/src/trusted/validator/validation_cache.h"
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/validator/rich_file_info.h"
 #include "native_client/src/trusted/validator/validation_metadata.h"
 
 #define CONTEXT_MARKER 31
@@ -252,124 +253,111 @@ TEST_F(ValidationCachingInterfaceTests, Metadata) {
 
 extern "C" {
   extern int SerializeNaClDescMetadata(
-      uint8_t known_file,
-      const char *file_name,
-      uint32_t file_name_length,
+      const struct RichFileInfo *info,
       uint8_t **buffer,
       uint32_t *buffer_length);
 
   extern int DeserializeNaClDescMetadata(
-      uint8_t *buffer,
+      const uint8_t *buffer,
       uint32_t buffer_length,
-      uint8_t *known_file,
-      char **file_name,
-      uint32_t *file_name_length);
+      struct RichFileInfo *info);
 }
 
 class ValidationCachingSerializationTests : public ::testing::Test {
  protected:
+  struct RichFileInfo info;
   uint8_t *buffer;
   uint32_t buffer_length;
-  uint8_t known_file;
-  char *file_name;
-  uint32_t file_name_length;
+  struct RichFileInfo inp;
+  struct RichFileInfo outp;
 
   void SetUp() {
     buffer = 0;
     buffer_length = 0;
-    known_file = 0;
-    file_name = 0;
-    file_name_length = 0;
+    RichFileInfoCtor(&inp);
+    RichFileInfoCtor(&outp);
+  }
+
+  void TearDown() {
+    free(buffer);
+    // Don't free the inp structure, it does not contain malloced memory.
+    RichFileInfoDtor(&outp);
   }
 };
 
 TEST_F(ValidationCachingSerializationTests, NormalOperationSimple) {
-  EXPECT_EQ(0, SerializeNaClDescMetadata(0, "foo", 3, &buffer, &buffer_length));
-  EXPECT_EQ(0, DeserializeNaClDescMetadata(buffer, buffer_length, &known_file,
-                                           &file_name, &file_name_length));
-  free(buffer);
+  inp.known_file = 0;
+  inp.file_path = "foo";
+  inp.file_path_length = 3;
+  EXPECT_EQ(0, SerializeNaClDescMetadata(&inp, &buffer, &buffer_length));
+  EXPECT_EQ(0, DeserializeNaClDescMetadata(buffer, buffer_length, &outp));
 
-  EXPECT_EQ((uint8_t) 0, known_file);
-  EXPECT_EQ((uint32_t) 0, file_name_length);
-  EXPECT_EQ(NULL, file_name);
+  EXPECT_EQ((uint8_t) 0, outp.known_file);
+  EXPECT_EQ((uint32_t) 0, outp.file_path_length);
+  EXPECT_EQ(NULL, outp.file_path);
 }
 
 TEST_F(ValidationCachingSerializationTests, NormalOperationFull) {
-  EXPECT_EQ(0, SerializeNaClDescMetadata(1, "foo", 3, &buffer, &buffer_length));
-  EXPECT_EQ(0, DeserializeNaClDescMetadata(buffer, buffer_length, &known_file,
-                                           &file_name, &file_name_length));
-  free(buffer);
+  inp.known_file = 1;
+  inp.file_path = "foo";
+  inp.file_path_length = 3;
 
-  EXPECT_EQ((uint8_t) 1, known_file);
-  EXPECT_EQ((uint32_t) 3, file_name_length);
-  EXPECT_EQ(0, memcmp("foo", file_name, file_name_length));
-  free(file_name);
+  EXPECT_EQ(0, SerializeNaClDescMetadata(&inp, &buffer, &buffer_length));
+  EXPECT_EQ(0, DeserializeNaClDescMetadata(buffer, buffer_length, &outp));
+
+  EXPECT_EQ((uint8_t) 1, outp.known_file);
+  EXPECT_EQ((uint32_t) 3, outp.file_path_length);
+  EXPECT_EQ(0, memcmp("foo", outp.file_path, outp.file_path_length));
 }
 
 TEST_F(ValidationCachingSerializationTests, BadSizeSimple) {
-  EXPECT_EQ(0, SerializeNaClDescMetadata(0, NULL, 0, &buffer, &buffer_length));
+  inp.known_file = 0;
+  EXPECT_EQ(0, SerializeNaClDescMetadata(&inp, &buffer, &buffer_length));
   for (uint32_t i = -1; i <= buffer_length + 4; i++) {
     /* The only case that is OK. */
     if (i == buffer_length)
       continue;
 
     /* Wrong number of bytes, fail. */
-    EXPECT_EQ(1, DeserializeNaClDescMetadata(buffer, i, &known_file,
-                                             &file_name, &file_name_length));
+    EXPECT_EQ(1, DeserializeNaClDescMetadata(buffer, i, &outp));
   }
-  free(buffer);
 }
 
 TEST_F(ValidationCachingSerializationTests, BadSizeFull) {
-  EXPECT_EQ(0, SerializeNaClDescMetadata(1, "foo", 3, &buffer, &buffer_length));
+  inp.known_file = 1;
+  inp.file_path = "foo";
+  inp.file_path_length = 3;
+  EXPECT_EQ(0, SerializeNaClDescMetadata(&inp, &buffer, &buffer_length));
   for (uint32_t i = -1; i <= buffer_length + 4; i++) {
     /* The only case that is OK. */
     if (i == buffer_length)
       continue;
 
     /* Wrong number of bytes, fail. */
-    EXPECT_EQ(1, DeserializeNaClDescMetadata(buffer, i, &known_file,
-                                             &file_name, &file_name_length));
+    EXPECT_EQ(1, DeserializeNaClDescMetadata(buffer, i, &outp));
     /* Paranoia. */
-    EXPECT_EQ(0, known_file);
+    EXPECT_EQ(0, outp.known_file);
     /* Make sure we don't leak on failure. */
-    EXPECT_EQ(NULL, file_name);
+    EXPECT_EQ(NULL, outp.file_path);
   }
-  free(buffer);
 }
 
-extern "C" {
-  extern int SetFileOriginInfo(
-      struct NaClDesc *desc,
-      uint8_t known_file,
-      const char *file_name,
-      uint32_t file_name_length);
-
-  extern int GetFileOriginInfo(
-      struct NaClDesc *desc,
-      uint8_t *known_file,
-      char **file_name,
-      uint32_t *file_name_length);
-}
-
-char *AN_ARBITRARY_FILE_PATH = NULL;
+static char *AN_ARBITRARY_FILE_PATH = NULL;
 
 class ValidationCachingFileOriginTests : public ::testing::Test {
  protected:
   struct NaClDesc *desc;
 
-  uint8_t known_file;
-  char *file_name;
-  uint32_t file_name_length;
+  struct RichFileInfo inp;
+  struct RichFileInfo outp;
 
   void SetUp() {
     struct NaClHostDesc *host_desc = NULL;
     int fd = open(AN_ARBITRARY_FILE_PATH, O_RDONLY);
 
     desc = NULL;
-    known_file = 0;
-    file_name = NULL;
-    file_name_length = 0;
+    RichFileInfoCtor(&inp);
+    RichFileInfoCtor(&outp);
 
     ASSERT_NE(-1, fd);
     host_desc = NaClHostDescPosixMake(fd, NACL_ABI_O_RDONLY);
@@ -378,35 +366,39 @@ class ValidationCachingFileOriginTests : public ::testing::Test {
   }
 
   void TearDown() {
-    free(file_name);
+    // Don't free the inp structure, it does not contain malloced memory.
+    RichFileInfoDtor(&outp);
     NaClDescSafeUnref(desc);
   }
 };
 
 TEST_F(ValidationCachingFileOriginTests, None) {
-  EXPECT_EQ(1, GetFileOriginInfo(desc, &known_file, &file_name,
-                                 &file_name_length));
+  EXPECT_EQ(1, GetFileOriginInfo(desc, &outp));
 }
 
 TEST_F(ValidationCachingFileOriginTests, Simple) {
-  EXPECT_EQ(0, SetFileOriginInfo(desc, 0, "foobar", 6));
-  EXPECT_EQ(0, GetFileOriginInfo(desc, &known_file, &file_name,
-                                 &file_name_length));
+  inp.known_file = 0;
+  inp.file_path = "foobar";
+  inp.file_path_length = 6;
+  EXPECT_EQ(0, SetFileOriginInfo(desc, &inp));
+  EXPECT_EQ(0, GetFileOriginInfo(desc, &outp));
 
-  EXPECT_EQ(0, known_file);
-  EXPECT_EQ((uint32_t) 0, file_name_length);
-  EXPECT_EQ(NULL, file_name);
+  EXPECT_EQ(0, outp.known_file);
+  EXPECT_EQ((uint32_t) 0, outp.file_path_length);
+  EXPECT_EQ(NULL, outp.file_path);
 }
 
 
 TEST_F(ValidationCachingFileOriginTests, Full) {
-  EXPECT_EQ(0, SetFileOriginInfo(desc, 1, "foobar", 6));
-  EXPECT_EQ(0, GetFileOriginInfo(desc, &known_file, &file_name,
-                                 &file_name_length));
+  inp.known_file = 1;
+  inp.file_path = "foobar";
+  inp.file_path_length = 6;
+  EXPECT_EQ(0, SetFileOriginInfo(desc, &inp));
+  EXPECT_EQ(0, GetFileOriginInfo(desc, &outp));
 
-  EXPECT_EQ(1, known_file);
-  EXPECT_EQ((uint32_t) 6, file_name_length);
-  EXPECT_EQ(0, memcmp("foobar", file_name, file_name_length));
+  EXPECT_EQ(1, outp.known_file);
+  EXPECT_EQ((uint32_t) 6, outp.file_path_length);
+  EXPECT_EQ(0, memcmp("foobar", outp.file_path, outp.file_path_length));
 }
 
 // Test driver function.

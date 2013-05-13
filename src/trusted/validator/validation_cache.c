@@ -13,6 +13,7 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/validator/rich_file_info.h"
 #include "native_client/src/trusted/validator/validation_metadata.h"
 
 #if NACL_WINDOWS
@@ -101,31 +102,27 @@ static void Serialize(uint8_t *buffer, const void *value, size_t size,
 }
 
 static void SerializeNaClDescMetadataInternal(
-    uint8_t known_file,
-    const char *file_name,
-    uint32_t file_name_length,
+    const struct RichFileInfo *info,
     uint8_t *buffer,
     uint32_t *offset) {
   *offset = 0;
-  Serialize(buffer, &known_file, sizeof(known_file), offset);
-  if (known_file) {
-    Serialize(buffer, &file_name_length, sizeof(file_name_length), offset);
-    Serialize(buffer, file_name, file_name_length, offset);
+  Serialize(buffer, &info->known_file, sizeof(info->known_file), offset);
+  if (info->known_file) {
+    Serialize(buffer, &info->file_path_length, sizeof(info->file_path_length),
+              offset);
+    Serialize(buffer, info->file_path, info->file_path_length, offset);
   }
 }
 
 int SerializeNaClDescMetadata(
-    uint8_t known_file,
-    const char *file_name,
-    uint32_t file_name_length,
+    const struct RichFileInfo *info,
     uint8_t **buffer,
     uint32_t *buffer_length) {
 
   *buffer = NULL;
 
   /* Calculate the buffer size. */
-  SerializeNaClDescMetadataInternal(known_file, file_name, file_name_length,
-                                    NULL, buffer_length);
+  SerializeNaClDescMetadataInternal(info, NULL, buffer_length);
 
   /* Allocate the buffer. */
   *buffer = malloc(*buffer_length);
@@ -133,18 +130,15 @@ int SerializeNaClDescMetadata(
     return 1;
 
   /* Fill the buffer. */
-  SerializeNaClDescMetadataInternal(known_file, file_name, file_name_length,
-                                    *buffer, buffer_length);
+  SerializeNaClDescMetadataInternal(info, *buffer, buffer_length);
   return 0;
 }
 
-int SetFileOriginInfo(struct NaClDesc *desc, uint8_t known_file,
-                      const char *file_name, uint32_t file_name_length) {
+int SetFileOriginInfo(struct NaClDesc *desc, struct RichFileInfo *info) {
   uint8_t *buffer = NULL;
   uint32_t buffer_length = 0;
   int status;
-  if (SerializeNaClDescMetadata(known_file, file_name, file_name_length,
-                                &buffer, &buffer_length)) {
+  if (SerializeNaClDescMetadata(info, &buffer, &buffer_length)) {
     return 1;
   }
   status = NACL_VTBL(NaClDesc, desc)->SetMetadata(
@@ -156,8 +150,8 @@ int SetFileOriginInfo(struct NaClDesc *desc, uint8_t known_file,
   return status;
 }
 
-static int Deserialize(uint8_t *buffer, uint32_t buffer_length, void *value,
-                       size_t size, uint32_t *offset) {
+static int Deserialize(const uint8_t *buffer, uint32_t buffer_length,
+                       void *value, size_t size, uint32_t *offset) {
   if (*offset + size > buffer_length)
     return 1;
   memcpy(value, &buffer[*offset], size);
@@ -166,29 +160,30 @@ static int Deserialize(uint8_t *buffer, uint32_t buffer_length, void *value,
 }
 
 int DeserializeNaClDescMetadata(
-    uint8_t *buffer,
+    const uint8_t *buffer,
     uint32_t buffer_length,
-    uint8_t *known_file,
-    char **file_name,
-    uint32_t *file_name_length) {
-
+    struct RichFileInfo *info) {
+  /* Work around const issues. */
+  char *file_path = NULL;
   uint32_t offset = 0;
-  *file_name = NULL;
+  RichFileInfoCtor(info);
 
-  if (Deserialize(buffer, buffer_length, known_file, sizeof(*known_file),
-                  &offset))
+  if (Deserialize(buffer, buffer_length, &info->known_file,
+                  sizeof(info->known_file), &offset))
     goto on_error;
 
-  if (*known_file) {
-    if (Deserialize(buffer, buffer_length, file_name_length,
-                    sizeof(*file_name_length), &offset))
+  if (info->known_file) {
+    if (Deserialize(buffer, buffer_length, &info->file_path_length,
+                    sizeof(info->file_path_length), &offset))
       goto on_error;
-    *file_name = malloc(*file_name_length);
-    if (NULL == *file_name)
+    file_path = malloc(info->file_path_length);
+    if (NULL == file_path)
       goto on_error;
-    if (Deserialize(buffer, buffer_length, *file_name, *file_name_length,
+    if (Deserialize(buffer, buffer_length, file_path, info->file_path_length,
                     &offset))
       goto on_error;
+    info->file_path = file_path;
+    file_path = NULL;
   }
 
   /* Entire buffer consumed? */
@@ -197,15 +192,26 @@ int DeserializeNaClDescMetadata(
   return 0;
 
  on_error:
-  *known_file = 0;
-  free(*file_name);
-  *file_name = NULL;
-  *file_name_length = 0;
+  free(file_path);
+  RichFileInfoDtor(info);
   return 1;
 }
 
-int GetFileOriginInfo(struct NaClDesc *desc, uint8_t *known_file,
-                      char **file_name, uint32_t *file_name_length) {
+void RichFileInfoCtor(struct RichFileInfo *info) {
+  memset(info, 0, sizeof(*info));
+}
+
+void RichFileInfoDtor(struct RichFileInfo *info) {
+  /*
+   * file_path is "const" to express intent, we need to cast away the const to
+   * dallocate it.
+   */
+  free((void *) info->file_path);
+  /* Prevent use after Dtor. */
+  memset(info, 0, sizeof(*info));
+}
+
+int GetFileOriginInfo(struct NaClDesc *desc, struct RichFileInfo *info) {
   int32_t metadata_type;
   uint8_t *buffer = NULL;
   uint32_t buffer_length = 0;
@@ -230,10 +236,29 @@ int GetFileOriginInfo(struct NaClDesc *desc, uint8_t *known_file,
   if (metadata_type != FILE_ORIGIN_INFO_TYPE)
     return 1;
 
-  status = DeserializeNaClDescMetadata(buffer, buffer_length, known_file,
-                                       file_name, file_name_length);
+  status = DeserializeNaClDescMetadata(buffer, buffer_length, info);
   free(buffer);
   return status;
+}
+
+void MetadataFromNaClDescCtor(struct NaClValidationMetadata *metadata,
+                              struct NaClDesc *desc) {
+  struct RichFileInfo info;
+  int32_t fd = -1;
+
+  RichFileInfoCtor(&info);
+  memset(metadata, 0, sizeof(*metadata));
+
+  if (NACL_VTBL(NaClDesc, desc)->typeTag != NACL_DESC_HOST_IO)
+    goto done;
+  fd = ((struct NaClDescIoDesc *) desc)->hd->d;
+  if (GetFileOriginInfo(desc, &info))
+    goto done;
+  if (!info.known_file || info.file_path == NULL || info.file_path_length <= 0)
+    goto done;
+  MetadataFromFDCtor(metadata, fd, info.file_path, info.file_path_length);
+ done:
+  RichFileInfoDtor(&info);
 }
 
 void AddCodeIdentity(uint8_t *data,

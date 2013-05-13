@@ -57,6 +57,8 @@ struct NaClValidationCache {
   void (*SetKnownToValidate)(void *query);
   void (*DestroyQuery)(void *query);
   int (*CachingIsInexpensive)(const struct NaClValidationMetadata *metadata);
+  int (*ResolveFileNonce)(void *handle, uint64_t nonce, int32_t *fd,
+                          char **file_path, uint32_t *file_path_length);
 };
 
 extern int CachingIsInexpensive(struct NaClValidationCache *cache,

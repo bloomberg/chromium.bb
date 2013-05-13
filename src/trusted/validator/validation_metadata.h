@@ -49,6 +49,9 @@ extern void MetadataFromFDCtor(struct NaClValidationMetadata *metadata,
                                const char* file_name,
                                size_t file_name_length);
 
+extern void MetadataFromNaClDescCtor(struct NaClValidationMetadata *metadata,
+                                     struct NaClDesc *desc);
+
 extern void MetadataDtor(struct NaClValidationMetadata *metadata);
 
 EXTERN_C_END

@@ -35,6 +35,9 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'imc',
         'platform',
         ],
+    'reverse_service': [
+        'validation_cache',
+        ],
     'sel': [
         'nacl_error_code',
         'env_cleanser',

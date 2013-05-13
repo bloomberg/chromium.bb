@@ -19,6 +19,7 @@
 
 EXTERN_C_BEGIN
 
+struct NaClFileInfo;
 struct NaClReverseInterface;
 struct NaClReverseInterfaceVtbl;
 
@@ -126,7 +127,7 @@ struct NaClReverseInterfaceVtbl {
   int                           (*OpenManifestEntry)(
       struct NaClReverseInterface   *self,
       char const                    *url_key,
-      int32_t                       *out_desc);
+      struct NaClFileInfo           *info);
 
   /*
    * Closes manifest entry with file descriptor |desc|. Returns 1 if
@@ -232,7 +233,7 @@ size_t NaClReverseInterfaceEnumerateManifestKeys(
 int NaClReverseInterfaceOpenManifestEntry(
     struct NaClReverseInterface   *self,
     char const                    *url_key,
-    int32_t                       *out_desc);
+    struct NaClFileInfo           *info);
 
 int NaClReverseInterfaceCloseManifestEntry(
     struct NaClReverseInterface   *self,
