@@ -82,6 +82,8 @@
 #include "ui/webui/web_ui_util.h"
 
 #if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_registration_service.h"
+#include "chrome/browser/managed_mode/managed_user_registration_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #endif
@@ -134,6 +136,24 @@ bool ShouldShowMultiProfilesUserList() {
 #else
   return ProfileManager::IsMultipleProfilesEnabled();
 #endif
+}
+
+void CreateDesktopShortcutForProfile(Profile* profile,
+                                     Profile::CreateStatus status) {
+  ProfileShortcutManager* shortcut_manager =
+      g_browser_process->profile_manager()->profile_shortcut_manager();
+  if (shortcut_manager)
+    shortcut_manager->CreateProfileShortcut(profile->GetPath());
+}
+
+void OnProfileCreated(
+    const std::vector<ProfileManager::CreateCallback>& callbacks,
+    Profile* profile,
+    Profile::CreateStatus status) {
+  std::vector<ProfileManager::CreateCallback>::const_iterator it;
+  for (it = callbacks.begin(); it != callbacks.end(); ++it) {
+    it->Run(profile, status);
+  }
 }
 
 }  // namespace
@@ -925,15 +945,6 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
   UpdateInstantCheckboxState();
 }
 
-// static
-void BrowserOptionsHandler::CreateDesktopShortcutForProfile(
-     Profile* profile, Profile::CreateStatus status) {
-  ProfileShortcutManager* shortcut_manager =
-      g_browser_process->profile_manager()->profile_shortcut_manager();
-  if (shortcut_manager)
-    shortcut_manager->CreateProfileShortcut(profile->GetPath());
-}
-
 void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
   int selected_index = -1;
   if (!ExtractIntegerValue(args, &selected_index)) {
@@ -1066,8 +1077,9 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 #if defined(ENABLE_MANAGED_USERS)
   // This handler could have been called in managed mode, for example because
   // the user fiddled with the web inspector. Silently return in this case.
+  Profile* profile = Profile::FromWebUI(web_ui());
   ManagedUserService* service =
-      ManagedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+      ManagedUserServiceFactory::GetForProfile(profile);
   if (service->ProfileIsManaged())
     return;
 #endif
@@ -1083,21 +1095,32 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 
   string16 name;
   string16 icon;
-  ProfileManager::CreateCallback callback;
+  std::vector<ProfileManager::CreateCallback> callbacks;
+  bool create_shortcut = false;
   bool managed_user = false;
   if (args->GetString(0, &name) && args->GetString(1, &icon)) {
-    bool create_box_checked = false;
-    if (args->GetBoolean(2, &create_box_checked)) {
-      if (create_box_checked)
-        callback = base::Bind(&CreateDesktopShortcutForProfile);
-
+    if (args->GetBoolean(2, &create_shortcut)) {
       bool success = args->GetBoolean(3, &managed_user);
       DCHECK(success);
     }
   }
 
-  ProfileManager::CreateMultiProfileAsync(name, icon, callback, desktop_type,
-                                          managed_user);
+  if (create_shortcut)
+    callbacks.push_back(base::Bind(&CreateDesktopShortcutForProfile));
+
+  if (managed_user) {
+#if defined(ENABLE_MANAGED_USERS)
+    ManagedUserRegistrationService* registration_service =
+        ManagedUserRegistrationServiceFactory::GetForProfile(profile);
+    callbacks.push_back(registration_service->GetRegistrationAndInitCallback());
+#else
+    NOTREACHED();
+#endif
+  }
+
+  ProfileManager::CreateMultiProfileAsync(
+      name, icon, base::Bind(&OnProfileCreated, callbacks),
+      desktop_type, managed_user);
 }
 
 void BrowserOptionsHandler::ObserveThemeChanged() {

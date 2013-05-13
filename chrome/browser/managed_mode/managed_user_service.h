@@ -20,8 +20,10 @@
 #include "content/public/browser/web_contents.h"
 
 class Browser;
+class GoogleServiceAuthError;
 class ManagedModeURLFilter;
 class ManagedModeSiteList;
+class ManagedUserRegistrationService;
 class Profile;
 
 namespace user_prefs {
@@ -113,6 +115,17 @@ class ManagedUserService : public ProfileKeyedService,
   // Marks the profile as managed and initializes it.
   void InitForTesting();
 
+  // Initializes this object for syncing managed-user-related data with the
+  // server.
+  void InitSync(const std::string& token);
+
+  // Convenience method that registers this managed user with
+  // |registration_service| and initializes sync with the returned token.
+  // Note that |registration_service| should belong to the custodian's profile,
+  // not this one.
+  void RegisterAndInitSync(
+      ManagedUserRegistrationService* registration_service);
+
   void set_startup_elevation(bool elevation) {
     startup_elevation_ = elevation;
   }
@@ -170,6 +183,9 @@ class ManagedUserService : public ProfileKeyedService,
     DISALLOW_COPY_AND_ASSIGN(URLFilterContext);
   };
 
+  void OnManagedUserRegistered(const GoogleServiceAuthError& auth_error,
+                               const std::string& token);
+
   // Internal implementation for ExtensionManagementPolicy::Delegate methods.
   // If |error| is not NULL, it will be filled with an error message if the
   // requested extension action (install, modify status, etc.) is not permitted.
@@ -194,6 +210,8 @@ class ManagedUserService : public ProfileKeyedService,
 
   // Returns if the passphrase to authorize as the custodian is empty.
   bool IsPassphraseEmpty() const;
+
+  base::WeakPtrFactory<ManagedUserService> weak_ptr_factory_;
 
   // Owns us via the ProfileKeyedService mechanism.
   Profile* profile_;

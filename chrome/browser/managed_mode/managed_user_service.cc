@@ -7,10 +7,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
+#include "chrome/browser/managed_mode/managed_user_registration_service.h"
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -24,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -111,7 +114,8 @@ void ManagedUserService::URLFilterContext::SetManualURLs(
 }
 
 ManagedUserService::ManagedUserService(Profile* profile)
-    : profile_(profile),
+    : weak_ptr_factory_(this),
+      profile_(profile),
       startup_elevation_(false),
       skip_dialog_for_testing_(false) {}
 
@@ -516,6 +520,31 @@ void ManagedUserService::Init() {
   UpdateSiteLists();
   UpdateManualHosts();
   UpdateManualURLs();
+}
+
+void ManagedUserService::InitSync(const std::string& token) {
+  // TODO(bauerb): This is a dummy implementation.
+}
+
+void ManagedUserService::RegisterAndInitSync(
+    ManagedUserRegistrationService* registration_service) {
+  string16 name = UTF8ToUTF16(profile_->GetProfileName());
+  registration_service->Register(
+      name,
+      base::Bind(&ManagedUserService::OnManagedUserRegistered,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ManagedUserService::OnManagedUserRegistered(
+    const GoogleServiceAuthError& auth_error,
+    const std::string& token) {
+  if (auth_error.state() != GoogleServiceAuthError::NONE) {
+    LOG(ERROR) << "Managed user OAuth error: " << auth_error.ToString();
+    DCHECK_EQ(std::string(), token);
+    return;
+  }
+
+  InitSync(token);
 }
 
 void ManagedUserService::UpdateManualHosts() {

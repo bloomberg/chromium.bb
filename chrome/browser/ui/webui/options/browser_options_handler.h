@@ -71,10 +71,6 @@ class BrowserOptionsHandler
   // TemplateURLServiceObserver implementation.
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
-  // Create a Windows' profile specific desktop shortcut.
-  static void CreateDesktopShortcutForProfile(
-      Profile* profile, Profile::CreateStatus status);
-
  private:
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -146,6 +142,12 @@ class BrowserOptionsHandler
   void SendProfilesInfo();
 
   // Asynchronously opens a new browser window to create a new profile.
+  // The arguments are as follows:
+  //   0: name (string)
+  //   1: icon (string)
+  //   2: a flag stating whether we should create a profile desktop shortcut
+  //      (optional, boolean)
+  //   3: a flag stating whether the user should be managed (optional, boolean)
   void CreateProfile(const base::ListValue* args);
 
   void ObserveThemeChanged();
