@@ -51,10 +51,10 @@ LIGHTTPD_RANDOM_PORT_FIRST = 8001
 LIGHTTPD_RANDOM_PORT_LAST = 8999
 TEST_SYNC_SERVER_PORT = 9031
 
-# The net test server is started from 10000. Reserve 20000 ports for the all
-# test-server based tests should be enough for allocating different port for
-# individual test-server based test.
-TEST_SERVER_PORT_FIRST = 10000
+# The net test server is started from port 10201.
+# TODO(pliard): http://crbug.com/239014. Remove this dirty workaround once
+# http://crbug.com/239014 is fixed properly.
+TEST_SERVER_PORT_FIRST = 10201
 TEST_SERVER_PORT_LAST = 30000
 # A file to record next valid port of test server.
 TEST_SERVER_PORT_FILE = '/tmp/test_server_port'
