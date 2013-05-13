@@ -3620,6 +3620,8 @@
             'platform/chromium/support/WebRTCVoidRequest.cpp',
             'platform/chromium/support/WebScrollbarImpl.cpp',
             'platform/chromium/support/WebScrollbarImpl.h',
+            'platform/chromium/support/WebScrollbarThemeClientImpl.cpp',
+            'platform/chromium/support/WebScrollbarThemeClientImpl.h',
             'platform/chromium/support/WebScrollbarThemeGeometryNative.cpp',
             'platform/chromium/support/WebScrollbarThemeGeometryNative.h',
             'platform/chromium/support/WebSocketStreamError.cpp',

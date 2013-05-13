@@ -25,11 +25,11 @@
 
 #include "config.h"
 
-#include "WebScrollbarThemeClientImpl.h"
+#include "core/platform/chromium/support/WebScrollbarThemeClientImpl.h"
 
-using namespace WebCore;
+using WebKit::WebScrollbar;
 
-namespace WebKit {
+namespace WebCore {
 
 WebScrollbarThemeClientImpl::WebScrollbarThemeClientImpl(WebScrollbar* scrollbar)
     : m_scrollbar(scrollbar)
@@ -110,7 +110,7 @@ WebCore::ScrollbarOverlayStyle WebScrollbarThemeClientImpl::scrollbarOverlayStyl
 
 void WebScrollbarThemeClientImpl::getTickmarks(Vector<IntRect>& tickmarks) const
 {
-    WebVector<WebRect> webTickmarks;
+    WebKit::WebVector<WebKit::WebRect> webTickmarks;
     m_scrollbar->getTickmarks(webTickmarks);
     tickmarks.resize(webTickmarks.size());
     for (size_t i = 0; i < webTickmarks.size(); ++i)

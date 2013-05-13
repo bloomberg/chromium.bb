@@ -27,53 +27,50 @@
 #define WebScrollbarThemeClientImpl_h
 
 #include "core/platform/ScrollbarThemeClient.h"
+#include "wtf/Noncopyable.h"
 #include <public/WebScrollbar.h>
-#include <wtf/Noncopyable.h>
 
 namespace WebCore {
 class ScrollView;
-}
-
-namespace WebKit {
 
 // Adapts a WebScrollbar to the ScrollbarThemeClient interface
-class WebScrollbarThemeClientImpl : public WebCore::ScrollbarThemeClient {
+class WebScrollbarThemeClientImpl : public ScrollbarThemeClient {
     WTF_MAKE_NONCOPYABLE(WebScrollbarThemeClientImpl);
 public:
     // Caller must retain ownership of this pointer and ensure that its lifetime
     // exceeds this instance.
-    WebScrollbarThemeClientImpl(WebScrollbar*);
+    WebScrollbarThemeClientImpl(WebKit::WebScrollbar*);
 
-    // Implement WebCore::ScrollbarThemeClient interface
+    // Implement ScrollbarThemeClient interface
     virtual int x() const OVERRIDE;
     virtual int y() const OVERRIDE;
     virtual int width() const OVERRIDE;
     virtual int height() const OVERRIDE;
-    virtual WebCore::IntSize size() const OVERRIDE;
-    virtual WebCore::IntPoint location() const OVERRIDE;
-    virtual WebCore::ScrollView* parent() const OVERRIDE;
-    virtual WebCore::ScrollView* root() const OVERRIDE;
-    virtual void setFrameRect(const WebCore::IntRect&) OVERRIDE;
-    virtual WebCore::IntRect frameRect() const OVERRIDE;
+    virtual IntSize size() const OVERRIDE;
+    virtual IntPoint location() const OVERRIDE;
+    virtual ScrollView* parent() const OVERRIDE;
+    virtual ScrollView* root() const OVERRIDE;
+    virtual void setFrameRect(const IntRect&) OVERRIDE;
+    virtual IntRect frameRect() const OVERRIDE;
     virtual void invalidate() OVERRIDE;
-    virtual void invalidateRect(const WebCore::IntRect&) OVERRIDE;
-    virtual WebCore::ScrollbarOverlayStyle scrollbarOverlayStyle() const OVERRIDE;
-    virtual void getTickmarks(Vector<WebCore::IntRect>&) const OVERRIDE;
+    virtual void invalidateRect(const IntRect&) OVERRIDE;
+    virtual ScrollbarOverlayStyle scrollbarOverlayStyle() const OVERRIDE;
+    virtual void getTickmarks(Vector<IntRect>&) const OVERRIDE;
     virtual bool isScrollableAreaActive() const OVERRIDE;
     virtual bool isScrollViewScrollbar() const OVERRIDE;
-    virtual WebCore::IntPoint convertFromContainingWindow(const WebCore::IntPoint&) OVERRIDE;
+    virtual IntPoint convertFromContainingWindow(const IntPoint&) OVERRIDE;
     virtual bool isCustomScrollbar() const OVERRIDE;
-    virtual WebCore::ScrollbarOrientation orientation() const OVERRIDE;
+    virtual ScrollbarOrientation orientation() const OVERRIDE;
     virtual int value() const OVERRIDE;
     virtual float currentPos() const OVERRIDE;
     virtual int visibleSize() const OVERRIDE;
     virtual int totalSize() const OVERRIDE;
     virtual int maximum() const OVERRIDE;
-    virtual WebCore::ScrollbarControlSize controlSize() const OVERRIDE;
+    virtual ScrollbarControlSize controlSize() const OVERRIDE;
     virtual int lineStep() const OVERRIDE;
     virtual int pageStep() const OVERRIDE;
-    virtual WebCore::ScrollbarPart pressedPart() const OVERRIDE;
-    virtual WebCore::ScrollbarPart hoveredPart() const OVERRIDE;
+    virtual ScrollbarPart pressedPart() const OVERRIDE;
+    virtual ScrollbarPart hoveredPart() const OVERRIDE;
     virtual void styleChanged() OVERRIDE;
     virtual bool enabled() const OVERRIDE;
     virtual void setEnabled(bool) OVERRIDE;
