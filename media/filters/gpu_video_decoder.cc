@@ -386,7 +386,7 @@ void GpuVideoDecoder::RequestBufferDecode(
     return;
   }
 
-  if (status == DemuxerStream::kAborted) {
+  if (status == DemuxerStream::kConfigChanged) {
     if (pending_read_cb_.is_null())
       return;
     // TODO(acolwell): Add support for reinitializing the decoder when
