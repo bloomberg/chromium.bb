@@ -14,13 +14,6 @@
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification.h"
 
-namespace {
-
-// Compensates for padding already provided by UI elements involved.
-const int kTextTopPaddingAdjustment = -6;
-
-}  // namespace
-
 @interface MCNotificationController (Private)
 // Configures a NSBox to be borderless, titleless, and otherwise appearance-
 // free.
@@ -100,27 +93,36 @@ const int kTextTopPaddingAdjustment = -6;
   // Update the icon.
   [icon_ setImage:notification_->icon().AsNSImage()];
 
+  // The message_center:: constants are relative to capHeight at the top and
+  // relative to the baseline at the bottom, but NSTextField uses the full line
+  // height for its height.
+  CGFloat titleTopGap = [[title_ font] ascender] - [[title_ font] capHeight];
+  CGFloat titleBottomGap = fabs([[title_ font] descender]);
+  CGFloat titlePadding = message_center::kTextTopPadding - titleTopGap;
+
+  CGFloat messageTopGap =
+      [[message_ font] ascender] - [[message_ font] capHeight];
+  CGFloat messagePadding =
+      message_center::kTextTopPadding - titleBottomGap - messageTopGap;
+
   // Set the title and recalculate the frame.
   [title_ setStringValue:base::SysUTF16ToNSString(notification_->title())];
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:title_];
   NSRect titleFrame = [title_ frame];
-  titleFrame.origin.y = NSMaxY(rootFrame) - message_center::kTextTopPadding -
-                        NSHeight(titleFrame);
+  titleFrame.origin.y = NSMaxY(rootFrame) - titlePadding - NSHeight(titleFrame);
 
   // Set the message and recalculate the frame.
   [message_ setStringValue:base::SysUTF16ToNSString(notification_->message())];
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:message_];
   NSRect messageFrame = [message_ frame];
-  messageFrame.origin.y = NSMinY(titleFrame) - message_center::kTextTopPadding -
-                          NSHeight(messageFrame);
+  messageFrame.origin.y =
+      NSMinY(titleFrame) - messagePadding - NSHeight(messageFrame);
   messageFrame.size.height = NSHeight([message_ frame]);
 
   // In this basic notification UI, the message body is the bottom-most
   // vertical element. If it is out of the rootView's bounds, resize the view.
-  if (NSMinY(messageFrame) <
-          message_center::kTextTopPadding + kTextTopPaddingAdjustment) {
-    CGFloat delta = message_center::kTextTopPadding +
-                    kTextTopPaddingAdjustment - NSMinY(messageFrame);
+  if (NSMinY(messageFrame) < messagePadding) {
+    CGFloat delta = messagePadding - NSMinY(messageFrame);
     rootFrame.size.height += delta;
     titleFrame.origin.y += delta;
     messageFrame.origin.y += delta;
