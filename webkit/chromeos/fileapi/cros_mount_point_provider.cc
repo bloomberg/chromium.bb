@@ -21,8 +21,10 @@
 #include "webkit/fileapi/async_file_util_adapter.h"
 #include "webkit/fileapi/copy_or_move_file_validator.h"
 #include "webkit/fileapi/external_mount_points.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
@@ -297,9 +299,18 @@ CrosMountPointProvider::CreateFileStreamReader(
     int64 offset,
     const base::Time& expected_modification_time,
     fileapi::FileSystemContext* context) const {
-  // For now we return a generic Reader implementation which utilizes
-  // CreateSnapshotFile internally (i.e. will download everything first).
-  // TODO(satorux,zel): implement more efficient reader for remote cases.
+  DCHECK(url.is_valid());
+
+  if (url.type() == fileapi::kFileSystemTypeDrive) {
+    fileapi::RemoteFileSystemProxyInterface* remote_proxy =
+        GetRemoteProxy(url.filesystem_id());
+    if (!remote_proxy)
+      return scoped_ptr<webkit_blob::FileStreamReader>();
+    return remote_proxy->CreateFileStreamReader(
+        context->task_runners()->file_task_runner(),
+        url, offset, expected_modification_time);
+  }
+
   return scoped_ptr<webkit_blob::FileStreamReader>(
       new fileapi::FileSystemFileStreamReader(
           context, url, offset, expected_modification_time));
