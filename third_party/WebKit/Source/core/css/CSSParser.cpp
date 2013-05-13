@@ -79,6 +79,7 @@
 #include "core/css/WebKitCSSTransformValue.h"
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "core/page/Settings.h"
@@ -9431,9 +9432,9 @@ inline UChar* CSSParser::tokenStart<UChar>()
     return m_tokenStart.ptr16;
 }
 
-CSSParser::Location CSSParser::currentLocation()
+CSSParserLocation CSSParser::currentLocation()
 {
-    Location location;
+    CSSParserLocation location;
     location.lineNumber = m_tokenStartLineNumber;
     if (is8BitSource())
         location.token.init(tokenStart<LChar>(), currentCharacter<LChar>() - tokenStart<LChar>());
@@ -10913,10 +10914,13 @@ CSSParser::RuleList* CSSParser::createRuleList()
     return listPtr;
 }
 
-void CSSParser::syntaxError(const Location& location, SyntaxErrorType error)
+void CSSParser::syntaxError(const CSSParserLocation& location, SyntaxErrorType error)
 {
     if (!isLoggingErrors())
         return;
+    if (!InspectorInstrumentation::cssErrorFilter(location, error))
+        return;
+
     StringBuilder builder;
     switch (error) {
     case PropertyDeclarationError:

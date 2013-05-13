@@ -50,7 +50,7 @@
     Vector<RefPtr<StyleKeyframe> >* keyframeRuleList;
     float val;
     CSSPropertyID id;
-    CSSParser::Location location;
+    CSSParserLocation location;
 }
 
 %{

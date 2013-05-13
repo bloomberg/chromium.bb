@@ -33,6 +33,7 @@
 
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/css/CSSParser.h"
 #include "core/css/CSSRule.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/StyleRule.h"
@@ -1309,6 +1310,15 @@ void pseudoElementDestroyedImpl(InstrumentingAgents* instrumentingAgents, Pseudo
 {
     if (InspectorLayerTreeAgent* layerTreeAgent = instrumentingAgents->inspectorLayerTreeAgent())
         layerTreeAgent->pseudoElementDestroyed(pseudoElement);
+}
+
+bool cssErrorFilter(const CSSParserLocation& location, int errorType)
+{
+    // Ignore errors like "*property: value". This trick is used for IE7: http://stackoverflow.com/questions/4563651/what-does-an-asterisk-do-in-a-css-property-name
+    if (errorType == CSSParser::PropertyDeclarationError && location.token.length() > 0 && location.token[0] == '*')
+        return false;
+
+    return true;
 }
 
 } // namespace InspectorInstrumentation

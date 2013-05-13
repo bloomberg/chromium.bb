@@ -67,11 +67,12 @@ class WebKitCSSArrayFunctionValue;
 class WebKitCSSMixFunctionValue;
 class WebKitCSSShaderValue;
 
+struct CSSParserLocation;
+
 class CSSParser {
     friend inline int cssyylex(void*, CSSParser*);
 
 public:
-    struct Location;
     class SourceDataHandler;
     enum SyntaxErrorType {
         NoSyntaxError,
@@ -385,7 +386,7 @@ public:
     void startProperty();
     void endProperty(bool isImportantFound, bool isPropertyParsed, SyntaxErrorType = NoSyntaxError);
     void startEndUnknownRule();
-    void syntaxError(const Location&, SyntaxErrorType = GeneralSyntaxError);
+    void syntaxError(const CSSParserLocation&, SyntaxErrorType = GeneralSyntaxError);
 
     inline int lex(void* yylval) { return (this->*m_lexFunc)(yylval); }
 
@@ -403,7 +404,7 @@ public:
 
     static KURL completeURL(const CSSParserContext&, const String& url);
 
-    Location currentLocation();
+    CSSParserLocation currentLocation();
 
 private:
     bool is8BitSource() { return m_is8BitSource; }
@@ -642,7 +643,7 @@ private:
     CSSParser* m_parser;
 };
 
-struct CSSParser::Location {
+struct CSSParserLocation {
     int lineNumber;
     CSSParserString token;
 };
