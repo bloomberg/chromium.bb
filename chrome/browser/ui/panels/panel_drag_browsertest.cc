@@ -1279,7 +1279,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
 }
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MACOSX)
+// http://crbug.com/240459 some panel tests are flaky on Linux/GTK.
+#if defined(OS_MACOSX) || defined(TOOLKIT_GTK)
 #define MAYBE_DetachWithSqueeze DISABLED_DetachWithSqueeze
 #else
 #define MAYBE_DetachWithSqueeze DetachWithSqueeze
