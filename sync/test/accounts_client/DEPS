@@ -1,0 +1,5 @@
+include_rules = [
+  # Allow this directory to depend on net since it's test infrastructure and
+  # not test cases.
+  "+net",
+]
