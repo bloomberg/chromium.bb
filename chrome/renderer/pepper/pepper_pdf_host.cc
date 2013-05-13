@@ -204,7 +204,7 @@ int32_t PepperPDFHost::OnHostMsgUserMetricsRecordAction(
     ppapi::host::HostMessageContext* context,
     const std::string& action) {
   bool valid = false;
-  for (size_t i = 0; i < arraysize(kResourceImageMap); ++i) {
+  for (size_t i = 0; i < arraysize(kValidUserMetricsActions); ++i) {
     if (action == kValidUserMetricsActions[i]) {
       valid = true;
       break;
