@@ -76,9 +76,6 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas)
 {
     m_stateStack.append(adoptPtr(new GraphicsContextState()));
     m_state = m_stateStack.last().get();
-
-    if (!canvas)
-        setPaintingDisabled(true);
 }
 
 GraphicsContext::~GraphicsContext()
@@ -618,14 +615,7 @@ bool GraphicsContext::updatingControlTints() const
 
 void GraphicsContext::setUpdatingControlTints(bool b)
 {
-    setPaintingDisabled(b);
     m_updatingControlTints = b;
-}
-
-void GraphicsContext::setPaintingDisabled(bool b)
-{
-    // Regardless of what is requested, no canvas means not painting.
-    m_state->m_paintingDisabled = !m_canvas || b;
 }
 
 InterpolationQuality GraphicsContext::imageInterpolationQuality() const

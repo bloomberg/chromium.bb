@@ -304,8 +304,7 @@ public:
     };
     void drawLineForDocumentMarker(const FloatPoint&, float width, DocumentMarkerLineStyle);
 
-    bool paintingDisabled() const { return m_state->m_paintingDisabled; }
-    void setPaintingDisabled(bool);
+    bool paintingDisabled() const { return !m_canvas; }
 
     bool updatingControlTints() const;
     void setUpdatingControlTints(bool);
@@ -493,15 +492,15 @@ private:
 #endif
     // Tracks the region painted opaque via the GraphicsContext.
     OpaqueRegionSkia m_opaqueRegion;
-    bool m_trackOpaqueRegion;
+    bool m_trackOpaqueRegion : 1;
 
     // Are we on a high DPI display? If so, spelling and grammar markers are larger.
-    bool m_useHighResMarker;
+    bool m_useHighResMarker : 1;
     // FIXME: Make this go away: crbug.com/236892
-    bool m_updatingControlTints;
-    bool m_accelerated;
-    bool m_isCertainlyOpaque;
-    bool m_printing;
+    bool m_updatingControlTints : 1;
+    bool m_accelerated : 1;
+    bool m_isCertainlyOpaque : 1;
+    bool m_printing : 1;
 };
 
 } // namespace WebCore
