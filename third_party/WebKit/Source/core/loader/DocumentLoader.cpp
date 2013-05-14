@@ -399,7 +399,7 @@ void DocumentLoader::handleSubstituteDataLoadSoon()
         handleSubstituteDataLoadNow(0);
 }
 
-bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request)
+bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, DocumentLoaderForNavigationPolicy documentLoaderForNavigationPolicy)
 {
     NavigationAction action = triggeringAction();
     if (action.isEmpty()) {
@@ -424,7 +424,7 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
     if (m_frame->ownerElement() && !m_frame->ownerElement()->document()->contentSecurityPolicy()->allowChildFrameFromSource(request.url()))
         return false;
 
-    PolicyAction policy = frameLoader()->client()->decidePolicyForNavigationAction(action, request);
+    PolicyAction policy = frameLoader()->client()->decidePolicyForNavigationAction(documentLoaderForNavigationPolicy == UseDocumentLoader ? this : 0, action, request);
     if (policy == PolicyDownload) {
         ResourceRequest mutableRequest(request);
         frameLoader()->setOriginalURLForDownloadRequest(mutableRequest);

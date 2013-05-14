@@ -1368,7 +1368,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
 class TestReloadDoesntRedirectWebFrameClient : public WebFrameClient {
 public:
     virtual WebNavigationPolicy decidePolicyForNavigation(
-        WebFrame*, const WebURLRequest&, WebNavigationType,
+        WebFrame*, WebDataSource::ExtraData*, const WebURLRequest&, WebNavigationType,
         WebNavigationPolicy defaultPolicy, bool isRedirect)
     {
         EXPECT_FALSE(isRedirect);

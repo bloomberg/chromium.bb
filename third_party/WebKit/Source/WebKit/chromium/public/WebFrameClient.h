@@ -37,6 +37,7 @@
 #include "../../../Platform/chromium/public/WebURLError.h"
 #include "../../../Platform/chromium/public/WebURLRequest.h"
 #include "WebDOMMessageEvent.h"
+#include "WebDataSource.h"
 #include "WebIconURL.h"
 #include "WebNavigationPolicy.h"
 #include "WebNavigationType.h"
@@ -51,7 +52,6 @@ class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebCachedURLRequest;
 class WebCookieJar;
-class WebDataSource;
 class WebDOMEvent;
 class WebFormElement;
 class WebFrame;
@@ -137,7 +137,7 @@ public:
     // The client may choose to alter the navigation policy.  Otherwise,
     // defaultPolicy should just be returned.
     virtual WebNavigationPolicy decidePolicyForNavigation(
-        WebFrame*, const WebURLRequest&, WebNavigationType,
+        WebFrame*, WebDataSource::ExtraData*, const WebURLRequest&, WebNavigationType,
         WebNavigationPolicy defaultPolicy, bool isRedirect) { return defaultPolicy; }
 
     // Query if the specified request can be handled.

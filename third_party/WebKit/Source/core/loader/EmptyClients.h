@@ -106,7 +106,7 @@ public:
     virtual void addMessageToConsole(MessageSource, MessageLevel, const String&, unsigned, const String&) OVERRIDE { }
 
     virtual bool canRunBeforeUnloadConfirmPanel() OVERRIDE { return false; }
-    virtual bool runBeforeUnloadConfirmPanel(const String&, Frame*) OVERRIDE { return true; }
+    virtual bool runBeforeUnloadConfirmPanel(const String&, bool, Frame*) OVERRIDE { return true; }
 
     virtual void closeWindowSoon() OVERRIDE { }
 
@@ -219,7 +219,7 @@ public:
     virtual void dispatchShow() OVERRIDE { }
 
     virtual PolicyAction policyForNewWindowAction(const NavigationAction&, const String&) OVERRIDE;
-    virtual PolicyAction decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&) OVERRIDE;
+    virtual PolicyAction decidePolicyForNavigationAction(DocumentLoader*, const NavigationAction&, const ResourceRequest&) OVERRIDE;
 
     virtual void dispatchUnableToImplementPolicy(const ResourceError&) OVERRIDE { }
 

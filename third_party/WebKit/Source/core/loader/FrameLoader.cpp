@@ -227,8 +227,8 @@ FrameLoader::~FrameLoader()
 void FrameLoader::init()
 {
     // This somewhat odd set of steps gives the frame an initial empty document.
-    setPolicyDocumentLoader(m_client->createDocumentLoader(ResourceRequest(KURL(ParsedURLString, emptyString())), SubstituteData()).get());
-    setProvisionalDocumentLoader(m_policyDocumentLoader.get());
+    setProvisionalDocumentLoader(m_client->createDocumentLoader(ResourceRequest(KURL(ParsedURLString, emptyString())), SubstituteData()).get());
+    m_provisionalDocumentLoader->setFrame(m_frame);
     m_provisionalDocumentLoader->startLoadingMainResource();
     m_frame->document()->cancelParsing();
     m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocument);
@@ -243,8 +243,6 @@ void FrameLoader::setDefersLoading(bool defers)
         m_documentLoader->setDefersLoading(defers);
     if (m_provisionalDocumentLoader)
         m_provisionalDocumentLoader->setDefersLoading(defers);
-    if (m_policyDocumentLoader)
-        m_policyDocumentLoader->setDefersLoading(defers);
     history()->setDefersLoading(defers);
 
     if (!defers) {
@@ -1138,6 +1136,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
         return;
 
     RefPtr<DocumentLoader> loader = m_client->createDocumentLoader(request, substituteData);
+    loader->setFrame(m_frame);
     loader->setTriggeringAction(action);
 
     if (Frame* parent = m_frame->tree()->parent())
@@ -1155,10 +1154,8 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
 
     if (shouldPerformFragmentNavigation(isFormSubmission, request.httpMethod(), type, request.url()))
         checkNavigationPolicyAndContinueFragmentScroll(NavigationAction(request, type, isFormSubmission));
-    else {
-        setPolicyDocumentLoader(loader.get());
-        checkNavigationPolicyAndContinueLoad(formState);
-    }
+    else
+        checkNavigationPolicyAndContinueLoad(loader.get(), formState);
 }
 
 void FrameLoader::reportLocalLoadFailed(Frame* frame, const String& url)
@@ -1316,26 +1313,9 @@ void FrameLoader::setDocumentLoader(DocumentLoader* loader)
     m_documentLoader = loader;
 }
 
-void FrameLoader::setPolicyDocumentLoader(DocumentLoader* loader)
-{
-    if (m_policyDocumentLoader == loader)
-        return;
-
-    ASSERT(m_frame);
-    if (loader)
-        loader->setFrame(m_frame);
-    if (m_policyDocumentLoader
-            && m_policyDocumentLoader != m_provisionalDocumentLoader
-            && m_policyDocumentLoader != m_documentLoader)
-        m_policyDocumentLoader->detachFromFrame();
-
-    m_policyDocumentLoader = loader;
-}
-
 void FrameLoader::setProvisionalDocumentLoader(DocumentLoader* loader)
 {
     ASSERT(!loader || !m_provisionalDocumentLoader);
-    ASSERT(!loader || loader->frameLoader() == this);
 
     if (m_provisionalDocumentLoader && m_provisionalDocumentLoader != m_documentLoader)
         m_provisionalDocumentLoader->detachFromFrame();
@@ -1501,9 +1481,6 @@ bool FrameLoader::subframeIsLoading() const
             return true;
         documentLoader = childLoader->provisionalDocumentLoader();
         if (documentLoader && documentLoader->isLoadingInAPISense())
-            return true;
-        documentLoader = childLoader->policyDocumentLoader();
-        if (documentLoader)
             return true;
     }
     return false;
@@ -1985,7 +1962,7 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
     m_documentLoader->setTriggeringAction(action);
 
     const ResourceRequest& request = action.resourceRequest();
-    if (!m_documentLoader->shouldContinueForNavigationPolicy(request))
+    if (!m_documentLoader->shouldContinueForNavigationPolicy(request, DocumentLoader::IgnoreDocumentLoader))
         return;
 
     // If we have a provisional request for a different document, a fragment scroll should cancel it.
@@ -2032,7 +2009,7 @@ void FrameLoader::scrollToFragmentWithParentBoundary(const KURL& url)
         boundaryFrame->view()->setSafeToPropagateScrollToParent(true);
 }
 
-bool FrameLoader::shouldClose()
+bool FrameLoader::shouldClose(bool isReload)
 {
     Page* page = m_frame->page();
     Chrome* chrome = page ? page->chrome() : 0;
@@ -2053,7 +2030,7 @@ bool FrameLoader::shouldClose()
         for (i = 0; i < targetFrames.size(); i++) {
             if (!targetFrames[i]->tree()->isDescendantOf(m_frame))
                 continue;
-            if (!targetFrames[i]->loader()->fireBeforeUnloadEvent(chrome))
+            if (!targetFrames[i]->loader()->fireBeforeUnloadEvent(chrome, isReload && m_frame == targetFrames[i]))
                 break;
         }
 
@@ -2067,7 +2044,7 @@ bool FrameLoader::shouldClose()
     return shouldClose;
 }
 
-bool FrameLoader::fireBeforeUnloadEvent(Chrome* chrome)
+bool FrameLoader::fireBeforeUnloadEvent(Chrome* chrome, bool isReload)
 {
     DOMWindow* domWindow = m_frame->document()->domWindow();
     if (!domWindow)
@@ -2088,16 +2065,11 @@ bool FrameLoader::fireBeforeUnloadEvent(Chrome* chrome)
         return true;
 
     String text = document->displayStringModifiedByEncoding(beforeUnloadEvent->result());
-    return chrome->runBeforeUnloadConfirmPanel(text, m_frame);
+    return chrome->runBeforeUnloadConfirmPanel(text, isReload, m_frame);
 }
 
-void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> formState)
+void FrameLoader::checkNavigationPolicyAndContinueLoad(DocumentLoader* loader, PassRefPtr<FormState> formState)
 {
-    // If we loaded an alternate page to replace an unreachableURL, we'll get in here with a
-    // nil policyDataSource because loading the alternate page will have passed
-    // through this method already, nested; otherwise, policyDataSource should still be set.
-    ASSERT(m_policyDocumentLoader || !m_provisionalDocumentLoader->unreachableURL().isEmpty());
-
     // stopAllLoaders can detach the Frame, so protect it.
     RefPtr<Frame> protect(m_frame);
 
@@ -2105,28 +2077,26 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
 
     bool shouldContinue = false;
     if (m_stateMachine.committedFirstRealDocumentLoad() || !m_frame->ownerElement()
-        || m_frame->ownerElement()->dispatchBeforeLoadEvent(m_policyDocumentLoader->request().url().string())) {
+        || m_frame->ownerElement()->dispatchBeforeLoadEvent(loader->request().url().string())) {
         // We skip dispatching the beforeload event if we've already
         // committed a real document load because the event would leak
         // subsequent activity by the frame which the parent frame isn't
         // supposed to learn. For example, if the child frame navigated to
         // a new URL, the parent frame shouldn't learn the URL.
-        shouldContinue = m_policyDocumentLoader->shouldContinueForNavigationPolicy(m_policyDocumentLoader->request());
+        shouldContinue = loader->shouldContinueForNavigationPolicy(loader->request());
     }
 
     // Two reasons we can't continue:
     //    1) Navigation policy delegate said we can't so request is nil. A primary case of this 
     //       is the user responding Cancel to the form repost nag sheet.
     //    2) User responded Cancel to an alert popped up by the before unload event handler.
-    bool canContinue = shouldContinue && shouldClose();
+    bool canContinue = shouldContinue && shouldClose(loader->triggeringAction().type() == NavigationTypeReload);
 
     if (!canContinue) {
         // If we were waiting for a client redirect, but the policy delegate decided to ignore it, then we
         // need to report that the client redirect was cancelled.
-        if (m_policyDocumentLoader->isClientRedirect())
+        if (loader->isClientRedirect())
             clientRedirectCancelledOrFinished();
-
-        setPolicyDocumentLoader(0);
 
         // If the navigation request came from the back/forward menu, and we punt on it, we have the 
         // problem that we have optimistically moved the b/f cursor already, so move it back.  For sanity, 
@@ -2154,10 +2124,8 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
             m_frame->page()->inspectorController()->resume();
     }
 
-    setProvisionalDocumentLoader(m_policyDocumentLoader.get());
+    setProvisionalDocumentLoader(loader);
     setState(FrameStateProvisional);
-
-    setPolicyDocumentLoader(0);
 
     if (formState)
         m_client->dispatchWillSubmitForm(formState);
@@ -2544,7 +2512,6 @@ void FrameLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_progressTracker, "progressTracker");
     info.addMember(m_documentLoader, "documentLoader");
     info.addMember(m_provisionalDocumentLoader, "provisionalDocumentLoader");
-    info.addMember(m_policyDocumentLoader, "policyDocumentLoader");
     info.addMember(m_submittedFormURL, "submittedFormURL");
     info.addMember(m_checkTimer, "checkTimer");
     info.addMember(m_opener, "opener");

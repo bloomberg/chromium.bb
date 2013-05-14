@@ -97,7 +97,7 @@ PolicyAction EmptyFrameLoaderClient::policyForNewWindowAction(const NavigationAc
     return PolicyUse;
 }
 
-PolicyAction EmptyFrameLoaderClient::decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&)
+PolicyAction EmptyFrameLoaderClient::decidePolicyForNavigationAction(DocumentLoader*, const NavigationAction&, const ResourceRequest&)
 {
     return PolicyUse;
 }

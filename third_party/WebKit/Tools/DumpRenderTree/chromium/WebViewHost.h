@@ -180,7 +180,7 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     virtual void loadURLExternally(WebKit::WebFrame*, const WebKit::WebURLRequest&, WebKit::WebNavigationPolicy);
     virtual void loadURLExternally(WebKit::WebFrame*, const WebKit::WebURLRequest&, WebKit::WebNavigationPolicy, const WebKit::WebString& downloadName);
     virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
-        WebKit::WebFrame*, const WebKit::WebURLRequest&,
+        WebKit::WebFrame*, WebKit::WebDataSource::ExtraData*, const WebKit::WebURLRequest&,
         WebKit::WebNavigationType, WebKit::WebNavigationPolicy, bool isRedirect);
     virtual bool canHandleRequest(WebKit::WebFrame*, const WebKit::WebURLRequest&);
     virtual WebKit::WebURLError cancelledError(WebKit::WebFrame*, const WebKit::WebURLRequest&);

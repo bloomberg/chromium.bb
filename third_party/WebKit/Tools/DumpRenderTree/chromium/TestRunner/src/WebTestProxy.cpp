@@ -1449,7 +1449,7 @@ bool WebTestProxyBase::runModalPromptDialog(WebFrame* frame, const WebString& me
     return true;
 }
 
-bool WebTestProxyBase::runModalBeforeUnloadDialog(WebFrame*, const WebString& message)
+bool WebTestProxyBase::runModalBeforeUnloadDialog(WebFrame*, bool, const WebString& message)
 {
     m_delegate->printMessage(string("CONFIRM NAVIGATION: ") + message.utf8().data() + "\n");
     return !m_testInterfaces->testRunner()->shouldStayOnPageAfterHandlingBeforeUnload();
@@ -1462,7 +1462,7 @@ void WebTestProxyBase::locationChangeDone(WebFrame* frame)
     m_testInterfaces->testRunner()->setTopLoadingFrame(frame, true);
 }
 
-WebNavigationPolicy WebTestProxyBase::decidePolicyForNavigation(WebFrame*, const WebURLRequest& request, WebNavigationType type, WebNavigationPolicy defaultPolicy, bool isRedirect)
+WebNavigationPolicy WebTestProxyBase::decidePolicyForNavigation(WebFrame*, WebDataSource::ExtraData*, const WebURLRequest& request, WebNavigationType type, WebNavigationPolicy defaultPolicy, bool isRedirect)
 {
     WebNavigationPolicy result;
     if (!m_testInterfaces->testRunner()->policyDelegateEnabled())

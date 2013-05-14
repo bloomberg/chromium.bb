@@ -407,11 +407,11 @@ bool ChromeClientImpl::canRunBeforeUnloadConfirmPanel()
     return !!m_webView->client();
 }
 
-bool ChromeClientImpl::runBeforeUnloadConfirmPanel(const String& message, Frame* frame)
+bool ChromeClientImpl::runBeforeUnloadConfirmPanel(const String& message, bool isReload, Frame* frame)
 {
     if (m_webView->client()) {
         return m_webView->client()->runModalBeforeUnloadDialog(
-            WebFrameImpl::fromFrame(frame), message);
+            WebFrameImpl::fromFrame(frame), isReload, message);
     }
     return false;
 }

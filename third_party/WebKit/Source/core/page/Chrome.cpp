@@ -258,14 +258,14 @@ bool Chrome::canRunBeforeUnloadConfirmPanel()
     return m_client->canRunBeforeUnloadConfirmPanel();
 }
 
-bool Chrome::runBeforeUnloadConfirmPanel(const String& message, Frame* frame)
+bool Chrome::runBeforeUnloadConfirmPanel(const String& message, bool isReload, Frame* frame)
 {
     // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
     PageGroupLoadDeferrer deferrer(m_page, true);
 
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(m_page, message);
-    bool ok = m_client->runBeforeUnloadConfirmPanel(message, frame);
+    bool ok = m_client->runBeforeUnloadConfirmPanel(message, isReload, frame);
     InspectorInstrumentation::didRunJavaScriptDialog(cookie);
     return ok;
 }

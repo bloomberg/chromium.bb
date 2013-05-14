@@ -113,7 +113,7 @@ public:
     void setResizable(bool) const;
 
     bool canRunBeforeUnloadConfirmPanel();
-    bool runBeforeUnloadConfirmPanel(const String& message, Frame*);
+    bool runBeforeUnloadConfirmPanel(const String& message, bool isReload, Frame*);
 
     void closeWindowSoon();
 

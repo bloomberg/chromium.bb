@@ -99,7 +99,7 @@ public:
     virtual WebCore::Frame* dispatchCreatePage(const WebCore::NavigationAction&);
     virtual void dispatchShow();
     virtual WebCore::PolicyAction policyForNewWindowAction(const WebCore::NavigationAction& action, const WTF::String& frame_name);
-    virtual WebCore::PolicyAction decidePolicyForNavigationAction(const WebCore::NavigationAction& action, const WebCore::ResourceRequest& request);
+    virtual WebCore::PolicyAction decidePolicyForNavigationAction(WebCore::DocumentLoader*, const WebCore::NavigationAction&, const WebCore::ResourceRequest&);
     virtual void dispatchUnableToImplementPolicy(const WebCore::ResourceError&);
     virtual void dispatchWillRequestResource(WebCore::CachedResourceRequest*);
     virtual void dispatchWillSendSubmitEvent(PassRefPtr<WebCore::FormState>);
