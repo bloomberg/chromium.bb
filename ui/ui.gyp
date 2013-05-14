@@ -244,6 +244,8 @@
         'base/models/button_menu_item_model.h',
         'base/models/combobox_model.cc',
         'base/models/combobox_model.h',
+        'base/models/dialog_model.cc',
+        'base/models/dialog_model.h',
         'base/models/list_model.h',
         'base/models/list_model_observer.h',
         'base/models/list_selection_model.cc',

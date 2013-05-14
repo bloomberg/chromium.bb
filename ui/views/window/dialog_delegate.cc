@@ -57,34 +57,6 @@ Widget* DialogDelegate::CreateDialogWidget(DialogDelegate* dialog,
   return widget;
 }
 
-int DialogDelegate::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
-int DialogDelegate::GetDefaultDialogButton() const {
-  if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
-    return ui::DIALOG_BUTTON_OK;
-  if (GetDialogButtons() & ui::DIALOG_BUTTON_CANCEL)
-    return ui::DIALOG_BUTTON_CANCEL;
-  return ui::DIALOG_BUTTON_NONE;
-}
-
-string16 DialogDelegate::GetDialogButtonLabel(ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_APP_OK);
-  if (button == ui::DIALOG_BUTTON_CANCEL) {
-    if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
-      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-    return l10n_util::GetStringUTF16(IDS_APP_CLOSE);
-  }
-  NOTREACHED();
-  return string16();
-}
-
-bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
-  return true;
-}
-
 View* DialogDelegate::CreateExtraView() {
   return NULL;
 }
@@ -106,6 +78,51 @@ bool DialogDelegate::Accept(bool window_closing) {
 }
 
 bool DialogDelegate::Accept() {
+  return true;
+}
+
+base::string16 DialogDelegate::GetDialogLabel() const {
+  return base::string16();
+}
+
+base::string16 DialogDelegate::GetDialogTitle() const {
+  return base::string16();
+}
+
+int DialogDelegate::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+}
+
+int DialogDelegate::GetDefaultDialogButton() const {
+  if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
+    return ui::DIALOG_BUTTON_OK;
+  if (GetDialogButtons() & ui::DIALOG_BUTTON_CANCEL)
+    return ui::DIALOG_BUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_NONE;
+}
+
+base::string16 DialogDelegate::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
+    return l10n_util::GetStringUTF16(IDS_APP_OK);
+  if (button == ui::DIALOG_BUTTON_CANCEL) {
+    if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
+      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
+    return l10n_util::GetStringUTF16(IDS_APP_CLOSE);
+  }
+  NOTREACHED();
+  return base::string16();
+}
+
+bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
+  return true;
+}
+
+bool DialogDelegate::OnDialogButtonActivated(ui::DialogButton button) {
+  if (button == ui::DIALOG_BUTTON_OK)
+    return Accept();
+  if (button == ui::DIALOG_BUTTON_CANCEL)
+    return Cancel();
   return true;
 }
 
