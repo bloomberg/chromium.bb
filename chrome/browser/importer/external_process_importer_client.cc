@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
@@ -186,7 +187,7 @@ void ExternalProcessImporterClient::OnBookmarksImportStart(
 }
 
 void ExternalProcessImporterClient::OnBookmarksImportGroup(
-    const std::vector<ProfileWriter::BookmarkEntry>& bookmarks_group) {
+    const std::vector<ImportedBookmarkEntry>& bookmarks_group) {
   if (cancelled_)
     return;
 
@@ -208,7 +209,7 @@ void ExternalProcessImporterClient::OnFaviconsImportStart(
 }
 
 void ExternalProcessImporterClient::OnFaviconsImportGroup(
-    const std::vector<history::ImportedFaviconUsage>& favicons_group) {
+    const std::vector<ImportedFaviconUsage>& favicons_group) {
   if (cancelled_)
     return;
 

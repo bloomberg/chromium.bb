@@ -17,10 +17,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
+#include "chrome/browser/favicon/favicon_util.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
-#include "chrome/browser/importer/importer_util.h"
 #include "chrome/browser/importer/mork_reader.h"
 #include "chrome/browser/importer/nss_decryptor.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -148,9 +149,9 @@ void Firefox2Importer::ImportBookmarksFile(
     const base::FilePath& file_path,
     const std::set<GURL>& default_urls,
     Importer* importer,
-    std::vector<ProfileWriter::BookmarkEntry>* bookmarks,
+    std::vector<ImportedBookmarkEntry>* bookmarks,
     std::vector<TemplateURL*>* template_urls,
-    std::vector<history::ImportedFaviconUsage>* favicons) {
+    std::vector<ImportedFaviconUsage>* favicons) {
   std::string content;
   file_util::ReadFileToString(file_path, &content);
   std::vector<std::string> lines;
@@ -205,7 +206,7 @@ void Firefox2Importer::ImportBookmarksFile(
         break;
       }
 
-      ProfileWriter::BookmarkEntry entry;
+      ImportedBookmarkEntry entry;
       entry.creation_time = add_date;
       entry.url = url;
       entry.title = title;
@@ -261,7 +262,7 @@ void Firefox2Importer::ImportBookmarksFile(
 
       if (last_folder_is_empty) {
         // Empty folder should be added explicitly.
-        ProfileWriter::BookmarkEntry entry;
+        ImportedBookmarkEntry entry;
         entry.is_folder = true;
         entry.creation_time = last_folder_add_date;
         entry.title = folder_title;
@@ -296,9 +297,9 @@ void Firefox2Importer::ImportBookmarks() {
     LoadDefaultBookmarks(app_path_, &default_urls);
 
   // Parse the bookmarks.html file.
-  std::vector<ProfileWriter::BookmarkEntry> bookmarks, toolbar_bookmarks;
+  std::vector<ImportedBookmarkEntry> bookmarks, toolbar_bookmarks;
   std::vector<TemplateURL*> template_urls;
-  std::vector<history::ImportedFaviconUsage> favicons;
+  std::vector<ImportedFaviconUsage> favicons;
   base::FilePath file = source_path_;
   if (!parsing_bookmarks_html_file_)
     file = file.AppendASCII("bookmarks.html");
@@ -638,7 +639,7 @@ void Firefox2Importer::FindXMLFilesInDir(
 void Firefox2Importer::DataURLToFaviconUsage(
     const GURL& link_url,
     const GURL& favicon_data,
-    std::vector<history::ImportedFaviconUsage>* favicons) {
+    std::vector<ImportedFaviconUsage>* favicons) {
   if (!link_url.is_valid() || !favicon_data.is_valid() ||
       !favicon_data.SchemeIs(chrome::kDataScheme))
     return;
@@ -649,8 +650,8 @@ void Firefox2Importer::DataURLToFaviconUsage(
       data.empty())
     return;
 
-  history::ImportedFaviconUsage usage;
-  if (!importer::ReencodeFavicon(
+  ImportedFaviconUsage usage;
+  if (!FaviconUtil::ReencodeFavicon(
           reinterpret_cast<const unsigned char*>(&data[0]),
           data.size(), &usage.png_data))
     return;  // Unable to decode.

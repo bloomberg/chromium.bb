@@ -13,10 +13,15 @@
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/profile_writer.h"
 
 class GURL;
+struct ImportedBookmarkEntry;
+struct ImportedFaviconUsage;
 class TemplateURL;
+
+namespace base {
+class Time;
+}
 
 // Importer for Mozilla Firefox 2.
 class Firefox2Importer : public Importer {
@@ -46,9 +51,9 @@ class Firefox2Importer : public Importer {
       const base::FilePath& file_path,
       const std::set<GURL>& default_urls,
       Importer* importer,
-      std::vector<ProfileWriter::BookmarkEntry>* bookmarks,
+      std::vector<ImportedBookmarkEntry>* bookmarks,
       std::vector<TemplateURL*>* template_urls,
-      std::vector<history::ImportedFaviconUsage>* favicons);
+      std::vector<ImportedFaviconUsage>* favicons);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FirefoxImporterTest, Firefox2BookmarkParse);
@@ -133,7 +138,7 @@ class Firefox2Importer : public Importer {
   static void DataURLToFaviconUsage(
       const GURL& link_url,
       const GURL& favicon_data,
-      std::vector<history::ImportedFaviconUsage>* favicons);
+      std::vector<ImportedFaviconUsage>* favicons);
 
   base::FilePath source_path_;
   base::FilePath app_path_;

@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "content/public/browser/browser_thread.h"
@@ -27,7 +29,7 @@ InProcessImporterBridge::InProcessImporterBridge(
 }
 
 void InProcessImporterBridge::AddBookmarks(
-    const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
+    const std::vector<ImportedBookmarkEntry>& bookmarks,
     const string16& first_folder_name) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -51,7 +53,7 @@ void InProcessImporterBridge::AddIE7PasswordInfo(
 #endif  // OS_WIN
 
 void InProcessImporterBridge::SetFavicons(
-    const std::vector<history::ImportedFaviconUsage>& favicons) {
+    const std::vector<ImportedFaviconUsage>& favicons) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ProfileWriter::AddFavicons, writer_, favicons));

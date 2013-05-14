@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_FAVICON_FAVICON_UTIL_H_
 #define CHROME_BROWSER_FAVICON_FAVICON_UTIL_H_
 
+#include <vector>
+
 #include "ui/base/layout.h"
 
 class GURL;
@@ -45,6 +47,13 @@ class FaviconUtil {
       const std::vector<SkBitmap>& bitmaps,
       const std::vector<ui::ScaleFactor>& scale_factors,
       int desired_size);
+
+  // Given raw image data, decodes the icon, re-sampling to the correct size as
+  // necessary, and re-encodes as PNG data in the given output vector. Returns
+  // true on success.
+  static bool ReencodeFavicon(const unsigned char* src_data,
+                              size_t src_len,
+                              std::vector<unsigned char>* png_data);
 };
 
 #endif  // CHROME_BROWSER_FAVICON_FAVICON_UTIL_H_

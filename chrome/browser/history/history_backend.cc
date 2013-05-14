@@ -25,6 +25,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_notifications.h"

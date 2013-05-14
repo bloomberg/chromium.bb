@@ -12,21 +12,20 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/importer/profile_writer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host_client.h"
 
 class ExternalProcessImporterHost;
+struct ImportedBookmarkEntry;
+struct ImportedFaviconUsage;
 class InProcessImporterBridge;
+class TemplateURL;
 
 namespace content {
+struct PasswordForm;
 class UtilityProcessHost;
-}
-
-namespace history {
-class URLRow;
-struct ImportedFaviconUsage;
 }
 
 // This class is the client for the out of process profile importing.  It
@@ -61,10 +60,10 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   void OnBookmarksImportStart(const string16& first_folder_name,
                               size_t total_bookmarks_count);
   void OnBookmarksImportGroup(
-      const std::vector<ProfileWriter::BookmarkEntry>& bookmarks_group);
+      const std::vector<ImportedBookmarkEntry>& bookmarks_group);
   void OnFaviconsImportStart(size_t total_favicons_count);
   void OnFaviconsImportGroup(
-      const std::vector<history::ImportedFaviconUsage>& favicons_group);
+      const std::vector<ImportedFaviconUsage>& favicons_group);
   void OnPasswordFormImportReady(const content::PasswordForm& form);
   // WARNING: This function takes ownership of (and deletes) the pointers in
   // |template_urls|!
@@ -90,8 +89,8 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   // These variables store data being collected from the importer until the
   // entire group has been collected and is ready to be written to the profile.
   history::URLRows history_rows_;
-  std::vector<ProfileWriter::BookmarkEntry> bookmarks_;
-  std::vector<history::ImportedFaviconUsage> favicons_;
+  std::vector<ImportedBookmarkEntry> bookmarks_;
+  std::vector<ImportedFaviconUsage> favicons_;
 
   // Usually some variation on IDS_BOOKMARK_GROUP_...; the name of the folder
   // under which imported bookmarks will be placed.

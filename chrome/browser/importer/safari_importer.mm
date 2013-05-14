@@ -16,9 +16,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
+#include "chrome/browser/favicon/favicon_util.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/importer/importer_bridge.h"
-#include "chrome/browser/importer/importer_util.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -100,7 +101,7 @@ void SafariImporter::StartImport(const importer::SourceProfile& source_profile,
 void SafariImporter::ImportBookmarks() {
   string16 toolbar_name =
       bridge_->GetLocalizedString(IDS_BOOKMARK_BAR_FOLDER_NAME);
-  std::vector<ProfileWriter::BookmarkEntry> bookmarks;
+  std::vector<ImportedBookmarkEntry> bookmarks;
   ParseBookmarks(toolbar_name, &bookmarks);
 
   // Write bookmarks into profile.
@@ -119,7 +120,7 @@ void SafariImporter::ImportBookmarks() {
   ImportFaviconURLs(&db, &favicon_map);
   // Write favicons into profile.
   if (!favicon_map.empty() && !cancelled()) {
-    std::vector<history::ImportedFaviconUsage> favicons;
+    std::vector<ImportedFaviconUsage> favicons;
     LoadFaviconData(&db, favicon_map, &favicons);
     bridge_->SetFavicons(favicons);
   }
@@ -153,7 +154,7 @@ void SafariImporter::ImportFaviconURLs(sql::Connection* db,
 void SafariImporter::LoadFaviconData(
     sql::Connection* db,
     const FaviconMap& favicon_map,
-    std::vector<history::ImportedFaviconUsage>* favicons) {
+    std::vector<ImportedFaviconUsage>* favicons) {
   const char* query = "SELECT i.url, d.data "
                       "FROM IconInfo i JOIN IconData d "
                       "ON i.iconID = d.iconID "
@@ -165,7 +166,7 @@ void SafariImporter::LoadFaviconData(
     s.Reset(true);
     s.BindInt64(0, i->first);
     if (s.Step()) {
-      history::ImportedFaviconUsage usage;
+      ImportedFaviconUsage usage;
 
       usage.favicon_url = GURL(s.ColumnString(0));
       if (!usage.favicon_url.is_valid())
@@ -176,7 +177,7 @@ void SafariImporter::LoadFaviconData(
       if (data.empty())
         continue;  // Data definitely invalid.
 
-      if (!importer::ReencodeFavicon(&data[0], data.size(), &usage.png_data))
+      if (!FaviconUtil::ReencodeFavicon(&data[0], data.size(), &usage.png_data))
         continue;  // Unable to decode.
 
       usage.urls = i->second;
@@ -190,7 +191,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
     const std::vector<string16>& parent_path_elements,
     bool is_in_toolbar,
     const string16& toolbar_name,
-    std::vector<ProfileWriter::BookmarkEntry>* out_bookmarks) {
+    std::vector<ImportedBookmarkEntry>* out_bookmarks) {
   DCHECK(bookmark_folder);
 
   NSString* type = [bookmark_folder objectForKey:@"WebBookmarkType"];
@@ -219,7 +220,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
     // This is an empty folder, so add it explicitly; but don't add the toolbar
     // folder if it is empty.  Note that all non-empty folders are added
     // implicitly when their children are added.
-    ProfileWriter::BookmarkEntry entry;
+    ImportedBookmarkEntry entry;
     // Safari doesn't specify a creation time for the folder.
     entry.creation_time = base::Time::Now();
     entry.title = base::SysNSStringToUTF16(title);
@@ -271,7 +272,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
       continue;
 
     // Output Bookmark.
-    ProfileWriter::BookmarkEntry entry;
+    ImportedBookmarkEntry entry;
     // Safari doesn't specify a creation time for the bookmark.
     entry.creation_time = base::Time::Now();
     entry.title = base::SysNSStringToUTF16(title);
@@ -285,7 +286,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
 
 void SafariImporter::ParseBookmarks(
     const string16& toolbar_name,
-    std::vector<ProfileWriter::BookmarkEntry>* bookmarks) {
+    std::vector<ImportedBookmarkEntry>* bookmarks) {
   DCHECK(bookmarks);
 
   // Construct ~/Library/Safari/Bookmarks.plist path

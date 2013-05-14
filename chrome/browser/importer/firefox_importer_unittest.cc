@@ -9,6 +9,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/browser/importer/firefox_importer_unittest_utils.h"
@@ -201,12 +202,12 @@ TEST(FirefoxImporterTest, Firefox2BookmarkFileImport) {
   std::set<GURL> default_urls;
   Firefox2Importer* importer = new Firefox2Importer();
   importer->AddRef();
-  std::vector<ProfileWriter::BookmarkEntry> bookmarks;
+  std::vector<ImportedBookmarkEntry> bookmarks;
   importer->ImportBookmarksFile(empty_folder_path, default_urls,
                                 importer, &bookmarks, NULL, NULL);
   EXPECT_EQ(3U, bookmarks.size());
-  std::vector<ProfileWriter::BookmarkEntry>::iterator it;
-  ProfileWriter::BookmarkEntry entry;
+  std::vector<ImportedBookmarkEntry>::iterator it;
+  ImportedBookmarkEntry entry;
   std::vector<string16>::iterator path_it;
   if (bookmarks.size() == 3) {
     it = bookmarks.begin();

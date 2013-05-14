@@ -15,8 +15,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -67,22 +69,6 @@ void ShowBookmarkBar(Profile* profile) {
 
 }  // namespace
 
-ProfileWriter::BookmarkEntry::BookmarkEntry()
-    : in_toolbar(false),
-      is_folder(false) {}
-
-ProfileWriter::BookmarkEntry::~BookmarkEntry() {}
-
-bool ProfileWriter::BookmarkEntry::operator==(
-    const ProfileWriter::BookmarkEntry& other) const {
-  return (in_toolbar == other.in_toolbar &&
-          is_folder == other.is_folder &&
-          url == other.url &&
-          path == other.path &&
-          title == other.title &&
-          creation_time == other.creation_time);
-}
-
 ProfileWriter::ProfileWriter(Profile* profile) : profile_(profile) {}
 
 bool ProfileWriter::BookmarkModelIsLoaded() const {
@@ -121,8 +107,9 @@ void ProfileWriter::AddHomepage(const GURL& home_page) {
   }
 }
 
-void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
-                                 const string16& top_level_folder_name) {
+void ProfileWriter::AddBookmarks(
+    const std::vector<ImportedBookmarkEntry>& bookmarks,
+    const string16& top_level_folder_name) {
   if (bookmarks.empty())
     return;
 
@@ -135,9 +122,10 @@ void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
   bool import_to_top_level = bookmark_bar->empty();
 
   // Reorder bookmarks so that the toolbar entries come first.
-  std::vector<BookmarkEntry> toolbar_bookmarks;
-  std::vector<BookmarkEntry> reordered_bookmarks;
-  for (std::vector<BookmarkEntry>::const_iterator it = bookmarks.begin();
+  std::vector<ImportedBookmarkEntry> toolbar_bookmarks;
+  std::vector<ImportedBookmarkEntry> reordered_bookmarks;
+  for (std::vector<ImportedBookmarkEntry>::const_iterator it =
+           bookmarks.begin();
        it != bookmarks.end(); ++it) {
     if (it->in_toolbar)
       toolbar_bookmarks.push_back(*it);
@@ -158,8 +146,8 @@ void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
 
   std::set<const BookmarkNode*> folders_added_to;
   const BookmarkNode* top_level_folder = NULL;
-  for (std::vector<BookmarkEntry>::const_iterator bookmark =
-         reordered_bookmarks.begin();
+  for (std::vector<ImportedBookmarkEntry>::const_iterator bookmark =
+           reordered_bookmarks.begin();
        bookmark != reordered_bookmarks.end(); ++bookmark) {
     // Disregard any bookmarks with invalid urls.
     if (!bookmark->is_folder && !bookmark->url.is_valid())
@@ -233,7 +221,7 @@ void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
 }
 
 void ProfileWriter::AddFavicons(
-    const std::vector<history::ImportedFaviconUsage>& favicons) {
+    const std::vector<ImportedFaviconUsage>& favicons) {
   FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS)->
       SetImportedFavicons(favicons);
 }

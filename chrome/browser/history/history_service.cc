@@ -40,6 +40,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -739,7 +740,7 @@ void HistoryService::CloneFavicons(const GURL& old_page_url,
 }
 
 void HistoryService::SetImportedFavicons(
-    const std::vector<history::ImportedFaviconUsage>& favicon_usage) {
+    const std::vector<ImportedFaviconUsage>& favicon_usage) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_NORMAL,
                     &HistoryBackend::SetImportedFavicons, favicon_usage);

@@ -13,8 +13,8 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/profile_writer.h"
 
 #if __OBJC__
 @class NSDictionary;
@@ -25,10 +25,11 @@ class NSString;
 #endif
 
 class GURL;
+struct ImportedBookmarkEntry;
+struct ImportedFaviconUsage;
 
 namespace history {
 class URLRow;
-struct ImportedFaviconUsage;
 }
 
 namespace sql {
@@ -73,7 +74,7 @@ class SafariImporter : public Importer {
 
   // Parse Safari's stored bookmarks.
   void ParseBookmarks(const string16& toolbar_name,
-                      std::vector<ProfileWriter::BookmarkEntry>* bookmarks);
+                      std::vector<ImportedBookmarkEntry>* bookmarks);
 
   // Function to recursively read Bookmarks out of Safari plist.
   // |bookmark_folder| The dictionary containing a folder to parse.
@@ -85,7 +86,7 @@ class SafariImporter : public Importer {
       const std::vector<string16>& parent_path_elements,
       bool is_in_toolbar,
       const string16& toolbar_name,
-      std::vector<ProfileWriter::BookmarkEntry>* out_bookmarks);
+      std::vector<ImportedBookmarkEntry>* out_bookmarks);
 
   // Converts history time stored by Safari as a double serialized as a string,
   // to seconds-since-UNIX-Ephoch-format used by Chrome.
@@ -103,7 +104,7 @@ class SafariImporter : public Importer {
   // Loads and reencodes the individual favicons.
   void LoadFaviconData(sql::Connection* db,
                        const FaviconMap& favicon_map,
-                       std::vector<history::ImportedFaviconUsage>* favicons);
+                       std::vector<ImportedFaviconUsage>* favicons);
 
   base::FilePath library_dir_;
 

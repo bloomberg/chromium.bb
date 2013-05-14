@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/importer/bookmarks_file_importer.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/browser/importer/firefox3_importer.h"
 #include "chrome/browser/importer/toolbar_importer.h"
@@ -53,6 +54,7 @@ Importer* CreateImporterByType(ImporterType type) {
       return new IEImporter();
 #endif
     case TYPE_BOOKMARKS_FILE:
+      return new BookmarksFileImporter();
     case TYPE_FIREFOX2:
       return new Firefox2Importer();
     case TYPE_FIREFOX3:

@@ -827,7 +827,7 @@ class HistoryService : public CancelableRequestProvider,
   // once. The pages must exist, any favicon sets for unknown pages will be
   // discarded. Existing favicons will not be overwritten.
   void SetImportedFavicons(
-      const std::vector<history::ImportedFaviconUsage>& favicon_usage);
+      const std::vector<ImportedFaviconUsage>& favicon_usage);
 
   // Sets the in-memory URL database. This is called by the backend once the
   // database is loaded to make it available.

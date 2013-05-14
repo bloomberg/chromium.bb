@@ -5,9 +5,10 @@
 #include "chrome/browser/importer/importer_unittest_utils.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-void TestEqualBookmarkEntry(const ProfileWriter::BookmarkEntry& entry,
+void TestEqualBookmarkEntry(const ImportedBookmarkEntry& entry,
                             const BookmarkInfo& expected) {
   ASSERT_EQ(WideToUTF16Hack(expected.title), entry.title);
   ASSERT_EQ(expected.in_toolbar, entry.in_toolbar) << entry.title;

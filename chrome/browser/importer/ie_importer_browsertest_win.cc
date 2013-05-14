@@ -28,7 +28,8 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/importer/ie_importer_test_registry_overrider_win.h"
 #include "chrome/browser/importer/importer_bridge.h"
@@ -307,7 +308,7 @@ class TestObserver : public ProfileWriter,
     EXPECT_EQ(history::SOURCE_IE_IMPORTED, visit_source);
   }
 
-  virtual void AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
+  virtual void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
                             const string16& top_level_folder_name) OVERRIDE {
     ASSERT_LE(bookmark_count_ + bookmarks.size(), arraysize(kIEBookmarks));
     // Importer should import the IE Favorites folder the same as the list,
@@ -329,7 +330,7 @@ class TestObserver : public ProfileWriter,
   }
 
   virtual void AddFavicons(
-      const std::vector<history::ImportedFaviconUsage>& usage) OVERRIDE {
+      const std::vector<ImportedFaviconUsage>& usage) OVERRIDE {
     // Importer should group the favicon information for each favicon URL.
     for (size_t i = 0; i < arraysize(kIEFaviconGroup); ++i) {
       GURL favicon_url(kIEFaviconGroup[i].favicon_url);
@@ -387,7 +388,7 @@ class MalformedFavoritesRegistryTestObserver
                               history::VisitSource visit_source) {}
   virtual void AddKeyword(std::vector<TemplateURL*> template_url,
                           int default_keyword_index) {}
-  virtual void AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
+  virtual void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
                             const string16& top_level_folder_name) OVERRIDE {
     ASSERT_LE(bookmark_count_ + bookmarks.size(),
               arraysize(kIESortedBookmarks));

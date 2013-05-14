@@ -10,7 +10,8 @@
 #include "base/task_runner.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/importer/profile_import_process_messages.h"
 #include "content/public/common/password_form.h"
 #include "ipc/ipc_sender.h"
@@ -40,16 +41,16 @@ ExternalProcessImporterBridge::ExternalProcessImporterBridge(
 }
 
 void ExternalProcessImporterBridge::AddBookmarks(
-    const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
+    const std::vector<ImportedBookmarkEntry>& bookmarks,
     const string16& first_folder_name) {
   Send(new ProfileImportProcessHostMsg_NotifyBookmarksImportStart(
       first_folder_name, bookmarks.size()));
 
-  std::vector<ProfileWriter::BookmarkEntry>::const_iterator it;
+  std::vector<ImportedBookmarkEntry>::const_iterator it;
   for (it = bookmarks.begin(); it < bookmarks.end();
        it = it + kNumBookmarksToSend) {
-    std::vector<ProfileWriter::BookmarkEntry> bookmark_group;
-    std::vector<ProfileWriter::BookmarkEntry>::const_iterator end_group =
+    std::vector<ImportedBookmarkEntry> bookmark_group;
+    std::vector<ImportedBookmarkEntry>::const_iterator end_group =
         it + kNumBookmarksToSend < bookmarks.end() ?
         it + kNumBookmarksToSend : bookmarks.end();
     bookmark_group.assign(it, end_group);
@@ -71,15 +72,15 @@ void ExternalProcessImporterBridge::AddIE7PasswordInfo(
 #endif
 
 void ExternalProcessImporterBridge::SetFavicons(
-    const std::vector<history::ImportedFaviconUsage>& favicons) {
+    const std::vector<ImportedFaviconUsage>& favicons) {
   Send(new ProfileImportProcessHostMsg_NotifyFaviconsImportStart(
     favicons.size()));
 
-  std::vector<history::ImportedFaviconUsage>::const_iterator it;
+  std::vector<ImportedFaviconUsage>::const_iterator it;
   for (it = favicons.begin(); it < favicons.end();
        it = it + kNumFaviconsToSend) {
-    std::vector<history::ImportedFaviconUsage> favicons_group;
-    std::vector<history::ImportedFaviconUsage>::const_iterator end_group =
+    std::vector<ImportedFaviconUsage> favicons_group;
+    std::vector<ImportedFaviconUsage>::const_iterator end_group =
         std::min(it + kNumFaviconsToSend, favicons.end());
     favicons_group.assign(it, end_group);
 

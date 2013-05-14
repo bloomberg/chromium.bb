@@ -16,6 +16,8 @@
 #include "chrome/browser/history/history_types.h"
 #include "googleurl/src/gurl.h"
 
+struct ImportedBookmarkEntry;
+struct ImportedFaviconUsage;
 class Profile;
 class TemplateURL;
 
@@ -31,19 +33,6 @@ struct IE7PasswordInfo;
 // This object must be invoked on UI thread.
 class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
  public:
-  struct BookmarkEntry {
-    BookmarkEntry();
-    ~BookmarkEntry();
-    bool operator==(const BookmarkEntry& other) const;
-
-    bool in_toolbar;
-    bool is_folder;
-    GURL url;
-    std::vector<string16> path;
-    string16 title;
-    base::Time creation_time;
-  };
-
   explicit ProfileWriter(Profile* profile);
 
   // These functions return true if the corresponding model has been loaded.
@@ -82,11 +71,12 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   // For example, if |first_folder_name| is 'Imported from IE' and a folder with
   // the name 'Imported from IE' already exists in the bookmarks toolbar, then
   // we will instead create a subfolder named 'Imported from IE (1)'.
-  virtual void AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
-                            const string16& top_level_folder_name);
+  virtual void AddBookmarks(
+      const std::vector<ImportedBookmarkEntry>& bookmarks,
+      const string16& top_level_folder_name);
 
   virtual void AddFavicons(
-      const std::vector<history::ImportedFaviconUsage>& favicons);
+      const std::vector<ImportedFaviconUsage>& favicons);
 
   // Adds the TemplateURLs in |template_urls| to the local store.  The local
   // store becomes the owner of the TemplateURLs.  Some TemplateURLs in

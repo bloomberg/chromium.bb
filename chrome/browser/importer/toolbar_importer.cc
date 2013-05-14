@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -269,7 +270,7 @@ void Toolbar5Importer::GetBookmarksFromServerDataResponse(
   XmlReader reader;
   if (reader.Load(response) && !cancelled()) {
     // Construct Bookmarks
-    std::vector<ProfileWriter::BookmarkEntry> bookmarks;
+    std::vector<ImportedBookmarkEntry> bookmarks;
     if (ParseBookmarksFromReader(&reader, &bookmarks,
         bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR)))
       AddBookmarksToChrome(bookmarks);
@@ -299,7 +300,7 @@ bool Toolbar5Importer::ParseAuthenticationTokenResponse(
 // Parsing
 bool Toolbar5Importer::ParseBookmarksFromReader(
     XmlReader* reader,
-    std::vector<ProfileWriter::BookmarkEntry>* bookmarks,
+    std::vector<ImportedBookmarkEntry>* bookmarks,
     const string16& bookmark_group_string) {
   DCHECK(reader);
   DCHECK(bookmarks);
@@ -320,7 +321,7 @@ bool Toolbar5Importer::ParseBookmarksFromReader(
   // Parse each |bookmark| blob
   while (LocateNextTagWithStopByName(reader, kBookmarkXmlTag,
                                      kBookmarksXmlTag)) {
-    ProfileWriter::BookmarkEntry bookmark_entry;
+    ImportedBookmarkEntry bookmark_entry;
     std::vector<BookmarkFolderType> folders;
     if (ExtractBookmarkInformation(reader, &bookmark_entry, &folders,
                                    bookmark_group_string)) {
@@ -383,7 +384,7 @@ bool Toolbar5Importer::LocateNextTagWithStopByName(XmlReader* reader,
 
 bool Toolbar5Importer::ExtractBookmarkInformation(
     XmlReader* reader,
-    ProfileWriter::BookmarkEntry* bookmark_entry,
+    ImportedBookmarkEntry* bookmark_entry,
     std::vector<BookmarkFolderType>* bookmark_folders,
     const string16& bookmark_group_string) {
   DCHECK(reader);
@@ -456,7 +457,7 @@ bool Toolbar5Importer::ExtractNamedValueFromXmlReader(XmlReader* reader,
 
 bool Toolbar5Importer::ExtractTitleFromXmlReader(
     XmlReader* reader,
-    ProfileWriter::BookmarkEntry* entry) {
+    ImportedBookmarkEntry* entry) {
   DCHECK(reader);
   DCHECK(entry);
 
@@ -472,7 +473,7 @@ bool Toolbar5Importer::ExtractTitleFromXmlReader(
 
 bool Toolbar5Importer::ExtractUrlFromXmlReader(
     XmlReader* reader,
-    ProfileWriter::BookmarkEntry* entry) {
+    ImportedBookmarkEntry* entry) {
   DCHECK(reader);
   DCHECK(entry);
 
@@ -488,7 +489,7 @@ bool Toolbar5Importer::ExtractUrlFromXmlReader(
 
 bool Toolbar5Importer::ExtractTimeFromXmlReader(
     XmlReader* reader,
-    ProfileWriter::BookmarkEntry* entry) {
+    ImportedBookmarkEntry* entry) {
   DCHECK(reader);
   DCHECK(entry);
   if (!LocateNextTagWithStopByName(reader, kTimestampXmlTag, kLabelsXmlTag))
@@ -563,7 +564,7 @@ bool Toolbar5Importer::ExtractFoldersFromXmlReader(
 }
 
 void  Toolbar5Importer::AddBookmarksToChrome(
-    const std::vector<ProfileWriter::BookmarkEntry>& bookmarks) {
+    const std::vector<ImportedBookmarkEntry>& bookmarks) {
   if (!bookmarks.empty() && !cancelled()) {
     const string16& first_folder_name =
         bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR);

@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/favicon/favicon_util.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -210,7 +211,7 @@ void FaviconService::CloneFavicon(const GURL& old_page_url,
 }
 
 void FaviconService::SetImportedFavicons(
-    const std::vector<history::ImportedFaviconUsage>& favicon_usage) {
+    const std::vector<ImportedFaviconUsage>& favicon_usage) {
   if (history_service_)
     history_service_->SetImportedFavicons(favicon_usage);
 }

@@ -429,14 +429,6 @@ FaviconBitmap::FaviconBitmap()
 FaviconBitmap::~FaviconBitmap() {
 }
 
-// ImportedFaviconUsage --------------------------------------------------------
-
-ImportedFaviconUsage::ImportedFaviconUsage() {
-}
-
-ImportedFaviconUsage::~ImportedFaviconUsage() {
-}
-
 // VisitDatabaseObserver -------------------------------------------------------
 
 VisitDatabaseObserver::~VisitDatabaseObserver() {}

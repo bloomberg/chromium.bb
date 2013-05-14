@@ -17,10 +17,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/profile_writer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
+struct ImportedBookmarkEntry;
 class ImporterBridge;
 class XmlReader;
 
@@ -118,7 +118,7 @@ class Toolbar5Importer : public net::URLFetcherDelegate, public Importer {
 
   static bool ParseBookmarksFromReader(
       XmlReader* reader,
-      std::vector<ProfileWriter::BookmarkEntry>* bookmarks,
+      std::vector<ImportedBookmarkEntry>* bookmarks,
       const string16& bookmark_group_string);
 
   static bool LocateNextOpenTag(XmlReader* reader);
@@ -130,18 +130,18 @@ class Toolbar5Importer : public net::URLFetcherDelegate, public Importer {
 
   static bool ExtractBookmarkInformation(
       XmlReader* reader,
-      ProfileWriter::BookmarkEntry* bookmark_entry,
+      ImportedBookmarkEntry* bookmark_entry,
       std::vector<BookmarkFolderType>* bookmark_folders,
       const string16& bookmark_group_string);
   static bool ExtractNamedValueFromXmlReader(XmlReader* reader,
                                              const std::string& name,
                                              std::string* buffer);
   static bool ExtractTitleFromXmlReader(XmlReader* reader,
-                                        ProfileWriter::BookmarkEntry* entry);
+                                        ImportedBookmarkEntry* entry);
   static bool ExtractUrlFromXmlReader(XmlReader* reader,
-                                      ProfileWriter::BookmarkEntry* entry);
+                                      ImportedBookmarkEntry* entry);
   static bool ExtractTimeFromXmlReader(XmlReader* reader,
-                                       ProfileWriter::BookmarkEntry* entry);
+                                       ImportedBookmarkEntry* entry);
   static bool ExtractFoldersFromXmlReader(
       XmlReader* reader,
       std::vector<BookmarkFolderType>* bookmark_folders,
@@ -149,7 +149,7 @@ class Toolbar5Importer : public net::URLFetcherDelegate, public Importer {
 
   // Bookmark creation is done by the method below.
   void AddBookmarksToChrome(
-      const std::vector<ProfileWriter::BookmarkEntry>& bookmarks);
+      const std::vector<ImportedBookmarkEntry>& bookmarks);
 
   InternalStateEnum state_;
 

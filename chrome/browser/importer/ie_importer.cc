@@ -28,9 +28,11 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
+#include "chrome/browser/favicon/favicon_util.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/importer/importer_util.h"
 #include "chrome/browser/importer/pstore_declarations.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
@@ -117,8 +119,8 @@ LPCITEMIDLIST BinaryReadItemIDList(size_t offset, size_t idlist_size,
 // Compares the two bookmarks in the order of IE's Favorites menu.
 // Returns true if rhs should come later than lhs (lhs < rhs).
 struct IEOrderBookmarkComparator {
-  bool operator()(const ProfileWriter::BookmarkEntry& lhs,
-                  const ProfileWriter::BookmarkEntry& rhs) const {
+  bool operator()(const ImportedBookmarkEntry& lhs,
+                  const ImportedBookmarkEntry& rhs) const {
     static const uint32 kNotSorted = 0xfffffffb; // IE uses this magic value.
     base::FilePath lhs_prefix;
     base::FilePath rhs_prefix;
@@ -261,7 +263,7 @@ bool ParseFavoritesOrderInfo(
 // and use the default (alphabetical) order.
 void SortBookmarksInIEOrder(
     const Importer* importer,
-    std::vector<ProfileWriter::BookmarkEntry>* bookmarks) {
+    std::vector<ImportedBookmarkEntry>* bookmarks) {
   std::map<base::FilePath, uint32> sort_index;
   if (!ParseFavoritesOrderInfo(importer, &sort_index))
     return;
@@ -367,7 +369,7 @@ bool ReadReencodedFaviconData(const string16& file,
 
   const unsigned char* ptr =
       reinterpret_cast<const unsigned char*>(image_data.c_str());
-  return importer::ReencodeFavicon(ptr, image_data.size(), data);
+  return FaviconUtil::ReencodeFavicon(ptr, image_data.size(), data);
 }
 
 // Loads favicon image data and registers to |favicon_map|.
@@ -375,19 +377,19 @@ void UpdateFaviconMap(
     const string16& url_file,
     const GURL& url,
     IUniformResourceLocator* url_locator,
-    std::map<GURL, history::ImportedFaviconUsage>* favicon_map) {
+    std::map<GURL, ImportedFaviconUsage>* favicon_map) {
   GURL favicon_url = ReadFaviconURLFromInternetShortcut(url_locator);
   if (!favicon_url.is_valid())
     return;
 
-  std::map<GURL, history::ImportedFaviconUsage>::iterator it =
+  std::map<GURL, ImportedFaviconUsage>::iterator it =
     favicon_map->find(favicon_url);
   if (it != favicon_map->end()) {
     // Known favicon URL.
     it->second.urls.insert(url);
   } else {
     // New favicon URL. Read the image data and store.
-    history::ImportedFaviconUsage usage;
+    ImportedFaviconUsage usage;
     if (ReadReencodedFaviconData(url_file, favicon_url, &usage.png_data)) {
       usage.favicon_url = favicon_url;
       usage.urls.insert(url);
@@ -468,7 +470,7 @@ void IEImporter::ImportFavorites() {
     return;
 
   BookmarkVector bookmarks;
-  std::vector<history::ImportedFaviconUsage> favicons;
+  std::vector<ImportedFaviconUsage> favicons;
   ParseFavoritesFolder(info, &bookmarks, &favicons);
 
   if (!bookmarks.empty() && !cancelled()) {
@@ -809,7 +811,7 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo* info) {
 void IEImporter::ParseFavoritesFolder(
     const FavoritesInfo& info,
     BookmarkVector* bookmarks,
-    std::vector<history::ImportedFaviconUsage>* favicons) {
+    std::vector<ImportedFaviconUsage>* favicons) {
   base::FilePath file;
   std::vector<base::FilePath::StringType> file_list;
   base::FilePath favorites_path(info.path);
@@ -826,7 +828,7 @@ void IEImporter::ParseFavoritesFolder(
 
   // Map from favicon URLs to the favicon data (the binary image data and the
   // set of bookmark URLs referring to the favicon).
-  typedef std::map<GURL, history::ImportedFaviconUsage> FaviconMap;
+  typedef std::map<GURL, ImportedFaviconUsage> FaviconMap;
   FaviconMap favicon_map;
 
   for (std::vector<base::FilePath::StringType>::iterator it = file_list.begin();
@@ -863,7 +865,7 @@ void IEImporter::ParseFavoritesFolder(
       relative_string = relative_string.substr(1);
     base::FilePath relative_path(relative_string);
 
-    ProfileWriter::BookmarkEntry entry;
+    ImportedBookmarkEntry entry;
     // Remove the dot, the file extension, and the directory path.
     entry.title = shortcut.RemoveExtension().BaseName().value();
     entry.url = url;

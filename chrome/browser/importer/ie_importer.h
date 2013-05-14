@@ -14,7 +14,9 @@
 #include "base/string16.h"
 #include "chrome/browser/importer/ie_importer_test_registry_overrider_win.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/profile_writer.h"
+
+struct ImportedBookmarkEntry;
+struct ImportedFaviconUsage;
 
 class IEImporter : public Importer {
  public:
@@ -26,7 +28,7 @@ class IEImporter : public Importer {
                            ImporterBridge* bridge) OVERRIDE;
 
  private:
-  typedef std::vector<ProfileWriter::BookmarkEntry> BookmarkVector;
+  typedef std::vector<ImportedBookmarkEntry> BookmarkVector;
 
   // A struct that hosts the information of IE Favorite folder.
   struct FavoritesInfo {
@@ -71,7 +73,7 @@ class IEImporter : public Importer {
   void ParseFavoritesFolder(
       const FavoritesInfo& info,
       BookmarkVector* bookmarks,
-      std::vector<history::ImportedFaviconUsage>* favicons);
+      std::vector<ImportedFaviconUsage>* favicons);
 
   // Determines which version of IE is in use.
   int CurrentIEVersion() const;

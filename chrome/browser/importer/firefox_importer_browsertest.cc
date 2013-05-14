@@ -11,7 +11,8 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/firefox_importer_unittest_utils.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -174,7 +175,7 @@ class FirefoxObserver : public ProfileWriter,
     ++history_count_;
   }
 
-  virtual void AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
+  virtual void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
                             const string16& top_level_folder_name) OVERRIDE {
     ASSERT_LE(bookmark_count_ + bookmarks.size(),
               arraysize(kFirefox2Bookmarks));
@@ -209,7 +210,7 @@ class FirefoxObserver : public ProfileWriter,
   }
 
   virtual void AddFavicons(
-      const std::vector<history::ImportedFaviconUsage>& favicons) OVERRIDE {
+      const std::vector<ImportedFaviconUsage>& favicons) OVERRIDE {
   }
 
  private:
@@ -330,7 +331,7 @@ class Firefox3Observer : public ProfileWriter,
     ++history_count_;
   }
 
-  virtual void AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
+  virtual void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
                             const string16& top_level_folder_name) OVERRIDE {
 
     ASSERT_LE(bookmark_count_ + bookmarks.size(),
@@ -366,7 +367,7 @@ class Firefox3Observer : public ProfileWriter,
   }
 
   virtual void AddFavicons(
-      const std::vector<history::ImportedFaviconUsage>& favicons) OVERRIDE {
+      const std::vector<ImportedFaviconUsage>& favicons) OVERRIDE {
   }
 
  private:

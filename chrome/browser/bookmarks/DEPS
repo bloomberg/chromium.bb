@@ -5,12 +5,11 @@ include_rules = [
   # exceptions!
   "-chrome/browser",
   "+chrome/browser/bookmarks",
+  "+chrome/browser/favicon",
 
   # TODO(kaiwang): Bring this list to zero.
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!chrome/browser/favicon/favicon_service.h",
-  "!chrome/browser/favicon/favicon_service_factory.h",
   "!chrome/browser/history/history_notifications.h",
   "!chrome/browser/history/history_service.h",
   "!chrome/browser/history/history_service_factory.h",
@@ -28,12 +27,3 @@ include_rules = [
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.
 ]
-
-specific_include_rules = {
-  # TODO(kaiwang): Bring this list to zero.
-  # Do not add to the list of temporarily-allowed dependencies below,
-  # and please do not introduce more #includes of these files.
-  '.*_[a-z]*test\.cc': [
-    "!chrome/browser/importer/firefox2_importer.h",
-  ]
-}

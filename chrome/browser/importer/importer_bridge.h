@@ -11,18 +11,27 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "build/build_config.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/importer/profile_writer.h"
 
+class GURL;
+struct IE7PasswordInfo;
+struct ImportedBookmarkEntry;
+struct ImportedFaviconUsage;
+class TemplateURL;
 // TODO: remove this, see friend declaration in ImporterBridge.
 class Toolbar5Importer;
+
+namespace content {
+struct PasswordForm;
+}
 
 class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
  public:
   ImporterBridge();
 
   virtual void AddBookmarks(
-      const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
+      const std::vector<ImportedBookmarkEntry>& bookmarks,
       const string16& first_folder_name) = 0;
 
   virtual void AddHomePage(const GURL& home_page) = 0;
@@ -32,7 +41,7 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
 #endif
 
   virtual void SetFavicons(
-      const std::vector<history::ImportedFaviconUsage>& favicons) = 0;
+      const std::vector<ImportedFaviconUsage>& favicons) = 0;
 
   virtual void SetHistoryItems(const history::URLRows& rows,
                                history::VisitSource visit_source) = 0;

@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/browser/importer/toolbar_importer.h"
@@ -316,7 +317,7 @@ static const char* kBadBookmarkNoLabels =
 
   XmlReader reader;
   std::string bookmark_xml;
-  std::vector<ProfileWriter::BookmarkEntry> bookmarks;
+  std::vector<ImportedBookmarkEntry> bookmarks;
 
   const GURL url(kUrl);
   const GURL other_url(kOtherUrl);

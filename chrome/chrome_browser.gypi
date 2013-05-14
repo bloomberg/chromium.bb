@@ -240,6 +240,8 @@
         'browser/bookmarks/bookmark_editor.h',
         'browser/bookmarks/bookmark_expanded_state_tracker.cc',
         'browser/bookmarks/bookmark_expanded_state_tracker.h',
+        'browser/bookmarks/bookmark_html_reader.cc',
+        'browser/bookmarks/bookmark_html_reader.h',
         'browser/bookmarks/bookmark_html_writer.cc',
         'browser/bookmarks/bookmark_html_writer.h',
         'browser/bookmarks/bookmark_index.cc',
@@ -261,6 +263,8 @@
         'browser/bookmarks/bookmark_storage.h',
         'browser/bookmarks/bookmark_utils.cc',
         'browser/bookmarks/bookmark_utils.h',
+        'browser/bookmarks/imported_bookmark_entry.cc',
+        'browser/bookmarks/imported_bookmark_entry.h',
         'browser/browser_about_handler.cc',
         'browser/browser_about_handler.h',
         'browser/browser_process.cc',
@@ -521,6 +525,8 @@
         'browser/favicon/favicon_tab_helper.h',
         'browser/favicon/favicon_util.cc',
         'browser/favicon/favicon_util.h',
+        'browser/favicon/imported_favicon_usage.cc',
+        'browser/favicon/imported_favicon_usage.h',
         'browser/file_select_helper.cc',
         'browser/file_select_helper.h',
         'browser/first_run/first_run.cc',
@@ -793,6 +799,8 @@
         'browser/idle_win.cc',
         'browser/image_decoder.cc',
         'browser/image_decoder.h',
+        'browser/importer/bookmarks_file_importer.cc',
+        'browser/importer/bookmarks_file_importer.h',
         'browser/importer/external_process_importer_bridge.cc',
         'browser/importer/external_process_importer_bridge.h',
         'browser/importer/external_process_importer_client.cc',
@@ -833,8 +841,6 @@
         'browser/importer/importer_progress_observer.h',
         'browser/importer/importer_type.cc',
         'browser/importer/importer_type.h',
-        'browser/importer/importer_util.cc',
-        'browser/importer/importer_util.h',
         'browser/importer/in_process_importer_bridge.cc',
         'browser/importer/in_process_importer_bridge.h',
         'browser/importer/mork_reader.cc',
@@ -2792,6 +2798,7 @@
           'sources!': [
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.
+            'browser/bookmarks/bookmark_html_reader.cc',
             'browser/bookmarks/bookmark_html_writer.cc',
             'browser/ssl/ssl_add_certificate.cc',
 

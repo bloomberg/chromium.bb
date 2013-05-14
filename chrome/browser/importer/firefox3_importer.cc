@@ -12,12 +12,13 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_html_reader.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/history_types.h"
-#include "chrome/browser/importer/firefox2_importer.h"
+#include "chrome/browser/favicon/favicon_util.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
-#include "chrome/browser/importer/importer_util.h"
 #include "chrome/browser/importer/nss_decryptor.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/time_format.h"
@@ -40,6 +41,43 @@ enum BookmarkItemType {
   TYPE_SEPARATOR = 3,
   TYPE_DYNAMIC_CONTAINER = 4
 };
+
+// Creates a TemplateURL with the |keyword| and |url|. |title| may be empty.
+// This function transfers ownership of the created TemplateURL to the caller.
+TemplateURL* CreateTemplateURL(const string16& title,
+                               const string16& keyword,
+                               const GURL& url) {
+  // Skip if the keyword or url is invalid.
+  if (keyword.empty() || !url.is_valid())
+    return NULL;
+
+  TemplateURLData data;
+  // We set short name by using the title if it exists.
+  // Otherwise, we use the shortcut.
+  data.short_name = title.empty() ? keyword : title;
+  data.SetKeyword(keyword);
+  data.SetURL(TemplateURLRef::DisplayURLToURLRef(UTF8ToUTF16(url.spec())));
+  return new TemplateURL(NULL, data);
+}
+
+// Loads the default bookmarks in the Firefox installed at |app_path|,
+// and stores their locations in |urls|.
+void LoadDefaultBookmarks(const base::FilePath& app_path,
+                          std::set<GURL>* urls) {
+  base::FilePath file = app_path.AppendASCII("defaults")
+      .AppendASCII("profile")
+      .AppendASCII("bookmarks.html");
+  urls->clear();
+
+  std::vector<ImportedBookmarkEntry> bookmarks;
+  bookmark_html_reader::ImportBookmarksFile(base::Callback<bool(void)>(),
+                                            base::Callback<bool(const GURL&)>(),
+                                            file,
+                                            &bookmarks,
+                                            NULL);
+  for (size_t i = 0; i < bookmarks.size(); ++i)
+    urls->insert(bookmarks[i].url);
+}
 
 }  // namespace
 
@@ -171,9 +209,9 @@ void Firefox3Importer::ImportBookmarks() {
   std::set<int> livemark_id;
   LoadLivemarkIDs(&db, &livemark_id);
 
-  // Load the default bookmarks. Its storage is the same as Firefox 2.
+  // Load the default bookmarks.
   std::set<GURL> default_urls;
-  Firefox2Importer::LoadDefaultBookmarks(app_path_, &default_urls);
+  LoadDefaultBookmarks(app_path_, &default_urls);
 
   BookmarkList list;
   GetTopBookmarkFolder(&db, toolbar_folder_id, &list);
@@ -183,7 +221,7 @@ void Firefox3Importer::ImportBookmarks() {
   for (size_t i = 0; i < count; ++i)
     GetWholeBookmarkFolder(&db, &list, i, NULL);
 
-  std::vector<ProfileWriter::BookmarkEntry> bookmarks;
+  std::vector<ImportedBookmarkEntry> bookmarks;
   std::vector<TemplateURL*> template_urls;
   FaviconMap favicon_map;
 
@@ -258,7 +296,7 @@ void Firefox3Importer::ImportBookmarks() {
     if (!found_path)
       continue;
 
-    ProfileWriter::BookmarkEntry entry;
+    ImportedBookmarkEntry entry;
     entry.creation_time = item->date_added;
     entry.title = item->title;
     entry.url = item->url;
@@ -273,7 +311,7 @@ void Firefox3Importer::ImportBookmarks() {
         favicon_map[item->favicon].insert(item->url);
 
       // This bookmark has a keyword, we import it to our TemplateURL model.
-      TemplateURL* t_url = Firefox2Importer::CreateTemplateURL(
+      TemplateURL* t_url = CreateTemplateURL(
           item->title, UTF8ToUTF16(item->keyword), item->url);
       if (t_url)
         template_urls.push_back(t_url);
@@ -293,7 +331,7 @@ void Firefox3Importer::ImportBookmarks() {
   else
     STLDeleteElements(&template_urls);
   if (!favicon_map.empty() && !cancelled()) {
-    std::vector<history::ImportedFaviconUsage> favicons;
+    std::vector<ImportedFaviconUsage> favicons;
     LoadFavicons(&db, favicon_map, &favicons);
     bridge_->SetFavicons(favicons);
   }
@@ -538,7 +576,7 @@ void Firefox3Importer::GetWholeBookmarkFolder(sql::Connection* db,
 void Firefox3Importer::LoadFavicons(
     sql::Connection* db,
     const FaviconMap& favicon_map,
-    std::vector<history::ImportedFaviconUsage>* favicons) {
+    std::vector<ImportedFaviconUsage>* favicons) {
   const char* query = "SELECT url, data FROM moz_favicons WHERE id=?";
   sql::Statement s(db->GetUniqueStatement(query));
 
@@ -549,7 +587,7 @@ void Firefox3Importer::LoadFavicons(
        i != favicon_map.end(); ++i) {
     s.BindInt64(0, i->first);
     if (s.Step()) {
-      history::ImportedFaviconUsage usage;
+      ImportedFaviconUsage usage;
 
       usage.favicon_url = GURL(s.ColumnString(0));
       if (!usage.favicon_url.is_valid())
@@ -560,7 +598,7 @@ void Firefox3Importer::LoadFavicons(
       if (data.empty())
         continue;  // Data definitely invalid.
 
-      if (!importer::ReencodeFavicon(&data[0], data.size(), &usage.png_data))
+      if (!FaviconUtil::ReencodeFavicon(&data[0], data.size(), &usage.png_data))
         continue;  // Unable to decode.
 
       usage.urls = i->second;

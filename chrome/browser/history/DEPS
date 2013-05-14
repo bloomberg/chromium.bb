@@ -1,10 +1,11 @@
 include_rules = [
   # History is being made into a Browser Component, so we have these
-  # three basic rules followed by temporary exceptions.  Please don't
+  # basic rules followed by temporary exceptions.  Please don't
   # add to the list of exceptions!
   "-chrome/browser",
   "+chrome/browser/api",
   "+chrome/browser/common",
+  "+chrome/browser/favicon",
   "+chrome/browser/history",
 
   # TODO(erikwright): Bring this list to zero.
@@ -25,7 +26,6 @@ include_rules = [
   "!chrome/browser/chromeos/login/existing_user_controller.h",
   "!chrome/browser/content_settings/cookie_settings.h",
   "!chrome/browser/diagnostics/sqlite_diagnostics.h",
-  "!chrome/browser/favicon/favicon_service.h",
   "!chrome/browser/omnibox/omnibox_field_trial.h",
   "!chrome/browser/prefs/scoped_user_pref_update.h",
   "!chrome/browser/prerender/prerender_contents.h",

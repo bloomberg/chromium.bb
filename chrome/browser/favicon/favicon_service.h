@@ -18,6 +18,7 @@
 
 class GURL;
 class HistoryService;
+struct ImportedFaviconUsage;
 class Profile;
 
 // The favicon service provides methods to access favicons. It calls the history
@@ -194,7 +195,7 @@ class FaviconService : public CancelableRequestProvider,
   // must exist, any favicon sets for unknown pages will be discarded. Existing
   // favicons will not be overwritten.
   void SetImportedFavicons(
-      const std::vector<history::ImportedFaviconUsage>& favicon_usage);
+      const std::vector<ImportedFaviconUsage>& favicon_usage);
 
   // Set the favicon for |page_url| for |icon_type| in the thumbnail database.
   // Unlike SetFavicons(), this method will not delete preexisting bitmap data

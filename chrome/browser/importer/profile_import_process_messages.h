@@ -9,9 +9,10 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "base/values.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/importer/profile_writer.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/common_param_traits_macros.h"
 #include "content/public/common/common_param_traits.h"
@@ -125,10 +126,10 @@ struct ParamTraits<history::URLRow> {
   }
 };  // ParamTraits<history::URLRow>
 
-// Traits for ProfileWriter::BookmarkEntry to pack/unpack.
+// Traits for ImportedBookmarkEntry to pack/unpack.
 template <>
-struct ParamTraits<ProfileWriter::BookmarkEntry> {
-  typedef ProfileWriter::BookmarkEntry param_type;
+struct ParamTraits<ImportedBookmarkEntry> {
+  typedef ImportedBookmarkEntry param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.in_toolbar);
     WriteParam(m, p.is_folder);
@@ -161,12 +162,12 @@ struct ParamTraits<ProfileWriter::BookmarkEntry> {
     LogParam(p.creation_time, l);
     l->append(")");
   }
-};  // ParamTraits<ProfileWriter::BookmarkEntry>
+};  // ParamTraits<ImportedBookmarkEntry>
 
-// Traits for history::ImportedFaviconUsage.
+// Traits for ImportedFaviconUsage.
 template <>
-struct ParamTraits<history::ImportedFaviconUsage> {
-  typedef history::ImportedFaviconUsage param_type;
+struct ParamTraits<ImportedFaviconUsage> {
+  typedef ImportedFaviconUsage param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.favicon_url);
     WriteParam(m, p.png_data);
@@ -187,7 +188,7 @@ struct ParamTraits<history::ImportedFaviconUsage> {
     LogParam(p.urls, l);
     l->append(")");
   }
-};  // ParamTraits<history::ImportedFaviconUsage
+};  // ParamTraits<ImportedFaviconUsage>
 
 // Traits for TemplateURLData
 template <>
@@ -322,13 +323,13 @@ IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyBookmarksImportStart,
                      int       /* total number of bookmarks */)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyBookmarksImportGroup,
-                     std::vector<ProfileWriter::BookmarkEntry>)
+                     std::vector<ImportedBookmarkEntry>)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportStart,
                      int  /* total number of favicons */)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportGroup,
-                     std::vector<history::ImportedFaviconUsage>)
+                     std::vector<ImportedFaviconUsage>)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyPasswordFormReady,
                      content::PasswordForm)

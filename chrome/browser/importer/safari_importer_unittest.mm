@@ -13,7 +13,8 @@
 #include "base/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
+#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/common/chrome_paths.h"
 #include "sql/connection.h"
@@ -127,13 +128,13 @@ TEST_F(SafariImporterTest, BookmarkImport) {
   };
 
   scoped_refptr<SafariImporter> importer(GetSafariImporter());
-  std::vector<ProfileWriter::BookmarkEntry> bookmarks;
+  std::vector<ImportedBookmarkEntry> bookmarks;
   importer->ParseBookmarks(ASCIIToUTF16("Toolbar"), &bookmarks);
   size_t num_bookmarks = bookmarks.size();
   ASSERT_EQ(ARRAYSIZE_UNSAFE(kImportedBookmarksData), num_bookmarks);
 
   for (size_t i = 0; i < num_bookmarks; ++i) {
-    ProfileWriter::BookmarkEntry& entry = bookmarks[i];
+    ImportedBookmarkEntry& entry = bookmarks[i];
     EXPECT_EQ(kImportedBookmarksData[i].in_toolbar, entry.in_toolbar);
     EXPECT_EQ(kImportedBookmarksData[i].url, entry.url);
 
@@ -156,13 +157,13 @@ TEST_F(SafariImporterTest, FaviconImport) {
   SafariImporter::FaviconMap favicon_map;
   importer->ImportFaviconURLs(&db, &favicon_map);
 
-  std::vector<history::ImportedFaviconUsage> favicons;
+  std::vector<ImportedFaviconUsage> favicons;
   importer->LoadFaviconData(&db, favicon_map, &favicons);
 
   size_t num_favicons = favicons.size();
   ASSERT_EQ(num_favicons, 2U);
 
-  history::ImportedFaviconUsage &fav0 = favicons[0];
+  ImportedFaviconUsage &fav0 = favicons[0];
   EXPECT_EQ("http://s.ytimg.com/yt/favicon-vfl86270.ico",
             fav0.favicon_url.spec());
   EXPECT_GT(fav0.png_data.size(), 0U);
@@ -170,7 +171,7 @@ TEST_F(SafariImporterTest, FaviconImport) {
   EXPECT_TRUE(fav0.urls.find(GURL("http://www.youtube.com/"))
       != fav0.urls.end());
 
-  history::ImportedFaviconUsage &fav1 = favicons[1];
+  ImportedFaviconUsage &fav1 = favicons[1];
   EXPECT_EQ("http://www.opensearch.org/favicon.ico",
             fav1.favicon_url.spec());
   EXPECT_GT(fav1.png_data.size(), 0U);

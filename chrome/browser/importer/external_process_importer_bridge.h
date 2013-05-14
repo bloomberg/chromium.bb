@@ -11,9 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/importer/importer_bridge.h"
-#include "chrome/browser/importer/profile_writer.h"
 
 class GURL;
+struct ImportedBookmarkEntry;
 
 namespace base {
 class DictionaryValue;
@@ -39,7 +39,7 @@ class ExternalProcessImporterBridge : public ImporterBridge {
 
   // Begin ImporterBridge implementation:
   virtual void AddBookmarks(
-      const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
+      const std::vector<ImportedBookmarkEntry>& bookmarks,
       const string16& first_folder_name) OVERRIDE;
 
   virtual void AddHomePage(const GURL& home_page) OVERRIDE;
@@ -50,7 +50,7 @@ class ExternalProcessImporterBridge : public ImporterBridge {
 #endif
 
   virtual void SetFavicons(
-      const std::vector<history::ImportedFaviconUsage>& favicons) OVERRIDE;
+      const std::vector<ImportedFaviconUsage>& favicons) OVERRIDE;
 
   virtual void SetHistoryItems(const history::URLRows& rows,
                                history::VisitSource visit_source) OVERRIDE;
