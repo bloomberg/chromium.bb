@@ -26,6 +26,7 @@
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
+#include "chrome/browser/sync_file_system/remote_change_handler.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_sync_operation_resolver.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
@@ -118,7 +119,7 @@ ConflictResolutionPolicy DriveFileSyncService::kDefaultPolicy =
     CONFLICT_RESOLUTION_LAST_WRITE_WIN;
 
 struct DriveFileSyncService::ProcessRemoteChangeParam {
-  RemoteChange remote_change;
+  RemoteChangeHandler::RemoteChange remote_change;
   SyncFileCallback callback;
 
   DriveMetadata drive_metadata;
@@ -129,8 +130,9 @@ struct DriveFileSyncService::ProcessRemoteChangeParam {
   SyncAction sync_action;
   bool clear_local_changes;
 
-  ProcessRemoteChangeParam(const RemoteChange& remote_change,
-                           const SyncFileCallback& callback)
+  ProcessRemoteChangeParam(
+      const RemoteChangeHandler::RemoteChange& remote_change,
+      const SyncFileCallback& callback)
       : remote_change(remote_change),
         callback(callback),
         metadata_updated(false),
@@ -160,69 +162,6 @@ struct DriveFileSyncService::ApplyLocalChangeParam {
         has_drive_metadata(false),
         callback(callback) {}
 };
-
-DriveFileSyncService::ChangeQueueItem::ChangeQueueItem()
-    : changestamp(0),
-      sync_type(REMOTE_SYNC_TYPE_INCREMENTAL) {
-}
-
-DriveFileSyncService::ChangeQueueItem::ChangeQueueItem(
-    int64 changestamp,
-    RemoteSyncType sync_type,
-    const FileSystemURL& url)
-    : changestamp(changestamp),
-      sync_type(sync_type),
-      url(url) {
-}
-
-bool DriveFileSyncService::ChangeQueueComparator::operator()(
-    const ChangeQueueItem& left,
-    const ChangeQueueItem& right) {
-  if (left.changestamp != right.changestamp)
-    return left.changestamp < right.changestamp;
-  if (left.sync_type != right.sync_type)
-    return left.sync_type < right.sync_type;
-  return fileapi::FileSystemURL::Comparator()(left.url, right.url);
-}
-
-DriveFileSyncService::RemoteChange::RemoteChange()
-    : changestamp(0),
-      sync_type(REMOTE_SYNC_TYPE_INCREMENTAL),
-      change(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_UNKNOWN) {
-}
-
-DriveFileSyncService::RemoteChange::RemoteChange(
-    int64 changestamp,
-    const std::string& resource_id,
-    const std::string& md5_checksum,
-    const base::Time& updated_time,
-    RemoteSyncType sync_type,
-    const FileSystemURL& url,
-    const FileChange& change,
-    PendingChangeQueue::iterator position_in_queue)
-    : changestamp(changestamp),
-      resource_id(resource_id),
-      md5_checksum(md5_checksum),
-      updated_time(updated_time),
-      sync_type(sync_type),
-      url(url),
-      change(change),
-      position_in_queue(position_in_queue) {
-}
-
-DriveFileSyncService::RemoteChange::~RemoteChange() {
-}
-
-bool DriveFileSyncService::RemoteChangeComparator::operator()(
-    const RemoteChange& left,
-    const RemoteChange& right) {
-  // This should return true if |right| has higher priority than |left|.
-  // Smaller changestamps have higher priorities (i.e. need to be processed
-  // earlier).
-  if (left.changestamp != right.changestamp)
-    return left.changestamp > right.changestamp;
-  return false;
-}
 
 // DriveFileSyncService ------------------------------------------------------
 
@@ -603,7 +542,8 @@ void DriveFileSyncService::DoRegisterOriginForTrackingChanges(
 void DriveFileSyncService::DoUnregisterOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  RemoveRemoteChangesForOrigin(origin);
+  remote_change_handler_.RemoveChangesForOrigin(origin);
+  pending_batch_sync_origins_.erase(origin);
   metadata_store_->RemoveOrigin(origin, callback);
 }
 
@@ -628,7 +568,8 @@ void DriveFileSyncService::DoDisableOriginForTrackingChanges(
     return;
   }
 
-  RemoveRemoteChangesForOrigin(origin);
+  remote_change_handler_.RemoveChangesForOrigin(origin);
+  pending_batch_sync_origins_.erase(origin);
   metadata_store_->DisableOrigin(origin, callback);
 }
 
@@ -664,7 +605,7 @@ void DriveFileSyncService::DoProcessRemoteChange(
   SyncFileCallback callback =
       base::Bind(&SyncFileCallbackAdapter, completion_callback, sync_callback);
 
-  if (pending_changes_.empty()) {
+  if (!remote_change_handler_.HasChanges()) {
     callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC, FileSystemURL());
     return;
   }
@@ -674,16 +615,12 @@ void DriveFileSyncService::DoProcessRemoteChange(
     return;
   }
 
-  const FileSystemURL& url = pending_changes_.begin()->url;
-  const GURL& origin = url.origin();
-  const base::FilePath::StringType& path =
-      fileapi::VirtualPath::GetNormalizedFilePath(url.path());
-  DCHECK(ContainsKey(origin_to_changes_map_, origin));
-  PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
-  DCHECK(ContainsKey(*path_to_change, path));
-  const RemoteChange& remote_change = (*path_to_change)[path];
+  RemoteChangeHandler::RemoteChange remote_change;
+  bool has_remote_change =
+      remote_change_handler_.GetChange(&remote_change);
+  DCHECK(has_remote_change);
 
-  DVLOG(1) << "ProcessRemoteChange for " << url.DebugString()
+  DVLOG(1) << "ProcessRemoteChange for " << remote_change.url.DebugString()
            << " remote_change:" << remote_change.change.DebugString();
 
   scoped_ptr<ProcessRemoteChangeParam> param(new ProcessRemoteChangeParam(
@@ -879,7 +816,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
   for (iterator itr = feed->entries().begin();
        itr != feed->entries().end(); ++itr) {
     AppendRemoteChange(origin, **itr, largest_changestamp,
-                       REMOTE_SYNC_TYPE_BATCH);
+                       RemoteChangeHandler::REMOTE_SYNC_TYPE_BATCH);
   }
 
   GURL next_feed_url;
@@ -894,7 +831,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
 
   // Move |origin| to the incremental sync origin set if the origin has no file.
   if (metadata_store_->IsBatchSyncOrigin(origin) &&
-      !ContainsKey(origin_to_changes_map_, origin)) {
+      !remote_change_handler_.HasChangesForOrigin(origin)) {
     metadata_store_->MoveBatchSyncOriginToIncremental(origin);
   }
 
@@ -917,9 +854,9 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
   DriveMetadata& drive_metadata = param->drive_metadata;
   const SyncStatusCallback& callback = param->callback;
 
-  RemoteChange remote_change;
-  const bool has_remote_change = GetPendingChangeForFileSystemURL(
-      url, &remote_change);
+  RemoteChangeHandler::RemoteChange remote_change;
+  const bool has_remote_change =
+      remote_change_handler_.GetChangeForURL(url, &remote_change);
   if (has_remote_change && param->drive_metadata.resource_id().empty())
     param->drive_metadata.set_resource_id(remote_change.resource_id);
 
@@ -1545,7 +1482,8 @@ void DriveFileSyncService::DidGetTemporaryFileForDownload(
   // We should not use the md5 in metadata for FETCH type to avoid the download
   // finishes due to NOT_MODIFIED.
   std::string md5_checksum;
-  if (param->remote_change.sync_type != REMOTE_SYNC_TYPE_FETCH)
+  if (param->remote_change.sync_type !=
+      RemoteChangeHandler::REMOTE_SYNC_TYPE_FETCH)
     md5_checksum = param->drive_metadata.md5_checksum();
 
   sync_client_->DownloadFile(
@@ -1644,7 +1582,8 @@ void DriveFileSyncService::CompleteRemoteSync(
   }
 
   GURL origin = param->remote_change.url.origin();
-  if (param->remote_change.sync_type == REMOTE_SYNC_TYPE_INCREMENTAL) {
+  if (param->remote_change.sync_type ==
+      RemoteChangeHandler::REMOTE_SYNC_TYPE_INCREMENTAL) {
     DCHECK(metadata_store_->IsIncrementalSyncOrigin(origin));
     int64 changestamp = param->remote_change.changestamp;
     DCHECK(changestamp);
@@ -1777,7 +1716,7 @@ bool DriveFileSyncService::AppendRemoteChange(
     const GURL& origin,
     const google_apis::ResourceEntry& entry,
     int64 changestamp,
-    RemoteSyncType sync_type) {
+    RemoteChangeHandler::RemoteSyncType sync_type) {
   base::FilePath path = TitleToPath(entry.title());
 
   if (!entry.is_folder() && !entry.is_file() && !entry.deleted())
@@ -1809,7 +1748,7 @@ bool DriveFileSyncService::AppendFetchChange(
       std::string(),  // remote_file_md5
       base::Time(),  // updated_time
       type,
-      REMOTE_SYNC_TYPE_FETCH);
+      RemoteChangeHandler::REMOTE_SYNC_TYPE_FETCH);
 }
 
 bool DriveFileSyncService::AppendRemoteChangeInternal(
@@ -1821,7 +1760,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     const std::string& remote_file_md5,
     const base::Time& updated_time,
     SyncFileType file_type,
-    RemoteSyncType sync_type) {
+    RemoteChangeHandler::RemoteSyncType sync_type) {
   fileapi::FileSystemURL url(
       CreateSyncableFileSystemURL(origin, kServiceName, path));
   DCHECK(url.is_valid());
@@ -1843,14 +1782,10 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
       local_file_md5 = metadata.md5_checksum();
   }
 
-  PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
-  PathToChangeMap::iterator found = path_to_change->find(normalized_path);
-  PendingChangeQueue::iterator overridden_queue_item = pending_changes_.end();
-  if (found != path_to_change->end()) {
-    if (found->second.changestamp >= changestamp)
+  RemoteChangeHandler::RemoteChange pending_change;
+  if (remote_change_handler_.GetChangeForURL(url, &pending_change)) {
+    if (pending_change.changestamp >= changestamp)
       return false;
-    const RemoteChange& pending_change = found->second;
-    overridden_queue_item = pending_change.position_in_queue;
 
     if (pending_change.change.IsDelete()) {
       local_resource_id.clear();
@@ -1900,21 +1835,10 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
                                     : FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                          file_type);
 
-  // Do not return in this block. These changes should be done together.
-  {
-    if (overridden_queue_item != pending_changes_.end())
-      pending_changes_.erase(overridden_queue_item);
-
-    std::pair<PendingChangeQueue::iterator, bool> inserted_to_queue =
-        pending_changes_.insert(ChangeQueueItem(changestamp, sync_type, url));
-    DCHECK(inserted_to_queue.second);
-
-    (*path_to_change)[normalized_path] =
-        RemoteChange(
-            changestamp, remote_resource_id, remote_file_md5,
-            updated_time, sync_type, url, file_change,
-            inserted_to_queue.first);
-  }
+  RemoteChangeHandler::RemoteChange remote_change(
+      changestamp, remote_resource_id, remote_file_md5,
+      updated_time, sync_type, url, file_change);
+  remote_change_handler_.AppendChange(remote_change);
 
   DVLOG(3) << "Append remote change: " << path.value()
            << " (" << normalized_path << ")"
@@ -1926,55 +1850,12 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
 
 void DriveFileSyncService::RemoveRemoteChange(
     const FileSystemURL& url) {
-  OriginToChangesMap::iterator found_origin =
-      origin_to_changes_map_.find(url.origin());
-  if (found_origin == origin_to_changes_map_.end())
+  if (!remote_change_handler_.RemoveChangeForURL(url))
     return;
-
-  PathToChangeMap* path_to_change = &found_origin->second;
-  PathToChangeMap::iterator found_change = path_to_change->find(
-      fileapi::VirtualPath::GetNormalizedFilePath(url.path()));
-  if (found_change == path_to_change->end())
-    return;
-
-  pending_changes_.erase(found_change->second.position_in_queue);
-  path_to_change->erase(found_change);
-  if (path_to_change->empty())
-    origin_to_changes_map_.erase(found_origin);
-
   if (metadata_store_->IsBatchSyncOrigin(url.origin()) &&
-      !ContainsKey(origin_to_changes_map_, url.origin())) {
+      !remote_change_handler_.HasChangesForOrigin(url.origin())) {
     metadata_store_->MoveBatchSyncOriginToIncremental(url.origin());
   }
-}
-
-void DriveFileSyncService::RemoveRemoteChangesForOrigin(const GURL& origin) {
-  OriginToChangesMap::iterator found = origin_to_changes_map_.find(origin);
-  if (found != origin_to_changes_map_.end()) {
-    for (PathToChangeMap::iterator itr = found->second.begin();
-         itr != found->second.end(); ++itr)
-      pending_changes_.erase(itr->second.position_in_queue);
-    origin_to_changes_map_.erase(found);
-  }
-  pending_batch_sync_origins_.erase(origin);
-}
-
-bool DriveFileSyncService::GetPendingChangeForFileSystemURL(
-    const FileSystemURL& url,
-    RemoteChange* change) const {
-  DCHECK(change);
-  OriginToChangesMap::const_iterator found_url =
-      origin_to_changes_map_.find(url.origin());
-  if (found_url == origin_to_changes_map_.end())
-    return false;
-  const PathToChangeMap& path_to_change = found_url->second;
-  PathToChangeMap::const_iterator found_path =
-      path_to_change.find(fileapi::VirtualPath::GetNormalizedFilePath(
-          url.path()));
-  if (found_path == path_to_change.end())
-    return false;
-  *change = found_path->second;
-  return true;
 }
 
 void DriveFileSyncService::MarkConflict(
@@ -1985,9 +1866,9 @@ void DriveFileSyncService::MarkConflict(
   if (drive_metadata->resource_id().empty()) {
     // If the file does not have valid drive_metadata in the metadata store
     // we must have a pending remote change entry.
-    RemoteChange remote_change;
+    RemoteChangeHandler::RemoteChange remote_change;
     const bool has_remote_change =
-        GetPendingChangeForFileSystemURL(url, &remote_change);
+        remote_change_handler_.GetChangeForURL(url, &remote_change);
     DCHECK(has_remote_change);
     drive_metadata->set_resource_id(remote_change.resource_id);
     drive_metadata->set_md5_checksum(std::string());
@@ -2066,7 +1947,8 @@ void DriveFileSyncService::MaybeScheduleNextTask() {
 
   // Notify observer of the update of |pending_changes_|.
   FOR_EACH_OBSERVER(Observer, service_observers_,
-                    OnRemoteChangeQueueUpdated(pending_changes_.size()));
+                    OnRemoteChangeQueueUpdated(
+                        remote_change_handler_.ChangesSize()));
 
   MaybeStartFetchChanges();
 }
@@ -2136,9 +2018,9 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
     DVLOG(3) << " * change:" << entry.title()
              << (entry.deleted() ? " (deleted)" : " ")
              << "[" << origin.spec() << "]";
-    has_new_changes =
-        AppendRemoteChange(origin, entry, entry.changestamp(),
-                           REMOTE_SYNC_TYPE_INCREMENTAL) || has_new_changes;
+    has_new_changes = AppendRemoteChange(
+        origin, entry, entry.changestamp(),
+        RemoteChangeHandler::REMOTE_SYNC_TYPE_INCREMENTAL) || has_new_changes;
   }
 
   if (reset_sync_root) {

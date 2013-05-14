@@ -21,6 +21,7 @@
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/local_sync_operation_resolver.h"
+#include "chrome/browser/sync_file_system/remote_change_handler.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_action.h"
@@ -134,61 +135,6 @@ class DriveFileSyncService
   friend class DriveFileSyncServiceSyncTest;
   struct ApplyLocalChangeParam;
   struct ProcessRemoteChangeParam;
-
-  enum RemoteSyncType {
-    // Smaller number indicates higher priority in ChangeQueue.
-    REMOTE_SYNC_TYPE_FETCH = 0,
-    REMOTE_SYNC_TYPE_INCREMENTAL = 1,
-    REMOTE_SYNC_TYPE_BATCH = 2,
-  };
-
-  struct ChangeQueueItem {
-    int64 changestamp;
-    RemoteSyncType sync_type;
-    fileapi::FileSystemURL url;
-
-    ChangeQueueItem();
-    ChangeQueueItem(int64 changestamp,
-                    RemoteSyncType sync_type,
-                    const fileapi::FileSystemURL& url);
-  };
-
-  struct ChangeQueueComparator {
-    bool operator()(const ChangeQueueItem& left, const ChangeQueueItem& right);
-  };
-
-  typedef std::set<ChangeQueueItem, ChangeQueueComparator> PendingChangeQueue;
-
-  struct RemoteChange {
-    int64 changestamp;
-    std::string resource_id;
-    std::string md5_checksum;
-    base::Time updated_time;
-    RemoteSyncType sync_type;
-    fileapi::FileSystemURL url;
-    FileChange change;
-    PendingChangeQueue::iterator position_in_queue;
-
-    RemoteChange();
-    RemoteChange(int64 changestamp,
-                 const std::string& resource_id,
-                 const std::string& md5_checksum,
-                 const base::Time& updated_time,
-                 RemoteSyncType sync_type,
-                 const fileapi::FileSystemURL& url,
-                 const FileChange& change,
-                 PendingChangeQueue::iterator position_in_queue);
-    ~RemoteChange();
-  };
-
-  struct RemoteChangeComparator {
-    bool operator()(const RemoteChange& left, const RemoteChange& right);
-  };
-
-  // TODO(tzik): Consider using std::pair<base::FilePath, FileType> as the key
-  // below to support directories and custom conflict handling.
-  typedef std::map<base::FilePath::StringType, RemoteChange> PathToChangeMap;
-  typedef std::map<GURL, PathToChangeMap> OriginToChangesMap;
 
   typedef base::Callback<void(const base::Time& time,
                               SyncFileType remote_file_type,
@@ -377,25 +323,27 @@ class DriveFileSyncService
       SyncStatusCode status);
 
   // Returns true if |pending_changes_| was updated.
-  bool AppendRemoteChange(const GURL& origin,
-                          const google_apis::ResourceEntry& entry,
-                          int64 changestamp,
-                          RemoteSyncType sync_type);
-  bool AppendFetchChange(const GURL& origin,
-                         const base::FilePath& path,
-                         const std::string& resource_id,
-                         SyncFileType file_type);
-  bool AppendRemoteChangeInternal(const GURL& origin,
-                                  const base::FilePath& path,
-                                  bool is_deleted,
-                                  const std::string& resource_id,
-                                  int64 changestamp,
-                                  const std::string& remote_file_md5,
-                                  const base::Time& updated_time,
-                                  SyncFileType file_type,
-                                  RemoteSyncType sync_type);
+  bool AppendRemoteChange(
+      const GURL& origin,
+      const google_apis::ResourceEntry& entry,
+      int64 changestamp,
+      RemoteChangeHandler::RemoteSyncType sync_type);
+  bool AppendFetchChange(
+      const GURL& origin,
+      const base::FilePath& path,
+      const std::string& resource_id,
+      SyncFileType file_type);
+  bool AppendRemoteChangeInternal(
+      const GURL& origin,
+      const base::FilePath& path,
+      bool is_deleted,
+      const std::string& resource_id,
+      int64 changestamp,
+      const std::string& remote_file_md5,
+      const base::Time& updated_time,
+      SyncFileType file_type,
+      RemoteChangeHandler::RemoteSyncType sync_type);
   void RemoveRemoteChange(const fileapi::FileSystemURL& url);
-  void RemoveRemoteChangesForOrigin(const GURL& origin);
   void MaybeMarkAsIncrementalSyncOrigin(const GURL& origin);
 
   void MarkConflict(
@@ -406,10 +354,6 @@ class DriveFileSyncService
       const UpdatedTimeCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> entry);
-
-  // This returns false if no change is found for the |url|.
-  bool GetPendingChangeForFileSystemURL(const fileapi::FileSystemURL& url,
-                                        RemoteChange* change) const;
 
   // A wrapper implementation to GDataErrorCodeToSyncStatusCode which returns
   // authentication error if the user is not signed in.
@@ -482,9 +426,6 @@ class DriveFileSyncService
 
   int64 largest_fetched_changestamp_;
 
-  PendingChangeQueue pending_changes_;
-  OriginToChangesMap origin_to_changes_map_;
-
   std::set<GURL> pending_batch_sync_origins_;
 
   // Is set to true when there's a fair possibility that we have some
@@ -503,6 +444,7 @@ class DriveFileSyncService
   ObserverList<Observer> service_observers_;
   ObserverList<FileStatusObserver> file_status_observers_;
 
+  RemoteChangeHandler remote_change_handler_;
   RemoteChangeProcessor* remote_change_processor_;
 
   ConflictResolutionPolicy conflict_resolution_;
