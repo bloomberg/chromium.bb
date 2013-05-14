@@ -57,7 +57,6 @@ namespace WebCore {
         void addColorStop(const ColorStop&);
         void addColorStop(float, const Color&);
 
-        void getColor(float value, float* r, float* g, float* b, float* a) const;
         virtual bool hasAlpha() const OVERRIDE;
 
         bool isRadial() const { return m_radial; }
@@ -143,7 +142,6 @@ namespace WebCore {
 
         void destroyShader();
 
-        int findStop(float value) const;
         void sortStopsIfNecessary();
 
         // Keep any parameters relevant to rendering in sync with the structure in Gradient::hash().
@@ -155,7 +153,6 @@ namespace WebCore {
         float m_aspectRatio; // For elliptical gradient, width / height.
         mutable Vector<ColorStop, 2> m_stops;
         mutable bool m_stopsSorted;
-        mutable int m_lastStop;
         GradientSpreadMethod m_spreadMethod;
         AffineTransform m_gradientSpaceTransformation;
 

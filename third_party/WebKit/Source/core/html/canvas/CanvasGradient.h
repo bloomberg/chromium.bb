@@ -51,7 +51,6 @@ namespace WebCore {
 
         void addColorStop(float value, const String& color, ExceptionCode&);
 
-        void getColor(float value, float* r, float* g, float* b, float* a) const { m_gradient->getColor(value, r, g, b, a); }
     private:
         CanvasGradient(const FloatPoint& p0, const FloatPoint& p1);
         CanvasGradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1);
