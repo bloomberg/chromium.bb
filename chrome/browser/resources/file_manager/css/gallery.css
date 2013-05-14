@@ -575,8 +575,10 @@ body[new-ui] .gallery .image-wrapper > img:not(.cached) {
   visibility: visible;
 }
 
-body .gallery button,
-body .gallery button[disabled] {
+body .gallery .header button,
+body .gallery .toolbar button,
+body .gallery .header button[disabled],
+body .gallery .toolbar button[disabled] {
   -webkit-box-align: center;
   -webkit-box-flex: 0;
   -webkit-box-orient: horizontal;
@@ -595,7 +597,8 @@ body .gallery button[disabled] {
   z-index: 10;
 }
 
-body .gallery button {
+body .gallery .header button,
+body .gallery .toolbar button {
   height: 40px;
   margin: 6px 0;
   min-width: 40px;  /* Reset. */
@@ -610,7 +613,8 @@ body .gallery button {
 /* Show labels if there is enough space. */
 @media (min-width: 1050px) {
 
-  body .gallery .edit-main button {
+  body .gallery .edit-main button,
+  body .gallery .edit-main button[disabled] {
     background-position: 5px center;
     min-width: 0;  /* Reset. */
     padding: 0 10px 0 35px;
@@ -623,14 +627,18 @@ body .gallery button {
 
 }
 
-body .gallery button:hover {
+body .gallery .header button:hover,
+body .gallery .toolbar button:hover {
   background-color: rgba(31, 31, 31, 1);
   color: white;
 }
 
-body .gallery button:active,
-body .gallery button[pressed],
-body .gallery button[pressed]:hover {
+body .gallery .header button:active,
+body .gallery .toolbar button:active,
+body .gallery .header button[pressed],
+body .gallery .toolbar button[pressed],
+body .gallery .header button[pressed]:hover,
+body .gallery .toolbar button[pressed]:hover {
   background-color: rgba(240, 240, 240, 1);
   color: black;
 }
@@ -727,12 +735,12 @@ body .gallery button[pressed]:hover {
     url('../images/gallery/2x/icon_redo_selected.png') 2x);
 }
 
-.gallery > .toolbar button[disabled] {
+body .gallery > .toolbar button[disabled] {
   opacity: 0.5;
   pointer-events: none;
 }
 
-.gallery > .toolbar button[hidden] {
+body .gallery > .toolbar button[hidden] {
   display: none;
 }
 
@@ -808,13 +816,13 @@ body .gallery button[pressed]:hover {
   background-color: rgba(31, 31, 31, 1);
 }
 
-.gallery[error] > .toolbar button.edit,
-.gallery[error] > .toolbar button.share {
+body .gallery[error] > .toolbar button.edit,
+body .gallery[error] > .toolbar button.share {
   opacity: 0.7;
   pointer-events: none;
 }
 
-.gallery > .toolbar > button.share[disabled] {
+body .gallery > .toolbar > button.share[disabled] {
   display: none;
 }
 
