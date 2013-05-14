@@ -5,6 +5,7 @@
 """Downloads items from the Chromium continuous archive."""
 
 import os
+import platform
 import sys
 import urllib
 
@@ -15,6 +16,7 @@ from common import util
 
 CHROME_26_REVISION = '181664'
 CHROME_27_REVISION = '190466'
+CHROME_28_REVISION = '198276'
 
 _SITE = 'http://commondatastorage.googleapis.com/chromium-browser-continuous'
 
@@ -66,4 +68,7 @@ def _GetDownloadPlatform():
   elif util.IsMac():
     return 'Mac'
   elif util.IsLinux():
-    return 'Linux_x64'
+    if platform.architecture()[0] == '64bit':
+      return 'Linux_x64'
+    else:
+      return 'Linux'

@@ -157,8 +157,11 @@ def main():
         continuous_archive.CHROME_26_REVISION, util.MakeTempDir())
     chrome_27 = continuous_archive.DownloadChrome(
         continuous_archive.CHROME_27_REVISION, util.MakeTempDir())
+    chrome_28 = continuous_archive.DownloadChrome(
+        continuous_archive.CHROME_28_REVISION, util.MakeTempDir())
     chrome_path_versions = [
         {'path': chrome_tip_of_tree, 'version': 'HEAD'},
+        {'path': chrome_28, 'version': '28'},
         {'path': chrome_27, 'version': '27'},
         {'path': chrome_26, 'version': '26'},
     ]
