@@ -62,11 +62,13 @@ void NegotiatingClientAuthenticator::ProcessMessage(
     current_method_ = method;
     method_set_by_host_ = true;
     state_ = PROCESSING_MESSAGE;
+
     // Copy the message since the authenticator may process it asynchronously.
-    CreateAuthenticator(WAITING_MESSAGE, base::Bind(
+    base::Closure callback = base::Bind(
         &NegotiatingAuthenticatorBase::ProcessMessageInternal,
         base::Unretained(this), base::Owned(new buzz::XmlElement(*message)),
-        resume_callback));
+        resume_callback);
+    CreateAuthenticatorForCurrentMethod(WAITING_MESSAGE, callback);
     return;
   }
   ProcessMessageInternal(message, resume_callback);
@@ -76,12 +78,18 @@ scoped_ptr<buzz::XmlElement> NegotiatingClientAuthenticator::GetNextMessage() {
   DCHECK_EQ(state(), MESSAGE_READY);
   // This is the first message to the host, send a list of supported methods.
   if (!current_method_.is_valid()) {
-    // We currently send just an empty message with the supported list, but, in
-    // the future, the client may optimistically pick a method and send its
-    // first message, along with the supported methods. If the host doesn't
-    // support that method, it is free to ignore this first message and pick a
-    // different method from the supported list.
-    scoped_ptr<buzz::XmlElement> result = CreateEmptyAuthenticatorMessage();
+    // If no authentication method has been chosen, see if we can optimistically
+    // choose one.
+    scoped_ptr<buzz::XmlElement> result;
+    current_authenticator_ = CreatePreferredAuthenticator();
+    if (current_authenticator_) {
+      DCHECK(current_authenticator_->state() == MESSAGE_READY);
+      result = GetNextMessageInternal();
+    } else {
+      result = CreateEmptyAuthenticatorMessage();
+    }
+
+    // Include a list of supported methods.
     std::stringstream supported_methods(std::stringstream::out);
     for (std::vector<AuthenticationMethod>::iterator it = methods_.begin();
          it != methods_.end(); ++it) {
@@ -96,7 +104,7 @@ scoped_ptr<buzz::XmlElement> NegotiatingClientAuthenticator::GetNextMessage() {
   return GetNextMessageInternal();
 }
 
-void NegotiatingClientAuthenticator::CreateAuthenticator(
+void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
     Authenticator::State preferred_initial_state,
     const base::Closure& resume_callback) {
   DCHECK(current_method_.is_valid());
@@ -113,6 +121,12 @@ void NegotiatingClientAuthenticator::CreateAuthenticator(
         &NegotiatingClientAuthenticator::CreateV2AuthenticatorWithSecret,
         weak_factory_.GetWeakPtr(), preferred_initial_state, resume_callback));
   }
+}
+
+scoped_ptr<Authenticator>
+NegotiatingClientAuthenticator::CreatePreferredAuthenticator() {
+  NOTIMPLEMENTED();
+  return scoped_ptr<Authenticator>();
 }
 
 void NegotiatingClientAuthenticator::CreateV2AuthenticatorWithSecret(

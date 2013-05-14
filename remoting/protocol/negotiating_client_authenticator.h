@@ -45,8 +45,19 @@ class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
   // |current_authenticator_|. Authenticators that can be started in either
   // state will be created in |preferred_initial_state|.
   // |resume_callback| is called after |current_authenticator_| is set.
-  void CreateAuthenticator(Authenticator::State preferred_initial_state,
-                           const base::Closure& resume_callback);
+  void CreateAuthenticatorForCurrentMethod(
+      Authenticator::State preferred_initial_state,
+      const base::Closure& resume_callback);
+
+  // If possible, create a preferred authenticator ready to send an
+  // initial message optimistically to the host. The host is free to
+  // ignore the client's preferred authenticator and initial message
+  // and to instead reply with an alternative method. See the comments
+  // in negotiating_authenticator_base.h for more details.
+  //
+  // Returns the preferred authenticator if possible, or NULL otherwise.
+  scoped_ptr<Authenticator> CreatePreferredAuthenticator();
+
 
   // Creates a V2Authenticator in state |initial_state| with the given
   // |shared_secret|, then runs |resume_callback|.
