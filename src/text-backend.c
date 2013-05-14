@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "compositor.h"
 #include "text-server-protocol.h"
@@ -92,6 +93,9 @@ struct text_backend {
 		struct wl_resource *binding;
 		struct weston_process process;
 		struct wl_client *client;
+
+		unsigned deathcount;
+		uint32_t deathstamp;
 	} input_method;
 
 	struct wl_listener seat_created_listener;
@@ -820,14 +824,33 @@ input_method_init_seat(struct weston_seat *seat)
 	seat->input_method->focus_listener_initialized = 1;
 }
 
+static void launch_input_method(struct text_backend *text_backend);
+
 static void
 handle_input_method_sigchld(struct weston_process *process, int status)
 {
+	uint32_t time;
 	struct text_backend *text_backend =
 		container_of(process, struct text_backend, input_method.process);
 
 	text_backend->input_method.process.pid = 0;
 	text_backend->input_method.client = NULL;
+
+	/* if input_method dies more than 5 times in 10 seconds, give up */
+	time = weston_compositor_get_time();
+	if (time - text_backend->input_method.deathstamp > 10000) {
+		text_backend->input_method.deathstamp = time;
+		text_backend->input_method.deathcount = 0;
+	}
+
+	text_backend->input_method.deathcount++;
+	if (text_backend->input_method.deathcount > 5) {
+		weston_log("input_method died, giving up.\n");
+		return;
+	}
+
+	weston_log("input_method died, respawning...\n");
+	launch_input_method(text_backend);
 }
 
 static void
