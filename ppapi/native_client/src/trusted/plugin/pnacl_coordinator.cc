@@ -366,6 +366,16 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
     ExitWithError();
     return;
   }
+  // Send out one last progress event, to finish up the progress events
+  // that were delayed (see the delay inserted in BitcodeGotCompiled).
+  if (ExpectedProgressKnown()) {
+    pexe_bytes_compiled_ = expected_pexe_size_;
+    plugin_->EnqueueProgressEvent(plugin::Plugin::kProgressEventProgress,
+                                  pexe_url_,
+                                  plugin::Plugin::LENGTH_IS_COMPUTABLE,
+                                  pexe_bytes_compiled_,
+                                  expected_pexe_size_);
+  }
 
   // If there are no errors, report stats from this thread (the main thread).
   HistogramOptLevel(pnacl_options_.opt_level());
@@ -857,21 +867,31 @@ StreamCallback PnaclCoordinator::GetCallback() {
 
 void PnaclCoordinator::BitcodeGotCompiled(int32_t pp_error,
                                           int64_t bytes_compiled) {
-  // If we don't know the expected total yet, ask.
   pexe_bytes_compiled_ += bytes_compiled;
-  if (expected_pexe_size_ == -1) {
+  // If we don't know the expected total yet, ask.
+  if (!ExpectedProgressKnown()) {
     int64_t amount_downloaded;  // dummy variable.
     streaming_downloader_->GetDownloadProgress(&amount_downloaded,
                                                &expected_pexe_size_);
   }
-  bool length_computable = (expected_pexe_size_ != -1);
-  plugin_->EnqueueProgressEvent(plugin::Plugin::kProgressEventProgress,
-                                pexe_url_,
-                                (length_computable ?
-                                 plugin::Plugin::LENGTH_IS_COMPUTABLE :
-                                 plugin::Plugin::LENGTH_IS_NOT_COMPUTABLE),
-                                pexe_bytes_compiled_,
-                                expected_pexe_size_);
+  // Hold off reporting the last few bytes of progress, since we don't know
+  // when they are actually completely compiled.  "bytes_compiled" only means
+  // that bytes were sent to the compiler.
+  if (ExpectedProgressKnown()) {
+    if (!ShouldDelayProgressEvent()) {
+      plugin_->EnqueueProgressEvent(plugin::Plugin::kProgressEventProgress,
+                                    pexe_url_,
+                                    plugin::Plugin::LENGTH_IS_COMPUTABLE,
+                                    pexe_bytes_compiled_,
+                                    expected_pexe_size_);
+    }
+  } else {
+    plugin_->EnqueueProgressEvent(plugin::Plugin::kProgressEventProgress,
+                                  pexe_url_,
+                                  plugin::Plugin::LENGTH_IS_NOT_COMPUTABLE,
+                                  pexe_bytes_compiled_,
+                                  expected_pexe_size_);
+  }
 }
 
 pp::CompletionCallback PnaclCoordinator::GetCompileProgressCallback(
