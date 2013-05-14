@@ -168,6 +168,9 @@ enum VariationID {
   EXTENDED_INSTANT_ID_DEV_OFFLINE_2       = 3310260,
   EXTENDED_INSTANT_ID_DEV_INSTANT_1       = 3310261,
   EXTENDED_INSTANT_ID_DEV_INSTANT_2       = 3310262,
+  // Reserve a contiguous chunk of IDs for Instant Extended.
+  EXTENDED_INSTANT_RANGE_ID_MIN           = 3310265,
+  EXTENDED_INSTANT_RANGE_ID_MAX           = 3310365,
 
   // Reserve 100 IDs to be used by autocomplete dynamic field trials.
   // The dynamic field trials are activated by a call to
@@ -193,7 +196,7 @@ enum VariationID {
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3310265,
+  NEXT_ID = 3310366,
 
   // USABLE IDs END HERE.
   //
