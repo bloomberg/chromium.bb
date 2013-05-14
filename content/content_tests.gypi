@@ -528,7 +528,6 @@
         '../webkit/plugins/ppapi/ppapi_unittest.cc',
         '../webkit/plugins/ppapi/ppapi_unittest.h',
         '../webkit/plugins/ppapi/quota_file_io_unittest.cc',
-        '../webkit/plugins/ppapi/v8_var_converter_unittest.cc',
         '../webkit/quota/mock_quota_manager.cc',
         '../webkit/quota/mock_quota_manager.h',
         '../webkit/quota/mock_quota_manager_unittest.cc',
