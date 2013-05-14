@@ -87,77 +87,28 @@ class PageCycler(page_measurement.PageMeasurement):
     if sys.platform == 'win32':
       metric = 'working_set'
 
-    # Browser
-    if 'VM' in memory['Browser']:
-      results.AddSummary('vm_final_size_browser', 'bytes',
-                         memory['Browser']['VM'], data_type='unimportant')
-    if 'VMPeak' in memory['Browser']:
-      results.AddSummary('vm_peak_size_browser', 'bytes', memory['Browser']
-                         ['VMPeak'], data_type='unimportant')
-    if 'WorkingSetSize' in memory['Browser']:
-      results.AddSummary('vm_%s_final_size_browser' % metric, 'bytes',
-                         memory['Browser']['WorkingSetSize'],
-                         data_type='unimportant')
-    if 'WorkingSetSizePeak' in memory['Browser']:
-      results.AddSummary('%s_peak_size_browser' % metric, 'bytes',
-                         memory['Browser']['WorkingSetSizePeak'],
-                         data_type='unimportant')
-    if 'PrivateDirty' in memory['Browser']:
-      results.AddSummary('vm_private_dirty_final_browser', 'bytes',
-                         memory['Browser']['PrivateDirty'],
-                         data_type='unimportant')
-    if 'ProportionalSetSize' in memory['Browser']:
-      results.AddSummary('vm_proportional_set_size_final_browser', 'bytes',
-                         memory['Browser']['ProportionalSetSize'],
-                         data_type='unimportant')
+    def AddSummariesForProcessTypes(process_types_memory, process_type_trace):
+      def AddSummary(value_name_memory, value_name_trace):
+        if len(process_types_memory) > 1 and value_name_memory.endswith('Peak'):
+          return
+        values = []
+        for process_type_memory in process_types_memory:
+          if value_name_memory in memory[process_type_memory]:
+            values.append(memory[process_type_memory][value_name_memory])
+        if values:
+          results.AddSummary(value_name_trace + process_type_trace,
+                             'bytes', sum(values), data_type='unimportant')
+      AddSummary('VM', 'vm_final_size_')
+      AddSummary('WorkingSetSize', 'vm_%s_final_size_' % metric)
+      AddSummary('PrivateDirty', 'vm_private_dirty_final_')
+      AddSummary('ProportionalSetSize', 'vm_proportional_set_size_final_')
+      AddSummary('VMPeak', 'vm_peak_size_')
+      AddSummary('WorkingSetSizePeak', '%s_peak_size_' % metric)
 
-    # Renderer
-    if 'VM' in memory['Renderer']:
-      results.AddSummary('vm_final_size_renderer', 'bytes',
-                         memory['Renderer']['VM'], data_type='unimportant')
-    if 'VMPeak' in memory['Renderer']:
-      results.AddSummary('vm_peak_size_renderer', 'bytes',
-                         memory['Browser']['VMPeak'], data_type='unimportant')
-    if 'WorkingSetSize' in memory['Renderer']:
-      results.AddSummary('vm_%s_final_size_renderer' % metric, 'bytes',
-                         memory['Renderer']['WorkingSetSize'],
-                         data_type='unimportant')
-    if 'WorkingSetSizePeak' in memory['Renderer']:
-      results.AddSummary('%s_peak_size_renderer' % metric, 'bytes',
-                         memory['Browser']['WorkingSetSizePeak'],
-                         data_type='unimportant')
-    if 'PrivateDirty' in memory['Renderer']:
-      results.AddSummary('vm_private_dirty_final_renderer', 'bytes',
-                         memory['Renderer']['PrivateDirty'],
-                         data_type='unimportant')
-    if 'ProportionalSetSize' in memory['Renderer']:
-      results.AddSummary('vm_proportional_set_size_final_renderer', 'bytes',
-                         memory['Renderer']['ProportionalSetSize'],
-                         data_type='unimportant')
-
-    # Total
-    if 'VM' in memory['Browser'] and 'VM' in memory['Renderer']:
-      results.AddSummary('vm_final_size_total', 'bytes',
-                         memory['Browser']['VM'] + memory['Renderer']['VM'],
-                         data_type='unimportant')
-    if ('WorkingSetSize' in memory['Browser'] and
-        'WorkingSetSize' in memory['Renderer']):
-      results.AddSummary('vm_%s_final_size_total' % metric, 'bytes',
-                         memory['Browser']['WorkingSetSize'] +
-                         memory['Renderer']['WorkingSetSize'],
-                         data_type='unimportant')
-    if ('PrivateDirty' in memory['Browser'] and
-        'PrivateDirty' in memory['Renderer']):
-      results.AddSummary('vm_private_dirty_final_total', 'bytes',
-                         memory['Browser']['PrivateDirty'] +
-                         memory['Renderer']['PrivateDirty'],
-                         data_type='unimportant')
-    if ('ProportionalSetSize' in memory['Browser'] and
-        'ProportionalSetSize' in memory['Renderer']):
-      results.AddSummary('vm_proportional_set_size_final_total', 'bytes',
-                         memory['Browser']['ProportionalSetSize'] +
-                         memory['Renderer']['ProportionalSetSize'],
-                         data_type='unimportant')
+    AddSummariesForProcessTypes(['Browser'], 'browser')
+    AddSummariesForProcessTypes(['Renderer'], 'renderer')
+    AddSummariesForProcessTypes(['Gpu'], 'gpu')
+    AddSummariesForProcessTypes(['Browser', 'Renderer', 'Gpu'], 'total')
 
     results.AddSummary('commit_charge', 'kb',
                        memory['SystemCommitCharge'] - self.start_commit_charge,
@@ -169,29 +120,25 @@ class PageCycler(page_measurement.PageMeasurement):
     io_stats = tab.browser.io_stats
     if not io_stats['Browser']:
       return
-    results.AddSummary('read_operations_browser', '', io_stats['Browser']
-                       ['ReadOperationCount'], data_type='unimportant')
-    results.AddSummary('write_operations_browser', '', io_stats['Browser']
-                       ['WriteOperationCount'],
-                       data_type='unimportant')
-    results.AddSummary('read_bytes_browser', 'kb',
-                       io_stats['Browser']['ReadTransferCount'] / 1024,
-                       data_type='unimportant')
-    results.AddSummary('write_bytes_browser', 'kb',
-                       io_stats['Browser']['WriteTransferCount'] / 1024,
-                       data_type='unimportant')
-    results.AddSummary('read_operations_renderer', '',
-                       io_stats['Renderer']['ReadOperationCount'],
-                       data_type='unimportant')
-    results.AddSummary('write_operations_renderer', '',
-                       io_stats['Renderer']['WriteOperationCount'],
-                       data_type='unimportant')
-    results.AddSummary('read_bytes_renderer', 'kb',
-                       io_stats['Renderer']['ReadTransferCount'] / 1024,
-                       data_type='unimportant')
-    results.AddSummary('write_bytes_renderer', 'kb',
-                       io_stats['Renderer']['WriteTransferCount'] / 1024,
-                       data_type='unimportant')
+
+    def AddSummariesForProcessType(process_type_io, process_type_trace):
+      results.AddSummary('read_operations_' + process_type_trace, '',
+                         io_stats[process_type_io]
+                         ['ReadOperationCount'],
+                         data_type='unimportant')
+      results.AddSummary('write_operations_' + process_type_trace, '',
+                         io_stats[process_type_io]
+                         ['WriteOperationCount'],
+                         data_type='unimportant')
+      results.AddSummary('read_bytes_' + process_type_trace, 'kb',
+                         io_stats[process_type_io]['ReadTransferCount'] / 1024,
+                         data_type='unimportant')
+      results.AddSummary('write_bytes_' + process_type_trace, 'kb',
+                         io_stats[process_type_io]['WriteTransferCount'] / 1024,
+                         data_type='unimportant')
+    AddSummariesForProcessType('Browser', 'browser')
+    AddSummariesForProcessType('Renderer', 'renderer')
+    AddSummariesForProcessType('Gpu', 'gpu')
 
   def MeasurePage(self, page, tab, results):
     def _IsDone():
