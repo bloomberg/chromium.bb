@@ -532,17 +532,9 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_CommandKeyEvents) {
 }
 #endif
 
-#if defined(OS_MACOSX)
-// http://crbug.com/81451 for mac
-#define MAYBE_AccessKeys DISABLED_AccessKeys
-#elif defined(OS_LINUX)
-// http://crbug.com/129235
-#define MAYBE_AccessKeys DISABLED_AccessKeys
-#else
-#define MAYBE_AccessKeys AccessKeys
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
+// Flaky: http://crbug.com/81451 , http://crbug.com/129235 ,
+// also fails on Windows.
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_AccessKeys) {
 #if defined(OS_MACOSX)
   // On Mac, access keys use ctrl+alt modifiers.
   static const KeyEventTestData kTestAccessA = {
