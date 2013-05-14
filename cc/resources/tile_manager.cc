@@ -18,6 +18,7 @@
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "ui/gfx/rect_conversions.h"
 
 namespace cc {
 
@@ -853,9 +854,13 @@ void TileManager::RunAnalyzeTask(
   analysis->is_solid_color &= use_color_estimator;
 
   if (metadata.prediction_benchmarking) {
-    SkDevice device(SkBitmap::kARGB_8888_Config, rect.width(), rect.height());
+    gfx::Rect layer_rect = gfx::ToEnclosingRect(
+        gfx::ScaleRect(rect, 1.0f / contents_scale));
+
+    SkDevice device(
+        SkBitmap::kARGB_8888_Config, layer_rect.width(), layer_rect.height());
     SkCanvas canvas(&device);
-    picture_pile->Raster(&canvas, rect, contents_scale, NULL);
+    picture_pile->Raster(&canvas, layer_rect, 1.0f, NULL);
 
     const SkBitmap bitmap = device.accessBitmap(false);
     DCHECK_EQ(bitmap.rowBytes(),

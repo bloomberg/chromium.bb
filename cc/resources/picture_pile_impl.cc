@@ -246,17 +246,19 @@ void PicturePileImpl::AnalyzeInRect(gfx::Rect content_rect,
   DCHECK(analysis);
   TRACE_EVENT0("cc", "PicturePileImpl::AnalyzeInRect");
 
-  content_rect.Intersect(gfx::Rect(gfx::ToCeiledSize(
-      gfx::ScaleSize(tiling_.total_size(), contents_scale))));
+  gfx::Rect layer_rect = gfx::ToEnclosingRect(
+      gfx::ScaleRect(content_rect, 1.0f / contents_scale));
+
+  layer_rect.Intersect(gfx::Rect(tiling_.total_size()));
 
   SkBitmap empty_bitmap;
   empty_bitmap.setConfig(SkBitmap::kNo_Config,
-                         content_rect.width(),
-                         content_rect.height());
+                         layer_rect.width(),
+                         layer_rect.height());
   skia::AnalysisDevice device(empty_bitmap);
   skia::AnalysisCanvas canvas(&device);
 
-  Raster(&canvas, content_rect, contents_scale, NULL);
+  Raster(&canvas, layer_rect, 1.0f, NULL);
 
   analysis->is_solid_color = canvas.getColorIfSolid(&analysis->solid_color);
   analysis->has_text = canvas.hasText();
