@@ -906,7 +906,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPDoesntSupportInstant) {
   EXPECT_EQ(instant()->GetLocalInstantURL(), active_tab->GetURL().spec());
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxHasFocusOnNewTab) {
+// Flaky, http://crbug.com/240852 .
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_OmniboxHasFocusOnNewTab) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
