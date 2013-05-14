@@ -493,8 +493,6 @@ void WebSocketJob::NotifyHeadersComplete() {
     delegate_->OnReceivedData(
         socket_, &received_data.front(), received_data.size());
 
-  handshake_response_.reset();
-
   WebSocketThrottle::GetInstance()->RemoveFromQueue(this);
   WebSocketThrottle::GetInstance()->WakeupSocketIfNecessary();
 }
