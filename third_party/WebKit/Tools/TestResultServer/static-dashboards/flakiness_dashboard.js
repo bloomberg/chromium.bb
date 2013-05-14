@@ -712,9 +712,9 @@ function getParsedExpectations(data)
         var parsed_expectations = [];
         var state = 'start';
 
-        // This clones _configuration_tokens_list in test_expectations.py.
+        // This clones _modifier_tokens_list in test_expectations.py.
         // FIXME: unify with the platforms constants at the top of the file.
-        var configuration_tokens = {
+        var modifier_tokens = {
             'Release': 'RELEASE',
             'Debug': 'DEBUG',
             'Mac': 'MAC',
@@ -742,40 +742,79 @@ function getParsedExpectations(data)
             'WontFix': 'WONTFIX',
         };
 
-            
+        var reachedEol = false;
+
+        // States
+        // - start: Next tokens are bugs or a path.
+        // - modifier: Parsed bugs and a '['. Next token is a modifier.
+        // - path: Parsed modifiers and a ']'. Next token is a path.
+        // - path_found: Parsed a path. Next token is '[' or EOL.
+        // - expectations: Parsed a path and a '['. Next tokens are
+        //                 expectations.
+        // - done: Parsed expectations and a ']'. Next is EOL.
+        // - error: Error occurred. Ignore this line.
         tokens.forEach(function(token) {
-          if (token.indexOf('Bug') != -1 ||
-              token.indexOf('webkit.org') != -1 ||
-              token.indexOf('crbug.com') != -1 ||
-              token.indexOf('code.google.com') != -1) {
+          if (reachedEol)
+              return;
+
+          if (state == 'start' &&
+              (token.indexOf('Bug') == 0 ||
+               token.indexOf('webkit.org') == 0 ||
+               token.indexOf('crbug.com') == 0 ||
+               token.indexOf('code.google.com') == 0)) {
               parsed_bugs.push(token);
           } else if (token == '[') {
               if (state == 'start') {
-                  state = 'configuration';
-              } else if (state == 'name_found') {
+                  state = 'modifier';
+              } else if (state == 'path_found') {
                   state = 'expectations';
+              } else {
+                  console.error('Unexpected \'[\' (state = ' + state + '): ' + line);
+                  state = 'error';
+                  return;
               }
           } else if (token == ']') {
-              if (state == 'configuration') {
-                  state = 'name';
+              if (state == 'modifier') {
+                  state = 'path';
               } else if (state == 'expectations') {
                   state = 'done';
+              } else {
+                  state = 'error';
+                  return;
               }
-          } else if (state == 'configuration') {
-              parsed_modifiers.push(configuration_tokens[token]);
+          } else if (state == 'modifier') {
+              var modifier = modifier_tokens[token];
+              if (!modifier) {
+                  console.error('Unknown modifier: ' + modifier);
+                  state = 'error';
+                  return;
+              }
+              parsed_modifiers.push(modifier);
           } else if (state == 'expectations') {
               if (token == 'Rebaseline' || token == 'Skip' || token == 'Slow' || token == 'WontFix') {
                   parsed_modifiers.push(token.toUpperCase());
               } else {
-                  parsed_expectations.push(expectation_tokens[token]);
+                  var expectation = expectation_tokens[token];
+                  if (!expectation) {
+                      console.error('Unknown expectation: ' + expectation);
+                      state = 'error';
+                      return;
+                  }
+                  parsed_expectations.push(expectation);
               }
           } else if (token == '#') {
-              state = 'done';
-          } else if (state == 'name' || state == 'start') {
+              reachedEol = true;
+          } else if (state == 'path' || state == 'start') {
               parsed_path = token;
-              state = 'name_found';
+              state = 'path_found';
+          } else {
+              console.error('Unexpected token (state = ' + state + '): ' + token);
+              state = 'error';
           }
         });
+
+        if (state != 'path_found' && state != 'done')
+            return;
 
         if (!parsed_expectations.length) {
             if (parsed_modifiers.indexOf('Slow') == -1) {

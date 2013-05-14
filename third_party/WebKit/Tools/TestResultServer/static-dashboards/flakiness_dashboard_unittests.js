@@ -55,6 +55,121 @@ function resetGlobals()
     return historyInstance;
 }
 
+test('getParsedExpectationsCommentLine', 1, function() {
+    var expectations  = getParsedExpectations('# Comment line crbug.com/12345 [ Release ] tests/foobar.html [ Failure ]');
+    equal(expectations.length, 0, 'Number of expectations');
+});
+
+test('getParsedExpectationsSimpleInput', 4, function() {
+    var expectations  = getParsedExpectations('crbug.com/12345 [ Release ] tests/foobar.html [ Failure ]');
+    equal(expectations.length, 1, 'Number of expectations');
+    equal(expectations[0].modifiers, 'crbug.com/12345 RELEASE', 'modifiers');
+    equal(expectations[0].path, 'tests/foobar.html', 'path');
+    equal(expectations[0].expectations, 'FAIL', 'expectations');
+});
+
+test('getParsedExpectationsSimpleInputWithComment', 4, function() {
+    var expectations  = getParsedExpectations('crbug.com/12345 [ Release ] tests/foobar.html [ Failure ] # Comment');
+    equal(expectations.length, 1, 'Number of expectations');
+    equal(expectations[0].modifiers, 'crbug.com/12345 RELEASE', 'modifiers');
+    equal(expectations[0].path, 'tests/foobar.html', 'path');
+    equal(expectations[0].expectations, 'FAIL', 'expectations');
+});
+
+test('getParsedExpectationsOnlyBug', 1, function() {
+    var expectations  = getParsedExpectations('crbug.com/12345');
+    equal(expectations.length, 0, 'Number of expectations');
+});
+
+test('getParsedExpectationsTwoBugs', 4, function() {
+    var expectations  = getParsedExpectations('crbug.com/12345 tests/foobar.html [ Failure ]');
+    equal(expectations.length, 1, 'Number of expectations');
+    equal(expectations[0].modifiers, 'crbug.com/12345', 'modifiers');
+    equal(expectations[0].path, 'tests/foobar.html', 'path');
+    equal(expectations[0].expectations, 'FAIL', 'expectations');
+});
+
+test('getParsedExpectationsNoBug', 4, function() {
+    var expectations  = getParsedExpectations('tests/foobar.html [ Failure ]');
+    equal(expectations.length, 1, 'Number of expectations');
+    equal(expectations[0].modifiers, '', 'modifiers');
+    equal(expectations[0].path, 'tests/foobar.html', 'path');
+    equal(expectations[0].expectations, 'FAIL', 'expectations');
+});
+
+test('getParsedExpectationsBugPrefixInPath', 4, function() {
+    var expectations = getParsedExpectations('Bug12345 Bug67890 tests/Bug.html [ Failure ]');
+    equal(expectations.length, 1, 'Number of expectations');
+    equal(expectations[0].modifiers, 'Bug12345 Bug67890', 'modifiers');
+    equal(expectations[0].path, 'tests/Bug.html', 'path');
+    equal(expectations[0].expectations, 'FAIL', 'expectations');
+});
+
+test('getParsedExpectationsTwoModifiers', 4, function() {
+    var expectations  = getParsedExpectations('crbug.com/12345 [ Release Debug ] tests/foobar.html [ Failure ]');
+    equal(expectations.length, 1, 'Number of expectations');
+    equal(expectations[0].modifiers, 'crbug.com/12345 RELEASE DEBUG', 'modifiers');
+    equal(expectations[0].path, 'tests/foobar.html', 'path');
+    equal(expectations[0].expectations, 'FAIL', 'expectations');
+});
+
+test('getParsedExpectationsUnknownModifier', 1, function() {
+    var expectations  = getParsedExpectations('crbug.com/12345 [ ImaginaryOS ] tests/foobar.html');
+    equal(expectations.length, 0, 'Number of expectations');
+});
+
+test('getParsedExpectationsTwoPaths', 1, function() {
+    var expectations  = getParsedExpectations('crbug.com/12345 tests/foo.html tests/bar.html [ Failure ]');
+    equal(expectations.length, 0, 'Number of expectations');
+});
+
+test('getParsedExpectationsNoPath', 1, function() {
+    var expectations  = getParsedExpectations('crbug.com/12345 [ Failure ]');
+    equal(expectations.length, 0, 'Number of expectations');
+});
+
+test('getParsedExpectationsHashInPath', 1, function() {
+    var expectations = getParsedExpectations('crbug.com/12345 # [ Failure ]');
+    equal(expectations.length, 0, 'Number of expectations');
+});
+
+test('getParsedExpectationsTwoExpectations', 4, function() {
+    expectations  = getParsedExpectations('crbug.com/12345 tests/foobar.html [ Pass Failure ]');
+    equal(expectations.length, 1, 'Number of expectations');
+    equal(expectations[0].modifiers, 'crbug.com/12345', 'modifiers');
+    equal(expectations[0].path, 'tests/foobar.html', 'path');
+    equal(expectations[0].expectations, 'PASS FAIL', 'expectations');
+});
+
+test('getParsedExpectationsNoExpectation', 4, function() {
+    var expectations  = getParsedExpectations('crbug.com/12345 tests/foobar.html');
+    equal(expectations.length, 1, 'Number of expectations');
+    equal(expectations[0].modifiers, 'crbug.com/12345 Skip', 'modifiers');
+    equal(expectations[0].path, 'tests/foobar.html', 'path');
+    equal(expectations[0].expectations, 'Pass', 'expectations');
+});
+
+test('getParsedExpectationsNoExpectationWithComment', 4, function() {
+    var expectations  = getParsedExpectations('crbug.com/12345 tests/foobar.html # Comment');
+    equal(expectations.length, 1, 'Number of expectations');
+    equal(expectations[0].modifiers, 'crbug.com/12345 Skip', 'modifiers');
+    equal(expectations[0].path, 'tests/foobar.html', 'path');
+    equal(expectations[0].expectations, 'Pass', 'expectations');
+});
+
+test('getParsedExpectationsExpectationConversionToModifier', 4, function() {
+    var expectations  = getParsedExpectations('crbug.com/12345 tests/foobar.html [ Rebaseline ]');
+    equal(expectations.length, 1, 'Number of expectations');
+    equal(expectations[0].modifiers, 'crbug.com/12345 REBASELINE Skip', 'modifiers');
+    equal(expectations[0].path, 'tests/foobar.html', 'path');
+    equal(expectations[0].expectations, 'Pass', 'expectations');
+});
+
+test('getParsedExpectationsUnknownExpectation', 1, function() {
+    var expectations  = getParsedExpectations('crbug.com/12345 tests/foobar.html [ PANIC ]');
+    equal(expectations.length, 0, 'Number of expectations');
+});
+
 function stubResultsByBuilder(data)
 {
     for (var builder in currentBuilders())
