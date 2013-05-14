@@ -67,17 +67,14 @@ def summarized_results(port, expected, passing, flaky):
         skipped_result.type = test_expectations.SKIP
         initial_results.add(skipped_result, expected, test_is_slow)
 
-        slow_pass_result = get_result('passes/text.html')
-        slow_pass_result.total_run_time = 1
-        initial_results.add(slow_pass_result, expected, test_is_slow)
-
+        initial_results.add(get_result('passes/text.html', run_time=1), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/audio.html'), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/timeout.html'), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/crash.html'), expected, test_is_slow)
     else:
-        initial_results.add(get_result('passes/text.html', test_expectations.TIMEOUT), expected, test_is_slow)
-        initial_results.add(get_result('failures/expected/audio.html', test_expectations.AUDIO), expected, test_is_slow)
-        initial_results.add(get_result('failures/expected/timeout.html', test_expectations.CRASH), expected, test_is_slow)
+        initial_results.add(get_result('passes/text.html', test_expectations.TIMEOUT, run_time=1), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/audio.html', test_expectations.AUDIO, run_time=0.049), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/timeout.html', test_expectations.CRASH, run_time=0.05), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/crash.html', test_expectations.TIMEOUT), expected, test_is_slow)
 
         # we only list hang.html here, since normally this is WontFix
@@ -162,3 +159,10 @@ class SummarizedResultsTest(unittest.TestCase):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=True, flaky=False)
         self.assertTrue(summary['tests']['passes']['skipped']['skip.html'])
+
+    def test_rounded_run_times(self):
+        summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
+        self.assertEquals(summary['tests']['passes']['text.html']['time'], 1)
+        self.assertTrue('time' not in summary['tests']['failures']['expected']['audio.html'])
+        self.assertEquals(summary['tests']['failures']['expected']['timeout.html']['time'], 0.1)
+        self.assertTrue('time' not in summary['tests']['failures']['expected']['crash.html'])

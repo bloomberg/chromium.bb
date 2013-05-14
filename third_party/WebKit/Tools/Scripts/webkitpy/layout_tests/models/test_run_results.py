@@ -167,7 +167,10 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
         actual = [keywords[result_type]]
 
         test_dict = {}
-        test_dict['time'] = result.total_run_time
+
+        rounded_run_time = round(result.test_run_time, 1)
+        if rounded_run_time:
+            test_dict['time'] = rounded_run_time
 
         if result.has_stderr:
             test_dict['has_stderr'] = True
@@ -180,7 +183,7 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
 
         if result_type == test_expectations.PASS:
             num_passes += 1
-            if expected == 'PASS' and result.total_run_time < 1 and not result.has_stderr:
+            if expected == 'PASS' and result.test_run_time < 1 and not result.has_stderr:
                 continue
         elif result_type == test_expectations.CRASH:
             if test_name in initial_results.unexpected_results_by_name:
