@@ -33,6 +33,25 @@
 
 using content::UserMetricsAction;
 
+namespace {
+// TODO(zork): Remove this blacklist when fonts are added to Chrome OS.
+// see: crbug.com/240586
+
+const char* kLanguageBlacklist[] = {
+  "km", // Khmer language
+  "si", // Sinhala language
+};
+
+bool IsBlacklisted(const std::string& language_code) {
+  for (size_t i = 0; i < arraysize(kLanguageBlacklist); ++i) {
+    if (language_code == kLanguageBlacklist[i])
+      return true;
+  }
+  return false;
+}
+
+} // namespace
+
 namespace chromeos {
 namespace options {
 
@@ -202,6 +221,7 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
                   *iter) == base_language_codes.end()) {
       continue;
     }
+
     const string16 display_name =
         l10n_util::GetDisplayNameForLocale(*iter, app_locale, true);
     const string16 native_display_name =
@@ -218,6 +238,12 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
     // Skip this language if it was already added.
     if (language_codes.find(base_language_codes[i]) != language_codes.end())
       continue;
+
+    // TODO(zork): Remove this blacklist when fonts are added to Chrome OS.
+    // see: crbug.com/240586
+    if (IsBlacklisted(base_language_codes[i]))
+      continue;
+
     string16 display_name =
         l10n_util::GetDisplayNameForLocale(
             base_language_codes[i], app_locale, false);
