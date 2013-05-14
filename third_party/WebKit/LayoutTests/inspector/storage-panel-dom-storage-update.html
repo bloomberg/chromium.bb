@@ -31,7 +31,7 @@ function test()
         var rows = [];
         for (var i = 0; i < nodes.length; ++i) {
             var node = nodes[i];
-            if (node._data.key.length)
+            if (typeof node._data.key === "string")
                 rows.push(node._data.key + " = " + node._data.value);
         }
         rows.sort();
