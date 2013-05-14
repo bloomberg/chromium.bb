@@ -267,7 +267,7 @@ void InspectorLayerTreeAgent::reasonsForCompositingLayer(ErrorString* errorStrin
     if (reasonsBitmask & CompositingReasonOverflowScrollingTouch)
         compositingReasons->setOverflowScrollingTouch(true);
 
-    if (reasonsBitmask & CompositingReasonStacking)
+    if (reasonsBitmask & CompositingReasonAssumedOverlap)
         compositingReasons->setStacking(true);
 
     if (reasonsBitmask & CompositingReasonOverlap)

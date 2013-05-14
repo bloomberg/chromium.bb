@@ -461,6 +461,11 @@ void RenderLayerCompositor::layerBecameNonComposited(const RenderLayer* renderLa
     --m_compositedLayerCount;
 }
 
+static bool requiresCompositing(CompositingReasons reasons)
+{
+    return reasons != CompositingReasonNone;
+}
+
 #if !LOG_DISABLED
 void RenderLayerCompositor::logLayerInfo(const RenderLayer* layer, int depth)
 {
@@ -468,7 +473,7 @@ void RenderLayerCompositor::logLayerInfo(const RenderLayer* layer, int depth)
         return;
         
     RenderLayerBacking* backing = layer->backing();
-    if (requiresCompositingLayer(layer) || layer->isRootLayer()) {
+    if (requiresCompositing(directReasonsCompositingLayer(layer)) || layer->isRootLayer()) {
         ++m_obligateCompositedLayerCount;
         m_obligatoryBackingStoreBytes += backing->backingStoreMemoryEstimate();
     } else {
@@ -491,8 +496,12 @@ bool RenderLayerCompositor::updateBacking(RenderLayer* layer, CompositingChangeR
 {
     bool layerChanged = false;
     RenderLayer::ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason = RenderLayer::NoNotCompositedReason;
+    requiresCompositingForPosition(layer->renderer(), layer, &viewportConstrainedNotCompositedReason);
 
-    if (needsToBeComposited(layer, &viewportConstrainedNotCompositedReason)) {
+    // FIXME: It would be nice to directly use the layer's compositing reason,
+    // but updateBacking() also gets called without having updated compositing
+    // requirements fully.
+    if (needsToBeComposited(layer)) {
         enableCompositingMode();
         
         if (!layer->backing()) {
@@ -751,15 +760,26 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     
     // Clear the flag
     layer->setHasCompositingDescendant(false);
-    
-    RenderLayer::IndirectCompositingReason compositingReason = compositingState.m_subtreeIsCompositing ? RenderLayer::IndirectCompositingForStacking : RenderLayer::NoIndirectCompositingReason;
+
+    // Start by assuming this layer will not need to composite.
+    CompositingReasons reasonsToComposite = CompositingReasonNone;
+
+    // First accumulate the straightforward compositing reasons.
+    CompositingReasons directReasons = directReasonsForCompositing(layer);
+    if (canBeComposited(layer)) {
+        reasonsToComposite |= directReasons;
+        reasonsToComposite |= (inCompositingMode() && layer->isRootLayer()) ? CompositingReasonRoot : CompositingReasonNone;
+    }
+
+    // Next, accumulate reasons related to overlap.
+    // If overlap testing is used, this reason will be overridden. If overlap testing is not
+    // used, we must assume we overlap if there is anything composited behind us in paint-order.
+    CompositingReasons overlapCompositingReason = compositingState.m_subtreeIsCompositing ? CompositingReasonAssumedOverlap : CompositingReasonNone;
 
     bool haveComputedBounds = false;
     IntRect absBounds;
     // If we know for sure the layer is going to be composited, don't bother looking it up in the overlap map.
-    // Note that we are using requiresCompositingLayer instead of needsToBeComposited to avoid reading back the
-    // previous indirectCompositingReason through the call to needsToBeComposited.
-    if (overlapMap && !overlapMap->isEmpty() && compositingState.m_testingOverlap && !requiresCompositingLayer(layer)) {
+    if (overlapMap && !overlapMap->isEmpty() && compositingState.m_testingOverlap && !requiresCompositing(directReasons)) {
         // If we're testing for overlap, we only need to composite if we overlap something that is already composited.
         absBounds = enclosingIntRect(overlapMap->geometryMap().absoluteRect(layer->overlapBounds()));
 
@@ -767,7 +787,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         if (absBounds.isEmpty())
             absBounds.setSize(IntSize(1, 1));
         haveComputedBounds = true;
-        compositingReason = overlapMap->overlapsLayers(absBounds) ? RenderLayer::IndirectCompositingForOverlap : RenderLayer::NoIndirectCompositingReason;
+        overlapCompositingReason = overlapMap->overlapsLayers(absBounds) ? CompositingReasonOverlap : CompositingReasonNone;
     }
 
     // Video is special. It's the only RenderLayer type that can both have
@@ -775,9 +795,9 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     // into. These children (the controls) always need to be promoted into their
     // own layers to draw on top of the accelerated video.
     if (compositingState.m_compositingAncestor && compositingState.m_compositingAncestor->renderer()->isVideo())
-        compositingReason = RenderLayer::IndirectCompositingForOverlap;
+        overlapCompositingReason = CompositingReasonOverlap;
 
-    layer->setIndirectCompositingReason(compositingReason);
+    reasonsToComposite |= overlapCompositingReason;
 
     // The children of this layer don't need to composite, unless there is
     // a compositing layer among them, so start by inheriting the compositing
@@ -785,7 +805,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     CompositingState childState(compositingState);
     childState.m_subtreeIsCompositing = false;
 
-    bool willBeComposited = needsToBeComposited(layer);
+    bool willBeComposited = canBeComposited(layer) && requiresCompositing(reasonsToComposite);
     if (willBeComposited) {
         // Tell the parent it has compositing descendants.
         compositingState.m_subtreeIsCompositing = true;
@@ -814,16 +834,19 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
 
                 // If we have to make a layer for this child, make one now so we can have a contents layer
                 // (since we need to ensure that the -ve z-order child renders underneath our contents).
-                if (!willBeComposited && childState.m_subtreeIsCompositing) {
-                    // make layer compositing
-                    layer->setIndirectCompositingReason(RenderLayer::IndirectCompositingForBackgroundLayer);
-                    childState.m_compositingAncestor = layer;
-                    if (overlapMap)
-                        overlapMap->pushCompositingContainer();
-                    // This layer is going to be composited, so children can safely ignore the fact that there's an 
-                    // animation running behind this layer, meaning they can rely on the overlap map testing again
-                    childState.m_testingOverlap = true;
-                    willBeComposited = true;
+                if (childState.m_subtreeIsCompositing) {
+                    reasonsToComposite |= CompositingReasonNegativeZIndexChildren;
+
+                    if (!willBeComposited) {
+                        // make layer compositing
+                        childState.m_compositingAncestor = layer;
+                        if (overlapMap)
+                            overlapMap->pushCompositingContainer();
+                        // This layer is going to be composited, so children can safely ignore the fact that there's an
+                        // animation running behind this layer, meaning they can rely on the overlap map testing again
+                        childState.m_testingOverlap = true;
+                        willBeComposited = true;
+                    }
                 }
             }
         }
@@ -846,14 +869,14 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
             }
         }
     }
-    
-    // If we just entered compositing mode, the root will have become composited (as long as accelerated compositing is enabled).
+
+    // Now that the subtree has been traversed, we can check for compositing reasons that depended on the state of the subtree.
+
+    // If we entered compositing mode during the recursion, the root will also need to be composited (as long as accelerated compositing is enabled).
     if (layer->isRootLayer()) {
         if (inCompositingMode() && m_hasAcceleratedCompositing)
             willBeComposited = true;
     }
-    
-    ASSERT(willBeComposited == needsToBeComposited(layer));
 
     // All layers (even ones that aren't being composited) need to get added to
     // the overlap map. Layers that do not composite will draw into their
@@ -862,10 +885,9 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         addToOverlapMap(*overlapMap, layer, absBounds, haveComputedBounds);
 
     // Now check for reasons to become composited that depend on the state of descendant layers.
-    RenderLayer::IndirectCompositingReason indirectCompositingReason;
-    if (!willBeComposited && canBeComposited(layer)
-        && requiresCompositingForIndirectReason(layer->renderer(), childState.m_subtreeIsCompositing, anyDescendantHas3DTransform, indirectCompositingReason)) {
-        layer->setIndirectCompositingReason(indirectCompositingReason);
+    CompositingReasons subtreeCompositingReasons = subtreeReasonsForCompositing(layer->renderer(), childState.m_subtreeIsCompositing, anyDescendantHas3DTransform);
+    reasonsToComposite |= subtreeCompositingReasons;
+    if (!willBeComposited && canBeComposited(layer) && requiresCompositing(subtreeCompositingReasons)) {
         childState.m_compositingAncestor = layer;
         if (overlapMap) {
             overlapMap->pushCompositingContainer();
@@ -873,54 +895,46 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         }
         willBeComposited = true;
     }
-    
-    ASSERT(willBeComposited == needsToBeComposited(layer));
+
+    // If the original layer is composited, the reflection needs to be, too.
     if (layer->reflectionLayer()) {
         // FIXME: Shouldn't we call computeCompositingRequirements to handle a reflection overlapping with another renderer?
-        layer->reflectionLayer()->setIndirectCompositingReason(willBeComposited ? RenderLayer::IndirectCompositingForStacking : RenderLayer::NoIndirectCompositingReason);
+        CompositingReasons reflectionCompositingReason = willBeComposited ? CompositingReasonReflectionOfCompositedParent : CompositingReasonNone;
+        layer->reflectionLayer()->setCompositingReasons(layer->reflectionLayer()->compositingReasons() | reflectionCompositingReason);
     }
 
-    // Subsequent layers in the parent stacking context also need to composite.
+    // Subsequent layers in the parent's stacking context may also need to composite.
     if (childState.m_subtreeIsCompositing)
         compositingState.m_subtreeIsCompositing = true;
 
     // Set the flag to say that this SC has compositing children.
     layer->setHasCompositingDescendant(childState.m_subtreeIsCompositing);
 
-    // setHasCompositingDescendant() may have changed the answer to needsToBeComposited() when clipping,
-    // so test that again.
-    bool isCompositedClippingLayer = canBeComposited(layer) && clipsCompositingDescendants(layer);
 
     // Turn overlap testing off for later layers if it's already off, or if we have an animating transform.
     // Note that if the layer clips its descendants, there's no reason to propagate the child animation to the parent layers. That's because
     // we know for sure the animation is contained inside the clipping rectangle, which is already added to the overlap map.
+    bool isCompositedClippingLayer = canBeComposited(layer) && (reasonsToComposite & CompositingReasonClipsCompositingDescendants);
     if ((!childState.m_testingOverlap && !isCompositedClippingLayer) || isRunningAcceleratedTransformAnimation(layer->renderer()))
         compositingState.m_testingOverlap = false;
     
-    if (isCompositedClippingLayer) {
-        if (!willBeComposited) {
-            childState.m_compositingAncestor = layer;
-            if (overlapMap) {
-                overlapMap->pushCompositingContainer();
-                addToOverlapMapRecursive(*overlapMap, layer);
-            }
-            willBeComposited = true;
-         }
-    }
-
     if (overlapMap && childState.m_compositingAncestor == layer && !layer->isRootLayer())
         overlapMap->popCompositingContainer();
 
     // If we're back at the root, and no other layers need to be composited, and the root layer itself doesn't need
     // to be composited, then we can drop out of compositing mode altogether. However, don't drop out of compositing mode
     // if there are composited layers that we didn't hit in our traversal (e.g. because of visibility:hidden).
-    if (layer->isRootLayer() && !childState.m_subtreeIsCompositing && !requiresCompositingLayer(layer) && !m_forceCompositingMode && !hasAnyAdditionalCompositedLayers(layer)) {
+    // FIXME: hasAnyAdditionalCompositedLayers() code seems fishy. We need to make root layer logic more obvious.
+    if (layer->isRootLayer() && !childState.m_subtreeIsCompositing && !requiresCompositing(directReasons) && !m_forceCompositingMode && !hasAnyAdditionalCompositedLayers(layer)) {
         enableCompositingMode(false);
         willBeComposited = false;
+        reasonsToComposite = CompositingReasonNone;
     }
-    
+
+    // At this point we have finished collecting all reasons to composite this layer.
+    layer->setCompositingReasons(reasonsToComposite);
+
     // If the layer is going into compositing mode, repaint its old location.
-    ASSERT(willBeComposited == needsToBeComposited(layer));
     if (!layer->isComposited() && willBeComposited)
         repaintOnCompositingChange(layer);
 
@@ -1481,38 +1495,12 @@ bool RenderLayerCompositor::has3DContent() const
     return layerHas3DContent(rootRenderLayer());
 }
 
-bool RenderLayerCompositor::needsToBeComposited(const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason) const
+bool RenderLayerCompositor::needsToBeComposited(const RenderLayer* layer) const
 {
     if (!canBeComposited(layer))
         return false;
 
-    return requiresCompositingLayer(layer, viewportConstrainedNotCompositedReason) || layer->mustCompositeForIndirectReasons() || (inCompositingMode() && layer->isRootLayer());
-}
-
-// Note: this specifies whether the RL needs a compositing layer for intrinsic reasons.
-// Use needsToBeComposited() to determine if a RL actually needs a compositing layer.
-// static
-bool RenderLayerCompositor::requiresCompositingLayer(const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason) const
-{
-    RenderObject* renderer = layer->renderer();
-    // The compositing state of a reflection should match that of its reflected layer.
-    if (layer->isReflection()) {
-        renderer = renderer->parent(); // The RenderReplica's parent is the object being reflected.
-        layer = toRenderLayerModelObject(renderer)->layer();
-    }
-    // The root layer always has a compositing layer, but it may not have backing.
-    return requiresCompositingForTransform(renderer)
-        || requiresCompositingForVideo(renderer)
-        || requiresCompositingForCanvas(renderer)
-        || requiresCompositingForPlugin(renderer)
-        || requiresCompositingForFrame(renderer)
-        || (canRender3DTransforms() && renderer->style()->backfaceVisibility() == BackfaceVisibilityHidden)
-        || clipsCompositingDescendants(layer)
-        || requiresCompositingForAnimation(renderer)
-        || requiresCompositingForFilters(renderer)
-        || requiresCompositingForPosition(renderer, layer, viewportConstrainedNotCompositedReason)
-        || requiresCompositingForOverflowScrolling(layer)
-        || requiresCompositingForBlending(renderer);
+    return requiresCompositing(directReasonsForCompositing(layer)) || requiresCompositing(layer->compositingReasons()) || (inCompositingMode() && layer->isRootLayer());
 }
 
 bool RenderLayerCompositor::canBeComposited(const RenderLayer* layer) const
@@ -1537,7 +1525,7 @@ bool RenderLayerCompositor::requiresOwnBackingStore(const RenderLayer* layer, co
         || requiresCompositingForCanvas(renderer)
         || requiresCompositingForPlugin(renderer)
         || requiresCompositingForFrame(renderer)
-        || (canRender3DTransforms() && renderer->style()->backfaceVisibility() == BackfaceVisibilityHidden)
+        || requiresCompositingForBackfaceVisibilityHidden(renderer)
         || requiresCompositingForAnimation(renderer)
         || requiresCompositingForFilters(renderer)
         || requiresCompositingForBlending(renderer)
@@ -1548,17 +1536,58 @@ bool RenderLayerCompositor::requiresOwnBackingStore(const RenderLayer* layer, co
         || renderer->hasReflection()
         || renderer->hasFilter())
         return true;
-        
+
+    CompositingReasons indirectReasonsThatNeedBacking = CompositingReasonOverlap
+        | CompositingReasonAssumedOverlap
+        | CompositingReasonNegativeZIndexChildren
+        | CompositingReasonTransformWithCompositedDescendants
+        | CompositingReasonOpacityWithCompositedDescendants
+        | CompositingReasonMaskWithCompositedDescendants
+        | CompositingReasonFilterWithCompositedDescendants
+        | CompositingReasonBlendingWithCompositedDescendants
+        | CompositingReasonPreserve3D; // preserve-3d has to create backing store to ensure that 3d-transformed elements intersect.
+    return layer->compositingReasons() & indirectReasonsThatNeedBacking;
+}
+
+CompositingReasons RenderLayerCompositor::directReasonsForCompositing(const RenderLayer* layer) const
+{
+    RenderObject* renderer = layer->renderer();
+    CompositingReasons directReasons = CompositingReasonNone;
+
+    if (requiresCompositingForTransform(renderer))
+        directReasons |= CompositingReason3DTransform;
+
+    if (requiresCompositingForVideo(renderer))
+        directReasons |= CompositingReasonVideo;
+
+    if (requiresCompositingForCanvas(renderer))
+        directReasons |= CompositingReasonCanvas;
+
+    if (requiresCompositingForPlugin(renderer))
+        directReasons |= CompositingReasonPlugin;
+
+    if (requiresCompositingForFrame(renderer))
+        directReasons |= CompositingReasonIFrame;
     
-    if (layer->mustCompositeForIndirectReasons()) {
-        RenderLayer::IndirectCompositingReason reason = layer->indirectCompositingReason();
-        return reason == RenderLayer::IndirectCompositingForOverlap
-            || reason == RenderLayer::IndirectCompositingForStacking
-            || reason == RenderLayer::IndirectCompositingForBackgroundLayer
-            || reason == RenderLayer::IndirectCompositingForGraphicalEffect
-            || reason == RenderLayer::IndirectCompositingForPreserve3D; // preserve-3d has to create backing store to ensure that 3d-transformed elements intersect.
-    }
-    return false;
+    if (requiresCompositingForBackfaceVisibilityHidden(renderer))
+        directReasons |= CompositingReasonBackfaceVisibilityHidden;
+
+    if (requiresCompositingForAnimation(renderer))
+        directReasons |= CompositingReasonAnimation;
+
+    if (requiresCompositingForFilters(renderer))
+        directReasons |= CompositingReasonFilters;
+
+    if (requiresCompositingForPosition(renderer, layer))
+        directReasons |= renderer->style()->position() == FixedPosition ? CompositingReasonPositionFixed : CompositingReasonPositionSticky;
+
+    if (requiresCompositingForOverflowScrolling(layer))
+        directReasons |= CompositingReasonOverflowScrollingTouch;
+
+    if (requiresCompositingForBlending(renderer))
+        directReasons |= CompositingReasonBlending;
+
+    return directReasons;
 }
 
 CompositingReasons RenderLayerCompositor::reasonsForCompositing(const RenderLayer* layer) const
@@ -1568,78 +1597,7 @@ CompositingReasons RenderLayerCompositor::reasonsForCompositing(const RenderLaye
     if (!layer || !layer->isComposited())
         return reasons;
 
-    RenderObject* renderer = layer->renderer();
-    if (layer->isReflection()) {
-        renderer = renderer->parent();
-        layer = toRenderLayerModelObject(renderer)->layer();
-    }
-
-    if (requiresCompositingForTransform(renderer))
-        reasons |= CompositingReason3DTransform;
-
-    if (requiresCompositingForVideo(renderer))
-        reasons |= CompositingReasonVideo;
-
-    if (requiresCompositingForCanvas(renderer))
-        reasons |= CompositingReasonCanvas;
-
-    if (requiresCompositingForPlugin(renderer))
-        reasons |= CompositingReasonPlugin;
-
-    if (requiresCompositingForFrame(renderer))
-        reasons |= CompositingReasonIFrame;
-    
-    if ((canRender3DTransforms() && renderer->style()->backfaceVisibility() == BackfaceVisibilityHidden))
-        reasons |= CompositingReasonBackfaceVisibilityHidden;
-
-    if (clipsCompositingDescendants(layer))
-        reasons |= CompositingReasonClipsCompositingDescendants;
-
-    if (requiresCompositingForAnimation(renderer))
-        reasons |= CompositingReasonAnimation;
-
-    if (requiresCompositingForFilters(renderer))
-        reasons |= CompositingReasonFilters;
-
-    if (requiresCompositingForPosition(renderer, layer))
-        reasons |= renderer->style()->position() == FixedPosition ? CompositingReasonPositionFixed : CompositingReasonPositionSticky;
-
-    if (requiresCompositingForOverflowScrolling(layer))
-        reasons |= CompositingReasonOverflowScrollingTouch;
-
-    if (layer->indirectCompositingReason() == RenderLayer::IndirectCompositingForStacking)
-        reasons |= CompositingReasonStacking;
-    else if (layer->indirectCompositingReason() == RenderLayer::IndirectCompositingForOverlap)
-        reasons |= CompositingReasonOverlap;
-    else if (layer->indirectCompositingReason() == RenderLayer::IndirectCompositingForBackgroundLayer)
-        reasons |= CompositingReasonNegativeZIndexChildren;
-    else if (layer->indirectCompositingReason() == RenderLayer::IndirectCompositingForGraphicalEffect) {
-        if (layer->transform())
-            reasons |= CompositingReasonTransformWithCompositedDescendants;
-
-        if (renderer->isTransparent())
-            reasons |= CompositingReasonOpacityWithCompositedDescendants;
-
-        if (renderer->hasMask())
-            reasons |= CompositingReasonMaskWithCompositedDescendants;
-
-        if (renderer->hasReflection())
-            reasons |= CompositingReasonReflectionWithCompositedDescendants;
-
-        if (renderer->hasFilter())
-            reasons |= CompositingReasonFilterWithCompositedDescendants;
-            
-        if (renderer->hasBlendMode())
-            reasons |= CompositingReasonBlendingWithCompositedDescendants;
-    } else if (layer->indirectCompositingReason() == RenderLayer::IndirectCompositingForPerspective)
-        reasons |= CompositingReasonPerspective;
-    else if (layer->indirectCompositingReason() == RenderLayer::IndirectCompositingForPreserve3D)
-        reasons |= CompositingReasonPreserve3D;
-
-    if (inCompositingMode() && layer->isRootLayer())
-        reasons |= CompositingReasonRoot;
-
-    return reasons;
+    return layer->compositingReasons();
 }
 
 #if !LOG_DISABLED
@@ -1865,6 +1823,11 @@ bool RenderLayerCompositor::requiresCompositingForFrame(RenderObject* renderer) 
     return contentBox.height() * contentBox.width() > 0;
 }
 
+bool RenderLayerCompositor::requiresCompositingForBackfaceVisibilityHidden(RenderObject* renderer) const
+{
+    return canRender3DTransforms() && renderer->style()->backfaceVisibility() == BackfaceVisibilityHidden;
+}
+
 bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* renderer) const
 {
     if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
@@ -1879,33 +1842,49 @@ bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* render
     return false;
 }
 
-bool RenderLayerCompositor::requiresCompositingForIndirectReason(RenderObject* renderer, bool hasCompositedDescendants, bool has3DTransformedDescendants, RenderLayer::IndirectCompositingReason& reason) const
+CompositingReasons RenderLayerCompositor::subtreeReasonsForCompositing(RenderObject* renderer, bool hasCompositedDescendants, bool has3DTransformedDescendants) const
 {
+    CompositingReasons subtreeReasons = CompositingReasonNone;
+
+    // FIXME: this seems to be a potentially different layer than the layer for which this was called. May not be an error, but is very confusing.
     RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
 
     // When a layer has composited descendants, some effects, like 2d transforms, filters, masks etc must be implemented
     // via compositing so that they also apply to those composited descdendants.
-    if (hasCompositedDescendants && (layer->transform() || renderer->createsGroup() || renderer->hasReflection())) {
-        reason = RenderLayer::IndirectCompositingForGraphicalEffect;
-        return true;
+    if (hasCompositedDescendants) {
+        if (layer->transform())
+            subtreeReasons |= CompositingReasonTransformWithCompositedDescendants;
+
+        // If the implementation of createsGroup changes, we need to be aware of that in this part of code.
+        ASSERT((renderer->isTransparent() || renderer->hasMask() || renderer->hasFilter() || renderer->hasBlendMode()) == renderer->createsGroup());
+        if (renderer->isTransparent())
+            subtreeReasons |= CompositingReasonOpacityWithCompositedDescendants;
+        if (renderer->hasMask())
+            subtreeReasons |= CompositingReasonMaskWithCompositedDescendants;
+        if (renderer->hasFilter())
+            subtreeReasons |= CompositingReasonFilterWithCompositedDescendants;
+        if (renderer->hasBlendMode())
+            subtreeReasons |= CompositingReasonBlendingWithCompositedDescendants;
+
+        if (renderer->hasReflection())
+            subtreeReasons |= CompositingReasonReflectionWithCompositedDescendants;
+
+        if (renderer->hasClipOrOverflowClip())
+            subtreeReasons |= CompositingReasonClipsCompositingDescendants;
     }
+
 
     // A layer with preserve-3d or perspective only needs to be composited if there are descendant layers that
     // will be affected by the preserve-3d or perspective.
     if (has3DTransformedDescendants) {
-        if (renderer->style()->transformStyle3D() == TransformStyle3DPreserve3D) {
-            reason = RenderLayer::IndirectCompositingForPreserve3D;
-            return true;
-        }
+        if (renderer->style()->transformStyle3D() == TransformStyle3DPreserve3D)
+            subtreeReasons |= CompositingReasonPreserve3D;
     
-        if (renderer->style()->hasPerspective()) {
-            reason = RenderLayer::IndirectCompositingForPerspective;
-            return true;
-        }
+        if (renderer->style()->hasPerspective())
+            subtreeReasons |= CompositingReasonPerspective;
     }
 
-    reason = RenderLayer::NoIndirectCompositingReason;
-    return false;
+    return subtreeReasons;
 }
 
 bool RenderLayerCompositor::requiresCompositingForFilters(RenderObject* renderer) const

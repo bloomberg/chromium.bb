@@ -80,6 +80,46 @@ enum RepaintStatus {
     NeedsFullRepaintForPositionedMovementLayout = 1 << 1
 };
 
+enum {
+    CompositingReasonNone                                   = 0,
+
+    // Intrinsic reasons that can be known right away by the layer
+    CompositingReason3DTransform                            = 1 << 0,
+    CompositingReasonVideo                                  = 1 << 1,
+    CompositingReasonCanvas                                 = 1 << 2,
+    CompositingReasonPlugin                                 = 1 << 3,
+    CompositingReasonIFrame                                 = 1 << 4,
+    CompositingReasonBackfaceVisibilityHidden               = 1 << 5,
+    CompositingReasonAnimation                              = 1 << 6,
+    CompositingReasonFilters                                = 1 << 7,
+    CompositingReasonPositionFixed                          = 1 << 8,
+    CompositingReasonPositionSticky                         = 1 << 9,
+    CompositingReasonOverflowScrollingTouch                 = 1 << 10,
+    CompositingReasonBlending                               = 1 << 11,
+
+    // Overlap reasons that require knowing what's behind you in paint-order before knowing the answer
+    CompositingReasonAssumedOverlap                         = 1 << 12,
+    CompositingReasonOverlap                                = 1 << 13,
+    CompositingReasonNegativeZIndexChildren                 = 1 << 14,
+
+    // Subtree reasons that require knowing what the status of your subtree is before knowing the answer
+    CompositingReasonTransformWithCompositedDescendants     = 1 << 15,
+    CompositingReasonOpacityWithCompositedDescendants       = 1 << 16,
+    CompositingReasonMaskWithCompositedDescendants          = 1 << 17,
+    CompositingReasonReflectionWithCompositedDescendants    = 1 << 18,
+    CompositingReasonFilterWithCompositedDescendants        = 1 << 19,
+    CompositingReasonBlendingWithCompositedDescendants      = 1 << 20,
+    CompositingReasonClipsCompositingDescendants            = 1 << 21,
+    CompositingReasonPerspective                            = 1 << 22,
+    CompositingReasonPreserve3D                             = 1 << 23,
+    CompositingReasonReflectionOfCompositedParent           = 1 << 24,
+
+    // The root layer is a special case that may be forced to be a layer, but also it needs to be
+    // a layer if anything else in the subtree is composited.
+    CompositingReasonRoot                                   = 1 << 25
+};
+typedef unsigned CompositingReasons;
+
 class ClipRect {
 public:
     ClipRect()
@@ -1074,20 +1114,9 @@ private:
     
     bool hasCompositingDescendant() const { return m_compositingProperties.hasCompositingDescendant; }
     void setHasCompositingDescendant(bool b)  { m_compositingProperties.hasCompositingDescendant = b; }
-    
-    enum IndirectCompositingReason {
-        NoIndirectCompositingReason,
-        IndirectCompositingForStacking,
-        IndirectCompositingForOverlap,
-        IndirectCompositingForBackgroundLayer,
-        IndirectCompositingForGraphicalEffect, // opacity, mask, filter, transform etc.
-        IndirectCompositingForPerspective,
-        IndirectCompositingForPreserve3D
-    };
-    
-    void setIndirectCompositingReason(IndirectCompositingReason reason) { m_compositingProperties.indirectCompositingReason = reason; }
-    IndirectCompositingReason indirectCompositingReason() const { return static_cast<IndirectCompositingReason>(m_compositingProperties.indirectCompositingReason); }
-    bool mustCompositeForIndirectReasons() const { return m_compositingProperties.indirectCompositingReason; }
+
+    void setCompositingReasons(CompositingReasons reasons) { m_compositingProperties.compositingReasons = reasons; }
+    CompositingReasons compositingReasons() const { return m_compositingProperties.compositingReasons; }
 
     // Returns true if z ordering would not change if this layer were a stacking container.
     bool canBeStackingContainer() const;
@@ -1247,18 +1276,18 @@ protected:
     struct CompositingProperties {
         CompositingProperties()
             : hasCompositingDescendant(false)
-            , indirectCompositingReason(NoIndirectCompositingReason)
             , viewportConstrainedNotCompositedReason(NoNotCompositedReason)
+            , compositingReasons(CompositingReasonNone)
         { }
 
         // Used only while determining what layers should be composited. Applies to the tree of z-order lists.
         bool hasCompositingDescendant : 1;
 
-        // Used only while determining what layers should be composited.
-        unsigned indirectCompositingReason : 3;
-
         // The reason, if any exists, that a fixed-position layer is chosen not to be composited.
         unsigned viewportConstrainedNotCompositedReason : 2;
+
+        // Once computed, indicates all that a layer needs to become composited using the CompositingReasons enum bitfield.
+        CompositingReasons compositingReasons;
     };
 
     CompositingProperties m_compositingProperties;
