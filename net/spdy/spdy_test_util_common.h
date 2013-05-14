@@ -298,6 +298,18 @@ class SpdyTestUtil {
                                 const char* const tail_headers[],
                                 int tail_header_count) const;
 
+  SpdyFrame* ConstructSpdyControlFrame(
+      const char* const extra_headers[],
+      int extra_header_count,
+      bool compressed,
+      SpdyStreamId stream_id,
+      RequestPriority request_priority,
+      SpdyFrameType type,
+      SpdyControlFlags flags,
+      const char* const* kHeaders,
+      int kHeadersSize,
+      SpdyStreamId associated_stream_id) const;
+
  private:
   const NextProto protocol_;
   const int spdy_version_;

@@ -74,6 +74,52 @@ SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
                                  tail_header_count);
 }
 
+// Construct a generic SpdyControlFrame.
+SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
+                                     int extra_header_count,
+                                     bool compressed,
+                                     int stream_id,
+                                     RequestPriority request_priority,
+                                     SpdyFrameType type,
+                                     SpdyControlFlags flags,
+                                     const char* const* kHeaders,
+                                     int kHeadersSize) {
+  SpdyTestUtil util(kProtoSPDY2);
+  return util.ConstructSpdyControlFrame(extra_headers,
+                                        extra_header_count,
+                                        compressed,
+                                        stream_id,
+                                        request_priority,
+                                        type,
+                                        flags,
+                                        kHeaders,
+                                        kHeadersSize,
+                                        0);
+}
+
+SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
+                                     int extra_header_count,
+                                     bool compressed,
+                                     SpdyStreamId stream_id,
+                                     RequestPriority request_priority,
+                                     SpdyFrameType type,
+                                     SpdyControlFlags flags,
+                                     const char* const* kHeaders,
+                                     int kHeadersSize,
+                                     SpdyStreamId associated_stream_id) {
+  SpdyTestUtil util(kProtoSPDY2);
+  return util.ConstructSpdyControlFrame(extra_headers,
+                                        extra_header_count,
+                                        compressed,
+                                        stream_id,
+                                        request_priority,
+                                        type,
+                                        flags,
+                                        kHeaders,
+                                        kHeadersSize,
+                                        associated_stream_id);
+}
+
 }  // namespace
 
 SpdyFrame* ConstructSpdySettings(const SettingsMap& settings) {
@@ -146,62 +192,6 @@ int ConstructSpdyHeader(const char* const extra_headers[],
                          this_header,
                          this_value);
   return n;
-}
-
-SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
-                                     int extra_header_count,
-                                     bool compressed,
-                                     int stream_id,
-                                     RequestPriority request_priority,
-                                     SpdyFrameType type,
-                                     SpdyControlFlags flags,
-                                     const char* const* kHeaders,
-                                     int kHeadersSize) {
-  EXPECT_GE(type, FIRST_CONTROL_TYPE);
-  EXPECT_LE(type, LAST_CONTROL_TYPE);
-  return ConstructSpdyControlFrame(extra_headers,
-                                   extra_header_count,
-                                   compressed,
-                                   stream_id,
-                                   request_priority,
-                                   type,
-                                   flags,
-                                   kHeaders,
-                                   kHeadersSize,
-                                   0);
-}
-
-SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
-                                     int extra_header_count,
-                                     bool compressed,
-                                     SpdyStreamId stream_id,
-                                     RequestPriority request_priority,
-                                     SpdyFrameType type,
-                                     SpdyControlFlags flags,
-                                     const char* const* kHeaders,
-                                     int kHeadersSize,
-                                     SpdyStreamId associated_stream_id) {
-  EXPECT_GE(type, FIRST_CONTROL_TYPE);
-  EXPECT_LE(type, LAST_CONTROL_TYPE);
-  const SpdyHeaderInfo kSynStartHeader = {
-    type,                         // Kind = Syn
-    stream_id,                    // Stream ID
-    associated_stream_id,         // Associated stream ID
-    ConvertRequestPriorityToSpdyPriority(request_priority, 2),
-                                  // Priority
-    kSpdyCredentialSlotUnused,
-    flags,                        // Control Flags
-    compressed,                   // Compressed
-    RST_STREAM_INVALID,           // Status
-    NULL,                         // Data
-    0,                            // Length
-    DATA_FLAG_NONE                // Data Flags
-  };
-  return ConstructSpdyFrame(kSynStartHeader,
-                            extra_headers,
-                            extra_header_count,
-                            kHeaders,
-                            kHeadersSize / 2);
 }
 
 SpdyFrame* ConstructSpdyGet(const char* const url,

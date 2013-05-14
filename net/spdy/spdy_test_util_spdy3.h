@@ -28,45 +28,6 @@ namespace test_spdy3 {
 // Can't find a function you're looking for?  ttuttle is migrating functions
 // from here into methods in the SpdyTestUtil class in spdy_test_common.h.
 
-// Construct a SPDY control frame. |spdy_version| must be
-// kSpdyVersion3 or kSpdyVersion4.
-//
-// TODO(akalin): Move this to a common area once
-// ConstructSpdyFrameWithVersion() is also moved.
-SpdyFrame* ConstructSpdyControlFrameWithVersion(
-    int spdy_version,
-    const char* const extra_headers[],
-    int extra_header_count,
-    bool compressed,
-    SpdyStreamId stream_id,
-    RequestPriority request_priority,
-    SpdyFrameType type,
-    SpdyControlFlags flags,
-    const char* const* kHeaders,
-    int kHeadersSize,
-    SpdyStreamId associated_stream_id);
-
-// Construct a generic SPDY control frame.
-SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
-                                     int extra_header_count,
-                                     bool compressed,
-                                     int stream_id,
-                                     RequestPriority request_priority,
-                                     SpdyFrameType type,
-                                     SpdyControlFlags flags,
-                                     const char* const* kHeaders,
-                                     int kHeadersSize);
-SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
-                                     int extra_header_count,
-                                     bool compressed,
-                                     SpdyStreamId stream_id,
-                                     RequestPriority request_priority,
-                                     SpdyFrameType type,
-                                     SpdyControlFlags flags,
-                                     const char* const* kHeaders,
-                                     int kHeadersSize,
-                                     SpdyStreamId associated_stream_id);
-
 // Construct an expected SPDY reply string.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.

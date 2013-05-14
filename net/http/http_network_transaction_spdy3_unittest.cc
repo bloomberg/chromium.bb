@@ -249,7 +249,8 @@ class HttpNetworkTransactionSpdy3Test : public PlatformTest {
 
  protected:
   HttpNetworkTransactionSpdy3Test()
-      : session_deps_(kProtoSPDY3),
+      : spdy_util_(kProtoSPDY3),
+        session_deps_(kProtoSPDY3),
         old_max_group_sockets_(ClientSocketPoolManager::max_sockets_per_group(
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         old_max_pool_sockets_(ClientSocketPoolManager::max_sockets_per_pool(
@@ -374,6 +375,7 @@ class HttpNetworkTransactionSpdy3Test : public PlatformTest {
 
   void CheckErrorIsPassedBack(int error, IoMode mode);
 
+  SpdyTestUtil spdy_util_;
   SpdySessionDependencies session_deps_;
 
   // Original socket limits.  Some tests set these.  Safest to always restore
@@ -3049,15 +3051,16 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
     ":version", "HTTP/1.1",
   };
   scoped_ptr<SpdyFrame> connect2(
-      ConstructSpdyControlFrame(NULL,
-                                0,
-                                /*compressed*/ false,
-                                3,
-                                LOWEST,
-                                SYN_STREAM,
-                                CONTROL_FLAG_NONE,
-                                kConnectHeaders2,
-                                arraysize(kConnectHeaders2)));
+      spdy_util_.ConstructSpdyControlFrame(NULL,
+                                           0,
+                                           /*compressed*/ false,
+                                           3,
+                                           LOWEST,
+                                           SYN_STREAM,
+                                           CONTROL_FLAG_NONE,
+                                           kConnectHeaders2,
+                                           arraysize(kConnectHeaders2),
+                                           0));
   scoped_ptr<SpdyFrame> conn_resp2(ConstructSpdyGetSynReply(NULL, 0, 3));
 
   // Fetch https://news.google.com/ via HTTP.
@@ -5853,15 +5856,16 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthSpdyProxy) {
   };
 
   scoped_ptr<SpdyFrame> conn_auth_resp(
-      ConstructSpdyControlFrame(NULL,
-                                0,
-                                false,
-                                1,
-                                LOWEST,
-                                SYN_REPLY,
-                                CONTROL_FLAG_NONE,
-                                kAuthChallenge,
-                                arraysize(kAuthChallenge)));
+      spdy_util_.ConstructSpdyControlFrame(NULL,
+                                           0,
+                                           false,
+                                           1,
+                                           LOWEST,
+                                           SYN_REPLY,
+                                           CONTROL_FLAG_NONE,
+                                           kAuthChallenge,
+                                           arraysize(kAuthChallenge),
+                                           0));
 
   scoped_ptr<SpdyFrame> conn_resp(ConstructSpdyGetSynReply(NULL, 0, 3));
   const char resp[] = "HTTP/1.1 200 OK\r\n"

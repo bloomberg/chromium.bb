@@ -88,6 +88,7 @@ class HttpProxyClientSocketPoolSpdy3Test : public TestWithHttpParam {
                          BoundNetLog().net_log()),
         session_(CreateNetworkSession()),
         http_proxy_histograms_("HttpProxyUnitTest"),
+        spdy_util_(kProtoSPDY3),
         ssl_data_(NULL),
         data_(NULL),
         pool_(kMaxSockets,
@@ -205,6 +206,7 @@ class HttpProxyClientSocketPoolSpdy3Test : public TestWithHttpParam {
   ClientSocketPoolHistograms http_proxy_histograms_;
 
  protected:
+  SpdyTestUtil spdy_util_;
   scoped_ptr<SSLSocketDataProvider> ssl_data_;
   scoped_ptr<DeterministicSocketData> data_;
   HttpProxyClientSocketPool pool_;
@@ -257,16 +259,16 @@ TEST_P(HttpProxyClientSocketPoolSpdy3Test, NeedAuth) {
     "proxy-authenticate", "Basic realm=\"MyRealm1\"",
   };
   scoped_ptr<SpdyFrame> resp(
-
-      ConstructSpdyControlFrame(NULL,
-                                0,
-                                false,
-                                1,
-                                LOWEST,
-                                SYN_REPLY,
-                                CONTROL_FLAG_NONE,
-                                kAuthChallenge,
-                                arraysize(kAuthChallenge)));
+      spdy_util_.ConstructSpdyControlFrame(NULL,
+                                           0,
+                                           false,
+                                           1,
+                                           LOWEST,
+                                           SYN_REPLY,
+                                           CONTROL_FLAG_NONE,
+                                           kAuthChallenge,
+                                           arraysize(kAuthChallenge),
+                                           0));
   MockRead spdy_reads[] = {
     CreateMockRead(*resp, 1, ASYNC),
     MockRead(ASYNC, 0, 3)

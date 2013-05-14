@@ -23,6 +23,8 @@ SpdyFrame* ConstructSpdyWebSocketSynStream(int stream_id,
                                            const char* path,
                                            const char* host,
                                            const char* origin) {
+  SpdyTestUtil util(kProtoSPDY2);
+
   const char* const kWebSocketHeaders[] = {
     "path",
     path,
@@ -35,31 +37,34 @@ SpdyFrame* ConstructSpdyWebSocketSynStream(int stream_id,
     "origin",
     origin
   };
-  return ConstructSpdyControlFrame(/*extra_headers*/ NULL,
-                                   /*extra_header_count*/ 0,
-                                   /*compressed*/ false,
-                                   stream_id,
-                                   HIGHEST,
-                                   SYN_STREAM,
-                                   CONTROL_FLAG_NONE,
-                                   kWebSocketHeaders,
-                                   arraysize(kWebSocketHeaders));
+  return util.ConstructSpdyControlFrame(/*extra_headers*/ NULL,
+                                        /*extra_header_count*/ 0,
+                                        /*compressed*/ false,
+                                        stream_id,
+                                        HIGHEST,
+                                        SYN_STREAM,
+                                        CONTROL_FLAG_NONE,
+                                        kWebSocketHeaders,
+                                        arraysize(kWebSocketHeaders),
+                                        0);
 }
 
 SpdyFrame* ConstructSpdyWebSocketSynReply(int stream_id) {
+  SpdyTestUtil util(kProtoSPDY2);
   static const char* const kStandardWebSocketHeaders[] = {
     "status",
     "101"
   };
-  return ConstructSpdyControlFrame(NULL,
-                                   0,
-                                   false,
-                                   stream_id,
-                                   LOWEST,
-                                   SYN_REPLY,
-                                   CONTROL_FLAG_NONE,
-                                   kStandardWebSocketHeaders,
-                                   arraysize(kStandardWebSocketHeaders));
+  return util.ConstructSpdyControlFrame(NULL,
+                                        0,
+                                        false,
+                                        stream_id,
+                                        LOWEST,
+                                        SYN_REPLY,
+                                        CONTROL_FLAG_NONE,
+                                        kStandardWebSocketHeaders,
+                                        arraysize(kStandardWebSocketHeaders),
+                                        0);
 }
 
 SpdyFrame* ConstructSpdyWebSocketHandshakeRequestFrame(
@@ -127,6 +132,7 @@ SpdyFrame* ConstructSpdyWebSocketHandshakeResponseFrame(
 SpdyFrame* ConstructSpdyWebSocketHeadersFrame(int stream_id,
                                               const char* length,
                                               bool fin) {
+  SpdyTestUtil util(kProtoSPDY2);
   static const char* const kHeaders[] = {
     "opcode",
     "1",  // text frame
@@ -135,15 +141,16 @@ SpdyFrame* ConstructSpdyWebSocketHeadersFrame(int stream_id,
     "fin",
     fin ? "1" : "0"
   };
-  return ConstructSpdyControlFrame(/*extra_headers*/ NULL,
-                                   /*extra_header_count*/ 0,
-                                   /*compression*/ false,
-                                   stream_id,
-                                   LOWEST,
-                                   HEADERS,
-                                   CONTROL_FLAG_NONE,
-                                   kHeaders,
-                                   arraysize(kHeaders));
+  return util.ConstructSpdyControlFrame(/*extra_headers*/ NULL,
+                                        /*extra_header_count*/ 0,
+                                        /*compression*/ false,
+                                        stream_id,
+                                        LOWEST,
+                                        HEADERS,
+                                        CONTROL_FLAG_NONE,
+                                        kHeaders,
+                                        arraysize(kHeaders),
+                                        0);
 }
 
 SpdyFrame* ConstructSpdyWebSocketDataFrame(

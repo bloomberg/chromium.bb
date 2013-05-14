@@ -379,15 +379,16 @@ SpdyFrame* SpdyProxyClientSocketSpdy3Test::ConstructConnectReplyFrame() {
       ":status", "200 Connection Established",
       ":version", "HTTP/1.1"
   };
-  return ConstructSpdyControlFrame(NULL,
-                                   0,
-                                   false,
-                                   kStreamId,
-                                   LOWEST,
-                                   SYN_REPLY,
-                                   CONTROL_FLAG_NONE,
-                                   kStandardReplyHeaders,
-                                   arraysize(kStandardReplyHeaders));
+  return spdy_util_.ConstructSpdyControlFrame(NULL,
+                                              0,
+                                              false,
+                                              kStreamId,
+                                              LOWEST,
+                                              SYN_REPLY,
+                                              CONTROL_FLAG_NONE,
+                                              kStandardReplyHeaders,
+                                              arraysize(kStandardReplyHeaders),
+                                              0);
 }
 
 // Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT.
@@ -399,15 +400,16 @@ SpdyProxyClientSocketSpdy3Test::ConstructConnectAuthReplyFrame() {
       "proxy-authenticate", "Basic realm=\"MyRealm1\"",
   };
 
-  return ConstructSpdyControlFrame(NULL,
-                                   0,
-                                   false,
-                                   kStreamId,
-                                   LOWEST,
-                                   SYN_REPLY,
-                                   CONTROL_FLAG_NONE,
-                                   kStandardReplyHeaders,
-                                   arraysize(kStandardReplyHeaders));
+  return spdy_util_.ConstructSpdyControlFrame(NULL,
+                                              0,
+                                              false,
+                                              kStreamId,
+                                              LOWEST,
+                                              SYN_REPLY,
+                                              CONTROL_FLAG_NONE,
+                                              kStandardReplyHeaders,
+                                              arraysize(kStandardReplyHeaders),
+                                              0);
 }
 
 // Constructs a SPDY SYN_REPLY frame with an HTTP 302 redirect.
@@ -420,15 +422,16 @@ SpdyProxyClientSocketSpdy3Test::ConstructConnectRedirectReplyFrame() {
       "set-cookie", "foo=bar"
   };
 
-  return ConstructSpdyControlFrame(NULL,
-                                   0,
-                                   false,
-                                   kStreamId,
-                                   LOWEST,
-                                   SYN_REPLY,
-                                   CONTROL_FLAG_NONE,
-                                   kStandardReplyHeaders,
-                                   arraysize(kStandardReplyHeaders));
+  return spdy_util_.ConstructSpdyControlFrame(NULL,
+                                              0,
+                                              false,
+                                              kStreamId,
+                                              LOWEST,
+                                              SYN_REPLY,
+                                              CONTROL_FLAG_NONE,
+                                              kStandardReplyHeaders,
+                                              arraysize(kStandardReplyHeaders),
+                                              0);
 }
 
 // Constructs a SPDY SYN_REPLY frame with an HTTP 500 error.
@@ -439,15 +442,16 @@ SpdyProxyClientSocketSpdy3Test::ConstructConnectErrorReplyFrame() {
       ":version", "HTTP/1.1",
   };
 
-  return ConstructSpdyControlFrame(NULL,
-                                   0,
-                                   false,
-                                   kStreamId,
-                                   LOWEST,
-                                   SYN_REPLY,
-                                   CONTROL_FLAG_NONE,
-                                   kStandardReplyHeaders,
-                                   arraysize(kStandardReplyHeaders));
+  return spdy_util_.ConstructSpdyControlFrame(NULL,
+                                              0,
+                                              false,
+                                              kStreamId,
+                                              LOWEST,
+                                              SYN_REPLY,
+                                              CONTROL_FLAG_NONE,
+                                              kStandardReplyHeaders,
+                                              arraysize(kStandardReplyHeaders),
+                                              0);
 }
 
 SpdyFrame* SpdyProxyClientSocketSpdy3Test::ConstructBodyFrame(

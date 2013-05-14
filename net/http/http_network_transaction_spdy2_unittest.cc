@@ -248,7 +248,8 @@ class HttpNetworkTransactionSpdy2Test : public PlatformTest {
 
  protected:
   HttpNetworkTransactionSpdy2Test()
-      : session_deps_(kProtoSPDY2),
+      : spdy_util_(kProtoSPDY2),
+        session_deps_(kProtoSPDY2),
         old_max_group_sockets_(ClientSocketPoolManager::max_sockets_per_group(
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         old_max_pool_sockets_(ClientSocketPoolManager::max_sockets_per_pool(
@@ -373,6 +374,7 @@ class HttpNetworkTransactionSpdy2Test : public PlatformTest {
 
   void CheckErrorIsPassedBack(int error, IoMode mode);
 
+  SpdyTestUtil spdy_util_;
   SpdySessionDependencies session_deps_;
 
   // Original socket limits.  Some tests set these.  Safest to always restore
@@ -3048,15 +3050,16 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
     "version", "HTTP/1.1",
   };
   scoped_ptr<SpdyFrame> connect2(
-      ConstructSpdyControlFrame(NULL,
-                                0,
-                                /*compressed*/ false,
-                                3,
-                                LOWEST,
-                                SYN_STREAM,
-                                CONTROL_FLAG_NONE,
-                                kConnectHeaders2,
-                                arraysize(kConnectHeaders2)));
+      spdy_util_.ConstructSpdyControlFrame(NULL,
+                                           0,
+                                           /*compressed*/ false,
+                                           3,
+                                           LOWEST,
+                                           SYN_STREAM,
+                                           CONTROL_FLAG_NONE,
+                                           kConnectHeaders2,
+                                           arraysize(kConnectHeaders2),
+                                           0));
   scoped_ptr<SpdyFrame> conn_resp2(ConstructSpdyGetSynReply(NULL, 0, 3));
 
   // Fetch https://news.google.com/ via HTTP.
@@ -3312,11 +3315,9 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
     "scheme", "http",
     "version", "HTTP/1.1"
   };
-  scoped_ptr<SpdyFrame> get1(ConstructSpdyControlFrame(NULL, 0, false, 1,
-                                                       LOWEST, SYN_STREAM,
-                                                       CONTROL_FLAG_FIN,
-                                                       headers1,
-                                                       arraysize(headers1)));
+  scoped_ptr<SpdyFrame> get1(spdy_util_.ConstructSpdyControlFrame(
+      NULL, 0, false, 1, LOWEST, SYN_STREAM, CONTROL_FLAG_FIN,
+      headers1, arraysize(headers1), 0));
   scoped_ptr<SpdyFrame> get_resp1(ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body1(ConstructSpdyBodyFrame(1, "1", 1, true));
 
@@ -3328,11 +3329,9 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
     "scheme", "http",
     "version", "HTTP/1.1"
   };
-  scoped_ptr<SpdyFrame> get2(ConstructSpdyControlFrame(NULL, 0, false, 3,
-                                                       LOWEST, SYN_STREAM,
-                                                       CONTROL_FLAG_FIN,
-                                                       headers2,
-                                                       arraysize(headers2)));
+  scoped_ptr<SpdyFrame> get2(spdy_util_.ConstructSpdyControlFrame(
+      NULL, 0, false, 3, LOWEST, SYN_STREAM, CONTROL_FLAG_FIN,
+      headers2, arraysize(headers2), 0));
   scoped_ptr<SpdyFrame> get_resp2(ConstructSpdyGetSynReply(NULL, 0, 3));
   scoped_ptr<SpdyFrame> body2(ConstructSpdyBodyFrame(3, "22", 2, true));
 
@@ -5871,15 +5870,16 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuthSpdyProxy) {
   };
 
   scoped_ptr<SpdyFrame> conn_auth_resp(
-      ConstructSpdyControlFrame(NULL,
-                                0,
-                                false,
-                                1,
-                                LOWEST,
-                                SYN_REPLY,
-                                CONTROL_FLAG_NONE,
-                                kAuthChallenge,
-                                arraysize(kAuthChallenge)));
+      spdy_util_.ConstructSpdyControlFrame(NULL,
+                                           0,
+                                           false,
+                                           1,
+                                           LOWEST,
+                                           SYN_REPLY,
+                                           CONTROL_FLAG_NONE,
+                                           kAuthChallenge,
+                                           arraysize(kAuthChallenge),
+                                           0));
 
   scoped_ptr<SpdyFrame> conn_resp(ConstructSpdyGetSynReply(NULL, 0, 3));
   const char resp[] = "HTTP/1.1 200 OK\r\n"
@@ -10834,11 +10834,9 @@ TEST_F(HttpNetworkTransactionSpdy2Test, DoNotUseSpdySessionForHttpOverTunnel) {
     "scheme", "http",
     "version", "HTTP/1.1"
   };
-  scoped_ptr<SpdyFrame> req2(ConstructSpdyControlFrame(NULL, 0, false, 3,
-                                                       MEDIUM, SYN_STREAM,
-                                                       CONTROL_FLAG_FIN,
-                                                       headers,
-                                                       arraysize(headers)));
+  scoped_ptr<SpdyFrame> req2(spdy_util_.ConstructSpdyControlFrame(
+      NULL, 0, false, 3, MEDIUM, SYN_STREAM, CONTROL_FLAG_FIN,
+      headers, arraysize(headers), 0));
 
   MockWrite writes1[] = {
     CreateMockWrite(*connect, 0),
@@ -11011,11 +11009,9 @@ TEST_F(HttpNetworkTransactionSpdy2Test, DoNotUseSpdySessionIfCertDoesNotMatch) {
     "scheme", "http",
     "version", "HTTP/1.1"
   };
-  scoped_ptr<SpdyFrame> req1(ConstructSpdyControlFrame(NULL, 0, false, 1,
-                                                       LOWEST, SYN_STREAM,
-                                                       CONTROL_FLAG_FIN,
-                                                       headers,
-                                                       arraysize(headers)));
+  scoped_ptr<SpdyFrame> req1(spdy_util_.ConstructSpdyControlFrame(
+      NULL, 0, false, 1, LOWEST, SYN_STREAM, CONTROL_FLAG_FIN,
+      headers, arraysize(headers), 0));
 
   MockWrite writes1[] = {
     CreateMockWrite(*req1, 0),

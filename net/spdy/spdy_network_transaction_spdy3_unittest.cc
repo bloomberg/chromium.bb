@@ -3049,28 +3049,28 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, UpperCaseHeadersInHeadersFrame) {
   static const char* const kLateHeaders[] = {
     "X-UpperCase", "yes",
   };
-  scoped_ptr<SpdyFrame>
-      stream1_reply(ConstructSpdyControlFrame(kInitialHeaders,
-                                              arraysize(kInitialHeaders) / 2,
-                                              false,
-                                              1,
-                                              LOWEST,
-                                              SYN_REPLY,
-                                              CONTROL_FLAG_NONE,
-                                              NULL,
-                                              0,
-                                              0));
-  scoped_ptr<SpdyFrame>
-      stream1_headers(ConstructSpdyControlFrame(kLateHeaders,
-                                                arraysize(kLateHeaders) / 2,
-                                                false,
-                                                1,
-                                                LOWEST,
-                                                HEADERS,
-                                                CONTROL_FLAG_NONE,
-                                                NULL,
-                                                0,
-                                                0));
+  scoped_ptr<SpdyFrame> stream1_reply(
+      spdy_util_.ConstructSpdyControlFrame(kInitialHeaders,
+                                           arraysize(kInitialHeaders) / 2,
+                                           false,
+                                           1,
+                                           LOWEST,
+                                           SYN_REPLY,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
+  scoped_ptr<SpdyFrame> stream1_headers(
+      spdy_util_.ConstructSpdyControlFrame(kLateHeaders,
+                                           arraysize(kLateHeaders) / 2,
+                                           false,
+                                           1,
+                                           LOWEST,
+                                           HEADERS,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
   scoped_ptr<SpdyFrame> stream1_body(ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
     CreateMockRead(*stream1_reply),
@@ -5596,28 +5596,28 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ServerPushWithHeaders) {
     ":version",
     "HTTP/1.1"
   };
-  scoped_ptr<SpdyFrame>
-    stream2_syn(ConstructSpdyControlFrame(kInitialHeaders,
-                                          arraysize(kInitialHeaders) / 2,
-                                          false,
-                                          2,
-                                          LOWEST,
-                                          SYN_STREAM,
-                                          CONTROL_FLAG_NONE,
-                                          NULL,
-                                          0,
-                                          1));
-  scoped_ptr<SpdyFrame>
-      stream2_headers(ConstructSpdyControlFrame(kLateHeaders,
-                                                arraysize(kLateHeaders) / 2,
-                                                false,
-                                                2,
-                                                LOWEST,
-                                                HEADERS,
-                                                CONTROL_FLAG_NONE,
-                                                NULL,
-                                                0,
-                                                0));
+  scoped_ptr<SpdyFrame> stream2_syn(
+      spdy_util_.ConstructSpdyControlFrame(kInitialHeaders,
+                                           arraysize(kInitialHeaders) / 2,
+                                           false,
+                                           2,
+                                           LOWEST,
+                                           SYN_STREAM,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           1));
+  scoped_ptr<SpdyFrame> stream2_headers(
+      spdy_util_.ConstructSpdyControlFrame(kLateHeaders,
+                                           arraysize(kLateHeaders) / 2,
+                                           false,
+                                           2,
+                                           LOWEST,
+                                           HEADERS,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
 
   scoped_ptr<SpdyFrame>
       stream1_reply(ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -5678,28 +5678,28 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ServerPushClaimBeforeHeaders) {
     ":version",
     "HTTP/1.1"
   };
-  scoped_ptr<SpdyFrame>
-      stream2_syn(ConstructSpdyControlFrame(kInitialHeaders,
-                                            arraysize(kInitialHeaders) / 2,
-                                            false,
-                                            2,
-                                            LOWEST,
-                                            SYN_STREAM,
-                                            CONTROL_FLAG_NONE,
-                                            NULL,
-                                            0,
-                                            1));
-  scoped_ptr<SpdyFrame>
-      stream2_headers(ConstructSpdyControlFrame(kLateHeaders,
-                                                arraysize(kLateHeaders) / 2,
-                                                false,
-                                                2,
-                                                LOWEST,
-                                                HEADERS,
-                                                CONTROL_FLAG_NONE,
-                                                NULL,
-                                                0,
-                                                0));
+  scoped_ptr<SpdyFrame> stream2_syn(
+      spdy_util_.ConstructSpdyControlFrame(kInitialHeaders,
+                                           arraysize(kInitialHeaders) / 2,
+                                           false,
+                                           2,
+                                           LOWEST,
+                                           SYN_STREAM,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           1));
+  scoped_ptr<SpdyFrame> stream2_headers(
+      spdy_util_.ConstructSpdyControlFrame(kLateHeaders,
+                                           arraysize(kLateHeaders) / 2,
+                                           false,
+                                           2,
+                                           LOWEST,
+                                           HEADERS,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
 
   scoped_ptr<SpdyFrame>
       stream1_reply(ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -5818,39 +5818,39 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ServerPushWithTwoHeaderFrames) {
     ":version",
     "HTTP/1.1"
   };
-  scoped_ptr<SpdyFrame>
-      stream2_syn(ConstructSpdyControlFrame(kInitialHeaders,
-                                            arraysize(kInitialHeaders) / 2,
-                                            false,
-                                            2,
-                                            LOWEST,
-                                            SYN_STREAM,
-                                            CONTROL_FLAG_NONE,
-                                            NULL,
-                                            0,
-                                            1));
-  scoped_ptr<SpdyFrame>
-      stream2_headers1(ConstructSpdyControlFrame(kMiddleHeaders,
-                                                 arraysize(kMiddleHeaders) / 2,
-                                                 false,
-                                                 2,
-                                                 LOWEST,
-                                                 HEADERS,
-                                                 CONTROL_FLAG_NONE,
-                                                 NULL,
-                                                 0,
-                                                 0));
-  scoped_ptr<SpdyFrame>
-      stream2_headers2(ConstructSpdyControlFrame(kLateHeaders,
-                                                 arraysize(kLateHeaders) / 2,
-                                                 false,
-                                                 2,
-                                                 LOWEST,
-                                                 HEADERS,
-                                                 CONTROL_FLAG_NONE,
-                                                 NULL,
-                                                 0,
-                                                 0));
+  scoped_ptr<SpdyFrame> stream2_syn(
+      spdy_util_.ConstructSpdyControlFrame(kInitialHeaders,
+                                           arraysize(kInitialHeaders) / 2,
+                                           false,
+                                           2,
+                                           LOWEST,
+                                           SYN_STREAM,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           1));
+  scoped_ptr<SpdyFrame> stream2_headers1(
+      spdy_util_.ConstructSpdyControlFrame(kMiddleHeaders,
+                                           arraysize(kMiddleHeaders) / 2,
+                                           false,
+                                           2,
+                                           LOWEST,
+                                           HEADERS,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
+  scoped_ptr<SpdyFrame> stream2_headers2(
+      spdy_util_.ConstructSpdyControlFrame(kLateHeaders,
+                                           arraysize(kLateHeaders) / 2,
+                                           false,
+                                           2,
+                                           LOWEST,
+                                           HEADERS,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
 
   scoped_ptr<SpdyFrame>
       stream1_reply(ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -5975,28 +5975,28 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, ServerPushWithNoStatusHeaderFrames) {
     "hello",
     "bye",
   };
-  scoped_ptr<SpdyFrame>
-      stream2_syn(ConstructSpdyControlFrame(kInitialHeaders,
-                                            arraysize(kInitialHeaders) / 2,
-                                            false,
-                                            2,
-                                            LOWEST,
-                                            SYN_STREAM,
-                                            CONTROL_FLAG_NONE,
-                                            NULL,
-                                            0,
-                                            1));
-  scoped_ptr<SpdyFrame>
-      stream2_headers1(ConstructSpdyControlFrame(kMiddleHeaders,
-                                                 arraysize(kMiddleHeaders) / 2,
-                                                 false,
-                                                 2,
-                                                 LOWEST,
-                                                 HEADERS,
-                                                 CONTROL_FLAG_NONE,
-                                                 NULL,
-                                                 0,
-                                                 0));
+  scoped_ptr<SpdyFrame> stream2_syn(
+      spdy_util_.ConstructSpdyControlFrame(kInitialHeaders,
+                                           arraysize(kInitialHeaders) / 2,
+                                           false,
+                                           2,
+                                           LOWEST,
+                                           SYN_STREAM,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           1));
+  scoped_ptr<SpdyFrame> stream2_headers1(
+      spdy_util_.ConstructSpdyControlFrame(kMiddleHeaders,
+                                           arraysize(kMiddleHeaders) / 2,
+                                           false,
+                                           2,
+                                           LOWEST,
+                                           HEADERS,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
 
   scoped_ptr<SpdyFrame>
       stream1_reply(ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -6089,28 +6089,28 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, SynReplyWithHeaders) {
     "hello",
     "bye",
   };
-  scoped_ptr<SpdyFrame>
-      stream1_reply(ConstructSpdyControlFrame(kInitialHeaders,
-                                              arraysize(kInitialHeaders) / 2,
-                                              false,
-                                              1,
-                                              LOWEST,
-                                              SYN_REPLY,
-                                              CONTROL_FLAG_NONE,
-                                              NULL,
-                                              0,
-                                              0));
-  scoped_ptr<SpdyFrame>
-      stream1_headers(ConstructSpdyControlFrame(kLateHeaders,
-                                                arraysize(kLateHeaders) / 2,
-                                                false,
-                                                1,
-                                                LOWEST,
-                                                HEADERS,
-                                                CONTROL_FLAG_NONE,
-                                                NULL,
-                                                0,
-                                                0));
+  scoped_ptr<SpdyFrame> stream1_reply(
+      spdy_util_.ConstructSpdyControlFrame(kInitialHeaders,
+                                           arraysize(kInitialHeaders) / 2,
+                                           false,
+                                           1,
+                                           LOWEST,
+                                           SYN_REPLY,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
+  scoped_ptr<SpdyFrame> stream1_headers(
+      spdy_util_.ConstructSpdyControlFrame(kLateHeaders,
+                                           arraysize(kLateHeaders) / 2,
+                                           false,
+                                           1,
+                                           LOWEST,
+                                           HEADERS,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
   scoped_ptr<SpdyFrame> stream1_body(ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
     CreateMockRead(*stream1_reply),
@@ -6144,28 +6144,28 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, SynReplyWithLateHeaders) {
     "hello",
     "bye",
   };
-  scoped_ptr<SpdyFrame>
-      stream1_reply(ConstructSpdyControlFrame(kInitialHeaders,
-                                              arraysize(kInitialHeaders) / 2,
-                                              false,
-                                              1,
-                                              LOWEST,
-                                              SYN_REPLY,
-                                              CONTROL_FLAG_NONE,
-                                              NULL,
-                                              0,
-                                              0));
-  scoped_ptr<SpdyFrame>
-      stream1_headers(ConstructSpdyControlFrame(kLateHeaders,
-                                                arraysize(kLateHeaders) / 2,
-                                                false,
-                                                1,
-                                                LOWEST,
-                                                HEADERS,
-                                                CONTROL_FLAG_NONE,
-                                                NULL,
-                                                0,
-                                                0));
+  scoped_ptr<SpdyFrame> stream1_reply(
+      spdy_util_.ConstructSpdyControlFrame(kInitialHeaders,
+                                           arraysize(kInitialHeaders) / 2,
+                                           false,
+                                           1,
+                                           LOWEST,
+                                           SYN_REPLY,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
+  scoped_ptr<SpdyFrame> stream1_headers(
+      spdy_util_.ConstructSpdyControlFrame(kLateHeaders,
+                                           arraysize(kLateHeaders) / 2,
+                                           false,
+                                           1,
+                                           LOWEST,
+                                           HEADERS,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
   scoped_ptr<SpdyFrame> stream1_body(ConstructSpdyBodyFrame(1, false));
   scoped_ptr<SpdyFrame> stream1_body2(ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
@@ -6201,28 +6201,28 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, SynReplyWithDuplicateLateHeaders) {
     ":status",
     "500 Server Error",
   };
-  scoped_ptr<SpdyFrame>
-      stream1_reply(ConstructSpdyControlFrame(kInitialHeaders,
-                                              arraysize(kInitialHeaders) / 2,
-                                              false,
-                                              1,
-                                              LOWEST,
-                                              SYN_REPLY,
-                                              CONTROL_FLAG_NONE,
-                                              NULL,
-                                              0,
-                                              0));
-  scoped_ptr<SpdyFrame>
-      stream1_headers(ConstructSpdyControlFrame(kLateHeaders,
-                                                arraysize(kLateHeaders) / 2,
-                                                false,
-                                                1,
-                                                LOWEST,
-                                                HEADERS,
-                                                CONTROL_FLAG_NONE,
-                                                NULL,
-                                                0,
-                                                0));
+  scoped_ptr<SpdyFrame> stream1_reply(
+      spdy_util_.ConstructSpdyControlFrame(kInitialHeaders,
+                                           arraysize(kInitialHeaders) / 2,
+                                           false,
+                                           1,
+                                           LOWEST,
+                                           SYN_REPLY,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
+  scoped_ptr<SpdyFrame> stream1_headers(
+      spdy_util_.ConstructSpdyControlFrame(kLateHeaders,
+                                           arraysize(kLateHeaders) / 2,
+                                           false,
+                                           1,
+                                           LOWEST,
+                                           HEADERS,
+                                           CONTROL_FLAG_NONE,
+                                           NULL,
+                                           0,
+                                           0));
   scoped_ptr<SpdyFrame> stream1_body(ConstructSpdyBodyFrame(1, false));
   scoped_ptr<SpdyFrame> stream1_body2(ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
