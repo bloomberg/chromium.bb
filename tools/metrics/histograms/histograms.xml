@@ -7488,6 +7488,55 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebFont.LoadTime.0.Under10KB" units="milliseconds">
+  <summary>
+    The time it takes for a webfont download to finish, for webfonts of under
+    10KB.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.LoadTime.1.10KBTo50KB" units="milliseconds">
+  <summary>
+    The time it takes for a webfont download to finish, for webfonts of
+    10KB-50KB.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.LoadTime.2.50KBTo100KB" units="milliseconds">
+  <summary>
+    The time it takes for a webfont download to finish, for webfonts of
+    50KB-100KB.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.LoadTime.3.100KBTo1MB" units="milliseconds">
+  <summary>
+    The time it takes for a webfont download to finish, for webfonts of
+    100KB-1MB.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.LoadTime.4.Over1MB" units="milliseconds">
+  <summary>
+    The time it takes for a webfont download to finish, for webfonts of over
+    1MB.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.LoadTime.LoadError" units="milliseconds">
+  <summary>
+    The time taken for a webfont download that failed. Includes aborted
+    requests.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.LocalFontUsed" enum="BooleanUsage">
+  <summary>
+    Whether a locallly installed font is actually used when @font-face had local
+    sources.
+  </summary>
+</histogram>
+
 <histogram name="WinTimeTicks.FailedToChangeCores" enum="WindowsVersion">
   <summary>
     Incremented each time the TimeTicks field trial runs on a machine with
