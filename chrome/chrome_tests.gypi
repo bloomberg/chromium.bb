@@ -33,6 +33,23 @@
   ],
   'targets': [
     {
+      'target_name': 'test_support_ui_runner',
+      'type': 'static_library',
+      'dependencies': [
+        'test_support_common',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'export_dependent_settings': [
+        'test_support_common',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/ui/run_all_unittests.cc',
+      ],
+    },
+    {
       'target_name': 'test_support_ui',
       'type': 'static_library',
       'dependencies': [
@@ -92,6 +109,7 @@
         'renderer',
         'test_support_common',
         'test_support_ui',
+        'test_support_ui_runner',
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../third_party/libxml/libxml.gyp:libxml',
@@ -508,6 +526,7 @@
         'chromedriver_support',
         'common',
         'test_support_ui',
+        'test_support_ui_runner',
         '../base/base.gyp:base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../net/net.gyp:net',
@@ -2233,6 +2252,7 @@
         'chrome_resources.gyp:theme_resources',
         'test_support_common',
         'test_support_ui',
+        'test_support_ui_runner',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
@@ -2303,9 +2323,13 @@
         'test/perf/dom_checker_uitest.cc',
         'test/perf/feature_startup_test.cc',
         'test/perf/frame_rate/frame_rate_tests.cc',
+        'test/perf/generate_profile.cc',
+        'test/perf/generate_profile.h',
         'test/perf/indexeddb_uitest.cc',
         'test/perf/memory_test.cc',
         'test/perf/page_cycler_test.cc',
+        'test/perf/perf_ui_test_suite.cc',
+        'test/perf/run_all_perfuitests.cc',
         'test/perf/shutdown_test.cc',
         'test/perf/startup_test.cc',
         'test/perf/tab_switching_test.cc',
@@ -2878,51 +2902,6 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
-    ['OS=="linux" or OS=="win"', {
-      'targets': [
-        {
-          'target_name': 'generate_profile',
-          'type': 'executable',
-          'dependencies': [
-            'test_support_common',
-            'browser',
-            'renderer',
-            'chrome_resources.gyp:packed_resources',
-            '../base/base.gyp:base',
-            '../net/net.gyp:net_test_support',
-            '../skia/skia.gyp:skia',
-            '../sync/sync.gyp:sync',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'tools/profiles/generate_profile.cc',
-            'tools/profiles/thumbnail-inl.h',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'conditions': [
-                ['win_use_allocator_shim==1', {
-                  'dependencies': [
-                    '<(allocator_target)',
-                  ],
-                }],
-              ],
-              'configurations': {
-                'Debug_Base': {
-                  'msvs_settings': {
-                    'VCLinkerTool': {
-                      'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                    },
-                  },
-                },
-              },
-            }],
-          ],
-        },
-      ]},  # 'targets'
-    ],
     # If you change this condition, make sure you also change it in all.gyp
     # for the chromium_builder_qa target.
     ['enable_automation==1 and (OS=="mac" or ((OS=="win" or os_posix==1) and target_arch==python_arch))', {

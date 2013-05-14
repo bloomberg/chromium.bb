@@ -45,12 +45,6 @@ class FilePath;
 // rather than UITestBase.
 class UITestBase {
  public:
-  // Profile theme type choices.
-  enum ProfileType {
-    DEFAULT_THEME = 0,
-    COMPLEX_THEME = 1,
-  };
-
   // ********* Utility functions *********
 
   // Launches the browser only.
@@ -147,10 +141,6 @@ class UITestBase {
 
   // Gets the executable file path of the Chrome browser process.
   const base::FilePath::CharType* GetExecutablePath();
-
-  // Returns the directory name where the "typical" user data is that we use
-  // for testing.
-  static base::FilePath ComputeTypicalUserDataSource(ProfileType profile_type);
 
   // Return the user data directory being used by the browser instance in
   // UITest::SetUp().
@@ -327,9 +317,6 @@ class UITestBase {
 
   // Launches browser and AutomationProxy.
   scoped_ptr<ProxyLauncher> launcher_;
-
-  // Are we using a profile with a complex theme?
-  ProfileType profile_type_;
 
   // PID file for websocket server.
   base::FilePath websocket_pid_file_;
