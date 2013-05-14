@@ -96,7 +96,6 @@ ShellWindow::ShellWindow(Profile* profile,
                          const extensions::Extension* extension)
     : profile_(profile),
       extension_(extension),
-      extension_id_(extension->id()),
       window_type_(WINDOW_TYPE_DEFAULT),
       image_loader_ptr_factory_(this),
       fullscreen_for_window_api_(false),

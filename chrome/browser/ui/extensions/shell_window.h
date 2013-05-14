@@ -142,7 +142,6 @@ class ShellWindow : public content::NotificationObserver,
   const std::string& window_key() const { return window_key_; }
   const SessionID& session_id() const { return session_id_; }
   const extensions::Extension* extension() const { return extension_; }
-  const std::string& extension_id() const { return extension_id_; }
   content::WebContents* web_contents() const;
   WindowType window_type() const { return window_type_; }
   bool window_type_is_panel() const {
@@ -276,7 +275,6 @@ class ShellWindow : public content::NotificationObserver,
   Profile* profile_;  // weak pointer - owned by ProfileManager.
   // weak pointer - owned by ExtensionService.
   const extensions::Extension* extension_;
-  const std::string extension_id_;
 
   // Identifier that is used when saving and restoring geometry for this
   // window.
