@@ -364,14 +364,6 @@
           'sources!': [
             'plugins/plugin_stubs.cc',
           ],
-          'conditions': [
-            ['linux_use_tcmalloc == 1', {
-              'dependencies': [
-                # This is needed by ../extensions/v8/heap_profiler_extension.cc
-                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
         }],
         ['use_aura==1', {
           'sources/': [
