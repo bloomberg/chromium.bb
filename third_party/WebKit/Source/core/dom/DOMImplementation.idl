@@ -39,8 +39,8 @@
 
     // DOMImplementationCSS interface from DOM Level 2 CSS
 
-     [RaisesException] CSSStyleSheet createCSSStyleSheet([Default=Undefined] optional DOMString title,
-                                                     [Default=Undefined] optional DOMString media);
+     CSSStyleSheet createCSSStyleSheet([Default=Undefined] optional DOMString title,
+                                       [Default=Undefined] optional DOMString media);
 
     // HTMLDOMImplementation interface from DOM Level 2 HTML
 
