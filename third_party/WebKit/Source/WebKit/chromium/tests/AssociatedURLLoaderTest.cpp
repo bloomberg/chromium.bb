@@ -436,7 +436,8 @@ TEST_F(AssociatedURLLoaderTest, RedirectSuccess)
 }
 
 // Test that a cross origin redirect response without CORS headers fails.
-TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlFailure)
+// Disabled, http://crbug.com/240912 .
+TEST_F(AssociatedURLLoaderTest, DISABLED_RedirectCrossOriginWithAccessControlFailure)
 {
     WebCore::KURL url = toKURL("http://www.test.com/RedirectCrossOriginWithAccessControlFailure.html");
     char redirect[] = "http://www.other.com/RedirectCrossOriginWithAccessControlFailure.html";  // Cross-origin
