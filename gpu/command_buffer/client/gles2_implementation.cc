@@ -46,6 +46,12 @@ const size_t GLES2Implementation::kMaxSizeOfSimpleResult;
 const unsigned int GLES2Implementation::kStartingOffset;
 #endif
 
+GLES2Implementation::GLStaticState::GLStaticState() {
+}
+
+GLES2Implementation::GLStaticState::~GLStaticState() {
+}
+
 GLES2Implementation::GLStaticState::IntState::IntState()
     : max_combined_texture_image_units(0),
       max_cube_map_texture_size(0),
@@ -142,25 +148,8 @@ bool GLES2Implementation::Initialize(
   mapped_memory_.reset(new MappedMemoryManager(helper_));
   SetSharedMemoryChunkSizeMultiple(1024 * 1024 * 2);
 
-  static const GLenum pnames[] = {
-    GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
-    GL_MAX_CUBE_MAP_TEXTURE_SIZE,
-    GL_MAX_FRAGMENT_UNIFORM_VECTORS,
-    GL_MAX_RENDERBUFFER_SIZE,
-    GL_MAX_TEXTURE_IMAGE_UNITS,
-    GL_MAX_TEXTURE_SIZE,
-    GL_MAX_VARYING_VECTORS,
-    GL_MAX_VERTEX_ATTRIBS,
-    GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,
-    GL_MAX_VERTEX_UNIFORM_VECTORS,
-    GL_NUM_COMPRESSED_TEXTURE_FORMATS,
-    GL_NUM_SHADER_BINARY_FORMATS,
-  };
-
-  GetMultipleIntegervCHROMIUM(
-      pnames, arraysize(pnames),
-      &static_state_.int_state.max_combined_texture_image_units,
-      sizeof(static_state_.int_state));
+  if (!QueryAndCacheStaticState())
+    return false;
 
   util_.set_num_compressed_texture_formats(
       static_state_.int_state.num_compressed_texture_formats);
@@ -183,6 +172,78 @@ bool GLES2Implementation::Initialize(
       static_state_.int_state.max_vertex_attribs,
       reserved_ids_[0],
       reserved_ids_[1]));
+
+  return true;
+}
+
+bool GLES2Implementation::QueryAndCacheStaticState() {
+  // Setup query for multiple GetIntegerv's
+  static const GLenum pnames[] = {
+    GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
+    GL_MAX_CUBE_MAP_TEXTURE_SIZE,
+    GL_MAX_FRAGMENT_UNIFORM_VECTORS,
+    GL_MAX_RENDERBUFFER_SIZE,
+    GL_MAX_TEXTURE_IMAGE_UNITS,
+    GL_MAX_TEXTURE_SIZE,
+    GL_MAX_VARYING_VECTORS,
+    GL_MAX_VERTEX_ATTRIBS,
+    GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,
+    GL_MAX_VERTEX_UNIFORM_VECTORS,
+    GL_NUM_COMPRESSED_TEXTURE_FORMATS,
+    GL_NUM_SHADER_BINARY_FORMATS,
+  };
+
+  GetMultipleIntegervState integerv_state(
+      pnames, arraysize(pnames),
+      &static_state_.int_state.max_combined_texture_image_units,
+      sizeof(static_state_.int_state));
+  if (!GetMultipleIntegervSetup(&integerv_state)) {
+    return false;
+  }
+
+  // Setup query for multiple GetShaderPrecisionFormat's
+  static const GLenum precision_params[][2] = {
+    { GL_VERTEX_SHADER, GL_LOW_INT },
+    { GL_VERTEX_SHADER, GL_MEDIUM_INT },
+    { GL_VERTEX_SHADER, GL_HIGH_INT },
+    { GL_VERTEX_SHADER, GL_LOW_FLOAT },
+    { GL_VERTEX_SHADER, GL_MEDIUM_FLOAT },
+    { GL_VERTEX_SHADER, GL_HIGH_FLOAT },
+    { GL_FRAGMENT_SHADER, GL_LOW_INT },
+    { GL_FRAGMENT_SHADER, GL_MEDIUM_INT },
+    { GL_FRAGMENT_SHADER, GL_HIGH_INT },
+    { GL_FRAGMENT_SHADER, GL_LOW_FLOAT },
+    { GL_FRAGMENT_SHADER, GL_MEDIUM_FLOAT },
+    { GL_FRAGMENT_SHADER, GL_HIGH_FLOAT },
+  };
+
+  GetAllShaderPrecisionFormatsState  precision_state(
+      precision_params, arraysize(precision_params));
+  GetAllShaderPrecisionFormatsSetup(&precision_state);
+
+  // Allocate and partition transfer buffer for all requests
+  void* buffer = transfer_buffer_->Alloc(
+      integerv_state.transfer_buffer_size_needed +
+      precision_state.transfer_buffer_size_needed);
+  if (!buffer) {
+    SetGLError(GL_OUT_OF_MEMORY, "QueryAndCacheStaticState",
+               "Transfer buffer allocation failed.");
+    return false;
+  }
+  integerv_state.buffer = buffer;
+  precision_state.results_buffer =
+      static_cast<char*>(buffer) + integerv_state.transfer_buffer_size_needed;
+
+  // Make all the requests and wait once for all the results.
+  GetMultipleIntegervRequest(&integerv_state);
+  GetAllShaderPrecisionFormatsRequest(&precision_state);
+  WaitForCmd();
+  GetMultipleIntegervOnCompleted(&integerv_state);
+  GetAllShaderPrecisionFormatsOnCompleted(&precision_state);
+
+  // TODO(gman): We should be able to free without a token.
+  transfer_buffer_->FreePendingToken(buffer, helper_->InsertToken());
+  CheckGLError();
 
   return true;
 }
@@ -1989,17 +2050,18 @@ void GLES2Implementation::GetShaderPrecisionFormat(
     return;
   }
 
-  ShaderPrecisionCacheKey key(shadertype, precisiontype);
-  ShaderPrecisionCacheMap::iterator i = shader_precision_cache_.find(key);
-  if (i != shader_precision_cache_.end()) {
+  GLStaticState::ShaderPrecisionKey key(shadertype, precisiontype);
+  GLStaticState::ShaderPrecisionMap::iterator i =
+      static_state_.shader_precisions.find(key);
+  if (i != static_state_.shader_precisions.end()) {
     *result = i->second;
   } else {
     result->success = false;
     helper_->GetShaderPrecisionFormat(
-      shadertype, precisiontype, GetResultShmId(), GetResultShmOffset());
+        shadertype, precisiontype, GetResultShmId(), GetResultShmOffset());
     WaitForCmd();
     if (result->success)
-      shader_precision_cache_[key] = *result;
+      static_state_.shader_precisions[key] = *result;
   }
 
   if (result->success) {
@@ -2885,62 +2947,126 @@ void GLES2Implementation::GetMultipleIntegervCHROMIUM(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetMultipleIntegervCHROMIUM("
                  << static_cast<const void*>(pnames) << ", "
-                 << count << ", " << results << ", " << size << ")");
+                 << count << ", " << results << ", "
+                 << size << ")");
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLuint i = 0; i < count; ++i) {
       GPU_CLIENT_LOG(
           "  " << i << ": " << GLES2Util::GetStringGLState(pnames[i]));
     }
   });
-  int num_results = 0;
-  for (GLuint ii = 0; ii < count; ++ii) {
-    int num = util_.GLGetNumValuesReturned(pnames[ii]);
-    if (!num) {
-      SetGLErrorInvalidEnum(
-          "glGetMultipleIntegervCHROMIUM", pnames[ii], "pname");
-      return;
-    }
-    num_results += num;
-  }
-  if (static_cast<size_t>(size) != num_results * sizeof(GLint)) {
-    SetGLError(GL_INVALID_VALUE, "glGetMultipleIntegervCHROMIUM", "bad size");
+
+  GetMultipleIntegervState state(pnames, count, results, size);
+  if (!GetMultipleIntegervSetup(&state)) {
     return;
   }
-  for (int ii = 0; ii < num_results; ++ii) {
-    if (results[ii] != 0) {
-      SetGLError(GL_INVALID_VALUE,
-                 "glGetMultipleIntegervCHROMIUM", "results not set to zero.");
-      return;
-    }
-  }
-  uint32 size_needed =
-      count * sizeof(pnames[0]) + num_results * sizeof(results[0]);
-  void* buffer = transfer_buffer_->Alloc(size_needed);
-  if (!buffer) {
+  state.buffer = transfer_buffer_->Alloc(state.transfer_buffer_size_needed);
+  if (!state.buffer) {
+    SetGLError(GL_OUT_OF_MEMORY, "glGetMultipleIntegervCHROMIUM",
+               "Transfer buffer allocation failed.");
     return;
   }
-  GLenum* pnames_buffer = static_cast<GLenum*>(buffer);
-  void* results_buffer = pnames_buffer + count;
-  memcpy(pnames_buffer, pnames, count * sizeof(GLenum));
-  memset(results_buffer, 0, num_results * sizeof(GLint));
-  helper_->GetMultipleIntegervCHROMIUM(
-      transfer_buffer_->GetShmId(),
-      transfer_buffer_->GetOffset(pnames_buffer),
-      count,
-      transfer_buffer_->GetShmId(),
-      transfer_buffer_->GetOffset(results_buffer),
-      size);
+  GetMultipleIntegervRequest(&state);
   WaitForCmd();
-  memcpy(results, results_buffer, size);
-  // TODO(gman): We should be able to free without a token.
-  transfer_buffer_->FreePendingToken(buffer, helper_->InsertToken());
+  GetMultipleIntegervOnCompleted(&state);
+
   GPU_CLIENT_LOG("  returned");
   GPU_CLIENT_LOG_CODE_BLOCK({
-    for (int i = 0; i < num_results; ++i) {
+    for (int i = 0; i < state.num_results; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << (results[i]));
     }
   });
+
+  // TODO(gman): We should be able to free without a token.
+  transfer_buffer_->FreePendingToken(state.buffer, helper_->InsertToken());
   CheckGLError();
+}
+
+bool GLES2Implementation::GetMultipleIntegervSetup(
+    GetMultipleIntegervState* state) {
+  state->num_results = 0;
+  for (GLuint ii = 0; ii < state->pnames_count; ++ii) {
+    int num = util_.GLGetNumValuesReturned(state->pnames[ii]);
+    if (!num) {
+      SetGLErrorInvalidEnum(
+          "glGetMultipleIntegervCHROMIUM", state->pnames[ii], "pname");
+      return false;
+    }
+    state->num_results += num;
+  }
+  if (static_cast<size_t>(state->results_size) !=
+      state->num_results * sizeof(GLint)) {
+    SetGLError(GL_INVALID_VALUE, "glGetMultipleIntegervCHROMIUM", "bad size");
+    return false;
+  }
+  for (int ii = 0; ii < state->num_results; ++ii) {
+    if (state->results[ii] != 0) {
+      SetGLError(GL_INVALID_VALUE,
+                 "glGetMultipleIntegervCHROMIUM", "results not set to zero.");
+      return false;
+    }
+  }
+  state->transfer_buffer_size_needed =
+      state->pnames_count * sizeof(state->pnames[0]) +
+      state->num_results * sizeof(state->results[0]);
+  return true;
+}
+
+void GLES2Implementation::GetMultipleIntegervRequest(
+    GetMultipleIntegervState* state) {
+  GLenum* pnames_buffer = static_cast<GLenum*>(state->buffer);
+  state->results_buffer = pnames_buffer + state->pnames_count;
+  memcpy(pnames_buffer, state->pnames, state->pnames_count * sizeof(GLenum));
+  memset(state->results_buffer, 0, state->num_results * sizeof(GLint));
+  helper_->GetMultipleIntegervCHROMIUM(
+      transfer_buffer_->GetShmId(),
+      transfer_buffer_->GetOffset(pnames_buffer),
+      state->pnames_count,
+      transfer_buffer_->GetShmId(),
+      transfer_buffer_->GetOffset(state->results_buffer),
+      state->results_size);
+}
+
+void GLES2Implementation::GetMultipleIntegervOnCompleted(
+    GetMultipleIntegervState* state) {
+  memcpy(state->results, state->results_buffer, state->results_size);;
+}
+
+void GLES2Implementation::GetAllShaderPrecisionFormatsSetup(
+    GetAllShaderPrecisionFormatsState* state) {
+  state->transfer_buffer_size_needed =
+      state->precision_params_count *
+      sizeof(cmds::GetShaderPrecisionFormat::Result);
+}
+
+void GLES2Implementation::GetAllShaderPrecisionFormatsRequest(
+    GetAllShaderPrecisionFormatsState* state) {
+  typedef cmds::GetShaderPrecisionFormat::Result Result;
+  Result* result = static_cast<Result*>(state->results_buffer);
+
+  for (int i = 0; i < state->precision_params_count; i++) {
+    result->success = false;
+    helper_->GetShaderPrecisionFormat(state->precision_params[i][0],
+                                      state->precision_params[i][1],
+                                      transfer_buffer_->GetShmId(),
+                                      transfer_buffer_->GetOffset(result));
+    result++;
+  }
+}
+
+void GLES2Implementation::GetAllShaderPrecisionFormatsOnCompleted(
+    GetAllShaderPrecisionFormatsState* state) {
+  typedef cmds::GetShaderPrecisionFormat::Result Result;
+  Result* result = static_cast<Result*>(state->results_buffer);
+
+  for (int i = 0; i < state->precision_params_count; i++) {
+    if (result->success) {
+      const GLStaticState::ShaderPrecisionKey key(
+        state->precision_params[i][0], state->precision_params[i][1]);
+      static_state_.shader_precisions[key] = *result;
+    }
+    result++;
+  }
 }
 
 void GLES2Implementation::GetProgramInfoCHROMIUMHelper(

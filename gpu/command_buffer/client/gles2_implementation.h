@@ -119,7 +119,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   };
 
   // Stores GL state that never changes.
-  struct GLStaticState {
+  struct GLES2_IMPL_EXPORT GLStaticState {
+    GLStaticState();
+    ~GLStaticState();
+
     struct GLES2_IMPL_EXPORT IntState {
       IntState();
       GLint max_combined_texture_image_units;
@@ -136,6 +139,12 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
       GLint num_shader_binary_formats;
     };
     IntState int_state;
+
+    typedef std::pair<GLenum,GLenum> ShaderPrecisionKey;
+    typedef std::map<ShaderPrecisionKey,
+                     cmds::GetShaderPrecisionFormat::Result>
+        ShaderPrecisionMap;
+    ShaderPrecisionMap shader_precisions;
   };
 
   // The maxiumum result size from simple GL get commands.
@@ -344,6 +353,58 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   void* GetResultBuffer();
   int32 GetResultShmId();
   uint32 GetResultShmOffset();
+
+  bool QueryAndCacheStaticState();
+
+  // Helpers used to batch synchronous GetIntergerv calls with other
+  // synchronous calls.
+  struct GetMultipleIntegervState {
+    GetMultipleIntegervState(const GLenum* pnames, GLuint pnames_count,
+                             GLint* results, GLsizeiptr results_size)
+       : pnames(pnames),
+         pnames_count(pnames_count),
+         results(results),
+         results_size(results_size)
+    { }
+    // inputs
+    const GLenum* pnames;
+    GLuint pnames_count;
+    // outputs
+    GLint* results;
+    GLsizeiptr results_size;
+    // transfer buffer
+    int num_results;
+    int transfer_buffer_size_needed;
+    void* buffer;
+    void* results_buffer;
+  };
+  bool GetMultipleIntegervSetup(
+      GetMultipleIntegervState* state);
+  void GetMultipleIntegervRequest(
+      GetMultipleIntegervState* state);
+  void GetMultipleIntegervOnCompleted(
+      GetMultipleIntegervState* state);
+
+  // Helpers used to batch synchronous GetShaderPrecision calls with other
+  // synchronous calls.
+  struct GetAllShaderPrecisionFormatsState {
+    GetAllShaderPrecisionFormatsState(
+        const GLenum (*precision_params)[2],
+        int precision_params_count)
+        : precision_params(precision_params),
+          precision_params_count(precision_params_count)
+    { }
+    const GLenum (*precision_params)[2];
+    int precision_params_count;
+    int transfer_buffer_size_needed;
+    void* results_buffer;
+  };
+  void GetAllShaderPrecisionFormatsSetup(
+      GetAllShaderPrecisionFormatsState* state);
+  void GetAllShaderPrecisionFormatsRequest(
+      GetAllShaderPrecisionFormatsState* state);
+  void GetAllShaderPrecisionFormatsOnCompleted(
+      GetAllShaderPrecisionFormatsState* state);
 
   // Lazily determines if GL_ANGLE_pack_reverse_row_order is available
   bool IsAnglePackReverseRowOrderAvailable();
@@ -585,13 +646,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   MappedTextureMap mapped_textures_;
 
   scoped_ptr<MappedMemoryManager> mapped_memory_;
-
-  // Cache results of GetShaderPrecisionFormat
-  typedef std::pair<GLenum,GLenum> ShaderPrecisionCacheKey;
-  typedef std::map<ShaderPrecisionCacheKey,
-                   cmds::GetShaderPrecisionFormat::Result>
-      ShaderPrecisionCacheMap;
-  ShaderPrecisionCacheMap shader_precision_cache_;
 
   scoped_refptr<ShareGroup> share_group_;
 

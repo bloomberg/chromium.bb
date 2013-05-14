@@ -141,7 +141,8 @@ class MockTransferBuffer : public TransferBufferInterface {
   }
 
   bool InSync() {
-    return expected_buffer_index_ == actual_buffer_index_;
+    return expected_buffer_index_ == actual_buffer_index_ &&
+           expected_offset_ == actual_offset_;
   }
 
   ExpectedMemoryInfo GetExpectedMemory(size_t size) {
@@ -302,7 +303,7 @@ class GLES2ImplementationTest : public testing::Test {
   static const int32 kNumCommandEntries = 500;
   static const int32 kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
-  static const size_t kTransferBufferSize = 256;
+  static const size_t kTransferBufferSize = 512;
 
   static const GLint kMaxCombinedTextureImageUnits = 8;
   static const GLint kMaxCubeMapTextureSize = 64;
@@ -383,7 +384,9 @@ class GLES2ImplementationTest : public testing::Test {
     // This just happens to work for now because IntState has 1 GLint per state.
     // If IntState gets more complicated this code will need to get more
     // complicated.
-    ExpectedMemoryInfo mem1 = GetExpectedMemory(sizeof(int_state) * 2);
+    ExpectedMemoryInfo mem1 = GetExpectedMemory(
+        sizeof(GLES2Implementation::GLStaticState::IntState) * 2 +
+        sizeof(cmds::GetShaderPrecisionFormat::Result) * 12);
 
     {
       InSequence sequence;
