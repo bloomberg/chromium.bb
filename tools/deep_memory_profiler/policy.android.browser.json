@@ -1,0 +1,233 @@
+{
+  "components": [
+    "second",
+    "mmap-profiler",
+    "mmap-type-profiler",
+    "mmap-tcmalloc",
+    "FROM_HERE_FOR_TOTAL",
+    "mustbezero",
+    "unhooked-absent",
+    "unhooked-anonymous",
+    "unhooked-file-exec",
+    "unhooked-file-nonexec",
+    "unhooked-stack",
+    "unhooked-other",
+    "no-bucket",
+    "mmap-gpu-transferbuffer",
+    "mmap-gpu-ringbuffer",
+    "mmap-catch-all",
+    "tc-disk_cache-backing",
+    "tc-disk_cache-other",
+    "tc-sqlite3MemAlloc",
+    "tc-angle",
+    "tc-crypto",
+    "tc-net-iobuffer",
+    "tc-stl-string",
+    "tc-stl-rbtree",
+    "tc-stl-vector",
+    "tc-stl-hashtable",
+    "tc-stl-node",
+    "tc-catch-all",
+    "tc-unused",
+    "UNTIL_HERE_FOR_TOTAL",
+    "total-exclude-profiler",
+    "total",
+    "absent",
+    "anonymous",
+    "file-exec",
+    "file-nonexec",
+    "stack",
+    "other",
+    "mmap-total-log",
+    "mmap-no-log",
+    "mmap-total-record",
+    "other-total-log",
+    "tc-total-log",
+    "tc-no-log",
+    "tc-total-record",
+    "tc-total"
+  ],
+  "rules": [
+    {
+      "name": "second",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "mmap-profiler",
+      "stacktrace": ".*(ProfilerMalloc|MemoryRegionMap::).*",
+      "allocator": "mmap"
+    },
+    {
+      "name": "mmap-type-profiler",
+      "stacktrace": ".*(TypeProfilerMalloc).*",
+      "allocator": "mmap"
+    },
+    {
+      "name": "mmap-tcmalloc",
+      "stacktrace": ".*(DoAllocWithArena|SbrkSysAllocator::Alloc|MmapSysAllocator::Alloc|LowLevelAlloc::Alloc|LowLevelAlloc::AllocWithArena).*",
+      "allocator": "mmap"
+    },
+    {
+      "name": "FROM_HERE_FOR_TOTAL",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "mustbezero",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "unhooked-absent",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "unhooked-anonymous",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "unhooked-file-exec",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "unhooked-file-nonexec",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "unhooked-stack",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "unhooked-other",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "mmap-gpu-transferbuffer",
+      "stacktrace": ".*gpu::TransferBufferManager::RegisterTransferBuffer.*",
+      "allocator": "mmap"
+    },
+    {
+      "name": "mmap-gpu-ringbuffer",
+      "stacktrace": ".*gpu::CommandBufferHelper::AllocateRingBuffer.*",
+      "allocator": "mmap"
+    },
+    {
+      "name": "mmap-catch-all",
+      "stacktrace": ".*",
+      "allocator": "mmap"
+    },
+    {
+      "name": "tc-disk_cache-backing",
+      "stacktrace": ".*disk_cache::BackendImpl::InitBackingStore.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-disk_cache-other",
+      "stacktrace": ".*disk_cache::.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-sqlite3MemAlloc",
+      "stacktrace": ".*sqlite3MemMalloc.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-angle",
+      "stacktrace": ".*TPoolAllocator::allocate.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-crypto",
+      "stacktrace": ".*(CRYPTO_malloc|CRYPTO_realloc).*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-net-iobuffer",
+      "stacktrace": ".*net::IOBuffer::IOBuffer.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-stl-string",
+      "stacktrace": ".*std::basic_string::.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-stl-rbtree",
+      "stacktrace": ".*std::priv::_Rb_tree::.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-stl-vector",
+      "stacktrace": ".*std::priv::_Impl_vector::.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-stl-hashtable",
+      "stacktrace": ".*std::hashtable::.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-stl-node",
+      "stacktrace": ".*std::priv::_Impl_vector::.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-catch-all",
+      "stacktrace": ".*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "UNTIL_HERE_FOR_TOTAL",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "total-exclude-profiler",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "total",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "absent",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "anonymous",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "file-exec",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "file-nonexec",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "stack",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "other",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    }
+  ],
+  "version": "POLICY_DEEP_3"
+}

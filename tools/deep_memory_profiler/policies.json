@@ -1,4 +1,8 @@
 {
+  "android.browser": {
+    "file": "policy.android.browser.json",
+    "format": "json"
+  },
   "sourcefile": {
     "file": "policy.sourcefile.json",
     "format": "json"
