@@ -913,6 +913,75 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Installer.DevModeErrorCodes" enum="UpdateEngineErrorCode">
+  <summary>Errors from update_engine process when running in dev mode.</summary>
+</histogram>
+
+<histogram name="Installer.DownloadOverheadPercentage" units="%">
+  <summary>
+    The overhead in downloading extra bytes due to errors/interruptions.
+    Expressed as a percentage of the bytes that are actually needed to be
+    downloaded for the update to be successful.
+  </summary>
+</histogram>
+
+<histogram name="Installer.DownloadSourcesUsed"
+    enum="UpdateEngineDownloadSources">
+  <summary>
+    The combinations of protocol and source server that were used to complete a
+    successful update.
+  </summary>
+</histogram>
+
+<histogram name="Installer.NormalErrorCodes" enum="UpdateEngineErrorCode">
+  <summary>
+    Errors from update_engine process when running in normal mode.
+  </summary>
+</histogram>
+
+<histogram name="Installer.SuccessfulMBsDownloadedFrom" units="MB">
+  <summary>
+    Number of MBs downloaded from during an update that completed successfully.
+  </summary>
+</histogram>
+
+<histogram name="Installer.TotalMBsDownloadedFrom" units="MB">
+  <summary>
+    Total number of MBs downloaded since the last successful update. This also
+    includes all the bytes downloaded during any prior failed attempts.
+  </summary>
+</histogram>
+
+<histogram name="Installer.UpdateDurationMinutes" units="Minutes">
+  <summary>
+    Absolute wallclock time duration it took for the update to complete from the
+    time an update first began.  It includes not just the time the device was
+    up, but also includes the time the device spent sleeping.
+  </summary>
+</histogram>
+
+<histogram name="Installer.UpdateDurationUptimeMinutes" units="Minutes">
+  <summary>
+    Uptime duration it took for the update to complete from the time an update
+    first began.  It does not include the time the device spent sleeping, but it
+    does include the uptime spent in waiting for the hourly update checks to
+    happen.
+  </summary>
+</histogram>
+
+<histogram name="Installer.UpdateNumReboots" units="count">
+  <summary>
+    Number of times the device was rebooted by the user since an update began
+    and until it completed successfully.
+  </summary>
+</histogram>
+
+<histogram name="Installer.UpdateURLSwitches" units="count">
+  <summary>
+    Number of times the download URLs were switched due to failures.
+  </summary>
+</histogram>
+
 <histogram name="Instant.InstantControllerEvent" enum="InstantControllerEvent">
   <summary>
     Records various events of interest in the InstantController. E.g. When URLs
@@ -11345,6 +11414,59 @@ other types of suffix sets.
   <int value="3" label="Group not reported and trial was disabled"/>
 </enum>
 
+<enum name="UpdateEngineDownloadSources" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="HTTPS Server Only"/>
+  <int value="2" label="HTTP Server Only"/>
+  <int value="3" label="Both HTTP and HTTPS Server"/>
+</enum>
+
+<enum name="UpdateEngineErrorCode" type="int">
+  <int value="0" label="kErrorCodeSuccess"/>
+  <int value="1" label="kErrorCodeError"/>
+  <int value="2" label="kErrorCodeOmahaRequestError"/>
+  <int value="3" label="kErrorCodeOmahaResponseHandlerError"/>
+  <int value="4" label="kErrorCodeFilesystemCopierError"/>
+  <int value="5" label="kErrorCodePostinstallRunnerError"/>
+  <int value="6" label="kErrorCodeSetBootableFlagError"/>
+  <int value="7" label="kErrorCodeInstallDeviceOpenError"/>
+  <int value="8" label="kErrorCodeKernelDeviceOpenError"/>
+  <int value="9" label="kErrorCodeDownloadTransferError"/>
+  <int value="10" label="kErrorCodePayloadHashMismatchError"/>
+  <int value="11" label="kErrorCodePayloadSizeMismatchError"/>
+  <int value="12" label="kErrorCodeDownloadPayloadVerificationError"/>
+  <int value="13" label="kErrorCodeDownloadNewPartitionInfoError"/>
+  <int value="14" label="kErrorCodeDownloadWriteError"/>
+  <int value="15" label="kErrorCodeNewRootfsVerificationError"/>
+  <int value="16" label="kErrorCodeNewKernelVerificationError"/>
+  <int value="17" label="kErrorCodeSignedDeltaPayloadExpectedError"/>
+  <int value="18" label="kErrorCodeDownloadPayloadPubKeyVerificationError"/>
+  <int value="19" label="kErrorCodePostinstallBootedFromFirmwareB"/>
+  <int value="20" label="kErrorCodeDownloadStateInitializationError"/>
+  <int value="21" label="kErrorCodeDownloadInvalidMetadataMagicString"/>
+  <int value="22" label="kErrorCodeDownloadSignatureMissingInManifest"/>
+  <int value="23" label="kErrorCodeDownloadManifestParseError"/>
+  <int value="24" label="kErrorCodeDownloadMetadataSignatureError"/>
+  <int value="25" label="kErrorCodeDownloadMetadataSignatureVerificationError"/>
+  <int value="26" label="kErrorCodeDownloadMetadataSignatureMismatch"/>
+  <int value="27" label="kErrorCodeDownloadOperationHashVerificationError"/>
+  <int value="28" label="kErrorCodeDownloadOperationExecutionError"/>
+  <int value="29" label="kErrorCodeDownloadOperationHashMismatch"/>
+  <int value="30" label="kErrorCodeOmahaRequestEmptyResponseError"/>
+  <int value="31" label="kErrorCodeOmahaRequestXMLParseError"/>
+  <int value="32" label="kErrorCodeDownloadInvalidMetadataSize"/>
+  <int value="33" label="kErrorCodeDownloadInvalidMetadataSignature"/>
+  <int value="34" label="kErrorCodeOmahaRequestResponseInvalid"/>
+  <int value="35" label="kErrorCodeOmahaUpdateIgnoredPerPolicy"/>
+  <int value="36" label="kErrorCodeOmahaUpdateDeferredPerPolicy"/>
+  <int value="37" label="kErrorCodeOmahaErrorInHTTPResponse"/>
+  <int value="38" label="kErrorCodeDownloadOperationHashMissingError"/>
+  <int value="39" label="kErrorCodeDownloadMetadataSignatureMissingError"/>
+  <int value="40" label="kErrorCodeOmahaUpdateDeferredForBackoff"/>
+  <int value="41" label="kErrorCodePostinstallPowerwashError"/>
+  <int value="42" label="kErrorCodeUpdateCanceledByChannelChange"/>
+</enum>
+
 <enum name="VAVDAH264DecoderFailure" type="int">
   <int value="0" label="FRAME_MBS_ONLY_FLAG_NOT_ONE"/>
   <int value="1" label="GAPS_IN_FRAME_NUM"/>
@@ -11772,6 +11894,13 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity.Pipeline.CanarySuccess"/>
   <affected-histogram name="NetConnectivity.Pipeline.Depth"/>
   <affected-histogram name="NetConnectivity.Pipeline.Success"/>
+</fieldtrial>
+
+<fieldtrial name="InstallerDownloadSources" separator="">
+  <group name="HttpServer" label="Download Source: HTTP Server"/>
+  <group name="HttpsServer" label="Download Source: HTTPS Server"/>
+  <affected-histogram name="Installer.SuccessfulMBsDownloadedFrom"/>
+  <affected-histogram name="Installer.TotalMBsDownloadedFrom"/>
 </fieldtrial>
 
 <fieldtrial name="Instant">
