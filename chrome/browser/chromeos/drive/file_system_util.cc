@@ -356,9 +356,6 @@ FileError GDataToFileError(google_apis::GDataErrorCode status) {
       return FILE_ERROR_ABORT;
     case google_apis::GDATA_NO_CONNECTION:
       return FILE_ERROR_NO_CONNECTION;
-    case google_apis::HTTP_SERVICE_UNAVAILABLE:
-    case google_apis::HTTP_INTERNAL_SERVER_ERROR:
-      return FILE_ERROR_THROTTLED;
     default:
       return FILE_ERROR_FAILED;
   }

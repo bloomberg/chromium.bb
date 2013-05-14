@@ -60,9 +60,6 @@ std::string FileErrorToString(FileError error) {
 
     case FILE_ERROR_NO_CONNECTION:
       return "FILE_ERROR_NO_CONNECTION";
-
-    case FILE_ERROR_THROTTLED:
-      return "FILE_ERROR_THROTTLED";
   }
 
   NOTREACHED();
@@ -120,9 +117,6 @@ base::PlatformFileError FileErrorToPlatformError(FileError error) {
       return base::PLATFORM_FILE_ERROR_INVALID_URL;
 
     case FILE_ERROR_NO_CONNECTION:
-      return base::PLATFORM_FILE_ERROR_FAILED;
-
-    case FILE_ERROR_THROTTLED:
       return base::PLATFORM_FILE_ERROR_FAILED;
   }
 

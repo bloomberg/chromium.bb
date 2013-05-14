@@ -622,6 +622,7 @@
         'browser/google_apis/event_logger.h',
         'browser/google_apis/gdata_contacts_operations.cc',
         'browser/google_apis/gdata_contacts_operations.h',
+        'browser/google_apis/gdata_errorcode.cc',
         'browser/google_apis/gdata_errorcode.h',
         'browser/google_apis/gdata_wapi_operations.cc',
         'browser/google_apis/gdata_wapi_operations.h',

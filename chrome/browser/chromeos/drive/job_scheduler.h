@@ -206,7 +206,7 @@ class JobScheduler
   void ResetThrottleAndContinueJobLoop(QueueType queue_type);
 
   // Retries the job if needed and returns false. Otherwise returns true.
-  bool OnJobDone(JobID job_id, FileError error);
+  bool OnJobDone(JobID job_id, google_apis::GDataErrorCode error);
 
   // Callback for job finishing with a GetResourceListCallback.
   void OnGetResourceListJobDone(
@@ -272,7 +272,8 @@ class JobScheduler
 
   // Notifies updates to observers.
   void NotifyJobAdded(const JobInfo& job_info);
-  void NotifyJobDone(const JobInfo& job_info, FileError error);
+  void NotifyJobDone(const JobInfo& job_info,
+                     google_apis::GDataErrorCode error);
   void NotifyJobUpdated(const JobInfo& job_info);
 
   // Gets information of the queue of the given type as string.

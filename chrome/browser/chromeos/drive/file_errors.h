@@ -28,7 +28,6 @@ enum FileError {
   FILE_ERROR_NOT_EMPTY = -14,
   FILE_ERROR_INVALID_URL = -15,
   FILE_ERROR_NO_CONNECTION = -16,
-  FILE_ERROR_THROTTLED = -17,
 };
 
 // Used as callbacks for file operations.

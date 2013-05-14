@@ -695,7 +695,7 @@ void JobScheduler::ResetThrottleAndContinueJobLoop(QueueType queue_type) {
                  queue_type));
 }
 
-bool JobScheduler::OnJobDone(JobID job_id, FileError error) {
+bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   JobEntry* job_entry = job_map_.Lookup(job_id);
@@ -706,7 +706,7 @@ bool JobScheduler::OnJobDone(JobID job_id, FileError error) {
   const base::TimeDelta elapsed = base::Time::Now() - job_info->start_time;
   util::Log("Job done: %s => %s (elapsed time: %sms) - %s",
             job_info->ToString().c_str(),
-            FileErrorToString(error).c_str(),
+            GDataErrorCodeToString(error).c_str(),
             base::Int64ToString(elapsed.InMilliseconds()).c_str(),
             GetQueueInfo(queue_type).c_str());
 
@@ -714,7 +714,8 @@ bool JobScheduler::OnJobDone(JobID job_id, FileError error) {
   --jobs_running_[queue_type];
 
   // Retry, depending on the error.
-  if (error == FILE_ERROR_THROTTLED) {
+  if (error == google_apis::HTTP_SERVICE_UNAVAILABLE ||
+      error == google_apis::HTTP_INTERNAL_SERVER_ERROR) {
     job_info->state = STATE_RETRY;
     NotifyJobUpdated(*job_info);
 
@@ -742,7 +743,7 @@ void JobScheduler::OnGetResourceListJobDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (OnJobDone(job_id, util::GDataToFileError(error)))
+  if (OnJobDone(job_id, error))
     callback.Run(error, resource_list.Pass());
 }
 
@@ -754,7 +755,7 @@ void JobScheduler::OnGetResourceEntryJobDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (OnJobDone(job_id, util::GDataToFileError(error)))
+  if (OnJobDone(job_id, error))
     callback.Run(error, entry.Pass());
 }
 
@@ -766,7 +767,7 @@ void JobScheduler::OnGetAboutResourceJobDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (OnJobDone(job_id, util::GDataToFileError(error)))
+  if (OnJobDone(job_id, error))
     callback.Run(error, about_resource.Pass());
 }
 
@@ -778,7 +779,7 @@ void JobScheduler::OnGetAppListJobDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (OnJobDone(job_id, util::GDataToFileError(error)))
+  if (OnJobDone(job_id, error))
     callback.Run(error, app_list.Pass());
 }
 
@@ -789,7 +790,7 @@ void JobScheduler::OnEntryActionJobDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (OnJobDone(job_id, util::GDataToFileError(error)))
+  if (OnJobDone(job_id, error))
     callback.Run(error);
 }
 
@@ -801,7 +802,7 @@ void JobScheduler::OnDownloadActionJobDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (OnJobDone(job_id, util::GDataToFileError(error)))
+  if (OnJobDone(job_id, error))
     callback.Run(error, temp_file);
 }
 
@@ -815,7 +816,7 @@ void JobScheduler::OnUploadCompletionJobDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (OnJobDone(job_id, util::GDataToFileError(error)))
+  if (OnJobDone(job_id, error))
     callback.Run(error, drive_path, file_path, resource_entry.Pass());
 }
 
@@ -876,10 +877,10 @@ void JobScheduler::NotifyJobAdded(const JobInfo& job_info) {
 }
 
 void JobScheduler::NotifyJobDone(const JobInfo& job_info,
-                                   FileError error) {
+                                 google_apis::GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(JobListObserver, observer_list_,
-                    OnJobDone(job_info, error));
+                    OnJobDone(job_info, util::GDataToFileError(error)));
 }
 
 void JobScheduler::NotifyJobUpdated(const JobInfo& job_info) {
