@@ -536,11 +536,9 @@ LayoutUnit RenderFlexibleBox::computeMainAxisExtentForChild(RenderBox* child, Si
     // FIXME: This is wrong for orthogonal flows. It should use the flexbox's writing-mode, not the child's in order
     // to figure out the logical height/width.
     if (isColumnFlow()) {
-        if (child->style()->logicalHeight().isIntrinsic() || child->style()->logicalMinHeight().isIntrinsic() ||
-            child->style()->logicalMaxHeight().isIntrinsic()) {
-            if (child->needsLayout())
-                child->layout();
-        }
+        // We don't have to check for "auto" here - computeContentLogicalHeight will just return -1 for that case anyway.
+        if (size.isIntrinsic())
+            child->layoutIfNeeded();
         return child->computeContentLogicalHeight(size, child->logicalHeight() - child->borderAndPaddingLogicalHeight());
     }
     // FIXME: Figure out how this should work for regions and pass in the appropriate values.
