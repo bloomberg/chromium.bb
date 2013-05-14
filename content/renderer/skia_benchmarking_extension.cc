@@ -7,6 +7,7 @@
 #include "cc/resources/picture.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBuffer.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "v8/include/v8.h"
 
@@ -68,7 +69,16 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
 
     WebKit::WebArrayBuffer buffer =
         WebKit::WebArrayBuffer::create(bitmap.getSize(), 1);
-    memcpy(buffer.data(), bitmap.getPixels(), bitmap.getSize());
+    uint32* packed_pixels = reinterpret_cast<uint32*>(bitmap.getPixels());
+    uint8* buffer_pixels = reinterpret_cast<uint8*>(buffer.data());
+    // Swizzle from native Skia format to RGBA as we copy out.
+    for (size_t i = 0; i < bitmap.getSize(); i += 4) {
+        uint32 c = packed_pixels[i >> 2];
+        buffer_pixels[i]     = SkGetPackedR32(c);
+        buffer_pixels[i + 1] = SkGetPackedG32(c);
+        buffer_pixels[i + 2] = SkGetPackedB32(c);
+        buffer_pixels[i + 3] = SkGetPackedA32(c);
+    }
 
     v8::Handle<v8::Object> result = v8::Object::New();
     result->Set(v8::String::New("width"), v8::Number::New(rect.width()));
