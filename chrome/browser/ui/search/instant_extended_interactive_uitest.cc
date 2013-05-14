@@ -2314,13 +2314,8 @@ class InstantExtendedFirstTabTest : public InProcessBrowserTest,
 };
 
 // Flaky: http://crbug.com/238863
-#if defined(OS_CHROMEOS)
-#define MAYBE_RedirectToLocalOnLoadFailure DISABLED_RedirectToLocalOnLoadFailure
-#else
-#define MAYBE_RedirectToLocalOnLoadFailure RedirectToLocalOnLoadFailure
-#endif
 IN_PROC_BROWSER_TEST_F(
-    InstantExtendedFirstTabTest, MAYBE_RedirectToLocalOnLoadFailure) {
+    InstantExtendedFirstTabTest, DISABLED_RedirectToLocalOnLoadFailure) {
   // Create a new window to test the first NTP load.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
