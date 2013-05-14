@@ -18,6 +18,7 @@ class MessageLoopProxy;
 
 namespace content {
 
+class PartialCircularBuffer;
 class WebRtcLoggingMessageFilter;
 
 // WebRtcLoggingHandlerImpl handles WebRTC logging. There is one object per
@@ -28,7 +29,6 @@ class CONTENT_EXPORT WebRtcLoggingHandlerImpl
     : public NON_EXPORTED_BASE(talk_base::LogMessageDelegate) {
  public:
   WebRtcLoggingHandlerImpl(
-      const scoped_refptr<WebRtcLoggingMessageFilter>& message_filter,
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
 
   virtual ~WebRtcLoggingHandlerImpl();
@@ -38,15 +38,13 @@ class CONTENT_EXPORT WebRtcLoggingHandlerImpl
 
   void OnFilterRemoved();
 
-  void OpenLog();
-
   void OnLogOpened(base::SharedMemoryHandle handle, uint32 length);
   void OnOpenLogFailed();
 
  private:
-  scoped_refptr<WebRtcLoggingMessageFilter> message_filter_;
-
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  scoped_ptr<base::SharedMemory> shared_memory_;
+  scoped_ptr<content::PartialCircularBuffer> circular_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLoggingHandlerImpl);
 };

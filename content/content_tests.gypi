@@ -603,6 +603,7 @@
             'renderer/media/video_source_handler_unittest.cc',
             'renderer/media/webrtc_audio_device_unittest.cc',
             'renderer/media/webrtc_local_audio_track_unittest.cc',
+            'renderer/media/webrtc_logging_handler_impl_unittest.cc',
           ],
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
