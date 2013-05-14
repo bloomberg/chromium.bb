@@ -50,7 +50,6 @@ public:
         CommittedFirstRealLoad
     };
 
-    bool committingFirstRealLoad() const;
     bool committedFirstRealDocumentLoad() const;
     bool creatingInitialEmptyDocument() const;
     bool isDisplayingInitialEmptyDocument() const;

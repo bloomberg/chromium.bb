@@ -41,6 +41,7 @@ using namespace HTMLNames;
 
 inline HTMLIFrameElement::HTMLIFrameElement(const QualifiedName& tagName, Document* document)
     : HTMLFrameElementBase(tagName, document)
+    , m_didLoadNonEmptyDocument(false)
 {
     ASSERT(hasTagName(iframeTag));
     ScriptWrappable::init(this);

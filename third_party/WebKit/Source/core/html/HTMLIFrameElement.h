@@ -49,7 +49,11 @@ private:
 
     virtual void didRecalcStyle(StyleChange) OVERRIDE;
 
+    virtual bool loadedNonEmptyDocument() const OVERRIDE { return m_didLoadNonEmptyDocument; }
+    virtual void didLoadNonEmptyDocument() OVERRIDE { m_didLoadNonEmptyDocument = true; }
+
     AtomicString m_name;
+    bool m_didLoadNonEmptyDocument;
 };
 
 } // namespace WebCore

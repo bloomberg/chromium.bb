@@ -209,8 +209,7 @@ double PerformanceResourceTiming::responseEnd() const
 
 double PerformanceResourceTiming::resourceTimeToDocumentMilliseconds(int deltaMilliseconds) const
 {
-    if (!deltaMilliseconds)
-        return 0.0;
+    ASSERT(deltaMilliseconds >= 0);
     return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->requestTime) + deltaMilliseconds;
 }
 

@@ -60,6 +60,9 @@ public:
 
     SandboxFlags sandboxFlags() const { return m_sandboxFlags; }
 
+    virtual bool loadedNonEmptyDocument() const { return false; }
+    virtual void didLoadNonEmptyDocument() { }
+
 protected:
     HTMLFrameOwnerElement(const QualifiedName& tagName, Document*);
     void setSandboxFlags(SandboxFlags);

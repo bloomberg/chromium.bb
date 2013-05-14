@@ -38,11 +38,6 @@ FrameLoaderStateMachine::FrameLoaderStateMachine()
     : m_state(CreatingInitialEmptyDocument)
 { 
 }
-    
-bool FrameLoaderStateMachine::committingFirstRealLoad() const 
-{
-    return m_state == DisplayingInitialEmptyDocument;
-}
 
 bool FrameLoaderStateMachine::committedFirstRealDocumentLoad() const 
 {
