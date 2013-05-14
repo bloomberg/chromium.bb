@@ -111,13 +111,12 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   DCHECK(!sink_);
   DCHECK(!source_);
 
-  // Use mono on all platforms but Windows for now.
-  // TODO(henrika): Tracking at http://crbug.com/166771.
-  media::ChannelLayout channel_layout = media::CHANNEL_LAYOUT_MONO;
-#if defined(OS_WIN)
-  channel_layout = media::CHANNEL_LAYOUT_STEREO;
+  // Use stereo output on all platforms exept Android.
+  media::ChannelLayout channel_layout = media::CHANNEL_LAYOUT_STEREO;
+#if defined(OS_ANDROID)
+  DVLOG(1) << "Using mono audio output for Android";
+  channel_layout = media::CHANNEL_LAYOUT_MONO;
 #endif
-
   // Ask the renderer for the default audio output hardware sample-rate.
   media::AudioHardwareConfig* hardware_config =
       RenderThreadImpl::current()->GetAudioHardwareConfig();
