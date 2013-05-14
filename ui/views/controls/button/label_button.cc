@@ -78,7 +78,6 @@ const string16& LabelButton::GetText() const {
 void LabelButton::SetText(const string16& text) {
   SetAccessibleName(text);
   label_->SetText(text);
-  SetAccessibleName(text);
 }
 
 void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
@@ -158,32 +157,29 @@ void LabelButton::SetStyle(ButtonStyle style) {
 }
 
 gfx::Size LabelButton::GetPreferredSize() {
-  // Accommodate bold text in case this STYLE_BUTTON button is made default.
   const gfx::Font font = label_->font();
-  if (style_ == STYLE_BUTTON)
-    label_->SetFont(font.DeriveFont(0, font.GetStyle() | gfx::Font::BOLD));
+  // Use a temporary label copy for sizing to avoid calculation side-effects.
+  // Use bold text for STYLE_BUTTON to avoid changing size when made default.
+  Label label(label_->text(), style_ == STYLE_BUTTON ?
+      font.DeriveFont(0, font.GetStyle() | gfx::Font::BOLD) : font);
+  label.SetMultiLine(GetTextMultiLine());
 
-  // Resize multi-line labels paired with images to use their available width.
+  // Resize multi-line labels given the current limited available width.
   const gfx::Size image_size(image_->GetPreferredSize());
-  if (GetTextMultiLine() && !image_size.IsEmpty() && !GetText().empty() &&
-      GetHorizontalAlignment() == gfx::ALIGN_CENTER) {
-    label_->SizeToFit(GetLocalBounds().width() - image_size.width() - kSpacing);
-  }
+  const int image_width = image_size.width();
+  if (GetTextMultiLine() && (width() > image_width + kSpacing))
+    label.SizeToFit(width() - image_width - (image_width > 0 ? kSpacing : 0));
 
   // Calculate the required size.
-  gfx::Size size(label_->GetPreferredSize());
-  if (image_size.width() > 0 && size.width() > 0)
+  gfx::Size size(label.GetPreferredSize());
+  if (image_width > 0 && size.width() > 0)
     size.Enlarge(kSpacing, 0);
-  size.set_height(std::max(size.height(), image_size.height()));
-  size.Enlarge(image_size.width() + GetInsets().width(), GetInsets().height());
-
-  // Restore the label's original font without the temporary bold style.
-  if (style_ == STYLE_BUTTON)
-    label_->SetFont(font);
+  size.ClampToMin(gfx::Size(0, image_size.height()));
+  const gfx::Insets insets(GetInsets());
+  size.Enlarge(image_size.width() + insets.width(), insets.height());
 
   // Increase the minimum size monotonically with the preferred size.
-  size.SetSize(std::max(min_size_.width(), size.width()),
-               std::max(min_size_.height(), size.height()));
+  size.ClampToMin(min_size_);
   min_size_ = size;
 
   // Return the largest known size clamped to the maximum size (if valid).
