@@ -424,8 +424,6 @@ void EventSender::mouseDown(const CppArgumentList& arguments, CppVariant* result
     if (result) // Could be 0 if invoked asynchronously.
         result->setNull();
 
-    webview()->layout();
-
     int buttonNumber = getButtonNumberFromSingleArg(arguments);
     WEBKIT_ASSERT(buttonNumber != -1);
 
@@ -445,8 +443,6 @@ void EventSender::mouseUp(const CppArgumentList& arguments, CppVariant* result)
 {
     if (result) // Could be 0 if invoked asynchronously.
         result->setNull();
-
-    webview()->layout();
 
     int buttonNumber = getButtonNumberFromSingleArg(arguments);
     WEBKIT_ASSERT(buttonNumber != -1);
@@ -506,7 +502,6 @@ void EventSender::mouseMoveTo(const CppArgumentList& arguments, CppVariant* resu
 
     if (arguments.size() < 2 || !arguments[0].isNumber() || !arguments[1].isNumber())
         return;
-    webview()->layout();
 
     WebPoint mousePos(arguments[0].toInt32(), arguments[1].toInt32());
 
@@ -1076,11 +1071,6 @@ void EventSender::handleMouseWheel(const CppArgumentList& arguments, CppVariant*
 
     if (arguments.size() < 2 || !arguments[0].isNumber() || !arguments[1].isNumber())
         return;
-
-    // Force a layout here just to make sure every position has been
-    // determined before we send events (as well as all the other methods
-    // that send an event do).
-    webview()->layout();
 
     int horizontal = arguments[0].toInt32();
     int vertical = arguments[1].toInt32();
