@@ -45,30 +45,37 @@ std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
 }
 
 // Returns true if the requested device is valid, else false. On success, fills
-// in |unique_id|, and |storage_size_in_bytes|.
-bool GetDeviceInfo(const std::string& source_path,
-                   std::string* unique_id,
-                   uint64* storage_size_in_bytes,
-                   string16* storage_label,
-                   string16* vendor_name,
-                   string16* model_name) {
+// in |info|.
+bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
+                   bool has_dcim,
+                   chrome::StorageInfo* info) {
+  std::string source_path = mount_info.source_path;
+
   const disks::DiskMountManager::Disk* disk =
       disks::DiskMountManager::GetInstance()->FindDiskBySourcePath(source_path);
   if (!disk || disk->device_type() == DEVICE_TYPE_UNKNOWN)
     return false;
 
-  if (unique_id)
-    *unique_id = MakeDeviceUniqueId(*disk);
+  std::string unique_id = MakeDeviceUniqueId(*disk);
+  // Keep track of device uuid and label, to see how often we receive empty
+  // values.
+  chrome::MediaStorageUtil::RecordDeviceInfoHistogram(
+      true, unique_id, UTF8ToUTF16(disk->device_label()));
+  if (unique_id.empty())
+    return false;
 
-  if (storage_size_in_bytes)
-    *storage_size_in_bytes = disk->total_size_in_bytes();
+  if (info) {
+    chrome::MediaStorageUtil::Type type = has_dcim ?
+        chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM :
+        chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
 
-  if (vendor_name)
-    *vendor_name = UTF8ToUTF16(disk->vendor_name());
-  if (model_name)
-    *model_name = UTF8ToUTF16(disk->product_name());
-  if (storage_label)
-    *storage_label = UTF8ToUTF16(disk->device_label());
+    info->device_id = chrome::MediaStorageUtil::MakeDeviceId(type, unique_id);
+    info->location = mount_info.mount_path,
+    info->vendor_name = UTF8ToUTF16(disk->vendor_name());
+    info->model_name = UTF8ToUTF16(disk->product_name());
+    info->storage_label = UTF8ToUTF16(disk->device_label());
+    info->total_size_in_bytes = disk->total_size_in_bytes();
+  }
 
   return true;
 }
@@ -284,43 +291,16 @@ void StorageMonitorCros::AddMountedPath(
   }
 
   // Get the media device uuid and label if exists.
-  std::string unique_id;
-  string16 storage_label;
-  string16 vendor_name;
-  string16 model_name;
-  uint64 storage_size_in_bytes;
-  if (!GetDeviceInfo(mount_info.source_path, &unique_id,
-                     &storage_size_in_bytes, &storage_label,
-                     &vendor_name, &model_name)) {
-    return;
-  }
-
-  // Keep track of device uuid and label, to see how often we receive empty
-  // values.
-  chrome::MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id,
-                                                      storage_label);
-  if (unique_id.empty())
+  chrome::StorageInfo info;
+  if (!GetDeviceInfo(mount_info, has_dcim, &info))
     return;
 
-  chrome::MediaStorageUtil::Type type = has_dcim ?
-      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM :
-      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
+  if (info.device_id.empty())
+    return;
 
-  std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(type,
-                                                                 unique_id);
+  mount_map_.insert(std::make_pair(mount_info.mount_path, info));
 
-  chrome::StorageInfo object_info(
-      device_id,
-      string16(),
-      mount_info.mount_path,
-      storage_label,
-      vendor_name,
-      model_name,
-      storage_size_in_bytes);
-
-  mount_map_.insert(std::make_pair(mount_info.mount_path, object_info));
-
-  receiver()->ProcessAttach(object_info);
+  receiver()->ProcessAttach(info);
 }
 
 }  // namespace chromeos
