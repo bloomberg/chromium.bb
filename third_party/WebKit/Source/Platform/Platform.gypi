@@ -117,6 +117,7 @@
             'chromium/public/WebPoint.h',
             'chromium/public/WebPrerender.h',
             'chromium/public/WebPrerenderingSupport.h',
+            'chromium/public/WebPrescientNetworking.h',
             'chromium/public/WebPrivateOwnPtr.h',
             'chromium/public/WebPrivatePtr.h',
             'chromium/public/WebRTCConfiguration.h',
