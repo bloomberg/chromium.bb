@@ -232,10 +232,10 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void OnGetGCacheContents(base::ListValue* gcache_contents,
                            base::DictionaryValue* cache_summary);
 
-  // Called when GetEntryInfoByPath() is complete.
-  void OnGetEntryInfoByPath(const base::FilePath& path,
-                            drive::FileError error,
-                            scoped_ptr<drive::ResourceEntry> entry);
+  // Called when GetResourceEntryByPath() is complete.
+  void OnGetResourceEntryByPath(const base::FilePath& path,
+                                drive::FileError error,
+                                scoped_ptr<drive::ResourceEntry> entry);
 
   // Called when ReadDirectoryByPath() is complete.
   void OnReadDirectoryByPath(const base::FilePath& parent_path,
@@ -626,9 +626,9 @@ void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection() {
   // Start rendering the file system tree as text.
   const base::FilePath root_path = drive::util::GetDriveGrandRootPath();
 
-  system_service->file_system()->GetEntryInfoByPath(
+  system_service->file_system()->GetResourceEntryByPath(
       root_path,
-      base::Bind(&DriveInternalsWebUIHandler::OnGetEntryInfoByPath,
+      base::Bind(&DriveInternalsWebUIHandler::OnGetResourceEntryByPath,
                  weak_ptr_factory_.GetWeakPtr(),
                  root_path));
 
@@ -703,7 +703,7 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
                                    *gcache_summary);
 }
 
-void DriveInternalsWebUIHandler::OnGetEntryInfoByPath(
+void DriveInternalsWebUIHandler::OnGetResourceEntryByPath(
     const base::FilePath& path,
     drive::FileError error,
     scoped_ptr<drive::ResourceEntry> entry) {

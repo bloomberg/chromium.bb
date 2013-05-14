@@ -545,7 +545,7 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
         base::FilePath(util::kDriveMyDriveRootPath),
         base::Bind(
             &ChangeListLoader
-                ::DoLoadGrandRootDirectoryFromServerAfterGetEntryInfoByPath,
+                ::DoLoadGrandRootDirectoryFromServerAfterGetResourceEntryByPath,
             weak_ptr_factory_.GetWeakPtr(),
             directory_fetch_info,
             callback));
@@ -568,7 +568,7 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
 }
 
 void
-ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetEntryInfoByPath(
+ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetResourceEntryByPath(
     const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
     FileError error,

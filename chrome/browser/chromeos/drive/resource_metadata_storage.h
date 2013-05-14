@@ -23,8 +23,8 @@ namespace drive {
 class ResourceEntry;
 class ResourceMetadataHeader;
 
-// Storage for ResourceMetadata which is responsible to manage entry info
-// and child-parent relationships between entries.
+// Storage for ResourceMetadata which is responsible to manage resource
+// entries and child-parent relationships between entries.
 class ResourceMetadataStorage {
  public:
   // This should be incremented when incompatibility change is made to DB

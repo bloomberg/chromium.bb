@@ -218,7 +218,7 @@ class ChangeListLoader {
                                  const FileOperationCallback& callback);
 
   // Part of DoLoadDirectoryFromServer() for the grand root ("/drive").
-  void DoLoadGrandRootDirectoryFromServerAfterGetEntryInfoByPath(
+  void DoLoadGrandRootDirectoryFromServerAfterGetResourceEntryByPath(
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
       FileError error,

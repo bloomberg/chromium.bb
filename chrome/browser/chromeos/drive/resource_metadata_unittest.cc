@@ -102,7 +102,7 @@ class ResourceMetadataTest : public testing::Test {
     base::ThreadRestrictions::SetIOAllowed(true);
   }
 
-  // Gets the entry info by path synchronously. Returns NULL on failure.
+  // Gets the resource entry by path synchronously. Returns NULL on failure.
   scoped_ptr<ResourceEntry> GetResourceEntryByPathSync(
       const base::FilePath& file_path) {
     FileError error = FILE_ERROR_OK;

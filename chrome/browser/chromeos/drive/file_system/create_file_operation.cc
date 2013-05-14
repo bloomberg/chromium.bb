@@ -51,14 +51,14 @@ void CreateFileOperation::CreateFile(const base::FilePath& file_path,
   metadata_->GetResourceEntryPairByPathsOnUIThread(
       file_path.DirName(),
       file_path,
-      base::Bind(&CreateFileOperation::CreateFileAfterGetEntryInfo,
+      base::Bind(&CreateFileOperation::CreateFileAfterGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  is_exclusive,
                  callback));
 }
 
-void CreateFileOperation::CreateFileAfterGetEntryInfo(
+void CreateFileOperation::CreateFileAfterGetResourceEntry(
     const base::FilePath& file_path,
     bool is_exclusive,
     const FileOperationCallback& callback,

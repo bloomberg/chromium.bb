@@ -196,7 +196,7 @@ void FileSystemProxy::GetFileInfo(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::GetEntryInfoByPath,
+      base::Bind(&FileSystemInterface::GetResourceEntryByPath,
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
@@ -644,17 +644,17 @@ void FileSystemProxy::CreateSnapshotFile(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::GetEntryInfoByPath,
+      base::Bind(&FileSystemInterface::GetResourceEntryByPath,
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&FileSystemProxy::OnGetEntryInfoByPath,
+                     base::Bind(&FileSystemProxy::OnGetResourceEntryByPath,
                                 this,
                                 file_path,
                                 callback))));
 }
 
-void FileSystemProxy::OnGetEntryInfoByPath(
+void FileSystemProxy::OnGetResourceEntryByPath(
     const base::FilePath& entry_path,
     const FileSystemOperation::SnapshotFileCallback& callback,
     FileError error,

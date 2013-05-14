@@ -2335,7 +2335,7 @@ bool GetDriveEntryPropertiesFunction::RunImpl() {
     return true;
   }
 
-  system_service->file_system()->GetEntryInfoByPath(
+  system_service->file_system()->GetResourceEntryByPath(
       file_path_,
       base::Bind(&GetDriveEntryPropertiesFunction::OnGetFileInfo, this));
   return true;

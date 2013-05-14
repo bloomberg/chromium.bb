@@ -137,7 +137,7 @@ class CreateDirectoryOperation {
   void FindFirstMissingParentDirectoryInternal(
       scoped_ptr<FindFirstMissingParentDirectoryParams> params);
 
-  // Callback for ResourceMetadata::GetEntryInfoByPath from
+  // Callback for ResourceMetadata::GetResourceEntryByPath from
   // FindFirstMissingParentDirectory.
   void ContinueFindFirstMissingParentDirectory(
       scoped_ptr<FindFirstMissingParentDirectoryParams> params,

@@ -112,7 +112,7 @@ class ChangeListProcessor {
   void ApplyEntryProto(const ResourceEntry& entry);
 
   // Continue ApplyEntryProto. This is a callback for
-  // ResourceMetadata::GetEntryInfoByResourceId.
+  // ResourceMetadata::GetResourceEntryById.
   void ContinueApplyEntryProto(
       const ResourceEntry& entry,
       FileError error,
@@ -170,7 +170,7 @@ class ChangeListProcessor {
   void UpdateRootEntry(const base::Closure& closure);
 
   // Part of UpdateRootEntry(). Called after
-  // ResourceMetadata::GetEntryInfoByPath is complete. Updates the root
+  // ResourceMetadata::GetResourceEntryByPath is complete. Updates the root
   // proto, and refreshes the root entry with the proto.
   void UpdateRootEntryAfterGetEntry(const base::Closure& closure,
                                     FileError error,

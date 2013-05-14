@@ -67,7 +67,7 @@ bool FileTaskExecutor::ExecuteAndNotify(
 
   for (std::vector<base::FilePath>::const_iterator iter = raw_paths.begin();
       iter != raw_paths.end(); ++iter) {
-    file_system->GetEntryInfoByPath(
+    file_system->GetResourceEntryByPath(
         *iter,
         base::Bind(&FileTaskExecutor::OnFileEntryFetched, this));
   }

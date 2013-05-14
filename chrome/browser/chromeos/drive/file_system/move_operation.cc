@@ -39,13 +39,13 @@ void MoveOperation::Move(const base::FilePath& src_file_path,
   metadata_->GetResourceEntryPairByPathsOnUIThread(
       src_file_path,
       dest_file_path.DirName(),
-      base::Bind(&MoveOperation::MoveAfterGetEntryInfoPair,
+      base::Bind(&MoveOperation::MoveAfterGetResourceEntryPair,
                  weak_ptr_factory_.GetWeakPtr(),
                  dest_file_path,
                  callback));
 }
 
-void MoveOperation::MoveAfterGetEntryInfoPair(
+void MoveOperation::MoveAfterGetResourceEntryPair(
     const base::FilePath& dest_file_path,
     const FileOperationCallback& callback,
     scoped_ptr<EntryInfoPairResult> src_dest_info) {

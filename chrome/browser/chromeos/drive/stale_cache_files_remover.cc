@@ -45,17 +45,17 @@ void StaleCacheFilesRemover::OnInitialLoadFinished() {
 
   cache_->IterateOnUIThread(
       base::Bind(
-          &StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary,
+          &StaleCacheFilesRemover::GetResourceEntryAndRemoveCacheIfNecessary,
           weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&base::DoNothing));
 }
 
-void StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary(
+void StaleCacheFilesRemover::GetResourceEntryAndRemoveCacheIfNecessary(
     const std::string& resource_id,
     const FileCacheEntry& cache_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  file_system_->GetEntryInfoByResourceId(
+  file_system_->GetResourceEntryById(
       resource_id,
       base::Bind(&StaleCacheFilesRemover::RemoveCacheIfNecessary,
                  weak_ptr_factory_.GetWeakPtr(),

@@ -47,12 +47,13 @@ class MoveOperation {
                     const base::FilePath& dest_file_path,
                     const FileOperationCallback& callback);
  private:
-  // Step 1 of Move(), called after the entry info of the source resource and
-  // the destination directory is obtained. It renames the resource in the
-  // source directory, before moving between directories.
-  void MoveAfterGetEntryInfoPair(const base::FilePath& dest_file_path,
-                                 const FileOperationCallback& callback,
-                                 scoped_ptr<EntryInfoPairResult> src_dest_info);
+  // Step 1 of Move(), called after the resource entry of the source and the
+  // destination directory is obtained. It renames the resource in the source
+  // directory, before moving between directories.
+  void MoveAfterGetResourceEntryPair(
+      const base::FilePath& dest_file_path,
+      const FileOperationCallback& callback,
+      scoped_ptr<EntryInfoPairResult> src_dest_info);
 
   // Step 2 of Move(), called after renaming is completed. It adds the resource
   // to the destination directory.

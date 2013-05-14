@@ -51,7 +51,7 @@ class FakeFileSystem : public FileSystemInterface {
   virtual void AddObserver(FileSystemObserver* observer) OVERRIDE;
   virtual void RemoveObserver(FileSystemObserver* observer) OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;
-  virtual void GetEntryInfoByResourceId(
+  virtual void GetResourceEntryById(
       const std::string& resource_id,
       const GetResourceEntryWithFilePathCallback& callback) OVERRIDE;
   virtual void TransferFileFromRemoteToLocal(
@@ -102,7 +102,7 @@ class FakeFileSystem : public FileSystemInterface {
       const std::string& resource_id,
       const DriveClientContext& context,
       const FileOperationCallback& callback) OVERRIDE;
-  virtual void GetEntryInfoByPath(
+  virtual void GetResourceEntryByPath(
       const base::FilePath& file_path,
       const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void ReadDirectoryByPath(
@@ -167,16 +167,16 @@ class FakeFileSystem : public FileSystemInterface {
       google_apis::GDataErrorCode error_in,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
-  // Helpers of GetEntryInfoByResourceId.
+  // Helpers of GetResourceEntryById.
   // How the method works:
   // 1) Gets ResourceEntry from the drive service.
   // 2) Gets the file path of the resource.
   // 3) Runs the |callback|.
-  void GetEntryInfoByResourceIdAfterGetResourceEntry(
+  void GetResourceEntryByIdAfterGetResourceEntry(
       const GetResourceEntryWithFilePathCallback& callback,
       google_apis::GDataErrorCode error_in,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
-  void GetEntryInfoByResourceIdAfterGetFilePath(
+  void GetResourceEntryByIdAfterGetFilePath(
       const GetResourceEntryWithFilePathCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry,
@@ -188,14 +188,14 @@ class FakeFileSystem : public FileSystemInterface {
   // 2) Look at if there is a cache file or not. If found return it.
   // 3) Otherwise start DownloadFile.
   // 4) Runs the |completion_callback| upon the download completion.
-  void GetFileContentByPathAfterGetEntryInfo(
+  void GetFileContentByPathAfterGetResourceEntry(
       const base::FilePath& file_path,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
-  void GetFileContentByPathAfterGetResourceEntry(
+  void GetFileContentByPathAfterGetWapiResourceEntry(
       const base::FilePath& file_path,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
@@ -207,7 +207,7 @@ class FakeFileSystem : public FileSystemInterface {
       google_apis::GDataErrorCode gdata_error,
       const base::FilePath& temp_file);
 
-  // Helpers of GetEntryInfoByPath.
+  // Helpers of GetResourceEntryByPath.
   // How the method works:
   // 1) If the path is root, gets AboutResrouce from the drive service
   //    and create ResourceEntry.
@@ -218,16 +218,16 @@ class FakeFileSystem : public FileSystemInterface {
   // not supported in FakeFileSystem. Thus, even if the server has
   // files sharing the same name under a directory, the second (or later)
   // file cannot be taken with the suffixed name.
-  void GetEntryInfoByPathAfterGetAboutResource(
+  void GetResourceEntryByPathAfterGetAboutResource(
       const GetResourceEntryCallback& callback,
       google_apis::GDataErrorCode gdata_error,
       scoped_ptr<google_apis::AboutResource> about_resource);
-  void GetEntryInfoByPathAfterGetParentEntryInfo(
+  void GetResourceEntryByPathAfterGetParentEntryInfo(
       const base::FilePath& base_name,
       const GetResourceEntryCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> parent_entry);
-  void GetEntryInfoByPathAfterGetResourceList(
+  void GetResourceEntryByPathAfterGetResourceList(
       const base::FilePath& base_name,
       const GetResourceEntryCallback& callback,
       google_apis::GDataErrorCode gdata_error,

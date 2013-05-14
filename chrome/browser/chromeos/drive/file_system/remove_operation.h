@@ -51,9 +51,9 @@ class RemoveOperation {
                       const FileOperationCallback& callback);
 
  private:
-  // Part of Remove(). Called after GetEntryInfoByPath() is complete.
+  // Part of Remove(). Called after GetResourceEntryByPath() is complete.
   // |callback| must not be null.
-  void RemoveAfterGetEntryInfo(
+  void RemoveAfterGetResourceEntry(
       const FileOperationCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);

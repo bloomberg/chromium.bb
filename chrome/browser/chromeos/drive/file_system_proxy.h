@@ -127,9 +127,9 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       FileError error,
       scoped_ptr<ResourceEntry> entry);
 
-  // Helper callback for relaying reply for GetEntryInfoByPath() to the
+  // Helper callback for relaying reply for GetResourceEntryByPath() to the
   // calling thread.
-  void OnGetEntryInfoByPath(
+  void OnGetResourceEntryByPath(
       const base::FilePath& entry_path,
       const fileapi::FileSystemOperation::SnapshotFileCallback&
           callback,

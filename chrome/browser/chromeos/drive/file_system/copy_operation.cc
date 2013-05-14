@@ -93,7 +93,7 @@ void CopyOperation::Copy(const base::FilePath& src_file_path,
   metadata_->GetResourceEntryPairByPathsOnUIThread(
       src_file_path,
       dest_file_path.DirName(),
-      base::Bind(&CopyOperation::CopyAfterGetEntryInfoPair,
+      base::Bind(&CopyOperation::CopyAfterGetResourceEntryPair,
                  weak_ptr_factory_.GetWeakPtr(),
                  dest_file_path,
                  callback));
@@ -151,7 +151,7 @@ void CopyOperation::TransferFileFromLocalToRemote(
   metadata_->GetResourceEntryByPathOnUIThread(
       remote_dest_file_path.DirName(),
       base::Bind(
-          &CopyOperation::TransferFileFromLocalToRemoteAfterGetEntryInfo,
+          &CopyOperation::TransferFileFromLocalToRemoteAfterGetResourceEntry,
           weak_ptr_factory_.GetWeakPtr(),
           local_src_file_path,
           remote_dest_file_path,
@@ -188,13 +188,14 @@ void CopyOperation::ScheduleTransferRegularFileAfterCreate(
 
   metadata_->GetResourceEntryByPathOnUIThread(
       remote_dest_file_path,
-      base::Bind(&CopyOperation::ScheduleTransferRegularFileAfterGetEntryInfo,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 local_file_path,
-                 callback));
+      base::Bind(
+          &CopyOperation::ScheduleTransferRegularFileAfterGetResourceEntry,
+          weak_ptr_factory_.GetWeakPtr(),
+          local_file_path,
+          callback));
 }
 
-void CopyOperation::ScheduleTransferRegularFileAfterGetEntryInfo(
+void CopyOperation::ScheduleTransferRegularFileAfterGetResourceEntry(
     const base::FilePath& local_file_path,
     const FileOperationCallback& callback,
     FileError error,
@@ -276,7 +277,7 @@ void CopyOperation::MoveEntryFromRootDirectory(
                         callback);
 }
 
-void CopyOperation::CopyAfterGetEntryInfoPair(
+void CopyOperation::CopyAfterGetResourceEntryPair(
     const base::FilePath& dest_file_path,
     const FileOperationCallback& callback,
     scoped_ptr<EntryInfoPairResult> result) {
@@ -346,7 +347,7 @@ void CopyOperation::OnGetFileCompleteForCopy(
   ScheduleTransferRegularFile(local_file_path, remote_dest_file_path, callback);
 }
 
-void CopyOperation::TransferFileFromLocalToRemoteAfterGetEntryInfo(
+void CopyOperation::TransferFileFromLocalToRemoteAfterGetResourceEntry(
     const base::FilePath& local_src_file_path,
     const base::FilePath& remote_dest_file_path,
     const FileOperationCallback& callback,

@@ -58,7 +58,7 @@ class UpdateOperation {
 
  private:
   // Part of UpdateFileByResourceId(). Called when
-  // ResourceMetadata::GetEntryInfoByResourceId() is complete.
+  // ResourceMetadata::GetResourceEntryById() is complete.
   // |callback| must not be null.
   void UpdateFileByEntryInfo(
       DriveClientContext context,

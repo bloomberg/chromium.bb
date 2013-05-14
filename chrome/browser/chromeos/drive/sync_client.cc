@@ -232,16 +232,16 @@ void SyncClient::OnGetResourceIdOfExistingPinnedFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (cache_entry.is_pinned() && cache_entry.is_present()) {
-    file_system_->GetEntryInfoByResourceId(
+    file_system_->GetResourceEntryById(
         resource_id,
-        base::Bind(&SyncClient::OnGetEntryInfoByResourceId,
+        base::Bind(&SyncClient::OnGetResourceEntryById,
                    weak_ptr_factory_.GetWeakPtr(),
                    resource_id,
                    cache_entry));
   }
 }
 
-void SyncClient::OnGetEntryInfoByResourceId(
+void SyncClient::OnGetResourceEntryById(
     const std::string& resource_id,
     const FileCacheEntry& cache_entry,
     FileError error,

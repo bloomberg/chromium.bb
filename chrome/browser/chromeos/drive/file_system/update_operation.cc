@@ -44,7 +44,7 @@ void UpdateOperation::UpdateFileByResourceId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(satorux): GetEntryInfoByResourceId() is called twice for
+  // TODO(satorux): GetResourceEntryById() is called twice for
   // UpdateFileByResourceId(). crbug.com/143873
   metadata_->GetResourceEntryByIdOnUIThread(
       resource_id,

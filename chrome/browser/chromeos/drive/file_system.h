@@ -65,7 +65,7 @@ class FileSystem : public FileSystemInterface,
   virtual void AddObserver(FileSystemObserver* observer) OVERRIDE;
   virtual void RemoveObserver(FileSystemObserver* observer) OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;
-  virtual void GetEntryInfoByResourceId(
+  virtual void GetResourceEntryById(
       const std::string& resource_id,
       const GetResourceEntryWithFilePathCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
@@ -123,7 +123,7 @@ class FileSystem : public FileSystemInterface,
       const std::string& resource_id,
       const DriveClientContext& context,
       const FileOperationCallback& callback) OVERRIDE;
-  virtual void GetEntryInfoByPath(
+  virtual void GetResourceEntryByPath(
       const base::FilePath& file_path,
       const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void ReadDirectoryByPath(
@@ -204,28 +204,28 @@ class FileSystem : public FileSystemInterface,
                                 FileError load_error);
 
   // Used to implement Pin().
-  void PinAfterGetEntryInfoByPath(const FileOperationCallback& callback,
-                                  FileError error,
-                                  scoped_ptr<ResourceEntry> entry);
+  void PinAfterGetResourceEntryByPath(const FileOperationCallback& callback,
+                                      FileError error,
+                                      scoped_ptr<ResourceEntry> entry);
 
   // Used to implement Unpin().
-  void UnpinAfterGetEntryInfoByPath(const FileOperationCallback& callback,
-                                    FileError error,
-                                    scoped_ptr<ResourceEntry> entry);
+  void UnpinAfterGetResourceEntryByPath(const FileOperationCallback& callback,
+                                        FileError error,
+                                        scoped_ptr<ResourceEntry> entry);
 
-  // Invoked upon completion of GetEntryInfoByPath initiated by
+  // Invoked upon completion of GetResourceEntryByPath initiated by
   // GetFileByPath. It then continues to invoke GetResolvedFileByPath.
   // |callback| must not be null.
-  void OnGetEntryInfoCompleteForGetFileByPath(
+  void OnGetResourceEntryCompleteForGetFileByPath(
       const base::FilePath& file_path,
       const GetFileCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> file_info);
 
-  // Invoked upon completion of GetEntryInfoByPath initiated by OpenFile.
+  // Invoked upon completion of GetResourceEntryByPath initiated by OpenFile.
   // It then continues to invoke GetResolvedFileByPath and proceeds to
   // OnGetFileCompleteForOpenFile.
-  void OnGetEntryInfoCompleteForOpenFile(
+  void OnGetResourceEntryCompleteForOpenFile(
       const base::FilePath& file_path,
       const OpenFileCallback& callback,
       FileError error,
@@ -245,10 +245,10 @@ class FileSystem : public FileSystemInterface,
   // 3) Removes the |file_path| from the remembered set of opened files.
   // 4) Invokes the user-supplied |callback|.
   // |callback| must not be null.
-  void CloseFileAfterGetEntryInfo(const base::FilePath& file_path,
-                                  const FileOperationCallback& callback,
-                                  FileError error,
-                                  scoped_ptr<ResourceEntry> entry);
+  void CloseFileAfterGetResourceEntry(const base::FilePath& file_path,
+                                      const FileOperationCallback& callback,
+                                      FileError error,
+                                      scoped_ptr<ResourceEntry> entry);
   void CloseFileFinalize(const base::FilePath& file_path,
                          const FileOperationCallback& callback,
                          FileError result);
@@ -288,21 +288,21 @@ class FileSystem : public FileSystemInterface,
   // Initializes preference change observer.
   void InitializePreferenceObserver();
 
-  // Part of GetEntryInfoByPath()
-  // 1) Called when ResourceMetadata::GetEntryInfoByPath() is complete.
-  //    If succeeded, GetEntryInfoByPath() returns immediately here.
+  // Part of GetResourceEntryByPath()
+  // 1) Called when ResourceMetadata::GetResourceEntryByPath() is complete.
+  //    If succeeded, GetResourceEntryByPath() returns immediately here.
   //    Otherwise, starts loading the file system.
   // 2) Called when LoadIfNeeded() is complete.
-  // 3) Called when ResourceMetadata::GetEntryInfoByPath() is complete.
-  void GetEntryInfoByPathAfterGetEntry1(
+  // 3) Called when ResourceMetadata::GetResourceEntryByPath() is complete.
+  void GetResourceEntryByPathAfterGetEntry1(
       const base::FilePath& file_path,
       const GetResourceEntryCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
-  void GetEntryInfoByPathAfterLoad(const base::FilePath& file_path,
-                                   const GetResourceEntryCallback& callback,
-                                   FileError error);
-  void GetEntryInfoByPathAfterGetEntry2(
+  void GetResourceEntryByPathAfterLoad(const base::FilePath& file_path,
+                                       const GetResourceEntryCallback& callback,
+                                       FileError error);
+  void GetResourceEntryByPathAfterGetEntry2(
       const GetResourceEntryCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
@@ -332,7 +332,7 @@ class FileSystem : public FileSystemInterface,
 
   // Gets the file at |file_path| from the cache (if found in the cache),
   // or the server (if not found in the cache) after the file info is
-  // already resolved with GetEntryInfoByPath() or GetEntryInfoByResourceId().
+  // already resolved with GetResourceEntryByPath() or GetResourceEntryById().
   void GetResolvedFileByPath(scoped_ptr<GetResolvedFileParams> params);
   void GetResolvedFileByPathAfterCreateDocumentJsonFile(
       scoped_ptr<GetResolvedFileParams> params,
@@ -379,17 +379,17 @@ class FileSystem : public FileSystemInterface,
       FileError error,
       const base::FilePath& cache_file);
 
-  // Part of GetEntryInfoByResourceId(). Called after
-  // ResourceMetadata::GetEntryInfoByResourceId() is complete.
+  // Part of GetResourceEntryById(). Called after
+  // ResourceMetadata::GetResourceEntryById() is complete.
   // |callback| must not be null.
-  void GetEntryInfoByResourceIdAfterGetEntry(
+  void GetResourceEntryByIdAfterGetEntry(
       const GetResourceEntryWithFilePathCallback& callback,
       FileError error,
       const base::FilePath& file_path,
       scoped_ptr<ResourceEntry> entry);
 
   // Part of GetFileByResourceId(). Called after
-  // ResourceMetadata::GetEntryInfoByResourceId() is complete.
+  // ResourceMetadata::GetResourceEntryById() is complete.
   // |get_file_callback| must not be null.
   // |get_content_callback| may be null.
   void GetFileByResourceIdAfterGetEntry(
@@ -401,7 +401,7 @@ class FileSystem : public FileSystemInterface,
       scoped_ptr<ResourceEntry> entry);
 
   // Part of GetFileContentByPath(). Called after
-  // ResourceMetadata::GetEntryInfoByPath() is complete.
+  // ResourceMetadata::GetResourceEntryByPath() is complete.
   // |initialized_callback|, |get_content_callback| and |completion_callback|
   // must not be null.
   void GetFileContentByPathAfterGetEntry(
@@ -413,8 +413,8 @@ class FileSystem : public FileSystemInterface,
       scoped_ptr<ResourceEntry> entry);
 
   // Part of RefreshDirectory(). Called after
-  // GetEntryInfoByPath() is complete.
-  void RefreshDirectoryAfterGetEntryInfo(
+  // GetResourceEntryByPath() is complete.
+  void RefreshDirectoryAfterGetResourceEntry(
       const base::FilePath& directory_path,
       const FileOperationCallback& callback,
       FileError error,
@@ -442,9 +442,9 @@ class FileSystem : public FileSystemInterface,
       base::PlatformFileInfo* file_info,
       bool get_file_info_result);
 
-  // Part of MarkCacheFileAsMounted. Called after GetEntryInfoByPath is
+  // Part of MarkCacheFileAsMounted. Called after GetResourceEntryByPath is
   // completed. |callback| must not be null.
-  void MarkCacheFileAsMountedAfterGetEntryInfo(
+  void MarkCacheFileAsMountedAfterGetResourceEntry(
       const OpenFileCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);

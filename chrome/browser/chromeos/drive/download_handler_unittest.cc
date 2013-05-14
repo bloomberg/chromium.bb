@@ -52,7 +52,7 @@ class DownloadHandlerTest : public testing::Test {
         .WillRepeatedly(Return(content::DownloadItem::IN_PROGRESS));
 
     // Set expectations for file system to save argument callbacks.
-    EXPECT_CALL(file_system_, GetEntryInfoByPath(_, _))
+    EXPECT_CALL(file_system_, GetResourceEntryByPath(_, _))
         .WillRepeatedly(SaveArg<1>(&get_entry_info_callback_));
     EXPECT_CALL(file_system_, CreateDirectory(_, _, _, _))
         .WillRepeatedly(SaveArg<3>(&create_directory_callback_));
@@ -110,7 +110,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPath) {
       base::Bind(&CopySubstituteDriveDownloadPathResult, &substituted_path));
   google_apis::test_util::RunBlockingPoolTask();
 
-  // Return result of GetEntryInfoByPath(), destination directory found.
+  // Return result of GetResourceEntryByPath(), destination directory found.
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   ASSERT_FALSE(get_entry_info_callback_.is_null());
   get_entry_info_callback_.Run(FILE_ERROR_OK, entry.Pass());
@@ -134,7 +134,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathGetEntryFailure) {
       base::Bind(&CopySubstituteDriveDownloadPathResult, &substituted_path));
   google_apis::test_util::RunBlockingPoolTask();
 
-  // Return result of GetEntryInfoByPath(), failing for some reason.
+  // Return result of GetResourceEntryByPath(), failing for some reason.
   ASSERT_FALSE(get_entry_info_callback_.is_null());
   get_entry_info_callback_.Run(FILE_ERROR_FAILED,
                               scoped_ptr<ResourceEntry>());
@@ -156,7 +156,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathCreateDirectory) {
       base::Bind(&CopySubstituteDriveDownloadPathResult, &substituted_path));
   google_apis::test_util::RunBlockingPoolTask();
 
-  // Return result of GetEntryInfoByPath(), destination directory not found.
+  // Return result of GetResourceEntryByPath(), destination directory not found.
   ASSERT_FALSE(get_entry_info_callback_.is_null());
   get_entry_info_callback_.Run(FILE_ERROR_NOT_FOUND,
                               scoped_ptr<ResourceEntry>());
@@ -186,7 +186,7 @@ TEST_F(DownloadHandlerTest,
       base::Bind(&CopySubstituteDriveDownloadPathResult, &substituted_path));
   google_apis::test_util::RunBlockingPoolTask();
 
-  // Return result of GetEntryInfoByPath(), destination directory not found.
+  // Return result of GetResourceEntryByPath(), destination directory not found.
   ASSERT_FALSE(get_entry_info_callback_.is_null());
   get_entry_info_callback_.Run(FILE_ERROR_NOT_FOUND,
                               scoped_ptr<ResourceEntry>());
@@ -215,7 +215,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathForSavePackage) {
       base::Bind(&CopySubstituteDriveDownloadPathResult, &substituted_path));
   google_apis::test_util::RunBlockingPoolTask();
 
-  // Return result of GetEntryInfoByPath(), destination directory found.
+  // Return result of GetResourceEntryByPath(), destination directory found.
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   ASSERT_FALSE(get_entry_info_callback_.is_null());
   get_entry_info_callback_.Run(FILE_ERROR_OK, entry.Pass());
@@ -251,7 +251,7 @@ TEST_F(DownloadHandlerTest, CheckForFileExistence) {
       base::Bind(&CopyCheckForFileExistenceResult, &file_exists));
   google_apis::test_util::RunBlockingPoolTask();
 
-  // Return result of GetEntryInfoByPath(), file exists.
+  // Return result of GetResourceEntryByPath(), file exists.
   {
     scoped_ptr<ResourceEntry> entry(new ResourceEntry);
     ASSERT_FALSE(get_entry_info_callback_.is_null());
@@ -271,7 +271,7 @@ TEST_F(DownloadHandlerTest, CheckForFileExistence) {
       base::Bind(&CopyCheckForFileExistenceResult, &file_exists));
   google_apis::test_util::RunBlockingPoolTask();
 
-  // Return result of GetEntryInfoByPath(), file does not exist.
+  // Return result of GetResourceEntryByPath(), file does not exist.
   ASSERT_FALSE(get_entry_info_callback_.is_null());
   get_entry_info_callback_.Run(FILE_ERROR_NOT_FOUND,
                                scoped_ptr<ResourceEntry>());

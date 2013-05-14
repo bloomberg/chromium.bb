@@ -139,7 +139,7 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
 
   base::FilePath unused;
   scoped_ptr<ResourceEntry> entry;
-  file_system_->GetEntryInfoByResourceId(
+  file_system_->GetResourceEntryById(
       resource_id,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &unused, &entry));

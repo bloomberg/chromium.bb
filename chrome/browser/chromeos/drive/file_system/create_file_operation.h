@@ -51,10 +51,11 @@ class CreateFileOperation {
                   const FileOperationCallback& callback);
 
  private:
-  void CreateFileAfterGetEntryInfo(const base::FilePath& file_path,
-                                   bool is_exclusive,
-                                   const FileOperationCallback& callback,
-                                   scoped_ptr<EntryInfoPairResult> pair_result);
+  void CreateFileAfterGetResourceEntry(
+      const base::FilePath& file_path,
+      bool is_exclusive,
+      const FileOperationCallback& callback,
+      scoped_ptr<EntryInfoPairResult> pair_result);
 
   void CreateFileAfterGetMimeType(const base::FilePath& file_path,
                                   const std::string& parent_resource_id,

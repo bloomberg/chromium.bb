@@ -187,7 +187,7 @@ class SyncClientTest : public testing::Test {
       const std::string& resource_id,
       const std::string& new_md5) {
     EXPECT_CALL(*mock_file_system_,
-                GetEntryInfoByResourceId(resource_id, _))
+                GetResourceEntryById(resource_id, _))
         .WillOnce(MockUpdateFileByResourceId(
             FILE_ERROR_OK,
             new_md5));

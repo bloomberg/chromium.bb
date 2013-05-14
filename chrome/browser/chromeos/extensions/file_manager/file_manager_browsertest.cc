@@ -472,7 +472,7 @@ class DriveTestVolume : public TestVolume,
 
     drive::FileError error = drive::FILE_ERROR_FAILED;
     scoped_ptr<drive::ResourceEntry> entry_proto;
-    system_service_->file_system()->GetEntryInfoByPath(
+    system_service_->file_system()->GetResourceEntryByPath(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
     google_apis::test_util::RunBlockingPoolTask();
@@ -533,7 +533,7 @@ class DriveTestVolume : public TestVolume,
 
     drive::FileError error = drive::FILE_ERROR_FAILED;
     scoped_ptr<drive::ResourceEntry> entry_proto;
-    system_service_->file_system()->GetEntryInfoByPath(
+    system_service_->file_system()->GetResourceEntryByPath(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
     google_apis::test_util::RunBlockingPoolTask();
@@ -550,7 +550,7 @@ class DriveTestVolume : public TestVolume,
 
     drive::FileError error = drive::FILE_ERROR_FAILED;
     scoped_ptr<drive::ResourceEntry> entry_proto;
-    system_service_->file_system()->GetEntryInfoByPath(
+    system_service_->file_system()->GetResourceEntryByPath(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
     google_apis::test_util::RunBlockingPoolTask();

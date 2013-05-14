@@ -142,14 +142,14 @@ void DownloadHandler::SubstituteDriveDownloadPath(
   if (util::IsUnderDriveMountPoint(drive_path)) {
     // Can't access drive if the directory does not exist on Drive.
     // We set off a chain of callbacks as follows:
-    // FileSystem::GetEntryInfoByPath
+    // FileSystem::GetResourceEntryByPath
     //   OnEntryFound calls FileSystem::CreateDirectory (if necessary)
     //     OnCreateDirectory calls SubstituteDriveDownloadPathInternal
     const base::FilePath drive_dir_path =
         util::ExtractDrivePath(drive_path.DirName());
     // Ensure the directory exists. This also forces FileSystem to
     // initialize DriveRootDirectory.
-    file_system_->GetEntryInfoByPath(
+    file_system_->GetResourceEntryByPath(
         drive_dir_path,
         base::Bind(&DownloadHandler::OnEntryFound,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -195,7 +195,7 @@ bool DownloadHandler::IsDriveDownload(const DownloadItem* download) {
 void DownloadHandler::CheckForFileExistence(
     const DownloadItem* download,
     const content::CheckForFileExistenceCallback& callback) {
-  file_system_->GetEntryInfoByPath(
+  file_system_->GetResourceEntryByPath(
       util::ExtractDrivePath(GetTargetPath(download)),
       base::Bind(&ContinueCheckingForFileExistence,
                  callback));
@@ -271,7 +271,7 @@ void DownloadHandler::OnEntryFound(
     // Directory is already ready.
     OnCreateDirectory(callback, FILE_ERROR_OK);
   } else {
-    LOG(WARNING) << "Failed to get entry info for path: "
+    LOG(WARNING) << "Failed to get resource entry for path: "
                  << drive_dir_path.value() << ", error = "
                  << FileErrorToString(error);
     callback.Run(base::FilePath());

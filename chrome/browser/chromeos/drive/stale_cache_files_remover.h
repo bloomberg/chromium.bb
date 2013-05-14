@@ -39,7 +39,7 @@ class StaleCacheFilesRemover : public FileSystemObserver {
 
   // Gets the file entry and calls RemoveCacheIfNecessary() with the file entry.
   // This is called from StaleCacheFilesRemover::OnInitialLoadFinished.
-  void GetEntryInfoAndRemoveCacheIfNecessary(
+  void GetResourceEntryAndRemoveCacheIfNecessary(
       const std::string& resource_id,
       const FileCacheEntry& cache_entry);
 

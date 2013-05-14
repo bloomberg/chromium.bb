@@ -167,7 +167,7 @@ class FileSystemInterface {
   // does not initiate content refreshing.
   //
   // |callback| must not be null.
-  virtual void GetEntryInfoByResourceId(
+  virtual void GetResourceEntryById(
       const std::string& resource_id,
       const GetResourceEntryWithFilePathCallback& callback) = 0;
 
@@ -353,7 +353,7 @@ class FileSystemInterface {
   // retrieve and refresh file system content from server and disk cache.
   //
   // |callback| must not be null.
-  virtual void GetEntryInfoByPath(
+  virtual void GetResourceEntryByPath(
       const base::FilePath& file_path,
       const GetResourceEntryCallback& callback) = 0;
 

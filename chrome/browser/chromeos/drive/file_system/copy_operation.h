@@ -88,7 +88,7 @@ class CopyOperation {
       const base::FilePath& remote_dest_file_path,
       const FileOperationCallback& callback,
       FileError error);
-  void ScheduleTransferRegularFileAfterGetEntryInfo(
+  void ScheduleTransferRegularFileAfterGetResourceEntry(
       const base::FilePath& local_file_path,
       const FileOperationCallback& callback,
       FileError error,
@@ -137,9 +137,9 @@ class CopyOperation {
                                   FileError error,
                                   const base::FilePath& file_path);
 
-  // Part of Copy(). Called after GetEntryInfoPairByPaths() is
+  // Part of Copy(). Called after GetResourceEntryPairByPaths() is
   // complete. |callback| must not be null.
-  void CopyAfterGetEntryInfoPair(const base::FilePath& dest_file_path,
+  void CopyAfterGetResourceEntryPair(const base::FilePath& dest_file_path,
                                  const FileOperationCallback& callback,
                                  scoped_ptr<EntryInfoPairResult> result);
 
@@ -155,8 +155,8 @@ class CopyOperation {
                                 scoped_ptr<ResourceEntry> entry);
 
   // Part of TransferFileFromLocalToRemote(). Called after
-  // GetEntryInfoByPath() is complete.
-  void TransferFileFromLocalToRemoteAfterGetEntryInfo(
+  // GetResourceEntryByPath() is complete.
+  void TransferFileFromLocalToRemoteAfterGetResourceEntry(
       const base::FilePath& local_src_file_path,
       const base::FilePath& remote_dest_file_path,
       const FileOperationCallback& callback,
