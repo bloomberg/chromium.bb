@@ -31,6 +31,10 @@
       'sources': [
         # this should likely be moved into src/utils in skia
         '../third_party/skia/src/core/SkFlate.cpp',
+        # We don't want to add this to Skia's core.gypi since it is
+        # Android only. Include it here and remove it for everyone
+        # but Android later.
+        '../third_party/skia/src/core/SkPaintOptionsAndroid.cpp',
 
         #'../third_party/skia/src/images/bmpdecoderhelper.cpp',
         #'../third_party/skia/src/images/bmpdecoderhelper.h',
@@ -321,6 +325,9 @@
           'sources/': [
             ['exclude', '_android\\.(cc|cpp)$'],
           ],
+          'sources!': [
+            '../third_party/skia/src/core/SkPaintOptionsAndroid.cpp'
+          ],
           'defines': [
             'SK_DEFAULT_FONT_CACHE_LIMIT=(20*1024*1024)',
           ],
@@ -394,7 +401,7 @@
               'defines': [
                 'HAVE_PTHREADS',
                 'OS_ANDROID',
-                'SK_BUILD_FOR_ANDROID_NDK',
+                'SK_BUILD_FOR_ANDROID',
                 # Android devices are typically more memory constrained, so
                 # use a smaller glyph cache.
                 'SK_DEFAULT_FONT_CACHE_LIMIT=(8*1024*1024)',
@@ -573,7 +580,7 @@
             ],
             'defines': [
               # Don't use non-NDK available stuff.
-              'SK_BUILD_FOR_ANDROID_NDK',
+              'SK_BUILD_FOR_ANDROID',
             ],
             'conditions': [
               [ '_toolset == "target" and android_webview_build == 0', {
@@ -648,7 +655,7 @@
         }],
         [ 'OS == "android"', {
           'defines': [
-            'SK_BUILD_FOR_ANDROID_NDK',
+            'SK_BUILD_FOR_ANDROID',
           ],
         }],
         [ 'target_arch != "arm" and target_arch != "mipsel"', {
