@@ -25,6 +25,7 @@ class ListValue;
 namespace chromeos {
 
 class NetworkProfileHandler;
+class NetworkUIData;
 
 // The ManagedNetworkConfigurationHandler class is used to create and configure
 // networks in ChromeOS using ONC and takes care of network policies.
@@ -69,6 +70,12 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler
   // Initialize() must be called before this.
   static ManagedNetworkConfigurationHandler* Get();
 
+  // Returns the NetworkUIData parsed from the UIData property of
+  // |shill_dictionary|. If parsing fails or the field doesn't exist, returns
+  // NULL.
+  static scoped_ptr<NetworkUIData> GetUIData(
+      const base::DictionaryValue& shill_dictionary);
+
   // Provides the properties of the network with |service_path| to |callback|.
   void GetProperties(
       const std::string& service_path,
@@ -94,20 +101,6 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler
       const base::DictionaryValue& user_settings,
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) const;
-
-  // Initiates a connection with network that has |service_path|. |callback| is
-  // called if the connection request was successfully handled. That doesn't
-  // mean that the connection was successfully established.
-  void Connect(const std::string& service_path,
-               const base::Closure& callback,
-               const network_handler::ErrorCallback& error_callback) const;
-
-  // Initiates a disconnect with the network at |service_path|. |callback| is
-  // called if the diconnect request was successfully handled. That doesn't mean
-  // that the network is already diconnected.
-  void Disconnect(const std::string& service_path,
-                  const base::Closure& callback,
-                  const network_handler::ErrorCallback& error_callback) const;
 
   // Initially configures an unconfigured network with the given user settings
   // and returns the new identifier to |callback| if successful. Fails if the

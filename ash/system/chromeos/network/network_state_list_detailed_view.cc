@@ -24,7 +24,7 @@
 #include "base/utf_string_conversions.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
-#include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
@@ -42,6 +42,7 @@
 using chromeos::DeviceState;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
+using chromeos::NetworkConnectionHandler;
 
 namespace ash {
 namespace internal {
@@ -759,24 +760,34 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
 
 void NetworkStateListDetailedView::ConnectToNetwork(
     const std::string& service_path) {
-  NetworkStateHandler* handler = NetworkStateHandler::Get();
-  const NetworkState* network = handler->GetNetworkState(service_path);
+  const NetworkState* network =
+      NetworkStateHandler::Get()->GetNetworkState(service_path);
   if (!network)
     return;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kUseNewNetworkConfigurationHandlers) &&
-      !network->IsConnectedState()) {
-    handler->SetConnectingNetwork(service_path);
-    chromeos::NetworkConfigurationHandler::Get()->Connect(
+          chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
+    NetworkConnectionHandler::Get()->ConnectToNetwork(
         service_path,
         base::Bind(&base::DoNothing),
-        chromeos::network_handler::ErrorCallback());
+        base::Bind(&NetworkStateListDetailedView::OnConnectFailed,
+                   AsWeakPtr(), service_path));
   } else {
-    // This will show the settings UI for a connected network.
-    // TODO(stevenjb): Change the API to explicitly show network settings.
     Shell::GetInstance()->system_tray_delegate()->ConnectToNetwork(
         service_path);
   }
+}
+
+void NetworkStateListDetailedView::OnConnectFailed(
+    const std::string& service_path,
+    const std::string& error_name,
+    scoped_ptr<base::DictionaryValue> error_data) {
+  VLOG(1) << "ConnectFailed: " << error_name;
+  // This will show the settings UI for a connected/ing network or a connect
+  // dialog for unconfigured networks.
+  // TODO(stevenjb): Change the API to explicitly show network settings or
+  // connect dialog (i.e. explicitly handle different error types).
+  Shell::GetInstance()->system_tray_delegate()->ConnectToNetwork(
+      service_path);
 }
 
 void NetworkStateListDetailedView::CallRequestScan() {

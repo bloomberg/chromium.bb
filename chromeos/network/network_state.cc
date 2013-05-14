@@ -59,6 +59,8 @@ NetworkState::NetworkState(const std::string& path)
       favorite_(false),
       priority_(0),
       signal_strength_(0),
+      connectable_(false),
+      passphrase_required_(false),
       activate_over_non_cellular_networks_(false),
       cellular_out_of_credits_(false) {
 }
@@ -75,6 +77,10 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetIntegerValue(key, value, &signal_strength_);
   } else if (key == flimflam::kStateProperty) {
     return GetStringValue(key, value, &connection_state_);
+  } else if (key == flimflam::kConnectableProperty) {
+    return GetBooleanValue(key, value, &connectable_);
+  } else if (key == flimflam::kPassphraseRequiredProperty) {
+    return GetBooleanValue(key, value, &passphrase_required_);
   } else if (key == flimflam::kErrorProperty) {
     return GetStringValue(key, value, &error_);
   } else if (key == IPConfigProperty(flimflam::kAddressProperty)) {
@@ -130,46 +136,50 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
   dictionary->SetStringWithoutPathExpansion(flimflam::kNameProperty, name());
   dictionary->SetStringWithoutPathExpansion(flimflam::kTypeProperty, type());
   dictionary->SetIntegerWithoutPathExpansion(flimflam::kSignalStrengthProperty,
-                                             signal_strength());
+                                             signal_strength_);
   dictionary->SetStringWithoutPathExpansion(flimflam::kStateProperty,
-                                            connection_state());
+                                            connection_state_);
+  dictionary->SetBooleanWithoutPathExpansion(flimflam::kConnectableProperty,
+                                             connectable_);
+  dictionary->SetBooleanWithoutPathExpansion(
+      flimflam::kPassphraseRequiredProperty, passphrase_required_);
   dictionary->SetStringWithoutPathExpansion(flimflam::kErrorProperty,
-                                            error());
+                                            error_);
   base::DictionaryValue* ipconfig_properties = new DictionaryValue;
   ipconfig_properties->SetStringWithoutPathExpansion(flimflam::kAddressProperty,
-                                                     ip_address());
+                                                     ip_address_);
   base::ListValue* name_servers = new ListValue;
-  name_servers->AppendStrings(dns_servers());
+  name_servers->AppendStrings(dns_servers_);
   ipconfig_properties->SetWithoutPathExpansion(flimflam::kNameServersProperty,
                                                name_servers);
   dictionary->SetWithoutPathExpansion(shill::kIPConfigProperty,
                                       ipconfig_properties);
 
   dictionary->SetStringWithoutPathExpansion(flimflam::kActivationStateProperty,
-                                            activation_state());
+                                            activation_state_);
   dictionary->SetStringWithoutPathExpansion(flimflam::kRoamingStateProperty,
-                                            roaming());
+                                            roaming_);
   dictionary->SetStringWithoutPathExpansion(flimflam::kSecurityProperty,
-                                            security());
+                                            security_);
   dictionary->SetBooleanWithoutPathExpansion(flimflam::kAutoConnectProperty,
-                                             auto_connect());
+                                             auto_connect_);
   dictionary->SetBooleanWithoutPathExpansion(flimflam::kFavoriteProperty,
-                                             favorite());
+                                             favorite_);
   dictionary->SetIntegerWithoutPathExpansion(flimflam::kPriorityProperty,
-                                             priority());
+                                             priority_);
   dictionary->SetStringWithoutPathExpansion(
       flimflam::kNetworkTechnologyProperty,
-      technology());
+      technology_);
   dictionary->SetStringWithoutPathExpansion(flimflam::kDeviceProperty,
-                                            device_path());
-  dictionary->SetStringWithoutPathExpansion(flimflam::kGuidProperty, guid());
+                                            device_path_);
+  dictionary->SetStringWithoutPathExpansion(flimflam::kGuidProperty, guid_);
   dictionary->SetStringWithoutPathExpansion(flimflam::kProfileProperty,
-                                            profile_path());
+                                            profile_path_);
   dictionary->SetBooleanWithoutPathExpansion(
       shill::kActivateOverNonCellularNetworkProperty,
-      activate_over_non_cellular_networks());
+      activate_over_non_cellular_networks_);
   dictionary->SetBooleanWithoutPathExpansion(shill::kOutOfCreditsProperty,
-                                             cellular_out_of_credits());
+                                             cellular_out_of_credits_);
 }
 
 bool NetworkState::IsConnectedState() const {

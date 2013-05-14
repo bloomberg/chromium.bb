@@ -112,8 +112,7 @@ void ShillServiceClientStub::SetProperty(const dbus::ObjectPath& service_path,
     if (value.GetAsString(&state) && state == flimflam::kStateOnline) {
       ShillManagerClient* manager_client =
           DBusThreadManager::Get()->GetShillManagerClient();
-      manager_client->GetTestInterface()->RemoveService(service_path.value());
-      manager_client->GetTestInterface()->AddServiceAtIndex(
+      manager_client->GetTestInterface()->MoveServiceToIndex(
           service_path.value(), 0, true);
     }
   }
@@ -189,13 +188,18 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
-  // Set Associating
-  base::StringValue associating_value(flimflam::kStateAssociation);
-  SetServiceProperty(service_path.value(),
-                     flimflam::kStateProperty,
-                     associating_value);
+  base::TimeDelta delay;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableStubInteractive)) {
+    // Set Associating
+    base::StringValue associating_value(flimflam::kStateAssociation);
+    SetServiceProperty(service_path.value(),
+                       flimflam::kStateProperty,
+                       associating_value);
+    const int kConnectDelaySeconds = 5;
+    delay = base::TimeDelta::FromSeconds(kConnectDelaySeconds);
+  }
   // Set Online after a delay
-  const int kConnectDelaySeconds = 5;
   base::StringValue online_value(flimflam::kStateOnline);
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
@@ -206,7 +210,7 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
                  online_value,
                  base::Bind(&base::DoNothing),
                  error_callback),
-                 base::TimeDelta::FromSeconds(kConnectDelaySeconds));
+      delay);
   callback.Run();
 }
 
@@ -218,8 +222,13 @@ void ShillServiceClientStub::Disconnect(const dbus::ObjectPath& service_path,
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
+  base::TimeDelta delay;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableStubInteractive)) {
+    const int kConnectDelaySeconds = 2;
+    delay = base::TimeDelta::FromSeconds(kConnectDelaySeconds);
+  }
   // Set Idle after a delay
-  const int kConnectDelaySeconds = 2;
   base::StringValue idle_value(flimflam::kStateIdle);
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
@@ -230,7 +239,7 @@ void ShillServiceClientStub::Disconnect(const dbus::ObjectPath& service_path,
                  idle_value,
                  base::Bind(&base::DoNothing),
                  error_callback),
-                 base::TimeDelta::FromSeconds(kConnectDelaySeconds));
+      delay);
   callback.Run();
 }
 
@@ -290,7 +299,7 @@ void ShillServiceClientStub::AddServiceWithIPConfig(
     const std::string& ipconfig_path,
     bool add_to_watch_list) {
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      AddService(service_path, add_to_watch_list);
+      AddManagerService(service_path, add_to_watch_list);
 
   base::DictionaryValue* properties =
       GetModifiableServiceProperties(service_path);
@@ -314,7 +323,7 @@ void ShillServiceClientStub::AddServiceWithIPConfig(
 
 void ShillServiceClientStub::RemoveService(const std::string& service_path) {
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      RemoveService(service_path);
+      RemoveManagerService(service_path);
 
   stub_services_.RemoveWithoutPathExpansion(service_path, NULL);
 }
@@ -336,7 +345,7 @@ const base::DictionaryValue* ShillServiceClientStub::GetServiceProperties(
 
 void ShillServiceClientStub::ClearServices() {
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      ClearServices();
+      ClearManagerServices();
 
   stub_services_.Clear();
 }

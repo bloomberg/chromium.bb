@@ -90,7 +90,8 @@ TEST_P(CreateUIDataTest, CreateUIDataFromONC) {
       test_utils::ReadTestDictionary(GetParam().second);
 
   scoped_ptr<NetworkUIData> actual_uidata =
-      CreateUIDataFromONC(onc::ONC_SOURCE_USER_POLICY, *onc_network);
+      NetworkUIData::CreateFromONC(
+          onc::ONC_SOURCE_USER_POLICY, *onc_network);
   EXPECT_TRUE(actual_uidata != NULL);
 
   base::DictionaryValue actual_uidata_dict;

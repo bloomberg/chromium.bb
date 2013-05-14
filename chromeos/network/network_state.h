@@ -51,6 +51,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   int priority() const { return priority_; }
   // Wireless property accessors
   int signal_strength() const { return signal_strength_; }
+  bool connectable() const { return connectable_; }
+  // Wifi property accessors
+  bool passphrase_required() const { return passphrase_required_; }
   // Cellular property accessors
   const std::string& technology() const { return technology_; }
   const std::string& activation_state() const { return activation_state_; }
@@ -103,9 +106,11 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::vector<std::string> dns_servers_;
   // Wireless properties
   int signal_strength_;
+  bool connectable_;
   // Wifi properties
   std::string hex_ssid_;
   std::string country_code_;
+  bool passphrase_required_;
   // Cellular properties
   std::string technology_;
   std::string activation_state_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros/certificate_pattern_matcher.h"
+#include "chromeos/network/certificate_pattern_matcher.h"
 
 #include <cert.h>
 #include <pk11pub.h>
@@ -130,6 +130,8 @@ class IssuerCaRefFilter {
 
 }  // namespace
 
+namespace certificate_pattern {
+
 scoped_refptr<net::X509Certificate> GetCertificateMatch(
     const CertificatePattern& pattern) {
   typedef std::list<scoped_refptr<net::X509Certificate> > CertificateStlList;
@@ -189,5 +191,7 @@ scoped_refptr<net::X509Certificate> GetCertificateMatch(
 
   return latest;
 }
+
+}  // namespace certificate_pattern
 
 }  // namespace chromeos

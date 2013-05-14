@@ -80,19 +80,6 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler {
                        const base::Closure& callback,
                        const network_handler::ErrorCallback& error_callback);
 
-  // Initiates a connection with network that has id |service_path|. See note on
-  // |callback| and |error_callback|, in class description above.
-  void Connect(const std::string& service_path,
-               const base::Closure& callback,
-               const network_handler::ErrorCallback& error_callback) const;
-
-  // Initiates a disconnect with the network at |service_path|. See note on
-  // |callback| and |error_callback|, in class description above.
-  void Disconnect(const std::string& service_path,
-                  const base::Closure& callback,
-                  const network_handler::ErrorCallback& error_callback) const;
-
-
   // Creates a network with the given properties in the active Shill profile,
   // and returns the new service_path to |callback| if successful. See note on
   // |callback| and |error_callback|, in class description above.

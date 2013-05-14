@@ -1160,7 +1160,7 @@ void NetworkLibraryImplBase::LoadOncNetworks(
 
     // Set the UIData.
     scoped_ptr<NetworkUIData> ui_data =
-        chromeos::CreateUIDataFromONC(source, *normalized_network);
+        NetworkUIData::CreateFromONC(source, *normalized_network);
     base::DictionaryValue ui_data_dict;
     ui_data->FillDictionary(&ui_data_dict);
     std::string ui_data_json;

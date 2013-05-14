@@ -87,26 +87,6 @@ void RunErrorCallback(const std::string& service_path,
                                            error_message)));
 }
 
-// Returns the NetworkUIData parsed from the UIData property of
-// |shill_dictionary|. If parsing fails or the field doesn't exist, returns
-// NULL.
-scoped_ptr<NetworkUIData> GetUIData(
-    const base::DictionaryValue& shill_dictionary) {
-  std::string ui_data_blob;
-  if (shill_dictionary.GetStringWithoutPathExpansion(
-          flimflam::kUIDataProperty,
-          &ui_data_blob) &&
-      !ui_data_blob.empty()) {
-    scoped_ptr<base::DictionaryValue> ui_data_dict =
-        onc::ReadDictionaryFromJson(ui_data_blob);
-    if (ui_data_dict)
-      return make_scoped_ptr(new NetworkUIData(*ui_data_dict));
-    else
-      LOG(ERROR) << "UIData is not a valid JSON dictionary.";
-  }
-  return scoped_ptr<NetworkUIData>();
-}
-
 // Sets the UIData property in |shill_dictionary| to the serialization of
 // |ui_data|.
 void SetUIData(const NetworkUIData& ui_data,
@@ -125,7 +105,7 @@ void IgnoreString(const std::string& str) {
 
 void LogErrorWithDict(const tracked_objects::Location& from_where,
                       const std::string& error_name,
-                      const scoped_ptr<base::DictionaryValue> error_data) {
+                      scoped_ptr<base::DictionaryValue> error_data) {
   LOG(ERROR) << from_where.ToString() << ": " << error_name;
 }
 
@@ -228,7 +208,7 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
 
   scoped_ptr<NetworkUIData> ui_data;
   if (policy)
-    ui_data = CreateUIDataFromONC(onc_source, *policy);
+    ui_data = NetworkUIData::CreateFromONC(onc_source, *policy);
   else
     ui_data.reset(new NetworkUIData());
 
@@ -343,6 +323,25 @@ void ManagedNetworkConfigurationHandler::Shutdown() {
 ManagedNetworkConfigurationHandler* ManagedNetworkConfigurationHandler::Get() {
   CHECK(g_configuration_handler_instance);
   return g_configuration_handler_instance;
+}
+
+// static
+scoped_ptr<NetworkUIData> ManagedNetworkConfigurationHandler::GetUIData(
+    const base::DictionaryValue& shill_dictionary) {
+  std::string ui_data_blob;
+  if (shill_dictionary.GetStringWithoutPathExpansion(
+          flimflam::kUIDataProperty,
+          &ui_data_blob) &&
+      !ui_data_blob.empty()) {
+    scoped_ptr<base::DictionaryValue> ui_data_dict =
+        onc::ReadDictionaryFromJson(ui_data_blob);
+    if (ui_data_dict)
+      return make_scoped_ptr(new NetworkUIData(*ui_data_dict));
+    else
+      LOG(ERROR) << "UIData is not a valid JSON dictionary.";
+  }
+  VLOG(2) << "JSON dictionary has no UIData blob: " << shill_dictionary;
+  return scoped_ptr<NetworkUIData>();
 }
 
 void ManagedNetworkConfigurationHandler::GetManagedProperties(
@@ -538,24 +537,6 @@ void ManagedNetworkConfigurationHandler::SetProperties(
                                                     *shill_dictionary,
                                                     callback,
                                                     error_callback);
-}
-
-void ManagedNetworkConfigurationHandler::Connect(
-    const std::string& service_path,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) const {
-  NetworkConfigurationHandler::Get()->Connect(service_path,
-                                              callback,
-                                              error_callback);
-}
-
-void ManagedNetworkConfigurationHandler::Disconnect(
-    const std::string& service_path,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) const {
-  NetworkConfigurationHandler::Get()->Disconnect(service_path,
-                                                 callback,
-                                                 error_callback);
 }
 
 void ManagedNetworkConfigurationHandler::CreateConfiguration(

@@ -22,7 +22,7 @@ namespace network_handler {
 // handler to receive error results from the API.
 typedef base::Callback<
   void(const std::string& error_name,
-       const scoped_ptr<base::DictionaryValue> error_data)> ErrorCallback;
+       scoped_ptr<base::DictionaryValue> error_data)> ErrorCallback;
 
 typedef base::Callback<
   void(const std::string& service_path,

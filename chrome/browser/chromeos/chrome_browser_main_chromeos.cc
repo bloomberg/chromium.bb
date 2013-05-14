@@ -112,6 +112,7 @@
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -335,6 +336,7 @@ class DBusServices {
         NetworkProfileHandler::Initialize();
     NetworkConfigurationHandler::Initialize();
     ManagedNetworkConfigurationHandler::Initialize(profile_handler);
+    NetworkConnectionHandler::Initialize();
 
     // Initialize the network change notifier for Chrome OS. The network
     // change notifier starts to monitor changes from the power manager and
@@ -378,6 +380,7 @@ class DBusServices {
 
     ManagedNetworkConfigurationHandler::Shutdown();
     NetworkConfigurationHandler::Shutdown();
+    NetworkConnectionHandler::Shutdown();
     NetworkProfileHandler::Shutdown();
 
     NetworkStateHandler::Shutdown();

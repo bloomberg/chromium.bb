@@ -168,28 +168,6 @@ void NetworkConfigurationHandler::ClearProperties(
                  kLogModule, service_path, error_callback));
 }
 
-void NetworkConfigurationHandler::Connect(
-    const std::string& service_path,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) const {
-  DBusThreadManager::Get()->GetShillServiceClient()->Connect(
-      dbus::ObjectPath(service_path),
-      callback,
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 kLogModule, service_path, error_callback));
-}
-
-void NetworkConfigurationHandler::Disconnect(
-    const std::string& service_path,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) const {
-  DBusThreadManager::Get()->GetShillServiceClient()->Disconnect(
-      dbus::ObjectPath(service_path),
-      callback,
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 kLogModule, service_path, error_callback));
-}
-
 void NetworkConfigurationHandler::CreateConfiguration(
     const base::DictionaryValue& properties,
     const network_handler::StringResultCallback& callback,

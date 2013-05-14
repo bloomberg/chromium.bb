@@ -110,6 +110,11 @@ class NetworkStateListDetailedView
   // Handle click (connect) action.
   void ConnectToNetwork(const std::string& service_path);
 
+  // Handle connect failures (new handlers only).
+  void OnConnectFailed(const std::string& service_path,
+                       const std::string& error_name,
+                       scoped_ptr<base::DictionaryValue> error_data);
+
   // Periodically request a network scan.
   void CallRequestScan();
 

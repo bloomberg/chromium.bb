@@ -78,6 +78,14 @@ class CHROMEOS_EXPORT NetworkUIData {
   // keys appropriate for Network::ui_data() as defined below (kKeyXXX).
   void FillDictionary(base::DictionaryValue* dict) const;
 
+  // Creates a NetworkUIData object from |onc_network|, which has to be a valid
+  // ONC NetworkConfiguration dictionary.
+  // This function is used to create the "UIData" field of the Shill
+  // configuration.
+  static scoped_ptr<NetworkUIData> CreateFromONC(
+      onc::ONCSource onc_source,
+      const base::DictionaryValue& onc_network);
+
   // Key for storing source of the ONC network.
   static const char kKeyONCSource[];
 
@@ -97,15 +105,6 @@ class CHROMEOS_EXPORT NetworkUIData {
   scoped_ptr<base::DictionaryValue> user_settings_;
   std::string policy_guid_;
 };
-
-// Creates a NetworkUIData object from |onc_network|, which has to be a valid
-// ONC NetworkConfiguration dictionary.
-//
-// This function is used to create the "UIData" field of the Shill
-// configuration.
-CHROMEOS_EXPORT scoped_ptr<NetworkUIData> CreateUIDataFromONC(
-    onc::ONCSource onc_source,
-    const base::DictionaryValue& onc_network);
 
 }  // namespace chromeos
 

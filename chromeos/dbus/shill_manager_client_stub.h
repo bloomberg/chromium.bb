@@ -13,9 +13,9 @@
 
 namespace chromeos {
 
-// A stub implementation of ShillManagerClient.
-// Implemented: Stub devices and services for NetworkStateManager tests.
-// Implemented: Stub cellular device entry for SMS tests.
+// A stub implementation of ShillManagerClient. This works in close coordination
+// with ShillServiceClientStub. ShillDeviceClientStub, and
+// ShillProfileClientStub, and is not intended to be used independently.
 class ShillManagerClientStub : public ShillManagerClient,
                                public ShillManagerClient::TestInterface {
  public:
@@ -78,17 +78,9 @@ class ShillManagerClientStub : public ShillManagerClient,
   virtual ShillManagerClient::TestInterface* GetTestInterface() OVERRIDE;
 
   // ShillManagerClient::TestInterface overrides.
-
   virtual void AddDevice(const std::string& device_path) OVERRIDE;
   virtual void RemoveDevice(const std::string& device_path) OVERRIDE;
   virtual void ClearDevices() OVERRIDE;
-  virtual void ClearServices() OVERRIDE;
-  virtual void AddService(const std::string& service_path,
-                          bool add_to_watch_list) OVERRIDE;
-  virtual void AddServiceAtIndex(const std::string& service_path,
-                                 size_t index,
-                                 bool add_to_watch_list) OVERRIDE;
-  virtual void RemoveService(const std::string& service_path) OVERRIDE;
   virtual void AddTechnology(const std::string& type, bool enabled) OVERRIDE;
   virtual void RemoveTechnology(const std::string& type) OVERRIDE;
   virtual void SetTechnologyInitializing(const std::string& type,
@@ -97,6 +89,13 @@ class ShillManagerClientStub : public ShillManagerClient,
                              const base::DictionaryValue& network) OVERRIDE;
   virtual void AddProfile(const std::string& profile_path) OVERRIDE;
   virtual void ClearProperties() OVERRIDE;
+  virtual void MoveServiceToIndex(const std::string& service_path,
+                                  size_t index,
+                                  bool add_to_watch_list) OVERRIDE;
+  virtual void AddManagerService(const std::string& service_path,
+                                 bool add_to_watch_list) OVERRIDE;
+  virtual void RemoveManagerService(const std::string& service_path) OVERRIDE;
+  virtual void ClearManagerServices() OVERRIDE;
 
  private:
   void AddServiceToWatchList(const std::string& service_path);

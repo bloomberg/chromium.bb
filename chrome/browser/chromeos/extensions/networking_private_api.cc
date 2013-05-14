@@ -17,6 +17,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_constants.h"
@@ -290,7 +291,7 @@ bool NetworkingPrivateStartConnectFunction::RunImpl() {
       api::StartConnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ManagedNetworkConfigurationHandler::Get()->Connect(
+  chromeos::NetworkConnectionHandler::Get()->ConnectToNetwork(
       params->network_guid,  // service path
       base::Bind(
           &NetworkingPrivateStartConnectFunction::ConnectionStartSuccess,
@@ -324,7 +325,7 @@ bool NetworkingPrivateStartDisconnectFunction::RunImpl() {
       api::StartDisconnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ManagedNetworkConfigurationHandler::Get()->Disconnect(
+  chromeos::NetworkConnectionHandler::Get()->DisconnectNetwork(
       params->network_guid,  // service path
       base::Bind(
           &NetworkingPrivateStartDisconnectFunction::DisconnectionStartSuccess,

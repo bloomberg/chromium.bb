@@ -64,6 +64,8 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   // Returns true if the TPM is available for hardware-backed certificates.
   bool IsHardwareBacked() const;
 
+  std::string GetPkcs11IdForCert(const net::X509Certificate& cert) const;
+
   bool certificates_loaded() const { return certificates_loaded_; }
 
   // TPM info is only valid once the TPM is available (IsHardwareBacked is

@@ -218,7 +218,8 @@ void TranslateONCHierarchy(const onc::OncValueSignature& signature,
 
 }  // namespace
 
-scoped_ptr<NetworkUIData> CreateUIDataFromONC(
+// static
+scoped_ptr<NetworkUIData> NetworkUIData::CreateFromONC(
     onc::ONCSource onc_source,
     const base::DictionaryValue& onc_network) {
   scoped_ptr<NetworkUIData> ui_data(new NetworkUIData());

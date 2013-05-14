@@ -50,7 +50,7 @@ void DictionaryValueCallback(
 void ErrorCallback(bool error_expected,
                    const std::string& expected_id,
                    const std::string& error_name,
-                   const scoped_ptr<base::DictionaryValue> error_data) {
+                   scoped_ptr<base::DictionaryValue> error_data) {
   EXPECT_TRUE(error_expected) << "Unexpected error: " << error_name
       << " with associated data: \n"
       << PrettyJson(*error_data);
@@ -132,18 +132,6 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     base::ListValue result;
     result.AppendBoolean(false);
     callback.Run(result);
-  }
-
-  void OnConnect(const dbus::ObjectPath& service_path,
-                 const base::Closure& callback,
-                 const ShillClientHelper::ErrorCallback& error_callback) {
-    callback.Run();
-  }
-
-  void OnDisconnect(const dbus::ObjectPath& service_path,
-                    const base::Closure& callback,
-                    const ShillClientHelper::ErrorCallback& error_callback) {
-    callback.Run();
   }
 
   void OnGetService(const base::DictionaryValue& properties,
@@ -293,34 +281,6 @@ TEST_F(NetworkConfigurationHandlerTest, ClearPropertiesError) {
       values_to_clear,
       base::Bind(&base::DoNothing),
       base::Bind(&ErrorCallback, true, service_path));
-  message_loop_.RunUntilIdle();
-}
-
-TEST_F(NetworkConfigurationHandlerTest, Connect) {
-  std::string service_path = "/service/1";
-
-  EXPECT_CALL(*mock_service_client_,
-              Connect(_, _, _)).WillOnce(
-                  Invoke(this,
-                         &NetworkConfigurationHandlerTest::OnConnect));
-  NetworkConfigurationHandler::Get()->Connect(
-      service_path,
-      base::Bind(&base::DoNothing),
-      base::Bind(&ErrorCallback, false, service_path));
-  message_loop_.RunUntilIdle();
-}
-
-TEST_F(NetworkConfigurationHandlerTest, Disconnect) {
-  std::string service_path = "/service/1";
-
-  EXPECT_CALL(*mock_service_client_,
-              Disconnect(_, _, _)).WillOnce(
-                  Invoke(this,
-                         &NetworkConfigurationHandlerTest::OnDisconnect));
-  NetworkConfigurationHandler::Get()->Disconnect(
-      service_path,
-      base::Bind(&base::DoNothing),
-      base::Bind(&ErrorCallback, false, service_path));
   message_loop_.RunUntilIdle();
 }
 

@@ -15,7 +15,8 @@
 
 namespace chromeos {
 
-// A stub implementation of ShillServiceClient.
+// A stub implementation of ShillServiceClient. This works in close coordination
+// with ShillManagerClientStub and is not intended to be used independently.
 class ShillServiceClientStub : public ShillServiceClient,
                                public ShillServiceClient::TestInterface {
  public:

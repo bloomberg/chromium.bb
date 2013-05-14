@@ -8,6 +8,7 @@
 
 #include "base/chromeos/chromeos_version.h"
 #include "base/observer_list.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -27,7 +28,8 @@ const int kRequestDelayMs = 500;
 
 net::CertificateList* LoadNSSCertificates() {
   net::CertificateList* cert_list(new net::CertificateList());
-  net::NSSCertDatabase::GetInstance()->ListCerts(cert_list);
+  if (base::chromeos::IsRunningOnChromeOS())
+    net::NSSCertDatabase::GetInstance()->ListCerts(cert_list);
   return cert_list;
 }
 
@@ -119,6 +121,36 @@ void CertLoader::RequestCertificates() {
   return;
 }
 
+// For background see this discussion on dev-tech-crypto.lists.mozilla.org:
+// http://web.archiveorange.com/archive/v/6JJW7E40sypfZGtbkzxX
+//
+// NOTE: This function relies on the convention that the same PKCS#11 ID
+// is shared between a certificate and its associated private and public
+// keys.  I tried to implement this with PK11_GetLowLevelKeyIDForCert(),
+// but that always returns NULL on Chrome OS for me.
+std::string CertLoader::GetPkcs11IdForCert(
+    const net::X509Certificate& cert) const {
+  if (!IsHardwareBacked())
+    return std::string();
+
+  CERTCertificateStr* cert_handle = cert.os_cert_handle();
+  SECKEYPrivateKey *priv_key =
+      PK11_FindKeyByAnyCert(cert_handle, NULL /* wincx */);
+  if (!priv_key)
+    return std::string();
+
+  // Get the CKA_ID attribute for a key.
+  SECItem* sec_item = PK11_GetLowLevelKeyIDForPrivateKey(priv_key);
+  std::string pkcs11_id;
+  if (sec_item) {
+    pkcs11_id = base::HexEncode(sec_item->data, sec_item->len);
+    SECITEM_FreeItem(sec_item, PR_TRUE);
+  }
+  SECKEY_DestroyPrivateKey(priv_key);
+
+  return pkcs11_id;
+}
+
 void CertLoader::OnTpmIsEnabled(DBusMethodCallStatus call_status,
                                 bool tpm_is_enabled) {
   VLOG(1) << "OnTpmIsEnabled: " << tpm_is_enabled;
@@ -172,7 +204,8 @@ void CertLoader::OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
 
 void CertLoader::InitializeTPMToken() {
   VLOG(1) << "InitializeTPMToken";
-  if (!crypto::InitializeTPMToken(tpm_token_name_, tpm_user_pin_)) {
+  if (base::chromeos::IsRunningOnChromeOS() &&
+      !crypto::InitializeTPMToken(tpm_token_name_, tpm_user_pin_)) {
     MaybeRetryRequestCertificates();
     return;
   }
@@ -212,6 +245,8 @@ void CertLoader::UpdateCertificates(net::CertificateList* cert_list) {
 void CertLoader::MaybeRetryRequestCertificates() {
   if (!request_task_.is_null())
     return;
+
+  LOG(WARNING) << "Re-Requesting Certificates.";
 
   // Cryptohome does not notify us when the token is ready, so call
   // this again after a delay.

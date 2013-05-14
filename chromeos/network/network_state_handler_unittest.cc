@@ -262,7 +262,7 @@ TEST_F(NetworkStateHandlerTest, TechnologyState) {
 
 TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
   // Set a service property.
-  const std::string eth0 = "stub_ethernet";
+  const std::string eth0 = kShillManagerClientStubDefaultService;
   EXPECT_EQ("", network_state_handler_->GetNetworkState(eth0)->security());
   EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(eth0));
   base::StringValue security_value("TestSecurity");
@@ -280,7 +280,7 @@ TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {
   // Change a network state.
   ShillServiceClient::TestInterface* service_test =
       DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
-  const std::string eth0 = "stub_ethernet";
+  const std::string eth0 = kShillManagerClientStubDefaultService;
   base::StringValue connection_state_idle_value(flimflam::kStateIdle);
   service_test->SetServiceProperty(eth0, flimflam::kStateProperty,
                                    connection_state_idle_value);
@@ -304,11 +304,11 @@ TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
       DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
   ASSERT_TRUE(service_test);
 
-  // Change the default network by inserting wifi1 at the front of the list
+  // Change the default network by moving wifi1 to the front of the list
   // and changing the state of stub_ethernet to Idle.
-  const std::string wifi1 = "stub_wifi1";
-  manager_test->AddServiceAtIndex(wifi1, 0, true);
-  const std::string eth0 = "stub_ethernet";
+  const std::string wifi1 = kShillManagerClientStubDefaultWireless;
+  manager_test->MoveServiceToIndex(wifi1, 0, true);
+  const std::string eth0 = kShillManagerClientStubDefaultService;
   base::StringValue connection_state_idle_value(flimflam::kStateIdle);
   service_test->SetServiceProperty(eth0, flimflam::kStateProperty,
                                    connection_state_idle_value);
