@@ -983,7 +983,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownload) {
   ::testing::Mock::VerifyAndClearExpectations(&dm_observer);
 
   // Confirm resumption while in progress doesn't do anything.
-  download->ResumeInterruptedDownload();
+  download->Resume();
   ASSERT_EQ(GetSafeBufferChunk(), download->GetReceivedBytes());
   ASSERT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
 
@@ -999,7 +999,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownload) {
   int initial_size = 0;
   DownloadUpdatedObserver initial_size_observer(
       download, base::Bind(&InitialSizeFilter, &initial_size));
-  download->ResumeInterruptedDownload();
+  download->Resume();
   initial_size_observer.WaitForEvent();
   EXPECT_EQ(GetSafeBufferChunk(), initial_size);
   ::testing::Mock::VerifyAndClearExpectations(&dm_observer);
@@ -1016,7 +1016,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownload) {
   // Resume and wait for completion.
   DownloadUpdatedObserver completion_observer(
       download, base::Bind(DownloadCompleteFilter));
-  download->ResumeInterruptedDownload();
+  download->Resume();
   completion_observer.WaitForEvent();
 
   ConfirmFileStatusForResume(
@@ -1024,7 +1024,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownload) {
       base::FilePath(FILE_PATH_LITERAL("rangereset")));
 
   // Confirm resumption while complete doesn't do anything.
-  download->ResumeInterruptedDownload();
+  download->Resume();
   ASSERT_EQ(GetSafeBufferChunk() * 3, download->GetReceivedBytes());
   ASSERT_EQ(DownloadItem::COMPLETE, download->GetState());
   RunAllPendingInMessageLoop();
@@ -1059,7 +1059,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownloadNoRange) {
 
   DownloadUpdatedObserver completion_observer(
       download, base::Bind(DownloadCompleteFilter));
-  download->ResumeInterruptedDownload();
+  download->Resume();
   completion_observer.WaitForEvent();
 
   ConfirmFileStatusForResume(
@@ -1107,7 +1107,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
   DownloadUpdatedObserver completion_observer(
       download, base::Bind(DownloadCompleteFilter));
-  download->ResumeInterruptedDownload();
+  download->Resume();
   completion_observer.WaitForEvent();
 
   ConfirmFileStatusForResume(
@@ -1157,7 +1157,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
   DownloadUpdatedObserver completion_observer(
       download, base::Bind(DownloadCompleteFilter));
-  download->ResumeInterruptedDownload();
+  download->Resume();
   completion_observer.WaitForEvent();
 
   ConfirmFileStatusForResume(
@@ -1204,7 +1204,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithDeletedFile) {
 
   DownloadUpdatedObserver completion_observer(
       download, base::Bind(DownloadCompleteFilter));
-  download->ResumeInterruptedDownload();
+  download->Resume();
   completion_observer.WaitForEvent();
 
   ConfirmFileStatusForResume(
@@ -1271,7 +1271,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileInitError) {
   // Resume and watch completion.
   DownloadUpdatedObserver completion_observer(
       download, base::Bind(DownloadCompleteFilter));
-  download->ResumeInterruptedDownload();
+  download->Resume();
   completion_observer.WaitForEvent();
   EXPECT_EQ(download->GetState(), DownloadItem::COMPLETE);
 }
@@ -1323,7 +1323,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   // Resume and watch completion.
   DownloadUpdatedObserver completion_observer(
       download, base::Bind(DownloadCompleteFilter));
-  download->ResumeInterruptedDownload();
+  download->Resume();
   completion_observer.WaitForEvent();
   EXPECT_EQ(download->GetState(), DownloadItem::COMPLETE);
 }
@@ -1373,7 +1373,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileFinalRenameError) {
   // Resume and watch completion.
   DownloadUpdatedObserver completion_observer(
       download, base::Bind(DownloadCompleteFilter));
-  download->ResumeInterruptedDownload();
+  download->Resume();
   completion_observer.WaitForEvent();
   EXPECT_EQ(download->GetState(), DownloadItem::COMPLETE);
 }

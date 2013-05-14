@@ -93,7 +93,6 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void DangerousDownloadValidated() OVERRIDE;
   virtual void Pause() OVERRIDE;
   virtual void Resume() OVERRIDE;
-  virtual void ResumeInterruptedDownload() OVERRIDE;
   virtual void Cancel(bool user_cancel) OVERRIDE;
   virtual void Delete(DeleteReason reason) OVERRIDE;
   virtual void Remove() OVERRIDE;
@@ -323,6 +322,8 @@ class CONTENT_EXPORT DownloadItemImpl
   void SetFullPath(const base::FilePath& new_path);
 
   void AutoResumeIfValid();
+
+  void ResumeInterruptedDownload();
 
   static DownloadState InternalToExternalState(
       DownloadInternalState internal_state);

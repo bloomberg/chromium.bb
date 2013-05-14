@@ -117,13 +117,9 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // paused.
   virtual void Pause() = 0;
 
-  // Resume a download.  Will have no effect if the download is not
-  // paused.
+  // Resume a download that has been paused or interrupted. Will have no effect
+  // if the download is neither.
   virtual void Resume() = 0;
-
-  // Resume a download that's been interrupted.  No-op if the download
-  // has not been interrupted.
-  virtual void ResumeInterruptedDownload() = 0;
 
   // Cancel the download operation. We need to distinguish between cancels at
   // exit (DownloadManager destructor) from user interface initiated cancels

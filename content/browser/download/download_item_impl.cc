@@ -311,8 +311,10 @@ void DownloadItemImpl::Resume() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Ignore irrelevant states.
-  if (state_ == COMPLETE_INTERNAL || state_ == COMPLETING_INTERNAL ||
-      !is_paused_)
+  if (state_ == COMPLETE_INTERNAL ||
+      state_ == COMPLETING_INTERNAL ||
+      state_ == CANCELLED_INTERNAL ||
+      (state_ == IN_PROGRESS_INTERNAL && !is_paused_))
     return;
 
   if (state_ == INTERRUPTED_INTERNAL) {
@@ -856,52 +858,6 @@ DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
   }
 
   return mode;
-}
-
-void DownloadItemImpl::ResumeInterruptedDownload() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // If the flag for downloads resumption isn't enabled, ignore
-  // this request.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kEnableDownloadResumption))
-    return;
-
-  // If we're not interrupted, ignore the request; our caller is drunk.
-  if (!IsInterrupted())
-    return;
-
-  // If we can't get a web contents, we can't resume the download.
-  // TODO(rdsmith): Find some alternative web contents to use--this
-  // means we can't restart a download if it's a download imported
-  // from the history.
-  if (!GetWebContents())
-    return;
-
-  // Reset the appropriate state if restarting.
-  ResumeMode mode = GetResumeMode();
-  if (mode == RESUME_MODE_IMMEDIATE_RESTART ||
-      mode == RESUME_MODE_USER_RESTART) {
-    received_bytes_ = 0;
-    hash_state_ = "";
-    last_modified_time_ = "";
-    etag_ = "";
-  }
-
-  scoped_ptr<DownloadUrlParameters> download_params(
-      DownloadUrlParameters::FromWebContents(GetWebContents(),
-                                             GetOriginalUrl()));
-
-  download_params->set_file_path(GetFullPath());
-  download_params->set_offset(GetReceivedBytes());
-  download_params->set_hash_state(GetHashState());
-  download_params->set_last_modified(GetLastModifiedTime());
-  download_params->set_etag(GetETag());
-
-  delegate_->ResumeInterruptedDownload(download_params.Pass(), GetGlobalId());
-
-  // Just in case we were interrupted while paused.
-  is_paused_ = false;
 }
 
 void DownloadItemImpl::NotifyRemoved() {
@@ -1587,6 +1543,52 @@ void DownloadItemImpl::AutoResumeIfValid() {
   auto_resume_count_++;
 
   ResumeInterruptedDownload();
+}
+
+void DownloadItemImpl::ResumeInterruptedDownload() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // If the flag for downloads resumption isn't enabled, ignore
+  // this request.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kEnableDownloadResumption))
+    return;
+
+  // If we're not interrupted, ignore the request; our caller is drunk.
+  if (!IsInterrupted())
+    return;
+
+  // If we can't get a web contents, we can't resume the download.
+  // TODO(rdsmith): Find some alternative web contents to use--this
+  // means we can't restart a download if it's a download imported
+  // from the history.
+  if (!GetWebContents())
+    return;
+
+  // Reset the appropriate state if restarting.
+  ResumeMode mode = GetResumeMode();
+  if (mode == RESUME_MODE_IMMEDIATE_RESTART ||
+      mode == RESUME_MODE_USER_RESTART) {
+    received_bytes_ = 0;
+    hash_state_ = "";
+    last_modified_time_ = "";
+    etag_ = "";
+  }
+
+  scoped_ptr<DownloadUrlParameters> download_params(
+      DownloadUrlParameters::FromWebContents(GetWebContents(),
+                                             GetOriginalUrl()));
+
+  download_params->set_file_path(GetFullPath());
+  download_params->set_offset(GetReceivedBytes());
+  download_params->set_hash_state(GetHashState());
+  download_params->set_last_modified(GetLastModifiedTime());
+  download_params->set_etag(GetETag());
+
+  delegate_->ResumeInterruptedDownload(download_params.Pass(), GetGlobalId());
+
+  // Just in case we were interrupted while paused.
+  is_paused_ = false;
 }
 
 // static
