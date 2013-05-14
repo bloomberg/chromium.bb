@@ -241,7 +241,6 @@ typedef std::vector<std::pair<int, int> > FileHandleMappingVector;
 struct LaunchOptions {
   LaunchOptions()
       : wait(false),
-        debug(false),
 #if defined(OS_WIN)
         start_hidden(false),
         inherit_handles(false),
@@ -258,19 +257,16 @@ struct LaunchOptions {
         maximize_rlimits(NULL),
         new_process_group(false)
 #if defined(OS_LINUX)
-      , clone_flags(0)
+        , clone_flags(0)
 #endif  // OS_LINUX
 #if defined(OS_CHROMEOS)
-      , ctrl_terminal_fd(-1)
+        , ctrl_terminal_fd(-1)
 #endif  // OS_CHROMEOS
 #endif  // !defined(OS_WIN)
-  {}
+        {}
 
   // If true, wait for the process to complete.
   bool wait;
-
-  // If true, print more debugging info (OS-dependent).
-  bool debug;
 
 #if defined(OS_WIN)
   bool start_hidden;

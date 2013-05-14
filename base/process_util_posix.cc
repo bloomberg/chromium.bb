@@ -641,10 +641,6 @@ bool LaunchProcess(const std::vector<std::string>& argv,
     // might do things like block waiting for threads that don't even exist
     // in the child.
 
-    if (options.debug) {
-      RAW_LOG(INFO, "Right after fork");
-    }
-
     // If a child process uses the readline library, the process block forever.
     // In BSD like OSes including OS X it is safe to assign /dev/null as stdin.
     // See http://crbug.com/56596.
@@ -670,18 +666,10 @@ bool LaunchProcess(const std::vector<std::string>& argv,
       }
     }
 
-    if (options.debug) {
-      RAW_LOG(INFO, "Right before base::type_profiler::Controller::Stop()");
-    }
-
     // Stop type-profiler.
     // The profiler should be stopped between fork and exec since it inserts
     // locks at new/delete expressions.  See http://crbug.com/36678.
     base::type_profiler::Controller::Stop();
-
-    if (options.debug) {
-      RAW_LOG(INFO, "Right after base::type_profiler::Controller::Stop()");
-    }
 
     if (options.maximize_rlimits) {
       // Some resource limits need to be maximal in this child.
@@ -706,10 +694,6 @@ bool LaunchProcess(const std::vector<std::string>& argv,
 #endif  // defined(OS_MACOSX)
 
     ResetChildSignalHandlersToDefaults();
-
-    if (options.debug) {
-      RAW_LOG(INFO, "Right after signal/exception handler restoration.");
-    }
 
 #if 0
     // When debugging it can be helpful to check that we really aren't making
@@ -746,10 +730,6 @@ bool LaunchProcess(const std::vector<std::string>& argv,
       }
     }
 
-    if (options.debug) {
-      RAW_LOG(INFO, "Right after fd_shuffle push_backs.");
-    }
-
     if (options.environ)
       SetEnvironment(new_environ.get());
 
@@ -757,19 +737,7 @@ bool LaunchProcess(const std::vector<std::string>& argv,
     if (!ShuffleFileDescriptors(&fd_shuffle1))
       _exit(127);
 
-    if (options.debug) {
-      RAW_LOG(INFO, "Right after ShuffleFileDescriptors");
-    }
-
     CloseSuperfluousFds(fd_shuffle2);
-
-    if (options.debug) {
-      RAW_LOG(INFO, "Right after CloseSuperfluousFds");
-    }
-
-    if (options.debug) {
-      RAW_LOG(INFO, "Right before execvp");
-    }
 
     for (size_t i = 0; i < argv.size(); i++)
       argv_cstr[i] = const_cast<char*>(argv[i].c_str());
