@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/omnibox/alternate_nav_url_fetcher.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_prompt_view.h"
@@ -1295,9 +1296,11 @@ bool LocationBarView::HasFocus() const {
 }
 
 void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (browser_ && browser_->instant_controller() && parent()) {
+  if (browser_ && browser_->instant_controller() && parent())
     browser_->instant_controller()->SetOmniboxBounds(bounds());
-  }
+  OmniboxPopupView* popup = location_entry_->model()->popup_model()->view();
+  if (popup->IsOpen())
+    popup->UpdatePopupAppearance();
 }
 
 void LocationBarView::WriteDragDataForView(views::View* sender,

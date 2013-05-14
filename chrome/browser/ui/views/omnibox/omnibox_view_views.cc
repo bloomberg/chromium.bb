@@ -205,11 +205,6 @@ void OmniboxViewViews::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_TEXT;
 }
 
-void OmniboxViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (popup_view_->IsOpen())
-    popup_view_->UpdatePopupAppearance();
-}
-
 bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
   select_all_on_mouse_release_ =
       (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
