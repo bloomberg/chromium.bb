@@ -80,16 +80,6 @@ void FEOffset::determineAbsolutePaintRect()
     setAbsolutePaintRect(enclosingIntRect(paintRect));
 }
 
-FloatRect FEOffset::mapRect(const FloatRect& rect, bool forward)
-{
-    FloatRect result = rect;
-    if (forward)
-        result.move(filter()->applyHorizontalScale(m_dx), filter()->applyHorizontalScale(m_dy));
-    else
-        result.move(-filter()->applyHorizontalScale(m_dx), -filter()->applyHorizontalScale(m_dy));
-    return result;
-}
-
 void FEOffset::applySoftware()
 {
     FilterEffect* in = inputEffect(0);

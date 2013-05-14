@@ -42,7 +42,6 @@ public:
     void setFilterResolution(const FloatSize& filterResolution) { m_filterResolution = filterResolution; }
 
     const AffineTransform& absoluteTransform() const { return m_absoluteTransform; }
-    void setAbsoluteTransform(const AffineTransform& absoluteTransform) { m_absoluteTransform = absoluteTransform; }
     FloatPoint mapAbsolutePointToLocalPoint(const FloatPoint& point) const { return m_absoluteTransform.inverse().mapPoint(point); }
 
     RenderingMode renderingMode() const { return m_renderingMode; }
@@ -52,20 +51,14 @@ public:
     virtual float applyVerticalScale(float value) const { return value * m_filterResolution.height(); }
     
     virtual FloatRect sourceImageRect() const = 0;
-
-    FloatRect absoluteFilterRegion() const { return m_absoluteFilterRegion; }
-    void setAbsoluteFilterRegion(const FloatRect& rect) { m_absoluteFilterRegion = rect; }
-
-    FloatRect filterRegion() const { return m_filterRegion; }
-    void setFilterRegion(const FloatRect& rect) { m_filterRegion = rect; }
+    virtual FloatRect filterRegion() const = 0;
+    
 
 private:
     OwnPtr<ImageBuffer> m_sourceImage;
     FloatSize m_filterResolution;
     RenderingMode m_renderingMode;
     AffineTransform m_absoluteTransform;
-    FloatRect m_absoluteFilterRegion;
-    FloatRect m_filterRegion;
 };
 
 } // namespace WebCore

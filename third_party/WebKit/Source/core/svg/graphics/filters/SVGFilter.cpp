@@ -30,24 +30,24 @@ SVGFilter::SVGFilter(const AffineTransform& absoluteTransform, const FloatRect& 
     : Filter(absoluteTransform)
     , m_absoluteSourceDrawingRegion(absoluteSourceDrawingRegion)
     , m_targetBoundingBox(targetBoundingBox)
+    , m_filterRegion(filterRegion)
     , m_effectBBoxMode(effectBBoxMode)
 {
-    setFilterRegion(filterRegion);
-    setAbsoluteFilterRegion(absoluteTransform.mapRect(filterRegion));
+    m_absoluteFilterRegion = absoluteTransform.mapRect(filterRegion);
 }
 
 float SVGFilter::applyHorizontalScale(float value) const
 {
     if (m_effectBBoxMode)
         value *= m_targetBoundingBox.width();
-    return Filter::applyHorizontalScale(value) * absoluteFilterRegion().width() / filterRegion().width();
+    return Filter::applyHorizontalScale(value) * m_absoluteFilterRegion.width() / m_filterRegion.width();
 }
 
 float SVGFilter::applyVerticalScale(float value) const
 {
     if (m_effectBBoxMode)
         value *= m_targetBoundingBox.height();
-    return Filter::applyVerticalScale(value) * absoluteFilterRegion().height() / filterRegion().height();
+    return Filter::applyVerticalScale(value) * m_absoluteFilterRegion.height() / m_filterRegion.height();
 }
 
 PassRefPtr<SVGFilter> SVGFilter::create(const AffineTransform& absoluteTransform, const FloatRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)

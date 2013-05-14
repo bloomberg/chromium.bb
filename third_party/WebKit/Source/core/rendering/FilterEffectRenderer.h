@@ -71,7 +71,7 @@ public:
 private:
     GraphicsContext* m_savedGraphicsContext;
     RenderLayer* m_renderLayer;
-
+    LayoutPoint m_paintOffset;
     LayoutRect m_repaintRect;
     bool m_haveFilterEffect;
 };
@@ -85,12 +85,17 @@ public:
         return adoptRef(new FilterEffectRenderer());
     }
 
-    void setSourceImageRect(const FloatRect& sourceImageRect)
+    virtual void setSourceImageRect(const FloatRect& sourceImageRect)
     { 
         m_sourceDrawingRegion = sourceImageRect;
+        setMaxEffectRects(sourceImageRect);
+        setFilterRegion(sourceImageRect);
         m_graphicsBufferAttached = false;
     }
     virtual FloatRect sourceImageRect() const { return m_sourceDrawingRegion; }
+
+    virtual void setFilterRegion(const FloatRect& filterRegion) { m_filterRegion = filterRegion; }
+    virtual FloatRect filterRegion() const { return m_filterRegion; }
 
     GraphicsContext* inputContext();
     ImageBuffer* output() const { return lastEffect()->asImageBuffer(); }
@@ -102,24 +107,32 @@ public:
     void clearIntermediateResults();
     void apply();
     
-    IntRect outputRect() const { return lastEffect()->hasResult() ? lastEffect()->absolutePaintRect() : IntRect(); }
+    IntRect outputRect() const { return lastEffect()->hasResult() ? lastEffect()->requestedRegionOfInputImageData(IntRect(m_filterRegion)) : IntRect(); }
 
     bool hasFilterThatMovesPixels() const { return m_hasFilterThatMovesPixels; }
     LayoutRect computeSourceImageRectForDirtyRect(const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect);
 
     bool hasCustomShaderFilter() const { return m_hasCustomShaderFilter; }
+private:
+    void setMaxEffectRects(const FloatRect& effectRect)
+    {
+        for (size_t i = 0; i < m_effects.size(); ++i) {
+            RefPtr<FilterEffect> effect = m_effects.at(i);
+            effect->setMaxEffectRect(effectRect);
+        }
+    }
     PassRefPtr<FilterEffect> lastEffect() const
     {
         if (m_effects.size() > 0)
             return m_effects.last();
         return 0;
     }
-private:
 
     FilterEffectRenderer();
     virtual ~FilterEffectRenderer();
     
     FloatRect m_sourceDrawingRegion;
+    FloatRect m_filterRegion;
     
     FilterEffectList m_effects;
     RefPtr<SourceGraphic> m_sourceGraphic;

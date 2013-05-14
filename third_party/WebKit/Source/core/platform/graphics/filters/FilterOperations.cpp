@@ -108,7 +108,7 @@ bool FilterOperations::hasOutsets() const
 {
     for (size_t i = 0; i < m_operations.size(); ++i) {
         FilterOperation::OperationType operationType = m_operations.at(i).get()->getOperationType();
-        if (operationType == FilterOperation::BLUR || operationType == FilterOperation::DROP_SHADOW || operationType == FilterOperation::REFERENCE)
+        if (operationType == FilterOperation::BLUR || operationType == FilterOperation::DROP_SHADOW)
             return true;
     }
     return false;
@@ -138,21 +138,6 @@ FilterOutsets FilterOperations::outsets() const
                 std::max(0, outsetSize.width() - dropShadowOperation->x())
             );
             totalOutsets += outsets;
-            break;
-        }
-        case FilterOperation::REFERENCE: {
-            ReferenceFilterOperation* referenceOperation = static_cast<ReferenceFilterOperation*>(filterOperation);
-            if (referenceOperation->filterEffect()) {
-                FloatRect outsetRect(0, 0, 1, 1);
-                outsetRect = referenceOperation->filterEffect()->mapRectRecursive(outsetRect);
-                FilterOutsets outsets(
-                    std::max(0.0f, -outsetRect.y()),
-                    std::max(0.0f, outsetRect.x() + outsetRect.width() - 1),
-                    std::max(0.0f, outsetRect.y() + outsetRect.height() - 1),
-                    std::max(0.0f, -outsetRect.x())
-                );
-                totalOutsets += outsets;
-            }
             break;
         }
         case FilterOperation::CUSTOM:

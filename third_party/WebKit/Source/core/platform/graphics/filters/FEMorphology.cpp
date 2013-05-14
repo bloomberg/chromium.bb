@@ -89,20 +89,15 @@ float FEMorphology::radiusY() const
 
 void FEMorphology::determineAbsolutePaintRect()
 {
-    FloatRect paintRect = mapRect(inputEffect(0)->absolutePaintRect());
+    FloatRect paintRect = inputEffect(0)->absolutePaintRect();
+    Filter* filter = this->filter();
+    paintRect.inflateX(filter->applyHorizontalScale(m_radiusX));
+    paintRect.inflateY(filter->applyVerticalScale(m_radiusY));
     if (clipsToBounds())
         paintRect.intersect(maxEffectRect());
     else
         paintRect.unite(maxEffectRect());
     setAbsolutePaintRect(enclosingIntRect(paintRect));
-}
-
-FloatRect FEMorphology::mapRect(const FloatRect& rect, bool)
-{
-    FloatRect result = rect;
-    result.inflateX(filter()->applyHorizontalScale(m_radiusX));
-    result.inflateY(filter()->applyVerticalScale(m_radiusY));
-    return result;
 }
 
 bool FEMorphology::setRadiusY(float radiusY)
