@@ -137,8 +137,21 @@ bool NativeTextfieldViews::OnMouseDragged(const ui::MouseEvent& event) {
   // TODO: Remove once NativeTextfield implementations are consolidated to
   // Textfield.
   if (!textfield_->OnMouseDragged(event)) {
-    if (MoveCursorTo(event.location(), true))
-      SchedulePaint();
+    MoveCursorTo(event.location(), true);
+    if (aggregated_clicks_ == 1) {
+      model_->SelectWord();
+      // Expand the selection so the initially selected word remains selected.
+      ui::Range selection = GetRenderText()->selection();
+      const size_t min = std::min(selection.GetMin(),
+                                  double_click_word_.GetMin());
+      const size_t max = std::max(selection.GetMax(),
+                                  double_click_word_.GetMax());
+      const bool reversed = selection.is_reversed();
+      selection.set_start(reversed ? max : min);
+      selection.set_end(reversed ? min : max);
+      model_->SelectRange(selection);
+    }
+    SchedulePaint();
   }
   OnAfterUserAction();
   return true;
@@ -1418,6 +1431,7 @@ void NativeTextfieldViews::HandleMousePressEvent(const ui::MouseEvent& event) {
     case 1:
       MoveCursorTo(event.location(), false);
       model_->SelectWord();
+      double_click_word_ = GetRenderText()->selection();
       OnCaretBoundsChanged();
       break;
     case 2:

@@ -466,7 +466,7 @@ void RenderText::SelectWord() {
     return;
   }
 
-  size_t cursor_pos = cursor_position();
+  size_t selection_max = selection().GetMax();
 
   base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
   bool success = iter.Init();
@@ -474,25 +474,26 @@ void RenderText::SelectWord() {
   if (!success)
     return;
 
-  size_t selection_start = cursor_pos;
-  if (selection_start == text().length() && selection_start != 0)
-    --selection_start;
+  size_t selection_min = selection().GetMin();
+  if (selection_min == text().length() && selection_min != 0)
+    --selection_min;
 
-  for (; selection_start != 0; --selection_start) {
-    if (iter.IsStartOfWord(selection_start) ||
-        iter.IsEndOfWord(selection_start))
+  for (; selection_min != 0; --selection_min) {
+    if (iter.IsStartOfWord(selection_min) ||
+        iter.IsEndOfWord(selection_min))
       break;
   }
 
-  if (selection_start == cursor_pos)
-    ++cursor_pos;
+  if (selection_min == selection_max && selection_max != text().length())
+    ++selection_max;
 
-  for (; cursor_pos < text().length(); ++cursor_pos)
-    if (iter.IsEndOfWord(cursor_pos) || iter.IsStartOfWord(cursor_pos))
+  for (; selection_max < text().length(); ++selection_max)
+    if (iter.IsEndOfWord(selection_max) || iter.IsStartOfWord(selection_max))
       break;
 
-  MoveCursorTo(selection_start, false);
-  MoveCursorTo(cursor_pos, true);
+  const bool reversed = selection().is_reversed();
+  MoveCursorTo(reversed ? selection_max : selection_min, false);
+  MoveCursorTo(reversed ? selection_min : selection_max, true);
 }
 
 const ui::Range& RenderText::GetCompositionRange() const {

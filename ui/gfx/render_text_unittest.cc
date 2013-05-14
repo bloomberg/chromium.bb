@@ -41,6 +41,11 @@ bool IndexInRange(const ui::Range& range, size_t index) {
   return index >= range.start() && index < range.end();
 }
 
+base::string16 GetSelectedText(RenderText* render_text) {
+  return render_text->text().substr(render_text->selection().GetMin(),
+                                    render_text->selection().length());
+}
+
 #if !defined(OS_MACOSX)
 // A test utility function to set the application default text direction.
 void SetRTL(bool rtl) {
@@ -1118,14 +1123,34 @@ TEST_F(RenderTextTest, LastWordSelected) {
   render_text->SetText(ASCIIToUTF16(kTestURL1));
   render_text->SetCursorPosition(kTestURL1.length());
   render_text->SelectWord();
-  EXPECT_EQ(ui::Range(kTestURL1.length() - 3, kTestURL1.length()),
-            render_text->selection());
+  EXPECT_EQ(ASCIIToUTF16("com"), GetSelectedText(render_text.get()));
+  EXPECT_FALSE(render_text->selection().is_reversed());
 
   render_text->SetText(ASCIIToUTF16(kTestURL2));
   render_text->SetCursorPosition(kTestURL2.length());
   render_text->SelectWord();
-  EXPECT_EQ(ui::Range(kTestURL2.length() - 1, kTestURL2.length()),
-            render_text->selection());
+  EXPECT_EQ(ASCIIToUTF16("/"), GetSelectedText(render_text.get()));
+  EXPECT_FALSE(render_text->selection().is_reversed());
+}
+
+// When given a non-empty selection, SelectWord should expand the selection to
+// nearest word boundaries.
+TEST_F(RenderTextTest, SelectMultipleWords) {
+  const std::string kTestURL = "http://www.google.com";
+
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+
+  render_text->SetText(ASCIIToUTF16(kTestURL));
+  render_text->SelectRange(ui::Range(16, 20));
+  render_text->SelectWord();
+  EXPECT_EQ(ASCIIToUTF16("google.com"), GetSelectedText(render_text.get()));
+  EXPECT_FALSE(render_text->selection().is_reversed());
+
+  // SelectWord should preserve the selection direction.
+  render_text->SelectRange(ui::Range(20, 16));
+  render_text->SelectWord();
+  EXPECT_EQ(ASCIIToUTF16("google.com"), GetSelectedText(render_text.get()));
+  EXPECT_TRUE(render_text->selection().is_reversed());
 }
 
 // TODO(asvitkine): Cursor movements tests disabled on Mac because RenderTextMac

@@ -237,7 +237,9 @@ class UI_EXPORT RenderText {
   // of text that overflows its display area.
   void SelectAll(bool reversed);
 
-  // Selects the word at the current cursor position.
+  // Selects the word at the current cursor position. If there is a non-empty
+  // selection, the selection bounds are extended to their nearest word
+  // boundaries.
   void SelectWord();
 
   const ui::Range& GetCompositionRange() const;

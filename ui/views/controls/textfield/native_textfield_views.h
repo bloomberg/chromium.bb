@@ -315,6 +315,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   size_t aggregated_clicks_;
   base::TimeDelta last_click_time_;
   gfx::Point last_click_location_;
+  ui::Range double_click_word_;
 
   // Context menu and its content list for the textfield.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;

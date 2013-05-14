@@ -156,7 +156,9 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // The current composition text will be confirmed.
   void SelectAll(bool reversed);
 
-  // Selects the word at which the cursor is currently positioned.
+  // Selects the word at which the cursor is currently positioned. If there is a
+  // non-empty selection, the selection bounds are extended to their nearest
+  // word boundaries.
   // The current composition text will be confirmed.
   void SelectWord();
 

@@ -1797,6 +1797,34 @@ TEST_F(NativeTextfieldViewsTest, GetCompositionCharacterBoundsTest) {
   EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count + 100, &rect));
 }
 
+// The word we select by double clicking should remain selected regardless of
+// where we drag the mouse afterwards without releasing the left button.
+TEST_F(NativeTextfieldViewsTest, KeepInitiallySelectedWord) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+
+  textfield_->SetText(ASCIIToUTF16("abc def ghi"));
+
+  textfield_->SelectRange(ui::Range(5, 5));
+  const gfx::Rect middle_cursor = GetCursorBounds();
+  textfield_->SelectRange(ui::Range(0, 0));
+  const gfx::Point beginning = GetCursorBounds().origin();
+
+  // Double click, but do not release the left button.
+  MouseClick(middle_cursor, 0);
+  const gfx::Point middle(middle_cursor.x(),
+                          middle_cursor.y() + middle_cursor.height() / 2);
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, middle, middle,
+                             ui::EF_LEFT_MOUSE_BUTTON);
+  textfield_view_->OnMousePressed(press_event);
+  EXPECT_EQ(ui::Range(4, 7), textfield_->GetSelectedRange());
+
+  // Drag the mouse to the beginning of the textfield.
+  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, beginning, beginning,
+                            ui::EF_LEFT_MOUSE_BUTTON);
+  textfield_view_->OnMouseDragged(drag_event);
+  EXPECT_EQ(ui::Range(7, 0), textfield_->GetSelectedRange());
+}
+
 // Touch selection and draggin currently only works for chromeos.
 #if defined(OS_CHROMEOS)
 TEST_F(NativeTextfieldViewsTest, TouchSelectionAndDraggingTest) {
