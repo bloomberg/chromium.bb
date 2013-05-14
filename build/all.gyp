@@ -377,11 +377,6 @@
           'target_name': 'chromium_builder_qa',
           'type': 'none',
           'dependencies': [
-            '../chrome/chrome.gyp:chromedriver',
-            '../chrome/chrome.gyp:chromedriver2',
-            '../chrome/chrome.gyp:chromedriver2_server',
-            '../chrome/chrome.gyp:chromedriver2_tests',
-            '../chrome/chrome.gyp:chromedriver2_unittests',
             # Dependencies of pyauto_functional tests.
             '../remoting/remoting.gyp:remoting_webapp',
           ],
@@ -430,6 +425,15 @@
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
           ],
         },  # target_name: chromium_builder_webrtc
+        {
+          'target_name': 'chromium_builder_chromedriver',
+          'type': 'none',
+          'dependencies': [
+            '../chrome/chrome.gyp:chromedriver2_server',
+            '../chrome/chrome.gyp:chromedriver2_tests',
+            '../chrome/chrome.gyp:chromedriver2_unittests',
+          ],
+        },  # target_name: chromium_builder_chromedriver
       ],  # targets
     }],
     ['OS=="mac"', {
