@@ -7,6 +7,7 @@
 #include <atlbase.h>
 #include <atlapp.h>
 #include <atlconv.h>
+#include <atlcrack.h>
 #include <atlmisc.h>
 #include <string>
 
@@ -157,6 +158,80 @@ ContextMenuModel* ConvertMenuModel(const ui::MenuModel* ui_model) {
 
 }  // namespace
 
+#if defined(USE_AURA)
+typedef ATL::CWinTraits<WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+                        WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW>
+    ContainerWindowHWNDTraits;
+
+// A window placed in the parent/child hierarchy between the host (e.g., a
+// ChromeFrameAutomationClient window) and the Aura DesktopRootWindowHostWin.
+// This non-activatable window is necessary to prevent focus from warping from
+// the DRWHW up to the CFAC window during reparenting. This is not needed in the
+// non-Aura case because the ExternalTabContainer's primary widget takes this
+// role (the RenderWidgetHostViewWin's HWND is a grandchild of it).
+class ContainerWindow : public ATL::CWindowImpl<ContainerWindow,
+                                                ATL::CWindow,
+                                                ContainerWindowHWNDTraits>,
+                        public base::SupportsWeakPtr<ContainerWindow> {
+ public:
+  DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS, 0);
+
+  BEGIN_MSG_MAP_EX(ContainerWindow)
+    MSG_WM_MOVE(OnMove)
+    MSG_WM_SHOWWINDOW(OnShowWindow)
+    MSG_WM_SIZE(OnSize)
+  END_MSG_MAP()
+
+  ContainerWindow(HWND parent, const gfx::Rect& bounds) : child_(NULL) {
+    RECT rect = bounds.ToRECT();
+    Create(parent, rect);
+  }
+
+  HWND hwnd() {
+    DCHECK(::IsWindow(m_hWnd));
+    return m_hWnd;
+  }
+
+  // Sets the child window (the DRWHW). The child is made activateable as part
+  // of the operation.
+  void SetChild(HWND window) {
+    child_ = window;
+
+    ::SetWindowLong(
+        window, GWL_STYLE,
+        (::GetWindowLong(window, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
+    ::SetWindowLong(window, GWL_EXSTYLE,
+                    (::GetWindowLong(window, GWL_EXSTYLE) & ~WS_EX_NOACTIVATE));
+
+    ::SetParent(window, hwnd());
+  }
+
+ protected:
+  virtual void OnFinalMessage(HWND hwnd) OVERRIDE {
+    delete this;
+  }
+
+ private:
+  void OnMove(const CPoint& position) {
+    ::SetWindowPos(child_, NULL, position.x, position.y, 0, 0,
+                   SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOZORDER);
+  }
+
+  void OnShowWindow(BOOL show, UINT status) {
+    ::ShowWindow(child_, SW_SHOWNA);
+  }
+
+  void OnSize(UINT type, const CSize& size) {
+    ::SetWindowPos(child_, NULL, 0, 0, size.cx, size.cy,
+                   SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
+  }
+
+  HWND child_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContainerWindow);
+};
+#endif
+
 base::LazyInstance<ExternalTabContainerWin::PendingTabs>
     ExternalTabContainerWin::pending_tabs_ = LAZY_INSTANCE_INITIALIZER;
 
@@ -224,15 +299,24 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.bounds = bounds;
 #if defined(USE_AURA)
+  // Create the window that sits between the parent (most likely a
+  // ChromeFrameAutomationClient) and the DesktopRootWindowHostWin.
+  tab_container_window_ =
+      (new ContainerWindow(HWND_DESKTOP, params.bounds))->AsWeakPtr();
+
   params.native_widget = new views::DesktopNativeWidgetAura(widget_);
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
 #endif
   widget_->Init(params);
-  HWND window = views::HWNDForWidget(widget_);
+
+#if defined(USE_AURA)
+  tab_container_window_->SetChild(views::HWNDForWidget(widget_));
+#endif
 
   // TODO(jcampan): limit focus traversal to contents.
 
-  prop_.reset(new ui::ViewProp(window, kWindowObjectKey, this));
+  prop_.reset(new ui::ViewProp(views::HWNDForWidget(widget_), kWindowObjectKey,
+                               this));
 
   if (existing_contents) {
     existing_contents->GetController().SetBrowserContext(profile);
@@ -284,6 +368,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   // Note that it's important to do this before we call SetParent since
   // during the SetParent call we will otherwise get a WA_ACTIVATE call
   // that causes us to steal the current focus.
+  HWND window = GetExternalTabHWND();
   SetWindowLong(window, GWL_STYLE,
                 (GetWindowLong(window, GWL_STYLE) & ~WS_POPUP) | style);
 
@@ -367,7 +452,7 @@ bool ExternalTabContainerWin::Reinitialize(
                  weak_factory_.GetWeakPtr()));
 
   if (parent_window)
-    SetParent(views::HWNDForWidget(widget_), parent_window);
+    SetParent(GetExternalTabHWND(), parent_window);
   return true;
 }
 
@@ -376,7 +461,11 @@ WebContents* ExternalTabContainerWin::GetWebContents() const {
 }
 
 HWND ExternalTabContainerWin::GetExternalTabHWND() const {
+#if defined(USE_AURA)
+  return tab_container_window_.get() ? tab_container_window_->hwnd() : NULL;
+#else
   return views::HWNDForWidget(widget_);
+#endif
 }
 
 HWND ExternalTabContainerWin::GetContentHWND() const {
