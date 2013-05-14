@@ -21,8 +21,11 @@ int StaticCookiePolicy::CanGetCookies(
     case StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES:
       if (first_party_for_cookies.is_empty())
         return OK;  // Empty first-party URL indicates a first-party request.
-      return RegistryControlledDomainService::SameDomainOrHost(
-          url, first_party_for_cookies) ? OK : ERR_ACCESS_DENIED;
+      return registry_controlled_domains::SameDomainOrHost(
+          url,
+          first_party_for_cookies,
+          registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES) ?
+              OK : ERR_ACCESS_DENIED;
     case StaticCookiePolicy::BLOCK_ALL_COOKIES:
       return ERR_ACCESS_DENIED;
     default:
@@ -41,8 +44,11 @@ int StaticCookiePolicy::CanSetCookie(
     case StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES:
       if (first_party_for_cookies.is_empty())
         return OK;  // Empty first-party URL indicates a first-party request.
-      return RegistryControlledDomainService::SameDomainOrHost(
-          url, first_party_for_cookies) ? OK : ERR_ACCESS_DENIED;
+      return registry_controlled_domains::SameDomainOrHost(
+          url,
+          first_party_for_cookies,
+          registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES) ?
+              OK : ERR_ACCESS_DENIED;
     case StaticCookiePolicy::BLOCK_ALL_COOKIES:
       return ERR_ACCESS_DENIED;
     default:

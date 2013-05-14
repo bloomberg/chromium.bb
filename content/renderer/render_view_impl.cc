@@ -2923,9 +2923,12 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     GURL frame_url(origin_str.utf8().data());
     // TODO(cevans): revisit whether this site check is still necessary once
     // crbug.com/101395 is fixed.
-    if (!net::RegistryControlledDomainService::SameDomainOrHost(frame_url,
-                                                                url) ||
-        frame_url.scheme() != url.scheme()) {
+    bool same_domain_or_host =
+        net::registry_controlled_domains::SameDomainOrHost(
+            frame_url,
+            url,
+            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+    if (!same_domain_or_host || frame_url.scheme() != url.scheme()) {
       OpenURL(frame, url, referrer, default_policy);
       return WebKit::WebNavigationPolicyIgnore;
     }

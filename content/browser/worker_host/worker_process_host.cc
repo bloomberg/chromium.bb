@@ -493,8 +493,9 @@ void WorkerProcessHost::UpdateTitle() {
         GetWorkerProcessTitle(i->url(), resource_context_);
 
     if (title.empty()) {
-      title = net::RegistryControlledDomainService::GetDomainAndRegistry(
-          i->url());
+      title = net::registry_controlled_domains::GetDomainAndRegistry(
+          i->url(),
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
     }
 
     // Use the host name if the domain is empty, i.e. localhost or IP address.

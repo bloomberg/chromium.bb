@@ -252,7 +252,8 @@ string16 ElideUrl(const GURL& url,
 
   // Get domain and registry information from the URL.
   string16 url_domain = UTF8ToUTF16(
-      net::RegistryControlledDomainService::GetDomainAndRegistry(url));
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
   if (url_domain.empty())
     url_domain = url_host;
 

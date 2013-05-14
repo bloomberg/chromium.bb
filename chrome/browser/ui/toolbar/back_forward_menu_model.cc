@@ -370,8 +370,9 @@ int BackForwardMenuModel::GetIndexOfNextChapterStop(int start_from,
     // When going backwards we return the first entry we find that has a
     // different domain.
     for (int i = start_from - 1; i >= 0; --i) {
-      if (!net::RegistryControlledDomainService::SameDomainOrHost(url,
-              controller.GetEntryAtIndex(i)->GetURL()))
+      if (!net::registry_controlled_domains::SameDomainOrHost(url,
+              controller.GetEntryAtIndex(i)->GetURL(),
+              net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES))
         return i;
     }
     // We have reached the beginning without finding a chapter stop.
@@ -380,8 +381,9 @@ int BackForwardMenuModel::GetIndexOfNextChapterStop(int start_from,
     // When going forwards we return the entry before the entry that has a
     // different domain.
     for (int i = start_from + 1; i < max_count; ++i) {
-      if (!net::RegistryControlledDomainService::SameDomainOrHost(url,
-              controller.GetEntryAtIndex(i)->GetURL()))
+      if (!net::registry_controlled_domains::SameDomainOrHost(url,
+              controller.GetEntryAtIndex(i)->GetURL(),
+              net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES))
         return i - 1;
     }
     // Last entry is always considered a chapter stop.

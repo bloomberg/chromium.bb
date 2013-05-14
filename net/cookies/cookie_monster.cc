@@ -1961,7 +1961,7 @@ int CookieMonster::GarbageCollectDeleteRange(
   return it_end - it_begin;
 }
 
-// A wrapper around RegistryControlledDomainService::GetDomainAndRegistry
+// A wrapper around registry_controlled_domains::GetDomainAndRegistry
 // to make clear we're creating a key for our local map.  Here and
 // in FindCookiesForHostAndDomain() are the only two places where
 // we need to conditionalize based on key type.
@@ -1986,7 +1986,8 @@ int CookieMonster::GarbageCollectDeleteRange(
 // non-problem).
 std::string CookieMonster::GetKey(const std::string& domain) const {
   std::string effective_domain(
-      RegistryControlledDomainService::GetDomainAndRegistry(domain));
+      registry_controlled_domains::GetDomainAndRegistry(
+          domain, registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
   if (effective_domain.empty())
     effective_domain = domain;
 

@@ -254,8 +254,9 @@ void SafeBrowsingUIManager::UpdateWhitelist(const UnsafeResource& resource) {
   WhiteListedEntry entry;
   entry.render_process_host_id = resource.render_process_host_id;
   entry.render_view_id = resource.render_view_id;
-  entry.domain = net::RegistryControlledDomainService::GetDomainAndRegistry(
-      resource.url);
+  entry.domain = net::registry_controlled_domains::GetDomainAndRegistry(
+      resource.url,
+      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   entry.threat_type = resource.threat_type;
   white_listed_entries_.push_back(entry);
 }
@@ -276,11 +277,11 @@ bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
          (entry.threat_type == SB_THREAT_TYPE_URL_PHISHING &&
           resource.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL) ||
          (entry.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL &&
-          resource.threat_type == SB_THREAT_TYPE_URL_PHISHING))  &&
-        entry.domain ==
-        net::RegistryControlledDomainService::GetDomainAndRegistry(
-            resource.url)) {
-      return true;
+          resource.threat_type == SB_THREAT_TYPE_URL_PHISHING))) {
+      return entry.domain ==
+          net::registry_controlled_domains::GetDomainAndRegistry(
+              resource.url,
+              net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
     }
   }
   return false;
