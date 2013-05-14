@@ -15,6 +15,7 @@ import os
 import select
 import struct
 import subprocess
+import sys
 import threading
 import time
 import urlparse
@@ -45,6 +46,20 @@ SERVER_TYPES = {
 # The timeout (in seconds) of starting up the Python test server.
 TEST_SERVER_STARTUP_TIMEOUT = 10
 
+def _WaitUntil(predicate, max_attempts=5):
+  """Blocks until the provided predicate (function) is true.
+
+  Returns:
+    Whether the provided predicate was satisfied once (before the timeout).
+  """
+  sleep_time_sec = 0.025
+  for attempt in xrange(1, max_attempts):
+    if predicate():
+      return True
+    time.sleep(sleep_time_sec)
+    sleep_time_sec = min(1, sleep_time_sec * 2)  # Don't wait more than 1 sec.
+  return False
+
 
 def _CheckPortStatus(port, expected_status):
   """Returns True if port has expected_status.
@@ -56,11 +71,12 @@ def _CheckPortStatus(port, expected_status):
   Returns:
     Returns True if the status is expected. Otherwise returns False.
   """
-  for timeout in range(1, 5):
-    if ports.IsHostPortUsed(port) == expected_status:
-      return True
-    time.sleep(timeout)
-  return False
+  return _WaitUntil(lambda: ports.IsHostPortUsed(port) == expected_status)
+
+
+def _CheckDevicePortStatus(adb, port):
+  """Returns whether the provided port is used."""
+  return _WaitUntil(lambda: ports.IsDevicePortUsed(adb, port))
 
 
 def _GetServerTypeCommandLine(server_type):
@@ -230,18 +246,13 @@ class TestServerThread(threading.Thread):
       self.is_ready = False
       device_port = self._test_server_forwarder.DevicePortForHostPort(
           self.host_port)
-      if device_port:
-        for timeout in range(1, 5):
-          if ports.IsDevicePortUsed(self.adb, device_port, 'LISTEN'):
-            self.is_ready = True
-            self.forwarder_device_port = device_port
-            break
-          time.sleep(timeout)
+      if device_port and _CheckDevicePortStatus(self.adb, device_port):
+        self.is_ready = True
+        self.forwarder_device_port = device_port
     # Wake up the request handler thread.
     self.ready_event.set()
     # Keep thread running until Stop() gets called.
-    while not self.stop_flag:
-      time.sleep(1)
+    _WaitUntil(lambda: self.stop_flag, max_attempts=sys.maxint)
     if self.process.poll() is None:
       self.process.kill()
     if self._test_server_forwarder:
@@ -401,7 +412,6 @@ class SpawningServer(object):
     listener_thread = threading.Thread(target=self._Listen)
     listener_thread.setDaemon(True)
     listener_thread.start()
-    time.sleep(1)
 
   def Stop(self):
     """Stops the test server spawner.
